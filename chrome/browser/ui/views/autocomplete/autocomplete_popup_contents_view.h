@@ -51,40 +51,35 @@ class AutocompletePopupContentsView : public views::View,
   // and includes offsets for the dropshadow which this view's border renders.
   gfx::Rect GetPopupBounds() const;
 
+  virtual void LayoutChildren();
+
   // Overridden from AutocompletePopupView:
-  virtual bool IsOpen() const;
-  virtual void InvalidateLine(size_t line);
-  virtual void UpdatePopupAppearance();
-  virtual gfx::Rect GetTargetBounds();
-  virtual void PaintUpdatesNow();
-  virtual void OnDragCanceled();
+  virtual bool IsOpen() const OVERRIDE;
+  virtual void InvalidateLine(size_t line) OVERRIDE;
+  virtual void UpdatePopupAppearance() OVERRIDE;
+  virtual gfx::Rect GetTargetBounds() OVERRIDE;
+  virtual void PaintUpdatesNow() OVERRIDE;
+  virtual void OnDragCanceled() OVERRIDE;
 
   // Overridden from AutocompleteResultViewModel:
-  virtual bool IsSelectedIndex(size_t index) const;
-  virtual bool IsHoveredIndex(size_t index) const;
-  virtual const SkBitmap* GetSpecialIcon(size_t index) const;
+  virtual bool IsSelectedIndex(size_t index) const OVERRIDE;
+  virtual bool IsHoveredIndex(size_t index) const OVERRIDE;
+  virtual const SkBitmap* GetSpecialIcon(size_t index) const OVERRIDE;
 
   // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas);
-
-  // This method should not be triggered directly as we paint our children
-  // in an un-conventional way inside OnPaint. We use a separate canvas to
-  // paint the children. Hence we override this method to a no-op so that
-  // the view hierarchy doesnot "accidentally" trigger this.
-  virtual void PaintChildren(gfx::Canvas* canvas);
-  virtual void Layout();
-  virtual void LayoutChildren();
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual views::View* GetEventHandlerForPoint(
+      const gfx::Point& point) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event,
                                bool canceled) OVERRIDE;
-  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
-  virtual views::View* GetEventHandlerForPoint(const gfx::Point& point);
+  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
 
  protected:
   virtual void PaintResultViews(gfx::CanvasSkia* canvas);
@@ -96,6 +91,14 @@ class AutocompletePopupContentsView : public views::View,
       int model_index,
       const gfx::Font& font,
       const gfx::Font& bold_font);
+
+  // Overridden from views::View:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  // This method should not be triggered directly as we paint our children
+  // in an un-conventional way inside OnPaint. We use a separate canvas to
+  // paint the children. Hence we override this method to a no-op so that
+  // the view hierarchy does not "accidentally" trigger this.
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
   scoped_ptr<AutocompletePopupModel> model_;
 

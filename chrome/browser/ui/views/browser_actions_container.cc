@@ -173,16 +173,6 @@ void BrowserActionButton::UpdateState() {
   parent()->SchedulePaint();
 }
 
-void BrowserActionButton::Observe(NotificationType type,
-                                  const NotificationSource& source,
-                                  const NotificationDetails& details) {
-  DCHECK(type == NotificationType::EXTENSION_BROWSER_ACTION_UPDATED);
-  UpdateState();
-  // The browser action may have become visible/hidden so we need to make
-  // sure the state gets updated.
-  panel_->OnBrowserActionVisibilityChanged();
-}
-
 bool BrowserActionButton::IsPopup() {
   int tab_id = panel_->GetCurrentTabId();
   return (tab_id < 0) ? false : browser_action_->HasPopup(tab_id);
@@ -191,6 +181,16 @@ bool BrowserActionButton::IsPopup() {
 GURL BrowserActionButton::GetPopupUrl() {
   int tab_id = panel_->GetCurrentTabId();
   return (tab_id < 0) ? GURL() : browser_action_->GetPopupUrl(tab_id);
+}
+
+void BrowserActionButton::Observe(NotificationType type,
+                                  const NotificationSource& source,
+                                  const NotificationDetails& details) {
+  DCHECK(type == NotificationType::EXTENSION_BROWSER_ACTION_UPDATED);
+  UpdateState();
+  // The browser action may have become visible/hidden so we need to make
+  // sure the state gets updated.
+  panel_->OnBrowserActionVisibilityChanged();
 }
 
 bool BrowserActionButton::Activate() {
@@ -237,16 +237,16 @@ void BrowserActionButton::OnMouseReleased(const views::MouseEvent& event,
   }
 }
 
-bool BrowserActionButton::OnKeyReleased(const views::KeyEvent& event) {
-  return IsPopup() ?
-      MenuButton::OnKeyReleased(event) : TextButton::OnKeyReleased(event);
-}
-
 void BrowserActionButton::OnMouseExited(const views::MouseEvent& event) {
   if (IsPopup() || showing_context_menu_)
     MenuButton::OnMouseExited(event);
   else
     TextButton::OnMouseExited(event);
+}
+
+bool BrowserActionButton::OnKeyReleased(const views::KeyEvent& event) {
+  return IsPopup() ?
+      MenuButton::OnKeyReleased(event) : TextButton::OnKeyReleased(event);
 }
 
 void BrowserActionButton::ShowContextMenu(const gfx::Point& p,
@@ -316,12 +316,6 @@ gfx::Canvas* BrowserActionView::GetIconWithBadge() {
   return canvas;
 }
 
-void BrowserActionView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->name = l10n_util::GetStringUTF16(
-      IDS_ACCNAME_EXTENSIONS_BROWSER_ACTION);
-  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
-}
-
 void BrowserActionView::Layout() {
   // We can't rely on button_->GetPreferredSize() here because that's not set
   // correctly until the first call to
@@ -332,6 +326,12 @@ void BrowserActionView::Layout() {
   // button should be regardless of what it's displaying.
   button_->SetBounds(0, ToolbarView::kVertSpacing, width(),
                      BrowserActionsContainer::IconHeight());
+}
+
+void BrowserActionView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->name = l10n_util::GetStringUTF16(
+      IDS_ACCNAME_EXTENSIONS_BROWSER_ACTION);
+  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
 }
 
 void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
@@ -571,40 +571,6 @@ void BrowserActionsContainer::Layout() {
   }
 }
 
-void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
-  // TODO(sky/glen): Instead of using a drop indicator, animate the icons while
-  // dragging (like we do for tab dragging).
-  if (drop_indicator_position_ > -1) {
-    // The two-pixel width drop indicator.
-    static const int kDropIndicatorWidth = 2;
-    gfx::Rect indicator_bounds(
-        drop_indicator_position_ - (kDropIndicatorWidth / 2),
-        ToolbarView::kVertSpacing, kDropIndicatorWidth, IconHeight());
-
-    // Color of the drop indicator.
-    static const SkColor kDropIndicatorColor = SK_ColorBLACK;
-    canvas->FillRectInt(kDropIndicatorColor, indicator_bounds.x(),
-                        indicator_bounds.y(), indicator_bounds.width(),
-                        indicator_bounds.height());
-  }
-}
-
-void BrowserActionsContainer::ViewHierarchyChanged(bool is_add,
-                                                   views::View* parent,
-                                                   views::View* child) {
-  // No extensions (e.g., incognito).
-  if (!model_)
-    return;
-
-  if (is_add && child == this) {
-    // Initial toolbar button creation and placement in the widget hierarchy.
-    // We do this here instead of in the constructor because AddBrowserAction
-    // calls Layout on the Toolbar, which needs this object to be constructed
-    // before its Layout function is called.
-    CreateBrowserActionViews();
-  }
-}
-
 bool BrowserActionsContainer::GetDropFormats(
     int* formats,
     std::set<OSExchangeData::CustomFormat>* custom_formats) {
@@ -730,10 +696,6 @@ int BrowserActionsContainer::OnPerformDrop(
 
   OnDragExited();  // Perform clean up after dragging.
   return ui::DragDropTypes::DRAG_MOVE;
-}
-
-void BrowserActionsContainer::OnThemeChanged() {
-  LoadImages();
 }
 
 void BrowserActionsContainer::GetAccessibleState(
@@ -862,6 +824,44 @@ void BrowserActionsContainer::TestSetIconVisibilityCount(size_t icons) {
   container_width_ = IconCountToWidth(icons, chevron_->IsVisible());
   Layout();
   SchedulePaint();
+}
+
+void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
+  // TODO(sky/glen): Instead of using a drop indicator, animate the icons while
+  // dragging (like we do for tab dragging).
+  if (drop_indicator_position_ > -1) {
+    // The two-pixel width drop indicator.
+    static const int kDropIndicatorWidth = 2;
+    gfx::Rect indicator_bounds(
+        drop_indicator_position_ - (kDropIndicatorWidth / 2),
+        ToolbarView::kVertSpacing, kDropIndicatorWidth, IconHeight());
+
+    // Color of the drop indicator.
+    static const SkColor kDropIndicatorColor = SK_ColorBLACK;
+    canvas->FillRectInt(kDropIndicatorColor, indicator_bounds.x(),
+                        indicator_bounds.y(), indicator_bounds.width(),
+                        indicator_bounds.height());
+  }
+}
+
+void BrowserActionsContainer::OnThemeChanged() {
+  LoadImages();
+}
+
+void BrowserActionsContainer::ViewHierarchyChanged(bool is_add,
+                                                   views::View* parent,
+                                                   views::View* child) {
+  // No extensions (e.g., incognito).
+  if (!model_)
+    return;
+
+  if (is_add && child == this) {
+    // Initial toolbar button creation and placement in the widget hierarchy.
+    // We do this here instead of in the constructor because AddBrowserAction
+    // calls Layout on the Toolbar, which needs this object to be constructed
+    // before its Layout function is called.
+    CreateBrowserActionViews();
+  }
 }
 
 // static

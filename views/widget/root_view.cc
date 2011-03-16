@@ -148,13 +148,6 @@ View* RootView::GetFocusTraversableParentView() {
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, View overrides:
 
-void RootView::SchedulePaintInRect(const gfx::Rect& rect) {
-  gfx::Rect xrect = ConvertRectToParent(rect);
-  gfx::Rect invalid_rect = GetLocalBounds().Intersect(xrect);
-  if (!invalid_rect.IsEmpty())
-    widget_->SchedulePaintInRect(invalid_rect);
-}
-
 const Widget* RootView::GetWidget() const {
   return widget_;
 }
@@ -163,11 +156,19 @@ Widget* RootView::GetWidget() {
   return const_cast<Widget*>(const_cast<const RootView*>(this)->GetWidget());
 }
 
-void RootView::OnMouseExited(const MouseEvent& event) {
-  if (mouse_move_handler_ != NULL) {
-    mouse_move_handler_->OnMouseExited(event);
-    mouse_move_handler_ = NULL;
-  }
+bool RootView::IsVisibleInRootView() const {
+  return IsVisible();
+}
+
+std::string RootView::GetClassName() const {
+  return kViewClassName;
+}
+
+void RootView::SchedulePaintInRect(const gfx::Rect& rect) {
+  gfx::Rect xrect = ConvertRectToParent(rect);
+  gfx::Rect invalid_rect = GetLocalBounds().Intersect(xrect);
+  if (!invalid_rect.IsEmpty())
+    widget_->SchedulePaintInRect(invalid_rect);
 }
 
 bool RootView::OnMousePressed(const MouseEvent& event) {
@@ -307,10 +308,11 @@ void RootView::OnMouseMoved(const MouseEvent& event) {
   }
 }
 
-void RootView::SetMouseHandler(View *new_mh) {
-  // If we're clearing the mouse handler, clear explicit_mouse_handler as well.
-  explicit_mouse_handler_ = (new_mh != NULL);
-  mouse_pressed_handler_ = new_mh;
+void RootView::OnMouseExited(const MouseEvent& event) {
+  if (mouse_move_handler_ != NULL) {
+    mouse_move_handler_->OnMouseExited(event);
+    mouse_move_handler_ = NULL;
+  }
 }
 
 bool RootView::OnMouseWheel(const MouseWheelEvent& event) {
@@ -385,21 +387,18 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
 }
 #endif
 
-bool RootView::IsVisibleInRootView() const {
-  return IsVisible();
-}
-
-std::string RootView::GetClassName() const {
-  return kViewClassName;
+void RootView::SetMouseHandler(View *new_mh) {
+  // If we're clearing the mouse handler, clear explicit_mouse_handler as well.
+  explicit_mouse_handler_ = (new_mh != NULL);
+  mouse_pressed_handler_ = new_mh;
 }
 
 void RootView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_APPLICATION;
 }
 
-void RootView::OnPaint(gfx::Canvas* canvas) {
-  canvas->AsCanvasSkia()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
-}
+////////////////////////////////////////////////////////////////////////////////
+// RootView, protected:
 
 void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   widget_->ViewHierarchyChanged(is_add, parent, child);
@@ -416,8 +415,13 @@ void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   }
 }
 
+
+void RootView::OnPaint(gfx::Canvas* canvas) {
+  canvas->AsCanvasSkia()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
-// RootView, protected:
+// RootView, private:
 
 // Coordinate conversion -------------------------------------------------------
 

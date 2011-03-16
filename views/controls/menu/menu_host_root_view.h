@@ -24,16 +24,15 @@ class MenuHostRootView : public RootView {
   MenuHostRootView(Widget* widget, SubmenuView* submenu);
 
   // When invoked subsequent events are NOT forwarded to the MenuController.
-  void suspend_events() {
-    suspend_events_ = true;
-  }
+  void suspend_events() { suspend_events_ = true; }
 
+  // Overridden from View:
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
   virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
   virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
 
  private:
   // Returns the MenuController for this MenuHostRootView.

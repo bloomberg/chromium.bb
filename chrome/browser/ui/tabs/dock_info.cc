@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/tabs/dock_info.h"
 
+#include "base/logging.h"
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/tabs/tab.h"
 #else

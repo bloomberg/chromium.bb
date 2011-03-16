@@ -24,6 +24,9 @@ class Checkbox : public NativeButton {
   explicit Checkbox(const std::wstring& label);
   virtual ~Checkbox();
 
+  // Returns the indentation of the text from the left edge of the view.
+  static int GetTextIndent();
+
   // Sets a listener for this checkbox. Checkboxes aren't required to have them
   // since their state can be read independently of them being toggled.
   void set_listener(ButtonListener* listener) { listener_ = listener; }
@@ -38,40 +41,36 @@ class Checkbox : public NativeButton {
   virtual void SetChecked(bool checked);
   bool checked() const { return checked_; }
 
-  // Returns the indentation of the text from the left edge of the view.
-  static int GetTextIndent();
-
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual int GetHeightForWidth(int w) OVERRIDE;
-  virtual void Layout() OVERRIDE;
   virtual void SetEnabled(bool enabled) OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnMouseEntered(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
-
-  // Accessibility accessors, overridden from View.
+  virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
+  virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseEntered(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Overridden from NativeButton:
   virtual void SetLabel(const std::wstring& label) OVERRIDE;
 
  protected:
-  virtual std::string GetClassName() const OVERRIDE;
+  // Returns true if the event (in Checkbox coordinates) is within the bounds of
+  // the label.
+  bool HitTestLabel(const MouseEvent& event);
+
+  // Overridden from View:
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
   // Overridden from NativeButton:
   virtual NativeButtonWrapper* CreateWrapper() OVERRIDE;
   virtual void InitBorder() OVERRIDE;
-
-  // Returns true if the event (in Checkbox coordinates) is within the bounds of
-  // the label.
-  bool HitTestLabel(const MouseEvent& event);
 
  private:
   // Called from the constructor to create and configure the checkbox label.

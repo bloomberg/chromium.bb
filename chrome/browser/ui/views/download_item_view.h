@@ -61,22 +61,34 @@ class DownloadItemView : public views::ButtonListener,
                    BaseDownloadItemModel* model);
   virtual ~DownloadItemView();
 
+  // Timer callback for handling animations
+  void UpdateDownloadProgress();
+  void StartDownloadProgress();
+  void StopDownloadProgress();
+
+  // IconManager::Client interface.
+  void OnExtractIconComplete(IconManager::Handle handle, gfx::Image* icon);
+
+  // Returns the DownloadItem model object belonging to this item.
+  DownloadItem* download() const { return download_; }
+
   // DownloadObserver method
   virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
   virtual void OnDownloadFileCompleted(DownloadItem* download) OVERRIDE { }
   virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE;
 
-  // View overrides
+  // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event,
                                bool canceled) OVERRIDE;
-  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p,
+                              std::wstring* tooltip) OVERRIDE;
   virtual void ShowContextMenu(const gfx::Point& p,
                                bool is_mouse_gesture) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
@@ -88,16 +100,9 @@ class DownloadItemView : public views::ButtonListener,
   // ui::AnimationDelegate implementation.
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
-  // Timer callback for handling animations
-  void UpdateDownloadProgress();
-  void StartDownloadProgress();
-  void StopDownloadProgress();
-
-  // IconManager::Client interface.
-  void OnExtractIconComplete(IconManager::Handle handle, gfx::Image* icon);
-
-  // Returns the DownloadItem model object belonging to this item.
-  DownloadItem* download() const { return download_; }
+ protected:
+  // Overridden from views::View:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   enum State {
@@ -130,8 +135,6 @@ class DownloadItemView : public views::ButtonListener,
   void OpenDownload();
 
   void LoadIcon();
-
-  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
 
   // Convenience method to paint the 3 vertical bitmaps (bottom, middle, top)
   // that form the background.

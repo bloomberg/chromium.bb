@@ -18,6 +18,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/animation/animation_container.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -260,27 +261,21 @@ void BaseTab::StopPulse() {
   pulse_animation_.reset(NULL);
 }
 
-bool BaseTab::IsSelected() const {
-  return controller() ? controller()->IsTabSelected(this) : true;
+void BaseTab::set_animation_container(ui::AnimationContainer* container) {
+  animation_container_ = container;
 }
 
 bool BaseTab::IsCloseable() const {
   return controller() ? controller()->IsTabCloseable(this) : true;
 }
 
-void BaseTab::OnMouseEntered(const views::MouseEvent& event) {
-  if (!hover_animation_.get()) {
-    hover_animation_.reset(new ui::SlideAnimation(this));
-    hover_animation_->SetContainer(animation_container_.get());
-    hover_animation_->SetSlideDuration(kHoverDurationMs);
-  }
-  hover_animation_->SetTweenType(ui::Tween::EASE_OUT);
-  hover_animation_->Show();
+bool BaseTab::IsSelected() const {
+  return controller() ? controller()->IsTabSelected(this) : true;
 }
 
-void BaseTab::OnMouseExited(const views::MouseEvent& event) {
-  hover_animation_->SetTweenType(ui::Tween::EASE_IN);
-  hover_animation_->Hide();
+ui::ThemeProvider* BaseTab::GetThemeProvider() const {
+  ui::ThemeProvider* tp = View::GetThemeProvider();
+  return tp ? tp : theme_provider_;
 }
 
 bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
@@ -353,6 +348,21 @@ void BaseTab::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
   }
 }
 
+void BaseTab::OnMouseEntered(const views::MouseEvent& event) {
+  if (!hover_animation_.get()) {
+    hover_animation_.reset(new ui::SlideAnimation(this));
+    hover_animation_->SetContainer(animation_container_.get());
+    hover_animation_->SetSlideDuration(kHoverDurationMs);
+  }
+  hover_animation_->SetTweenType(ui::Tween::EASE_OUT);
+  hover_animation_->Show();
+}
+
+void BaseTab::OnMouseExited(const views::MouseEvent& event) {
+  hover_animation_->SetTweenType(ui::Tween::EASE_IN);
+  hover_animation_->Hide();
+}
+
 bool BaseTab::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   if (data_.title.empty())
     return false;
@@ -368,11 +378,6 @@ bool BaseTab::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
 void BaseTab::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PAGETAB;
   state->name = data_.title;
-}
-
-ui::ThemeProvider* BaseTab::GetThemeProvider() const {
-  ui::ThemeProvider* tp = View::GetThemeProvider();
-  return tp ? tp : theme_provider_;
 }
 
 void BaseTab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,

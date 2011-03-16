@@ -96,12 +96,11 @@ class BitmapScrollBar : public ScrollBar,
 
   // View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
-  virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
+  virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
 
   // BaseButton::ButtonListener overrides:
   virtual void ButtonPressed(Button* sender,
@@ -123,6 +122,10 @@ class BitmapScrollBar : public ScrollBar,
   virtual std::wstring GetLabel(int id) const OVERRIDE;
   virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual void ExecuteCommand(int id) OVERRIDE;
+
+ protected:
+  // View overrides:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   // Called when the mouse is pressed down in the track area.

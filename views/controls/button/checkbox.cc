@@ -34,6 +34,11 @@ Checkbox::Checkbox(const std::wstring& label)
 Checkbox::~Checkbox() {
 }
 
+// static
+int Checkbox::GetTextIndent() {
+  return NativeButtonWrapper::GetFixedWidth() + kCheckboxLabelSpacing;
+}
+
 void Checkbox::SetMultiLine(bool multiline) {
   label_->SetMultiLine(multiline);
   PreferredSizeChanged();
@@ -45,11 +50,6 @@ void Checkbox::SetChecked(bool checked) {
   checked_ = checked;
   if (native_wrapper_)
     native_wrapper_->UpdateChecked();
-}
-
-// static
-int Checkbox::GetTextIndent() {
-  return NativeButtonWrapper::GetFixedWidth() + kCheckboxLabelSpacing;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,6 +87,12 @@ int Checkbox::GetHeightForWidth(int w) {
   return label_->GetHeightForWidth(std::max(prefsize.height(), w - width));
 }
 
+void Checkbox::SetEnabled(bool enabled) {
+  NativeButton::SetEnabled(enabled);
+  if (label_)
+    label_->SetEnabled(enabled);
+}
+
 void Checkbox::Layout() {
   if (!native_wrapper_)
     return;
@@ -112,31 +118,17 @@ void Checkbox::Layout() {
   native_wrapper_->GetView()->Layout();
 }
 
-void Checkbox::SetEnabled(bool enabled) {
-  NativeButton::SetEnabled(enabled);
-  if (label_)
-    label_->SetEnabled(enabled);
-}
-
-void Checkbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  // Our focus border is rendered by the label, so we don't do anything here.
-}
-
-void Checkbox::OnMouseEntered(const MouseEvent& event) {
-  native_wrapper_->SetPushed(HitTestLabel(event));
-}
-
-void Checkbox::OnMouseMoved(const MouseEvent& event) {
-  native_wrapper_->SetPushed(HitTestLabel(event));
-}
-
-void Checkbox::OnMouseExited(const MouseEvent& event) {
-  native_wrapper_->SetPushed(false);
+std::string Checkbox::GetClassName() const {
+  return kViewClassName;
 }
 
 bool Checkbox::OnMousePressed(const MouseEvent& event) {
   native_wrapper_->SetPushed(HitTestLabel(event));
   return true;
+}
+
+bool Checkbox::OnMouseDragged(const MouseEvent& event) {
+  return false;
 }
 
 void Checkbox::OnMouseReleased(const MouseEvent& event, bool canceled) {
@@ -147,16 +139,16 @@ void Checkbox::OnMouseReleased(const MouseEvent& event, bool canceled) {
   }
 }
 
-bool Checkbox::OnMouseDragged(const MouseEvent& event) {
-  return false;
+void Checkbox::OnMouseMoved(const MouseEvent& event) {
+  native_wrapper_->SetPushed(HitTestLabel(event));
 }
 
-void Checkbox::OnFocus() {
-  label_->set_paint_as_focused(true);
+void Checkbox::OnMouseEntered(const MouseEvent& event) {
+  native_wrapper_->SetPushed(HitTestLabel(event));
 }
 
-void Checkbox::OnBlur() {
-  label_->set_paint_as_focused(false);
+void Checkbox::OnMouseExited(const MouseEvent& event) {
+  native_wrapper_->SetPushed(false);
 }
 
 void Checkbox::GetAccessibleState(ui::AccessibleViewState* state) {
@@ -165,24 +157,8 @@ void Checkbox::GetAccessibleState(ui::AccessibleViewState* state) {
   state->state = checked() ? ui::AccessibilityTypes::STATE_CHECKED : 0;
 }
 
-std::string Checkbox::GetClassName() const {
-  return kViewClassName;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Checkbox, NativeButton overrides:
-
-NativeButtonWrapper* Checkbox::CreateWrapper() {
-  NativeButtonWrapper* native_wrapper =
-      NativeButtonWrapper::CreateCheckboxWrapper(this);
-  native_wrapper->UpdateLabel();
-  native_wrapper->UpdateChecked();
-  return native_wrapper;
-}
-
-void Checkbox::InitBorder() {
-  // No border, so we do nothing.
-}
 
 void Checkbox::SetLabel(const std::wstring& label) {
   NativeButton::SetLabel(label);
@@ -197,6 +173,36 @@ bool Checkbox::HitTestLabel(const MouseEvent& event) {
   gfx::Point tmp(event.location());
   ConvertPointToView(this, label_, &tmp);
   return label_->HitTest(tmp);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Checkbox, View overrides, protected:
+
+void Checkbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
+  // Our focus border is rendered by the label, so we don't do anything here.
+}
+void Checkbox::OnFocus() {
+  label_->set_paint_as_focused(true);
+}
+
+void Checkbox::OnBlur() {
+  label_->set_paint_as_focused(false);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Checkbox, NativeButton overrides, protected:
+
+NativeButtonWrapper* Checkbox::CreateWrapper() {
+  NativeButtonWrapper* native_wrapper =
+      NativeButtonWrapper::CreateCheckboxWrapper(this);
+  native_wrapper->UpdateLabel();
+  native_wrapper->UpdateChecked();
+  return native_wrapper;
+}
+
+void Checkbox::InitBorder() {
+  // No border, so we do nothing.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

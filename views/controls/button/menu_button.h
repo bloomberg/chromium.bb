@@ -42,35 +42,24 @@ class MenuButton : public TextButton {
     menu_marker_ = menu_marker;
   }
 
+  const gfx::Point& menu_offset() const { return menu_offset_; }
+  void set_menu_offset(int x, int y) { menu_offset_.SetPoint(x, y); }
+
   // Activate the button (called when the button is pressed).
   virtual bool Activate();
 
-  // Overridden to take into account the potential use of a drop marker.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  // Overridden from TextButton for the potential use of a drop marker.
   virtual void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) OVERRIDE;
 
-  // These methods are overriden to implement a simple push button
-  // behavior.
+  // Overridden from View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
   virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const KeyEvent& event) OVERRIDE;
-
-  // Accessibility accessors, overridden from View.
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-
-  // Returns views/MenuButton.
-  virtual std::string GetClassName() const OVERRIDE;
-
-  // Accessors for menu_offset_.
-  const gfx::Point& menu_offset() const {
-    return menu_offset_;
-  }
-
-  void set_menu_offset(int x, int y) {
-    menu_offset_.SetPoint(x, y);
-  }
 
  protected:
   // True if the menu is currently visible.

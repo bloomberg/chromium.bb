@@ -72,53 +72,6 @@ MenuButton::~MenuButton() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-gfx::Size MenuButton::GetPreferredSize() {
-  gfx::Size prefsize = TextButton::GetPreferredSize();
-  if (show_menu_marker_) {
-    prefsize.Enlarge(menu_marker_->width() + kMenuMarkerPaddingLeft +
-                         kMenuMarkerPaddingRight,
-                     0);
-  }
-  return prefsize;
-}
-
-void MenuButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
-  TextButton::PaintButton(canvas, mode);
-
-  if (show_menu_marker_) {
-    gfx::Insets insets = GetInsets();
-
-    // We can not use the views' mirroring infrastructure for mirroring a
-    // MenuButton control (see TextButton::OnPaint() for a detailed explanation
-    // regarding why we can not flip the canvas). Therefore, we need to
-    // manually mirror the position of the down arrow.
-    gfx::Rect arrow_bounds(width() - insets.right() -
-                           menu_marker_->width() - kMenuMarkerPaddingRight,
-                           height() / 2 - menu_marker_->height() / 2,
-                           menu_marker_->width(),
-                           menu_marker_->height());
-    arrow_bounds.set_x(GetMirroredXForRect(arrow_bounds));
-    canvas->DrawBitmapInt(*menu_marker_, arrow_bounds.x(), arrow_bounds.y());
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// MenuButton - Events
-//
-////////////////////////////////////////////////////////////////////////////////
-
-int MenuButton::GetMaximumScreenXCoordinate() {
-  if (!GetWidget()) {
-    NOTREACHED();
-    return 0;
-  }
-
-  gfx::Rect monitor_bounds =
-      Screen::GetMonitorWorkAreaNearestWindow(GetWidget()->GetNativeView());
-  return monitor_bounds.right() - 1;
-}
-
 bool MenuButton::Activate() {
   SetState(BS_PUSHED);
   // We need to synchronously paint here because subsequently we enter a
@@ -188,6 +141,46 @@ bool MenuButton::Activate() {
   return true;
 }
 
+void MenuButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
+  TextButton::PaintButton(canvas, mode);
+
+  if (show_menu_marker_) {
+    gfx::Insets insets = GetInsets();
+
+    // We can not use the views' mirroring infrastructure for mirroring a
+    // MenuButton control (see TextButton::OnPaint() for a detailed explanation
+    // regarding why we can not flip the canvas). Therefore, we need to
+    // manually mirror the position of the down arrow.
+    gfx::Rect arrow_bounds(width() - insets.right() -
+                           menu_marker_->width() - kMenuMarkerPaddingRight,
+                           height() / 2 - menu_marker_->height() / 2,
+                           menu_marker_->width(),
+                           menu_marker_->height());
+    arrow_bounds.set_x(GetMirroredXForRect(arrow_bounds));
+    canvas->DrawBitmapInt(*menu_marker_, arrow_bounds.x(), arrow_bounds.y());
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// MenuButton - Events
+//
+////////////////////////////////////////////////////////////////////////////////
+
+gfx::Size MenuButton::GetPreferredSize() {
+  gfx::Size prefsize = TextButton::GetPreferredSize();
+  if (show_menu_marker_) {
+    prefsize.Enlarge(menu_marker_->width() + kMenuMarkerPaddingLeft +
+                         kMenuMarkerPaddingRight,
+                     0);
+  }
+  return prefsize;
+}
+
+std::string MenuButton::GetClassName() const {
+  return kViewClassName;
+}
+
 bool MenuButton::OnMousePressed(const MouseEvent& event) {
   RequestFocus();
   if (state() != BS_DISABLED) {
@@ -219,6 +212,17 @@ void MenuButton::OnMouseReleased(const MouseEvent& event, bool canceled) {
   }
 }
 
+// The reason we override View::OnMouseExited is because we get this event when
+// we display the menu. If we don't override this method then
+// BaseButton::OnMouseExited will get the event and will set the button's state
+// to BS_NORMAL instead of keeping the state BM_PUSHED. This, in turn, will
+// cause the button to appear depressed while the menu is displayed.
+void MenuButton::OnMouseExited(const MouseEvent& event) {
+  if ((state_ != BS_DISABLED) && (!menu_visible_) && (!InDrag())) {
+    SetState(BS_NORMAL);
+  }
+}
+
 bool MenuButton::OnKeyPressed(const KeyEvent& event) {
   switch (event.key_code()) {
     case ui::VKEY_SPACE:
@@ -243,23 +247,6 @@ bool MenuButton::OnKeyReleased(const KeyEvent& event) {
   return false;
 }
 
-// The reason we override View::OnMouseExited is because we get this event when
-// we display the menu. If we don't override this method then
-// BaseButton::OnMouseExited will get the event and will set the button's state
-// to BS_NORMAL instead of keeping the state BM_PUSHED. This, in turn, will
-// cause the button to appear depressed while the menu is displayed.
-void MenuButton::OnMouseExited(const MouseEvent& event) {
-  if ((state_ != BS_DISABLED) && (!menu_visible_) && (!InDrag())) {
-    SetState(BS_NORMAL);
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// MenuButton - accessibility
-//
-////////////////////////////////////////////////////////////////////////////////
-
 void MenuButton::GetAccessibleState(ui::AccessibleViewState* state) {
   CustomButton::GetAccessibleState(state);
   state->role = ui::AccessibilityTypes::ROLE_BUTTONMENU;
@@ -267,8 +254,15 @@ void MenuButton::GetAccessibleState(ui::AccessibleViewState* state) {
   state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
 }
 
-std::string MenuButton::GetClassName() const {
-  return kViewClassName;
+int MenuButton::GetMaximumScreenXCoordinate() {
+  if (!GetWidget()) {
+    NOTREACHED();
+    return 0;
+  }
+
+  gfx::Rect monitor_bounds =
+      Screen::GetMonitorWorkAreaNearestWindow(GetWidget()->GetNativeView());
+  return monitor_bounds.right() - 1;
 }
 
 }  // namespace views

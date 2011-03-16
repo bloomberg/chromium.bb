@@ -9,7 +9,6 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
-#include "ui/base/animation/animation_container.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
@@ -62,9 +61,7 @@ class BaseTab : public ui::AnimationDelegate,
   bool dragging() const { return dragging_; }
 
   // Sets the container all animations run from.
-  void set_animation_container(ui::AnimationContainer* container) {
-    animation_container_ = container;
-  }
+  void set_animation_container(ui::AnimationContainer* container);
   ui::AnimationContainer* animation_container() const {
     return animation_container_.get();
   }
@@ -76,23 +73,23 @@ class BaseTab : public ui::AnimationDelegate,
     theme_provider_ = provider;
   }
 
-  // Returns true if the tab is selected.
-  virtual bool IsSelected() const;
-
   // Returns true if the tab is closeable.
   bool IsCloseable() const;
 
-  // views::View overrides:
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  // Returns true if the tab is selected.
+  virtual bool IsSelected() const;
+
+  // Overridden from views::View:
+  virtual ThemeProvider* GetThemeProvider() const OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event,
                                bool canceled) OVERRIDE;
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               std::wstring* tooltip) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual ThemeProvider* GetThemeProvider() const OVERRIDE;
 
  protected:
   // Invoked from SetData after |data_| has been updated to the new data.
@@ -124,11 +121,11 @@ class BaseTab : public ui::AnimationDelegate,
   virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
-  // views::ButtonListener overrides:
+  // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
-  // views::ContextMenuController overrides:
+  // Overridden from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& p,
                                       bool is_mouse_gesture) OVERRIDE;

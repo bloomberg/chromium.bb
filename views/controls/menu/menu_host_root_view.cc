@@ -66,17 +66,17 @@ void MenuHostRootView::OnMouseMoved(const MouseEvent& event) {
     GetMenuController()->OnMouseMoved(submenu_, event);
 }
 
-bool MenuHostRootView::OnMouseWheel(const MouseWheelEvent& event) {
-  // RootView::OnMouseWheel forwards to the focused view. We don't have a
-  // focused view, so we need to override this then forward to the menu.
-  return submenu_->OnMouseWheel(event);
-}
-
 void MenuHostRootView::OnMouseExited(const MouseEvent& event) {
   if (suspend_events_)
     return;
 
   RootView::OnMouseExited(event);
+}
+
+bool MenuHostRootView::OnMouseWheel(const MouseWheelEvent& event) {
+  // RootView::OnMouseWheel forwards to the focused view. We don't have a
+  // focused view, so we need to override this then forward to the menu.
+  return submenu_->OnMouseWheel(event);
 }
 
 MenuController* MenuHostRootView::GetMenuController() {

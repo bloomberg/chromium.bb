@@ -357,6 +357,12 @@ void DownloadItemView::StopDownloadProgress() {
   progress_timer_.Stop();
 }
 
+void DownloadItemView::OnExtractIconComplete(IconManager::Handle handle,
+                                             gfx::Image* icon_bitmap) {
+  if (icon_bitmap)
+    parent()->SchedulePaint();
+}
+
 // DownloadObserver interface.
 
 // Update the progress graphic on the icon and our text status label
@@ -445,6 +451,212 @@ void DownloadItemView::Layout() {
   }
 }
 
+gfx::Size DownloadItemView::GetPreferredSize() {
+  int width, height;
+
+  // First, we set the height to the height of two rows or text plus margins.
+  height = 2 * kVerticalPadding + 2 * font_.GetHeight() + kVerticalTextPadding;
+  // Then we increase the size if the progress icon doesn't fit.
+  height = std::max<int>(height, download_util::kSmallProgressIconSize);
+
+  if (IsDangerousMode()) {
+    width = kLeftPadding + dangerous_mode_body_image_set_.top_left->width();
+    width += warning_icon_->width() + kLabelPadding;
+    width += dangerous_download_label_->width() + kLabelPadding;
+    gfx::Size button_size = GetButtonSize();
+    // Make sure the button fits.
+    height = std::max<int>(height, 2 * kVerticalPadding + button_size.height());
+    // Then we make sure the warning icon fits.
+    height = std::max<int>(height, 2 * kVerticalPadding +
+                                   warning_icon_->height());
+    width += button_size.width() * 2 + kButtonPadding;
+    width += dangerous_mode_body_image_set_.top_right->width();
+  } else {
+    width = kLeftPadding + normal_body_image_set_.top_left->width();
+    width += download_util::kSmallProgressIconSize;
+    width += kTextWidth;
+    width += normal_body_image_set_.top_right->width();
+    width += normal_drop_down_image_set_.top->width();
+  }
+  return gfx::Size(width, height);
+}
+
+// Handle a mouse click and open the context menu if the mouse is
+// over the drop-down region.
+bool DownloadItemView::OnMousePressed(const views::MouseEvent& event) {
+  // Mouse should not activate us in dangerous mode.
+  if (IsDangerousMode())
+    return true;
+
+  // Stop any completion animation.
+  if (complete_animation_.get() && complete_animation_->is_animating())
+    complete_animation_->End();
+
+  if (event.IsOnlyLeftMouseButton()) {
+    if (!InDropDownButtonXCoordinateRange(event.x())) {
+      SetState(PUSHED, NORMAL);
+      return true;
+    }
+
+    ShowContextMenu(event.location(), false);
+  }
+  return true;
+}
+
+// Handle drag (file copy) operations.
+bool DownloadItemView::OnMouseDragged(const views::MouseEvent& event) {
+  // Mouse should not activate us in dangerous mode.
+  if (IsDangerousMode())
+    return true;
+
+  if (!starting_drag_) {
+    starting_drag_ = true;
+    drag_start_point_ = event.location();
+  }
+  if (dragging_) {
+    if (download_->state() == DownloadItem::COMPLETE) {
+      IconManager* im = g_browser_process->icon_manager();
+      gfx::Image* icon = im->LookupIcon(download_->GetUserVerifiedFilePath(),
+                                        IconLoader::SMALL);
+      if (icon) {
+        views::Widget* widget = GetWidget();
+        download_util::DragDownload(download_, icon,
+                                    widget ? widget->GetNativeView() : NULL);
+      }
+    }
+  } else if (ExceededDragThreshold(
+                 event.location().x() - drag_start_point_.x(),
+                 event.location().y() - drag_start_point_.y())) {
+    dragging_ = true;
+  }
+  return true;
+}
+
+void DownloadItemView::OnMouseReleased(const views::MouseEvent& event,
+                                       bool canceled) {
+  // Mouse should not activate us in dangerous mode.
+  if (IsDangerousMode())
+    return;
+
+  if (dragging_) {
+    // Starting a drag results in a MouseReleased, we need to ignore it.
+    dragging_ = false;
+    starting_drag_ = false;
+    return;
+  }
+  if (event.IsOnlyLeftMouseButton() &&
+      !InDropDownButtonXCoordinateRange(event.x())) {
+    OpenDownload();
+  }
+
+  SetState(NORMAL, NORMAL);
+}
+
+void DownloadItemView::OnMouseMoved(const views::MouseEvent& event) {
+  // Mouse should not activate us in dangerous mode.
+  if (IsDangerousMode())
+    return;
+
+  bool on_body = !InDropDownButtonXCoordinateRange(event.x());
+  SetState(on_body ? HOT : NORMAL, on_body ? NORMAL : HOT);
+  if (on_body) {
+    body_hover_animation_->Show();
+    drop_hover_animation_->Hide();
+  } else {
+    body_hover_animation_->Hide();
+    drop_hover_animation_->Show();
+  }
+}
+
+void DownloadItemView::OnMouseExited(const views::MouseEvent& event) {
+  // Mouse should not activate us in dangerous mode.
+  if (IsDangerousMode())
+    return;
+
+  SetState(NORMAL, drop_down_pressed_ ? PUSHED : NORMAL);
+  body_hover_animation_->Hide();
+  drop_hover_animation_->Hide();
+}
+
+bool DownloadItemView::OnKeyPressed(const views::KeyEvent& event) {
+  // Key press should not activate us in dangerous mode.
+  if (IsDangerousMode())
+    return true;
+
+  if (event.key_code() == ui::VKEY_SPACE ||
+      event.key_code() == ui::VKEY_RETURN) {
+    OpenDownload();
+    return true;
+  }
+  return false;
+}
+
+bool DownloadItemView::GetTooltipText(const gfx::Point& p,
+                                      std::wstring* tooltip) {
+  if (tooltip_text_.empty())
+    return false;
+
+  tooltip->assign(tooltip_text_);
+  return true;
+}
+
+void DownloadItemView::ShowContextMenu(const gfx::Point& p,
+                                       bool is_mouse_gesture) {
+  gfx::Point point = p;
+  drop_down_pressed_ = true;
+  SetState(NORMAL, PUSHED);
+
+  // Similar hack as in MenuButton.
+  // We're about to show the menu from a mouse press. By showing from the
+  // mouse press event we block RootView in mouse dispatching. This also
+  // appears to cause RootView to get a mouse pressed BEFORE the mouse
+  // release is seen, which means RootView sends us another mouse press no
+  // matter where the user pressed. To force RootView to recalculate the
+  // mouse target during the mouse press we explicitly set the mouse handler
+  // to NULL.
+  GetRootView()->SetMouseHandler(NULL);
+
+  // The menu's position is different depending on the UI layout.
+  // DownloadShelfContextMenu will take care of setting the right anchor for
+  // the menu depending on the locale.
+  point.set_y(height());
+  if (base::i18n::IsRTL())
+    point.set_x(drop_down_x_right_);
+  else
+    point.set_x(drop_down_x_left_);
+
+  views::View::ConvertPointToScreen(this, &point);
+
+  if (!context_menu_.get())
+    context_menu_.reset(new DownloadShelfContextMenuWin(model_.get()));
+  // When we call the Run method on the menu, it runs an inner message loop
+  // that might causes us to be deleted.
+  bool deleted = false;
+  deleted_ = &deleted;
+  context_menu_->Run(point);
+  if (deleted)
+    return;  // We have been deleted! Don't access 'this'.
+  deleted_ = NULL;
+
+  // If the menu action was to remove the download, this view will also be
+  // invalid so we must not access 'this' in this case.
+  if (context_menu_->download()) {
+    drop_down_pressed_ = false;
+    // Showing the menu blocks. Here we revert the state.
+    SetState(NORMAL, NORMAL);
+  }
+}
+
+void DownloadItemView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->name = accessible_name_;
+  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+  if (download_->safety_state() == DownloadItem::DANGEROUS) {
+    state->state = ui::AccessibilityTypes::STATE_UNAVAILABLE;
+  } else {
+    state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
+  }
+}
+
 void DownloadItemView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == discard_button_) {
@@ -464,8 +676,12 @@ void DownloadItemView::ButtonPressed(
   }
 }
 
-// Load an icon for the file type we're downloading, and animate any in progress
-// download state.
+void DownloadItemView::AnimationProgressed(const ui::Animation* animation) {
+  // We don't care if what animation (body button/drop button/complete),
+  // is calling back, as they all have to go through the same paint call.
+  SchedulePaint();
+}
+
 void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
   BodyImageSet* body_image_set = NULL;
   switch (body_state_) {
@@ -701,6 +917,24 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
+void DownloadItemView::OpenDownload() {
+  // We're interested in how long it takes users to open downloads.  If they
+  // open downloads super quickly, we should be concerned about clickjacking.
+  UMA_HISTOGRAM_LONG_TIMES("clickjacking.open_download",
+                           base::Time::Now() - creation_time_);
+  download_->OpenDownload();
+  UpdateAccessibleName();
+}
+
+void DownloadItemView::LoadIcon() {
+  IconManager* im = g_browser_process->icon_manager();
+  im->LoadIcon(download_->GetUserVerifiedFilePath(),
+               IconLoader::SMALL, &icon_consumer_,
+               NewCallback(this, &DownloadItemView::OnExtractIconComplete));
+}
+
+// Load an icon for the file type we're downloading, and animate any in progress
+// download state.
 void DownloadItemView::PaintBitmaps(gfx::Canvas* canvas,
                                     const SkBitmap* top_bitmap,
                                     const SkBitmap* center_bitmap,
@@ -762,240 +996,6 @@ void DownloadItemView::ClearDangerousMode() {
   // Force the shelf to layout again as our size has changed.
   parent_->Layout();
   parent_->SchedulePaint();
-}
-
-gfx::Size DownloadItemView::GetPreferredSize() {
-  int width, height;
-
-  // First, we set the height to the height of two rows or text plus margins.
-  height = 2 * kVerticalPadding + 2 * font_.GetHeight() + kVerticalTextPadding;
-  // Then we increase the size if the progress icon doesn't fit.
-  height = std::max<int>(height, download_util::kSmallProgressIconSize);
-
-  if (IsDangerousMode()) {
-    width = kLeftPadding + dangerous_mode_body_image_set_.top_left->width();
-    width += warning_icon_->width() + kLabelPadding;
-    width += dangerous_download_label_->width() + kLabelPadding;
-    gfx::Size button_size = GetButtonSize();
-    // Make sure the button fits.
-    height = std::max<int>(height, 2 * kVerticalPadding + button_size.height());
-    // Then we make sure the warning icon fits.
-    height = std::max<int>(height, 2 * kVerticalPadding +
-                                   warning_icon_->height());
-    width += button_size.width() * 2 + kButtonPadding;
-    width += dangerous_mode_body_image_set_.top_right->width();
-  } else {
-    width = kLeftPadding + normal_body_image_set_.top_left->width();
-    width += download_util::kSmallProgressIconSize;
-    width += kTextWidth;
-    width += normal_body_image_set_.top_right->width();
-    width += normal_drop_down_image_set_.top->width();
-  }
-  return gfx::Size(width, height);
-}
-
-void DownloadItemView::OnMouseExited(const views::MouseEvent& event) {
-  // Mouse should not activate us in dangerous mode.
-  if (IsDangerousMode())
-    return;
-
-  SetState(NORMAL, drop_down_pressed_ ? PUSHED : NORMAL);
-  body_hover_animation_->Hide();
-  drop_hover_animation_->Hide();
-}
-
-// Handle a mouse click and open the context menu if the mouse is
-// over the drop-down region.
-bool DownloadItemView::OnMousePressed(const views::MouseEvent& event) {
-  // Mouse should not activate us in dangerous mode.
-  if (IsDangerousMode())
-    return true;
-
-  // Stop any completion animation.
-  if (complete_animation_.get() && complete_animation_->is_animating())
-    complete_animation_->End();
-
-  if (event.IsOnlyLeftMouseButton()) {
-    if (!InDropDownButtonXCoordinateRange(event.x())) {
-      SetState(PUSHED, NORMAL);
-      return true;
-    }
-
-    ShowContextMenu(event.location(), false);
-  }
-  return true;
-}
-
-void DownloadItemView::OnMouseMoved(const views::MouseEvent& event) {
-  // Mouse should not activate us in dangerous mode.
-  if (IsDangerousMode())
-    return;
-
-  bool on_body = !InDropDownButtonXCoordinateRange(event.x());
-  SetState(on_body ? HOT : NORMAL, on_body ? NORMAL : HOT);
-  if (on_body) {
-    body_hover_animation_->Show();
-    drop_hover_animation_->Hide();
-  } else {
-    body_hover_animation_->Hide();
-    drop_hover_animation_->Show();
-  }
-}
-
-void DownloadItemView::OnMouseReleased(const views::MouseEvent& event,
-                                       bool canceled) {
-  // Mouse should not activate us in dangerous mode.
-  if (IsDangerousMode())
-    return;
-
-  if (dragging_) {
-    // Starting a drag results in a MouseReleased, we need to ignore it.
-    dragging_ = false;
-    starting_drag_ = false;
-    return;
-  }
-  if (event.IsOnlyLeftMouseButton() &&
-      !InDropDownButtonXCoordinateRange(event.x())) {
-    OpenDownload();
-  }
-
-  SetState(NORMAL, NORMAL);
-}
-
-// Handle drag (file copy) operations.
-bool DownloadItemView::OnMouseDragged(const views::MouseEvent& event) {
-  // Mouse should not activate us in dangerous mode.
-  if (IsDangerousMode())
-    return true;
-
-  if (!starting_drag_) {
-    starting_drag_ = true;
-    drag_start_point_ = event.location();
-  }
-  if (dragging_) {
-    if (download_->state() == DownloadItem::COMPLETE) {
-      IconManager* im = g_browser_process->icon_manager();
-      gfx::Image* icon = im->LookupIcon(download_->GetUserVerifiedFilePath(),
-                                        IconLoader::SMALL);
-      if (icon) {
-        views::Widget* widget = GetWidget();
-        download_util::DragDownload(download_, icon,
-                                    widget ? widget->GetNativeView() : NULL);
-      }
-    }
-  } else if (ExceededDragThreshold(
-                 event.location().x() - drag_start_point_.x(),
-                 event.location().y() - drag_start_point_.y())) {
-    dragging_ = true;
-  }
-  return true;
-}
-
-bool DownloadItemView::OnKeyPressed(const views::KeyEvent& event) {
-  // Key press should not activate us in dangerous mode.
-  if (IsDangerousMode())
-    return true;
-
-  if (event.key_code() == ui::VKEY_SPACE ||
-      event.key_code() == ui::VKEY_RETURN) {
-    OpenDownload();
-    return true;
-  }
-  return false;
-}
-
-void DownloadItemView::ShowContextMenu(const gfx::Point& p,
-                                       bool is_mouse_gesture) {
-  gfx::Point point = p;
-  drop_down_pressed_ = true;
-  SetState(NORMAL, PUSHED);
-
-  // Similar hack as in MenuButton.
-  // We're about to show the menu from a mouse press. By showing from the
-  // mouse press event we block RootView in mouse dispatching. This also
-  // appears to cause RootView to get a mouse pressed BEFORE the mouse
-  // release is seen, which means RootView sends us another mouse press no
-  // matter where the user pressed. To force RootView to recalculate the
-  // mouse target during the mouse press we explicitly set the mouse handler
-  // to NULL.
-  GetRootView()->SetMouseHandler(NULL);
-
-  // The menu's position is different depending on the UI layout.
-  // DownloadShelfContextMenu will take care of setting the right anchor for
-  // the menu depending on the locale.
-  point.set_y(height());
-  if (base::i18n::IsRTL())
-    point.set_x(drop_down_x_right_);
-  else
-    point.set_x(drop_down_x_left_);
-
-  views::View::ConvertPointToScreen(this, &point);
-
-  if (!context_menu_.get())
-    context_menu_.reset(new DownloadShelfContextMenuWin(model_.get()));
-  // When we call the Run method on the menu, it runs an inner message loop
-  // that might causes us to be deleted.
-  bool deleted = false;
-  deleted_ = &deleted;
-  context_menu_->Run(point);
-  if (deleted)
-    return;  // We have been deleted! Don't access 'this'.
-  deleted_ = NULL;
-
-  // If the menu action was to remove the download, this view will also be
-  // invalid so we must not access 'this' in this case.
-  if (context_menu_->download()) {
-    drop_down_pressed_ = false;
-    // Showing the menu blocks. Here we revert the state.
-    SetState(NORMAL, NORMAL);
-  }
-}
-
-void DownloadItemView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->name = accessible_name_;
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  if (download_->safety_state() == DownloadItem::DANGEROUS) {
-    state->state = ui::AccessibilityTypes::STATE_UNAVAILABLE;
-  } else {
-    state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
-  }
-}
-
-void DownloadItemView::AnimationProgressed(const ui::Animation* animation) {
-  // We don't care if what animation (body button/drop button/complete),
-  // is calling back, as they all have to go through the same paint call.
-  SchedulePaint();
-}
-
-void DownloadItemView::OpenDownload() {
-  // We're interested in how long it takes users to open downloads.  If they
-  // open downloads super quickly, we should be concerned about clickjacking.
-  UMA_HISTOGRAM_LONG_TIMES("clickjacking.open_download",
-                           base::Time::Now() - creation_time_);
-  download_->OpenDownload();
-  UpdateAccessibleName();
-}
-
-void DownloadItemView::OnExtractIconComplete(IconManager::Handle handle,
-                                             gfx::Image* icon_bitmap) {
-  if (icon_bitmap)
-    parent()->SchedulePaint();
-}
-
-void DownloadItemView::LoadIcon() {
-  IconManager* im = g_browser_process->icon_manager();
-  im->LoadIcon(download_->GetUserVerifiedFilePath(),
-               IconLoader::SMALL, &icon_consumer_,
-               NewCallback(this, &DownloadItemView::OnExtractIconComplete));
-}
-
-bool DownloadItemView::GetTooltipText(const gfx::Point& p,
-                                      std::wstring* tooltip) {
-  if (tooltip_text_.empty())
-    return false;
-
-  tooltip->assign(tooltip_text_);
-  return true;
 }
 
 gfx::Size DownloadItemView::GetButtonSize() {

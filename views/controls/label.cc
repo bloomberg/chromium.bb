@@ -44,58 +44,6 @@ Label::Label(const std::wstring& text, const gfx::Font& font) {
 Label::~Label() {
 }
 
-gfx::Size Label::GetPreferredSize() {
-  // Return a size of (0, 0) if the label is not visible and if the
-  // collapse_when_hidden_ flag is set.
-  // TODO(munjal): This logic probably belongs to the View class. But for now,
-  // put it here since putting it in View class means all inheriting classes
-  // need ot respect the collapse_when_hidden_ flag.
-  if (!IsVisible() && collapse_when_hidden_)
-    return gfx::Size();
-
-  gfx::Size prefsize(GetTextSize());
-  gfx::Insets insets = GetInsets();
-  prefsize.Enlarge(insets.width(), insets.height());
-  return prefsize;
-}
-
-int Label::GetBaseline() {
-  return GetInsets().top() + font_.GetBaseline();
-}
-
-int Label::GetHeightForWidth(int w) {
-  if (!is_multi_line_)
-    return View::GetHeightForWidth(w);
-
-  w = std::max(0, w - GetInsets().width());
-  int h = font_.GetHeight();
-  gfx::CanvasSkia::SizeStringInt(text_, font_, &w, &h,
-                                 ComputeMultiLineFlags());
-  return h + GetInsets().height();
-}
-
-std::string Label::GetClassName() const {
-  return kViewClassName;
-}
-
-void Label::OnPaint(gfx::Canvas* canvas) {
-  OnPaintBackground(canvas);
-
-  std::wstring paint_text;
-  gfx::Rect text_bounds;
-  int flags = 0;
-  CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  PaintText(canvas, paint_text, text_bounds, flags);
-}
-
-void Label::OnPaintBackground(gfx::Canvas* canvas) {
-  const Background* bg = contains_mouse_ ? GetMouseOverBackground() : NULL;
-  if (!bg)
-    bg = background();
-  if (bg)
-    bg->Paint(canvas, this);
-}
-
 void Label::SetFont(const gfx::Font& font) {
   font_ = font;
   text_size_valid_ = false;
@@ -182,58 +130,12 @@ void Label::SetTooltipText(const std::wstring& tooltip_text) {
   tooltip_text_ = WideToUTF16Hack(tooltip_text);
 }
 
-bool Label::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
-  DCHECK(tooltip);
-
-  // If a tooltip has been explicitly set, use it.
-  if (!tooltip_text_.empty()) {
-    tooltip->assign(UTF16ToWideHack(tooltip_text_));
-    return true;
-  }
-
-  // Show the full text if the text does not fit.
-  if (!is_multi_line_ &&
-      (font_.GetStringWidth(text_) > GetAvailableRect().width())) {
-    *tooltip = UTF16ToWideHack(text_);
-    return true;
-  }
-  return false;
-}
-
-void Label::OnMouseMoved(const MouseEvent& event) {
-  UpdateContainsMouse(event);
-}
-
-void Label::OnMouseEntered(const MouseEvent& event) {
-  UpdateContainsMouse(event);
-}
-
-void Label::OnMouseExited(const MouseEvent& event) {
-  SetContainsMouse(false);
-}
-
 void Label::SetMouseOverBackground(Background* background) {
   mouse_over_background_.reset(background);
 }
 
 const Background* Label::GetMouseOverBackground() const {
   return mouse_over_background_.get();
-}
-
-void Label::SetEnabled(bool enabled) {
-  if (enabled == enabled_)
-    return;
-  View::SetEnabled(enabled);
-  SetColor(enabled ? kEnabledColor : kDisabledColor);
-}
-
-gfx::Insets Label::GetInsets() const {
-  gfx::Insets insets = View::GetInsets();
-  if (IsFocusable() || has_focus_border_)  {
-    insets += gfx::Insets(kFocusBorderPadding, kFocusBorderPadding,
-                          kFocusBorderPadding, kFocusBorderPadding);
-  }
-  return insets;
 }
 
 void Label::SizeToFit(int max_width) {
@@ -258,18 +160,98 @@ void Label::SizeToFit(int max_width) {
   SizeToPreferredSize();
 }
 
-void Label::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_STATICTEXT;
-  state->state = ui::AccessibilityTypes::STATE_READONLY;
-  state->name = text_;
-}
-
 void Label::SetHasFocusBorder(bool has_focus_border) {
   has_focus_border_ = has_focus_border;
   if (is_multi_line_) {
     text_size_valid_ = false;
     PreferredSizeChanged();
   }
+}
+
+gfx::Insets Label::GetInsets() const {
+  gfx::Insets insets = View::GetInsets();
+  if (IsFocusable() || has_focus_border_)  {
+    insets += gfx::Insets(kFocusBorderPadding, kFocusBorderPadding,
+                          kFocusBorderPadding, kFocusBorderPadding);
+  }
+  return insets;
+}
+
+int Label::GetBaseline() {
+  return GetInsets().top() + font_.GetBaseline();
+}
+
+gfx::Size Label::GetPreferredSize() {
+  // Return a size of (0, 0) if the label is not visible and if the
+  // collapse_when_hidden_ flag is set.
+  // TODO(munjal): This logic probably belongs to the View class. But for now,
+  // put it here since putting it in View class means all inheriting classes
+  // need ot respect the collapse_when_hidden_ flag.
+  if (!IsVisible() && collapse_when_hidden_)
+    return gfx::Size();
+
+  gfx::Size prefsize(GetTextSize());
+  gfx::Insets insets = GetInsets();
+  prefsize.Enlarge(insets.width(), insets.height());
+  return prefsize;
+}
+
+int Label::GetHeightForWidth(int w) {
+  if (!is_multi_line_)
+    return View::GetHeightForWidth(w);
+
+  w = std::max(0, w - GetInsets().width());
+  int h = font_.GetHeight();
+  gfx::CanvasSkia::SizeStringInt(text_, font_, &w, &h,
+                                 ComputeMultiLineFlags());
+  return h + GetInsets().height();
+}
+
+void Label::SetEnabled(bool enabled) {
+  if (enabled == enabled_)
+    return;
+  View::SetEnabled(enabled);
+  SetColor(enabled ? kEnabledColor : kDisabledColor);
+}
+
+std::string Label::GetClassName() const {
+  return kViewClassName;
+}
+
+void Label::OnMouseMoved(const MouseEvent& event) {
+  UpdateContainsMouse(event);
+}
+
+void Label::OnMouseEntered(const MouseEvent& event) {
+  UpdateContainsMouse(event);
+}
+
+void Label::OnMouseExited(const MouseEvent& event) {
+  SetContainsMouse(false);
+}
+
+bool Label::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
+  DCHECK(tooltip);
+
+  // If a tooltip has been explicitly set, use it.
+  if (!tooltip_text_.empty()) {
+    tooltip->assign(UTF16ToWideHack(tooltip_text_));
+    return true;
+  }
+
+  // Show the full text if the text does not fit.
+  if (!is_multi_line_ &&
+      (font_.GetStringWidth(text_) > GetAvailableRect().width())) {
+    *tooltip = UTF16ToWideHack(text_);
+    return true;
+  }
+  return false;
+}
+
+void Label::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_STATICTEXT;
+  state->state = ui::AccessibilityTypes::STATE_READONLY;
+  state->name = text_;
 }
 
 void Label::PaintText(gfx::Canvas* canvas,
@@ -312,6 +294,24 @@ gfx::Size Label::GetTextSize() const {
 
 void Label::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   text_size_valid_ &= !is_multi_line_;
+}
+
+void Label::OnPaint(gfx::Canvas* canvas) {
+  OnPaintBackground(canvas);
+
+  std::wstring paint_text;
+  gfx::Rect text_bounds;
+  int flags = 0;
+  CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
+  PaintText(canvas, paint_text, text_bounds, flags);
+}
+
+void Label::OnPaintBackground(gfx::Canvas* canvas) {
+  const Background* bg = contains_mouse_ ? GetMouseOverBackground() : NULL;
+  if (!bg)
+    bg = background();
+  if (bg)
+    bg->Paint(canvas, this);
 }
 
 // static

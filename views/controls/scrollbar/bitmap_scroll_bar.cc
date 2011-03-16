@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -394,11 +394,6 @@ void BitmapScrollBar::ScrollByContentsOffset(int contents_offset) {
   ScrollContentsToOffset();
 }
 
-void BitmapScrollBar::TrackClicked() {
-  if (last_scroll_amount_ != SCROLL_NONE)
-    ScrollByAmount(last_scroll_amount_);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // BitmapScrollBar, View implementation:
 
@@ -407,14 +402,6 @@ gfx::Size BitmapScrollBar::GetPreferredSize() {
   // minimum allowable height.
   gfx::Size button_prefsize = prev_button_->GetPreferredSize();
   return gfx::Size(button_prefsize.width(), button_prefsize.height() * 2);
-}
-
-void BitmapScrollBar::OnPaint(gfx::Canvas* canvas) {
-  // Paint the track.
-  gfx::Rect track_bounds = GetTrackBounds();
-  canvas->TileImageInt(*images_[THUMB_TRACK][thumb_track_state_],
-                       track_bounds.x(), track_bounds.y(),
-                       track_bounds.width(), track_bounds.height());
 }
 
 void BitmapScrollBar::Layout() {
@@ -490,11 +477,6 @@ void BitmapScrollBar::OnMouseReleased(const MouseEvent& event, bool canceled) {
   View::OnMouseReleased(event, canceled);
 }
 
-bool BitmapScrollBar::OnMouseWheel(const MouseWheelEvent& event) {
-  ScrollByContentsOffset(event.offset());
-  return true;
-}
-
 bool BitmapScrollBar::OnKeyPressed(const KeyEvent& event) {
   ScrollAmount amount = SCROLL_NONE;
   switch (event.key_code()) {
@@ -532,6 +514,11 @@ bool BitmapScrollBar::OnKeyPressed(const KeyEvent& event) {
     return true;
   }
   return false;
+}
+
+bool BitmapScrollBar::OnMouseWheel(const MouseWheelEvent& event) {
+  ScrollByContentsOffset(event.offset());
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -694,7 +681,23 @@ int BitmapScrollBar::GetPosition() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// BitmapScrollBar, View implementation:
+
+void BitmapScrollBar::OnPaint(gfx::Canvas* canvas) {
+  // Paint the track.
+  gfx::Rect track_bounds = GetTrackBounds();
+  canvas->TileImageInt(*images_[THUMB_TRACK][thumb_track_state_],
+                       track_bounds.x(), track_bounds.y(),
+                       track_bounds.width(), track_bounds.height());
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // BitmapScrollBar, private:
+
+void BitmapScrollBar::TrackClicked() {
+  if (last_scroll_amount_ != SCROLL_NONE)
+    ScrollByAmount(last_scroll_amount_);
+}
 
 void BitmapScrollBar::ScrollContentsToOffset() {
   GetController()->ScrollToPosition(this, contents_scroll_offset_);

@@ -51,8 +51,6 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual gfx::NativeView GetNativeView() OVERRIDE;
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
-  virtual void Focus() OVERRIDE;
-  virtual void Blur() OVERRIDE;
   virtual bool HasFocus() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
@@ -90,14 +88,16 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   // inner view. This can return NULL when it's not attached to a view.
   gfx::NativeView GetInnerNativeView() const;
 
-  virtual void OnPaint(gfx::Canvas* canvas);
+  // Forwards a keyboard event to renderer.
+  void ForwardKeyEvent(const views::KeyEvent& event);
+
+  // Forwards a web keyboard event to renderer.
+  void ForwardWebKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   // Overridden from views::View.
-  virtual std::string GetClassName() const;
-  gfx::NativeCursor GetCursorForPoint(ui::EventType type,
-                                      const gfx::Point& point);
-
-  // Views mouse events, overridden from views::View.
+  virtual std::string GetClassName() const OVERRIDE;
+  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType type,
+                                              const gfx::Point& point) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event,
@@ -105,24 +105,21 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
-
-  // Views keyboard events, overridden from views::View.
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
-  virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
-
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
-
-  // Forwards a web keyboard event to renderer.
-  void ForwardWebKeyboardEvent(const NativeWebKeyboardEvent& event);
-
-  // Forwards a keyboard event to renderer.
-  void ForwardKeyEvent(const views::KeyEvent& event);
-
-  // Views touch events, overridden from views::View.
+#if defined(TOUCH_UI)
   virtual View::TouchStatus OnTouchEvent(
       const views::TouchEvent& event) OVERRIDE;
+#endif
+  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
+
+ protected:
+  // Overridden from RenderWidgetHostView / views::View.
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Focus() OVERRIDE;
+  virtual void Blur() OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
  private:
   friend class RenderWidgetHostViewViewsWidget;

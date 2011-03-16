@@ -54,27 +54,6 @@ class Label : public View {
   Label(const std::wstring& text, const gfx::Font& font);
   virtual ~Label();
 
-  // Overridden to compute the size required to display this label.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-
-  // Overriden to return the baseline of the label.
-  virtual int GetBaseline() OVERRIDE;
-
-  // Return the height necessary to display this label with the provided width.
-  // This method is used to layout multi-line labels. It is equivalent to
-  // GetPreferredSize().height() if the receiver is not multi-line.
-  virtual int GetHeightForWidth(int w);
-
-  // Returns views/Label.
-  virtual std::string GetClassName() const OVERRIDE;
-
-  // Overridden to paint
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-
-  // If the mouse is over the label, and a mouse over background has been
-  // specified, its used. Otherwise super's implementation is invoked.
-  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
-
   // Set the font.
   virtual void SetFont(const gfx::Font& font);
 
@@ -145,28 +124,10 @@ class Label : public View {
   // default behavior, call this with an empty string.
   void SetTooltipText(const std::wstring& tooltip_text);
 
-  // Gets the tooltip text for labels that are wider than their bounds, except
-  // when the label is multiline, in which case it just returns false (no
-  // tooltip).  If a custom tooltip has been specified with SetTooltipText()
-  // it is returned instead.
-  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
-
-  // Mouse enter/exit are overridden to render mouse over background color.
-  // These invoke SetContainsMouse as necessary.
-  virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseEntered(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
-
   // The background color to use when the mouse is over the label. Label
   // takes ownership of the Background.
   void SetMouseOverBackground(Background* background);
   const Background* GetMouseOverBackground() const;
-
-  // Sets the enabled state. Setting the enabled state resets the color.
-  virtual void SetEnabled(bool enabled) OVERRIDE;
-
-  // Overridden from View:
-  virtual gfx::Insets GetInsets() const;
 
   // Resizes the label so its width is set to the width of the longest line and
   // its height deduced accordingly.
@@ -175,9 +136,6 @@ class Label : public View {
   // |max_width| is the maximum width that will be used (longer lines will be
   // wrapped).  If 0, no maximum width is enforced.
   void SizeToFit(int max_width);
-
-  // Accessibility accessors, overridden from View.
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Gets/sets the flag to determine whether the label should be collapsed when
   // it's hidden (not visible). If this flag is true, the label will return a
@@ -193,6 +151,30 @@ class Label : public View {
 
   void SetHasFocusBorder(bool has_focus_border);
 
+  // Overridden from View:
+  virtual gfx::Insets GetInsets() const;
+  virtual int GetBaseline() OVERRIDE;
+  // Overridden to compute the size required to display this label.
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  // Return the height necessary to display this label with the provided width.
+  // This method is used to layout multi-line labels. It is equivalent to
+  // GetPreferredSize().height() if the receiver is not multi-line.
+  virtual int GetHeightForWidth(int w);
+  // Sets the enabled state. Setting the enabled state resets the color.
+  virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
+  // Mouse enter/exit are overridden to render mouse over background color.
+  // These invoke SetContainsMouse as necessary.
+  virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseEntered(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
+  // Gets the tooltip text for labels that are wider than their bounds, except
+  // when the label is multiline, in which case it just returns false (no
+  // tooltip).  If a custom tooltip has been specified with SetTooltipText()
+  // it is returned instead.
+  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+
  protected:
   // Called by Paint to paint the text.  Override this to change how
   // text is painted.
@@ -205,8 +187,13 @@ class Label : public View {
 
   virtual gfx::Size GetTextSize() const;
 
-  // Overriden to dirty our text bounds if we're multi-line.
+  // Overridden from View:
+  // Overridden to dirty our text bounds if we're multi-line.
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  // If the mouse is over the label, and a mouse over background has been
+  // specified, its used. Otherwise super's implementation is invoked.
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   // These tests call CalculateDrawStringParams in order to verify the

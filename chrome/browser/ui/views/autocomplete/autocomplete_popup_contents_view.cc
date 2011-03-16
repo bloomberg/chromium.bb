@@ -243,6 +243,19 @@ gfx::Rect AutocompletePopupContentsView::GetPopupBounds() const {
   return current_frame_bounds;
 }
 
+void AutocompletePopupContentsView::LayoutChildren() {
+  gfx::Rect contents_rect = GetContentsBounds();
+  int top = contents_rect.y();
+  for (int i = 0; i < child_count(); ++i) {
+    View* v = GetChildViewAt(i);
+    if (v->IsVisible()) {
+      v->SetBounds(contents_rect.x(), top, contents_rect.width(),
+                   v->GetPreferredSize().height());
+      top = v->bounds().bottom();
+    }
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupContentsView, AutocompletePopupView overrides:
 
@@ -371,6 +384,113 @@ void AutocompletePopupContentsView::AnimationProgressed(
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupContentsView, views::View overrides:
 
+void AutocompletePopupContentsView::Layout() {
+  UpdateBlurRegion();
+
+  // Size our children to the available content area.
+  LayoutChildren();
+
+  // We need to manually schedule a paint here since we are a layered window and
+  // won't implicitly require painting until we ask for one.
+  SchedulePaint();
+}
+
+views::View* AutocompletePopupContentsView::GetEventHandlerForPoint(
+    const gfx::Point& point) {
+  // If there is no opt in view, then we want all mouse events. Otherwise let
+  // any descendants of the opt-in view get mouse events.
+  if (!opt_in_view_)
+    return this;
+
+  views::View* child = views::View::GetEventHandlerForPoint(point);
+  views::View* ancestor = child;
+  while (ancestor && ancestor != opt_in_view_)
+    ancestor = ancestor->parent();
+  return ancestor ? child : this;
+}
+
+bool AutocompletePopupContentsView::OnMousePressed(
+    const views::MouseEvent& event) {
+  ignore_mouse_drag_ = false;  // See comment on |ignore_mouse_drag_| in header.
+  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
+    size_t index = GetIndexForPoint(event.location());
+    model_->SetHoveredLine(index);
+    if (HasMatchAt(index) && event.IsLeftMouseButton())
+      model_->SetSelectedLine(index, false, false);
+  }
+  return true;
+}
+
+bool AutocompletePopupContentsView::OnMouseDragged(
+    const views::MouseEvent& event) {
+  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
+    size_t index = GetIndexForPoint(event.location());
+    model_->SetHoveredLine(index);
+    if (!ignore_mouse_drag_ && HasMatchAt(index) && event.IsLeftMouseButton())
+      model_->SetSelectedLine(index, false, false);
+  }
+  return true;
+}
+
+void AutocompletePopupContentsView::OnMouseReleased(
+    const views::MouseEvent& event,
+    bool canceled) {
+  if (canceled || ignore_mouse_drag_) {
+    ignore_mouse_drag_ = false;
+    return;
+  }
+
+  size_t index = GetIndexForPoint(event.location());
+  if (event.IsOnlyMiddleMouseButton())
+    OpenIndex(index, NEW_BACKGROUND_TAB);
+  else if (event.IsOnlyLeftMouseButton())
+    OpenIndex(index, CURRENT_TAB);
+}
+
+void AutocompletePopupContentsView::OnMouseMoved(
+    const views::MouseEvent& event) {
+  model_->SetHoveredLine(GetIndexForPoint(event.location()));
+}
+
+void AutocompletePopupContentsView::OnMouseEntered(
+    const views::MouseEvent& event) {
+  model_->SetHoveredLine(GetIndexForPoint(event.location()));
+}
+
+void AutocompletePopupContentsView::OnMouseExited(
+    const views::MouseEvent& event) {
+  model_->SetHoveredLine(AutocompletePopupModel::kNoMatch);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AutocompletePopupContentsView, protected:
+
+void AutocompletePopupContentsView::PaintResultViews(gfx::CanvasSkia* canvas) {
+  canvas->drawColor(AutocompleteResultView::GetColor(
+      AutocompleteResultView::NORMAL, AutocompleteResultView::BACKGROUND));
+  View::PaintChildren(canvas);
+}
+
+int AutocompletePopupContentsView::CalculatePopupHeight() {
+  DCHECK_GE(static_cast<size_t>(child_count()), model_->result().size());
+  int popup_height = 0;
+  for (size_t i = 0; i < model_->result().size(); ++i)
+    popup_height += GetChildViewAt(i)->GetPreferredSize().height();
+  return popup_height +
+      (opt_in_view_ ? opt_in_view_->GetPreferredSize().height() : 0);
+}
+
+AutocompleteResultView* AutocompletePopupContentsView::CreateResultView(
+    AutocompleteResultViewModel* model,
+    int model_index,
+    const gfx::Font& font,
+    const gfx::Font& bold_font) {
+  return new AutocompleteResultView(model, model_index, font, bold_font);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AutocompletePopupContentsView, views::View overrides, protected:
+
 void AutocompletePopupContentsView::OnPaint(gfx::Canvas* canvas) {
   // We paint our children in an unconventional way.
   //
@@ -414,123 +534,6 @@ void AutocompletePopupContentsView::OnPaint(gfx::Canvas* canvas) {
 
 void AutocompletePopupContentsView::PaintChildren(gfx::Canvas* canvas) {
   // We paint our children inside OnPaint().
-}
-
-void AutocompletePopupContentsView::Layout() {
-  UpdateBlurRegion();
-
-  // Size our children to the available content area.
-  LayoutChildren();
-
-  // We need to manually schedule a paint here since we are a layered window and
-  // won't implicitly require painting until we ask for one.
-  SchedulePaint();
-}
-
-void AutocompletePopupContentsView::LayoutChildren() {
-  gfx::Rect contents_rect = GetContentsBounds();
-  int top = contents_rect.y();
-  for (int i = 0; i < child_count(); ++i) {
-    View* v = GetChildViewAt(i);
-    if (v->IsVisible()) {
-      v->SetBounds(contents_rect.x(), top, contents_rect.width(),
-                   v->GetPreferredSize().height());
-      top = v->bounds().bottom();
-    }
-  }
-}
-
-void AutocompletePopupContentsView::OnMouseEntered(
-    const views::MouseEvent& event) {
-  model_->SetHoveredLine(GetIndexForPoint(event.location()));
-}
-
-void AutocompletePopupContentsView::OnMouseMoved(
-    const views::MouseEvent& event) {
-  model_->SetHoveredLine(GetIndexForPoint(event.location()));
-}
-
-void AutocompletePopupContentsView::OnMouseExited(
-    const views::MouseEvent& event) {
-  model_->SetHoveredLine(AutocompletePopupModel::kNoMatch);
-}
-
-bool AutocompletePopupContentsView::OnMousePressed(
-    const views::MouseEvent& event) {
-  ignore_mouse_drag_ = false;  // See comment on |ignore_mouse_drag_| in header.
-  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
-    size_t index = GetIndexForPoint(event.location());
-    model_->SetHoveredLine(index);
-    if (HasMatchAt(index) && event.IsLeftMouseButton())
-      model_->SetSelectedLine(index, false, false);
-  }
-  return true;
-}
-
-void AutocompletePopupContentsView::OnMouseReleased(
-    const views::MouseEvent& event,
-    bool canceled) {
-  if (canceled || ignore_mouse_drag_) {
-    ignore_mouse_drag_ = false;
-    return;
-  }
-
-  size_t index = GetIndexForPoint(event.location());
-  if (event.IsOnlyMiddleMouseButton())
-    OpenIndex(index, NEW_BACKGROUND_TAB);
-  else if (event.IsOnlyLeftMouseButton())
-    OpenIndex(index, CURRENT_TAB);
-}
-
-bool AutocompletePopupContentsView::OnMouseDragged(
-    const views::MouseEvent& event) {
-  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
-    size_t index = GetIndexForPoint(event.location());
-    model_->SetHoveredLine(index);
-    if (!ignore_mouse_drag_ && HasMatchAt(index) && event.IsLeftMouseButton())
-      model_->SetSelectedLine(index, false, false);
-  }
-  return true;
-}
-
-views::View* AutocompletePopupContentsView::GetEventHandlerForPoint(
-    const gfx::Point& point) {
-  // If there is no opt in view, then we want all mouse events. Otherwise let
-  // any descendants of the opt-in view get mouse events.
-  if (!opt_in_view_)
-    return this;
-
-  views::View* child = views::View::GetEventHandlerForPoint(point);
-  views::View* ancestor = child;
-  while (ancestor && ancestor != opt_in_view_)
-    ancestor = ancestor->parent();
-  return ancestor ? child : this;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// AutocompletePopupContentsView, protected:
-
-void AutocompletePopupContentsView::PaintResultViews(gfx::CanvasSkia* canvas) {
-  canvas->drawColor(AutocompleteResultView::GetColor(
-      AutocompleteResultView::NORMAL, AutocompleteResultView::BACKGROUND));
-  View::PaintChildren(canvas);
-}
-
-int AutocompletePopupContentsView::CalculatePopupHeight() {
-  DCHECK_GE(static_cast<size_t>(child_count()), model_->result().size());
-  int popup_height = 0;
-  for (size_t i = 0; i < model_->result().size(); ++i)
-    popup_height += GetChildViewAt(i)->GetPreferredSize().height();
-  return popup_height +
-      (opt_in_view_ ? opt_in_view_->GetPreferredSize().height() : 0);
-}
-
-AutocompleteResultView* AutocompletePopupContentsView::CreateResultView(
-    AutocompleteResultViewModel* model,
-    int model_index,
-    const gfx::Font& font,
-    const gfx::Font& bold_font) {
-  return new AutocompleteResultView(model, model_index, font, bold_font);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

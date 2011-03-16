@@ -57,6 +57,22 @@ bool ButtonDropDown::OnMousePressed(const MouseEvent& event) {
   return ImageButton::OnMousePressed(event);
 }
 
+bool ButtonDropDown::OnMouseDragged(const MouseEvent& event) {
+  bool result = ImageButton::OnMouseDragged(event);
+
+  if (!show_menu_factory_.empty()) {
+    // If the mouse is dragged to a y position lower than where it was when
+    // clicked then we should not wait for the menu to appear but show
+    // it immediately.
+    if (event.y() > y_position_on_lbuttondown_ + GetHorizontalDragThreshold()) {
+      show_menu_factory_.RevokeAll();
+      ShowDropDownMenu(GetWidget()->GetNativeView());
+    }
+  }
+
+  return result;
+}
+
 void ButtonDropDown::OnMouseReleased(const MouseEvent& event, bool canceled) {
   // Showing the drop down results in a MouseReleased with a canceled drag, we
   // need to ignore it.
@@ -77,22 +93,6 @@ void ButtonDropDown::OnMouseReleased(const MouseEvent& event, bool canceled) {
   }
 }
 
-bool ButtonDropDown::OnMouseDragged(const MouseEvent& event) {
-  bool result = ImageButton::OnMouseDragged(event);
-
-  if (!show_menu_factory_.empty()) {
-    // If the mouse is dragged to a y position lower than where it was when
-    // clicked then we should not wait for the menu to appear but show
-    // it immediately.
-    if (event.y() > y_position_on_lbuttondown_ + GetHorizontalDragThreshold()) {
-      show_menu_factory_.RevokeAll();
-      ShowDropDownMenu(GetWidget()->GetNativeView());
-    }
-  }
-
-  return result;
-}
-
 void ButtonDropDown::OnMouseExited(const MouseEvent& event) {
   // Starting a drag results in a MouseExited, we need to ignore it.
   // A right click release triggers an exit event. We want to
@@ -101,17 +101,18 @@ void ButtonDropDown::OnMouseExited(const MouseEvent& event) {
     SetState(BS_NORMAL);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// ButtonDropDown - Menu functions
-//
-////////////////////////////////////////////////////////////////////////////////
-
 void ButtonDropDown::ShowContextMenu(const gfx::Point& p,
                                      bool is_mouse_gesture) {
   show_menu_factory_.RevokeAll();
   ShowDropDownMenu(GetWidget()->GetNativeView());
   SetState(BS_HOT);
+}
+
+void ButtonDropDown::GetAccessibleState(ui::AccessibleViewState* state) {
+  CustomButton::GetAccessibleState(state);
+  state->role = ui::AccessibilityTypes::ROLE_BUTTONDROPDOWN;
+  state->default_action = l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS);
+  state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
 }
 
 bool ButtonDropDown::ShouldEnterPushedState(const MouseEvent& event) {
@@ -164,12 +165,5 @@ void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {
 // ButtonDropDown - Accessibility
 //
 ////////////////////////////////////////////////////////////////////////////////
-
-void ButtonDropDown::GetAccessibleState(ui::AccessibleViewState* state) {
-  CustomButton::GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_BUTTONDROPDOWN;
-  state->default_action = l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS);
-  state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
-}
 
 }  // namespace views

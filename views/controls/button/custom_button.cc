@@ -56,26 +56,32 @@ void CustomButton::SetAnimationDuration(int duration) {
   hover_animation_->SetSlideDuration(duration);
 }
 
+bool CustomButton::IsMouseHovered() const {
+  // If we haven't yet been placed in an onscreen view hierarchy, we can't be
+  // hovered.
+  if (!GetWidget())
+    return false;
+
+  gfx::Point cursor_pos(Screen::GetCursorScreenPoint());
+  ConvertPointToView(NULL, this, &cursor_pos);
+  return HitTest(cursor_pos);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, View overrides:
 
-void CustomButton::GetAccessibleState(ui::AccessibleViewState* state) {
-  Button::GetAccessibleState(state);
-  switch (state_) {
-    case BS_HOT:
-      state->state = ui::AccessibilityTypes::STATE_HOTTRACKED;
-      break;
-    case BS_PUSHED:
-      state->state = ui::AccessibilityTypes::STATE_PRESSED;
-      break;
-    case BS_DISABLED:
-      state->state = ui::AccessibilityTypes::STATE_UNAVAILABLE;
-      break;
-    case BS_NORMAL:
-    case BS_COUNT:
-      // No additional accessibility state set for this button state.
-      break;
+void CustomButton::SetHotTracked(bool flag) {
+  if (state_ != BS_DISABLED)
+    SetState(flag ? BS_HOT : BS_NORMAL);
+
+  if (flag && GetWidget()) {
+    GetWidget()->NotifyAccessibilityEvent(
+        this, ui::AccessibilityTypes::EVENT_FOCUS, true);
   }
+}
+
+bool CustomButton::IsHotTracked() const {
+  return state_ == BS_HOT;
 }
 
 void CustomButton::SetEnabled(bool enabled) {
@@ -92,55 +98,8 @@ bool CustomButton::IsEnabled() const {
   return state_ != BS_DISABLED;
 }
 
-bool CustomButton::IsFocusable() const {
-  return (state_ != BS_DISABLED) && View::IsFocusable();
-}
-
-bool CustomButton::IsMouseHovered() const {
-  // If we haven't yet been placed in an onscreen view hierarchy, we can't be
-  // hovered.
-  if (!GetWidget())
-    return false;
-
-  gfx::Point cursor_pos(Screen::GetCursorScreenPoint());
-  ConvertPointToView(NULL, this, &cursor_pos);
-  return HitTest(cursor_pos);
-}
-
 std::string CustomButton::GetClassName() const {
   return kViewClassName;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// CustomButton, protected:
-
-CustomButton::CustomButton(ButtonListener* listener)
-    : Button(listener),
-      state_(BS_NORMAL),
-      animate_on_state_change_(true),
-      is_throbbing_(false),
-      triggerable_event_flags_(ui::EF_LEFT_BUTTON_DOWN),
-      request_focus_on_press_(true) {
-  hover_animation_.reset(new ui::ThrobAnimation(this));
-  hover_animation_->SetSlideDuration(kHoverFadeDurationMs);
-}
-
-bool CustomButton::IsTriggerableEvent(const MouseEvent& event) {
-  return (triggerable_event_flags_ & event.flags()) != 0;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// CustomButton, View overrides (protected):
-
-bool CustomButton::AcceleratorPressed(const Accelerator& accelerator) {
-  if (!enabled_)
-    return false;
-
-  SetState(BS_NORMAL);
-  KeyEvent key_event(ui::ET_KEY_RELEASED, accelerator.GetKeyCode(),
-                     accelerator.modifiers());
-  NotifyClick(key_event);
-  return true;
 }
 
 bool CustomButton::OnMousePressed(const MouseEvent& event) {
@@ -186,15 +145,15 @@ void CustomButton::OnMouseEntered(const MouseEvent& event) {
     SetState(BS_HOT);
 }
 
-void CustomButton::OnMouseMoved(const MouseEvent& event) {
-  if (state_ != BS_DISABLED)
-    SetState(HitTest(event.location()) ? BS_HOT : BS_NORMAL);
-}
-
 void CustomButton::OnMouseExited(const MouseEvent& event) {
   // Starting a drag results in a MouseExited, we need to ignore it.
   if (state_ != BS_DISABLED && !InDrag())
     SetState(BS_NORMAL);
+}
+
+void CustomButton::OnMouseMoved(const MouseEvent& event) {
+  if (state_ != BS_DISABLED)
+    SetState(HitTest(event.location()) ? BS_HOT : BS_NORMAL);
 }
 
 bool CustomButton::OnKeyPressed(const KeyEvent& event) {
@@ -224,8 +183,15 @@ bool CustomButton::OnKeyReleased(const KeyEvent& event) {
   return true;
 }
 
-void CustomButton::OnDragDone() {
+bool CustomButton::AcceleratorPressed(const Accelerator& accelerator) {
+  if (!enabled_)
+    return false;
+
   SetState(BS_NORMAL);
+  KeyEvent key_event(ui::ET_KEY_RELEASED, accelerator.GetKeyCode(),
+                     accelerator.modifiers());
+  NotifyClick(key_event);
+  return true;
 }
 
 void CustomButton::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
@@ -239,29 +205,27 @@ void CustomButton::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
   View::ShowContextMenu(p, is_mouse_gesture);
 }
 
-void CustomButton::ViewHierarchyChanged(bool is_add, View *parent,
-                                        View *child) {
-  if (!is_add && state_ != BS_DISABLED)
-    SetState(BS_NORMAL);
+void CustomButton::OnDragDone() {
+  SetState(BS_NORMAL);
 }
 
-void CustomButton::SetHotTracked(bool flag) {
-  if (state_ != BS_DISABLED)
-    SetState(flag ? BS_HOT : BS_NORMAL);
-
-  if (flag && GetWidget()) {
-    GetWidget()->NotifyAccessibilityEvent(
-        this, ui::AccessibilityTypes::EVENT_FOCUS, true);
+void CustomButton::GetAccessibleState(ui::AccessibleViewState* state) {
+  Button::GetAccessibleState(state);
+  switch (state_) {
+    case BS_HOT:
+      state->state = ui::AccessibilityTypes::STATE_HOTTRACKED;
+      break;
+    case BS_PUSHED:
+      state->state = ui::AccessibilityTypes::STATE_PRESSED;
+      break;
+    case BS_DISABLED:
+      state->state = ui::AccessibilityTypes::STATE_UNAVAILABLE;
+      break;
+    case BS_NORMAL:
+    case BS_COUNT:
+      // No additional accessibility state set for this button state.
+      break;
   }
-}
-
-bool CustomButton::IsHotTracked() const {
-  return state_ == BS_HOT;
-}
-
-void CustomButton::OnBlur() {
-  if (IsHotTracked())
-    SetState(BS_NORMAL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -271,8 +235,44 @@ void CustomButton::AnimationProgressed(const ui::Animation* animation) {
   SchedulePaint();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// CustomButton, protected:
+
+CustomButton::CustomButton(ButtonListener* listener)
+    : Button(listener),
+      state_(BS_NORMAL),
+      animate_on_state_change_(true),
+      is_throbbing_(false),
+      triggerable_event_flags_(ui::EF_LEFT_BUTTON_DOWN),
+      request_focus_on_press_(true) {
+  hover_animation_.reset(new ui::ThrobAnimation(this));
+  hover_animation_->SetSlideDuration(kHoverFadeDurationMs);
+}
+
+bool CustomButton::IsTriggerableEvent(const MouseEvent& event) {
+  return (triggerable_event_flags_ & event.flags()) != 0;
+}
+
 bool CustomButton::ShouldEnterPushedState(const MouseEvent& event) {
   return IsTriggerableEvent(event);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CustomButton, View overrides (protected):
+
+void CustomButton::ViewHierarchyChanged(bool is_add, View *parent,
+                                        View *child) {
+  if (!is_add && state_ != BS_DISABLED)
+    SetState(BS_NORMAL);
+}
+
+bool CustomButton::IsFocusable() const {
+  return (state_ != BS_DISABLED) && View::IsFocusable();
+}
+
+void CustomButton::OnBlur() {
+  if (IsHotTracked())
+    SetState(BS_NORMAL);
 }
 
 }  // namespace views

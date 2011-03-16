@@ -99,28 +99,28 @@ class RootView : public View,
   virtual View* GetFocusTraversableParentView() OVERRIDE;
 
   // Overridden from View:
-  virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual const Widget* GetWidget() const OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
-  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
+  virtual bool IsVisibleInRootView() const OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
   virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
-  virtual void SetMouseHandler(View* new_mouse_handler) OVERRIDE;
+  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
 #if defined(TOUCH_UI)
   virtual TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
 #endif
-  virtual bool IsVisibleInRootView() const OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual void SetMouseHandler(View* new_mouse_handler) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:
   // Overridden from View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add, View* parent,
                                     View* child) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   friend class View;
