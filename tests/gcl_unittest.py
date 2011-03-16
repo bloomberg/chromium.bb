@@ -12,7 +12,6 @@
 from super_mox import mox, SuperMoxTestBase
 
 import gcl
-import presubmit_support
 
 
 class GclTestsBase(SuperMoxTestBase):
@@ -57,14 +56,13 @@ class GclUnittest(GclTestsBase):
         'GetCodeReviewSetting', 'GetEditor', 'GetFilesNotInCL', 'GetInfoDir',
         'GetModifiedFiles', 'GetRepositoryRoot', 'ListFiles',
         'LoadChangelistInfoForMultiple', 'MISSING_TEST_MSG',
-        'OptionallyDoPresubmitChecks', 'REPOSITORY_ROOT', 'REVIEWERS_REGEX',
+        'OptionallyDoPresubmitChecks', 'REPOSITORY_ROOT',
         'RunShell', 'RunShellWithReturnCode', 'SVN',
         'TryChange', 'UnknownFiles', 'Warn',
         'attrs', 'breakpad', 'defer_attributes', 'gclient_utils', 'getpass',
         'json', 'main', 'need_change', 'need_change_and_args', 'no_args',
-        'optparse', 'os', 'owners', 'presubmit_support', 'random', 're',
-        'string', 'subprocess', 'suggest_reviewers', 'sys', 'tempfile', 'time',
-        'upload', 'urllib2',
+        'optparse', 'os', 'random', 're', 'string', 'subprocess', 'sys',
+        'tempfile', 'time', 'upload', 'urllib2',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gcl, members)
@@ -151,8 +149,7 @@ class ChangeInfoUnittest(GclTestsBase):
       'NeedsUpload', 'PrimeLint', 'Save', 'SendToRietveld',
       'UpdateRietveldDescription',
       'description', 'issue', 'name',
-      'needs_upload', 'patch', 'patchset', 'reviewers', 'rietveld',
-      'subject'
+      'needs_upload', 'patch', 'patchset', 'rietveld',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(
@@ -261,8 +258,7 @@ class CMDuploadUnittest(GclTestsBase):
     change_info.patch = None
     change_info.rietveld = 'my_server'
     files = [item[1] for item in change_info.files]
-    output = presubmit_support.PresubmitOutput()
-    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(output)
+    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     #gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.os.getcwd().AndReturn('somewhere')
     change_info.GetFiles().AndReturn(change_info.files)
@@ -297,8 +293,7 @@ class CMDuploadUnittest(GclTestsBase):
                                 self.fake_root_dir, 'my_server')
     self.mox.StubOutWithMock(change_info, 'Save')
     change_info.Save()
-    output = presubmit_support.PresubmitOutput()
-    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(output)
+    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
     gcl.os.write(42, change_info.description)
     gcl.os.close(42)
@@ -332,8 +327,7 @@ class CMDuploadUnittest(GclTestsBase):
                                  self.fake_root_dir, 'my_server')
     self.mox.StubOutWithMock(change_info, 'Save')
     change_info.Save()
-    output = presubmit_support.PresubmitOutput()
-    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(output)
+    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
     gcl.os.write(42, change_info.description)
     gcl.os.close(42)
