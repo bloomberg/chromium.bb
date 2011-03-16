@@ -189,4 +189,55 @@
 <translation id="8885335402904131721">Wurzelverzeichnis des Dateisystems nicht verfügbar.</translation>
 <translation id="9162230117499798906"><ph name="COUNT"/> Stiländerung</translation>
 <translation id="9219103736887031265">Abbilder</translation>
+<translation id="2965436661362105284">SPEICHERABBILDER</translation>
+<translation id="4047216625641135770">Markierung</translation>
+<translation id="4067394776038365023">Haltepunkt hinzufügen</translation>
+<translation id="4081621117339138901">Ziehen</translation>
+<translation id="4085960679600739946">Verzeichnis im Dateimanager öffnen</translation>
+<translation id="4156072768474272260">Antwortzeit</translation>
+<translation id="4275663329226226506">Medien</translation>
+<translation id="430089115801637957">Aufnahme läuft …</translation>
+<translation id="4332530925589974171">AUFNAHMEN</translation>
+<translation id="4341979764901859772"><ph name="DISPLAYED_COUNT"/> von <ph name="TOTAL_COUNT"/> Aufnahmen sind sichtbar</translation>
+<translation id="4447945128078372094">Dauerhaftes Dateisystem</translation>
+<translation id="450506832420206463">Funktion</translation>
+<translation id="4505083617939040110">Quelle</translation>
+<translation id="4542837164280679094">Schritt vorwärts</translation>
+<translation id="4561649714117979875">WebSockets</translation>
+<translation id="4572868319785220114">Vorherige Skriptquelle anzeigen</translation>
+<translation id="4584326581222680212">Schritt heraus</translation>
+<translation id="4588170590087229653">An einem JavaScript Haltepunkt pausiert</translation>
+<translation id="4625897288034475385"><ph name="DURATION"/> (bei <ph name="TIME"/>)</translation>
+<translation id="4680840512092646727">Temporäres Dateisystem</translation>
+<translation id="4710372660833450782">Um <ph name="VALUE"/> erhöhen/verringern</translation>
+<translation id="4756974516033204540">Aufnahme <ph name="NUMBER"/></translation>
+<translation id="478482426871697879">[leere Domain]</translation>
+<translation id="4818927033622169470">Konsole verstecken.</translation>
+<translation id="4850582513716689876">Stilvorlage</translation>
+<translation id="4919559949551957080">Skript formatieren.</translation>
+<translation id="492139119201427519">abgeleitet von</translation>
+<translation id="4934072863752329939">ERGEBNISSE</translation>
+<translation id="4958877645380050233">Speicherabbild sichern</translation>
+<translation id="5056412143720059012"><ph name="BYTES"/> eingesammelt</translation>
+<translation id="5077392757361473280">Haltepunkt bearbeiten...</translation>
+<translation id="5104694644471459465">Erwartete Länge des Inhalts</translation>
+<translation id="5167716886898615186">Nächste/Vorherige Empfehlung</translation>
+<translation id="5215654583224799840">Halten bei Entfernung des Knotens</translation>
+<translation id="5217253600698456221">Konsole leeren</translation>
+<translation id="5267618901871637334">Endzeit</translation>
+<translation id="5281833939935682414"><ph name="SIGN"/> &gt;1000%%</translation>
+<translation id="5299075592160799973"><ph name="NUMBER"/> Konsolennachrichten werden nicht angezeigt.</translation>
+<translation id="5476516521619370280">Der Haltepunkt auf Zeile <ph name="LINE_NUMBER"/> wird nur halten, wenn dieser Ausdruck wahr ist:</translation>
+<translation id="5492281286267442590">Methode</translation>
+<translation id="5546435790121932843">Attribut bearbeiten</translation>
+<translation id="5552689477187388058">Die &quot;<ph name="TABLE_NAME"/>&quot;-\nTabelle ist leer.</translation>
+<translation id="5573705484394179258">Konsole anzeigen.</translation>
+<translation id="5592514154180021899">Bei Änderungen unterhalb anhalten</translation>
+<translation id="5601873005887400645">Profiling starten.</translation>
+<translation id="5616977921640201471">RGB Farben</translation>
+<translation id="5637935970607846190">In eigenes Fenster verschieben.</translation>
+<translation id="5699439099859319182">Profiling anhalten.</translation>
+<translation id="5756407098099267202">Bis hierher fortsetzen</translation>
+<translation id="5991633594421322375">Wie angegeben</translation>
+<translation id="5997661785897230805">Alle Leisten</translation>
 </translationbundle>

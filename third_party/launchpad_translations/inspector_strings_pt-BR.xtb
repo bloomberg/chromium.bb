@@ -164,4 +164,163 @@
 <translation id="8885335402904131721">Caminho raiz do sistema de arquivos não disponivel.</translation>
 <translation id="8988793062306956622">Carregando (<ph name="LOADED"/> de <ph name="TOTAL"/>)</translation>
 <translation id="9089819584697017929">PERFIS DE CPU</translation>
+<translation id="1768404365792104093">Próximo/comando anterior</translation>
+<translation id="1801042861827795142">Termino de carga</translation>
+<translation id="1823768272150895732">Fonte</translation>
+<translation id="2246851932332031117">Sem auditorias para rodar</translation>
+<translation id="229259783486983247">Requisição de agendamento</translation>
+<translation id="2312740652191388094">do cache</translation>
+<translation id="2326802841004704199">Adicionar um ponto de quebra condicional...</translation>
+<translation id="2332815705129827753">Avaliar Script</translation>
+<translation id="2362657748192933744">Exportar para o HAR</translation>
+<translation id="2384522206906920960">Editar Atributo</translation>
+<translation id="2441568932527294164">Próxima/propriedade anterior</translation>
+<translation id="2516706892830004734"><ph name="WIDTH"/> x <ph name="HEIGHT"/> pixels</translation>
+<translation id="2585982364983498644">(<ph name="X"/>, <ph name="Y"/>)</translation>
+<translation id="2586657967955657006">Área de Transferência</translation>
+<translation id="2685884034607832835">Desativar todos os pontos de parada.</translation>
+<translation id="2768286617102192777">Revelar  no painel de elementos</translation>
+<translation id="2787301409000765636">Latência</translation>
+<translation id="2803765297292272769">Renderizando</translation>
+<translation id="2836784866826176182">Pausado em um \&quot;<ph name="NAME"/>\&quot; ponto de parada setado em <ph name="LOCATION"/>.</translation>
+<translation id="2894816874009266926">Banco de dados não encontrado.</translation>
+<translation id="2965436661362105284">PILHA DE CAPTURAS</translation>
+<translation id="2968088195674830792">Bem-vindo ao painel de perfis</translation>
+<translation id="2971424273970731397">HTTP</translation>
+<translation id="3000270109993784958">Abrir link  no painel de recursos.</translation>
+<translation id="3010825681353851814"><ph name="SIGN"/><ph name="VALUE"/>%%</translation>
+<translation id="3077477444163267975">Painel de estilos</translation>
+<translation id="3129687551880844787">Armazenamento de sessão</translation>
+<translation id="3134993091059956927">Frames</translation>
+<translation id="3169289721517350539">Limpar perfis de CPU.</translation>
+<translation id="3288262520198260549">Enviar Requisição</translation>
+<translation id="3293586211597699933">Script interno</translation>
+<translation id="3442522329146629199">Mostrar os registros que são menores do que <ph name="TIME"/></translation>
+<translation id="3542768452570884558">Abrir link em uma nova janela</translation>
+<translation id="3548877692560438464">Elementos de navegação</translation>
+<translation id="3631915440578930939">Dê um clique duplo para alternar entre os formatos de URL codificado e descodificado</translation>
+<translation id="3798002618172578547">(original)</translation>
+<translation id="3905760801744450823">Pseudo elemento</translation>
+<translation id="3910041850555398247">Método de requisição</translation>
+<translation id="4015869299329981179">(não foi possível decodificar valor)</translation>
+<translation id="4067394776038365023">Adicionar ponto de parada.</translation>
+<translation id="4081621117339138901">Arrastar</translation>
+<translation id="4085960679600739946">Revelar pasta no SO</translation>
+<translation id="4118257644426026583">String de parâmetro de consulta</translation>
+<translation id="4156072768474272260">Tempo de resposta</translation>
+<translation id="4172725583035809347"><ph name="TOTAL_TIME"/> (não carregado: <ph name="ONLOAD_TIME"/>, DOMContentLoaded: <ph name="DOMCONTENT_TIME"/>)</translation>
+<translation id="4279459213339949730">Executar comando</translation>
+<translation id="430089115801637957">Gravando...</translation>
+<translation id="4332530925589974171">REGISTROS</translation>
+<translation id="4341979764901859772"><ph name="DISPLAYED_COUNT"/> de <ph name="TOTAL_COUNT"/> registros capturados visíveis</translation>
+<translation id="4380494639778700150">Console</translation>
+<translation id="4404400199667265958">Linha do tempo</translation>
+<translation id="4505083617939040110">Recurso</translation>
+<translation id="4510290974676570902">Tipo MIME</translation>
+<translation id="4522570452068850558">Detalhes</translation>
+<translation id="4542837164280679094">Avançar</translation>
+<translation id="4561649714117979875">WebSockets</translation>
+<translation id="4625897288034475385"><ph name="DURATION"/> (em <ph name="TIME"/>)</translation>
+<translation id="4680840512092646727">Sistema de arquivos temporários</translation>
+<translation id="4710372660833450782">Incrementar/decrementar por <ph name="VALUE"/></translation>
+<translation id="4756974516033204540">Capturas <ph name="NUMBER"/></translation>
+<translation id="478482426871697879">[domínio vazio]</translation>
+<translation id="484355523267079305">Receber Resposta</translation>
+<translation id="4850582513716689876">Folha de Estilos</translation>
+<translation id="4919559949551957080">Formatar script.</translation>
+<translation id="492139119201427519">Herdado de</translation>
+<translation id="4934072863752329939">RESULTADOS</translation>
+<translation id="4958877645380050233">Pegar a captura da pilha.</translation>
+<translation id="4985509611418653372">Executar</translation>
+<translation id="5019580642216388802">&lt;node&gt;</translation>
+<translation id="5056412143720059012"><ph name="BYTES"/> coletados</translation>
+<translation id="5077392757361473280">Editar ponto de parada...</translation>
+<translation id="5154917547274118687">Memória</translation>
+<translation id="5188891880448173739">Pintar</translation>
+<translation id="5201810533706869030">Objetos</translation>
+<translation id="5217253600698456221">Limpar Console</translation>
+<translation id="5281833939935682414"><ph name="SIGN"/> &gt;1000%%</translation>
+<translation id="5299075592160799973"><ph name="NUMBER"/> messagens do console não são mostradas.</translation>
+<translation id="5309063511327323581">Parse</translation>
+<translation id="5328580414682635314">Comparado com <ph name="PROFILE_NAME"/></translation>
+<translation id="5336126575388085039">Código</translation>
+<translation id="5378158564957061833">Remover ponto de interrupção</translation>
+<translation id="5452933067270033131">Cronômetro acionado</translation>
+<translation id="5476516521619370280">O ponto de interrupção na linha <ph name="LINE_NUMBER"/> irá parar somente se a esta expressão for verdadeira:</translation>
+<translation id="5492281286267442590">Método</translation>
+<translation id="5521674545694907834">Mostrar todos os nós (<ph name="COUNT"/> Mais)</translation>
+<translation id="5546435790121932843">Editar atributo</translation>
+<translation id="5616977921640201471">Cores RGB</translation>
+<translation id="5756407098099267202">Continuar aqui</translation>
+<translation id="5839271681555723175">Painel de scripts</translation>
+<translation id="593760561751318079">Cabeçalhos</translation>
+<translation id="594041821969834346">Regras de CSS conrespondidas</translation>
+<translation id="5991633594421322375">Como autor</translation>
+<translation id="5997661785897230805">Todos os paineis</translation>
+<translation id="602540601702957753">Parar uma exceção não capturada.\n Clique pra não parar as exceções.</translation>
+<translation id="6040034394100792317">''' (repetido <ph name="TIMES"/> vezes)</translation>
+<translation id="6053666381828300479">Evento GC</translation>
+<translation id="6075741839409585483">Auditar o estado presente</translation>
+<translation id="6127423179437546633">Nenhuma requisição capturada. Recarregue a página para ver a informação detalhada da atividade da rede.</translation>
+<translation id="6214555124211713909"><ph name="COUNT"/> cookies (<ph name="SIZE"/>)</translation>
+<translation id="6223807494898827645">Esconder os registros que são menores do que <ph name="DURATION"/></translation>
+<translation id="6322316724724460534"><ph name="USED"/> de <ph name="TOTAL"/></translation>
+<translation id="6332070367953727318">Qualquer XHR</translation>
+<translation id="6366894209607468950">ID do temporizador</translation>
+<translation id="6655582135079510798">Esta requisição não tem cookies.</translation>
+<translation id="6841186874966388268">Erros</translation>
+<translation id="6847541693235449912">Prosseguir</translation>
+<translation id="6847736500082831849">URL da requisição</translation>
+<translation id="6863589982688145509">Teclas de Atalho</translation>
+<translation id="6875606269029079781">evento DOMContent</translation>
+<translation id="6876511917337708686">Tamanho \xb1</translation>
+<translation id="6903403507726942474">Ir para a linha:</translation>
+<translation id="6930242544192836755">Duração</translation>
+<translation id="6965978654500191972">Dispositivo</translation>
+<translation id="7029202950876890188"><ph name="SIGN"/><ph name="VALUE"/></translation>
+<translation id="7143207342074048698">Conectando</translation>
+<translation id="7229269264717884237">Sub-arvore modificada</translation>
+<translation id="7247652327135976256">Limpar resultados da audição.</translation>
+<translation id="7255513090217522383">Enviando</translation>
+<translation id="7267405484336523498">Clique para mudar o formato da cor</translation>
+<translation id="7400418766976504921">URL</translation>
+<translation id="7460943792763833940">Exportar todos HAR</translation>
+<translation id="7461631445362412997">Construtor</translation>
+<translation id="7501957181231305652">ou</translation>
+<translation id="7641938616688887143">Registro</translation>
+<translation id="7661400741848152476">SSL</translation>
+<translation id="7677748775835891962"><ph name="BYTES"/> transferidos</translation>
+<translation id="7702907602086592255">Domínio</translation>
+<translation id="7759590037707568265">Copiar como HTML</translation>
+<translation id="7767313639108918004">Cores HSL</translation>
+<translation id="7771452384635174008">Layout</translation>
+<translation id="7806321212973960311">Formulário de dados</translation>
+<translation id="7846634333498149051">Teclado</translation>
+<translation id="7872270543903644114">Remover temporizador</translation>
+<translation id="7915699402739018958">Ativar todos os pontos de interrupção.</translation>
+<translation id="7982789257301363584">Rede</translation>
+<translation id="8049189770492311300">Temporizador</translation>
+<translation id="8063206765073939997"><ph name="COUNT"/> requisições</translation>
+<translation id="8168435359814927499">Conteúdo</translation>
+<translation id="8172043047364349114">Alternar console</translation>
+<translation id="8186909905596845015">Carregar</translation>
+<translation id="8198713139034504582">Sessão</translation>
+<translation id="8213615223841667302">Expandir/encolher</translation>
+<translation id="8260864402787962391">Mouse</translation>
+<translation id="8346449506466267432">Editar como HTML</translation>
+<translation id="8456328144826979587">Atributo mofidificado</translation>
+<translation id="8461914792118322307">Proxy</translation>
+<translation id="8681501316494108869">Painel de elementos</translation>
+<translation id="8696985166948174571">Todos os Nós</translation>
+<translation id="8721192439366781236">Script</translation>
+<translation id="8752885927916654924"><ph name="WIDTH"/> × <ph name="HEIGHT"/> pixels (Natural: <ph name="NATURAL_WIDTH"/> × <ph name="NATURAL_HEIGHT"/> pixels)</translation>
+<translation id="8765263675224758228">1 - <ph name="LAST_LINE"/></translation>
+<translation id="8803639129939845298">Seguro</translation>
+<translation id="886930082991257706"><ph name="NAME"/> (<ph name="SIZE"/>)</translation>
+<translation id="8911461501537433420">Inserir Atributo</translation>
+<translation id="8969720035800604570"><ph name="SIZE"/>MB</translation>
+<translation id="9009901108071066356">Tamanho de pilha usada</translation>
+<translation id="9065203028668620118">Editar</translation>
+<translation id="9137833494350751475">Nenhuma informação do cache da aplicação disponível.</translation>
+<translation id="981121421437150478">Desconectado</translation>
 </translationbundle>

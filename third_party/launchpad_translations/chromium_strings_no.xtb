@@ -43,4 +43,26 @@
 <translation id="8865765905101981392">Nettleser</translation>
 <translation id="911206726377975832">Slette dine brukerdata også?</translation>
 <translation id="985602178874221306">Chromium-utviklerne</translation>
+<translation id="1221340462641866827">Chromium OS støtter ikke oppstart av eksterne programmer for å kjøre <ph name="SCHEME"/>-koblinger. Den ønskede koblingen er  <ph name="PROTOLINK"/>.</translation>
+<translation id="1293235220023151515">En eksisterende installasjon av Chromium ble oppdaget på systemet. Vennligst avinstaller dette og prøv på nytt.</translation>
+<translation id="1929939181775079593">Chromium svarer ikke. Starte på nytt?</translation>
+<translation id="1967743265616885482">En modul med samme navn er i konflikt med Chromium.</translation>
+<translation id="2407806170074302369">Om Chromiumrammen...</translation>
+<translation id="275588974610408078">Kræsjrapportering er ikke tilgjengelig i Chromium.</translation>
+<translation id="2843244238218937196">Chromium gjengiver</translation>
+<translation id="2927042866129133279">Ugyldige argumenter. Chromiumrammen kan ikke installeres i klar-modus uten også å installere Chromium.</translation>
+<translation id="3190315855212034486">Aiai! Chromium har kræsjet. Start på nytt?</translation>
+<translation id="3509308970982693815">Vennligst lukk alle Chromiumvinduer og prøv på nytt.</translation>
+<translation id="3849925841547750267">Dessverre er ikke innstillingene fra Mozilla Firefox tilgjengelig mens nettleseren kjører. Lagre arbeidet og lukk alle Firefoxvinduer for å importere disse til Chromium. Klikk deretter Fortsetter.</translation>
+<translation id="4077262827416206768">Lukk alle Chromiumvinduer og start Chromium på nytt for at endringene skal tre i kraft.</translation>
+<translation id="4222661289444749267">Chromiumramme-oppdatering</translation>
+<translation id="4330585738697551178">Denne modulen går for å være i konflikt med Chromium.</translation>
+<translation id="4464530290860906238">Brukes ikke i Chromium. Plassholder for å holde ressurskart á jour.</translation>
+<translation id="4736009297872521264">Chromium oppfører seg ikke pent</translation>
+<translation id="5498103559159810756">Chromium bruker din standard søkemotor <ph name="PAGE_TITLE"/>. Ønsker du å beholde denne?</translation>
+<translation id="5559945513746540383">Chromium er ikke installert eller mislyktes å finne installasjonsmappen. Vennligst last ned Chromium på nytt.</translation>
+<translation id="5947389362804196214">Kan ikke lese innstillinger.\n\nDet kan hende at noen funksjoner ikke er tilgjengelige, og endringer i innstillinger vil ikke lagres.</translation>
+<translation id="6055895534982063517">Det finnes en ny versjon av Chromium, raskere enn noen gang.</translation>
+<translation id="6944967875980567883">Moduler lastet i Chromium</translation>
+<translation id="7223968959479464213">Oppgavebehandling - Chromium</translation>
 </translationbundle>

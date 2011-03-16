@@ -106,4 +106,14 @@
 <translation id="985602178874221306">יוצרי Chromium</translation>
 <translation id="4330297532943865716">התקנה הגורמת להתנגשות של Chromium או מסגרת Chromium נמצאה במערכת. נא להסיר אותה ולנסות שוב.</translation>
 <translation id="8974095189086268230">Chromium OS זמינה בזכות <ph name="BEGIN_LINK_CROS_OSS"/>תכנה בקוד פתוח<ph name="END_LINK_CROS_OSS"/> נוספת.</translation>
+<translation id="1293235220023151515">התקנה סותרת של Chromium נמצאה במערכת. נא להסיר אותה ולנסות שוב.</translation>
+<translation id="1929939181775079593">Chromium אינו מגיב. אם להפעיל אותו מחדש כעת?</translation>
+<translation id="275588974610408078">אין אפשרות לדווח על קריסות ב־Chromium.</translation>
+<translation id="2927042866129133279">הארגומנטים שגויים. לא ניתן להתקין את מסגרת Chromium במצב הכנה מבלי להתקין גם את Chromium.</translation>
+<translation id="3096463977885168586">זכויות יוצרים © 2011-2006 יוצרי Chromium. כל הזכויות שמורות.</translation>
+<translation id="3190315855212034486">בום! Chromium קרס. האם להפעיל אותו מחדש כעת?</translation>
+<translation id="4077262827416206768">נא לסגור את כל החלונות של Chromium ולהפעיל אותו מחדש כדי שהשינויים ייכנסו לתוקף.</translation>
+<translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796</translation>
+<translation id="7278516633989165382">מסגרת Chromium עודכנה. נא להפעיל מחדש את הדפדפן. גרסת ה־Chromium:‏ <ph name="TODO_0001"/>, גרסת מסגרת ה־Chromium:‏ <ph name="TODO_0002"/></translation>
+<translation id="8046283042877435986">אתר זה ממליץ להשתמש במסגרת Chromium (כבר מותקנת).</translation>
 </translationbundle>

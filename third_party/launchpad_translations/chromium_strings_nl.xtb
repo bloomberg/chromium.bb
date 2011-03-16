@@ -109,4 +109,11 @@
 <translation id="3096463977885168586">Copyright © 2006-2011 De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="4330297532943865716">Er werd een conflicterende installatie van Chromium of Chromium Frame op uw systeem gevonden. Verwijder deze versie van uw systeem en probeer opnieuw.</translation>
 <translation id="8046283042877435986">Deze website beveelt ‘Chromium Frame’ aan (Reeds geïnstalleerd).</translation>
+<translation id="1929939181775079593">Chromium reageert niet. Wilt u Chromium herstarten?</translation>
+<translation id="275588974610408078">Het doorgeven van crashes is niet mogelijk in Chromium.</translation>
+<translation id="2927042866129133279">Ongeldige opdracht. Chromium Frame kan niet in ready mode geïnstalleerd worden zonder ook Chromium te installeren.</translation>
+<translation id="3190315855212034486">Oeps! Chromium is gecrasht. Opnieuw starten?</translation>
+<translation id="4077262827416206768">U moet alle Chromium vensters sluiten en Chromium opnieuw opstarten voordat deze wijzigingen doorgevoerd kunnen worden.</translation>
+<translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796</translation>
+<translation id="7278516633989165382">Chromium Frame is geüpdatet, herstart uw browser. Chrome versie: <ph name="TODO_0001"/>, Chromium Frame versie: <ph name="TODO_0002"/></translation>
 </translationbundle>

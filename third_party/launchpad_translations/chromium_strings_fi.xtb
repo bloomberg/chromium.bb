@@ -75,4 +75,8 @@
 <translation id="7278516633989165382">Chromium Frame -kehys on päivitetty. Käynnistä selain uudelleeen. Chromen versio: <ph name="TODO_0001"/>, Chromium Frame -kehyksen versio: <ph name="TODO_0002"/></translation>
 <translation id="8046283042877435986">Tämä sivusto suosittelee Chromium Frame -kehystä (jo asennettu).</translation>
 <translation id="8971920611044657379">Chromium Frame -kehys</translation>
+<translation id="2632329825580776666">Asetustiedosto on korruptoitunut tai muuten virheellinen.\n\nChromium ei voi palauttaa asetuksiasi.</translation>
+<translation id="4222661289444749267">Chromium Frame -kehyksen päivitys</translation>
+<translation id="4330297532943865716">Järjestelmästä löytyi ristiriidan aiheuttava asennus Chromiumista tai Chromium Frame -kehyksestä. Poista se ensin ja yritä sitten asennusta uudelleen.</translation>
+<translation id="980185455267101462">Tällä tietokoneella on jo uudempi versio Chromium Frame -kehyksestä asennettuna. Jos se ei toimi kunnolla, poista Chromium Frame -kehyksen asennus ja lataa se uudelleen.</translation>
 </translationbundle>

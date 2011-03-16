@@ -3,4 +3,56 @@
 <translationbundle lang="ast">
 <translation id="1109244393487346293"><ph name="SHARE"/>%%</translation>
 <translation id="1634828734222219955">Total</translation>
+<translation id="1015536732094484178"><ph name="EVENT"/> - Detalles</translation>
+<translation id="1062798188241579840">Colores hexadecimales</translation>
+<translation id="1160115729576918586">Testeres de rempuesta</translation>
+<translation id="1169028494908542778">Revertir a esta revisión</translation>
+<translation id="1215014271600658849">Amosar el recuentu de tamaños y porcentaxes</translation>
+<translation id="124758223932734674">Posar execución del script.</translation>
+<translation id="1272268244580491898">Activar puntu d'interrupción</translation>
+<translation id="1311367388993416646"><ph name="DURATION"/>ms</translation>
+<translation id="1324319449713370867"><ph name="LATENCY"/> de llatencia</translation>
+<translation id="137671950541962857">Recolectado</translation>
+<translation id="1383876407941801731">Guetar</translation>
+<translation id="1434836903656932448">Amosar el siguiente recursu de script.</translation>
+<translation id="1436722359433789623">Nodu desaniciáu</translation>
+<translation id="1451049628911401385">Llinia siguiente/anterior</translation>
+<translation id="1471549911969958014">Posáu nun puntu de ruptura \&quot;<ph name="BREAKPOINT"/>\&quot; definíu en <ph name="NODE"/>, porque'l so descendiente <ph name="CHILD"/> desanicióse.</translation>
+<translation id="1507648903387903382">Nueva regal d'estilu</translation>
+<translation id="1521283072525575706">El sistema de ficheros ta desactiváu.</translation>
+<translation id="1639239467298939599">Cargando</translation>
+<translation id="1644861063548770358">Desaniciar Nodu</translation>
+<translation id="1648890265918980181">Posar en toles esceiciones. \nCalcar pa posar nes esceiciones non deteutaes.</translation>
+<translation id="1653705052218729891">(espaciu en blanco)</translation>
+<translation id="1654944857563611006">Códigu d'estáu</translation>
+<translation id="1745154242849680575">Usar fileres de recursos más grandes.</translation>
+<translation id="1752354630032595359">''' (<ph name="COUNT"/>)</translation>
+<translation id="1768404365792104093">Orde previa/anterior</translation>
+<translation id="1801042861827795142">Carga terminada</translation>
+<translation id="1803799720926799756">Tamañu del ficheru</translation>
+<translation id="1823768272150895732">Fonte</translation>
+<translation id="1859436107025556606">Pasar a la siguiente llamada a función.</translation>
+<translation id="1874452619567281280">conteníu</translation>
+<translation id="1892670850488572691">(programa)</translation>
+<translation id="1927081658806650620">Namái el nodu esbilláu</translation>
+<translation id="1946125830871712831">Error obteniendo la ruta raíz pal sistema de ficheros.</translation>
+<translation id="1970347183234422155">Solicitú de carga</translation>
+<translation id="2034493627456664629">Ensin puntos de ruptura</translation>
+<translation id="2071167425364270751">&lt;nun ta disponible la fonte&gt;</translation>
+<translation id="2091908538154256618">Tiempu agregáu</translation>
+<translation id="2098305189700762159">Nun s'atopa</translation>
+<translation id="2161656808144014275">Testu</translation>
+<translation id="2170606215056882663">Amosar tiempos totales y propios como porcentaxes</translation>
+<translation id="2187217037175158938">Ensin oyentes d'eventos</translation>
+<translation id="2210962763794079615">Temporizador</translation>
+<translation id="2215182539621589286"><ph name="ERRORS_COUNT"/> errores, <ph name="WARNINGS_COUNT"/> avisos</translation>
+<translation id="2246851932332031117">Ensin auditoríes pa executar</translation>
+<translation id="2288623059494346417">Propiedaes</translation>
+<translation id="229259783486983247">Petición de planificación</translation>
+<translation id="230848277395574520">Suxerencia aceutada</translation>
+<translation id="2312740652191388094">(dende la caché)</translation>
+<translation id="2315805297948832311">Escluyir función seleicionada.</translation>
+<translation id="2326802841004704199">Amestar puntu de ruptura condicional ...</translation>
+<translation id="2332815705129827753">Evaluar el script</translation>
+<translation id="6863589982688145509">Atayos de tecláu</translation>
 </translationbundle>

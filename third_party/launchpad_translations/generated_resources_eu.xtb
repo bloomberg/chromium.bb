@@ -2946,4 +2946,32 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9049981332609050619"><ph name="DOMAIN"/> domeinua atzitzen saiatu zara, baina zerbitzariak baliogabeko ziurtagiria aurkeztu du.</translation>
 <translation id="9073281213608662541">PAP</translation>
+<translation id="1221462285898798023">Abiarazi <ph name="PRODUCT_NAME"/> erabiltzaile normal modura. Erro modura exekutatzeko, --user-data-dir alternatiboa adierazi behar duzu profilaren informazioa gordetzeko.</translation>
+<translation id="1466288268059179648">Egiaztatu zure Interneteko konexioa. Berrabiarazi routerrak, modemak
+       eta erabiltzen ari zaren beste edozein sareko gailu.</translation>
+<translation id="1607220950420093847">Beharbada zure kontua ezabatu edo desgaitu egin da. Mesedez, amaitu saioa.</translation>
+<translation id="1972131420608645908">FPS kontagailua.</translation>
+<translation id="2024918351532495204">Zure gailua lineaz kanpo dago</translation>
+<translation id="2086712242472027775">Zure kontuak ez du funtzionatzen <ph name="PRODUCT_NAME"/>-(e)n. Jarri kontaktuan zure domeinu-administratzailearekin edo erabili Google kontu arrunt bat saioa hasteko.</translation>
+<translation id="2249605167705922988">adib. 1-5, 8, 11-13</translation>
+<translation id="3092040396860056776">Dena den, saiatu orri kargatzen</translation>
+<translation id="3303818374450886607">Kopiak</translation>
+<translation id="3587482841069643663">Denak</translation>
+<translation id="3718288130002896473">Portaera</translation>
+<translation id="4278390842282768270">Onartuak</translation>
+<translation id="4625904365165566833">Ez daukazu baimenik saioa hasteko. Hitz egin notebook-aren jabearekin.</translation>
+<translation id="4886690096315032939">Jarri fokua existitzen den fitxan hura irekitzean</translation>
+<translation id="4988526792673242964">Orrialdeak</translation>
+<translation id="5353719617589986386">Orrialde-tarte baliogabea</translation>
+<translation id="5451285724299252438">orrialde-tartearen testu-kutxa</translation>
+<translation id="5677928146339483299">Blokeatuak</translation>
+<translation id="5748266869826978907">Egiaztatu zure DNS ezarpenak. Jarri kontaktuan zure sareko administratzailearekin
+        honek zer esan nahi duen seguru ez badakizu.</translation>
+<translation id="5949910269212525572">Ezin izan da zerbitzariaren DNS helbidea ebatzi.</translation>
+<translation id="6549677549082720666">Atzeko planoko aplikazio berria instalatu da</translation>
+<translation id="6677380263041696420">Aldatu irudia...</translation>
+<translation id="7396845648024431313"><ph name="APP_NAME"/> sistemaren abioan abiaraziko da eta atzeko planoan exekutatuko da, baita <ph name="PRODUCT_NAME"/>-(e)n beste leiho guztiak itxi ondoren ere.</translation>
+<translation id="7771452384635174008">Diseinua</translation>
+<translation id="8433186206711564395">Sareko ezarpenak</translation>
+<translation id="8550022383519221471">Sinkronizazio-zerbitzua ez dago eskuragarri zure domeinutik.</translation>
 </translationbundle>

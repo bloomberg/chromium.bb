@@ -65,7 +65,7 @@
 <translation id="1196338895211115272">Kilîla taybet nayê derxistin.</translation>
 <translation id="1197979282329025000">Dema ku ji bo çapera <ph name="PRINTER_NAME"/>ê pêkariya çapkirinê distand, çewtiyekê rû da. Ev çaper li gel <ph name="CLOUD_PRINT_NAME"/>ê nehate tomarkirin.</translation>
 <translation id="1198271701881992799">Dest pê bike</translation>
-<translation id="119944043368869598">Hemûyan paqik bike</translation>
+<translation id="119944043368869598">Hemûyan paqij bike</translation>
 <translation id="1201402288615127009">Pêş</translation>
 <translation id="1202290638211552064">Dema ku ji pêşkêşkareke jor an jî proksiyekê bersiv dihate hêvîkirin, demê têrê nekir.</translation>
 <translation id="1204242529756846967">Zimanê kontrola rastnivîsê</translation>
@@ -181,4 +181,5 @@
 <translation id="883848425547221593">Bijareyên din</translation>
 <translation id="8870413625673593573">Yên herî dawiyê hatine girtin</translation>
 <translation id="1116694919640316211">Derbarê de</translation>
+<translation id="1128128132059598906">EAP-TTLS</translation>
 </translationbundle>

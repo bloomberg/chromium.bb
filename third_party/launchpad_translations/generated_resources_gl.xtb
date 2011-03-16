@@ -35,7 +35,7 @@
 <translation id="1120026268649657149">A palabra chave debe ser única ou inexistente</translation>
 <translation id="112343676265501403">Excepcións de complementos</translation>
 <translation id="1125520545229165057">Dvorak (Hsu)</translation>
-<translation id="1131850611586448366">Temos recibido informes de suplantación de identidade sobre o sitio web <ph name="HOST_NAME"/>. Este tipo de sitios enganan aos usuarios para que desvelen información persoal ou financeira, a miúdo finxindo ser institucións de confianza, como bancos.</translation>
+<translation id="1131850611586448366">Temos recibido informes de suplantación de identidade (phishing) sobre o sitio web <ph name="HOST_NAME"/>. Este tipo de sitios enganan aos usuarios para que desvelen información persoal ou financeira, a miúdo finxindo ser institucións de confianza, como bancos.</translation>
 <translation id="1134009406053225289">Abrir nunha xanela de incógnito</translation>
 <translation id="1135328998467923690">O paquete non é válido: «<ph name="ERROR_CODE"/>»</translation>
 <translation id="1138248235429035196">Mensaxe da extensión <ph name="EXTENSION_NAME"/>:</translation>
@@ -87,7 +87,7 @@
 <translation id="1254593899333212300">Conexión a Internet directa</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1273291576878293349">Abrir todos os marcadores nunha xanela de incógnito</translation>
-<translation id="1275018677838892971">O sitio web <ph name="HOST_NAME"/> conten elementos de sitios dos que temos recibido informes de suplantación de identidade. Este tipo de sitios enganan aos usuarios para que desvelen información persoal ou financeira, a miúdo finxindo ser institucións de confianza, como bancos.</translation>
+<translation id="1275018677838892971">O sitio web <ph name="HOST_NAME"/> conten elementos de sitios dos que temos recibido informes de suplantación de identidade (phishing). Este tipo de sitios enganan aos usuarios para que desvelen información persoal ou financeira, a miúdo finxindo ser institucións de confianza, como bancos.</translation>
 <translation id="1275718070701477396">Seleccionado</translation>
 <translation id="1285320974508926690">Non traducir nunca este sitio</translation>
 <translation id="1290691390430578691">Cambiar a modo inglés</translation>
@@ -279,7 +279,7 @@
 <translation id="1823768272150895732">Tipo de letra</translation>
 <translation id="1824910108648426227">Opcionalmente poede desactivar estes servizos.</translation>
 <translation id="182729337634291014">Produciuse un erro de sincronización...</translation>
-<translation id="1829483195200467833">Limpar as confifuracións abertas automaticamente</translation>
+<translation id="1829483195200467833">Limpar as configuracións abertas automaticamente</translation>
 <translation id="1844694039143158925">Cambiar a modo chinés</translation>
 <translation id="1847961471583915783">Limpar as cookies e outros datos do sitio e complementos cando pecho o navegador</translation>
 <translation id="1849632043866553433">Cachés de aplicativos</translation>
@@ -456,7 +456,7 @@
 <translation id="2371436973350908350">Tomar a súa imaxe de conta</translation>
 <translation id="2374144379568843525">Agoc&amp;har o panel de ortografía</translation>
 <translation id="2378982052244864789">Seleccione o directorio da extensión.</translation>
-<translation id="238391805422906964">Abrir un informe de suplantación de identidade (pishing)</translation>
+<translation id="238391805422906964">Abrir un informe de suplantación de identidade (phishing)</translation>
 <translation id="2385700042425247848">Nome do servizo:</translation>
 <translation id="2390045462562521613">Omitir esta rede</translation>
 <translation id="2392264364428905409">Disposición de teclado búlgaro</translation>
@@ -801,7 +801,7 @@
 <translation id="3459774175445953971">Última modificación:</translation>
 <translation id="3467848195100883852">Activar a corrección ortográfica automática</translation>
 <translation id="347250956943431997">O certificado do servidor foi revocado</translation>
-<translation id="3473105180351527598">Activar a protección contra phishing e software mal intencionado</translation>
+<translation id="3473105180351527598">Activar a protección contra suplantación de identidade (phishing) e software mal intencionado (malware)</translation>
 <translation id="3479552764303398839">Agora non</translation>
 <translation id="3481915276125965083">Bloqueáronse as seguintes mensaxes emerxentes nesta páxina:</translation>
 <translation id="348620396154188443">Permitir que todos os sitios mostren notificacións de escritorio</translation>
@@ -1108,7 +1108,7 @@
 <translation id="4381849418013903196">Coma «,»</translation>
 <translation id="4388712255200933062"><ph name="CLOUD_PRINT_NAME"/> está feita a partires da idea de que imprimir ten de ser máis intuitivo, accesíbel e útil. Usando <ph name="CLOUD_PRINT_NAME"/> pode facer que as súas impresoras estean dispoñíbeis para calquera aplicativo ou móbil <ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="4394049700291259645">Desactivar</translation>
-<translation id="4400697530699263877">Utilizar a carga  previa de DNS para mellorar o rendiminto de carga de páxinas</translation>
+<translation id="4400697530699263877">Utilizar a carga  previa de DNS para mellorar o rendemento de carga de páxinas</translation>
 <translation id="4404805853119650018">Non foi posíbel rexistrar este equipo para acceso remoto.</translation>
 <translation id="4405141258442788789">A operación esgotou o tempo de resposta.</translation>
 <translation id="4408427661507229495">nome de rede</translation>
@@ -1474,7 +1474,7 @@
 <translation id="5546865291508181392">Buscar</translation>
 <translation id="5548207786079516019">Esta instalación de <ph name="PRODUCT_NAME"/> é secundaria, polo que non pode estabelecerse como o seu navegador predeterminado.</translation>
 <translation id="5550431144454300634">Corrixir a entrada de forma automática</translation>
-<translation id="5552632479093547648">Detectouse suplantación de identidade (pishing) e software mal intencionado (nalware)!</translation>
+<translation id="5552632479093547648">Detectouse suplantación de identidade (phishing) e software mal intencionado (malware)!</translation>
 <translation id="5553089923092577885">Asignacións de políticas de certificados</translation>
 <translation id="5554489410841842733">Esta icona aparecerá cando a extensión poida actuar na páxina actual.</translation>
 <translation id="5554720593229208774">Entidade de acreditación de correos</translation>
@@ -1616,7 +1616,7 @@
 <translation id="5910363049092958439">Gar&amp;dar imaxe como...</translation>
 <translation id="5912292566401425135">L</translation>
 <translation id="5912378097832178659">&amp;Editar motores de busca...</translation>
-<translation id="5917011688104426363">Dar foco á barra de enderezos en modo busca</translation>
+<translation id="5917011688104426363">Dar o foco á barra de enderezos en modo busca</translation>
 <translation id="5918363047783857623">Editar excepción</translation>
 <translation id="5921544176073914576">Páxina de suplantación de identidade (phishing)</translation>
 <translation id="5922220455727404691">Usar SSL 3.0</translation>
@@ -1950,7 +1950,7 @@
 <translation id="6996550240668667907">Ver mapa de teclado</translation>
 <translation id="7005812687360380971">Produciuse un fallo</translation>
 <translation id="7006788746334555276">Configuración de contido</translation>
-<translation id="7009102566764819240">Embaixo ten a lista de todos os elementos non seguros da páxina. Prema na ligazón de Diagnóstico para obter máis información sobre a ameaza do software malicioso do recurso específico. Se sabe que un recurso foi erroneamente considerado como de  suplantación de identidade (pishing), prema na ligazón «Informar dun erro»</translation>
+<translation id="7009102566764819240">Embaixo ten a lista de todos os elementos non seguros da páxina. Prema na ligazón de Diagnóstico para obter máis información sobre a ameaza do software malicioso (malware) do recurso específico. Se sabe que un recurso foi erroneamente considerado como de  suplantación de identidade (phishing), prema na ligazón «Informar dun erro»</translation>
 <translation id="701080569351381435">Ver código fonte</translation>
 <translation id="7014174261166285193">Produciuse un fallou durante a instalación.</translation>
 <translation id="7017354871202642555">Non é posíbel estabelecer un modo despois de estabelecer unha xanela.</translation>
@@ -2947,4 +2947,73 @@ Se vostede pensa que este comportamento non é o desexábel, por exemplo, se vos
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9049981332609050619">Tentou acceder a <ph name="DOMAIN"/>, mais o servidor presentou un certificado non válido.</translation>
 <translation id="9073281213608662541">PAP</translation>
+<translation id="1221462285898798023">Inicie <ph name="PRODUCT_NAME"/> como un usuario normal. Para executar como administrador (root), debe especificar un -user-data-dir (directorio de datos de usuario) alternativo para o almacenamento da información do perfil.</translation>
+<translation id="1466288268059179648">Comprobe a súa conexión a Internet. Reinicie calquera encamiñador, módem, ou outros
+        dispositivos de rede que estea a empregar.</translation>
+<translation id="1607220950420093847">A súa conta puido ser eliminada ou desactivada. Peche a sesión.</translation>
+<translation id="1972131420608645908">Contador FPS</translation>
+<translation id="1999115740519098545">No inicio</translation>
+<translation id="2024918351532495204">O seu dispositivo non está en liña</translation>
+<translation id="2086712242472027775">A súa conta non funciona con  <ph name="PRODUCT_NAME"/>. Contacte co seu administrador de dominio ou empregue unha conta normal de Google para acceder.</translation>
+<translation id="2249605167705922988">P.Ex.. 1-5, 8, 11-13</translation>
+<translation id="2893168226686371498">Navegador predeterminado</translation>
+<translation id="3092040396860056776">Aínda así, tente a cargar a páxina</translation>
+<translation id="3303818374450886607">Copias</translation>
+<translation id="3587482841069643663">Todas</translation>
+<translation id="3718288130002896473">Comportamento</translation>
+<translation id="4278390842282768270">Permitido</translation>
+<translation id="4532822216683966758">Ten activado o certificado de control de procedencia de DNS. Isto pode dar lugar ao envío de información privada a Google.</translation>
+<translation id="4625904365165566833">Non ten permiso para acceder. Probe co propietario do portátil.</translation>
+<translation id="4734773543612306111">O servidor en <ph name="HOST_NAME"/>
+        non puido ser atopado, xa que fallou a busca de DNS. DNS é o servizo web
+        que traduce os nomes dos sitios ao seu enderezo na Internet. Este erro adoita
+        seren causado por non teren conexión a Internet ou a unha rede mal configurada.
+        Tamén pode seren causado por un servidor DNS que non responde ou por unha
+        regra de prevención na devasa
+        <ph name="PRODUCT_NAME"/>
+        que impide o acceso á rede.</translation>
+<translation id="4886690096315032939">Dar o foco a lapela existente ao abrila</translation>
+<translation id="4988526792673242964">Páxinas</translation>
+<translation id="505077122661873132">Tente desactivar a obtención anticipada de DNS seguindo estes pasos:
+        Ir a
+        <ph name="BEGIN_BOLD"/>
+        Menú da chave inglesa &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        <ph name="END_BOLD"/>
+        e desmarque &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;</translation>
+<translation id="5098647635849512368">Non se atopou a ruta absoluta ao directorio.</translation>
+<translation id="5353719617589986386">Rango de páxinas incorrecto</translation>
+<translation id="5359419173856026110">Mostra a taxa real de fotogramas dunha páxina, en fotogramas por segundo, cando a aceleración por hardware está activada.</translation>
+<translation id="5412713837047574330">Non se pode acceder ao aplicativo en <ph name="HOST_NAME"/> xa que a súa conexión de rede non funciona. A páxina cargarase cando se restabeleza a conexión de rede. &lt;br&gt;</translation>
+<translation id="5451285724299252438">caixa de texto de rango de páxina</translation>
+<translation id="5512074755152723588">Se escribe na caixa multifunción un enderezo URL dunha lapela xa existente, o resultado é unha posta en foco da lapela existente no canto de cargala de novo na lapela actual.</translation>
+<translation id="5565871407246142825">Tarxetas de crédito</translation>
+<translation id="563969276220951735">Autocompletado de formularios</translation>
+<translation id="5677928146339483299">Bloqueado</translation>
+<translation id="5748266869826978907">Comprobe a configuración dos DNS. Póñase en contacto co seu administrador de rede
+        se non está seguro do que quere dicir isto.</translation>
+<translation id="5949910269212525572">Non é posíbel atopar o enderezo do servidor DNS.</translation>
+<translation id="6549677549082720666">Instalado un novo aplicativo en segundo plano</translation>
+<translation id="6677380263041696420">Cambiar imaxe...</translation>
+<translation id="7366909168761621528">Datos de navegación</translation>
+<translation id="7387829944233909572">Dialogo «Limpar datos de navegación»</translation>
+<translation id="7396845648024431313"><ph name="APP_NAME"/> porase en funcionamento no inicio do sistema e seguirá funcionando en segundo plano, incluso unha vez que teña pechadas todas as outras xanelas de  <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="7771452384635174008">Disposición</translation>
+<translation id="8433186206711564395">Configuracións da rede</translation>
+<translation id="8550022383519221471">O servizo de sincronización non está dispoñíbel para o seu dominio.</translation>
+<translation id="8652487083013326477">botón de escolla de rango de páxina</translation>
+<translation id="8844709414456935411"><ph name="PRODUCT_NAME"/>
+        detectou que un produto da ESET intercepta as conexións seguras.
+        Isto, normalmente, non é un problema de seguranza, xa que o software
+        da ESET adoita a executarse no mesmo equipo. Porén, debido a algúns
+        aspectos específicos das conexións seguras cos que
+        <ph name="PRODUCT_NAME"/>
+        é intolerante, os produtos da ESET teñen que ser configurados para que
+        non execute esta interceptación. Prema en «Aprender máis» para ver as
+        instrucións.</translation>
+<translation id="8870318296973696995">Páxina de inicio</translation>
+<translation id="9076523132036239772">Ou o seu correo ou o contrasinal non puideron seren verificados. Tente primeiro conectar a unha rede.</translation>
+<translation id="976526967778596630">Non se pode acceder á páxina web <ph name="HOST_NAME"/> porque non está conectado á rede. A páxina cargarase cando se restabeleza a conexión de rede.&lt;br&gt;</translation>
 </translationbundle>
