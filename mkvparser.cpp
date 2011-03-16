@@ -1007,8 +1007,13 @@ long long Segment::CreateInstance(
             else if (total < 0)
                 size = -1;
 
+#if 0  //this turned out to be too conservative:
             else if ((pos + size) > end)
                 return E_FILE_FORMAT_INVALID;
+#else  //so do this instead
+            else if ((pos + size) > total)
+                size = -1;
+#endif
 
             pSegment = new (std::nothrow) Segment(pReader, pos, size);
 
@@ -1699,9 +1704,19 @@ long Segment::DoLoadCluster(
 
         pos += cluster_size;
 
-        m_pos = pos;
-        assert((segment_stop < 0) || (m_pos <= segment_stop));
+        if ((total >= 0) && (pos >= total))
+        {
+            m_pos = total;
+            return 1;  //no more clusters
+        }
 
+        if ((segment_stop >= 0) && (pos >= segment_stop))
+        {
+            m_pos = segment_stop;
+            return 1;  //no more clusters
+        }
+
+        m_pos = pos;
         return 2;  //try again
     }
 
@@ -1717,31 +1732,6 @@ long Segment::DoLoadCluster(
     assert(m_clusters);
     assert(idx < m_clusterSize);
     assert(m_clusters[idx] == pCluster);
-
-    //we could handle this as follows.
-    //if the cluster_size is non-negative, then there's nothing special
-    //we need to do because we have the end of the cluster, and we're
-    //"parsing to find the next cluster" in the normal way.
-    //
-    //If we don't know have a cluster size, the last cluster object
-    //is created (or perhaps was already preloaded -- must still reason
-    //about this), but it doesn't have a known size yet.  In this
-    //case the segment is in a different kind of state, "searching
-    //for end of last cluster object".  We need a way to differentiate
-    //between these two states.
-    //
-    //This has the benefit that we could call cluster::parse on the
-    //(last) cluster object (with unknown size), and let it fill in
-    //the value of the cluster size when it is finally discovered.
-    //At that point the segment transitions out of the "find end of
-    //last cluster" state and into the "find next cluster" state.
-    //
-    //We could mark the segment as being in one state or the other
-    //using the sign of segment::m_pos: m_pos > 0 means "searching
-    //for next cluster" and m_pos < 0 means "searching to determine
-    //end of last cluster with unknown size".  Positive m_pos means
-    //we're outside of a cluster and negative means we're inside
-    //a cluster.
 
     if (cluster_size >= 0)
     {
@@ -2612,6 +2602,9 @@ long Segment::ParseCues(
 
     pos = m_start + off;
 
+    if ((total < 0) || (pos >= total))
+        return 1;  //don't bother parsing cues
+
     const long long element_start = pos;
     const long long segment_stop = (m_size < 0) ? -1 : m_start + m_size;
 
@@ -2690,6 +2683,9 @@ long Segment::ParseCues(
 
     if ((segment_stop >= 0) && (element_stop > segment_stop))
         return E_FILE_FORMAT_INVALID;
+
+    if ((total >= 0) && (element_stop > total))
+        return 1;  //don't bother parsing anymore
 
     len = static_cast<long>(size);
 
@@ -6917,6 +6913,9 @@ long Cluster::HasBlockEntries(
 
     pos = pSegment->m_start + off;  //absolute
 
+    if ((total >= 0) && (pos >= total))
+        return 0;  //we don't even have a complete cluster
+
     const long long segment_stop =
         (pSegment->m_size < 0) ? -1 : pSegment->m_start + pSegment->m_size;
 
@@ -6939,6 +6938,9 @@ long Cluster::HasBlockEntries(
 
         if ((segment_stop >= 0) && ((pos + len) > segment_stop))
             return E_FILE_FORMAT_INVALID;
+
+        if ((total >= 0) && ((pos + len) > total))
+            return 0;
 
         if ((pos + len) > avail)
             return E_BUFFER_NOT_FULL;
@@ -6972,6 +6974,9 @@ long Cluster::HasBlockEntries(
         if ((segment_stop >= 0) && ((pos + len) > segment_stop))
             return E_FILE_FORMAT_INVALID;
 
+        if ((total >= 0) && ((pos + len) > total))
+            return 0;
+
         if ((pos + len) > avail)
             return E_BUFFER_NOT_FULL;
 
@@ -6998,7 +7003,8 @@ long Cluster::HasBlockEntries(
                 return E_FILE_FORMAT_INVALID;
 
             if ((total >= 0) && (cluster_stop > total))
-                return E_FILE_FORMAT_INVALID;
+                //return E_FILE_FORMAT_INVALID;  //too conservative
+                return 0;  //cluster does not have any entries
         }
     }
 
