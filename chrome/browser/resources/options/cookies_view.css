@@ -44,7 +44,7 @@ html[dir=rtl] #remove-all-cookies-search-column {
   /* it would be nice if we could make this expand as necessary up to the height
    * of the window, but the panel doesn't have a known height and that would
    * probably confuse cr.ui.List (which doesn't expect that) anyway */
-  height: 700px;
+  height: 600px;
   margin: 0;
 }
 
