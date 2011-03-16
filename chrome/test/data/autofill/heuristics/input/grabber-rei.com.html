@@ -1,0 +1,1118 @@
+<html xmlns:rei="http://www.rei.com/ns/rei">
+<!--Form Location: https://www.rei.com/RegistrationView?storeId=8000--><head>
+
+<meta name="reiShortcut_requestUri" content="/RegistrationView">
+<meta name="reiShortcut_targetUrl" content="/CreateNewAccount.do?xsl=http://localhost/xsl/user/registration.xsl|ultraTransform&amp;sectionClass=yourAccount&amp;navClass=noSidebar">
+<meta name="reiServer_name" content="www.rei.com">
+<meta name="reiParamXml" content="">
+<meta name="reiParamXsl" content="http://localhost/xsl/user/registration.xsl|ultraTransform">
+<title>REI Account Setup</title>
+<style type="text/css" media="all">
+@import url(/css/rei.css);
+@import url("/css/global/thickboxForms.css");
+@import url("/css/sections/yourAccountStyle.css");
+</style>
+<script type="text/javascript">
+var perf_start = (new Date()).getTime(),
+	isUltraTransform = true,
+	jsIsCheckout = false,
+	httpsPath,
+	httpPath,
+	jscript_path,
+	httpHost,
+	httpsHost,
+	returnUrl,
+	currentUrl,
+	storeId = '8000',
+	image_path = 'http://media.rei.com',
+	yourAccountInView = 'YourAccountInfoInView?storeId=8000',
+	yourAccountOutView = 'YourAccountInfoOutView?storeId=8000',
+	pageIsSecure = false,
+	referringUrlPath = '/',
+	navClass = 'noSidebar ',
+	storeClass = 'rei',
+	sectionClass = 'yourAccount',
+	pageClass = 'content',
+	contentClass = '';
+
+returnUrl = currentUrl =  location.href;
+httpPath = httpHost = jscript_path = 'http://www.rei.com/';
+httpsPath = httpsHost = 'https://www.rei.com/';
+</script><script type="text/javascript" src="/javascript/commonHead"></script><script type="text/javascript">
+// TODO review, can these be moved into commonHead?
+function setCookie(name, value) {
+	var expdate = "Fri, 31-Dec-99 11:59:59 GMT"
+	document.cookie = name + "=" + escape(value) + "; expires=" + expdate + "; path=/";
+}
+function logout() {
+	setCookie("SESSION_ID", "");
+	setCookie("loggedin", "0");
+	setCookie("rei_cart", "0");
+	setCookie("GiftRegistrySetup", "0");
+}
+</script><script type="text/javascript" src="/javascript/thickbox.js"></script><script src="/javascript/smart_button.js" type="text/javascript"></script><script type="text/javascript">
+						function checkValueLength(paramStr){
+						if (paramStr.length == 0) {return false;} return true;
+						}
+						
+						
+								var cm_orderId = '';
+							
+
+// Check for non-Latin alphabet characters, same logic as used on server in Java
+function containsInvalidCharacter(val) {
+
+  // Check lower 8-bits of each unicode char to ensure that the string
+  // is composed of the allowed character set
+    var res = 0;
+    var hasInvalidCharacter = false;
+    for (i = 0; i < val.length; i++) {
+      res = (val.charCodeAt(i) | 0x00);
+      if (res < 0x20 || res > 0x7e) {
+        hasInvalidCharacter = true;
+        break;
+      }
+    }
+  return hasInvalidCharacter;
+}
+
+function stripSpaces(string) {
+   while('' + string.charAt(string.length-1) == ' ')
+     string = string.substring(0, string.length-1);
+   while('' + string.charAt(0) == ' ')
+     string = string.substring(1, string.length);
+   return string;
+ }
+
+function validate_form(emailStr){
+
+	f=document.REG_FORM;
+	/* validate all User information */
+	var elementNames = ["First Name","Last Name","Password","Re-type Password","Zip Code","Email"];
+	var validationList = [f.firstName, f.lastName, f.logonPassword, f.logonPasswordVerify, f.zipCode, f.email1];
+	var maxCnt = validationList.length;
+	var count = 0;
+	var ntfyCnt = 0;
+	var notificationList = new Array();
+	
+	/* Validate that required fields are entered */
+	while(count < maxCnt) {
+			    if((validationList[count].value == null) || (stripSpaces(validationList[count].value).length < 1) 
+			      || (containsInvalidCharacter(validationList[count].value))) {
+			      notificationList[ntfyCnt] = elementNames[count] + " \n";
+			      ntfyCnt++;
+			    }
+	  	count++;
+	}
+	
+	var errorString = "";
+	if(notificationList.length > 0){
+	    for(i = 0; i < notificationList.length; i++){
+	            errorString = errorString + notificationList[i];
+	    }
+	}
+	
+	if(errorString.length > 1){
+	    alert("The following fields have not been filled in, or contain invalid characters: \n" + errorString );
+	    return false;
+	}
+	
+	if(emailCheck(emailStr)) {
+		// Create CM reg tag
+	  	var cmEmail = emailStr;
+	  	var cmZip = f.zipCode.value;
+	  	cmCreateRegistrationTag(cmEmail, cmEmail, cmZip, null, cm_orderId);
+	  	document.REG_FORM.submit();
+	} else {
+		return false;
+	}
+}
+
+function checkScreenName() {
+    var screenName = $("#screenName").val();
+    if (screenName.toLowerCase() == "") {
+    	cleanScreenNameError();
+        return;
+    }
+    
+    var url = "/rest/user/screenname/valid/" + screenName;
+
+    $.getJSON(url, function (errors) {
+        if (errors.length > 0) {
+            $("#screenNameErrorMessages").addClass("errorDisplay").text(getScreenNameErrorMessage(errors[0]));
+        } else {
+            cleanScreenNameError();
+        }
+    });
+}
+
+function getScreenNameErrorMessage(code) {
+	var messagesByCode = {};
+	messagesByCode["ERR_SCREEN_NAME_ALREADY_EXISTS"] = "This Screen Name is already in use. Please try again.";
+	messagesByCode["ERR_MAX_SCREEN_NAME_LENGTH"] = "Maximum Screen Name length is 40 characters. Please enter a different Screen Name.";
+	messagesByCode["ERR_MAX_SCREEN_NAME_INVALID"] = "This is an invalid Screen Name. Please enter a different one.";
+	return messagesByCode[code];
+}
+
+function cleanScreenNameError() {
+	$("#screenNameErrorMessages").removeClass("errorDisplay").text("");
+}
+
+					</script>
+</head>
+<body id="registrationCreateView" class="noSidebar rei yourAccount content  showSiteWideMsg"><div id="container"><div id="wrapper">
+<div id="coreWrapper">
+<div id="pageContent">
+<span id="omni_re"></span><h1>Create a New REI Online Account</h1>
+<p class="captionTxt">*Required Information</p>
+<form action="/CreateNewAccount" method="post" name="REG_FORM" target="_top" class="createAcct" onsubmit="return validate_form(this.email1.value);" onkeypress="onReturnKeySubmit(this, validate_form, this.email1.value)">
+<input type="hidden" name="langId" value="-1"><input type="hidden" name="catalogId" value="40000008000"><input type="hidden" name="storeId" value="8000"><input type="hidden" name="toURL" value="/YourAccountInfoInView?storeId=8000"><input type="hidden" name="URL" value="/YourAccountInfoInView?storeId=8000"><input type="hidden" name="context" value=""><input type="hidden" name="displayScreenName" value=""><input type="hidden" name="pageId" value=""><input type="hidden" name="mode" value="new"><input type="hidden" name="pageFrom" value="registrationNew"><input type="hidden" name="pageName" value=""><input type="hidden" name="submit2" value="submit2"><input type="hidden" name="formSubmitted" value="formSubmitted"><input type="hidden" name="address1" value=""><input type="hidden" name="address2" value=""><input type="hidden" name="address3" value=""><input type="hidden" name="city" value=""><input type="hidden" name="state" value=""><input type="hidden" name="country" value=""><input type="hidden" name="phone1" value=""><input type="hidden" name="reiMembershipNumber" value=""><input type="hidden" name="krypto2" value=""><input type="hidden" name="token" value="" id="token"><input type="hidden" name="token_map" value="firstName=firstName;lastName=lastName;memberNumber=reiMembershipNumber;address1=address1;address2=address2;city=city;state=state;zipCode=zipCode;country=country;email=email1;phone=phone1"><fieldset><ol>
+<li>
+<label for="firstName">
+													First Name:*</label><input type="text" name="firstName" id="firstName" value="" maxlength="30" class="field">
+</li>
+<li>
+<label for="middleName">Middle Initial:</label><input type="text" name="middleName" id="middleName" value="" maxlength="1" class="field mInitial">
+</li>
+<li>
+<label for="lastName">
+													Last Name:*</label><input type="text" name="lastName" id="lastName" value="" maxlength="30" class="field">
+</li>
+<li>
+<label for="logonPassword">
+													Password:*</label><input type="password" name="logonPassword" id="logonPassword" value="" maxlength="20" class="field"><span class="captionCol captionTxt">6-16 characters</span>
+</li>
+<li>
+<label for="logonPasswordVerify">
+													Re-type Password:*</label><input type="password" name="logonPasswordVerify" id="logonPasswordVerify" value="" maxlength="20" class="field">
+</li>
+<li>
+<label for="zipCode">
+													ZIP (Postal) Code:*</label><input type="text" name="zipCode" id="ZipCode" value="" maxlength="10" class="field"><span class="captionCol captionTxt">International customers, if no postal code, specify N/A.</span>
+</li>
+<li>
+<label for="email1">
+													E-mail Address:*</label><input type="text" name="email1" id="E-Mail" value="" maxlength="254" class="field">
+</li>
+<li>
+<input type="checkbox" class="cbox" checked name="gearmail" value="y" id="gearmail">
+												Yes, I'd like to be notified of news, offers and events at REI via this email address.
+											</li>
+<li class="submitBtn">
+<div class="button" id="createAccntFormButton"><input type="submit" value="submit"></div>
+<div class="button" id="createAccntCssButton" style="display: none;">
+<script type="text/javascript">							
+														document.getElementById('createAccntFormButton').style.display='none';							
+														document.getElementById('createAccntCssButton').style.display='block';	
+													</script><a class="btnStyle1" href="#" onclick="validate_form(document.REG_FORM.email1.value);return false;"><span>submit</span></a>
+</div>
+</li>
+</ol></fieldset>
+</form>
+<script type="text/javascript">	
+						var naf = new Object();
+						naf['page_name'] = 'your account: create_main';
+						naf['site_section'] = 'your account';
+						naf["subsection1"] = 'create';
+						naf['template_type'] = 'your account';
+						naf['content_type'] = 'non-commerce';
+						
+								naf["site_id"] ='rei';
+							</script><script type="text/javascript"> 
+						var cm_page_name = document.title;
+						var cm_page_cat = "YOUR_ACCOUNT_REI";
+						/*
+						//cmCreatePageviewTag(cm_page_name, null, cm_page_cat, null, cm_orderId, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, getCookie("queryId"));
+						*/
+					</script><script type="text/javascript" id="omnitureCode">
+				         $(document).ready(function(){
+				             initToken();            	
+				         }); 
+				    </script>
+</div>
+<div id="sidebarWrapper"><div class="omnissni"></div></div>
+<div style="clear:both;"></div>
+<div class="omnissni"><p id="opinionLab">How are we doing? <a href="javascript:O_LC()">Give us feedback</a> on this page.</p></div>
+</div>
+<div class="cleardiv"> </div>
+<div id="headerWrapper">
+<div xmlns:fo="http://www.w3.org/1999/XSL/Format" id="unvHeader" class="omnissni">
+<div id="topBar">
+<a id="helpDDL" href="/help/index.html"><span id="helpMenuHotSpot"><b class="helpDownArrow"></b></span><span class="helpMenuLabel">Help</span></a><div id="helpMenu" style="display:none;">
+<div id="helpLineInfo">
+<b id="helpPhoneIcon"></b><span id="helpLine" class="p2">1-800-426-4840</span><br>Call Monday through Sunday,
+<br>4 AM to 11 PM Pacific Time
+</div>
+<a id="hdrLink_liveHelp" href="#" class="p2" title="Live Help"><b id="helpPersonIcon"></b>Live Help </a><a onclick="hdrObj.goToURL(this);" href="/help/feedback/feedback.html"><b class="arrow"></b>More Ways to Contact Us </a><a id="hdrLink_orderStatus" href="/OrderTrackingLoginView?storeId=8000" onclick="hdrObj.goToURL(this);"><b class="arrow"></b>Order Status</a><a href="/help/returns.html" onclick="hdrObj.goToURL(this);"><b class="arrow"></b>Returns and Exchanges</a><a href="/help/shipping.html" onclick="hdrObj.goToURL(this);"><b class="arrow"></b>Shipping Info</a>
+</div>
+<ul id="topBar_right">
+<!--[if lt IE 9]><style>
+#minicartCheckoutBtnLink, .hdrLink_checkoutBtn{background-image:url(/img/sprite_rei1.png);background-repeat:no-repeat;background-position:-24px 0;background-color:transparent !important;line-height:18px !important;border:0;}
+#minicartCheckoutBtnLink, .hdrLink_checkoutBtnOn{background-position:-24px -30px;}
+</style><![endif]--><li><a class="hdrLink_checkoutBtn button" id="hdrLink_checkoutBtn" href="/CheckCart?storeId=8000&amp;checkInventory=Y">checkout</a></li>
+<li id="hdrCartLinks">
+<a href="#showMiniCart" id="miniCartAvailableArrow" style="display:none;"><b class="helpDownArrow"></b></a><a id="hdrLink_cart" href="/ShoppingCart?storeId=8000" title="Go to Shopping Cart"><span id="cartIco"></span><span class="p2">Cart </span><span id="hdrCartItemCount" style="display:none;">0 items</span></a>
+</li>
+<li style="display:none;" id="notUser">
+<a href="javascript:hdrObj.clearCookie();" id="hdrLink_notUser"> Not <span id="notUserName">User</span></a> ?
+</li>
+<li style="display:none;" class="separator" id="separatorB">|</li>
+<li style="display:none;" id="loginRegister">
+( <a href="/YourAccountLoginView?storeId=8000">Log In</a><span> or </span><a href="/RegistrationView?storeId=8000">Register</a>)
+</li>
+<li style="display:none;" id="logOut"><a href="/Logoff?storeId=8000&amp;URL=/YourAccountInfoOutView?storeId=8000">Log Out</a></li>
+<li style="display:none;" class="separator" id="separatorA">|</li>
+<li style="display:none;" id="welcomeUser">Welcome to REI.com!</li>
+<li style="display:none" id="helloUserName">Hello!</li>
+</ul>
+</div>
+<div id="logo"><a href="/"><img src="/pix/common/REI_logo.gif" border="0" alt="REI.com" title="REI.com"></a></div>
+<form name="psearch" id="psearch" class="yui-skin-sam" action="/search" method="get" onsubmit="return checkSearchBoxValue(this)">
+<span id="wrapSearchQuery"><input type="text" size="19" maxlength="70" name="query" id="headerQuery" value="" title="Search" class="searchBox"></span><input type="image" src="/img/search_rei.png" name="button" class="searchBtn" alt="Search" title="Search"><div id="autocomplete"></div>
+</form>
+<p id="hunt1Sup"><a analytics_click="sendMembershipEvent(mem_out_header_member_free_ship)" href="/promotions/member-shipping.html">FREE SHIPPING for REI Members on orders of $75 or more</a></p>
+<ul id="hunt1Sub">
+<li><a href="/map/store">Store Locator</a></li>
+<li class="separator">|</li>
+<li><a href="/learn" id="hdrLink_events">Classes &amp; Events</a></li>
+<li class="separator">|</li>
+<li class="giftReg" id="flexLink"><a id="grLink" href="/giftregistry">Gift Registry</a></li>
+<li class="separator">|</li>
+<li><a href="/wishlistManage">Wish List</a></li>
+</ul>
+</div>
+<div class="omnissni">
+<div class="cleardiv"></div>
+<ul id="hunt2">
+<li id="current"><a href="/" id="reiLink" analytics1="true">SHOP REI</a></li>
+              <li><a href="/outlet" id="outletLink" analytics1="true">SHOP REI-OUTLET</a></li>
+              <li><a href="/adventures" id="advLink" analytics1="true">TRAVEL WITH REI</a></li>
+              <li><a href="/learn" id="expertLink" analytics1="true">LEARN</a></li>
+            	<li><a href="/findout" id="getoutLink" analytics1="true">SHARE</a></li>
+            	<li><a href="/membership" id="membershipLink" analytics1="true">MEMBERSHIP</a></li>
+              <li><a href="/stewardship" id="stewardLink" analytics1="true">STEWARDSHIP</a></li>
+            </ul>
+<ul id="hunt3" style="padding-left:0; width:908px;">
+<li>
+						<a href="/category/4500001" class="catList catCamp" analytics1="true">Camping &amp; Hiking</a>
+						<ul class="col1 campNav">
+<li class="subTitle">Gear</li>
+							<li invalidlinkaction="remove"><a href="/category/4500036" analytics1="true">Car Camping Mattresses</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_Backpacks" analytics1="true">Backpacks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500665" analytics1="true">Bivy Sacks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_Camp+Furniture" analytics1="true">Camp Furniture</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_Sleeping+Bags" analytics1="true">Sleeping Bags</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500026" analytics1="true">Sleeping Pads</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40006345" analytics1="true">Stuff Sacks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_Tents+and+Shelters" analytics1="true">Tents &amp; Shelters</a></li>
+							<li invalidlinkaction="remove"><a href="/category/5760722" analytics1="true">Water Bottles</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500030" analytics1="true">Water Treatment</a></li>
+							<li><a href="/category/4500001" analytics1="true">All Camp/Hike Gear</a></li>							
+						</ul>
+<ul class="col2  campNav">
+<li class="subTitle">Gadgets and Electronics</li>
+							<li invalidlinkaction="remove"><a href="/category/4500033" analytics1="true">Binoculars</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40006351" analytics1="true">Camp Tools</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500059" analytics1="true">Compasses</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_Electronics" analytics1="true">Electronics</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500058" analytics1="true">Flashlights</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_GPS" analytics1="true">GPS</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40006352" analytics1="true">Headlamps</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500055" analytics1="true">Knives</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500056" analytics1="true">Lanterns</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500063" analytics1="true">Radios</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001/q/Gadgets%7CElectronics" analytics1="true">All Gadgets and Electronics</a></li>
+						</ul>
+<ul class="col3  campNav">
+<li class="subTitle">Camp Kitchen</li>
+							<li invalidlinkaction="remove"><a href="/category/5760724" analytics1="true">Coffee</a></li>
+							<li invalidlinkaction="remove"><a href="/category/5760721" analytics1="true">Cookware</a></li>
+							<li invalidlinkaction="remove"><a href="/category/5760718" analytics1="true">Coolers</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40006317" analytics1="true">Cups and Mugs</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_Food" analytics1="true">Food</a></li>
+							<li invalidlinkaction="remove"><a href="/category/5760715" analytics1="true">Plates and Bowls</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_Stoves" analytics1="true">Stoves</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500555" analytics1="true">Tables</a></li>
+							<li invalidlinkaction="remove"><a href="/category/5760717" analytics1="true">Utensils</a></li>
+							<li invalidlinkaction="remove"><a href="/category/5760719" analytics1="true">Water Storage</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001/q/Camp+Kitchen" analytics1="true">All Camp Kitchen</a></li>							
+						</ul>
+<ul class="col4 campNav">
+<li class="subTitle">Health and Safety</li>
+							<li invalidlinkaction="remove"><a href="/category/40006516" analytics1="true">Bear Safety</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500062" analytics1="true">Camp Bathroom</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500614" analytics1="true">Camp Towels</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500041" analytics1="true">Emergency/Survival</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40006527" analytics1="true">Emergency Electronics</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40006515" analytics1="true">Fire Starting Gear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500045" analytics1="true">First Aid</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_Gear+Storage+and+Maintenance" analytics1="true">Gear Storage and Repair</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_Health+and+Safety/q/Sun+and+Bug+Protection" analytics1="true">Sun and Bug Protection</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500049" analytics1="true">Trekking Poles</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_Health+and+Safety" analytics1="true">All Health and Safety</a></li>							
+							
+							<li class="catCatchAll"><a invalidlinkaction="remove" href="/category/4500001/q/Camping+Sale+and+Clearance" analytics1="true">Camping Sale and Clearance</a></li>
+							<li><a href="/category/4500001" analytics1="true">All Camping Categories</a></li>
+						</ul>
+</li>
+					<li>
+						<a href="/category/4500002" class="catList catClimb" analytics1="true">Climbing</a>
+						<ul class="col1 climbNav">
+<li class="subTitle">Climbing Gear</li>
+							<li invalidlinkaction="remove"><a href="/category/4500708" analytics1="true">Aid Gear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500694" analytics1="true">Ascenders</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500695" analytics1="true">Belay/Rappel</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500079" analytics1="true">Carabiners</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003879" analytics1="true">Climbing Chalk</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500075" analytics1="true">Climbing Harnesses</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500689" analytics1="true">Climbing Helmets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003625" analytics1="true">Climbing Holds</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500575" analytics1="true">Climbing Packs</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003624" analytics1="true">Crash Pads</a></li>
+						</ul>
+<ul class="col2 climbNav">
+<li invalidlinkaction="remove"><a href="/category/4500091" analytics1="true">Rock Protection</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500697" analytics1="true">Pulleys</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500682" analytics1="true">Quickdraws</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500676" analytics1="true">Rock Climbing Shoes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500081" analytics1="true">Ropes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500696" analytics1="true">Caving and Canyoneering</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500089" analytics1="true">Webbing and Cord</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500701" analytics1="true">Slings and Runners</a></li>
+							<li><a href="/category/4500002" analytics1="true">All Climbing Gear</a></li>
+						</ul>
+<ul class="col3 climbNav">
+<li class="subTitle">Snow and Ice</li>
+							<li invalidlinkaction="remove"><a href="/category/4500076" analytics1="true">Avalanche Safety</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500002_Snow+and+Ice/q/Crampons" analytics1="true">Crampons</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40000057" analytics1="true">Glacier Glasses</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500002_Snow+and+Ice/q/Ice+Axes" analytics1="true">Ice Axes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500094/q/Ice+Tools" analytics1="true">Ice Tools</a></li>							
+							<li invalidlinkaction="remove"><a href="/category/4500077/q/Mountaineering+Boots" analytics1="true">Mountaineering Boots</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500002_Snow+and+Ice/q/Ice%7CSnow+Protection" analytics1="true">Snow and Ice Protection</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500002_Snow+and+Ice" analytics1="true">All Snow and Ice</a></li>
+						</ul>
+<ul class="col4 climbNav">
+<li class="subTitle">Climbing Shops</li>
+							<li invalidlinkaction="remove"><a href="/category/4500002/q/Bouldering+Shop" analytics1="true">Bouldering Shop</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003625" analytics1="true">Home Climbing Gym Shop</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500002/q/Ice+Climbing+Shop" analytics1="true">Ice Climbing Shop</a></li>
+							<li invalidlinkaction="remove"><a href="/category/1/q/Mountaineering+Shop" analytics1="true">Mountaineering Shop</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500002/q/Rock+Climbing+Shop" analytics1="true">Rock Climbing Shop</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500008/q/Men%27s+Climbing+Clothing" analytics1="true">Men's Climbing Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500013/q/Women%27s+Climbing+Clothing" analytics1="true">Women's Climbing Clothing</a></li>							
+						
+							<li class="catCatchAll"><a invalidlinkaction="remove" href="/category/4500002/q/Climbing+Sale+and+Clearance" analytics1="true">Climbing Sale and Clearance</a></li>
+							<li><a href="/category/4500002" analytics1="true">All Climbing</a></li>						
+						</ul>
+</li>
+					<li>
+						<a href="/category/4500003" class="catList catCycle" analytics1="true">Cycling</a>
+						<ul class="col1 cycleNav">
+<li class="subTitle">Bikes</li>
+							<li invalidlinkaction="remove"><a href="/category/4500776" analytics1="true">Cruiser Bikes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4502048" analytics1="true">Comfort Bikes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40005004" analytics1="true">Folding Bikes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500150" analytics1="true">Kids' Bikes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500775" analytics1="true">Hybrid Bikes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500127" analytics1="true">Mountain Bikes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500133" analytics1="true">Road Bikes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40005059" analytics1="true">Urban Bikes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500003_Bicycles" analytics1="true">All Bikes</a></li>
+						</ul>
+<ul class="col2 cycleNav">
+<li class="subTitle">Clothing/Helmets</li>
+							<li invalidlinkaction="remove"><a href="/category/4500796" analytics1="true">Cycling Gloves</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500003_Bike+Helmets" analytics1="true">Cycling Helmets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500003_Cycle+Clothing/q/Cycling+Jackets" analytics1="true">Cycling Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500003_Cycle+Clothing/q/Cycling+Jerseys" analytics1="true">Cycling Jerseys</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500108" analytics1="true">Cycling Shoes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500003_Cycle+Clothing/q/Cycling+Shorts" analytics1="true">Cycling Shorts</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500792" analytics1="true">Cycling Socks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500003_Cycle+Clothing/q/Cycling+Tights%7CPants" analytics1="true">Cycling Tights &amp; Pants</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4927693" analytics1="true">Arm/Leg Warmers</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500003_Cycle+Clothing" analytics1="true">All Cycling Clothes</a></li>
+						</ul>
+<ul class="col3 cycleNav">
+<li class="subTitle">Bike Accessories</li>
+							<li invalidlinkaction="remove"><a href="/category/4500105" analytics1="true">Bike Computers</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500120" analytics1="true">Bike Lights</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500121" analytics1="true">Bike Locks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500131" analytics1="true">Bike Pumps</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500850" analytics1="true">Bike Racks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500003_Bike+Accessories/q/Bike+Trailers" analytics1="true">Bike Trailers</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500142" analytics1="true">Bike Trainers</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500003_Bike+Hydration" analytics1="true">Hydration</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500129" analytics1="true">Panniers/Bike Bags</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500003_Bike+Accessories" analytics1="true">All Bike Accessories</a></li>
+							<li class="catCatchAll"><a href="/bikeyourdrive" analytics1="true">Bike Your Drive</a></li>
+							<li><a href="/category/4500010" analytics1="true">Car Racks</a></li>
+						</ul>
+<ul class="col4 cycleNav">
+<li class="subTitle">Bike Components</li>
+							<li invalidlinkaction="remove"><a href="/category/4500134" analytics1="true">Bike Saddles/Seats</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500138" analytics1="true">Bike Tires</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500139" analytics1="true">Bike Tools</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500886" analytics1="true">Bike Tubes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500146" analytics1="true">Bike Wheels</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500106" analytics1="true">Drivetrain Components</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500130" analytics1="true">Bike Pedals</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500112" analytics1="true">Handlebars</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500003_Components" analytics1="true">All Bike Components</a></li>								
+							
+							<li class="catCatchAll"><a invalidlinkaction="remove" href="/category/4500003/q/Cycling+Sale+and+Clearance" analytics1="true">Cycling Sale and Clearance</a></li>
+							<li><a href="/category/4500003" analytics1="true">All Cycling Categories</a></li>
+						</ul>
+</li>
+					<li>
+						<a href="/category/4500005" class="catList catFitness" analytics1="true">Fitness</a>
+						<ul class="col1 fitnessNav">
+<li class="subTitle">Fitness Clothing</li>
+							<li invalidlinkaction="remove"><a href="/category/4500008/q/Running+Clothes" analytics1="true">Men's Running Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004261" analytics1="true">Men's Swimming</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500008/q/Triathlon+Clothing" analytics1="true">Men's Triathlon Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500013/q/Running+Clothes" analytics1="true">Women's Running Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004271" analytics1="true">Women's Swimming</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500013/q/Triathlon+Clothing" analytics1="true">Women's Triathlon Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500013/q/Yoga+Clothing" analytics1="true">Women's Yoga Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500005/q/Fitness+Clothing" analytics1="true">All Fitness Clothing</a></li>
+						</ul>
+<ul class="col2 fitnessNav">
+<li class="subTitle">Fitness Footwear</li>
+							<li invalidlinkaction="remove"><a href="/category/4501259" analytics1="true">Men's Cross-Training Shoes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501260" analytics1="true">Men's Road-Running Shoes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501261" analytics1="true">Men's Trail Running Shoes</a></li>
+							
+							<li invalidlinkaction="remove"><a href="/category/4501266" analytics1="true">Women's Cross-Training Shoes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501267" analytics1="true">Women's Road-Running Shoes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501268" analytics1="true">Women's Trail Running Shoes</a></li>
+							
+							<li invalidlinkaction="remove"><a href="/category/4500005_Footwear" analytics1="true">All Fitness Footwear</a></li>
+						</ul>
+<ul class="col3 fitnessNav">
+<li class="subTitle">Fitness Gear</li>
+							<li invalidlinkaction="remove"><a href="/category/4500061" analytics1="true">Energy Food</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500182" analytics1="true">Exercise Equipment</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40001902" analytics1="true">GPS Sports Watches</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004553" analytics1="true">Gym Bags</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500567" analytics1="true">Heart Rate Monitors</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500188" analytics1="true">Hydration</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500569" analytics1="true">Pedometers</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40005258" analytics1="true">Running Packs</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500119/q/Strollers" analytics1="true">Strollers</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500005_Outdoor+Fitness+Essentials" analytics1="true">All Fitness Gear</a></li>
+						</ul>
+<ul class="col4 fitnessNav">
+<li class="subTitle">Fitness Shops</li>
+							<li><a href="/category/4500003" analytics1="true">Cycling Shop</a></li>
+							<li><a href="/features/running-shop" analytics1="true">Running Shop</a></li>
+							<li invalidlinkaction="remove"><a href="/category/1/q/Swimming+Shop" analytics1="true">Swimming Shop</a></li>
+							<li><a href="/features/triathlon-gear" analytics1="true">Triathlon Shop</a></li>
+							<li invalidlinkaction="remove"><a href="/category/1/q/Yoga+Shop" analytics1="true">Yoga Shop</a></li>
+							
+							<li class="catCatchAll"><a invalidlinkaction="remove" href="/category/4500005/q/Fitness+Sale+and+Clearance" analytics1="true">Fitness Sale and Clearance</a></li>
+							<li><a href="/category/4500005" analytics1="true">All Fitness</a></li>
+						</ul>
+</li>
+					
+					<li>
+						<a href="/category/4500009" class="catList catPaddle" analytics1="true">Paddling</a>
+						<ul class="col1 paddleNav">
+<li class="subTitle">Kayaking</li>
+							<li invalidlinkaction="remove"><a href="/category/4500271" analytics1="true">Kayaks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501485" analytics1="true">Cockpit Covers</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500266" analytics1="true">Kayak Accessories</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501462" analytics1="true">Kayak Carts</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40005363" analytics1="true">Kayak Paddles</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501499" analytics1="true">Safety Equipment</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501490" analytics1="true">Spray Skirts</a></li>
+						</ul>
+<ul class="col2 paddleNav">
+<li class="subTitle">Watercraft</li>
+							<li invalidlinkaction="remove"><a href="/category/4500267" analytics1="true">Canoes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40006808" analytics1="true">Canoe Paddles</a></li>
+							<li invalidlinkaction="remove"><a href="/category/9086386" analytics1="true">Canoe Packs</a></li>
+							<li style="padding-bottom:  10px;"><a invalidlinkaction="remove" href="/category/40002205" analytics1="true">Canoe Accessories</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40005362" analytics1="true">Paddleboards</a></li>
+														
+						</ul>
+<ul class="col3 paddleNav">
+<li class="subTitle">Clothing and PFDs</li>
+							<li invalidlinkaction="remove"><a href="/category/4501474" analytics1="true">Dry Suits</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40006812" analytics1="true">Paddling Footwear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501476" analytics1="true">Paddling Gloves</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501478" analytics1="true">Paddling Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500272" analytics1="true">PFDs</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4790515" analytics1="true">Rashguards</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501480" analytics1="true">Wet Suits</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500268" analytics1="true">All Paddling Clothing</a></li>
+						</ul>
+<ul class="col4 paddleNav">
+<li class="subTitle">Accessories</li>
+							<li invalidlinkaction="remove"><a href="/category/4501463" analytics1="true">Boat Maintenance</a></li>
+							<li><a href="/category/4500277" analytics1="true">Car Racks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500274" analytics1="true">Dry Bags</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500009/q/Fishing" analytics1="true">Fishing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/9086387" analytics1="true">Mesh Bags</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501504" analytics1="true">Waterproof Cases</a></li>
+							
+							<li class="catCatchAll"><a invalidlinkaction="remove" href="/category/4500009/q/Paddling+Sale+and+Clearance" analytics1="true">Paddling Sale and Clearance</a></li>
+							<li><a href="/category/4500009" analytics1="true">All Paddling</a></li>
+						</ul>
+</li>
+					<li>
+						<a href="/snowsports" class="catList catSnow" analytics1="true">Snowsports</a>
+						<ul class="col1 snowNav">
+<li class="subTitle">Downhill Skiing</li>
+							<li invalidlinkaction="remove"><a href="/category/40004320" analytics1="true">Downhill Skis</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004340" analytics1="true">Downhill Ski Bindings</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004425" analytics1="true">Downhill Ski Boots</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004364" analytics1="true">Ski Bags</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004356" analytics1="true">Ski Goggles</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004351" analytics1="true">Ski Helmets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004361" analytics1="true">Ski Packs</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004346" analytics1="true">Downhill Ski Poles</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004379" analytics1="true">Men's Downhill Ski Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004390" analytics1="true">Women's Downhill Ski Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004401" analytics1="true">Gloves, Hats and Socks</a></li>
+							<li><a href="/category/40004319" analytics1="true">All Downhill Skiing</a></li>
+						</ul>
+<ul class="col2 snowNav">
+<li class="subTitle">XC and Backcountry</li>
+							<li><a href="/category/40004009" analytics1="true">Cross-Country Skiing</a></li>
+							<li><a href="/category/4500306" analytics1="true">Backcountry Skiing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500307" analytics1="true">Nordic Touring</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500288" analytics1="true">Metal-Edge Touring</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500302" analytics1="true">Race/Performance Skiing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501557" analytics1="true">Cross-Country Ski Tuning</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501558" analytics1="true">Cross-Country Ski Waxes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500299" analytics1="true">Men's XC Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500310" analytics1="true">Women's XC Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500297" analytics1="true">Kids' XC Ski Gear</a></li>
+							<li><a href="/category/40004009" analytics1="true">All Cross-Country</a></li>
+							<li><a href="/category/4500306" analytics1="true">All Tele/Randonee</a></li>
+						</ul>
+<ul class="col3 snowNav">
+<li class="subTitle">Snowboarding</li>
+							<li invalidlinkaction="remove"><a href="/category/4500304" analytics1="true">Snowboards</a></li>
+							<li invalidlinkaction="remove"><a href="/category/10684568" analytics1="true">Snowboard Bags</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500290" analytics1="true">Snowboard Bindings</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500292" analytics1="true">Snowboard Boots</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003587" analytics1="true">Snowboard Goggles</a></li>
+							<li invalidlinkaction="remove"><a href="/category/11785380" analytics1="true">Snowboard Helmets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500293/q/Snowboard+Packs" analytics1="true">Snowboard Packs</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003971" analytics1="true">Stomp Pads</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500300" analytics1="true">Men's Snowboard Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500311" analytics1="true">Women's Snowboard Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500286" analytics1="true">Gloves, Hats and Socks</a></li>
+							<li><a href="/category/40003930" analytics1="true">All Snowboarding</a></li>			
+						</ul>
+<ul class="col4 snowNav">
+<li class="subTitle">Snowshoeing</li>
+							<li invalidlinkaction="remove"><a href="/category/4500305" analytics1="true">Snowshoes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004086" analytics1="true">Snowshoe Bags</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003596" analytics1="true">Snowshoe Poles</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004095" analytics1="true">Hand/Foot Warmers</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500006/q/Winter+Boots" analytics1="true">Winter Boots</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500076" analytics1="true">Avalanche Safety</a></li>
+							<li><a href="/category/40004010" analytics1="true">All Snowshoeing</a></li>									
+						
+							<li class="catCatchAll"><a href="/category/4500010" analytics1="true">Car Racks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/1/q/Snowsports+Sale+and+Clearance" analytics1="true">Sale and Clearance</a></li>
+							<li><a href="/snowsports" analytics1="true">All Snowsports</a></li>
+						</ul>
+</li>
+		                                    <li>
+		                                    	<a href="/category/4500012" class="catList catTravel" analytics1="true">Travel</a>
+		                                      <ul class="col1 travelNav">
+<li class="subTitle">Luggage</li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4501710" analytics1="true">Carry-On Luggage</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4501760" analytics1="true">Travel Packs</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4501712" analytics1="true">Wheeled Backpacks</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4501705" analytics1="true">Wheeled Duffels</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4501711" analytics1="true">Wheeled Luggage</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4500012/q/Kids" analytics1="true">Kids' Luggage</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4500879" analytics1="true">Bike Travel Cases</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/40004364" analytics1="true">Ski Bags</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4500342" analytics1="true">All Luggage</a></li>
+		                                      </ul>
+<ul class="col2 travelNav">
+<li class="subTitle">Day Bags</li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/9064424" analytics1="true">Camera Bags</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4501696" analytics1="true">Daypacks</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/40005006" analytics1="true">Duffel Bags</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/40004552" analytics1="true">Handbags</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/40004547" analytics1="true">Laptop Bags</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4501697" analytics1="true">Messenger Bags</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4501698" analytics1="true">Shoulder Bags</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4501700" analytics1="true">Travel Totes</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4500313" analytics1="true">All Day Bags</a></li>
+		                                      </ul>
+<ul class="col3 travelNav">
+<li class="subTitle">Packing</li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4501756" analytics1="true">Luggage Locks</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/40004534" analytics1="true">Luggage Tags</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4500346" analytics1="true">Organizers</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4501740" analytics1="true">Packing Cubes</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/40004302" analytics1="true">Packing Folders</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4501739" analytics1="true">Pouches</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4500348" analytics1="true">Electronics Cases</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4501741" analytics1="true">Toiletry Kits</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4500012/q/Packing" analytics1="true">All Packing</a></li>
+		                                      </ul>
+<ul class="col4 travelNav">
+<li class="subTitle">Travel Accessories</li>
+		                                      	<li><a href="/category/4500010" analytics1="true">Car Racks</a></li>
+		                                      	 
+		                                      	<li invalidlinkaction="remove"><a href="/category/4500314" analytics1="true">Converters and Adapters</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4500008/q/Men%27s+Travel+Clothing" analytics1="true">Men's Travel Clothing</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4500347" analytics1="true">Personal Care</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/40003718" analytics1="true">Sleeping Accessories</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4501732" analytics1="true">Umbrellas</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4500349" analytics1="true">Wallets and Money Belts</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4500013/q/Women%27s+Travel+Clothing" analytics1="true">Women's Travel Clothing</a></li>
+		                                      	<li invalidlinkaction="remove"><a href="/category/4500012/q/Travel+Accessories" analytics1="true">All Travel Accessories</a></li>	
+		                                      	
+		                                      	<li class="catCatchAll"><a invalidlinkaction="remove" href="/category/4500012/q/Travel+Sale+and+Clearance" analytics1="true">Travel Sale and Clearance</a></li>
+		                                      	<li><a href="/category/4500012" analytics1="true">All Travel</a></li>	
+		                                      </ul>
+</li>
+					<li>
+						<a href="/category/4500008" class="catList catMen" analytics1="true">Men's</a>
+						<ul class="col1 menNav">
+<li class="subTitle">Men's Jackets</li>
+							<li invalidlinkaction="remove"><a href="/category/4501410" analytics1="true">Casual Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004574" analytics1="true">Down Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501418" analytics1="true">Fleece Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501424" analytics1="true">Insulated Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501456" analytics1="true">Rain Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004180" analytics1="true">Running Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501453" analytics1="true">Wind Shells</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004379/q/Men%27s+Ski+Jackets" analytics1="true">Ski Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500300/q/Men%27s+Snowboard+Jackets" analytics1="true">Snowboard Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501460" analytics1="true">Soft Shell Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004572" analytics1="true">All Men's Jackets</a></li>
+						</ul>
+<ul class="col2 menNav">
+<li class="subTitle">Men's Clothing</li>
+							<li invalidlinkaction="remove"><a href="/category/40005464" analytics1="true">Pants</a></li>							
+							<li invalidlinkaction="remove"><a href="/category/4500259" analytics1="true">Shirts </a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004589" analytics1="true">Shorts</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500256" analytics1="true">Sweaters</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004261" analytics1="true">Swimming</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500250" analytics1="true">Underwear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004600" analytics1="true">Vests</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500006_Men%27s+Footwear" analytics1="true">Footwear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500008/q/Men%27s+Tall+Clothing" analytics1="true">Tall Clothing</a></li>
+							<li><a href="/category/4500008" analytics1="true">All Men's Clothing</a></li>
+						</ul>
+<ul class="col3 menNav">
+<li class="subTitle">Men's Accessories</li>
+							<li invalidlinkaction="remove"><a href="/category/40003705" analytics1="true">Balaclavas</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501449" analytics1="true">Bandanas</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40005927" analytics1="true">Belts</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501452" analytics1="true">Gaiters</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500254" analytics1="true">Gloves and Mittens</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003701" analytics1="true">Hats</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40005915" analytics1="true">Headwear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500230/q/Men%27s" analytics1="true">Socks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500069" analytics1="true">Sunglasses</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500074" analytics1="true">Watches</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500008/q/Clothing+Accessories" analytics1="true">All Accessories</a></li>
+						</ul>
+<ul class="col4 menNav">
+<li class="subTitle">Clothing Shops</li>
+							<li invalidlinkaction="remove"><a href="/category/4500124" analytics1="true">Cycling Clothes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500008/q/Eco-Conscious+Clothing" analytics1="true">Eco-Conscious Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500008/q/Men%27s+Extended+Sizes" analytics1="true">Extended Sizes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500008/q/Fitness+Clothing" analytics1="true">Fitness Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500008/q/Men%27s+Hiking+Clothing" analytics1="true">Hiking Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500008/q/Rain+Gear" analytics1="true">Rain Gear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004379" analytics1="true">Ski Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500300" analytics1="true">Snowboard Clothing</a></li>
+							
+							
+							<li class="catCatchAll"><a invalidlinkaction="remove" href="/category/4500008/q/Men%27s+Sale+and+Clearance" analytics1="true">Men's Sale and Clearance</a></li>
+							<li><a href="/category/4500008" analytics1="true">All Men's Clothing</a></li>
+						</ul>
+</li>
+					<li>
+						<a href="/category/4500013" class="catList catWomen" analytics1="true">Women's</a>
+						<ul class="col1 womenNav">
+<li class="subTitle">Women's Jackets</li>
+							<li invalidlinkaction="remove"><a href="/category/4501801" analytics1="true">Casual Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004820" analytics1="true">Down Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501810" analytics1="true">Fleece Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501870" analytics1="true">Insulated Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501864" analytics1="true">Rain Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004178" analytics1="true">Running Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501861" analytics1="true">Wind Shells</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004390/q/Women%27s+Ski+Jackets" analytics1="true">Ski Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500311/q/Women%27s+Snowboard+Jackets" analytics1="true">Snowboard Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501868" analytics1="true">Soft Shell Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004818" analytics1="true">All Women's Jackets</a></li>
+						</ul>
+<ul class="col2 womenNav">
+<li class="subTitle">Women's Clothing</li>
+							<li invalidlinkaction="remove"><a href="/category/4500006_Women%27s+Footwear" analytics1="true">Footwear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500355" analytics1="true">Pants</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500368" analytics1="true">Shirts </a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004926" analytics1="true">Shorts</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500361" analytics1="true">Skirts and Dresses</a></li>
+							
+							<li invalidlinkaction="remove"><a href="/category/4500363" analytics1="true">Sweaters</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004271" analytics1="true">Swimming</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500354" analytics1="true">Underwear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004827" analytics1="true">Vests</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500013/q/Women%27s+Petite+Clothing" analytics1="true">Petite Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500013/q/Plus+Sizes" analytics1="true">Plus Sizes</a></li>
+							<li><a href="/category/4500013" analytics1="true">All Women's Clothing</a></li>							
+						</ul>
+<ul class="col3 womenNav">
+<li class="subTitle">Women's Accessories</li>
+							<li invalidlinkaction="remove"><a href="/category/40005923" analytics1="true">Belts</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004991" analytics1="true">Gaiters</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500359" analytics1="true">Gloves and Mittens</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003693" analytics1="true">Hats</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40005918" analytics1="true">Headwear</a></li>
+							
+							<li invalidlinkaction="remove"><a href="/category/40003483" analytics1="true">Scarves </a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500230/q/Women%27s+Socks" analytics1="true">Socks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003549" analytics1="true">Sports Bras</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500069" analytics1="true">Sunglasses</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500074" analytics1="true">Watches</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500013/q/Clothing+Accessories" analytics1="true">All Accessories</a></li>
+						</ul>
+<ul class="col4 womenNav">
+<li class="subTitle">Clothing Shops</li>
+							<li invalidlinkaction="remove"><a href="/category/4500148" analytics1="true">Cycling Clothes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500013/q/Eco-Conscious+Clothing" analytics1="true">Eco-Conscious Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500013/q/Women%27s+Extended+Sizes" analytics1="true">Extended Sizes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500013/q/Fitness+Clothing" analytics1="true">Fitness Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500013/q/Women%27s+Hiking+Clothing" analytics1="true">Hiking Clothes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500013/q/Raingear" analytics1="true">Raingear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40004390" analytics1="true">Ski Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500311" analytics1="true">Snowboard Clothing</a></li>
+							
+							
+							<li class="catCatchAll"><a invalidlinkaction="remove" href="/category/4500013/q/Women%27s+Sale+and+Clearance" analytics1="true">Women's Sale and Clearance</a></li>
+							<li><a href="/category/4500013" analytics1="true">All Women's Clothing</a></li>
+						</ul>
+</li>
+					<li>
+						<a href="/category/4500007" class="catList catKids" analytics1="true">Kids'</a>
+						<ul class="col1 kidsNav">
+<li class="subTitle">Kids' Shops</li>
+							<li invalidlinkaction="remove"><a href="/category/4500007_Boys+and+Girls/q/Boys%27+Clothing" analytics1="true">Boys' Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500007_Boys+and+Girls/q/Girls%27+Clothing" analytics1="true">Girls' Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500007_Infants+and+Toddlers" analytics1="true">Infant &amp; Toddler Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500007/q/Kids%27+Outerwear" analytics1="true">Kids' Outerwear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500006_Kids%27+Footwear" analytics1="true">Kids' Shoes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500007/q/Kids%27+Ski+Clothing" analytics1="true">Kids' Ski Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500007/q/Kids%27+Snowboard+Clothing" analytics1="true">Kids' Snowboard Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500007/q/Eco-Conscious" analytics1="true">Eco-Conscious</a></li>
+							<li><a href="/category/4500007" analytics1="true">All Kids'</a></li>
+						</ul>
+<ul class="col2 kidsNav">
+<li class="subTitle">Clothing</li>
+							<li invalidlinkaction="remove"><a href="/category/4500007/q/Kids%27+Jackets" analytics1="true">Jackets</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500007/q/Kids%27+Pants" analytics1="true">Pants</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500007/q/Kids%27+Shirts" analytics1="true">Shirts </a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500007/q/Kids%27+Shorts" analytics1="true">Shorts</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500007/q/Kids%27+Vests" analytics1="true">Vests</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500006_Kids%27+Footwear" analytics1="true">Footwear</a></li>
+							
+							
+							
+							
+							<li><a href="/category/4500007" analytics1="true">All Kids' Clothing</a></li>
+						</ul>
+<ul class="col3 kidsNav">
+<li class="subTitle">Accessories</li>
+							<li invalidlinkaction="remove"><a href="/category/4500007/q/Kids%27+Hats" analytics1="true">Hats</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501359" analytics1="true">Gloves and Mittens</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500007/q/Kids%27+Socks" analytics1="true">Socks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003615" analytics1="true">Sunglasses</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003668" analytics1="true">Toys</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500007/q/Kids%27+Long+Underwear" analytics1="true">Underwear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/5760722/q/Kids%27+Water+Bottles" analytics1="true">Water Bottles</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500007/q/Clothing+Accessories" analytics1="true">All Kids' Accessories</a></li>
+						</ul>
+<ul class="col4 kidsNav">
+<li class="subTitle">Kids' Gear</li>
+							<li invalidlinkaction="remove"><a href="/category/4500066" analytics1="true">Baby Carrier Backpacks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500119/q/Kids%27+Bike+Trailers" analytics1="true">Bike Trailers</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001/q/Kids%27+Camping+Gear" analytics1="true">Camping Gear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500003/q/Kids%27+Cycling+Gear" analytics1="true">Cycling Gear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_Backpacks/q/Kids%27" analytics1="true">Kids' Backpacks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500150" analytics1="true">Kids' Bikes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/1/q/Kids%27+Snowsports+Gear" analytics1="true">Snowsports Gear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500119/q/Strollers" analytics1="true">Strollers</a></li>
+							<li invalidlinkaction="remove"><a href="/category/1/q/Kids%27+Gear" analytics1="true">All Kids' Gear</a></li>
+							
+							<li class="catCatchAll"><a invalidlinkaction="remove" href="/category/4500007/q/Kids+Sale+and+Clearance" analytics1="true">Kids' Sale and Clearance</a></li>
+							<li><a href="/category/4500007" analytics1="true">All Kids'</a></li>
+						</ul>
+</li>
+					<li>
+						<a href="/category/4500006" class="catList catShoes" analytics1="true">Shoes &amp; Boots</a>
+						<ul class="col1 shoesNav">
+<li class="subTitle">Men's Footwear</li>
+							<li invalidlinkaction="remove"><a href="/category/4500006_Men%27s+Footwear/q/Men%27s+Boots" analytics1="true">Men's Boots</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500006_Men%27s+Footwear/q/Extended+Sizes" analytics1="true">Men's Extended Sizes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003529" analytics1="true">Men's Sandals</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500006_Men%27s+Footwear/q/Men%27s+Shoes" analytics1="true">Men's Shoes</a></li>
+							
+							<li invalidlinkaction="remove"><a href="/category/4500230/q/Men%27s" analytics1="true">Men's Socks</a></li>
+						</ul>
+<ul class="col2 shoesNav">
+<li class="subTitle">Women's Footwear</li>
+							<li invalidlinkaction="remove"><a href="/category/4500006_Women%27s+Footwear/q/Women%27s+Boots" analytics1="true">Women's Boots</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500006_Women%27s+Footwear/q/Extended+Sizes" analytics1="true">Women's Extended Sizes</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003532" analytics1="true">Women's Sandals</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500006_Women%27s+Footwear/q/Women%27s+Shoes" analytics1="true">Women's Shoes</a></li>
+							
+							<li invalidlinkaction="remove"><a href="/category/4500230/q/Women%27s+Socks" analytics1="true">Women's Socks</a></li>
+						</ul>
+<ul class="col3 shoesNav">
+<li class="subTitle">Kids' Footwear</li>
+							<li invalidlinkaction="remove"><a href="/category/4500218/q/Kids%27+Boots" analytics1="true">Kids' Boots</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501308" analytics1="true">Kids' Sandals</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500218/q/Kids%27+Shoes" analytics1="true">Kids' Shoes</a></li>
+							
+							<li invalidlinkaction="remove"><a href="/category/4500007/q/Kids%27+Socks" analytics1="true">Kids' Socks</a></li>
+						</ul>
+<ul class="col4 shoesNav">
+<li class="subTitle">Footwear Accessories</li>
+							<li invalidlinkaction="remove"><a href="/category/4501822" analytics1="true">Gaiters</a></li>
+							<li invalidlinkaction="remove"><a href="/category/12221601" analytics1="true">Insoles</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501304" analytics1="true">Laces</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4501302" analytics1="true">Treatments</a></li>
+							<li invalidlinkaction="remove"><a href="/category/12221603" analytics1="true">Winter Traction</a></li>
+							
+							<li class="catCatchAll"><a invalidlinkaction="remove" href="/category/4500006/q/Footwear+Sale+and+Clearance" analytics1="true">Footwear Sale and Clearance</a></li>
+							<li><a href="/category/4500006" analytics1="true">All Footwear</a></li>
+						</ul>
+</li>
+					
+					<li>
+						<a href="/brands" class="catList catBrands" analytics1="true">Brands</a>
+						<ul class="col1 brandNav">
+<li><a href="/brand/REI" analytics1="true">REI</a></li>
+							<li><a href="/brand/Novara" analytics1="true">Novara</a></li>
+							<li><img src="/pix/common/dot_horiz_several.gif" alt="" title="" class="dotHori" border="0"></li>
+							<li invalidlinkaction="remove"><a href="/brand/Arc%27teryx" analytics1="true">Arc'teryx</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/BOB" analytics1="true">BOB Strollers</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Burton" analytics1="true">Burton</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/CamelBak" analytics1="true">CamelBak</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Chaco" analytics1="true">Chaco</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Columbia" analytics1="true">Columbia</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/DAKINE" analytics1="true">DAKINE</a></li>
+						</ul>
+<ul class="col2 brandNav">
+<li invalidlinkaction="remove"><a href="/brand/Dansko" analytics1="true">Dansko</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Eagle+Creek" analytics1="true">Eagle Creek</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Garmin" analytics1="true">Garmin</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/K2" analytics1="true">K2</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Keen" analytics1="true">Keen</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Kuhl" analytics1="true">Kuhl</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Life+is+good" analytics1="true">Life is good</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Marmot" analytics1="true">Marmot</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Merrell" analytics1="true">Merrell</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Mountain+Hardwear" analytics1="true">Mountain Hardwear</a></li>
+						</ul>
+<ul class="col3 brandNav">
+<li invalidlinkaction="remove"><a href="/brand/MSR" analytics1="true">MSR</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Nalgene" analytics1="true">Nalgene</a></li>
+							<li><a href="/brand/Novara" analytics1="true">Novara</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/The+North+Face" analytics1="true">The North Face</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Oakley" analytics1="true">Oakley</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Osprey" analytics1="true">Osprey</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Patagonia" analytics1="true">Patagonia</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/prAna" analytics1="true">prAna</a></li>
+							<li><a href="/brand/REI" analytics1="true">REI</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Salomon" analytics1="true">Salomon</a></li>
+						</ul>
+<ul class="col4 brandNav">
+<li invalidlinkaction="remove"><a href="/brand/SmartWool" analytics1="true">SmartWool</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Teva" analytics1="true">Teva</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Therm-a-Rest" analytics1="true">Therm-a-Rest</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Thule" analytics1="true">Thule</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Timbuk2" analytics1="true">Timbuk2</a></li>
+							
+							<li invalidlinkaction="remove"><a href="/brand/Under+Armour" analytics1="true">Under Armour</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Vasque" analytics1="true">Vasque</a></li>
+							<li invalidlinkaction="remove"><a href="/brand/Vibram" analytics1="true">Vibram</a></li>							
+							<li invalidlinkaction="remove"><a href="/brand/Yakima" analytics1="true">Yakima</a></li>
+							
+							<li class="catCatchAll"><a href="/brands" analytics1="true">All Brands...</a></li>
+						</ul>
+</li>
+					<li>
+						<a href="/categories" class="catList catAll" analytics1="true">All Categories</a>
+						<ul class="col1 allCatNav">
+<li><a href="/category/40004319" analytics1="true">Alpine Skiing Shop</a></li>
+							<li><a href="/category/4500306" analytics1="true">Backcountry Skiing Shop</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_Backpacks" analytics1="true">Backpacks</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500033" analytics1="true">Binoculars</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500003_Bicycles" analytics1="true">Bikes</a></li>
+							
+							<li><a href="/category/4500000" analytics1="true">Books and Maps</a></li>
+							<li><a href="/category/4500001" analytics1="true">Camping and Hiking</a></li>
+							<li><a href="/category/4500010" analytics1="true">Car Racks</a></li>
+							<li><a href="/category/4500002" analytics1="true">Climbing</a></li>
+							<li><a href="/category/40004009" analytics1="true">Cross-Country Skiing</a></li>							
+						</ul>
+<ul class="col2 allCatNav">
+<li><a href="/category/4500003" analytics1="true">Cycling</a></li>
+							<li invalidlinkaction="remove"><a href="/category/40003681" analytics1="true">Dog Gear</a></li>
+							<li invalidlinkaction="remove"><a href="/category/1/q/Electronics" analytics1="true">Electronics</a></li>
+							<li><a href="/category/4500005" analytics1="true">Fitness</a></li>
+							<li><a href="/giftcard" analytics1="true">Gift Cards</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_GPS" analytics1="true">GPS</a></li>
+							<li invalidlinkaction="remove"><a href="/category/1/q/Hammocks" analytics1="true">Hammocks</a></li>
+							
+							
+							<li invalidlinkaction="remove"><a href="/category/1/q/Jackets" analytics1="true">Jackets</a></li>
+							<li><a href="/category/4500007" analytics1="true">Kids'</a></li>
+							
+							
+								
+							<li><a href="/category/4500012" analytics1="true">Luggage and Day Bags</a></li>
+						</ul>
+<ul class="col3 allCatNav">
+<li><a href="/category/4500008" analytics1="true">Men's Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500006_Men%27s+Footwear" analytics1="true">Men's Shoes and Boots</a></li>
+							
+							<li><a href="/category/40003658" analytics1="true">Outdoor Lifestyle</a></li>
+							<li><a href="/category/4500009" analytics1="true">Paddling</a></li>
+							
+							<li invalidlinkaction="remove"><a href="/category/4500005/q/Running+Shop" analytics1="true">Running</a></li>
+							<li><a href="/Sale+and+Clearance" analytics1="true">Sale &amp; Clearance</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_Sleeping+Bags" analytics1="true">Sleeping Bags</a></li>
+							<li><a href="/category/40003930" analytics1="true">Snowboarding Shop</a></li>
+							<li><a href="/category/40004010" analytics1="true">Snowshoeing Shop</a></li>
+							<li><a href="/snowsports" analytics1="true">Snowsports</a></li>	
+							<li invalidlinkaction="remove"><a href="/category/4500119/q/Strollers" analytics1="true">Strollers</a></li>
+						</ul>
+<ul class="col4 allCatNav">
+<li invalidlinkaction="remove"><a href="/category/4500069" analytics1="true">Sunglasses</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500005/q/Swimming+Shop" analytics1="true">Swimming</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001_Tents+and+Shelters" analytics1="true">Tents</a></li>
+							<li><a href="/category/4500012" analytics1="true">Travel</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500005/q/Triathlon+Shop" analytics1="true">Triathlon</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500001/q/Ultralight+Backpacking" analytics1="true">Ultralight Backpacking</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500074" analytics1="true">Watches</a></li>
+							<li invalidlinkaction="remove"><a href="/category/1/q/Water+Bottles" analytics1="true">Water Bottles</a></li>
+							<li><a href="/category/4500013" analytics1="true">Women's Clothing</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500006_Women%27s+Footwear" analytics1="true">Women's Shoes and Boots</a></li>
+							<li invalidlinkaction="remove"><a href="/category/4500005/q/Yoga+Shop" analytics1="true">Yoga</a></li>
+							
+							<li class="catCatchAll"><a href="/categories" analytics1="true">All Categories...</a></li>
+						</ul>
+</li>	
+         				</ul>
+<div id="showBanner_yes" name="default_generic"><div id="siteWideMsg" style="background: url(/pix/homepage/swb_bg_freeshipping_outlet.jpg) no-repeat;">
+    <p><span style="font-size: 14px; color:#fff; font-weight: normal; position: relative; top: 3px;">
+        <a href="/help/shipping.html" style="font-size:14px; color:#fff; font-weight:bold;">Free Shipping to Any REI Store!</a>
+        &#160;&#160;Have your REI.com or REI-OUTLET.com order sent to your local REI store then 
+        <a href="/help/shipping.html" style="font-size:14px; color:#fff;">pick it up for free</a>.</span></p>
+</div></div>
+</div>
+</div>
+<div id="footerWrapper"><div class="omnissni">
+<ul class="ftrPromo1">
+<li class="image"><a href="/giftcard" analytics1="true"><img src="/pix/giftCard/sr6165_gift_card.gif" alt="Buy REI Gift Cards" title="Buy REI Gift Cards" border="0"></a></li>
+        <li class="ftTitle">REI Gift Cards</li>
+        <li>Fast, easy and one size fits all.</li>
+        <li><a href="/giftcard" analytics1="true">Buy now!</a></li>
+    </ul>
+<ul class="ftrPromo2">
+<li class="image"><a onclick="naf.omni.sendMembershipEvent('mem_rei_footer_image_box')" href="/help/membership_join.html?mem_ind_REI_footer" analytics1="true"><img src="/pix/common/sr6165_member_card.gif" alt="Join REI today!" title="Join REI today!" border="0"></a></li>
+        <li class="ftTitle">REI Membership</li>        
+        <li>REI member benefits include an annual refund (typically 10% on eligible purchases).</li>
+        <li><a onclick="naf.omni.sendMembershipEvent('mem_rei_footer_image_box')" href="/membership" analytics1="true">Join REI today!</a></li>  
+    </ul>
+<ul class="ftrPromo3">
+<li class="ftTitle">Sign up for REI Gearmail<span class="spChar">&#174;</span>
+</li>
+        
+        <li>and get 15% off selected items!  
+        </li>
+        <li>
+            <form action="/email/miniforms/quick.html" name="footerMiniform" class="footerForm">
+                <input type="hidden" name="formSrc" id="formSrc" value="quickReiFooter"><input type="text" name="EmailAddress" id="footerGmQuery" value="Email Address" class="email" title="Enter email address to sign up for REI Gearmail" onfocus="javascript:if(document.getElementById('footerGmQuery').value=='Email Address') document.getElementById('footerGmQuery').value='';" size="20" maxlength="70"><input src="/pix/common/button_box_arrow.gif" alt="submit" type="image" class="imgSignup">
+</form>
+            
+        </li>
+    </ul>
+<ul class="ftrPromo4">
+<li class="ftTitle">Store Locator</li>
+        
+        <li>Locate an REI store near you.</li>
+        <li>
+            <div class="footerForm">
+                <input type="text" id="findAStoreZip" name="zip" value="Enter Your ZIP Code" title="Enter your zip code to find a store near you" size="20" maxlength="70" class="findStore"><img id="findAStoreClick" src="/pix/common/button_box_arrow.gif" alt="Find a Store" class="imgFindStore">
+</div>
+        </li>     
+    </ul>
+<div class="cleardiv"></div>
+<ul class="col1">
+<li class="ftTitle">Company Info</li>
+        <li><a href="/aboutrei/about_rei.html" analytics1="true">About REI</a></li>
+        <li><a href="/jobs/index.html" analytics1="true">Jobs at REI</a></li>
+        <li><a href="/help/guarantee.html" analytics1="true">100% Satisfaction Guarantee</a></li>
+        <li><a href="/cgs/index.html" analytics1="true">Corporate &amp; Group Sales</a></li>
+        <li><a href="/help/privacy.html" analytics1="true">Privacy Policy</a></li>
+        <li><a href="/help/termsofuse.html" analytics1="true">Terms of Use</a></li>
+        <li><a href="/help/siterules.html" analytics1="true">Site Rules</a></li>
+        
+    </ul>
+<ul class="col2">
+<li class="ftTitle">REI Membership</li>
+        <li><a onclick="naf.omni.sendMembershipEvent('mem_rei_footer_text_link')" href="/membership" analytics1="true">Become an REI Member</a></li>
+        <li><a onclick="naf.omni.sendMembershipEvent('mem_rei_footer_text_link')" href="/membership/support" analytics1="true">Member Help</a></li>
+        <li><a onclick="naf.omni.sendMembershipEvent('mem_rei_footer_text_link')" href="/membership/support#divMemLookup" analytics1="true">Find Membership Number</a></li>
+        <li><a onclick="naf.omni.sendMembershipEvent('mem_rei_footer_text_link')" href="/membership/dividend" analytics1="true">Dividend Lookup</a></li>
+        
+        <li><a onclick="naf.omni.sendMembershipEvent('mem_rei_footer_text_link')" href="http://www.reivisa.com/62rei" analytics1="true">Apply for an REI Visa&#174; Card</a></li>
+        
+        <li class="ftTitle2">We Care</li>
+        <li><a href="/aboutrei/gives02.html" analytics1="true">REI Gives</a></li>
+        <li><a href="/aboutrei/stewardship_08.html" analytics1="true">Stewardship</a></li>
+        <li><a href="/aboutrei/volunteer.html" analytics1="true">Volunteer</a></li>
+        <li><a href="/help/eco-conscious.html" analytics1="true">Eco-Conscious Gear</a></li>
+    </ul>
+<ul class="col3">
+<li class="ftTitle">Expert Outdoor Advice</li>
+        <li><a href="/expertadvice" analytics1="true">Expert Advice Articles</a></li>
+        <li><a href="/video" analytics1="true">Outdoor Videos</a></li>
+        <li><a href="/outdoorschool" analytics1="true">REI Outdoor School</a></li>
+        <li><a href="/map/store" analytics1="true">Store Events</a></li>
+        
+        <li class="ftTitle2">Online Affiliate Program</li>
+        <li><a href="/affiliates/index.html" analytics1="true">Become an REI Affiliate</a></li>   
+        
+        <li class="ftTitle2"><a href="/giftregistry" analytics1="true">Gift Registry</a></li>
+    </ul>
+<ul class="col4">
+<li class="ftTitle">Help</li>
+        <li><a href="/help/index.html" analytics1="true">Help Section</a></li>
+        <li><a href="/help/feedback/feedback.html" analytics1="true">Contact Us</a></li>
+        <li><a href="javascript:launchChatPopup()" analytics1="true">Live Help</a></li>
+        <li><a id="orderTrackingLink" href="/OrderTrackingLoginView?storeId=8000" analytics1="true">Order Status</a></li>
+        <li><a href="/help/returns.html" analytics1="true">Returns and Exchanges</a></li>
+        <li><a href="/help/shipping.html" analytics1="true">Shipping Info</a></li>
+        <li>1-800-426-4840</li>
+        <li><a href="/help/recall/index.html" analytics1="true">Product Safety &amp; Recalls</a></li>	
+    </ul>
+<script type="text/javascript">        
+        if(loggedIn == 1 || loggedIn == '1'){
+            document.getElementById('orderTrackingLink').href = '/OrderHistoryView?storeId=8000';
+        }        
+    </script>
+</div></div>
+<p id="socialFtr" class="p2">Find REI on:
+<a href="http://www.facebook.com/rei" target="_blank"><b class="ftFacebook"></b><b>Facebook</b><b class="arrow"></b></a><a href="http://twitter.com/REI" target="_blank"><b class="ftTwitter"></b><b>Twitter</b><b class="arrow"></b></a><a href="http://www.youtube.com/reifindout" target="_blank"><b class="ftYouTube"></b><b>YouTube</b><b class="arrow"></b></a><a href="http://www.flickr.com/groups/rei-findout/" target="_blank"><b class="ftFlickr"></b><b>Flickr</b><b class="arrow"></b></a></p>
+</div></div></body>
+</html>
