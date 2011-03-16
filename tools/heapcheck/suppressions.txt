@@ -1222,3 +1222,11 @@
    fun:PluginService::GetInstance
    fun:::PluginServiceTest::SetUp
 }
+{
+   bug_76354
+   Heapcheck:Leak
+   fun:MessageWithReply
+   fun:ChildProcessHostMsg_ResolveProxy
+   fun:ResolveProxyMsgHelperTest::GenerateReply
+   fun:ResolveProxyMsgHelperTest_*_Test::TestBody
+}
