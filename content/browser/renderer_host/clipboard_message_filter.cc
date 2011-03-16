@@ -52,6 +52,8 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteObjectsAsync, OnWriteObjectsAsync)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteObjectsSync, OnWriteObjectsSync)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_IsFormatAvailable, OnIsFormatAvailable)
+    IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadAvailableTypes,
+                        OnReadAvailableTypes)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadText, OnReadText)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadAsciiText, OnReadAsciiText)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadHTML, OnReadHTML)
@@ -60,8 +62,6 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_FindPboardWriteStringAsync,
                         OnFindPboardWriteString)
 #endif
-    IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadAvailableTypes,
-                        OnReadAvailableTypes)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadData, OnReadData)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadFilenames, OnReadFilenames)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -141,11 +141,9 @@ void ClipboardMessageFilter::OnReadImage(
 }
 
 void ClipboardMessageFilter::OnReadAvailableTypes(
-    ui::Clipboard::Buffer buffer, bool* succeeded, std::vector<string16>* types,
+    ui::Clipboard::Buffer buffer, std::vector<string16>* types,
     bool* contains_filenames) {
-  *contains_filenames = false;
-  *succeeded = ClipboardDispatcher::ReadAvailableTypes(
-      buffer, types, contains_filenames);
+  GetClipboard()->ReadAvailableTypes(buffer, types, contains_filenames);
 }
 
 void ClipboardMessageFilter::OnReadData(

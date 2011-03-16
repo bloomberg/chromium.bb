@@ -31,6 +31,10 @@ IPC_SYNC_MESSAGE_CONTROL2_1(ClipboardHostMsg_IsFormatAvailable,
                             std::string /* format */,
                             ui::Clipboard::Buffer /* buffer */,
                             bool /* result */)
+IPC_SYNC_MESSAGE_CONTROL1_2(ClipboardHostMsg_ReadAvailableTypes,
+                            ui::Clipboard::Buffer /* buffer */,
+                            std::vector<string16> /* types */,
+                            bool /* contains filenames */)
 IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadText,
                             ui::Clipboard::Buffer /* buffer */,
                             string16 /* result */)
@@ -48,11 +52,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadImage,
 IPC_MESSAGE_CONTROL1(ClipboardHostMsg_FindPboardWriteStringAsync,
                      string16 /* text */)
 #endif
-IPC_SYNC_MESSAGE_CONTROL1_3(ClipboardHostMsg_ReadAvailableTypes,
-                            ui::Clipboard::Buffer /* buffer */,
-                            bool /* result */,
-                            std::vector<string16> /* types */,
-                            bool /* contains filenames */)
 IPC_SYNC_MESSAGE_CONTROL2_3(ClipboardHostMsg_ReadData,
                             ui::Clipboard::Buffer /* buffer */,
                             string16 /* type */,

@@ -188,6 +188,11 @@ ui::Clipboard* ClipboardGetClipboard();
 bool ClipboardIsFormatAvailable(const ui::Clipboard::FormatType& format,
                                 ui::Clipboard::Buffer buffer);
 
+// Reads the available types from the clipboard, if available.
+void ClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
+                                 std::vector<string16>* types,
+                                 bool* contains_filenames);
+
 // Reads UNICODE text from the clipboard, if available.
 void ClipboardReadText(ui::Clipboard::Buffer buffer, string16* result);
 
@@ -199,11 +204,6 @@ void ClipboardReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
                        GURL* url);
 
 void ClipboardReadImage(ui::Clipboard::Buffer buffer, std::string* data);
-
-// Reads the available types from the clipboard, if available.
-bool ClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
-                                 std::vector<string16>* types,
-                                 bool* contains_filenames);
 
 // Reads one type of data from the clipboard, if available.
 bool ClipboardReadData(ui::Clipboard::Buffer buffer, const string16& type,

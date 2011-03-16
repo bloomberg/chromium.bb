@@ -292,6 +292,20 @@ bool Clipboard::IsFormatAvailableByString(const std::string& format,
   return IsFormatAvailable(format, buffer);
 }
 
+void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
+                                   std::vector<string16>* types,
+                                   bool* contains_filenames) const {
+  if (!types || !contains_filenames) {
+    NOTREACHED();
+    return;
+  }
+
+  // TODO(dcheng): Implement me.
+  types->clear();
+  *contains_filenames = false;
+}
+
+
 void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
   GtkClipboard* clipboard = LookupBackingClipboard(buffer);
   if (clipboard == NULL)

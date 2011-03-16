@@ -166,6 +166,13 @@ bool ClipboardIsFormatAvailable(const ui::Clipboard::FormatType& format,
   return result;
 }
 
+void ClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
+                                 std::vector<string16>* types,
+                                 bool* contains_filenames) {
+  RenderThread::current()->Send(new ClipboardHostMsg_ReadAvailableTypes(
+      buffer, types, contains_filenames));
+}
+
 void ClipboardReadText(ui::Clipboard::Buffer buffer, string16* result) {
   RenderThread::current()->Send(new ClipboardHostMsg_ReadText(buffer, result));
 }
@@ -183,15 +190,6 @@ void ClipboardReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
 
 void ClipboardReadImage(ui::Clipboard::Buffer buffer, std::string* data) {
   RenderThread::current()->Send(new ClipboardHostMsg_ReadImage(buffer, data));
-}
-
-bool ClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
-                                 std::vector<string16>* types,
-                                 bool* contains_filenames) {
-  bool result = false;
-  RenderThread::current()->Send(new ClipboardHostMsg_ReadAvailableTypes(
-      buffer, &result, types, contains_filenames));
-  return result;
 }
 
 bool ClipboardReadData(ui::Clipboard::Buffer buffer, const string16& type,

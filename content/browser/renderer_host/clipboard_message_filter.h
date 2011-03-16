@@ -32,6 +32,9 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
   void OnIsFormatAvailable(ui::Clipboard::FormatType format,
                            ui::Clipboard::Buffer buffer,
                            bool* result);
+  void OnReadAvailableTypes(ui::Clipboard::Buffer buffer,
+                            std::vector<string16>* types,
+                            bool* contains_filenames);
   void OnReadText(ui::Clipboard::Buffer buffer, string16* result);
   void OnReadAsciiText(ui::Clipboard::Buffer buffer, std::string* result);
   void OnReadHTML(ui::Clipboard::Buffer buffer, string16* markup, GURL* url);
@@ -39,10 +42,6 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
 #if defined(OS_MACOSX)
   void OnFindPboardWriteString(const string16& text);
 #endif
-  void OnReadAvailableTypes(ui::Clipboard::Buffer buffer,
-                            bool* succeeded,
-                            std::vector<string16>* types,
-                            bool* contains_filenames);
   void OnReadData(ui::Clipboard::Buffer buffer, const string16& type,
                   bool* succeeded, string16* data, string16* metadata);
   void OnReadFilenames(ui::Clipboard::Buffer buffer, bool* succeeded,

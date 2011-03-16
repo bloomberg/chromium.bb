@@ -36,6 +36,13 @@ bool ClipboardIsFormatAvailable(const ui::Clipboard::FormatType& format,
   return ClipboardGetClipboard()->IsFormatAvailable(format, buffer);
 }
 
+// TODO(dcheng): Implement.
+void ClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
+                                 std::vector<string16>* types,
+                                 bool* contains_filenames) {
+  return;
+}
+
 void ClipboardReadText(ui::Clipboard::Buffer buffer, string16* result) {
   ClipboardGetClipboard()->ReadText(buffer, result);
 }
@@ -54,13 +61,6 @@ void ClipboardReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
 
 void ClipboardReadImage(ui::Clipboard::Buffer buffer, std::string* data) {
   ClipboardGetClipboard()->ReadImage(buffer, data);
-}
-
-// TODO(dcheng): Implement.
-bool ClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
-                                 std::vector<string16>* types,
-                                 bool* contains_filenames) {
-  return false;
 }
 
 bool ClipboardReadData(ui::Clipboard::Buffer buffer, const string16& type,
