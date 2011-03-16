@@ -98,6 +98,25 @@ class OwnersDatabaseTest(unittest.TestCase):
     self.assert_not_covered_by(['content/content.gyp'], [ben],
                              ['content/content.gyp'])
 
+  def test_not_covered_by__valid_inputs(self):
+    db = self.db()
+
+    # Check that we're passed in a sequence that isn't a string.
+    self.assertRaises(AssertionError, db.files_not_covered_by, 'foo', [])
+    self.assertRaises(AssertionError, db.files_not_covered_by,
+                      (f for f in ['x', 'y']), [])
+
+    # Check that the files are under the root.
+    db.root = '/checkout'
+    self.assertRaises(AssertionError, db.files_not_covered_by, ['/OWNERS'],
+                      [])
+    db.root = '/'
+
+    # Check invalid email address.
+    self.assertRaises(AssertionError, db.files_not_covered_by, ['OWNERS'],
+                      ['foo'])
+
+
   def assert_reviewers_for(self, files, expected_reviewers):
     db = self.db()
     self.assertEquals(db.reviewers_for(set(files)), set(expected_reviewers))
@@ -108,6 +127,17 @@ class OwnersDatabaseTest(unittest.TestCase):
 
   def test_reviewers_for__set_noparent_works(self):
     self.assert_reviewers_for(['content/content.gyp'], [john, darin])
+
+  def test_reviewers_for__valid_inputs(self):
+    db = self.db()
+
+    # Check that we're passed in a sequence that isn't a string.
+    self.assertRaises(AssertionError, db.reviewers_for, 'foo')
+    self.assertRaises(AssertionError, db.reviewers_for, (f for f in ['x', 'y']))
+
+    # Check that the files are under the root.
+    db.root = '/checkout'
+    self.assertRaises(AssertionError, db.reviewers_for, ['/OWNERS'])
 
   def test_reviewers_for__wildcard_dir(self):
     self.assert_reviewers_for(['DEPS'], [owners.EVERYONE])

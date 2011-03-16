@@ -4,6 +4,7 @@
 
 """A database of OWNERS files."""
 
+import collections
 import re
 
 
@@ -58,9 +59,9 @@ class Database(object):
     self.stop_looking = set([''])
 
   def reviewers_for(self, files):
-    """Returns a suggested set of reviewers that will cover the set of files.
+    """Returns a suggested set of reviewers that will cover the files.
 
-    files is a set of paths relative to (and under) self.root."""
+    files is a sequence of paths relative to (and under) self.root."""
     self._check_paths(files)
     self._load_data_needed_for(files)
     return self._covering_set_of_owners_for(files)
@@ -70,7 +71,11 @@ class Database(object):
     return not self.files_not_covered_by(files, reviewers)
 
   def files_not_covered_by(self, files, reviewers):
-    """Returns the set of files that are not owned by at least one reviewer."""
+    """Returns the set of files that are not owned by at least one reviewer.
+
+    Args:
+        files is a sequence of paths relative to (and under) self.root.
+        reviewers is a sequence of strings matching self.email_regexp."""
     self._check_paths(files)
     self._check_reviewers(reviewers)
     if not reviewers:
@@ -85,13 +90,19 @@ class Database(object):
         uncovered_files.extend(files_in_d)
     return set(uncovered_files)
 
+  def _check_collection(self, obj):
+    assert (isinstance(obj, collections.Iterable) and
+            isinstance(obj, collections.Sized) and
+            not isinstance(obj, basestring))
+
   def _check_paths(self, files):
     def _is_under(f, pfx):
       return self.os_path.abspath(self.os_path.join(pfx, f)).startswith(pfx)
+    self._check_collection(files)
     assert all(_is_under(f, self.os_path.abspath(self.root)) for f in files)
 
   def _check_reviewers(self, reviewers):
-    """Verifies each reviewer is a valid email address."""
+    self._check_collection(reviewers)
     assert all(self.email_regexp.match(r) for r in reviewers)
 
   def _files_by_dir(self, files):
