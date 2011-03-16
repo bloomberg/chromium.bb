@@ -133,7 +133,7 @@ readonly PNACL_AS_X8664="${INSTALL_BIN}/pnacl-x86_64-as"
 # hg-update-stable  uses these
 readonly LLVM_REV=8b90cf891e03
 readonly LLVM_GCC_REV=80ce86616af9
-readonly NEWLIB_REV=d0ac50acf303
+readonly NEWLIB_REV=eb9c4bb9ccd7
 readonly BINUTILS_REV=5d388c57ed1b
 
 # Repositories
@@ -202,11 +202,11 @@ setup-tools-common() {
     CXX="${CXX_FOR_SFI_TARGET}"
     RAW_CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
     LD="${LD_FOR_SFI_TARGET}"
-    CFLAGS="${CFLAGS_FOR_SFI_TARGET}"
-    CPPFLAGS="${CPPFLAGS_FOR_SFI_TARGET}"
-    CXXFLAGS="${CXXFLAGS_FOR_SFI_TARGET}"
-    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}"
-    CPPFLAGS_FOR_TARGET="${CPPFLAGS_FOR_SFI_TARGET}"
+    CFLAGS="${CFLAGS_FOR_SFI_TARGET} --pnacl-arm-bias"
+    CPPFLAGS="${CPPFLAGS_FOR_SFI_TARGET} --pnacl-arm-bias"
+    CXXFLAGS="${CXXFLAGS_FOR_SFI_TARGET} --pnacl-arm-bias"
+    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET} --pnacl-arm-bias"
+    CPPFLAGS_FOR_TARGET="${CPPFLAGS_FOR_SFI_TARGET} --pnacl-arm-bias"
     CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
     GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
     CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
@@ -222,8 +222,8 @@ setup-tools-common() {
   # NOTE: we do not expect the assembler or linker to be used to build newlib.a
   #       hence the use of ILLEGAL_TOOL.
   STD_ENV_FOR_NEWLIB=(
-    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}"
-    CPPFLAGS_FOR_TARGET="${CPPFLAGS_FOR_SFI_TARGET}"
+    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET} --pnacl-arm-bias"
+    CPPFLAGS_FOR_TARGET="${CPPFLAGS_FOR_SFI_TARGET} --pnacl-arm-bias"
     CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
     GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
     CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
@@ -1106,7 +1106,8 @@ xgcc-patch() {
 #!/bin/sh
 XGCC="\$(readlink -m \${0})"
 ${PNACL_GCC} \\
---driver="\${XGCC}-real" -arch ${arch} ${CPPFLAGS_FOR_SFI_TARGET} "\$@"
+--driver="\${XGCC}-real" \\
+--pnacl-bias=${arch} -arch ${arch} ${CPPFLAGS_FOR_SFI_TARGET} "\$@"
 EOF
 
   chmod 755 "${XGCC}"

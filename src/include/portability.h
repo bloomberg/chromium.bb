@@ -180,6 +180,8 @@ struct timezone {
 #define NACL_ARCH_CPU_32_BITS 1
 #define NACL_HOST_WORDSIZE 32
 #define NACL_WCHAR_T_IS_UNSIGNED 1
+#elif defined(__pnacl__)
+#define NACL_HOST_WORDSIZE 32
 #else
 #error Unrecognized host architecture
 #endif

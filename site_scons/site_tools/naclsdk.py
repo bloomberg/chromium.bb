@@ -280,6 +280,26 @@ def _SetEnvForSdkManually(env):
               RANLIB=GetEnvOrDummy('RANLIB'),
               )
 
+# This adds architecture specific defines for the target architecture.
+# These are normally omitted by PNaCl.
+# For example: __i686__, __arm__, __x86_64__
+def AddBiasForPNaCl(env):
+  assert(env.Bit('bitcode'))
+
+  # Activate after DEPS update.
+  #if env.Bit('target_arm'):
+  #  env.Append(CCFLAGS=['--pnacl-arm-bias'])
+  #  env.Append(CXXFLAGS=['--pnacl-arm-bias'])
+  #elif env.Bit('target_x86_32'):
+  #  env.Append(CCFLAGS=['--pnacl-i686-bias'])
+  #  env.Append(CXXFLAGS=['--pnacl-i686-bias'])
+  #elif env.Bit('target_x86_64'):
+  #  env.Append(CCFLAGS=['--pnacl-x86_64-bias'])
+  #  env.Append(CXXFLAGS=['--pnacl-x86_64-bias'])
+  #else:
+  #  raise Exception("Unknown architecture!")
+
+
 def ValidateSdk(env):
   checkables = ['${NACL_SDK_INCLUDE}/stdio.h']
   for c in checkables:
@@ -327,6 +347,7 @@ def generate(env):
 
   # make these methods to the top level scons file
   env.AddMethod(ValidateSdk)
+  env.AddMethod(AddBiasForPNaCl)
 
   sdk_mode = SCons.Script.ARGUMENTS.get('naclsdk_mode', 'download')
 

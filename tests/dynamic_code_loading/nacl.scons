@@ -38,62 +38,67 @@ if asm_env.Bit('bitcode'):
                   OBJSUFFIX='.o')
 template_obj = asm_env.ComponentObject(GetTemplate(env))
 
-env.ComponentProgram('dynamic_load_test.nexe',
-                     ['dynamic_load_test.c',
-                      template_obj],
-                     EXTRA_LIBS=['testrunner', 'srpc', 'pthread'])
+prog_env = env.Clone()
 
-env.ComponentProgram('dynamic_modify_test.nexe',
-                     ['dynamic_modify_test.c',
-                      template_obj],
-                     EXTRA_LIBS=['testrunner', 'srpc', 'pthread'])
+if env.Bit('bitcode'):
+  prog_env.AddBiasForPNaCl()
 
-env.ComponentProgram('write_to_dyncode.nexe',
-                     ['write_to_dyncode.c'])
+prog_env.ComponentProgram('dynamic_load_test.nexe',
+                          ['dynamic_load_test.c',
+                           template_obj],
+                          EXTRA_LIBS=['testrunner', 'srpc', 'pthread'])
 
-env.ComponentProgram('dyncode_disabled_test.nexe',
-                     ['dyncode_disabled_test.c'])
+prog_env.ComponentProgram('dynamic_modify_test.nexe',
+                          ['dynamic_modify_test.c',
+                           template_obj],
+                          EXTRA_LIBS=['testrunner', 'srpc', 'pthread'])
 
-env.ComponentProgram('debug_mode_test.nexe',
-                     ['debug_mode_test.c',
-                      template_obj])
+prog_env.ComponentProgram('write_to_dyncode.nexe',
+                          ['write_to_dyncode.c'])
+
+prog_env.ComponentProgram('dyncode_disabled_test.nexe',
+                          ['dyncode_disabled_test.c'])
+
+prog_env.ComponentProgram('debug_mode_test.nexe',
+                          ['debug_mode_test.c',
+                           template_obj])
 
 tests = [
-    env.CommandSelLdrTestNacl(
+    prog_env.CommandSelLdrTestNacl(
         'dynamic_load_test.out',
-        command=[env.File('dynamic_load_test.nexe')],
+        command=[prog_env.File('dynamic_load_test.nexe')],
         # We need to set this because the test needs to behave
         # differently in the plugin, but the plugin does not provide a
         # way to distinguish itself.  TODO(mseaborn): Fix that.
         # See http://code.google.com/p/nativeclient/issues/detail?id=889
         sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1'],
         ),
-    env.CommandSelLdrTestNacl(
+    prog_env.CommandSelLdrTestNacl(
         'write_to_dyncode.out',
-        command=[env.File('write_to_dyncode.nexe')],
+        command=[prog_env.File('write_to_dyncode.nexe')],
         exit_status='untrusted_segfault',
-        stdout_golden=env.File('write_to_dyncode.stdout'),
+        stdout_golden=prog_env.File('write_to_dyncode.stdout'),
         ),
-    env.CommandSelLdrTestNacl(
+    prog_env.CommandSelLdrTestNacl(
         'dyncode_disabled_test.out',
-        command=[env.File('dyncode_disabled_test.nexe')],
+        command=[prog_env.File('dyncode_disabled_test.nexe')],
         osenv='NACL_DISABLE_DYNAMIC_LOADING=1',
         ),
-    env.CommandSelLdrTestNacl(
+    prog_env.CommandSelLdrTestNacl(
         'debug_mode_test.out',
         # NOTE: the data we are loading does not pass the validator
         sel_ldr_flags=["-c"],
-        command=[env.File('debug_mode_test.nexe')],
+        command=[prog_env.File('debug_mode_test.nexe')],
         ),
   ]
-if not env.Bit('target_arm'):
-  tests.append(env.CommandSelLdrTestNacl(
+if not prog_env.Bit('target_arm'):
+  tests.append(prog_env.CommandSelLdrTestNacl(
        'dynamic_modify_test.out',
-       command=[env.File('dynamic_modify_test.nexe')],
+       command=[prog_env.File('dynamic_modify_test.nexe')],
        sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1']))
 
 # TODO(kcc): non-standard linking options confuse Valgrind debug info reader.
-if not env.IsRunningUnderValgrind():
-  env.AddNodeToTestSuite(tests,
-                         ['small_tests', 'sel_ldr_tests'],
-                         'run_dynamic_load_test')
+if not prog_env.IsRunningUnderValgrind():
+  prog_env.AddNodeToTestSuite(tests,
+                              ['small_tests', 'sel_ldr_tests'],
+                              'run_dynamic_load_test')

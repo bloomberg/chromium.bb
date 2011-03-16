@@ -60,6 +60,12 @@ INITIAL_ENV = {
                           # TODO(pdox): Either eliminate gold native linking or
                           #             figure out why this is broken in the
                           #             first place.
+  'BIAS'        : 'ARM',  # This can be 'NONE', 'ARM', 'X8632', or 'X8664'.
+                          # When not set to none, this causes the front-end to
+                          # act like a target-specific compiler. This bias is
+                          # currently needed while compiling llvm-gcc, newlib,
+                          # and some scons tests.
+                          # TODO(pdox): Can this be removed?
   # Command-line options
   'GCC_MODE'    : '',     # '' (default), '-E', '-c', or '-S'
   'PIC'         : '0',    # -fPIC
@@ -106,9 +112,27 @@ INITIAL_ENV = {
   'LLVM_GCC'    : '${BASE_ARM}/bin/arm-none-linux-gnueabi-gcc',
   'LLVM_GXX'    : '${BASE_ARM}/bin/arm-none-linux-gnueabi-g++',
 
+  # We need to remove the pre-existing ARM defines which appear
+  # because we are using the ARM llvm-gcc frontend.
+  # TODO(pdox): Prevent these from being defined by llvm-gcc in
+  #             the first place by creating a custom target for PNaCl.
+  'REMOVE_BIAS' : '-U__arm__ -U__APCS_32__ -U__thumb__ -U__thumb2__ ' +
+                  '-U__ARMEB__ -U__THUMBEB__ -U__ARMWEL__ ' +
+                  '-U__ARMEL__ -U__THUMBEL__ -U__SOFTFP__ ' +
+                  '-U__VFP_FP__ -U__ARM_NEON__ -U__ARM_FP16 ' +
+                  '-U__ARM_FP16__ -U__MAVERICK__ -U__XSCALE__ -U__IWMMXT__ ' +
+                  '-U__ARM_EABI__',
+
+  'BIAS_NONE'   : '${REMOVE_BIAS}',
+  'BIAS_ARM'    : '',
+  'BIAS_X8632'  : '${REMOVE_BIAS} ' +
+                  '-D__i386__ -D__i386 -D__i686 -D__i686__ -D__pentium4__',
+  'BIAS_X8664'  : '${REMOVE_BIAS} ' +
+                  '-D__amd64__ -D__amd64 -D__x86_64__ -D__x86_64 -D__core2__',
+
   'CC_FLAGS'    : '${OPT_LEVEL} -fuse-llvm-va-arg -Werror-portable-llvm ' +
                   '-nostdinc -DNACL_LINUX=1 -D__native_client__=1 ' +
-                  '-D__pnacl__=1',
+                  '-D__pnacl__=1 ${BIAS_%BIAS%}',
   'CC_STDINC'   :
     # NOTE: the two competing approaches here
     #       make the gcc driver "right" or
@@ -291,6 +315,11 @@ DriverPatterns = [
   ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
   ( '--dry-run',                       "env.set('DRY_RUN', '1')"),
   ( '--pnacl-gold-fix',                "env.set('GOLD_FIX', '1')"),
+  ( '--pnacl-arm-bias',                "env.set('BIAS', 'ARM')"),
+  ( '--pnacl-i686-bias',               "env.set('BIAS', 'X8632')"),
+  ( '--pnacl-x86_64-bias',             "env.set('BIAS', 'X8664')"),
+  ( '--pnacl-bias=(.+)',               "env.set('BIAS', FixArch($0))"),
+
 
   # Catch all pattern (must be last)
   ( '(.*)',                            "env.append('ARGV', $0)"),

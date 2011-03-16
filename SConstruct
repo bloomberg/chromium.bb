@@ -2285,6 +2285,11 @@ if nacl_extra_sdk_env.Bit('target_arm'):
   nacl_extra_sdk_env.FilterOut(CCFLAGS = ['-Werror'])
   nacl_extra_sdk_env.Append(CFLAGS = werror_flags)
 
+# TODO(pdox): Remove this as soon as build_config.h can be
+#             changed to accept __pnacl__.
+if nacl_extra_sdk_env.Bit('bitcode'):
+  nacl_extra_sdk_env.AddBiasForPNaCl()
+
 if nacl_extra_sdk_env.Bit('host_windows'):
   # NOTE: This is needed because Windows builds are case-insensitive.
   # Without this we use nacl-as, which doesn't handle include directives, etc.
