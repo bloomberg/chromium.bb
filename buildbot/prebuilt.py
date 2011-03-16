@@ -51,7 +51,6 @@ _HOST_PACKAGES_PATH = 'chroot/var/lib/portage/pkgs'
 _CATEGORIES_PATH = 'chroot/etc/portage/categories'
 _HOST_TARGET = 'amd64'
 _BOARD_PATH = 'chroot/build/%(board)s'
-_BOTO_CONFIG = '/home/chrome-bot/external-boto'
 # board/board-target/version/packages/'
 _REL_BOARD_PATH = 'board/%(board)s/%(version)s/packages'
 # host/host-target/version/packages/'
@@ -59,6 +58,7 @@ _REL_HOST_PATH = 'host/%(target)s/%(version)s/packages'
 # Private overlays to look at for builds to filter
 # relative to build path
 _PRIVATE_OVERLAY_DIR = 'src/private-overlays'
+_GOOGLESTORAGE_ACL_FILE = 'googlestorage_acl.xml'
 _BINHOST_BASE_URL = 'http://commondatastorage.googleapis.com/chromeos-prebuilt'
 _PREBUILT_BASE_DIR = 'src/third_party/chromiumos-overlay/chromeos/config/'
 # Created in the event of new host targets becoming available
@@ -278,10 +278,32 @@ def _GsUpload(args):
     Return the arg tuple of two if the upload failed
   """
   (local_file, remote_file, acl) = args
+  CANNED_ACLS = ['public-read', 'private', 'bucket-owner-read',
+                 'authenticated-read', 'bucket-owner-full-control',
+                 'public-read-write']
+  acl_cmd = None
+  if acl in CANNED_ACLS:
+    cmd = '%s cp -a %s %s %s' % (_GSUTIL_BIN, acl, local_file, remote_file)
+  else:
+    # For private uploads we assume that the overlay board is set up properly
+    # and a googlestore_acl.xml is present, if not this script errors
+    cmd = '%s cp -a private %s %s' % (_GSUTIL_BIN, local_file, remote_file)
+    if not os.path.exists(acl):
+      print >> sys.stderr, ('You are specifying either a file that does not '
+                            'exist or an unknown canned acl: %s. Aborting '
+                            'upload') % acl
+      # emulate the failing of an upload since we are not uploading the file
+      return (local_file, remote_file)
 
-  cmd = '%s cp -a %s %s %s' % (_GSUTIL_BIN, acl, local_file, remote_file)
+    acl_cmd = '%s setacl %s %s' % (_GSUTIL_BIN, acl, remote_file)
+
   if not _RetryRun(cmd, print_cmd=False, shell=True):
     return (local_file, remote_file)
+
+  if acl_cmd:
+    # Apply the passed in ACL xml file to the uploaded object.
+    _RetryRun(acl_cmd, print_cmd=False, shell=True)
+
 
 def RemoteUpload(acl, files, pool=10):
   """Upload to google storage.
@@ -611,24 +633,27 @@ def ParseOptions():
     usage(parser, 'Error: you need provide a chroot path')
   if not options.upload:
     usage(parser, 'Error: you need to provide an upload location using -u')
-  if options.private and not (options.binhost_base_url.startswith('gs://') and
-                              options.upload.startswith('gs://')):
-    usage(parser, 'Error: --private is only valid for gs:// URLs.\n'
-                  'Both --binhost-base-url and --upload must be gs:// URLs.')
+
+  if options.private:
+    if options.sync_host:
+      usage(parser, 'Error: --private and --sync-host/-s cannot be specified '
+                    'together, we do not support private host prebuilts')
+
+    if not options.upload.startswith('gs://'):
+      usage(parser, 'Error: --private is only valid for gs:// URLs.\n'
+                    '--upload must be a gs:// URL.')
+
+    if options.binhost_base_url != _BINHOST_BASE_URL:
+        usage(parser, 'Error: when using --private the --binhost-base-url '
+                      'is automatically derived.')
   return options
 
 def main():
   options = ParseOptions()
 
-  # Setup boto environment for gsutil to use
-  os.environ['BOTO_CONFIG'] = _BOTO_CONFIG
-
   if options.filters:
     LoadPrivateFilters(options.build_path)
 
-  acl = 'public-read'
-  if options.private:
-    acl = 'private'
 
   # Calculate a list of Packages index files to compare against. Whenever we
   # upload a package, we check to make sure it's not already stored in one of
@@ -640,7 +665,16 @@ def main():
   if options.prepend_version:
     version = '%s-%s' % (options.prepend_version, version)
 
-  uploader = PrebuiltUploader(options.upload, acl, options.binhost_base_url,
+  acl = 'public-read'
+  binhost_base_url = options.binhost_base_url
+
+  if options.private:
+    binhost_base_url = options.upload
+    board_path = GetBoardPathFromCrosOverlayList(options.build_path,
+                                                 options.board)
+    acl = os.path.join(board_path, _GOOGLESTORAGE_ACL_FILE)
+
+  uploader = PrebuiltUploader(options.upload, acl, binhost_base_url,
                               pkg_indexes)
 
   if options.sync_host:

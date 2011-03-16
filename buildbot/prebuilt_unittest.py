@@ -511,8 +511,14 @@ class TestMain(unittest.TestCase):
     self.mox.StubOutWithMock(prebuilt, 'GrabRemotePackageIndex')
     prebuilt.GrabRemotePackageIndex(old_binhost).AndReturn(True)
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '__init__')
-    prebuilt.PrebuiltUploader.__init__(options.upload, 'private',
-        options.binhost_base_url, mox.IgnoreArg())
+    self.mox.StubOutWithMock(prebuilt, 'GetBoardPathFromCrosOverlayList')
+    fake_overlay_path = '/fake_path'
+    acl_path = prebuilt.GetBoardPathFromCrosOverlayList(
+        options.build_path, options.board).AndReturn(fake_overlay_path)
+    expected_gs_acl_path = os.path.join(fake_overlay_path,
+                                        prebuilt._GOOGLESTORAGE_ACL_FILE)
+    prebuilt.PrebuiltUploader.__init__(options.upload, expected_gs_acl_path,
+                                       options.upload, mox.IgnoreArg())
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_SyncHostPrebuilts')
     prebuilt.PrebuiltUploader._SyncHostPrebuilts(options.build_path,
         mox.IgnoreArg(), options.key, options.git_sync,
