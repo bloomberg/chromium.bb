@@ -26,9 +26,18 @@ def BuildArgParser():
   parser.add_option('--browser_path', dest='browser_path', action='store',
                     type='string', default=None,
                     help='Use the browser located here.')
+  parser.add_option('--map_file', dest='map_files', action='append',
+                    type='string', nargs=2, default=[],
+                    metavar='DEST SRC',
+                    help='Add file SRC to be served from the HTTP server, '
+                    'to be made visible under the path DEST.')
   parser.add_option('-f', '--file', dest='files', action='append',
                     type='string', default=[],
-                    help='Add a file to serve from the HTTP server.')
+                    metavar='FILENAME',
+                    help='Add a file to serve from the HTTP server, to be '
+                    'made visible in the root directory.  '
+                    '"--file path/to/foo.html" is equivalent to '
+                    '"--map_file foo.html path/to/foo.html"')
   parser.add_option('-u', '--url', dest='url', action='store',
                     type='string', default=None,
                     help='The webpage to load.')
@@ -69,8 +78,15 @@ def Run(url, options):
   # socket directly.
   host, port = server.socket.getsockname()
 
+  file_mapping = dict(options.map_files)
+  for filename in options.files:
+    file_mapping[os.path.basename(filename)] = filename
+  for server_path, real_path in file_mapping.iteritems():
+    if not os.path.exists(real_path):
+      raise AssertionError('\'%s\' does not exist.' % real_path)
+
   listener = browsertester.rpclistener.RPCListener(server.TestingEnded)
-  server.Configure(options, listener)
+  server.Configure(file_mapping, options.allow_404, listener)
 
   browser = browsertester.browserlauncher.ChromeLauncher(options)
 
@@ -114,11 +130,6 @@ def RunFromCommandLine():
 
   # Look for files in the browserdata directory as a last resort
   options.files.append(os.path.join(script_dir, 'browserdata', 'nacltest.js'))
-
-  # Validate the roots
-  for root_file in options.files:
-    if not os.path.exists(root_file):
-      parser.error('\'%s\' does not exist.' % root_file)
 
   return Run(url, options)
 

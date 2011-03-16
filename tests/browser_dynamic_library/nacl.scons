@@ -1,0 +1,47 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+if 'TRUSTED_ENV' not in env:
+  Return()
+if env.Bit('nacl_static_link'):
+  Return()
+
+async_test_prog = env.ComponentProgram(
+    'async_hello_world.nexe', 'async_hello_world.c')
+
+stubout_tool = env['TRUSTED_ENV'].File(
+    '${STAGING_DIR}/${PROGPREFIX}ncval_stubout${PROGSUFFIX}')
+
+libraries = ('runnable-ld.so', 'libc.so.6', 'libm.so.6', 'libgcc_s.so.1')
+library_mapping = []
+for library_name in libraries:
+  # nacl-glibc has some validator failures so we need to apply
+  # ncval_stubout before we can load the libraries in the browser.
+  # TODO(mseaborn): Remove the need for running ncval_stubout here.
+  # See http://code.google.com/p/nativeclient/issues/detail?id=876
+  node = env.Command(
+      target='%s.stubout' % library_name,
+      source=[stubout_tool, env.File('${NACL_SDK_LIB}/%s' % library_name)],
+      action=[Action('${SOURCES[0]} ${SOURCES[1]} -o $TARGET')])
+  library_mapping.append(('lib/%s' % library_name, node))
+
+
+node = env.PPAPIBrowserTester(
+    'browser_dynamic_library_test.out', url='dynamic_library_test.html',
+    files=[env.File('dynamic_library_test.html'),
+           env.File('dynamic_library_helper.js'),
+           async_test_prog],
+    map_files=library_mapping,
+    # TODO(mseaborn): We will get some 404 errors because the "tls"
+    # subdir is in nacl-glibc's search path (we should remove it) and
+    # because we're not using an explicit mapping based on a manifest
+    # file yet.
+    args=['--allow_404'])
+
+env.AddNodeToTestSuite(node, ['dynamic_library_browser_tests'],
+                       'run_browser_dynamic_library_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

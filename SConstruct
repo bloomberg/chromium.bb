@@ -452,6 +452,11 @@ MAJOR_TEST_SUITES = set([
   'pepper_browser_tests',
   # Lightweight browser tests
   'chrome_browser_tests',
+  # dynamic_library_browser_tests is separate from chrome_browser_tests
+  # because it currently requires different HTML/Javascript to run a
+  # dynamically-linked executable.  Once this is addressed, the two suites
+  # can be merged.
+  'dynamic_library_browser_tests',
   'huge_tests',
 ])
 
@@ -1087,9 +1092,10 @@ def PPAPIBrowserTester(env,
                        target,
                        url,
                        files,
-                       extensions=None,
+                       map_files=(),
+                       extensions=(),
                        log_verbosity=2,
-                       args=[]):
+                       args=()):
   if 'TRUSTED_ENV' not in env:
     return []
 
@@ -1109,9 +1115,10 @@ def PPAPIBrowserTester(env,
     command.extend(['--sel_ldr', GetSelLdr(env)])
   for dep_file in files:
     command.extend(['--file', dep_file])
-  if extensions is not None:
-    for extension in extensions:
-      command.extend(['--extension', extension])
+  for extension in extensions:
+    command.extend(['--extension', extension])
+  for dest_path, dep_file in map_files:
+    command.extend(['--map_file', dest_path, dep_file])
   command.extend(args)
   return env.AutoDepsCommand(target, command)
 
@@ -2082,6 +2089,7 @@ nacl_env.Append(
     'tests/app_lib/nacl.scons',
     'tests/autoloader/nacl.scons',
     'tests/barebones/nacl.scons',
+    'tests/browser_dynamic_library/nacl.scons',
     'tests/bundle_size/nacl.scons',
     'tests/computed_gotos/nacl.scons',
     'tests/data_not_executable/nacl.scons',

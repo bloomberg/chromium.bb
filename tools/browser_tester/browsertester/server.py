@@ -23,8 +23,8 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
   def translate_path(self, path):
     path = self.NormalizePath(path)
-    if path in self.server.roots:
-      return self.server.roots[path]
+    if path in self.server.file_mapping:
+      return self.server.file_mapping[path]
     elif not path.endswith('favicon.ico') and not self.server.allow_404:
       self.server.listener.ServerError('Cannot find file \'%s\'' % path)
     return path
@@ -90,11 +90,9 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 # when using older versions of Python.
 class Server(BaseHTTPServer.HTTPServer):
 
-  def Configure(self, options, listener):
-    root_files = options.files
-    self.roots = dict((os.path.basename(root_file), root_file)
-                      for root_file in root_files)
-    self.allow_404 = options.allow_404
+  def Configure(self, file_mapping, allow_404, listener):
+    self.file_mapping = file_mapping
+    self.allow_404 = allow_404
     self.listener = listener
     self.rpc_lock = threading.Lock()
 

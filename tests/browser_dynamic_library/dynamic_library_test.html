@@ -1,0 +1,40 @@
+<!--
+  Copyright 2011 The Native Client Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can
+  be found in the LICENSE file.
+-->
+
+<script type="text/javascript" src="nacltest.js"></script>
+<script type="text/javascript" src="dynamic_library_helper.js"></script>
+
+<embed id="plugin_element" src="lib/runnable-ld.so"
+  type="application/x-nacl" onload="onProcessStart()" width="0" height="0" />
+
+<script type="text/javascript">
+
+var rpc = new RPCWrapper();
+rpc.startup();
+
+var log = function(message) {
+  rpc.log('test', message);
+};
+
+var handleTestRequest = function(message_body) {
+  if (message_body === 'Hello world! (async message)') {
+    rpc.pass('test');
+  } else {
+    rpc.fail('test', 'Received unexpected message: ' + message_body);
+  }
+  rpc.shutdown();
+};
+
+var onProcessStart = function() {
+  log('in on_start()');
+  var plugin = document.getElementById('plugin_element');
+  var handlers = {
+    'TEST': handleTestRequest,
+  };
+  handlePluginInstance(plugin, log, ['./async_hello_world.nexe'], handlers);
+};
+
+</script>
