@@ -123,6 +123,7 @@ TEST_F(InstallerStateTest, Delete) {
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     installer_state.RemoveOldVersionDirectories(*latest_version.get(),
+                                                NULL,
                                                 temp_dir.path());
   }
 
@@ -199,15 +200,19 @@ TEST_F(InstallerStateTest, DeleteInUsed) {
   MockInstallerState installer_state;
   BuildSingleChromeState(chrome_dir, &installer_state);
   scoped_ptr<Version> latest_version(Version::GetVersionFromString("1.0.4.0"));
+  scoped_ptr<Version> existing_version(
+      Version::GetVersionFromString("1.0.1.0"));
   {
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     installer_state.RemoveOldVersionDirectories(*latest_version.get(),
+                                                existing_version.get(),
                                                 temp_dir.path());
   }
 
+  // the version defined as the existing version should stay
+  EXPECT_TRUE(file_util::PathExists(chrome_dir_1));
   // old versions not in used should be gone
-  EXPECT_FALSE(file_util::PathExists(chrome_dir_1));
   EXPECT_FALSE(file_util::PathExists(chrome_dir_3));
   // every thing under in used version should stay
   EXPECT_TRUE(file_util::PathExists(chrome_dir_2));
@@ -279,7 +284,10 @@ TEST_F(InstallerStateTest, Basic) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
+  // Don't explicitly tell the directory cleanup logic not to delete the
+  // old version, rely on the key files to keep it around.
   installer_state.RemoveOldVersionDirectories(*new_version.get(),
+                                              NULL,
                                               temp_dir.path());
 
   // The old directory should still exist.
@@ -290,6 +298,7 @@ TEST_F(InstallerStateTest, Basic) {
   file.Close();
 
   installer_state.RemoveOldVersionDirectories(*new_version.get(),
+                                              NULL,
                                               temp_dir.path());
   // The new directory should still exist.
   EXPECT_TRUE(file_util::PathExists(new_version_dir));

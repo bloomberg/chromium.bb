@@ -148,9 +148,11 @@ class InstallerState {
   // (for example <target_path>\Google\Chrome\Application\<Version>\Installer)
   FilePath GetInstallerDirectory(const Version& version) const;
 
-  // Try to delete all directories whose versions are lower than
-  // |latest_version|.
-  void RemoveOldVersionDirectories(const Version& latest_version,
+  // Try to delete all directories under |temp_path| whose versions are less
+  // than |new_version| and not equal to |existing_version|. |existing_version|
+  // may be NULL.
+  void RemoveOldVersionDirectories(const Version& new_version,
+                                   Version* existing_version,
                                    const FilePath& temp_path) const;
 
   // Adds to |com_dll_list| the list of COM DLLs that are to be registered

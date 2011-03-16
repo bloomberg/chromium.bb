@@ -411,8 +411,10 @@ InstallStatus InstallOrUpdateProduct(
           make_chrome_default || force_chrome_default_for_user);
     }
 
-    installer_state.RemoveOldVersionDirectories(existing_version.get() ?
-        *existing_version.get() : new_version, install_temp_path);
+    installer_state.RemoveOldVersionDirectories(
+        new_version,
+        existing_version.get(),
+        install_temp_path);
   }
 
   return result;

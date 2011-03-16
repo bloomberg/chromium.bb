@@ -393,7 +393,8 @@ FilePath InstallerState::GetInstallerDirectory(const Version& version) const {
 }
 
 void InstallerState::RemoveOldVersionDirectories(
-    const Version& latest_version,
+    const Version& new_version,
+    Version* existing_version,
     const FilePath& temp_path) const {
   file_util::FileEnumerator version_enum(target_path(), false,
       file_util::FileEnumerator::DIRECTORIES);
@@ -409,24 +410,30 @@ void InstallerState::RemoveOldVersionDirectories(
     VLOG(1) << "directory found: " << find_data.cFileName;
     version.reset(Version::GetVersionFromString(
                       WideToASCII(find_data.cFileName)));
-    if (version.get() && latest_version.CompareTo(*version) > 0) {
-      key_files.clear();
-      std::for_each(products_.begin(), products_.end(),
-                    std::bind2nd(std::mem_fun(&Product::AddKeyFiles),
-                                 &key_files));
-      const std::vector<FilePath>::iterator end = key_files.end();
-      for (std::vector<FilePath>::iterator scan = key_files.begin();
-           scan != end; ++scan) {
-        *scan = next_version.Append(*scan);
+    if (version.get()) {
+      // Delete the version folder if it is less than the new version and not
+      // equal to the old version (if we have an old version).
+      if (version->CompareTo(new_version) < 0 &&
+          (existing_version == NULL ||
+           version->CompareTo(*existing_version) != 0)) {
+        key_files.clear();
+        std::for_each(products_.begin(), products_.end(),
+                      std::bind2nd(std::mem_fun(&Product::AddKeyFiles),
+                                   &key_files));
+        const std::vector<FilePath>::iterator end = key_files.end();
+        for (std::vector<FilePath>::iterator scan = key_files.begin();
+             scan != end; ++scan) {
+          *scan = next_version.Append(*scan);
+        }
+
+        VLOG(1) << "Deleting directory: " << next_version.value();
+
+        scoped_ptr<WorkItem> item(
+            WorkItem::CreateDeleteTreeWorkItem(next_version, temp_path,
+                                               key_files));
+        if (!item->Do())
+          item->Rollback();
       }
-
-      VLOG(1) << "Deleting directory: " << next_version.value();
-
-      scoped_ptr<WorkItem> item(
-          WorkItem::CreateDeleteTreeWorkItem(next_version, temp_path,
-                                             key_files));
-      if (!item->Do())
-        item->Rollback();
     }
 
     next_version = version_enum.Next();
