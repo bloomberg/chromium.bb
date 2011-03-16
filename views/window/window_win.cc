@@ -404,19 +404,7 @@ void WindowWin::OnCommand(UINT notification_code, int command_id, HWND window) {
 
 void WindowWin::OnDestroy() {
   delegate_->OnNativeWindowDestroying();
-
   RestoreEnabledIfNecessary();
-
-  // If the user activates another app after opening us, then comes back and
-  // closes us, we want our owner to gain activation.  But only if the owner
-  // is visible. If we don't manually force that here, the other app will
-  // regain activation instead.
-  HWND owner = GetOwner(GetNativeView());
-  if (owner && GetNativeView() == GetForegroundWindow() &&
-      IsWindowVisible(owner)) {
-    SetForegroundWindow(owner);
-  }
-
   WidgetWin::OnDestroy();
 }
 
@@ -867,6 +855,26 @@ void WindowWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
   }
 
   WidgetWin::OnWindowPosChanging(window_pos);
+}
+
+void WindowWin::Close() {
+  WidgetWin::Close();
+
+  // If the user activates another app after opening us, then comes back and
+  // closes us, we want our owner to gain activation.  But only if the owner
+  // is visible. If we don't manually force that here, the other app will
+  // regain activation instead.
+  // It's tempting to think that this could be done from OnDestroy, but by then
+  // it's too late - GetForegroundWindow() will return the window that Windows
+  // has decided to re-activate for us instead of this dialog. It's also
+  // tempting to think about removing the foreground window check entirely, but
+  // it's necessary to this code path from being triggered when an inactive
+  // window is closed.
+  HWND owner = GetOwner(GetNativeView());
+  if (owner && GetNativeView() == GetForegroundWindow() &&
+      IsWindowVisible(owner)) {
+    SetForegroundWindow(owner);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

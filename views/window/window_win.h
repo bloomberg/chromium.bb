@@ -135,6 +135,7 @@ class WindowWin : public WidgetWin,
   virtual void OnWindowPosChanging(WINDOWPOS* window_pos) OVERRIDE;
   virtual Window* GetWindow() OVERRIDE { return this; }
   virtual const Window* GetWindow() const OVERRIDE { return this; }
+  virtual void Close() OVERRIDE;
 
   // Overridden from NativeWindow:
   virtual NativeWidget* AsNativeWidget() OVERRIDE;
