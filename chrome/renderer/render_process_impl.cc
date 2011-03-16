@@ -19,6 +19,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
@@ -157,6 +158,17 @@ RenderProcessImpl::RenderProcessImpl()
         pdf.value().c_str(), "gdi32.dll", "CreateDCA", CreateDCAPatch);
     g_iat_patch_get_font_data.Patch(
         pdf.value().c_str(), "gdi32.dll", "GetFontData", GetFontDataPatch);
+  }
+#endif
+
+#if defined(OS_LINUX)
+  // Remoting requires NSS to function properly.
+  if (command_line.HasSwitch(switches::kEnableRemoting)) {
+    // We are going to fork to engage the sandbox and we have not loaded
+    // any security modules so it is safe to disable the fork check in NSS.
+    base::DisableNSSForkCheck();
+    base::ForceNSSNoDBInit();
+    base::EnsureNSSInit();
   }
 #endif
 }

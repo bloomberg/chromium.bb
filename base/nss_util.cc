@@ -18,9 +18,11 @@
 #include <sys/vfs.h>
 #endif
 
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -30,8 +32,6 @@
 // certificate and key databases.
 #if defined(USE_NSS)
 #include "base/crypto/crypto_module_blocking_password_delegate.h"
-#include "base/environment.h"
-#include "base/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #endif  // defined(USE_NSS)
 
@@ -204,6 +204,12 @@ class NSSInitSingleton {
   }
 #endif  // defined(USE_NSS)
 
+  // This method is used to force NSS to be initialized without a DB.
+  // Call this method before NSSInitSingleton() is constructed.
+  static void ForceNoDBInit() {
+    force_nodb_init_ = true;
+  }
+
  private:
   friend struct DefaultLazyInstanceTraits<NSSInitSingleton>;
 
@@ -236,63 +242,71 @@ class NSSInitSingleton {
     }
 
     SECStatus status = SECFailure;
+    bool nodb_init = force_nodb_init_;
+
 #if !defined(USE_NSS)
     // Use the system certificate store, so initialize NSS without database.
-    status = NSS_NoDB_Init(NULL);
-    if (status != SECSuccess) {
-      LOG(ERROR) << "Error initializing NSS without a persistent "
-                    "database: NSS error code " << PR_GetError();
-    }
-#else
-    FilePath database_dir = GetInitialConfigDirectory();
-    if (!database_dir.empty()) {
-      // This duplicates the work which should have been done in
-      // EarlySetupForNSSInit. However, this function is idempotent so there's
-      // no harm done.
-      UseLocalCacheOfNSSDatabaseIfNFS(database_dir);
-
-      // Initialize with a persistent database (likely, ~/.pki/nssdb).
-      // Use "sql:" which can be shared by multiple processes safely.
-      std::string nss_config_dir =
-          StringPrintf("sql:%s", database_dir.value().c_str());
-#if defined(OS_CHROMEOS)
-      status = NSS_Init(nss_config_dir.c_str());
-#else
-      status = NSS_InitReadWrite(nss_config_dir.c_str());
+    nodb_init = true;
 #endif
-      if (status != SECSuccess) {
-        LOG(ERROR) << "Error initializing NSS with a persistent "
-                      "database (" << nss_config_dir
-                   << "): NSS error code " << PR_GetError();
-      }
-    }
-    if (status != SECSuccess) {
-      LOG(WARNING) << "Initialize NSS without a persistent database "
-                      "(~/.pki/nssdb).";
+
+    if (nodb_init) {
       status = NSS_NoDB_Init(NULL);
       if (status != SECSuccess) {
         LOG(ERROR) << "Error initializing NSS without a persistent "
-                      "database: NSS error code " << PR_GetError();
-        return;
+            "database: NSS error code " << PR_GetError();
       }
+    } else {
+#if defined(USE_NSS)
+      FilePath database_dir = GetInitialConfigDirectory();
+      if (!database_dir.empty()) {
+        // This duplicates the work which should have been done in
+        // EarlySetupForNSSInit. However, this function is idempotent so
+        // there's no harm done.
+        UseLocalCacheOfNSSDatabaseIfNFS(database_dir);
+
+        // Initialize with a persistent database (likely, ~/.pki/nssdb).
+        // Use "sql:" which can be shared by multiple processes safely.
+        std::string nss_config_dir =
+            StringPrintf("sql:%s", database_dir.value().c_str());
+#if defined(OS_CHROMEOS)
+        status = NSS_Init(nss_config_dir.c_str());
+#else
+        status = NSS_InitReadWrite(nss_config_dir.c_str());
+#endif
+        if (status != SECSuccess) {
+          LOG(ERROR) << "Error initializing NSS with a persistent "
+                        "database (" << nss_config_dir
+                     << "): NSS error code " << PR_GetError();
+        }
+      }
+      if (status != SECSuccess) {
+        LOG(WARNING) << "Initialize NSS without a persistent database "
+                        "(~/.pki/nssdb).";
+        status = NSS_NoDB_Init(NULL);
+        if (status != SECSuccess) {
+          LOG(ERROR) << "Error initializing NSS without a persistent "
+              "database: NSS error code " << PR_GetError();
+          return;
+        }
+      }
+
+      PK11_SetPasswordFunc(PKCS11PasswordFunc);
+
+      // If we haven't initialized the password for the NSS databases,
+      // initialize an empty-string password so that we don't need to
+      // log in.
+      PK11SlotInfo* slot = PK11_GetInternalKeySlot();
+      if (slot) {
+        // PK11_InitPin may write to the keyDB, but no other thread can use NSS
+        // yet, so we don't need to lock.
+        if (PK11_NeedUserInit(slot))
+          PK11_InitPin(slot, NULL, NULL);
+        PK11_FreeSlot(slot);
+      }
+
+      root_ = InitDefaultRootCerts();
+#endif  // defined(USE_NSS)
     }
-
-    PK11_SetPasswordFunc(PKCS11PasswordFunc);
-
-    // If we haven't initialized the password for the NSS databases,
-    // initialize an empty-string password so that we don't need to
-    // log in.
-    PK11SlotInfo* slot = PK11_GetInternalKeySlot();
-    if (slot) {
-      // PK11_InitPin may write to the keyDB, but no other thread can use NSS
-      // yet, so we don't need to lock.
-      if (PK11_NeedUserInit(slot))
-        PK11_InitPin(slot, NULL, NULL);
-      PK11_FreeSlot(slot);
-    }
-
-    root_ = InitDefaultRootCerts();
-#endif  // !defined(USE_NSS)
   }
 
   // NOTE(willchan): We don't actually execute this code since we leak NSS to
@@ -337,6 +351,9 @@ class NSSInitSingleton {
     return db_slot;
   }
 
+  // If this is set to true NSS is forced to be initialized without a DB.
+  static bool force_nodb_init_;
+
   PK11SlotInfo* real_db_slot_;  // Overrides internal key slot if non-NULL.
   PK11SlotInfo* test_db_slot_;  // Overrides internal key slot and real_db_slot_
   SECMODModule *root_;
@@ -347,6 +364,9 @@ class NSSInitSingleton {
   Lock write_lock_;
 #endif  // defined(USE_NSS)
 };
+
+// static
+bool NSSInitSingleton::force_nodb_init_ = false;
 
 LazyInstance<NSSInitSingleton, LeakyLazyInstanceTraits<NSSInitSingleton> >
     g_nss_singleton(LINKER_INITIALIZED);
@@ -371,6 +391,15 @@ void EnsureNSSInit() {
   //   http://code.google.com/p/chromium/issues/detail?id=59847
   ThreadRestrictions::ScopedAllowIO allow_io;
   g_nss_singleton.Get();
+}
+
+void ForceNSSNoDBInit() {
+  NSSInitSingleton::ForceNoDBInit();
+}
+
+void DisableNSSForkCheck() {
+  scoped_ptr<Environment> env(Environment::Create());
+  env->SetVar("NSS_STRICT_NOFORK", "DISABLED");
 }
 
 bool CheckNSSVersion(const char* version) {

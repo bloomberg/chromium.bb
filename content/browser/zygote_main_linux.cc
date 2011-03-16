@@ -28,6 +28,7 @@
 #include "base/global_descriptors_posix.h"
 #include "base/hash_tables.h"
 #include "base/linux_util.h"
+#include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/process_util.h"
@@ -599,6 +600,20 @@ static void PreSandboxInit() {
   FilePath module_path;
   if (PathService::Get(base::DIR_MODULE, &module_path))
     media::InitializeMediaLibrary(module_path);
+
+  // Remoting requires NSS to function properly. It is not used for other
+  // reasons so load NSS only if remoting is enabled.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableRemoting)) {
+    // We are going to fork to engage the sandbox and we have not loaded
+    // any security modules so it is safe to disable the fork check in NSS.
+    base::DisableNSSForkCheck();
+
+    // Initialize NSS so that we load the necessary library files
+    // before we enter the sandbox.
+    base::ForceNSSNoDBInit();
+    base::EnsureNSSInit();
+  }
 
   // Ensure access to the Pepper plugins before the sandbox is turned on.
   PepperPluginRegistry::PreloadModules();

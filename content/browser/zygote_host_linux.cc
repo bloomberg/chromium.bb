@@ -97,6 +97,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
     switches::kAllowSandboxDebugging,
     switches::kLoggingLevel,
     switches::kEnableLogging,  // Support, e.g., --enable-logging=stderr.
+    switches::kEnableRemoting,
     switches::kV,
     switches::kVModule,
     switches::kUserDataDir,  // Make logs go to the right file.
