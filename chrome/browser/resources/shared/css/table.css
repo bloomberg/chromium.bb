@@ -1,0 +1,106 @@
+html.col-resize * {
+  cursor: col-resize !important;
+}
+
+.table[hasElementFocus] > list > [lead] {
+  border-color: hsl(214, 91%, 65%);
+  z-index: 2;
+}
+
+.table[hasElementFocus] > list > [selected] {
+  background-color: hsl(214,91%,89%);
+  border-color: hsl(214, 91%, 65%);
+}
+
+.table[hasElementFocus] > list > [lead][selected],
+list > [selected]:hover {
+  background-color: hsl(214, 91%, 87%);
+  border-color: hsl(214, 91%, 65%);
+}
+
+.list > * {
+  padding: 0;
+  border-right: none;
+  border-left: none;
+}
+.list {
+  height: 200px;
+}
+
+.table:focus {
+  border: 1px solid;
+}
+
+.table {
+  outline: none;
+  overflow: hidden;
+  border: 1px solid;
+}
+
+.table-row {
+  width: 100%;
+  text-align: start;
+  display: -webkit-box;
+}
+
+.table-row-cell {
+  overflow: hidden;
+}
+
+.table-row-cell > * {
+  overflow: hidden;
+  margin: 0 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-header {
+  position: relative;
+  overflow: hidden;
+  background-color: rgb(220, 220, 220);
+}
+
+.table-header-inner {
+  position: relative;
+  text-align: start;
+  float: left;
+  display: -webkit-box;
+}
+
+.table-header-cell {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  font-weight: normal;
+}
+
+.table-header-label {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  margin: 0 7px;
+}
+
+.table-header-label > * {
+  padding: 0 12px;
+}
+
+.table-header-sort-image-desc {
+  background-image: url('../images/treeDownTriangleBlack.png');
+  background-repeat: no-repeat;
+}
+
+.table-header-sort-image-asc {
+  background-image: url('../images/treeUpTriangleBlack.png');
+  background-repeat: no-repeat;
+}
+
+.table-header-splitter {
+  position: absolute;
+  top: 0px;
+  cursor: col-resize;
+  width: 5px;
+  -webkit-margin-start: -1px;
+  height: 100%;
+  background-color: black;
+}

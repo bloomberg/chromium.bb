@@ -72,7 +72,8 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Starts the dragging of the splitter.
+     * Starts the dragging of the splitter. Adds listeners for mouse move and
+     * mouse up events and calls splitter drag start handler.
      * @param {!Event} e The mouse event that started the drag.
      */
     startDrag: function(e) {
@@ -88,28 +89,19 @@ cr.define('cr.ui', function() {
       doc.addEventListener('mousemove',this.boundHandleMouseMove_, true);
       doc.addEventListener('mouseup', this.boundHandleMouseUp_, true);
 
-      // Use the computed width style as the base so that we can ignore what
-      // box sizing the element has.
-      var leftComponent = this.previousElementSibling;
-      var computedWidth = getComputedWidth(leftComponent);
       this.startX_ = e.clientX;
-      this.startWidth_ = computedWidth
+      this.handleSplitterDragStart();
     },
 
     /**
-     * Ends the dragging of the splitter. This fires a "resize" event if the
-     * size changed.
+     * Ends the dragging of the splitter. Removes listeners set in startDrag
+     * and calls splitter drag end handler.
      */
     endDrag: function() {
       var doc = this.ownerDocument;
       doc.removeEventListener('mousemove', this.boundHandleMouseMove_, true);
       doc.removeEventListener('mouseup', this.boundHandleMouseUp_, true);
-
-      // Check if the size changed.
-      var leftComponent = this.previousElementSibling;
-      var computedWidth = getComputedWidth(leftComponent);
-      if (this.startWidth_ != computedWidth)
-        cr.dispatchSimpleEvent(this, 'resize');
+      this.handleSplitterDragEnd();
     },
 
     /**
@@ -125,17 +117,16 @@ cr.define('cr.ui', function() {
 
     /**
      * Handles the mousemove event which moves the splitter as the user moves
-     * the mouse.
+     * the mouse. Calls splitter drag move handler.
      * @param {!Event} e The mouse event.
      * @private
      */
     handleMouseMove_: function(e) {
-      var leftComponent = this.previousElementSibling;
       var rtl = this.ownerDocument.defaultView.getComputedStyle(this).
           direction == 'rtl';
       var dirMultiplier = rtl ? -1 : 1;
-      leftComponent.style.width = this.startWidth_ +
-          dirMultiplier * (e.clientX - this.startX_) + 'px';
+      var deltaX = dirMultiplier * (e.clientX - this.startX_);
+      this.handleSplitterDragMove(deltaX);
     },
 
     /**
@@ -145,7 +136,46 @@ cr.define('cr.ui', function() {
      */
     handleMouseUp_: function(e) {
       this.endDrag();
-    }
+    },
+
+    /**
+     * Handles start of the splitter dragging. Saves current width of the
+     * element being resized.
+     * @protected
+     */
+    handleSplitterDragStart: function() {
+      // Use the computed width style as the base so that we can ignore what
+      // box sizing the element has.
+      var leftComponent = this.previousElementSibling;
+      var doc = leftComponent.ownerDocument;
+      this.startWidth_ = parseFloat(
+          doc.defaultView.getComputedStyle(leftComponent).width);
+    },
+
+    /**
+     * Handles splitter moves. Updates width of the element being resized.
+     * @param {number} changeX The change of splitter horizontal position.
+     * @protected
+     */
+    handleSplitterDragMove: function(deltaX) {
+      var leftComponent = this.previousElementSibling;
+      leftComponent.style.width = this.startWidth_ + deltaX + 'px';
+    },
+
+    /**
+     * Handles end of the splitter dragging. This fires a 'resize' event if the
+     * size changed.
+     * @protected
+     */
+    handleSplitterDragEnd: function() {
+      // Check if the size changed.
+      var leftComponent = this.previousElementSibling;
+      var doc = leftComponent.ownerDocument;
+      var computedWidth = parseFloat(
+          doc.defaultView.getComputedStyle(leftComponent).width);
+      if (this.startWidth_ != computedWidth)
+        cr.dispatchSimpleEvent(this, 'resize');
+    },
   };
 
   return {

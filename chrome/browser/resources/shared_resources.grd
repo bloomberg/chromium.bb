@@ -20,6 +20,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/css/list.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_MENU"
                file="shared/css/menu.css" type="BINDATA" />
+      <include name="IDR_SHARED_CSS_TABLE"
+               file="shared/css/table.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_TABS"
                file="shared/css/tabs.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_THROBBER"
@@ -72,6 +74,24 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/js/cr/ui/position_util.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_SPLITTER"
                file="shared/js/cr/ui/splitter.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_TABLE"
+               file="shared/js/cr/ui/table.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_TABLE_COLUMN"
+               file="shared/js/cr/ui/table/table_column.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_TABLE_COLUMN_MODEL"
+               file="shared/js/cr/ui/table/table_column_model.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_TABLE_DATA_MODEL"
+               file="shared/js/cr/ui/table/table_data_model.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_TABLE_HEADER"
+               file="shared/js/cr/ui/table/table_header.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_TABLE_LIST"
+               file="shared/js/cr/ui/table/table_list.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_TABLE_SELECTION_MODEL"
+               file="shared/js/cr/ui/table/table_selection_model.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_TABLE_SINGLE_SELECTION_MODEL"
+               file="shared/js/cr/ui/table/table_single_selection_model.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_TABLE_SPLITTER"
+               file="shared/js/cr/ui/table/table_splitter.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_TABS"
                file="shared/js/cr/ui/tabs.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_TREE"
