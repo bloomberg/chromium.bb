@@ -43,8 +43,16 @@ export GYP_GENERATOR=make
 
 
 echo @@@BUILD_STEP extract_archive@@@
+if [[ $BUILDBOT_SLAVENAME == nacl-arm2 ]]; then
+  PARENT_BUILDER=nacl-arm_${MODE}
+  VERSION=None
+else
+  PARENT_BUILDER=hardy64-marm-narm-${MODE}
+  VERSION=rev_${BUILDBOT_GOT_REVISION}
+fi
 curl -L \
-    http://commondatastorage.googleapis.com/nativeclient-archive2/between_builders/arm_try_opt.tgz \
+    http://commondatastorage.googleapis.com/nativeclient-archive2/\
+between_builders/${PARENT_BUILDER}/${VERSION}/build.tgz \
     -o build.tgz && tar xvfz build.tgz --no-same-owner
 
 echo @@@BUILD_STEP small_tests@@@

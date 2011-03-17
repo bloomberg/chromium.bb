@@ -84,7 +84,13 @@ echo @@@BUILD_STEP large_tests@@@
     (RETCODE=$? && echo @@@BUILD_FAILED@@@)
 
 echo @@@BUILD_STEP archive_build@@@
+if [[ $BUILDBOT_BUILDERNAME == nacl-* ]]; then
+  VERSION=None
+else
+  VERSION=rev_${BUILDBOT_GOT_REVISION}
+fi
 /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    arm.tgz gs://nativeclient-archive2/between_builders/arm_try_${MODE}.tgz
+    arm.tgz gs://nativeclient-archive2/between_builders/\
+${BUILDBOT_BUILDERNAME}/${VERSION}/build.tgz
 
 exit ${RETCODE}
