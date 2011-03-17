@@ -48,8 +48,15 @@ without changes to the corresponding grd file. etaa -->
       <include name="IDR_LOGIN_CONTAINER_HTML" file="resources\login_container.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GPU_BLACKLIST" file="resources\software_rendering_list.json" type="BINDATA" />
       <include name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\new_incognito_tab_theme.css" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_NEW_NEW_TAB_HTML" file="resources\new_new_tab.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_NEW_TAB_THEME_CSS" file="resources\new_tab_theme.css" flattenhtml="true" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_NEW_TAB_HTML" file="resources\new_new_tab.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_NEW_TAB_THEME_CSS" file="resources\new_tab_theme.css" flattenhtml="true" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_NEW_TAB_HTML" file="resources\touch_ntp\newtab.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_NEW_TAB_THEME_CSS" file="resources\touch_ntp\newtab.css" flattenhtml="true" type="BINDATA" />
+      </if>
+      <include name="IDR_TOUCH_NEW_TAB_HTML" file="resources\touch_ntp\newtab.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NOTIFICATION_1LINE_HTML" file="resources\notification_1line.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NOTIFICATION_2LINE_HTML" file="resources\notification_2line.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NOTIFICATION_ICON_HTML" file="resources\notification_icon.html" type="BINDATA" />

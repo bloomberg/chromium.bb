@@ -390,8 +390,13 @@ void NTPResourceCache::CreateNewTabHTML() {
     UserMetrics::RecordAction(UserMetricsAction("NTPPromoShown"));
   }
 
+  // Load the new tab page appropriate for this build
+  // Note that some builds (eg. TOUCHUI) don't make use of everything we
+  // do here (all of the template data, etc.), but we keep the back end
+  // consistent across builds, supporting the union of all NTP front-ends
+  // for simplicity.
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
-      GetRawDataResource(IDR_NEW_NEW_TAB_HTML));
+      GetRawDataResource(IDR_NEW_TAB_HTML));
 
   // Inject the template data into the HTML so that it is available before any
   // layout is needed.
