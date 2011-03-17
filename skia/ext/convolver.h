@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/cpu.h"
+#include "third_party/skia/include/core/SkTypes.h"
 
 #if defined(ARCH_CPU_X86_FAMILY)
 #if defined(__x86_64__) || defined(_M_X64) || defined(__SSE2__) || _M_IX86_FP==2
@@ -42,8 +43,8 @@ class ConvolutionFilter1D {
   // The number of bits that fixed point values are shifted by.
   enum { kShiftBits = 14 };
 
-  ConvolutionFilter1D();
-  ~ConvolutionFilter1D();
+  SK_API ConvolutionFilter1D();
+  SK_API ~ConvolutionFilter1D();
 
   // Convert between floating point and our fixed point representation.
   static Fixed FloatToFixed(float f) {
@@ -80,9 +81,9 @@ class ConvolutionFilter1D {
   // The filter_length must be > 0.
   //
   // This version will automatically convert your input to fixed point.
-  void AddFilter(int filter_offset,
-                 const float* filter_values,
-                 int filter_length);
+  SK_API void AddFilter(int filter_offset,
+                        const float* filter_values,
+                        int filter_length);
 
   // Same as the above version, but the input is already fixed point.
   void AddFilter(int filter_offset,
@@ -118,7 +119,7 @@ class ConvolutionFilter1D {
   }
 
  private:
-  struct FilterInstance {
+  struct SK_API FilterInstance {
     // Offset within filter_values for this instance of the filter.
     int data_location;
 
@@ -159,14 +160,14 @@ class ConvolutionFilter1D {
 //
 // The layout in memory is assumed to be 4-bytes per pixel in B-G-R-A order
 // (this is ARGB when loaded into 32-bit words on a little-endian machine).
-void BGRAConvolve2D(const unsigned char* source_data,
-                    int source_byte_row_stride,
-                    bool source_has_alpha,
-                    const ConvolutionFilter1D& xfilter,
-                    const ConvolutionFilter1D& yfilter,
-                    int output_byte_row_stride,
-                    unsigned char* output,
-                    bool use_sse2);
+SK_API void BGRAConvolve2D(const unsigned char* source_data,
+                           int source_byte_row_stride,
+                           bool source_has_alpha,
+                           const ConvolutionFilter1D& xfilter,
+                           const ConvolutionFilter1D& yfilter,
+                           int output_byte_row_stride,
+                           unsigned char* output,
+                           bool use_sse2);
 }  // namespace skia
 
 #endif  // SKIA_EXT_CONVOLVER_H_
