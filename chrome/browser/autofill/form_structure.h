@@ -72,10 +72,6 @@ class FormStructure {
   // form's method be POST is only applied if |require_method_post| is true.
   bool IsAutoFillable(bool require_method_post) const;
 
-  // Returns true if at least one of the form fields relevant for AutoFill
-  // is not empty.
-  bool HasAutoFillableValues() const;
-
   // Resets |autofill_count_| and counts the number of auto-fillable fields.
   // This is used when we receive server data for form fields.  At that time,
   // we may have more known fields than just the number of fields we matched

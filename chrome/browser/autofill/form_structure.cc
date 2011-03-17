@@ -296,20 +296,6 @@ bool FormStructure::IsAutoFillable(bool require_method_post) const {
   return ShouldBeParsed(require_method_post);
 }
 
-bool FormStructure::HasAutoFillableValues() const {
-  if (autofill_count_ == 0)
-    return false;
-
-  for (std::vector<AutofillField*>::const_iterator iter = begin();
-       iter != end(); ++iter) {
-    AutofillField* field = *iter;
-    if (field && !field->IsEmpty() && field->IsFieldFillable())
-      return true;
-  }
-
-  return false;
-}
-
 void FormStructure::UpdateAutoFillCount() {
   autofill_count_ = 0;
   for (std::vector<AutofillField*>::const_iterator iter = begin();
