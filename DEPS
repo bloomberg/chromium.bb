@@ -7,7 +7,7 @@ vars = {
   "webkit_revision": "81308",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  "nacl_revision": "4508",
+  "nacl_revision": "4559",
   "libjingle_revision": "55",
   "libvpx_revision": "76510",
   "ffmpeg_revision": "77796",
@@ -63,7 +63,7 @@ deps = {
     (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@70",
 
   "src/tools/gyp":
-    (Var("googlecode_url") % "gyp") + "/trunk@900",
+    (Var("googlecode_url") % "gyp") + "/trunk@901",
 
   "src/v8":
     (Var("googlecode_url") % "v8") + "/trunk@" + Var("v8_revision"),
