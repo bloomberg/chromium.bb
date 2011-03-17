@@ -247,8 +247,6 @@ WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {
   ask_for_save_location_.Init(prefs::kPromptForDownload, prefs, this);
   auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
   default_font_size_.Init(prefs::kWebKitDefaultFontSize, prefs, this);
-  default_fixed_font_size_.Init(prefs::kWebKitDefaultFixedFontSize, prefs,
-                                this);
   proxy_prefs_.reset(
       PrefSetObserver::CreateProxyPrefSetObserver(prefs, this));
 
@@ -349,8 +347,7 @@ void AdvancedOptionsHandler::Observe(NotificationType type,
       if (cloud_print_proxy_ui_enabled_)
         SetupCloudPrintProxySection();
 #endif
-    } else if (*pref_name == prefs::kWebKitDefaultFontSize ||
-               *pref_name == prefs::kWebKitDefaultFixedFontSize) {
+    } else if (*pref_name == prefs::kWebKitDefaultFontSize) {
       SetupFontSizeLabel();
     }
   }
@@ -415,7 +412,6 @@ void AdvancedOptionsHandler::HandleDefaultFontSize(const ListValue* args) {
   if (ExtractIntegerValue(args, &font_size)) {
     if (font_size > 0) {
       default_font_size_.SetValue(font_size);
-      default_fixed_font_size_.SetValue(font_size);
       SetupFontSizeLabel();
     }
   }
@@ -612,10 +608,9 @@ void AdvancedOptionsHandler::SetupMetricsReportingSettingVisibility() {
 
 void AdvancedOptionsHandler::SetupFontSizeLabel() {
   // We're only interested in integer values, so convert to int.
-  FundamentalValue fixed_font_size(default_fixed_font_size_.GetValue());
   FundamentalValue font_size(default_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
-      "options.AdvancedOptions.SetFontSize", fixed_font_size, font_size);
+      "options.AdvancedOptions.SetFontSize", font_size);
 }
 
 void AdvancedOptionsHandler::SetupDownloadLocationPath() {

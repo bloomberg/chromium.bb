@@ -181,7 +181,6 @@ class AdvancedOptionsHandler
   BooleanPrefMember ask_for_save_location_;
   StringPrefMember auto_open_files_;
   IntegerPrefMember default_font_size_;
-  IntegerPrefMember default_fixed_font_size_;
   scoped_ptr<PrefSetObserver> proxy_prefs_;
   scoped_ptr<OptionsManagedBannerHandler> banner_handler_;
 

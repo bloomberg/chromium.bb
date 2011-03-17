@@ -175,17 +175,14 @@ var OptionsPage = options.OptionsPage;
   }
 
   // Set the font size selected item.
-  AdvancedOptions.SetFontSize = function(fixed_font_size_value,
-      font_size_value) {
+  AdvancedOptions.SetFontSize = function(font_size_value) {
     var selectCtl = $('defaultFontSize');
-    if (fixed_font_size_value == font_size_value) {
-      for (var i = 0; i < selectCtl.options.length; i++) {
-        if (selectCtl.options[i].value == font_size_value) {
-          selectCtl.selectedIndex = i;
-          if ($('Custom'))
-            selectCtl.remove($('Custom').index);
-          return;
-        }
+    for (var i = 0; i < selectCtl.options.length; i++) {
+      if (selectCtl.options[i].value == font_size_value) {
+        selectCtl.selectedIndex = i;
+        if ($('Custom'))
+          selectCtl.remove($('Custom').index);
+        return;
       }
     }
 

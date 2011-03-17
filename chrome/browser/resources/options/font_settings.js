@@ -30,24 +30,23 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       var standardFontRange = $('standard-font-size');
-      standardFontRange.valueMap = $('fixed-font-size').valueMap = [9, 10, 11,
-          12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40,
-          44, 48, 56, 64, 72];
+      standardFontRange.valueMap = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20,
+          22, 24, 26, 28, 30, 32, 34, 36, 40, 44, 48, 56, 64, 72];
       standardFontRange.continuous = false;
-      standardFontRange.fontSampleEl = $('standard-font-sample');
-      standardFontRange.notifyChange = this.rangeChanged_.bind(this);
+      standardFontRange.notifyChange = this.standardRangeChanged_.bind(this);
 
       var minimumFontRange = $('minimum-font-size');
       minimumFontRange.valueMap = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
           18, 20, 22, 24];
       minimumFontRange.continuous = false;
-      minimumFontRange.fontSampleEl = $('minimum-font-sample');
-      minimumFontRange.notifyChange = this.rangeChanged_.bind(this);
+      minimumFontRange.notifyChange = this.minimumRangeChanged_.bind(this);
       minimumFontRange.notifyPrefChange =
           this.minimumFontSizeChanged_.bind(this);
 
       var placeholder = localStrings.getString('fontSettingsPlaceholder');
       $('standard-font-family').appendChild(new Option(placeholder));
+      $('serif-font-family').appendChild(new Option(placeholder));
+      $('sans-serif-font-family').appendChild(new Option(placeholder));
       $('fixed-font-family').appendChild(new Option(placeholder));
       $('font-encoding').appendChild(new Option(placeholder));
     },
@@ -67,15 +66,37 @@ cr.define('options', function() {
     },
 
     /**
-     * Called as the user changes a non-continuous slider.  This allows for
+     * Called as the user changes the standard font size.  This allows for
      * reflecting the change in the UI before the preference has been changed.
      * @param {Element} el The slider input element.
      * @param {number} value The mapped value currently set by the slider.
      * @private
      */
-    rangeChanged_: function(el, value) {
-      this.setupFontSample_(el.fontSampleEl, value,
-                            el.fontSampleEl.style.fontFamily);
+    standardRangeChanged_: function(el, value) {
+      var fontSampleEl = $('standard-font-sample');
+      this.setupFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
+                            true);
+
+      fontSampleEl = $('serif-font-sample');
+      this.setupFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
+                            true);
+
+      fontSampleEl = $('sans-serif-font-sample');
+      this.setupFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
+                            true);
+    },
+
+    /**
+     * Called as the user changes the miniumum font size.  This allows for
+     * reflecting the change in the UI before the preference has been changed.
+     * @param {Element} el The slider input element.
+     * @param {number} value The mapped value currently set by the slider.
+     * @private
+     */
+    minimumRangeChanged_: function(el, value) {
+      var fontSampleEl = $('minimum-font-sample');
+      this.setupFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
+                            true);
     },
 
     /**
@@ -95,12 +116,14 @@ cr.define('options', function() {
      * @param {Element} el The div containing the sample text.
      * @param {number} size The font size of the sample text.
      * @param {string} font The font family of the sample text.
+     * @param {bool} showSize True if the font size should appear in the sample.
      * @private
      */
-    setupFontSample_: function(el, size, font) {
-      el.textContent =
-          size + ": " + localStrings.getString('fontSettingsLoremIpsum');
-      el.style.fontSize = size + "px";
+    setupFontSample_: function(el, size, font, showSize) {
+      var prefix = showSize ? (size + ': ') : '';
+      el.textContent = prefix +
+          localStrings.getString('fontSettingsLoremIpsum');
+      el.style.fontSize = size + 'px';
       if (font)
         el.style.fontFamily = font;
     },
@@ -139,24 +162,43 @@ cr.define('options', function() {
   FontSettings.setFontsData = function(fonts, encodings, selectedValues) {
     FontSettings.getInstance().populateSelect_($('standard-font-family'), fonts,
                                                selectedValues[0]);
-    FontSettings.getInstance().populateSelect_($('fixed-font-family'), fonts,
+    FontSettings.getInstance().populateSelect_($('serif-font-family'), fonts,
                                                selectedValues[1]);
+    FontSettings.getInstance().populateSelect_($('sans-serif-font-family'),
+                                               fonts, selectedValues[2]);
+    FontSettings.getInstance().populateSelect_($('fixed-font-family'), fonts,
+                                               selectedValues[3]);
     FontSettings.getInstance().populateSelect_($('font-encoding'), encodings,
-                                               selectedValues[2]);
+                                               selectedValues[4]);
   };
 
   FontSettings.setupStandardFontSample = function(font, size) {
     FontSettings.getInstance().setupFontSample_($('standard-font-sample'), size,
-                                                font);
+                                                font, true);
+  };
+
+  FontSettings.setupSerifFontSample = function(font, size) {
+    FontSettings.getInstance().setupFontSample_($('serif-font-sample'), size,
+                                                font, true);
+  };
+
+  FontSettings.setupSansSerifFontSample = function(font, size) {
+    FontSettings.getInstance().setupFontSample_($('sans-serif-font-sample'),
+                                                size, font, true);
   };
 
   FontSettings.setupFixedFontSample = function(font, size) {
-    FontSettings.getInstance().setupFontSample_($('fixed-font-sample'), size,
-                                                font);
+    FontSettings.getInstance().setupFontSample_($('fixed-font-sample'),
+                                                size, font, false);
   };
 
   FontSettings.setupMinimumFontSample = function(size) {
-    FontSettings.getInstance().setupFontSample_($('minimum-font-sample'), size);
+    // If size is less than 6, represent it as six in the sample to account
+    // for the minimum logical font size.
+    if (size < 6)
+      size = 6;
+    FontSettings.getInstance().setupFontSample_($('minimum-font-sample'), size,
+                                                true);
   };
 
   // Export
