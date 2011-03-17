@@ -11,7 +11,10 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/content_settings/content_settings_notification_provider.h"
+#include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/content_settings.h"
 #include "content/common/notification_observer.h"
@@ -127,9 +130,6 @@ class DesktopNotificationService : public NotificationObserver {
   // Takes a notification object and shows it in the UI.
   void ShowNotification(const Notification& notification);
 
-  // Save a permission change to the profile.
-  void PersistPermissionChange(const GURL& origin, bool is_allowed);
-
   // Returns a display name for an origin, to be used in permission infobar
   // or on the frame of the notification toast.  Different from the origin
   // itself when dealing with extensions.
@@ -148,6 +148,9 @@ class DesktopNotificationService : public NotificationObserver {
   // Non-owned pointer to the notification manager which manages the
   // UI for desktop toasts.
   NotificationUIManager* ui_manager_;
+
+  scoped_ptr<content_settings::NotificationProvider> provider_;
+  scoped_ptr<content_settings::NotificationDefaultProvider> default_provider_;
 
   PrefChangeRegistrar prefs_registrar_;
   NotificationRegistrar notification_registrar_;

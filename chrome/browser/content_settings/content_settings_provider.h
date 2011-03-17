@@ -8,6 +8,8 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PROVIDER_H_
 #pragma once
 
+#define NO_RESOURCE_IDENTIFIER ""
+
 #include <string>
 #include <vector>
 

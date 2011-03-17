@@ -94,8 +94,6 @@ const PrefsForManagedContentSettingsMapEntry
   }
 };
 
-const std::string NO_IDENTIFIER = "";
-
 }  // namespace
 
 namespace content_settings {
@@ -359,7 +357,7 @@ void PolicyProvider::GetContentSettingsFromPreferences(
           pattern,
           pattern,
           kPrefsForManagedContentSettingsMap[i].content_type,
-          NO_IDENTIFIER,
+          ProviderInterface::ResourceIdentifier(NO_RESOURCE_IDENTIFIER),
           kPrefsForManagedContentSettingsMap[i].setting));
     }
   }
@@ -401,7 +399,7 @@ ContentSetting PolicyProvider::GetContentSetting(
       requesting_url,
       embedding_url,
       content_type,
-      NO_IDENTIFIER);
+      NO_RESOURCE_IDENTIFIER);
 }
 
 void PolicyProvider::ClearAllContentSettingsRules(

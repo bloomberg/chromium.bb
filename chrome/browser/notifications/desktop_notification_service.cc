@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
@@ -42,6 +43,45 @@ using WebKit::WebNotificationPresenter;
 using WebKit::WebTextDirection;
 
 const ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
+
+namespace {
+
+const std::string HTTP_PREFIX("http://");
+
+typedef content_settings::ProviderInterface::Rules Rules;
+
+void GetOriginsWithSettingFromContentSettingsRules(
+    const Rules& content_setting_rules,
+    ContentSetting setting,
+    std::vector<GURL>* origins) {
+  origins->clear();
+
+  for (Rules::const_iterator rule = content_setting_rules.begin();
+       rule != content_setting_rules.end();
+       ++rule) {
+    if (setting == rule->content_setting) {
+      std::string url_str = rule->requesting_url_pattern.AsString();
+      if (!rule->requesting_url_pattern.IsValid()) {
+        // TODO(markusheintz): This will be removed in one of the next
+        // refactoring steps as this entire function will disapear.
+        LOG(DFATAL) << "Ignoring invalid content settings pattern: "
+                   << url_str;
+      } else if (url_str.find(ContentSettingsPattern::kDomainWildcard) == 0) {
+        // TODO(markusheintz): This must be changed once the UI code is
+        // refactored and content_settings patterns are fully supported for
+        // notifications settings.
+        LOG(DFATAL) << "Ignoring unsupported content settings pattern: "
+                   << url_str << ". Content settings patterns other than "
+                   << "hostnames (e.g. wildcard patterns) are not supported "
+                   << "for notification content settings yet.";
+      } else {
+        origins->push_back(GURL(HTTP_PREFIX + url_str));
+      }
+    }
+  }
+}
+
+}  // namespace
 
 // NotificationPermissionInfoBarDelegate --------------------------------------
 
@@ -225,28 +265,25 @@ DesktopNotificationService::~DesktopNotificationService() {
 }
 
 void DesktopNotificationService::RegisterUserPrefs(PrefService* user_prefs) {
-  if (!user_prefs->FindPreference(
-      prefs::kDesktopNotificationDefaultContentSetting)) {
-    user_prefs->RegisterIntegerPref(
-        prefs::kDesktopNotificationDefaultContentSetting, kDefaultSetting);
-  }
-  if (!user_prefs->FindPreference(prefs::kDesktopNotificationAllowedOrigins))
-    user_prefs->RegisterListPref(prefs::kDesktopNotificationAllowedOrigins);
-  if (!user_prefs->FindPreference(prefs::kDesktopNotificationDeniedOrigins))
-    user_prefs->RegisterListPref(prefs::kDesktopNotificationDeniedOrigins);
+  content_settings::NotificationDefaultProvider::RegisterUserPrefs(user_prefs);
+  content_settings::NotificationProvider::RegisterUserPrefs(user_prefs);
 }
 
 // Initialize the cache with the allowed and denied origins, or
 // create the preferences if they don't exist yet.
 void DesktopNotificationService::InitPrefs() {
-  PrefService* prefs = profile_->GetPrefs();
+  default_provider_.reset(new content_settings::NotificationDefaultProvider(
+      profile_));
+  provider_.reset(new content_settings::NotificationProvider(profile_));
+
   std::vector<GURL> allowed_origins;
   std::vector<GURL> denied_origins;
   ContentSetting default_content_setting = CONTENT_SETTING_DEFAULT;
 
   if (!profile_->IsOffTheRecord()) {
-    default_content_setting = IntToContentSetting(
-        prefs->GetInteger(prefs::kDesktopNotificationDefaultContentSetting));
+    default_content_setting =
+        default_provider_->ProvideDefaultSetting(
+            CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
     allowed_origins = GetAllowedOrigins();
     denied_origins = GetBlockedOrigins();
   }
@@ -264,11 +301,9 @@ void DesktopNotificationService::StartObserving() {
                          this);
     prefs_registrar_.Add(prefs::kDesktopNotificationAllowedOrigins, this);
     prefs_registrar_.Add(prefs::kDesktopNotificationDeniedOrigins, this);
-
     notification_registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                                 NotificationService::AllSources());
   }
-
   notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                               Source<Profile>(profile_));
 }
@@ -281,31 +316,43 @@ void DesktopNotificationService::StopObserving() {
 }
 
 void DesktopNotificationService::GrantPermission(const GURL& origin) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PersistPermissionChange(origin, true);
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromURLNoWildcard(origin);
+  provider_->SetContentSetting(
+      pattern,
+      pattern,
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      NO_RESOURCE_IDENTIFIER,
+      CONTENT_SETTING_ALLOW);
 
   // Schedule a cache update on the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
-          prefs_cache_.get(), &NotificationsPrefsCache::CacheAllowedOrigin,
+          prefs_cache_.get(),
+          &NotificationsPrefsCache::CacheAllowedOrigin,
           origin));
-
-  NotifySettingsChange();
 }
 
+
 void DesktopNotificationService::DenyPermission(const GURL& origin) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PersistPermissionChange(origin, false);
+  // Update content settings
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromURLNoWildcard(origin);
+  provider_->SetContentSetting(
+      pattern,
+      pattern,
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      NO_RESOURCE_IDENTIFIER,
+      CONTENT_SETTING_BLOCK);
 
   // Schedule a cache update on the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
-          prefs_cache_.get(), &NotificationsPrefsCache::CacheDeniedOrigin,
+          prefs_cache_.get(),
+          &NotificationsPrefsCache::CacheDeniedOrigin,
           origin));
-
-  NotifySettingsChange();
 }
 
 void DesktopNotificationService::Observe(NotificationType type,
@@ -327,13 +374,9 @@ void DesktopNotificationService::Observe(NotificationType type,
 }
 
 void DesktopNotificationService::OnPrefsChanged(const std::string& pref_name) {
-  PrefService* prefs = profile_->GetPrefs();
-
   if (pref_name == prefs::kDesktopNotificationAllowedOrigins) {
-    NotifySettingsChange();
-
-    std::vector<GURL> allowed_origins(GetAllowedOrigins());
     // Schedule a cache update on the IO thread.
+    std::vector<GURL> allowed_origins(GetAllowedOrigins());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
@@ -341,10 +384,8 @@ void DesktopNotificationService::OnPrefsChanged(const std::string& pref_name) {
             &NotificationsPrefsCache::SetCacheAllowedOrigins,
             allowed_origins));
   } else if (pref_name == prefs::kDesktopNotificationDeniedOrigins) {
-    NotifySettingsChange();
-
-    std::vector<GURL> denied_origins(GetBlockedOrigins());
     // Schedule a cache update on the IO thread.
+    std::vector<GURL> denied_origins(GetBlockedOrigins());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
@@ -352,14 +393,9 @@ void DesktopNotificationService::OnPrefsChanged(const std::string& pref_name) {
             &NotificationsPrefsCache::SetCacheDeniedOrigins,
             denied_origins));
   } else if (pref_name == prefs::kDesktopNotificationDefaultContentSetting) {
-    NotificationService::current()->Notify(
-        NotificationType::DESKTOP_NOTIFICATION_DEFAULT_CHANGED,
-        Source<DesktopNotificationService>(this),
-        NotificationService::NoDetails());
-
-    const ContentSetting default_content_setting = IntToContentSetting(
-        prefs->GetInteger(prefs::kDesktopNotificationDefaultContentSetting));
-
+    const ContentSetting default_content_setting =
+        default_provider_->ProvideDefaultSetting(
+            CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
     // Schedule a cache update on the IO thread.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -370,186 +406,90 @@ void DesktopNotificationService::OnPrefsChanged(const std::string& pref_name) {
   }
 }
 
-void DesktopNotificationService::PersistPermissionChange(
-    const GURL& origin, bool is_allowed) {
-  // Don't persist changes when incognito.
-  if (profile_->IsOffTheRecord())
-    return;
-
-  PrefService* prefs = profile_->GetPrefs();
-
-  // |Observe()| updates the whole permission set in the cache, but only a
-  // single origin has changed. Hence, callers of this method manually
-  // schedule a task to update the prefs cache, and the prefs observer is
-  // disabled while the update runs.
-  StopObserving();
-
-  bool allowed_changed = false;
-  bool denied_changed = false;
-
-  ListValue* allowed_sites =
-      prefs->GetMutableList(prefs::kDesktopNotificationAllowedOrigins);
-  ListValue* denied_sites =
-      prefs->GetMutableList(prefs::kDesktopNotificationDeniedOrigins);
-  {
-    // value is passed to the preferences list, or deleted.
-    StringValue* value = new StringValue(origin.spec());
-
-    // Remove from one list and add to the other.
-    if (is_allowed) {
-      // Remove from the denied list.
-      if (denied_sites->Remove(*value) != -1)
-        denied_changed = true;
-
-      // Add to the allowed list.
-      if (allowed_sites->AppendIfNotPresent(value))
-        allowed_changed = true;
-      else
-        delete value;
-    } else {
-      // Remove from the allowed list.
-      if (allowed_sites->Remove(*value) != -1)
-        allowed_changed = true;
-
-      // Add to the denied list.
-      if (denied_sites->AppendIfNotPresent(value))
-        denied_changed = true;
-      else
-        delete value;
-    }
-  }
-
-  // Persist the pref if anthing changed, but only send updates for the
-  // list that changed.
-  if (allowed_changed || denied_changed) {
-    if (allowed_changed) {
-      ScopedUserPrefUpdate update_allowed(
-          prefs, prefs::kDesktopNotificationAllowedOrigins);
-    }
-    if (denied_changed) {
-      ScopedUserPrefUpdate updateDenied(
-          prefs, prefs::kDesktopNotificationDeniedOrigins);
-    }
-    prefs->ScheduleSavePersistentPrefs();
-  }
-  StartObserving();
-}
-
 ContentSetting DesktopNotificationService::GetDefaultContentSetting() {
-  PrefService* prefs = profile_->GetPrefs();
-  ContentSetting setting = IntToContentSetting(
-      prefs->GetInteger(prefs::kDesktopNotificationDefaultContentSetting));
-  if (setting == CONTENT_SETTING_DEFAULT)
-    setting = kDefaultSetting;
-  return setting;
+  return default_provider_->ProvideDefaultSetting(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 void DesktopNotificationService::SetDefaultContentSetting(
     ContentSetting setting) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  profile_->GetPrefs()->SetInteger(
-      prefs::kDesktopNotificationDefaultContentSetting,
-      setting == CONTENT_SETTING_DEFAULT ?  kDefaultSetting : setting);
-  // The cache is updated through the notification observer.
+  default_provider_->UpdateDefaultSetting(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
 }
 
 bool DesktopNotificationService::IsDefaultContentSettingManaged() const {
-  return profile_->GetPrefs()->IsManagedPreference(
-      prefs::kDesktopNotificationDefaultContentSetting);
+  return default_provider_->DefaultSettingIsManaged(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 void DesktopNotificationService::ResetToDefaultContentSetting() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  PrefService* prefs = profile_->GetPrefs();
-  prefs->ClearPref(prefs::kDesktopNotificationDefaultContentSetting);
+  default_provider_->ResetToDefaults();
 }
 
 std::vector<GURL> DesktopNotificationService::GetAllowedOrigins() {
+  content_settings::ProviderInterface::Rules content_setting_rules;
+  provider_->GetAllContentSettingsRules(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      NO_RESOURCE_IDENTIFIER,
+      &content_setting_rules);
   std::vector<GURL> allowed_origins;
-  PrefService* prefs = profile_->GetPrefs();
-  const ListValue* allowed_sites =
-      prefs->GetList(prefs::kDesktopNotificationAllowedOrigins);
-  if (allowed_sites) {
-    NotificationsPrefsCache::ListValueToGurlVector(*allowed_sites,
-                                                   &allowed_origins);
-  }
+
+  GetOriginsWithSettingFromContentSettingsRules(
+      content_setting_rules, CONTENT_SETTING_ALLOW, &allowed_origins);
+
   return allowed_origins;
 }
 
 std::vector<GURL> DesktopNotificationService::GetBlockedOrigins() {
+  content_settings::ProviderInterface::Rules content_settings_rules;
+  provider_->GetAllContentSettingsRules(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      NO_RESOURCE_IDENTIFIER,
+      &content_settings_rules);
   std::vector<GURL> denied_origins;
-  PrefService* prefs = profile_->GetPrefs();
-  const ListValue* denied_sites =
-      prefs->GetList(prefs::kDesktopNotificationDeniedOrigins);
-  if (denied_sites) {
-    NotificationsPrefsCache::ListValueToGurlVector(*denied_sites,
-                                                   &denied_origins);
-  }
+
+  GetOriginsWithSettingFromContentSettingsRules(
+      content_settings_rules, CONTENT_SETTING_BLOCK, &denied_origins);
+
   return denied_origins;
 }
 
 void DesktopNotificationService::ResetAllowedOrigin(const GURL& origin) {
-  if (profile_->IsOffTheRecord())
-    return;
-
-  // Since this isn't called often, let the normal observer behavior update the
-  // cache in this case.
-  PrefService* prefs = profile_->GetPrefs();
-  ListValue* allowed_sites =
-      prefs->GetMutableList(prefs::kDesktopNotificationAllowedOrigins);
-  {
-    StringValue value(origin.spec());
-    int removed_index = allowed_sites->Remove(value);
-    DCHECK_NE(-1, removed_index) << origin << " was not allowed";
-    ScopedUserPrefUpdate update_allowed(
-        prefs, prefs::kDesktopNotificationAllowedOrigins);
-  }
-  prefs->ScheduleSavePersistentPrefs();
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromURLNoWildcard(origin);
+  provider_->SetContentSetting(
+      pattern,
+      pattern,
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      NO_RESOURCE_IDENTIFIER,
+      CONTENT_SETTING_DEFAULT);
 }
 
 void DesktopNotificationService::ResetBlockedOrigin(const GURL& origin) {
-  if (profile_->IsOffTheRecord())
-    return;
-
-  // Since this isn't called often, let the normal observer behavior update the
-  // cache in this case.
-  PrefService* prefs = profile_->GetPrefs();
-  ListValue* denied_sites =
-      prefs->GetMutableList(prefs::kDesktopNotificationDeniedOrigins);
-  {
-    StringValue value(origin.spec());
-    int removed_index = denied_sites->Remove(value);
-    DCHECK_NE(-1, removed_index) << origin << " was not blocked";
-    ScopedUserPrefUpdate update_allowed(
-        prefs, prefs::kDesktopNotificationDeniedOrigins);
-  }
-  prefs->ScheduleSavePersistentPrefs();
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromURLNoWildcard(origin);
+  provider_->SetContentSetting(
+      pattern,
+      pattern,
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      NO_RESOURCE_IDENTIFIER,
+      CONTENT_SETTING_DEFAULT);
 }
 
 void DesktopNotificationService::ResetAllOrigins() {
-  PrefService* prefs = profile_->GetPrefs();
-  prefs->ClearPref(prefs::kDesktopNotificationAllowedOrigins);
-  prefs->ClearPref(prefs::kDesktopNotificationDeniedOrigins);
+  provider_->ClearAllContentSettingsRules(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 ContentSetting DesktopNotificationService::GetContentSetting(
     const GURL& origin) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (profile_->IsOffTheRecord())
-    return kDefaultSetting;
-
-  std::vector<GURL> allowed_origins(GetAllowedOrigins());
-  if (std::find(allowed_origins.begin(), allowed_origins.end(), origin) !=
-      allowed_origins.end())
-    return CONTENT_SETTING_ALLOW;
-
-  std::vector<GURL> denied_origins(GetBlockedOrigins());
-  if (std::find(denied_origins.begin(), denied_origins.end(), origin) !=
-      denied_origins.end())
-    return CONTENT_SETTING_BLOCK;
-
-  return GetDefaultContentSetting();
+  ContentSetting provided_setting = provider_->GetContentSetting(
+      origin,
+      origin,
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      NO_RESOURCE_IDENTIFIER);
+  if (CONTENT_SETTING_DEFAULT == provided_setting)
+    return GetDefaultContentSetting();
+  return provided_setting;
 }
 
 void DesktopNotificationService::RequestPermission(

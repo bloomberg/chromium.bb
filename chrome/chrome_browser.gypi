@@ -763,6 +763,8 @@
         'browser/content_settings/content_settings_provider.h',
         'browser/content_settings/host_content_settings_map.cc',
         'browser/content_settings/host_content_settings_map.h',
+        'browser/content_settings/content_settings_notification_provider.cc',
+        'browser/content_settings/content_settings_notification_provider.h',
         'browser/content_settings/content_settings_policy_provider.cc',
         'browser/content_settings/content_settings_policy_provider.h',
         'browser/content_settings/content_settings_pref_provider.cc',
