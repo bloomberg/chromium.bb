@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/threading/non_thread_safe.h"
-#include "chrome/common/gpu_feature_flags.h"
 #include "content/browser/browser_child_process_host.h"
+#include "content/common/gpu_feature_flags.h"
 
 namespace IPC {
 class Message;

@@ -13,7 +13,7 @@
 #include "base/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/web_resource/gpu_blacklist_updater.h"
-#include "chrome/common/gpu_feature_flags.h"
+#include "content/common/gpu_feature_flags.h"
 #include "content/common/gpu_info.h"
 
 class CommandLine;

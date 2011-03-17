@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_GPU_FEATURE_FLAGS_H__
-#define CHROME_COMMON_GPU_FEATURE_FLAGS_H__
+#ifndef CONTENT_COMMON_GPU_FEATURE_FLAGS_H_
+#define CONTENT_COMMON_GPU_FEATURE_FLAGS_H_
 #pragma once
 
 // Provides flags indicating which gpu features are blacklisted for the system
@@ -58,5 +58,4 @@ class GpuFeatureFlags {
   uint32 flags_;
 };
 
-#endif  // CHROME_COMMON_GPU_FEATURE_FLAGS_H__
-
+#endif  // CONTENT_COMMON_GPU_FEATURE_FLAGS_H_

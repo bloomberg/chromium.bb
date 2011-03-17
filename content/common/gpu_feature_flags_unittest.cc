@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/gpu_feature_flags.h"
+#include "content/common/gpu_feature_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(GpuFeatureFlagsTest, GpuFeatureFlagsBasic) {

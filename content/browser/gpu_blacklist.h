@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/common/gpu_feature_flags.h"
+#include "content/common/gpu_feature_flags.h"
 
 class DictionaryValue;
 class Version;

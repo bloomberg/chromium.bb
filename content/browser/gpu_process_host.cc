@@ -16,7 +16,6 @@
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/gpu_feature_flags.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_widget_host.h"
