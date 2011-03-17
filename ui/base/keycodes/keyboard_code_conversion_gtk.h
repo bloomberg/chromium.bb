@@ -39,11 +39,15 @@
 
 #include "ui/base/keycodes/keyboard_codes_posix.h"
 
+typedef struct _GdkEventKey GdkEventKey;
+
 namespace ui {
 
 KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode);
 
 int GdkKeyCodeForWindowsKeyCode(KeyboardCode keycode, bool shift);
+
+KeyboardCode KeyboardCodeFromGdkEventKey(GdkEventKey* event);
 
 } // namespace ui
 

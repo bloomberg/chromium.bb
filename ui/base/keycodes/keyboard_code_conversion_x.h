@@ -13,6 +13,11 @@ namespace ui {
 
 KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev);
 
+KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym);
+
+// Converts a hardware keycode into a key symbol on a standard US PC keyboard.
+unsigned int DefaultXKeysymFromHardwareKeycode(unsigned int keycode);
+
 }  // namespace ui
 
 #endif  // UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_X_H_

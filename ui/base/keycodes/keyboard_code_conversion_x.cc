@@ -7,6 +7,7 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace ui {
@@ -15,6 +16,16 @@ namespace ui {
 KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
   KeySym keysym = XLookupKeysym(&xev->xkey, 0);
 
+  KeyboardCode keycode = KeyboardCodeFromXKeysym(keysym);
+  if (keycode == VKEY_UNKNOWN) {
+    keysym = DefaultXKeysymFromHardwareKeycode(xev->xkey.keycode);
+    keycode = KeyboardCodeFromXKeysym(keysym);
+  }
+
+  return keycode;
+}
+
+KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
   // Consult GDK key translation (in WindowsKeyCodeForGdkKeyCode) for details
   // about the following translations.
 
@@ -276,6 +287,93 @@ KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
 
   DLOG(WARNING) << "Unknown keycode: " << keysym;
   return VKEY_UNKNOWN;
+}
+
+unsigned int DefaultXKeysymFromHardwareKeycode(unsigned int hardware_code) {
+  static const unsigned int kHardwareKeycodeMap[] = {
+    0,                // 0x00:
+    0,                // 0x01:
+    0,                // 0x02:
+    0,                // 0x03:
+    0,                // 0x04:
+    0,                // 0x05:
+    0,                // 0x06:
+    0,                // 0x07:
+    0,                // 0x08:
+    XK_Escape,        // 0x09: XK_Escape
+    XK_1,             // 0x0A: XK_1
+    XK_2,             // 0x0B: XK_2
+    XK_3,             // 0x0C: XK_3
+    XK_4,             // 0x0D: XK_4
+    XK_5,             // 0x0E: XK_5
+    XK_6,             // 0x0F: XK_6
+    XK_7,             // 0x10: XK_7
+    XK_8,             // 0x11: XK_8
+    XK_9,             // 0x12: XK_9
+    XK_0,             // 0x13: XK_0
+    XK_minus,         // 0x14: XK_minus
+    XK_equal,         // 0x15: XK_equal
+    XK_BackSpace,     // 0x16: XK_BackSpace
+    XK_Tab,           // 0x17: XK_Tab
+    XK_q,             // 0x18: XK_q
+    XK_w,             // 0x19: XK_w
+    XK_e,             // 0x1A: XK_e
+    XK_r,             // 0x1B: XK_r
+    XK_t,             // 0x1C: XK_t
+    XK_y,             // 0x1D: XK_y
+    XK_u,             // 0x1E: XK_u
+    XK_i,             // 0x1F: XK_i
+    XK_o,             // 0x20: XK_o
+    XK_p,             // 0x21: XK_p
+    XK_bracketleft,   // 0x22: XK_bracketleft
+    XK_bracketright,  // 0x23: XK_bracketright
+    XK_Return,        // 0x24: XK_Return
+    XK_Control_L,     // 0x25: XK_Control_L
+    XK_a,             // 0x26: XK_a
+    XK_s,             // 0x27: XK_s
+    XK_d,             // 0x28: XK_d
+    XK_f,             // 0x29: XK_f
+    XK_g,             // 0x2A: XK_g
+    XK_h,             // 0x2B: XK_h
+    XK_j,             // 0x2C: XK_j
+    XK_k,             // 0x2D: XK_k
+    XK_l,             // 0x2E: XK_l
+    XK_semicolon,     // 0x2F: XK_semicolon
+    XK_apostrophe,    // 0x30: XK_apostrophe
+    XK_grave,         // 0x31: XK_grave
+    XK_Shift_L,       // 0x32: XK_Shift_L
+    XK_backslash,     // 0x33: XK_backslash
+    XK_z,             // 0x34: XK_z
+    XK_x,             // 0x35: XK_x
+    XK_c,             // 0x36: XK_c
+    XK_v,             // 0x37: XK_v
+    XK_b,             // 0x38: XK_b
+    XK_n,             // 0x39: XK_n
+    XK_m,             // 0x3A: XK_m
+    XK_comma,         // 0x3B: XK_comma
+    XK_period,        // 0x3C: XK_period
+    XK_slash,         // 0x3D: XK_slash
+    XK_Shift_R,       // 0x3E: XK_Shift_R
+    0,                // 0x3F: XK_KP_Multiply
+    XK_Alt_L,         // 0x40: XK_Alt_L
+    XK_space,         // 0x41: XK_space
+    XK_Caps_Lock,     // 0x42: XK_Caps_Lock
+    XK_F1,            // 0x43: XK_F1
+    XK_F2,            // 0x44: XK_F2
+    XK_F3,            // 0x45: XK_F3
+    XK_F4,            // 0x46: XK_F4
+    XK_F5,            // 0x47: XK_F5
+    XK_F6,            // 0x48: XK_F6
+    XK_F7,            // 0x49: XK_F7
+    XK_F8,            // 0x4A: XK_F8
+    XK_F9,            // 0x4B: XK_F9
+    XK_F10,           // 0x4C: XK_F10
+    XK_Num_Lock,      // 0x4D: XK_Num_Lock
+    XK_Scroll_Lock,   // 0x4E: XK_Scroll_Lock
+  };
+
+  return hardware_code < arraysize(kHardwareKeycodeMap) ?
+      kHardwareKeycodeMap[hardware_code] : 0;
 }
 
 }  // namespace ui

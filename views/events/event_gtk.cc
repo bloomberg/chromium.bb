@@ -168,8 +168,8 @@ MouseEvent::MouseEvent(NativeEvent2 native_event_2,
 KeyEvent::KeyEvent(NativeEvent native_event)
     : Event(native_event, EventTypeFromNative(native_event),
             GetFlagsFromGdkState(GetGdkStateFromNative(native_event))),
-      key_code_(ui::WindowsKeyCodeForGdkKeyCode(
-                GetGdkEventKeyFromNative(native_event)->keyval)) {
+      key_code_(ui::KeyboardCodeFromGdkEventKey(
+                GetGdkEventKeyFromNative(native_event))) {
 }
 
 #if !defined(TOUCH_UI)
