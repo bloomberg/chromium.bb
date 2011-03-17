@@ -31,7 +31,7 @@ def check(obj_file, output_fh):
     for line in proc.stdout:
       match = objdump_regexp.match(line)
       if match is not None:
-        output_fh.write("  code: %s" % line[match.end():])
+        output_fh.write("  code: %s\n" % line[match.end():].strip())
         break
 
   def decode_address(addr):
@@ -56,7 +56,9 @@ def check(obj_file, output_fh):
 
   # Pass --max_errors=-1 to get all validation errors.  This works
   # around ncval's default of truncating the number of results to 100.
-  proc = subprocess.Popen(["ncval", "--max_errors=-1", obj_file],
+  # Pass --cpuid-all because we are only interested in instructions
+  # that are always rejected by the validator.
+  proc = subprocess.Popen(["ncval", "--max_errors=-1", "--cpuid-all", obj_file],
                           stdout=subprocess.PIPE)
   for line in proc.stdout:
     match = ncval_regexp.match(line)

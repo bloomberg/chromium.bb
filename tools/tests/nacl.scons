@@ -69,11 +69,6 @@ if 'TRUSTED_ENV' in env:
         'test_toolchain',
         ['${SCONSTRUCT_DIR}/tools/tests/test_toolchain.py',
          env['TRUSTED_ENV'].SubstList2('${STAGING_DIR}/ncval${PROGSUFFIX}')],
-        '$PYTHON ${SOURCES[0].abspath}'),
-    env2.Command(
-        'ncval_annotate_test',
-        ['${SCONSTRUCT_DIR}/src/trusted/validator_x86/ncval_annotate_test.py',
-         env['TRUSTED_ENV'].SubstList2('${STAGING_DIR}/ncval${PROGSUFFIX}')],
         '$PYTHON ${SOURCES[0].abspath}')]
 
 else:

@@ -413,13 +413,14 @@ nacl_glibc_skiplist = set([
     'sdk_minimal_test',
     # TODO(elijahtaylor) add apropriate syscall hooks for glibc
     'run_gc_instrumentation_test',
-    # The tests below just run ncval.  ncval does not pass on
+    # The tests below run ncval.  ncval does not pass on
     # dynamically-linked executables because, to reduce executable
     # size, the code segment is not page-aligned, and ncval rejects
     # such executables.  See
     # http://code.google.com/p/nativeclient/issues/detail?id=1183
     'run_earth',
     'run_mandel_nav',
+    'run_ncval_annotate_test',
     'run_whole_archive_test',
     'validate_ppapi_example_audio',
     # run_srpc_sysv_shm_test fails because:
@@ -2086,6 +2087,7 @@ nacl_env.Append(
     ####  ALPHABETICALLY SORTED ####
     'src/tools/posix_over_imc/nacl.scons',
     'src/trusted/service_runtime/nacl.scons',
+    'src/trusted/validator_x86/nacl.scons',
     'tests/app_lib/nacl.scons',
     'tests/autoloader/nacl.scons',
     'tests/barebones/nacl.scons',
