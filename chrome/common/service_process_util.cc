@@ -203,7 +203,7 @@ bool ServiceProcessState::Initialize() {
 
 bool ServiceProcessState::HandleOtherVersion() {
   std::string running_version;
-  base::ProcessId process_id;
+  base::ProcessId process_id = 0;
   ServiceProcessRunningState state =
       GetServiceProcessRunningState(&running_version, &process_id);
   switch (state) {
