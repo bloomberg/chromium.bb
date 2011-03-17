@@ -8,9 +8,12 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/login/image_decoder.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "content/browser/browser_thread.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 namespace chromeos {
 
@@ -56,11 +59,27 @@ void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
     NOTREACHED();
     return;
   }
+  ImageInfo image_info = info_it->second;
+  SkBitmap final_image = decoded_image;
+  if (image_info.should_save_image) {
+    // Auto crop the image, taking the largest square in the center.
+    // Also make the image smaller to save space and memory.
+    int size = std::min(decoded_image.width(), decoded_image.height());
+    int x = (decoded_image.width() - size) / 2;
+    int y = (decoded_image.height() - size) / 2;
+    SkBitmap cropped_image =
+        SkBitmapOperations::CreateTiledBitmap(decoded_image, x, y, size, size);
+    final_image =
+        skia::ImageOperations::Resize(cropped_image,
+                                      skia::ImageOperations::RESIZE_LANCZOS3,
+                                      login::kUserImageSize,
+                                      login::kUserImageSize);
+  }
   target_message_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this,
                         &UserImageLoader::NotifyDelegate,
-                        decoded_image,
-                        info_it->second));
+                        final_image,
+                        image_info));
   image_info_map_.erase(info_it);
 }
 
