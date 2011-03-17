@@ -39,10 +39,10 @@ inline const RECT& SkIRectToRECT(const SkIRect& rect) {
 }
 
 // Converts COLORREFs (0BGR) to the ARGB layout Skia expects.
-SkColor COLORREFToSkColor(COLORREF color);
+SK_API SkColor COLORREFToSkColor(COLORREF color);
 
 // Converts ARGB to COLORREFs (0BGR).
-COLORREF SkColorToCOLORREF(SkColor color);
+SK_API COLORREF SkColorToCOLORREF(SkColor color);
 
 }  // namespace skia
 

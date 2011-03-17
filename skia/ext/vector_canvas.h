@@ -19,7 +19,7 @@ namespace skia {
 // to work with a VectorDevice to manage platform-specific drawing. It allows
 // using both Skia operations and platform-specific operations. It *doesn't*
 // support reading back from the bitmap backstore since it is not used.
-class VectorCanvas : public PlatformCanvas {
+class SK_API VectorCanvas : public PlatformCanvas {
  public:
   VectorCanvas();
   explicit VectorCanvas(SkDeviceFactory* factory);

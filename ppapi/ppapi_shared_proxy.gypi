@@ -10,6 +10,7 @@
       'dependencies': [
         'ppapi_c',
         '../base/base.gyp:base',
+        '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icuuc',
       ],
       'include_dirs': [

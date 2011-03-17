@@ -16,7 +16,7 @@ namespace skia {
 // This class is a specialization of the regular SkCanvas that is designed to
 // work with a PlatformDevice to manage platform-specific drawing. It allows
 // using both Skia operations and platform-specific operations.
-class PlatformCanvas : public SkCanvas {
+class SK_API PlatformCanvas : public SkCanvas {
  public:
   // If you use the version with no arguments, you MUST call initialize()
   PlatformCanvas();

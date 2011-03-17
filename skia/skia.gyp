@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'skia',
-      'type': '<(library)',
+      'type': '<(component)',
       'msvs_guid': 'CD9CA56E-4E94-444C-87D4-58CA1E6F300D',
       'sources': [
         '../third_party/skia/gpu/src/GrAllocPool.cpp',
@@ -54,6 +54,8 @@
         '../third_party/skia/gpu/include/GrGLConfig.h',
         '../third_party/skia/gpu/include/GrGLConfig_chrome.h',
         '../third_party/skia/gpu/include/GrGLIndexBuffer.h',
+        '../third_party/skia/gpu/include/GrGLInterface.h',
+        '../third_party/skia/gpu/include/GrGLPlatformIncludes.h',
         '../third_party/skia/gpu/include/GrGLTexture.h',
         '../third_party/skia/gpu/include/GrGLVertexBuffer.h',
         '../third_party/skia/gpu/include/GrGlyph.h',
@@ -249,11 +251,12 @@
         #'../third_party/skia/src/animator/SkTextOnPath.h',
         #'../third_party/skia/src/animator/SkTextToPath.cpp',
         #'../third_party/skia/src/animator/SkTextToPath.h',
-        #'../third_party/skia/src/animator/SkTime.cpp',
         #'../third_party/skia/src/animator/SkTypedArray.cpp',
         #'../third_party/skia/src/animator/SkTypedArray.h',
         #'../third_party/skia/src/animator/SkXMLAnimatorWriter.cpp',
         #'../third_party/skia/src/animator/SkXMLAnimatorWriter.h',
+
+        '../third_party/skia/src/animator/SkTime.cpp',
 
         '../third_party/skia/src/core/ARGB32_Clamp_Bilinear_BitmapShader.h',
         '../third_party/skia/src/core/Sk64.cpp',
@@ -763,6 +766,24 @@
           'include_dirs': [
             'config/win',
           ],
+        },],
+        ['OS=="win" and component=="shared_library"', {
+          'defines': [
+            'SKIA_DLL',
+            'SKIA_IMPLEMENTATION=1',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../gpu/gpu.gyp:gles2_c_lib',
+            '../gpu/gpu.gyp:gles2_implementation',
+            '../gpu/gpu.gyp:command_buffer_client',
+            '../gpu/gpu.gyp:command_buffer_common',
+          ],
+          'direct_dependent_settings': {
+            'defines': [
+              'SKIA_DLL',
+            ],
+          },
         },],
       ],
       'dependencies': [

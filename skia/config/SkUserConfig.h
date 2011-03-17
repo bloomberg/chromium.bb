@@ -143,8 +143,8 @@
 
 // Log the file and line number for assertions.
 #define SkDebugf(...) SkDebugf_FileLine(__FILE__, __LINE__, false, __VA_ARGS__)
-void SkDebugf_FileLine(const char* file, int line, bool fatal,
-                       const char* format, ...);
+SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
+                              const char* format, ...);
 
 // Marking the debug print as "fatal" will cause a debug break, so we don't need
 // a separate crash call here.

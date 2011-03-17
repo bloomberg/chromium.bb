@@ -6,12 +6,14 @@
 #define SKIA_EXT_IMAGE_OPERATIONS_H_
 #pragma once
 
+#include "third_party/skia/include/core/SkTypes.h"
+
 class SkBitmap;
 struct SkIRect;
 
 namespace skia {
 
-class ImageOperations {
+class SK_API ImageOperations {
  public:
   enum ResizeMethod {
     //

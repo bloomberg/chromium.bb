@@ -4,7 +4,7 @@
 
 #include "ppapi/shared_impl/image_data_impl.h"
 
-#include "skia/config/SkUserConfig.h"
+#include "third_party/skia/include/core/SkTypes.h"
 
 namespace pp {
 namespace shared_impl {

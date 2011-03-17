@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "SkDevice.h"
+#include "third_party/skia/include/core/SkDevice.h"
 
 class SkMatrix;
 class SkPath;
@@ -23,7 +23,7 @@ namespace skia {
 // to. It also provides functionality to play well with GDI drawing functions.
 // This class is abstract and must be subclassed. It provides the basic
 // interface to implement it either with or without a bitmap backend.
-class PlatformDevice : public SkDevice {
+class SK_API PlatformDevice : public SkDevice {
  public:
   typedef HDC PlatformSurface;
 
