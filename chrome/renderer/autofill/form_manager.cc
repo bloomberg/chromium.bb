@@ -844,28 +844,22 @@ void FormManager::ForEachMatchingFormField(FormElement* form,
 
     bool is_initiating_node = false;
 
-    // More than likely |requirements| will contain REQUIRE_AUTOCOMPLETE and/or
-    // REQUIRE_EMPTY, which both require text form control elements, so special-
-    // case this type of element.
     const WebInputElement* input_element = toWebInputElement(element);
     if (IsTextInput(input_element)) {
-
       // TODO(jhawkins): WebKit currently doesn't handle the autocomplete
       // attribute for select control elements, but it probably should.
-      if (requirements & REQUIRE_AUTOCOMPLETE && !input_element->autoComplete())
+      if (!input_element->autoComplete())
         continue;
 
       is_initiating_node = (*input_element == node);
-      // Don't require the node that initiated the auto-fill process to be
-      // empty.  The user is typing in this field and we should complete the
-      // value when the user selects a value to fill out.
-      if (requirements & REQUIRE_EMPTY &&
-          !is_initiating_node &&
-          !input_element->value().isEmpty())
+
+      // Only autofill empty fields and the field that initiated the filling,
+      // i.e. the field the user is currently editing and interacting with.
+      if (!is_initiating_node && !input_element->value().isEmpty())
         continue;
     }
 
-    if (requirements & REQUIRE_ENABLED && !element->isEnabled())
+    if (!element->isEnabled() || element->isReadOnly())
       continue;
 
     callback->Run(element, &data.fields[k], is_initiating_node);

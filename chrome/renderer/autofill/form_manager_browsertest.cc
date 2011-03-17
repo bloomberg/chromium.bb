@@ -728,6 +728,7 @@ TEST_F(FormManagerTest, FillForm) {
            "  <INPUT type=\"text\" id=\"notempty\" value=\"Hi\"/>"
            "  <INPUT type=\"text\" autocomplete=\"off\" id=\"noautocomplete\"/>"
            "  <INPUT type=\"text\" disabled=\"disabled\" id=\"notenabled\"/>"
+           "  <INPUT type=\"text\" readonly id=\"readonly\"/>"
            "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
            "</FORM>");
 
@@ -755,7 +756,7 @@ TEST_F(FormManagerTest, FillForm) {
   EXPECT_EQ(GURL("http://buh.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
-  ASSERT_EQ(5U, fields.size());
+  ASSERT_EQ(6U, fields.size());
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("firstname"),
                       string16(),
@@ -791,6 +792,13 @@ TEST_F(FormManagerTest, FillForm) {
                       WebInputElement::defaultMaxLength(),
                       false),
             fields[4]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("readonly"),
+                      string16(),
+                      ASCIIToUTF16("text"),
+                      WebInputElement::defaultMaxLength(),
+                      false),
+           fields[5]);
 
   // Fill the form.
   form.fields[0].value = ASCIIToUTF16("Wyatt");
@@ -798,6 +806,7 @@ TEST_F(FormManagerTest, FillForm) {
   form.fields[2].value = ASCIIToUTF16("Alpha");
   form.fields[3].value = ASCIIToUTF16("Beta");
   form.fields[4].value = ASCIIToUTF16("Gamma");
+  form.fields[5].value = ASCIIToUTF16("Delta");
   EXPECT_TRUE(form_manager.FillForm(form, input_element));
 
   // Verify the filled elements.
@@ -831,6 +840,12 @@ TEST_F(FormManagerTest, FillForm) {
       document.getElementById("notenabled").to<WebInputElement>();
   EXPECT_FALSE(notenabled.isAutofilled());
   EXPECT_TRUE(notenabled.value().isEmpty());
+
+  // Read-only fields are not filled.
+  WebInputElement readonly =
+  document.getElementById("readonly").to<WebInputElement>();
+  EXPECT_FALSE(readonly.isAutofilled());
+  EXPECT_TRUE(readonly.value().isEmpty());
 }
 
 TEST_F(FormManagerTest, PreviewForm) {
