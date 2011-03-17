@@ -102,8 +102,6 @@ class Context : public base::SupportsWeakPtr<Context> {
   static bool MakeCurrent(Context* context);
 
   // Display all content rendered since last call to SwapBuffers.
-  // TODO(apatrick): support rendering to browser window. This function is
-  // not useful at this point.
   bool SwapBuffers();
 
   // Create a hardware accelerated video decoder associated with this context.
