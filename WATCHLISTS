@@ -235,7 +235,7 @@
                  'simonmorris+watch@chromium.org',
                  'wez+watch@chromium.org'],
     'cookie_monster': ['rdsmith@chromium.org'],
-    'autofill': ['dhollowa@chromium.org', 'jhawkins@chromium.org',
+    'autofill': ['dhollowa@chromium.org', 'georgey@chromium.org',
                  'isherman@chromium.org'],
     'webdata': ['dhollowa@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
