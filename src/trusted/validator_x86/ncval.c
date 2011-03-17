@@ -612,6 +612,8 @@ int main(int argc, const char *argv[]) {
   argc = GrokFlags(argc, argv);
   NCValidatorSetMaxDiagnostics(NACL_FLAGS_max_reported_errors);
 
+  NaClLogDisableTimestamp();
+
   if (NACL_FLAGS_use_iter) {
     Bool success = FALSE;
     NaClValidateSetCPUFeatures(&ncval_cpu_features);
@@ -628,7 +630,6 @@ int main(int argc, const char *argv[]) {
       NaClValidatorByteArray data;
       int i;
       success = TRUE;
-      NaClLogDisableTimestamp();
       argc = ValidateSfiHexLoad(argc, argv, &data);
       for (i = 0; i < NACL_FLAGS_validate_attempts; ++i) {
         if (!NaClRunValidatorBytes(
