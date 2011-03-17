@@ -124,18 +124,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallThenCancel) {
 
 // Tests that installing and uninstalling extensions don't crash with an
 // incognito window open.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, FLAKY_Incognito) {
-  LOG(INFO) << "Incognito test started.";
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, Incognito) {
   // Open an incognito window to the extensions management page.  We just
   // want to make sure that we don't crash while playing with extensions when
   // this guy is around.
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
                                      GURL(chrome::kChromeUIExtensionsURL));
-  LOG(INFO) << "Extensions UI page loaded.";
+
   ASSERT_TRUE(InstallExtension(test_data_dir_.AppendASCII("good.crx"), 1));
-  LOG(INFO) << "Test extension installed.";
   UninstallExtension("ldnnhddmnhbkjipkidpdiheffobcpfmf");
-  LOG(INFO) << "Test extension uninstalled.";
 }
 
 // Tests the process of updating an extension to one that requires higher
