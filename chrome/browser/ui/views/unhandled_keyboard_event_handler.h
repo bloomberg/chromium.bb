@@ -7,7 +7,7 @@
 #pragma once
 
 #include "views/view.h"
-#include "chrome/common/native_web_keyboard_event.h"
+#include "content/common/native_web_keyboard_event.h"
 
 namespace views {
 class FocusManager;

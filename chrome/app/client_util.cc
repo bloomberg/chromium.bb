@@ -19,12 +19,12 @@
 #include "chrome/app/client_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/result_codes.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/util_constants.h"
+#include "content/common/result_codes.h"
 
 namespace {
 // The entry point signature of chrome.dll.

@@ -4,7 +4,6 @@
 
 #include "chrome/common/render_messages_params.h"
 
-#include "chrome/common/navigation_gesture.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/render_messages.h"

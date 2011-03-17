@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/importer/importer_observer.h"
-#include "chrome/common/result_codes.h"
+#include "content/common/result_codes.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
 

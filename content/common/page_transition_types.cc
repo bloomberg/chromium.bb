@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/page_transition_types.h"
+#include "content/common/page_transition_types.h"
 
 #include "base/logging.h"
 

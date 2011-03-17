@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/common/page_transition_types.h"
+#include "content/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
 // This class captures some of the information associated to the provisional

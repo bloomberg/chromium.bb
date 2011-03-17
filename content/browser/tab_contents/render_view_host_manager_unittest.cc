@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/browser_url_handler.h"
-#include "chrome/common/page_transition_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
@@ -18,6 +17,7 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
+#include "content/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webkit_glue.h"
 

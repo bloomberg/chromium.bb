@@ -11,7 +11,7 @@
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/common/instant_types.h"
-#include "chrome/common/page_transition_types.h"
+#include "content/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"

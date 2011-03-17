@@ -10,7 +10,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
-#include "chrome/common/result_codes.h"
+#include "content/common/result_codes.h"
 #include "sandbox/src/dep.h"
 #include "sandbox/src/sandbox_factory.h"
 

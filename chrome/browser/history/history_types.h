@@ -19,9 +19,9 @@
 #include "base/time.h"
 #include "chrome/browser/history/snippet.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "chrome/common/page_transition_types.h"
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/thumbnail_score.h"
+#include "content/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
 namespace history {

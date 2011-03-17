@@ -15,7 +15,7 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/edit_command.h"
-#include "chrome/common/native_web_keyboard_event.h"
+#include "content/common/native_web_keyboard_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class GtkKeyBindingsHandlerTest : public testing::Test {

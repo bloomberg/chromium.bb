@@ -19,7 +19,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
-#include "chrome/common/page_transition_types.h"
+#include "content/common/page_transition_types.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/font.h"
 #include "views/controls/menu/menu_2.h"

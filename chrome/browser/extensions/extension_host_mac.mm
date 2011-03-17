@@ -8,7 +8,7 @@
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#include "chrome/common/native_web_keyboard_event.h"
+#include "content/common/native_web_keyboard_event.h"
 
 ExtensionHostMac::~ExtensionHostMac() {
   // If there is a popup open for this host's extension, close it.

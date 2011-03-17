@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PAGE_TRANSITION_TYPES_H__
-#define CHROME_COMMON_PAGE_TRANSITION_TYPES_H__
+#ifndef CONTENT_COMMON_PAGE_TRANSITION_TYPES_H_
+#define CONTENT_COMMON_PAGE_TRANSITION_TYPES_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -162,4 +162,4 @@ class PageTransition {
   static const char* CoreTransitionString(Type type);
 };
 
-#endif  // CHROME_COMMON_PAGE_TRANSITION_TYPES_H__
+#endif  // CONTENT_COMMON_PAGE_TRANSITION_TYPES_H_

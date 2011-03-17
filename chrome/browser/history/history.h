@@ -19,11 +19,11 @@
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "chrome/common/page_transition_types.h"
 #include "chrome/common/ref_counted_util.h"
 #include "content/browser/cancelable_request.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/common/page_transition_types.h"
 
 class BookmarkService;
 struct DownloadCreateInfo;

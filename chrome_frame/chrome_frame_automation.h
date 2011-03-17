@@ -18,13 +18,13 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/timer.h"
-#include "chrome/common/page_zoom.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/chrome_frame_histograms.h"
 #include "chrome_frame/plugin_url_request.h"
 #include "chrome_frame/sync_msg_reply_dispatcher.h"
+#include "content/common/page_zoom.h"
 
 // By a convoluated route, this timeout also winds up being the sync automation
 // message timeout. See the ChromeFrameAutomationProxyImpl ctor and the

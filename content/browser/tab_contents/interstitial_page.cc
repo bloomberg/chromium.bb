@@ -18,7 +18,6 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "chrome/common/page_transition_types.h"
 #include "chrome/common/render_messages_params.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -33,6 +32,7 @@
 #include "content/common/dom_storage_common.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
+#include "content/common/page_transition_types.h"
 #include "net/base/escape.h"
 
 #if defined(TOOLKIT_GTK)

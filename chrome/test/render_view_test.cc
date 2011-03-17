@@ -6,7 +6,6 @@
 
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
@@ -19,6 +18,7 @@
 #include "chrome/renderer/mock_render_process.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "content/common/dom_storage_common.h"
+#include "content/common/native_web_keyboard_event.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"

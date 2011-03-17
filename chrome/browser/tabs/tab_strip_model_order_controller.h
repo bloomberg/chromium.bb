@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/common/page_transition_types.h"
+#include "content/common/page_transition_types.h"
 
 class TabContentsWrapper;
 

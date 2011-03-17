@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/process_watcher.h"
+#include "content/common/process_watcher.h"
 
 #include "base/scoped_ptr.h"
-#include "base/environment.h"
 #include "base/message_loop.h"
 #include "base/win/object_watcher.h"
-#include "chrome/common/env_vars.h"
-#include "chrome/common/result_codes.h"
+#include "content/common/result_codes.h"
 
 // Maximum amount of time (in milliseconds) to wait for the process to exit.
 static const int kWaitInterval = 2000;
@@ -50,16 +48,6 @@ class TimerExpiredTask : public Task,
 
  private:
   void KillProcess() {
-    scoped_ptr<base::Environment> env(base::Environment::Create());
-    if (env->HasVar(env_vars::kHeadless)) {
-     // If running the distributed tests, give the renderer a little time
-     // to figure out that the channel is shutdown and unwind.
-     if (WaitForSingleObject(process_, kWaitInterval) == WAIT_OBJECT_0) {
-       OnObjectSignaled(process_);
-       return;
-     }
-    }
-
     // OK, time to get frisky.  We don't actually care when the process
     // terminates.  We just care that it eventually terminates, and that's what
     // TerminateProcess should do for us. Don't check for the result code since

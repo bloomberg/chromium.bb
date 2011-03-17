@@ -13,9 +13,9 @@
 #include "chrome/browser/automation/automation_resource_routing_delegate.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/instant_types.h"
-#include "chrome/common/navigation_types.h"
-#include "chrome/common/page_transition_types.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/common/navigation_types.h"
+#include "content/common/page_transition_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 

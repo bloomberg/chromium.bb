@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/page_transition_types.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/common/page_transition_types.h"
 
 class RenderViewHostTest : public RenderViewHostTestHarness {
 };

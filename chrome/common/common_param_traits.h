@@ -15,7 +15,7 @@
 #include "base/file_util.h"
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/page_zoom.h"
+#include "content/common/page_zoom.h"
 #include "ipc/ipc_message_utils.h"
 #include "printing/native_metafile.h"
 // !!! WARNING: DO NOT ADD NEW WEBKIT DEPENDENCIES !!!

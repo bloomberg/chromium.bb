@@ -1,5 +1,5 @@
 include_rules = [
-  "+chrome/common",
+  "+content/common",
   "+media",
   "+skia/ext",
 ]

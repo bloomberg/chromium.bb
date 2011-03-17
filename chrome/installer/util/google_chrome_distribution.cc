@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/result_codes.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/install_util.h"
@@ -35,6 +34,7 @@
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/wmi.h"
+#include "content/common/result_codes.h"
 
 #include "installer_util_strings.h"  // NOLINT
 

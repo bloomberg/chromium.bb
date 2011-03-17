@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/result_codes.h"
+#include "content/common/result_codes.h"
 
 #if defined(OS_WIN)
 #include "base/file_path.h"

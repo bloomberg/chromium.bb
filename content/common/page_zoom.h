@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PAGE_ZOOM_H_
-#define CHROME_COMMON_PAGE_ZOOM_H_
+#ifndef CONTENT_COMMON_PAGE_ZOOM_H_
+#define CONTENT_COMMON_PAGE_ZOOM_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -22,4 +22,4 @@ class PageZoom {
   DISALLOW_IMPLICIT_CONSTRUCTORS(PageZoom);
 };
 
-#endif  // CHROME_COMMON_PAGE_ZOOM_H_
+#endif  // CONTENT_COMMON_PAGE_ZOOM_H_

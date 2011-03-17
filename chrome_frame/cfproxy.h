@@ -14,7 +14,7 @@
 #include "base/time.h"         // for base::TimeDelta
 #include "base/file_path.h"
 #include "chrome/common/automation_constants.h"
-#include "chrome/common/page_zoom.h"
+#include "content/common/page_zoom.h"
 #include "ipc/ipc_channel.h"
 
 enum FindInPageDirection { BACK = 0, FWD = 1 };

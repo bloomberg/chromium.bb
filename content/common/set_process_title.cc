@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/set_process_title.h"
+#include "content/common/set_process_title.h"
 
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -20,7 +20,7 @@
 #include <sys/prctl.h>
 
 // Linux/glibc doesn't natively have setproctitle().
-#include "chrome/common/set_process_title_linux.h"
+#include "content/common/set_process_title_linux.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

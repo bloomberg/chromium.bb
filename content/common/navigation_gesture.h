@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NAVIGATION_GESTURE_H_
-#define CHROME_COMMON_NAVIGATION_GESTURE_H_
+#ifndef CONTENT_COMMON_NAVIGATION_GESTURE_H_
+#define CONTENT_COMMON_NAVIGATION_GESTURE_H_
 #pragma once
 
 enum NavigationGesture {
@@ -17,4 +17,4 @@ enum NavigationGesture {
   NavigationGestureUnknown,
 };
 
-#endif  // CHROME_COMMON_NAVIGATION_GESTURE_H_
+#endif  // CONTENT_COMMON_NAVIGATION_GESTURE_H_

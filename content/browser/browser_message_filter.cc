@@ -8,7 +8,7 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/common/result_codes.h"
+#include "content/common/result_codes.h"
 
 BrowserMessageFilter::BrowserMessageFilter()
     : channel_(NULL), peer_handle_(base::kNullProcessHandle) {

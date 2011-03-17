@@ -9,8 +9,8 @@
 #include "base/values.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
-#include "chrome/common/page_transition_types.h"
 #include "chrome/common/url_constants.h"
+#include "content/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::SessionModelAssociator;

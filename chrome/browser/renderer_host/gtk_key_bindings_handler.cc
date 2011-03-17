@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "chrome/common/native_web_keyboard_event.h"
+#include "content/common/native_web_keyboard_event.h"
 
 GtkKeyBindingsHandler::GtkKeyBindingsHandler(GtkWidget* parent_widget)
     : handler_(CreateNewHandler()) {

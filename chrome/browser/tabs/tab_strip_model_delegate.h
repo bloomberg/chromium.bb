@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_TABS_TAB_STRIP_MODEL_DELEGATE_H_
 #pragma once
 
-#include "chrome/common/page_transition_types.h"
+#include "content/common/page_transition_types.h"
 
 class Browser;
 class DockInfo;

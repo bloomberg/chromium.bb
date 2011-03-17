@@ -17,7 +17,7 @@
 #include "base/string16.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/instant/instant_delegate.h"
-#include "chrome/common/page_transition_types.h"
+#include "content/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditView;

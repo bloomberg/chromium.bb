@@ -13,8 +13,8 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/history/url_database.h"
-#include "chrome/common/page_transition_types.h"
 #include "chrome/common/url_constants.h"
+#include "content/common/page_transition_types.h"
 
 // Rows, in order, of the visit table.
 #define HISTORY_VISIT_ROW_FIELDS \

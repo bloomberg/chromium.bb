@@ -10,7 +10,7 @@
 #define CONTENT_BROWSER_TAB_CONTENTS_PAGE_NAVIGATOR_H_
 #pragma once
 
-#include "chrome/common/page_transition_types.h"
+#include "content/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class GURL;

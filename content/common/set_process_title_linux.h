@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SET_PROCESS_TITLE_LINUX_H_
-#define CHROME_COMMON_SET_PROCESS_TITLE_LINUX_H_
+#ifndef CONTENT_COMMON_SET_PROCESS_TITLE_LINUX_H_
+#define CONTENT_COMMON_SET_PROCESS_TITLE_LINUX_H_
 #pragma once
 
 // Set the process title that will show in "ps" and similar tools. Takes
@@ -20,4 +20,4 @@ void setproctitle(const char* fmt, ...);
 // from main() to setproctitle_init() before calling setproctitle().
 void setproctitle_init(char** main_argv);
 
-#endif  // CHROME_COMMON_SET_PROCESS_TITLE_LINUX_H_
+#endif  // CONTENT_COMMON_SET_PROCESS_TITLE_LINUX_H_

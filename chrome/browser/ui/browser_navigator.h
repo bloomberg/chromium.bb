@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/common/page_transition_types.h"
+#include "content/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"

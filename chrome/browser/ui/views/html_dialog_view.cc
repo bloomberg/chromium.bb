@@ -8,8 +8,8 @@
 
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/window.h"
-#include "chrome/common/native_web_keyboard_event.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/native_web_keyboard_event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"

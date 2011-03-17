@@ -11,11 +11,11 @@
 #include "base/message_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/common/page_transition_types.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gfx {

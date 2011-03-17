@@ -35,8 +35,6 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/navigation_types.h"
-#include "chrome/common/page_zoom.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/bho.h"
@@ -45,6 +43,8 @@
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/navigation_types.h"
+#include "content/common/page_zoom.h"
 
 DEFINE_GUID(CGID_DocHostCmdPriv, 0x000214D4L, 0, 0, 0xC0, 0, 0, 0, 0, 0, 0,
             0x46);

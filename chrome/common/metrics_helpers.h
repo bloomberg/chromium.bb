@@ -16,7 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/common/page_transition_types.h"
+#include "content/common/page_transition_types.h"
 
 class GURL;
 class MetricsLog;

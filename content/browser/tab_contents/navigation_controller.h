@@ -16,8 +16,8 @@
 #include "googleurl/src/gurl.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ssl/ssl_manager.h"
-#include "chrome/common/navigation_types.h"
-#include "chrome/common/page_transition_types.h"
+#include "content/common/navigation_types.h"
+#include "content/common/page_transition_types.h"
 
 class NavigationEntry;
 class Profile;

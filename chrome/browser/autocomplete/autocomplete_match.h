@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 
-#include "chrome/common/page_transition_types.h"
+#include "content/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
 class AutocompleteProvider;

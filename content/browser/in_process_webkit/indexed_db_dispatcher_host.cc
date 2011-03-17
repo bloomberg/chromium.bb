@@ -18,7 +18,7 @@
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/common/indexed_db_messages.h"
-#include "chrome/common/result_codes.h"
+#include "content/common/result_codes.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMStringList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"

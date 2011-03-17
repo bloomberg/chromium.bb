@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/string16.h"
-#include "chrome/common/page_transition_types.h"
+#include "content/common/page_transition_types.h"
 
 class DictionaryValue;
 class WebUIMessageHandler;

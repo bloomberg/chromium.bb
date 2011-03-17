@@ -15,9 +15,9 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/common/automation_constants.h"
-#include "chrome/common/page_zoom.h"
 #include "chrome_frame/cfproxy.h"
 #include "chrome_frame/task_marshaller.h"
+#include "content/common/page_zoom.h"
 #include "googleurl/src/gurl.h"
 
 class Task;

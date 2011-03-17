@@ -14,7 +14,6 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "chrome/common/result_codes.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/installer/setup/install.h"
@@ -32,6 +31,7 @@
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
+#include "content/common/result_codes.h"
 #include "rlz/win/lib/rlz_lib.h"
 
 // Build-time generated include file.

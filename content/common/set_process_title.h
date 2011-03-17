@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SET_PROCESS_TITLE_H_
-#define CHROME_COMMON_SET_PROCESS_TITLE_H_
+#ifndef CONTENT_COMMON_SET_PROCESS_TITLE_H_
+#define CONTENT_COMMON_SET_PROCESS_TITLE_H_
 
 // Sets OS-specific process title information based on the command line. This
 // does nothing if the OS doesn't support or need this capability.
@@ -21,5 +21,4 @@
 // will try to fix it so the "effective" command line shows up instead.
 void SetProcessTitleFromCommandLine(char** main_argv);
 
-#endif  // CHROME_COMMON_SET_PROCESS_TITLE_H_
-
+#endif  // CONTENT_COMMON_SET_PROCESS_TITLE_H_

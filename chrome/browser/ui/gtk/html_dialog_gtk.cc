@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "chrome/common/native_web_keyboard_event.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/native_web_keyboard_event.h"
 
 namespace browser {
 

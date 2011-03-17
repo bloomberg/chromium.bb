@@ -23,9 +23,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/process_watcher.h"
-#include "chrome/common/result_codes.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
+#include "content/common/process_watcher.h"
+#include "content/common/result_codes.h"
 #include "content/common/unix_domain_socket_posix.h"
 #include "sandbox/linux/suid/suid_unsafe_environment_variables.h"
 

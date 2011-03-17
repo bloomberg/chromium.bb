@@ -18,13 +18,13 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/process_watcher.h"
-#include "chrome/common/result_codes.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/common/notification_service.h"
 #include "content/common/plugin_messages.h"
+#include "content/common/process_watcher.h"
+#include "content/common/result_codes.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
