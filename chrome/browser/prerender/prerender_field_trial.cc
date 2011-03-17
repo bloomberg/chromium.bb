@@ -57,8 +57,8 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
     case PRERENDER_OPTION_AUTO: {
       const base::FieldTrial::Probability kPrefetchDivisor = 1000;
       const base::FieldTrial::Probability kYesPrefetchProbability = 0;
-      const base::FieldTrial::Probability kPrerenderExperimentProbability = 300;
-      const base::FieldTrial::Probability kPrerenderControlProbability = 300;
+      const base::FieldTrial::Probability kPrerenderExperimentProbability = 450;
+      const base::FieldTrial::Probability kPrerenderControlProbability = 450;
 
       scoped_refptr<base::FieldTrial> trial(
           new base::FieldTrial("Prefetch", kPrefetchDivisor,
