@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/test/thread_test_helper.h"
@@ -125,4 +126,17 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearLocalState) {
   // should survive and the first go into vanity.
   ASSERT_FALSE(file_util::PathExists(temp_file_path_1));
   ASSERT_TRUE(file_util::PathExists(temp_file_path_2));
+}
+
+class IndexedDBBrowserTestWithGCExposed : public IndexedDBBrowserTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed,
+                       DatabaseCallbacksTest) {
+  SimpleTest(
+      testUrl(FilePath(FILE_PATH_LITERAL("database_callbacks_first.html"))));
 }

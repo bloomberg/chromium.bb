@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,6 +113,8 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message,
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
 
+  // TODO(dgrogan): The page cycler test can crash here because
+  // database_dispatcher_host_ becomes invalid.
   bool handled =
       database_dispatcher_host_->OnMessageReceived(message, message_was_ok) ||
       index_dispatcher_host_->OnMessageReceived(message, message_was_ok) ||
