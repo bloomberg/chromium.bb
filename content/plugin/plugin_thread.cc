@@ -20,10 +20,10 @@
 #include "base/process_util.h"
 #include "base/threading/thread_local.h"
 #include "content/common/child_process.h"
-#include "content/common/content_client.h"
 #include "content/common/content_switches.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/plugin_messages.h"
+#include "content/plugin/content_plugin_client.h"
 #include "content/plugin/npobject_util.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/net_errors.h"
@@ -81,7 +81,7 @@ PluginThread::PluginThread()
   if (plugin.get())
     plugin->NP_Initialize();
 
-  content::GetContentClient()->PluginProcessStarted(
+  content::GetContentClient()->plugin()->PluginProcessStarted(
       plugin.get() ? plugin->plugin_info().name : string16());
 
   // Certain plugins, such as flash, steal the unhandled exception filter

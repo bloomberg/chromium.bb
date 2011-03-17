@@ -29,8 +29,8 @@
 #include "content/plugin/npobject_stub.h"
 #include "content/plugin/npobject_util.h"
 #include "content/renderer/command_buffer_proxy.h"
+#include "content/renderer/content_renderer_client.h"
 #include "content/renderer/plugin_channel_host.h"
-//#include "grit/renderer_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/mime_util.h"
 #include "skia/ext/platform_canvas.h"
@@ -40,7 +40,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/blit.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/native_widget_types.h"
@@ -1151,12 +1150,9 @@ void WebPluginDelegateProxy::OnMissingPluginStatus(int status) {
 void WebPluginDelegateProxy::PaintSadPlugin(WebKit::WebCanvas* native_context,
                                             const gfx::Rect& rect) {
   // Lazily load the sad plugin image.
-  /* temporarily disabled by jam
-  if (!sad_plugin_) {
-    sad_plugin_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_SAD_PLUGIN);
-  }
-  */
+  if (!sad_plugin_)
+    sad_plugin_ = content::GetContentClient()->renderer()->GetSadPluginBitmap();
+
   if (!sad_plugin_)
     return;
 

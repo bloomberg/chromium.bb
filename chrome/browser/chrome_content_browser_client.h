@@ -12,9 +12,9 @@ namespace chrome {
 
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
-  virtual void OnRenderViewCreation(RenderViewHost* render_view_host,
-                                    Profile* profile,
-                                    const GURL& url);
+  virtual void PreCreateRenderView(RenderViewHost* render_view_host,
+                                   Profile* profile,
+                                   const GURL& url);
 };
 
 }  // namespace chrome

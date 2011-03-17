@@ -25,6 +25,7 @@
         'renderer/audio_device.h',
         'renderer/audio_message_filter.cc',
         'renderer/audio_message_filter.h',
+        'renderer/content_renderer_client.h',
         'renderer/cookie_message_filter.cc',
         'renderer/cookie_message_filter.h',
         'renderer/device_orientation_dispatcher.cc',

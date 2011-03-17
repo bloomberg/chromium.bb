@@ -11,7 +11,7 @@
 
 namespace chrome {
 
-void ChromeContentBrowserClient::OnRenderViewCreation(
+void ChromeContentBrowserClient::PreCreateRenderView(
     RenderViewHost* render_view_host,
     Profile* profile,
     const GURL& url) {

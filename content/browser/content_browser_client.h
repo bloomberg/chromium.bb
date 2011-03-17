@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_CONTENT_BROWSER_CLIENT_H_
 #pragma once
 
+#include "content/common/content_client.h"
+
 class GURL;
 class Profile;
 class RenderViewHost;
@@ -16,9 +18,9 @@ namespace content {
 class ContentBrowserClient {
  public:
   // Initialize a RenderViewHost before its CreateRenderView method is called.
-  virtual void OnRenderViewCreation(RenderViewHost* render_view_host,
-                                    Profile* profile,
-                                    const GURL& url) {}
+  virtual void PreCreateRenderView(RenderViewHost* render_view_host,
+                                   Profile* profile,
+                                   const GURL& url) {}
 };
 
 }  // namespace content

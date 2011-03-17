@@ -35,7 +35,7 @@ void BrowserWithTestWindowTest::SetUp() {
   // NOTE: I have a feeling we're going to want virtual methods for creating
   // these, as such they're in SetUp instead of the constructor.
   profile_.reset(new TestingProfile());
-  content::GetContentClient()->set_browser_client(&browser_client_);
+  content::GetContentClient()->set_browser(&browser_client_);
   browser_.reset(new Browser(Browser::TYPE_NORMAL, profile()));
   window_.reset(new TestBrowserWindow(browser()));
   browser_->set_window(window_.get());

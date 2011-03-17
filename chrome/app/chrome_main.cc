@@ -26,6 +26,8 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_content_gpu_client.h"
+#include "chrome/common/chrome_content_plugin_client.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -211,7 +213,7 @@ void EnableHeapProfiler(const CommandLine& command_line) {
 #endif
 }
 
-void CommonSubprocessInit() {
+void CommonSubprocessInit(const std::string& process_type) {
 #if defined(OS_WIN)
   // HACK: Let Windows know that we have started.  This is needed to suppress
   // the IDC_APPSTARTING cursor from being displayed for a prolonged period
@@ -231,6 +233,14 @@ void CommonSubprocessInit() {
   // surface UI -- but it's likely they get this wrong too so why not.
   setlocale(LC_NUMERIC, "C");
 #endif
+
+  if (process_type == switches::kPluginProcess) {
+    static chrome::ChromeContentPluginClient chrome_content_plugin_client;
+    content::GetContentClient()->set_plugin(&chrome_content_plugin_client);
+  } else if (process_type == switches::kGpuProcess) {
+    static chrome::ChromeContentGpuClient chrome_content_gpu_client;
+    content::GetContentClient()->set_gpu(&chrome_content_gpu_client);
+  }
 }
 
 // Returns true if this subprocess type needs the ResourceBundle initialized
@@ -722,7 +732,7 @@ int ChromeMain(int argc, char** argv) {
   }
 
   if (!process_type.empty())
-    CommonSubprocessInit();
+    CommonSubprocessInit(process_type);
 
   // Initialize the sandbox for this process.
   SandboxInitWrapper sandbox_wrapper;

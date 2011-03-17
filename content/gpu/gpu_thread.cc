@@ -14,9 +14,9 @@
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "content/common/child_process.h"
-#include "content/common/content_client.h"
 #include "content/common/content_switches.h"
 #include "content/common/gpu_messages.h"
+#include "content/gpu/content_gpu_client.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "ipc/ipc_channel_handle.h"
@@ -132,7 +132,7 @@ void GpuThread::OnInitialize() {
   }
   gpu_info_collector::CollectGraphicsInfo(&gpu_info_);
 
-  content::GetContentClient()->SetGpuInfo(gpu_info_);
+  content::GetContentClient()->gpu()->SetGpuInfo(gpu_info_);
   LOG(INFO) << "gpu_info_collector::CollectGraphicsInfo complete";
 
   // Record initialization only after collecting the GPU info because that can

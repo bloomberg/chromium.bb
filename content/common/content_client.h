@@ -7,16 +7,17 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
-#include "base/string16.h"
 
-class ContentBrowserClient;
 class GURL;
-struct GPUInfo;
 
 namespace content {
 
+class ContentBrowserClient;
 class ContentClient;
+class ContentGpuClient;
+class ContentPluginClient;
+class ContentRendererClient;
+
 // Setter and getter for the client.  The client should be set early, before any
 // content code is called.
 void SetContentClient(ContentClient* client);
@@ -28,27 +29,28 @@ class ContentClient {
   ContentClient();
   ~ContentClient();
 
-  // Gets or sets the embedder API for participating in browser logic.
-  // The client must be set early, before any content code is called.
-  ContentBrowserClient* browser_client() {
-    return browser_client_;
-  }
-  void set_browser_client(ContentBrowserClient* client) {
-    browser_client_ = client;
-  }
+  ContentBrowserClient* browser() { return browser_; }
+  void set_browser(ContentBrowserClient* c) { browser_ = c; }
+  ContentGpuClient* gpu() { return gpu_; }
+  void set_gpu(ContentGpuClient* g) { gpu_ = g; }
+  ContentPluginClient* plugin() { return plugin_; }
+  void set_plugin(ContentPluginClient* r) { plugin_ = r; }
+  ContentRendererClient* renderer() { return renderer_; }
+  void set_renderer(ContentRendererClient* r) { renderer_ = r; }
 
   // Sets the URL that is logged if the child process crashes. Use GURL() to
   // clear the URL.
   virtual void SetActiveURL(const GURL& url) {}
 
-  // Sets the data on the gpu to send along with crash reports.
-  virtual void SetGpuInfo(const GPUInfo& gpu_info) {}
-
-  // Notifies that a plugin process has started.
-  virtual void PluginProcessStarted(const string16& plugin_name) {}
-
  private:
-  ContentBrowserClient* browser_client_;
+  // The embedder API for participating in browser logic.
+  ContentBrowserClient* browser_;
+  // The embedder API for participating in gpu logic.
+  ContentGpuClient* gpu_;
+  // The embedder API for participating in plugin logic.
+  ContentPluginClient* plugin_;
+  // The embedder API for participating in renderer logic.
+  ContentRendererClient* renderer_;
 };
 
 }  // namespace content

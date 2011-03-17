@@ -26,6 +26,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pepper_plugin_registry.h"
+#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "chrome/renderer/render_process_impl.h"
 #include "chrome/renderer/render_thread.h"
@@ -179,6 +180,9 @@ static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
 // mainline routine for running as the Renderer process
 int RendererMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN("RendererMain", 0, "");
+
+  chrome::ChromeContentRendererClient renderer_client;
+  content::GetContentClient()->set_renderer(&renderer_client);
 
   const CommandLine& parsed_command_line = parameters.command_line_;
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;

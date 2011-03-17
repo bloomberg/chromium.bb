@@ -495,7 +495,7 @@ int main(int argc, char** argv) {
   content::SetContentClient(&chrome_content_client);
   // Override the default ContentBrowserClient to let Chrome participate in
   // content logic.  Must be done before any tabs are created.
-  content::GetContentClient()->set_browser_client(
+  content::GetContentClient()->set_browser(
       new chrome::ChromeContentBrowserClient);
 
   // TODO(tommi): Stuff be broke. Needs a fixin'.

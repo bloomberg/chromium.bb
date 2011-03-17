@@ -20,6 +20,7 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under plugins except for tests and
         # mocks.
+        'plugin/content_plugin_client.h',
         'plugin/npobject_base.h',
         'plugin/npobject_proxy.cc',
         'plugin/npobject_proxy.h',

@@ -84,6 +84,8 @@
         'renderer/about_handler.h',
         'renderer/blocked_plugin.cc',
         'renderer/blocked_plugin.h',
+        'renderer/chrome_content_renderer_client.cc',
+        'renderer/chrome_content_renderer_client.h',
         'renderer/devtools_agent.cc',
         'renderer/devtools_agent.h',
         'renderer/devtools_agent_filter.cc',

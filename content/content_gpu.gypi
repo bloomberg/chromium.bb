@@ -19,6 +19,7 @@
         '../skia/skia.gyp:skia',
       ],
       'sources': [
+        'gpu/content_gpu_client.h',
         'gpu/gpu_channel.cc',
         'gpu/gpu_channel.h',
         'gpu/gpu_command_buffer_stub.cc',

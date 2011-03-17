@@ -22,7 +22,6 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/browser/webui/web_ui_factory.h"
-#include "content/common/content_client.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 
@@ -488,7 +487,7 @@ bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
 
   // Give the embedder a chance to initialize the render view.
   Profile* profile = delegate_->GetControllerForRenderManager().profile();
-  content::GetContentClient()->browser_client()->OnRenderViewCreation(
+  content::GetContentClient()->browser()->PreCreateRenderView(
       render_view_host, profile, entry.url());
 
   return delegate_->CreateRenderViewForRenderManager(render_view_host);

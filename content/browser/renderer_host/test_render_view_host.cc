@@ -341,7 +341,7 @@ void RenderViewHostTestHarness::Reload() {
 void RenderViewHostTestHarness::SetUp() {
   // Initialize Chrome's ContentBrowserClient here, since we won't go through
   // BrowserMain.
-  content::GetContentClient()->set_browser_client(&browser_client_);
+  content::GetContentClient()->set_browser(&browser_client_);
   contents_.reset(CreateTestTabContents());
 }
 
