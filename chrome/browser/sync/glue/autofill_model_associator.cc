@@ -243,8 +243,8 @@ bool AutofillModelAssociator::TraverseAndAssociateAllSyncNodes(
         all_profiles_from_db.begin(); ix != all_profiles_from_db.end(); ++ix) {
       AutofillProfile* p = *ix;
       VLOG(2) << "[AUTOFILL MIGRATION]  "
-              << p->GetFieldText(AutofillType(NAME_FIRST))
-              << p->GetFieldText(AutofillType(NAME_LAST));
+              << p->GetFieldText(NAME_FIRST)
+              << p->GetFieldText(NAME_LAST);
     }
   }
 
@@ -498,9 +498,9 @@ bool AutofillModelAssociator::MergeTimestamps(
 // the local value if they differ, and return whether the merge happened.
 bool MergeField(FormGroup* f, AutofillFieldType t,
                 const std::string& specifics_field) {
-  if (UTF16ToUTF8(f->GetFieldText(AutofillType(t))) == specifics_field)
+  if (UTF16ToUTF8(f->GetFieldText(t)) == specifics_field)
     return false;
-  f->SetInfo(AutofillType(t), UTF8ToUTF16(specifics_field));
+  f->SetInfo(t, UTF8ToUTF16(specifics_field));
   return true;
 }
 

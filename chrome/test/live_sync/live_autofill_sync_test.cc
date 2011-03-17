@@ -223,7 +223,7 @@ void LiveAutofillSyncTest::UpdateProfile(int profile,
   for (size_t i = 0; i < all_profiles.size(); ++i) {
     profiles.push_back(*all_profiles[i]);
     if (all_profiles[i]->guid() == guid)
-      profiles.back().SetInfo(type, value);
+      profiles.back().SetInfo(type.field_type(), value);
   }
   SetProfiles(profile, &profiles);
 }

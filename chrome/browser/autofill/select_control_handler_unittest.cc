@@ -23,10 +23,8 @@ TEST(SelectControlHandlerTest, CreditCardMonthExact) {
   field.option_strings = options;
 
   CreditCard credit_card;
-  credit_card.SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), ASCIIToUTF16("01"));
-  autofill::FillSelectControl(credit_card,
-                              AutofillType(CREDIT_CARD_EXP_MONTH),
-                              &field);
+  credit_card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
+  autofill::FillSelectControl(credit_card, CREDIT_CARD_EXP_MONTH, &field);
   EXPECT_EQ(ASCIIToUTF16("01"), field.value);
 }
 
@@ -44,10 +42,8 @@ TEST(SelectControlHandlerTest, CreditCardMonthAbbreviated) {
   field.option_strings = options;
 
   CreditCard credit_card;
-  credit_card.SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), ASCIIToUTF16("01"));
-  autofill::FillSelectControl(credit_card,
-                              AutofillType(CREDIT_CARD_EXP_MONTH),
-                              &field);
+  credit_card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
+  autofill::FillSelectControl(credit_card, CREDIT_CARD_EXP_MONTH, &field);
   EXPECT_EQ(ASCIIToUTF16("Jan"), field.value);
 }
 
@@ -65,10 +61,8 @@ TEST(SelectControlHandlerTest, CreditCardMonthFull) {
   field.option_strings = options;
 
   CreditCard credit_card;
-  credit_card.SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), ASCIIToUTF16("01"));
-  autofill::FillSelectControl(credit_card,
-                              AutofillType(CREDIT_CARD_EXP_MONTH),
-                              &field);
+  credit_card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
+  autofill::FillSelectControl(credit_card, CREDIT_CARD_EXP_MONTH, &field);
   EXPECT_EQ(ASCIIToUTF16("January"), field.value);
 }
 
@@ -85,10 +79,8 @@ TEST(SelectControlHandlerTest, CreditCardMonthNumeric) {
   field.option_strings = options;
 
   CreditCard credit_card;
-  credit_card.SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), ASCIIToUTF16("01"));
-  autofill::FillSelectControl(credit_card,
-                              AutofillType(CREDIT_CARD_EXP_MONTH),
-                              &field);
+  credit_card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
+  autofill::FillSelectControl(credit_card, CREDIT_CARD_EXP_MONTH, &field);
   EXPECT_EQ(ASCIIToUTF16("1"), field.value);
 }
 
@@ -105,10 +97,8 @@ TEST(SelectControlHandlerTest, AddressCountryFull) {
   field.option_strings = options;
 
   AutofillProfile profile;
-  profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("CA"));
-  autofill::FillSelectControl(profile,
-                              AutofillType(ADDRESS_HOME_COUNTRY),
-                              &field);
+  profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CA"));
+  autofill::FillSelectControl(profile, ADDRESS_HOME_COUNTRY, &field);
   EXPECT_EQ(ASCIIToUTF16("Canada"), field.value);
 }
 
@@ -125,10 +115,8 @@ TEST(SelectControlHandlerTest, AddressCountryAbbrev) {
   field.option_strings = options;
 
   AutofillProfile profile;
-  profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("Canada"));
-  autofill::FillSelectControl(profile,
-                              AutofillType(ADDRESS_HOME_COUNTRY),
-                              &field);
+  profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Canada"));
+  autofill::FillSelectControl(profile, ADDRESS_HOME_COUNTRY, &field);
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
 }
 
@@ -145,10 +133,8 @@ TEST(SelectControlHandlerTest, AddressStateFull) {
   field.option_strings = options;
 
   AutofillProfile profile;
-  profile.SetInfo(AutofillType(ADDRESS_HOME_STATE), ASCIIToUTF16("CA"));
-  autofill::FillSelectControl(profile,
-                              AutofillType(ADDRESS_HOME_STATE),
-                              &field);
+  profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
+  autofill::FillSelectControl(profile, ADDRESS_HOME_STATE, &field);
   EXPECT_EQ(ASCIIToUTF16("California"), field.value);
 }
 
@@ -165,9 +151,7 @@ TEST(SelectControlHandlerTest, AddressStateAbbrev) {
   field.option_strings = options;
 
   AutofillProfile profile;
-  profile.SetInfo(AutofillType(ADDRESS_HOME_STATE), ASCIIToUTF16("California"));
-  autofill::FillSelectControl(profile,
-                              AutofillType(ADDRESS_HOME_STATE),
-                              &field);
+  profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("California"));
+  autofill::FillSelectControl(profile, ADDRESS_HOME_STATE, &field);
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
 }

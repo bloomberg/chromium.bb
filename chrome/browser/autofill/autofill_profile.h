@@ -36,14 +36,14 @@ class AutofillProfile : public FormGroup {
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
-  virtual string16 GetFieldText(const AutofillType& type) const;
+  virtual string16 GetFieldText(AutofillFieldType type) const;
   // Returns true if the |value| matches the profile data corresponding to type.
   // If the type is UNKNOWN_TYPE then |value| will be matched against all of the
   // profile data.
-  virtual void FindInfoMatches(const AutofillType& type,
+  virtual void FindInfoMatches(AutofillFieldType type,
                                const string16& value,
                                std::vector<string16>* matched_text) const;
-  virtual void SetInfo(const AutofillType& type, const string16& value);
+  virtual void SetInfo(AutofillFieldType type, const string16& value);
 
   // The user-visible label of the profile, generated in relation to other
   // profiles. Shows at least 2 fields that differentiate profile from other

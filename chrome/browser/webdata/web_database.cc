@@ -285,19 +285,19 @@ void BindAutofillProfileToStatement(const AutofillProfile& profile,
   DCHECK(guid::IsValidGUID(profile.guid()));
   s->BindString(0, profile.guid());
 
-  string16 text = profile.GetFieldText(AutofillType(COMPANY_NAME));
+  string16 text = profile.GetFieldText(COMPANY_NAME);
   s->BindString16(1, LimitDataSize(text));
-  text = profile.GetFieldText(AutofillType(ADDRESS_HOME_LINE1));
+  text = profile.GetFieldText(ADDRESS_HOME_LINE1);
   s->BindString16(2, LimitDataSize(text));
-  text = profile.GetFieldText(AutofillType(ADDRESS_HOME_LINE2));
+  text = profile.GetFieldText(ADDRESS_HOME_LINE2);
   s->BindString16(3, LimitDataSize(text));
-  text = profile.GetFieldText(AutofillType(ADDRESS_HOME_CITY));
+  text = profile.GetFieldText(ADDRESS_HOME_CITY);
   s->BindString16(4, LimitDataSize(text));
-  text = profile.GetFieldText(AutofillType(ADDRESS_HOME_STATE));
+  text = profile.GetFieldText(ADDRESS_HOME_STATE);
   s->BindString16(5, LimitDataSize(text));
-  text = profile.GetFieldText(AutofillType(ADDRESS_HOME_ZIP));
+  text = profile.GetFieldText(ADDRESS_HOME_ZIP);
   s->BindString16(6, LimitDataSize(text));
-  text = profile.GetFieldText(AutofillType(ADDRESS_HOME_COUNTRY));
+  text = profile.GetFieldText(ADDRESS_HOME_COUNTRY);
   s->BindString16(7, LimitDataSize(text));
   std::string country_code = profile.CountryCode();
   s->BindString(8, country_code);
@@ -309,12 +309,12 @@ AutofillProfile* AutofillProfileFromStatement(const sql::Statement& s) {
   profile->set_guid(s.ColumnString(0));
   DCHECK(guid::IsValidGUID(profile->guid()));
 
-  profile->SetInfo(AutofillType(COMPANY_NAME), s.ColumnString16(1));
-  profile->SetInfo(AutofillType(ADDRESS_HOME_LINE1), s.ColumnString16(2));
-  profile->SetInfo(AutofillType(ADDRESS_HOME_LINE2), s.ColumnString16(3));
-  profile->SetInfo(AutofillType(ADDRESS_HOME_CITY), s.ColumnString16(4));
-  profile->SetInfo(AutofillType(ADDRESS_HOME_STATE), s.ColumnString16(5));
-  profile->SetInfo(AutofillType(ADDRESS_HOME_ZIP), s.ColumnString16(6));
+  profile->SetInfo(COMPANY_NAME, s.ColumnString16(1));
+  profile->SetInfo(ADDRESS_HOME_LINE1, s.ColumnString16(2));
+  profile->SetInfo(ADDRESS_HOME_LINE2, s.ColumnString16(3));
+  profile->SetInfo(ADDRESS_HOME_CITY, s.ColumnString16(4));
+  profile->SetInfo(ADDRESS_HOME_STATE, s.ColumnString16(5));
+  profile->SetInfo(ADDRESS_HOME_ZIP, s.ColumnString16(6));
   // Intentionally skip column 7, which stores the localized country name.
   profile->SetCountryCode(s.ColumnString(8));
   // Intentionally skip column 9, which stores the profile's modification date.
@@ -327,9 +327,9 @@ void AddAutofillProfileNameFromStatement(const sql::Statement& s,
   DCHECK_EQ(profile->guid(), s.ColumnString(0));
   DCHECK(guid::IsValidGUID(profile->guid()));
 
-  profile->SetInfo(AutofillType(NAME_FIRST), s.ColumnString16(1));
-  profile->SetInfo(AutofillType(NAME_MIDDLE), s.ColumnString16(2));
-  profile->SetInfo(AutofillType(NAME_LAST), s.ColumnString16(3));
+  profile->SetInfo(NAME_FIRST, s.ColumnString16(1));
+  profile->SetInfo(NAME_MIDDLE, s.ColumnString16(2));
+  profile->SetInfo(NAME_LAST, s.ColumnString16(3));
 }
 
 void AddAutofillProfileEmailFromStatement(const sql::Statement& s,
@@ -337,7 +337,7 @@ void AddAutofillProfileEmailFromStatement(const sql::Statement& s,
   DCHECK_EQ(profile->guid(), s.ColumnString(0));
   DCHECK(guid::IsValidGUID(profile->guid()));
 
-  profile->SetInfo(AutofillType(EMAIL_ADDRESS), s.ColumnString16(1));
+  profile->SetInfo(EMAIL_ADDRESS, s.ColumnString16(1));
 }
 
 void AddAutofillProfilePhoneFromStatement(const sql::Statement& s,
@@ -345,7 +345,7 @@ void AddAutofillProfilePhoneFromStatement(const sql::Statement& s,
   DCHECK_EQ(profile->guid(), s.ColumnString(0));
   DCHECK(guid::IsValidGUID(profile->guid()));
   DCHECK_EQ(kAutoFillPhoneNumber, s.ColumnInt(1));
-  profile->SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), s.ColumnString16(2));
+  profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, s.ColumnString16(2));
 }
 
 void AddAutofillProfileFaxFromStatement(const sql::Statement& s,
@@ -353,7 +353,7 @@ void AddAutofillProfileFaxFromStatement(const sql::Statement& s,
   DCHECK_EQ(profile->guid(), s.ColumnString(0));
   DCHECK(guid::IsValidGUID(profile->guid()));
   DCHECK_EQ(kAutoFillFaxNumber, s.ColumnInt(1));
-  profile->SetInfo(AutofillType(PHONE_FAX_WHOLE_NUMBER), s.ColumnString16(2));
+  profile->SetInfo(PHONE_FAX_WHOLE_NUMBER, s.ColumnString16(2));
 }
 
 void BindCreditCardToStatement(const CreditCard& credit_card,
@@ -361,13 +361,13 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
   DCHECK(guid::IsValidGUID(credit_card.guid()));
   s->BindString(0, credit_card.guid());
 
-  string16 text = credit_card.GetFieldText(AutofillType(CREDIT_CARD_NAME));
+  string16 text = credit_card.GetFieldText(CREDIT_CARD_NAME);
   s->BindString16(1, LimitDataSize(text));
-  text = credit_card.GetFieldText(AutofillType(CREDIT_CARD_EXP_MONTH));
+  text = credit_card.GetFieldText(CREDIT_CARD_EXP_MONTH);
   s->BindString16(2, LimitDataSize(text));
-  text = credit_card.GetFieldText(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  text = credit_card.GetFieldText(CREDIT_CARD_EXP_4_DIGIT_YEAR);
   s->BindString16(3, LimitDataSize(text));
-  text = credit_card.GetFieldText(AutofillType(CREDIT_CARD_NUMBER));
+  text = credit_card.GetFieldText(CREDIT_CARD_NUMBER);
   std::string encrypted_data;
   Encryptor::EncryptString16(text, &encrypted_data);
   s->BindBlob(4, encrypted_data.data(),
@@ -381,10 +381,10 @@ CreditCard* CreditCardFromStatement(const sql::Statement& s) {
   credit_card->set_guid(s.ColumnString(0));
   DCHECK(guid::IsValidGUID(credit_card->guid()));
 
-  credit_card->SetInfo(AutofillType(CREDIT_CARD_NAME), s.ColumnString16(1));
-  credit_card->SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH),
+  credit_card->SetInfo(CREDIT_CARD_NAME, s.ColumnString16(1));
+  credit_card->SetInfo(CREDIT_CARD_EXP_MONTH,
                        s.ColumnString16(2));
-  credit_card->SetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+  credit_card->SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
                        s.ColumnString16(3));
   int encrypted_number_len = s.ColumnByteLength(4);
   string16 credit_card_number;
@@ -394,16 +394,16 @@ CreditCard* CreditCardFromStatement(const sql::Statement& s) {
     memcpy(&encrypted_number[0], s.ColumnBlob(4), encrypted_number_len);
     Encryptor::DecryptString16(encrypted_number, &credit_card_number);
   }
-  credit_card->SetInfo(AutofillType(CREDIT_CARD_NUMBER), credit_card_number);
+  credit_card->SetInfo(CREDIT_CARD_NUMBER, credit_card_number);
   // Intentionally skip column 5, which stores the modification date.
 
   return credit_card;
 }
 
 bool AutofillProfileHasName(const AutofillProfile& profile) {
-  return !profile.GetFieldText(AutofillType(NAME_FIRST)).empty() ||
-         !profile.GetFieldText(AutofillType(NAME_MIDDLE)).empty() ||
-         !profile.GetFieldText(AutofillType(NAME_MIDDLE)).empty();
+  return !profile.GetFieldText(NAME_FIRST).empty() ||
+         !profile.GetFieldText(NAME_MIDDLE).empty() ||
+         !profile.GetFieldText(NAME_MIDDLE).empty();
 }
 
 bool AddAutofillProfileName(const std::string& guid,
@@ -422,9 +422,9 @@ bool AddAutofillProfileName(const std::string& guid,
     return false;
   }
   s_find.BindString(0, guid);
-  s_find.BindString16(1, profile.GetFieldText(AutofillType(NAME_FIRST)));
-  s_find.BindString16(2, profile.GetFieldText(AutofillType(NAME_MIDDLE)));
-  s_find.BindString16(3, profile.GetFieldText(AutofillType(NAME_LAST)));
+  s_find.BindString16(1, profile.GetFieldText(NAME_FIRST));
+  s_find.BindString16(2, profile.GetFieldText(NAME_MIDDLE));
+  s_find.BindString16(3, profile.GetFieldText(NAME_LAST));
 
   if (!s_find.Step()) {
     // Add the new name.
@@ -437,9 +437,9 @@ bool AddAutofillProfileName(const std::string& guid,
       return false;
     }
     s.BindString(0, guid);
-    s.BindString16(1, profile.GetFieldText(AutofillType(NAME_FIRST)));
-    s.BindString16(2, profile.GetFieldText(AutofillType(NAME_MIDDLE)));
-    s.BindString16(3, profile.GetFieldText(AutofillType(NAME_LAST)));
+    s.BindString16(1, profile.GetFieldText(NAME_FIRST));
+    s.BindString16(2, profile.GetFieldText(NAME_MIDDLE));
+    s.BindString16(3, profile.GetFieldText(NAME_LAST));
 
     if (!s.Run()) {
       NOTREACHED();
@@ -452,7 +452,7 @@ bool AddAutofillProfileName(const std::string& guid,
 bool AddAutofillProfileEmail(const std::string& guid,
                              const AutofillProfile& profile,
                              sql::Connection* db) {
-  if (profile.GetFieldText(AutofillType(EMAIL_ADDRESS)).empty())
+  if (profile.GetFieldText(EMAIL_ADDRESS).empty())
     return true;
 
   // Check for duplicate.
@@ -465,7 +465,7 @@ bool AddAutofillProfileEmail(const std::string& guid,
     return false;
   }
   s_find.BindString(0, guid);
-  s_find.BindString16(1, profile.GetFieldText(AutofillType(EMAIL_ADDRESS)));
+  s_find.BindString16(1, profile.GetFieldText(EMAIL_ADDRESS));
 
   if (!s_find.Step()) {
     sql::Statement s(db->GetUniqueStatement(
@@ -477,7 +477,7 @@ bool AddAutofillProfileEmail(const std::string& guid,
       return false;
     }
     s.BindString(0, guid);
-    s.BindString16(1, profile.GetFieldText(AutofillType(EMAIL_ADDRESS)));
+    s.BindString16(1, profile.GetFieldText(EMAIL_ADDRESS));
 
     if (!s.Run()) {
       NOTREACHED();
@@ -501,7 +501,7 @@ bool AddAutofillProfilePhone(const std::string& guid,
     return false;
   }
 
-  if (profile.GetFieldText(AutofillType(field_type)).empty())
+  if (profile.GetFieldText(field_type).empty())
     return true;
 
   // Check for duplicate.
@@ -516,7 +516,7 @@ bool AddAutofillProfilePhone(const std::string& guid,
   s_find.BindString(0, guid);
   s_find.BindInt(1, phone_type);
   s_find.BindString16(
-      2, profile.GetFieldText(AutofillType(field_type)));
+      2, profile.GetFieldText(field_type));
 
   if (!s_find.Step()) {
     sql::Statement s(db->GetUniqueStatement(
@@ -530,7 +530,7 @@ bool AddAutofillProfilePhone(const std::string& guid,
     s.BindString(0, guid);
     s.BindInt(1, phone_type);
     s.BindString16(
-        2, profile.GetFieldText(AutofillType(field_type)));
+        2, profile.GetFieldText(field_type));
 
     if (!s.Run()) {
       NOTREACHED();
@@ -2895,27 +2895,19 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(){
             profile.set_guid(s.ColumnString(0));
             DCHECK(guid::IsValidGUID(profile.guid()));
 
-            profile.SetInfo(AutofillType(NAME_FIRST), s.ColumnString16(1));
-            profile.SetInfo(AutofillType(NAME_MIDDLE), s.ColumnString16(2));
-            profile.SetInfo(AutofillType(NAME_LAST), s.ColumnString16(3));
-            profile.SetInfo(AutofillType(EMAIL_ADDRESS), s.ColumnString16(4));
-            profile.SetInfo(AutofillType(COMPANY_NAME), s.ColumnString16(5));
-            profile.SetInfo(AutofillType(ADDRESS_HOME_LINE1),
-                            s.ColumnString16(6));
-            profile.SetInfo(AutofillType(ADDRESS_HOME_LINE2),
-                            s.ColumnString16(7));
-            profile.SetInfo(AutofillType(ADDRESS_HOME_CITY),
-                            s.ColumnString16(8));
-            profile.SetInfo(AutofillType(ADDRESS_HOME_STATE),
-                            s.ColumnString16(9));
-            profile.SetInfo(AutofillType(ADDRESS_HOME_ZIP),
-                            s.ColumnString16(10));
-            profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
-                            s.ColumnString16(11));
-            profile.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
-                            s.ColumnString16(12));
-            profile.SetInfo(AutofillType(PHONE_FAX_WHOLE_NUMBER),
-                            s.ColumnString16(13));
+            profile.SetInfo(NAME_FIRST, s.ColumnString16(1));
+            profile.SetInfo(NAME_MIDDLE, s.ColumnString16(2));
+            profile.SetInfo(NAME_LAST, s.ColumnString16(3));
+            profile.SetInfo(EMAIL_ADDRESS, s.ColumnString16(4));
+            profile.SetInfo(COMPANY_NAME, s.ColumnString16(5));
+            profile.SetInfo(ADDRESS_HOME_LINE1, s.ColumnString16(6));
+            profile.SetInfo(ADDRESS_HOME_LINE2, s.ColumnString16(7));
+            profile.SetInfo(ADDRESS_HOME_CITY, s.ColumnString16(8));
+            profile.SetInfo(ADDRESS_HOME_STATE, s.ColumnString16(9));
+            profile.SetInfo(ADDRESS_HOME_ZIP, s.ColumnString16(10));
+            profile.SetInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(11));
+            profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, s.ColumnString16(12));
+            profile.SetInfo(PHONE_FAX_WHOLE_NUMBER, s.ColumnString16(13));
             int64 date_modified = s.ColumnInt64(14);
 
             sql::Statement s_insert(db_.GetUniqueStatement(
@@ -2929,20 +2921,14 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(){
               return sql::INIT_FAILURE;
             }
             s_insert.BindString(0, profile.guid());
-            s_insert.BindString16(
-                1, profile.GetFieldText(AutofillType(COMPANY_NAME)));
-            s_insert.BindString16(
-                2, profile.GetFieldText(AutofillType(ADDRESS_HOME_LINE1)));
-            s_insert.BindString16(
-                3, profile.GetFieldText(AutofillType(ADDRESS_HOME_LINE2)));
-            s_insert.BindString16(
-                4, profile.GetFieldText(AutofillType(ADDRESS_HOME_CITY)));
-            s_insert.BindString16(
-                5, profile.GetFieldText(AutofillType(ADDRESS_HOME_STATE)));
-            s_insert.BindString16(
-                6, profile.GetFieldText(AutofillType(ADDRESS_HOME_ZIP)));
-            s_insert.BindString16(
-                7, profile.GetFieldText(AutofillType(ADDRESS_HOME_COUNTRY)));
+            s_insert.BindString16(1, profile.GetFieldText(COMPANY_NAME));
+            s_insert.BindString16(2, profile.GetFieldText(ADDRESS_HOME_LINE1));
+            s_insert.BindString16(3, profile.GetFieldText(ADDRESS_HOME_LINE2));
+            s_insert.BindString16(4, profile.GetFieldText(ADDRESS_HOME_CITY));
+            s_insert.BindString16(5, profile.GetFieldText(ADDRESS_HOME_STATE));
+            s_insert.BindString16(6, profile.GetFieldText(ADDRESS_HOME_ZIP));
+            s_insert.BindString16(7,
+                                  profile.GetFieldText(ADDRESS_HOME_COUNTRY));
             s_insert.BindInt64(8, date_modified);
 
             if (!s_insert.Run()) {

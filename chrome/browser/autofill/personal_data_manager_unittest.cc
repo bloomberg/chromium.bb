@@ -130,7 +130,7 @@ TEST_F(PersonalDataManagerTest, SetProfiles) {
   //  - Update profile0
   //  - Remove profile1
   //  - Add profile2
-  profile0.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("John"));
+  profile0.SetInfo(NAME_FIRST, ASCIIToUTF16("John"));
   update.clear();
   update.push_back(profile0);
   update.push_back(profile2);
@@ -198,7 +198,7 @@ TEST_F(PersonalDataManagerTest, SetCreditCards) {
   //  - Update creditcard0
   //  - Remove creditcard1
   //  - Add creditcard2
-  creditcard0.SetInfo(AutofillType(CREDIT_CARD_NAME), ASCIIToUTF16("Joe"));
+  creditcard0.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Joe"));
   update.clear();
   update.push_back(creditcard0);
   update.push_back(creditcard2);
@@ -499,7 +499,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   // open with a previous snapshot of the profiles, and something [e.g. sync]
   // removed a profile from the browser.  In this edge case, we will end up
   // in a consistent state by dropping the write).
-  profile2.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Jo"));
+  profile2.SetInfo(NAME_FIRST, ASCIIToUTF16("Jo"));
   update.clear();
   update.push_back(profile0);
   update.push_back(profile1);
@@ -701,17 +701,17 @@ TEST_F(PersonalDataManagerTest, ImportPhoneNumberSplitAcrossMultipleFields) {
 
 TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
   CreditCard credit_card0;
-  credit_card0.SetInfo(AutofillType(CREDIT_CARD_NAME), ASCIIToUTF16("John"));
+  credit_card0.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("John"));
   CreditCard credit_card1;
-  credit_card1.SetInfo(AutofillType(CREDIT_CARD_NAME), ASCIIToUTF16("Paul"));
+  credit_card1.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Paul"));
   CreditCard credit_card2;
-  credit_card2.SetInfo(AutofillType(CREDIT_CARD_NAME), ASCIIToUTF16("Ringo"));
+  credit_card2.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Ringo"));
   CreditCard credit_card3;
-  credit_card3.SetInfo(AutofillType(CREDIT_CARD_NAME), ASCIIToUTF16("Other"));
+  credit_card3.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Other"));
   CreditCard credit_card4;
-  credit_card4.SetInfo(AutofillType(CREDIT_CARD_NAME), ASCIIToUTF16("Ozzy"));
+  credit_card4.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Ozzy"));
   CreditCard credit_card5;
-  credit_card5.SetInfo(AutofillType(CREDIT_CARD_NAME), ASCIIToUTF16("Dio"));
+  credit_card5.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Dio"));
 
   // This will verify that the web database has been loaded and the notification
   // sent out.

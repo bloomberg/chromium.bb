@@ -148,12 +148,12 @@ void AutofillProfile::GetAvailableFieldTypes(
     (*it)->GetAvailableFieldTypes(available_types);
 }
 
-string16 AutofillProfile::GetFieldText(const AutofillType& type) const {
-  AutofillType return_type(
-      AutofillType::GetEquivalentFieldType(type.field_type()));
+string16 AutofillProfile::GetFieldText(AutofillFieldType type) const {
+  AutofillFieldType return_type = AutofillType::GetEquivalentFieldType(type);
 
   FormGroupMap info = info_map();
-  FormGroupMap::const_iterator it = info.find(return_type.group());
+  FormGroupMap::const_iterator it =
+      info.find(AutofillType(return_type).group());
   if (it == info.end())
     return string16();
 
@@ -161,7 +161,7 @@ string16 AutofillProfile::GetFieldText(const AutofillType& type) const {
 }
 
 void AutofillProfile::FindInfoMatches(
-    const AutofillType& type,
+    AutofillFieldType type,
     const string16& value,
     std::vector<string16>* matched_text) const {
   if (matched_text == NULL) {
@@ -172,22 +172,22 @@ void AutofillProfile::FindInfoMatches(
   string16 clean_info = StringToLowerASCII(CollapseWhitespace(value, false));
 
   // If the field_type is unknown, then match against all field types.
-  if (type.field_type() == UNKNOWN_TYPE) {
+  if (type == UNKNOWN_TYPE) {
     FormGroupList info = info_list();
     for (FormGroupList::const_iterator it = info.begin();
          it != info.end(); ++it)
       (*it)->FindInfoMatches(type, clean_info, matched_text);
   } else {
     FormGroupMap info = info_map();
-    FormGroupMap::const_iterator it = info.find(type.group());
+    FormGroupMap::const_iterator it = info.find(AutofillType(type).group());
     if (it != info.end())
       it->second->FindInfoMatches(type, clean_info, matched_text);
   }
 }
 
-void AutofillProfile::SetInfo(const AutofillType& type, const string16& value) {
+void AutofillProfile::SetInfo(AutofillFieldType type, const string16& value) {
   MutableFormGroupMap info = mutable_info_map();
-  MutableFormGroupMap::iterator it = info.find(type.group());
+  MutableFormGroupMap::iterator it = info.find(AutofillType(type).group());
   if (it != info.end())
     it->second->SetInfo(type, CollapseWhitespace(value, false));
 }
@@ -291,8 +291,8 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
                                       PHONE_FAX_NUMBER };
 
   for (size_t index = 0; index < arraysize(types); ++index) {
-    int comparison = GetFieldText(AutofillType(types[index])).compare(
-        profile.GetFieldText(AutofillType(types[index])));
+    int comparison = GetFieldText(types[index]).compare(
+        profile.GetFieldText(types[index]));
     if (comparison != 0)
       return comparison;
   }
@@ -309,10 +309,10 @@ bool AutofillProfile::operator!=(const AutofillProfile& profile) const {
 }
 
 const string16 AutofillProfile::PrimaryValue() const {
-  return GetFieldText(AutofillType(NAME_FULL)) +
-         GetFieldText(AutofillType(ADDRESS_HOME_LINE1)) +
-         GetFieldText(AutofillType(ADDRESS_HOME_LINE2)) +
-         GetFieldText(AutofillType(EMAIL_ADDRESS));
+  return GetFieldText(NAME_FULL) +
+         GetFieldText(ADDRESS_HOME_LINE1) +
+         GetFieldText(ADDRESS_HOME_LINE2) +
+         GetFieldText(EMAIL_ADDRESS);
 }
 
 string16 AutofillProfile::ConstructInferredLabel(
@@ -327,7 +327,7 @@ string16 AutofillProfile::ConstructInferredLabel(
            included_fields.begin();
        it != included_fields.end() && num_fields_used < num_fields_to_use;
        ++it) {
-    string16 field = GetFieldText(AutofillType(*it));
+    string16 field = GetFieldText(*it);
     if (field.empty())
       continue;
 
@@ -364,7 +364,7 @@ void AutofillProfile::CreateDifferentiatingLabels(
     for (std::list<size_t>::const_iterator it = indices.begin();
          it != indices.end(); ++it) {
       const AutofillProfile* profile = profiles[*it];
-      string16 field_text = profile->GetFieldText(AutofillType(*field));
+      string16 field_text = profile->GetFieldText(*field);
 
       // If this label is not already in the map, add it with frequency 0.
       if (!field_text_frequencies.count(field_text))
@@ -391,7 +391,7 @@ void AutofillProfile::CreateDifferentiatingLabels(
     for (std::vector<AutofillFieldType>::const_iterator field = fields.begin();
          field != fields.end(); ++field) {
       // Skip over empty fields.
-      string16 field_text = profile->GetFieldText(AutofillType(*field));
+      string16 field_text = profile->GetFieldText(*field);
       if (field_text.empty())
         continue;
 
@@ -461,31 +461,29 @@ std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
       << " "
       << profile.guid()
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutofillType(NAME_FIRST)))
+      << UTF16ToUTF8(profile.GetFieldText(NAME_FIRST))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutofillType(NAME_MIDDLE)))
+      << UTF16ToUTF8(profile.GetFieldText(NAME_MIDDLE))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutofillType(NAME_LAST)))
+      << UTF16ToUTF8(profile.GetFieldText(NAME_LAST))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutofillType(EMAIL_ADDRESS)))
+      << UTF16ToUTF8(profile.GetFieldText(EMAIL_ADDRESS))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutofillType(COMPANY_NAME)))
+      << UTF16ToUTF8(profile.GetFieldText(COMPANY_NAME))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutofillType(ADDRESS_HOME_LINE1)))
+      << UTF16ToUTF8(profile.GetFieldText(ADDRESS_HOME_LINE1))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutofillType(ADDRESS_HOME_LINE2)))
+      << UTF16ToUTF8(profile.GetFieldText(ADDRESS_HOME_LINE2))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutofillType(ADDRESS_HOME_CITY)))
+      << UTF16ToUTF8(profile.GetFieldText(ADDRESS_HOME_CITY))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutofillType(ADDRESS_HOME_STATE)))
+      << UTF16ToUTF8(profile.GetFieldText(ADDRESS_HOME_STATE))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutofillType(ADDRESS_HOME_ZIP)))
+      << UTF16ToUTF8(profile.GetFieldText(ADDRESS_HOME_ZIP))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutofillType(ADDRESS_HOME_COUNTRY)))
+      << UTF16ToUTF8(profile.GetFieldText(ADDRESS_HOME_COUNTRY))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutofillType(
-             PHONE_HOME_WHOLE_NUMBER)))
+      << UTF16ToUTF8(profile.GetFieldText(PHONE_HOME_WHOLE_NUMBER))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(AutofillType(
-             PHONE_FAX_WHOLE_NUMBER)));
+      << UTF16ToUTF8(profile.GetFieldText(PHONE_FAX_WHOLE_NUMBER));
 }

@@ -139,7 +139,7 @@ class AutofillManager : public TabContentsObserver,
   // is filled with the Profile label.
   void GetProfileSuggestions(FormStructure* form,
                              const webkit_glue::FormField& field,
-                             AutofillType type,
+                             AutofillFieldType type,
                              std::vector<string16>* values,
                              std::vector<string16>* labels,
                              std::vector<string16>* icons,
@@ -149,7 +149,7 @@ class AutofillManager : public TabContentsObserver,
   // the value of |field| and returns the labels of the matching credit cards.
   void GetCreditCardSuggestions(FormStructure* form,
                                 const webkit_glue::FormField& field,
-                                AutofillType type,
+                                AutofillFieldType type,
                                 std::vector<string16>* values,
                                 std::vector<string16>* labels,
                                 std::vector<string16>* icons,
@@ -158,18 +158,18 @@ class AutofillManager : public TabContentsObserver,
   // Set |field| argument's value based on |type| and contents of the
   // |credit_card|.
   void FillCreditCardFormField(const CreditCard* credit_card,
-                               AutofillType type,
+                               AutofillFieldType type,
                                webkit_glue::FormField* field);
 
   // Set |field| argument's value based on |type| and contents of the |profile|.
   void FillFormField(const AutofillProfile* profile,
-                     AutofillType type,
+                     AutofillFieldType type,
                      webkit_glue::FormField* field);
 
   // Set |field| argument's value for phone/fax number based on contents of the
   // |profile|. |type| is the type of the phone.
   void FillPhoneNumberField(const AutofillProfile* profile,
-                            AutofillType type,
+                            AutofillFieldType type,
                             webkit_glue::FormField* field);
 
   // Parses the forms using heuristic matching and querying the Autofill server.

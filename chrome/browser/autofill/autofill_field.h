@@ -26,8 +26,8 @@ class AutofillField : public webkit_glue::FormField {
   const FieldTypeSet& possible_types() const { return possible_types_; }
 
   // Sets the heuristic type of this field, validating the input.
-  void set_heuristic_type(const AutofillFieldType& type);
-  void set_server_type(const AutofillFieldType& type) { server_type_ = type; }
+  void set_heuristic_type(AutofillFieldType type);
+  void set_server_type(AutofillFieldType type) { server_type_ = type; }
   void set_possible_types(const FieldTypeSet& possible_types) {
     possible_types_ = possible_types;
   }

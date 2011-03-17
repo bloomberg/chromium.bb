@@ -254,8 +254,7 @@ TEST_F(AutofillProfileModelAssociatorTest, TestNeedToAddNativeProfile) {
       read_node);
 
   EXPECT_EQ(bundle.new_profiles.size(), (unsigned int)1);
-  EXPECT_EQ(
-      bundle.new_profiles.front()->GetFieldText(AutofillType(NAME_FIRST)),
-      UTF8ToUTF16(first_name));
+  EXPECT_EQ(bundle.new_profiles.front()->GetFieldText(NAME_FIRST),
+            UTF8ToUTF16(first_name));
 }
 

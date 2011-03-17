@@ -10,7 +10,6 @@
 
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
 
 // This class is an interface for collections of form fields, grouped by type.
@@ -32,21 +31,21 @@ class FormGroup {
 
   // Returns the string that should be auto-filled into a text field given the
   // type of that field.
-  virtual string16 GetFieldText(const AutofillType& type) const = 0;
+  virtual string16 GetFieldText(AutofillFieldType type) const = 0;
 
   // Returns the text for preview.
-  virtual string16 GetPreviewText(const AutofillType& type) const;
+  virtual string16 GetPreviewText(AutofillFieldType type) const;
 
   // Used to determine if the text being typed into a field matches the
   // information in this FormGroup object. This is used by the preview
   // functionality.  |matched_text| will be populated with all of the possible
   // matches given the type.  This method is additive on |matched_text|.
-  virtual void FindInfoMatches(const AutofillType& type,
+  virtual void FindInfoMatches(AutofillFieldType type,
                                const string16& info,
                                std::vector<string16>* matched_text) const = 0;
 
   // Used to populate this FormGroup object with data.
-  virtual void SetInfo(const AutofillType& type, const string16& value) = 0;
+  virtual void SetInfo(AutofillFieldType type, const string16& value) = 0;
 
   // Returns the label for this FormGroup item. This should be overridden for
   // form group items that implement a label.

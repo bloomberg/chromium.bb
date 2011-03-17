@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_AUTOFILL_SELECT_CONTROL_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/autofill/autofill_type.h"
+#include "chrome/browser/autofill/field_types.h"
 
 class FormGroup;
 
@@ -21,7 +21,7 @@ namespace autofill {
 // variations of a value, e.g., (tx, TX, Texas) or credit card expiration
 // months, e.g., (04, April).
 void FillSelectControl(const FormGroup& form_group,
-                       AutofillType type,
+                       AutofillFieldType type,
                        webkit_glue::FormField* field);
 
 }  // namespace autofill

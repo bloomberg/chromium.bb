@@ -481,7 +481,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
 
   // A field must have a non-empty value for each profile to be considered a
   // distinguishing field.
-  profiles[1]->SetInfo(AutofillType(ADDRESS_HOME_LINE1),
+  profiles[1]->SetInfo(ADDRESS_HOME_LINE1,
                        ASCIIToUTF16("88 Nowhere Ave."));
   AutofillProfile::CreateInferredLabels(&profiles.get(), NULL, UNKNOWN_TYPE, 1,
                                         &labels);

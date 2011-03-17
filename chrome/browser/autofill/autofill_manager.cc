@@ -331,8 +331,9 @@ void AutofillManager::OnQueryFormFieldAutoFill(
       FindCachedFormAndField(form, field, &form_structure, &autofill_field) &&
       // Don't send suggestions for forms that aren't auto-fillable.
       form_structure->IsAutoFillable(false)) {
-    AutofillType type(autofill_field->type());
-    bool is_filling_credit_card = (type.group() == AutofillType::CREDIT_CARD);
+    AutofillFieldType type = autofill_field->type();
+    bool is_filling_credit_card =
+        (AutofillType(type).group() == AutofillType::CREDIT_CARD);
     if (is_filling_credit_card) {
       GetCreditCardSuggestions(
           form_structure, field, type, &values, &labels, &icons, &unique_ids);
@@ -450,13 +451,15 @@ void AutofillManager::OnFillAutoFillFormData(int query_id,
     for (std::vector<FormField>::iterator iter = result.fields.begin();
          iter != result.fields.end(); ++iter) {
       if ((*iter) == field) {
-        AutofillType autofill_type(autofill_field->type());
+        AutofillFieldType field_type = autofill_field->type();
         if (profile) {
-          DCHECK_NE(AutofillType::CREDIT_CARD, autofill_type.group());
-          FillFormField(profile, autofill_type, &(*iter));
+          DCHECK_NE(AutofillType::CREDIT_CARD,
+                    AutofillType(field_type).group());
+          FillFormField(profile, field_type, &(*iter));
         } else {
-          DCHECK_EQ(AutofillType::CREDIT_CARD, autofill_type.group());
-          FillCreditCardFormField(credit_card, autofill_type, &(*iter));
+          DCHECK_EQ(AutofillType::CREDIT_CARD,
+                    AutofillType(field_type).group());
+          FillCreditCardFormField(credit_card, field_type, &(*iter));
         }
         break;
       }
@@ -488,14 +491,15 @@ void AutofillManager::OnFillAutoFillFormData(int query_id,
     if (k >= section_end)
       continue;
 
-    AutofillType autofill_type(form_structure->field(k)->type());
-    if (autofill_type.group() != AutofillType::NO_GROUP) {
+    AutofillFieldType field_type = form_structure->field(k)->type();
+    FieldTypeGroup field_group_type = AutofillType(field_type).group();
+    if (field_group_type != AutofillType::NO_GROUP) {
       if (profile) {
-        DCHECK_NE(AutofillType::CREDIT_CARD, autofill_type.group());
-        FillFormField(profile, autofill_type, &result.fields[j]);
+        DCHECK_NE(AutofillType::CREDIT_CARD, field_group_type);
+        FillFormField(profile, field_type, &result.fields[j]);
       } else {
-        DCHECK_EQ(AutofillType::CREDIT_CARD, autofill_type.group());
-        FillCreditCardFormField(credit_card, autofill_type, &result.fields[j]);
+        DCHECK_EQ(AutofillType::CREDIT_CARD, field_group_type);
+        FillCreditCardFormField(credit_card, field_type, &result.fields[j]);
       }
     }
 
@@ -724,7 +728,7 @@ bool AutofillManager::FindCachedFormAndField(const FormData& form,
 
 void AutofillManager::GetProfileSuggestions(FormStructure* form,
                                             const FormField& field,
-                                            AutofillType type,
+                                            AutofillFieldType type,
                                             std::vector<string16>* values,
                                             std::vector<string16>* labels,
                                             std::vector<string16>* icons,
@@ -758,7 +762,7 @@ void AutofillManager::GetProfileSuggestions(FormStructure* form,
   }
 
   AutofillProfile::CreateInferredLabels(&matched_profiles, &form_fields,
-                                        type.field_type(), 1, labels);
+                                        type, 1, labels);
 
   // No icons for profile suggestions.
   icons->resize(values->size());
@@ -766,7 +770,7 @@ void AutofillManager::GetProfileSuggestions(FormStructure* form,
 
 void AutofillManager::GetCreditCardSuggestions(FormStructure* form,
                                                const FormField& field,
-                                               AutofillType type,
+                                               AutofillFieldType type,
                                                std::vector<string16>* values,
                                                std::vector<string16>* labels,
                                                std::vector<string16>* icons,
@@ -780,13 +784,13 @@ void AutofillManager::GetCreditCardSuggestions(FormStructure* form,
     string16 creditcard_field_value = credit_card->GetFieldText(type);
     if (!creditcard_field_value.empty() &&
         StartsWith(creditcard_field_value, field.value, false)) {
-      if (type.field_type() == CREDIT_CARD_NUMBER)
+      if (type == CREDIT_CARD_NUMBER)
         creditcard_field_value = credit_card->ObfuscatedNumber();
 
       string16 label;
       if (credit_card->number().empty()) {
         // If there is no CC number, return name to show something.
-        label = credit_card->GetFieldText(AutofillType(CREDIT_CARD_NAME));
+        label = credit_card->GetFieldText(CREDIT_CARD_NAME);
       } else {
         label = kCreditCardPrefix;
         label.append(credit_card->LastFourDigits());
@@ -801,20 +805,18 @@ void AutofillManager::GetCreditCardSuggestions(FormStructure* form,
 }
 
 void AutofillManager::FillCreditCardFormField(const CreditCard* credit_card,
-                                              AutofillType type,
+                                              AutofillFieldType type,
                                               webkit_glue::FormField* field) {
   DCHECK(credit_card);
-  DCHECK_EQ(AutofillType::CREDIT_CARD, type.group());
+  DCHECK_EQ(AutofillType::CREDIT_CARD, AutofillType(type).group());
   DCHECK(field);
 
   if (field->form_control_type == ASCIIToUTF16("select-one")) {
     autofill::FillSelectControl(*credit_card, type, field);
   } else if (field->form_control_type == ASCIIToUTF16("month")) {
     // HTML5 input="month" consists of year-month.
-    string16 year = credit_card->GetFieldText(
-        AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-    string16 month = credit_card->GetFieldText(
-        AutofillType(CREDIT_CARD_EXP_MONTH));
+    string16 year = credit_card->GetFieldText(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+    string16 month = credit_card->GetFieldText(CREDIT_CARD_EXP_MONTH);
     if (!year.empty() && !month.empty()) {
       // Fill the value only if |credit_card| includes both year and month
       // information.
@@ -826,13 +828,13 @@ void AutofillManager::FillCreditCardFormField(const CreditCard* credit_card,
 }
 
 void AutofillManager::FillFormField(const AutofillProfile* profile,
-                                    AutofillType type,
+                                    AutofillFieldType type,
                                     webkit_glue::FormField* field) {
   DCHECK(profile);
-  DCHECK_NE(AutofillType::CREDIT_CARD, type.group());
+  DCHECK_NE(AutofillType::CREDIT_CARD, AutofillType(type).group());
   DCHECK(field);
 
-  if (type.subgroup() == AutofillType::PHONE_NUMBER) {
+  if (AutofillType(type).subgroup() == AutofillType::PHONE_NUMBER) {
     FillPhoneNumberField(profile, type, field);
   } else {
     if (field->form_control_type == ASCIIToUTF16("select-one"))
@@ -843,11 +845,11 @@ void AutofillManager::FillFormField(const AutofillProfile* profile,
 }
 
 void AutofillManager::FillPhoneNumberField(const AutofillProfile* profile,
-                                           AutofillType type,
+                                           AutofillFieldType type,
                                            webkit_glue::FormField* field) {
   // If we are filling a phone number, check to see if the size field
   // matches the "prefix" or "suffix" sizes and fill accordingly.
-  string16 number = profile->GetFieldText(AutofillType(type));
+  string16 number = profile->GetFieldText(type);
   bool has_valid_suffix_and_prefix = (number.length() ==
       static_cast<size_t>(PhoneNumber::kPrefixLength +
                           PhoneNumber::kSuffixLength));

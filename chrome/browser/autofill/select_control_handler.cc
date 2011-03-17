@@ -199,7 +199,7 @@ bool FillExpirationMonthSelectControl(const string16& value,
 namespace autofill {
 
 void FillSelectControl(const FormGroup& form_group,
-                       AutofillType type,
+                       AutofillFieldType type,
                        webkit_glue::FormField* field) {
   DCHECK(field);
   DCHECK_EQ(ASCIIToUTF16("select-one"), field->form_control_type);
@@ -229,15 +229,12 @@ void FillSelectControl(const FormGroup& form_group,
     return;
   }
 
-  if (type.field_type() == ADDRESS_HOME_STATE ||
-      type.field_type() == ADDRESS_BILLING_STATE) {
+  if (type == ADDRESS_HOME_STATE || type == ADDRESS_BILLING_STATE)
     FillStateSelectControl(field_text, field);
-  } else if (type.field_type() == ADDRESS_HOME_COUNTRY ||
-             type.field_type() == ADDRESS_BILLING_COUNTRY) {
+  else if (type == ADDRESS_HOME_COUNTRY || type == ADDRESS_BILLING_COUNTRY)
     FillCountrySelectControl(form_group, field);
-  } else if (type.field_type() == CREDIT_CARD_EXP_MONTH) {
+  else if (type == CREDIT_CARD_EXP_MONTH)
     FillExpirationMonthSelectControl(field_text, field);
-  }
 
   return;
 }

@@ -1672,14 +1672,13 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   AutofillProfile *work_profile = autofill_manager_->GetProfileWithGUID(
       "00000000-0000-0000-0000-000000000002");
   ASSERT_TRUE(work_profile != NULL);
-  const AutofillType phone_type(PHONE_HOME_NUMBER);
-  string16 saved_phone = work_profile->GetFieldText(phone_type);
+  string16 saved_phone = work_profile->GetFieldText(PHONE_HOME_NUMBER);
 
   char test_data[] = "1234567890123456";
   for (int i = arraysize(test_data) - 1; i >= 0; --i) {
     test_data[i] = 0;
     SCOPED_TRACE(StringPrintf("Testing phone: %s", test_data));
-    work_profile->SetInfo(phone_type, ASCIIToUTF16(test_data));
+    work_profile->SetInfo(PHONE_HOME_NUMBER, ASCIIToUTF16(test_data));
     // The page ID sent to the AutofillManager from the RenderView, used to send
     // an IPC message back to the renderer.
     int page_id = 100 - i;
@@ -1700,7 +1699,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
     }
   }
 
-  work_profile->SetInfo(phone_type, saved_phone);
+  work_profile->SetInfo(PHONE_HOME_NUMBER, saved_phone);
 }
 
 // Test that we can still fill a form when a field has been removed from it.

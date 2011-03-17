@@ -25,11 +25,11 @@ class NameInfo : public FormGroup {
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
-  virtual void FindInfoMatches(const AutofillType& type,
+  virtual void FindInfoMatches(AutofillFieldType type,
                                const string16& info,
                                std::vector<string16>* matched_text) const;
-  virtual string16 GetFieldText(const AutofillType& type) const;
-  virtual void SetInfo(const AutofillType& type, const string16& value);
+  virtual string16 GetFieldText(AutofillFieldType type) const;
+  virtual void SetInfo(AutofillFieldType type, const string16& value);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NameInfoTest, TestSetFullName);
@@ -48,7 +48,7 @@ class NameInfo : public FormGroup {
 
   // A helper function for FindInfoMatches that only handles matching the info
   // with the requested field type.
-  bool FindInfoMatchesHelper(const AutofillFieldType& field_type,
+  bool FindInfoMatchesHelper(AutofillFieldType field_type,
                              const string16& info,
                              string16* matched_text) const;
 
@@ -114,11 +114,11 @@ class EmailInfo : public FormGroup {
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
-  virtual void FindInfoMatches(const AutofillType& type,
+  virtual void FindInfoMatches(AutofillFieldType type,
                                const string16& info,
                                std::vector<string16>* matched_text) const;
-  virtual string16 GetFieldText(const AutofillType& type) const;
-  virtual void SetInfo(const AutofillType& type, const string16& value);
+  virtual string16 GetFieldText(AutofillFieldType type) const;
+  virtual void SetInfo(AutofillFieldType type, const string16& value);
 
  private:
   string16 email_;
@@ -136,11 +136,11 @@ class CompanyInfo : public FormGroup {
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
-  virtual void FindInfoMatches(const AutofillType& type,
+  virtual void FindInfoMatches(AutofillFieldType type,
                                const string16& info,
                                std::vector<string16>* matched_text) const;
-  virtual string16 GetFieldText(const AutofillType& type) const;
-  virtual void SetInfo(const AutofillType& type, const string16& value);
+  virtual string16 GetFieldText(AutofillFieldType type) const;
+  virtual void SetInfo(AutofillFieldType type, const string16& value);
 
  private:
   string16 company_name_;

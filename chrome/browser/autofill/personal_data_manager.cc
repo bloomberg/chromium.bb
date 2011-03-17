@@ -87,10 +87,10 @@ bool IsValidEmail(const string16& value) {
 // filled.  No verification of validity of the contents is preformed.  This is
 // and existence check only.
 bool IsMinimumAddress(const AutofillProfile& profile) {
-  return !profile.GetFieldText(AutofillType(ADDRESS_HOME_LINE1)).empty() &&
-         !profile.GetFieldText(AutofillType(ADDRESS_HOME_CITY)).empty() &&
-         !profile.GetFieldText(AutofillType(ADDRESS_HOME_STATE)).empty() &&
-         !profile.GetFieldText(AutofillType(ADDRESS_HOME_ZIP)).empty();
+  return !profile.GetFieldText(ADDRESS_HOME_LINE1).empty() &&
+         !profile.GetFieldText(ADDRESS_HOME_CITY).empty() &&
+         !profile.GetFieldText(ADDRESS_HOME_STATE).empty() &&
+         !profile.GetFieldText(ADDRESS_HOME_ZIP).empty();
 }
 
 // Whether we have already logged the number of profiles this session.
@@ -174,26 +174,26 @@ bool PersonalDataManager::ImportFormData(
       if (!field->IsFieldFillable() || value.empty())
         continue;
 
-      AutofillType field_type(field->type());
-      FieldTypeGroup group(field_type.group());
+      AutofillFieldType field_type = field->type();
+      FieldTypeGroup group(AutofillType(field_type).group());
 
       if (group == AutofillType::CREDIT_CARD) {
         // If the user has a password set, we have no way of setting credit
         // card numbers.
         if (!HasPassword()) {
           if (LowerCaseEqualsASCII(field->form_control_type, "month")) {
-            DCHECK_EQ(CREDIT_CARD_EXP_MONTH, field_type.field_type());
+            DCHECK_EQ(CREDIT_CARD_EXP_MONTH, field_type);
             local_imported_credit_card->SetInfoForMonthInputType(value);
           } else {
-            local_imported_credit_card->SetInfo(
-                AutofillType(field_type.field_type()), value);
+            local_imported_credit_card->SetInfo(field_type, value);
           }
           ++importable_credit_card_fields;
         }
       } else {
         // In the case of a phone number, if the whole phone number was entered
         // into a single field, then parse it and set the sub components.
-        if (field_type.subgroup() == AutofillType::PHONE_WHOLE_NUMBER) {
+        if (AutofillType(field_type).subgroup() ==
+                AutofillType::PHONE_WHOLE_NUMBER) {
           string16 number;
           string16 city_code;
           string16 country_code;
@@ -205,17 +205,13 @@ bool PersonalDataManager::ImportFormData(
             continue;
 
           if (group == AutofillType::PHONE_HOME) {
-            imported_profile->SetInfo(AutofillType(PHONE_HOME_COUNTRY_CODE),
-                                      country_code);
-            imported_profile->SetInfo(AutofillType(PHONE_HOME_CITY_CODE),
-                                      city_code);
-            imported_profile->SetInfo(AutofillType(PHONE_HOME_NUMBER), number);
+            imported_profile->SetInfo(PHONE_HOME_COUNTRY_CODE, country_code);
+            imported_profile->SetInfo(PHONE_HOME_CITY_CODE, city_code);
+            imported_profile->SetInfo(PHONE_HOME_NUMBER, number);
           } else if (group == AutofillType::PHONE_FAX) {
-            imported_profile->SetInfo(AutofillType(PHONE_FAX_COUNTRY_CODE),
-                                      country_code);
-            imported_profile->SetInfo(AutofillType(PHONE_FAX_CITY_CODE),
-                                      city_code);
-            imported_profile->SetInfo(AutofillType(PHONE_FAX_NUMBER), number);
+            imported_profile->SetInfo(PHONE_FAX_COUNTRY_CODE, country_code);
+            imported_profile->SetInfo(PHONE_FAX_CITY_CODE, city_code);
+            imported_profile->SetInfo(PHONE_FAX_NUMBER, number);
           }
 
           continue;
@@ -226,9 +222,9 @@ bool PersonalDataManager::ImportFormData(
         // If so, combine them to form the full number.
         if (group == AutofillType::PHONE_HOME ||
             group == AutofillType::PHONE_FAX) {
-          AutofillType number_type(PHONE_HOME_NUMBER);
+          AutofillFieldType number_type = PHONE_HOME_NUMBER;
           if (group == AutofillType::PHONE_FAX)
-            number_type = AutofillType(PHONE_FAX_NUMBER);
+            number_type = PHONE_FAX_NUMBER;
 
           string16 stored_number = imported_profile->GetFieldText(number_type);
           if (stored_number.size() ==
@@ -238,11 +234,10 @@ bool PersonalDataManager::ImportFormData(
           }
         }
 
-        if (field_type.field_type() == EMAIL_ADDRESS && !IsValidEmail(value))
+        if (field_type == EMAIL_ADDRESS && !IsValidEmail(value))
           continue;
 
-        imported_profile->SetInfo(AutofillType(field_type.field_type()),
-                                   value);
+        imported_profile->SetInfo(field_type, value);
         ++importable_fields;
       }
     }
@@ -260,7 +255,7 @@ bool PersonalDataManager::ImportFormData(
 
   if (local_imported_credit_card.get() &&
       !CreditCard::IsCreditCardNumber(local_imported_credit_card->GetFieldText(
-          AutofillType(CREDIT_CARD_NUMBER)))) {
+          CREDIT_CARD_NUMBER))) {
     local_imported_credit_card.reset();
   }
 

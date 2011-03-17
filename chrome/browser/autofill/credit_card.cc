@@ -185,18 +185,18 @@ void CreditCard::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
     available_types->insert(CREDIT_CARD_NUMBER);
 }
 
-void CreditCard::FindInfoMatches(const AutofillType& type,
+void CreditCard::FindInfoMatches(AutofillFieldType type,
                                  const string16& info,
                                  std::vector<string16>* matched_text) const {
   DCHECK(matched_text);
 
   string16 match;
-  switch (type.field_type()) {
+  switch (type) {
     case CREDIT_CARD_NUMBER: {
       // Because the credit card number is encrypted and we are not able to do
       // comparisons with it we will say that any field that is known to be a
       // credit card number field will match all credit card numbers.
-      string16 text = GetPreviewText(AutofillType(CREDIT_CARD_NUMBER));
+      string16 text = GetPreviewText(CREDIT_CARD_NUMBER);
       if (!text.empty())
         matched_text->push_back(text);
       break;
@@ -214,14 +214,14 @@ void CreditCard::FindInfoMatches(const AutofillType& type,
       break;
 
     default:
-      if (FindInfoMatchesHelper(type.field_type(), info, &match))
+      if (FindInfoMatchesHelper(type, info, &match))
         matched_text->push_back(match);
       break;
   }
 }
 
-string16 CreditCard::GetFieldText(const AutofillType& type) const {
-  switch (type.field_type()) {
+string16 CreditCard::GetFieldText(AutofillFieldType type) const {
+  switch (type) {
     case CREDIT_CARD_NAME:
       return name_on_card();
 
@@ -267,8 +267,8 @@ string16 CreditCard::GetFieldText(const AutofillType& type) const {
   }
 }
 
-string16 CreditCard::GetPreviewText(const AutofillType& type) const {
-  switch (type.field_type()) {
+string16 CreditCard::GetPreviewText(AutofillFieldType type) const {
+  switch (type) {
     case CREDIT_CARD_NUMBER:
       return last_four_digits();
 
@@ -281,8 +281,8 @@ string16 CreditCard::GetPreviewText(const AutofillType& type) const {
   }
 }
 
-void CreditCard::SetInfo(const AutofillType& type, const string16& value) {
-  switch (type.field_type()) {
+void CreditCard::SetInfo(AutofillFieldType type, const string16& value) {
+  switch (type) {
     case CREDIT_CARD_NAME:
       set_name_on_card(value);
       break;
@@ -322,8 +322,7 @@ void CreditCard::SetInfo(const AutofillType& type, const string16& value) {
       break;
 
     default:
-      DLOG(ERROR) << "Attempting to set unknown info-type "
-                  << type.field_type();
+      DLOG(ERROR) << "Attempting to set unknown info-type " << type;
       break;
   }
 }
@@ -412,8 +411,8 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
                                       CREDIT_CARD_EXP_MONTH,
                                       CREDIT_CARD_EXP_4_DIGIT_YEAR };
   for (size_t index = 0; index < arraysize(types); ++index) {
-    int comparison = GetFieldText(AutofillType(types[index])).compare(
-        credit_card.GetFieldText(AutofillType(types[index])));
+    int comparison = GetFieldText(types[index]).compare(
+        credit_card.GetFieldText(types[index]));
     if (comparison != 0)
       return comparison;
   }
@@ -529,7 +528,7 @@ void CreditCard::set_expiration_year(int expiration_year) {
   expiration_year_ = expiration_year;
 }
 
-bool CreditCard::FindInfoMatchesHelper(const AutofillFieldType& field_type,
+bool CreditCard::FindInfoMatchesHelper(AutofillFieldType field_type,
                                        const string16& info,
                                        string16* match) const {
   DCHECK(match);
@@ -642,17 +641,15 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
       << " "
       << credit_card.guid()
       << " "
-      << UTF16ToUTF8(credit_card.GetFieldText(AutofillType(CREDIT_CARD_NAME)))
+      << UTF16ToUTF8(credit_card.GetFieldText(CREDIT_CARD_NAME))
       << " "
-      << UTF16ToUTF8(credit_card.GetFieldText(AutofillType(CREDIT_CARD_TYPE)))
+      << UTF16ToUTF8(credit_card.GetFieldText(CREDIT_CARD_TYPE))
       << " "
-      << UTF16ToUTF8(credit_card.GetFieldText(AutofillType(CREDIT_CARD_NUMBER)))
+      << UTF16ToUTF8(credit_card.GetFieldText(CREDIT_CARD_NUMBER))
       << " "
-      << UTF16ToUTF8(credit_card.GetFieldText(
-             AutofillType(CREDIT_CARD_EXP_MONTH)))
+      << UTF16ToUTF8(credit_card.GetFieldText(CREDIT_CARD_EXP_MONTH))
       << " "
-      << UTF16ToUTF8(credit_card.GetFieldText(
-             AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)));
+      << UTF16ToUTF8(credit_card.GetFieldText(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 }
 
 // These values must match the values in WebKitClientImpl in webkit/glue. We

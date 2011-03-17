@@ -100,48 +100,47 @@ void Address::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
     available_types->insert(ADDRESS_HOME_COUNTRY);
 }
 
-void Address::FindInfoMatches(const AutofillType& type,
+void Address::FindInfoMatches(AutofillFieldType type,
                               const string16& info,
                               std::vector<string16>* matched_text) const {
   DCHECK(matched_text);
 
   string16 match;
-  if (type.field_type() == UNKNOWN_TYPE) {
+  if (type == UNKNOWN_TYPE) {
     for (int i = 0; i < kAutoFillAddressLength; ++i) {
       if (FindInfoMatchesHelper(kAutoFillAddressTypes[i], info, &match))
         matched_text->push_back(match);
     }
   } else {
-    if (FindInfoMatchesHelper(type.subgroup(), info, &match))
+    if (FindInfoMatchesHelper(AutofillType(type).subgroup(), info, &match))
       matched_text->push_back(match);
   }
 }
 
-string16 Address::GetFieldText(const AutofillType& type) const {
-  AutofillFieldType field_type = type.field_type();
-  if (field_type == ADDRESS_HOME_LINE1)
+string16 Address::GetFieldText(AutofillFieldType type) const {
+  if (type == ADDRESS_HOME_LINE1)
     return line1_;
 
-  if (field_type == ADDRESS_HOME_LINE2)
+  if (type == ADDRESS_HOME_LINE2)
     return line2_;
 
-  if (field_type == ADDRESS_HOME_CITY)
+  if (type == ADDRESS_HOME_CITY)
     return city_;
 
-  if (field_type == ADDRESS_HOME_STATE)
+  if (type == ADDRESS_HOME_STATE)
     return state_;
 
-  if (field_type ==  ADDRESS_HOME_ZIP)
+  if (type ==  ADDRESS_HOME_ZIP)
     return zip_code_;
 
-  if (field_type == ADDRESS_HOME_COUNTRY)
+  if (type == ADDRESS_HOME_COUNTRY)
     return Country();
 
   return string16();
 }
 
-void Address::SetInfo(const AutofillType& type, const string16& value) {
-  FieldTypeSubGroup subgroup = type.subgroup();
+void Address::SetInfo(AutofillFieldType type, const string16& value) {
+  FieldTypeSubGroup subgroup = AutofillType(type).subgroup();
   if (subgroup == AutofillType::ADDRESS_LINE1)
     set_line1(value);
   else if (subgroup == AutofillType::ADDRESS_LINE2)

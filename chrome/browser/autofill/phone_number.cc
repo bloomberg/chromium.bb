@@ -92,27 +92,26 @@ void PhoneNumber::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
     available_types->insert(GetWholeNumberType());
 }
 
-string16 PhoneNumber::GetFieldText(const AutofillType& type) const {
-  AutofillFieldType field_type = type.field_type();
-  if (field_type == GetNumberType())
+string16 PhoneNumber::GetFieldText(AutofillFieldType type) const {
+  if (type == GetNumberType())
     return number();
 
-  if (field_type == GetCityCodeType())
+  if (type == GetCityCodeType())
     return city_code();
 
-  if (field_type == GetCountryCodeType())
+  if (type == GetCountryCodeType())
     return country_code();
 
-  if (field_type == GetCityAndNumberType())
+  if (type == GetCityAndNumberType())
     return CityAndNumber();
 
-  if (field_type == GetWholeNumberType())
+  if (type == GetWholeNumberType())
     return WholeNumber();
 
   return string16();
 }
 
-void PhoneNumber::FindInfoMatches(const AutofillType& type,
+void PhoneNumber::FindInfoMatches(AutofillFieldType type,
                                   const string16& info,
                                   std::vector<string16>* matched_text) const {
   if (matched_text == NULL) {
@@ -126,24 +125,24 @@ void PhoneNumber::FindInfoMatches(const AutofillType& type,
     return;
 
   string16 match;
-  if (type.field_type() == UNKNOWN_TYPE) {
+  if (type == UNKNOWN_TYPE) {
     for (int i = 0; i < kAutoFillPhoneLength; ++i) {
       if (FindInfoMatchesHelper(kAutoFillPhoneTypes[i], info, &match))
         matched_text->push_back(match);
     }
   } else {
-    if (FindInfoMatchesHelper(type.subgroup(), info, &match))
+    if (FindInfoMatchesHelper(AutofillType(type).subgroup(), info, &match))
       matched_text->push_back(match);
   }
 }
 
-void PhoneNumber::SetInfo(const AutofillType& type, const string16& value) {
+void PhoneNumber::SetInfo(AutofillFieldType type, const string16& value) {
   string16 number(value);
   StripPunctuation(&number);
   if (!Validate(number))
     return;
 
-  FieldTypeSubGroup subgroup = type.subgroup();
+  FieldTypeSubGroup subgroup = AutofillType(type).subgroup();
   if (subgroup == AutofillType::PHONE_NUMBER)
     set_number(number);
   else if (subgroup == AutofillType::PHONE_CITY_CODE)
