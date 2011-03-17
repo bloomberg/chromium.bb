@@ -974,6 +974,28 @@
         }],
       ],
     },
+    {
+      'target_name': 'ipclist',
+      'type': 'executable',
+      'dependencies': [
+         'chrome',
+         'chrome_resources',
+         'chrome_strings',
+         'test_support_common',
+         'test_support_ui',
+         '../skia/skia.gyp:skia',
+         '../testing/gtest.gyp:gtest',
+         '../third_party/libxslt/libxslt.gyp:libxslt',
+         '../third_party/npapi/npapi.gyp:npapi',
+      ],
+      'include_dirs': [
+         '..',
+      ],
+      'sources': [
+        'tools/ipclist/all_messages.h',
+        'tools/ipclist/ipclist.cc',
+      ],   
+    },
   ],
   'conditions': [
     ['OS=="mac"',

@@ -17,7 +17,13 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 
+// Singly-included section, not converted.
+#ifndef CONTENT_COMMON_WORKER_MESSAGES_H_
+#define CONTENT_COMMON_WORKER_MESSAGES_H_
+
 typedef std::pair<string16, std::vector<int> > QueuedMessage;
+
+#endif  // CONTENT_COMMON_WORKER_MESSAGES_H_
 
 #define IPC_MESSAGE_START WorkerMsgStart
 

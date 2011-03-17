@@ -77,6 +77,7 @@ enum IPCMessageStart {
   ClipboardMsgStart,
   BlobMsgStart,
   AppCacheMsgStart,
+  LastIPCMsgStart      // Must come last.
 };
 
 class DictionaryValue;

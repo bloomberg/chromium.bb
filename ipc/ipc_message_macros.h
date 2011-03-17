@@ -138,10 +138,15 @@
 // There's also IPC_STRUCT_TRAITS_PARENT, which is used to register a parent
 // class (whose own traits are already defined). Note that
 // IPC_STRUCT_TRAITS_MEMBER() and IPC_STRUCT_TRAITS_PARENT are only permitted
-// inside matching calls to IPC_STRUCT_TRAITS_BEGIN() / IPC_STRUCT_TRAITS_END().
+// inside matching calls to IPC_STRUCT_TRAITS_BEGIN() /
+// IPC_STRUCT_TRAITS_END().
 //
 // Enum types are registered with a single IPC_ENUM_TRAITS() macro.  There
 // is no need to enumerate each value to the IPC mechanism.
+//
+// Do not place semicolons following these IPC_ macro invocations.  There
+// is no reason to expect that their expansion corresponds one-to-one with
+// C++ statements.
 //
 // Once the types have been declared / registered, message definitions follow.
 // "Sync" messages are just synchronous calls, the Send() call doesn't return

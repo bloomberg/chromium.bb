@@ -3,13 +3,11 @@
 // found in the LICENSE file.
 
 // Multiply-included message file, hence no include guard.
-
 #include <vector>
 
+#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
-
-class GURL;
 
 #define IPC_MESSAGE_START SocketStreamMsgStart
 

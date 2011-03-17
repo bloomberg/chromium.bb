@@ -938,15 +938,15 @@ IPC_MESSAGE_CONTROL2(ViewMsg_Extension_UpdatePageActions,
                      std::vector<std::string> /* page_action_ids */)
 
 // Notifies the renderer that an extension was loaded in the browser.
-IPC_MESSAGE_CONTROL1(ViewMsg_ExtensionLoaded, ViewMsg_ExtensionLoaded_Params);
+IPC_MESSAGE_CONTROL1(ViewMsg_ExtensionLoaded, ViewMsg_ExtensionLoaded_Params)
 
 // Notifies the renderer that an extension was unloaded in the browser.
-IPC_MESSAGE_CONTROL1(ViewMsg_ExtensionUnloaded, std::string);
+IPC_MESSAGE_CONTROL1(ViewMsg_ExtensionUnloaded, std::string)
 
 // Updates the scripting whitelist for extensions in the render process. This is
 // only used for testing.
 IPC_MESSAGE_CONTROL1(ViewMsg_Extension_SetScriptingWhitelist,
-                     Extension::ScriptingWhitelist /* extenison ids */);
+                     Extension::ScriptingWhitelist /* extenison ids */)
 
 // Changes the text direction of the currently selected input field (if any).
 IPC_MESSAGE_ROUTED1(ViewMsg_SetTextDirection,
@@ -1318,7 +1318,7 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_DidDisplayInsecureContent)
 // Sent when the renderer runs insecure content in a secure origin.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_DidRunInsecureContent,
                     std::string  /* security_origin */,
-                    GURL         /* target URL */);
+                    GURL         /* target URL */)
 
 // Sent when the renderer starts a provisional load for a frame.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_DidStartProvisionalLoadForFrame,

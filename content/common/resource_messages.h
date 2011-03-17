@@ -3,16 +3,12 @@
 // found in the LICENSE file.
 
 // IPC messages for resource loading.
-// Multiply-included message file, hence no include guard.
 
+// Multiply-included message file, hence no include guard.
 #include "base/shared_memory.h"
 #include "content/common/resource_response.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/upload_data.h"
-
-namespace net {
-class UploadData;
-}
 
 #define IPC_MESSAGE_START ResourceMsgStart
 

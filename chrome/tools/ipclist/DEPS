@@ -1,0 +1,4 @@
+# Wherever a message file is found, we follow.
+include_rules = [
+  "+ppapi/proxy",
+]

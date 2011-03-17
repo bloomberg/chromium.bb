@@ -26,10 +26,16 @@
 
 #define IPC_MESSAGE_START UtilityMsgStart
 
+// Singly-included secton, not yet converted
+#ifndef CHROME_COMMON_UTILITY_MESSAGES_H_
+#define CHROME_COMMON_UTILITY_MESSAGES_H_
+
 class FilePath;
 class IndexedDBKey;
 class SerializedScriptValue;
 class SkBitmap;
+
+#endif  // CHROME_COMMON_UTILITY_MESSAGES_H_
 
 // Traits for UpdateManifest::Result.
 IPC_STRUCT_TRAITS_BEGIN(UpdateManifest::Result)
@@ -85,7 +91,7 @@ IPC_MESSAGE_CONTROL3(UtilityMsg_IDBKeysFromValuesAndKeyPath,
 IPC_MESSAGE_CONTROL3(UtilityMsg_InjectIDBKey,
                      IndexedDBKey /* key */,
                      SerializedScriptValue /* value */,
-                     string16 /* key path*/);
+                     string16 /* key path*/)
 
 // Tells the utility process that it's running in batch mode.
 IPC_MESSAGE_CONTROL0(UtilityMsg_BatchMode_Started)

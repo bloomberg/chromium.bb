@@ -38,7 +38,7 @@ IPC_MESSAGE_CONTROL1(PpapiMsg_LoadPlugin, FilePath /* path */)
 // PpapiHostMsg_ChannelCreated.
 IPC_MESSAGE_CONTROL2(PpapiMsg_CreateChannel,
                      base::ProcessHandle /* host_process_handle */,
-                     int /* renderer_id */);
+                     int /* renderer_id */)
 
 // Each plugin may be referenced by multiple renderers. We need the instance
 // IDs to be unique within a plugin, despite coming from different renderers,
@@ -345,19 +345,19 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFileRef_GetParent,
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileRef_MakeDirectory,
                     pp::proxy::HostResource /* file_ref */,
                     PP_Bool /* make_ancestors */,
-                    uint32_t /* serialized_callback */);
+                    uint32_t /* serialized_callback */)
 IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFileRef_Touch,
                     pp::proxy::HostResource /* file_ref */,
                     PP_Time /* last_access */,
                     PP_Time /* last_modified */,
-                    uint32_t /* serialized_callback */);
+                    uint32_t /* serialized_callback */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileRef_Delete,
                     pp::proxy::HostResource /* file_ref */,
-                    uint32_t /* serialized_callback */);
+                    uint32_t /* serialized_callback */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileRef_Rename,
                     pp::proxy::HostResource /* file_ref */,
                     pp::proxy::HostResource /* new_file_ref */,
-                    uint32_t /* serialized_callback */);
+                    uint32_t /* serialized_callback */)
 
 // PPB_FileSystem.
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFileSystem_Create,
