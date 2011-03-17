@@ -144,7 +144,8 @@ void CookiesViewHandler::UpdateSearchResults(const ListValue* args) {
         new BrowsingDataLocalStorageHelper(profile),
         NULL,
         new BrowsingDataAppCacheHelper(profile),
-        BrowsingDataIndexedDBHelper::Create(profile)));
+        BrowsingDataIndexedDBHelper::Create(profile),
+        false));
     cookies_tree_model_->AddCookiesTreeObserver(this);
   }
 

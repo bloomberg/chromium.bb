@@ -320,5 +320,6 @@ TabSpecificContentSettings::LocalSharedObjectsContainer::GetCookiesTreeModel() {
                               local_storages_->Clone(),
                               session_storages_->Clone(),
                               appcaches_->Clone(),
-                              indexed_dbs_->Clone());
+                              indexed_dbs_->Clone(),
+                              true);
 }

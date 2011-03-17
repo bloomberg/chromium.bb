@@ -504,7 +504,8 @@ CookiesTreeModel::CookiesTreeModel(
     BrowsingDataLocalStorageHelper* local_storage_helper,
     BrowsingDataLocalStorageHelper* session_storage_helper,
     BrowsingDataAppCacheHelper* appcache_helper,
-    BrowsingDataIndexedDBHelper* indexed_db_helper)
+    BrowsingDataIndexedDBHelper* indexed_db_helper,
+    bool use_cookie_source)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::TreeNodeModel<CookieTreeNode>(
           new CookieTreeRootNode(this))),
       cookie_monster_(cookie_monster),
@@ -513,7 +514,8 @@ CookiesTreeModel::CookiesTreeModel(
       local_storage_helper_(local_storage_helper),
       session_storage_helper_(session_storage_helper),
       indexed_db_helper_(indexed_db_helper),
-      batch_update_(0) {
+      batch_update_(0),
+      use_cookie_source_(use_cookie_source) {
   LoadCookies();
   DCHECK(database_helper_);
   database_helper_->StartFetching(NewCallback(
@@ -603,7 +605,7 @@ void CookiesTreeModel::LoadCookiesWithFilter(const std::wstring& filter) {
   for (CookieList::iterator it = all_cookies_.begin();
        it != all_cookies_.end(); ++it) {
     std::string source_string = it->Source();
-    if (source_string.empty()) {
+    if (source_string.empty() || !use_cookie_source_) {
       std::string domain = it->Domain();
       if (domain.length() > 1 && domain[0] == '.')
         domain = domain.substr(1);

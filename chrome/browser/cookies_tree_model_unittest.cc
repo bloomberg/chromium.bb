@@ -55,7 +55,8 @@ class CookiesTreeModelTest : public testing::Test {
         mock_browsing_data_local_storage_helper_,
         mock_browsing_data_session_storage_helper_,
         mock_browsing_data_appcache_helper_,
-        mock_browsing_data_indexed_db_helper_);
+        mock_browsing_data_indexed_db_helper_,
+        false);
     mock_browsing_data_database_helper_->AddDatabaseSamples();
     mock_browsing_data_database_helper_->Notify();
     mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
@@ -468,7 +469,8 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
                                  mock_browsing_data_local_storage_helper_,
                                  mock_browsing_data_session_storage_helper_,
                                  mock_browsing_data_appcache_helper_,
-                                 mock_browsing_data_indexed_db_helper_);
+                                 mock_browsing_data_indexed_db_helper_,
+                                 false);
   mock_browsing_data_database_helper_->AddDatabaseSamples();
   mock_browsing_data_database_helper_->Notify();
   mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
@@ -529,7 +531,8 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
                                  mock_browsing_data_local_storage_helper_,
                                  mock_browsing_data_session_storage_helper_,
                                  mock_browsing_data_appcache_helper_,
-                                 mock_browsing_data_indexed_db_helper_);
+                                 mock_browsing_data_indexed_db_helper_,
+                                 false);
   mock_browsing_data_database_helper_->AddDatabaseSamples();
   mock_browsing_data_database_helper_->Notify();
   mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
@@ -591,7 +594,8 @@ TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
                                  mock_browsing_data_local_storage_helper_,
                                  mock_browsing_data_session_storage_helper_,
                                  mock_browsing_data_appcache_helper_,
-                                 mock_browsing_data_indexed_db_helper_);
+                                 mock_browsing_data_indexed_db_helper_,
+                                 false);
   {
     SCOPED_TRACE("Initial State 5 cookies");
     // 11 because there's the root, then foo1 -> cookies -> a,
@@ -627,7 +631,8 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
       new MockBrowsingDataLocalStorageHelper(profile_.get()),
       new MockBrowsingDataLocalStorageHelper(profile_.get()),
       new MockBrowsingDataAppCacheHelper(profile_.get()),
-      new MockBrowsingDataIndexedDBHelper(profile_.get()));
+      new MockBrowsingDataIndexedDBHelper(profile_.get()),
+      false);
 
   {
     SCOPED_TRACE("Initial State 8 cookies");
@@ -655,7 +660,8 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
       new MockBrowsingDataLocalStorageHelper(profile_.get()),
       new MockBrowsingDataLocalStorageHelper(profile_.get()),
       new MockBrowsingDataAppCacheHelper(profile_.get()),
-      new MockBrowsingDataIndexedDBHelper(profile_.get()));
+      new MockBrowsingDataIndexedDBHelper(profile_.get()),
+      false);
 
   TestingProfile profile;
   HostContentSettingsMap* content_settings =

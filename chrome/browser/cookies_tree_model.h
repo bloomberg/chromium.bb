@@ -467,7 +467,8 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
       BrowsingDataLocalStorageHelper* local_storage_helper,
       BrowsingDataLocalStorageHelper* session_storage_helper,
       BrowsingDataAppCacheHelper* appcache_helper,
-      BrowsingDataIndexedDBHelper* indexed_db_helper);
+      BrowsingDataIndexedDBHelper* indexed_db_helper,
+      bool use_cookie_source);
   virtual ~CookiesTreeModel();
 
   // ui::TreeModel methods:
@@ -554,6 +555,10 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   // notifications coming down the pipe). This is an integer is used to balance
   // calls to Begin/EndBatch() if they're called in a nested manner.
   int batch_update_;
+
+  // If true, use the CanonicalCookie::Source attribute to group cookies.
+  // Otherwise, use the CanonicalCookie::Domain attribute.
+  bool use_cookie_source_;
 
   friend class CookieTreeAppCacheNode;
   friend class CookieTreeCookieNode;
