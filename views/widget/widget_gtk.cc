@@ -1247,6 +1247,12 @@ void WidgetGtk::OnDestroy(GtkWidget* object) {
 }
 
 void WidgetGtk::OnShow(GtkWidget* widget) {
+  // Force an expose event to trigger OnPaint. This is necessary because earlier
+  // SchedulePaintInRect calls for the widget may have happened before the
+  // widget was drawable. This means that gtk_widget_queue_draw_area wasn't
+  // called, and so the widget will not get any expose events. Consequently, the
+  // widget won't paint itself until something else triggers a paint call.
+  gdk_window_process_updates(widget_->window, true);
 }
 
 void WidgetGtk::OnHide(GtkWidget* widget) {
