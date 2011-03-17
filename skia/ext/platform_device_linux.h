@@ -20,6 +20,9 @@ class PlatformDevice : public SkDevice {
   // Returns if the preferred rendering engine is vectorial or bitmap based.
   virtual bool IsVectorial() = 0;
 
+  // Returns if native platform APIs are allowed to render text to this device.
+  virtual bool IsNativeFontRenderingAllowed() { return true; }
+
   virtual PlatformSurface beginPlatformPaint() = 0;
 
  protected:
