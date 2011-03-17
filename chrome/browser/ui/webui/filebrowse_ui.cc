@@ -64,11 +64,6 @@ static const int kMaxSearchResults = 100;
 static const char kPropertyPath[] = "path";
 static const char kPropertyTitle[] = "title";
 static const char kPropertyDirectory[] = "isDirectory";
-static const char kPicasawebUserPrefix[] =
-    "http://picasaweb.google.com/data/feed/api/user/";
-static const char kPicasawebDefault[] = "/albumid/default";
-static const char kPicasawebDropBox[] = "/home";
-static const char kPicasawebBaseUrl[] = "http://picasaweb.google.com/";
 static const char kMediaPath[] = "/media";
 static const char kFilebrowseURLHash[] = "chrome://filebrowse#";
 static const int kPopupLeft = 0;
@@ -102,7 +97,6 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
                           public chromeos::MountLibrary::Observer,
 #endif
                           public base::SupportsWeakPtr<FilebrowseHandler>,
-                          public URLFetcher::Delegate,
                           public DownloadManager::Observer,
                           public DownloadItem::Observer {
  public:
@@ -122,9 +116,11 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   virtual void RegisterMessages();
 
 #if defined(OS_CHROMEOS)
-  void MountChanged(chromeos::MountLibrary* obj,
-                    chromeos::MountEventType evt,
-                    const std::string& path);
+  // chromeos::MountLibrary::Observer interface
+  virtual void DiskChanged(chromeos::MountLibraryEventType event,
+                           const chromeos::MountLibrary::Disk* disk);
+  virtual void DeviceChanged(chromeos::MountLibraryEventType event,
+                             const std::string& device_path);
 #endif
 
   // DownloadItem::Observer interface
@@ -140,13 +136,6 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
 
   void GetChildrenForPath(const FilePath& path, bool is_refresh);
 
-  void OnURLFetchComplete(const URLFetcher* source,
-                          const GURL& url,
-                          const net::URLRequestStatus& status,
-                          int response_code,
-                          const ResponseCookies& cookies,
-                          const std::string& data);
-
   // Callback for the "getChildren" message.
   void HandleGetChildren(const ListValue* args);
   // Callback for the "refreshDirectory" message.
@@ -159,9 +148,6 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   // Callback for the "openNewWindow" message.
   void OpenNewFullWindow(const ListValue* args);
   void OpenNewPopupWindow(const ListValue* args);
-
-  // Callback for the "uploadToPicasaweb" message.
-  void UploadToPicasaweb(const ListValue* args);
 
   // Callback for the "getDownloads" message.
   void HandleGetDownloads(const ListValue* args);
@@ -184,11 +170,6 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   void HandleAllowDownload(const ListValue* args);
 
   void CreateNewFolder(const FilePath& path) const;
-
-  void ReadInFile();
-  void FireUploadComplete();
-
-  void SendPicasawebRequest(URLRequestContextGetter* request_context);
 
   // Callback for the "validateSavePath" message.
   void HandleValidateSavePath(const ListValue* args);
@@ -222,12 +203,9 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   Profile* profile_;
   TabContents* tab_contents_;
   std::string current_file_contents_;
-  std::string current_file_uploaded_;
-  int upload_response_code_;
   TaskProxy* current_task_;
   scoped_refptr<net::DirectoryLister> lister_;
   bool is_refresh_;
-  scoped_ptr<URLFetcher> fetch_;
 
   DownloadManager* download_manager_;
   typedef std::vector<DownloadItem*> DownloadList;
@@ -258,27 +236,6 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
   }
 
   void DoNothing() {}
-
-  void ReadInFileProxy() {
-    if (handler_)
-      handler_->ReadInFile();
-    DeleteOnUIThread();
-  }
-
-  void DeleteFetcher(URLFetcher* fetch) {
-    delete fetch;
-  }
-
-  void SendPicasawebRequestProxy(URLRequestContextGetter* request_context) {
-    if (handler_)
-      handler_->SendPicasawebRequest(request_context);
-    DeleteOnUIThread();
-  }
-
-  void FireUploadCompleteProxy() {
-    if (handler_)
-      handler_->FireUploadComplete();
-  }
 
   void DeleteFileProxy() {
     if (handler_)
@@ -364,12 +321,6 @@ void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_FILEBROWSER_NEW_FOLDER));
   localized_strings.SetString("open",
       l10n_util::GetStringUTF16(IDS_FILEBROWSER_OPEN));
-  localized_strings.SetString("picasaweb",
-      l10n_util::GetStringUTF16(IDS_FILEBROWSER_UPLOAD_PICASAWEB));
-  localized_strings.SetString("flickr",
-      l10n_util::GetStringUTF16(IDS_FILEBROWSER_UPLOAD_FLICKR));
-  localized_strings.SetString("email",
-      l10n_util::GetStringUTF16(IDS_FILEBROWSER_UPLOAD_EMAIL));
   localized_strings.SetString("delete",
       l10n_util::GetStringUTF16(IDS_FILEBROWSER_DELETE));
   localized_strings.SetString("enqueue",
@@ -408,7 +359,6 @@ FilebrowseHandler::FilebrowseHandler()
     : profile_(NULL),
       tab_contents_(NULL),
       is_refresh_(false),
-      fetch_(NULL),
       download_manager_(NULL),
       got_first_download_list_(false) {
   lister_ = NULL;
@@ -432,14 +382,6 @@ FilebrowseHandler::~FilebrowseHandler() {
 
   ClearDownloadItems();
   download_manager_->RemoveObserver(this);
-  URLFetcher* fetch = fetch_.release();
-  if (fetch) {
-    scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(), currentpath_);
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(
-            task.get(), &TaskProxy::DeleteFetcher, fetch));
-  }
 }
 
 WebUIMessageHandler* FilebrowseHandler::Attach(WebUI* web_ui) {
@@ -454,21 +396,6 @@ WebUIMessageHandler* FilebrowseHandler::Attach(WebUI* web_ui) {
 void FilebrowseHandler::Init() {
   download_manager_ = profile_->GetDownloadManager();
   download_manager_->AddObserver(this);
-  static bool sent_request = false;
-  if (!sent_request &&
-      !chromeos::UserManager::Get()->logged_in_user().email().empty()) {
-    // If we have not sent a request before, we should do one in order to
-    // ensure that we have the correct cookies. This is for uploads.
-    scoped_refptr<TaskProxy> task =
-        new TaskProxy(AsWeakPtr(), currentpath_);
-    current_task_ = task;
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(task.get(),
-                          &TaskProxy::SendPicasawebRequestProxy,
-                          profile_->GetRequestContext()));
-    sent_request = true;
-  }
 }
 
 void FilebrowseHandler::RegisterMessages() {
@@ -482,8 +409,6 @@ void FilebrowseHandler::RegisterMessages() {
       NewCallback(this, &FilebrowseHandler::OpenNewPopupWindow));
   web_ui_->RegisterMessageCallback("openNewFullWindow",
       NewCallback(this, &FilebrowseHandler::OpenNewFullWindow));
-  web_ui_->RegisterMessageCallback("uploadToPicasaweb",
-      NewCallback(this, &FilebrowseHandler::UploadToPicasaweb));
   web_ui_->RegisterMessageCallback("getDownloads",
       NewCallback(this, &FilebrowseHandler::HandleGetDownloads));
   web_ui_->RegisterMessageCallback("createNewFolder",
@@ -524,76 +449,35 @@ void FilebrowseHandler::FireCopyComplete(const FilePath& src,
   GetChildrenForPath(dir_path, true);
 };
 
-void FilebrowseHandler::FireUploadComplete() {
 #if defined(OS_CHROMEOS)
-  DictionaryValue info_value;
-  info_value.SetString("path", current_file_uploaded_);
-
-  std::string username;
-  chromeos::UserManager* user_man = chromeos::UserManager::Get();
-  username = user_man->logged_in_user().email();
-
-  if (username.empty()) {
-    LOG(ERROR) << "Unable to get username";
-    return;
-  }
-  int location = username.find_first_of('@', 0);
-  if (location <= 0) {
-    LOG(ERROR) << "Username not formatted correctly";
-    return;
-  }
-  username = username.erase(username.find_first_of('@', 0));
-  std::string picture_url = kPicasawebBaseUrl;
-  picture_url += username;
-  picture_url += kPicasawebDropBox;
-  info_value.SetString("url", picture_url);
-  info_value.SetInteger("status_code", upload_response_code_);
-  web_ui_->CallJavascriptFunction("uploadComplete", info_value);
-#endif
-}
-
-#if defined(OS_CHROMEOS)
-void FilebrowseHandler::MountChanged(chromeos::MountLibrary* obj,
-                                     chromeos::MountEventType evt,
-                                     const std::string& path) {
-  if (evt == chromeos::DISK_REMOVED ||
-      evt == chromeos::DISK_CHANGED) {
+void FilebrowseHandler::DiskChanged(chromeos::MountLibraryEventType event,
+                                    const chromeos::MountLibrary::Disk* disk) {
+  if (event == chromeos::MOUNT_DISK_REMOVED ||
+      event == chromeos::MOUNT_DISK_CHANGED) {
     web_ui_->CallJavascriptFunction("rootsChanged");
   }
 }
-#endif
 
-void FilebrowseHandler::OnURLFetchComplete(const URLFetcher* source,
-                                           const GURL& url,
-                                           const net::URLRequestStatus& status,
-                                           int response_code,
-                                           const ResponseCookies& cookies,
-                                           const std::string& data) {
-  upload_response_code_ = response_code;
-  VLOG(1) << "Response code: " << response_code;
-  VLOG(1) << "Request url: " << url;
-  if (StartsWithASCII(url.spec(), kPicasawebUserPrefix, true)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(current_task_, &TaskProxy::FireUploadCompleteProxy));
-  }
-  fetch_.reset();
+void FilebrowseHandler::DeviceChanged(chromeos::MountLibraryEventType event,
+                                      const std::string& device_path) {
 }
+#endif
 
 void FilebrowseHandler::HandleGetRoots(const ListValue* args) {
   ListValue results_value;
   DictionaryValue info_value;
   // TODO(dhg): add other entries, make this more general
 #if defined(OS_CHROMEOS)
-  chromeos::MountLibrary* lib =
-      chromeos::CrosLibrary::Get()->GetMountLibrary();
-  const chromeos::MountLibrary::DiskVector& disks = lib->disks();
-
-  for (size_t i = 0; i < disks.size(); ++i) {
-    if (!disks[i].mount_path.empty()) {
+  chromeos::MountLibrary* lib = chromeos::CrosLibrary::Get()->GetMountLibrary();
+  for (chromeos::MountLibrary::DiskMap::const_iterator iter =
+          lib->disks().begin();
+       iter != lib->disks().end();
+       ++iter) {
+    const chromeos::MountLibrary::Disk* disk = iter->second;
+    if (!disk->mount_path().empty()) {
       DictionaryValue* page_value = new DictionaryValue();
-      page_value->SetString(kPropertyPath, disks[i].mount_path);
-      FilePath currentpath(disks[i].mount_path);
+      page_value->SetString(kPropertyPath, disk->mount_path());
+      FilePath currentpath(disk->mount_path());
       std::string filename;
       filename = currentpath.BaseName().value();
       page_value->SetString(kPropertyTitle, filename);
@@ -759,78 +643,6 @@ void FilebrowseHandler::OpenNewWindow(const ListValue* args, bool popup) {
   params.browser->window()->Show();
 }
 
-void FilebrowseHandler::SendPicasawebRequest(
-    URLRequestContextGetter* request_context) {
-#if defined(OS_CHROMEOS)
-  fetch_.reset(URLFetcher::Create(0,
-                                  GURL(kPicasawebBaseUrl),
-                                  URLFetcher::GET,
-                                  this));
-  fetch_->set_request_context(request_context);
-  fetch_->Start();
-#endif
-}
-
-void FilebrowseHandler::ReadInFile() {
-#if defined(OS_CHROMEOS)
-  // Get the users username
-  std::string username;
-  chromeos::UserManager* user_man = chromeos::UserManager::Get();
-  username = user_man->logged_in_user().email();
-
-  if (username.empty()) {
-    LOG(ERROR) << "Unable to get username";
-    return;
-  }
-  int location = username.find_first_of('@', 0);
-  if (location <= 0) {
-    LOG(ERROR) << "Username not formatted correctly";
-    return;
-  }
-  username = username.erase(username.find_first_of('@', 0));
-  std::string url = kPicasawebUserPrefix;
-  url += username;
-  url += kPicasawebDefault;
-
-  FilePath currentpath(current_file_uploaded_);
-  // Get the filename
-  std::string filename;
-  filename = currentpath.BaseName().value();
-  std::string filecontents;
-  if (!file_util::ReadFileToString(currentpath, &filecontents)) {
-    LOG(ERROR) << "Unable to read this file:" << currentpath.value();
-    return;
-  }
-  fetch_.reset(URLFetcher::Create(0,
-                                  GURL(url),
-                                  URLFetcher::POST,
-                                  this));
-  fetch_->set_upload_data("image/jpeg", filecontents);
-  // Set the filename on the server
-  std::string slug = "Slug: ";
-  slug += filename;
-  fetch_->set_extra_request_headers(slug);
-  fetch_->set_request_context(profile_->GetRequestContext());
-  fetch_->Start();
-#endif
-}
-
-// This is just a prototype for allowing generic uploads to various sites
-// TODO(dhg): Remove this and implement general upload.
-void FilebrowseHandler::UploadToPicasaweb(const ListValue* args) {
-#if defined(OS_CHROMEOS)
-  std::string search_string = UTF16ToUTF8(ExtractStringValue(args));
-  current_file_uploaded_ = search_string;
-  //  ReadInFile();
-  FilePath current_path(search_string);
-  scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(), current_path);
-  current_task_ = task;
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          task.get(), &TaskProxy::ReadInFileProxy));
-#endif
-}
 
 void FilebrowseHandler::GetChildrenForPath(const FilePath& path,
                                            bool is_refresh) {

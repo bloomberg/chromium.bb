@@ -23,9 +23,12 @@ class MockMountLibrary : public MountLibrary {
   virtual ~MockMountLibrary();
 
   MOCK_METHOD1(AddObserver, void(MountLibrary::Observer*));
-  MOCK_METHOD1(MountPath, bool(const char*));
   MOCK_METHOD1(RemoveObserver, void(MountLibrary::Observer*));
-  MOCK_CONST_METHOD0(disks, const MountLibrary::DiskVector&(void));
+  MOCK_CONST_METHOD0(disks, const MountLibrary::DiskMap&(void));
+
+  MOCK_METHOD0(RequestMountInfoRefresh, void(void));
+  MOCK_METHOD1(MountPath, void(const char*));
+  MOCK_METHOD1(UnmountPath, void(const char*));
 
   void FireDeviceInsertEvents();
   void FireDeviceRemoveEvents();
@@ -33,16 +36,18 @@ class MockMountLibrary : public MountLibrary {
  private:
   void AddObserverInternal(MountLibrary::Observer* observer);
   void RemoveObserverInternal(MountLibrary::Observer* observer);
-  const MountLibrary::DiskVector& disksInternal() const { return disks_; }
+  const MountLibrary::DiskMap& disksInternal() const { return disks_; }
 
 
-  void UpdateMountStatus(MountEventType evt,
-                         const std::string& path);
+  void UpdateDeviceChanged(MountLibraryEventType evt,
+                           const std::string& path);
+  void UpdateDiskChanged(MountLibraryEventType evt,
+                         const MountLibrary::Disk* disk);
 
   ObserverList<MountLibrary::Observer> observers_;
 
   // The list of disks found.
-  MountLibrary::DiskVector disks_;
+  MountLibrary::DiskMap disks_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMountLibrary);
 };

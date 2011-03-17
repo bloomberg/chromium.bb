@@ -216,15 +216,21 @@ void ImageBurnHandler::RegisterMessages() {
       NewCallback(this, &ImageBurnHandler::HandleCancelBurnImage));
 }
 
-void ImageBurnHandler::MountChanged(chromeos::MountLibrary* obj,
-                                    chromeos::MountEventType evt,
-                                    const std::string& path) {
-  if ((evt == chromeos::DISK_REMOVED ||
-      evt == chromeos::DISK_CHANGED ||
-      evt == chromeos::DEVICE_REMOVED)) {
+void ImageBurnHandler::DiskChanged(chromeos::MountLibraryEventType event,
+                                   const chromeos::MountLibrary::Disk* disk) {
+  if (event == chromeos::MOUNT_DISK_REMOVED ||
+      event == chromeos::MOUNT_DISK_CHANGED ||
+      event == chromeos::MOUNT_DISK_UNMOUNTED) {
     web_ui_->CallJavascriptFunction("rootsChanged");
   }
 }
+
+void ImageBurnHandler::DeviceChanged(chromeos::MountLibraryEventType event,
+                                     const std::string& device_path) {
+  if (event == chromeos::MOUNT_DEVICE_REMOVED)
+    web_ui_->CallJavascriptFunction("rootsChanged");
+}
+
 
 void ImageBurnHandler::ProgressUpdated(chromeos::BurnLibrary* object,
                                        chromeos::BurnEventType evt,
@@ -288,13 +294,15 @@ void ImageBurnHandler::HandleGetRoots(const ListValue* args) {
   DictionaryValue info_value;
   chromeos::MountLibrary* mount_lib =
       chromeos::CrosLibrary::Get()->GetMountLibrary();
-  const chromeos::MountLibrary::DiskVector& disks = mount_lib->disks();
+  const chromeos::MountLibrary::DiskMap& disks = mount_lib->disks();
   if (!burn_resource_manager_->CheckBurnInProgress()) {
-    for (size_t i = 0; i < disks.size(); ++i) {
-      if (!disks[i].mount_path.empty()) {
-        FilePath disk_path = FilePath(disks[i].system_path).DirName();
+    for (chromeos::MountLibrary::DiskMap::const_iterator iter =  disks.begin();
+         iter != disks.end();
+         ++iter) {
+      if (iter->second->mount_path().empty()) {
+        FilePath disk_path = FilePath(iter->second->system_path()).DirName();
         std::string title = "/dev/" + disk_path.BaseName().value();
-        if (!mount_lib->IsBootPath(title.c_str())) {
+        if (!iter->second->on_boot_device()) {
           DictionaryValue* page_value = new DictionaryValue();
           page_value->SetString(std::string(kPropertyTitle), title);
           page_value->SetString(std::string(kPropertyPath), title);

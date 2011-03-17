@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/cros/mount_library.h"
 
+#include <set>
+
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -14,106 +16,326 @@ namespace chromeos {
 class MountLibraryImpl : public MountLibrary {
  public:
   MountLibraryImpl() : mount_status_connection_(NULL) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    if (CrosLibrary::Get()->EnsureLoaded())
       Init();
-    } else {
+    else
       LOG(ERROR) << "Cros Library has not been loaded";
-    }
   }
 
-  ~MountLibraryImpl() {
-    if (mount_status_connection_) {
-      DisconnectMountStatus(mount_status_connection_);
-    }
+  virtual ~MountLibraryImpl() {
+    if (mount_status_connection_)
+      DisconnectMountEventMonitor(mount_status_connection_);
   }
 
-  void AddObserver(Observer* observer) {
+  // MountLibrary overrides.
+  virtual void AddObserver(Observer* observer) OVERRIDE {
     observers_.AddObserver(observer);
   }
 
-  void RemoveObserver(Observer* observer) {
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
     observers_.RemoveObserver(observer);
   }
 
-  bool MountPath(const char* device_path) {
-    return MountDevicePath(device_path);
+  virtual void MountPath(const char* device_path) OVERRIDE {
+    MountRemovableDevice(device_path,
+                         &MountLibraryImpl::MountRemovableDeviceCallback,
+                         this);
   }
 
-  bool IsBootPath(const char* device_path) {
-    return IsBootDevicePath(device_path);
+  virtual void UnmountPath(const char* device_path) OVERRIDE {
+    UnmountRemovableDevice(device_path,
+                           &MountLibraryImpl::UnmountRemovableDeviceCallback,
+                           this);
   }
 
-  const DiskVector& disks() const { return disks_; }
+  virtual void RequestMountInfoRefresh() OVERRIDE {
+    RequestMountInfo(&MountLibraryImpl::RequestMountInfoCallback,
+                     this);
+  }
+
+  virtual void RefreshDiskProperties(const Disk* disk) OVERRIDE {
+    DCHECK(disk);
+    GetDiskProperties(disk->device_path().c_str(),
+                      &MountLibraryImpl::GetDiskPropertiesCallback,
+                      this);
+  }
+
+  const DiskMap& disks() const OVERRIDE { return disks_; }
 
  private:
-  void ParseDisks(const MountStatus& status) {
-    disks_.clear();
-    for (int i = 0; i < status.size; i++) {
-      std::string path;
-      std::string mountpath;
-      std::string systempath;
-      bool parent;
-      bool hasmedia;
-      if (status.disks[i].path != NULL) {
-        path = status.disks[i].path;
+
+  // Callback for MountRemovableDevice method.
+  static void MountRemovableDeviceCallback(void* object,
+                                           const char* device_path,
+                                           const char* mount_path,
+                                           MountMethodErrorType error,
+                                           const char* error_message) {
+    DCHECK(object);
+    MountLibraryImpl* self = static_cast<MountLibraryImpl*>(object);
+    self->OnMountRemovableDevice(device_path,
+                                 mount_path,
+                                 error,
+                                 error_message);
+  }
+
+  // Callback for UnmountRemovableDevice method.
+  static void UnmountRemovableDeviceCallback(void* object,
+                                             const char* device_path,
+                                             const char* mount_path,
+                                             MountMethodErrorType error,
+                                             const char* error_message) {
+    DCHECK(object);
+    MountLibraryImpl* self = static_cast<MountLibraryImpl*>(object);
+    self->OnUnmountRemovableDevice(device_path,
+                                   error,
+                                   error_message);
+  }
+
+  // Callback for disk information retrieval calls.
+  static void GetDiskPropertiesCallback(void* object,
+                                        const char* device_path,
+                                        const DiskInfo* disk,
+                                        MountMethodErrorType error,
+                                        const char* error_message) {
+    DCHECK(object);
+    MountLibraryImpl* self = static_cast<MountLibraryImpl*>(object);
+    self->OnGetDiskProperties(device_path,
+                              disk,
+                              error,
+                              error_message);
+  }
+
+  // Callback for RequestMountInfo call.
+  static void RequestMountInfoCallback(void* object,
+                                       const char** devices,
+                                       size_t device_len,
+                                       MountMethodErrorType error,
+                                       const char* error_message) {
+    DCHECK(object);
+    MountLibraryImpl* self = static_cast<MountLibraryImpl*>(object);
+    self->OnRequestMountInfo(devices,
+                             device_len,
+                             error,
+                             error_message);
+  }
+
+  // This method will receive events that are caused by drive status changes.
+  static void MonitorMountEventsHandler(void* object,
+                                        MountEventType evt,
+                                        const char* device_path) {
+    DCHECK(object);
+    MountLibraryImpl* self = static_cast<MountLibraryImpl*>(object);
+    self->OnMountEvent(evt, device_path);
+  }
+
+
+  void OnMountRemovableDevice(const char* device_path,
+                              const char* mount_path,
+                              MountMethodErrorType error,
+                              const char* error_message) {
+    DCHECK(device_path);
+    DCHECK(mount_path);
+    if (error == MOUNT_METHOD_ERROR_NONE && device_path && mount_path) {
+      std::string path(device_path);
+      DiskMap::iterator iter = disks_.find(path);
+      if (iter == disks_.end()) {
+        // disk might have been removed by now?
+        return;
       }
-      if (status.disks[i].mountpath != NULL) {
-        mountpath = status.disks[i].mountpath;
-      }
-      if (status.disks[i].systempath != NULL) {
-        systempath = status.disks[i].systempath;
-      }
-      parent = status.disks[i].isparent;
-      hasmedia = status.disks[i].hasmedia;
-      disks_.push_back(Disk(path,
-                            mountpath,
-                            systempath,
-                            parent,
-                            hasmedia));
+      Disk* disk = iter->second;
+      DCHECK(disk);
+      disk->set_mount_path(mount_path);
+      FireDiskStatusUpdate(MOUNT_DISK_MOUNTED, disk);
+    } else {
+      LOG(WARNING) << "Mount request failed for device "
+                   << device_path << ", with error: "
+                   << (error_message ? error_message : "Unknown");
     }
   }
 
-  static void MountStatusChangedHandler(void* object,
-                                        const MountStatus& status,
-                                        MountEventType evt,
-                                        const  char* path) {
-    MountLibraryImpl* mount = static_cast<MountLibraryImpl*>(object);
-    std::string devicepath = path;
-    mount->ParseDisks(status);
-    mount->UpdateMountStatus(status, evt, devicepath);
+  void OnUnmountRemovableDevice(const char* device_path,
+                                MountMethodErrorType error,
+                                const char* error_message) {
+    DCHECK(device_path);
+    if (error == MOUNT_METHOD_ERROR_NONE && device_path) {
+      std::string path(device_path);
+      DiskMap::iterator iter = disks_.find(path);
+      if (iter == disks_.end()) {
+        // disk might have been removed by now?
+        return;
+      }
+      Disk* disk = iter->second;
+      DCHECK(disk);
+      disk->clear_mount_path();
+      FireDiskStatusUpdate(MOUNT_DISK_UNMOUNTED, disk);
+    } else {
+      LOG(WARNING) << "Unmount request failed for device "
+                   << device_path << ", with error: "
+                   << (error_message ? error_message : "Unknown");
+    }
+  }
+
+  void OnGetDiskProperties(const char* device_path,
+                           const DiskInfo* disk,
+                           MountMethodErrorType error,
+                           const char* error_message) {
+    DCHECK(device_path);
+    if (error == MOUNT_METHOD_ERROR_NONE && device_path) {
+      // TODO(zelidrag): Find a better way to filter these out before we
+      // fetch the properties:
+      // Ignore disks coming from the device we booted the system from.
+      if (disk->on_boot_device())
+        return;
+
+      LOG(WARNING) << "Found disk " << device_path;
+      // Delete previous disk info for this path:
+      bool is_new = true;
+      std::string device_path_string(device_path);
+      DiskMap::iterator iter = disks_.find(device_path_string);
+      if (iter != disks_.end()) {
+        delete iter->second;
+        disks_.erase(iter);
+        is_new = false;
+      }
+      std::string path;
+      std::string mountpath;
+      std::string systempath;
+      if (disk->path() != NULL)
+        path = disk->path();
+
+      if (disk->mount_path() != NULL)
+        mountpath = disk->mount_path();
+
+      if (disk->system_path() != NULL)
+        systempath = disk->system_path();
+
+      Disk* new_disk = new Disk(path,
+                                mountpath,
+                                systempath,
+                                disk->is_drive(),
+                                disk->has_media(),
+                                disk->on_boot_device());
+      disks_.insert(
+          std::pair<std::string, Disk*>(device_path_string, new_disk));
+      FireDiskStatusUpdate(is_new ? MOUNT_DISK_ADDED : MOUNT_DISK_CHANGED,
+                           new_disk);
+    } else {
+      LOG(WARNING) << "Property retrieval request failed for device "
+                   << device_path << ", with error: "
+                   << (error_message ? error_message : "Unknown");
+    }
+  }
+
+  void OnRequestMountInfo(const char** devices,
+                          size_t devices_len,
+                          MountMethodErrorType error,
+                          const char* error_message) {
+    std::set<std::string> current_device_set;
+    if (error == MOUNT_METHOD_ERROR_NONE && devices && devices_len) {
+      // Initiate properties fetch for all removable disks,
+      bool found_disk = false;
+      for (size_t i = 0; i < devices_len; i++) {
+        if (!devices[i]) {
+          NOTREACHED();
+          continue;
+        }
+        current_device_set.insert(std::string(devices[i]));
+        found_disk = true;
+        // Initiate disk property retrieval for each relevant device path.
+        GetDiskProperties(devices[i],
+                          &MountLibraryImpl::GetDiskPropertiesCallback,
+                          this);
+      }
+    } else if (error != MOUNT_METHOD_ERROR_NONE) {
+      LOG(WARNING) << "Request mount info retrieval request failed with error: "
+                   << (error_message ? error_message : "Unknown");
+    }
+    // Search and remove disks that are no longer present.
+    for (MountLibrary::DiskMap::iterator iter = disks_.begin();
+         iter != disks_.end(); ) {
+      if (current_device_set.find(iter->first) == current_device_set.end()) {
+        Disk* disk = iter->second;
+        FireDiskStatusUpdate(MOUNT_DISK_REMOVED, disk);
+        delete iter->second;
+        disks_.erase(iter++);
+      } else {
+        ++iter;
+      }
+    }
+  }
+
+  void OnMountEvent(MountEventType evt,
+                    const char* device_path) {
+    if (!device_path)
+      return;
+    MountLibraryEventType type;
+    switch (evt) {
+      case DISK_ADDED:
+      case DISK_CHANGED: {
+        GetDiskProperties(device_path,
+                          &MountLibraryImpl::GetDiskPropertiesCallback,
+                          this);
+        return;
+      }
+      case DISK_REMOVED: {
+        // Search and remove disks that are no longer present.
+        MountLibrary::DiskMap::iterator iter =
+            disks_.find(std::string(device_path));
+        if (iter != disks_.end()) {
+            Disk* disk = iter->second;
+            FireDiskStatusUpdate(MOUNT_DISK_REMOVED, disk);
+            delete iter->second;
+            disks_.erase(iter);
+        }
+        return;
+      }
+      case DEVICE_ADDED: {
+        type = MOUNT_DEVICE_ADDED;
+        break;
+      }
+      case DEVICE_REMOVED: {
+        type = MOUNT_DEVICE_REMOVED;
+        break;
+      }
+      case DEVICE_SCANNED: {
+        type = MOUNT_DEVICE_SCANNED;
+        break;
+      }
+    }
+    FireDeviceStatusUpdate(type, std::string(device_path));
   }
 
   void Init() {
     // Getting the monitor status so that the daemon starts up.
-    MountStatus* mount = RetrieveMountInformation();
-    if (!mount) {
-      LOG(ERROR) << "Failed to retrieve mount information";
-      return;
-    }
-    ParseDisks(*mount);
-    FreeMountStatus(mount);
-
-    mount_status_connection_ = MonitorMountStatus(
-        &MountStatusChangedHandler, this);
+    mount_status_connection_ = MonitorMountEvents(
+        &MonitorMountEventsHandler, this);
   }
 
-  void UpdateMountStatus(const MountStatus& status,
-                                       MountEventType evt,
-                                       const std::string& path) {
+  void FireDiskStatusUpdate(MountLibraryEventType evt,
+                            const Disk* disk) {
     // Make sure we run on UI thread.
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
     FOR_EACH_OBSERVER(
-        Observer, observers_, MountChanged(this, evt, path));
+        Observer, observers_, DiskChanged(evt, disk));
   }
+
+  void FireDeviceStatusUpdate(MountLibraryEventType evt,
+                              const std::string& device_path) {
+    // Make sure we run on UI thread.
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    FOR_EACH_OBSERVER(
+        Observer, observers_, DeviceChanged(evt, device_path));
+  }
+
+  // Mount event change observers.
   ObserverList<Observer> observers_;
 
   // A reference to the  mount api, to allow callbacks when the mount
   // status changes.
-  MountStatusConnection mount_status_connection_;
+  MountEventConnection mount_status_connection_;
 
   // The list of disks found.
-  DiskVector disks_;
+  MountLibrary::DiskMap disks_;
 
   DISALLOW_COPY_AND_ASSIGN(MountLibraryImpl);
 };
@@ -124,15 +346,17 @@ class MountLibraryStubImpl : public MountLibrary {
   virtual ~MountLibraryStubImpl() {}
 
   // MountLibrary overrides.
-  virtual void AddObserver(Observer* observer) {}
-  virtual void RemoveObserver(Observer* observer) {}
-  virtual const DiskVector& disks() const { return disks_; }
-  virtual bool MountPath(const char* device_path) { return false; }
-  virtual bool IsBootPath(const char* device_path) { return true; }
+  virtual void AddObserver(Observer* observer) OVERRIDE {}
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
+  virtual const DiskMap& disks() const OVERRIDE { return disks_; }
+  virtual void RequestMountInfoRefresh() OVERRIDE {}
+  virtual void MountPath(const char* device_path) OVERRIDE {}
+  virtual void UnmountPath(const char* device_path) OVERRIDE {}
+  virtual bool IsBootPath(const char* device_path) OVERRIDE { return true; }
 
  private:
   // The list of disks found.
-  DiskVector disks_;
+  DiskMap disks_;
 
   DISALLOW_COPY_AND_ASSIGN(MountLibraryStubImpl);
 };

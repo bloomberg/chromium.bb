@@ -46,9 +46,10 @@ class ImageBurnHandler : public WebUIMessageHandler,
   virtual void RegisterMessages();
 
   // chromeos::MountLibrary::Observer interface
-  virtual void MountChanged(chromeos::MountLibrary* obj,
-                     chromeos::MountEventType evt,
-                     const std::string& path);
+  virtual void DiskChanged(chromeos::MountLibraryEventType event,
+                           const chromeos::MountLibrary::Disk* disk);
+  virtual void DeviceChanged(chromeos::MountLibraryEventType event,
+                             const std::string& device_path);
 
   // chromeos::BurnLibrary::Observer interface
   virtual void ProgressUpdated(chromeos::BurnLibrary* object,

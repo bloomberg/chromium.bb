@@ -653,8 +653,11 @@ class SessionRestoreImpl : public NotificationObserver {
 
     // Record an app launch, if applicable.
     GURL url = tab.navigations.at(tab.current_navigation_index).virtual_url();
-    DCHECK(browser->profile()->GetExtensionService());
-    if (browser->profile()->GetExtensionService()->IsInstalledApp(url)) {
+    if (
+#if defined(OS_CHROMEOS)
+        browser->profile()->GetExtensionService() &&
+#endif
+        browser->profile()->GetExtensionService()->IsInstalledApp(url)) {
       UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
                                 extension_misc::APP_LAUNCH_SESSION_RESTORE,
                                 extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);

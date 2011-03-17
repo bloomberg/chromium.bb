@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <map>
 #include <vector>
 
 #include "chrome/browser/chromeos/cros/mount_library.h"
@@ -23,7 +24,7 @@ namespace chromeos { // NOLINT
 
 // Used to monitor mount changes and popup a new window when
 // a new mounted usb device is found.
-class USBMountObserver : public chromeos::MountLibrary::Observer,
+class USBMountObserver : public MountLibrary::Observer,
                          public NotificationObserver {
  public:
   struct BrowserWithPath {
@@ -34,23 +35,37 @@ class USBMountObserver : public chromeos::MountLibrary::Observer,
 
   static USBMountObserver* GetInstance();
 
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  // NotificationObserver overrides.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
-  void MountChanged(chromeos::MountLibrary* obj,
-                    chromeos::MountEventType evt,
-                    const std::string& path);
-
-  void ScanForDevices(chromeos::MountLibrary* obj);
+  // MountLibrary::Observer overrides.
+  virtual void DiskChanged(MountLibraryEventType event,
+                           const MountLibrary::Disk* disk);
+  virtual void DeviceChanged(MountLibraryEventType event,
+                             const std::string& device_path);
 
  private:
   friend struct DefaultSingletonTraits<USBMountObserver>;
   typedef std::vector<BrowserWithPath>::iterator BrowserIterator;
-  BrowserIterator FindBrowserForPath(const std::string& path);
+  typedef std::map<std::string, std::string> MountPointMap;
 
   USBMountObserver() {}
-  ~USBMountObserver() {}
+  virtual ~USBMountObserver() {}
+
+  // USB mount event handlers.
+  void OnDiskAdded(const MountLibrary::Disk* disk);
+  void OnDiskRemoved(const MountLibrary::Disk* disk);
+  void OnDiskChanged(const MountLibrary::Disk* disk);
+  void OnDeviceAdded(const std::string& device_path);
+  void OnDeviceRemoved(const std::string& device_path);
+  void OnDeviceScanned(const std::string& device_path);
+
+  BrowserIterator FindBrowserForPath(const std::string& path);
+
+  // Sends filesystem changed extension message to all renderers.
+  void FireFileSystemChanged(const std::string& web_path);
 
   void RemoveBrowserFromVector(const std::string& path);
 
@@ -62,6 +77,7 @@ class USBMountObserver : public chromeos::MountLibrary::Observer,
 
   std::vector<BrowserWithPath> browsers_;
   NotificationRegistrar registrar_;
+  MountPointMap mounted_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(USBMountObserver);
 };

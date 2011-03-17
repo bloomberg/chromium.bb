@@ -5,7 +5,9 @@
 #include "chrome/browser/chromeos/usb_mount_observer.h"
 
 #include "base/command_line.h"
+#include "base/json/json_writer.h"
 #include "base/singleton.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -14,6 +16,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
+
 
 namespace chromeos {
 
@@ -45,19 +48,13 @@ void USBMountObserver::Observe(NotificationType type,
   }
 }
 
-void USBMountObserver::ScanForDevices(chromeos::MountLibrary* obj) {
-  const chromeos::MountLibrary::DiskVector& disks = obj->disks();
-  for (size_t i = 0; i < disks.size(); ++i) {
-    chromeos::MountLibrary::Disk disk = disks[i];
-    if (!disk.is_parent && !disk.device_path.empty()) {
-      obj->MountPath(disk.device_path.c_str());
-    }
-  }
-}
-
 void USBMountObserver::OpenFileBrowse(const std::string& url,
                                       const std::string& device_path,
                                       bool small) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAdvancedFileSystem)) {
+    return;
+  }
   Browser* browser;
   Profile* profile;
   browser =  BrowserList::GetLastActive();
@@ -65,10 +62,6 @@ void USBMountObserver::OpenFileBrowse(const std::string& url,
     return;
   }
   profile = browser->profile();
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAdvancedFileSystem)) {
-    return;
-  }
   if (small) {
     browser = FileBrowseUI::OpenPopup(profile,
                                       url,
@@ -80,11 +73,12 @@ void USBMountObserver::OpenFileBrowse(const std::string& url,
                                       FileBrowseUI::kPopupWidth,
                                       FileBrowseUI::kPopupHeight);
   }
-  registrar_.Add(this,
-                 NotificationType::BROWSER_CLOSED,
-                 Source<Browser>(browser));
+
   BrowserIterator iter = FindBrowserForPath(device_path);
   if (iter == browsers_.end()) {
+    registrar_.Add(this,
+                   NotificationType::BROWSER_CLOSED,
+                   Source<Browser>(browser));
     BrowserWithPath new_browser;
     new_browser.browser = browser;
     new_browser.device_path = device_path;
@@ -94,82 +88,133 @@ void USBMountObserver::OpenFileBrowse(const std::string& url,
   }
 }
 
-void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
-                                    chromeos::MountEventType evt,
-                                    const std::string& path) {
-  if (evt == chromeos::DISK_ADDED) {
-    const chromeos::MountLibrary::DiskVector& disks = obj->disks();
-    for (size_t i = 0; i < disks.size(); ++i) {
-      chromeos::MountLibrary::Disk disk = disks[i];
-      if (disk.device_path == path) {
-        if (disk.is_parent) {
-          if (!disk.has_media) {
-            RemoveBrowserFromVector(disk.system_path);
-          }
-        } else if (!obj->MountPath(path.c_str())) {
-          RemoveBrowserFromVector(disk.system_path);
-        }
-      }
-    }
-    VLOG(1) << "Got added mount: " << path;
-  } else if (evt == chromeos::DISK_REMOVED ||
-             evt == chromeos::DEVICE_REMOVED) {
-    RemoveBrowserFromVector(path);
-  } else if (evt == chromeos::DISK_CHANGED) {
-    BrowserIterator iter = FindBrowserForPath(path);
-    VLOG(1) << "Got changed mount: " << path;
-    if (iter == browsers_.end()) {
-      // We don't currently have this one, so it must have been
-      // mounted
-      const chromeos::MountLibrary::DiskVector& disks = obj->disks();
-      for (size_t i = 0; i < disks.size(); ++i) {
-        if (disks[i].device_path == path) {
-          if (!disks[i].mount_path.empty()) {
-            // Doing second search to see if the current disk has already
-            // been popped up due to its parent device being plugged in.
-            iter = FindBrowserForPath(disks[i].system_path);
-            if (iter != browsers_.end() && iter->browser) {
-              std::string url = kFilebrowseURLHash;
-              url += disks[i].mount_path;
-              TabContents* tab = iter->browser->GetSelectedTabContents();
-              iter->browser->window()->SetBounds(gfx::Rect(
-                  0, 0, FileBrowseUI::kPopupWidth, FileBrowseUI::kPopupHeight));
-              tab->OpenURL(GURL(url), GURL(), CURRENT_TAB,
-                  PageTransition::LINK);
-              tab->NavigateToPendingEntry(NavigationController::RELOAD);
-              iter->device_path = path;
-              iter->mount_path = disks[i].mount_path;
-            } else {
-              OpenFileBrowse(disks[i].mount_path, disks[i].device_path, false);
-            }
-          }
-          return;
-        }
-      }
-    }
-  } else if (evt == chromeos::DEVICE_ADDED) {
-    VLOG(1) << "Got device added: " << path;
-    OpenFileBrowse(kFilebrowseScanning, path, true);
-  } else if (evt == chromeos::DEVICE_SCANNED) {
-    VLOG(1) << "Got device scanned: " << path;
+void USBMountObserver::DiskChanged(MountLibraryEventType event,
+                                   const MountLibrary::Disk* disk) {
+  if (event == MOUNT_DISK_ADDED) {
+    OnDiskAdded(disk);
+  } else if (event == MOUNT_DISK_REMOVED) {
+    OnDiskRemoved(disk);
+  } else if (event == MOUNT_DISK_CHANGED) {
+    OnDiskChanged(disk);
   }
+}
+
+void USBMountObserver::DeviceChanged(MountLibraryEventType event,
+                                     const std::string& device_path) {
+  if (event == MOUNT_DEVICE_ADDED) {
+    OnDeviceAdded(device_path);
+  }else if (event == MOUNT_DEVICE_REMOVED) {
+    OnDeviceRemoved(device_path);
+  } else if (event == MOUNT_DEVICE_SCANNED) {
+    OnDeviceScanned(device_path);
+  }
+}
+
+void USBMountObserver::FireFileSystemChanged(
+    const std::string& web_path) {
+  // TODO(zelidrag): Send message to all extensions that file system has
+  // changed.
+  return;
+}
+
+void USBMountObserver::OnDiskAdded(const MountLibrary::Disk* disk) {
+  VLOG(1) << "Disk added: " << disk->device_path();
+  if (disk->device_path().empty()) {
+    VLOG(1) << "Empty system path for " << disk->device_path();
+    return;
+  }
+  if (disk->is_parent()) {
+    if (!disk->has_media())
+      RemoveBrowserFromVector(disk->system_path());
+    return;
+  }
+
+  // If disk is not mounted yet, give it a try.
+  if (disk->mount_path().empty()) {
+    // Initiate disk mount operation.
+    chromeos::MountLibrary* lib =
+        chromeos::CrosLibrary::Get()->GetMountLibrary();
+    lib->MountPath(disk->device_path().c_str());
+  }
+}
+
+void USBMountObserver::OnDiskRemoved(const MountLibrary::Disk* disk) {
+  VLOG(1) << "Disk removed: " << disk->device_path();
+  RemoveBrowserFromVector(disk->system_path());
+  MountPointMap::iterator iter = mounted_devices_.find(disk->device_path());
+  if (iter == mounted_devices_.end())
+    return;
+
+  chromeos::MountLibrary* lib =
+      chromeos::CrosLibrary::Get()->GetMountLibrary();
+  // TODO(zelidrag): This for some reason does not work as advertized.
+  // we might need to clean up mount directory on FILE thread here as well.
+  lib->UnmountPath(disk->device_path().c_str());
+
+  FireFileSystemChanged(iter->second);
+  mounted_devices_.erase(iter);
+}
+
+void USBMountObserver::OnDiskChanged(const MountLibrary::Disk* disk) {
+  VLOG(1) << "Disk changed : " << disk->device_path();
+  if (!disk->mount_path().empty()) {
+    // Remember this mount point.
+    mounted_devices_.insert(
+        std::pair<std::string, std::string>(disk->device_path(),
+                                            disk->mount_path()));
+    FireFileSystemChanged(disk->mount_path());
+
+    // TODO(zelidrag): We should remove old file browser stuff later.
+    // Doing second search to see if the current disk has already
+    // been popped up due to its parent device being plugged in.
+    BrowserIterator iter = FindBrowserForPath(disk->system_path());
+    if (iter != browsers_.end() && iter->browser) {
+      std::string url = kFilebrowseURLHash;
+      url += disk->mount_path();
+      TabContents* tab = iter->browser->GetSelectedTabContents();
+      iter->browser->window()->SetBounds(gfx::Rect(
+          0, 0, FileBrowseUI::kPopupWidth, FileBrowseUI::kPopupHeight));
+      tab->OpenURL(GURL(url), GURL(), CURRENT_TAB,
+          PageTransition::LINK);
+      tab->NavigateToPendingEntry(NavigationController::RELOAD);
+      iter->device_path = disk->device_path();
+      iter->mount_path = disk->mount_path();
+    } else {
+      OpenFileBrowse(disk->mount_path(), disk->device_path(), false);
+    }
+  }
+}
+
+void USBMountObserver::OnDeviceAdded(const std::string& device_path) {
+  VLOG(1) << "Device added : " << device_path;
+  OpenFileBrowse(kFilebrowseScanning, device_path, true);
+}
+
+void USBMountObserver::OnDeviceRemoved(const std::string& system_path) {
+  // New device is added, initiate disk rescan.
+  RemoveBrowserFromVector(system_path);
+}
+
+void USBMountObserver::OnDeviceScanned(const std::string& device_path) {
+  VLOG(1) << "Device scanned : " << device_path;
 }
 
 USBMountObserver::BrowserIterator USBMountObserver::FindBrowserForPath(
     const std::string& path) {
   for (BrowserIterator i = browsers_.begin();i != browsers_.end();
        ++i) {
+    const std::string& device_path = i->device_path;
     // Doing a substring match so that we find if this new one is a subdevice
     // of another already inserted device.
-    if (path.find(i->device_path) != std::string::npos) {
+    if (path.find(device_path) != std::string::npos) {
       return i;
     }
   }
   return browsers_.end();
 }
 
-void USBMountObserver::RemoveBrowserFromVector(const std::string& path) {
-  BrowserIterator i = FindBrowserForPath(path);
+void USBMountObserver::RemoveBrowserFromVector(const std::string& system_path) {
+  BrowserIterator i = FindBrowserForPath(system_path);
   std::string mount_path;
   if (i != browsers_.end()) {
     registrar_.Remove(this,

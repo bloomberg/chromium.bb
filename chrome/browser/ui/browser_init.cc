@@ -87,6 +87,7 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/enterprise_extension_observer.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/low_battery_observer.h"
 #include "chrome/browser/chromeos/network_message_observer.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
@@ -581,15 +582,16 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
     chromeos::GViewRequestInterceptor::GetInstance();
   }
   if (process_startup) {
-    // TODO(dhg): Try to make this just USBMountObserver::Get()->set_profile
-    // and have the constructor take care of everything else.
-    chromeos::MountLibrary* lib =
-        chromeos::CrosLibrary::Get()->GetMountLibrary();
-    chromeos::USBMountObserver* observe =
-        chromeos::USBMountObserver::GetInstance();
-    lib->AddObserver(observe);
-    observe->ScanForDevices(lib);
     // Connect the chromeos notifications
+
+    if (chromeos::UserManager::Get()->user_is_logged_in()) {
+      chromeos::MountLibrary* lib =
+          chromeos::CrosLibrary::Get()->GetMountLibrary();
+      chromeos::USBMountObserver* observe =
+          chromeos::USBMountObserver::GetInstance();
+      lib->AddObserver(observe);
+      lib->RequestMountInfoRefresh();
+    }
 
     // This observer is a singleton. It is never deleted but the pointer is kept
     // in a static so that it isn't reported as a leak.
