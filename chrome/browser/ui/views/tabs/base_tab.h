@@ -76,6 +76,9 @@ class BaseTab : public ui::AnimationDelegate,
   // Returns true if the tab is closeable.
   bool IsCloseable() const;
 
+  // Returns true if this tab is the active tab.
+  bool IsActive() const;
+
   // Returns true if the tab is selected.
   virtual bool IsSelected() const;
 

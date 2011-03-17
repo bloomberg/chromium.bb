@@ -243,7 +243,7 @@ void TabStrip::SelectTabAt(int old_model_index, int new_model_index) {
 
 void TabStrip::TabTitleChangedNotLoading(int model_index) {
   Tab* tab = GetTabAtModelIndex(model_index);
-  if (tab->data().mini && !tab->IsSelected())
+  if (tab->data().mini && !tab->IsActive())
     tab->StartMiniTabTitleAnimation();
 }
 
@@ -269,25 +269,34 @@ BaseTab* TabStrip::CreateTabForDragging() {
 
 void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   // Tabs are painted in reverse order, so they stack to the left.
-  std::vector<Tab*> selected_tabs;
+  Tab* active_tab = NULL;
   std::vector<Tab*> tabs_dragging;
+  std::vector<Tab*> selected_tabs;
+  bool is_dragging = false;
 
   for (int i = tab_count() - 1; i >= 0; --i) {
-    Tab* tab = GetTabAtTabDataIndex(i);
     // We must ask the _Tab's_ model, not ourselves, because in some situations
     // the model will be different to this object, e.g. when a Tab is being
     // removed after its TabContents has been destroyed.
+    Tab* tab = GetTabAtTabDataIndex(i);
     if (tab->dragging()) {
-      tabs_dragging.push_back(tab);
-    } else if (!tab->IsSelected()) {
-      tab->Paint(canvas);
+      is_dragging = true;
+      if (tab->IsActive())
+        active_tab = tab;
+      else
+        tabs_dragging.push_back(tab);
+    } else if (!tab->IsActive()) {
+      if (!tab->IsSelected())
+        tab->Paint(canvas);
+      else
+        selected_tabs.push_back(tab);
     } else {
-      selected_tabs.push_back(tab);
+      active_tab = tab;
     }
   }
 
   if (GetWindow()->non_client_view()->UseNativeFrame()) {
-    // Make sure unselected tabs are somewhat transparent.
+    // Make sure non-active tabs are somewhat transparent.
     SkPaint paint;
     paint.setColor(SkColorSetARGB(200, 255, 255, 255));
     paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
@@ -297,20 +306,25 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
         paint);
   }
 
-  // Next comes selected tabs.
-  for (std::vector<Tab*>::reverse_iterator i = selected_tabs.rbegin();
-       i != selected_tabs.rend(); ++i) {
-    (*i)->Paint(canvas);
-  }
+  // Now selected but not active. We don't want these dimmed if using native
+  // frame, so they're painted after initial pass.
+  for (size_t i = 0; i < selected_tabs.size(); ++i)
+    selected_tabs[i]->Paint(canvas);
+
+  // Next comes the active tab.
+  if (active_tab && !is_dragging)
+    active_tab->Paint(canvas);
 
   // Paint the New Tab button.
   newtab_button_->Paint(canvas);
 
   // And the dragged tabs.
-  for (std::vector<Tab*>::reverse_iterator i = tabs_dragging.rbegin();
-       i != tabs_dragging.rend(); ++i) {
-    (*i)->Paint(canvas);
-  }
+  for (size_t i = 0; i < tabs_dragging.size(); ++i)
+    tabs_dragging[i]->Paint(canvas);
+
+  // If the active tab is being dragged, it goes last.
+  if (active_tab && is_dragging)
+    active_tab->Paint(canvas);
 }
 
 // Overridden to support automation. See automation_proxy_uitest.cc.
@@ -383,12 +397,12 @@ views::View* TabStrip::GetEventHandlerForPoint(const gfx::Point& point) {
     return v;
 
   // The display order doesn't necessarily match the child list order, so we
-  // walk the display list hit-testing Tabs. Since the selected tab always
+  // walk the display list hit-testing Tabs. Since the active tab always
   // renders on top of adjacent tabs, it needs to be hit-tested before any
   // left-adjacent Tab, so we look ahead for it as we walk.
   for (int i = 0; i < tab_count(); ++i) {
     Tab* next_tab = i < (tab_count() - 1) ? GetTabAtTabDataIndex(i + 1) : NULL;
-    if (next_tab && next_tab->IsSelected() && IsPointInTab(next_tab, point))
+    if (next_tab && next_tab->IsActive() && IsPointInTab(next_tab, point))
       return next_tab;
     Tab* tab = GetTabAtTabDataIndex(i);
     if (IsPointInTab(tab, point))
@@ -659,7 +673,8 @@ void TabStrip::ResizeLayoutTabs() {
   Tab* first_tab  = GetTabAtTabDataIndex(mini_tab_count);
   double unselected, selected;
   GetDesiredTabWidths(tab_count(), mini_tab_count, &unselected, &selected);
-  int w = Round(first_tab->IsSelected() ? selected : selected);
+  // TODO: this is always selected, should it be 'selected : unselected'?
+  int w = Round(first_tab->IsActive() ? selected : selected);
 
   // We only want to run the animation if we're not already at the desired
   // size.
@@ -872,7 +887,7 @@ void TabStrip::GenerateIdealBounds() {
           // Give a bigger gap between mini and non-mini tabs.
           tab_x += mini_to_non_mini_gap_;
         }
-        if (tab->IsSelected())
+        if (tab->IsActive())
           tab_width = selected;
       }
       double end_of_tab = tab_x + tab_width;

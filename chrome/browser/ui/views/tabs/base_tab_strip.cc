@@ -278,6 +278,12 @@ void BaseTabStrip::ShowContextMenuForTab(BaseTab* tab, const gfx::Point& p) {
   controller_->ShowContextMenuForTab(tab, p);
 }
 
+bool BaseTabStrip::IsActiveTab(const BaseTab* tab) const {
+  int model_index = GetModelIndexOfBaseTab(tab);
+  return IsValidModelIndex(model_index) &&
+      controller_->IsActiveTab(model_index);
+}
+
 bool BaseTabStrip::IsTabSelected(const BaseTab* tab) const {
   int model_index = GetModelIndexOfBaseTab(tab);
   return IsValidModelIndex(model_index) &&

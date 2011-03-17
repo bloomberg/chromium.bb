@@ -42,6 +42,7 @@ class BrowserTabStripController : public TabStripController,
   // TabStripController implementation:
   virtual int GetCount() const OVERRIDE;
   virtual bool IsValidIndex(int model_index) const OVERRIDE;
+  virtual bool IsActiveTab(int model_index) const;
   virtual bool IsTabSelected(int model_index) const OVERRIDE;
   virtual bool IsTabPinned(int model_index) const OVERRIDE;
   virtual bool IsTabCloseable(int model_index) const OVERRIDE;

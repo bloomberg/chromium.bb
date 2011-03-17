@@ -126,6 +126,7 @@ class BaseTabStrip : public AbstractTabStripView,
   virtual void CloseTab(BaseTab* tab) OVERRIDE;
   virtual void ShowContextMenuForTab(BaseTab* tab,
                                      const gfx::Point& p) OVERRIDE;
+  virtual bool IsActiveTab(const BaseTab* tab) const OVERRIDE;
   virtual bool IsTabSelected(const BaseTab* tab) const OVERRIDE;
   virtual bool IsTabPinned(const BaseTab* tab) const OVERRIDE;
   virtual bool IsTabCloseable(const BaseTab* tab) const OVERRIDE;

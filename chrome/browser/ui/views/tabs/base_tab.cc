@@ -269,6 +269,10 @@ bool BaseTab::IsCloseable() const {
   return controller() ? controller()->IsTabCloseable(this) : true;
 }
 
+bool BaseTab::IsActive() const {
+  return controller() ? controller()->IsActiveTab(this) : true;
+}
+
 bool BaseTab::IsSelected() const {
   return controller() ? controller()->IsTabSelected(this) : true;
 }

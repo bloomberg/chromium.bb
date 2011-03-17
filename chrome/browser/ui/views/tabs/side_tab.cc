@@ -76,6 +76,7 @@ void SideTab::Layout() {
 }
 
 void SideTab::OnPaint(gfx::Canvas* canvas) {
+  // TODO: should render the active tab differently.
   if (ShouldPaintHighlight()) {
     SkPaint paint;
     paint.setColor(kTabBackgroundColor);

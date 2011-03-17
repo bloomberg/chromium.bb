@@ -54,6 +54,12 @@ static const int kMiniTabRendererAsNormalTabWidth =
 static const double kHoverOpacity = 0.33;
 static const double kHoverSlideOpacity = 0.5;
 
+// Opacity for the non-active selected tab.
+static const double kSelectedTabOpacity = .4;
+
+// Selected (but not active) tabs have their throb value scaled down by this.
+static const double kSelectedTabThrobScale = .5;
+
 Tab::TabImage Tab::tab_alpha_ = {0};
 Tab::TabImage Tab::tab_active_ = {0};
 Tab::TabImage Tab::tab_inactive_ = {0};
@@ -361,7 +367,7 @@ void Tab::OnMouseMoved(const views::MouseEvent& event) {
 // Tab, private
 
 void Tab::PaintTabBackground(gfx::Canvas* canvas) {
-  if (IsSelected()) {
+  if (IsActive()) {
     PaintActiveTabBackground(canvas);
   } else {
     if (mini_title_animation_.get() && mini_title_animation_->is_animating())
@@ -615,8 +621,8 @@ bool Tab::ShouldShowIcon() const {
     return true;
   if (!data().show_icon) {
     return false;
-  } else if (IsSelected()) {
-    // The selected tab clips favicon before close button.
+  } else if (IsActive()) {
+    // The active tab clips favicon before close button.
     return IconCapacity() >= 2;
   }
   // Non-selected tabs clip close button before favicon.
@@ -624,17 +630,23 @@ bool Tab::ShouldShowIcon() const {
 }
 
 bool Tab::ShouldShowCloseBox() const {
-  // The selected tab never clips close button.
+  // The active tab never clips close button.
   return !data().mini && IsCloseable() &&
-      (IsSelected() || IconCapacity() >= 3);
+      (IsActive() || IconCapacity() >= 3);
 }
 
 double Tab::GetThrobValue() {
-  if (pulse_animation() && pulse_animation()->is_animating())
-    return pulse_animation()->GetCurrentValue() * kHoverOpacity;
+  bool is_selected = IsSelected();
+  double min = is_selected ? kSelectedTabOpacity : 0;
+  double scale = is_selected ? kSelectedTabThrobScale : 1;
 
-  return hover_animation() ?
-      kHoverOpacity * hover_animation()->GetCurrentValue() : 0;
+  if (pulse_animation() && pulse_animation()->is_animating())
+    return pulse_animation()->GetCurrentValue() * kHoverOpacity * scale + min;
+
+  if (hover_animation())
+    return kHoverOpacity * hover_animation()->GetCurrentValue() * scale + min;
+
+  return is_selected ? kSelectedTabOpacity : 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

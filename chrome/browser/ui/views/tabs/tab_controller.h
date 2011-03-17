@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,10 @@ class TabController {
 
   // Shows a context menu for the tab at the specified point in screen coords.
   virtual void ShowContextMenuForTab(BaseTab* tab, const gfx::Point& p) = 0;
+
+  // Returns true if |tab| is the active tab. The active tab is the one whose
+  // content is shown in the browser.
+  virtual bool IsActiveTab(const BaseTab* tab) const = 0;
 
   // Returns true if the specified Tab is selected.
   virtual bool IsTabSelected(const BaseTab* tab) const = 0;
