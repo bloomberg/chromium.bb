@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 
 #ifdef ENABLE_GPU
 PlatformContext3DImpl::PlatformContext3DImpl(ggl::Context* parent_context)
-      : parent_context_(parent_context),
+      : parent_context_(ggl::GetWeakContextReference(parent_context)),
         parent_texture_id_(0),
         command_buffer_(NULL),
         callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -28,7 +28,7 @@ PlatformContext3DImpl::~PlatformContext3DImpl() {
 
   channel_ = NULL;
 
-  if (parent_context_ && parent_texture_id_ != 0) {
+  if (parent_context_.get() && parent_texture_id_ != 0) {
     ggl::GetImplementation(parent_context_)->FreeTextureId(parent_texture_id_);
   }
 
@@ -38,6 +38,10 @@ bool PlatformContext3DImpl::Init() {
   // Ignore initializing more than once.
   if (command_buffer_)
     return true;
+
+  // Parent may already have been deleted.
+  if (!parent_context_.get())
+    return false;
 
   RenderThread* render_thread = RenderThread::current();
   if (!render_thread)
@@ -103,10 +107,6 @@ void PlatformContext3DImpl::SetContextLostCallback(Callback0::Type* callback) {
 void PlatformContext3DImpl::OnContextLost() {
   DCHECK(command_buffer_);
 
-  // We will lose the parent context soon (it will be reallocated by the main
-  // page).
-  parent_context_ = NULL;
-  parent_texture_id_ = 0;
   if (context_lost_callback_.get())
     context_lost_callback_->Run();
 }
