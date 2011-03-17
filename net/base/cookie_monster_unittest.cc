@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -2240,6 +2241,36 @@ TEST(CookieMonsterTest, GetCookieSourceFromURL) {
   EXPECT_EQ("http://example.com/",
             CookieMonster::CanonicalCookie::GetCookieSourceFromURL(
                 GURL("http://example.com/test#foo")));
+}
+
+TEST(CookieMonsterTest, HistogramCheck) {
+  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster(NULL, NULL));
+  // Should match call in InitializeHistograms, but doesn't really matter
+  // since the histogram should have been initialized by the CM construction
+  // above.
+  scoped_refptr<base::Histogram> expired_histogram =
+      base::Histogram::FactoryGet(
+          "Cookie.ExpirationDurationMinutes", 1, 10 * 365 * 24 * 60, 50,
+          base::Histogram::kUmaTargetedHistogramFlag);
+
+  base::Histogram::SampleSet histogram_set_1;
+  expired_histogram->SnapshotSample(&histogram_set_1);
+  ASSERT_TRUE(cm->SetCookieWithDetails(
+      GURL("http://fake.a.url"), "a", "b", "a.url", "/",
+      base::Time::Now() + base::TimeDelta::FromMinutes(59),
+      false, false));
+
+  base::Histogram::SampleSet histogram_set_2;
+  expired_histogram->SnapshotSample(&histogram_set_2);
+  EXPECT_EQ(histogram_set_1.TotalCount() + 1,
+            histogram_set_2.TotalCount());
+
+  // kValidCookieLine creates a session cookie.
+  GURL url_google(kUrlGoogle);
+  ASSERT_TRUE(cm->SetCookie(url_google, kValidCookieLine));
+  expired_histogram->SnapshotSample(&histogram_set_1);
+  EXPECT_EQ(histogram_set_2.TotalCount(),
+            histogram_set_1.TotalCount());
 }
 
 }  // namespace

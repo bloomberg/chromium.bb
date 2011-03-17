@@ -1316,8 +1316,11 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
   // was to delete the cookie which we've already done.
   if (!(*cc)->IsExpired(creation_time) || keep_expired_cookies_) {
     // See InitializeHistograms() for details.
-    histogram_expiration_duration_minutes_->Add(
-        ((*cc)->ExpiryDate() - creation_time).InMinutes());
+    if ((*cc)->DoesExpire()) {
+      histogram_expiration_duration_minutes_->Add(
+          ((*cc)->ExpiryDate() - creation_time).InMinutes());
+    }
+
     InternalInsertCookie(key, cc->release(), true);
   }
 
