@@ -17,35 +17,33 @@ class ExtensionHistoryApiTest : public ExtensionApiTest {
 
     ASSERT_TRUE(StartTestServer());
   }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-
-    // Tests are flaky, but only on the waterfall (crbug.com/26296).
-    // Failures involve a call to chrome.history.search() not finding
-    // a result whose addition caused event chrome.history.onVisited
-    // to fire.  Turn on verbose logging.
-    // TODO(skerner): Remove this once the flakiness is fixed.
-    command_line->AppendSwitchASCII(switches::kVModule, "*/history/*=1");
-  }
 };
 
-// Flaky, http://crbug.com/26296.
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_MiscSearch) {
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, MiscSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "misc_search.html")) << message_;
 }
 
-// Flaky, http://crbug.com/26296.
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_TimedSearch) {
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, TimedSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "timed_search.html")) << message_;
 }
 
-// Flaky, http://crbug.com/26296.
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_Delete) {
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, Delete) {
   ASSERT_TRUE(RunExtensionSubtest("history", "delete.html")) << message_;
 }
 
-// Flaky, http://crbug.com/26296.
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_GetVisits) {
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, GetVisits) {
   ASSERT_TRUE(RunExtensionSubtest("history", "get_visits.html")) << message_;
+}
+
+#if defined(OS_WIN)
+// Searching for a URL right after adding it fails on win XP.
+// Fix this as part of crbug/76170.
+#define MAYBE_SearchAfterAdd FLAKY_SearchAfterAdd
+#else
+#define MAYBE_SearchAfterAdd SearchAfterAdd
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, MAYBE_SearchAfterAdd) {
+  ASSERT_TRUE(RunExtensionSubtest("history", "search_after_add.html"))
+      << message_;
 }
