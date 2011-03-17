@@ -902,7 +902,7 @@ def CMDupload(change_info, args):
       upload_arg.append("--cc=" + cc_list)
     upload_arg.append("--description_file=" + desc_file + "")
     if change_info.subject:
-      upload_arg.append("--message=" + subject)
+      upload_arg.append("--message=" + change_info.subject)
 
     if GetCodeReviewSetting("PRIVATE") == "True":
       upload_arg.append("--private")

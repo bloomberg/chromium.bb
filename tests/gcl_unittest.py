@@ -12,6 +12,7 @@
 from super_mox import mox, SuperMoxTestBase
 
 import gcl
+import presubmit_support
 
 
 class GclTestsBase(SuperMoxTestBase):
@@ -56,13 +57,14 @@ class GclUnittest(GclTestsBase):
         'GetCodeReviewSetting', 'GetEditor', 'GetFilesNotInCL', 'GetInfoDir',
         'GetModifiedFiles', 'GetRepositoryRoot', 'ListFiles',
         'LoadChangelistInfoForMultiple', 'MISSING_TEST_MSG',
-        'OptionallyDoPresubmitChecks', 'REPOSITORY_ROOT',
+        'OptionallyDoPresubmitChecks', 'REPOSITORY_ROOT', 'REVIEWERS_REGEX',
         'RunShell', 'RunShellWithReturnCode', 'SVN',
         'TryChange', 'UnknownFiles', 'Warn',
         'attrs', 'breakpad', 'defer_attributes', 'gclient_utils', 'getpass',
         'json', 'main', 'need_change', 'need_change_and_args', 'no_args',
-        'optparse', 'os', 'random', 're', 'string', 'subprocess', 'sys',
-        'tempfile', 'time', 'upload', 'urllib2',
+        'optparse', 'os', 'owners', 'presubmit_support', 'random', 're',
+        'string', 'subprocess', 'suggest_reviewers', 'sys', 'tempfile',
+        'time', 'upload', 'urllib2',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gcl, members)
@@ -149,7 +151,8 @@ class ChangeInfoUnittest(GclTestsBase):
       'NeedsUpload', 'PrimeLint', 'Save', 'SendToRietveld',
       'UpdateRietveldDescription',
       'description', 'issue', 'name',
-      'needs_upload', 'patch', 'patchset', 'rietveld',
+      'needs_upload', 'patch', 'patchset', 'reviewers', 'rietveld',
+      'subject',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(
@@ -253,12 +256,13 @@ class CMDuploadUnittest(GclTestsBase):
     change_info.name = 'naame'
     change_info.issue = 1
     change_info.patchset = 0
-    change_info.description = 'deescription',
+    change_info.description = 'deescription\n\nR=foo@bar.com',
     change_info.files = [('A', 'aa'), ('M', 'bb')]
     change_info.patch = None
     change_info.rietveld = 'my_server'
     files = [item[1] for item in change_info.files]
-    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
+    output = presubmit_support.PresubmitOutput()
+    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(output)
     #gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.os.getcwd().AndReturn('somewhere')
     change_info.GetFiles().AndReturn(change_info.files)
@@ -293,7 +297,8 @@ class CMDuploadUnittest(GclTestsBase):
                                 self.fake_root_dir, 'my_server')
     self.mox.StubOutWithMock(change_info, 'Save')
     change_info.Save()
-    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
+    output = presubmit_support.PresubmitOutput()
+    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(output)
     gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
     gcl.os.write(42, change_info.description)
     gcl.os.close(42)
@@ -327,7 +332,8 @@ class CMDuploadUnittest(GclTestsBase):
                                  self.fake_root_dir, 'my_server')
     self.mox.StubOutWithMock(change_info, 'Save')
     change_info.Save()
-    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
+    output = presubmit_support.PresubmitOutput()
+    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(output)
     gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
     gcl.os.write(42, change_info.description)
     gcl.os.close(42)
@@ -372,6 +378,87 @@ class CMDuploadUnittest(GclTestsBase):
       self.fail()
     except SystemExit:
       pass
+
+  def testReviewersInDescription(self):
+    change_info = self.mox.CreateMock(gcl.ChangeInfo)
+    change_info.name = 'naame'
+    change_info.issue = 1
+    change_info.patchset = 0
+    change_info.description = 'deescription\n\nR=georges@example.com',
+    change_info.files = [('A', 'aa'), ('M', 'bb')]
+    change_info.patch = None
+    change_info.rietveld = 'my_server'
+    change_info.reviewers = ['georges@example.com']
+    files = [item[1] for item in change_info.files]
+    output = presubmit_support.PresubmitOutput()
+    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(output)
+    #gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
+    gcl.os.getcwd().AndReturn('somewhere')
+    change_info.GetFiles().AndReturn(change_info.files)
+    change_info.GetLocalRoot().AndReturn('proout')
+    gcl.os.chdir('proout')
+    change_info.GetFileNames().AndReturn(files)
+    gcl.GenerateDiff(files)
+    gcl.upload.RealMain(['upload.py', '-y', '--server=my_server',
+                         '--reviewers=georges@example.com',
+                         '--message=\'\'', '--issue=1'],
+                         change_info.patch).AndReturn(("1", "2"))
+    change_info.Save()
+    change_info.PrimeLint()
+    gcl.os.chdir('somewhere')
+    gcl.sys.stdout.write("*** Upload does not submit a try; use gcl try to"
+                         " submit a try. ***")
+    gcl.sys.stdout.write("\n")
+    gcl.GetRepositoryRoot().AndReturn(self.fake_root_dir)
+    gcl.ChangeInfo.Load('naame', self.fake_root_dir, True, True
+        ).AndReturn(change_info)
+    self.mox.ReplayAll()
+
+    gcl.CMDupload(['naame'])
+    self.checkstdout('*** Upload does not submit a try; use gcl try to submit '
+        'a try. ***\n'
+        '*** Upload does not submit a try; use gcl try to submit a try. ***\n')
+
+  def testSuggestReviewers(self):
+    change_info = self.mox.CreateMock(gcl.ChangeInfo)
+    change_info.name = 'naame'
+    change_info.issue = 1
+    change_info.patchset = 0
+    change_info.description = 'deescription',
+    change_info.files = [('A', 'aa'), ('M', 'bb')]
+    change_info.patch = None
+    change_info.rietveld = 'my_server'
+    change_info.reviewers = None
+    files = [item[1] for item in change_info.files]
+    output = presubmit_support.PresubmitOutput()
+    output.reviewers = ['foo@example.com', 'bar@example.com']
+    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(output)
+    #gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
+    gcl.os.getcwd().AndReturn('somewhere')
+    change_info.GetFiles().AndReturn(change_info.files)
+    change_info.GetLocalRoot().AndReturn('proout')
+    gcl.os.chdir('proout')
+    change_info.GetFileNames().AndReturn(files)
+    gcl.GenerateDiff(files)
+    gcl.upload.RealMain(['upload.py', '-y', '--server=my_server',
+                         '--reviewers=foo@example.com,bar@example.com',
+                         '--message=\'\'', '--issue=1'],
+                         change_info.patch).AndReturn(("1", "2"))
+    change_info.Save()
+    change_info.PrimeLint()
+    gcl.os.chdir('somewhere')
+    gcl.sys.stdout.write("*** Upload does not submit a try; use gcl try to"
+                         " submit a try. ***")
+    gcl.sys.stdout.write("\n")
+    gcl.GetRepositoryRoot().AndReturn(self.fake_root_dir)
+    gcl.ChangeInfo.Load('naame', self.fake_root_dir, True, True
+        ).AndReturn(change_info)
+    self.mox.ReplayAll()
+
+    gcl.CMDupload(['naame'])
+    self.checkstdout('*** Upload does not submit a try; use gcl try to submit '
+        'a try. ***\n'
+        '*** Upload does not submit a try; use gcl try to submit a try. ***\n')
 
 
 if __name__ == '__main__':
