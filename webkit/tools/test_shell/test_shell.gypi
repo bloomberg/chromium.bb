@@ -419,6 +419,7 @@
         '../../plugins/ppapi/ppapi_unittest.h',
         '../../plugins/ppapi/resource_tracker_unittest.cc',
         '../../plugins/ppapi/url_request_info_unittest.cc',
+        '../../quota/quota_database_unittest.cc',
         '../webcore_unit_tests/BMPImageDecoder_unittest.cpp',
         '../webcore_unit_tests/ICOImageDecoder_unittest.cpp',
         'event_listener_unittest.cc',
