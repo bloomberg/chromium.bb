@@ -147,14 +147,6 @@
    ...
    fun:pager_write
 }
-{
-   bug_32564
-   Memcheck:Free
-   fun:free
-   fun:_cache_free_block
-   fun:_cache_collect_free
-   fun:_cache_fill
-}
 
 # See http://www.openradar.me/8287193
 {
