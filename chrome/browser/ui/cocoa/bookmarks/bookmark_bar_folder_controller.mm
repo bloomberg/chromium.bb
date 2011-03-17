@@ -1259,6 +1259,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // Called from BookmarkButton.
 // Unlike bookmark_bar_controller's version, we DO default to being enabled.
 - (void)mouseEnteredButton:(id)sender event:(NSEvent*)event {
+  [[NSCursor arrowCursor] set];
+
   buttonThatMouseIsIn_ = sender;
 
   // Cancel a previous hover if needed.
@@ -1361,6 +1363,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
   // Delegate handling of dragging over a button to the |hoverState_| member.
   return [hoverState_ draggingEnteredButton:button];
+}
+
+- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info {
+  return NSDragOperationMove;
 }
 
 // Unlike bookmark_bar_controller, we need to keep track of dragging state.

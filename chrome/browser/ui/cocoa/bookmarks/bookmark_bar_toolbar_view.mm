@@ -26,6 +26,12 @@ const CGFloat kBorderRadius = 3.0;
   return [controller_ isInState:bookmarks::kDetachedState];
 }
 
+- (void)resetCursorRects {
+  NSCursor *arrow = [NSCursor arrowCursor];
+  [self addCursorRect:[self visibleRect] cursor:arrow];
+  [arrow setOnMouseEntered:YES];
+}
+
 - (void)drawRect:(NSRect)rect {
   if ([controller_ isInState:bookmarks::kDetachedState] ||
       [controller_ isAnimatingToState:bookmarks::kDetachedState] ||
