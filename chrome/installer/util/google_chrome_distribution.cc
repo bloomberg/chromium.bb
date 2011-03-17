@@ -130,13 +130,13 @@ int GetDirectoryWriteAgeInHours(const wchar_t* path) {
   return (now_time - dir_time);
 }
 
-// Launches again this same process with switch --|flag|=|value|.
+// Launches setup.exe (located at |setup_path|) with switch --|flag|=|value|.
 // If system_level_toast is true, appends --system-level-toast.
 // If handle to experiment result key was given at startup, re-add it.
 // Does not wait for the process to terminate.
-bool RelaunchSetup(const std::string& flag, int value,
-                   bool system_level_toast) {
-  CommandLine new_cmd_line(CommandLine::ForCurrentProcess()->GetProgram());
+bool LaunchSetup(const FilePath& setup_path, const std::string& flag,
+                 int value, bool system_level_toast) {
+  CommandLine new_cmd_line(setup_path);
   new_cmd_line.AppendSwitchASCII(flag, base::IntToString(value));
 
   // Re-add the system level toast flag.
@@ -221,9 +221,9 @@ bool FixDACLsForExecute(const FilePath& exe) {
 // the computer is on but nobody has logged in locally.
 // Remote Desktop sessions do not count as interactive sessions; running this
 // method as a user logged in via remote desktop will do nothing.
-bool RelaunchSetupAsConsoleUser(const std::string& flag) {
-  FilePath setup_exe = CommandLine::ForCurrentProcess()->GetProgram();
-  CommandLine cmd_line(setup_exe);
+bool LaunchSetupAsConsoleUser(const FilePath& setup_path,
+                              const std::string& flag) {
+  CommandLine cmd_line(setup_path);
   cmd_line.AppendSwitch(flag);
 
   // Get the Google Update results key, and pass it on the command line to
@@ -235,7 +235,7 @@ bool RelaunchSetupAsConsoleUser(const std::string& flag) {
   if (base::win::GetVersion() > base::win::VERSION_XP) {
     // Make sure that in Vista and Above we have the proper DACLs so
     // the interactive user can launch it.
-    if (!FixDACLsForExecute(setup_exe))
+    if (!FixDACLsForExecute(setup_path))
       NOTREACHED();
   }
 
@@ -557,12 +557,14 @@ void SetClient(std::wstring experiment_group, bool last_write) {
 // 3- It has been re-launched from the #2 case. In this case we enter
 //    this function with |system_install| true and a REENTRY_SYS_UPDATE status.
 void GoogleChromeDistribution::LaunchUserExperiment(
-    installer::InstallStatus status, const Version& version,
-    const installer::Product& installation, bool system_level) {
+    const FilePath& setup_path, installer::InstallStatus status,
+    const Version& version, const installer::Product& installation,
+    bool system_level) {
   if (system_level) {
     if (installer::NEW_VERSION_UPDATED == status) {
       // We need to relaunch as the interactive user.
-      RelaunchSetupAsConsoleUser(installer::switches::kSystemLevelToast);
+      LaunchSetupAsConsoleUser(setup_path,
+                               installer::switches::kSystemLevelToast);
       return;
     }
   } else {
@@ -630,8 +632,8 @@ void GoogleChromeDistribution::LaunchUserExperiment(
   // because google_update expects the upgrade process to be quick and nimble.
   // System level: We have already been relaunched, so we don't need to be
   // quick, but we relaunch to follow the exact same codepath.
-  RelaunchSetup(installer::switches::kInactiveUserToast, flavor,
-                system_level);
+  LaunchSetup(setup_path, installer::switches::kInactiveUserToast, flavor,
+              system_level);
 }
 
 // User qualifies for the experiment. Launch chrome with --try-chrome=flavor.

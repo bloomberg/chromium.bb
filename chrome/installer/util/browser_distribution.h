@@ -98,7 +98,8 @@ class BrowserDistribution {
   // After an install or upgrade the user might qualify to participate in an
   // experiment. This function determines if the user qualifies and if so it
   // sets the wheels in motion or in simple cases does the experiment itself.
-  virtual void LaunchUserExperiment(installer::InstallStatus status,
+  virtual void LaunchUserExperiment(const FilePath& setup_path,
+      installer::InstallStatus status,
       const Version& version, const installer::Product& installation,
       bool system_level);
 

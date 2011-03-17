@@ -70,7 +70,8 @@ class GoogleChromeDistribution : public BrowserDistribution {
       installer::ArchiveType archive_type,
       installer::InstallStatus install_status);
 
-  virtual void LaunchUserExperiment(installer::InstallStatus status,
+  virtual void LaunchUserExperiment(const FilePath& setup_path,
+      installer::InstallStatus status,
       const Version& version,
       const installer::Product& installation,
       bool system_level);

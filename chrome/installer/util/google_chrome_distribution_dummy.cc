@@ -107,8 +107,9 @@ void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
 }
 
 void GoogleChromeDistribution::LaunchUserExperiment(
-    installer::InstallStatus status, const Version& version,
-    const installer::Product& installation, bool system_level) {
+    const FilePath& setup_path, installer::InstallStatus status,
+    const Version& version, const installer::Product& installation,
+    bool system_level) {
   NOTREACHED();
 }
 

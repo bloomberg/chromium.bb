@@ -644,10 +644,19 @@ installer::InstallStatus InstallProductsHelper(
     //
     // There is another way to reach this same function if this is a system
     // level install. See HandleNonInstallCmdLineOptions().
-    for (size_t i = 0; i < products.size(); ++i) {
-      const Product* product = products[i];
-      product->distribution()->LaunchUserExperiment(install_status,
-          *installer_version, *product, system_install);
+    {
+      // If installation failed, use the path to the currently running setup.
+      // If installation succeeded, use the path to setup in the installer dir.
+      FilePath setup_path(cmd_line.GetProgram());
+      if (InstallUtil::GetInstallReturnCode(install_status) == 0) {
+        setup_path = installer_state.GetInstallerDirectory(*installer_version)
+            .Append(setup_path.BaseName());
+      }
+      for (size_t i = 0; i < products.size(); ++i) {
+        const Product* product = products[i];
+        product->distribution()->LaunchUserExperiment(setup_path,
+            install_status, *installer_version, *product, system_install);
+      }
     }
   }
 
@@ -895,7 +904,8 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       scoped_ptr<Version> installed_version(
           InstallUtil::GetChromeVersion(browser_dist,
                                         installer_state->system_install()));
-      browser_dist->LaunchUserExperiment(installer::REENTRY_SYS_UPDATE,
+      browser_dist->LaunchUserExperiment(cmd_line.GetProgram(),
+                                         installer::REENTRY_SYS_UPDATE,
                                          *installed_version, *product, true);
     }
   } else if (cmd_line.HasSwitch(
