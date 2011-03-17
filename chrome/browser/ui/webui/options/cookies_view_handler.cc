@@ -130,12 +130,7 @@ void CookiesViewHandler::TreeModelEndBatch(CookiesTreeModel* model) {
   SendChildren(cookies_tree_model_->GetRoot());
 }
 
-void CookiesViewHandler::UpdateSearchResults(const ListValue* args) {
-  std::string query;
-  if (!args->GetString(0, &query)){
-    return;
-  }
-
+void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
   if (!cookies_tree_model_.get()) {
     Profile* profile = web_ui_->GetProfile();
     cookies_tree_model_.reset(new CookiesTreeModel(
@@ -148,11 +143,21 @@ void CookiesViewHandler::UpdateSearchResults(const ListValue* args) {
         false));
     cookies_tree_model_->AddCookiesTreeObserver(this);
   }
+}
+
+void CookiesViewHandler::UpdateSearchResults(const ListValue* args) {
+  std::string query;
+  if (!args->GetString(0, &query)){
+    return;
+  }
+
+  EnsureCookiesTreeModelCreated();
 
   cookies_tree_model_->UpdateSearchResults(UTF8ToWide(query));
 }
 
 void CookiesViewHandler::RemoveAll(const ListValue* args) {
+  EnsureCookiesTreeModelCreated();
   cookies_tree_model_->DeleteAllStoredObjects();
 }
 
@@ -161,6 +166,8 @@ void CookiesViewHandler::Remove(const ListValue* args) {
   if (!args->GetString(0, &node_path)){
     return;
   }
+
+  EnsureCookiesTreeModelCreated();
 
   CookieTreeNode* node = cookies_tree_model_util::GetTreeNodeFromPath(
       cookies_tree_model_->GetRoot(), node_path);
@@ -173,6 +180,8 @@ void CookiesViewHandler::LoadChildren(const ListValue* args) {
   if (!args->GetString(0, &node_path)){
     return;
   }
+
+  EnsureCookiesTreeModelCreated();
 
   CookieTreeNode* node = cookies_tree_model_util::GetTreeNodeFromPath(
       cookies_tree_model_->GetRoot(), node_path);

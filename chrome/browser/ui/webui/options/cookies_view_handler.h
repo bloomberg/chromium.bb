@@ -34,6 +34,9 @@ class CookiesViewHandler : public OptionsPageUIHandler,
   virtual void TreeModelEndBatch(CookiesTreeModel* model);
 
  private:
+  // Creates the CookiesTreeModel if neccessary.
+  void EnsureCookiesTreeModelCreated();
+
   // Updates search filter for cookies tree model.
   void UpdateSearchResults(const ListValue* args);
 
