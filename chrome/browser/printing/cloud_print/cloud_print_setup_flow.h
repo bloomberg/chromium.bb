@@ -76,10 +76,10 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   virtual bool ShouldShowDialogTitle() const;
 
   // GaiaAuthConsumer implementation.
-  virtual void OnClientLoginFailure(
-      const GoogleServiceAuthError& error);
   virtual void OnClientLoginSuccess(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
+  virtual void OnClientLoginFailure(
+      const GoogleServiceAuthError& error);
 
  private:
   friend class CloudPrintServiceProcessHelper;
@@ -110,8 +110,8 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   void ShowGaiaSuccessAndSettingUp();
   void ShowGaiaFailed(const GoogleServiceAuthError& error);
   void ShowSetupDone();
-  void ExecuteJavascriptInIFrame(const std::wstring& iframe_xpath,
-                                 const std::wstring& js);
+  void ExecuteJavascriptInIFrame(const string16& iframe_xpath,
+                                 const string16& js);
 
   // Pointer to the Web UI. This is provided by CloudPrintSetupMessageHandler
   // when attached.

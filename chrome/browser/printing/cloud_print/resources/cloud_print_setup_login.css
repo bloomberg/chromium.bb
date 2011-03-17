@@ -5,10 +5,12 @@ body {
 }
 
 .cloudprint-signup {
+  vertical-align: top;
   width: 60%;
 }
 
 .cloudprint-login {
+  border: 2px;
   width: 40%;
 }
 
@@ -26,6 +28,6 @@ body {
 }
 
 .cloudprint-item-image {
-  text-align: center;
   padding: 8px;
+  text-align: center;
 }
