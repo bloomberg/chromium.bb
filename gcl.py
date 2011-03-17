@@ -989,7 +989,9 @@ def CMDcommit(change_info, args):
   if not change_info.GetFiles():
     print "Nothing to commit, changelist is empty."
     return 1
-  if not OptionallyDoPresubmitChecks(change_info, True, args):
+
+  output = OptionallyDoPresubmitChecks(change_info, True, args)
+  if not output.should_continue():
     return 1
 
   # We face a problem with svn here: Let's say change 'bleh' modifies
