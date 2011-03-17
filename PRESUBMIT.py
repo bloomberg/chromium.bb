@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,6 +7,8 @@
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl.
 """
+
+import time
 
 _EXCLUDED_PATHS = (
     r"^breakpad[\\\/].*",
@@ -22,13 +24,12 @@ _TEXT_FILES = (
 )
 
 _LICENSE_HEADER = (
-     r".*? Copyright \(c\) 20[0-9\-]{2,7} The Chromium Authors\. All rights "
-       r"reserved\." "\n"
+     r".*? Copyright \(c\) %s The Chromium Authors\. All rights reserved\.\n"
      r".*? Use of this source code is governed by a BSD-style license that can "
        "be\n"
      r".*? found in the LICENSE file\."
        "\n"
-)
+) % time.strftime("%Y")
 
 def _CheckNoInterfacesInBase(input_api, output_api, source_file_filter):
   """Checks to make sure no files in libbase.a have |@interface|."""
