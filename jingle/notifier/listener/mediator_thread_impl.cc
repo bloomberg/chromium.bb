@@ -69,7 +69,8 @@ void MediatorThreadImpl::Logout() {
       NewRunnableMethod(this, &MediatorThreadImpl::DoDisconnect));
   // TODO(akalin): Decomp this into a separate stop method.
   worker_thread_.Stop();
-  // worker_thread_ should have cleaned this up.
+  // worker_thread_ should have cleaned this up. It is OK to check this
+  // variable in this thread because worker_thread_ is gone by now.
   CHECK(!login_.get());
 }
 
@@ -99,6 +100,16 @@ void MediatorThreadImpl::SendNotification(
       FROM_HERE,
       NewRunnableMethod(this, &MediatorThreadImpl::DoSendNotification,
                         data));
+}
+
+void MediatorThreadImpl::UpdateXmppSettings(
+    const buzz::XmppClientSettings& settings) {
+  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  worker_message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this,
+                        &MediatorThreadImpl::DoUpdateXmppSettings,
+                        settings));
 }
 
 MessageLoop* MediatorThreadImpl::worker_message_loop() {
@@ -219,6 +230,19 @@ void MediatorThreadImpl::DoSendNotification(
   task->Start();
   observers_->Notify(&Observer::OnOutgoingNotification);
 }
+
+void MediatorThreadImpl::DoUpdateXmppSettings(
+    const buzz::XmppClientSettings& settings) {
+  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  VLOG(1) << "P2P: Thread Updating login settings.";
+  // The caller should only call UpdateXmppSettings after a Login call.
+  if (login_.get())
+    login_->UpdateXmppSettings(settings);
+  else
+    NOTREACHED() <<
+        "P2P: Thread UpdateXmppSettings called when login_ was NULL";
+}
+
 
 void MediatorThreadImpl::OnIncomingNotification(
     const Notification& notification) {

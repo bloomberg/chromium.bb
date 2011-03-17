@@ -104,8 +104,15 @@ TEST_F(TalkMediatorImplTest, LoginWiring) {
 
   EXPECT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
                                   "fake_service"));
+  EXPECT_EQ(0, mock->update_settings_calls);
+
   EXPECT_TRUE(talk1->Login());
   EXPECT_EQ(1, mock->login_calls);
+
+  // We call SetAuthToken again to update the settings after an update.
+  EXPECT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
+                                  "fake_service"));
+  EXPECT_EQ(1, mock->update_settings_calls);
 
   // Successive calls to login will fail.  One needs to create a new talk
   // mediator object.

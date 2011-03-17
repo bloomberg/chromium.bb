@@ -72,6 +72,7 @@ class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
   virtual void ListenForUpdates();
   virtual void SubscribeForUpdates(const SubscriptionList& subscriptions);
   virtual void SendNotification(const Notification& data);
+  virtual void UpdateXmppSettings(const buzz::XmppClientSettings& settings);
 
   // Login::Delegate implementation.
   virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task);
@@ -110,6 +111,7 @@ class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
 
   void DoSendNotification(
       const Notification& data);
+  void DoUpdateXmppSettings(const buzz::XmppClientSettings& settings);
 
   const NotifierOptions notifier_options_;
 

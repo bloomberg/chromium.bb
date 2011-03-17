@@ -44,6 +44,8 @@ class MockMediatorThread : public MediatorThread {
   virtual void ListenForUpdates();
 
   virtual void SendNotification(const Notification &);
+  virtual void UpdateXmppSettings(const buzz::XmppClientSettings& settings);
+
 
   void ReceiveNotification(const Notification& data);
 
@@ -55,6 +57,7 @@ class MockMediatorThread : public MediatorThread {
   int subscribe_calls;
   int listen_calls;
   int send_calls;
+  int update_settings_calls;
 };
 
 }  // namespace notifier

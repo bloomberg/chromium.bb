@@ -75,6 +75,10 @@ void Login::StartConnection() {
   single_attempt_.reset(new SingleLoginAttempt(login_settings_.get(), this));
 }
 
+void Login::UpdateXmppSettings(const buzz::XmppClientSettings& user_settings) {
+  *(login_settings_->modifiable_user_settings()) = user_settings;
+}
+
 void Login::OnConnect(base::WeakPtr<talk_base::Task> base_task) {
   ResetReconnectState();
   delegate_->OnConnect(base_task);

@@ -21,6 +21,7 @@ void MockMediatorThread::Reset() {
   subscribe_calls = 0;
   listen_calls = 0;
   send_calls = 0;
+  update_settings_calls = 0;
 }
 
 void MockMediatorThread::AddObserver(Observer* observer) {
@@ -74,6 +75,11 @@ void MockMediatorThread::ReceiveNotification(
   if (observer_) {
     observer_->OnIncomingNotification(data);
   }
+}
+
+void MockMediatorThread::UpdateXmppSettings(
+    const buzz::XmppClientSettings& settings) {
+  update_settings_calls++;
 }
 
 }  // namespace notifier

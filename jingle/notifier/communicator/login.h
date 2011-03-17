@@ -69,6 +69,9 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
   virtual ~Login();
 
   void StartConnection();
+  // The updated settings only take effect the next time StartConnection
+  // is called.
+  void UpdateXmppSettings(const buzz::XmppClientSettings& user_settings);
 
   // net::NetworkChangeNotifier::IPAddressObserver implementation.
   virtual void OnIPAddressChanged();

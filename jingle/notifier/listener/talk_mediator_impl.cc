@@ -97,6 +97,12 @@ bool TalkMediatorImpl::SetAuthToken(const std::string& email,
     xmpp_settings_.set_use_tls(false);
   }
 
+  // The auth token got updated and we are already in the logging_in or
+  // logged_in state. Update the token.
+  if (state_.logging_in || state_.logged_in) {
+    mediator_thread_->UpdateXmppSettings(xmpp_settings_);
+  }
+
   state_.initialized = 1;
   return true;
 }
@@ -113,7 +119,9 @@ void TalkMediatorImpl::AddSubscription(const Subscription& subscription) {
 
 void TalkMediatorImpl::OnConnectionStateChange(bool logged_in) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  state_.logging_in = 0;
+  // If we just lost connection, then the MediatorThread implementation will
+  // try to log in again. We need to set state_.logging_in to true in that case.
+  state_.logging_in = !logged_in;
   state_.logged_in = logged_in;
   if (logged_in) {
     VLOG(1) << "P2P: Logged in.";
