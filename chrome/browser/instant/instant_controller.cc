@@ -425,12 +425,15 @@ void InstantController::InstantLoaderDoesntSupportInstant(
   // Don't attempt to use instant for this search engine again.
   BlacklistFromInstant(loader->template_url_id());
 
-  if (loader_manager_->active_loader() == loader) {
-    // The loader is active, hide all.
+  // Because of the state of the stack we can't destroy the loader now.
+  bool was_pending = loader_manager_->pending_loader() == loader;
+  ScheduleDestroy(loader_manager_->ReleaseLoader(loader));
+  if (was_pending) {
+    // |loader| was the pending loader. We may be showing another TabContents to
+    // the user (what was current). Destroy it.
     DestroyPreviewContentsAndLeaveActive();
   } else {
-    scoped_ptr<InstantLoader> owned_loader(
-        loader_manager_->ReleaseLoader(loader));
+    // |loader| wasn't pending, yet it may still be the displayed loader.
     UpdateDisplayableLoader();
   }
 }
