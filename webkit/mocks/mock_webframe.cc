@@ -235,10 +235,6 @@ bool MockWebFrame::willSuppressOpenerInNewFrame() const {
   return false;
 }
 
-bool MockWebFrame::pageDismissalEventBeingDispatched() const {
-  return false;
-}
-
 void MockWebFrame::replaceSelection(const WebString& text) {}
 
 void MockWebFrame::insertText(const WebString& text) {}
