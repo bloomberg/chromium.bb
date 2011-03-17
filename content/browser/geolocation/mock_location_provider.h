@@ -10,8 +10,8 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/threading/thread.h"
-#include "chrome/common/geoposition.h"
 #include "content/browser/geolocation/location_provider.h"
+#include "content/common/geoposition.h"
 #include "googleurl/src/gurl.h"
 
 // Mock implementation of a location provider for testing.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_FONT_CONFIG_IPC_LINUX_H_
-#define CHROME_COMMON_FONT_CONFIG_IPC_LINUX_H_
+#ifndef CONTENT_COMMON_FONT_CONFIG_IPC_LINUX_H_
+#define CONTENT_COMMON_FONT_CONFIG_IPC_LINUX_H_
 #pragma once
 
 #include "skia/ext/SkFontHost_fontconfig_impl.h"
@@ -37,4 +37,4 @@ class FontConfigIPC : public FontConfigInterface {
   const int fd_;
 };
 
-#endif  // CHROME_COMMON_FONT_CONFIG_IPC_LINUX_H_
+#endif  // CONTENT_COMMON_FONT_CONFIG_IPC_LINUX_H_

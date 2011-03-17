@@ -12,8 +12,8 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_nsobject.h"
-#include "chrome/common/geoposition.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/geoposition.h"
 
 #import <Foundation/Foundation.h>
 

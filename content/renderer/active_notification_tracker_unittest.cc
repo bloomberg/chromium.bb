@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/desktop_notifications/active_notification_tracker.h"
+#include "content/renderer/active_notification_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(ActiveNotificationTrackerTest, TestLookupAndClear) {

@@ -9,8 +9,8 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/geoposition.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "content/common/geoposition.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 

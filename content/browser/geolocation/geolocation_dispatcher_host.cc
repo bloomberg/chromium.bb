@@ -8,13 +8,13 @@
 #include <set>
 #include <utility>
 
-#include "chrome/common/geoposition.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/geolocation/geolocation_permission_context.h"
 #include "content/browser/geolocation/geolocation_provider.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/common/geoposition.h"
 
 namespace {
 class GeolocationDispatcherHostImpl : public GeolocationDispatcherHost,

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "chrome/common/mru_cache.h"
+#include "content/common/mru_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

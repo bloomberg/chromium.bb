@@ -11,7 +11,7 @@
 #include <sys/time.h>
 
 #include "base/logging.h"
-#include "chrome/common/geoposition.h"
+#include "content/common/geoposition.h"
 #include "third_party/gpsd/release-2.38/gps.h"
 
 class LibGpsV238 : public LibGps {

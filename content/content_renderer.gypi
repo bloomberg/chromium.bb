@@ -18,6 +18,8 @@
         '..',
       ],
       'sources': [
+        'renderer/active_notification_tracker.cc',
+        'renderer/active_notification_tracker.h',
         'renderer/audio_device.cc',
         'renderer/audio_device.h',
         'renderer/audio_message_filter.cc',

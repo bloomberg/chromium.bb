@@ -18,7 +18,7 @@
 #include "chrome/browser/history/text_database.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/history/url_database.h"
-#include "chrome/common/mru_cache.h"
+#include "content/common/mru_cache.h"
 
 struct sqlite3;
 

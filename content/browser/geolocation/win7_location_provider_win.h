@@ -9,7 +9,7 @@
 #include "base/task.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/win7_location_api_win.h"
-#include "chrome/common/geoposition.h"
+#include "content/common/geoposition.h"
 
 // Location provider for Windows 7 that uses the Location and Sensors platform
 // to obtain position fixes.

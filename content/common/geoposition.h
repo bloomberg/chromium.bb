@@ -6,8 +6,8 @@
 // position fix. Originally derived from
 // http://gears.googlecode.com/svn/trunk/gears/geolocation/geolocation.h
 
-#ifndef CHROME_COMMON_GEOPOSITION_H_
-#define CHROME_COMMON_GEOPOSITION_H_
+#ifndef CONTENT_COMMON_GEOPOSITION_H_
+#define CONTENT_COMMON_GEOPOSITION_H_
 #pragma once
 
 #include <string>
@@ -62,4 +62,4 @@ struct Geoposition {
   std::string error_message;   // Human-readable error message
 };
 
-#endif  // CHROME_COMMON_GEOPOSITION_H_
+#endif  // CONTENT_COMMON_GEOPOSITION_H_

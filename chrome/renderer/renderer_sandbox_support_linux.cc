@@ -12,7 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/sandbox_methods_linux.h"
-#include "chrome/common/unix_domain_socket_posix.h"
+#include "content/common/unix_domain_socket_posix.h"
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontRenderStyle.h"
 

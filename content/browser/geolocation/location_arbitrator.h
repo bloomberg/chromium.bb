@@ -9,11 +9,11 @@
 #include "base/string16.h"
 #include "base/scoped_vector.h"
 #include "base/time.h"
-#include "chrome/common/geoposition.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/geolocation/access_token_store.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/geolocation_observer.h"
+#include "content/common/geoposition.h"
 #include "googleurl/src/gurl.h"
 
 class AccessTokenStore;

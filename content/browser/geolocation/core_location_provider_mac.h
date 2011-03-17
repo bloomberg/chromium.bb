@@ -10,8 +10,8 @@
 #define CONTENT_BROWSER_GEOLOCATION_CORE_LOCATION_PROVIDER_MAC_H_
 #pragma once
 
-#include "chrome/common/geoposition.h"
 #include "content/browser/geolocation/location_provider.h"
+#include "content/common/geoposition.h"
 
 class CoreLocationDataProviderMac;
 

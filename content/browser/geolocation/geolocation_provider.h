@@ -9,8 +9,8 @@
 #include <map>
 
 #include "base/threading/thread.h"
-#include "chrome/common/geoposition.h"
 #include "content/browser/geolocation/geolocation_observer.h"
+#include "content/common/geoposition.h"
 #include "googleurl/src/gurl.h"
 
 class GeolocationArbitrator;

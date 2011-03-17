@@ -7,7 +7,7 @@
 #include "content/browser/geolocation/libgps_wrapper_linux.h"
 
 #include "base/logging.h"
-#include "chrome/common/geoposition.h"
+#include "content/common/geoposition.h"
 #include "third_party/gpsd/release-2.94/gps.h"
 
 class LibGpsV294 : public LibGps {

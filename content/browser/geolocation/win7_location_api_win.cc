@@ -11,7 +11,7 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/geoposition.h"
+#include "content/common/geoposition.h"
 
 namespace {
 const double kKnotsToMetresPerSecondConversionFactor = 0.5144;

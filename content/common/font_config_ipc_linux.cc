@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/font_config_ipc_linux.h"
+#include "content/common/font_config_ipc_linux.h"
 
 #include <errno.h>
 #include <unistd.h>
@@ -11,7 +11,7 @@
 #include <sys/uio.h>
 
 #include "base/pickle.h"
-#include "chrome/common/unix_domain_socket_posix.h"
+#include "content/common/unix_domain_socket_posix.h"
 
 FontConfigIPC::FontConfigIPC(int fd)
     : fd_(fd) {

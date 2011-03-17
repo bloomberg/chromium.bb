@@ -14,10 +14,10 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/threading/thread.h"
-#include "chrome/common/geoposition.h"
 #include "content/browser/geolocation/device_data_provider.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/network_location_request.h"
+#include "content/common/geoposition.h"
 
 class URLFetcherProtectEntry;
 

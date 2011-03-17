@@ -13,8 +13,8 @@
 // legibility rather than optimality. If future profiling identifies this as
 // a bottleneck, there is room for smaller values of 1 in the O(1). :]
 
-#ifndef CHROME_COMMON_MRU_CACHE_H__
-#define CHROME_COMMON_MRU_CACHE_H__
+#ifndef CONTENT_COMMON_MRU_CACHE_H_
+#define CONTENT_COMMON_MRU_CACHE_H_
 #pragma once
 
 #include <list>
@@ -250,4 +250,4 @@ class OwningMRUCache
   DISALLOW_COPY_AND_ASSIGN(OwningMRUCache);
 };
 
-#endif  // CHROME_COMMON_MRU_CACHE_H__
+#endif  // CONTENT_COMMON_MRU_CACHE_H_

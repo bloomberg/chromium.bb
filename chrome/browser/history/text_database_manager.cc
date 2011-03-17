@@ -13,7 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/visit_database.h"
-#include "chrome/common/mru_cache.h"
+#include "content/common/mru_cache.h"
 
 using base::Time;
 using base::TimeDelta;

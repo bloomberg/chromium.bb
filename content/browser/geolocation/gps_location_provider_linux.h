@@ -13,8 +13,8 @@
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/common/geoposition.h"
 #include "content/browser/geolocation/location_provider.h"
+#include "content/common/geoposition.h"
 
 class LibGps;
 

@@ -21,7 +21,7 @@
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/browser/history/visit_tracker.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "chrome/common/mru_cache.h"
+#include "content/common/mru_cache.h"
 
 class BookmarkService;
 struct DownloadCreateInfo;

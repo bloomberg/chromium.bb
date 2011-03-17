@@ -7,9 +7,9 @@
 #include <dlfcn.h>
 #include <errno.h>
 
-#include "chrome/common/geoposition.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "content/common/geoposition.h"
 
 namespace {
 // Pass to TryToOpen() to indicate which functions should be wired up.

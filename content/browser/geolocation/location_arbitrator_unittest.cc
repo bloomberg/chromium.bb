@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/scoped_ptr.h"
-#include "chrome/common/geoposition.h"
 #include "content/browser/geolocation/arbitrator_dependency_factory.h"
 #include "content/browser/geolocation/fake_access_token_store.h"
 #include "content/browser/geolocation/geolocation_observer.h"
 #include "content/browser/geolocation/location_arbitrator.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/mock_location_provider.h"
+#include "content/common/geoposition.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
