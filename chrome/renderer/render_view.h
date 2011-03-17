@@ -38,7 +38,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
@@ -155,6 +154,7 @@ class WebView;
 struct WebContextMenuData;
 struct WebFileChooserParams;
 struct WebFindOptions;
+struct WebMediaPlayerAction;
 struct WebPluginParams;
 struct WebPoint;
 struct WebWindowFeatures;

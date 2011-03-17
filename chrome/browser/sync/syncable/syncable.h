@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -481,9 +481,7 @@ class MutableEntry : public Entry {
   bool Put(BaseVersion field, int64 value);
 
   bool Put(ProtoField field, const sync_pb::EntitySpecifics& value);
-  inline bool Put(BitField field, bool value) {
-    return PutField(field, value);
-  }
+  bool Put(BitField field, bool value);
   inline bool Put(IsDelField field, bool value) {
     return PutIsDel(value);
   }
@@ -495,29 +493,10 @@ class MutableEntry : public Entry {
   // ID to put the node in first position.
   bool PutPredecessor(const Id& predecessor_id);
 
-  inline bool Put(BitTemp field, bool value) {
-    return PutTemp(field, value);
-  }
+  bool Put(BitTemp field, bool value);
 
  protected:
   syncable::MetahandleSet* GetDirtyIndexHelper();
-
-  template <typename FieldType, typename ValueType>
-  inline bool PutField(FieldType field, const ValueType& value) {
-    DCHECK(kernel_);
-    if (kernel_->ref(field) != value) {
-      kernel_->put(field, value);
-      kernel_->mark_dirty(GetDirtyIndexHelper());
-    }
-    return true;
-  }
-
-  template <typename TempType, typename ValueType>
-  inline bool PutTemp(TempType field, const ValueType& value) {
-    DCHECK(kernel_);
-    kernel_->put(field, value);
-    return true;
-  }
 
   bool PutIsDel(bool value);
 

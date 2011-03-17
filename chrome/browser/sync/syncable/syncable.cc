@@ -1411,6 +1411,15 @@ bool MutableEntry::Put(ProtoField field,
   return true;
 }
 
+bool MutableEntry::Put(BitField field, bool value) {
+  DCHECK(kernel_);
+  if (kernel_->ref(field) != value) {
+    kernel_->put(field, value);
+    kernel_->mark_dirty(GetDirtyIndexHelper());
+  }
+  return true;
+}
+
 MetahandleSet* MutableEntry::GetDirtyIndexHelper() {
   return dir()->kernel_->dirty_metahandles;
 }
@@ -1563,6 +1572,11 @@ bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
   return true;
 }
 
+bool MutableEntry::Put(BitTemp field, bool value) {
+  DCHECK(kernel_);
+  kernel_->put(field, value);
+  return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////
 // High-level functions
