@@ -1143,7 +1143,7 @@ def Main(argv):
                     "system directories will also be searched.")
   parser.add_option("--default_presubmit")
   parser.add_option("--may_prompt", action='store_true', default=False)
-  options, args = parser.parse_args(argv[1:])
+  options, args = parser.parse_args(argv)
   if options.verbose:
     logging.basicConfig(level=logging.DEBUG)
   if os.path.isdir(os.path.join(options.root, '.svn')):
@@ -1195,4 +1195,4 @@ def Main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(Main(sys.argv))
+  sys.exit(Main(None))
