@@ -146,6 +146,9 @@ const AccelerometerMac::SensorDescriptor
   // Tested by crc on a 15" MacBook Pro.
   { "MacBookPro1,1", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
+  // Tested by Raul Cuza (via avi) on a 17" MacBook Pro.
+  { "MacBookPro1,2", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+
   // Tested by L.V. (via avi) on a 17" MacBook Pro.
   { "MacBookPro2,1", NULL, { { 0, true  }, { 2, false }, { 4, true  } } },
 
@@ -199,9 +202,8 @@ const AccelerometerMac::SensorDescriptor
   // Generic MacBook accelerometer sensor data, used for both future models
   // and past models for which there has been no testing. Note that this generic
   // configuration may well have problems with inverted axes.
-  // TODO(avi): Find these past models and test on them; test on future models.
+  // TODO(avi): Find this past model and test on it; test on future models.
   //  MacBook5,1
-  //  MacBookPro1,2
   { "",              NULL, { { 0, true  }, { 2, true  }, { 4, false } } }
 };
 
