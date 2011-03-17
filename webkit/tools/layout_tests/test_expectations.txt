@@ -7,7 +7,3 @@
 
 // Skip these tests until the test_expectations can be updated after this Chromium patch lands.
 BUGWK44797 SKIP : fullscreen = PASS FAIL TIMEOUT
-
-// Just need rebaselines upstream.
-BUG_LEVIN : media/controls-without-preload.html = IMAGE IMAGE+TEXT PASS
-BUG_LEVIN : media/media-document-audio-repaint.html = IMAGE IMAGE+TEXT PASS
