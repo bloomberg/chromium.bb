@@ -9,7 +9,7 @@
 #include <iterator>
 
 string16 FormGroup::GetPreviewText(AutofillFieldType type) const {
-  return GetFieldText(type);
+  return GetInfo(type);
 }
 
 const string16 FormGroup::Label() const { return string16(); }
@@ -35,7 +35,7 @@ bool FormGroup::IsSubsetOf(const FormGroup& form_group) const {
 
   for (FieldTypeSet::const_iterator iter = types.begin(); iter != types.end();
        ++iter) {
-    if (GetFieldText(*iter) != form_group.GetFieldText(*iter))
+    if (GetInfo(*iter) != form_group.GetInfo(*iter))
       return false;
   }
 
@@ -57,7 +57,7 @@ bool FormGroup::IntersectionOfTypesHasEqualValues(
 
   for (FieldTypeSet::const_iterator iter = intersection.begin();
        iter != intersection.end(); ++iter) {
-    if (GetFieldText(*iter) != form_group.GetFieldText(*iter))
+    if (GetInfo(*iter) != form_group.GetInfo(*iter))
       return false;
   }
 
@@ -74,7 +74,7 @@ void FormGroup::MergeWith(const FormGroup& form_group) {
 
   for (FieldTypeSet::const_iterator iter = intersection.begin();
        iter != intersection.end(); ++iter) {
-    SetInfo(*iter, form_group.GetFieldText(*iter));
+    SetInfo(*iter, form_group.GetInfo(*iter));
   }
 }
 
@@ -83,6 +83,6 @@ void FormGroup::OverwriteWith(const FormGroup& form_group) {
   form_group.GetAvailableFieldTypes(&a);
 
   for (FieldTypeSet::const_iterator iter = a.begin(); iter != a.end(); ++iter) {
-    SetInfo(*iter, form_group.GetFieldText(*iter));
+    SetInfo(*iter, form_group.GetInfo(*iter));
   }
 }

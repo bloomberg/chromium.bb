@@ -92,7 +92,7 @@ void PhoneNumber::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
     available_types->insert(GetWholeNumberType());
 }
 
-string16 PhoneNumber::GetFieldText(AutofillFieldType type) const {
+string16 PhoneNumber::GetInfo(AutofillFieldType type) const {
   if (type == GetNumberType())
     return number();
 

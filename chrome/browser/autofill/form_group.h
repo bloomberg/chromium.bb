@@ -31,7 +31,7 @@ class FormGroup {
 
   // Returns the string that should be auto-filled into a text field given the
   // type of that field.
-  virtual string16 GetFieldText(AutofillFieldType type) const = 0;
+  virtual string16 GetInfo(AutofillFieldType type) const = 0;
 
   // Returns the text for preview.
   virtual string16 GetPreviewText(AutofillFieldType type) const;

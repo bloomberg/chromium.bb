@@ -29,7 +29,7 @@ class PhoneNumber : public FormGroup {
   virtual void FindInfoMatches(AutofillFieldType type,
                                const string16& info,
                                std::vector<string16>* matched_text) const;
-  virtual string16 GetFieldText(AutofillFieldType type) const;
+  virtual string16 GetInfo(AutofillFieldType type) const;
   virtual void SetInfo(AutofillFieldType type, const string16& value);
 
   // Parses |value| to extract the components of a phone number.  |number|

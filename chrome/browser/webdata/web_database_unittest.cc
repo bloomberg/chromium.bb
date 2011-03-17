@@ -1585,7 +1585,7 @@ TEST_F(WebDatabaseTest, AutofillProfileTrashInteraction) {
   AutofillProfile* updated_profile = NULL;
   EXPECT_TRUE(db.GetAutofillProfile(profile.guid(), &updated_profile));
   ASSERT_NE(static_cast<AutofillProfile*>(NULL), added_profile);
-  EXPECT_EQ(ASCIIToUTF16("John"), updated_profile->GetFieldText(NAME_FIRST));
+  EXPECT_EQ(ASCIIToUTF16("John"), updated_profile->GetInfo(NAME_FIRST));
   delete updated_profile;
 
   // Try to delete the trashed profile.  This stops |RemoveAutofillProfile| from
@@ -2847,20 +2847,20 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion31ToCurrent) {
     EXPECT_NO_FATAL_FAILURE(AutofillProfile33FromStatement(
         s1, &profile_a, &profile_date_modified_a));
     EXPECT_EQ(profile.guid(), profile_a.guid());
-    EXPECT_EQ(profile.GetFieldText(COMPANY_NAME),
-              profile_a.GetFieldText(COMPANY_NAME));
-    EXPECT_EQ(profile.GetFieldText(ADDRESS_HOME_LINE1),
-              profile_a.GetFieldText(ADDRESS_HOME_LINE1));
-    EXPECT_EQ(profile.GetFieldText(ADDRESS_HOME_LINE2),
-              profile_a.GetFieldText(ADDRESS_HOME_LINE2));
-    EXPECT_EQ(profile.GetFieldText(ADDRESS_HOME_CITY),
-              profile_a.GetFieldText(ADDRESS_HOME_CITY));
-    EXPECT_EQ(profile.GetFieldText(ADDRESS_HOME_STATE),
-              profile_a.GetFieldText(ADDRESS_HOME_STATE));
-    EXPECT_EQ(profile.GetFieldText(ADDRESS_HOME_ZIP),
-              profile_a.GetFieldText(ADDRESS_HOME_ZIP));
-    EXPECT_EQ(profile.GetFieldText(ADDRESS_HOME_COUNTRY),
-              profile_a.GetFieldText(ADDRESS_HOME_COUNTRY));
+    EXPECT_EQ(profile.GetInfo(COMPANY_NAME),
+              profile_a.GetInfo(COMPANY_NAME));
+    EXPECT_EQ(profile.GetInfo(ADDRESS_HOME_LINE1),
+              profile_a.GetInfo(ADDRESS_HOME_LINE1));
+    EXPECT_EQ(profile.GetInfo(ADDRESS_HOME_LINE2),
+              profile_a.GetInfo(ADDRESS_HOME_LINE2));
+    EXPECT_EQ(profile.GetInfo(ADDRESS_HOME_CITY),
+              profile_a.GetInfo(ADDRESS_HOME_CITY));
+    EXPECT_EQ(profile.GetInfo(ADDRESS_HOME_STATE),
+              profile_a.GetInfo(ADDRESS_HOME_STATE));
+    EXPECT_EQ(profile.GetInfo(ADDRESS_HOME_ZIP),
+              profile_a.GetInfo(ADDRESS_HOME_ZIP));
+    EXPECT_EQ(profile.GetInfo(ADDRESS_HOME_COUNTRY),
+              profile_a.GetInfo(ADDRESS_HOME_COUNTRY));
     EXPECT_EQ(profile_date_modified, profile_date_modified_a);
 
     sql::Statement s2(

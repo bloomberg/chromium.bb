@@ -326,26 +326,26 @@ void AutofillProfileChangeProcessor::WriteAutofillProfile(
   DCHECK(guid::IsValidGUID(profile.guid()));
 
   specifics.set_guid(profile.guid());
-  specifics.set_name_first(UTF16ToUTF8(profile.GetFieldText(NAME_FIRST)));
-  specifics.set_name_middle(UTF16ToUTF8(profile.GetFieldText(NAME_MIDDLE)));
-  specifics.set_name_last(UTF16ToUTF8(profile.GetFieldText(NAME_LAST)));
+  specifics.set_name_first(UTF16ToUTF8(profile.GetInfo(NAME_FIRST)));
+  specifics.set_name_middle(UTF16ToUTF8(profile.GetInfo(NAME_MIDDLE)));
+  specifics.set_name_last(UTF16ToUTF8(profile.GetInfo(NAME_LAST)));
   specifics.set_address_home_line1(
-      UTF16ToUTF8(profile.GetFieldText(ADDRESS_HOME_LINE1)));
+      UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_LINE1)));
   specifics.set_address_home_line2(
-      UTF16ToUTF8(profile.GetFieldText(ADDRESS_HOME_LINE2)));
-  specifics.set_address_home_city(UTF16ToUTF8(profile.GetFieldText(
+      UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_LINE2)));
+  specifics.set_address_home_city(UTF16ToUTF8(profile.GetInfo(
       ADDRESS_HOME_CITY)));
-  specifics.set_address_home_state(UTF16ToUTF8(profile.GetFieldText(
+  specifics.set_address_home_state(UTF16ToUTF8(profile.GetInfo(
       ADDRESS_HOME_STATE)));
-  specifics.set_address_home_country(UTF16ToUTF8(profile.GetFieldText(
+  specifics.set_address_home_country(UTF16ToUTF8(profile.GetInfo(
       ADDRESS_HOME_COUNTRY)));
-  specifics.set_address_home_zip(UTF16ToUTF8(profile.GetFieldText(
+  specifics.set_address_home_zip(UTF16ToUTF8(profile.GetInfo(
       ADDRESS_HOME_ZIP)));
-  specifics.set_email_address(UTF16ToUTF8(profile.GetFieldText(EMAIL_ADDRESS)));
-  specifics.set_company_name(UTF16ToUTF8(profile.GetFieldText(COMPANY_NAME)));
-  specifics.set_phone_fax_whole_number(UTF16ToUTF8(profile.GetFieldText(
+  specifics.set_email_address(UTF16ToUTF8(profile.GetInfo(EMAIL_ADDRESS)));
+  specifics.set_company_name(UTF16ToUTF8(profile.GetInfo(COMPANY_NAME)));
+  specifics.set_phone_fax_whole_number(UTF16ToUTF8(profile.GetInfo(
       PHONE_FAX_WHOLE_NUMBER)));
-  specifics.set_phone_home_whole_number(UTF16ToUTF8(profile.GetFieldText(
+  specifics.set_phone_home_whole_number(UTF16ToUTF8(profile.GetInfo(
       PHONE_HOME_WHOLE_NUMBER)));
   node->SetAutofillProfileSpecifics(specifics);
 }

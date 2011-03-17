@@ -148,18 +148,6 @@ void AutofillProfile::GetAvailableFieldTypes(
     (*it)->GetAvailableFieldTypes(available_types);
 }
 
-string16 AutofillProfile::GetFieldText(AutofillFieldType type) const {
-  AutofillFieldType return_type = AutofillType::GetEquivalentFieldType(type);
-
-  FormGroupMap info = info_map();
-  FormGroupMap::const_iterator it =
-      info.find(AutofillType(return_type).group());
-  if (it == info.end())
-    return string16();
-
-  return it->second->GetFieldText(return_type);
-}
-
 void AutofillProfile::FindInfoMatches(
     AutofillFieldType type,
     const string16& value,
@@ -183,6 +171,18 @@ void AutofillProfile::FindInfoMatches(
     if (it != info.end())
       it->second->FindInfoMatches(type, clean_info, matched_text);
   }
+}
+
+string16 AutofillProfile::GetInfo(AutofillFieldType type) const {
+  AutofillFieldType return_type = AutofillType::GetEquivalentFieldType(type);
+
+  FormGroupMap info = info_map();
+  FormGroupMap::const_iterator it =
+      info.find(AutofillType(return_type).group());
+  if (it == info.end())
+    return string16();
+
+  return it->second->GetInfo(return_type);
 }
 
 void AutofillProfile::SetInfo(AutofillFieldType type, const string16& value) {
@@ -291,8 +291,8 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
                                       PHONE_FAX_NUMBER };
 
   for (size_t index = 0; index < arraysize(types); ++index) {
-    int comparison = GetFieldText(types[index]).compare(
-        profile.GetFieldText(types[index]));
+    int comparison = GetInfo(types[index]).compare(
+        profile.GetInfo(types[index]));
     if (comparison != 0)
       return comparison;
   }
@@ -309,10 +309,10 @@ bool AutofillProfile::operator!=(const AutofillProfile& profile) const {
 }
 
 const string16 AutofillProfile::PrimaryValue() const {
-  return GetFieldText(NAME_FULL) +
-         GetFieldText(ADDRESS_HOME_LINE1) +
-         GetFieldText(ADDRESS_HOME_LINE2) +
-         GetFieldText(EMAIL_ADDRESS);
+  return GetInfo(NAME_FULL) +
+         GetInfo(ADDRESS_HOME_LINE1) +
+         GetInfo(ADDRESS_HOME_LINE2) +
+         GetInfo(EMAIL_ADDRESS);
 }
 
 string16 AutofillProfile::ConstructInferredLabel(
@@ -327,7 +327,7 @@ string16 AutofillProfile::ConstructInferredLabel(
            included_fields.begin();
        it != included_fields.end() && num_fields_used < num_fields_to_use;
        ++it) {
-    string16 field = GetFieldText(*it);
+    string16 field = GetInfo(*it);
     if (field.empty())
       continue;
 
@@ -364,7 +364,7 @@ void AutofillProfile::CreateDifferentiatingLabels(
     for (std::list<size_t>::const_iterator it = indices.begin();
          it != indices.end(); ++it) {
       const AutofillProfile* profile = profiles[*it];
-      string16 field_text = profile->GetFieldText(*field);
+      string16 field_text = profile->GetInfo(*field);
 
       // If this label is not already in the map, add it with frequency 0.
       if (!field_text_frequencies.count(field_text))
@@ -391,7 +391,7 @@ void AutofillProfile::CreateDifferentiatingLabels(
     for (std::vector<AutofillFieldType>::const_iterator field = fields.begin();
          field != fields.end(); ++field) {
       // Skip over empty fields.
-      string16 field_text = profile->GetFieldText(*field);
+      string16 field_text = profile->GetInfo(*field);
       if (field_text.empty())
         continue;
 
@@ -461,29 +461,29 @@ std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
       << " "
       << profile.guid()
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(NAME_FIRST))
+      << UTF16ToUTF8(profile.GetInfo(NAME_FIRST))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(NAME_MIDDLE))
+      << UTF16ToUTF8(profile.GetInfo(NAME_MIDDLE))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(NAME_LAST))
+      << UTF16ToUTF8(profile.GetInfo(NAME_LAST))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(EMAIL_ADDRESS))
+      << UTF16ToUTF8(profile.GetInfo(EMAIL_ADDRESS))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(COMPANY_NAME))
+      << UTF16ToUTF8(profile.GetInfo(COMPANY_NAME))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(ADDRESS_HOME_LINE1))
+      << UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_LINE1))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(ADDRESS_HOME_LINE2))
+      << UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_LINE2))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(ADDRESS_HOME_CITY))
+      << UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_CITY))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(ADDRESS_HOME_STATE))
+      << UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_STATE))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(ADDRESS_HOME_ZIP))
+      << UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_ZIP))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(ADDRESS_HOME_COUNTRY))
+      << UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_COUNTRY))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(PHONE_HOME_WHOLE_NUMBER))
+      << UTF16ToUTF8(profile.GetInfo(PHONE_HOME_WHOLE_NUMBER))
       << " "
-      << UTF16ToUTF8(profile.GetFieldText(PHONE_FAX_WHOLE_NUMBER));
+      << UTF16ToUTF8(profile.GetInfo(PHONE_FAX_WHOLE_NUMBER));
 }

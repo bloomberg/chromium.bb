@@ -740,7 +740,7 @@ void AutofillManager::GetProfileSuggestions(FormStructure* form,
     AutofillProfile* profile = *iter;
 
     // The value of the stored data for this field type in the |profile|.
-    string16 profile_field_value = profile->GetFieldText(type);
+    string16 profile_field_value = profile->GetInfo(type);
 
     if (!profile_field_value.empty() &&
         StartsWith(profile_field_value, field.value, false)) {
@@ -781,7 +781,7 @@ void AutofillManager::GetCreditCardSuggestions(FormStructure* form,
     CreditCard* credit_card = *iter;
 
     // The value of the stored data for this field type in the |credit_card|.
-    string16 creditcard_field_value = credit_card->GetFieldText(type);
+    string16 creditcard_field_value = credit_card->GetInfo(type);
     if (!creditcard_field_value.empty() &&
         StartsWith(creditcard_field_value, field.value, false)) {
       if (type == CREDIT_CARD_NUMBER)
@@ -790,7 +790,7 @@ void AutofillManager::GetCreditCardSuggestions(FormStructure* form,
       string16 label;
       if (credit_card->number().empty()) {
         // If there is no CC number, return name to show something.
-        label = credit_card->GetFieldText(CREDIT_CARD_NAME);
+        label = credit_card->GetInfo(CREDIT_CARD_NAME);
       } else {
         label = kCreditCardPrefix;
         label.append(credit_card->LastFourDigits());
@@ -815,15 +815,15 @@ void AutofillManager::FillCreditCardFormField(const CreditCard* credit_card,
     autofill::FillSelectControl(*credit_card, type, field);
   } else if (field->form_control_type == ASCIIToUTF16("month")) {
     // HTML5 input="month" consists of year-month.
-    string16 year = credit_card->GetFieldText(CREDIT_CARD_EXP_4_DIGIT_YEAR);
-    string16 month = credit_card->GetFieldText(CREDIT_CARD_EXP_MONTH);
+    string16 year = credit_card->GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+    string16 month = credit_card->GetInfo(CREDIT_CARD_EXP_MONTH);
     if (!year.empty() && !month.empty()) {
       // Fill the value only if |credit_card| includes both year and month
       // information.
       field->value = year + ASCIIToUTF16("-") + month;
     }
   } else {
-    field->value = credit_card->GetFieldText(type);
+    field->value = credit_card->GetInfo(type);
   }
 }
 
@@ -840,7 +840,7 @@ void AutofillManager::FillFormField(const AutofillProfile* profile,
     if (field->form_control_type == ASCIIToUTF16("select-one"))
       autofill::FillSelectControl(*profile, type, field);
     else
-      field->value = profile->GetFieldText(type);
+      field->value = profile->GetInfo(type);
   }
 }
 
@@ -849,7 +849,7 @@ void AutofillManager::FillPhoneNumberField(const AutofillProfile* profile,
                                            webkit_glue::FormField* field) {
   // If we are filling a phone number, check to see if the size field
   // matches the "prefix" or "suffix" sizes and fill accordingly.
-  string16 number = profile->GetFieldText(type);
+  string16 number = profile->GetInfo(type);
   bool has_valid_suffix_and_prefix = (number.length() ==
       static_cast<size_t>(PhoneNumber::kPrefixLength +
                           PhoneNumber::kSuffixLength));

@@ -266,17 +266,17 @@ void AutoFillOptionsHandler::LoadAddressEditor(const ListValue* args) {
 
   DictionaryValue address;
   address.SetString("guid", profile->guid());
-  address.SetString("fullName", profile->GetFieldText(NAME_FULL));
-  address.SetString("companyName", profile->GetFieldText(COMPANY_NAME));
-  address.SetString("addrLine1", profile->GetFieldText(ADDRESS_HOME_LINE1));
-  address.SetString("addrLine2", profile->GetFieldText(ADDRESS_HOME_LINE2));
-  address.SetString("city", profile->GetFieldText(ADDRESS_HOME_CITY));
-  address.SetString("state", profile->GetFieldText(ADDRESS_HOME_STATE));
-  address.SetString("postalCode", profile->GetFieldText(ADDRESS_HOME_ZIP));
+  address.SetString("fullName", profile->GetInfo(NAME_FULL));
+  address.SetString("companyName", profile->GetInfo(COMPANY_NAME));
+  address.SetString("addrLine1", profile->GetInfo(ADDRESS_HOME_LINE1));
+  address.SetString("addrLine2", profile->GetInfo(ADDRESS_HOME_LINE2));
+  address.SetString("city", profile->GetInfo(ADDRESS_HOME_CITY));
+  address.SetString("state", profile->GetInfo(ADDRESS_HOME_STATE));
+  address.SetString("postalCode", profile->GetInfo(ADDRESS_HOME_ZIP));
   address.SetString("country", profile->CountryCode());
-  address.SetString("phone", profile->GetFieldText(PHONE_HOME_WHOLE_NUMBER));
-  address.SetString("fax", profile->GetFieldText(PHONE_FAX_WHOLE_NUMBER));
-  address.SetString("email", profile->GetFieldText(EMAIL_ADDRESS));
+  address.SetString("phone", profile->GetInfo(PHONE_HOME_WHOLE_NUMBER));
+  address.SetString("fax", profile->GetInfo(PHONE_FAX_WHOLE_NUMBER));
+  address.SetString("email", profile->GetInfo(EMAIL_ADDRESS));
 
   web_ui_->CallJavascriptFunction("AutoFillOptions.editAddress", address);
 }
@@ -303,14 +303,14 @@ void AutoFillOptionsHandler::LoadCreditCardEditor(const ListValue* args) {
   DictionaryValue credit_card_data;
   credit_card_data.SetString("guid", credit_card->guid());
   credit_card_data.SetString("nameOnCard",
-                             credit_card->GetFieldText(CREDIT_CARD_NAME));
+                             credit_card->GetInfo(CREDIT_CARD_NAME));
   credit_card_data.SetString("creditCardNumber",
-                             credit_card->GetFieldText(CREDIT_CARD_NUMBER));
+                             credit_card->GetInfo(CREDIT_CARD_NUMBER));
   credit_card_data.SetString("expirationMonth",
-                             credit_card->GetFieldText(CREDIT_CARD_EXP_MONTH));
+                             credit_card->GetInfo(CREDIT_CARD_EXP_MONTH));
   credit_card_data.SetString(
       "expirationYear",
-      credit_card->GetFieldText(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+      credit_card->GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
   web_ui_->CallJavascriptFunction("AutoFillOptions.editCreditCard",
                                   credit_card_data);

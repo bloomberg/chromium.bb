@@ -203,7 +203,7 @@ void FillSelectControl(const FormGroup& form_group,
   DCHECK(field);
   DCHECK_EQ(ASCIIToUTF16("select-one"), field->form_control_type);
 
-  string16 field_text = form_group.GetFieldText(type);
+  string16 field_text = form_group.GetInfo(type);
   if (field_text.empty())
     return;
 

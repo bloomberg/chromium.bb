@@ -209,13 +209,13 @@ bool ImportCurrentUserProfiles(std::vector<AutofillProfile>* profiles,
     if (ImportSingleProfile(&profile, &key, reg_to_field)) {
       // Combine phones into whole phone #.
       string16 phone;
-      phone = profile.GetFieldText(PHONE_HOME_COUNTRY_CODE);
-      phone.append(profile.GetFieldText(PHONE_HOME_CITY_CODE));
-      phone.append(profile.GetFieldText(PHONE_HOME_NUMBER));
+      phone = profile.GetInfo(PHONE_HOME_COUNTRY_CODE);
+      phone.append(profile.GetInfo(PHONE_HOME_CITY_CODE));
+      phone.append(profile.GetInfo(PHONE_HOME_NUMBER));
       profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, phone);
-      phone = profile.GetFieldText(PHONE_FAX_COUNTRY_CODE);
-      phone.append(profile.GetFieldText(PHONE_FAX_CITY_CODE));
-      phone.append(profile.GetFieldText(PHONE_FAX_NUMBER));
+      phone = profile.GetInfo(PHONE_FAX_COUNTRY_CODE);
+      phone.append(profile.GetInfo(PHONE_FAX_CITY_CODE));
+      phone.append(profile.GetInfo(PHONE_FAX_NUMBER));
       profile.SetInfo(PHONE_FAX_WHOLE_NUMBER, phone);
       profiles->push_back(profile);
     }
@@ -239,7 +239,7 @@ bool ImportCurrentUserProfiles(std::vector<AutofillProfile>* profiles,
       RegKey key(HKEY_CURRENT_USER, key_name.c_str(), KEY_READ);
       CreditCard credit_card;
       if (ImportSingleProfile(&credit_card, &key, reg_to_field)) {
-        string16 cc_number = credit_card.GetFieldText(CREDIT_CARD_NUMBER);
+        string16 cc_number = credit_card.GetInfo(CREDIT_CARD_NUMBER);
         if (!cc_number.empty())
           credit_cards->push_back(credit_card);
       }

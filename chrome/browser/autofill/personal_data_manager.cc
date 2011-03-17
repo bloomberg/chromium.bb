@@ -98,10 +98,10 @@ bool IsValidZip(const string16& value) {
 // filled.  No verification of validity of the contents is preformed.  This is
 // and existence check only.
 bool IsMinimumAddress(const AutofillProfile& profile) {
-  return !profile.GetFieldText(ADDRESS_HOME_LINE1).empty() &&
-         !profile.GetFieldText(ADDRESS_HOME_CITY).empty() &&
-         !profile.GetFieldText(ADDRESS_HOME_STATE).empty() &&
-         !profile.GetFieldText(ADDRESS_HOME_ZIP).empty();
+  return !profile.GetInfo(ADDRESS_HOME_LINE1).empty() &&
+         !profile.GetInfo(ADDRESS_HOME_CITY).empty() &&
+         !profile.GetInfo(ADDRESS_HOME_STATE).empty() &&
+         !profile.GetInfo(ADDRESS_HOME_ZIP).empty();
 }
 
 // Whether we have already logged the number of profiles this session.
@@ -262,7 +262,7 @@ bool PersonalDataManager::ImportFormData(
           if (group == AutofillType::PHONE_FAX)
             number_type = PHONE_FAX_NUMBER;
 
-          string16 stored_number = imported_profile->GetFieldText(number_type);
+          string16 stored_number = imported_profile->GetInfo(number_type);
           if (stored_number.size() ==
                   static_cast<size_t>(PhoneNumber::kPrefixLength) &&
               value.size() == static_cast<size_t>(PhoneNumber::kSuffixLength)) {
@@ -297,7 +297,7 @@ bool PersonalDataManager::ImportFormData(
   }
 
   if (local_imported_credit_card.get() &&
-      !CreditCard::IsCreditCardNumber(local_imported_credit_card->GetFieldText(
+      !CreditCard::IsCreditCardNumber(local_imported_credit_card->GetInfo(
           CREDIT_CARD_NUMBER))) {
     local_imported_credit_card.reset();
   }
@@ -658,19 +658,19 @@ bool PersonalDataManager::IsValidLearnableProfile(
   if (!IsMinimumAddress(profile))
     return false;
 
-  string16 email = profile.GetFieldText(EMAIL_ADDRESS);
+  string16 email = profile.GetInfo(EMAIL_ADDRESS);
   if (!email.empty() && !IsValidEmail(email))
     return false;
 
   // Reject profiles with invalid US state information.
-  string16 state = profile.GetFieldText(ADDRESS_HOME_STATE);
+  string16 state = profile.GetInfo(ADDRESS_HOME_STATE);
   if (profile.CountryCode() == "US" &&
       !state.empty() && !autofill::IsValidState(state)) {
     return false;
   }
 
   // Reject profiles with invalid US zip information.
-  string16 zip = profile.GetFieldText(ADDRESS_HOME_ZIP);
+  string16 zip = profile.GetInfo(ADDRESS_HOME_ZIP);
   if (profile.CountryCode() == "US" && !zip.empty() && !IsValidZip(zip))
     return false;
 

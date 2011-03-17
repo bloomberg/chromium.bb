@@ -220,7 +220,7 @@ void CreditCard::FindInfoMatches(AutofillFieldType type,
   }
 }
 
-string16 CreditCard::GetFieldText(AutofillFieldType type) const {
+string16 CreditCard::GetInfo(AutofillFieldType type) const {
   switch (type) {
     case CREDIT_CARD_NAME:
       return name_on_card();
@@ -277,7 +277,7 @@ string16 CreditCard::GetPreviewText(AutofillFieldType type) const {
       return string16();
 
     default:
-      return GetFieldText(type);
+      return GetInfo(type);
   }
 }
 
@@ -411,8 +411,8 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
                                       CREDIT_CARD_EXP_MONTH,
                                       CREDIT_CARD_EXP_4_DIGIT_YEAR };
   for (size_t index = 0; index < arraysize(types); ++index) {
-    int comparison = GetFieldText(types[index]).compare(
-        credit_card.GetFieldText(types[index]));
+    int comparison = GetInfo(types[index]).compare(
+        credit_card.GetInfo(types[index]));
     if (comparison != 0)
       return comparison;
   }
@@ -641,15 +641,15 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
       << " "
       << credit_card.guid()
       << " "
-      << UTF16ToUTF8(credit_card.GetFieldText(CREDIT_CARD_NAME))
+      << UTF16ToUTF8(credit_card.GetInfo(CREDIT_CARD_NAME))
       << " "
-      << UTF16ToUTF8(credit_card.GetFieldText(CREDIT_CARD_TYPE))
+      << UTF16ToUTF8(credit_card.GetInfo(CREDIT_CARD_TYPE))
       << " "
-      << UTF16ToUTF8(credit_card.GetFieldText(CREDIT_CARD_NUMBER))
+      << UTF16ToUTF8(credit_card.GetInfo(CREDIT_CARD_NUMBER))
       << " "
-      << UTF16ToUTF8(credit_card.GetFieldText(CREDIT_CARD_EXP_MONTH))
+      << UTF16ToUTF8(credit_card.GetInfo(CREDIT_CARD_EXP_MONTH))
       << " "
-      << UTF16ToUTF8(credit_card.GetFieldText(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+      << UTF16ToUTF8(credit_card.GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 }
 
 // These values must match the values in WebKitClientImpl in webkit/glue. We

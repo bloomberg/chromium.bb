@@ -97,7 +97,7 @@ void NameInfo::FindInfoMatches(AutofillFieldType type,
   }
 }
 
-string16 NameInfo::GetFieldText(AutofillFieldType type) const {
+string16 NameInfo::GetInfo(AutofillFieldType type) const {
   if (type == NAME_FIRST)
     return first();
 
@@ -406,7 +406,7 @@ void EmailInfo::FindInfoMatches(AutofillFieldType type,
   }
 }
 
-string16 EmailInfo::GetFieldText(AutofillFieldType type) const {
+string16 EmailInfo::GetInfo(AutofillFieldType type) const {
   if (type == EMAIL_ADDRESS)
     return email_;
 
@@ -461,7 +461,7 @@ void CompanyInfo::FindInfoMatches(AutofillFieldType type,
   }
 }
 
-string16 CompanyInfo::GetFieldText(AutofillFieldType type) const {
+string16 CompanyInfo::GetInfo(AutofillFieldType type) const {
   if (type == COMPANY_NAME)
     return company_name_;
 

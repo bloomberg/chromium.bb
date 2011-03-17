@@ -53,7 +53,7 @@ std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
       AutofillFieldType type = kProfileFieldTypes[j];
       result += AutofillType::FieldTypeToString(type);
       result += kFieldSeparator;
-      result += UTF16ToUTF8(profiles[i]->GetFieldText(type));
+      result += UTF16ToUTF8(profiles[i]->GetInfo(type));
       result += "\n";
     }
   }

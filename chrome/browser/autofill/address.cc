@@ -117,7 +117,7 @@ void Address::FindInfoMatches(AutofillFieldType type,
   }
 }
 
-string16 Address::GetFieldText(AutofillFieldType type) const {
+string16 Address::GetInfo(AutofillFieldType type) const {
   if (type == ADDRESS_HOME_LINE1)
     return line1_;
 

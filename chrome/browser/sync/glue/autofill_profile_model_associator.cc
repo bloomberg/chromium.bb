@@ -62,8 +62,8 @@ bool AutofillProfileModelAssociator::TraverseAndAssociateChromeAutofillProfiles(
         all_profiles_from_db.begin(); ix != all_profiles_from_db.end(); ++ix) {
       AutofillProfile* p = *ix;
       VLOG(2) << "[AUTOFILL MIGRATION]  "
-              << p->GetFieldText(NAME_FIRST)
-              << p->GetFieldText(NAME_LAST)
+              << p->GetInfo(NAME_FIRST)
+              << p->GetInfo(NAME_LAST)
               << p->guid();
     }
   }
@@ -90,8 +90,8 @@ bool AutofillProfileModelAssociator::TraverseAndAssociateChromeAutofillProfiles(
         current_profiles->find(guid) == current_profiles->end()) {
       VLOG(2) << "[AUTOFILL MIGRATION]"
               << " Found in sync db: "
-              << (*ix)->GetFieldText(NAME_FIRST)
-              << (*ix)->GetFieldText(NAME_LAST)
+              << (*ix)->GetInfo(NAME_FIRST)
+              << (*ix)->GetInfo(NAME_LAST)
               << (*ix)->guid()
               << " so associating with node id " << node.GetId();
       const sync_pb::AutofillProfileSpecifics& autofill(
@@ -210,7 +210,7 @@ bool AutofillProfileModelAssociator::DisassociateModels() {
 bool AutofillProfileModelAssociator::MergeField(FormGroup* f,
     AutofillFieldType t,
     const std::string& specifics_field) {
-  if (UTF16ToUTF8(f->GetFieldText(t)) == specifics_field)
+  if (UTF16ToUTF8(f->GetInfo(t)) == specifics_field)
     return false;
   f->SetInfo(t, UTF8ToUTF16(specifics_field));
   return true;
@@ -323,8 +323,8 @@ bool AutofillProfileModelAssociator::MakeNewAutofillProfileSyncNodeIfNeeded(
     current_profiles->insert(autofill_specifics.guid());
     VLOG(2) << "[AUTOFILL MIGRATION]"
             << "Found in sync db but with a different guid: "
-            << UTF16ToUTF8(profile.GetFieldText(NAME_FIRST))
-            << UTF16ToUTF8(profile.GetFieldText(NAME_LAST))
+            << UTF16ToUTF8(profile.GetInfo(NAME_FIRST))
+            << UTF16ToUTF8(profile.GetInfo(NAME_LAST))
             << "New guid " << autofill_specifics.guid() << " sync node id "
             << sync_node_id << " so associating. Profile to be deleted "
             << profile.guid();
@@ -342,8 +342,8 @@ bool AutofillProfileModelAssociator::MakeNewAutofillProfileSyncNodeIfNeeded(
     node.SetTitle(UTF8ToWide(profile.guid()));
     VLOG(2) << "[AUTOFILL MIGRATION]"
             << "NOT Found in sync db  "
-            << UTF16ToUTF8(profile.GetFieldText(NAME_FIRST))
-            << UTF16ToUTF8(profile.GetFieldText(NAME_LAST))
+            << UTF16ToUTF8(profile.GetInfo(NAME_FIRST))
+            << UTF16ToUTF8(profile.GetInfo(NAME_LAST))
             << profile.guid()
             << " so creating a new sync node. Sync node id "
             << node.GetId();
