@@ -53,10 +53,6 @@ def GetTranslatorBinaries():
   toolchain_lib_dir = '%s/libs-%s/' % (toolchain_dir, arch_str)
   toolchain_native_libs = [ env.File(toolchain_lib_dir + x)
                             for x in ['crt1.o',
-                                      'crtbegin.o',
-                                      'crtend.o',
-                                      'crti.o',
-                                      'crtn.o',
                                       'libcrt_platform.a',
                                       'libgcc.a',
                                       'libgcc_eh.a']]
