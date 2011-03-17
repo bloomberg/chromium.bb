@@ -82,7 +82,7 @@ class WifiDataProviderCommon
   // WifiDataProviderImplBase implementation
   virtual bool StartDataProvider();
   virtual void StopDataProvider();
-  virtual bool GetData(WifiData *data);
+  virtual bool GetData(WifiData* data);
 
  protected:
   virtual ~WifiDataProviderCommon();

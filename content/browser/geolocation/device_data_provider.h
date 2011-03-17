@@ -230,6 +230,10 @@ class DeviceDataProviderImplBase : public DeviceDataProviderImplBaseHack {
     return MessageLoop::current() == this->client_loop_;
   }
 
+  MessageLoop* client_loop() const {
+    return client_loop_;
+  }
+
  private:
   void NotifyListenersInClientLoop() {
     DCHECK(CalledOnClientThread());

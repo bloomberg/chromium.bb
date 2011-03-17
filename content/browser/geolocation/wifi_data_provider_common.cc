@@ -39,7 +39,7 @@ void WifiDataProviderCommon::StopDataProvider() {
   Stop();
 }
 
-bool WifiDataProviderCommon::GetData(WifiData *data) {
+bool WifiDataProviderCommon::GetData(WifiData* data) {
   DCHECK(CalledOnClientThread());
   DCHECK(data);
   base::AutoLock lock(data_mutex_);
