@@ -5639,8 +5639,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_TAB_CXMENU_DUPLICATE" desc="The label of the 'Duplicate' Tab context menu item.">
           Duplicate
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="The label of the 'Close Tab' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="The label of the 'Close Tab' Tab context menu item. Used when closing a single tab.">
           Close tab
+        </message>
+        <message name="IDS_TAB_CXMENU_CLOSETABS" desc="The label of the 'Close Tab' Tab context menu item. Used when closing more than one tab.">
+          Close tabs
         </message>
         <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="The label of the 'Close Other Tabs' Tab context menu item.">
           Close other tabs
@@ -5648,11 +5651,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="The label of the 'Close Tabs to the Right' Tab context menu item.">
           Close tabs to the right
         </message>
-        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="The label of the tab context menu item for pinning a tab.">
+        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="The label of the tab context menu item for pinning a single tab.">
           Pin tab
         </message>
-        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="The label of the tab context menu item for unpinning a tab.">
+        <message name="IDS_TAB_CXMENU_PIN_TABS" desc="The label of the tab context menu item for pinning more than one tab.">
+          Pin tabs
+        </message>
+        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="The label of the tab context menu item for unpinning a single tab.">
           Unpin tab
+        </message>
+        <message name="IDS_TAB_CXMENU_UNPIN_TABS" desc="The label of the tab context menu item for unpinning multiple tab.">
+          Unpin tabs
         </message>
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark all tabs...
@@ -5674,6 +5683,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_TAB_CXMENU_CLOSETAB" desc="In Title Case: The label of the 'Close Tab' Tab context menu item.">
           Close Tab
         </message>
+        <message name="IDS_TAB_CXMENU_CLOSETABS" desc="In Title Case: The label of the 'Close Tab' Tab context menu item when more than one tab is selected.">
+          Close Tabs
+        </message>
         <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="In Title Case: The label of the 'Close Other Tabs' Tab context menu item.">
           Close Other Tabs
         </message>
@@ -5683,8 +5695,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_TAB_CXMENU_PIN_TAB" desc="In Title Case: The label of the tab context menu item for pinning a tab.">
           Pin Tab
         </message>
+        <message name="IDS_TAB_CXMENU_PIN_TABS" desc="In Title Case: The label of the tab context menu item for pinning multiple tabs.">
+          Pin Tabs
+        </message>
         <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="In Title Case: The label of the tab context menu item for unpinning a tab.">
           Unpin Tab
+        </message>
+        <message name="IDS_TAB_CXMENU_UNPIN_TABS" desc="In Title Case: The label of the tab context menu item for unpinning multiple tabs.">
+          Unpin Tabs
         </message>
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="In Title Case: The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark All Tabs...

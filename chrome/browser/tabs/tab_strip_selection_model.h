@@ -58,7 +58,7 @@ class TabStripSelectionModel {
   void SetSelectedIndex(int index);
 
   // Returns true if |index| is selected.
-  bool IsSelected(int index);
+  bool IsSelected(int index) const;
 
   // Adds |index| to the selection. This does not change the active or anchor
   // indices.

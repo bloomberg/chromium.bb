@@ -245,6 +245,7 @@ class TabStripModel : public NotificationObserver {
   void MoveSelectedTabsTo(int index);
 
   // Returns the currently selected TabContents, or NULL if there is none.
+  // TODO(sky): rename to GetActiveTabContents.
   TabContentsWrapper* GetSelectedTabContents() const;
 
   // Returns the TabContentsWrapper at the specified index, or NULL if there is
@@ -375,10 +376,14 @@ class TabStripModel : public NotificationObserver {
   void ToggleSelectionAt(int index);
 
   // Returns true if the tab at |index| is selected.
-  bool IsTabSelected(int index);
+  bool IsTabSelected(int index) const;
 
   // Sets the selection to match that of |source|.
   void SetSelectionFromModel(const TabStripSelectionModel& source);
+
+  const TabStripSelectionModel& selection_model() const {
+    return selection_model_;
+  }
 
   // Command level API /////////////////////////////////////////////////////////
 
@@ -391,8 +396,8 @@ class TabStripModel : public NotificationObserver {
                       PageTransition::Type transition,
                       int add_types);
 
-  // Closes the selected TabContents.
-  void CloseSelectedTab();
+  // Closes the selected tabs.
+  void CloseSelectedTabs();
 
   // Select adjacent tabs
   void SelectNextTab();
@@ -423,7 +428,8 @@ class TabStripModel : public NotificationObserver {
     CommandLast
   };
 
-  // Returns true if the specified command is enabled.
+  // Returns true if the specified command is enabled. If |context_index| is
+  // selected the response applies to all selected tabs.
   bool IsContextMenuCommandEnabled(int context_index,
                                    ContextMenuCommand command_id) const;
 
@@ -432,7 +438,8 @@ class TabStripModel : public NotificationObserver {
                                    ContextMenuCommand command_id) const;
 
   // Performs the action associated with the specified command for the given
-  // TabStripModel index |context_index|.
+  // TabStripModel index |context_index|.  If |context_index| is selected the
+  // command applies to all selected tabs.
   void ExecuteContextMenuCommand(int context_index,
                                  ContextMenuCommand command_id);
 
@@ -441,6 +448,10 @@ class TabStripModel : public NotificationObserver {
   // descending order.
   std::vector<int> GetIndicesClosedByCommand(int index,
                                              ContextMenuCommand id) const;
+
+  // Returns true if 'CommandTogglePinned' will pin. |index| is the index
+  // supplied to |ExecuteContextMenuCommand|.
+  bool WillContextMenuPin(int index);
 
   // Overridden from notificationObserver:
   virtual void Observe(NotificationType type,
@@ -454,6 +465,11 @@ class TabStripModel : public NotificationObserver {
  private:
   // We cannot be constructed without a delegate.
   TabStripModel();
+
+  // If |index| is selected all the selected indices are returned, otherwise a
+  // vector with |index| is returned. This is used when executing commands to
+  // determine which indices the command applies to.
+  std::vector<int> GetIndicesForCommand(int index) const;
 
   // Returns true if the specified TabContents is a New Tab at the end of the
   // TabStrip. We check for this because opener relationships are _not_

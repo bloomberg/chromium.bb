@@ -585,7 +585,7 @@ void TabStripModel::ToggleSelectionAt(int index) {
   NotifySelectionChanged(old_selection);
 }
 
-bool TabStripModel::IsTabSelected(int index) {
+bool TabStripModel::IsTabSelected(int index) const {
   DCHECK(ContainsIndex(index));
   return selection_model_.IsSelected(index);
 }
@@ -666,9 +666,9 @@ void TabStripModel::AddTabContents(TabContentsWrapper* contents,
   }
 }
 
-void TabStripModel::CloseSelectedTab() {
-  // TODO: this should close all selected tabs.
-  CloseTabContentsAt(selected_index(), CLOSE_CREATE_HISTORICAL_TAB);
+void TabStripModel::CloseSelectedTabs() {
+  InternalCloseTabs(selection_model_.selected_indices(),
+                    CLOSE_CREATE_HISTORICAL_TAB | CLOSE_USER_GESTURE);
 }
 
 void TabStripModel::SelectNextTab() {
@@ -701,37 +701,55 @@ bool TabStripModel::IsContextMenuCommandEnabled(
   DCHECK(command_id > CommandFirst && command_id < CommandLast);
   switch (command_id) {
     case CommandNewTab:
+      return true;
+
     case CommandCloseTab:
       return delegate_->CanCloseTab();
-    case CommandReload:
-      if (TabContentsWrapper* contents = GetTabContentsAt(context_index)) {
-        return contents->tab_contents()->
-            delegate()->CanReloadContents(contents->tab_contents());
-      } else {
-        return false;
+
+    case CommandReload: {
+      std::vector<int> indices = GetIndicesForCommand(context_index);
+      for (size_t i = 0; i < indices.size(); ++i) {
+        TabContentsWrapper* tab = GetTabContentsAt(indices[i]);
+        if (tab && tab->tab_contents()->delegate()->CanReloadContents(
+                tab->tab_contents())) {
+          return true;
+        }
       }
-    case CommandCloseOtherTabs: {
-      int mini_tab_count = IndexOfFirstNonMiniTab();
-          int non_mini_tab_count = count() - mini_tab_count;
-      // Close other doesn't effect mini-tabs.
-      return non_mini_tab_count > 1 ||
-          (non_mini_tab_count == 1 && context_index != mini_tab_count);
+      return false;
     }
+
+    case CommandCloseOtherTabs:
     case CommandCloseTabsToRight:
-      // Close doesn't effect mini-tabs.
-      return count() != IndexOfFirstNonMiniTab() &&
-          context_index < (count() - 1);
-    case CommandDuplicate:
-      return delegate_->CanDuplicateContentsAt(context_index);
+      return !GetIndicesClosedByCommand(context_index, command_id).empty();
+
+    case CommandDuplicate: {
+      std::vector<int> indices = GetIndicesForCommand(context_index);
+      for (size_t i = 0; i < indices.size(); ++i) {
+        if (delegate_->CanDuplicateContentsAt(indices[i]))
+          return true;
+      }
+      return false;
+    }
+
     case CommandRestoreTab:
       return delegate_->CanRestoreTab();
-    case CommandTogglePinned:
-      return !IsAppTab(context_index);
+
+    case CommandTogglePinned: {
+      std::vector<int> indices = GetIndicesForCommand(context_index);
+      for (size_t i = 0; i < indices.size(); ++i) {
+        if (!IsAppTab(indices[i]))
+          return true;
+      }
+      return false;
+    }
+
     case CommandBookmarkAllTabs:
       return browser_defaults::bookmarks_enabled &&
           delegate_->CanBookmarkAllTabs();
+
     case CommandUseVerticalTabs:
       return true;
+
     default:
       NOTREACHED();
   }
@@ -760,22 +778,57 @@ void TabStripModel::ExecuteContextMenuCommand(
                                 profile_);
       delegate()->AddBlankTabAt(context_index + 1, true);
       break;
-    case CommandReload:
+
+    case CommandReload: {
       UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_Reload"),
                                 profile_);
-      GetContentsAt(context_index)->controller().Reload(true);
+      std::vector<int> indices = GetIndicesForCommand(context_index);
+      for (size_t i = 0; i < indices.size(); ++i) {
+        TabContentsWrapper* tab = GetTabContentsAt(indices[i]);
+        if (tab && tab->tab_contents()->delegate()->CanReloadContents(
+                tab->tab_contents())) {
+          tab->controller().Reload(true);
+        }
+      }
       break;
-    case CommandDuplicate:
+    }
+
+    case CommandDuplicate: {
       UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_Duplicate"),
                                 profile_);
-      delegate_->DuplicateContentsAt(context_index);
+      std::vector<int> indices = GetIndicesForCommand(context_index);
+      // Copy the TabContents off as the indices will change as tabs are
+      // duplicated.
+      std::vector<TabContentsWrapper*> tabs;
+      for (size_t i = 0; i < indices.size(); ++i)
+        tabs.push_back(GetTabContentsAt(indices[i]));
+      for (size_t i = 0; i < tabs.size(); ++i) {
+        int index = GetIndexOfTabContents(tabs[i]);
+        if (index != -1 && delegate_->CanDuplicateContentsAt(index))
+          delegate_->DuplicateContentsAt(index);
+      }
       break;
-    case CommandCloseTab:
+    }
+
+    case CommandCloseTab: {
       UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_CloseTab"),
                                 profile_);
-      CloseTabContentsAt(context_index, CLOSE_CREATE_HISTORICAL_TAB |
-                         CLOSE_USER_GESTURE);
+      std::vector<int> indices = GetIndicesForCommand(context_index);
+      // Copy the TabContents off as the indices will change as we remove
+      // things.
+      std::vector<TabContentsWrapper*> tabs;
+      for (size_t i = 0; i < indices.size(); ++i)
+        tabs.push_back(GetTabContentsAt(indices[i]));
+      for (size_t i = 0; i < tabs.size() && delegate_->CanCloseTab(); ++i) {
+        int index = GetIndexOfTabContents(tabs[i]);
+        if (index != -1) {
+          CloseTabContentsAt(index,
+                             CLOSE_CREATE_HISTORICAL_TAB | CLOSE_USER_GESTURE);
+        }
+      }
       break;
+    }
+
     case CommandCloseOtherTabs: {
       UserMetrics::RecordAction(
           UserMetricsAction("TabContextMenu_CloseOtherTabs"),
@@ -784,6 +837,7 @@ void TabStripModel::ExecuteContextMenuCommand(
                         CLOSE_CREATE_HISTORICAL_TAB);
       break;
     }
+
     case CommandCloseTabsToRight: {
       UserMetrics::RecordAction(
           UserMetricsAction("TabContextMenu_CloseTabsToRight"),
@@ -792,18 +846,33 @@ void TabStripModel::ExecuteContextMenuCommand(
                         CLOSE_CREATE_HISTORICAL_TAB);
       break;
     }
+
     case CommandRestoreTab: {
       UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_RestoreTab"),
                                 profile_);
       delegate_->RestoreTab();
       break;
     }
+
     case CommandTogglePinned: {
       UserMetrics::RecordAction(
           UserMetricsAction("TabContextMenu_TogglePinned"),
           profile_);
-      SelectTabContentsAt(context_index, true);
-      SetTabPinned(context_index, !IsTabPinned(context_index));
+      std::vector<int> indices = GetIndicesForCommand(context_index);
+      bool pin = WillContextMenuPin(context_index);
+      if (pin) {
+        for (size_t i = 0; i < indices.size(); ++i) {
+          if (!IsAppTab(indices[i]))
+            SetTabPinned(indices[i], true);
+        }
+      } else {
+        // Unpin from the back so that the order is maintained (unpinning can
+        // trigger moving a tab).
+        for (size_t i = indices.size(); i > 0; --i) {
+          if (!IsAppTab(indices[i - 1]))
+            SetTabPinned(indices[i - 1], false);
+        }
+      }
       break;
     }
 
@@ -829,24 +898,41 @@ void TabStripModel::ExecuteContextMenuCommand(
   }
 }
 
-
 std::vector<int> TabStripModel::GetIndicesClosedByCommand(
     int index,
     ContextMenuCommand id) const {
   DCHECK(ContainsIndex(index));
-
-  // NOTE: some callers assume indices are sorted in reverse order.
+  DCHECK(id == CommandCloseTabsToRight || id == CommandCloseOtherTabs);
+  bool is_selected = IsTabSelected(index);
+  int start;
+  if (id == CommandCloseTabsToRight) {
+    if (is_selected) {
+      start = selection_model_.selected_indices()[
+          selection_model_.selected_indices().size() - 1] + 1;
+    } else {
+      start = index + 1;
+    }
+  } else {
+    start = 0;
+  }
+  // NOTE: callers expect the vector to be sorted in descending order.
   std::vector<int> indices;
-
-  if (id != CommandCloseTabsToRight && id != CommandCloseOtherTabs)
-    return indices;
-
-  int start = (id == CommandCloseTabsToRight) ? index + 1 : 0;
   for (int i = count() - 1; i >= start; --i) {
-    if (i != index && !IsMiniTab(i))
+    if (i != index && !IsMiniTab(i) && (!is_selected || !IsTabSelected(i)))
       indices.push_back(i);
   }
   return indices;
+}
+
+bool TabStripModel::WillContextMenuPin(int index) {
+  std::vector<int> indices = GetIndicesForCommand(index);
+  // If all tabs are pinned, then we unpin, otherwise we pin.
+  bool all_pinned = true;
+  for (size_t i = 0; i < indices.size() && all_pinned; ++i) {
+    if (!IsAppTab(index))  // We never change app tabs.
+      all_pinned = IsTabPinned(indices[i]);
+  }
+  return !all_pinned;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -927,6 +1013,15 @@ bool TabStripModel::ContextMenuCommandToBrowserCommand(int cmd_id,
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModel, private:
+
+std::vector<int> TabStripModel::GetIndicesForCommand(int index) const {
+  if (!IsTabSelected(index)) {
+    std::vector<int> indices;
+    indices.push_back(index);
+    return indices;
+  }
+  return selection_model_.selected_indices();
+}
 
 bool TabStripModel::IsNewTabAtEndOfTabStrip(
     TabContentsWrapper* contents) const {

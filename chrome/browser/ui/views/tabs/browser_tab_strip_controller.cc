@@ -36,7 +36,9 @@ class BrowserTabStripController::TabContextMenuContents
   TabContextMenuContents(BaseTab* tab,
                          BrowserTabStripController* controller)
       : ALLOW_THIS_IN_INITIALIZER_LIST(
-          model_(this, controller->IsTabPinned(tab))),
+          model_(this,
+                 controller->model_,
+                 controller->tabstrip_->GetModelIndexOfBaseTab(tab))),
         tab_(tab),
         controller_(controller),
         last_command_(TabStripModel::CommandFirst) {
