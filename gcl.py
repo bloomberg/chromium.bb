@@ -39,7 +39,10 @@ import breakpad  # pylint: disable=W0611
 
 # gcl now depends on gclient.
 from scm import SVN
+
 import gclient_utils
+import owners
+import presubmit_support
 
 __version__ = '1.2'
 
@@ -70,6 +73,7 @@ FILES_CACHE = {}
 DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
 DEFAULT_LINT_IGNORE_REGEX = r"$^"
 
+REVIEWERS_REGEX = r'\s*R=(.+)'
 
 def CheckHomeForFile(filename):
   """Checks the users home dir for the existence of the given file.  Returns
@@ -286,7 +290,10 @@ class ChangeInfo(object):
     self.name = name
     self.issue = int(issue)
     self.patchset = int(patchset)
-    self.description = description
+    self._description = None
+    self._subject = None
+    self._reviewers = None
+    self._set_description(description)
     if files is None:
       files = []
     self._files = files
@@ -297,6 +304,44 @@ class ChangeInfo(object):
     if not self.rietveld:
       # Set the default value.
       self.rietveld = GetCodeReviewSetting('CODE_REVIEW_SERVER')
+
+  def _get_description(self):
+    return self._description
+
+  def _set_description(self, description):
+    # TODO(dpranke): Cloned from git_cl.py. These should be shared.
+    if not description:
+      self._description = description
+      return
+
+    parsed_lines = []
+    reviewers_re = re.compile(REVIEWERS_REGEX)
+    reviewers = ''
+    subject = ''
+    for l in description.splitlines():
+      if not subject:
+        subject = l
+      matched_reviewers = reviewers_re.match(l)
+      if matched_reviewers:
+        reviewers = matched_reviewers.group(1).split(',')
+      parsed_lines.append(l)
+
+    if len(subject) > 100:
+      subject = subject[:97] + '...'
+
+    self._subject = subject
+    self._reviewers = reviewers
+    self._description = '\n'.join(parsed_lines)
+
+  description = property(_get_description, _set_description)
+
+  @property
+  def reviewers(self):
+    return self._reviewers
+
+  @property
+  def subject(self):
+    return self._subject
 
   def NeedsUpload(self):
     return self.needs_upload
@@ -714,8 +759,14 @@ def GenerateDiff(files, root=None):
 
 def OptionallyDoPresubmitChecks(change_info, committing, args):
   if FilterFlag(args, "--no_presubmit") or FilterFlag(args, "--force"):
-    return True
+    return presubmit_support.PresubmitOutput()
   return DoPresubmitChecks(change_info, committing, True)
+
+
+def suggest_reviewers(change_info, affected_files):
+  owners_db = owners.Database(change_info.GetLocalRoot(), fopen=file,
+                              os_path=os.path)
+  return owners_db.reviewers_for([f[1] for f in affected_files])
 
 
 def defer_attributes(a, b):
@@ -797,7 +848,9 @@ def CMDupload(change_info, args):
   if not change_info.GetFiles():
     print "Nothing to upload, changelist is empty."
     return 0
-  if not OptionallyDoPresubmitChecks(change_info, False, args):
+
+  output = OptionallyDoPresubmitChecks(change_info, False, args)
+  if not output.should_continue():
     return 1
   no_watchlists = (FilterFlag(args, "--no_watchlists") or
                    FilterFlag(args, "--no-watchlists"))
@@ -808,6 +861,13 @@ def CMDupload(change_info, args):
 
   upload_arg = ["upload.py", "-y"]
   upload_arg.append("--server=%s" % change_info.rietveld)
+
+  reviewers = change_info.reviewers or output.reviewers
+  if (reviewers and
+      not any(arg.startswith('-r') or arg.startswith('--reviewer') for
+              arg in args)):
+    upload_arg.append('--reviewers=%s' % ','.join(reviewers))
+
   upload_arg.extend(args)
 
   desc_file = ""
@@ -841,14 +901,7 @@ def CMDupload(change_info, args):
     if cc_list:
       upload_arg.append("--cc=" + cc_list)
     upload_arg.append("--description_file=" + desc_file + "")
-    if change_info.description:
-      subject = change_info.description[:77]
-      if subject.find("\r\n") != -1:
-        subject = subject[:subject.find("\r\n")]
-      if subject.find("\n") != -1:
-        subject = subject[:subject.find("\n")]
-      if len(change_info.description) > 77:
-        subject = subject + "..."
+    if change_info.subject:
       upload_arg.append("--message=" + subject)
 
     if GetCodeReviewSetting("PRIVATE") == "True":
@@ -981,7 +1034,7 @@ def CMDcommit(change_info, args):
       revision = re.compile(".*?\nCommitted revision (\d+)",
                             re.DOTALL).match(output).group(1)
       viewvc_url = GetCodeReviewSetting("VIEW_VC")
-      change_info.description = change_info.description + '\n'
+      change_info.description += '\n'
       if viewvc_url:
         change_info.description += "\nCommitted: " + viewvc_url + revision
       change_info.CloseIssue()
@@ -1042,6 +1095,14 @@ def CMDchange(args):
   file_re = re.compile(r"^[a-z].+\Z", re.IGNORECASE)
   affected_files = [x for x in other_files if file_re.match(x[0])]
   unaffected_files = [x for x in other_files if not file_re.match(x[0])]
+
+  if not change_info.reviewers:
+    suggested_reviewers = suggest_reviewers(change_info, affected_files)
+    if suggested_reviewers:
+      reviewers_re = re.compile(REVIEWERS_REGEX)
+      if not any(
+          reviewers_re.match(l) for l in description.splitlines()):
+        description += '\nR=' + ','.join(suggested_reviewers) + '\n'
 
   separator1 = ("\n---All lines above this line become the description.\n"
                 "---Repository Root: " + change_info.GetLocalRoot() + "\n"
@@ -1164,8 +1225,6 @@ def CMDlint(change_info, args):
 
 def DoPresubmitChecks(change_info, committing, may_prompt):
   """Imports presubmit, then calls presubmit.DoPresubmitChecks."""
-  # Need to import here to avoid circular dependency.
-  import presubmit_support
   root_presubmit = GetCachedFile('PRESUBMIT.py', use_root=True)
   change = presubmit_support.SvnChange(change_info.name,
                                        change_info.description,
@@ -1179,13 +1238,14 @@ def DoPresubmitChecks(change_info, committing, may_prompt):
                                                output_stream=sys.stdout,
                                                input_stream=sys.stdin,
                                                default_presubmit=root_presubmit,
-                                               may_prompt=may_prompt)
+                                               may_prompt=may_prompt,
+                                               tbr=False,
+                                               host_url=change_info.rietveld)
   if not output.should_continue() and may_prompt:
     # TODO(dpranke): move into DoPresubmitChecks(), unify cmd line args.
     print "\nPresubmit errors, can't continue (use --no_presubmit to bypass)"
 
-  # TODO(dpranke): Return the output object and make use of it.
-  return output.should_continue()
+  return output
 
 
 @no_args
