@@ -2,11 +2,11 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include "chrome/renderer/websharedworkerrepository_impl.h"
+#include "content/renderer/websharedworkerrepository_impl.h"
 
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
-#include "chrome/renderer/websharedworker_proxy.h"
+#include "content/renderer/websharedworker_proxy.h"
 
 WebSharedWorkerRepositoryImpl::WebSharedWorkerRepositoryImpl() {}
 

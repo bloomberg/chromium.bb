@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_COMMAND_BUFFER_PROXY_H_
-#define CHROME_RENDERER_COMMAND_BUFFER_PROXY_H_
+#ifndef CONTENT_RENDERER_COMMAND_BUFFER_PROXY_H_
+#define CONTENT_RENDERER_COMMAND_BUFFER_PROXY_H_
 #pragma once
 
 #if defined(ENABLE_GPU)
@@ -128,4 +128,4 @@ class CommandBufferProxy : public gpu::CommandBuffer,
 
 #endif  // ENABLE_GPU
 
-#endif  // CHROME_RENDERER_COMMAND_BUFFER_PROXY_H_
+#endif  // CONTENT_RENDERER_COMMAND_BUFFER_PROXY_H_

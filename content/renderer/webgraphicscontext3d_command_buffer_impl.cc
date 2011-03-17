@@ -4,7 +4,7 @@
 
 #if defined(ENABLE_GPU)
 
-#include "chrome/renderer/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/renderer/webgraphicscontext3d_command_buffer_impl.h"
 
 #include <GLES2/gl2.h>
 #ifndef GL_GLEXT_PROTOTYPES
@@ -19,9 +19,9 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
+#include "content/renderer/gpu_channel_host.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/webplugin_delegate_proxy.h"
+#include "content/renderer/webplugin_delegate_proxy.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
@@ -22,16 +22,15 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/command_buffer_proxy.h"
-#include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "content/common/plugin_messages.h"
 #include "content/plugin/npobject_proxy.h"
 #include "content/plugin/npobject_stub.h"
 #include "content/plugin/npobject_util.h"
-#include "grit/generated_resources.h"
-#include "grit/renderer_resources.h"
+#include "content/renderer/command_buffer_proxy.h"
+#include "content/renderer/plugin_channel_host.h"
+//#include "grit/renderer_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/mime_util.h"
 #include "skia/ext/platform_canvas.h"
@@ -1152,10 +1151,12 @@ void WebPluginDelegateProxy::OnMissingPluginStatus(int status) {
 void WebPluginDelegateProxy::PaintSadPlugin(WebKit::WebCanvas* native_context,
                                             const gfx::Rect& rect) {
   // Lazily load the sad plugin image.
+  /* temporarily disabled by jam
   if (!sad_plugin_) {
     sad_plugin_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_SAD_PLUGIN);
   }
+  */
   if (!sad_plugin_)
     return;
 

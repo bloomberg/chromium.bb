@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_WEBSHAREDWORKER_PROXY_H_
-#define CHROME_RENDERER_WEBSHAREDWORKER_PROXY_H_
+#ifndef CONTENT_RENDERER_WEBSHAREDWORKER_PROXY_H_
+#define CONTENT_RENDERER_WEBSHAREDWORKER_PROXY_H_
 #pragma once
 
 #include "base/basictypes.h"
-#include "chrome/renderer/webworker_base.h"
+#include "content/renderer/webworker_base.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorker.h"
 
@@ -55,4 +55,4 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerProxy);
 };
 
-#endif  // CHROME_RENDERER_WEBSHAREDWORKER_PROXY_H_
+#endif  // CONTENT_RENDERER_WEBSHAREDWORKER_PROXY_H_

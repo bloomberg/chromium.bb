@@ -8,8 +8,8 @@
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/devtools_agent.h"
-#include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/render_view.h"
+#include "content/renderer/plugin_channel_host.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 

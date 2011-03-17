@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/command_buffer_proxy.h"
+
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "base/task.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/command_buffer_proxy.h"
-#include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/render_thread.h"
 #include "content/common/gpu_messages.h"
 #include "content/common/plugin_messages.h"
+#include "content/renderer/plugin_channel_host.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "ui/gfx/size.h"
 

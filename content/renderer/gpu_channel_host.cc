@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/gpu_channel_host.h"
+#include "content/renderer/gpu_channel_host.h"
 
-#include "chrome/renderer/command_buffer_proxy.h"
-#include "chrome/renderer/gpu_video_service_host.h"
 #include "chrome/renderer/render_thread.h"
 #include "content/common/child_process.h"
 #include "content/common/gpu_messages.h"
+#include "content/renderer/command_buffer_proxy.h"
+#include "content/renderer/gpu_video_service_host.h"
 
 GpuChannelHost::GpuChannelHost() : state_(kUnconnected) {
 }

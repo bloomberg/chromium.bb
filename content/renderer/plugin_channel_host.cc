@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/plugin_channel_host.h"
+#include "content/renderer/plugin_channel_host.h"
 
 #include "content/common/plugin_messages.h"
 #include "content/plugin/npobject_base.h"
