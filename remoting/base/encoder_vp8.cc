@@ -115,23 +115,20 @@ static int RoundToTwosMultiple(int x) {
   return x & (~1);
 }
 
-// Align the sides of the rectange to multiples of 2.
-static gfx::Rect AlignRect(const gfx::Rect& rect, int width, int height) {
-  CHECK(rect.width() > 0 && rect.height() > 0);
+// Align the sides of the rectangle to multiples of 2 (expanding outwards).
+static gfx::Rect AlignRect(const gfx::Rect& rect) {
   int x = RoundToTwosMultiple(rect.x());
   int y = RoundToTwosMultiple(rect.y());
-  int right = std::min(RoundToTwosMultiple(rect.right() + 1),
-                       RoundToTwosMultiple(width));
-  int bottom = std::min(RoundToTwosMultiple(rect.bottom() + 1),
-                        RoundToTwosMultiple(height));
+  int right = RoundToTwosMultiple(rect.right() + 1);
+  int bottom = RoundToTwosMultiple(rect.bottom() + 1);
+  return gfx::Rect(x, y, right - x, bottom - y);
+}
 
-  // Do the final check to make sure the width and height are not negative.
-  gfx::Rect r(x, y, right - x, bottom - y);
-  if (r.width() <= 0 || r.height() <= 0) {
-    r.set_width(0);
-    r.set_height(0);
-  }
-  return r;
+// static
+gfx::Rect EncoderVp8::AlignAndClipRect(const gfx::Rect& rect,
+                                       int width, int height) {
+  gfx::Rect screen(RoundToTwosMultiple(width), RoundToTwosMultiple(height));
+  return screen.Intersect(AlignRect(rect));
 }
 
 bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
@@ -155,9 +152,10 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
 
   DCHECK(updated_rects->empty());
   for (InvalidRects::const_iterator r = rects.begin(); r != rects.end(); ++r) {
-    // Align the rectangle report it as updated.
-    gfx::Rect rect = AlignRect(*r, image_->w, image_->h);
-    updated_rects->push_back(rect);
+    // Align the rectangle, report it as updated.
+    gfx::Rect rect = AlignAndClipRect(*r, image_->w, image_->h);
+    if (!rect.IsEmpty())
+      updated_rects->push_back(rect);
 
     ConvertRGB32ToYUVWithRect(in,
                               y_out,
@@ -223,7 +221,7 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
   act_map.rows = active_map_height_;
   act_map.cols = active_map_width_;
   act_map.active_map = active_map_.get();
-  if(vpx_codec_control(codec_.get(), VP8E_SET_ACTIVEMAP, &act_map)) {
+  if (vpx_codec_control(codec_.get(), VP8E_SET_ACTIVEMAP, &act_map)) {
     LOG(ERROR) << "Unable to apply active map";
   }
 
