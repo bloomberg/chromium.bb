@@ -133,19 +133,27 @@ function onPDFLoad() {
 }
 
 /**
- * Create the PDF plugin or reload the existing one.
- * @param {string} url The PdfPlugin data url.
- * @param {number} pagesCount The expected total pages count.
+ * Update the print preview when new preview data is available.
+ * Create the PDF plugin as needed.
+ * @param {number} pageCount The expected total pages count.
  */
-function createPDFPlugin(url, pagesCount) {
-  if (!hasPDFPlugin) {
-    return;
-  }
-  // Set the expected pages count.
-  if (expectedPageCount != pagesCount) {
-    expectedPageCount = pagesCount;
+function updatePrintPreview(pageCount) {
+  // Set the expected page count.
+  if (expectedPageCount != pageCount) {
+    expectedPageCount = pageCount;
     // Set the initial page range text.
     $('pages').value = '1-' + expectedPageCount;
+  }
+
+  createPDFPlugin();
+}
+
+/**
+ * Create the PDF plugin or reload the existing one.
+ */
+function createPDFPlugin() {
+  if (!hasPDFPlugin) {
+    return;
   }
 
   // Enable the print button.
@@ -165,7 +173,7 @@ function createPDFPlugin(url, pagesCount) {
   var pdfPlugin = document.createElement('object');
   pdfPlugin.setAttribute('id', 'pdf-viewer');
   pdfPlugin.setAttribute('type', 'application/pdf');
-  pdfPlugin.setAttribute('src', url);
+  pdfPlugin.setAttribute('src', 'chrome://print/print.pdf');
   mainView.appendChild(pdfPlugin);
   if (!pdfPlugin.onload) {
     hasPDFPlugin = false;
