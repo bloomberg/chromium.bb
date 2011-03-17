@@ -577,7 +577,7 @@ TEST_F(URLFetcherProtectTest, Overload) {
   // Registers an entry for test url. It only allows 3 requests to be sent
   // in 200 milliseconds.
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(200, 3, 1, 0, 2.0, 0.0, 256));
+      new net::URLRequestThrottlerEntry(200, 3, 1, 2.0, 0.0, 256));
   net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
       url, entry);
 
@@ -599,7 +599,7 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
   // and maximum backoff time is 256 milliseconds.
   // Maximum retries allowed is set to 11.
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(200, 3, 1, 0, 2.0, 0.0, 256));
+      new net::URLRequestThrottlerEntry(200, 3, 1, 2.0, 0.0, 256));
   net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
       url, entry);
 
@@ -621,7 +621,7 @@ TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
   // and maximum backoff time is 150000 milliseconds.
   // Maximum retries allowed is set to 11.
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(200, 3, 100, 0, 2.0, 0.0, 150000));
+      new net::URLRequestThrottlerEntry(200, 3, 100, 2.0, 0.0, 150000));
   // Total time if *not* for not doing automatic backoff would be 150s.
   // In reality it should be "as soon as server responds".
   net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
@@ -665,7 +665,7 @@ TEST_F(URLFetcherCancelTest, ReleasesContext) {
   // The initial backoff is 2 seconds and maximum backoff is 4 seconds.
   // Maximum retries allowed is set to 2.
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(200, 3, 2000, 0, 2.0, 0.0, 4000));
+      new net::URLRequestThrottlerEntry(200, 3, 2000, 2.0, 0.0, 4000));
   net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
       url, entry);
 
@@ -693,7 +693,7 @@ TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
   // Using a sliding window of 4 seconds, and max of 1 request, under a fast
   // run we expect to have a 4 second delay when posting the Start task.
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(4000, 1, 2000, 0, 2.0, 0.0, 4000));
+      new net::URLRequestThrottlerEntry(4000, 1, 2000, 2.0, 0.0, 4000));
   net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
       url, entry);
   // Fake that a request has just started.

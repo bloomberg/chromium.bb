@@ -320,7 +320,7 @@ TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
   // Registers an entry for test url. It only allows 3 requests to be sent
   // in 200 milliseconds.
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(200, 3, 1, 0, 2.0, 0.0, 256));
+      new net::URLRequestThrottlerEntry(200, 3, 1, 2.0, 0.0, 256));
   net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
       url, entry);
 
@@ -343,7 +343,7 @@ TEST_F(CloudPrintURLFetcherRetryBackoffTest, FLAKY_GiveUp) {
   // and maximum backoff time is 256 milliseconds.
   // Maximum retries allowed is set to 11.
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(200, 3, 1, 0, 2.0, 0.0, 256));
+      new net::URLRequestThrottlerEntry(200, 3, 1, 2.0, 0.0, 256));
   net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
       url, entry);
 
