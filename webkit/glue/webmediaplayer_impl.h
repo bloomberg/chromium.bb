@@ -281,10 +281,6 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // Destroy resources held.
   void Destroy();
 
-  // Callback executed after |pipeline_| stops which signals Destroy()
-  // to continue.
-  void PipelineStoppedCallback(media::PipelineStatus status);
-
   // Getter method to |client_|.
   WebKit::WebMediaPlayerClient* GetClient();
 
@@ -327,9 +323,6 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   WebKit::WebMediaPlayerClient* client_;
 
   scoped_refptr<Proxy> proxy_;
-
-  // Used to block Destroy() until Pipeline::Stop() is completed.
-  base::WaitableEvent pipeline_stopped_;
 
 #if WEBKIT_USING_CG
   scoped_ptr<skia::PlatformCanvas> skia_canvas_;

@@ -281,8 +281,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       seeking_(false),
       playback_rate_(0.0f),
       client_(client),
-      proxy_(NULL),
-      pipeline_stopped_(false, false) {
+      proxy_(NULL) {
   // Saves the current message loop.
   DCHECK(!main_loop_);
   main_loop_ = MessageLoop::current();
@@ -884,9 +883,9 @@ void WebMediaPlayerImpl::Destroy() {
   // Make sure to kill the pipeline so there's no more media threads running.
   // Note: stopping the pipeline might block for a long time.
   if (pipeline_) {
-    pipeline_->Stop(NewCallback(this,
-        &WebMediaPlayerImpl::PipelineStoppedCallback));
-    pipeline_stopped_.Wait();
+    media::PipelineStatusNotification note;
+    pipeline_->Stop(note.Callback());
+    note.Wait();
   }
 
   message_loop_factory_.reset();
@@ -897,10 +896,6 @@ void WebMediaPlayerImpl::Destroy() {
     proxy_->Detach();
     proxy_ = NULL;
   }
-}
-
-void WebMediaPlayerImpl::PipelineStoppedCallback(PipelineStatus status) {
-  pipeline_stopped_.Signal();
 }
 
 WebKit::WebMediaPlayerClient* WebMediaPlayerImpl::GetClient() {
