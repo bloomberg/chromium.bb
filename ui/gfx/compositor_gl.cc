@@ -4,9 +4,8 @@
 
 #include "ui/gfx/compositor.h"
 
-#include <GL/gl.h>
-
 #include "app/gfx/gl/gl_context.h"
+#include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/scoped_ptr.h"
 #include "base/basictypes.h"
@@ -18,7 +17,7 @@ namespace ui {
 
 class CompositorGL : public Compositor {
  public:
-  CompositorGL(gfx::AcceleratedWidget widget);
+  explicit CompositorGL(gfx::AcceleratedWidget widget);
 
  private:
   // Overridden from Compositor.
@@ -63,11 +62,9 @@ void CompositorGL::DrawTextureWithTransform(TextureID txt,
 }
 
 void CompositorGL::SaveTransform() {
-  glPushMatrix();
 }
 
 void CompositorGL::RestoreTransform() {
-  glPopMatrix();
 }
 
 // static
