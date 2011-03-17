@@ -17,6 +17,7 @@
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/wrapped_window_proc.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/gfx/size.h"
 
@@ -135,7 +136,7 @@ Clipboard::Clipboard() : create_window_(false) {
     // Make a dummy HWND to be the clipboard's owner.
     WNDCLASSEX wcex = {0};
     wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.lpfnWndProc = ClipboardOwnerWndProc;
+    wcex.lpfnWndProc = base::win::WrappedWindowProc<ClipboardOwnerWndProc>;
     wcex.hInstance = GetModuleHandle(NULL);
     wcex.lpszClassName = L"ClipboardOwnerWindowClass";
     ::RegisterClassEx(&wcex);

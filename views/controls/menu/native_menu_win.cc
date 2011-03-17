@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
+#include "base/win/wrapped_window_proc.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -76,7 +77,7 @@ class NativeMenuWin::MenuHostWindow {
     WNDCLASSEX wcex = {0};
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_DBLCLKS;
-    wcex.lpfnWndProc = &MenuHostWindowProc;
+    wcex.lpfnWndProc = base::win::WrappedWindowProc<&MenuHostWindowProc>;
     wcex.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);
     wcex.lpszClassName = kWindowClassName;
     ATOM clazz = RegisterClassEx(&wcex);

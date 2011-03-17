@@ -13,6 +13,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_gdi_object.h"
+#include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/accessibility/browser_accessibility_win.h"
@@ -511,7 +512,7 @@ HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
     WNDCLASSEX wcex;
     wcex.cbSize         = sizeof(WNDCLASSEX);
     wcex.style          = CS_DBLCLKS;
-    wcex.lpfnWndProc    = PluginWrapperWindowProc;
+    wcex.lpfnWndProc    = base::win::WrappedWindowProc<PluginWrapperWindowProc>;
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = GetModuleHandle(NULL);
@@ -1592,7 +1593,8 @@ gfx::PluginWindowHandle RenderWidgetHostViewWin::AcquireCompositingSurface() {
     WNDCLASSEX wcex;
     wcex.cbSize         = sizeof(WNDCLASSEX);
     wcex.style          = 0;
-    wcex.lpfnWndProc    = CompositorHostWindowProc;
+    wcex.lpfnWndProc    =
+        base::win::WrappedWindowProc<CompositorHostWindowProc>;
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = GetModuleHandle(NULL);

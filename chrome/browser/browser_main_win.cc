@@ -19,10 +19,12 @@
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
+#include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/ui/views/uninstall_view.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/result_codes.h"
@@ -42,9 +44,22 @@
 #include "views/window/window.h"
 
 namespace {
+
 typedef HRESULT (STDAPICALLTYPE* RegisterApplicationRestartProc)(
     const wchar_t* command_line,
     DWORD flags);
+
+void InitializeWindowProcExceptions() {
+  // Get the breakpad pointer from chrome.exe
+  base::win::WinProcExceptionFilter exception_filter =
+      reinterpret_cast<base::win::WinProcExceptionFilter>(
+          ::GetProcAddress(::GetModuleHandle(
+                               chrome::kBrowserProcessExecutableName),
+                           "CrashForException"));
+  exception_filter = base::win::SetWinProcExceptionFilter(exception_filter);
+  DCHECK(!exception_filter);
+}
+
 }  // namespace
 
 void DidEndMainMessageLoop() {
@@ -264,6 +279,9 @@ class BrowserMainPartsWin : public BrowserMainParts {
     if (!parameters().ui_task) {
       // Override the configured locale with the user's preferred UI language.
       l10n_util::OverrideLocaleWithUILanguageList();
+
+      // Make sure that we know how to handle exceptions from the message loop.
+      InitializeWindowProcExceptions();
     }
   }
 

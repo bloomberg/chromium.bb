@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/status_icons/status_tray_win.h"
 
+#include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "ui/base/win/hwnd_util.h"
@@ -16,7 +17,7 @@ StatusTrayWin::StatusTrayWin()
   HINSTANCE hinst = GetModuleHandle(NULL);
   WNDCLASSEX wc = {0};
   wc.cbSize = sizeof(wc);
-  wc.lpfnWndProc = StatusTrayWin::WndProcStatic;
+  wc.lpfnWndProc = base::win::WrappedWindowProc<StatusTrayWin::WndProcStatic>;
   wc.hInstance = hinst;
   wc.lpszClassName = chrome::kStatusTrayWindowClass;
   ATOM clazz = RegisterClassEx(&wc);

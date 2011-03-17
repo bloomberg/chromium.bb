@@ -6,9 +6,10 @@
 
 #include <list>
 
-#include "ui/base/win/hwnd_util.h"
 #include "base/singleton.h"
 #include "base/string_number_conversions.h"
+#include "base/win/wrapped_window_proc.h"
+#include "ui/base/win/hwnd_util.h"
 
 namespace ui {
 
@@ -209,7 +210,7 @@ std::wstring WindowImpl::GetWindowClassName() {
   WNDCLASSEX class_ex;
   class_ex.cbSize = sizeof(WNDCLASSEX);
   class_ex.style = class_info.style;
-  class_ex.lpfnWndProc = &WindowImpl::WndProc;
+  class_ex.lpfnWndProc = base::win::WrappedWindowProc<&WindowImpl::WndProc>;
   class_ex.cbClsExtra = 0;
   class_ex.cbWndExtra = 0;
   class_ex.hInstance = NULL;

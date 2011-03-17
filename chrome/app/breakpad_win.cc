@@ -438,6 +438,18 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
                                flags, exit_now);
 }
 
+// Crashes the process after generating a dump for the provided exception. Note
+// that the crash reporter should be initialized before calling this function
+// for it to do anything.
+extern "C" int __declspec(dllexport) CrashForException(
+    EXCEPTION_POINTERS* info) {
+  if (g_breakpad) {
+    g_breakpad->WriteMinidumpForException(info);
+    ::ExitProcess(ResultCodes::KILLED);
+  }
+  return EXCEPTION_CONTINUE_SEARCH;
+}
+
 // Determine whether configuration management allows loading the crash reporter.
 // Since the configuration management infrastructure is not initialized at this
 // point, we read the corresponding registry key directly. The return status
