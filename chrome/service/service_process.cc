@@ -175,23 +175,14 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
 
 #if defined(ENABLE_REMOTING)
   // Load media codecs, required by the Chromoting host
-  bool initialized_media_library = false;
-#if defined(OS_MACOSX)
-  FilePath bundle_path = base::mac::MainAppBundlePath();
-
-  initialized_media_library =
-     media::InitializeMediaLibrary(bundle_path.Append("Libraries"));
-#else
   FilePath module_path;
-  initialized_media_library =
-      PathService::Get(base::DIR_MODULE, &module_path) &&
-      media::InitializeMediaLibrary(module_path);
-#endif
-
-  // Initialize chromoting host manager.
-  remoting_host_manager_ = new remoting::ChromotingHostManager(this);
-  remoting_host_manager_->Initialize(message_loop,
-                                     file_thread_->message_loop_proxy());
+  if (PathService::Get(chrome::DIR_MEDIA_LIBS, &module_path) &&
+      media::InitializeMediaLibrary(module_path)) {
+    // Initialize chromoting host manager.
+    remoting_host_manager_ = new remoting::ChromotingHostManager(this);
+    remoting_host_manager_->Initialize(message_loop,
+                                       file_thread_->message_loop_proxy());
+  }
 #endif // ENABLE_REMOTING
 
   // Enable Cloud Print if needed. First check the command-line.
@@ -359,7 +350,3 @@ ServiceProcess::~ServiceProcess() {
   Teardown();
   g_service_process = NULL;
 }
-
-// Disable refcounting for runnable method because it is really not needed
-// when we post tasks on the main message loop.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(ServiceProcess);

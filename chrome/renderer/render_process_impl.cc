@@ -131,21 +131,18 @@ RenderProcessImpl::RenderProcessImpl()
     base::StatisticsRecorder::set_dump_on_exit(true);
   }
 
-#if defined(OS_MACOSX)
-  FilePath bundle_path = base::mac::MainAppBundlePath();
+  // Note that under Linux, the media library will normally already have
+  // been initialized by the Zygote before this instance became a Renderer.
+  FilePath media_path;
+  if (PathService::Get(chrome::DIR_MEDIA_LIBS, &media_path))
+    media::InitializeMediaLibrary(media_path);
 
-  initialized_media_library_ =
-     media::InitializeMediaLibrary(bundle_path.Append("Libraries"));
-#else
-  FilePath module_path;
-  initialized_media_library_ =
-      PathService::Get(base::DIR_MODULE, &module_path) &&
-      media::InitializeMediaLibrary(module_path);
-
+#if !defined(OS_MACOSX)
   // TODO(hclam): Add more checks here. Currently this is not used.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (media::IsMediaLibraryInitialized() &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableOpenMax)) {
-    media::InitializeOpenMaxLibrary(module_path);
+    media::InitializeOpenMaxLibrary(media_path);
   }
 #endif
 
@@ -277,7 +274,7 @@ bool RenderProcessImpl::UseInProcessPlugins() const {
 }
 
 bool RenderProcessImpl::HasInitializedMediaLibrary() const {
-  return initialized_media_library_;
+  return media::IsMediaLibraryInitialized();
 }
 
 bool RenderProcessImpl::GetTransportDIBFromCache(TransportDIB** mem,

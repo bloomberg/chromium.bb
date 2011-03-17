@@ -195,6 +195,14 @@ bool PathProvider(int key, FilePath* result) {
       if (!GetInternalPluginsDirectory(&cur))
         return false;
       break;
+    case chrome::DIR_MEDIA_LIBS:
+#if defined(OS_MACOSX)
+      *result = base::mac::MainAppBundlePath();
+      *result = result->Append("Libraries");
+      return true;
+#else
+      return PathService::Get(chrome::DIR_APP, result);
+#endif
     case chrome::FILE_LOCAL_STATE:
       if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;

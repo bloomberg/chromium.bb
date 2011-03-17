@@ -142,6 +142,10 @@ class ServiceProcess : public CloudPrintProxy::Client,
   DISALLOW_COPY_AND_ASSIGN(ServiceProcess);
 };
 
+// Disable refcounting for runnable method because it is really not needed
+// when we post tasks on the main message loop.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(ServiceProcess);
+
 extern ServiceProcess* g_service_process;
 
 #endif  // CHROME_SERVICE_SERVICE_PROCESS_H_

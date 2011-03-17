@@ -37,6 +37,7 @@
 #include "base/sys_info.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_descriptors.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "content/common/font_config_ipc_linux.h"
@@ -597,9 +598,12 @@ static void PreSandboxInit() {
   // cached and there's no more need to access the file system.
   scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
 
-  FilePath module_path;
-  if (PathService::Get(base::DIR_MODULE, &module_path))
-    media::InitializeMediaLibrary(module_path);
+  // Each Renderer we spawn will re-attempt initialization of the media
+  // libraries, at which point failure will be detected and handled, so
+  // we do not need to cope with initialization failures here.
+  FilePath media_path;
+  if (PathService::Get(chrome::DIR_MEDIA_LIBS, &media_path))
+    media::InitializeMediaLibrary(media_path);
 
   // Remoting requires NSS to function properly. It is not used for other
   // reasons so load NSS only if remoting is enabled.

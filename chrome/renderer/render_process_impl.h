@@ -69,7 +69,6 @@ class RenderProcessImpl : public RenderProcess {
   uint32 transport_dib_next_sequence_number_;
 
   bool in_process_plugins_;
-  bool initialized_media_library_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessImpl);
 };
