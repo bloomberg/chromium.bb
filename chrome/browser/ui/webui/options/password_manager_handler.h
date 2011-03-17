@@ -11,17 +11,19 @@
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
-class PasswordManagerHandler : public OptionsPageUIHandler {
+class PasswordManagerHandler : public OptionsPageUIHandler,
+                               public PasswordStore::Observer {
  public:
   PasswordManagerHandler();
   virtual ~PasswordManagerHandler();
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
-
   virtual void Initialize();
-
   virtual void RegisterMessages();
+
+  // PasswordStore::Observer implementation.
+  virtual void OnLoginsChanged();
 
  private:
   // The password store associated with the currently active profile.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
@@ -37,6 +38,18 @@ class PasswordStoreConsumer {
 // from the UI thread.
 class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
  public:
+  // An interface used to notify clients (observers) of this object that data in
+  // the password store has changed. Register the observer via
+  // PasswordStore::SetObserver.
+  class Observer {
+   public:
+    // Notifies the observer that password data changed in some way.
+    virtual void OnLoginsChanged() = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   PasswordStore();
 
   // Reimplement this to add custom initialization. Always call this too.
@@ -76,7 +89,13 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   void CancelLoginsQuery(int handle);
 
   // Reports usage metrics for the database.
-  virtual void ReportMetrics();
+  void ReportMetrics();
+
+  // Adds an observer to be notified when the password store data changes.
+  void AddObserver(Observer* observer);
+
+  // Removes |observer| from the observer list.
+  void RemoveObserver(Observer* observer);
 
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
@@ -153,6 +172,19 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // Returns a new request handle tracked in pending_requests_.
   int GetNewRequestHandle();
 
+  // Wrapper method called on the destination thread (DB for non-mac) that calls
+  // the method specified in |task| and then calls back into the source thread
+  // to notify observers that the password store may have been modified via
+  // NotifyLoginsChanged(). Note that there is no guarantee that the called
+  // method will actually modify the password store data. |task| may not be
+  // NULL. This method owns and will delete |task|.
+  void WrapModificationTask(Task* task);
+
+  // Called by WrapModificationTask() once the underlying data-modifying
+  // operation has been performed. Notifies observers that password store data
+  // may have been changed.
+  void NotifyLoginsChanged();
+
   // Next handle to return from Get*Logins() to allow callers to track
   // their request.
   int handle_;
@@ -160,6 +192,9 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // List of pending request handles.  Handles are removed from the set when
   // they finish or are canceled.
   std::set<int> pending_requests_;
+
+  // The observers.
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStore);
 };
