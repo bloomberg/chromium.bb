@@ -36,6 +36,10 @@ PlatformDevice::PlatformDevice(const SkBitmap& bitmap)
     : SkDevice(NULL, bitmap, /*isForLayer=*/false) {
 }
 
+bool PlatformDevice::IsNativeFontRenderingAllowed() {
+    return true;
+}
+
 // Set up the CGContextRef for peaceful coexistence with Skia
 void PlatformDevice::InitializeCGContext(CGContextRef context) {
   // CG defaults to the same settings as Skia

@@ -42,7 +42,7 @@ class PlatformDevice : public SkDevice {
   virtual bool IsVectorial() = 0;
 
   // Returns if native platform APIs are allowed to render text to this device.
-  virtual bool IsNativeFontRenderingAllowed() { return true; }
+  virtual bool IsNativeFontRenderingAllowed();
 
   // Initializes the default settings and colors in a device context.
   static void InitializeCGContext(CGContextRef context);
