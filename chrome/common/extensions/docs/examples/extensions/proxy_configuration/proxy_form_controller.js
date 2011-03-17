@@ -493,8 +493,8 @@ ProxyFormController.prototype = {
    * @private
    */
   callbackForRegularSettings_: function() {
-    if (!chrome.extension.lastError) {
-      this.generateAlert(chrome.i18n.getMessage('errorSettingRegularProxy'));
+    if (chrome.extension.lastError) {
+      this.generateAlert_(chrome.i18n.getMessage('errorSettingRegularProxy'));
       return;
     }
     if (this.config_.incognito) {
@@ -514,8 +514,8 @@ ProxyFormController.prototype = {
    * @private
    */
   callbackForIncognitoSettings_: function() {
-    if (!chrome.extension.lastError) {
-      this.generateAlert(chrome.i18n.getMessage('errorSettingIncognitoProxy'));
+    if (chrome.extension.lastError) {
+      this.generateAlert_(chrome.i18n.getMessage('errorSettingIncognitoProxy'));
       return;
     }
     ProxyFormController.setPersistedSettings(this.config_);
