@@ -494,12 +494,25 @@ cr.define('options', function() {
      * @private
      */
     keyDownEventHandler_: function(event) {
-      // Focus the search field on an unused forward-slash.
-      if (event.keyCode == 191 &&
-          !/INPUT|SELECT|BUTTON|TEXTAREA/.test(event.target.tagName)) {
-        this.searchField.focus();
-        event.stopPropagation();
-        event.preventDefault();
+      const ESCAPE_KEY_CODE = 27;
+      const FORWARD_SLASH_KEY_CODE = 191;
+
+      switch(event.keyCode) {
+        case ESCAPE_KEY_CODE:
+          if (event.target == this.searchField) {
+            this.setSearchText_('');
+            this.searchField.blur();
+            event.stopPropagation();
+            event.preventDefault();
+          }
+          break;
+        case FORWARD_SLASH_KEY_CODE:
+          if (!/INPUT|SELECT|BUTTON|TEXTAREA/.test(event.target.tagName)) {
+            this.searchField.focus();
+            event.stopPropagation();
+            event.preventDefault();
+          }
+          break;
       }
     },
   };
