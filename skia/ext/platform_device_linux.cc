@@ -10,4 +10,8 @@ PlatformDevice::PlatformDevice(const SkBitmap& bitmap)
     : SkDevice(NULL, bitmap, /*isForLayer=*/false) {
 }
 
+bool PlatformDevice::IsNativeFontRenderingAllowed() {
+    return true;
+}
+
 }  // namespace skia
