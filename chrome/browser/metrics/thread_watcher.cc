@@ -197,7 +197,7 @@ ThreadWatcherList::ThreadWatcherList()
   CHECK(!global_);
   global_ = this;
   // Register Notifications observer.
-  MetricsService::SetupNotifications(&registrar_, this);
+  MetricsService::SetUpNotifications(&registrar_, this);
 }
 
 ThreadWatcherList::~ThreadWatcherList() {

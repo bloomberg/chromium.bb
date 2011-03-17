@@ -504,7 +504,7 @@ void MetricsService::SetRecording(bool enabled) {
     child_process_logging::SetClientId(client_id_);
     StartRecording();
 
-    SetupNotifications(&registrar_, this);
+    SetUpNotifications(&registrar_, this);
   } else {
     registrar_.RemoveAll();
     PushPendingLogsToUnsentLists();
@@ -534,7 +534,7 @@ bool MetricsService::reporting_active() const {
 }
 
 // static
-void MetricsService::SetupNotifications(NotificationRegistrar* registrar,
+void MetricsService::SetUpNotifications(NotificationRegistrar* registrar,
                                         NotificationObserver* observer) {
     registrar->Add(observer, NotificationType::BROWSER_OPENED,
                    NotificationService::AllSources());

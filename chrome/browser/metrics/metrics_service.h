@@ -95,10 +95,10 @@ class MetricsService : public NotificationObserver,
   // types we'll be using.
   static void RegisterPrefs(PrefService* local_state);
 
-  // Setup notifications which indicate that a user is performing work. This is
+  // Set up notifications which indicate that a user is performing work. This is
   // useful to allow some features to sleep, until the machine becomes active,
   // such as precluding UMA uploads unless there was recent activity.
-  static void SetupNotifications(NotificationRegistrar* registrar,
+  static void SetUpNotifications(NotificationRegistrar* registrar,
                                  NotificationObserver* observer);
 
   // Implementation of NotificationObserver
@@ -177,13 +177,6 @@ class MetricsService : public NotificationObserver,
   void SetRecording(bool enabled);
 
   // Enable/disable transmission of accumulated logs and crash reports (dumps).
-  // Return value "true" indicates setting was definitively set as requested).
-  // Return value of "false" indicates that the enable state is effectively
-  // stuck in the other logical setting.
-  // Google Update maintains the authoritative preference in the registry, so
-  // the caller *might* not be able to actually change the setting.
-  // It is always possible to set this to at least one value, which matches the
-  // current value reported by querying Google Update.
   void SetReporting(bool enabled);
 
   // If in_idle is true, sets idle_since_last_transmission to true.
