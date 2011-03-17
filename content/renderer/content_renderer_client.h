@@ -15,7 +15,7 @@ namespace content {
 // Embedder API for participating in renderer logic.
 class ContentRendererClient {
  public:
-  virtual SkBitmap* GetSadPluginBitmap() { return NULL; }
+  virtual SkBitmap* GetSadPluginBitmap();
 };
 
 }  // namespace content
