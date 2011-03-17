@@ -117,6 +117,7 @@ const int TabStrip::mini_to_non_mini_gap_ = 3;
 
 TabStrip::TabStrip(TabStripController* controller)
     : BaseTabStrip(controller, BaseTabStrip::HORIZONTAL_TAB_STRIP),
+      newtab_button_(NULL),
       current_unselected_width_(Tab::GetStandardSize().width()),
       current_selected_width_(Tab::GetStandardSize().width()),
       available_width_for_tabs_(-1),

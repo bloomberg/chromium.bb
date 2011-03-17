@@ -10,7 +10,13 @@ class AbstractTabStripView;
 class Browser;
 class TabStripModel;
 
+namespace views {
+class View;
+}
+
+// Creates and returns a new tabstrip. The tabstrip should be added to |parent|.
 AbstractTabStripView* CreateTabStrip(Browser* browser,
+                                     views::View* parent,
                                      TabStripModel* model,
                                      bool use_vertical_tabs);
 

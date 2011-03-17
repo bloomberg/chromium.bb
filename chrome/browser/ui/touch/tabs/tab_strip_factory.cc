@@ -11,6 +11,7 @@
 
 // The implmentation of CreateTabStrip for touchui creates a TouchTabStrip
 AbstractTabStripView* CreateTabStrip(Browser* browser,
+                                     views::View* parent,
                                      TabStripModel* model,
                                      bool use_vertical_tabs) {
   BrowserTabStripController* tabstrip_controller =
@@ -19,6 +20,7 @@ AbstractTabStripView* CreateTabStrip(Browser* browser,
   // construct it below.
 
   TouchTabStrip* tabstrip = new TouchTabStrip(tabstrip_controller);
+  parent->AddChildView(tabstrip);
   tabstrip_controller->InitFromModel(tabstrip);
   return tabstrip;
 }

@@ -1816,8 +1816,7 @@ void BrowserView::InitTabStrip(TabStripModel* model) {
   if (tabstrip_)
     tabstrip_->parent()->RemoveChildView(tabstrip_);
 
-  tabstrip_ = CreateTabStrip(browser_.get(), model, UseVerticalTabs());
-  AddChildView(tabstrip_);
+  tabstrip_ = CreateTabStrip(browser_.get(), this, model, UseVerticalTabs());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
