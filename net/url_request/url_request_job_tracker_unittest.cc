@@ -118,16 +118,9 @@ class URLRequestJobTrackerTestJob : public URLRequestJob {
     NotifyReadComplete(status);
   }
 
-  bool GetContentEncodings(
-      std::vector<Filter::FilterType>* encoding_types) {
-    if (request_->url().spec() == "test:basic") {
-      return false;
-    } else if (request_->url().spec() == "test:compressed") {
-      encoding_types->push_back(Filter::FILTER_TYPE_GZIP);
-      return true;
-    } else {
-      return URLRequestJob::GetContentEncodings(encoding_types);
-    }
+  Filter* SetupFilter() const {
+    return request_->url().spec() == "test:compressed"
+        ? Filter::GZipFactory() : NULL;
   }
 
   // The data to send, will be set in Start().
