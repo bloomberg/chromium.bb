@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
 import pyauto_functional
 import pyauto
 
@@ -26,12 +25,6 @@ class ChromeosBasic(pyauto.PyUITest):
     self.assertEqual(1, len(self.GetHistoryInfo().History()))
     self.RestartBrowser(clear_profile=False)
     self.assertEqual(1, len(self.GetHistoryInfo().History()))
-
-  def testNetworkInfo(self):
-    """Get basic info on networks."""
-    result = self.GetNetworkInfo()
-    self.assertTrue(result)
-    logging.debug(result)
 
   def testScreenLocker(self):
     """Sanity check for screen locker functions."""
