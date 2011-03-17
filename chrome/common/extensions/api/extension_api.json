@@ -4726,5 +4726,107 @@
         "description": "Whether third party cookies should be blocked. The value of this preference is of type boolean."
       }
     }
+  },
+  {
+    "namespace": "experimental.debugger",
+    "functions": [
+      {
+        "name": "attach",
+        "type": "function",
+        "description": "Attaches debugger to the tab with given id.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "description": "The id of the tab to which you want to attach."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [],
+            "description": "If an error occurs while attaching to the tab, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
+          }
+        ]
+      },
+      {
+        "name": "detach",
+        "type": "function",
+        "description": "Detaches debugger from a tab with given id.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "description": "The id of the tab from which you want to detach."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [],
+            "description": "If an error occurs while detaching from the tab, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
+          }
+        ]
+      },
+      {
+        "name": "postMessage",
+        "type": "function",
+        "description": "Execute.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "description": "The id of the tab to which you want to send debugging message."
+          },
+          {
+            "type": "object",
+            "name": "request",
+            "properties": {},
+            "additionalProperties": { "type": "any" },
+            "description": "JSON object matching Developer Tools / Web Inspector Protocol request scheme."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [],
+            "description": "If an error occurs while posting the message, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onMessage",
+        "type": "function",
+        "description": "Fired when debugger wants to send response or event message to its client.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "description": "The id of the tab that generated debug message."
+          },
+          {
+            "type": "object",
+            "name": "message",
+            "properties": {},
+            "additionalProperties": { "type": "any" },
+            "description": "JSON object matching Developer Tools / Web Inspector Protocol response or event scheme."
+          }
+        ]
+      },
+      {
+        "name": "onDetach",
+        "type": "function",
+        "description": "Fired when browser terminates debugging session for the tab.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "description": "The id of the tab that was detached."
+          }
+        ]
+      }
+    ]
   }
 ]

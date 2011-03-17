@@ -303,6 +303,7 @@ var chrome = chrome || {};
       "experimental.clipboard",
       "experimental.contentSettings.misc",
       "experimental.extension",
+      "experimental.debugger",
       "experimental.infobars",
       "experimental.input",
       "experimental.metrics",

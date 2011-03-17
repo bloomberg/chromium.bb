@@ -296,10 +296,6 @@ void DevToolsHttpProtocolHandler::OnWebSocketMessageUI(
 
   DevToolsManager* manager = DevToolsManager::GetInstance();
 
-  // TODO(pfeldman): remove this once front-end stops sending it upstream.
-  if (data == "loaded")
-    return;
-
   manager->ForwardToDevToolsAgent(
       it->second,
       DevToolsAgentMsg_DispatchOnInspectorBackend(data));

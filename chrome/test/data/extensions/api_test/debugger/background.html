@@ -1,0 +1,62 @@
+<script>
+
+var pass = chrome.test.callbackPass;
+var fail = chrome.test.callbackFail;
+
+var tabId;
+
+chrome.test.runTests([
+
+  function attach() {
+    chrome.tabs.getSelected(null, function(tab) {
+      tabId = tab.id;
+      chrome.experimental.debugger.attach(tabId, pass());
+    });
+  },
+
+  function attachAgain() {
+    chrome.experimental.debugger.attach(tabId,
+        fail("Another debugger is already attached to the tab with id: " +
+                 tabId + "."));
+  },
+
+  function postMessage() {
+    function onMessage(messageTabId) {
+      chrome.test.assertEq(tabId, messageTabId);
+      chrome.experimental.debugger.onMessage.removeListener(onMessage);
+      chrome.test.succeed();
+    }
+    chrome.experimental.debugger.onMessage.addListener(onMessage);
+    chrome.experimental.debugger.postMessage(tabId, {});
+  },
+
+  function detach() {
+    chrome.experimental.debugger.detach(tabId, pass());
+  },
+
+  function postMessageAfterDetach() {
+    chrome.experimental.debugger.postMessage(tabId, {},
+        fail("Debugger is not attached to the tab with id: " + tabId + "."));
+  },
+
+  function detachAgain() {
+    chrome.experimental.debugger.detach(tabId,
+        fail("Debugger is not attached to the tab with id: " + tabId + "."));
+  },
+
+  function closeTab() {
+    chrome.tabs.create({url:"inspected.html"}, function(tab) {
+
+      function onDetach(messageTabId) {
+        chrome.test.assertEq(tab.id, messageTabId);
+        chrome.experimental.debugger.onDetach.removeListener(onDetach);
+        chrome.test.succeed();
+      }
+      chrome.experimental.debugger.onDetach.addListener(onDetach);
+
+      chrome.experimental.debugger.attach(tab.id);
+      chrome.tabs.remove(tab.id);
+    });
+  }
+]);
+</script>

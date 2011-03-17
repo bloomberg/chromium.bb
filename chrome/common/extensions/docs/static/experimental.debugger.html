@@ -1,0 +1,24 @@
+<!-- BEGIN AUTHORED CONTENT -->
+
+
+<h2>Notes</h2>
+
+<p>
+Debugger API exposes Google Chrome debugging interface to the extensions.
+Debugging messages that are being sent and received are all JSON objects
+with the structure defined by the Developer Tools / Web Inspector Protocol.
+We are currently drafting this protocol, it is by no means ready and stable,
+but we can already expose the way to attach to a given tab and instrument it.
+Although not finalized, this API is feature rich. There is a proof of concept
+implementation of the Chrome Developer Tools front-end running as an extension
+using the debugger API.
+</p>
+
+<p>
+Note that attaching to the page by means of the debugger API and using embedded
+Chrome Developer Tools with it are mutually exclusive. If extension is attached
+to the page and user invokes Developer Tools, debugging session is being
+terminated. Extension can then re-establish it via attaching to a tab later.
+</p>
+
+<!-- END AUTHORED CONTENT -->

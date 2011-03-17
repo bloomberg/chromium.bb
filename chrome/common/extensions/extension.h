@@ -176,6 +176,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static const char kContentSettingsPermission[];
   static const char kContextMenusPermission[];
   static const char kCookiePermission[];
+  static const char kDebuggerPermission[];
   static const char kExperimentalPermission[];
   static const char kGeolocationPermission[];
   static const char kHistoryPermission[];

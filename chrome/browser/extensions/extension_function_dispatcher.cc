@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_clipboard_api.h"
 #include "chrome/browser/extensions/extension_context_menu_api.h"
 #include "chrome/browser/extensions/extension_cookies_api.h"
+#include "chrome/browser/extensions/extension_debugger_api.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
@@ -302,6 +303,11 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<GetPreferenceFunction>();
   RegisterFunction<SetPreferenceFunction>();
   RegisterFunction<ClearPreferenceFunction>();
+
+  // Debugger
+  RegisterFunction<AttachDebuggerFunction>();
+  RegisterFunction<DetachDebuggerFunction>();
+  RegisterFunction<PostMessageDebuggerFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

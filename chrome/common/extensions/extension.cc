@@ -205,6 +205,7 @@ const char Extension::kBookmarkPermission[] = "bookmarks";
 const char Extension::kContextMenusPermission[] = "contextMenus";
 const char Extension::kContentSettingsPermission[] = "contentSettings";
 const char Extension::kCookiePermission[] = "cookies";
+const char Extension::kDebuggerPermission[] = "debugger";
 const char Extension::kExperimentalPermission[] = "experimental";
 const char Extension::kGeolocationPermission[] = "geolocation";
 const char Extension::kHistoryPermission[] = "history";
@@ -225,6 +226,7 @@ const Extension::Permission Extension::kPermissions[] = {
   { kContentSettingsPermission, 0 },
   { kContextMenusPermission, 0 },
   { kCookiePermission, 0 },
+  { kDebuggerPermission, IDS_EXTENSION_PROMPT_WARNING_DEBUGGER },
   { kExperimentalPermission, 0 },
   { kGeolocationPermission, IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION },
   { kIdlePermission, 0 },

@@ -3609,6 +3609,9 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       <message name="IDS_EXTENSION_PROMPT_WARNING_TABS" desc="Permission string for access to tabs.">
         Your tabs and browsing activity
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_DEBUGGER" desc="Permission string for access to debugger.">
+        Your data on all websites
+      </message>
 
       <!-- Extension/App error messages -->
       <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">
