@@ -75,6 +75,8 @@
         'common/font_descriptor_mac.mm',
         'common/font_loader_mac.h',
         'common/font_loader_mac.mm',
+        'common/gpu_feature_flags.cc',
+        'common/gpu_feature_flags.h',
         'common/gpu_info.cc',
         'common/gpu_info.h',
         'common/gpu_messages.h',

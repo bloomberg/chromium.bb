@@ -57,8 +57,6 @@
           'common/geoposition.h',
           'common/gfx_resource_provider.cc',
           'common/gfx_resource_provider.h',
-          'common/gpu_feature_flags.cc',
-          'common/gpu_feature_flags.h',
           'common/guid.cc',
           'common/guid.h',
           'common/guid_posix.cc',
