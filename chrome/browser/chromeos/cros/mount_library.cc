@@ -268,7 +268,7 @@ class MountLibraryImpl : public MountLibrary {
                     const char* device_path) {
     if (!device_path)
       return;
-    MountLibraryEventType type;
+    MountLibraryEventType type = MOUNT_DEVICE_ADDED;
     switch (evt) {
       case DISK_ADDED:
       case DISK_CHANGED: {
