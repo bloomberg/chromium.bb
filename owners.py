@@ -16,6 +16,12 @@ EVERYONE = '*'
 BASIC_EMAIL_REGEXP = r'^[\w\-\+\%\.]+\@[\w\-\+\%\.]+$'
 
 
+def _assert_is_collection(obj):
+  assert (isinstance(obj, collections.Iterable) and
+          isinstance(obj, collections.Sized) and
+          not isinstance(obj, basestring))
+
+
 class SyntaxErrorInOwnersFile(Exception):
   def __init__(self, path, lineno, msg):
     super(SyntaxErrorInOwnersFile, self).__init__((path, lineno, msg))
@@ -90,19 +96,14 @@ class Database(object):
         uncovered_files.extend(files_in_d)
     return set(uncovered_files)
 
-  def _check_collection(self, obj):
-    assert (isinstance(obj, collections.Iterable) and
-            isinstance(obj, collections.Sized) and
-            not isinstance(obj, basestring))
-
   def _check_paths(self, files):
     def _is_under(f, pfx):
       return self.os_path.abspath(self.os_path.join(pfx, f)).startswith(pfx)
-    self._check_collection(files)
+    _assert_is_collection(files)
     assert all(_is_under(f, self.os_path.abspath(self.root)) for f in files)
 
   def _check_reviewers(self, reviewers):
-    self._check_collection(reviewers)
+    _assert_is_collection(reviewers)
     assert all(self.email_regexp.match(r) for r in reviewers)
 
   def _files_by_dir(self, files):
