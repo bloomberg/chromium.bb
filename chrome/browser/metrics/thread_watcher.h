@@ -2,11 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-//------------------------------------------------------------------------------
+// This file defines a WatchDog thread that monitors the responsiveness of other
+// browser threads like UI, IO, DB, FILE and CACHED threads. It also defines
+// ThreadWatcher class which performs health check on threads that would like to
+// be watched. This file also defines ThreadWatcherList class that has list of
+// all active ThreadWatcher objects.
+//
+// ThreadWatcher class sends ping message to the watched thread and the watched
+// thread responds back with a pong message. It uploads response time
+// (difference between ping and pong times) as a histogram.
+//
+// TODO(raman): ThreadWatcher can detect hung threads. If a hung thread is
+// detected, we should probably just crash, and allow the crash system to gather
+// then stack trace.
+//
+// Example Usage:
+//
+//   The following is an example for watching responsiveness of IO thread.
+//   sleep_time specifies how often ping messages have to be sent to IO thread.
+//   unresponsive_time is the wait time after ping message is sent, to check if
+//   we have received pong message or not.
+//
+//   base::TimeDelta sleep_time = base::TimeDelta::FromSeconds(5);
+//   base::TimeDelta unresponsive_time = base::TimeDelta::FromSeconds(10);
+//   ThreadWatcher::StartWatching(BrowserThread::IO, "IO", sleep_time,
+//                                unresponsive_time);
 
 #ifndef CHROME_BROWSER_METRICS_THREAD_WATCHER_H_
 #define CHROME_BROWSER_METRICS_THREAD_WATCHER_H_
-#pragma once
 
 #include <map>
 #include <string>
@@ -29,27 +52,7 @@
 class CustomThreadWatcher;
 class ThreadWatcherList;
 
-//------------------------------------------------------------------------------
-// This class performs health check on threads that would like to be watched. It
-// sends ping message to the watched thread and the watched thread responds back
-// with a pong message. It uploads response time (difference between ping and
-// pong times) as a histogram.
-// TODO(raman:) ThreadWatcher can detect hung threads. If a hung thread is
-// detected, we should probably just crash, and allow the crash system to gather
-// then stack trace.
-//
-// Example Usage:
-//
-//   The following is an example for watching responsiveness of IO thread.
-//   sleep_time specifies how often ping messages have to be sent to IO thread.
-//   unresponsive_time is the wait time after ping message is sent, to check if
-//   we have received pong message or not.
-//
-//   base::TimeDelta sleep_time = base::TimeDelta::FromSeconds(5);
-//   base::TimeDelta unresponsive_time = base::TimeDelta::FromSeconds(10);
-//   ThreadWatcher::StartWatching(BrowserThread::IO, "IO", sleep_time,
-//                                unresponsive_time);
-
+// This class performs health check on threads that would like to be watched.
 class ThreadWatcher {
  public:
   // This method starts performing health check on the given thread_id. It will
@@ -59,7 +62,7 @@ class ThreadWatcher {
   // to check if we have received pong message or not. It will register that
   // ThreadWatcher object and activate the thread watching of the given
   // thread_id.
-  static void StartWatching(const BrowserThread::ID thread_id,
+  static void StartWatching(const BrowserThread::ID& thread_id,
                             const std::string& thread_name,
                             const base::TimeDelta& sleep_time,
                             const base::TimeDelta& unresponsive_time);
@@ -89,7 +92,7 @@ class ThreadWatcher {
   // Construct a ThreadWatcher for the given thread_id. sleep_time_ is the
   // wait time between ping messages. unresponsive_time_ is the wait time after
   // ping message is sent, to check if we have received pong message or not.
-  ThreadWatcher(const BrowserThread::ID thread_id,
+  ThreadWatcher(const BrowserThread::ID& thread_id,
                 const std::string& thread_name,
                 const base::TimeDelta& sleep_time,
                 const base::TimeDelta& unresponsive_time);
@@ -143,7 +146,7 @@ class ThreadWatcher {
 
   // Watched thread does nothing except post callback_task to the WATCHDOG
   // Thread. This method is called on watched thread.
-  static void OnPingMessage(const BrowserThread::ID thread_id,
+  static void OnPingMessage(const BrowserThread::ID& thread_id,
                             Task* callback_task);
 
   // This is the number of ping messages to be sent when the user is idle.
@@ -185,12 +188,14 @@ class ThreadWatcher {
   // Histogram that keeps track of response times for the watched thread.
   scoped_refptr<base::Histogram> histogram_;
 
+  // We use this factory to create callback tasks for ThreadWatcher object. We
+  // use this during ping-pong messaging between WatchDog thread and watched
+  // thread.
   ScopedRunnableMethodFactory<ThreadWatcher> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadWatcher);
 };
 
-//------------------------------------------------------------------------------
 // Class with a list of all active thread watchers.  A thread watcher is active
 // if it has been registered, which includes determing the histogram name. This
 // class provides utility functions to start and stop watching all browser
@@ -250,15 +255,17 @@ class ThreadWatcherList : public NotificationObserver {
 
   // The Find() method can be used to test to see if a given ThreadWatcher was
   // already registered, or to retrieve a pointer to it from the global map.
-  static ThreadWatcher* Find(const BrowserThread::ID thread_id);
+  static ThreadWatcher* Find(const BrowserThread::ID& thread_id);
 
   // Helper function should be called only while holding lock_.
-  ThreadWatcher* PreLockedFind(const BrowserThread::ID thread_id);
+  ThreadWatcher* PreLockedFind(const BrowserThread::ID& thread_id);
 
   static ThreadWatcherList* global_;  // The singleton of this class.
 
   // Lock for access to registered_.
   base::Lock lock_;
+
+  // Map of all registered watched threads, from thread_id to ThreadWatcher.
   RegistrationList registered_;
 
   // The registrar that holds NotificationTypes to be observed.
@@ -270,7 +277,6 @@ class ThreadWatcherList : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ThreadWatcherList);
 };
 
-//------------------------------------------------------------------------------
 // Class for WatchDogThread and in its Init method, we start watching UI, IO,
 // DB, FILE, CACHED threads.
 class WatchDogThread : public base::Thread {
@@ -314,6 +320,8 @@ class WatchDogThread : public base::Thread {
   DISALLOW_COPY_AND_ASSIGN(WatchDogThread);
 };
 
+// DISABLE_RUNNABLE_METHOD_REFCOUNT is a convenience macro for disabling
+// refcounting of ThreadWatcher and ThreadWatcherList classes.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ThreadWatcher);
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ThreadWatcherList);
 

@@ -40,6 +40,12 @@ enum CheckResponseState {
   FAILED,             // CheckResponse has failed.
 };
 
+// This class helps to track and manipulate thread state during tests. This
+// class also has utility method to simulate hanging of watched thread by making
+// the watched thread wait for a very long time by posting a task on watched
+// thread that keeps it busy. It also has an utility method to block running of
+// tests until ThreadWatcher object's post-condition state changes to an
+// expected state.
 class CustomThreadWatcher : public ThreadWatcher {
  public:
   base::Lock custom_lock_;
@@ -86,8 +92,6 @@ class CustomThreadWatcher : public ThreadWatcher {
       saved_ping_sequence_number_ = ping_sequence_number();
     }
     state_changed_.Broadcast();
-    // LOG(INFO) << "UpdateState: thread_name_: " << thread_name_ <<
-    //     " thread_watcher_state_: " << new_state;
     return old_state;
   }
 
@@ -99,8 +103,6 @@ class CustomThreadWatcher : public ThreadWatcher {
       wait_state_ = new_state;
     }
     state_changed_.Broadcast();
-    // LOG(INFO) << "UpdateWaitState: thread_name_: " << thread_name_ <<
-    //     " wait_state_: " << new_state;
     return old_state;
   }
 
@@ -132,10 +134,6 @@ class CustomThreadWatcher : public ThreadWatcher {
   bool OnCheckResponsiveness(uint64 ping_sequence_number) {
     bool responsive =
         ThreadWatcher::OnCheckResponsiveness(ping_sequence_number);
-    // LOG(INFO) << "CheckResponse: thread_name_: " << thread_name_ <<
-    //     " ping_sequence_number_:" << ping_sequence_number_  <<
-    //     " ping_sequence_number:" << ping_sequence_number <<
-    //     " responsive: " << responsive;
     {
       base::AutoLock auto_lock(custom_lock_);
       if (responsive) {
@@ -182,10 +180,6 @@ class CustomThreadWatcher : public ThreadWatcher {
           while (thread_watcher_state_ != expected_state &&
                  TimeTicks::Now() < end_time) {
             TimeDelta state_change_wait_time = end_time - TimeTicks::Now();
-            // LOG(INFO) << "In WaitForStateChange: thread_name_: " <<
-            //     thread_name_ << " i:" << i <<
-            //     " wait: " << state_change_wait_time.InMilliseconds() <<
-            //     " thread_watcher_state_: " << thread_watcher_state_;
             state_changed_.TimedWait(state_change_wait_time);
           }
           // Capture the thread_watcher_state_ before it changes and return it
@@ -195,9 +189,6 @@ class CustomThreadWatcher : public ThreadWatcher {
             break;
         }
     }
-    // LOG(INFO) << "In WaitForStateChange: thread_name_: " << thread_name_ <<
-    //     " expected_state: " << expected_state <<
-    //     " exit_state:" << exit_state;
     UpdateWaitState(STOPPED_WAITING);
     return exit_state;
   }
@@ -218,10 +209,6 @@ class CustomThreadWatcher : public ThreadWatcher {
           while (check_response_state_ != expected_state &&
                  TimeTicks::Now() < end_time) {
             TimeDelta state_change_wait_time = end_time - TimeTicks::Now();
-            // LOG(INFO) << "In WaitForCheckResponse: " <<
-            //     " thread_name_: " << thread_name_ << " i:" << i <<
-            //     " wait:" << state_change_wait_time.InMilliseconds() <<
-            //     " check_response_state_:" << check_response_state_;
             state_changed_.TimedWait(state_change_wait_time);
           }
           // Capture the check_response_state_ before it changes and return it
@@ -231,9 +218,6 @@ class CustomThreadWatcher : public ThreadWatcher {
             break;
         }
     }
-    // LOG(INFO) << "In WaitForCheckResponse: thread_name_: " << thread_name_ <<
-    //     " expected_state: " << expected_state <<
-    //     " exit_state:" << exit_state;
     UpdateWaitState(STOPPED_WAITING);
     return exit_state;
   }
@@ -276,9 +260,6 @@ class ThreadWatcherTest : public ::testing::Test {
     ThreadWatcherList::StopWatchingAll();
     io_watcher_ = NULL;
     webkit_watcher_ = NULL;
-    // io_thread_->Stop();
-    // webkit_thread_->Stop();
-    // watchdog_thread_->Stop();
     io_thread_.reset();
     webkit_thread_.reset();
     watchdog_thread_.reset();
