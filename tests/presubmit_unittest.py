@@ -1867,13 +1867,19 @@ mac|success|blew
 
   def OwnersTest(self, is_committing, tbr=False, change_tags=None,
       suggested_reviewers=None, approvers=None,
-      uncovered_files=None, expected_reviewers=None, expected_output=''):
+      uncovered_files=None, expected_reviewers=None, expected_output='',
+      host_url=None):
     affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
     affected_file.LocalPath().AndReturn('foo.cc')
     change = self.mox.CreateMock(presubmit.Change)
     change.AffectedFiles(None).AndReturn([affected_file])
 
     input_api = self.MockInputApi(change, False)
+    expected_host = 'http://localhost'
+    if host_url:
+      input_api.host_url = host_url
+      if host_url.startswith('https'):
+        expected_host = host_url
     fake_db = self.mox.CreateMock(owners.Database)
     fake_db.email_regexp = input_api.re.compile(owners.BASIC_EMAIL_REGEXP)
     input_api.owners_db = fake_db
@@ -1887,7 +1893,7 @@ mac|success|blew
       rietveld_response = ('{"owner": "john@example.com",'
                            '"messages": [' + ','.join(messages) + ']}')
       input_api.urllib2.urlopen(
-          input_api.host_url + '/api/1?messages=true').AndReturn(
+          expected_host + '/api/1?messages=true').AndReturn(
           StringIO.StringIO(rietveld_response))
       input_api.json = presubmit.json
       fake_db.files_not_covered_by(set(['foo.cc']), approvers).AndReturn(
@@ -1936,6 +1942,17 @@ mac|success|blew
         approvers=set(),
         uncovered_files=set(),
         expected_output='--tbr was specified, skipping OWNERS check\n')
+
+  def testCannedCheckOwners_MissingSchemeInHostURL(self):
+    self.OwnersTest(is_committing=True,
+        approvers=set(['ben@example.com']),
+        uncovered_files=set(), host_url='localhost')
+
+  def testCannedCheckOwners_HTTPS_HostURL(self):
+    self.OwnersTest(is_committing=True,
+        approvers=set(['ben@example.com']),
+        uncovered_files=set(), host_url='https://localhost')
+
 
 if __name__ == '__main__':
   import unittest

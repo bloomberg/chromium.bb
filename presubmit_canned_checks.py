@@ -655,8 +655,12 @@ def _Approvers(input_api, email_regexp):
   if not input_api.change.issue:
     return []
 
-  path = '/api/%s?messages=true'
-  url = (input_api.host_url + path) % input_api.change.issue
+  # TODO(dpranke): Should figure out if input_api.host_url is supposed to
+  # be a host or a scheme+host and normalize it there.
+  host = input_api.host_url
+  if not host.startswith('http://') and not host.startswith('https://'):
+    host = 'http://' + host
+  url = '%s/api/%s?messages=true' % (host, input_api.change.issue)
 
   f = input_api.urllib2.urlopen(url)
   issue_props = input_api.json.load(f)
