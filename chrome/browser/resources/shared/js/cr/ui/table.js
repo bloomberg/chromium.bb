@@ -121,7 +121,7 @@ cr.define('cr.ui', function() {
       TableHeader.decorate(this.header_);
       this.header_.table = this;
 
-      this.className = 'table';
+      this.classList.add('table');
       this.appendChild(this.header_);
       this.appendChild(this.list_);
       this.ownerDocument.defaultView.addEventListener(
