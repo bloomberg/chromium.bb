@@ -244,7 +244,7 @@ void AutomationProvider::CreateExternalTab(
   scoped_refptr<ExternalTabContainer> external_tab_container =
       new ExternalTabContainer(this, automation_resource_message_filter_);
 
-  Profile* profile = settings.is_off_the_record ?
+  Profile* profile = settings.is_incognito ?
       profile_->GetOffTheRecordProfile() : profile_;
 
   // When the ExternalTabContainer window is created we grab a reference on it

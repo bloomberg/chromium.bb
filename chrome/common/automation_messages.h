@@ -63,7 +63,7 @@ struct ExternalTabSettings {
   ExternalTabSettings(gfx::NativeWindow parent,
                       const gfx::Rect& dimensions,
                       unsigned int style,
-                      bool is_off_the_record,
+                      bool is_incognito,
                       bool load_requests_via_automation,
                       bool handle_top_level_requests,
                       const GURL& initial_url,
@@ -75,7 +75,7 @@ struct ExternalTabSettings {
   gfx::NativeWindow parent;
   gfx::Rect dimensions;
   unsigned int style;
-  bool is_off_the_record;
+  bool is_incognito;
   bool load_requests_via_automation;
   bool handle_top_level_requests;
   GURL initial_url;

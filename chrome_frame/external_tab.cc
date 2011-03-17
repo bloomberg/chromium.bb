@@ -123,7 +123,7 @@ void ExternalTabProxy::UiConnected(ChromeProxy* proxy) {
   ExternalTabSettings settings;
   settings.parent = m_hWnd;
   settings.style = WS_CHILD;
-  settings.is_off_the_record = tab_params_.is_incognito;
+  settings.is_incognito = tab_params_.is_incognito;
   // TODO(stoyan): FIX this.
   settings.load_requests_via_automation = true;
   // TODO(stoyan): FIX this.

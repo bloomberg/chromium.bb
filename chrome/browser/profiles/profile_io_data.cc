@@ -123,7 +123,7 @@ void ProfileIOData::InitializeProfileParams(Profile* profile,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* pref_service = profile->GetPrefs();
 
-  params->is_off_the_record = profile->IsOffTheRecord();
+  params->is_incognito = profile->IsOffTheRecord();
   params->clear_local_state_on_exit =
       pref_service->GetBoolean(prefs::kClearSiteDataOnExit);
 
@@ -179,12 +179,12 @@ ProfileIOData::RequestContext::RequestContext() {}
 ProfileIOData::RequestContext::~RequestContext() {}
 
 ProfileIOData::ProfileParams::ProfileParams()
-    : is_off_the_record(false),
+    : is_incognito(false),
       clear_local_state_on_exit(false),
       profile_id(Profile::kInvalidProfileId) {}
 ProfileIOData::ProfileParams::~ProfileParams() {}
 
-ProfileIOData::ProfileIOData(bool is_off_the_record)
+ProfileIOData::ProfileIOData(bool is_incognito)
     : initialized_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -250,7 +250,7 @@ void ProfileIOData::LazyInitialize() const {
 void ProfileIOData::ApplyProfileParamsToContext(
     const ProfileParams& profile_params,
     ChromeURLRequestContext* context) {
-  context->set_is_incognito(profile_params.is_off_the_record);
+  context->set_is_incognito(profile_params.is_incognito);
   context->set_accept_language(profile_params.accept_language);
   context->set_accept_charset(profile_params.accept_charset);
   context->set_referrer_charset(profile_params.referrer_charset);

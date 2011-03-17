@@ -90,7 +90,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     ProfileParams();
     ~ProfileParams();
 
-    bool is_off_the_record;
+    bool is_incognito;
     bool clear_local_state_on_exit;
     std::string accept_language;
     std::string accept_charset;
@@ -116,7 +116,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     ProfileId profile_id;
   };
 
-  explicit ProfileIOData(bool is_off_the_record);
+  explicit ProfileIOData(bool is_incognito);
   virtual ~ProfileIOData();
 
   // Static helper functions to assist in common operations executed by

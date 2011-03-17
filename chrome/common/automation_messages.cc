@@ -57,7 +57,7 @@ ExternalTabSettings::ExternalTabSettings()
     : parent(NULL),
       dimensions(),
       style(0),
-      is_off_the_record(false),
+      is_incognito(false),
       load_requests_via_automation(false),
       handle_top_level_requests(false),
       initial_url(),
@@ -70,7 +70,7 @@ ExternalTabSettings::ExternalTabSettings(
     gfx::NativeWindow in_parent,
     const gfx::Rect& in_dimensions,
     unsigned int in_style,
-    bool in_is_off_the_record,
+    bool in_is_incognito,
     bool in_load_requests_via_automation,
     bool in_handle_top_level_requests,
     const GURL& in_initial_url,
@@ -80,7 +80,7 @@ ExternalTabSettings::ExternalTabSettings(
     : parent(in_parent),
       dimensions(in_dimensions),
       style(in_style),
-      is_off_the_record(in_is_off_the_record),
+      is_incognito(in_is_incognito),
       load_requests_via_automation(in_load_requests_via_automation),
       handle_top_level_requests(in_handle_top_level_requests),
       initial_url(in_initial_url),
@@ -488,7 +488,7 @@ void ParamTraits<ExternalTabSettings>::Write(Message* m,
   WriteParam(m, p.parent);
   WriteParam(m, p.dimensions);
   WriteParam(m, p.style);
-  WriteParam(m, p.is_off_the_record);
+  WriteParam(m, p.is_incognito);
   WriteParam(m, p.load_requests_via_automation);
   WriteParam(m, p.handle_top_level_requests);
   WriteParam(m, p.initial_url);
@@ -504,7 +504,7 @@ bool ParamTraits<ExternalTabSettings>::Read(const Message* m,
   return ReadParam(m, iter, &p->parent) &&
       ReadParam(m, iter, &p->dimensions) &&
       ReadParam(m, iter, &p->style) &&
-      ReadParam(m, iter, &p->is_off_the_record) &&
+      ReadParam(m, iter, &p->is_incognito) &&
       ReadParam(m, iter, &p->load_requests_via_automation) &&
       ReadParam(m, iter, &p->handle_top_level_requests) &&
       ReadParam(m, iter, &p->initial_url) &&
@@ -523,7 +523,7 @@ void ParamTraits<ExternalTabSettings>::Log(const param_type& p,
   l->append(", ");
   LogParam(p.style, l);
   l->append(", ");
-  LogParam(p.is_off_the_record, l);
+  LogParam(p.is_incognito, l);
   l->append(", ");
   LogParam(p.load_requests_via_automation, l);
   l->append(", ");

@@ -749,7 +749,7 @@ void ExternalTabUITestMockClient::InvalidateHandle(
 const ExternalTabSettings ExternalTabUITestMockClient::default_settings(
     NULL, gfx::Rect(),  // will be replaced by CreateHostWindowAndTab
     WS_CHILD | WS_VISIBLE,
-    false,   // is_off_the_record
+    false,   // is_incognito
     true,    // load_requests_via_automation
     true,    // handle_top_level_requests
     GURL(),  // initial_url
@@ -957,7 +957,7 @@ TEST_F(ExternalTabUITest, FLAKY_IncognitoMode) {
 
   ExternalTabSettings incognito =
       ExternalTabUITestMockClient::default_settings;
-  incognito.is_off_the_record = true;
+  incognito.is_incognito = true;
   // SetCookie is a sync call and deadlock can happen if window is visible,
   // since it shares same thread with AutomationProxy.
   mock_->host_window_style_ &= ~WS_VISIBLE;
