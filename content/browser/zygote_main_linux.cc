@@ -605,19 +605,12 @@ static void PreSandboxInit() {
   if (PathService::Get(chrome::DIR_MEDIA_LIBS, &media_path))
     media::InitializeMediaLibrary(media_path);
 
-  // Remoting requires NSS to function properly. It is not used for other
-  // reasons so load NSS only if remoting is enabled.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableRemoting)) {
-    // We are going to fork to engage the sandbox and we have not loaded
-    // any security modules so it is safe to disable the fork check in NSS.
-    base::DisableNSSForkCheck();
-
-    // Initialize NSS so that we load the necessary library files
-    // before we enter the sandbox.
-    base::ForceNSSNoDBInit();
-    base::EnsureNSSInit();
-  }
+  // NSS libraries are loaded before sandbox is activated. This is to allow
+  // successful initialization of NSS which tries to load extra library files.
+  // Doing so will allow NSS to be used within sandbox for chromoting.
+#if defined(USE_NSS)
+  base::LoadNSSLibraries();
+#endif
 
   // Ensure access to the Pepper plugins before the sandbox is turned on.
   PepperPluginRegistry::PreloadModules();

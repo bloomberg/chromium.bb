@@ -18,10 +18,14 @@
 #include <sys/vfs.h>
 #endif
 
+#include <vector>
+
 #include "base/environment.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/native_library.h"
 #include "base/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -400,6 +404,47 @@ void ForceNSSNoDBInit() {
 void DisableNSSForkCheck() {
   scoped_ptr<Environment> env(Environment::Create());
   env->SetVar("NSS_STRICT_NOFORK", "DISABLED");
+}
+
+void LoadNSSLibraries() {
+  // Some NSS libraries are linked dynamically so load them here.
+#if defined(USE_NSS)
+  // Try to search for multiple directories to load the libraries.
+  std::vector<FilePath> paths;
+
+  // Use relative path to Search PATH for the library files.
+  paths.push_back(FilePath());
+
+  // For Debian derivaties NSS libraries are located here.
+  paths.push_back(FilePath("/usr/lib/nss"));
+
+  // A list of library files to load.
+  std::vector<std::string> libs;
+  libs.push_back("libsoftokn3.so");
+  libs.push_back("libfreebl3.so");
+
+  // For each combination of library file and path, check for existence and
+  // then load.
+  size_t loaded = 0;
+  for (size_t i = 0; i < libs.size(); ++i) {
+    for (size_t j = 0; j < paths.size(); ++j) {
+      FilePath path = paths[j].Append(libs[i]);
+      if (file_util::PathExists(path)) {
+        NativeLibrary lib = base::LoadNativeLibrary(path);
+        if (lib) {
+          ++loaded;
+          break;
+        }
+      }
+    }
+  }
+
+  if (loaded == libs.size()) {
+    VLOG(3) << "NSS libraries loaded.";
+  } else {
+    LOG(WARNING) << "Failed to load NSS libraries.";
+  }
+#endif
 }
 
 bool CheckNSSVersion(const char* version) {

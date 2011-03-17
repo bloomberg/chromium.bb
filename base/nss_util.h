@@ -65,6 +65,15 @@ void ForceNSSNoDBInit();
 // WARNING: Use this with caution.
 void DisableNSSForkCheck();
 
+// Load NSS library files. This function has no effect on Mac and Windows.
+// This loads the necessary NSS library files so that NSS can be initialized
+// after loading additional library files is disallowed, for example when the
+// sandbox is active.
+//
+// Note that this does not load libnssckbi.so which contains the root
+// certificates.
+void LoadNSSLibraries();
+
 // Check if the current NSS version is greater than or equals to |version|.
 // A sample version string is "3.12.3".
 bool CheckNSSVersion(const char* version);
