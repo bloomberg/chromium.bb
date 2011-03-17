@@ -17,10 +17,8 @@
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/ref_counted.h"
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
-#include "base/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_switches.h"
@@ -178,31 +176,6 @@ static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
   }
 }
 
-// This is a simplified version of the browser Jankometer, which measures
-// the processing time of tasks on the render thread.
-class RendererMessageLoopObserver : public MessageLoop::TaskObserver {
- public:
-  RendererMessageLoopObserver()
-      : process_times_(base::Histogram::FactoryGet(
-            "Chrome.ProcMsgL RenderThread",
-            1, 3600000, 50, base::Histogram::kUmaTargetedHistogramFlag)) {}
-  virtual ~RendererMessageLoopObserver() {}
-
-  virtual void WillProcessTask(const Task* task) {
-    begin_process_message_ = base::TimeTicks::Now();
-  }
-
-  virtual void DidProcessTask(const Task* task) {
-    if (begin_process_message_ != base::TimeTicks())
-      process_times_->AddTime(base::TimeTicks::Now() - begin_process_message_);
-  }
-
- private:
-  base::TimeTicks begin_process_message_;
-  scoped_refptr<base::Histogram> process_times_;
-  DISALLOW_COPY_AND_ASSIGN(RendererMessageLoopObserver);
-};
-
 // mainline routine for running as the Renderer process
 int RendererMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN("RendererMain", 0, "");
@@ -262,7 +235,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::StatsScope<base::StatsCounterTimer>
       startup_timer(chrome::Counters::renderer_main());
 
-  RendererMessageLoopObserver task_observer;
 #if defined(OS_MACOSX)
   // As long as we use Cocoa in the renderer (for the forseeable future as of
   // now; see http://crbug.com/13890 for info) we need to have a UI loop.
@@ -273,7 +245,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   MessageLoop main_message_loop(RenderProcessImpl::InProcessPlugins() ?
               MessageLoop::TYPE_UI : MessageLoop::TYPE_DEFAULT);
 #endif
-  main_message_loop.AddTaskObserver(&task_observer);
 
   base::PlatformThread::SetName("CrRendererMain");
 
