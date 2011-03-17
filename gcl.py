@@ -1097,12 +1097,15 @@ def CMDchange(args):
   unaffected_files = [x for x in other_files if not file_re.match(x[0])]
 
   if not change_info.reviewers:
-    suggested_reviewers = suggest_reviewers(change_info, affected_files)
+    files_for_review = affected_files[:]
+    files_for_review.extend(change_info.GetFiles())
+    suggested_reviewers = suggest_reviewers(change_info, files_for_review)
     if suggested_reviewers:
       reviewers_re = re.compile(REVIEWERS_REGEX)
-      if not any(
-          reviewers_re.match(l) for l in description.splitlines()):
-        description += '\nR=' + ','.join(suggested_reviewers) + '\n'
+      if not any(reviewers_re.match(l) for l in description.splitlines()):
+        description += '\n\nR=' + ','.join(suggested_reviewers)
+
+  description = description.rstrip() + '\n'
 
   separator1 = ("\n---All lines above this line become the description.\n"
                 "---Repository Root: " + change_info.GetLocalRoot() + "\n"
