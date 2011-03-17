@@ -110,11 +110,6 @@ class ProfileManager : public base::NonThreadSafe,
  private:
   friend class ExtensionEventRouterForwarderTest;
 
-  // Hooks to suspend/resume per-profile network traffic.
-  // These must be called on the IO thread.
-  static void SuspendProfile(Profile*);
-  static void ResumeProfile(Profile*);
-
   // Helper method for unit tests to inject |profile| into the ProfileManager.
   void RegisterProfile(Profile* profile);
 

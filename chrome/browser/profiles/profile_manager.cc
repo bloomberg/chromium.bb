@@ -32,6 +32,35 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #endif
 
+namespace {
+
+void SuspendURLRequestJobs() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  for (net::URLRequestJobTracker::JobIterator i =
+           net::g_url_request_job_tracker.begin();
+       i != net::g_url_request_job_tracker.end(); ++i)
+    (*i)->Kill();
+}
+
+void SuspendRequestContext(URLRequestContextGetter* request_context_getter) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  scoped_refptr<net::URLRequestContext> request_context =
+      request_context_getter->GetURLRequestContext();
+
+  request_context->http_transaction_factory()->Suspend(true);
+}
+
+void ResumeRequestContext(URLRequestContextGetter* request_context_getter) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  scoped_refptr<net::URLRequestContext> request_context =
+      request_context_getter->GetURLRequestContext();
+  request_context->http_transaction_factory()->Suspend(false);
+}
+
+}  // namespace
+
 // static
 void ProfileManager::ShutdownSessionServices() {
   ProfileManager* pm = g_browser_process->profile_manager();
@@ -224,19 +253,41 @@ Profile* ProfileManager::GetProfileByPath(const FilePath& path) const {
 void ProfileManager::OnSuspend() {
   DCHECK(CalledOnValidThread());
 
+  bool posted = BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(&SuspendURLRequestJobs));
+  DCHECK(posted);
+
+  scoped_refptr<URLRequestContextGetter> request_context;
   for (const_iterator i(begin()); i != end(); ++i) {
-    BrowserThread::PostTask(
+    request_context = (*i)->GetRequestContext();
+    posted = BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(&ProfileManager::SuspendProfile, *i));
+        NewRunnableFunction(&SuspendRequestContext, request_context));
+    DCHECK(posted);
+    request_context = (*i)->GetRequestContextForMedia();
+    posted = BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableFunction(&SuspendRequestContext, request_context));
+    DCHECK(posted);
   }
 }
 
 void ProfileManager::OnResume() {
   DCHECK(CalledOnValidThread());
+
+  scoped_refptr<URLRequestContextGetter> request_context;
   for (const_iterator i(begin()); i != end(); ++i) {
-    BrowserThread::PostTask(
+    request_context = (*i)->GetRequestContext();
+    bool posted = BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(&ProfileManager::ResumeProfile, *i));
+        NewRunnableFunction(&ResumeRequestContext, request_context));
+    DCHECK(posted);
+    request_context = (*i)->GetRequestContextForMedia();
+    posted = BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableFunction(&ResumeRequestContext, request_context));
+    DCHECK(posted);
   }
 }
 
@@ -260,26 +311,6 @@ void ProfileManager::Observe(
     logged_in_ = true;
   }
 #endif
-}
-
-void ProfileManager::SuspendProfile(Profile* profile) {
-  DCHECK(profile);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  for (net::URLRequestJobTracker::JobIterator i =
-           net::g_url_request_job_tracker.begin();
-       i != net::g_url_request_job_tracker.end(); ++i)
-    (*i)->Kill();
-
-  profile->GetRequestContext()->GetURLRequestContext()->
-      http_transaction_factory()->Suspend(true);
-}
-
-void ProfileManager::ResumeProfile(Profile* profile) {
-  DCHECK(profile);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  profile->GetRequestContext()->GetURLRequestContext()->
-      http_transaction_factory()->Suspend(false);
 }
 
 // static
