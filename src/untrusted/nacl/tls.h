@@ -135,6 +135,15 @@ void __nacl_tls_data_bss_initialize_from_template(void* combined_area);
 /************************************************************************/
 /* Functions defined in libplatform.a (src/untrusted/stubs/tls.c):      */
 
+/*
+ * NOTE: PNaCl replaces these functions by intrinsics in the compiler.
+ * If you make changes to these functions, please also change the code in
+ * hg/llvm-gcc/.../gcc/builtins.def
+ * hg/llvm/.../include/llvm/Intrinsics.td
+ * hg/llvm/.../lib/Target/ARM/ARMInstrInfo.td
+ * hg/llvm/.../lib/Target/X86/X86InstrNaCl.td
+ */
+
 /* Platform specific alignment for tls segment */
 int __nacl_tls_aligment();
 

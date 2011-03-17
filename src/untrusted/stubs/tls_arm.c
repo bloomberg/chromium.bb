@@ -9,6 +9,14 @@
  * These routines are documented in the tls.h header included below.
  */
 
+/*
+ * NOTE: PNaCl replaces these functions by intrinsics in the compiler.
+ * If you make changes to these functions, please also change the code in
+ * hg/llvm-gcc/.../gcc/builtins.def
+ * hg/llvm/.../include/llvm/Intrinsics.td
+ * hg/llvm/.../lib/Target/ARM/ARMInstrInfo.td
+ */
+
 #include "native_client/src/untrusted/nacl/tls.h"
 
 /* See src/untrusted/nacl/tls.h */
