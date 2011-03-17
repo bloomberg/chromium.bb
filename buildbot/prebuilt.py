@@ -496,7 +496,7 @@ class PrebuiltUploader(object):
 
       failed_uploads = RemoteUpload(self._acl, upload_files)
       if len(failed_uploads) > 1 or (None not in failed_uploads):
-        error_msg = ['%s -> %s\n' % args for args in failed_uploads]
+        error_msg = ['%s -> %s\n' % args for args in failed_uploads if args]
         raise UploadFailed('Error uploading:\n%s' % error_msg)
     else:
       pkgs = ' '.join(p['CPV'] + '.tbz2' for p in uploads)
