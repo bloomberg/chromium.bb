@@ -593,8 +593,8 @@ TEST_F(PersonalDataManagerTest, ImportFormDataBadEmail) {
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure);
   const CreditCard* imported_credit_card;
-  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
-  ASSERT_FALSE(imported_credit_card);
+  EXPECT_FALSE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_EQ(static_cast<CreditCard*>(NULL), imported_credit_card);
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -602,13 +602,8 @@ TEST_F(PersonalDataManagerTest, ImportFormDataBadEmail) {
 
   MessageLoop::current()->Run();
 
-  AutofillProfile expected;
-  autofill_test::SetProfileInfo(&expected, "George", NULL,
-      "Washington", NULL, NULL, "21 Laussat St", NULL,
-      "San Francisco", "California", "94102", NULL, NULL, NULL);
   const std::vector<AutofillProfile*>& results = personal_data_->profiles();
-  ASSERT_EQ(1U, results.size());
-  EXPECT_EQ(0, expected.Compare(*results[0]));
+  ASSERT_EQ(0U, results.size());
 }
 
 TEST_F(PersonalDataManagerTest, ImportFormDataNotEnoughFilledFields) {

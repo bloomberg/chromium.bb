@@ -17,6 +17,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/field_types.h"
+#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/webdata/web_data_service.h"
 
 class AutofillManager;
@@ -29,6 +30,7 @@ class Profile;
 // AutoFill.
 class PersonalDataManager
     : public WebDataServiceConsumer,
+      public ProfileSyncServiceObserver,
       public base::RefCountedThreadSafe<PersonalDataManager> {
  public:
   // An interface the PersonalDataManager uses to notify its clients (observers)
@@ -57,6 +59,9 @@ class PersonalDataManager
 
   // Removes |observer| as the observer of this PersonalDataManager.
   virtual void RemoveObserver(PersonalDataManager::Observer* observer);
+
+  // ProfileSyncServiceObserver:
+  virtual void OnStateChanged();
 
         // TODO(isherman): Update this comment
   // If AutoFill is able to determine the field types of a significant number of
@@ -144,6 +149,17 @@ class PersonalDataManager
   // Kicks off asynchronous loading of profiles and credit cards.
   void Init(Profile* profile);
 
+  // Checks suitability of |profile| for adding to the user's set of profiles.
+  static bool IsValidLearnableProfile(const AutofillProfile& profile);
+
+  // Merges |profile| into one of the |existing_profiles| if possible; otherwise
+  // appends |profile| to the end of that list. Fills |merged_profiles| with the
+  // result.
+  static bool MergeProfile(
+      const AutofillProfile& profile,
+      const std::vector<AutofillProfile*>& existing_profiles,
+      std::vector<AutofillProfile>* merged_profiles);
+
  protected:
   // Make sure that only Profile and certain tests can create an instance of
   // PersonalDataManager.
@@ -188,12 +204,8 @@ class PersonalDataManager
   // Saves |imported_profile| to the WebDB if it exists.
   virtual void SaveImportedProfile(const AutofillProfile& imported_profile);
 
-  // Merges |profile| into one of the |existing_profiles| if possible; otherwise
-  // appends |profile| to the end of that list. Fills |merged_profiles| with the
-  // result.
-  bool MergeProfile(const AutofillProfile& profile,
-                    const std::vector<AutofillProfile*>& existing_profiles,
-                    std::vector<AutofillProfile>* merged_profiles);
+  // Notifies Sync about data migration if necessary.
+  void EmptyMigrationTrash();
 
   // The first time this is called, logs an UMA metrics for the number of
   // profiles the user has. On subsequent calls, does nothing.

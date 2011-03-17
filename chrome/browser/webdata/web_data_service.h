@@ -454,6 +454,10 @@ class WebDataService
   // consumer owns the profiles.
   Handle GetAutofillProfiles(WebDataServiceConsumer* consumer);
 
+  // Remove "trashed" profile guids from the web database and optionally send
+  // notifications to tell Sync that the items have been removed.
+  void EmptyMigrationTrash(bool notify_sync);
+
   // Schedules a task to add credit card to the web database.
   void AddCreditCard(const CreditCard& credit_card);
 
@@ -603,6 +607,7 @@ class WebDataService
   void UpdateAutofillProfileImpl(GenericRequest<AutofillProfile>* request);
   void RemoveAutofillProfileImpl(GenericRequest<std::string>* request);
   void GetAutofillProfilesImpl(WebDataRequest* request);
+  void EmptyMigrationTrashImpl(GenericRequest<bool>* request);
   void AddCreditCardImpl(GenericRequest<CreditCard>* request);
   void UpdateCreditCardImpl(GenericRequest<CreditCard>* request);
   void RemoveCreditCardImpl(GenericRequest<std::string>* request);

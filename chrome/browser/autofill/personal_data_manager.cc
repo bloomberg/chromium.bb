@@ -15,8 +15,10 @@
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/phone_number.h"
+#include "chrome/browser/autofill/select_control_handler.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
@@ -78,6 +80,15 @@ bool IsValidEmail(const string16& value) {
   const string16 kEmailPattern =
       ASCIIToUTF16("^[^@]+@[^@]+\\.[a-z]{2,6}$");
   WebKit::WebRegularExpression re(WebKit::WebString(kEmailPattern),
+                                  WebKit::WebTextCaseInsensitive);
+  return re.match(WebKit::WebString(StringToLowerASCII(value))) != -1;
+}
+
+// Valid for US zip codes only.
+bool IsValidZip(const string16& value) {
+  // Basic US zip code matching.
+  const string16 kZipPattern = ASCIIToUTF16("^\\d{5}(-\\d{4})?$");
+  WebKit::WebRegularExpression re(WebKit::WebString(kZipPattern),
                                   WebKit::WebTextCaseInsensitive);
   return re.match(WebKit::WebString(StringToLowerASCII(value))) != -1;
 }
@@ -149,6 +160,31 @@ void PersonalDataManager::SetObserver(PersonalDataManager::Observer* observer) {
 void PersonalDataManager::RemoveObserver(
     PersonalDataManager::Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+// The |PersonalDataManager| is set up as a listener of the sync service in
+// |EmptyMigrationTrash| in the case where sync is not yet ready to receive
+// changes.  This method, |OnStateChange| acts as a deferred call to
+// |EmptyMigrationTrash| once the sync service becomes available.
+void PersonalDataManager::OnStateChanged() {
+  if (!profile_ || profile_->IsOffTheRecord())
+    return;
+
+  WebDataService* web_data_service =
+      profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!web_data_service) {
+    NOTREACHED();
+    return;
+  }
+
+  ProfileSyncService* sync_service = profile_->GetProfileSyncService();
+  if (!sync_service)
+    return;
+
+  if (sync_service->ShouldPushChanges()) {
+    web_data_service->EmptyMigrationTrash(true);
+    sync_service->RemoveObserver(this);
+  }
 }
 
 bool PersonalDataManager::ImportFormData(
@@ -234,11 +270,15 @@ bool PersonalDataManager::ImportFormData(
           }
         }
 
-        if (field_type == EMAIL_ADDRESS && !IsValidEmail(value))
-          continue;
-
         imported_profile->SetInfo(field_type, value);
         ++importable_fields;
+
+        // Reject profiles with invalid country information.
+        if (field_type == ADDRESS_HOME_COUNTRY &&
+            !value.empty() && imported_profile->CountryCode().empty()) {
+          imported_profile.reset();
+          break;
+        }
       }
     }
   }
@@ -250,8 +290,11 @@ bool PersonalDataManager::ImportFormData(
   if (importable_credit_card_fields < kMinCreditCardImportSize)
     local_imported_credit_card.reset();
 
-  if (imported_profile.get() && !IsMinimumAddress(*imported_profile.get()))
+  // Reject if minimum address and validation requirements are not met.
+  if (imported_profile.get() &&
+      !IsValidLearnableProfile(*imported_profile.get())) {
     imported_profile.reset();
+  }
 
   if (local_imported_credit_card.get() &&
       !CreditCard::IsCreditCardNumber(local_imported_credit_card->GetFieldText(
@@ -609,96 +652,32 @@ void PersonalDataManager::Init(Profile* profile) {
   LoadCreditCards();
 }
 
-void PersonalDataManager::LoadProfiles() {
-  WebDataService* web_data_service =
-      profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
-  if (!web_data_service) {
-    NOTREACHED();
-    return;
+// static
+bool PersonalDataManager::IsValidLearnableProfile(
+    const AutofillProfile& profile) {
+  if (!IsMinimumAddress(profile))
+    return false;
+
+  string16 email = profile.GetFieldText(EMAIL_ADDRESS);
+  if (!email.empty() && !IsValidEmail(email))
+    return false;
+
+  // Reject profiles with invalid US state information.
+  string16 state = profile.GetFieldText(ADDRESS_HOME_STATE);
+  if (profile.CountryCode() == "US" &&
+      !state.empty() && !autofill::IsValidState(state)) {
+    return false;
   }
 
-  CancelPendingQuery(&pending_profiles_query_);
+  // Reject profiles with invalid US zip information.
+  string16 zip = profile.GetFieldText(ADDRESS_HOME_ZIP);
+  if (profile.CountryCode() == "US" && !zip.empty() && !IsValidZip(zip))
+    return false;
 
-  pending_profiles_query_ = web_data_service->GetAutofillProfiles(this);
+  return true;
 }
 
-// Win and Linux implementations do nothing.  Mac implementation fills in the
-// contents of |auxiliary_profiles_|.
-#if !defined(OS_MACOSX)
-void PersonalDataManager::LoadAuxiliaryProfiles() {
-}
-#endif
-
-void PersonalDataManager::LoadCreditCards() {
-  WebDataService* web_data_service =
-      profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
-  if (!web_data_service) {
-    NOTREACHED();
-    return;
-  }
-
-  CancelPendingQuery(&pending_creditcards_query_);
-
-  pending_creditcards_query_ = web_data_service->GetCreditCards(this);
-}
-
-void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
-                                                const WDTypedResult* result) {
-  DCHECK_EQ(pending_profiles_query_, h);
-
-  pending_profiles_query_ = 0;
-  web_profiles_.reset();
-
-  const WDResult<std::vector<AutofillProfile*> >* r =
-      static_cast<const WDResult<std::vector<AutofillProfile*> >*>(result);
-
-  std::vector<AutofillProfile*> profiles = r->GetValue();
-  for (std::vector<AutofillProfile*>::iterator iter = profiles.begin();
-       iter != profiles.end(); ++iter) {
-    web_profiles_.push_back(*iter);
-  }
-
-  LogProfileCount();
-}
-
-void PersonalDataManager::ReceiveLoadedCreditCards(
-    WebDataService::Handle h, const WDTypedResult* result) {
-  DCHECK_EQ(pending_creditcards_query_, h);
-
-  pending_creditcards_query_ = 0;
-  credit_cards_.reset();
-
-  const WDResult<std::vector<CreditCard*> >* r =
-      static_cast<const WDResult<std::vector<CreditCard*> >*>(result);
-
-  std::vector<CreditCard*> credit_cards = r->GetValue();
-  for (std::vector<CreditCard*>::iterator iter = credit_cards.begin();
-       iter != credit_cards.end(); ++iter) {
-    credit_cards_.push_back(*iter);
-  }
-}
-
-void PersonalDataManager::CancelPendingQuery(WebDataService::Handle* handle) {
-  if (*handle) {
-    WebDataService* web_data_service =
-        profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
-    if (!web_data_service) {
-      NOTREACHED();
-      return;
-    }
-    web_data_service->CancelRequest(*handle);
-  }
-  *handle = 0;
-}
-
-void PersonalDataManager::SaveImportedProfile(
-    const AutofillProfile& imported_profile) {
-  if (profile_->IsOffTheRecord())
-    return;
-
-  AddProfile(imported_profile);
-}
-
+// static
 bool PersonalDataManager::MergeProfile(
     const AutofillProfile& profile,
     const std::vector<AutofillProfile*>& existing_profiles,
@@ -755,6 +734,97 @@ bool PersonalDataManager::MergeProfile(
   return merged;
 }
 
+void PersonalDataManager::LoadProfiles() {
+  WebDataService* web_data_service =
+      profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!web_data_service) {
+    NOTREACHED();
+    return;
+  }
+
+  CancelPendingQuery(&pending_profiles_query_);
+
+  pending_profiles_query_ = web_data_service->GetAutofillProfiles(this);
+}
+
+// Win and Linux implementations do nothing.  Mac implementation fills in the
+// contents of |auxiliary_profiles_|.
+#if !defined(OS_MACOSX)
+void PersonalDataManager::LoadAuxiliaryProfiles() {
+}
+#endif
+
+void PersonalDataManager::LoadCreditCards() {
+  WebDataService* web_data_service =
+      profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!web_data_service) {
+    NOTREACHED();
+    return;
+  }
+
+  CancelPendingQuery(&pending_creditcards_query_);
+
+  pending_creditcards_query_ = web_data_service->GetCreditCards(this);
+}
+
+void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
+                                                const WDTypedResult* result) {
+  DCHECK_EQ(pending_profiles_query_, h);
+
+  pending_profiles_query_ = 0;
+  web_profiles_.reset();
+
+  const WDResult<std::vector<AutofillProfile*> >* r =
+      static_cast<const WDResult<std::vector<AutofillProfile*> >*>(result);
+
+  std::vector<AutofillProfile*> profiles = r->GetValue();
+  for (std::vector<AutofillProfile*>::iterator iter = profiles.begin();
+       iter != profiles.end(); ++iter) {
+    web_profiles_.push_back(*iter);
+  }
+
+  LogProfileCount();
+  EmptyMigrationTrash();
+}
+
+void PersonalDataManager::ReceiveLoadedCreditCards(
+    WebDataService::Handle h, const WDTypedResult* result) {
+  DCHECK_EQ(pending_creditcards_query_, h);
+
+  pending_creditcards_query_ = 0;
+  credit_cards_.reset();
+
+  const WDResult<std::vector<CreditCard*> >* r =
+      static_cast<const WDResult<std::vector<CreditCard*> >*>(result);
+
+  std::vector<CreditCard*> credit_cards = r->GetValue();
+  for (std::vector<CreditCard*>::iterator iter = credit_cards.begin();
+       iter != credit_cards.end(); ++iter) {
+    credit_cards_.push_back(*iter);
+  }
+}
+
+void PersonalDataManager::CancelPendingQuery(WebDataService::Handle* handle) {
+  if (*handle) {
+    WebDataService* web_data_service =
+        profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+    if (!web_data_service) {
+      NOTREACHED();
+      return;
+    }
+    web_data_service->CancelRequest(*handle);
+  }
+  *handle = 0;
+}
+
+void PersonalDataManager::SaveImportedProfile(
+    const AutofillProfile& imported_profile) {
+  if (profile_->IsOffTheRecord())
+    return;
+
+  AddProfile(imported_profile);
+}
+
 
 void PersonalDataManager::SaveImportedCreditCard(
     const CreditCard& imported_credit_card) {
@@ -794,6 +864,32 @@ void PersonalDataManager::SaveImportedCreditCard(
   SetCreditCards(&creditcards);
 }
 
+void PersonalDataManager::EmptyMigrationTrash() {
+  if (!profile_ || profile_->IsOffTheRecord())
+    return;
+
+  WebDataService* web_data_service =
+      profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!web_data_service) {
+    NOTREACHED();
+    return;
+  }
+
+  ProfileSyncService* sync_service = profile_->GetProfileSyncService();
+  if (!sync_service)
+    return;
+
+  if (!sync_service->HasSyncSetupCompleted()) {
+    web_data_service->EmptyMigrationTrash(false);
+  } else if (sync_service->ShouldPushChanges()) {
+    web_data_service->EmptyMigrationTrash(true);
+  } else {
+    // Install ourself as a listener so we can empty the trash once the
+    // sync service becomes available.
+    if (!sync_service->HasObserver(this))
+      sync_service->AddObserver(this);
+  }
+}
 
 void PersonalDataManager::LogProfileCount() const {
   if (!g_has_logged_profile_count) {

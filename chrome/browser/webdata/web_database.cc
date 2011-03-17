@@ -20,6 +20,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/credit_card.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/password_manager/encryptor.h"
@@ -158,6 +159,13 @@ enum AutoFillPhoneType {
 //                      of the number.
 //   number
 //
+// autofill_profiles_trash
+//                      This table contains guids of "trashed" autofill
+//                      profiles.  When a profile is removed its guid is added
+//                      to this table so that Sync can perform deferred removal.
+//
+//   guid               The guid string that identifies the trashed profile.
+//
 // credit_cards         This table contains credit card data added by the user
 //                      with the AutoFill dialog.  Most of the columns are
 //                      standard entries in a credit card form.
@@ -192,8 +200,8 @@ typedef std::vector<Tuple3<int64, string16, string16> > AutofillElementList;
 // Current version number.  Note: when changing the current version number,
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
-const int kCurrentVersionNumber = 35;
-const int kCompatibleVersionNumber = 35;
+const int kCurrentVersionNumber = 36;
+const int kCompatibleVersionNumber = 36;
 
 // ID of the url column in keywords.
 const int kUrlIdPosition = 16;
@@ -592,6 +600,13 @@ bool RemoveAutofillProfilePieces(const std::string& guid, sql::Connection* db) {
   return s3.Run();
 }
 
+// TODO(dhollowa): Find a common place for this.  It is duplicated in
+// personal_data_manager.cc.
+template<typename T>
+T* address_of(T& v) {
+  return &v;
+}
+
 }  // namespace
 
 WebDatabase::WebDatabase() {
@@ -651,8 +666,8 @@ sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
       !InitWebAppsTable() || !InitAutofillTable() ||
       !InitAutofillDatesTable() || !InitAutofillProfilesTable() ||
       !InitAutofillProfileNamesTable() || !InitAutofillProfileEmailsTable() ||
-      !InitAutofillProfilePhonesTable() || !InitCreditCardsTable() ||
-      !InitTokenServiceTable()) {
+      !InitAutofillProfilePhonesTable() || !InitAutofillProfileTrashTable() ||
+      !InitCreditCardsTable() || !InitTokenServiceTable()) {
     LOG(WARNING) << "Unable to initialize the web database.";
     return sql::INIT_FAILURE;
   }
@@ -990,6 +1005,17 @@ bool WebDatabase::InitAutofillProfilePhonesTable() {
                      "guid VARCHAR, "
                      "type INTEGER DEFAULT 0, "
                      "number VARCHAR)")) {
+      NOTREACHED();
+      return false;
+    }
+  }
+  return true;
+}
+
+bool WebDatabase::InitAutofillProfileTrashTable() {
+  if (!db_.DoesTableExist("autofill_profiles_trash")) {
+    if (!db_.Execute("CREATE TABLE autofill_profiles_trash ( "
+                     "guid VARCHAR)")) {
       NOTREACHED();
       return false;
     }
@@ -1847,6 +1873,9 @@ bool WebDatabase::RemoveFormElement(const string16& name,
 }
 
 bool WebDatabase::AddAutofillProfile(const AutofillProfile& profile) {
+  if (IsAutofillGUIDInTrash(profile.guid()))
+    return true;
+
   sql::Statement s(db_.GetUniqueStatement(
       "INSERT INTO autofill_profiles"
       "(guid, company_name, address_line_1, address_line_2, city, state,"
@@ -1986,6 +2015,11 @@ bool WebDatabase::GetAutofillProfiles(
 bool WebDatabase::UpdateAutofillProfile(const AutofillProfile& profile) {
   DCHECK(guid::IsValidGUID(profile.guid()));
 
+  // Don't update anything until the trash has been emptied.  There may be
+  // pending modifications to process.
+  if (!IsAutofillProfilesTrashEmpty())
+    return true;
+
   AutofillProfile* tmp_profile = NULL;
   if (!GetAutofillProfile(profile.guid(), &tmp_profile))
     return false;
@@ -2022,6 +2056,23 @@ bool WebDatabase::UpdateAutofillProfile(const AutofillProfile& profile) {
 
 bool WebDatabase::RemoveAutofillProfile(const std::string& guid) {
   DCHECK(guid::IsValidGUID(guid));
+
+  if (IsAutofillGUIDInTrash(guid)) {
+    sql::Statement s_trash(db_.GetUniqueStatement(
+        "DELETE FROM autofill_profiles_trash WHERE guid = ?"));
+    if (!s_trash) {
+      NOTREACHED() << "Statement prepare failed";
+      return false;
+    }
+    s_trash.BindString(0, guid);
+    if (!s_trash.Run()) {
+      NOTREACHED() << "Expected item in trash.";
+      return false;
+    }
+
+    return true;
+  }
+
   sql::Statement s(db_.GetUniqueStatement(
       "DELETE FROM autofill_profiles WHERE guid = ?"));
   if (!s) {
@@ -2034,6 +2085,50 @@ bool WebDatabase::RemoveAutofillProfile(const std::string& guid) {
     return false;
 
   return RemoveAutofillProfilePieces(guid, &db_);
+}
+
+bool WebDatabase::ClearAutofillProfiles() {
+  sql::Statement s1(db_.GetUniqueStatement(
+      "DELETE FROM autofill_profiles"));
+  if (!s1) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  if (!s1.Run())
+    return false;
+
+  sql::Statement s2(db_.GetUniqueStatement(
+      "DELETE FROM autofill_profile_names"));
+  if (!s2) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  if (!s2.Run())
+    return false;
+
+  sql::Statement s3(db_.GetUniqueStatement(
+      "DELETE FROM autofill_profile_emails"));
+  if (!s3) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  if (!s3.Run())
+    return false;
+
+  sql::Statement s4(db_.GetUniqueStatement(
+      "DELETE FROM autofill_profile_phones"));
+  if (!s4) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  if (!s4.Run())
+    return false;
+
+  return true;
 }
 
 bool WebDatabase::AddCreditCard(const CreditCard& credit_card) {
@@ -2195,6 +2290,36 @@ bool WebDatabase::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
   return true;
 }
 
+bool WebDatabase::GetAutofillProfilesInTrash(std::vector<std::string>* guids) {
+  guids->clear();
+
+  sql::Statement s(db_.GetUniqueStatement(
+      "SELECT guid "
+      "FROM autofill_profiles_trash"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  while (s.Step()) {
+    std::string guid = s.ColumnString(0);
+    guids->push_back(guid);
+  }
+
+  return s.Succeeded();
+}
+
+bool WebDatabase::EmptyAutofillProfilesTrash() {
+  sql::Statement s(db_.GetUniqueStatement(
+      "DELETE FROM autofill_profiles_trash"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  return s.Run();
+}
+
 bool WebDatabase::AddToCountOfFormElement(int64 pair_id,
                                           int delta,
                                           bool* was_removed) {
@@ -2229,6 +2354,50 @@ bool WebDatabase::RemoveFormElementForID(int64 pair_id) {
                                          NULL);
   }
   return false;
+}
+
+bool WebDatabase::AddAutofillGUIDToTrash(const std::string& guid) {
+  sql::Statement s(db_.GetUniqueStatement(
+    "INSERT INTO autofill_profiles_trash"
+    " (guid) "
+    "VALUES (?)"));
+  if (!s) {
+    NOTREACHED();
+    return sql::INIT_FAILURE;
+  }
+
+  s.BindString(0, guid);
+  if (!s.Run()) {
+    NOTREACHED();
+    return false;
+  }
+  return true;
+}
+
+bool WebDatabase::IsAutofillProfilesTrashEmpty() {
+  sql::Statement s(db_.GetUniqueStatement(
+      "SELECT guid "
+      "FROM autofill_profiles_trash"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  return !s.Step();
+}
+
+bool WebDatabase::IsAutofillGUIDInTrash(const std::string& guid) {
+  sql::Statement s(db_.GetUniqueStatement(
+      "SELECT guid "
+      "FROM autofill_profiles_trash "
+      "WHERE guid = ?"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  s.BindString(0, guid);
+  return s.Step();
 }
 
 sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(){
@@ -3075,6 +3244,101 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(){
       meta_table_.SetVersionNumber(35);
       meta_table_.SetCompatibleVersionNumber(
           std::min(35, kCompatibleVersionNumber));
+
+      // FALL THROUGH
+
+    case 35:
+      // Merge and cull older profiles where possible.
+      {
+        sql::Statement s(db_.GetUniqueStatement(
+            "SELECT guid, date_modified "
+            "FROM autofill_profiles"));
+        if (!s) {
+          NOTREACHED() << "Statement prepare failed";
+          return sql::INIT_FAILURE;
+        }
+
+        // Accumulate the good profiles.
+        std::vector<AutofillProfile> accumulated_profiles;
+        std::vector<AutofillProfile*> accumulated_profiles_p;
+        std::map<std::string, int64> modification_map;
+        while (s.Step()) {
+          std::string guid = s.ColumnString(0);
+          int64 date_modified = s.ColumnInt64(1);
+          modification_map.insert(
+              std::pair<std::string, int64>(guid, date_modified));
+          AutofillProfile* profile = NULL;
+          if (!GetAutofillProfile(guid, &profile)) {
+            NOTREACHED() << "Bad read of profile.";
+            return sql::INIT_FAILURE;
+          }
+          scoped_ptr<AutofillProfile> p(profile);
+
+          if (PersonalDataManager::IsValidLearnableProfile(*p)) {
+            std::vector<AutofillProfile> merged_profiles;
+            bool merged = PersonalDataManager::MergeProfile(
+                *p, accumulated_profiles_p, &merged_profiles);
+
+            std::swap(accumulated_profiles, merged_profiles);
+
+            accumulated_profiles_p.clear();
+            accumulated_profiles_p.resize(accumulated_profiles.size());
+            std::transform(accumulated_profiles.begin(),
+                           accumulated_profiles.end(),
+                           accumulated_profiles_p.begin(),
+                           address_of<AutofillProfile>);
+
+            // If the profile got merged trash the original.
+            if (merged)
+              AddAutofillGUIDToTrash(p->guid());
+          } else {
+            // An invalid profile, so trash it.
+            AddAutofillGUIDToTrash(p->guid());
+          }
+        }
+
+        // Drop the current profiles.
+        if (!ClearAutofillProfiles()) {
+          LOG(WARNING) << "Unable to update web database to version 36.";
+          NOTREACHED();
+          return sql::INIT_FAILURE;
+        }
+
+        // Add the newly merged profiles back in.
+        for (std::vector<AutofillProfile>::const_iterator
+                iter = accumulated_profiles.begin();
+             iter != accumulated_profiles.end();
+             ++iter) {
+          if (!AddAutofillProfile(*iter)) {
+            LOG(WARNING) << "Unable to update web database to version 36.";
+            NOTREACHED();
+            return sql::INIT_FAILURE;
+          }
+
+          // Fix up the original modification date.
+          std::map<std::string, int64>::const_iterator date_item =
+              modification_map.find(iter->guid());
+          if (date_item == modification_map.end()) {
+            LOG(WARNING) << "Unable to update web database to version 36.";
+            NOTREACHED();
+            return sql::INIT_FAILURE;
+          }
+          sql::Statement s_date(db_.GetUniqueStatement(
+              "UPDATE autofill_profiles SET date_modified=? "
+              "WHERE guid=?"));
+          s_date.BindInt64(0, date_item->second);
+          s_date.BindString(1, iter->guid());
+          if (!s_date.Run()) {
+            LOG(WARNING) << "Unable to update web database to version 36.";
+            NOTREACHED();
+            return sql::INIT_FAILURE;
+          }
+        }
+      }
+
+      meta_table_.SetVersionNumber(36);
+      meta_table_.SetCompatibleVersionNumber(
+          std::min(36, kCompatibleVersionNumber));
 
       // FALL THROUGH
 

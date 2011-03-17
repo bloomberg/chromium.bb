@@ -434,6 +434,16 @@ WebDataService::Handle WebDataService::GetAutofillProfiles(
   return request->GetHandle();
 }
 
+void WebDataService::EmptyMigrationTrash(bool notify_sync) {
+  GenericRequest<bool>* request =
+      new GenericRequest<bool>(
+          this, GetNextRequestHandle(), NULL, notify_sync);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::EmptyMigrationTrashImpl,
+                                 request));
+}
+
 void WebDataService::AddCreditCard(const CreditCard& credit_card) {
   GenericRequest<CreditCard>* request =
       new GenericRequest<CreditCard>(
@@ -1084,6 +1094,57 @@ void WebDataService::GetAutofillProfilesImpl(WebDataRequest* request) {
     request->SetResult(
         new WDResult<std::vector<AutofillProfile*> >(AUTOFILL_PROFILES_RESULT,
                                                      profiles));
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::EmptyMigrationTrashImpl(
+    GenericRequest<bool>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    bool notify_sync = request->GetArgument();
+    if (notify_sync) {
+      std::vector<std::string> guids;
+      if (!db_->GetAutofillProfilesInTrash(&guids)) {
+        NOTREACHED();
+        return;
+      }
+
+      for (std::vector<std::string>::const_iterator iter = guids.begin();
+           iter != guids.end(); ++iter) {
+        // Send GUID-based notification.
+        AutofillProfileChange change(AutofillProfileChange::REMOVE,
+                                     *iter, NULL);
+        NotificationService::current()->Notify(
+            NotificationType::AUTOFILL_PROFILE_CHANGED,
+            Source<WebDataService>(this),
+            Details<AutofillProfileChange>(&change));
+      }
+
+      // If we trashed any profiles they may have been merged, so send out
+      // update notifications as well.
+      if (!guids.empty()) {
+        std::vector<AutofillProfile*> profiles;
+        db_->GetAutofillProfiles(&profiles);
+        for (std::vector<AutofillProfile*>::const_iterator
+                iter = profiles.begin();
+             iter != profiles.end(); ++iter) {
+          AutofillProfileChange change(AutofillProfileChange::UPDATE,
+                                       (*iter)->guid(), *iter);
+          NotificationService::current()->Notify(
+              NotificationType::AUTOFILL_PROFILE_CHANGED,
+              Source<WebDataService>(this),
+              Details<AutofillProfileChange>(&change));
+        }
+        STLDeleteElements(&profiles);
+      }
+    }
+
+    if (!db_->EmptyAutofillProfilesTrash()) {
+      NOTREACHED();
+      return;
+    }
+    ScheduleCommit();
   }
   request->RequestComplete();
 }

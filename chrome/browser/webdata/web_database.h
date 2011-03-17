@@ -261,6 +261,13 @@ class WebDatabase {
       base::Time delete_begin,
       base::Time delete_end);
 
+  // Retrieves all profiles in the database that have been deleted since last
+  // "empty" of the trash.
+  bool GetAutofillProfilesInTrash(std::vector<std::string>* guids);
+
+  // Empties the Autofill profiles "trash can".
+  bool EmptyAutofillProfilesTrash();
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // Web Apps
@@ -311,6 +318,8 @@ class WebDatabase {
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, CreditCard);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, UpdateAutofillProfile);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, UpdateCreditCard);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, AutofillProfileTrash);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, AutofillProfileTrashInteraction);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest,
                            RemoveAutofillProfilesAndCreditCardsModifiedBetween);
 
@@ -333,6 +342,19 @@ class WebDatabase {
   // Insert a single AutofillEntry into the autofill/autofill_dates tables.
   bool InsertAutofillEntry(const AutofillEntry& entry);
 
+  // Retrieves all profiles in the database that have been deleted since last
+  // "empty" of the trash.
+  bool AddAutofillGUIDToTrash(const std::string& guid);
+
+  // Checks if the trash is empty.
+  bool IsAutofillProfilesTrashEmpty();
+
+  // Checks if the guid is in the trash.
+  bool IsAutofillGUIDInTrash(const std::string& guid);
+
+  // Clear all profiles.
+  bool ClearAutofillProfiles();
+
   bool InitKeywordsTable();
   bool InitLoginsTable();
   bool InitAutofillTable();
@@ -341,6 +363,7 @@ class WebDatabase {
   bool InitAutofillProfileNamesTable();
   bool InitAutofillProfileEmailsTable();
   bool InitAutofillProfilePhonesTable();
+  bool InitAutofillProfileTrashTable();
   bool InitCreditCardsTable();
   bool InitTokenServiceTable();
   bool InitWebAppIconsTable();

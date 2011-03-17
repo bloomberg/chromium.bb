@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/autofill/field_types.h"
+#include "base/string16.h"
 
 class FormGroup;
 
@@ -23,6 +24,10 @@ namespace autofill {
 void FillSelectControl(const FormGroup& form_group,
                        AutofillFieldType type,
                        webkit_glue::FormField* field);
+
+// Returns true if |value| is a valid US state name or abbreviation.  It is case
+// insensitive.  Valid for US states only.
+bool IsValidState(const string16& value);
 
 }  // namespace autofill
 

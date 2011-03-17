@@ -181,10 +181,8 @@ void CreditCard31FromStatement(const sql::Statement& s,
   *unique_id = s.ColumnInt(1);
   credit_card->SetInfo(CREDIT_CARD_NAME, s.ColumnString16(2));
   credit_card->SetInfo(CREDIT_CARD_TYPE, s.ColumnString16(3));
-  credit_card->SetInfo(CREDIT_CARD_EXP_MONTH,
-                       s.ColumnString16(5));
-  credit_card->SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                       s.ColumnString16(6));
+  credit_card->SetInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(5));
+  credit_card->SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(6));
   int encrypted_number_len = s.ColumnByteLength(10);
   if (encrypted_number_len) {
     encrypted_number->resize(encrypted_number_len);
@@ -205,10 +203,8 @@ void CreditCard32FromStatement(const sql::Statement& s,
   credit_card->set_guid(s.ColumnString(0));
   EXPECT_TRUE(guid::IsValidGUID(credit_card->guid()));
   credit_card->SetInfo(CREDIT_CARD_NAME, s.ColumnString16(1));
-  credit_card->SetInfo(CREDIT_CARD_EXP_MONTH,
-                       s.ColumnString16(2));
-  credit_card->SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                       s.ColumnString16(3));
+  credit_card->SetInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(2));
+  credit_card->SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(3));
   int encrypted_number_len = s.ColumnByteLength(4);
   if (encrypted_number_len) {
     encrypted_number->resize(encrypted_number_len);
@@ -1411,22 +1407,16 @@ TEST_F(WebDatabaseTest, AutofillProfile) {
   home_profile.SetInfo(NAME_FIRST, ASCIIToUTF16("John"));
   home_profile.SetInfo(NAME_MIDDLE, ASCIIToUTF16("Q."));
   home_profile.SetInfo(NAME_LAST, ASCIIToUTF16("Smith"));
-  home_profile.SetInfo(EMAIL_ADDRESS,
-                       ASCIIToUTF16("js@smith.xyz"));
+  home_profile.SetInfo(EMAIL_ADDRESS, ASCIIToUTF16("js@smith.xyz"));
   home_profile.SetInfo(COMPANY_NAME, ASCIIToUTF16("Google"));
-  home_profile.SetInfo(ADDRESS_HOME_LINE1,
-                       ASCIIToUTF16("1234 Apple Way"));
-  home_profile.SetInfo(ADDRESS_HOME_LINE2,
-                       ASCIIToUTF16("unit 5"));
-  home_profile.SetInfo(ADDRESS_HOME_CITY,
-                       ASCIIToUTF16("Los Angeles"));
+  home_profile.SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1234 Apple Way"));
+  home_profile.SetInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("unit 5"));
+  home_profile.SetInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Los Angeles"));
   home_profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
   home_profile.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
   home_profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
-  home_profile.SetInfo(PHONE_HOME_WHOLE_NUMBER,
-                       ASCIIToUTF16("18181234567"));
-  home_profile.SetInfo(PHONE_FAX_WHOLE_NUMBER,
-                       ASCIIToUTF16("1915243678"));
+  home_profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
+  home_profile.SetInfo(PHONE_FAX_WHOLE_NUMBER, ASCIIToUTF16("1915243678"));
 
   Time pre_creation_time = Time::Now();
   EXPECT_TRUE(db.AddAutofillProfile(home_profile));
@@ -1452,8 +1442,7 @@ TEST_F(WebDatabaseTest, AutofillProfile) {
   billing_profile.set_guid(guid::GenerateGUID());
   billing_profile.SetInfo(ADDRESS_HOME_LINE1,
                           ASCIIToUTF16("5678 Bottom Street"));
-  billing_profile.SetInfo(ADDRESS_HOME_LINE2,
-                          ASCIIToUTF16("suite 3"));
+  billing_profile.SetInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("suite 3"));
 
   pre_creation_time = Time::Now();
   EXPECT_TRUE(db.AddAutofillProfile(billing_profile));
@@ -1495,24 +1484,16 @@ TEST_F(WebDatabaseTest, AutofillProfile) {
   billing_profile.SetInfo(NAME_FIRST, ASCIIToUTF16("Janice"));
   billing_profile.SetInfo(NAME_MIDDLE, ASCIIToUTF16("C."));
   billing_profile.SetInfo(NAME_FIRST, ASCIIToUTF16("Joplin"));
-  billing_profile.SetInfo(EMAIL_ADDRESS,
-                          ASCIIToUTF16("jane@singer.com"));
+  billing_profile.SetInfo(EMAIL_ADDRESS, ASCIIToUTF16("jane@singer.com"));
   billing_profile.SetInfo(COMPANY_NAME, ASCIIToUTF16("Indy"));
-  billing_profile.SetInfo(ADDRESS_HOME_LINE1,
-                          ASCIIToUTF16("Open Road"));
-  billing_profile.SetInfo(ADDRESS_HOME_LINE2,
-                          ASCIIToUTF16("Route 66"));
-  billing_profile.SetInfo(ADDRESS_HOME_CITY,
-                          ASCIIToUTF16("NFA"));
+  billing_profile.SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("Open Road"));
+  billing_profile.SetInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Route 66"));
+  billing_profile.SetInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("NFA"));
   billing_profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("NY"));
-  billing_profile.SetInfo(ADDRESS_HOME_ZIP,
-                          ASCIIToUTF16("10011"));
-  billing_profile.SetInfo(ADDRESS_HOME_COUNTRY,
-                          ASCIIToUTF16("United States"));
-  billing_profile.SetInfo(PHONE_HOME_WHOLE_NUMBER,
-                          ASCIIToUTF16("18181230000"));
-  billing_profile.SetInfo(PHONE_FAX_WHOLE_NUMBER,
-                          ASCIIToUTF16("1915240000"));
+  billing_profile.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("10011"));
+  billing_profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"));
+  billing_profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181230000"));
+  billing_profile.SetInfo(PHONE_FAX_WHOLE_NUMBER, ASCIIToUTF16("1915240000"));
   Time pre_modification_time_2 = Time::Now();
   EXPECT_TRUE(db.UpdateAutofillProfile(billing_profile));
   Time post_modification_time_2 = Time::Now();
@@ -1535,6 +1516,99 @@ TEST_F(WebDatabaseTest, AutofillProfile) {
   EXPECT_FALSE(db.GetAutofillProfile(billing_profile.guid(), &db_profile));
 }
 
+TEST_F(WebDatabaseTest, AutofillProfileTrash) {
+  WebDatabase db;
+
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  std::vector<std::string> guids;
+  db.GetAutofillProfilesInTrash(&guids);
+  EXPECT_TRUE(guids.empty());
+
+  ASSERT_TRUE(
+      db.AddAutofillGUIDToTrash("00000000-0000-0000-0000-000000000000"));
+  ASSERT_TRUE(
+      db.AddAutofillGUIDToTrash("00000000-0000-0000-0000-000000000001"));
+  ASSERT_TRUE(db.GetAutofillProfilesInTrash(&guids));
+  EXPECT_EQ(2UL, guids.size());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000000", guids[0]);
+  EXPECT_EQ("00000000-0000-0000-0000-000000000001", guids[1]);
+
+  ASSERT_TRUE(db.EmptyAutofillProfilesTrash());
+  ASSERT_TRUE(db.GetAutofillProfilesInTrash(&guids));
+  EXPECT_TRUE(guids.empty());
+}
+
+TEST_F(WebDatabaseTest, AutofillProfileTrashInteraction) {
+  WebDatabase db;
+
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  std::vector<std::string> guids;
+  db.GetAutofillProfilesInTrash(&guids);
+  EXPECT_TRUE(guids.empty());
+
+  AutofillProfile profile;
+  profile.SetInfo(NAME_FIRST, ASCIIToUTF16("John"));
+  profile.SetInfo(NAME_MIDDLE, ASCIIToUTF16("Q."));
+  profile.SetInfo(NAME_LAST, ASCIIToUTF16("Smith"));
+  profile.SetInfo(EMAIL_ADDRESS,ASCIIToUTF16("js@smith.xyz"));
+  profile.SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1 Main St"));
+  profile.SetInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Los Angeles"));
+  profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
+  profile.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
+  profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+
+  // Mark this profile as in the trash.  This stops |AddAutofillProfile| from
+  // adding it.
+  EXPECT_TRUE(db.AddAutofillGUIDToTrash(profile.guid()));
+  EXPECT_TRUE(db.AddAutofillProfile(profile));
+  AutofillProfile* added_profile = NULL;
+  EXPECT_FALSE(db.GetAutofillProfile(profile.guid(), &added_profile));
+  EXPECT_EQ(static_cast<AutofillProfile*>(NULL), added_profile);
+
+  // Add the profile for real this time.
+  EXPECT_TRUE(db.EmptyAutofillProfilesTrash());
+  EXPECT_TRUE(db.GetAutofillProfilesInTrash(&guids));
+  EXPECT_TRUE(guids.empty());
+  EXPECT_TRUE(db.AddAutofillProfile(profile));
+  EXPECT_TRUE(db.GetAutofillProfile(profile.guid(), &added_profile));
+  ASSERT_NE(static_cast<AutofillProfile*>(NULL), added_profile);
+  delete added_profile;
+
+  // Mark this profile as in the trash.  This stops |UpdateAutofillProfile| from
+  // updating it.  In normal operation a profile should not be both in the trash
+  // and in the profiles table simultaneously.
+  EXPECT_TRUE(db.AddAutofillGUIDToTrash(profile.guid()));
+  profile.SetInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
+  EXPECT_TRUE(db.UpdateAutofillProfile(profile));
+  AutofillProfile* updated_profile = NULL;
+  EXPECT_TRUE(db.GetAutofillProfile(profile.guid(), &updated_profile));
+  ASSERT_NE(static_cast<AutofillProfile*>(NULL), added_profile);
+  EXPECT_EQ(ASCIIToUTF16("John"), updated_profile->GetFieldText(NAME_FIRST));
+  delete updated_profile;
+
+  // Try to delete the trashed profile.  This stops |RemoveAutofillProfile| from
+  // deleting it.  In normal operation deletion is done by migration step, and
+  // removal from trash is done by |WebDataService|.  |RemoveAutofillProfile|
+  // does remove the item from the trash if it is found however, so that if
+  // other clients remove it (via Sync say) then it is gone and doesn't need to
+  // be processed further by |WebDataService|.
+  EXPECT_TRUE(db.RemoveAutofillProfile(profile.guid()));
+  AutofillProfile* removed_profile = NULL;
+  EXPECT_TRUE(db.GetAutofillProfile(profile.guid(), &removed_profile));
+  EXPECT_FALSE(db.IsAutofillGUIDInTrash(profile.guid()));
+  ASSERT_NE(static_cast<AutofillProfile*>(NULL), removed_profile);
+  delete removed_profile;
+
+  // Check that emptying the trash now allows removal to occur.
+  EXPECT_TRUE(db.EmptyAutofillProfilesTrash());
+  EXPECT_TRUE(db.RemoveAutofillProfile(profile.guid()));
+  removed_profile = NULL;
+  EXPECT_FALSE(db.GetAutofillProfile(profile.guid(), &removed_profile));
+  EXPECT_EQ(static_cast<AutofillProfile*>(NULL), removed_profile);
+}
+
 TEST_F(WebDatabaseTest, CreditCard) {
   WebDatabase db;
 
@@ -1542,14 +1616,10 @@ TEST_F(WebDatabaseTest, CreditCard) {
 
   // Add a 'Work' credit card.
   CreditCard work_creditcard;
-  work_creditcard.SetInfo(CREDIT_CARD_NAME,
-                          ASCIIToUTF16("Jack Torrance"));
-  work_creditcard.SetInfo(CREDIT_CARD_NUMBER,
-                          ASCIIToUTF16("1234567890123456"));
-  work_creditcard.SetInfo(CREDIT_CARD_EXP_MONTH,
-                          ASCIIToUTF16("04"));
-  work_creditcard.SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                          ASCIIToUTF16("2013"));
+  work_creditcard.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
+  work_creditcard.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1234567890123456"));
+  work_creditcard.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("04"));
+  work_creditcard.SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2013"));
 
   Time pre_creation_time = Time::Now();
   EXPECT_TRUE(db.AddCreditCard(work_creditcard));
@@ -1573,14 +1643,11 @@ TEST_F(WebDatabaseTest, CreditCard) {
 
   // Add a 'Target' credit card.
   CreditCard target_creditcard;
-  target_creditcard.SetInfo(CREDIT_CARD_NAME,
-                            ASCIIToUTF16("Jack Torrance"));
+  target_creditcard.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
   target_creditcard.SetInfo(CREDIT_CARD_NUMBER,
                             ASCIIToUTF16("1111222233334444"));
-  target_creditcard.SetInfo(CREDIT_CARD_EXP_MONTH,
-                            ASCIIToUTF16("06"));
-  target_creditcard.SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                            ASCIIToUTF16("2012"));
+  target_creditcard.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("06"));
+  target_creditcard.SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2012"));
 
   pre_creation_time = Time::Now();
   EXPECT_TRUE(db.AddCreditCard(target_creditcard));
@@ -1600,8 +1667,7 @@ TEST_F(WebDatabaseTest, CreditCard) {
   delete db_creditcard;
 
   // Update the 'Target' credit card.
-  target_creditcard.SetInfo(CREDIT_CARD_NAME,
-                            ASCIIToUTF16("Charles Grady"));
+  target_creditcard.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Charles Grady"));
   Time pre_modification_time = Time::Now();
   EXPECT_TRUE(db.UpdateCreditCard(target_creditcard));
   Time post_modification_time = Time::Now();
@@ -1635,17 +1701,14 @@ TEST_F(WebDatabaseTest, UpdateAutofillProfile) {
   profile.SetInfo(NAME_LAST, ASCIIToUTF16("Smith"));
   profile.SetInfo(EMAIL_ADDRESS, ASCIIToUTF16("js@example.com"));
   profile.SetInfo(COMPANY_NAME, ASCIIToUTF16("Google"));
-  profile.SetInfo(ADDRESS_HOME_LINE1,
-                  ASCIIToUTF16("1234 Apple Way"));
+  profile.SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1234 Apple Way"));
   profile.SetInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("unit 5"));
   profile.SetInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Los Angeles"));
   profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
   profile.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
   profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
-  profile.SetInfo(PHONE_HOME_WHOLE_NUMBER,
-                  ASCIIToUTF16("18181234567"));
-  profile.SetInfo(PHONE_FAX_WHOLE_NUMBER,
-                  ASCIIToUTF16("1915243678"));
+  profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
+  profile.SetInfo(PHONE_FAX_WHOLE_NUMBER, ASCIIToUTF16("1915243678"));
   db.AddAutofillProfile(profile);
 
   // Set a mocked value for the profile's creation time.
@@ -1714,14 +1777,10 @@ TEST_F(WebDatabaseTest, UpdateCreditCard) {
 
   // Add a credit card to the db.
   CreditCard credit_card;
-  credit_card.SetInfo(CREDIT_CARD_NAME,
-                      ASCIIToUTF16("Jack Torrance"));
-  credit_card.SetInfo(CREDIT_CARD_NUMBER,
-                      ASCIIToUTF16("1234567890123456"));
-  credit_card.SetInfo(CREDIT_CARD_EXP_MONTH,
-                      ASCIIToUTF16("04"));
-  credit_card.SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                      ASCIIToUTF16("2013"));
+  credit_card.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
+  credit_card.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1234567890123456"));
+  credit_card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("04"));
+  credit_card.SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2013"));
   db.AddCreditCard(credit_card);
 
   // Set a mocked value for the credit card's creation time.
@@ -2104,7 +2163,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 35;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 36;
 
 void WebDatabaseMigrationTest::LoadDatabase(const FilePath::StringType& file) {
   std::string contents;
@@ -2983,16 +3042,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ(1297882100L, s1.ColumnInt64(8));
 
     // Alfred E Newman.
-    ASSERT_TRUE(s1.Step());
-    EXPECT_EQ("584282AC-5D21-8D73-A2DB-4F892EF61F3F", s1.ColumnString(0));
-    EXPECT_EQ(ASCIIToUTF16(""), s1.ColumnString16(1));
-    EXPECT_EQ(ASCIIToUTF16(""), s1.ColumnString16(2));
-    EXPECT_EQ(ASCIIToUTF16(""), s1.ColumnString16(3));
-    EXPECT_EQ(ASCIIToUTF16(""), s1.ColumnString16(4));
-    EXPECT_EQ(ASCIIToUTF16(""), s1.ColumnString16(5));
-    EXPECT_EQ(ASCIIToUTF16(""), s1.ColumnString16(6));
-    EXPECT_EQ(ASCIIToUTF16(""), s1.ColumnString16(7));
-    EXPECT_EQ(1297882100L, s1.ColumnInt64(8));
+    // Gets culled during migration from 35 to 36 due to incomplete address.
 
     // 3 Main St.
     ASSERT_TRUE(s1.Step());
@@ -3043,11 +3093,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ(ASCIIToUTF16("Smith"), s2.ColumnString16(3));
 
     // Alfred E Newman.
-    ASSERT_TRUE(s2.Step());
-    EXPECT_EQ("584282AC-5D21-8D73-A2DB-4F892EF61F3F", s2.ColumnString(0));
-    EXPECT_EQ(ASCIIToUTF16("Alfred"), s2.ColumnString16(1));
-    EXPECT_EQ(ASCIIToUTF16("E"), s2.ColumnString16(2));
-    EXPECT_EQ(ASCIIToUTF16("Newman"), s2.ColumnString16(3));
+    // Gets culled during migration from 35 to 36 due to incomplete address.
 
     // Note no name for 3 Main St.
 
@@ -3073,9 +3119,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     // Note no email for 2 Main St.
 
     // Alfred E Newman.
-    ASSERT_TRUE(s3.Step());
-    EXPECT_EQ("584282AC-5D21-8D73-A2DB-4F892EF61F3F", s3.ColumnString(0));
-    EXPECT_EQ(ASCIIToUTF16("a@e.com"), s3.ColumnString16(1));
+    // Gets culled during migration from 35 to 36 due to incomplete address.
 
     // Note no email for 3 Main St.
 
@@ -3229,5 +3273,96 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion34ToCurrent) {
 
     // Should have only one.
     ASSERT_FALSE(s.Step());
+  }
+}
+
+// Cleans up invalid profiles based on more agressive merging.  Filters out
+// profiles that are subsets of other profiles, and profiles with invalid email,
+// state, and incomplete address.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion35ToCurrent) {
+  // Initialize the database.
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_35.sql")));
+
+  // Verify pre-conditions. These are expectations for version 34 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    EXPECT_FALSE(connection.DoesTableExist("autofill_profiles_trash"));
+    ASSERT_TRUE(connection.DoesColumnExist("autofill_profiles", "guid"));
+
+    // Check that there are 6 profiles prior to merge.
+    sql::Statement s(
+        connection.GetUniqueStatement("SELECT guid FROM autofill_profiles"));
+    int i = 0;
+    while (s.Step())
+      ++i;
+    EXPECT_EQ(6, i);
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    ASSERT_TRUE(connection.DoesTableExist("autofill_profiles_trash"));
+    ASSERT_TRUE(connection.DoesColumnExist("autofill_profiles_trash", "guid"));
+    ASSERT_TRUE(connection.DoesColumnExist("autofill_profiles", "guid"));
+
+    // Verify data in the database after the migration.
+    sql::Statement s1(
+        connection.GetUniqueStatement(
+            "SELECT guid, company_name, address_line_1, address_line_2, "
+            "city, state, zipcode, country, date_modified "
+            "FROM autofill_profiles"));
+
+    // John Doe.
+    ASSERT_TRUE(s1.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000001", s1.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16("Acme Inc."), s1.ColumnString16(1));
+    EXPECT_EQ(ASCIIToUTF16("1 Main Street"), s1.ColumnString16(2));
+    EXPECT_EQ(ASCIIToUTF16("Apt 2"), s1.ColumnString16(3));
+    EXPECT_EQ(ASCIIToUTF16("San Francisco"), s1.ColumnString16(4));
+    EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
+    EXPECT_EQ(ASCIIToUTF16("94102"), s1.ColumnString16(6));
+    EXPECT_EQ(ASCIIToUTF16("United States"), s1.ColumnString16(7));
+    EXPECT_EQ(1300131704, s1.ColumnInt64(8));
+
+    // That should be it.
+    ASSERT_FALSE(s1.Step());
+
+    // Check that there 5 trashed profile after the merge.
+    sql::Statement s2(
+        connection.GetUniqueStatement("SELECT guid "
+                                      "FROM autofill_profiles_trash"));
+    ASSERT_TRUE(s2.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000002", s2.ColumnString(0));
+
+    ASSERT_TRUE(s2.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000003", s2.ColumnString(0));
+
+    ASSERT_TRUE(s2.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000004", s2.ColumnString(0));
+
+    ASSERT_TRUE(s2.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000005", s2.ColumnString(0));
+
+    ASSERT_TRUE(s2.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000006", s2.ColumnString(0));
+
+    // That should be it.
+    ASSERT_FALSE(s2.Step());
   }
 }

@@ -30,7 +30,8 @@ class AutofillCountry {
   static const std::string CountryCodeForLocale(const std::string& locale);
 
   // Returns the country code corresponding to |country|, which should be a
-  // country code or country name localized to |locale|.
+  // country code or country name localized to |locale|.  This function can
+  // be expensive so use judiciously.
   static const std::string GetCountryCode(const string16& country,
                                           const std::string& locale);
 

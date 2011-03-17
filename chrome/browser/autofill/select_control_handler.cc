@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_country.h"
@@ -237,6 +236,10 @@ void FillSelectControl(const FormGroup& form_group,
     FillExpirationMonthSelectControl(field_text, field);
 
   return;
+}
+
+bool IsValidState(const string16& value) {
+  return !State::Abbreviation(value).empty() || !State::FullName(value).empty();
 }
 
 }  // namespace autofill
