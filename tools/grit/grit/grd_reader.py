@@ -147,7 +147,7 @@ def Parse(filename_or_stream, dir=None, flexible_root=False,
 
   # Assign first ids to the nodes that don't have them.
   if isinstance(handler.root, misc.GritNode) and first_id_filename != '':
-    handler.root.AssignFirstIds(filename_or_stream, first_id_filename)
+    handler.root.AssignFirstIds(filename_or_stream, first_id_filename, defines)
 
   return handler.root
 

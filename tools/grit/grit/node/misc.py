@@ -7,6 +7,7 @@
 '''
 
 import os.path
+import re
 import sys
 
 from grit.node import base
@@ -18,6 +19,33 @@ from grit import util
 
 import grit.format.rc_header
 
+
+def _ReadFirstIdsFromFile(filename, defines, src_root_dir):
+  '''Read the starting resource id values from |filename|.  We also
+  expand variables of the form <(FOO) based on defines passed in on
+  the command line.'''
+  first_ids_dict = eval(open(filename).read())
+
+  def ReplaceVariable(matchobj):
+    for key, value in defines.iteritems():
+      if matchobj.group(1) == key:
+        value = os.path.abspath(value)[len(src_root_dir) + 1:]
+        return value
+    return ''
+
+  renames = []
+  for grd_filename in first_ids_dict:
+    new_grd_filename = re.sub(r'<\(([A-Za-z_]+)\)', ReplaceVariable,
+                              grd_filename)
+    if new_grd_filename != grd_filename:
+      new_grd_filename = new_grd_filename.replace('\\', '/')
+      renames.append((grd_filename, new_grd_filename))
+
+  for grd_filename, new_grd_filename in renames:
+    first_ids_dict[new_grd_filename] = first_ids_dict[grd_filename]
+    del(first_ids_dict[grd_filename])
+
+  return first_ids_dict
 
 
 class IfNode(base.Node):
@@ -267,7 +295,7 @@ class GritNode(base.Node):
   def SetDefines(self, defines):
     self.defines = defines
 
-  def AssignFirstIds(self, filename_or_stream, first_id_filename):
+  def AssignFirstIds(self, filename_or_stream, first_id_filename, defines):
     '''Assign first ids to each grouping node based on values from
     tools/grit/resource_ids.'''
     # If the input is a stream, then we're probably in a unit test and
@@ -293,7 +321,8 @@ class GritNode(base.Node):
             len(src_root_dir) + 1:]
         filename = filename.replace('\\', '/')
         if not first_ids:
-          first_ids = eval(open(first_id_filename).read())
+          first_ids = _ReadFirstIdsFromFile(first_id_filename, defines,
+                                            src_root_dir)
 
         if node.attrs['first_id'] != '':
           raise Exception("Don't set the first_id attribute, update "

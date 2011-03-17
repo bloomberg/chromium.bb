@@ -422,6 +422,7 @@
           },
           'inputs': [
             '<@(chrome_extra_resources_inputs)',
+            '<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd',
           ],
           'outputs': [
             '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT).h',
@@ -441,6 +442,7 @@
             '<(RULE_INPUT_PATH)',
             'build', '-o', '<(grit_out_dir)',
             '-D', '<(chrome_build)',
+            '-D', 'SHARED_INTERMEDIATE_DIR=<(SHARED_INTERMEDIATE_DIR)',
             '-E', '<(branded_env)',
             '<@(grit_defines)',
           ],
@@ -450,6 +452,10 @@
       'sources': [
         '<@(chrome_extra_resources_grds)',
         '<@(chrome_extra_resources_inputs)',
+        '<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd',
+      ],
+      'dependencies': [
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:generate_devtools_grd',
       ],
       'direct_dependent_settings': {
         'include_dirs': [

@@ -115,7 +115,7 @@ class GrdReaderUnittest(unittest.TestCase):
                                  '..')
     root.AssignFirstIds(
         os.path.join(grit_root_dir, "../../chrome/app/generated_resources.grd"),
-        None)
+        None, {})
     messages_node = root.children[0].children[0]
     self.failUnless(isinstance(messages_node, empty.MessagesNode))
     self.failUnless(messages_node.attrs["first_id"] !=
@@ -145,7 +145,8 @@ class GrdReaderUnittest(unittest.TestCase):
                                  '..')
     root.AssignFirstIds(
         os.path.join(grit_root_dir, "../../test.grd"),
-        os.path.join(grit_root_dir, "grit/test/data/resource_ids"))
+        os.path.join(grit_root_dir, "grit/test/data/resource_ids"),
+        {})
     messages_node = root.children[0].children[0]
     self.assertTrue(isinstance(messages_node, empty.MessagesNode))
     self.assertEqual('100', messages_node.attrs["first_id"])
