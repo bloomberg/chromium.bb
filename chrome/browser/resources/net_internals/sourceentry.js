@@ -234,6 +234,7 @@ SourceEntry.prototype.getDescription = function() {
       description = e.params.host;
       break;
     case LogSourceType.DISK_CACHE_ENTRY:
+    case LogSourceType.MEMORY_CACHE_ENTRY:
       description = e.params.key;
       break;
     case LogSourceType.SPDY_SESSION:

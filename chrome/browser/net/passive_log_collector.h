@@ -312,6 +312,22 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserver {
     DISALLOW_COPY_AND_ASSIGN(DiskCacheEntryTracker);
   };
 
+  // Tracks the log entries for the last seen SOURCE_DISK_CACHE_ENTRY.
+  class MemCacheEntryTracker : public SourceTracker {
+   public:
+    static const size_t kMaxNumSources;
+    static const size_t kMaxGraveyardSize;
+
+    MemCacheEntryTracker();
+
+   protected:
+    virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
+                              SourceInfo* out_info);
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(MemCacheEntryTracker);
+  };
+
   class HttpStreamJobTracker : public SourceTracker {
    public:
     static const size_t kMaxNumSources;
@@ -363,6 +379,7 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserver {
   DNSRequestTracker dns_request_tracker_;
   DNSJobTracker dns_job_tracker_;
   DiskCacheEntryTracker disk_cache_entry_tracker_;
+  MemCacheEntryTracker mem_cache_entry_tracker_;
   HttpStreamJobTracker http_stream_job_tracker_;
 
   // This array maps each NetLog::SourceType to one of the tracker instances

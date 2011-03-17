@@ -92,7 +92,8 @@ body {
   color: #308080;
 }
 
-#eventsListTableBody .source_DISK_CACHE_ENTRY {
+#eventsListTableBody .source_DISK_CACHE_ENTRY,
+#eventsListTableBody .source_MEMORY_CACHE_ENTRY {
   color: gray;
 }
 
