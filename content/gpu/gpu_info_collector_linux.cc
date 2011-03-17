@@ -93,7 +93,7 @@ bool IsPciSupported() {
 PciInterface* InitializeLibPci(const char* lib_name) {
   void* handle = dlopen(lib_name, RTLD_LAZY);
   if (handle == NULL) {
-    LOG(INFO) << "Failed to dlopen " << lib_name;
+    VLOG(1) << "Failed to dlopen " << lib_name;
     return NULL;
   }
   PciInterface* interface = new struct PciInterface;
@@ -116,7 +116,7 @@ PciInterface* InitializeLibPci(const char* lib_name) {
       interface->pci_scan_bus == NULL ||
       interface->pci_fill_info == NULL ||
       interface->pci_lookup_name == NULL) {
-    LOG(ERROR) << "Missing required function(s) from " << lib_name;
+    VLOG(1) << "Missing required function(s) from " << lib_name;
     dlclose(handle);
     delete interface;
     return NULL;
@@ -164,7 +164,7 @@ bool CollectVideoCardInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   if (IsPciSupported() == false) {
-    LOG(INFO) << "PCI bus scanning is not supported";
+    VLOG(1) << "PCI bus scanning is not supported";
     return false;
   }
 
@@ -173,7 +173,7 @@ bool CollectVideoCardInfo(GPUInfo* gpu_info) {
   if (interface == NULL)
     interface = InitializeLibPci("libpci.so");
   if (interface == NULL) {
-    LOG(ERROR) << "Failed to locate libpci";
+    VLOG(1) << "Failed to locate libpci";
     return false;
   }
 
