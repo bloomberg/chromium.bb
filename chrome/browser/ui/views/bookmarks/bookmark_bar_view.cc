@@ -958,8 +958,14 @@ void BookmarkBarView::BookmarkNodeMoved(BookmarkModel* model,
                                         int old_index,
                                         const BookmarkNode* new_parent,
                                         int new_index) {
+  bool was_throbbing = throbbing_view_ &&
+      throbbing_view_ == DetermineViewToThrobFromRemove(old_parent, old_index);
+  if (was_throbbing)
+    throbbing_view_->StopThrobbing();
   BookmarkNodeRemovedImpl(model, old_parent, old_index);
   BookmarkNodeAddedImpl(model, new_parent, new_index);
+  if (was_throbbing)
+    StartThrobbing(new_parent->GetChild(new_index), false);
 }
 
 void BookmarkBarView::BookmarkNodeAdded(BookmarkModel* model,
@@ -1515,6 +1521,31 @@ void BookmarkBarView::StartThrobbing(const BookmarkNode* node,
   // Use a large number so that the button continues to throb.
   if (throbbing_view_)
     throbbing_view_->StartThrobbing(std::numeric_limits<int>::max());
+}
+
+views::CustomButton* BookmarkBarView::DetermineViewToThrobFromRemove(
+    const BookmarkNode* parent,
+    int old_index) {
+  const BookmarkNode* bbn = model_->GetBookmarkBarNode();
+  const BookmarkNode* old_node = parent;
+  int old_index_on_bb = old_index;
+  while (old_node && old_node != bbn) {
+    const BookmarkNode* parent = old_node->parent();
+    if (parent == bbn) {
+      old_index_on_bb = bbn->GetIndexOf(old_node);
+      break;
+    }
+    old_node = parent;
+  }
+  if (old_node) {
+    if (old_index_on_bb >= GetFirstHiddenNodeIndex()) {
+      // Node is hidden, animate the overflow button.
+      return overflow_button_;
+    }
+    return static_cast<CustomButton*>(GetChildViewAt(old_index_on_bb));
+  }
+  // Node wasn't on the bookmark bar, use the other bookmark button.
+  return other_bookmarked_button_;
 }
 
 int BookmarkBarView::GetBookmarkButtonCount() {

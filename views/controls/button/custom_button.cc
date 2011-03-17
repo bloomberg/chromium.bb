@@ -52,6 +52,13 @@ void CustomButton::StartThrobbing(int cycles_til_stop) {
   hover_animation_->StartThrobbing(cycles_til_stop);
 }
 
+void CustomButton::StopThrobbing() {
+  if (hover_animation_->is_animating()) {
+    hover_animation_->Stop();
+    SchedulePaint();
+  }
+}
+
 void CustomButton::SetAnimationDuration(int duration) {
   hover_animation_->SetSlideDuration(duration);
 }

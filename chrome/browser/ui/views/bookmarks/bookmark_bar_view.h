@@ -439,6 +439,13 @@ class BookmarkBarView : public DetachableToolbarView,
   // the overflow menu.
   void StartThrobbing(const BookmarkNode* node, bool overflow_only);
 
+  // Returns the view to throb when a node is removed. |parent| is the parent of
+  // the node that was removed, and |old_index| the index of the node that was
+  // removed.
+  views::CustomButton* DetermineViewToThrobFromRemove(
+      const BookmarkNode* parent,
+      int old_index);
+
   // Updates the colors for all the child objects in the bookmarks bar.
   void UpdateColors();
 

@@ -44,6 +44,9 @@ class CustomButton : public Button,
   // Starts throbbing. See HoverAnimation for a description of cycles_til_stop.
   void StartThrobbing(int cycles_til_stop);
 
+  // Stops throbbing immediately.
+  void StopThrobbing();
+
   // Set how long the hover animation will last for.
   void SetAnimationDuration(int duration);
 

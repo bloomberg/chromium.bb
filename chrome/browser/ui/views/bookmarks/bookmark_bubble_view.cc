@@ -344,6 +344,7 @@ std::wstring BookmarkBubbleView::accessible_name() {
 }
 
 void BookmarkBubbleView::Close() {
+  ApplyEdits();
   static_cast<InfoBubble*>(GetWidget())->Close();
 }
 
