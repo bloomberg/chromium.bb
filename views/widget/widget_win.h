@@ -490,6 +490,9 @@ class WidgetWin : public ui::WindowImpl,
   // (In fact, it'll return misleading information from GetUpdateRect()).
   gfx::Rect layered_window_invalid_rect_;
 
+  // A factory that allows us to schedule a redraw for layered windows.
+  ScopedRunnableMethodFactory<WidgetWin> paint_layered_window_factory_;
+
   // Whether or not the window should delete itself when it is destroyed.
   // Set this to false via its setter for stack allocated instances.
   bool delete_on_destroy_;
