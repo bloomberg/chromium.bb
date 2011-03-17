@@ -23,7 +23,7 @@ class PdfPsMetafile : public NativeMetafile {
 
   // NativeMetafile methods.
   virtual bool Init();
-  virtual bool Init(const void* src_buffer, uint32 src_buffer_size);
+  virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 
   virtual cairo_t* StartPage(const gfx::Size& page_size,
                              double margin_top_in_points,

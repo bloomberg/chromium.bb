@@ -1096,7 +1096,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
   scoped_ptr<printing::NativeMetafile> metafile(
       printing::NativeMetafileFactory::CreateMetafile());
   // Create a PDF metafile and render from there into the passed in context.
-  if (metafile->Init(buffer->mapped_buffer(), buffer->size())) {
+  if (metafile->InitFromData(buffer->mapped_buffer(), buffer->size())) {
     // Flip the transform.
     CGContextSaveGState(canvas);
     CGContextTranslateCTM(canvas, 0,

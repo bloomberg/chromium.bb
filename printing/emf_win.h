@@ -31,7 +31,7 @@ class Emf : public NativeMetafile {
 
   // NativeMetafile methods.
   virtual bool Init() { return true; }
-  virtual bool Init(const void* src_buffer, uint32 src_buffer_size);
+  virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 
   virtual bool StartPage();
   virtual bool FinishPage();

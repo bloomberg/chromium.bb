@@ -44,7 +44,7 @@ TEST(PdfMetafileTest, Pdf) {
 
   // Test browser-side constructor.
   printing::PdfMetafile pdf2;
-  EXPECT_TRUE(pdf2.Init(&buffer.front(), size));
+  EXPECT_TRUE(pdf2.InitFromData(&buffer.front(), size));
 
   // Get the first 4 characters from pdf2.
   std::vector<char> buffer2(4, 0);

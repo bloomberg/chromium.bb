@@ -923,7 +923,7 @@ void WebPluginDelegateProxy::Print(gfx::NativeDrawingContext context) {
 #if defined(OS_WIN)
   scoped_ptr<printing::NativeMetafile> metafile(
       printing::NativeMetafileFactory::CreateMetafile());
-  if (!metafile->Init(memory.memory(), size)) {
+  if (!metafile->InitFromData(memory.memory(), size)) {
     NOTREACHED();
     return;
   }

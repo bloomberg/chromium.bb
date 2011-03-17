@@ -113,7 +113,8 @@ bool PdfPsMetafile::Init() {
   return true;
 }
 
-bool PdfPsMetafile::Init(const void* src_buffer, uint32 src_buffer_size) {
+bool PdfPsMetafile::InitFromData(const void* src_buffer,
+                                 uint32 src_buffer_size) {
   // We need to check at least these two members to ensure Init() has not been
   // called before
   DCHECK(!context_);
@@ -131,7 +132,7 @@ bool PdfPsMetafile::SetRawData(const void* src_buffer,
                                uint32 src_buffer_size) {
   if (!context_) {
     // If Init has not already been called, just call Init()
-    return Init(src_buffer, src_buffer_size);
+    return InitFromData(src_buffer, src_buffer_size);
   }
   // If a context has already been created, remember this data in
   // raw_override_data_

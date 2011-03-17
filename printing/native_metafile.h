@@ -48,7 +48,7 @@ class NativeMetafile {
   // Initializes the metafile with the data in |src_buffer|. Returns true
   // on success.
   // Note: It should only be called from within the browser process.
-  virtual bool Init(const void* src_buffer, uint32 src_buffer_size) = 0;
+  virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size) = 0;
 
 #if defined(OS_WIN)
   // Inserts a custom GDICOMMENT records indicating StartPage/EndPage calls

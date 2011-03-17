@@ -56,7 +56,7 @@ TEST_F(PdfPsTest, Pdf) {
 
   // Tests another constructor.
   printing::PdfPsMetafile pdf2;
-  EXPECT_TRUE(pdf2.Init(&buffer.front(), size));
+  EXPECT_TRUE(pdf2.InitFromData(&buffer.front(), size));
 
   // Tries to get the first 4 characters from pdf2.
   std::vector<char> buffer2(4, 0x00);

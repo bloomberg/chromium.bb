@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ Emf::~Emf() {
   DCHECK(!emf_ && !hdc_);
 }
 
-bool Emf::Init(const void* src_buffer, uint32 src_buffer_size) {
+bool Emf::InitFromData(const void* src_buffer, uint32 src_buffer_size) {
   DCHECK(!emf_ && !hdc_);
   emf_ = SetEnhMetaFileBits(src_buffer_size,
                             reinterpret_cast<const BYTE*>(src_buffer));

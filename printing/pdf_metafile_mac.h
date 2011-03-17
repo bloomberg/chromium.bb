@@ -31,7 +31,7 @@ class PdfMetafile : public NativeMetafile {
 
   // NativeMetafile methods.
   virtual bool Init();
-  virtual bool Init(const void* src_buffer, uint32 src_buffer_size);
+  virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 
   virtual CGContextRef StartPage(const gfx::Size& page_size,
                                  const gfx::Point& content_origin,

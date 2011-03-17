@@ -148,7 +148,7 @@ bool Image::LoadMetafile(const std::string& data) {
   DCHECK(!data.empty());
   scoped_ptr<NativeMetafile> metafile(
       printing::NativeMetafileFactory::CreateMetafile());
-  metafile->Init(data.data(), data.size());
+  metafile->InitFromData(data.data(), data.size());
   return LoadMetafile(*metafile);
 }
 

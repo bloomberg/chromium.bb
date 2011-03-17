@@ -368,7 +368,7 @@ bool ParamTraits<printing::NativeMetafile>::Read(
     const Message* m, void** iter, param_type* p) {
   std::vector<uint8> buffer;
   return ReadParam(m, iter, &buffer) &&
-         p->Init(&buffer.front(), static_cast<uint32>(buffer.size()));
+         p->InitFromData(&buffer.front(), static_cast<uint32>(buffer.size()));
 }
 
 void ParamTraits<printing::NativeMetafile>::Log(
