@@ -70,7 +70,7 @@ bool AutoFillCCInfoBarDelegate::Cancel() {
 }
 
 string16 AutoFillCCInfoBarDelegate::GetLinkText() {
-  return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_LEARN_MORE);
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
 bool AutoFillCCInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {

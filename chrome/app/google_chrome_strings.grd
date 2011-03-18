@@ -332,12 +332,6 @@ Chrome supports. -->
       <message name="IDS_UNSUPPORTED_OS" desc="The text used to warn the user that current OS is not supported">
         Google Chrome does not support <ph name="OS_NAME">$1<ex>Windows 2000</ex></ph>.
       </message>
-      <message name="IDS_OPTIONS_CHROME_LANGUAGE_INFO" desc="Information text about the language of various Chrome features">
-        Change the language used in Google Chrome menus, dialog boxes, and tooltips.
-      </message>
-      <message name="IDS_OPTIONS_CHROME_UI_LANGUAGE" desc="The documentation string of the 'Chrome UI language' preference">
-        Google Chrome language:
-      </message>
       <if expr="not pp_ifdef('chromeos')">
         <message name="IDS_OPTIONS_RELAUNCH_REQUIRED" desc="The message displayed for an option that requires a relaunch to take effect. This appears in a message box if an option is changed that requires a relaunch.">
           Please close all Google Chrome windows and relaunch it for this change to take effect.
@@ -348,10 +342,6 @@ Chrome supports. -->
           Please sign out of Google Chrome OS and sign in again for this change to take effect.
         </message>
       </if>
-      <!--TODO(kmadhusu): Remove "IDS_OPTIONS_RESET_MESSAGE" after platform-specific dialogs are removed.-->
-      <message name="IDS_OPTIONS_RESET_MESSAGE" desc="The message shown when the user presses the 'Reset Chrome options' button">
-        When you reset Google Chrome options any changes you've made will be reverted to the default settings. Do you want to reset Chrome options?
-      </message>
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY" desc="Summary of problem displayed in dialog when we can't create a directory for this user.">
         Google Chrome cannot read and write to its data directory:\n\n<ph name="USER_DATA_DIRECTORY">$1<ex>C:\Documents and Settings\devint\Local Settings\Application Data\Google\Chrome</ex></ph>
       </message>
@@ -453,10 +443,6 @@ Chrome supports. -->
         Invalid arguments. Google Chrome Frame cannot be installed in ready mode without also installing Google Chrome.
       </message>
       <!-- Options Dialog -->
-      <!-- TODO(kmadhusu): Remove "IDS_OPTIONS_DISABLE_SERVICES" after platform-specific dialogs are removed.-->
-      <message name="IDS_OPTIONS_DISABLE_SERVICES" desc="The text in the options panel that describes how we use web services to improve browsing experience.">
-        Google Chrome may use web services to improve your browsing experience. You may optionally disable these services.
-      </message>
       <message name="IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE" desc="The text in the options panel that describes how we use web services to improve browsing experience.">
         Google Chrome may use web services to improve your browsing experience.
       </message>

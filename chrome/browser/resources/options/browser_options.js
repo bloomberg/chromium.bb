@@ -103,11 +103,6 @@ cr.define('options', function() {
           homepageField.blur();
       });
 
-      // Remove Windows-style accelerators from button labels.
-      // TODO(stuartmorgan): Remove this once the strings are updated.
-      $('startupAddButton').textContent =
-          localStrings.getStringWithoutAccelerator('startupAddButton');
-
       if (!cr.isChromeOS) {
         $('defaultBrowserUseAsDefaultButton').onclick = function(event) {
           chrome.send('becomeDefaultBrowser');

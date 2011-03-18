@@ -1088,7 +1088,7 @@ class DNSCertProvenanceCheckingInfoBar : public ConfirmInfoBarDelegate {
   }
 
   virtual string16 GetButtonLabel(InfoBarButton button) const {
-    return l10n_util::GetStringUTF16(IDS_OPTIONS_LEARN_MORE_LABEL);
+    return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
   }
 
   virtual bool Accept() {

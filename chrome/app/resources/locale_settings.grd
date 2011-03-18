@@ -510,36 +510,6 @@
         </message>
       </if>
 
-      <!-- The width of the AutoFill dialog in characters. -->
-      <message name="IDS_AUTOFILL_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        94
-      </message>
-
-      <!-- The height of the AutoFill dialog in lines. -->
-      <message name="IDS_AUTOFILL_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        32
-      </message>
-
-      <!-- The width of the AutoFill edit Address dialog in characters. -->
-      <message name="IDS_AUTOFILL_DIALOG_EDIT_ADDRESS_WIDTH_CHARS" use_name_for_id="true">
-        80
-      </message>
-
-      <!-- The height of the AutoFill edit Address dialog in lines. -->
-      <message name="IDS_AUTOFILL_DIALOG_EDIT_ADDRESS_HEIGHT_LINES" use_name_for_id="true">
-        25
-      </message>
-
-      <!-- The width of the AutoFill edit Credit Card dialog in characters. -->
-      <message name="IDS_AUTOFILL_DIALOG_EDIT_CCARD_WIDTH_CHARS" use_name_for_id="true">
-        60
-      </message>
-
-      <!-- The height of the AutoFill edit Credit Card dialog in lines. -->
-      <message name="IDS_AUTOFILL_DIALOG_EDIT_CCARD_HEIGHT_LINES" use_name_for_id="true">
-        10
-      </message>
-
       <!-- The width of the Instant confirm dialog box in characters. -->
       <message name="IDS_INSTANT_CONFIRM_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         70

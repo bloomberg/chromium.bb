@@ -1577,7 +1577,6 @@
         'browser/ui/cocoa/content_settings/content_setting_bubble_cocoa_unittest.mm',
         'browser/ui/cocoa/content_settings/cookie_details_unittest.mm',
         'browser/ui/cocoa/content_settings/cookie_details_view_controller_unittest.mm',
-        'browser/ui/cocoa/content_settings/simple_content_exceptions_window_controller_unittest.mm',
         'browser/ui/cocoa/download/download_item_button_unittest.mm',
         'browser/ui/cocoa/download/download_shelf_mac_unittest.mm',
         'browser/ui/cocoa/download/download_shelf_view_unittest.mm',

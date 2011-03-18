@@ -93,13 +93,6 @@ var OptionsPage = options.OptionsPage;
           chrome.send('promptForDownloadAction',
               [String($('promptForDownload').checked)]);
         };
-
-        // Remove Windows-style accelerators from the Browse button label.
-        // TODO(csilv): Remove this after the accelerator has been removed from
-        // the localized strings file, pending removal of old options window.
-        $('downloadLocationChangeButton').textContent =
-            localStrings.getStringWithoutAccelerator(
-                'downloadLocationChangeButton');
       } else {
         $('proxiesConfigureButton').onclick = function(event) {
           OptionsPage.navigateToPage('proxy');

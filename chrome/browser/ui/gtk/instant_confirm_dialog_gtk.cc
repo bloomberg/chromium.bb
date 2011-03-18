@@ -45,7 +45,7 @@ InstantConfirmDialogGtk::InstantConfirmDialogGtk(
   gtk_box_pack_start(vbox, label, FALSE, FALSE, 0);
 
   GtkWidget* link_button = gtk_chrome_link_button_new(
-      l10n_util::GetStringUTF8(IDS_OPTIONS_LEARN_MORE_LABEL).c_str());
+      l10n_util::GetStringUTF8(IDS_LEARN_MORE).c_str());
   g_signal_connect(link_button, "clicked",
                    G_CALLBACK(OnLinkButtonClickedThunk), this);
 

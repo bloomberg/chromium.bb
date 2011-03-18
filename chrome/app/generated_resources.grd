@@ -310,9 +310,6 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       <message name="IDS_LEARN_MORE" desc="Learn more text">
         Learn more
       </message>
-      <message name="IDS_ABORT" desc="Abort operation">
-        Abort
-      </message>
       <message name="IDS_CLOSE" desc="A generic term for Close on buttons and menus.">
         Close
       </message>
@@ -3295,27 +3292,6 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       <message name="IDS_CERT_MANAGER_EDIT_SERVER_TRUST_DESCRIPTION_FORMAT" desc="Description in dialog for editing server certificate trust flags.  The following line will contain information about the issuer.">
         The certificate "<ph name="CERTIFICATE_NAME">$1<ex>www.example.com</ex></ph>" was issued by:
       </message>
-      <message name="IDS_CERT_MANAGER_EDIT_SERVER_TRUST_UNKNOWN_CA" desc="Message displayed in dialog for editing server certificate trust flags, when the server certificate is issued by a certification authority that is not known.">
-        Because you do not know the Certification Authority that issued this certificate, you do not trust the authenticity of this certificate unless otherwise indicated here.
-      </message>
-      <message name="IDS_CERT_MANAGER_EDIT_SERVER_TRUST_UNTRUSTED_CA" desc="Message displayed in dialog for editing server certificate trust flags, when the server certificate is issued by a certification authority that is known, but not trusted.">
-        Because you do not trust the Certification Authority that issued this certificate, you do not trust the authenticity of this certificate unless otherwise indicated here.
-      </message>
-      <message name="IDS_CERT_MANAGER_EDIT_SERVER_TRUST_TRUSTED_CA" desc="Message displayed in dialog for editing server certificate trust flags, when the server certificate is issued by a certification authority that is known and trusted.">
-        Because you trust the Certification Authority that issued this certificate, you implicitly trust the authenticity of this certificate.
-      </message>
-      <message name="IDS_CERT_MANAGER_EDIT_SERVER_TRUST_SELF_SIGNED" desc="Message displayed in dialog for editing server certificate trust flags, when the certificate is self-signed">
-        This certificate is self-signed, you will not trust its authenticity unless indicated here.
-      </message>
-      <message name="IDS_CERT_MANAGER_EDIT_SERVER_TRUST_YES" desc="Description of option to trust the certificate, in the dialog for editing server certificate trust flags.">
-        Trust the authenticity of this certificate.
-      </message>
-      <message name="IDS_CERT_MANAGER_EDIT_SERVER_TRUST_NO" desc="Description of option to not trust the certificate, in the dialog for editing server certificate trust flags.">
-        Do not trust the authenticity of this certificate.
-      </message>
-      <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_BUTTON" desc="Label of button in the dialog for editing server certificate trust flags, which allows you to open the dialog for editing the trust of the issuing Certification Authority.">
-        Edit Issuer Trust...
-      </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_CERT_MANAGER_IMPORT_AND_BIND_BUTTON" desc="Label for the button in the certificate manager which allows you to import certificates and bind to your device.">
           Import and Bind to Device...
@@ -3899,9 +3875,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON" desc="Text for the enable button on the extension re-enable prompt">
         Re-enable
       </message>
-      <message name="IDS_EXTENSION_GET_MORE_APPS" desc="Promo text for button to the Web Store">
-        Get More Apps
-      </message>
       <message name="IDS_EXTENSION_WEB_STORE_TITLE" desc="Text for the Chrome Web Store">
         Web Store
       </message>
@@ -4263,9 +4236,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CONFLICTS_HELP_CENTER_LINK" desc="The text for the Help Center link.">
         Learn more
       </message>
-      <message name="IDS_CONFLICTS_CHECK_WARNING_PREFIX" desc="Warning label prefix on the compatibility page">
-        Warning
-      </message>
       <message name="IDS_CONFLICTS_CHECK_INVESTIGATING" desc="A label on the compatibility page saying we are investigating.">
         We are currently investigating this issue.
       </message>
@@ -4432,9 +4402,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE" desc="Title for Javascript prompt and confirm originating from a web page">
         The page at <ph name="SITE">$1<ex>http://www.google.com</ex></ph> says:
-      </message>
-      <message name="IDS_EXTENSION_ALERT_TITLE" desc="Title for Javascript alert originating from an extension">
-        The <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> extension says:
       </message>
       <message name="IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION" desc="Optional UI shown on the message box, in the form of a checkbox, allowing the user to suppress additional message boxes from the page.">
         Prevent this page from creating additional dialogs.
@@ -4705,11 +4672,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' infobar's 'Never remember for this site' option">
         Never for this site
-      </message>
-
-      <!-- Import bookmarks promo -->
-      <message name="IDS_IMPORT_BOOKMARKS_PROMO" desc="Text telling users to import bookmarks after initial install">
-        <ph name="BEGIN_LINK">$1</ph>Import<ph name="END_LINK">$2</ph> or add bookmarks to show your bookmarks bar.
       </message>
 
       <!-- Import Settings Dialog -->
@@ -5046,9 +5008,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Dialog title">
         Clear Browsing Data
       </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_TIME_LABEL" desc="Label before time period combo box">
-        Clear data from this period:
-      </message>
       <message name="IDS_CLEAR_BROWSING_DATA_LABEL" desc="Label at the top of the client area of the dialog, preceding the period combo box">
         Obliterate the following items from:
       </message>
@@ -5072,12 +5031,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_DEL_FORM_DATA_CHKBOX" desc="Checkbox for deleting form data saved for Autofill">
         Clear saved Autofill form data
-      </message>
-      <message name="IDS_CLEAR_CHROME_DATA_TAB_LABEL" desc="Tab label for controls for clearing browser data">
-        Chrome data
-      </message>
-      <message name="IDS_CLEAR_OTHER_DATA_TAB_LABEL" desc="Tab label for controls for clearing other data (including server data)">
-        Other data
       </message>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="In Title Case: Text for OK button on dialog">
@@ -5110,53 +5063,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CLEAR_DATA_DELETING" desc="The progress message">
         Clearing...
       </message>
-      <message name="IDS_CLEAR_DATA_ADOBE_FLASH_TITLE" desc="Title of Adobe flash section">
-        Adobe Flash Player
-      </message>
-      <message name="IDS_CLEAR_DATA_ADOBE_FLASH_DESCRIPTION" desc="Description of Adobe flash section">
-        Adobe Flash Player enables websites you visit to store data on your computer. You can manage this data using a website provided by Adobe:
-      </message>
-      <message name="IDS_CLEAR_DATA_CHROME_SYNC_TITLE" desc="Title of Chrome Sync section">
-        Chrome Sync
-      </message>
-      <message name="IDS_CLEAR_DATA_CLEAR_SERVER_DATA_DESCRIPTION" desc="Description of clearing server data">
-        Chrome stores information on Google servers when it syncs. If you're absolutely sure you do not want to use sync anymore you can stop all syncing and delete the data from Google.
-      </message>
-      <message name="IDS_CLEAR_DATA_CLEAR_BUTTON" desc="Button used to clear server data">
-        Stop sync and delete data from Google
-     </message>
-     <message name="IDS_CLEAR_DATA_SENDING" desc="Label text indicating that we are sending a clear to the server">
-        Sending
-     </message>
-     <message name="IDS_CLEAR_DATA_ERROR" desc="Label text indicating that an error occurred in sending a clear to the server">
-        Error
-     </message>
-     <message name="IDS_CLEAR_DASHBOARD_DESCRIPTION" desc="Description of Google dashboard">
-        The Google Dashboard has more details about what Google is storing when Chrome syncs your data.
-     </message>
-     <message name="IDS_CONFIRM_CLEAR_DESCRIPTION" desc="Clear confirmation dialog text">
-        You're about to stop sync on all your computers where you use Chrome. Your data will also be deleted from Google, but will remain within Chrome. Are you sure?
-     </message>
-     <message name="IDS_CONFIRM_CLEAR_TITLE" desc="Clear confirmation dialog title">
-        Clear Browsing Data
-     </message>
-
 
       <!-- Content Settings dialog data -->
       <message name="IDS_CONTENT_SETTINGS_TITLE" desc="Title for content settings dialog">
         Content Settings
-      </message>
-      <message name="IDS_CONTENT_SETTINGS_FEATURES_LABEL" desc="Label above a box listing several features, in the content settings dialog">
-        Features:
       </message>
       <message name="IDS_COOKIES_TAB_LABEL" desc="Label for Cookies tab on Content Settings dialog">
         Cookies
       </message>
       <message name="IDS_COOKIES_HEADER" desc="Header for cookie exception management page on Content Settings dialog">
         Cookie and Site Data Exceptions
-      </message>
-      <message name="IDS_MODIFY_COOKIE_STORING_LABEL" desc="Label at the top of Cookies tab of Content Settings dialog">
-        Cookie Settings:
       </message>
       <message name="IDS_COOKIES_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing cookies and other site data to be stored on your computer.">
         Allow local data to be set (recommended)
@@ -5197,9 +5113,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_IMAGES_HEADER" desc="Header for image exception management page on Content Settings dialog">
         Image Exceptions
-      </message>
-      <message name="IDS_IMAGES_SETTING_LABEL" desc="A label on top of images tab on Content Settings dialog">
-        Image Settings:
       </message>
       <message name="IDS_IMAGES_LOAD_RADIO" desc="A radio button in the Content Settings dialog for allowing all images to be loaded.">
         Show all images (recommended)
@@ -5249,9 +5162,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_JAVASCRIPT_HEADER" desc="Label for JavaScript exception management page on Content Settings dialog">
         JavaScript Exceptions
       </message>
-      <message name="IDS_JS_SETTING_LABEL" desc="A label on top of JavaScript tab on Content Settings dialog">
-        JavaScript Settings:
-      </message>
       <message name="IDS_JS_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing JavaScript use on any site.">
         Allow all sites to run JavaScript (recommended)
       </message>
@@ -5264,9 +5174,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_GEOLOCATION_HEADER" desc="Label for Geolocation exception management page on Content Settings dialog">
         Geolocation Exceptions
       </message>
-      <message name="IDS_GEOLOCATION_SETTING_LABEL" desc="A label on top of Geolocation tab on Content Settings dialog">
-        Location Settings:
-      </message>
       <message name="IDS_GEOLOCATION_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing all sites access to geolocation data.">
         Allow all sites to track my physical location
       </message>
@@ -5275,6 +5182,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_GEOLOCATION_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking sites from accessing geolocation data.">
         Do not allow any site to track my physical location
+      </message>
+      <message name="IDS_GEOLOCATION_EXCEPTION_TITLE" desc="Title for geolocation exceptions dialog">
+        Location Exceptions
       </message>
       <message name="IDS_NOTIFICATIONS_TAB_LABEL" desc="Label for Notifications tab on Content Settings dialog">
         Notifications
@@ -5294,33 +5204,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NOTIFICATIONS_ASK_RADIO" desc="A radio button in Content Settings dialog to configure notifications per-site.">
         Ask me when a site wants to show desktop notifications (recommended)
       </message>
-      <message name="IDS_NOTIFICATIONS_SETTING_LABEL" desc="Label on top of the radio buttons for Notifications tab of Content Settings dialog.">
-        Desktop Notifications Settings:
-      </message>
-
-      <!-- Cookie/Images/JavaScript/Plugins/Pop-ups/Location exception dialogs -->
-      <message name="IDS_COOKIE_EXCEPTION_TITLE" desc="Title for cookie exceptions dialog">
-        Cookie Exceptions
-      </message>
-      <message name="IDS_IMAGES_EXCEPTION_TITLE" desc="Title for images exceptions dialog">
-        Image Exceptions
-      </message>
-      <message name="IDS_PLUGINS_EXCEPTION_TITLE" desc="Title for plugin exceptions dialog">
-        Plug-in Exceptions
-      </message>
-      <message name="IDS_JS_EXCEPTION_TITLE" desc="Title for JavaScript exceptions dialog">
-        JavaScript Exceptions
-      </message>
-      <message name="IDS_POPUP_EXCEPTION_TITLE" desc="Title for pop-up exceptions dialog">
-        Pop-up Exceptions
-      </message>
-      <message name="IDS_GEOLOCATION_EXCEPTION_TITLE" desc="Title for geolocation exceptions dialog">
-        Location Exceptions
-      </message>
-      <message name="IDS_NOTIFICATIONS_EXCEPTION_TITLE" desc="Title for notifications exceptions dialog">
-        Notification Exceptions
-      </message>
-
       <message name="IDS_EXCEPTIONS_HOSTNAME_HEADER" desc="A column header for the hostname column of the cookie/image/javascript/plugins exceptions dialog">
         Site
       </message>
@@ -5329,9 +5212,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXCEPTIONS_ACTION_HEADER" desc="A column header for the action column of the cookie/image/javascript/plugins exceptions dialog">
         Behavior
-      </message>
-      <message name="IDS_EXCEPTIONS_OTR_HEADER" desc="A column header for the incognito column of the cookie/image/javascript/plugins exceptions dialog">
-        Incognito
       </message>
       <message name="IDS_EXCEPTIONS_ADD_BUTTON" desc="A button in the cookie/image/javascript/plugins exceptions dialog for adding new exception rules.">
         Add...
@@ -5357,9 +5237,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXCEPTIONS_BLOCK_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is blocked for a given domain.">
         Block
       </message>
-      <message name="IDS_EXCEPTIONS_OTR_IN_ITALICS" desc="A label informing the user that incognito-only exceptions are displayed in italics">
-        Exceptions displayed in italics only apply to this incognito session.
-      </message>
       <message name="IDS_EXCEPTIONS_OTR_LABEL" desc="A label informing the user that the table below the label shows incognito-only exceptions">
         Exceptions below only apply to the current incognito session.
       </message>
@@ -5371,9 +5248,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXCEPTIONS_NOT_SET_BUTTON" desc="A label to display in the exception page's action column when a site's content setting has not yet been set for a given domain.">
         Not set
-      </message>
-      <message name="IDS_EXCEPTIONS_SAMPLE_PATTERN" desc="Exceptions page view's pattern entry field's watermark - example pattern. Users will see this text before they start typing pattern in the field.">
-        [*.]example.com
       </message>
       <message name="IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST" desc="Template text for a child row in the Geolocation Exceptions page view. Controls the permission setting for the parent page when embedded on the specified site.">
         embedded on <ph name="URL">$1<ex>www.google.com</ex></ph>
@@ -5400,28 +5274,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- Cookie/Images/JavaScript/Plugins/Pop-ups/Location exception editor dialogs -->
-      <message name="IDS_EXCEPTION_EDITOR_TITLE" desc="Title for exception editor">
-        Edit Exception
-      </message>
-      <message name="IDS_EXCEPTION_EDITOR_NEW_TITLE" desc="Title for exception editor">
-        New Exception
-      </message>
       <message name="IDS_EXCEPTION_EDITOR_PATTERN_TITLE" desc="Title of the pattern field in the exception editor">
         Pattern:
       </message>
-      <message name="IDS_EXCEPTION_EDITOR_ACTION_TITLE" desc="Title of the action combobox in the exception editor">
-        Action:
-      </message>
       <message name="IDS_EXCEPTION_EDITOR_OTR_TITLE" desc="Title of the incognito checkbox in the exception editor">
         Only apply to this incognito session
-      </message>
-
-      <!-- Cookie alert dialog -->
-      <message name="IDS_COOKIE_ALERT_TITLE" desc="Format string for cookie alert dialog title">
-        Cookie from <ph name="HOST">$1<ex>www.google.com</ex></ph>
-      </message>
-      <message name="IDS_COOKIE_ALERT_LABEL" desc="Format string for a label on top of cookie alert dialog">
-        <ph name="HOST">$1<ex>www.google.com</ex></ph> wants to create a cookie on your computer.
       </message>
 
       <!-- Automatic updates -->
@@ -6207,7 +6064,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         won't use insecure connections in order to protect your privacy.
       </message>
 
-      <message name="IDS_ERRORPAGES_SUMMARY_ESET_ANTI_VIRUS_SSL_INTERCEPTION" desc="Summary in the error page when we detect that ESET anti-virus is running and intercepting our HTTPS connections. 'ESET' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_OPTIONS_LEARN_MORE_LABEL.">
+      <message name="IDS_ERRORPAGES_SUMMARY_ESET_ANTI_VIRUS_SSL_INTERCEPTION" desc="Summary in the error page when we detect that ESET anti-virus is running and intercepting our HTTPS connections. 'ESET' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_LEARN_MORE.">
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
         has detected that an ESET product is intercepting secure connections.
         This is typically not a security issue as the ESET software is
@@ -6219,7 +6076,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         instructions.
       </message>
 
-      <message name="IDS_ERRORPAGES_SUMMARY_NETNANNY_SSL_INTERCEPTION" desc="Summary in the error page when we detect that NetNanny is running and intercepting our HTTPS connections. 'NetNanny' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_OPTIONS_LEARN_MORE_LABEL.">
+      <message name="IDS_ERRORPAGES_SUMMARY_NETNANNY_SSL_INTERCEPTION" desc="Summary in the error page when we detect that NetNanny is running and intercepting our HTTPS connections. 'NetNanny' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_LEARN_MORE.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has detected that
         NetNanny is intercepting secure connections. This is typically
         not a security issue as the NetNanny software is usually running on the
@@ -6561,9 +6418,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE" desc="Title that appears in the sub-dialogue for Fonts and Encoding">
         Fonts and Encoding
       </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_FONT_TITLE" desc="Title that appears in the sub-dialogue for Font within Fonts and Encoding tab">
-        Font
-      </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL" desc="Dialog label for Serif font selection">
         Serif Font:
       </message>
@@ -6576,44 +6430,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="Label of the fixed-width fonts section of the Fonts and Encoding subpage">
         Fixed-width font:
       </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_BUTTON_LABEL" desc="Button label for font selection">
-        Change...
-      </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE" desc="Title that appears in the sub-dialogue for Encoding within Fonts and Encoding tab">
         Encoding
       </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_DEFAULT_ENCODING_SELECTOR_LABEL" desc="Dialog label for Default Encoding selection">
         Default Encoding:
       </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_LANGUAGES_TAB_TITLE" desc="Title that appears in the tab for Languages">
-        Languages
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_LANGUAGES_INSTRUCTIONS" desc="Instructions that appear in the languages tab">
-        Add the languages you use to read websites, listing in order of preference. Only add the ones you need, as some characters can be used to impersonate websites in other languages.
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_MOVEUP_BUTTON_LABEL" desc="Button label for Move up languages">
-        Move up
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_MOVEDOWN_BUTTON_LABEL" desc="Button label for Move down languages">
-        Move down
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_REMOVE_BUTTON_LABEL" desc="Button label for Remove languages">
-        Remove
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_ADD_BUTTON_LABEL" desc="Button label for Add languages">
-        Add
-      </message>
-      <message name="IDS_FONT_SETTING_WINDOWS_TITLE" desc="Title that appears in the dialogue title bar for advanced font/encoding settings">
-        Fonts and Encoding
-      </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_SELECTOR_LABEL" desc="Dialog label for font size selection">
         Size:
       </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE" desc="Section title for minimum font size selection">
         Minimum font size
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_NO_MINIMUM_FONT_SIZE_LABEL" desc="Label for the 'None' minimum font size selection">
-        None
       </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_TINY" desc="Label for the 'Tiny' side of the font size range selector">
         Tiny
@@ -6808,19 +6635,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- Options Window -->
-      <if expr="os != 'darwin'">
-        <message name="IDS_OPTIONS_CHROME_APPS_ENABLE_BACKGROUND_MODE" desc="The label in the checkbox that enables background mode for installed web apps.">
-          Allow installed web apps to run in the background and launch on system start
-        </message>
-      </if>
       <message name="IDS_OPTIONS_DIALOG_TITLE" desc="The title of the Options dialog box">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Options
       </message>
-      <if expr="os == 'linux2'">
-        <message name="IDS_PREFERENCES_DIALOG_TITLE" desc="The title of the Preferences dialog box">
-          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Preferences
-        </message>
-      </if>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_OPTIONS_SYSTEM_TAB_LABEL" desc="The title of the System tab">
           System
@@ -6843,9 +6660,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_ADVANCED_TAB_LABEL" desc="The title of the Under the Hood tab">
         Under the Hood
-      </message>
-      <message name="IDS_OPTIONS_LEARN_MORE_LABEL" desc="In the options dialog, we have links to the support web pages where the user can learn more about a feature.">
-        Learn more
       </message>
       <message name="IDS_OPTIONS_TAB_TITLE" desc="The format of the title on the browser tab for an options subpage, e.g. Settings - Basics">
         <ph name="OPTIONS_TITLE">$1<ex>Settings</ex></ph> - <ph name="SUBPAGE_TITLE">$2<ex>Under the Hood</ex></ph>
@@ -6906,26 +6720,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_STARTUP_SHOW_PAGES" desc="The label of the 'Show these pages:' startup option radio button">
         Open the following pages:
       </message>
-      <message name="IDS_OPTIONS_STARTUP_SHOW_MANY_PAGES" desc="The label of the 'Open several specific pages' startup option radio button">
-        Open several specific pages
-      </message>
       <message name="IDS_OPTIONS_STARTUP_PAGE_TOOLTIP" desc="A tooltip to display for a page in the list of pages to open on startup">
         <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - <ph name="PAGE_URL">$2<ex>http://www.google.com/</ex></ph>
       </message>
       <message name="IDS_OPTIONS_STARTUP_ADD_BUTTON" desc="The label of the 'Add...' button for the custom startup urls list">
-        A&amp;dd...
-      </message>
-      <message name="IDS_OPTIONS_STARTUP_REMOVE_BUTTON" desc="The label of the 'Remove' button for the custom startup urls list">
-        &amp;Remove
-      </message>
-      <message name="IDS_STARTUP_PAGE_SUBPAGE_TITLE" desc="Title for startup page management subpage">
-        Startup Pages
+        Add...
       </message>
 
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_STARTUP_MANAGE_BUTTON" desc="In Title Case: The label of the 'Use Current' button for the custom startup urls list">
-          Manage Startup Pages...
-        </message>
         <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="In Title Case: The label of the 'Use Current' button for the custom startup urls list">
           Use Current Pages
         </message>
@@ -6934,9 +6736,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_STARTUP_MANAGE_BUTTON" desc="In sentence case: The label of the 'Use Current' button for the custom startup urls list">
-          Manage startup pages...
-        </message>
         <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="In sentence case: The label of the 'Use Current' button for the custom startup urls list">
           Use current pages
         </message>
@@ -6970,19 +6769,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON" desc="The label of the 'Show Home button' checkbox">
         Show Home button
       </message>
-      <!-- Windows and Linux put this checkbox in the "home page" section of the prefs, Mac puts -->
-      <!-- it in a 'toolbar' section, so it does not need to say toolbar. -->
-      <!-- TODO(estade): remove this string -->
-      <if expr="os != 'darwin'">
-        <message name="IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON" desc="The label of the 'Show Home button on the toolbar' checkbox">
-          Show Home button on the toolbar
-        </message>
-      </if>
-      <if expr="os == 'darwin'">
-        <message name="IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON" desc="The label of the 'Show Home button' checkbox">
-          Show Home button
-        </message>
-      </if>
 
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="The title of the default search engine group">
@@ -6995,10 +6781,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <message name="IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES_LINK"
-               desc="The label of a link that brings up the keyword editor (aka search engine editor)">
-        Manage
-      </message>
       <message name="IDS_SEARCH_ENGINE_ADD_NEW_NAME_PLACEHOLDER" desc="Placeholder text for name before the user adds a new search engine" >
         Add a new search engine
       </message>
@@ -7049,10 +6831,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <!-- TODO(tfarina): Remove this message when the platform-specific dialogs are removed. -->
-      <message name="IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_BUTTON" desc="The label of the 'Browse...' button">
-        Br&amp;owse...
-      </message>
       <message name="IDS_OPTIONS_DOWNLOADLOCATION_CHANGE_BUTTON" desc="The label of the 'Change...' button">
         Change...
       </message>
@@ -7070,10 +6848,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You have chosen to open certain file types automatically after downloading.
       </message>
 
-      <message name="IDS_OPTIONS_AUTOOPENFILETYPES_INFO" desc="The information label for the 'Reset always open files' button">
-        You have chosen to open certain file types automatically after downloading. You can clear these settings so that downloaded files don't open automatically.
-      </message>
-
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT" desc="In Title Case: The label of the 'Reset always open files' button">
           Clear Auto-opening Settings
@@ -7089,10 +6863,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Offer to translate pages that aren't in a language I read
       </message>
 
-      <message name="IDS_OPTIONS_CERTIFICATES_LABEL" desc="The info label for the 'Manage certificates' button">
-        Select trusted SSL certificates.
-      </message>
-
       <message name="IDS_OPTIONS_PASSWORDS_ASKTOSAVE" desc="The label of the 'Ask me to save passwords' radio button">
         Offer to save passwords
       </message>
@@ -7100,17 +6870,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Never save passwords
       </message>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS" desc="In Title Case: The label of the 'Show passwords' button">
-          Show Saved Passwords...
-        </message>
         <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS" desc="In Title Case: The label of the 'Manage saved passwords' button">
           Manage Saved Passwords...
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS" desc="In sentence case: The label of the 'Show passwords' button">
-          Show saved passwords...
-        </message>
         <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS" desc="In sentence case: The label of the 'Manage saved passwords' button">
           Manage saved passwords...
         </message>
@@ -7137,20 +6901,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_AUTOFILL_ENABLE" desc="The label of the 'Ask me to enable Autofill' radio button">
         Enable Autofill to fill out web forms in a single click
       </message>
-      <message name="IDS_OPTIONS_AUTOFILL_DISABLE" desc="The label of the 'Disable Autofill' radio button">
-        Disable Autofill
-      </message>
       <message name="IDS_AUTOFILL_CC_INFOBAR_ACCEPT" desc="Text to show for the Autofill credit card request infobar accept button.">
         Save info
       </message>
       <message name="IDS_AUTOFILL_CC_INFOBAR_DENY" desc="Text to show for the Autofill credit card request infobar deny button.">
         Don't save
-      </message>
-      <message name="IDS_AUTOFILL_LEARN_MORE" desc="Text to show for the Autofill Learn more link.">
-        Learn more
-      </message>
-      <message name="IDS_AUTOFILL_CC_LEARN_MORE" desc="Text to show for the Autofill credit card request infobar Learn more link.">
-        Learn more
       </message>
       <message name="IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM" desc="The entry in the suggestions dropdown that clears an auto-filled form.">
         Clear form
@@ -7224,10 +6979,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Include addresses from my Address Book card
       </message>
 
-      <message name="IDS_AUTOFILL_EDIT_BUTTON"
-               desc="Text of the edit button in the Autofill editor">
-        Edit...
-      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="In sentence case: The name of the Addresses group of the Autofill dialog.">
           Addresses
@@ -7270,9 +7021,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
       <message name="IDS_AUTOFILL_LIST_HEADER_SUMMARY" desc="The text on the list view header over the summary.">
         Summary
-      </message>
-      <message name="IDS_AUTOFILL_DELETE_BUTTON" desc="The label of the button that deletes an Autofill profile.">
-        Remove
       </message>
       <message name="IDS_AUTOFILL_MAC_ADDRESS_LINE_SEPARATOR" desc="The separator character used to join multi-line addresses on the Mac.">
         , '''
@@ -7365,9 +7113,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Expiration date
       </message>
 
-      <message name="IDS_AUTOFILL_DIALOG_SAVE" desc="The label of the Save button on the Autofill dialog.">
-        Save
-      </message>
       <message name="IDS_AUTOFILL_HELP_LABEL" desc="The label of the Help link on the Autofill dialog.">
         About Autofill
       </message>
@@ -7573,12 +7318,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Cookies Window -->
       <message name="IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE" desc="The title of the redesigned Cookies Window that lets you manage cookies, storage quota for websites and other permissions per-website">
         Cookies and Other Data
-      </message>
-      <message name="IDS_COOKIES_SEARCH_LABEL" desc="The label of the 'Search:' label in the Cookies window">
-        Search:
-      </message>
-      <message name="IDS_COOKIES_INFO_LABEL" desc="The content of the description text above the cookies list in the Cookies window">
-        The following cookies are stored on your computer:
       </message>
       <message name="IDS_COOKIES_REMOVE_LABEL" desc="The label of the 'Remove' button in the Cookies Window">
         Remove
@@ -8154,12 +7893,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_FONTSETTINGS_INFO" desc="Information text about font and language options for web pages">
         Change the default font and language for webpages.
       </message>
-      <message name="IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTS_BUTTON" desc="The label of the 'configure fonts and languages' button">
-        Change font and language settings
-      </message>
-      <message name="IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTSONLY_BUTTON" desc="The label of the 'configure fonts' button">
-        Change font settings
-      </message>
       <message name="IDS_OPTIONS_DEFAULT_ZOOM_LEVEL_LABEL" desc="The label of the 'Default Zoom Level' select menu">
         Page zoom:
       </message>
@@ -8195,39 +7928,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <message name="IDS_OPTIONS_CHROME_DICTIONARY_LANGUAGE" desc="The documentation string of the 'Spell check dictionary language' preference">
-        Spell-checker language:
-      </message>
       <message name="IDS_OPTIONS_ENABLE_SPELLCHECK" desc="The documentation string of the 'Enable spellcheck' option">
         Enable spell checking
       </message>
       <message name="IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION" desc="The documentation string of the 'Enable auto spell correction' option">
         Enable automatic spell correction
       </message>
-
-      <!-- TODO(kmadhusu): Remove "IDS_OPTIONS_RESET", "IDS_OPTIONS_RESET_OKLABEL", "IDS_OPTIONS_RESET_CANCELLABEL" after platform-specific dialogs are removed.-->
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_RESET" desc="The label of the 'Reset all settings to defaults' button">
-          Reset to defaults
-        </message>
-        <message name="IDS_OPTIONS_RESET_OKLABEL" desc="The label of the OK button in the 'Reset Chrome options' confirmation dialog box">
-          Reset to defaults
-        </message>
-        <message name="IDS_OPTIONS_RESET_CANCELLABEL" desc="The label of the Cancel button in the 'Reset Chrome options' confirmation dialog box">
-          Don't reset
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_RESET" desc="In Title Case: The label of the 'Reset all settings to defaults' button">
-          Reset to Defaults
-        </message>
-        <message name="IDS_OPTIONS_RESET_OKLABEL" desc="In Title Case: The label of the OK button in the 'Reset Chrome options' confirmation dialog box">
-          Reset to Defaults
-        </message>
-        <message name="IDS_OPTIONS_RESET_CANCELLABEL" desc="In Title Case: The label of the Cancel button in the 'Reset Chrome options' confirmation dialog box">
-          Don't Reset
-        </message>
-      </if>
 
       <!-- General app failure messages -->
       <message name="IDS_COULDNT_OPEN_PROFILE_ERROR" desc="Error displayed on startup when the profile can not be opened correctly due to problems reading or writing files in it">
@@ -9811,9 +9517,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY_ANONYMOUS" desc="In settings Internet options, the anonymous identity for authentication.">
         Anonymous Identity:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER" desc="In settings Internet options, the server certificate to use.">
-        Server Certificate:
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT" desc="In settings Internet options, the x509 certificate to use.">
         Certificate:
       </message>
@@ -9841,14 +9544,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT" desc="In settings Internet options, the label for the auto-connect checkbox.">
         Automatically connect to this network
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USAGE" desc="In settings Internet options, the tab header for mobile plan usage tab.">
-        Usage
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE" desc="In settings Internet options, the title for buy cellular data plan button.">
         Buy data plan...
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_MORE_INFO" desc="In settings Internet options, the title for button for getting more information about the current cellular data plan.">
-        More info...
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_CREDENTIALS" desc="In settings Internet options, the label for invalid passphrase or identity input.">
         Password is too short or invalid.
@@ -9888,9 +9585,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN" desc="In settings Internet options, the label for the button to sign in.">
         Sign in
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONFIGURE" desc="In settings Internet options, the label for to configure the type of connection.">
-        Configure:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE" desc="In settings Internet options, the label for connection status.">
         Connection Status:
@@ -11603,9 +11297,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
     <message name="IDS_SPEECH_INPUT_BUBBLE_HEADING" desc="First line in the content area of the speech input bubble. Instructs the user that they can start speaking.">
       Speak now
-    </message>
-    <message name="IDS_SPEECH_INPUT_BUBBLE_WORKING" desc="Message shown to the user while waiting for speech recognition results to arrive.">
-      Working
     </message>
     <message name="IDS_SPEECH_INPUT_MIC_ERROR" desc="Message shown when audio recording failed with an error during speech recognition.">
       There was a problem with your microphone.
