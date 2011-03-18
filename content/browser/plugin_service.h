@@ -33,7 +33,7 @@
 #endif
 
 #if defined(OS_LINUX)
-#include "chrome/browser/file_path_watcher/file_path_watcher.h"
+#include "content/common/file_path_watcher/file_path_watcher.h"
 #endif
 
 #if defined(OS_CHROMEOS)

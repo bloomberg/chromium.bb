@@ -1,12 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/file_path_watcher/file_path_watcher.h"
+#include "content/common/file_path_watcher/file_path_watcher.h"
 
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
 #include "base/ref_counted.h"
 #include "base/time.h"
 #include "base/win/object_watcher.h"
@@ -18,8 +19,11 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
  public:
   FilePathWatcherImpl() : delegate_(NULL), handle_(INVALID_HANDLE_VALUE) {}
 
-  virtual bool Watch(const FilePath& path, FilePathWatcher::Delegate* delegate);
-  virtual void Cancel();
+  // FilePathWatcher::PlatformDelegate overrides.
+  virtual bool Watch(const FilePath& path,
+                     FilePathWatcher::Delegate* delegate,
+                     base::MessageLoopProxy* loop) OVERRIDE;
+  virtual void Cancel() OVERRIDE;
 
   // Callback from MessageLoopForIO.
   virtual void OnObjectSignaled(HANDLE object);
@@ -63,8 +67,11 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
 };
 
 bool FilePathWatcherImpl::Watch(const FilePath& path,
-                                FilePathWatcher::Delegate* delegate) {
+                                FilePathWatcher::Delegate* delegate,
+                                base::MessageLoopProxy*) {
   DCHECK(target_.value().empty());  // Can only watch one path.
+
+  set_message_loop(base::MessageLoopProxy::CreateForCurrentThread());
   delegate_ = delegate;
   target_ = path;
 
@@ -77,9 +84,14 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
 }
 
 void FilePathWatcherImpl::Cancel() {
+  if (!message_loop().get()) {
+    // Watch was never called, so exit.
+    return;
+  }
+
   // Switch to the file thread if necessary so we can stop |watcher_|.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+  if (!message_loop()->BelongsToCurrentThread()) {
+    message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(this, &FilePathWatcherImpl::Cancel));
     return;
   }

@@ -148,8 +148,12 @@ void UserStyleSheetWatcher::Init() {
     file_watcher_.reset(new FilePathWatcher);
     FilePath style_sheet_file = profile_path_.AppendASCII(kStyleSheetDir)
                                              .AppendASCII(kUserStyleSheetFile);
-    if (!file_watcher_->Watch(style_sheet_file, loader_.get()))
+    if (!file_watcher_->Watch(
+        style_sheet_file,
+        loader_.get(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI))) {
       LOG(ERROR) << "Failed to setup watch for " << style_sheet_file.value();
+    }
     loader_->LoadStyleSheet(style_sheet_file);
   }
 }

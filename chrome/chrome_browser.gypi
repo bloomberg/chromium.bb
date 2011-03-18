@@ -1062,11 +1062,6 @@
         'browser/favicon_helper.h',
         'browser/favicon_service.cc',
         'browser/favicon_service.h',
-        'browser/file_path_watcher/file_path_watcher.cc',
-        'browser/file_path_watcher/file_path_watcher.h',
-        'browser/file_path_watcher/file_path_watcher_inotify.cc',
-        'browser/file_path_watcher/file_path_watcher_mac.cc',
-        'browser/file_path_watcher/file_path_watcher_win.cc',
         'browser/file_select_helper.cc',
         'browser/file_select_helper.h',
         'browser/first_run/first_run.cc',
@@ -3408,7 +3403,6 @@
           ],
         }, {  # OS != "linux"
           'sources!': [
-            'browser/file_path_watcher/file_path_watcher_inotify.cc',
             'browser/ui/webui/options/certificate_manager_handler.cc',
             'browser/ui/webui/options/certificate_manager_handler.h',
           ],
@@ -3419,9 +3413,6 @@
             '../build/linux/system.gyp:gtkprint',
             '../build/linux/system.gyp:nss',
             '../build/linux/system.gyp:x11',
-          ],
-          'sources': [
-            'browser/file_path_watcher/file_path_watcher_stub.cc',
           ],
         }],
         # Use system SSL settings on Mac and Windows.  Use preferences

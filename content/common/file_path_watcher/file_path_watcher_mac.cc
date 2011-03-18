@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/file_path_watcher/file_path_watcher.h"
+#include "content/common/file_path_watcher/file_path_watcher.h"
 
 #include <CoreServices/CoreServices.h>
 #include <set>
@@ -11,8 +11,20 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/message_loop.h"
 #include "base/singleton.h"
 #include "base/time.h"
+
+// Note to future well meaning engineers. Unless kqueue semantics have changed
+// considerably, do NOT try to reimplement this class using kqueue. The main
+// problem is that this class requires the ability to watch a directory
+// and notice changes to any files within it. A kqueue on a directory can watch
+// for creation and deletion of files, but not for modifications to files within
+// the directory. To do this with the current kqueue semantics would require
+// kqueueing every file in the directory, and file descriptors are a limited
+// resource. If you have a good idea on how to get around this, the source for a
+// reasonable implementation of this class using kqueues is attached here:
+// http://code.google.com/p/chromium/issues/detail?id=54822#c13
 
 namespace {
 
@@ -32,8 +44,14 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
   void UpdateEventStream(FSEventStreamEventId start_event);
 
   // FilePathWatcher::PlatformDelegate overrides.
-  virtual bool Watch(const FilePath& path, FilePathWatcher::Delegate* delegate);
-  virtual void Cancel();
+  virtual bool Watch(const FilePath& path,
+                     FilePathWatcher::Delegate* delegate,
+                     base::MessageLoopProxy* loop) OVERRIDE;
+  virtual void Cancel() OVERRIDE;
+
+  scoped_refptr<base::MessageLoopProxy> run_loop_message_loop() {
+    return run_loop_message_loop_;
+  }
 
  private:
   virtual ~FilePathWatcherImpl() {}
@@ -58,6 +76,9 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
   // Backend stream we receive event callbacks from (strong reference).
   FSEventStreamRef fsevent_stream_;
 
+  // Run loop for FSEventStream to run on.
+  scoped_refptr<base::MessageLoopProxy> run_loop_message_loop_;
+
   // Used to detect early cancellation.
   bool canceled_;
 
@@ -69,10 +90,10 @@ void FSEventsCallback(ConstFSEventStreamRef stream,
                       void* event_watcher, size_t num_events,
                       void* event_paths, const FSEventStreamEventFlags flags[],
                       const FSEventStreamEventId event_ids[]) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   FilePathWatcherImpl* watcher =
       reinterpret_cast<FilePathWatcherImpl*>(event_watcher);
+  DCHECK(watcher->run_loop_message_loop()->BelongsToCurrentThread());
+
   bool root_changed = false;
   FSEventStreamEventId root_change_at = FSEventStreamGetLatestEventId(stream);
   for (size_t i = 0; i < num_events; i++) {
@@ -88,13 +109,12 @@ void FSEventsCallback(ConstFSEventStreamRef stream,
   if (root_changed) {
     // Resetting the event stream from within the callback fails (FSEvents spews
     // bad file descriptor errors), so post a task to do the reset.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+    watcher->run_loop_message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(watcher, &FilePathWatcherImpl::UpdateEventStream,
                           root_change_at));
   }
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(watcher, &FilePathWatcherImpl::OnFilePathChanged));
+  watcher->OnFilePathChanged();
 }
 
 // FilePathWatcherImpl implementation:
@@ -105,7 +125,16 @@ FilePathWatcherImpl::FilePathWatcherImpl()
 }
 
 void FilePathWatcherImpl::OnFilePathChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  // Switch to the CFRunLoop based thread if necessary, so we can tear down
+  // the event stream.
+  if (!message_loop()->BelongsToCurrentThread()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &FilePathWatcherImpl::OnFilePathChanged));
+    return;
+  }
+
+  DCHECK(message_loop()->BelongsToCurrentThread());
   DCHECK(!target_.empty());
 
   base::PlatformFileInfo file_info;
@@ -143,9 +172,13 @@ void FilePathWatcherImpl::OnFilePathChanged() {
 }
 
 bool FilePathWatcherImpl::Watch(const FilePath& path,
-                                FilePathWatcher::Delegate* delegate) {
+                                FilePathWatcher::Delegate* delegate,
+                                base::MessageLoopProxy* loop) {
   DCHECK(target_.value().empty());
+  DCHECK(MessageLoopForIO::current());
 
+  set_message_loop(base::MessageLoopProxy::CreateForCurrentThread());
+  run_loop_message_loop_ = loop;
   target_ = path;
   delegate_ = delegate;
 
@@ -157,7 +190,7 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
     first_notification_ = base::Time::Now();
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+  run_loop_message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(this, &FilePathWatcherImpl::UpdateEventStream,
                         start_event));
 
@@ -165,9 +198,15 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
 }
 
 void FilePathWatcherImpl::Cancel() {
-  // Switch to the UI thread if necessary, so we can tear down the event stream.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+  if (!run_loop_message_loop().get()) {
+    // Watch was never called, so exit.
+    return;
+  }
+
+  // Switch to the CFRunLoop based thread if necessary, so we can tear down
+  // the event stream.
+  if (!run_loop_message_loop()->BelongsToCurrentThread()) {
+    run_loop_message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(this, &FilePathWatcherImpl::Cancel));
     return;
   }
@@ -178,7 +217,8 @@ void FilePathWatcherImpl::Cancel() {
 }
 
 void FilePathWatcherImpl::UpdateEventStream(FSEventStreamEventId start_event) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(run_loop_message_loop()->BelongsToCurrentThread());
+  DCHECK(MessageLoopForUI::current());
 
   // It can happen that the watcher gets canceled while tasks that call this
   // function are still in flight, so abort if this situation is detected.
@@ -212,14 +252,14 @@ void FilePathWatcherImpl::UpdateEventStream(FSEventStreamEventId start_event) {
   FSEventStreamScheduleWithRunLoop(fsevent_stream_, CFRunLoopGetCurrent(),
                                    kCFRunLoopDefaultMode);
   if (!FSEventStreamStart(fsevent_stream_)) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+    message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(delegate_.get(),
                           &FilePathWatcher::Delegate::OnError));
   }
 }
 
 void FilePathWatcherImpl::DestroyEventStream() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(run_loop_message_loop()->BelongsToCurrentThread());
   FSEventStreamStop(fsevent_stream_);
   FSEventStreamUnscheduleFromRunLoop(fsevent_stream_, CFRunLoopGetCurrent(),
                                      kCFRunLoopDefaultMode);

@@ -1,17 +1,17 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This module provides a way to monitor a file or directory for changes.
 
-#ifndef CHROME_BROWSER_FILE_PATH_WATCHER_FILE_PATH_WATCHER_H_
-#define CHROME_BROWSER_FILE_PATH_WATCHER_FILE_PATH_WATCHER_H_
+#ifndef CONTENT_COMMON_FILE_PATH_WATCHER_FILE_PATH_WATCHER_H_
+#define CONTENT_COMMON_FILE_PATH_WATCHER_FILE_PATH_WATCHER_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/message_loop_proxy.h"
 #include "base/ref_counted.h"
-#include "content/browser/browser_thread.h"
 
 // This class lets you register interest in changes on a FilePath.
 // The delegate will get called whenever the file or directory referenced by the
@@ -36,27 +36,61 @@ class FilePathWatcher {
   ~FilePathWatcher();
 
   // Register interest in any changes on |path|. OnPathChanged will be called
-  // back for each change. Returns true on success.
-  bool Watch(const FilePath& path, Delegate* delegate) WARN_UNUSED_RESULT;
+  // back for each change. Returns true on success. |loop| is only used
+  // by the Mac implementation right now, and must be backed by a CFRunLoop
+  // based MessagePump. This is usually going to be a MessageLoop of type
+  // TYPE_UI.
+  bool Watch(const FilePath& path,
+             Delegate* delegate,
+             base::MessageLoopProxy* loop) WARN_UNUSED_RESULT;
+
+  class PlatformDelegate;
+
+  // Traits for PlatformDelegate, which must delete itself on the IO message
+  // loop that Watch was called from.
+  struct DeletePlatformDelegate {
+    static void Destruct(const PlatformDelegate* delegate);
+  };
 
   // Used internally to encapsulate different members on different platforms.
   class PlatformDelegate
       : public base::RefCountedThreadSafe<PlatformDelegate,
-                                          BrowserThread::DeleteOnFileThread> {
+                                          DeletePlatformDelegate> {
    public:
     // Start watching for the given |path| and notify |delegate| about changes.
-    virtual bool Watch(const FilePath& path, Delegate* delegate)
-        WARN_UNUSED_RESULT = 0;
+    // |loop| is only used by the Mac implementation right now, and must be
+    // backed by a CFRunLoop based MessagePump. This is usually going to be a
+    // MessageLoop of type TYPE_UI.
+    virtual bool Watch(
+        const FilePath& path,
+        Delegate* delegate,
+        base::MessageLoopProxy* loop) WARN_UNUSED_RESULT = 0;
 
     // Stop watching. This is called from FilePathWatcher's dtor in order to
     // allow to shut down properly while the object is still alive.
-    virtual void Cancel() {}
+    virtual void Cancel() = 0;
+
+ /*   scoped_refptr<base::MessageLoopProxy> message_loop() const {
+      return message_loop_;
+    }
+    void set_message_loop(base::MessageLoopProxy* loop);*/
 
    protected:
-    friend struct BrowserThread::DeleteOnThread<BrowserThread::FILE>;
     friend class DeleteTask<PlatformDelegate>;
+    friend struct DeletePlatformDelegate;
+    virtual ~PlatformDelegate();
 
-    virtual ~PlatformDelegate() {}
+    scoped_refptr<base::MessageLoopProxy> message_loop() const {
+      return message_loop_;
+    }
+
+    void set_message_loop(base::MessageLoopProxy* loop) {
+      message_loop_ = loop;
+    }
+
+   private:
+    // IO Message Loop.
+    scoped_refptr<base::MessageLoopProxy> message_loop_;
   };
 
  private:
@@ -65,4 +99,4 @@ class FilePathWatcher {
   DISALLOW_COPY_AND_ASSIGN(FilePathWatcher);
 };
 
-#endif  // CHROME_BROWSER_FILE_PATH_WATCHER_FILE_PATH_WATCHER_H_
+#endif  // CONTENT_COMMON_FILE_PATH_WATCHER_FILE_PATH_WATCHER_H_

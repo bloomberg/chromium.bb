@@ -58,10 +58,15 @@
         'common/db_message_filter.h',
         'common/debug_flags.cc',
         'common/debug_flags.h',
-        'common/dx_diag_node.cc',
-        'common/dx_diag_node.h',
         'common/dom_storage_common.h',
         'common/dom_storage_messages.h',
+        'common/dx_diag_node.cc',
+        'common/dx_diag_node.h',
+        'common/file_path_watcher/file_path_watcher.cc',
+        'common/file_path_watcher/file_path_watcher.h',
+        'common/file_path_watcher/file_path_watcher_inotify.cc',
+        'common/file_path_watcher/file_path_watcher_mac.cc',
+        'common/file_path_watcher/file_path_watcher_win.cc',
         'common/file_system/file_system_dispatcher.cc',
         'common/file_system/file_system_dispatcher.h',
         'common/file_system/webfilesystem_callback_dispatcher.cc',
@@ -93,7 +98,7 @@
         'common/indexed_db_messages.h',
         'common/indexed_db_param_traits.cc',
         'common/indexed_db_param_traits.h',
-        'common/main_function_params.h',          
+        'common/main_function_params.h',
         'common/message_router.cc',
         'common/message_router.h',
         'common/mime_registry_messages.h',
@@ -173,6 +178,16 @@
       'conditions': [
         ['OS=="win"', {
           'msvs_guid': '062E9260-304A-4657-A74C-0D3AA1A0A0A4',
+        }],
+        ['OS!="linux"', {
+          'sources!': [
+            'common/file_path_watcher/file_path_watcher_inotify.cc',
+          ],
+        }],
+        ['OS=="freebsd" or OS=="openbsd"', {
+          'sources': [
+            'common/file_path_watcher/file_path_watcher_stub.cc',
+          ],
         }],
         ['OS=="mac"', {
           'sources!': [

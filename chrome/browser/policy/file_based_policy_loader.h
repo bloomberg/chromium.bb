@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_POLICY_FILE_BASED_POLICY_LOADER_H_
 #pragma once
 
-#include "chrome/browser/file_path_watcher/file_path_watcher.h"
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
 #include "chrome/browser/policy/file_based_policy_provider.h"
+#include "content/common/file_path_watcher/file_path_watcher.h"
 
 namespace policy {
 

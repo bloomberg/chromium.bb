@@ -1,8 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/policy/file_based_policy_loader.h"
+
+#include "content/browser/browser_thread.h"
 
 namespace {
 
@@ -93,8 +95,10 @@ void FileBasedPolicyLoader::InitOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   watcher_.reset(new FilePathWatcher);
   if (!config_file_path().empty() &&
-      !watcher_->Watch(config_file_path(),
-                       new FileBasedPolicyWatcherDelegate(this))) {
+      !watcher_->Watch(
+          config_file_path(),
+          new FileBasedPolicyWatcherDelegate(this),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI))) {
     OnError();
   }
 
