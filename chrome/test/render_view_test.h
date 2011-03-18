@@ -17,6 +17,7 @@
 #include "content/common/main_function_params.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/sandbox_init_wrapper.h"
+#include "content/renderer/content_renderer_client.h"
 #include "content/renderer/renderer_webkitclient_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -92,6 +93,7 @@ class RenderViewTest : public testing::Test {
   virtual void TearDown();
 
   MessageLoop msg_loop_;
+  content::ContentRendererClient content_renderer_client_;
   MockRenderThread render_thread_;
   scoped_ptr<MockRenderProcess> mock_process_;
   scoped_refptr<RenderView> view_;
