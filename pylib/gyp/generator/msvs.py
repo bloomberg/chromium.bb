@@ -218,7 +218,8 @@ def _ConfigFullName(config_name, config_data):
   return '%s|%s' % (_ConfigBaseName(config_name, platform_name), platform_name)
 
 
-def _PrepareActionRaw(spec, cmd, cygwin_shell, has_input_path, quote_cmd):
+def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
+                                quote_cmd):
   if cygwin_shell:
     # Find path to cygwin.
     cygwin_dir = _FixPath(spec.get('msvs_cygwin_dirs', ['.'])[0])
@@ -256,21 +257,22 @@ def _PrepareActionRaw(spec, cmd, cygwin_shell, has_input_path, quote_cmd):
   else:
     # Convert cat --> type to mimic unix.
     if cmd[0] == 'cat':
-      cmd = ['type'] + cmd[1:]
+      command = ['type']
+    else:
+      command = [cmd[0].replace('/', '\\')]
+    # Fix the paths
+    # If the argument starts with a slash, it's probably a command line switch
+    arguments = [i.startswith('/') and i or _FixPath(i) for i in cmd[1:]]
     if quote_cmd:
       # Support a mode for using cmd directly.
       # Convert any paths to native form (first element is used directly).
       # TODO(quote):  regularize quoting path names throughout the module
-      direct_cmd = ([cmd[0].replace('/', '\\')] +
-                    ['"%s"' % _FixPath(i) for i in cmd[1:]])
-    else:
-      direct_cmd = ([cmd[0].replace('/', '\\')] +
-                    [_FixPath(i) for i in cmd[1:]])
+      arguments = ['"%s"' % i for i in arguments]
     # Collapse into a single command.
-    return ' '.join(direct_cmd)
+    return ' '.join(command + arguments)
 
 
-def _PrepareAction(spec, rule, has_input_path):
+def _BuildCommandLineForRule(spec, rule, has_input_path):
   # Find path to cygwin.
   cygwin_dir = _FixPath(spec.get('msvs_cygwin_dirs', ['.'])[0])
 
@@ -284,8 +286,8 @@ def _PrepareAction(spec, rule, has_input_path):
   elif isinstance(mcs, str):
     mcs = int(mcs)
   quote_cmd = int(rule.get('msvs_quote_cmd', 1))
-  return _PrepareActionRaw(spec, rule['action'], mcs,
-                           has_input_path, quote_cmd)
+  return _BuildCommandLineForRuleRaw(spec, rule['action'], mcs, has_input_path,
+                                     quote_cmd)
 
 
 def _AddActionStep(actions_dict, inputs, outputs, description, command):
@@ -351,7 +353,7 @@ def _AddCustomBuildToolForMSVS(p, spec, primary_input,
                     _ConfigFullName(config_name, c_data), tools=[tool])
 
 
-def _AddAccumulatedActions(p, spec, actions_dict):
+def _AddAccumulatedActionsToMSVS(p, spec, actions_dict):
   """Add actions accumulated into an actions_dict, merging as needed.
 
   Arguments:
@@ -363,24 +365,22 @@ def _AddAccumulatedActions(p, spec, actions_dict):
   for input in actions_dict:
     inputs = set()
     outputs = set()
-    description = []
-    command = []
+    descriptions = []
+    commands = []
     for action in actions_dict[input]:
       inputs.update(set(action['inputs']))
       outputs.update(set(action['outputs']))
-      if description:
-        description.append(', and also ')
-      description.append(action['description'])
-      if command:
-        command.append('\r\n')
-      command.append(action['command'])
+      descriptions.append(action['description'])
+      commands.append(action['command'])
     # Add the custom build step for one input file.
+    description = ', and also '.join(descriptions)
+    command = '\r\n'.join(commands)
     _AddCustomBuildToolForMSVS(p, spec,
                                primary_input=input,
                                inputs=inputs,
                                outputs=outputs,
-                               description=''.join(description),
-                               cmd=''.join(command))
+                               description=description,
+                               cmd=command)
 
 
 def _RuleExpandPath(path, input_file):
@@ -423,8 +423,8 @@ def _RuleInputsAndOutputs(rule, trigger_file):
   Returns:
     The pair of (inputs, outputs) involved in this rule.
   """
-  raw_inputs = rule.get('inputs', [])
-  raw_outputs = rule.get('outputs', [])
+  raw_inputs = [_FixPath(i) for i in rule.get('inputs', [])]
+  raw_outputs = [_FixPath(i) for i in rule.get('outputs', [])]
   inputs = set()
   outputs = set()
   inputs.add(trigger_file)
@@ -455,7 +455,7 @@ def _GenerateNativeRulesForMSVS(p, rules, output_dir, spec, options):
     rule_ext = r['extension']
     inputs = [_FixPath(i) for i in r.get('inputs', [])]
     outputs = [_FixPath(i) for i in r.get('outputs', [])]
-    cmd = _PrepareAction(spec, r, has_input_path=True)
+    cmd = _BuildCommandLineForRule(spec, r, has_input_path=True)
     rules_file.AddCustomBuildRule(name=rule_name,
                                   description=r.get('message', rule_name),
                                   extensions=[rule_ext],
@@ -541,7 +541,7 @@ def _GenerateExternalRules(rules, output_dir, spec,
          'IntDir=$(IntDir)',
          '-j', '${NUMBER_OF_PROCESSORS_PLUS_1}',
          '-f', filename]
-  cmd = _PrepareActionRaw(spec, cmd, True, False, True)
+  cmd = _BuildCommandLineForRuleRaw(spec, cmd, True, False, True)
   # Insert makefile as 0'th input, so it gets the action attached there,
   # as this is easier to understand from in the IDE.
   all_inputs = list(all_inputs)
@@ -563,7 +563,7 @@ def _EscapeEnvironmentVariableExpansion(s):
 
 
 quote_replacer_regex = re.compile(r'(\\*)"')
-def _EscapeCommandLineArgument(s):
+def _EscapeCommandLineArgumentForMSVS(s):
   """Escapes a Windows command-line argument, so that the Win32
      CommandLineToArgv function will turn the escaped result back into the
      original string. See http://msdn.microsoft.com/en-us/library/17w5ykft.aspx
@@ -622,7 +622,7 @@ def _EscapeVCProjCommandLineArgListItem(s):
 def _EscapeCppDefineForMSVS(s):
   """Escapes a CPP define so that it will reach the compiler unaltered."""
   s = _EscapeEnvironmentVariableExpansion(s)
-  s = _EscapeCommandLineArgument(s)
+  s = _EscapeCommandLineArgumentForMSVS(s)
   s = _EscapeVCProjCommandLineArgListItem(s)
   return s
 
@@ -662,11 +662,11 @@ def _AdjustSourcesForRules(rules, sources, excluded_sources):
     if int(rule.get('process_outputs_as_sources', False)):
       # Add in the outputs from this rule.
       trigger_files = _FindRuleTriggerFiles(rule, sources)
-      for tf in trigger_files:
-        inputs, outputs = _RuleInputsAndOutputs(rule, tf)
+      for trigger_file in trigger_files:
+        inputs, outputs = _RuleInputsAndOutputs(rule, trigger_file)
         inputs = set([_FixPath(i) for i in inputs])
         outputs = set([_FixPath(i) for i in outputs])
-        inputs.remove(_FixPath(tf))
+        inputs.remove(_FixPath(trigger_file))
         sources.update(inputs)
         excluded_sources.update(inputs)
         sources.update(outputs)
@@ -751,7 +751,7 @@ def _GenerateMSVSProject(project, options, version):
     _AddConfigurationToMSVSProject(p, spec, config_type, config_name, config)
 
   # Prepare list of sources and excluded sources.
-  sources, excluded_sources = _PrepareListOfSources(spec, project.build_file)
+  sources, excluded_sources = _PrepareListOfSources(project, spec)
 
   # Add rules.
   actions_to_add = {}
@@ -767,8 +767,8 @@ def _GenerateMSVSProject(project, options, version):
 
   _AddToolFilesToMSVS(p, spec)
   _HandlePreCompileHeaderStubs(p, spec)
-  _AddActionsToMSVS(actions_to_add, spec, project.build_file)
-  _AddCopiesForMSVS(actions_to_add, spec)
+  _AddActions(actions_to_add, spec, project.build_file)
+  _AddCopies(actions_to_add, spec)
   _WriteMSVSUserFile(project.path, version, spec)
 
   # NOTE: this stanza must appear after all actions have been decided.
@@ -776,7 +776,7 @@ def _GenerateMSVSProject(project, options, version):
   excluded_sources = _FilterActionsFromExcluded(
       excluded_sources, actions_to_add)
   _ExcludeFilesFromBeingBuilt(p, spec, excluded_sources, excluded_idl)
-  _AddAccumulatedActions(p, spec, actions_to_add)
+  _AddAccumulatedActionsToMSVS(p, spec, actions_to_add)
 
   # Write it out.
   p.Write()
@@ -1066,7 +1066,7 @@ def _AddConfigurationToMSVS(p, spec, tools, config, config_type, config_name):
   tool_list = _ConvertToolsToExpectedForm(tools)
   p.AddConfig(_ConfigFullName(config_name, config),
               attrs=attributes, tools=tool_list)
-  
+
 def _GetMSVSAttributes(spec, config, config_type):
   # Prepare configuration attributes.
   prepared_attrs = {}
@@ -1091,7 +1091,7 @@ def _AddNormalizedSources(sources_set, sources_array):
   sources = [_NormalizedSource(s) for s in sources_array]
   sources_set.update(set(sources))
 
-def _PrepareListOfSources(spec, build_file):
+def _PrepareListOfSources(project, spec):
   """Prepare list of sources and excluded sources.
 
   Besides the sources specified directly in the spec, adds the gyp file so
@@ -1100,8 +1100,8 @@ def _PrepareListOfSources(spec, build_file):
   have custom build steps attached.
 
   Arguments:
+    project: the MSVSProject object.
     spec: The target dictionary containing the properties of the target.
-    build_file: Filename of the .gyp file that the vcproj file comes from.
   Returns:
     A pair of (list of sources, list of excluded sources)
   """
@@ -1109,8 +1109,11 @@ def _PrepareListOfSources(spec, build_file):
   _AddNormalizedSources(sources, spec.get('sources', []))
   excluded_sources = set()
   # Add in the gyp file.
-  gyp_file = posixpath.split(build_file)[1]
-  sources.add(_NormalizedSource(gyp_file))
+  gyp_file = posixpath.split(project.build_file)[1]
+  gyp_path = _NormalizedSource(gyp_file)
+  project_dir = os.path.split(project.path)[0]
+  sources.add(gyp.common.RelativePath(gyp_path, project_dir))
+
   # Add in 'action' inputs and outputs.
   for a in spec.get('actions', []):
     inputs = a.get('inputs', [])
@@ -1249,11 +1252,11 @@ def _HandlePreCompileHeaderStubs(p, spec):
                       {}, tools=[tool])
 
 
-def _AddActionsToMSVS(actions_to_add, spec, gyp_file):
+def _AddActions(actions_to_add, spec, gyp_file):
   # Add actions.
   actions = spec.get('actions', [])
   for a in actions:
-    cmd = _PrepareAction(spec, a, has_input_path=False)
+    cmd = _BuildCommandLineForRule(spec, a, has_input_path=False)
     # Attach actions to the gyp file if nothing else is there.
     inputs = a.get('inputs') or [gyp_file]
     # Add the action.
@@ -1285,7 +1288,7 @@ def _WriteMSVSUserFile(project_path, version, spec):
   user_file.Write()
 
 
-def _AddCopiesForMSVS(actions_to_add, spec):
+def _AddCopies(actions_to_add, spec):
   copies = _GetCopies(spec)
   for inputs, outputs, cmd, description in copies:
     _AddActionStep(actions_to_add, inputs=inputs, outputs=outputs,
@@ -1382,7 +1385,8 @@ def _GetPathOfProject(qualified_target, spec, options, msvs_version):
   default_config = _GetDefaultConfiguration(spec)
   proj_filename = default_config.get('msvs_existing_vcproj')
   if not proj_filename:
-    proj_filename = spec['target_name'] + options.suffix + '.vcproj'
+    proj_filename = (spec['target_name'] + options.suffix +
+        msvs_version.ProjectExtension())
 
   build_file = gyp.common.BuildFile(qualified_target)
   proj_path = os.path.join(os.path.split(build_file)[0], proj_filename)
