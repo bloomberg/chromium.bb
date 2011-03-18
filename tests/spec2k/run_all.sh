@@ -28,10 +28,8 @@ SPEC2K_SCRIPT="./run.train.sh"
 # verification time will be part of  overall benchmarking time
 # export VERIFY=no
 export VERIFY=${VERIFY:-yes}
-
+export MAKEOPTS=${MAKEOPTS:-}
 export PERF_LOGGER="$(pwd)/emit_perf_log.sh"
-
-# Pick a setup
 
 ######################################################################
 # Helper
@@ -439,7 +437,7 @@ BuildBenchmarks() {
     Banner "Building: $i"
     cd $i
 
-    make measureit=${timeit} PERF_LOGGER="${PERF_LOGGER}" ${i#*.}.${SUFFIX}
+    make ${MAKEOPTS} measureit=${timeit} PERF_LOGGER="${PERF_LOGGER}" ${i#*.}.${SUFFIX}
     cd ..
   done
 }
