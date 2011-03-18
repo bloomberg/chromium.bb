@@ -83,7 +83,8 @@ class PrintWebViewHelper : public RenderViewObserver ,
   virtual void didStopLoading();
 
  private:
-  friend class RenderViewTest_OnPrintPages_Test;
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, BlockScriptInitiatedPrinting);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnPrintPages);
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, PrintLayoutTest);
@@ -113,9 +114,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
 
   // Main printing code -------------------------------------------------------
 
-  void Print(WebKit::WebFrame* frame,
-             WebKit::WebNode* node,
-             bool script_initiated);
+  void Print(WebKit::WebFrame* frame, WebKit::WebNode* node);
 
   // Notification when printing is done - signal teardown.
   void DidFinishPrinting(bool success);

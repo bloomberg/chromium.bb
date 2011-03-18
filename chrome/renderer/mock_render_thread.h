@@ -83,6 +83,10 @@ class MockRenderThread : public RenderThreadBase {
   // Returns the pseudo-printer instance.
   MockPrinter* printer() const { return printer_.get(); }
 
+  // Call with |response| set to true if the user wants to print.
+  // False if the user decides to cancel.
+  void set_print_dialog_user_response(bool response);
+
  private:
   // This function operates as a regular IPC listener.
   bool OnMessageReceived(const IPC::Message& msg);
@@ -145,6 +149,9 @@ class MockRenderThread : public RenderThreadBase {
   ExtensionSet extensions_;
 
   bool is_extension_process_;
+
+  // True to simulate user clicking print. False to cancel.
+  bool print_dialog_user_response_;
 };
 
 #endif  // CHROME_RENDERER_MOCK_RENDER_THREAD_H_

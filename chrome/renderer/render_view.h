@@ -662,24 +662,25 @@ class RenderView : public RenderWidget,
   friend class PepperDeviceTest;
   friend class RenderViewTest;
 
+  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
-  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnNavStateChanged);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, LastCommittedUpdateState);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnImeStateChanged);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, BlockScriptInitiatedPrinting);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, ImeComposition);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnSetTextDirection);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnPrintPages);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, PrintWithIframe);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, PrintLayoutTest);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnHandleKeyboardEvent);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, InsertCharacters);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, JSBlockSentAfterPageLoad);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, LastCommittedUpdateState);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnHandleKeyboardEvent);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnImeStateChanged);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnNavStateChanged);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnPrintPages);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnSetTextDirection);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, PrintLayoutTest);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, PrintWithIframe);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, UpdateTargetURLWithInvalidURL);
 #if defined(OS_MACOSX)
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, MacTestCmdUp);
 #endif
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, JSBlockSentAfterPageLoad);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, UpdateTargetURLWithInvalidURL);
 
   typedef std::map<GURL, ContentSettings> HostContentSettings;
   typedef std::map<GURL, double> HostZoomLevels;

@@ -40,6 +40,13 @@ using WebKit::WebURLError;
 using webkit_glue::FormData;
 using webkit_glue::FormField;
 
+namespace {
+
+const char kPrintWithJSHTML[] =
+    "<body>Hello<script>window.print()</script>World</body>";
+
+}  // namespace
+
 // Test that we get form state change notifications when input fields change.
 TEST_F(RenderViewTest, OnNavStateChanged) {
   // Don't want any delay for form state sync changes. This will still post a
@@ -397,16 +404,40 @@ TEST_F(RenderViewTest, OnPrintPages) {
   view_->print_helper_->OnPrintPages();
 
   VerifyPageCount(1);
-  VerifyPagesPrinted();
+  VerifyPagesPrinted(true);
 }
 
 // Duplicate of OnPrintPagesTest only using javascript to print.
 TEST_F(RenderViewTest, PrintWithJavascript) {
   // HTML contains a call to window.print()
-  LoadHTML("<body>Hello<script>window.print()</script>World</body>");
+  LoadHTML(kPrintWithJSHTML);
 
   VerifyPageCount(1);
-  VerifyPagesPrinted();
+  VerifyPagesPrinted(true);
+}
+
+// Tests that the renderer blocks window.print() calls if they occur too
+// frequently.
+TEST_F(RenderViewTest, BlockScriptInitiatedPrinting) {
+  // Pretend user will cancel printing.
+  render_thread_.set_print_dialog_user_response(false);
+  // Try to print with window.print() a few times.
+  LoadHTML(kPrintWithJSHTML);
+  LoadHTML(kPrintWithJSHTML);
+  LoadHTML(kPrintWithJSHTML);
+  VerifyPagesPrinted(false);
+
+  // Pretend user will print. (but printing is blocked.)
+  render_thread_.set_print_dialog_user_response(true);
+  LoadHTML(kPrintWithJSHTML);
+  VerifyPagesPrinted(false);
+
+  // Unblock script initiated printing and verify printing works.
+  view_->print_helper_->ResetScriptedPrintCount();
+  render_thread_.printer()->ResetPrinter();
+  LoadHTML(kPrintWithJSHTML);
+  VerifyPageCount(1);
+  VerifyPagesPrinted(true);
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)

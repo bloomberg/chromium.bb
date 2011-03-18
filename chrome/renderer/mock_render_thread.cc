@@ -21,7 +21,8 @@ MockRenderThread::MockRenderThread()
       widget_(NULL),
       reply_deserializer_(NULL),
       printer_(new MockPrinter),
-      is_extension_process_(false) {
+      is_extension_process_(false),
+      print_dialog_user_response_(true) {
 }
 
 MockRenderThread::~MockRenderThread() {
@@ -193,7 +194,7 @@ void MockRenderThread::OnGetDefaultPrintSettings(ViewMsg_Print_Params* params) {
 void MockRenderThread::OnScriptedPrint(
     const ViewHostMsg_ScriptedPrint_Params& params,
     ViewMsg_PrintPages_Params* settings) {
-  if (printer_.get()) {
+  if (print_dialog_user_response_ && printer_.get()) {
     printer_->ScriptedPrint(params.cookie,
                             params.expected_pages_count,
                             params.has_selection,
@@ -210,4 +211,8 @@ void MockRenderThread::OnDidPrintPage(
     const ViewHostMsg_DidPrintPage_Params& params) {
   if (printer_.get())
     printer_->PrintPage(params);
+}
+
+void MockRenderThread::set_print_dialog_user_response(bool response) {
+  print_dialog_user_response_ = response;
 }

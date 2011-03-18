@@ -74,8 +74,8 @@ class RenderViewTest : public testing::Test {
   // according to the specified settings defined in the mock render thread.
   // Verify the page count is correct.
   void VerifyPageCount(int count);
-  // Verifies the rendered "printed page".
-  void VerifyPagesPrinted();
+  // Verifies whether the pages printed or not.
+  void VerifyPagesPrinted(bool printed);
 
   // Returns the bounds (coordinates and size) of the element with id
   // |element_id|.  Returns an empty rect if such an element was not found.

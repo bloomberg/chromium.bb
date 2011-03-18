@@ -2148,8 +2148,6 @@ void RenderView::didAddMessageToConsole(
 }
 
 void RenderView::printPage(WebFrame* frame) {
-  // TODO(thestig) Handle print preview case. http://crbug.com/75505.
-  DCHECK(frame);
   print_helper_->ScriptInitiatedPrint(frame);
 }
 

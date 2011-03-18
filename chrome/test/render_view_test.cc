@@ -275,20 +275,22 @@ void RenderViewTest::VerifyPageCount(int count) {
 #endif  // defined(OS_CHROMEOS)
 }
 
-void RenderViewTest::VerifyPagesPrinted() {
+void RenderViewTest::VerifyPagesPrinted(bool printed) {
 #if defined(OS_CHROMEOS)
-  const IPC::Message* did_print_msg =
-      render_thread_.sink().GetUniqueMessageMatching(
-          ViewHostMsg_TempFileForPrintingWritten::ID);
-  ASSERT_TRUE(did_print_msg);
+  bool did_print_msg = (NULL != render_thread_.sink().GetUniqueMessageMatching(
+      ViewHostMsg_TempFileForPrintingWritten::ID));
+  ASSERT_EQ(printed, did_print_msg);
 #else
-  const IPC::Message* did_print_msg =
+  const IPC::Message* print_msg =
       render_thread_.sink().GetUniqueMessageMatching(
           ViewHostMsg_DidPrintPage::ID);
-  ASSERT_TRUE(did_print_msg);
-  ViewHostMsg_DidPrintPage::Param post_did_print_page_param;
-  ViewHostMsg_DidPrintPage::Read(did_print_msg, &post_did_print_page_param);
-  EXPECT_EQ(0, post_did_print_page_param.a.page_number);
+  bool did_print_msg = (NULL != print_msg);
+  ASSERT_EQ(printed, did_print_msg);
+  if (printed) {
+    ViewHostMsg_DidPrintPage::Param post_did_print_page_param;
+    ViewHostMsg_DidPrintPage::Read(print_msg, &post_did_print_page_param);
+    EXPECT_EQ(0, post_did_print_page_param.a.page_number);
+  }
 #endif  // defined(OS_CHROMEOS)
 }
 

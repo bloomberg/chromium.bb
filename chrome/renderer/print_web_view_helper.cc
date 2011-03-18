@@ -116,8 +116,14 @@ PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
 
 PrintWebViewHelper::~PrintWebViewHelper() {}
 
-void PrintWebViewHelper::ScriptInitiatedPrint(WebFrame* frame) {
-  Print(frame, NULL, true);
+void PrintWebViewHelper::ScriptInitiatedPrint(WebKit::WebFrame* frame) {
+  DCHECK(frame);
+
+  if (IsScriptInitiatedPrintTooFrequent(frame))
+    return;
+  IncrementScriptedPrintCount();
+  // TODO(thestig) Handle print preview case. http://crbug.com/75505.
+  Print(frame, NULL);
 }
 
 bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
@@ -185,7 +191,7 @@ void PrintWebViewHelper::OnPrint() {
   WebFrame* frame = render_view()->webview()->focusedFrame()->hasSelection() ?
       render_view()->webview()->focusedFrame() :
       render_view()->webview()->mainFrame();
-  Print(frame, NULL, false);
+  Print(frame, NULL);
 }
 
 void PrintWebViewHelper::OnPrintPages() {
@@ -215,20 +221,13 @@ void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
   // Make a copy of the node, since we will do a sync call to the browser and
   // during that time OnContextMenuClosed might reset context_menu_node_.
   WebNode context_menu_node(render_view()->context_menu_node());
-  Print(context_menu_node.document().frame(), &context_menu_node, false);
+  Print(context_menu_node.document().frame(), &context_menu_node);
 }
 
-void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
-                               WebNode* node,
-                               bool script_initiated) {
+void PrintWebViewHelper::Print(WebKit::WebFrame* frame, WebKit::WebNode* node) {
   // If still not finished with earlier print request simply ignore.
   if (print_web_view_)
     return;
-
-  if (script_initiated && IsScriptInitiatedPrintTooFrequent(frame))
-    return;
-
-  bool print_cancelled = false;
 
   // Initialize print settings.
   if (!InitPrintSettings(frame, node))
@@ -246,6 +245,8 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
     if (expected_pages_count)
       use_browser_overlays = prep_frame_view.ShouldUseBrowserOverlays();
   }
+
+  bool print_cancelled = false;
 
   // Some full screen plugins can say they don't want to print.
   if (expected_pages_count) {
@@ -266,9 +267,6 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
 
       ResetScriptedPrintCount();
       return;  // All went well.
-    } else {
-      if (script_initiated)
-        IncrementScriptedPrintCount();
     }
   } else {
     // Nothing to print.
@@ -300,7 +298,7 @@ void PrintWebViewHelper::DidFinishPrinting(bool success) {
   print_pages_params_.reset();
 }
 
-bool PrintWebViewHelper::CopyAndPrint(WebFrame* web_frame) {
+bool PrintWebViewHelper::CopyAndPrint(WebKit::WebFrame* web_frame) {
   // Create a new WebView with the same settings as the current display one.
   // Except that we disable javascript (don't want any active content running
   // on the page).
@@ -484,8 +482,8 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
       margin_left_in_points, printing::kPointsPerInch, dpi));
 }
 
-bool PrintWebViewHelper::InitPrintSettings(WebFrame* frame,
-                                           WebNode* node) {
+bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
+                                           WebKit::WebNode* node) {
   ViewMsg_PrintPages_Params settings;
 
   if (!render_view()->Send(new ViewHostMsg_GetDefaultPrintSettings(
@@ -527,7 +525,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   return true;
 }
 
-bool PrintWebViewHelper::GetPrintSettingsFromUser(WebFrame* frame,
+bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
                                                   int expected_pages_count,
                                                   bool use_browser_overlays) {
   ViewHostMsg_ScriptedPrint_Params params;
@@ -560,8 +558,8 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebFrame* frame,
   return (print_settings.params.dpi && print_settings.params.document_cookie);
 }
 
-void PrintWebViewHelper::RenderPagesForPrint(WebFrame* frame,
-                                             WebNode* node) {
+void PrintWebViewHelper::RenderPagesForPrint(WebKit::WebFrame* frame,
+                                             WebKit::WebNode* node) {
   ViewMsg_PrintPages_Params print_settings = *print_pages_params_;
   if (print_settings.params.selection_only) {
     CopyAndPrint(frame);
