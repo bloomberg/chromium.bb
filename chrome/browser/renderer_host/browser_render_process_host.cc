@@ -87,6 +87,7 @@
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/speech/speech_input_dispatcher_host.h"
+#include "content/browser/trace_message_filter.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/common/child_process_info.h"
 #include "content/common/child_process_messages.h"
@@ -499,6 +500,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableP2PApi))
     channel_->AddFilter(new P2PSocketsHost());
 
+  channel_->AddFilter(new TraceMessageFilter());
   channel_->AddFilter(new ResolveProxyMsgHelper(NULL));
 }
 

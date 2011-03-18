@@ -35,6 +35,8 @@
         'common/child_process_messages.h',
         'common/child_thread.cc',
         'common/child_thread.h',
+        'common/child_trace_message_filter.cc',
+        'common/child_trace_message_filter.h',
         'common/chrome_application_mac.h',
         'common/chrome_application_mac.mm',
         'common/chrome_descriptors.h',

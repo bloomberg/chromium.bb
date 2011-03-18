@@ -25,9 +25,23 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetIPCLoggingEnabled,
                      bool /* on or off */)
 #endif
 
+// Sent to all child processes to enable trace event recording.
+IPC_MESSAGE_CONTROL0(ChildProcessMsg_BeginTracing)
+
+// Sent to all child processes to disable trace event recording.
+IPC_MESSAGE_CONTROL0(ChildProcessMsg_EndTracing)
+
+////////////////////////////////////////////////////////////////////////////////
 // Messages sent from the child process to the browser.
 
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ShutdownRequest)
+
+// Reply from child processes acking ChildProcessMsg_TraceChangeStatus(false).
+IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_EndTracingAck)
+
+// Child processes send trace data back in JSON chunks.
+IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceDataCollected,
+                     std::string /*json trace data*/)
 
 // Get the list of proxies to use for |url|, as a semicolon delimited list
 // of "<TYPE> <HOST>:<PORT>" | "DIRECT".

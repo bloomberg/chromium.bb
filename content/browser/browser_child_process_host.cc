@@ -21,6 +21,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
+#include "content/browser/trace_message_filter.h"
 #include "content/common/notification_service.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/process_watcher.h"
@@ -70,6 +71,8 @@ BrowserChildProcessHost::BrowserChildProcessHost(
         id(), type, resource_dispatcher_host_);
     AddFilter(resource_message_filter);
   }
+
+  AddFilter(new TraceMessageFilter);
 
   g_child_process_list.Get().push_back(this);
 }

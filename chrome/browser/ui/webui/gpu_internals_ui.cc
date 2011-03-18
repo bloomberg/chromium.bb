@@ -37,6 +37,7 @@
 #include "content/browser/gpu_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/trace_controller.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -66,7 +67,8 @@ class GpuHTMLSource : public ChromeURLDataManager::DataSource {
 // this class's methods are expected to run on the UI thread.
 class GpuMessageHandler
     : public WebUIMessageHandler,
-      public base::SupportsWeakPtr<GpuMessageHandler> {
+      public base::SupportsWeakPtr<GpuMessageHandler>,
+      public TraceSubscriber {
  public:
   GpuMessageHandler();
   virtual ~GpuMessageHandler();
@@ -86,8 +88,11 @@ class GpuMessageHandler
   Value* OnRequestLogMessages(const ListValue* list);
 
   // Callbacks.
-  void OnTraceDataCollected(const std::string& json_events);
   void OnGpuInfoUpdate();
+
+  // TraceSubscriber implementation.
+  virtual void OnEndTracingComplete();
+  virtual void OnTraceDataCollected(const std::string& json_events);
 
   // Executes the javascript function |function_name| in the renderer, passing
   // it the argument |value|.
@@ -99,8 +104,6 @@ class GpuMessageHandler
 
   // Cache the Singleton for efficiency.
   GpuDataManager* gpu_data_manager_;
-
-  void OnEndTracingComplete();
 
   Callback0::Type* gpu_info_update_callback_;
 
@@ -163,8 +166,8 @@ GpuMessageHandler::~GpuMessageHandler() {
     delete gpu_info_update_callback_;
   }
 
-  if (trace_enabled_)
-    OnEndTracingAsync(NULL);
+  // If we are the current subscriber, this will result in ending tracing.
+  TraceController::GetInstance()->CancelSubscriber(this);
 }
 
 WebUIMessageHandler* GpuMessageHandler::Attach(WebUI* web_ui) {
@@ -390,17 +393,26 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
 
 void GpuMessageHandler::OnBeginTracing(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   trace_enabled_ = true;
-  // TODO(jbates): TracingController::BeginTracing()
+  // TODO(jbates) This may fail, but that's OK for current use cases.
+  //              Ex: Multiple about:gpu traces can not trace simultaneously.
+  // TODO(nduca) send feedback to javascript about whether or not BeginTracing
+  //             was successful.
+  TraceController::GetInstance()->BeginTracing(this);
 }
 
 void GpuMessageHandler::OnEndTracingAsync(const ListValue* list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(trace_enabled_);
 
-  // TODO(jbates): TracingController::OnEndTracingAsync(new
-  // Callback(this, GpuMessageHandler::OnEndTracingComplete))
+  // TODO(nduca): fix javascript code to make sure trace_enabled_ is always true
+  //              here. triggered a false condition by just clicking stop
+  //              trace a few times when it was going slow, and maybe switching
+  //              between tabs.
+  if (trace_enabled_ &&
+      !TraceController::GetInstance()->EndTracingAsync(this)) {
+    // Set to false now, since it turns out we never were the trace subscriber.
+    OnEndTracingComplete();
+  }
 }
 
 void GpuMessageHandler::OnEndTracingComplete() {

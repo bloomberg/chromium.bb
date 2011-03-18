@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,7 +129,7 @@ TraceLog::~TraceLog() {
 TraceCategory* TraceLog::GetCategory(const char* name) {
   AutoLock lock(lock_);
   // TODO(nduca): replace with a hash_map.
-  for (int i = categories_.size() - 1; i >= 0; i-- ) {
+  for (int i = static_cast<int>(categories_.size()) - 1; i >= 0; i-- ) {
     if (strcmp(categories_[i]->name(), name) == 0)
       return categories_[i];
   }

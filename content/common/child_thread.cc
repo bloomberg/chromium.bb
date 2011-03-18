@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "content/common/child_process.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/child_trace_message_filter.h"
 #include "content/common/content_switches.h"
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/notification_service.h"
@@ -56,6 +57,13 @@ void ChildThread::Init() {
   sync_message_filter_ =
       new IPC::SyncMessageFilter(ChildProcess::current()->GetShutDownEvent());
   channel_->AddFilter(sync_message_filter_.get());
+
+#if !defined(NACL_WIN64)
+  // Currently, the NaCl 64 DLL build requires a lot of extra dependencies to
+  // support IPC messages with parameters, so until there's a need for trace in
+  // NaCl, this is reserved for non-NaCl builds.
+  channel_->AddFilter(new ChildTraceMessageFilter());
+#endif
 
   // When running in unit tests, there is already a NotificationService object.
   // Since only one can exist at a time per thread, check first.

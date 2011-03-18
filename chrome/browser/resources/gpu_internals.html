@@ -58,23 +58,16 @@ var timelineView; // made global for debugging purposes only
  */
 function onLoad() {
   browserBridge = new gpu.BrowserBridge();
-  if (browserBridge.debugMode)
-    tracingController = new gpu.TracingController();
+  tracingController = new gpu.TracingController();
 
   // Create the views.
   cr.ui.decorate('#info-view', gpu.InfoView);
 
   var rawEventsView = $('raw-events-view');
-  if (browserBridge.debugMode)
-    cr.ui.decorate('#raw-events-view', gpu.RawEventsView);
-  else
-    rawEventsView.parentNode.removeChild(rawEventsView);
+  cr.ui.decorate('#raw-events-view', gpu.RawEventsView);
 
   timelineView = $('timeline-view');
-  if (browserBridge.debugMode)
-    cr.ui.decorate(timelineView, gpu.TimelineView);
-  else
-    timelineView.parentNode.removeChild(timelineView);
+  cr.ui.decorate(timelineView, gpu.TimelineView);
 
   // Create the main tab control
   var tabs = $('main-tabs');
