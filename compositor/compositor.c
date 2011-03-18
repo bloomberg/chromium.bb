@@ -1327,9 +1327,11 @@ wlsc_output_move(struct wlsc_output *output, int x, int y)
 	output->x = x;
 	output->y = y;
 
-	output->background->x = x;
-	output->background->y = y;
-	wlsc_surface_update_matrix(output->background);
+	if (output->background) {
+		output->background->x = x;
+		output->background->y = y;
+		wlsc_surface_update_matrix(output->background);
+	}
 
 	pixman_region32_init(&output->previous_damage_region);
 
