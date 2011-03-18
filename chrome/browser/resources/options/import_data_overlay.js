@@ -101,11 +101,14 @@ cr.define('options', function() {
      */
     updateCheckboxes_: function() {
       var index = $('import-browsers').selectedIndex;
-      var browserProfile = ImportDataOverlay.browserProfiles[index];
+      var browserProfile;
+      if (this.browserProfiles.length > index)
+        browserProfile = this.browserProfiles[index];
       var importOptions = ['history', 'favorites', 'passwords', 'search'];
       for (var i = 0; i < importOptions.length; i++) {
         var checkbox = $('import-' + importOptions[i]);
-        this.setUpCheckboxState_(checkbox, browserProfile[importOptions[i]]);
+        this.setUpCheckboxState_(checkbox,
+            browserProfile ? browserProfile[importOptions[i]] : false);
       }
     },
 
@@ -115,7 +118,7 @@ cr.define('options', function() {
      * @private
      */
     updateSupportedBrowsers_: function(browsers) {
-      ImportDataOverlay.browserProfiles = browsers;
+      this.browserProfiles = browsers;
       var browserSelect = $('import-browsers');
       browserSelect.remove(0);  // Remove the 'Loading...' option.
       browserSelect.textContent = '';
