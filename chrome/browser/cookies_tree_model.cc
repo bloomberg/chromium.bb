@@ -274,7 +274,7 @@ CookieTreeOriginNode* CookieTreeRootNode::GetOrCreateOriginNode(
   // children.
   CookieTreeOriginNode* retval = new CookieTreeOriginNode(url);
   DCHECK(model_);
-  model_->Add(this, (origin_node_iterator - children().begin()), retval);
+  model_->Add(this, retval, (origin_node_iterator - children().begin()));
   return retval;
 }
 
@@ -492,7 +492,7 @@ void CookieTreeNode::AddChildSortedByTitle(CookieTreeNode* new_child) {
                   children().end(),
                   new_child,
                   NodeTitleComparator());
-  GetModel()->Add(this, iter - children().begin(), new_child);
+  GetModel()->Add(this, new_child, iter - children().begin());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

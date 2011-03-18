@@ -68,7 +68,7 @@ TEST_F(TreeNodeModelTest, AddNode) {
   // Create the first root child.
   TreeNodeWithValue<int>* child1 =
       new TreeNodeWithValue<int>(ASCIIToUTF16("child 1"), 1);
-  model.Add(root, 0, child1);
+  model.Add(root, child1, 0);
 
   AssertObserverCount(1, 0, 0);
 
@@ -77,13 +77,13 @@ TEST_F(TreeNodeModelTest, AddNode) {
       new TreeNodeWithValue<int>(ASCIIToUTF16("foo1"), 3);
   TreeNodeWithValue<int>* foo2 =
       new TreeNodeWithValue<int>(ASCIIToUTF16("foo2"), 4);
-  child1->Add(0, foo1);
-  child1->Add(1, foo2);
+  child1->Add(foo1, 0);
+  child1->Add(foo2, 1);
 
   // Create the second root child.
   TreeNodeWithValue<int>* child2 =
       new TreeNodeWithValue<int>(ASCIIToUTF16("child 2"), 2);
-  root->Add(1, child2);
+  root->Add(child2, 1);
 
   // Check if there is two nodes under the root.
   ASSERT_EQ(2, model.GetChildCount(root));
@@ -109,7 +109,7 @@ TEST_F(TreeNodeModelTest, RemoveNode) {
       new TreeNodeWithValue<int>(ASCIIToUTF16("child 1"), 1);
 
   // And add it to the root node.
-  root->Add(0, child1);
+  root->Add(child1, 0);
 
   ASSERT_EQ(1, model.GetChildCount(root));
 
@@ -141,17 +141,17 @@ TEST_F(TreeNodeModelTest, RemoveAllNodes) {
   // Create the first child node.
   TreeNodeWithValue<int>* child1 =
       new TreeNodeWithValue<int>(ASCIIToUTF16("child 1"), 1);
-  model.Add(root, 0, child1);
+  model.Add(root, child1, 0);
 
   TreeNodeWithValue<int>* foo1 =
       new TreeNodeWithValue<int>(ASCIIToUTF16("foo1"), 2);
-  model.Add(child1, 0, foo1);
+  model.Add(child1, foo1, 0);
 
   // Add some nodes to |foo1|.
   for (int i = 0; i < 3; ++i) {
-    model.Add(foo1, i,
+    model.Add(foo1,
               new TreeNodeWithValue<int>(ASCIIToUTF16("child") +
-                                             base::IntToString16(i), i));
+                                         base::IntToString16(i), i), i);
   }
 
   ASSERT_EQ(3, model.GetChildCount(foo1));
@@ -180,15 +180,15 @@ TEST_F(TreeNodeModelTest, GetIndexOf) {
 
   TreeNodeWithValue<int>* child1 =
       new TreeNodeWithValue<int>(ASCIIToUTF16("child 1"), 1);
-  model.Add(root, 0, child1);
+  model.Add(root, child1, 0);
 
   TreeNodeWithValue<int>* child2 =
       new TreeNodeWithValue<int>(ASCIIToUTF16("child 2"), 2);
-  model.Add(root, 1, child2);
+  model.Add(root, child2, 1);
 
   TreeNodeWithValue<int>* foo1 =
       new TreeNodeWithValue<int>(ASCIIToUTF16("foo1"), 0);
-  model.Add(child1, 0, foo1);
+  model.Add(child1, foo1, 0);
 
   ASSERT_EQ(0, model.GetIndexOf(root, child1));
   ASSERT_EQ(1, model.GetIndexOf(root, child2));
@@ -208,11 +208,11 @@ TEST_F(TreeNodeModelTest, HasAncestor) {
 
   TreeNodeWithValue<int>* child1 =
       new TreeNodeWithValue<int>(ASCIIToUTF16("child 1"), 0);
-  model.Add(root, 0, child1);
+  model.Add(root, child1, 0);
 
   TreeNodeWithValue<int>* child2 =
       new TreeNodeWithValue<int>(ASCIIToUTF16("child 2"), 1);
-  model.Add(root, 1, child2);
+  model.Add(root, child2, 1);
 
   ASSERT_TRUE(root->HasAncestor(root));
   ASSERT_FALSE(root->HasAncestor(child1));
@@ -260,16 +260,16 @@ TEST_F(TreeNodeModelTest, GetTotalNodeCount) {
   TreeNodeWithValue<int>* bar1 =
       new TreeNodeWithValue<int>(ASCIIToUTF16("bar1"), 8);
 
-  model.Add(root, 0, child1);
-  model.Add(child1, 0, child2);
-  model.Add(child2, 0, child3);
+  model.Add(root, child1, 0);
+  model.Add(child1, child2, 0);
+  model.Add(child2, child3, 0);
 
-  model.Add(root, 1, foo1);
-  model.Add(foo1, 0, foo2);
-  model.Add(foo1, 1, foo4);
-  model.Add(foo2, 0, foo3);
+  model.Add(root, foo1, 1);
+  model.Add(foo1, foo2, 0);
+  model.Add(foo1, foo4, 1);
+  model.Add(foo2, foo3, 0);
 
-  model.Add(root, 0, bar1);
+  model.Add(root, bar1, 0);
 
   ASSERT_EQ(9, root->GetTotalNodeCount());
   ASSERT_EQ(3, child1->GetTotalNodeCount());

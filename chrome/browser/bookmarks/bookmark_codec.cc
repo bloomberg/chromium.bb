@@ -247,7 +247,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
       return false;  // Node invalid.
 
     if (parent)
-      parent->Add(parent->child_count(), node);
+      parent->Add(node, parent->child_count());
     node->set_type(BookmarkNode::URL);
     UpdateChecksumWithUrlNode(id_string, title, url_string);
   } else {
@@ -275,7 +275,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
     node->set_date_folder_modified(Time::FromInternalValue(internal_time));
 
     if (parent)
-      parent->Add(parent->child_count(), node);
+      parent->Add(node, parent->child_count());
 
     UpdateChecksumWithFolderNode(id_string, title);
 

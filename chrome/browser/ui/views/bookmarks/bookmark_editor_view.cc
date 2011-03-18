@@ -462,7 +462,7 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::AddNewFolder(
       l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));
   new_node->value = 0;
   // new_node is now owned by parent.
-  tree_model_->Add(parent, parent->child_count(), new_node);
+  tree_model_->Add(parent, new_node, parent->child_count());
   return new_node;
 }
 
@@ -499,7 +499,7 @@ void BookmarkEditorView::CreateNodes(const BookmarkNode* bb_node,
       EditorNode* new_b_node =
           new EditorNode(WideToUTF16(child_bb_node->GetTitle()),
                                      child_bb_node->id());
-      b_node->Add(b_node->child_count(), new_b_node);
+      b_node->Add(new_b_node, b_node->child_count());
       CreateNodes(child_bb_node, new_b_node);
     }
   }

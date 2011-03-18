@@ -361,7 +361,7 @@ bool StarredURLDatabase::BuildStarNodes(
         StarredNode* parent =
             group_id_to_node_map[star_entries[i].parent_group_id];
         StarredNode* node = new StarredNode(star_entries[i]);
-        parent->Add(parent->child_count(), node);
+        parent->Add(node, parent->child_count());
       }
     } else if (groups_with_duplicate_ids->find(star_entries[i].id) ==
                groups_with_duplicate_ids->end()) {
@@ -378,7 +378,7 @@ bool StarredURLDatabase::BuildStarNodes(
             group_id_to_node_map[star_entries[i].parent_group_id];
         StarredNode* node = group_id_to_node_map[star_entries[i].group_id];
         if (!node->HasAncestor(parent) && !parent->HasAncestor(node)) {
-          parent->Add(parent->child_count(), node);
+          parent->Add(node, parent->child_count());
         } else {
           // The node has a cycle. Add it to the list of roots so the cycle is
           // broken.
@@ -529,7 +529,7 @@ bool StarredURLDatabase::Move(StarredNode* source, StarredNode* new_parent) {
     NOTREACHED() << "Unable to move folder";
     return false;
   }
-  new_parent->Add(new_parent->child_count(), source);
+  new_parent->Add(source, new_parent->child_count());
   return true;
 }
 
@@ -611,7 +611,7 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
     // Add the node to its parent. |entries| is ordered by parent then
     // visual order so that we know we maintain visual order by always adding
     // to the end.
-    parent->Add(parent->child_count(), node);
+    parent->Add(node, parent->child_count());
   }
 
   // Save to file.

@@ -11,13 +11,13 @@ namespace ui {
 
 TEST(TreeNodeIteratorTest, Test) {
   TreeNodeWithValue<int> root;
-  root.Add(0, new TreeNodeWithValue<int>(1));
-  root.Add(1, new TreeNodeWithValue<int>(2));
+  root.Add(new TreeNodeWithValue<int>(1), 0);
+  root.Add(new TreeNodeWithValue<int>(2), 1);
   TreeNodeWithValue<int>* f3 = new TreeNodeWithValue<int>(3);
-  root.Add(2, f3);
+  root.Add(f3, 2);
   TreeNodeWithValue<int>* f4 = new TreeNodeWithValue<int>(4);
-  f3->Add(0, f4);
-  f4->Add(0, new TreeNodeWithValue<int>(5));
+  f3->Add(f4, 0);
+  f4->Add(new TreeNodeWithValue<int>(5), 0);
 
   TreeNodeIterator<TreeNodeWithValue<int> > iterator(&root);
   ASSERT_TRUE(iterator.has_next());

@@ -205,7 +205,7 @@ void BookmarkModel::Move(const BookmarkNode* node,
   if (old_parent == new_parent && index > old_index)
     index--;
   BookmarkNode* mutable_new_parent = AsMutable(new_parent);
-  mutable_new_parent->Add(index, AsMutable(node));
+  mutable_new_parent->Add(AsMutable(node), index);
 
   if (store_.get())
     store_->ScheduleSave();
@@ -572,8 +572,8 @@ void BookmarkModel::DoneLoading(
 
   // WARNING: order is important here, various places assume bookmark bar then
   // other node.
-  root_.Add(0, bookmark_bar_node_);
-  root_.Add(1, other_node_);
+  root_.Add(bookmark_bar_node_, 0);
+  root_.Add(other_node_, 1);
 
   {
     base::AutoLock url_lock(url_lock_);
@@ -661,7 +661,7 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
                                      int index,
                                      BookmarkNode* node,
                                      bool was_bookmarked) {
-  parent->Add(index, node);
+  parent->Add(node, index);
 
   if (store_.get())
     store_->ScheduleSave();

@@ -587,7 +587,7 @@ static void PopulateNodeImpl(const std::vector<std::string>& description,
       TestNode* new_node =
           new TestNode(base::IntToString16(next_folder_id++),
                        BookmarkNode::FOLDER);
-      parent->Add(parent->child_count(), new_node);
+      parent->Add(new_node, parent->child_count());
       PopulateNodeImpl(description, index, new_node);
     } else if (element == "]") {
       // End the current folder.
@@ -599,8 +599,8 @@ static void PopulateNodeImpl(const std::vector<std::string>& description,
       // likely means a space was forgotten.
       DCHECK(element.find('[') == std::string::npos);
       DCHECK(element.find(']') == std::string::npos);
-      parent->Add(parent->child_count(),
-                  new TestNode(UTF8ToUTF16(element), BookmarkNode::URL));
+      parent->Add(new TestNode(UTF8ToUTF16(element), BookmarkNode::URL),
+                  parent->child_count());
     }
   }
 }

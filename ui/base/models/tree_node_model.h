@@ -73,17 +73,17 @@ class TreeNode : public TreeModelNode {
 
   virtual ~TreeNode() {}
 
-  // Adds the specified child node.
-  virtual void Add(int index, NodeType* child) {
-    DCHECK(child);
+  // Adds a TreeNode as a child of this one, at |index|.
+  virtual void Add(NodeType* node, int index) {
+    DCHECK(node);
     DCHECK_LE(0, index);
     DCHECK_GE(child_count(), index);
     // If the node has a parent, remove it from its parent.
-    NodeType* node_parent = child->parent();
-    if (node_parent)
-      node_parent->Remove(node_parent->GetIndexOf(child));
-    child->parent_ = static_cast<NodeType*>(this);
-    children_->insert(children_->begin() + index, child);
+    NodeType* parent = node->parent();
+    if (parent)
+      parent->Remove(parent->GetIndexOf(node));
+    node->parent_ = static_cast<NodeType*>(this);
+    children_->insert(children_->begin() + index, node);
   }
 
   // Removes the node by index. This does NOT delete the specified node, it is
@@ -213,9 +213,9 @@ class TreeNodeModel : public TreeModel {
     return static_cast<NodeType*>(model_node);
   }
 
-  void Add(NodeType* parent, int index, NodeType* child) {
+  void Add(NodeType* parent, NodeType* child, int index) {
     DCHECK(parent && child);
-    parent->Add(index, child);
+    parent->Add(child, index);
     NotifyObserverTreeNodesAdded(parent, index, 1);
   }
 
