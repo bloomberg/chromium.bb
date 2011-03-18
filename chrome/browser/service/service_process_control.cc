@@ -147,6 +147,11 @@ void ServiceProcessControl::Launch(Task* success_task, Task* failure_task) {
   if (!v_level.empty())
     cmd_line->AppendSwitchASCII(switches::kV, v_level);
 
+  std::string v_modules = browser_command_line.GetSwitchValueASCII(
+      switches::kVModule);
+  if (!v_modules.empty())
+    cmd_line->AppendSwitchASCII(switches::kVModule, v_modules);
+
   if (browser_command_line.HasSwitch(switches::kWaitForDebuggerChildren)) {
     cmd_line->AppendSwitch(switches::kWaitForDebugger);
   }
