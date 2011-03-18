@@ -38,7 +38,7 @@ UserImageSource::UserImageSource()
 UserImageSource::~UserImageSource() {}
 
 void UserImageSource::StartDataRequest(const std::string& path,
-                                       bool is_off_the_record,
+                                       bool is_incognito,
                                        int request_id) {
   // Strip the query param value - we only use it as a hack to ensure our
   // image gets reloaded instead of being pulled from the browser cache

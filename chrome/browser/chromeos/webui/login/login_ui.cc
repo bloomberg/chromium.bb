@@ -34,7 +34,7 @@ LoginUIHTMLSource::LoginUIHTMLSource(MessageLoop* message_loop)
 }
 
 void LoginUIHTMLSource::StartDataRequest(const std::string& path,
-                                         bool is_off_the_record,
+                                         bool is_incognito,
                                          int request_id) {
   DictionaryValue localized_strings;
   SetFontAndTextDirection(&localized_strings);

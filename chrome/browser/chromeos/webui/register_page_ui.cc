@@ -95,7 +95,7 @@ class RegisterPageUIHTMLSource : public ChromeURLDataManager::DataSource {
   // Called when the network layer has requested a resource underneath
   // the path we registered.
   virtual void StartDataRequest(const std::string& path,
-                                bool is_off_the_record,
+                                bool is_incognito,
                                 int request_id);
   virtual std::string GetMimeType(const std::string&) const {
     return "text/html";
@@ -161,7 +161,7 @@ RegisterPageUIHTMLSource::RegisterPageUIHTMLSource()
 }
 
 void RegisterPageUIHTMLSource::StartDataRequest(const std::string& path,
-                                                bool is_off_the_record,
+                                                bool is_incognito,
                                                 int request_id) {
   // Make sure that chrome://register is available only during
   // OOBE wizard lifetime and when device has not been registered yet.
