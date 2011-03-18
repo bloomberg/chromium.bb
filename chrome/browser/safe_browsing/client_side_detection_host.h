@@ -68,7 +68,7 @@ class ClientSideDetectionHost : public TabContentsObserver {
   scoped_refptr<SafeBrowsingService> sb_service_;
   // Keep a handle to the latest classification request so that we can cancel
   // it if necessary.
-  scoped_ptr<ShouldClassifyUrlRequest> classification_request_;
+  scoped_refptr<ShouldClassifyUrlRequest> classification_request_;
 
   base::ScopedCallbackFactory<ClientSideDetectionHost> cb_factory_;
 
