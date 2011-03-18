@@ -12,7 +12,7 @@
 #include "native_client/src/shared/imc/nacl_imc.h"
 
 #if defined(OS_LINUX)
-#include "chrome/renderer/renderer_sandbox_support_linux.h"
+#include "content/renderer/renderer_sandbox_support_linux.h"
 #endif
 
 #if defined(OS_MACOSX)

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_
-#define CHROME_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_
+#ifndef CONTENT_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_
+#define CONTENT_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -34,4 +34,4 @@ class RendererWebStorageAreaImpl : public WebKit::WebStorageArea {
   int64 storage_area_id_;
 };
 
-#endif  // CHROME_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_
+#endif  // CONTENT_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_

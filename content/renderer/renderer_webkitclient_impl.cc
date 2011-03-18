@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/renderer_webkitclient_impl.h"
+#include "content/renderer/renderer_webkitclient_impl.h"
 
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -14,9 +14,6 @@
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
-#include "chrome/renderer/renderer_webaudiodevice_impl.h"
-#include "chrome/renderer/renderer_webidbfactory_impl.h"
-#include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "content/common/database_util.h"
 #include "content/common/file_system/webfilesystem_impl.h"
@@ -25,6 +22,9 @@
 #include "content/common/webblobregistry_impl.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/plugin/npobject_util.h"
+#include "content/renderer/renderer_webaudiodevice_impl.h"
+#include "content/renderer/renderer_webidbfactory_impl.h"
+#include "content/renderer/renderer_webstoragenamespace_impl.h"
 #include "content/renderer/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/websharedworkerrepository_impl.h"
 #include "googleurl/src/gurl.h"
@@ -60,7 +60,7 @@
 #include <map>
 
 #include "base/synchronization/lock.h"
-#include "chrome/renderer/renderer_sandbox_support_linux.h"
+#include "content/renderer/renderer_sandbox_support_linux.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebSandboxSupport.h"
 #endif
 

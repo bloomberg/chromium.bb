@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
-#define CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
+#ifndef CONTENT_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
+#define CONTENT_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
 #pragma once
 
 #include "base/platform_file.h"
@@ -114,4 +114,4 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   scoped_ptr<WebKit::WebBlobRegistry> blob_registry_;
 };
 
-#endif  // CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
+#endif  // CONTENT_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_

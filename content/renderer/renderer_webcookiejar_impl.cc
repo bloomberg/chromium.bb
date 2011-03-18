@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/renderer_webcookiejar_impl.h"
+#include "content/renderer/renderer_webcookiejar_impl.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"

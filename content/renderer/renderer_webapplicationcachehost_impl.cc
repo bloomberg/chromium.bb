@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/renderer_webapplicationcachehost_impl.h"
+#include "content/renderer/renderer_webapplicationcachehost_impl.h"
 
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/render_messages.h"

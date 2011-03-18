@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/renderer_webidbdatabase_impl.h"
+#include "content/renderer/renderer_webidbdatabase_impl.h"
 
 #include "chrome/renderer/render_thread.h"
-#include "chrome/renderer/renderer_webidbobjectstore_impl.h"
-#include "chrome/renderer/renderer_webidbtransaction_impl.h"
 #include "content/common/indexed_db_messages.h"
 #include "content/renderer/indexed_db_dispatcher.h"
+#include "content/renderer/renderer_webidbobjectstore_impl.h"
+#include "content/renderer/renderer_webidbtransaction_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 

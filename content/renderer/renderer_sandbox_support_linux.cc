@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/renderer_sandbox_support_linux.h"
+#include "content/renderer/renderer_sandbox_support_linux.h"
 
 #include <sys/stat.h>
 
@@ -10,7 +10,7 @@
 #include "base/global_descriptors_posix.h"
 #include "base/pickle.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/chrome_descriptors.h"
+#include "content/common/chrome_descriptors.h"
 #include "content/common/sandbox_methods_linux.h"
 #include "content/common/unix_domain_socket_posix.h"
 

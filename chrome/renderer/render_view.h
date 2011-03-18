@@ -29,7 +29,7 @@
 #include "chrome/renderer/external_popup_menu.h"
 #include "chrome/renderer/page_load_histograms.h"
 #include "chrome/renderer/render_widget.h"
-#include "chrome/renderer/renderer_webcookiejar_impl.h"
+#include "content/renderer/renderer_webcookiejar_impl.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/page_zoom.h"
 #include "content/renderer/pepper_plugin_delegate_impl.h"
