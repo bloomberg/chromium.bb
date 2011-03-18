@@ -83,7 +83,7 @@ _start:
     pushl   %ecx  /* Push argv onto the stack */
     pushl   %esi  /* Push argc back onto the stack */
 
-    call    __nacl_startup
+    naclcall  __nacl_startup
 
 halt_loop:
     hlt

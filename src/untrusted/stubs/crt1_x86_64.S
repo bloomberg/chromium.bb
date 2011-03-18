@@ -75,7 +75,7 @@ _start:
     movq    %rsi, %rdi
     movq    %rcx, %rsi
     movl    %ebx, %edx
-    call    __nacl_startup
+    naclcall __nacl_startup
 
 halt_loop:
     hlt
