@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_RENDER_WIDGET_H_
-#define CHROME_RENDERER_RENDER_WIDGET_H_
+#ifndef CONTENT_RENDERER_RENDER_WIDGET_H_
+#define CONTENT_RENDERER_RENDER_WIDGET_H_
 #pragma once
 
 #include <vector>
@@ -378,4 +378,4 @@ class RenderWidget : public IPC::Channel::Listener,
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };
 
-#endif  // CHROME_RENDERER_RENDER_WIDGET_H_
+#endif  // CONTENT_RENDERER_RENDER_WIDGET_H_

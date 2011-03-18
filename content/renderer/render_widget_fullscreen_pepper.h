@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
-#define CHROME_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
+#ifndef CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
+#define CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
 
-#include "chrome/renderer/render_widget_fullscreen.h"
+#include "content/renderer/render_widget_fullscreen.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
 
@@ -86,4 +86,4 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetFullscreenPepper);
 };
 
-#endif  // CHROME_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
+#endif  // CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_

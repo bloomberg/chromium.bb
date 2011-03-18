@@ -119,12 +119,6 @@
         'renderer/render_view.h',
         'renderer/render_view_observer.cc',
         'renderer/render_view_observer.h',
-        'renderer/render_widget.cc',
-        'renderer/render_widget.h',
-        'renderer/render_widget_fullscreen.cc',
-        'renderer/render_widget_fullscreen.h',
-        'renderer/render_widget_fullscreen_pepper.cc',
-        'renderer/render_widget_fullscreen_pepper.h',
         'renderer/renderer_glue.cc',
         'renderer/renderer_histogram_snapshots.cc',
         'renderer/renderer_histogram_snapshots.h',
@@ -179,11 +173,6 @@
         'renderer/visitedlink_slave.cc',
         'renderer/visitedlink_slave.h',
       ],
-      'link_settings': {
-        'mac_bundle_resources': [
-          'renderer/renderer.sb',
-        ],
-      },
       'conditions': [
         ['disable_nacl!=1', {
           'dependencies': [

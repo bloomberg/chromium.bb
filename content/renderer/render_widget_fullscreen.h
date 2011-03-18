@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_RENDER_WIDGET_FULLSCREEN_H_
-#define CHROME_RENDERER_RENDER_WIDGET_FULLSCREEN_H_
+#ifndef CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_H_
+#define CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_H_
 
-#include "chrome/renderer/render_widget.h"
+#include "content/renderer/render_widget.h"
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 
@@ -27,4 +27,4 @@ class RenderWidgetFullscreen : public RenderWidget {
   void Init(int32 opener_id);
 };
 
-#endif  // CHROME_RENDERER_RENDER_WIDGET_FULLSCREEN_H_
+#endif  // CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_H_

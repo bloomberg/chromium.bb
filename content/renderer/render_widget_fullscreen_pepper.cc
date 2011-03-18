@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/render_widget_fullscreen_pepper.h"
+#include "content/renderer/render_widget_fullscreen_pepper.h"
 
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"

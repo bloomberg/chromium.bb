@@ -7,11 +7,11 @@
 #include "base/lazy_instance.h"
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
-#include "chrome/renderer/render_widget.h"
 #include "content/renderer/command_buffer_proxy.h"
 #include "content/renderer/gpu_channel_host.h"
 #include "content/renderer/gpu_video_service_host.h"
 #include "content/renderer/media/gles2_video_decode_context.h"
+#include "content/renderer/render_widget.h"
 #include "ipc/ipc_channel_handle.h"
 
 #if defined(ENABLE_GPU)

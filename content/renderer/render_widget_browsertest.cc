@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/render_widget_browsertest.h"
+
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -10,7 +12,6 @@
 #include "base/stringprintf.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/renderer/render_widget_browsertest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"

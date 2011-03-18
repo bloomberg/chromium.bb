@@ -72,6 +72,12 @@
         'renderer/pepper_plugin_delegate_impl.h',
         'renderer/plugin_channel_host.cc',
         'renderer/plugin_channel_host.h',
+        'renderer/render_widget.cc',
+        'renderer/render_widget.h',
+        'renderer/render_widget_fullscreen.cc',
+        'renderer/render_widget_fullscreen.h',
+        'renderer/render_widget_fullscreen_pepper.cc',
+        'renderer/render_widget_fullscreen_pepper.h',
         'renderer/renderer_sandbox_support_linux.cc',
         'renderer/renderer_sandbox_support_linux.h',
         'renderer/renderer_webapplicationcachehost_impl.cc',
@@ -129,6 +135,16 @@
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
+        }],
+        ['OS=="mac"', {
+          'sources!': [
+            'common/process_watcher_posix.cc',
+          ],
+          'link_settings': {
+            'mac_bundle_resources': [
+              'renderer/renderer.sb',
+            ],
+          },
         }],
       ],
     },

@@ -1753,7 +1753,6 @@
         'renderer/net/renderer_predictor_unittest.cc',
         'renderer/render_process_unittest.cc',
         'renderer/render_thread_unittest.cc',
-        'renderer/render_widget_unittest.cc',
         'renderer/renderer_about_handler_unittest.cc',
         'renderer/renderer_main_unittest.cc',
         'renderer/safe_browsing/features_unittest.cc',
@@ -1840,6 +1839,7 @@
         '../content/renderer/gpu_video_decoder_host_unittest.cc',
         '../content/renderer/media/audio_renderer_impl_unittest.cc',
         '../content/renderer/paint_aggregator_unittest.cc',
+        '../content/renderer/render_widget_unittest.cc',
         '../testing/gtest_mac_unittest.mm',
         '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
         '../webkit/fileapi/file_system_dir_url_request_job_unittest.cc',
@@ -2293,8 +2293,6 @@
         'renderer/page_click_tracker_browsertest.cc',
         'renderer/render_view_browsertest.cc',
         'renderer/render_view_browsertest_mac.mm',
-        'renderer/render_widget_browsertest.cc',
-        'renderer/render_widget_browsertest.h',
         'renderer/safe_browsing/malware_dom_details_browsertest.cc',
         'renderer/safe_browsing/phishing_classifier_browsertest.cc',
         'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',
@@ -2322,6 +2320,8 @@
         '../content/browser/webui/web_ui_handler_browsertest.cc',
         '../content/browser/webui/web_ui_handler_browsertest.h',
         '../content/common/file_path_watcher/file_path_watcher_browsertest.cc',
+        '../content/renderer/render_widget_browsertest.cc',
+        '../content/renderer/render_widget_browsertest.h',
       ],
       'conditions': [
         ['chromeos==0', {
