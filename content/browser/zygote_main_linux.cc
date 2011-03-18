@@ -604,12 +604,14 @@ static void PreSandboxInit() {
   FilePath media_path;
   if (PathService::Get(chrome::DIR_MEDIA_LIBS, &media_path))
     media::InitializeMediaLibrary(media_path);
-
+#if defined(USE_NSS)
   // NSS libraries are loaded before sandbox is activated. This is to allow
   // successful initialization of NSS which tries to load extra library files.
   // Doing so will allow NSS to be used within sandbox for chromoting.
-#if defined(USE_NSS)
   base::LoadNSSLibraries();
+#else
+    // TODO(bulach): implement openssl support.
+    NOTREACHED() << "Remoting is not supported for openssl";
 #endif
 
   // Ensure access to the Pepper plugins before the sandbox is turned on.

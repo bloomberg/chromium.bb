@@ -161,11 +161,16 @@ RenderProcessImpl::RenderProcessImpl()
 #if defined(OS_LINUX)
   // Remoting requires NSS to function properly.
   if (command_line.HasSwitch(switches::kEnableRemoting)) {
+#if defined(USE_NSS)
     // We are going to fork to engage the sandbox and we have not loaded
     // any security modules so it is safe to disable the fork check in NSS.
     base::DisableNSSForkCheck();
     base::ForceNSSNoDBInit();
     base::EnsureNSSInit();
+#else
+    // TODO(bulach): implement openssl support.
+    NOTREACHED() << "Remoting is not supported for openssl";
+#endif
   }
 #endif
 }
