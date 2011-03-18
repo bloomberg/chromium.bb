@@ -31,5 +31,5 @@ PrintPreviewUIHTMLSource* PrintPreviewUI::html_source() {
 
 void PrintPreviewUI::PreviewDataIsAvailable(int expected_pages_count) {
   FundamentalValue pages_count(expected_pages_count);
-  CallJavascriptFunction("createPDFPlugin", pages_count);
+  CallJavascriptFunction("updatePrintPreview", pages_count);
 }
