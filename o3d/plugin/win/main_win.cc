@@ -43,6 +43,7 @@
 #include "core/cross/display_mode.h"
 #include "core/cross/event.h"
 #include "core/win/display_window_win.h"
+#include "pixman-win32-tls.h"
 #include "v8/include/v8.h"
 #if !defined(O3D_INTERNAL_PLUGIN)
 #include "breakpad/win/exception_handler_win32.h"
@@ -739,6 +740,9 @@ NPError PlatformPostNPShutdown() {
   // delete g_exception_manager;
 #endif
 
+  // Clean up all pixman TLS entries.
+  pixman_win32_tls_shutdown();
+
   return NPERR_NO_ERROR;
 }
 
@@ -752,6 +756,10 @@ NPError PlatformNPPDestroy(NPP instance, PluginObject *obj) {
   }
 
   obj->TearDown();
+
+  // Clean up pixman TLS thread local storage.
+  pixman_win32_tls_shutdown_thread();
+
   return NPERR_NO_ERROR;
 }
 

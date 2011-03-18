@@ -54,6 +54,9 @@
           {
             'type': 'static_library',
             'defines': [
+              # Build pixman with Windows XP support.
+              '_WIN32_WINNT=0x0502',
+              'WINVER=0x0502',
               'PACKAGE=pixman',
               'PACKAGE_VERSION=""',
               'PACKAGE_BUGREPORT=""',
@@ -90,6 +93,7 @@
               '../../<(pixmandir)/pixman/pixman-timer.c',
               '../../<(pixmandir)/pixman/pixman-trap.c',
               '../../<(pixmandir)/pixman/pixman-utils.c',
+              '../../<(pixmandir)/pixman/pixman-win32-tls.c',
             ],
           },
         ],
