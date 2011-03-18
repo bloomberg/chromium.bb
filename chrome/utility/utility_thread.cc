@@ -22,7 +22,9 @@
 #include "printing/units.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 #include "webkit/glue/idb_bindings.h"
 #include "webkit/glue/image_decoder.h"
 
@@ -276,7 +278,9 @@ bool UtilityThread::RenderPDFToWinMetafile(
     for (int page_number = iter->from; page_number <= iter->to; ++page_number) {
       if (page_number >= total_page_count)
         break;
-      metafile->StartPage();
+      // The underlying metafile is of type Emf and ignores the arguments passed
+      // to StartPage.
+      metafile->StartPage(gfx::Size(), gfx::Point(), 1);
       if (render_proc(&buffer.front(), buffer.size(), page_number,
                       metafile->context(), render_dpi, render_dpi,
                       render_area.x(), render_area.y(), render_area.width(),

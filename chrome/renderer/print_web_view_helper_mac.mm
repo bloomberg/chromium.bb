@@ -106,15 +106,14 @@ void PrintWebViewHelper::RenderPage(
     const gfx::Size& page_size, const gfx::Point& content_origin,
     const float& scale_factor, int page_number, WebFrame* frame,
     printing::NativeMetafile* metafile) {
-  CGContextRef context = metafile->StartPage(page_size, content_origin,
-                                             scale_factor);
-  DCHECK(context);
+  bool success = metafile->StartPage(page_size, content_origin, scale_factor);
+  DCHECK(success);
 
   // printPage can create autoreleased references to |context|. PDF contexts
   // don't write all their data until they are destroyed, so we need to make
   // certain that there are no lingering references.
   NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-  frame->printPage(page_number, context);
+  frame->printPage(page_number, metafile->context());
   [pool release];
 
   // Done printing. Close the device context to retrieve the compiled metafile.

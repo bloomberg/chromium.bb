@@ -15,6 +15,9 @@
 #include "skia/ext/vector_platform_device.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "ui/gfx/gdi_util.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 using printing::ConvertUnitDouble;
 using printing::kPointsPerInch;
@@ -199,9 +202,13 @@ void PrintWebViewHelper::RenderPage(
 
   double content_width_in_points;
   double content_height_in_points;
+  double margin_top_in_points;
+  double margin_left_in_points;
   GetPageSizeAndMarginsInPoints(frame, page_number, params,
-      &content_width_in_points, &content_height_in_points, NULL, NULL, NULL,
-      NULL);
+                                &content_width_in_points,
+                                &content_height_in_points,
+                                &margin_top_in_points, NULL, NULL,
+                                &margin_left_in_points);
 
   // Since WebKit extends the page width depending on the magical scale factor
   // we make sure the canvas covers the worst case scenario (x2.0 currently).
@@ -209,7 +216,11 @@ void PrintWebViewHelper::RenderPage(
   int width = static_cast<int>(content_width_in_points * params.max_shrink);
   int height = static_cast<int>(content_height_in_points * params.max_shrink);
 
-  bool result = (*metafile)->StartPage();
+  bool result = (*metafile)->StartPage(
+      gfx::Size(width, height),
+      gfx::Point(static_cast<int>(margin_top_in_points),
+                 static_cast<int>(margin_left_in_points)),
+      *scale_factor);
   DCHECK(result);
 
 #if 0

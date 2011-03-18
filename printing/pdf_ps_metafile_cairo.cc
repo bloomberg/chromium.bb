@@ -145,23 +145,25 @@ bool PdfPsMetafile::SetRawData(const void* src_buffer,
   return true;
 }
 
-cairo_t* PdfPsMetafile::StartPage(const gfx::Size& page_size,
-                                  double margin_top_in_points,
-                                  double margin_left_in_points) {
+bool PdfPsMetafile::StartPage(const gfx::Size& page_size,
+                              const gfx::Point& content_origin,
+                              const float& scale_factor) {
   DCHECK(IsSurfaceValid(surface_));
   DCHECK(IsContextValid(context_));
   // Passing this check implies page_surface_ is NULL, and current_page_ is
   // empty.
   DCHECK_GT(page_size.width(), 0);
   DCHECK_GT(page_size.height(), 0);
+  // |scale_factor| is not supported yet.
+  DCHECK_EQ(scale_factor, 1);
 
   // Don't let WebKit draw over the margins.
   cairo_surface_set_device_offset(surface_,
-                                  margin_left_in_points,
-                                  margin_top_in_points);
+                                  content_origin.x(),
+                                  content_origin.y());
 
   cairo_pdf_surface_set_size(surface_, page_size.width(), page_size.height());
-  return context_;
+  return context_ != NULL;
 }
 
 bool PdfPsMetafile::FinishPage() {

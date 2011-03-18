@@ -11,6 +11,12 @@
 #include "base/gtest_prod_util.h"
 #include "printing/native_metafile.h"
 
+namespace gfx {
+class Point;
+class Rect;
+class Size;
+}
+
 typedef struct _cairo_surface cairo_surface_t;
 
 namespace printing {
@@ -25,9 +31,9 @@ class PdfPsMetafile : public NativeMetafile {
   virtual bool Init();
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 
-  virtual cairo_t* StartPage(const gfx::Size& page_size,
-                             double margin_top_in_points,
-                             double margin_left_in_points);
+  virtual bool StartPage(const gfx::Size& page_size,
+                         const gfx::Point& content_origin,
+                         const float& scale_factor);
   virtual bool FinishPage();
   virtual bool Close();
 

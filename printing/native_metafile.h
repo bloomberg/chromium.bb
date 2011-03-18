@@ -21,9 +21,9 @@
 class FilePath;
 
 namespace gfx {
+class Point;
 class Rect;
 class Size;
-class Point;
 }
 
 #if defined(OS_CHROMEOS)
@@ -50,26 +50,12 @@ class NativeMetafile {
   // Note: It should only be called from within the browser process.
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size) = 0;
 
-#if defined(OS_WIN)
-  // Inserts a custom GDICOMMENT records indicating StartPage/EndPage calls
-  // (since StartPage and EndPage do not work in a metafile DC). Only valid
-  // when hdc_ is non-NULL.
-  virtual bool StartPage() = 0;
-#elif defined(OS_MACOSX)
-  // Prepares a new pdf page at specified |content_origin| with the given
-  // |page_size| and a |scale_factor| to use for the drawing.
-  virtual gfx::NativeDrawingContext StartPage(const gfx::Size& page_size,
-                                              const gfx::Point& content_origin,
-                                              const float& scale_factor) = 0;
-#elif defined(OS_POSIX)
-  // Prepares a new cairo surface/context for rendering a new page.
-  // The unit is in point (=1/72 in).
-  // Returns NULL when failed.
-  virtual gfx::NativeDrawingContext StartPage(const gfx::Size& page_size,
-                                              double margin_top_in_points,
-                                              double margin_left_in_points) = 0;
-#endif
-
+  // Prepares a context for rendering a new page at the specified
+  // |content_origin| with the given |page_size| and a |scale_factor| to use for
+  // the drawing. The units are in points (=1/72 in). Returns true on success.
+  virtual bool StartPage(const gfx::Size& page_size,
+                         const gfx::Point& content_origin,
+                         const float& scale_factor) = 0;
 
   // Closes the current page and destroys the context used in rendering that
   // page. The results of current page will be appended into the underlying

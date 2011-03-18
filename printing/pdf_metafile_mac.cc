@@ -62,8 +62,9 @@ bool PdfMetafile::InitFromData(const void* src_buffer, uint32 src_buffer_size) {
   return true;
 }
 
-CGContextRef PdfMetafile::StartPage(const gfx::Size& page_size,
-    const gfx::Point& content_origin, const float& scale_factor) {
+bool PdfMetafile::StartPage(const gfx::Size& page_size,
+                            const gfx::Point& content_origin,
+                            const float& scale_factor) {
   DCHECK(context_.get());
   DCHECK(!page_is_open_);
 
@@ -82,7 +83,7 @@ CGContextRef PdfMetafile::StartPage(const gfx::Size& page_size,
   // Move the context to origin.
   CGContextTranslateCTM(context_, content_origin.x(), content_origin.y());
 
-  return context_.get();
+  return context_.get() != NULL;
 }
 
 bool PdfMetafile::FinishPage() {

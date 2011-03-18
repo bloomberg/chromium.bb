@@ -13,7 +13,9 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/gdi_util.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace {
 const int kCustomGdiCommentSignature = 0xdeadbabe;
@@ -410,7 +412,10 @@ bool Emf::Record::SafePlayback(const XFORM* base_matrix) const {
   return res;
 }
 
-bool Emf::StartPage() {
+bool Emf::StartPage(const gfx::Size& /*page_size*/,
+                    const gfx::Point& /*content_origin*/,
+                    const float& scale_factor) {
+  DCHECK_EQ(scale_factor, 1);
   DCHECK(hdc_);
   if (!hdc_)
     return false;
