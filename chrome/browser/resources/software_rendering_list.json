@@ -43,7 +43,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.7",
+  "version": "1.8",
   "entries": [
     {
       "id": 1,
@@ -107,42 +107,14 @@
     },
     {
       "id": 5,
-      "description": "ATI cards in Linux do not support WebGL.",
-      "cr_bugs": [71381],
+      "description": "ATI cards in Linux are crash-prone.",
+      "cr_bugs": [71381, 76428, 73910],
       "os": {
         "type": "linux"
       },
       "vendor_id": "0x1002",
       "blacklist": [
-        "webgl"
-      ]
-    },
-    {
-      "id": 6,
-      "description": "ATI Radeon HD2600 on Mac do not support WebGL or accelerated compositing.",
-      "cr_bugs": [68859],
-      "os": {
-        "type": "macosx"
-      },
-      "vendor_id": "0x1002",
-      "device_id": ["0x9583"],
-      "blacklist": [
-        "webgl",
-        "accelerated_compositing"
-      ]
-    },
-    {
-      "id": 7,
-      "description": "ATI Radeon HD2400 on Mac do not support WebGL or accelerated compositing.",
-      "cr_bugs": [68859],
-      "os": {
-        "type": "macosx"
-      },
-      "vendor_id": "0x1002",
-      "device_id": ["0x94c8"],
-      "blacklist": [
-        "webgl",
-        "accelerated_compositing"
+        "all"
       ]
     },
     {
@@ -159,7 +131,7 @@
         "accelerated_compositing"
       ]
     },
-    { // NVIDIA GeForce 7300 GT on Mac, BUG=73794
+    {
       "id": 10,
       "description": "NVIDIA GeForce 7300 GT on Mac does not support WebGL.",
       "cr_bugs": [73794],
@@ -170,20 +142,6 @@
       "device_id": ["0x0393"],
       "blacklist": [
         "webgl"
-      ]
-    },
-    {
-      "id": 11,
-      "description": "ATI Radeon HD2600 XT on Mac does not support WebGL or accelerated compositing.",
-      "cr_bugs": [68859],
-      "os": {
-        "type": "macosx"
-      },
-      "vendor_id": "0x1002",
-      "device_id": ["0x9588"],
-      "blacklist": [
-        "webgl",
-        "accelerated_compositing"
       ]
     },
     {
@@ -271,6 +229,18 @@
       "vendor_id": "0x1002",
       "blacklist": [
         "multisampling"
+      ]
+    },
+    {
+      "id": 17,
+      "description": "Intel mesa drivers are crash-prone.",
+      "cr_bugs": [76703],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x8086",
+      "blacklist": [
+        "all"
       ]
     }
   ]
