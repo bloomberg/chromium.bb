@@ -71,6 +71,16 @@ void AddEndURLRequestEntries(LoadTimingObserver& observer, uint32 id) {
               NULL);
 }
 
+void AddStartHTTPStreamJobEntries(LoadTimingObserver& observer, uint32 id) {
+  NetLog::Source source(NetLog::SOURCE_HTTP_STREAM_JOB, id);
+  AddStartEntry(observer, source, NetLog::TYPE_HTTP_STREAM_JOB, NULL);
+}
+
+void AddEndHTTPStreamJobEntries(LoadTimingObserver& observer, uint32 id) {
+  NetLog::Source source(NetLog::SOURCE_HTTP_STREAM_JOB, id);
+  AddEndEntry(observer, source, NetLog::TYPE_HTTP_STREAM_JOB, NULL);
+}
+
 void AddStartConnectJobEntries(LoadTimingObserver& observer, uint32 id) {
   NetLog::Source source(NetLog::SOURCE_CONNECT_JOB, id);
   AddStartEntry(observer, source, NetLog::TYPE_SOCKET_POOL_CONNECT_JOB, NULL);
@@ -89,6 +99,40 @@ void AddStartSocketEntries(LoadTimingObserver& observer, uint32 id) {
 void AddEndSocketEntries(LoadTimingObserver& observer, uint32 id) {
   NetLog::Source source(NetLog::SOURCE_SOCKET, id);
   AddEndEntry(observer, source, NetLog::TYPE_SOCKET_ALIVE, NULL);
+}
+
+void BindURLRequestToHTTPStreamJob(LoadTimingObserver& observer,
+                                   NetLog::Source url_request_source,
+                                   NetLog::Source http_stream_job_source) {
+  scoped_refptr<net::NetLogSourceParameter> params(
+      new net::NetLogSourceParameter("source_dependency",
+                                     http_stream_job_source));
+  AddStartEntry(observer,
+                url_request_source,
+                NetLog::TYPE_HTTP_STREAM_REQUEST_BOUND_TO_JOB,
+                params.get());
+}
+
+void BindHTTPStreamJobToConnectJob(LoadTimingObserver& observer,
+                                   NetLog::Source& http_stream_job_source,
+                                   NetLog::Source& connect_source) {
+  scoped_refptr<net::NetLogSourceParameter> params(
+      new net::NetLogSourceParameter("source_dependency", connect_source));
+  AddStartEntry(observer,
+                http_stream_job_source,
+                NetLog::TYPE_SOCKET_POOL_BOUND_TO_CONNECT_JOB,
+                params.get());
+}
+
+void BindHTTPStreamJobToSocket(LoadTimingObserver& observer,
+                               NetLog::Source& http_stream_job_source,
+                               NetLog::Source& socket_source) {
+  scoped_refptr<net::NetLogSourceParameter> params(
+      new net::NetLogSourceParameter("source_dependency", socket_source));
+  AddStartEntry(observer,
+                http_stream_job_source,
+                NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET,
+                params.get());
 }
 
 }  // namespace
@@ -123,6 +167,27 @@ TEST_F(LoadTimingObserverTest, URLRequestRecord) {
     AddStartURLRequestEntries(observer, i, true);
   record = observer.GetURLRequestRecord(1);
   ASSERT_TRUE(record == NULL);
+}
+
+// Test that HTTPStreamJobRecord is created, deleted and is not growing unbound.
+TEST_F(LoadTimingObserverTest, HTTPStreamJobRecord) {
+  LoadTimingObserver observer;
+
+  // Create record.
+  AddStartHTTPStreamJobEntries(observer, 0);
+  ASSERT_FALSE(observer.http_stream_job_to_record_.find(0) ==
+                   observer.http_stream_job_to_record_.end());
+
+  // Collect record.
+  AddEndHTTPStreamJobEntries(observer, 0);
+  ASSERT_TRUE(observer.http_stream_job_to_record_.find(0) ==
+                   observer.http_stream_job_to_record_.end());
+
+  // Check unbound growth.
+  for (size_t i = 1; i < 1100; ++i)
+    AddStartHTTPStreamJobEntries(observer, i);
+  ASSERT_TRUE(observer.http_stream_job_to_record_.find(1) ==
+                  observer.http_stream_job_to_record_.end());
 }
 
 // Test that ConnectJobRecord is created, deleted and is not growing unbound.
@@ -206,10 +271,16 @@ TEST_F(LoadTimingObserverTest, ConnectTime) {
   AddStartURLRequestEntries(observer, 0, true);
   NetLog::Source source(NetLog::SOURCE_URL_REQUEST, 0);
 
+  NetLog::Source http_stream_job_source(NetLog::SOURCE_HTTP_STREAM_JOB, 1);
+  AddStartHTTPStreamJobEntries(observer, 1);
+
   current_time += TimeDelta::FromSeconds(2);
-  AddStartEntry(observer, source, NetLog::TYPE_SOCKET_POOL, NULL);
+  AddStartEntry(observer, http_stream_job_source, NetLog::TYPE_SOCKET_POOL,
+                NULL);
   current_time += TimeDelta::FromSeconds(3);
-  AddEndEntry(observer, source, NetLog::TYPE_SOCKET_POOL, NULL);
+  AddEndEntry(observer, http_stream_job_source, NetLog::TYPE_SOCKET_POOL, NULL);
+
+  BindURLRequestToHTTPStreamJob(observer, source, http_stream_job_source);
 
   LoadTimingObserver::URLRequestRecord* record =
       observer.GetURLRequestRecord(0);
@@ -237,13 +308,12 @@ TEST_F(LoadTimingObserverTest, DnsTime) {
   AddEndEntry(observer, connect_source, NetLog::TYPE_HOST_RESOLVER_IMPL, NULL);
   AddEndConnectJobEntries(observer, 1);
 
-  // Bind to connect job.
-  scoped_refptr<net::NetLogSourceParameter> params(
-      new net::NetLogSourceParameter("connect_job", connect_source));
-  AddStartEntry(observer,
-                source,
-                NetLog::TYPE_SOCKET_POOL_BOUND_TO_CONNECT_JOB,
-                params.get());
+  NetLog::Source http_stream_job_source(NetLog::SOURCE_HTTP_STREAM_JOB, 2);
+  AddStartHTTPStreamJobEntries(observer, 2);
+
+  BindHTTPStreamJobToConnectJob(observer, http_stream_job_source,
+                                connect_source);
+  BindURLRequestToHTTPStreamJob(observer, source, http_stream_job_source);
 
   LoadTimingObserver::URLRequestRecord* record =
       observer.GetURLRequestRecord(0);
@@ -319,13 +389,11 @@ TEST_F(LoadTimingObserverTest, SslTime) {
   current_time += TimeDelta::FromSeconds(2);
   AddEndEntry(observer, socket_source, NetLog::TYPE_SSL_CONNECT, NULL);
 
-  // Bind to connect job.
-  scoped_refptr<net::NetLogSourceParameter> params(
-      new net::NetLogSourceParameter("socket", socket_source));
-  AddStartEntry(observer,
-                source,
-                NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET,
-                params.get());
+  NetLog::Source http_stream_job_source(NetLog::SOURCE_HTTP_STREAM_JOB, 2);
+  AddStartHTTPStreamJobEntries(observer, 2);
+
+  BindHTTPStreamJobToSocket(observer, http_stream_job_source, socket_source);
+  BindURLRequestToHTTPStreamJob(observer, source, http_stream_job_source);
 
   LoadTimingObserver::URLRequestRecord* record =
       observer.GetURLRequestRecord(0);

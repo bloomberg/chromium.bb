@@ -56,6 +56,11 @@ LoadTimingObserver::URLRequestRecord::URLRequestRecord()
       socket_reused(false) {
 }
 
+LoadTimingObserver::HTTPStreamJobRecord::HTTPStreamJobRecord()
+    : socket_log_id(net::NetLog::Source::kInvalidId),
+      socket_reused(false) {
+}
+
 LoadTimingObserver::LoadTimingObserver()
     : ThreadSafeObserver(net::NetLog::LOG_BASIC),
       last_connect_job_id_(net::NetLog::Source::kInvalidId) {
@@ -84,6 +89,8 @@ void LoadTimingObserver::OnAddEntry(net::NetLog::EventType type,
     return;
   if (source.type == net::NetLog::SOURCE_URL_REQUEST)
     OnAddURLRequestEntry(type, time, source, phase, params);
+  else if (source.type == net::NetLog::SOURCE_HTTP_STREAM_JOB)
+    OnAddHTTPStreamJobEntry(type, time, source, phase, params);
   else if (source.type == net::NetLog::SOURCE_CONNECT_JOB)
     OnAddConnectJobEntry(type, time, source, phase, params);
   else if (source.type == net::NetLog::SOURCE_SOCKET)
@@ -133,7 +140,7 @@ void LoadTimingObserver::OnAddURLRequestEntry(
       if (!(load_flags & net::LOAD_ENABLE_LOAD_TIMING))
         return;
 
-      // Prevents us from passively growing the memory memory unbounded in case
+      // Prevents us from passively growing the memory unbounded in case
       // something went wrong. Should not happen.
       if (url_request_to_record_.size() > kMaxNumEntries) {
         LOG(WARNING) << "The load timing observer url request count has grown "
@@ -166,40 +173,24 @@ void LoadTimingObserver::OnAddURLRequestEntry(
       else if (is_end)
         timing.proxy_end = TimeTicksToOffset(time, record);
       break;
-    case net::NetLog::TYPE_SOCKET_POOL:
-      if (is_begin)
-        timing.connect_start = TimeTicksToOffset(time, record);
-      else if (is_end)
-        timing.connect_end = TimeTicksToOffset(time, record);
-      break;
-    case net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_CONNECT_JOB:
-      {
-        uint32 connect_job_id = static_cast<net::NetLogSourceParameter*>(
-            params)->value().id;
-        if (last_connect_job_id_ == connect_job_id &&
-            !last_connect_job_record_.dns_start.is_null()) {
-          timing.dns_start =
-              TimeTicksToOffset(last_connect_job_record_.dns_start, record);
-          timing.dns_end =
-              TimeTicksToOffset(last_connect_job_record_.dns_end, record);
-        }
-      }
-      break;
-    case net::NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET:
-      record->socket_reused = true;
-      break;
-    case net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET:
-      record->socket_log_id = static_cast<net::NetLogSourceParameter*>(
+    case net::NetLog::TYPE_HTTP_STREAM_REQUEST_BOUND_TO_JOB: {
+      uint32 http_stream_job_id = static_cast<net::NetLogSourceParameter*>(
           params)->value().id;
-      if (!record->socket_reused) {
-        SocketToRecordMap::iterator it =
-            socket_to_record_.find(record->socket_log_id);
-        if (it != socket_to_record_.end() && !it->second.ssl_start.is_null()) {
-          timing.ssl_start = TimeTicksToOffset(it->second.ssl_start, record);
-          timing.ssl_end = TimeTicksToOffset(it->second.ssl_end, record);
-        }
-      }
+      HTTPStreamJobToRecordMap::iterator it =
+          http_stream_job_to_record_.find(http_stream_job_id);
+      if (it == http_stream_job_to_record_.end())
+        return;
+      timing.connect_start = TimeTicksToOffset(it->second.connect_start,
+                                               record);
+      timing.connect_end = TimeTicksToOffset(it->second.connect_end, record);
+      timing.dns_start = TimeTicksToOffset(it->second.dns_start, record);
+      timing.dns_end = TimeTicksToOffset(it->second.dns_end, record);
+      record->socket_reused = it->second.socket_reused;
+      record->socket_log_id = it->second.socket_log_id;
+      timing.ssl_start = TimeTicksToOffset(it->second.ssl_start, record);
+      timing.ssl_end = TimeTicksToOffset(it->second.ssl_end, record);
       break;
+    }
     case net::NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST:
       if (is_begin)
         timing.send_start = TimeTicksToOffset(time, record);
@@ -211,6 +202,78 @@ void LoadTimingObserver::OnAddURLRequestEntry(
         timing.receive_headers_start =  TimeTicksToOffset(time, record);
       else if (is_end)
         timing.receive_headers_end =  TimeTicksToOffset(time, record);
+      break;
+    default:
+      break;
+  }
+}
+
+void LoadTimingObserver::OnAddHTTPStreamJobEntry(
+    net::NetLog::EventType type,
+    const base::TimeTicks& time,
+    const net::NetLog::Source& source,
+    net::NetLog::EventPhase phase,
+    net::NetLog::EventParameters* params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  bool is_begin = phase == net::NetLog::PHASE_BEGIN;
+  bool is_end = phase == net::NetLog::PHASE_END;
+
+  if (type == net::NetLog::TYPE_HTTP_STREAM_JOB) {
+    if (is_begin) {
+      // Prevents us from passively growing the memory unbounded in
+      // case something went wrong. Should not happen.
+      if (http_stream_job_to_record_.size() > kMaxNumEntries) {
+        LOG(WARNING) << "The load timing observer http stream job count "
+                        "has grown larger than expected, resetting";
+        http_stream_job_to_record_.clear();
+      }
+
+      http_stream_job_to_record_.insert(
+          std::make_pair(source.id, HTTPStreamJobRecord()));
+    } else if (is_end) {
+      http_stream_job_to_record_.erase(source.id);
+    }
+    return;
+  }
+
+  HTTPStreamJobToRecordMap::iterator it =
+      http_stream_job_to_record_.find(source.id);
+  if (it == http_stream_job_to_record_.end())
+    return;
+
+  switch (type) {
+    case net::NetLog::TYPE_SOCKET_POOL:
+      if (is_begin)
+        it->second.connect_start = time;
+      else if (is_end)
+        it->second.connect_end = time;
+      break;
+    case net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_CONNECT_JOB: {
+      uint32 connect_job_id = static_cast<net::NetLogSourceParameter*>(
+          params)->value().id;
+      if (last_connect_job_id_ == connect_job_id &&
+          !last_connect_job_record_.dns_start.is_null()) {
+        it->second.dns_start = last_connect_job_record_.dns_start;
+        it->second.dns_end = last_connect_job_record_.dns_end;
+      }
+      break;
+    }
+    case net::NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET:
+      it->second.socket_reused = true;
+      break;
+    case net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET:
+      it->second.socket_log_id = static_cast<net::NetLogSourceParameter*>(
+        params)->value().id;
+      if (!it->second.socket_reused) {
+        SocketToRecordMap::iterator socket_it =
+            socket_to_record_.find(it->second.socket_log_id);
+        if (socket_it != socket_to_record_.end() &&
+            !socket_it->second.ssl_start.is_null()) {
+          it->second.ssl_start = socket_it->second.ssl_start;
+          it->second.ssl_end = socket_it->second.ssl_end;
+        }
+      }
       break;
     default:
       break;
@@ -231,7 +294,7 @@ void LoadTimingObserver::OnAddConnectJobEntry(
   // Manage record lifetime based on the SOCKET_POOL_CONNECT_JOB entry.
   if (type == net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB) {
     if (is_begin) {
-      // Prevents us from passively growing the memory memory unbounded in case
+      // Prevents us from passively growing the memory unbounded in case
       // something went wrong. Should not happen.
       if (connect_job_to_record_.size() > kMaxNumEntries) {
         LOG(WARNING) << "The load timing observer connect job count has grown "
@@ -276,7 +339,7 @@ void LoadTimingObserver::OnAddSocketEntry(
   // Manage record lifetime based on the SOCKET_ALIVE entry.
   if (type == net::NetLog::TYPE_SOCKET_ALIVE) {
     if (is_begin) {
-      // Prevents us from passively growing the memory memory unbounded in case
+      // Prevents us from passively growing the memory unbounded in case
       // something went wrong. Should not happen.
       if (socket_to_record_.size() > kMaxNumEntries) {
         LOG(WARNING) << "The load timing observer socket count has grown "

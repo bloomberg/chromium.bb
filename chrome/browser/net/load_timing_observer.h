@@ -36,6 +36,19 @@ class LoadTimingObserver : public ChromeNetLog::ThreadSafeObserver {
     base::TimeTicks base_ticks;
   };
 
+  struct HTTPStreamJobRecord {
+    HTTPStreamJobRecord();
+
+    uint32 socket_log_id;
+    bool socket_reused;
+    base::TimeTicks connect_start;
+    base::TimeTicks connect_end;
+    base::TimeTicks dns_start;
+    base::TimeTicks dns_end;
+    base::TimeTicks ssl_start;
+    base::TimeTicks ssl_end;
+  };
+
   struct ConnectJobRecord {
     base::TimeTicks dns_start;
     base::TimeTicks dns_end;
@@ -63,6 +76,8 @@ class LoadTimingObserver : public ChromeNetLog::ThreadSafeObserver {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LoadTimingObserverTest,
+                           HTTPStreamJobRecord);
+  FRIEND_TEST_ALL_PREFIXES(LoadTimingObserverTest,
                            ConnectJobRecord);
   FRIEND_TEST_ALL_PREFIXES(LoadTimingObserverTest,
                            SocketRecord);
@@ -72,6 +87,12 @@ class LoadTimingObserver : public ChromeNetLog::ThreadSafeObserver {
                             const net::NetLog::Source& source,
                             net::NetLog::EventPhase phase,
                             net::NetLog::EventParameters* params);
+
+  void OnAddHTTPStreamJobEntry(net::NetLog::EventType type,
+                               const base::TimeTicks& time,
+                               const net::NetLog::Source& source,
+                               net::NetLog::EventPhase phase,
+                               net::NetLog::EventParameters* params);
 
   void OnAddConnectJobEntry(net::NetLog::EventType type,
                             const base::TimeTicks& time,
@@ -89,9 +110,11 @@ class LoadTimingObserver : public ChromeNetLog::ThreadSafeObserver {
   void DeleteURLRequestRecord(uint32 source_id);
 
   typedef base::hash_map<uint32, URLRequestRecord> URLRequestToRecordMap;
+  typedef base::hash_map<uint32, HTTPStreamJobRecord> HTTPStreamJobToRecordMap;
   typedef base::hash_map<uint32, ConnectJobRecord> ConnectJobToRecordMap;
   typedef base::hash_map<uint32, SocketRecord> SocketToRecordMap;
   URLRequestToRecordMap url_request_to_record_;
+  HTTPStreamJobToRecordMap http_stream_job_to_record_;
   ConnectJobToRecordMap connect_job_to_record_;
   SocketToRecordMap socket_to_record_;
   uint32 last_connect_job_id_;
