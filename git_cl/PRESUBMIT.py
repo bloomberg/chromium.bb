@@ -28,7 +28,7 @@ def RunTests(input_api, output_api):
   old_sys_path = sys.path
   try:
     sys.path = [input_api.PresubmitLocalPath()] + sys.path
-    from test import local_rietveld
+    from test import local_rietveld  # pylint: disable=W0403
     server = local_rietveld.LocalRietveld()
   finally:
     sys.path = old_sys_path

@@ -7,20 +7,20 @@ import logging
 import optparse
 import os
 import re
-import StringIO
 import subprocess
 import sys
 import tempfile
 import textwrap
-import upload
 import urlparse
 import urllib2
 
 try:
-  import readline
+  import readline  # pylint: disable=W0611
 except ImportError:
   pass
 
+# TODO(dpranke): don't use relative import.
+import upload  # pylint: disable=W0403
 try:
   # TODO(dpranke): We wrap this in a try block for a limited form of
   # backwards-compatibility with older versions of git-cl that weren't
@@ -29,7 +29,7 @@ try:
   # once this has baked for a while and things seem safe.
   depot_tools_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
   sys.path.append(depot_tools_path)
-  import breakpad
+  import breakpad  # pylint: disable=W0611
 except ImportError:
   pass
 
@@ -584,7 +584,7 @@ def LoadCodereviewSettingsFromFile(fileobj):
 def CMDconfig(parser, args):
   """edit configuration for this tree"""
 
-  (options, args) = parser.parse_args(args)
+  _, args = parser.parse_args(args)
   if len(args) == 0:
     GetCodereviewSettingsInteractively()
     return 0
@@ -650,7 +650,7 @@ def CMDissue(parser, args):
 
   Pass issue number 0 to clear the current issue.
 """
-  (options, args) = parser.parse_args(args)
+  _, args = parser.parse_args(args)
 
   cl = Changelist()
   if len(args) > 0:
@@ -1170,11 +1170,11 @@ def CMDpatch(parser, args):
   if len(args) != 1:
     parser.print_help()
     return 1
-  input = args[0]
+  issue_arg = args[0]
 
   if re.match(r'\d+', input):
     # Input is an issue id.  Figure out the URL.
-    issue = input
+    issue = issue_arg
     server = settings.GetDefaultServerUrl()
     fetch = urllib2.urlopen('%s/%s' % (server, issue)).read()
     m = re.search(r'/download/issue[0-9]+_[0-9]+.diff', fetch)
@@ -1184,8 +1184,8 @@ def CMDpatch(parser, args):
     url = '%s%s' % (server, m.group(0).strip())
   else:
     # Assume it's a URL to the patch. Default to http.
-    input = FixUrl(input)
-    match = re.match(r'.*?/issue(\d+)_\d+.diff', input)
+    issue_url = FixUrl(issue_arg)
+    match = re.match(r'.*?/issue(\d+)_\d+.diff', issue_url)
     if match:
       issue = match.group(1)
       url = input
@@ -1270,14 +1270,11 @@ def GetTreeStatusReason():
   # on python 2.5 and it is only used for git-cl tree which isn't often used,
   # forcing everyone to install simplejson isn't efficient.
   try:
-    import simplejson as json
+    import simplejson as json  # pylint: disable=F0401
   except ImportError:
     try:
       import json
-      # Some versions of python2.5 have an incomplete json module. Check to make
-      # sure loads exists.
-      json.loads
-    except (ImportError, AttributeError):
+    except ImportError:
       print >> sys.stderr, 'Please install simplejson'
       sys.exit(1)
 
@@ -1291,7 +1288,7 @@ def GetTreeStatusReason():
 
 def CMDtree(parser, args):
   """show the status of the tree"""
-  (options, args) = parser.parse_args(args)
+  _, args = parser.parse_args(args)
   status = GetTreeStatus()
   if 'unset' == status:
     print 'You must configure your tree status URL by running "git cl config".'
@@ -1307,7 +1304,7 @@ def CMDtree(parser, args):
 
 def CMDupstream(parser, args):
   """print the name of the upstream branch, if any"""
-  (options, args) = parser.parse_args(args)
+  _, args = parser.parse_args(args)
   cl = Changelist()
   print cl.GetUpstreamBranch()
   return 0
@@ -1319,7 +1316,7 @@ def Command(name):
 
 def CMDhelp(parser, args):
   """print list of commands or help for a specific command"""
-  (options, args) = parser.parse_args(args)
+  _, args = parser.parse_args(args)
   if len(args) == 1:
     return main(args + ['--help'])
   parser.print_help()

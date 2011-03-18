@@ -38,14 +38,13 @@ def CommonChecks(input_api, output_api):
       input_api,
       output_api,
       UNIT_TESTS))
-  output.extend(WasGitClUploadHookModified(input_api, output_api))
 
   white_list = [r'.*\.py$', r'^git-try$']
   black_list = list(input_api.DEFAULT_BLACK_LIST) + [
       r'^cpplint\.py$',
-      r'^git_cl[\/\\].*',
-      r'^git_cl_repo[\/\\].*',
-      r'^git_cl[\/\\]test[\/\\]rietveld.*']
+      r'^git_cl[\/\\]test[\/\\](local_)?rietveld.*',
+      r'^git_cl[\/\\]upload.*',
+      ]
   output.extend(input_api.canned_checks.RunPylint(
       input_api,
       output_api,
@@ -65,13 +64,3 @@ def CheckChangeOnCommit(input_api, output_api):
       input_api,
       output_api))
   return output
-
-
-def WasGitClUploadHookModified(input_api, output_api):
-  for affected_file in input_api.AffectedSourceFiles(None):
-    if (input_api.os_path.basename(affected_file.LocalPath()) ==
-        'git-cl-upload-hook'):
-      return [output_api.PresubmitPromptWarning(
-          'Don\'t forget to fix git-cl to download the newest version of '
-          'git-cl-upload-hook')]
-  return []

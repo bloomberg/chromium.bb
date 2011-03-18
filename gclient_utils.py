@@ -660,7 +660,7 @@ class ExecutionQueue(object):
         self.running.append(t)
       else:
         t.join()
-        sys.stdout.full_flush()
+        sys.stdout.full_flush()  # pylint: disable=E1101
         if self.progress:
           self.progress.update(1, t.item.name)
         assert not t.item.name in self.ran
