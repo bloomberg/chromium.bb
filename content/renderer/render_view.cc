@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/render_view.h"
+#include "content/renderer/render_view.h"
 
 #include <algorithm>
 #include <cmath>
@@ -161,7 +161,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
-#include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/message_box_flags.h"
 #include "ui/gfx/color_utils.h"
@@ -418,32 +417,6 @@ static bool CrossesExtensionExtents(const ExtensionSet* extensions,
       !extensions->GetByURL(old_url)->web_extent().is_empty();
   return !extensions->InSameExtent(old_url, new_url) &&
          !old_url_is_hosted_app;
-}
-
-// Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
-// if it failed.
-static std::string DetermineTextLanguage(const string16& text) {
-  std::string language = chrome::kUnknownLanguageCode;
-  int num_languages = 0;
-  int text_bytes = 0;
-  bool is_reliable = false;
-  Language cld_language =
-      DetectLanguageOfUnicodeText(NULL, text.c_str(), true, &is_reliable,
-                                  &num_languages, NULL, &text_bytes);
-  // We don't trust the result if the CLD reports that the detection is not
-  // reliable, or if the actual text used to detect the language was less than
-  // 100 bytes (short texts can often lead to wrong results).
-  if (is_reliable && text_bytes >= 100 && cld_language != NUM_LANGUAGES &&
-      cld_language != UNKNOWN_LANGUAGE && cld_language != TG_UNKNOWN_LANGUAGE) {
-    // We should not use LanguageCode_ISO_639_1 because it does not cover all
-    // the languages CLD can detect. As a result, it'll return the invalid
-    // language code for tradtional Chinese among others.
-    // |LanguageCodeWithDialect| will go through ISO 639-1, ISO-639-2 and
-    // 'other' tables to do the 'right' thing. In addition, it'll return zh-CN
-    // for Simplified Chinese.
-    language = LanguageCodeWithDialects(cld_language);
-  }
-  return language;
 }
 
 // Returns true if the parameter node is a textfield, text area or a content
@@ -1213,7 +1186,8 @@ void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
         TranslateHelper::GetPageLanguageFromMetaTag(&document);
     if (language.empty()) {
       base::TimeTicks begin_time = base::TimeTicks::Now();
-      language = DetermineTextLanguage(contents);
+      language = content::GetContentClient()->renderer()->
+          DetermineTextLanguage(contents);
       UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.LanguageDetection",
                                  base::TimeTicks::Now() - begin_time);
     }

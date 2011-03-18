@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "content/common/content_client.h"
 
 class RenderView;
@@ -38,6 +39,9 @@ class ContentRendererClient {
   virtual std::string GetNavigationErrorHtml(
       const WebKit::WebURLRequest& failed_request,
       const WebKit::WebURLError& error);
+  // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
+  // if it failed.
+  virtual std::string DetermineTextLanguage(const string16& text);
 };
 
 }  // namespace content

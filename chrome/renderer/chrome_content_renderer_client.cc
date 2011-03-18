@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/values.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/render_messages.h"
@@ -23,6 +24,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -196,6 +198,33 @@ std::string ChromeContentRendererClient::GetNavigationErrorHtml(
   }
 
   return html;
+}
+
+// Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
+// if it failed.
+std::string ChromeContentRendererClient::DetermineTextLanguage(
+    const string16& text) {
+  std::string language = chrome::kUnknownLanguageCode;
+  int num_languages = 0;
+  int text_bytes = 0;
+  bool is_reliable = false;
+  Language cld_language =
+      DetectLanguageOfUnicodeText(NULL, text.c_str(), true, &is_reliable,
+                                  &num_languages, NULL, &text_bytes);
+  // We don't trust the result if the CLD reports that the detection is not
+  // reliable, or if the actual text used to detect the language was less than
+  // 100 bytes (short texts can often lead to wrong results).
+  if (is_reliable && text_bytes >= 100 && cld_language != NUM_LANGUAGES &&
+      cld_language != UNKNOWN_LANGUAGE && cld_language != TG_UNKNOWN_LANGUAGE) {
+    // We should not use LanguageCode_ISO_639_1 because it does not cover all
+    // the languages CLD can detect. As a result, it'll return the invalid
+    // language code for tradtional Chinese among others.
+    // |LanguageCodeWithDialect| will go through ISO 639-1, ISO-639-2 and
+    // 'other' tables to do the 'right' thing. In addition, it'll return zh-CN
+    // for Simplified Chinese.
+    language = LanguageCodeWithDialects(cld_language);
+  }
+  return language;
 }
 
 }  // namespace chrome

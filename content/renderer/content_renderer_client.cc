@@ -27,4 +27,8 @@ std::string ContentRendererClient::GetNavigationErrorHtml(
   return std::string();
 }
 
+std::string ContentRendererClient::DetermineTextLanguage(const string16& text) {
+  return std::string();
+}
+
 }  // namespace content
