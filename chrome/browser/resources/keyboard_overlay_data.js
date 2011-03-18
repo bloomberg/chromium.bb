@@ -23674,6 +23674,7 @@ var keyboardOverlayData = {
     "n CTRL SHIFT": "keyboardOverlayNewIncognitoWindow",
     "o CTRL": "keyboardOverlayContentBrowser",
     "p CTRL": "keyboardOverlayPrint",
+    "power": "keyboardOverlayLockScreenOrPowerOff",
     "q CTRL SHIFT": "keyboardOverlaySignOut",
     "r CTRL": "keyboardOverlayReloadCurrentPage",
     "r CTRL SHIFT": "keyboardOverlayReloadIgnoringCache",
