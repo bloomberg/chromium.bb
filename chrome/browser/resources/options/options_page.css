@@ -770,16 +770,13 @@ label > input[disabled] ~ span {
   color: grey;
 }
 
-.page list.autocomplete-suggestions {
+#main-content list.autocomplete-suggestions {
   background-color: white;
   border: 1px solid #aaa;
   border-radius: 2px;
   min-height: 0;
   opacity: 0.9;
-  position: absolute;
-  left: 0;
-  right: 0;
-  width: 100%;
+  position: fixed;
   z-index: 3;
 }
 

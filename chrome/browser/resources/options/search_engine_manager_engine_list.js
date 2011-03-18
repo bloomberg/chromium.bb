@@ -54,13 +54,6 @@ cr.define('options.search_engines', function() {
     urlField_: null,
 
     /**
-     * Whether or not this is a placeholder for adding an engine.
-     * @type {boolean}
-     * @private
-     */
-    isPlaceholder_: false,
-
-    /**
      * Whether or not an input validation request is currently outstanding.
      * @type {boolean}
      * @private
@@ -81,13 +74,13 @@ cr.define('options.search_engines', function() {
       var engine = this.searchEngine_;
 
       if (engine['modelIndex'] == '-1') {
-        this.isPlaceholder_ = true;
+        this.isPlaceholder = true;
         engine['name'] = '';
         engine['keyword'] = '';
         engine['url'] = '';
       }
 
-      this.currentlyValid_ = !this.isPlaceholder_;
+      this.currentlyValid_ = !this.isPlaceholder;
 
       if (engine['default'])
         this.classList.add('default');
@@ -107,19 +100,16 @@ cr.define('options.search_engines', function() {
       faviconDivEl.appendChild(imgEl);
       nameColEl.appendChild(faviconDivEl);
 
-      var nameEl = this.createEditableTextCell(engine['displayName'],
-                                               this.isPlaceholder_);
+      var nameEl = this.createEditableTextCell(engine['displayName']);
       nameColEl.appendChild(nameEl);
 
       // Then the keyword column.
-      var keywordEl = this.createEditableTextCell(engine['keyword'],
-                                                  this.isPlaceholder_);
+      var keywordEl = this.createEditableTextCell(engine['keyword']);
       keywordEl.className = 'keyword-column';
       this.contentElement.appendChild(keywordEl);
 
       // And the URL column.
-      var urlEl = this.createEditableTextCell(engine['url'],
-                                              this.isPlaceholder_);
+      var urlEl = this.createEditableTextCell(engine['url']);
       var urlWithButtonEl = this.ownerDocument.createElement('div');
       urlWithButtonEl.appendChild(urlEl);
       urlWithButtonEl.className = 'url-column';
@@ -151,7 +141,7 @@ cr.define('options.search_engines', function() {
       if (engine['urlLocked'])
         this.urlField_.disabled = true;
 
-      if (this.isPlaceholder_) {
+      if (this.isPlaceholder) {
         this.nameField_.placeholder =
             localStrings.getString('searchEngineTableNamePlaceholder');
         this.keywordField_.placeholder =
@@ -213,17 +203,10 @@ cr.define('options.search_engines', function() {
     onEditCancelled_: function() {
       chrome.send('searchEngineEditCancelled');
 
-      var engine = this.searchEngine_;
-      if (this.isPlaceholder_) {
-        this.nameField_.value = '';
-        this.keywordField_.value = '';
-        this.urlField_.value = '';
-      } else {
-        // The name field has been automatically set to match the display name,
-        // but it should use the raw name instead.
-        this.nameField_.value = engine['name'];
-      }
-      this.currentlyValid_ = !this.isPlaceholder_;
+      // The name field has been automatically set to match the display name,
+      // but it should use the raw name instead.
+      this.nameField_.value = this.searchEngine_['name'];
+      this.currentlyValid_ = !this.isPlaceholder;
     },
 
     /**

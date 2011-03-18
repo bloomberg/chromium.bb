@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('options.browser_options', function() {
+  const AutocompleteList = options.AutocompleteList;
   const InlineEditableItem = options.InlineEditableItem;
   const InlineEditableItemList = options.InlineEditableItemList;
 
@@ -42,24 +43,43 @@ cr.define('options.browser_options', function() {
     decorate: function() {
       InlineEditableItem.prototype.decorate.call(this);
 
+      var pageInfo = this.pageInfo_;
+
+      if (pageInfo['modelIndex'] == '-1') {
+        this.isPlaceholder = true;
+        pageInfo['title'] = localStrings.getString('startupAddLabel');
+        pageInfo['url'] = '';
+      }
+
       var titleEl = this.ownerDocument.createElement('div');
       titleEl.className = 'title';
       titleEl.classList.add('favicon-cell');
-      titleEl.textContent = this.pageInfo_['title'];
-      titleEl.style.backgroundImage = url('chrome://favicon/' +
-                                          this.pageInfo_['url']);
-      titleEl.title = this.pageInfo_['tooltip'];
+      titleEl.textContent = pageInfo['title'];
+      if (!this.isPlaceholder) {
+        titleEl.style.backgroundImage = url('chrome://favicon/' +
+                                            pageInfo['url']);
+        titleEl.title = pageInfo['tooltip'];
+      }
 
       this.contentElement.appendChild(titleEl);
 
-      var urlEl = this.createEditableTextCell(this.pageInfo_['url']);
+      var urlEl = this.createEditableTextCell(pageInfo['url']);
       urlEl.className = 'url';
       this.contentElement.appendChild(urlEl);
 
-      this.urlField_ = urlEl.querySelector('input');
-      this.urlField_.required = true;
+      var urlField = urlEl.querySelector('input')
+      urlField.required = true;
+      this.urlField_ = urlField;
 
-      this.addEventListener('commitedit', this.onEditCommitted_.bind(this));
+      this.addEventListener('commitedit', this.onEditCommitted_);
+
+      var self = this;
+      urlField.addEventListener('focus', function(event) {
+        self.parentNode.autocompleteList.attachToInput(urlField);
+      });
+      urlField.addEventListener('blur', function(event) {
+        self.parentNode.autocompleteList.detach();
+      });
     },
 
     /** @inheritDoc */
@@ -78,8 +98,11 @@ cr.define('options.browser_options', function() {
      * @private
      */
     onEditCommitted_: function(e) {
-      chrome.send('editStartupPage',
-                  [this.pageInfo_['modelIndex'], this.urlField_.value]);
+      var url = this.urlField_.value;
+      if (this.isPlaceholder)
+        chrome.send('addStartupPage', [url]);
+      else
+        chrome.send('editStartupPage', [this.pageInfo_['modelIndex'], url]);
     },
   };
 
@@ -87,6 +110,12 @@ cr.define('options.browser_options', function() {
 
   StartupPageList.prototype = {
     __proto__: InlineEditableItemList.prototype,
+
+    /**
+     * An autocomplete suggestion list for URL editing.
+     * @type {AutocompleteList}
+     */
+    autocompleteList: null,
 
     /** @inheritDoc */
     createItem: function(pageInfo) {

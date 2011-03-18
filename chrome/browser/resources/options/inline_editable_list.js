@@ -38,6 +38,20 @@ cr.define('options', function() {
     editable_: true,
 
     /**
+     * Whether or not this is a placeholder for adding a new item.
+     * @type {boolean}
+     * @private
+     */
+    isPlaceholder_: false,
+
+    /**
+     * Fields associated with edit mode.
+     * @type {array}
+     * @private
+     */
+    editFields_: null,
+
+    /**
      * Whether or not the current edit should be considered cancelled, rather
      * than committed, when editing ends.
      * @type {boolean}
@@ -57,6 +71,7 @@ cr.define('options', function() {
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);
 
+      this.editFields_ = [];
       this.addEventListener('mousedown', this.handleMouseDown_.bind(this));
       this.addEventListener('keydown', this.handleKeyDown_.bind(this));
       this.addEventListener('leadChange', this.handleLeadChange_);
@@ -147,6 +162,19 @@ cr.define('options', function() {
     },
 
     /**
+     * Whether the item is a new item placeholder.
+     * @type {boolean}
+     */
+    get isPlaceholder() {
+      return this.isPlaceholder_;
+    },
+    set isPlaceholder(isPlaceholder) {
+      this.isPlaceholder_ = isPlaceholder;
+      if (isPlaceholder)
+        this.deletable = false;
+    },
+
+    /**
      * The HTML element that should have focus initially when editing starts,
      * if a specific element wasn't clicked.
      * Defaults to the first <input> element; can be overriden by subclasses if
@@ -180,16 +208,15 @@ cr.define('options', function() {
 
     /**
      * Returns a div containing an <input>, as well as static text if
-     * opt_alwaysEditable is not true.
+     * isPlaceholder is not true.
      * @param {string} text The text of the cell.
-     * @param {bool} opt_alwaysEditable True if the cell always shows the input.
      * @return {HTMLElement} The HTML element for the cell.
      * @private
      */
-    createEditableTextCell: function(text, opt_alwaysEditable) {
+    createEditableTextCell: function(text) {
       var container = this.ownerDocument.createElement('div');
 
-      if (!opt_alwaysEditable) {
+      if (!this.isPlaceholder) {
         var textEl = this.ownerDocument.createElement('div');
         textEl.className = 'static-text';
         textEl.textContent = text;
@@ -200,11 +227,12 @@ cr.define('options', function() {
       var inputEl = this.ownerDocument.createElement('input');
       inputEl.type = 'text';
       inputEl.value = text;
-      if (!opt_alwaysEditable) {
+      if (!this.isPlaceholder) {
         inputEl.setAttribute('displaymode', 'edit');
         inputEl.staticVersion = textEl;
       }
       container.appendChild(inputEl);
+      this.editFields_.push(inputEl);
 
       return container;
     },
@@ -215,13 +243,15 @@ cr.define('options', function() {
      * @private
      */
     resetEditableValues_: function() {
-      var editFields = this.querySelectorAll('[displaymode=edit]');
+      var editFields = this.editFields_;
       for (var i = 0; i < editFields.length; i++) {
         var staticLabel = editFields[i].staticVersion;
-        if (!staticLabel)
+        if (!staticLabel && !this.isPlaceholder)
           continue;
-        if (editFields[i].tagName == 'INPUT')
-          editFields[i].value = staticLabel.textContent;
+        if (editFields[i].tagName == 'INPUT') {
+          editFields[i].value =
+            this.isPlaceholder ? '' : staticLabel.textContent;
+        }
         // Add more tag types here as new createEditable* methods are added.
 
         editFields[i].setCustomValidity('');
@@ -235,7 +265,7 @@ cr.define('options', function() {
      * @private
      */
     updateStaticValues_: function() {
-      var editFields = this.querySelectorAll('[displaymode=edit]');
+      var editFields = this.editFields_;
       for (var i = 0; i < editFields.length; i++) {
         var staticLabel = editFields[i].staticVersion;
         if (!staticLabel)
@@ -287,9 +317,10 @@ cr.define('options', function() {
         return;
 
       var clickTarget = e.target;
-      var editFields = this.querySelectorAll('[displaymode=edit]');
+      var editFields = this.editFields_;
       for (var i = 0; i < editFields.length; i++) {
-        if (editFields[i].staticVersion == clickTarget) {
+        if (editFields[i] == clickTarget ||
+            editFields[i].staticVersion == clickTarget) {
           this.editClickTarget_ = editFields[i];
           return;
         }

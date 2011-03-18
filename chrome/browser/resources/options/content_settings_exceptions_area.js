@@ -39,8 +39,8 @@ cr.define('options.contentSettings', function() {
     decorate: function() {
       InlineEditableItem.prototype.decorate.call(this);
 
-      var patternCell = this.createEditableTextCell(this.pattern,
-                                                    !this.pattern);
+      this.isPlaceholder = !this.pattern;
+      var patternCell = this.createEditableTextCell(this.pattern);
       patternCell.className = 'exception-pattern';
       this.contentElement.appendChild(patternCell);
       if (this.pattern)

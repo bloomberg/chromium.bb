@@ -56,7 +56,7 @@ void BrowserOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB},
     { "startupShowLastSession", IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION },
     { "startupShowPages", IDS_OPTIONS_STARTUP_SHOW_PAGES },
-    { "startupAddButton", IDS_OPTIONS_STARTUP_ADD_BUTTON },
+    { "startupAddLabel", IDS_OPTIONS_STARTUP_ADD_LABEL },
     { "startupUseCurrent", IDS_OPTIONS_STARTUP_USE_CURRENT },
     { "homepageGroupName", IDS_OPTIONS_HOMEPAGE_GROUP_NAME },
     { "homepageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
@@ -140,12 +140,10 @@ void BrowserOptionsHandler::SetHomePage(const ListValue* args) {
   std::string url_string;
   std::string do_fixup_string;
   int do_fixup;
-  if (args->GetSize() != 2 ||
-      !args->GetString(0, &url_string) ||
-      !args->GetString(1, &do_fixup_string) ||
-      !base::StringToInt(do_fixup_string, &do_fixup)) {
-    CHECK(false);
-  };
+  CHECK_EQ(args->GetSize(), 2U);
+  CHECK(args->GetString(0, &url_string));
+  CHECK(args->GetString(1, &do_fixup_string));
+  CHECK(base::StringToInt(do_fixup_string, &do_fixup));
 
   if (do_fixup) {
     GURL fixed_url = URLFixerUpper::FixupURL(url_string, std::string());
@@ -355,9 +353,8 @@ void BrowserOptionsHandler::SetStartupPagesToCurrentPages(
 void BrowserOptionsHandler::RemoveStartupPages(const ListValue* args) {
   for (int i = args->GetSize() - 1; i >= 0; --i) {
     std::string string_value;
-    if (!args->GetString(i, &string_value)) {
-      CHECK(false);
-    }
+    CHECK(args->GetString(i, &string_value));
+
     int selected_index;
     base::StringToInt(string_value, &selected_index);
     if (selected_index < 0 ||
@@ -373,22 +370,11 @@ void BrowserOptionsHandler::RemoveStartupPages(const ListValue* args) {
 
 void BrowserOptionsHandler::AddStartupPage(const ListValue* args) {
   std::string url_string;
-  std::string index_string;
-  int index;
-  if (args->GetSize() != 2 ||
-      !args->GetString(0, &url_string) ||
-      !args->GetString(1, &index_string) ||
-      !base::StringToInt(index_string, &index)) {
-    CHECK(false);
-  };
-
-  if (index == -1)
-    index = startup_custom_pages_table_model_->RowCount();
-  else
-    ++index;
+  CHECK_EQ(args->GetSize(), 1U);
+  CHECK(args->GetString(0, &url_string));
 
   GURL url = URLFixerUpper::FixupURL(url_string, std::string());
-
+  int index = startup_custom_pages_table_model_->RowCount();
   startup_custom_pages_table_model_->Add(index, url);
   SaveStartupPagesPref();
 }
@@ -397,12 +383,10 @@ void BrowserOptionsHandler::EditStartupPage(const ListValue* args) {
   std::string url_string;
   std::string index_string;
   int index;
-  if (args->GetSize() != 2 ||
-      !args->GetString(0, &index_string) ||
-      !base::StringToInt(index_string, &index) ||
-      !args->GetString(1, &url_string)) {
-    CHECK(false);
-  };
+  CHECK_EQ(args->GetSize(), 2U);
+  CHECK(args->GetString(0, &index_string));
+  CHECK(base::StringToInt(index_string, &index));
+  CHECK(args->GetString(1, &url_string));
 
   if (index < 0 || index > startup_custom_pages_table_model_->RowCount()) {
     NOTREACHED();
@@ -426,8 +410,8 @@ void BrowserOptionsHandler::SaveStartupPagesPref() {
 void BrowserOptionsHandler::RequestAutocompleteSuggestions(
     const ListValue* args) {
   string16 input;
-  if (args->GetSize() != 1 || !args->GetString(0, &input))
-    CHECK(false);
+  CHECK_EQ(args->GetSize(), 1U);
+  CHECK(args->GetString(0, &input));
 
   autocomplete_controller_->Start(input, string16(),
                                   true, false, false, false);

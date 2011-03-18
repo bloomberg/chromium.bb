@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 var AddLanguageOverlay = options.AddLanguageOverlay;
-var AddStartupPageOverlay = options.AddStartupPageOverlay;
 var AdvancedOptions = options.AdvancedOptions;
 var AlertOverlay = options.AlertOverlay;
 var AutoFillEditAddressOverlay = options.AutoFillEditAddressOverlay;
@@ -127,8 +126,6 @@ function load() {
   }
   OptionsPage.registerOverlay(AddLanguageOverlay.getInstance(),
                               LanguageOptions.getInstance());
-  OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance(),
-                              BrowserOptions.getInstance());
   OptionsPage.registerOverlay(AlertOverlay.getInstance());
   OptionsPage.registerOverlay(AutoFillEditAddressOverlay.getInstance(),
                               AutoFillOptions.getInstance());

@@ -60,9 +60,6 @@ cr.define('options', function() {
       $('startupUseCurrentButton').onclick = function(event) {
         chrome.send('setStartupPagesToCurrentPages');
       };
-      $('startupAddButton').onclick = function(event) {
-        OptionsPage.navigateToPage('addStartupPage');
-      };
       $('defaultSearchManageEnginesButton').onclick = function(event) {
         OptionsPage.navigateToPage('searchEngines');
         chrome.send('coreOptionsUserMetricsAction',
@@ -109,9 +106,9 @@ cr.define('options', function() {
         };
       }
 
-      var list = $('startupPagesList');
-      options.browser_options.StartupPageList.decorate(list);
-      list.autoExpands = true;
+      var startupPagesList = $('startupPagesList');
+      options.browser_options.StartupPageList.decorate(startupPagesList);
+      startupPagesList.autoExpands = true;
 
       // Check if we are in the guest mode.
       if (cr.commandLine.options['--bwsi']) {
@@ -141,7 +138,11 @@ cr.define('options', function() {
           return;
         suggestionList.targetInput.value = suggestionList.selectedItem['url'];
       });
+      suggestionList.suggestionUpdateRequestCallback =
+          this.requestAutocompleteSuggestions_.bind(this);
+      $('main-content').appendChild(suggestionList);
       this.autocompleteList_ = suggestionList;
+      startupPagesList.autocompleteList = suggestionList;
     },
 
     /**
@@ -218,7 +219,12 @@ cr.define('options', function() {
      * @private
      */
     updateStartupPages_: function(pages) {
-      $('startupPagesList').dataModel = new ArrayDataModel(pages);
+      var model = new ArrayDataModel(pages);
+      // Add a "new page" row.
+      model.push({
+        'modelIndex': '-1'
+      });
+      $('startupPagesList').dataModel = model;
     },
 
     /**
@@ -248,10 +254,6 @@ cr.define('options', function() {
       var homepageField = $('homepageURL');
       var doFixup = event.type == 'change' ? '1' : '0';
       chrome.send('setHomePage', [homepageField.value, doFixup]);
-
-      if (!this.autocompleteList_.targetInput)
-        this.autocompleteList_.attachToInput(homepageField);
-      chrome.send('requestAutocompleteSuggestions', [homepageField.value]);
     },
 
     /**
@@ -390,7 +392,6 @@ cr.define('options', function() {
       var disable = !this.shouldEnableCustomStartupPageControls();
       $('startupPagesList').disabled = disable;
       $('startupUseCurrentButton').disabled = disable;
-      $('startupAddButton').disabled = disable;
     },
 
     /**
@@ -418,13 +419,14 @@ cr.define('options', function() {
     },
 
     /**
-     * Adds the given startup page at the current selection point.
+     * Sends an asynchronous request for new autocompletion suggestions for the
+     * the given query. When new suggestions are available, the C++ handler will
+     * call updateAutocompleteSuggestions_.
+     * @param {string} query List of autocomplete suggestions.
      * @private
      */
-    addStartupPage_: function(url) {
-      var selectedIndex =
-          $('startupPagesList').selectionModel.selectedIndex;
-      chrome.send('addStartupPage', [url, String(selectedIndex)]);
+    requestAutocompleteSuggestions_: function(query) {
+      chrome.send('requestAutocompleteSuggestions', [query]);
     },
 
     /**
@@ -458,10 +460,6 @@ cr.define('options', function() {
 
   BrowserOptions.updateStartupPages = function(pages) {
     BrowserOptions.getInstance().updateStartupPages_(pages);
-  };
-
-  BrowserOptions.addStartupPage = function(url) {
-    BrowserOptions.getInstance().addStartupPage_(url);
   };
 
   BrowserOptions.updateAutocompleteSuggestions = function(suggestions) {

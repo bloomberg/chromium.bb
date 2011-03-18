@@ -79,6 +79,20 @@ cr.define('options', function() {
      */
     textFieldKeyHandler_: null,
 
+    /**
+     * Input event listener to attach to a text field.
+     * @type {Function}
+     * @private
+     */
+    textFieldInputHandler_: null,
+
+    /**
+     * A function to call when new suggestions are needed.
+     * @type {Function}
+     * @private
+     */
+    suggestionUpdateRequestCallback_: null,
+
     /** @inheritDoc */
     decorate: function() {
       List.prototype.decorate.call(this);
@@ -86,6 +100,11 @@ cr.define('options', function() {
       this.selectionModel = new cr.ui.ListSingleSelectionModel;
 
       this.textFieldKeyHandler_ = this.handleAutocompleteKeydown_.bind(this);
+      var self = this;
+      this.textFieldInputHandler_ = function(e) {
+        if (self.suggestionUpdateRequestCallback_)
+          self.suggestionUpdateRequestCallback_(self.targetInput_.value);
+      };
     },
 
     /** @inheritDoc */
@@ -93,9 +112,23 @@ cr.define('options', function() {
       return new AutocompleteListItem(pageInfo);
     },
 
+    /**
+     * The suggestions to show.
+     * @type {Array}
+     */
     set suggestions(suggestions) {
       this.dataModel = new ArrayDataModel(suggestions);
       this.hidden = suggestions.length == 0;
+    },
+
+    /**
+     * A function to call when the attached input field's contents change.
+     * The function should take one string argument, which will be the text
+     * to autocomplete from.
+     * @type {Function}
+     */
+    set suggestionUpdateRequestCallback(callback) {
+      this.suggestionUpdateRequestCallback_ = callback;
     },
 
     /**
@@ -109,29 +142,27 @@ cr.define('options', function() {
 
       this.detach();
       this.targetInput_ = input;
-      input.parentNode.appendChild(this);
-      const MENU_BOTTOM_OFFSET = 3;
-      this.style.top = input.getBoundingClientRect().height +
-          MENU_BOTTOM_OFFSET + 'px';
+      this.style.width = input.getBoundingClientRect().width + 'px';
+      this.hidden = false;  // Necessary for positionPopupAroundElement to work.
+      cr.ui.positionPopupAroundElement(input, this, cr.ui.AnchorType.BELOW)
       // Start hidden; when the data model gets results the list will show.
       this.hidden = true;
 
-      input.addEventListener('keydown', this.textFieldKeyHandler_);
+      input.addEventListener('keydown', this.textFieldKeyHandler_, true);
+      input.addEventListener('input', this.textFieldInputHandler_);
     },
 
     /**
      * Detaches the autocomplete popup from its current input element, if any.
      */
     detach: function() {
-      if (!this.targetInput_)
+      var input = this.targetInput_
+      if (!input)
         return;
 
-      this.targetInput_.removeEventListener('keydown',
-                                            this.textFieldKeyHandler_);
+      input.removeEventListener('keydown', this.textFieldKeyHandler_);
+      input.removeEventListener('input', this.textFieldInputHandler_);
       this.targetInput_ = null;
-      var parentNode = this.parentNode;
-      if (parentNode)
-        parentNode.removeChild(this);
       this.suggestions = [];
     },
 
@@ -150,16 +181,26 @@ cr.define('options', function() {
      * @private
      */
     handleAutocompleteKeydown_: function(event) {
+      if (this.hidden)
+        return;
+      var handled = false;
       switch (event.keyIdentifier) {
         case 'U+001B':  // Esc
         case 'Enter':
           this.suggestions = [];
-          event.preventDefault();
+          handled = true;
           break;
         case 'Up':
         case 'Down':
           this.dispatchEvent(event);
+          handled = true;
           break;
+      }
+      // Don't let arrow keys affect the text field, or bubble up to, e.g.,
+      // an enclosing list item.
+      if (handled) {
+        event.preventDefault();
+        event.stopPropagation();
       }
     },
   };

@@ -6726,6 +6726,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_STARTUP_ADD_BUTTON" desc="The label of the 'Add...' button for the custom startup urls list">
         Add...
       </message>
+      <message name="IDS_OPTIONS_STARTUP_ADD_LABEL" desc="The text labelling the add row in the custom startup urls list">
+        Add a new page
+      </message>
 
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="In Title Case: The label of the 'Use Current' button for the custom startup urls list">

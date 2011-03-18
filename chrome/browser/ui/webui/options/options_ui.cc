@@ -20,7 +20,6 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/about_page_handler.h"
-#include "chrome/browser/ui/webui/options/add_startup_page_handler.h"
 #include "chrome/browser/ui/webui/options/advanced_options_handler.h"
 #include "chrome/browser/ui/webui/options/autofill_options_handler.h"
 #include "chrome/browser/ui/webui/options/browser_options_handler.h"
@@ -168,7 +167,6 @@ OptionsUI::OptionsUI(TabContents* contents)
   AddOptionsPageUIHandler(localized_strings, new CoreOptionsHandler());
 #endif
 
-  AddOptionsPageUIHandler(localized_strings, new AddStartupPageHandler());
   AddOptionsPageUIHandler(localized_strings, new AdvancedOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new AutoFillOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new BrowserOptionsHandler());

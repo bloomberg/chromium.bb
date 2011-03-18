@@ -3145,8 +3145,6 @@
         'browser/ui/webui/ntp_resource_cache.h',
         'browser/ui/webui/options/about_page_handler.cc',
         'browser/ui/webui/options/about_page_handler.h',
-        'browser/ui/webui/options/add_startup_page_handler.cc',
-        'browser/ui/webui/options/add_startup_page_handler.h',
         'browser/ui/webui/options/advanced_options_handler.cc',
         'browser/ui/webui/options/advanced_options_handler.h',
         'browser/ui/webui/options/advanced_options_utils.h',

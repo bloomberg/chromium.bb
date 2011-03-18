@@ -14,7 +14,6 @@
 <link rel="stylesheet" href="chrome://resources/css/tree.css">
 <link rel="stylesheet" href="../webui.css">
 <link rel="stylesheet" href="options_page.css">
-<link rel="stylesheet" href="add_startup_page_overlay.css">
 <link rel="stylesheet" href="advanced_options.css">
 <link rel="stylesheet" href="alert_overlay.css">
 <link rel="stylesheet" href="autofill_options.css">
@@ -55,6 +54,7 @@
 <script src="chrome://resources/js/cr/ui/list_single_selection_model.js"></script>
 <script src="chrome://resources/js/cr/ui/list_item.js"></script>
 <script src="chrome://resources/js/cr/ui/list.js"></script>
+<script src="chrome://resources/js/cr/ui/position_util.js"></script>
 <script src="chrome://resources/js/cr/ui/tree.js"></script>
 <script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/util.js"></script>
@@ -97,8 +97,6 @@
     var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
   </script>
 </if>
-<script src="add_startup_page_overlay.js"></script>
-<script src="add_startup_page_recent_pages_list.js"></script>
 <script src="advanced_options.js"></script>
 <script src="alert_overlay.js"></script>
 <script src="autocomplete_list.js"></script>
@@ -133,7 +131,6 @@
 <div class="header">
 </div>
 <div id="overlay" class="overlay transparent" hidden>
-  <include src="add_startup_page_overlay.html">
   <include src="alert_overlay.html">
   <include src="autofill_edit_address_overlay.html">
   <include src="autofill_edit_creditcard_overlay.html">
