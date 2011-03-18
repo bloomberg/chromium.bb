@@ -1157,6 +1157,11 @@ const char kPasswordStore[]                 = "password-store";
 #endif
 #endif
 
+#if defined(OS_MACOSX)
+// Enables the tabs expose feature ( http://crbug.com/50307 ).
+const char kEnableExposeForTabs[] = "enable-expose-for-tabs";
+#endif
+
 #if !defined(OS_MACOSX)
 // Enable Kiosk mode.
 const char kKioskMode[]                     = "kiosk";

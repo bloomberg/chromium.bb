@@ -334,6 +334,10 @@ extern const char kPasswordStore[];
 #endif
 #endif
 
+#if defined(OS_MACOSX)
+extern const char kEnableExposeForTabs[];
+#endif
+
 #if !defined(OS_MACOSX)
 extern const char kKioskMode[];
 #endif
