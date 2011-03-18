@@ -54,17 +54,18 @@ PrefixSet::PrefixSet(const std::vector<SBPrefix>& sorted_prefixes) {
       // Calculate the delta.  |unsigned| is mandatory, because the
       // sorted_prefixes could be more than INT_MAX apart.
       DCHECK_GT(sorted_prefixes[i], prev_prefix);
-      unsigned delta = sorted_prefixes[i] - prev_prefix;
+      const unsigned delta = sorted_prefixes[i] - prev_prefix;
+      const uint16 delta16 = static_cast<uint16>(delta);
 
-      // New index ref if the delta is too wide, or if too many
-      // consecutive deltas have been encoded.  Note that
-      // |kMaxDelta| cannot itself be encoded.
-      if (delta >= kMaxDelta || run_length >= kMaxRun) {
+      // New index ref if the delta doesn't fit, or if too many
+      // consecutive deltas have been encoded.
+      if (delta != static_cast<unsigned>(delta16) || run_length >= kMaxRun) {
         index_.push_back(std::make_pair(sorted_prefixes[i], deltas_.size()));
         run_length = 0;
       } else {
         // Continue the run of deltas.
-        deltas_.push_back(static_cast<uint16>(delta));
+        deltas_.push_back(delta16);
+        DCHECK_EQ(static_cast<unsigned>(deltas_.back()), delta);
         ++run_length;
       }
 
@@ -125,7 +126,7 @@ bool PrefixSet::Exists(SBPrefix prefix) const {
   return current == prefix;
 }
 
-void PrefixSet::GetPrefixes(std::vector<SBPrefix>* prefixes) {
+void PrefixSet::GetPrefixes(std::vector<SBPrefix>* prefixes) const {
   for (size_t ii = 0; ii < index_.size(); ++ii) {
     // The deltas for this |index_| entry run to the next index entry,
     // or the end of the deltas.

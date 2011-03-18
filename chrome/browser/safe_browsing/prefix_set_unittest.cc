@@ -164,6 +164,75 @@ TEST_F(PrefixSetTest, Empty) {
   }
 }
 
+// Single-element set should work fine.
+TEST_F(PrefixSetTest, OneElement) {
+  const std::vector<SBPrefix> prefixes(100, 0);
+  safe_browsing::PrefixSet prefix_set(prefixes);
+  EXPECT_FALSE(prefix_set.Exists(-1));
+  EXPECT_TRUE(prefix_set.Exists(prefixes[0]));
+  EXPECT_FALSE(prefix_set.Exists(1));
+
+  // Check that |GetPrefixes()| returns the same set of prefixes as
+  // was passed in.
+  std::vector<SBPrefix> prefixes_copy;
+  prefix_set.GetPrefixes(&prefixes_copy);
+  EXPECT_EQ(1U, prefixes_copy.size());
+  EXPECT_EQ(prefixes[0], prefixes_copy[0]);
+}
+
+// Edges of the 32-bit integer range.
+TEST_F(PrefixSetTest, IntMinMax) {
+  std::vector<SBPrefix> prefixes;
+
+  // Using bit patterns rather than portable constants because this
+  // really is testing how the entire 32-bit integer range is handled.
+  prefixes.push_back(0x00000000);
+  prefixes.push_back(0x0000FFFF);
+  prefixes.push_back(0x7FFF0000);
+  prefixes.push_back(0x7FFFFFFF);
+  prefixes.push_back(0x80000000);
+  prefixes.push_back(0x8000FFFF);
+  prefixes.push_back(0xFFFF0000);
+  prefixes.push_back(0xFFFFFFFF);
+
+  std::sort(prefixes.begin(), prefixes.end());
+  safe_browsing::PrefixSet prefix_set(prefixes);
+
+  // Check that |GetPrefixes()| returns the same set of prefixes as
+  // was passed in.
+  std::vector<SBPrefix> prefixes_copy;
+  prefix_set.GetPrefixes(&prefixes_copy);
+  ASSERT_EQ(prefixes_copy.size(), prefixes.size());
+  EXPECT_TRUE(std::equal(prefixes.begin(), prefixes.end(),
+                         prefixes_copy.begin()));
+}
+
+// A range with only large deltas.
+TEST_F(PrefixSetTest, AllBig) {
+  std::vector<SBPrefix> prefixes;
+
+  const SBPrefix kVeryPositive = 1000 * 1000 * 1000;
+  const SBPrefix kVeryNegative = -kVeryPositive;
+  const unsigned kDelta = 10 * 1000 * 1000;
+
+  for (SBPrefix prefix = kVeryNegative;
+       prefix < kVeryPositive; prefix += kDelta) {
+    prefixes.push_back(prefix);
+  }
+
+  std::sort(prefixes.begin(), prefixes.end());
+  safe_browsing::PrefixSet prefix_set(prefixes);
+
+  // Check that |GetPrefixes()| returns the same set of prefixes as
+  // was passed in.
+  std::vector<SBPrefix> prefixes_copy;
+  prefix_set.GetPrefixes(&prefixes_copy);
+  prefixes.erase(std::unique(prefixes.begin(), prefixes.end()), prefixes.end());
+  EXPECT_EQ(prefixes_copy.size(), prefixes.size());
+  EXPECT_TRUE(std::equal(prefixes.begin(), prefixes.end(),
+                         prefixes_copy.begin()));
+}
+
 // Use artificial inputs to test various edge cases in Exists().
 // Items before the lowest item aren't present.  Items after the
 // largest item aren't present.  Create a sequence of items with

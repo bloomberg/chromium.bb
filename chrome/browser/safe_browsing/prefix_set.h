@@ -72,12 +72,9 @@ class PrefixSet {
 
   // Regenerate the vector of prefixes passed to the constructor into
   // |prefixes|.  Prefixes will be added in sorted order.
-  void GetPrefixes(std::vector<SBPrefix>* prefixes);
+  void GetPrefixes(std::vector<SBPrefix>* prefixes) const;
 
  private:
-  // Maximum delta that can be encoded in a 16-bit unsigned.
-  static const unsigned kMaxDelta = 256 * 256;
-
   // Maximum number of consecutive deltas to encode before generating
   // a new index entry.  This helps keep the worst-case performance
   // for |Exists()| under control.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -214,6 +214,9 @@ enum PrefixSetEvent {
   PREFIX_SET_EVENT_BLOOM_MISS_PREFIX_HIT,
   PREFIX_SET_EVENT_BLOOM_MISS_PREFIX_HIT_INVALID,
   PREFIX_SET_GETPREFIXES_BROKEN,
+  PREFIX_SET_GETPREFIXES_BROKEN_SIZE,
+  PREFIX_SET_GETPREFIXES_FIRST_BROKEN,
+  PREFIX_SET_SBPREFIX_WAS_BROKEN,
 
   // Memory space for histograms is determined by the max.  ALWAYS ADD
   // NEW VALUES BEFORE THIS ONE.
@@ -223,6 +226,43 @@ enum PrefixSetEvent {
 void RecordPrefixSetInfo(PrefixSetEvent event_type) {
   UMA_HISTOGRAM_ENUMERATION("SB2.PrefixSetEvent", event_type,
                             PREFIX_SET_EVENT_MAX);
+}
+
+// Verify that |GetPrefixes()| returns the same set of prefixes as
+// |prefixes|.  This is necessary so that the
+// PREFIX_SET_EVENT_BLOOM_MISS_PREFIX_HIT_INVALID histogram in
+// ContainsBrowseUrl() can be trustworthy.
+void CheckPrefixSet(const safe_browsing::PrefixSet& prefix_set,
+                    const std::vector<SBPrefix>& prefixes) {
+  std::vector<SBPrefix> restored;
+  prefix_set.GetPrefixes(&restored);
+
+  const std::set<SBPrefix> unique(prefixes.begin(), prefixes.end());
+
+  // Expect them to be equal.
+  if (restored.size() == unique.size() &&
+      std::equal(unique.begin(), unique.end(), restored.begin()))
+    return;
+
+  // Log BROKEN for continuity with previous release, and SIZE to
+  // distinguish which test failed.
+  NOTREACHED();
+  RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN);
+  if (restored.size() != unique.size())
+    RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN_SIZE);
+
+  // Try to distinguish between updates from one broken user and a
+  // distributed problem.
+  static bool logged_broken = false;
+  if (!logged_broken) {
+    RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_FIRST_BROKEN);
+    logged_broken = true;
+  }
+
+  // This seems so very very unlikely.  But if it ever were true, then
+  // it could explain why GetPrefixes() seemed broken.
+  if (sizeof(int) != sizeof(int32))
+    RecordPrefixSetInfo(PREFIX_SET_SBPREFIX_WAS_BROKEN);
 }
 
 }  // namespace
@@ -973,16 +1013,7 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
   scoped_ptr<safe_browsing::PrefixSet>
       prefix_set(new safe_browsing::PrefixSet(prefixes));
 
-  // Verify that |GetPrefixes()| returns the same set of prefixes as
-  // was passed to the constructor.
-  std::vector<SBPrefix> restored;
-  prefix_set->GetPrefixes(&restored);
-  prefixes.erase(std::unique(prefixes.begin(), prefixes.end()), prefixes.end());
-  if (restored.size() != prefixes.size() ||
-      !std::equal(prefixes.begin(), prefixes.end(), restored.begin())) {
-    NOTREACHED();
-    RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN);
-  }
+  CheckPrefixSet(*(prefix_set.get()), prefixes);
 
   // This needs to be in sorted order by prefix for efficient access.
   std::sort(add_full_hashes.begin(), add_full_hashes.end(),
@@ -1096,18 +1127,7 @@ void SafeBrowsingDatabaseNew::LoadBloomFilter() {
   }
   std::sort(prefixes.begin(), prefixes.end());
   prefix_set_.reset(new safe_browsing::PrefixSet(prefixes));
-
-  // Double-check the prefixes so that the
-  // PREFIX_SET_EVENT_BLOOM_MISS_PREFIX_HIT_INVALID histogram in
-  // ContainsBrowseUrl() can be trustworthy.
-  std::vector<SBPrefix> restored;
-  prefix_set_->GetPrefixes(&restored);
-  std::set<SBPrefix> unique(prefixes.begin(), prefixes.end());
-  if (restored.size() != unique.size() ||
-      !std::equal(unique.begin(), unique.end(), restored.begin())) {
-    NOTREACHED();
-    RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN);
-  }
+  CheckPrefixSet(*(prefix_set_.get()), prefixes);
 }
 
 bool SafeBrowsingDatabaseNew::Delete() {
