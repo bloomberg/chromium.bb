@@ -1574,6 +1574,7 @@ function getUnknownFileTypeHandler() {
 function getFunctionForItem(path, id, isDirectory) {
   if (isDirectory) {
     return function() {
+      selectItem(id, path);
       descend(path, currentNode);
     };
   }
