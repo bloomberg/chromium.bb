@@ -319,6 +319,9 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       <message name="IDS_SKIP" desc="A generic term for Skip on buttons and menus.">
         Skip
       </message>
+      <message name="IDS_ACCNAME_TAB" desc="A generic description of a tab button's role">
+        Tab
+      </message>
 
       <!-- content area context menus -->
       <if expr="os == 'darwin'">

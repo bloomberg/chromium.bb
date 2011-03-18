@@ -12,7 +12,9 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -827,26 +829,13 @@ const CGFloat kRapidCloseDist = 2.5;
 
 - (id)accessibilityAttributeValue:(NSString*)attribute {
   if ([attribute isEqual:NSAccessibilityRoleAttribute])
-    return NSAccessibilityButtonRole;
+    return l10n_util::GetNSStringWithFixup(IDS_ACCNAME_TAB);
 
   if ([attribute isEqual:NSAccessibilityTitleAttribute])
     return [controller_ title];
 
   if ([attribute isEqual:NSAccessibilityEnabledAttribute])
     return [NSNumber numberWithBool:YES];
-
-  if ([attribute isEqual:NSAccessibilityChildrenAttribute]) {
-    // The subviews (icon and text) are clutter; filter out everything but
-    // useful controls.
-    NSArray* children = [super accessibilityAttributeValue:attribute];
-    NSMutableArray* okChildren = [NSMutableArray array];
-    for (id child in children) {
-      if ([child isKindOfClass:[NSButtonCell class]])
-        [okChildren addObject:child];
-    }
-
-    return okChildren;
-  }
 
   return [super accessibilityAttributeValue:attribute];
 }

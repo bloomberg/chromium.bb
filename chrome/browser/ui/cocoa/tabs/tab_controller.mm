@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/mac/mac_util.h"
-#include "chrome/browser/accessibility/browser_accessibility_state.h"
 #import "chrome/browser/themes/browser_theme_provider.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
@@ -222,12 +221,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 // Returns YES if we should be showing the close button. The selected tab
 // always shows the close button.
 - (BOOL)shouldShowCloseButton {
-  // Accessibility: When VoiceOver is active, it is desirable for us to hide the
-  // close button, so that VoiceOver does not encounter it.
-  // TODO(dtseng): http://crbug.com/59978
-  if (BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser())
-    return NO;
-
   if ([self mini])
     return NO;
   return ([self selected] || [self iconCapacity] >= 3);
