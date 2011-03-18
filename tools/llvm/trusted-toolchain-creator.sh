@@ -279,6 +279,7 @@ BuildAndInstallQemu() {
   cp arm-linux-user/qemu-arm ${INSTALL_ROOT}
   cd ${saved_dir}
   cp tools/llvm/qemu_tool.sh ${INSTALL_ROOT}
+  ln -sf qemu_tool.sh ${INSTALL_ROOT}/run_under_qemu_arm
 }
 ######################################################################
 # Main

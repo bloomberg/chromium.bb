@@ -59,56 +59,59 @@ Hints() {
   echo "for faster execution disable sel_ldr validation"
   echo
 }
-######################################################################
-if [[ $# -eq 0 ]] ; then
-     echo "you must specify a mode on the commandline:"
-     echo
-     Usage
-     exit -1
-fi
 
-MODE=$1
-shift
+######################################################################
 
 #@
 #@ help
 #@
 #@   print help for all modes
-if [[ ${MODE} = 'help' ]] ; then
+help () {
   Usage
-  exit 0
-fi
+}
 
 #@
 #@ run
 #@
 #@   run stuff
-if [[ ${MODE} = 'run' ]] ; then
+run() {
   CheckPrerequisites
-  exec ${QEMU} -L ${QEMU_JAIL} ${QEMU_ARGS} $*
-fi
+  exec ${QEMU} -L ${QEMU_JAIL} ${QEMU_ARGS} "$@"
+}
 
 #@
 #@ run_debug
 #@
 #@   run stuff but also generate trace in /tmp
-if [[ ${MODE} = 'run_debug' ]] ; then
+run_debug() {
   Hints
   CheckPrerequisites
-  exec ${QEMU} -L ${QEMU_JAIL} ${QEMU_ARGS} ${QEMU_ARGS_DEBUG} $*
-fi
+  exec ${QEMU} -L ${QEMU_JAIL} ${QEMU_ARGS} ${QEMU_ARGS_DEBUG} "$@"
+}
 
 #@
 #@ run_debug_service_runtime
 #@
 #@   run stuff but also generate trace in /tmp even for service_runtime
-if [[ ${MODE} = 'run_debug_service_runtime' ]] ; then
+run_debug_service_runtime() {
   Hints
   CheckPrerequisites
-  exec ${QEMU} -L ${QEMU_JAIL} ${QEMU_ARGS} ${QEMU_ARGS_DEBUG_SR} $*
-fi
+  exec ${QEMU} -L ${QEMU_JAIL} ${QEMU_ARGS} ${QEMU_ARGS_DEBUG_SR} "$@"
+}
 
 ######################################################################
-echo "unknown mode: ${MODE}"
-exit -1
-
+if [[ "$0" == *run_under_qemu_arm ]] ; then
+  run "$@"
+elif [[ $# -eq 0 ]] ; then
+  echo "you must specify a mode on the commandline:"
+  echo
+  Usage
+  exit -1
+elif [[ "$(type -t $1)" != "function" ]]; then
+  echo "ERROR: unknown function '$1'." >&2
+  echo "For help, try:"
+  echo "    $0 help"
+  exit 1
+else
+  "$@"
+fi
