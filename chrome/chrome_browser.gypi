@@ -27,6 +27,7 @@
         'theme_resources',
         'userfeedback_proto',
         '../app/app.gyp:app_resources',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../content/content.gyp:content_browser',
         '../gpu/gpu.gyp:gpu_common',
         '../media/media.gyp:media',

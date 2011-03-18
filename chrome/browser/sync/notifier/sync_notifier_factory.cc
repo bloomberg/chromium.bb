@@ -41,7 +41,8 @@ net::HostPortPair StringToHostPortPair(const std::string& host_port_str,
   return net::HostPortPair(host, port);
 }
 
-SyncNotifier* CreateDefaultSyncNotifier(const CommandLine& command_line) {
+SyncNotifier* CreateDefaultSyncNotifier(const CommandLine& command_line,
+                                        const std::string& client_info) {
   // Contains options specific to how sync clients send and listen to
   // jingle notifications.
   notifier::NotifierOptions notifier_options;
@@ -82,18 +83,18 @@ SyncNotifier* CreateDefaultSyncNotifier(const CommandLine& command_line) {
         notifier::StringToNotificationMethod(notification_method_str);
   }
 
-  return new SyncNotifierImpl(notifier_options);
+  return new SyncNotifierImpl(notifier_options, client_info);
 }
 }  // namespace
 
-SyncNotifierFactory::SyncNotifierFactory() {
-}
+SyncNotifierFactory::SyncNotifierFactory(const std::string& client_info)
+    : client_info_(client_info) {}
 
 SyncNotifierFactory::~SyncNotifierFactory() {
 }
 
 SyncNotifier* SyncNotifierFactory::CreateSyncNotifier(
     const CommandLine& command_line) {
-  return CreateDefaultSyncNotifier(command_line);
+  return CreateDefaultSyncNotifier(command_line, client_info_);
 }
 }  // namespace sync_notifier

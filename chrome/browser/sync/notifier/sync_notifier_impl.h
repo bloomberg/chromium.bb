@@ -26,7 +26,8 @@ class SyncNotifierImpl
       public sync_notifier::StateWriter,
       public notifier::TalkMediator::Delegate {
  public:
-  explicit SyncNotifierImpl(const notifier::NotifierOptions& notifier_options);
+  SyncNotifierImpl(const notifier::NotifierOptions& notifier_options,
+                   const std::string& client_info);
 
   virtual ~SyncNotifierImpl();
 
@@ -63,6 +64,7 @@ class SyncNotifierImpl
   std::string state_;
 
   notifier::NotifierOptions notifier_options_;
+  const std::string client_info_;
   ServerNotifierThread* server_notifier_thread_;
   ObserverList<SyncNotifierObserver> observer_list_;
 };

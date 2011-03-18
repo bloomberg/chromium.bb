@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,8 @@ namespace sync_notifier {
 class FakeServerNotifierThread : public ServerNotifierThread {
  public:
    FakeServerNotifierThread()
-      : ServerNotifierThread(notifier::NotifierOptions(), "fake state",
+      : ServerNotifierThread(notifier::NotifierOptions(),
+                             "fake client info", "fake state",
                              ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
   virtual ~FakeServerNotifierThread() {}

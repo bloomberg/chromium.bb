@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,18 +9,18 @@
 
 #include "base/logging.h"
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
-#include "googleurl/src/gurl.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/notification_defines.h"
 #include "talk/xmpp/xmppclient.h"
-#include "webkit/glue/webkit_glue.h"
 
 namespace sync_notifier {
 
 ServerNotifierThread::ServerNotifierThread(
     const notifier::NotifierOptions& notifier_options,
-    const std::string& state, StateWriter* state_writer)
+    const std::string& client_info, const std::string& state,
+    StateWriter* state_writer)
     : notifier::MediatorThreadImpl(notifier_options),
+      client_info_(client_info),
       state_(state),
       state_writers_(new ObserverListThreadSafe<StateWriter>()),
       state_writer_(state_writer) {
@@ -140,11 +140,8 @@ void ServerNotifierThread::DoListenForUpdates() {
     // make it so that we won't receive any notifications that were
     // generated from our own changes.
     const std::string kClientId = "server_notifier_thread";
-    // Use user agent as |client_info| so we can use it for debugging
-    // server-side.
-    const std::string& client_info = webkit_glue::GetUserAgent(GURL());
     chrome_invalidation_client_->Start(
-        kClientId, client_info, state_, this, this, base_task_);
+        kClientId, client_info_, state_, this, this, base_task_);
     RegisterTypes();
     state_.clear();
   }

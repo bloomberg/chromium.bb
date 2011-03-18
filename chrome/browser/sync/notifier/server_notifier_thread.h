@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -39,6 +39,7 @@ class ServerNotifierThread
   // be NULL).
   explicit ServerNotifierThread(
       const notifier::NotifierOptions& notifier_options,
+      const std::string& client_info,
       const std::string& state, StateWriter* state_writer);
 
   virtual ~ServerNotifierThread();
@@ -85,6 +86,7 @@ class ServerNotifierThread
   // Posted to the worker thread by Logout().
   void StopInvalidationListener();
 
+  const std::string client_info_;
   std::string state_;
   // Hack to get the nice thread-safe behavior for |state_writer_|.
   scoped_refptr<ObserverListThreadSafe<StateWriter> > state_writers_;

@@ -38,6 +38,8 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
+#include "googleurl/src/gurl.h"
+#include "webkit/glue/webkit_glue.h"
 
 static const int kSaveChangesIntervalSeconds = 10;
 static const FilePath::CharType kSyncDataFolderName[] =
@@ -700,7 +702,8 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
 
   syncapi_->AddObserver(this);
   const FilePath& path_str = host_->sync_data_folder_path();
-  sync_notifier::SyncNotifierFactory sync_notifier_factory;
+  const std::string& client_info = webkit_glue::GetUserAgent(GURL());
+  sync_notifier::SyncNotifierFactory sync_notifier_factory(client_info);
   success = syncapi_->Init(
       path_str,
       (options.service_url.host() + options.service_url.path()).c_str(),

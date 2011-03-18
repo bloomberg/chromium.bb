@@ -20,8 +20,10 @@ using notifier::TalkMediatorImpl;
 namespace sync_notifier {
 
 SyncNotifierImpl::SyncNotifierImpl(
-    const notifier::NotifierOptions& notifier_options)
+    const notifier::NotifierOptions& notifier_options,
+    const std::string& client_info)
     : notifier_options_(notifier_options),
+      client_info_(client_info),
       server_notifier_thread_(NULL) { }
 
 SyncNotifierImpl::~SyncNotifierImpl() {
@@ -122,7 +124,7 @@ void SyncNotifierImpl::UpdateCredentials(
     // but it is guaranteed that |sync_notifier_thread_| is destroyed only
     // when |talk_mediator_| is (see the comments in talk_mediator.h).
     server_notifier_thread_ = new sync_notifier::ServerNotifierThread(
-        notifier_options_, state_, this);
+        notifier_options_, client_info_, state_, this);
     talk_mediator_.reset(
         new TalkMediatorImpl(server_notifier_thread_,
                              notifier_options_.invalidate_xmpp_login,
