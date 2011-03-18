@@ -581,7 +581,7 @@ public:
 
     long GetEntryCount() const;
 
-    void Load() const;
+    //void Load() const;
     long Load(long long& pos, long& size) const;
 
     void LoadBlockEntries() const;

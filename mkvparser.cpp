@@ -5837,6 +5837,7 @@ long long Cluster::Unparsed() const
 #endif
 
 
+#if 0
 void Cluster::Load() const
 {
     assert(m_pSegment);
@@ -5911,6 +5912,7 @@ void Cluster::Load() const
 
     m_timecode = timecode;
 }
+#endif
 
 
 long Cluster::Load(long long& pos, long& len) const
@@ -7305,7 +7307,17 @@ void Cluster::LoadBlockEntries() const
 
 long long Cluster::GetTimeCode() const
 {
+#if 0
     Load();
+#else
+    long long pos;
+    long len;
+
+    const long status = Load(pos, len);
+    status;
+    assert(status == 0);
+#endif
+
     return m_timecode;
 }
 
