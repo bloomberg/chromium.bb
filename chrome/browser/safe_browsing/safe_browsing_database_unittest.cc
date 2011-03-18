@@ -1434,11 +1434,17 @@ TEST_F(SafeBrowsingDatabaseTest, EmptyUpdate) {
   database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
   database_->UpdateFinished(true);
 
+  // Get an older time to reset the lastmod time for detecting whether
+  // the file has been updated.
+  base::PlatformFileInfo before_info, after_info;
+  ASSERT_TRUE(file_util::GetFileInfo(filename, &before_info));
+  const base::Time old_last_modified =
+      before_info.last_modified - base::TimeDelta::FromSeconds(10);
+
   // Inserting another chunk updates the database file.  The sleep is
   // needed because otherwise the entire test can finish w/in the
   // resolution of the lastmod time.
-  base::PlatformFileInfo before_info, after_info;
-  base::PlatformThread::Sleep(1500);
+  ASSERT_TRUE(file_util::SetLastModifiedTime(filename, old_last_modified));
   ASSERT_TRUE(file_util::GetFileInfo(filename, &before_info));
   EXPECT_TRUE(database_->UpdateStarted(&lists));
   chunk.hosts.clear();
@@ -1452,7 +1458,7 @@ TEST_F(SafeBrowsingDatabaseTest, EmptyUpdate) {
   EXPECT_LT(before_info.last_modified, after_info.last_modified);
 
   // Deleting a chunk updates the database file.
-  base::PlatformThread::Sleep(1500);
+  ASSERT_TRUE(file_util::SetLastModifiedTime(filename, old_last_modified));
   ASSERT_TRUE(file_util::GetFileInfo(filename, &before_info));
   EXPECT_TRUE(database_->UpdateStarted(&lists));
   AddDelChunk(safe_browsing_util::kMalwareList, chunk.chunk_number);
@@ -1462,7 +1468,7 @@ TEST_F(SafeBrowsingDatabaseTest, EmptyUpdate) {
 
   // Simply calling |UpdateStarted()| then |UpdateFinished()| does not
   // update the database file.
-  base::PlatformThread::Sleep(1500);
+  ASSERT_TRUE(file_util::SetLastModifiedTime(filename, old_last_modified));
   ASSERT_TRUE(file_util::GetFileInfo(filename, &before_info));
   EXPECT_TRUE(database_->UpdateStarted(&lists));
   database_->UpdateFinished(true);
