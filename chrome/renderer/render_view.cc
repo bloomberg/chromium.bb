@@ -32,7 +32,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/json_value_serializer.h"
-#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -47,7 +46,6 @@
 #include "chrome/renderer/autofill/form_manager.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
-#include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/devtools_client.h"
 #include "chrome/renderer/extension_groups.h"
@@ -85,6 +83,7 @@
 #include "content/common/page_zoom.h"
 #include "content/common/pepper_messages.h"
 #include "content/renderer/audio_message_filter.h"
+#include "content/renderer/content_renderer_client.h"
 #include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/ggl.h"
@@ -105,8 +104,6 @@
 #include "content/renderer/websharedworker_proxy.h"
 #include "content/renderer/webworker_proxy.h"
 #include "content/renderer/web_ui_bindings.h"
-#include "grit/generated_resources.h"
-#include "grit/renderer_resources.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
 #include "media/base/message_loop_factory_impl.h"
@@ -166,9 +163,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
 #include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/message_box_flags.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -1892,42 +1887,12 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
                                          const WebURLError& error,
                                          const std::string& html,
                                          bool replace) {
-  GURL failed_url = error.unreachableURL;
-  std::string alt_html;
-  const Extension* extension = NULL;
-  if (html.empty()) {
-    // Use a local error page.
-    int resource_id;
-    DictionaryValue error_strings;
-
-    if (failed_url.is_valid() && !failed_url.SchemeIs(chrome::kExtensionScheme))
-      extension = render_thread_->GetExtensions()->GetByURL(failed_url);
-    if (extension) {
-      LocalizedError::GetAppErrorStrings(error, failed_url, extension,
-                                         &error_strings);
-
-      // TODO(erikkay): Should we use a different template for different
-      // error messages?
-      resource_id = IDR_ERROR_APP_HTML;
-    } else {
-      if (error.domain == WebString::fromUTF8(net::kErrorDomain) &&
-          error.reason == net::ERR_CACHE_MISS &&
-          EqualsASCII(failed_request.httpMethod(), "POST")) {
-        LocalizedError::GetFormRepostStrings(failed_url, &error_strings);
-      } else {
-        LocalizedError::GetStrings(error, &error_strings);
-      }
-      resource_id = IDR_NET_ERROR_HTML;
-    }
-
-    alt_html = GetAltHTMLForTemplate(error_strings, resource_id);
-  } else {
-    alt_html = html;
-  }
-
+  std::string alt_html = !html.empty() ? html :
+      content::GetContentClient()->renderer()->GetNavigationErrorHtml(
+          failed_request, error);
   frame->loadHTMLString(alt_html,
                         GURL(chrome::kUnreachableWebDataURL),
-                        failed_url,
+                        error.unreachableURL,
                         replace);
 }
 
@@ -2690,101 +2655,11 @@ void RenderView::runModal() {
 
 WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                     const WebPluginParams& params) {
-  bool found = false;
-  ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  webkit::npapi::WebPluginInfo info;
-  GURL url(params.url);
-  std::string actual_mime_type;
-  Send(new ViewHostMsg_GetPluginInfo(routing_id_,
-                                     url,
-                                     frame->top()->url(),
-                                     params.mimeType.utf8(),
-                                     &found,
-                                     &info,
-                                     &plugin_setting,
-                                     &actual_mime_type));
-
-  if (!found)
-    return NULL;
-  DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
-  if (!webkit::npapi::IsPluginEnabled(info))
-    return NULL;
-
-  const webkit::npapi::PluginGroup* group =
-      webkit::npapi::PluginList::Singleton()->GetPluginGroup(info);
-  DCHECK(group != NULL);
-
-  if (group->IsVulnerable() &&
-      !cmd->HasSwitch(switches::kAllowOutdatedPlugins)) {
-    Send(new ViewHostMsg_BlockedOutdatedPlugin(routing_id_,
-                                               group->GetGroupName(),
-                                               GURL(group->GetUpdateURL())));
-    return CreatePluginPlaceholder(frame,
-                                   params,
-                                   *group,
-                                   IDR_BLOCKED_PLUGIN_HTML,
-                                   IDS_PLUGIN_OUTDATED,
-                                   false);
-  }
-
-  ContentSetting host_setting =
-      current_content_settings_.settings[CONTENT_SETTINGS_TYPE_PLUGINS];
-
-  if (group->RequiresAuthorization() &&
-      !cmd->HasSwitch(switches::kAlwaysAuthorizePlugins) &&
-      (plugin_setting == CONTENT_SETTING_ALLOW ||
-       plugin_setting == CONTENT_SETTING_ASK) &&
-      host_setting == CONTENT_SETTING_DEFAULT) {
-    Send(new ViewHostMsg_BlockedOutdatedPlugin(routing_id_,
-                                               group->GetGroupName(),
-                                               GURL()));
-    return CreatePluginPlaceholder(frame,
-                                   params,
-                                   *group,
-                                   IDR_BLOCKED_PLUGIN_HTML,
-                                   IDS_PLUGIN_NOT_AUTHORIZED,
-                                   false);
-  }
-
-  if (info.path.value() == webkit::npapi::kDefaultPluginLibraryName ||
-      plugin_setting == CONTENT_SETTING_ALLOW ||
-      host_setting == CONTENT_SETTING_ALLOW) {
-    // Delay loading plugins if prerendering.
-    if (is_prerendering_) {
-      return CreatePluginPlaceholder(frame,
-                                     params,
-                                     *group,
-                                     IDR_CLICK_TO_PLAY_PLUGIN_HTML,
-                                     IDS_PLUGIN_LOAD,
-                                     true);
-    }
-
-    scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
-        pepper_delegate_.CreatePepperPlugin(info.path));
-    if (pepper_module)
-      return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
-    return CreateNPAPIPlugin(frame, params, info.path, actual_mime_type);
-  }
-  std::string resource;
-  if (cmd->HasSwitch(switches::kEnableResourceContentSettings))
-    resource = group->identifier();
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
-  if (plugin_setting == CONTENT_SETTING_ASK) {
-    return CreatePluginPlaceholder(frame,
-                                   params,
-                                   *group,
-                                   IDR_CLICK_TO_PLAY_PLUGIN_HTML,
-                                   IDS_PLUGIN_LOAD,
-                                   false);
-  } else {
-    return CreatePluginPlaceholder(frame,
-                                   params,
-                                   *group,
-                                   IDR_BLOCKED_PLUGIN_HTML,
-                                   IDS_PLUGIN_BLOCKED,
-                                   false);
-  }
+  WebPlugin* plugin = content::GetContentClient()->renderer()->CreatePlugin(
+      this, frame, params);
+  if (!plugin)
+    plugin = CreatePluginNoCheck(frame, params);
+  return plugin;
 }
 
 WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
@@ -4354,28 +4229,6 @@ WebPlugin* RenderView::CreateNPAPIPlugin(
       frame, params, path, mime_type, AsWeakPtr());
 }
 
-WebPlugin* RenderView::CreatePluginPlaceholder(
-    WebFrame* frame,
-    const WebPluginParams& params,
-    const webkit::npapi::PluginGroup& group,
-    int resource_id,
-    int message_id,
-    bool is_blocked_for_prerendering) {
-  // |blocked_plugin| will delete itself when the WebViewPlugin
-  // is destroyed.
-  BlockedPlugin* blocked_plugin =
-      new BlockedPlugin(this,
-                        frame,
-                        group,
-                        params,
-                        webkit_preferences_,
-                        resource_id,
-                        l10n_util::GetStringFUTF16(message_id,
-                                                   group.GetGroupName()),
-                        is_blocked_for_prerendering);
-  return blocked_plugin->plugin();
-}
-
 void RenderView::OnZoom(PageZoom::Function function) {
   if (!webview())  // Not sure if this can happen, but no harm in being safe.
     return;
@@ -4954,22 +4807,6 @@ bool RenderView::MaybeLoadAlternateErrorPage(WebFrame* frame,
           error_page_url, frame, error,
           NewCallback(this, &RenderView::AltErrorPageFinished)));
   return true;
-}
-
-std::string RenderView::GetAltHTMLForTemplate(
-    const DictionaryValue& error_strings, int template_resource_id) const {
-  const base::StringPiece template_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          template_resource_id));
-
-  if (template_html.empty()) {
-    NOTREACHED() << "unable to load template. ID: " << template_resource_id;
-    return "";
-  }
-
-  // "t" is the id of the templates root node.
-  return jstemplate_builder::GetTemplatesHtml(
-      template_html, &error_strings, "t");
 }
 
 void RenderView::AltErrorPageFinished(WebFrame* frame,

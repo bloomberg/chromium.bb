@@ -10,7 +10,16 @@
 
 #include "content/common/content_client.h"
 
+class RenderView;
 class SkBitmap;
+
+namespace WebKit {
+class WebFrame;
+class WebPlugin;
+class WebURLRequest;
+struct WebPluginParams;
+struct WebURLError;
+}
 
 namespace content {
 
@@ -19,6 +28,16 @@ class ContentRendererClient {
  public:
   virtual SkBitmap* GetSadPluginBitmap();
   virtual std::string GetDefaultEncoding();
+  // Create a plugin in the given frame.  Can return NULL, in which case
+  // RenderView will create a plugin itself.
+  virtual WebKit::WebPlugin* CreatePlugin(
+      RenderView* render_view,
+      WebKit::WebFrame* frame,
+      const WebKit::WebPluginParams& params);
+  // Returns the html to display when a navigation error occurs.
+  virtual std::string GetNavigationErrorHtml(
+      const WebKit::WebURLRequest& failed_request,
+      const WebKit::WebURLError& error);
 };
 
 }  // namespace content

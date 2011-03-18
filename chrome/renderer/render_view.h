@@ -55,7 +55,6 @@
 
 class AudioMessageFilter;
 class BlockedPlugin;
-class DictionaryValue;
 class DeviceOrientationDispatcher;
 class DevToolsAgent;
 class DevToolsClient;
@@ -97,6 +96,10 @@ struct WebDropData;
 
 namespace base {
 class WaitableEvent;
+}
+
+namespace chrome {
+class ChromeContentRendererClient;
 }
 
 namespace gfx {
@@ -657,6 +660,9 @@ class RenderView : public RenderWidget,
   virtual void OnWasRestored(bool needs_repainting);
 
  private:
+  // TODO(jam): temporary friend class to ease with the file move.  Remove soon.
+  friend class chrome::ChromeContentRendererClient;
+
   // For unit tests.
   friend class ExternalPopupMenuTest;
   friend class PepperDeviceTest;
@@ -964,14 +970,6 @@ class RenderView : public RenderWidget,
       const FilePath& path,
       webkit::ppapi::PluginModule* pepper_module);
 
-  WebKit::WebPlugin* CreatePluginPlaceholder(
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params,
-      const webkit::npapi::PluginGroup& group,
-      int resource_id,
-      int message_id,
-      bool is_blocked_for_prerendering);
-
   // Sends an IPC notification that the specified content type was blocked.
   // If the content type requires it, |resource_identifier| names the specific
   // resource that was blocked (the plugin path in the case of plugins),
@@ -1016,9 +1014,6 @@ class RenderView : public RenderWidget,
 
   GURL GetAlternateErrorPageURL(const GURL& failed_url,
                                 ErrorPageType error_type);
-
-  std::string GetAltHTMLForTemplate(const DictionaryValue& error_strings,
-                                    int template_resource_id) const;
 
   // Locates a sub frame with given xpath
   WebKit::WebFrame* GetChildFrame(const std::wstring& frame_xpath) const;
