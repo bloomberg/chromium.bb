@@ -469,16 +469,31 @@ void TabStrip::DoLayout() {
 }
 
 void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
-                                   const gfx::Point& location) {
+                                   BaseTab* active_tab,
+                                   const gfx::Point& location,
+                                   bool initial_drag) {
+  int active_tab_model_index = GetModelIndexOfBaseTab(active_tab);
+  int active_tab_index = static_cast<int>(
+      std::find(tabs.begin(), tabs.end(), active_tab) - tabs.begin());
   int x = location.x();
   for (size_t i = 0; i < tabs.size(); ++i) {
     BaseTab* tab = tabs[i];
-    tab->SchedulePaint();
     gfx::Rect new_bounds = tab->bounds();
     new_bounds.set_x(x);
-    tab->SetX(GetMirroredXForRect(new_bounds));
-    tab->SetY(location.y());
-    tab->SchedulePaint();
+    new_bounds.set_x(GetMirroredXForRect(new_bounds));
+    new_bounds.set_y(location.y());
+    int consecutive_index =
+        active_tab_model_index - (active_tab_index - static_cast<int>(i));
+    // If this is the initial layout during a drag and the tabs aren't
+    // consecutive animate the view into position. Do the same if the tab is
+    // already animating (which means we previously caused it to animate).
+    if ((initial_drag &&
+         GetModelIndexOfBaseTab(tabs[i]) != consecutive_index) ||
+        bounds_animator().IsAnimating(tabs[i])) {
+      bounds_animator().SetTargetBounds(tabs[i], new_bounds);
+    } else {
+      tab->SetBoundsRect(new_bounds);
+    }
     x += tab->width() + kTabHOffset;
     if (i > 0 && tab->data().mini != tabs[i - 1]->data().mini)
       x += mini_to_non_mini_gap_;

@@ -723,6 +723,11 @@ void DraggedTabController::MoveAttached(const gfx::Point& screen_point) {
     threshold = static_cast<int>(ratio * kHorizontalMoveThreshold);
   }
 
+  std::vector<BaseTab*> tabs(drag_data_.size());
+  for (size_t i = 0; i < drag_data_.size(); ++i)
+    tabs[i] = drag_data_[i].attached_tab;
+
+  bool did_layout = false;
   // Update the model, moving the TabContents from one index to another. Do this
   // only if we have moved a minimum distance since the last reorder (to prevent
   // jitter) or if this the first move and the tabs are not consecutive.
@@ -739,6 +744,15 @@ void DraggedTabController::MoveAttached(const gfx::Point& screen_point) {
         drag_data_[drag_data_.size() - 1].contents;
     int index_of_last_item =
           attached_model->GetIndexOfTabContents(last_contents);
+    if (initial_move_) {
+      // TabStrip determines if the tabs needs to be animated based on model
+      // position. This means we need to invoke LayoutDraggedTabsAt before
+      // changing the model.
+      attached_tabstrip_->LayoutDraggedTabsAt(
+          tabs, source_tab_drag_data()->attached_tab, dragged_view_point,
+          initial_move_);
+      did_layout = true;
+    }
     attached_model->MoveSelectedTabsTo(to_index);
     // Move may do nothing in certain situations (such as when dragging pinned
     // tabs). Make sure the tabstrip actually changed before updating
@@ -748,13 +762,14 @@ void DraggedTabController::MoveAttached(const gfx::Point& screen_point) {
       last_move_screen_loc_ = MajorAxisValue(screen_point, attached_tabstrip_);
     }
   }
+
+  if (!did_layout) {
+    attached_tabstrip_->LayoutDraggedTabsAt(
+        tabs, source_tab_drag_data()->attached_tab, dragged_view_point,
+        initial_move_);
+  }
+
   initial_move_ = false;
-
-  std::vector<BaseTab*> tabs(drag_data_.size());
-  for (size_t i = 0; i < drag_data_.size(); ++i)
-    tabs[i] = drag_data_[i].attached_tab;
-
-  attached_tabstrip_->LayoutDraggedTabsAt(tabs, dragged_view_point);
 }
 
 void DraggedTabController::MoveDetached(const gfx::Point& screen_point) {

@@ -137,7 +137,9 @@ void TouchTabStrip::GenerateIdealBounds() {
 }
 
 void TouchTabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
-                                        const gfx::Point& location) {
+                                        BaseTab* active_tab,
+                                        const gfx::Point& location,
+                                        bool initial_drag) {
   // Not needed as dragging isn't supported.
   NOTIMPLEMENTED();
 }

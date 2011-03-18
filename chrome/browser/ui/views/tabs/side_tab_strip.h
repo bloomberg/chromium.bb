@@ -43,7 +43,9 @@ class SideTabStrip : public BaseTabStrip {
   virtual void AnimateToIdealBounds() OVERRIDE;
   virtual void DoLayout() OVERRIDE;
   virtual void LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
-                                   const gfx::Point& location) OVERRIDE;
+                                   BaseTab* active_tab,
+                                   const gfx::Point& location,
+                                   bool initial_drag) OVERRIDE;
   virtual int GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs) OVERRIDE;
 
  private:

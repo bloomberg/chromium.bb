@@ -240,7 +240,10 @@ void SideTabStrip::DoLayout() {
 }
 
 void SideTabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
-                                       const gfx::Point& location) {
+                                       BaseTab* active_tab,
+                                       const gfx::Point& location,
+                                       bool initial_drag) {
+  // TODO: add support for initial_drag (see TabStrip's implementation).
   gfx::Rect layout_rect = GetContentsBounds();
   layout_rect.Inset(kTabStripInset, kTabStripInset);
   int y = location.y();

@@ -189,9 +189,12 @@ class BaseTabStrip : public AbstractTabStripView,
   virtual void GenerateIdealBounds() = 0;
 
   // Invoked during drag to layout the tabs being dragged in |tabs| at
-  // |location|.
+  // |location|. If |initial_drag| is true, this is the initial layout after the
+  // user moved the mouse far enough to trigger a drag.
   virtual void LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
-                                   const gfx::Point& location) = 0;
+                                   BaseTab* active_tab,
+                                   const gfx::Point& location,
+                                   bool initial_drag) = 0;
 
   void set_ideal_bounds(int index, const gfx::Rect& bounds) {
     tab_data_[index].ideal_bounds = bounds;
