@@ -15,6 +15,7 @@ import tempfile
 
 import chromebinaries
 import download_utils
+import sync_file
 import sync_zip
 
 
@@ -34,6 +35,25 @@ def MakeCommandLineParser():
   parser.add_option('-f', '--force', dest='force', default=False,
                     action='store_true', help='Force the update')
   return parser
+
+
+def CreateLinkToMacFrameworkDir(bin_root):
+  # On Mac, a link to the 'Chromium Framework.framework' directory must be
+  # available next to _pyautolib.so so that it can load the directory. Since
+  # the framework directory path is dependent on the Chromium version, we list
+  # the subdirectories of 'Versions' and pick the first subdirectory. This works
+  # on the NaCl bots because only one Chromium version is downloaded at a time.
+  dir_name = 'Chromium Framework.framework'
+  rel_path = os.path.join('Chromium.app',
+                          'Contents',
+                          'Versions')
+  rel_path = os.path.join(rel_path,
+                          os.listdir(os.path.join(bin_root, rel_path))[0],
+                          dir_name)
+  sys.stdout.write('Creating symlink in %s: %s -> %s\n' % (bin_root,
+                                                           dir_name,
+                                                           rel_path))
+  os.symlink(rel_path, os.path.join(bin_root, dir_name))
 
 
 def Main():
@@ -58,19 +78,41 @@ def Main():
 
   if options.force or not download_utils.SourceIsCurrent(dst, uid):
     # Requires hitting the network to read the index file.
-    url = chromebinaries.GetURL(options.base_url, options.os, options.arch,
-                                options.revision)
+    index = chromebinaries.GetIndex(None, None, False,
+                                    base_url=options.base_url)
 
-    # Everything inside the zip file will be inside this directory.
-    prefix = os.path.splitext(os.path.split(url)[1])[0] + '/'
 
     # Create a temporary working directory.
     tempdir = tempfile.mkdtemp(prefix='nacl_chrome_download_')
     try:
-      sync_zip.SyncZip(url, tempdir, remove_prefix=prefix)
+      chrome_url = chromebinaries.GetChromeURL(index,
+                                               options.base_url,
+                                               options.os,
+                                               options.arch,
+                                               options.revision)
+      # Everything inside the zip file will be inside this directory.
+      prefix = os.path.splitext(os.path.split(chrome_url)[1])[0] + '/'
+      sync_zip.SyncZip(chrome_url, tempdir, remove_prefix=prefix)
+
+      # Copy over files necessary to run pyauto.
+      pyautopy_url, pyautolib_url = chromebinaries.GetPyAutoURLs(
+          index,
+          options.base_url,
+          options.os,
+          options.arch,
+          options.revision)
+      sync_file.SyncFile(pyautopy_url, tempdir)
+      sync_file.SyncFile(pyautolib_url, tempdir)
+
+      # On Mac, create a symlink to the framework directory so it can be loaded.
+      if options.os == 'mac':
+        CreateLinkToMacFrameworkDir(tempdir)
+
+      # Move binaries from temp directory to destination.
       download_utils.WriteSourceStamp(tempdir, uid)
       sys.stdout.write('Moving %s to %s\n' % (tempdir, dst))
       download_utils.MoveDirCleanly(tempdir, dst)
+
     except Exception:
       download_utils.RemoveDir(tempdir)
       raise

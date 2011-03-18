@@ -1,0 +1,13 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+node = env.PyAutoTester('pyautosanity.out', env.File('sanity.py'))
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_pyauto_sanity_test',
+                       is_broken=env.PyAutoTesterIsBroken())

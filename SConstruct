@@ -6,6 +6,7 @@
 import atexit
 import glob
 import os
+import platform
 import stat
 import subprocess
 import sys
@@ -1138,6 +1139,67 @@ def PPAPIBrowserTesterIsBroken(env):
 pre_base_env.AddMethod(PPAPIBrowserTesterIsBroken)
 
 
+def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
+  if 'TRUSTED_ENV' not in env:
+    return []
+
+  env = env.Clone()
+  SetupBrowserEnv(env)
+
+  if env.Bit('host_mac'):
+    # On Mac, remove 'Chromium.app/Contents/MacOS/Chromium' from the path.
+    pyautolib_dir = env.DownloadedChromeBinary().dir.dir.dir.dir
+  else:
+    # On Windows or Linux, remove 'chrome' or 'chrome.exe' from the path.
+    pyautolib_dir = env.DownloadedChromeBinary().dir
+
+  pyauto_python = ''
+  if env.Bit('host_windows'):
+    # On Windows, we use a hermetically sealed version of python.
+    pyauto_python = '${PYTHON}'
+  else:
+    # On Posix, we match the version of python used to build pyautolib.
+    pyauto_python = 'python2.5'
+
+  # Pass on the chrome flags to pyauto as one string.
+  chrome_flags = ''
+  if not env.Bit('disable_dynamic_plugin_loading'):
+    chrome_flags += ('--register-pepper-plugins=%s;application/x-nacl' %
+                     GetPPAPIPluginPath(env['TRUSTED_ENV']))
+    chrome_flags += ' --no-sandbox'
+    # Pass the sel_ldr location to Chrome via the NACL_SEL_LDR variable.
+    env['NACL_SEL_LDR'] = GetSelLdr(env)
+  else:
+    chrome_flags += '--enable-nacl'
+
+  command = [pyauto_python, test, pyautolib_dir, '-v', '--no-http-server',
+             '--chrome-flags="%s"' % chrome_flags]
+  command.extend(args)
+
+  node = env.AutoDepsCommand(target, command)
+
+  # Add an explicit dependency on the chrome binary assuming we are not running
+  # on the Chrome bots.
+  if 'chrome_browser_path' not in ARGUMENTS:
+    env.Depends(node, env.DownloadedChromeBinary())
+
+  return node
+
+pre_base_env.AddMethod(PyAutoTester)
+
+
+# Disabled for ARM (because Chrome binaries for ARM are not available), on the
+# Chrome bots (because PyAuto is not expected to be available on them), and when
+# 32-bit test binaries are run on a 64-bit machine (because 32-bit python is not
+# available on 64-bit machines).
+def PyAutoTesterIsBroken(env):
+  return (PPAPIBrowserTesterIsBroken(env) or
+          'chrome_browser_path' in ARGUMENTS or
+          (env.Bit('build_x86_32') and platform.architecture()[0] == '64bit'))
+
+pre_base_env.AddMethod(PyAutoTesterIsBroken)
+
+
 # ----------------------------------------------------------
 def DemoSelLdrNacl(env,
                    target,
@@ -2143,6 +2205,7 @@ nacl_env.Append(
     # http://code.google.com/p/nativeclient/issues/detail?id=902 gets fixed
     # 'tests/ppapi_tests/nacl.scons',
     'tests/ppapi/nacl.scons',
+    'tests/pyauto_nacl/nacl.scons',
     'tests/redir/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
     'tests/signal_handler/nacl.scons',

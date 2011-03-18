@@ -4,7 +4,7 @@ vars = {
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "x86_toolchain_version": "4528",
   "arm_toolchain_version": "4542",
-  "chrome_rev": "78289",
+  "chrome_rev": "78322",
   "gyp_rev": "856",
   "gtest_rev": "364",
   "tools_rev": "4214",
@@ -14,6 +14,8 @@ vars = {
 }
 
 deps = {
+  "chrome/test/pyautolib":
+    Var("chromium_trunk") + "/src/chrome/test/pyautolib@" + Var("chrome_rev"),
   "tools/gyp":
     "http://gyp.googlecode.com/svn/trunk@" + Var("gyp_rev"),
   "build":

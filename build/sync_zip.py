@@ -31,7 +31,7 @@ def Unzip(zip_filename, target, verbose=True, remove_prefix=None):
 
 def SyncZip(url, target, username=None, password=None, verbose=True,
             remove_prefix=None):
-  zip_filename = os.path.join(target, os.path.split(url)[1])
+  zip_filename = os.path.join(target, os.path.basename(url))
   if verbose:
     print 'Downloading %s to %s...' % (url, zip_filename)
   http_download.HttpDownload(url, zip_filename,

@@ -15,10 +15,22 @@ BASE_URL = 'http://build.chromium.org/f/chromium/continuous'
 # (os, arch) -> (base_directory, archive_name)
 # Used from constructing the full URL for a snapshot
 SNAPSHOT_MAP = {
-           ('windows', 'x86-32'): ('win', 'chrome-win32.zip'),
-           ('mac', 'x86-32'): ('mac', 'chrome-mac.zip'),
-           ('linux', 'x86-32'): ('linux', 'chrome-linux.zip'),
-           ('linux', 'x86-64'): ('linux64', 'chrome-linux.zip'),
+           ('windows', 'x86-32'): ('win',
+                                   'chrome-win32.zip',
+                                   'chrome-win32.test/pyautolib.py',
+                                   'chrome-win32.test/_pyautolib.pyd'),
+           ('mac', 'x86-32'): ('mac',
+                               'chrome-mac.zip',
+                               'chrome-mac.test/pyautolib.py',
+                               'chrome-mac.test/_pyautolib.so'),
+           ('linux', 'x86-32'): ('linux',
+                                 'chrome-linux.zip',
+                                 'chrome-linux.test/pyautolib.py',
+                                 'chrome-linux.test/lib.target/_pyautolib.so'),
+           ('linux', 'x86-64'): ('linux64',
+                                 'chrome-linux.zip',
+                                 'chrome-linux.test/pyautolib.py',
+                                 'chrome-linux.test/lib.target/_pyautolib.so'),
            }
 
 
@@ -61,6 +73,9 @@ def ParseIndex(data, min_rev, max_rev):
   return directories
 
 
+# Unfortunately, it is necessary to download the index file to map rev -> url.
+# This is because the continuous builder sticks revisions in directories based
+# on the day they were built, which is impossible to infer from the revision.
 def GetIndex(min_rev, max_rev, verbose, base_url=None):
   data = GetIndexData(verbose, base_url=base_url)
   return ParseIndex(data, min_rev, max_rev)
@@ -85,24 +100,38 @@ def GetCommonRevisions(min_rev, max_rev, verbose, base_url=None):
 
 
 # Construct the URL for a binary, given platform and revision.
-# Unfortunately, this requires downloading the index file to map rev -> url.
-# This is because the continuous builder sticks revisions in directories based
-# on the day they were built, which is impossible to infer from the revision.
-def GetURL(base_url, os, arch, revision):
+def GetChromeURL(index, base_url, os, arch, revision):
   key = (os, arch)
   if key not in SNAPSHOT_MAP:
     raise Exception('%s/%s is not supported.  Update SNAPSHOT_MAP if this '
                     'binary exists.' % key)
-  base_dir, archive_name = SNAPSHOT_MAP[key]
+  base_dir, archive_name, _, _ = SNAPSHOT_MAP[key]
   revision = int(revision)
 
-  directories = GetIndex(None, None, False, base_url=base_url)
-  if revision not in directories[base_dir]:
+  if revision not in index[base_dir]:
     raise Exception('A Chromium binary cannot be found for %s at revision %d - '
                     'run find_chrome_revisions.py to find a better revision'
                     % (base_dir, revision))
-  directory = directories[base_dir][revision]
+  directory = index[base_dir][revision]
   return '/'.join([base_url, directory, archive_name])
+
+
+def GetPyAutoURLs(index, base_url, os, arch, revision):
+  key = (os, arch)
+  if key not in SNAPSHOT_MAP:
+    raise Exception('%s/%s is not supported.  Update SNAPSHOT_MAP if this '
+                    'binary exists.' % key)
+  base_dir, _, pyautopy_name, pyautolib_name = SNAPSHOT_MAP[key]
+  revision = int(revision)
+
+  if revision not in index[base_dir]:
+    raise Exception('A Chromium binary cannot be found for %s at revision %d - '
+                    'run find_chrome_revisions.py to find a better revision'
+                    % (base_dir, revision))
+  directory = index[base_dir][revision]
+  pyautopy_url = '/'.join([base_url, directory, pyautopy_name])
+  pyautolib_url = '/'.join([base_url, directory, pyautolib_name])
+  return pyautopy_url, pyautolib_url
 
 
 def EvalDepsFile(path):
