@@ -16,6 +16,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/npapi/npapi.gyp:npapi',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'include_dirs': [
         '..',
