@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,6 @@
 #include "chrome/browser/sync/js_backend.h"
 #include "chrome/browser/sync/js_event_router.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
-#include "chrome/browser/sync/notifier/sync_notifier_factory.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
@@ -88,7 +87,6 @@ using syncable::Directory;
 using syncable::DirectoryManager;
 using syncable::Entry;
 using syncable::SPECIFICS;
-using sync_notifier::SyncNotifierFactory;
 using sync_pb::AutofillProfileSpecifics;
 
 typedef GoogleServiceAuthError AuthError;
@@ -1139,6 +1137,7 @@ class SyncManager::SyncInternal
             ModelSafeWorkerRegistrar* model_safe_worker_registrar,
             const char* user_agent,
             const SyncCredentials& credentials,
+            sync_notifier::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
             bool setup_for_test_mode);
 
@@ -1151,9 +1150,8 @@ class SyncManager::SyncInternal
   // Update tokens that we're using in Sync. Email must stay the same.
   void UpdateCredentials(const SyncCredentials& credentials);
 
-  // Update the set of enabled sync types. Usually called when the user disables
-  // or enables a sync type.
-  void UpdateEnabledTypes(const syncable::ModelTypeSet& types);
+  // Called when the user disables or enables a sync type.
+  void UpdateEnabledTypes();
 
   // Tell the sync engine to start the syncing process.
   void StartSyncing();
@@ -1513,6 +1511,7 @@ bool SyncManager::Init(const FilePath& database_location,
                        ModelSafeWorkerRegistrar* registrar,
                        const char* user_agent,
                        const SyncCredentials& credentials,
+                       sync_notifier::SyncNotifier* sync_notifier,
                        const std::string& restored_key_for_bootstrapping,
                        bool setup_for_test_mode) {
   DCHECK(post_factory);
@@ -1526,6 +1525,7 @@ bool SyncManager::Init(const FilePath& database_location,
                      registrar,
                      user_agent,
                      credentials,
+                     sync_notifier,
                      restored_key_for_bootstrapping,
                      setup_for_test_mode);
 }
@@ -1534,8 +1534,8 @@ void SyncManager::UpdateCredentials(const SyncCredentials& credentials) {
   data_->UpdateCredentials(credentials);
 }
 
-void SyncManager::UpdateEnabledTypes(const syncable::ModelTypeSet& types) {
-  data_->UpdateEnabledTypes(types);
+void SyncManager::UpdateEnabledTypes() {
+  data_->UpdateEnabledTypes();
 }
 
 
@@ -1627,6 +1627,7 @@ bool SyncManager::SyncInternal::Init(
     ModelSafeWorkerRegistrar* model_safe_worker_registrar,
     const char* user_agent,
     const SyncCredentials& credentials,
+    sync_notifier::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
     bool setup_for_test_mode) {
 
@@ -1636,6 +1637,9 @@ bool SyncManager::SyncInternal::Init(
   DCHECK(core_message_loop_);
   registrar_ = model_safe_worker_registrar;
   setup_for_test_mode_ = setup_for_test_mode;
+
+  sync_notifier_.reset(sync_notifier);
+  sync_notifier_->AddObserver(this);
 
   share_.dir_manager.reset(new DirectoryManager(database_location));
 
@@ -1796,15 +1800,8 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
   if (!OpenDirectory())
     return false;
 
-  // Initialize the sync notifier. This should be done only after OpenDirectory
-  // is called, as we also need to set the state.
-  // TODO(nileshagrawal): Pass SyncNotifierFactory as an argument to Init
-  // to improve testability.
-  SyncNotifierFactory sync_notifier_factory;
-  sync_notifier_.reset(sync_notifier_factory.CreateSyncNotifier(
-      *CommandLine::ForCurrentProcess()));
-  sync_notifier_->AddObserver(this);
-
+  // Retrieve and set the sync notifier state. This should be done
+  // only after OpenDirectory is called.
   syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
   std::string state;
   if (lookup.good()) {
@@ -1819,9 +1816,8 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
   }
   sync_notifier_->SetState(state);
 
-  if (!setup_for_test_mode_) {
-    UpdateCredentials(credentials);
-  }
+  UpdateCredentials(credentials);
+  UpdateEnabledTypes();
   return true;
 }
 
@@ -1834,14 +1830,21 @@ void SyncManager::SyncInternal::UpdateCredentials(
   connection_manager()->set_auth_token(credentials.sync_token);
   sync_notifier_->UpdateCredentials(
       credentials.email, credentials.sync_token);
-  CheckServerReachable();
+  if (!setup_for_test_mode_) {
+    CheckServerReachable();
+  }
 }
 
-void SyncManager::SyncInternal::UpdateEnabledTypes(
-  const syncable::ModelTypeSet& types) {
+void SyncManager::SyncInternal::UpdateEnabledTypes() {
   DCHECK_EQ(MessageLoop::current(), core_message_loop_);
-
-  sync_notifier_->UpdateEnabledTypes(types);
+  ModelSafeRoutingInfo routes;
+  registrar_->GetModelSafeRoutingInfo(&routes);
+  syncable::ModelTypeSet enabled_types;
+  for (ModelSafeRoutingInfo::const_iterator it = routes.begin();
+       it != routes.end(); ++it) {
+    enabled_types.insert(it->first);
+  }
+  sync_notifier_->UpdateEnabledTypes(enabled_types);
 }
 
 void SyncManager::SyncInternal::RaiseAuthNeededEvent() {

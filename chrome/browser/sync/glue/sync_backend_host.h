@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,8 +127,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // Called from |frontend_loop| to update SyncCredentials.
   void UpdateCredentials(const sync_api::SyncCredentials& credentials);
-
-  virtual void UpdateEnabledTypes(const syncable::ModelTypeSet& types);
 
   // This starts the SyncerThread running a Syncer object to communicate with
   // sync servers.  Until this is called, no changes will leave or enter this
@@ -329,9 +327,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // update on behalf of SyncBackendHost::UpdateCredentials
     void DoUpdateCredentials(const sync_api::SyncCredentials& credentials);
 
-  // Update the set of enabled sync types. Usually called when the user disables
-  // or enables a sync type.
-    void DoUpdateEnabledTypes(const syncable::ModelTypeSet& types);
+    // Called when the user disables or enables a sync type.
+    void DoUpdateEnabledTypes();
 
     // Called on the SyncBackendHost core_thread_ to tell the syncapi to start
     // syncing (generally after initialization and authentication).

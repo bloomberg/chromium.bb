@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/js_arg_list.h"
+#include "chrome/browser/sync/notifier/sync_notifier_factory.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 // TODO(tim): Remove this! We should have a syncapi pass-thru instead.
 #include "chrome/browser/sync/syncable/directory_manager.h"  // Cryptographer.
@@ -206,14 +207,6 @@ void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
       NewRunnableMethod(core_.get(),
                         &SyncBackendHost::Core::DoUpdateCredentials,
                         credentials));
-}
-
-void SyncBackendHost::UpdateEnabledTypes(
-    const syncable::ModelTypeSet& types) {
-  core_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(core_.get(),
-                        &SyncBackendHost::Core::DoUpdateEnabledTypes,
-                        types));
 }
 
 void SyncBackendHost::StartSyncingWithServer() {
@@ -412,6 +405,11 @@ void SyncBackendHost::ConfigureDataTypes(
   // complete, the configure_ready_task_ is run via an
   // OnInitializationComplete notification.
   ScheduleSyncEventForConfigChange(deleted_type, added_types);
+
+  // Notify the SyncManager about the new types.
+  core_thread_.message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(core_.get(),
+                        &SyncBackendHost::Core::DoUpdateEnabledTypes));
 }
 
 void SyncBackendHost::ScheduleSyncEventForConfigChange(bool deleted_type,
@@ -702,6 +700,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
 
   syncapi_->AddObserver(this);
   const FilePath& path_str = host_->sync_data_folder_path();
+  sync_notifier::SyncNotifierFactory sync_notifier_factory;
   success = syncapi_->Init(
       path_str,
       (options.service_url.host() + options.service_url.path()).c_str(),
@@ -711,6 +710,8 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       host_,  // ModelSafeWorkerRegistrar.
       MakeUserAgentForSyncapi().c_str(),
       options.credentials,
+      sync_notifier_factory.CreateSyncNotifier(
+          *CommandLine::ForCurrentProcess()),
       options.restored_key_for_bootstrapping,
       options.setup_for_test_mode);
   DCHECK(success) << "Syncapi initialization failed!";
@@ -722,10 +723,9 @@ void SyncBackendHost::Core::DoUpdateCredentials(
   syncapi_->UpdateCredentials(credentials);
 }
 
-void SyncBackendHost::Core::DoUpdateEnabledTypes(
-    const syncable::ModelTypeSet& types) {
+void SyncBackendHost::Core::DoUpdateEnabledTypes() {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
-  syncapi_->UpdateEnabledTypes(types);
+  syncapi_->UpdateEnabledTypes();
 }
 
 void SyncBackendHost::Core::DoStartSyncing() {

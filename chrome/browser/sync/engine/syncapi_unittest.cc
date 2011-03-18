@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,8 @@
 #include "chrome/browser/sync/js_event_handler.h"
 #include "chrome/browser/sync/js_event_router.h"
 #include "chrome/browser/sync/js_test_util.h"
+#include "chrome/browser/sync/notifier/sync_notifier.h"
+#include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
@@ -54,6 +56,7 @@ using syncable::ModelTypeSet;
 using test::ExpectDictionaryValue;
 using test::ExpectStringValue;
 using testing::_;
+using testing::AtLeast;
 using testing::Invoke;
 using testing::SaveArg;
 using testing::StrictMock;
@@ -621,18 +624,60 @@ class SyncManagerObserverMock : public SyncManager::Observer {
   MOCK_METHOD1(OnEncryptionComplete, void(const ModelTypeSet&));  // NOLINT
 };
 
+class SyncNotifierMock : public sync_notifier::SyncNotifier {
+ public:
+  MOCK_METHOD1(AddObserver, void(sync_notifier::SyncNotifierObserver*));
+  MOCK_METHOD1(RemoveObserver, void(sync_notifier::SyncNotifierObserver*));
+  MOCK_METHOD1(SetState, void(const std::string&));
+  MOCK_METHOD2(UpdateCredentials,
+               void(const std::string&, const std::string&));
+  MOCK_METHOD1(UpdateEnabledTypes,
+               void(const syncable::ModelTypeSet&));
+  MOCK_METHOD0(SendNotification, void());
+};
+
 class SyncManagerTest : public testing::Test,
                         public ModelSafeWorkerRegistrar {
  protected:
-  SyncManagerTest() : ui_thread_(BrowserThread::UI, &ui_loop_) {}
+  SyncManagerTest()
+      : ui_thread_(BrowserThread::UI, &ui_loop_),
+        sync_notifier_observer_(NULL),
+        update_enabled_types_call_count_(0) {}
 
   // Test implementation.
   void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    SyncCredentials credentials;
+    credentials.email = "foo@bar.com";
+    credentials.sync_token = "sometoken";
+
+    scoped_ptr<StrictMock<SyncNotifierMock> > sync_notifier_mock(
+        new StrictMock<SyncNotifierMock>());
+    EXPECT_CALL(*sync_notifier_mock, AddObserver(_)).
+        WillOnce(Invoke(this, &SyncManagerTest::SyncNotifierAddObserver));
+    EXPECT_CALL(*sync_notifier_mock, SetState(""));
+    EXPECT_CALL(*sync_notifier_mock,
+                UpdateCredentials(credentials.email, credentials.sync_token));
+    EXPECT_CALL(*sync_notifier_mock, UpdateEnabledTypes(_)).
+        Times(AtLeast(1)).
+        WillRepeatedly(
+            Invoke(this, &SyncManagerTest::SyncNotifierUpdateEnabledTypes));
+    EXPECT_CALL(*sync_notifier_mock, RemoveObserver(_)).
+        WillOnce(Invoke(this, &SyncManagerTest::SyncNotifierRemoveObserver));
+
+    EXPECT_FALSE(sync_notifier_observer_);
+
     sync_manager_.Init(temp_dir_.path(), "bogus", 0, false,
                        new TestHttpPostProviderFactory(), this, "bogus",
-                       SyncCredentials(), "", true /* setup_for_test_mode */);
+                       credentials, sync_notifier_mock.release(), "",
+                       true /* setup_for_test_mode */);
+
+    EXPECT_TRUE(sync_notifier_observer_);
     sync_manager_.AddObserver(&observer_);
+
+    EXPECT_EQ(1, update_enabled_types_call_count_);
+
     ModelSafeRoutingInfo routes;
     GetModelSafeRoutingInfo(&routes);
     for (ModelSafeRoutingInfo::iterator i = routes.begin(); i != routes.end();
@@ -649,6 +694,7 @@ class SyncManagerTest : public testing::Test,
   void TearDown() {
     sync_manager_.RemoveObserver(&observer_);
     sync_manager_.Shutdown();
+    EXPECT_FALSE(sync_notifier_observer_);
   }
 
   // ModelSafeWorkerRegistrar implementation.
@@ -693,6 +739,31 @@ class SyncManagerTest : public testing::Test,
     return type_roots_[type];
   }
 
+  void SyncNotifierAddObserver(
+      sync_notifier::SyncNotifierObserver* sync_notifier_observer) {
+    EXPECT_EQ(NULL, sync_notifier_observer_);
+    sync_notifier_observer_ = sync_notifier_observer;
+  }
+
+  void SyncNotifierRemoveObserver(
+      sync_notifier::SyncNotifierObserver* sync_notifier_observer) {
+    EXPECT_EQ(sync_notifier_observer_, sync_notifier_observer);
+    sync_notifier_observer_ = NULL;
+  }
+
+  void SyncNotifierUpdateEnabledTypes(
+      const syncable::ModelTypeSet& types) {
+    ModelSafeRoutingInfo routes;
+    GetModelSafeRoutingInfo(&routes);
+    syncable::ModelTypeSet expected_types;
+    for (ModelSafeRoutingInfo::const_iterator it = routes.begin();
+         it != routes.end(); ++it) {
+      expected_types.insert(it->first);
+    }
+    EXPECT_EQ(expected_types, types);
+    ++update_enabled_types_call_count_;
+  }
+
  private:
   // Needed by |ui_thread_|.
   MessageLoopForUI ui_loop_;
@@ -706,7 +777,16 @@ class SyncManagerTest : public testing::Test,
  protected:
   SyncManager sync_manager_;
   StrictMock<SyncManagerObserverMock> observer_;
+  sync_notifier::SyncNotifierObserver* sync_notifier_observer_;
+  int update_enabled_types_call_count_;
 };
+
+TEST_F(SyncManagerTest, UpdateEnabledTypes) {
+  EXPECT_EQ(1, update_enabled_types_call_count_);
+  // Triggers SyncNotifierUpdateEnabledTypes.
+  sync_manager_.UpdateEnabledTypes();
+  EXPECT_EQ(2, update_enabled_types_call_count_);
+}
 
 TEST_F(SyncManagerTest, ParentJsEventRouter) {
   StrictMock<MockJsEventRouter> event_router;

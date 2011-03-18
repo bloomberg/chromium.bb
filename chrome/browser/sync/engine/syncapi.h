@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,6 +64,10 @@ namespace sessions {
 struct SyncSessionSnapshot;
 }
 }
+
+namespace sync_notifier {
+class SyncNotifier;
+}  // namespace sync_notifier
 
 // Forward declarations of internal class types so that sync API objects
 // may have opaque pointers to these types.
@@ -840,7 +844,8 @@ class SyncManager {
   // |model_safe_worker| ownership is given to the SyncManager.
   // |user_agent| is a 7-bit ASCII string suitable for use as the User-Agent
   // HTTP header. Used internally when collecting stats to classify clients.
-  // |notifier_options| contains options specific to sync notifications.
+  // |sync_notifier| will be owned internally and used to listen for
+  // notifications.
   bool Init(const FilePath& database_location,
             const char* sync_server_and_path,
             int sync_server_port,
@@ -849,6 +854,7 @@ class SyncManager {
             browser_sync::ModelSafeWorkerRegistrar* registrar,
             const char* user_agent,
             const SyncCredentials& credentials,
+            sync_notifier::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
             bool setup_for_test_mode);
 
@@ -879,9 +885,8 @@ class SyncManager {
   // Update tokens that we're using in Sync. Email must stay the same.
   void UpdateCredentials(const SyncCredentials& credentials);
 
-  // Update the set of enabled sync types. Usually called when the user disables
-  // or enables a sync type.
-  void UpdateEnabledTypes(const syncable::ModelTypeSet& types);
+  // Called when the user disables or enables a sync type.
+  void UpdateEnabledTypes();
 
   // Start the SyncerThread.
   // TODO(tim): With the new impl, this would mean starting "NORMAL" operation.
