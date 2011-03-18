@@ -54,6 +54,11 @@ BOT_ASSIGNMENT = {
     'nacl-arm_opt': 'bash buildbot/buildbot_arm.sh opt',
     'nacl-lucid64-pnacl1': 'bash buildbot/buildbot_pnacl1.sh',
     'nacl-lucid64-pnacl2': 'bash buildbot/buildbot_pnacl2.sh',
+
+    # Toolchain.
+    'lucid64-glibc': 'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
+    'mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
+    'win7-glibc': 'bash buildbot/buildbot_windows-glibc-makefile.bat',
 }
 
 
