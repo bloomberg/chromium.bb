@@ -3993,6 +3993,23 @@
    fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
    fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
 }
+{
+   bug_76647
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11webkit_glue18BufferedDataSource20CreateResourceLoaderExx
+   fun:_ZN11webkit_glue18BufferedDataSource14InitializeTaskEv
+   fun:_Z16DispatchToMethodIN11webkit_glue18BufferedDataSourceEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN11webkit_glue18BufferedDataSourceEMS1_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
+   fun:_ZN4base16MessagePumpForUI3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
