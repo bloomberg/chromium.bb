@@ -5,6 +5,19 @@
 
 Import('env')
 
+# TODO(mseaborn): fix this test.
+#
+# This test breaks on atom, where nacl-gcc is not available.  Instead,
+# it should build w/ nacl-gcc on the builder (vista bots) and have the
+# executable as an explicit output that gets copied over to the atom
+# bots.
+#
+
+import os
+
+if os.environ.get('COMPUTERNAME') == 'NACL-ATOM1':
+  Return()
+
 if 'TRUSTED_ENV' not in env:
   Return()
 
@@ -19,7 +32,8 @@ else:
   Return()
 
 env.PrependENVPath('PATH', env['TRUSTED_ENV'].SubstList2('${STAGING_DIR}'))
-dependencies = [env['TRUSTED_ENV'].File('${STAGING_DIR}/ncval${PROGSUFFIX}')]
+dependencies = [env['TRUSTED_ENV'].File('${STAGING_DIR}/ncval${PROGSUFFIX}'),
+               ]
 
 node = env.CommandTest(
     'ncval_annotate_test.out',
