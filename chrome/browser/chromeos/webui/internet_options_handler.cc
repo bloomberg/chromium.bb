@@ -20,12 +20,16 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
+#include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/window.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "content/browser/webui/web_ui_util.h"
 #include "grit/chromium_strings.h"
@@ -56,7 +60,9 @@ std::string FormatHardwareAddress(const std::string& address) {
 }  // namespace
 
 InternetOptionsHandler::InternetOptionsHandler()
-    : use_settings_ui_(false) {
+    : chromeos::CrosOptionsPageUIHandler(
+          new chromeos::UserCrosSettingsProvider),
+      use_settings_ui_(false) {
   chromeos::NetworkLibrary* netlib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   netlib->AddNetworkManagerObserver(this);
@@ -293,11 +299,17 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringFUTF16(
           IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR)));
+  localized_strings->SetString("enableDataRoaming",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING));
   localized_strings->SetString("generalNetworkingTitle",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE));
   localized_strings->SetString("detailsInternetDismiss",
       l10n_util::GetStringUTF16(IDS_CLOSE));
+  localized_strings->SetString("ownerOnly", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_ACCOUNTS_OWNER_ONLY));
+  localized_strings->SetString("ownerUserId", UTF8ToUTF16(
+      chromeos::UserCrosSettingsProvider::cached_owner()));
 
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();

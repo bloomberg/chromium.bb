@@ -75,6 +75,7 @@
 
 #ownerOnlyWarning {
   margin-bottom: 10px;
+  padding-bottom: 1px;
   -webkit-padding-start: 20px;
   background-repeat: no-repeat;
   background-image: url('warning.png');

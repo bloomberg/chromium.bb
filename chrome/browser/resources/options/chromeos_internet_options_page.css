@@ -15,7 +15,12 @@
   display: none;
 }
 
-#networkingControls {
+#internetPage > section > div:only-of-type > div.checkbox {
+  margin: 10px 0;
+  -webkit-margin-start: 10px;
+}
+
+#networking-controls {
   display: -webkit-box;
   -webkit-margin-start: 10px;
 }
@@ -146,7 +151,7 @@ html[dir='rtl'] .details-button {
   float: left;
 }
 
-#lockedNetworkBanner {
+#locked-network-banner {
   height: 31px;
   width: 100%;
   margin: 0;
@@ -154,7 +159,7 @@ html[dir='rtl'] .details-button {
   vertical-align: middle;
 }
 
-#lockedNetworkIcon {
+#locked-network-icon {
   background-image: url("chrome://theme/IDR_WARNING");
   background-repeat: no-repeat;
   background-position:center;
@@ -165,15 +170,25 @@ html[dir='rtl'] .details-button {
   width: 24px;
 }
 
-#accessLockedText {
+#access-locked-text {
   vertical-align: middle;
 }
 
-#internetPage:not([accesslocked]) #lockedNetworkBanner,
-#internetPage[accesslocked] #wirelessButtons,
-#internetPage[accesslocked] #wiredSection,
-#internetPage[accesslocked] #wirelessSection,
-#internetPage[accesslocked] #rememberedSection,
+#internet-owner-only-warning {  
+  margin-bottom: 10px;
+  margin-top: 10px;
+  padding-bottom: 1px;
+  -webkit-margin-start: 10px;
+  -webkit-padding-start: 20px;  
+  background-repeat: no-repeat;
+  background-image: url('warning.png');
+}
+
+#internetPage:not([accesslocked]) #locked-network-banner,
+#internetPage[accesslocked] #wireless-buttons,
+#internetPage[accesslocked] #wired-section,
+#internetPage[accesslocked] #wireless-section,
+#internetPage[accesslocked] #remembered-section,
 #internetPage[accesslocked] #detailsInternetPage {
   display: none;
 }
@@ -200,6 +215,6 @@ html[dir='rtl'] .details-button {
   display: none;
 }
 
-#wirelessButtons > * > button {
+#wireless-buttons > * > button {
   margin-left: 5px;
 }

@@ -1,31 +1,46 @@
 <div class="page hidden" id="internetPage">
   <h1 i18n-content="internetPage"></h1>
-  <div id="lockedNetworkBanner">
-    <span id="lockedNetworkIcon"></span>
-    <span id="accessLockedText" i18n-content="accessLockedMsg"></span>
+  <div id="locked-network-banner">
+    <span id="locked-network-icon"></span>
+    <span id="access-locked-text" i18n-content="accessLockedMsg"></span>
   </div>
-  <section id="wirelessButtons">
+  <section id="wireless-buttons">
    <h3 i18n-content="generalNetworkingTitle"></h3>
-   <div id="networkingControls">
-     <button id="enableWifi" class="hidden" i18n-content="enableWifi"></button>
-     <button id="disableWifi" class="hidden"
-         i18n-content="disableWifi"></button>
-     <button id="enableCellular" class="hidden"
-         i18n-content="enableCellular"></button>
-     <button id="disableCellular" class="hidden"
-         i18n-content="disableCellular"></button>
+   <div>     
+     <div id="networking-controls" class="section-group">
+       <button id="enable-wifi" hidden
+           i18n-content="enableWifi"></button>
+       <button id="disable-wifi" hidden
+           i18n-content="disableWifi"></button>
+       <button id="enable-cellular" hidden
+           i18n-content="enableCellular"></button>
+       <button id="disable-cellular" hidden
+           i18n-content="disableCellular"></button>
+     </div>     
+     <div id="internet-owner-only-warning" hidden>
+       <span i18n-content="ownerOnly"></span>
+       <span i18n-content="ownerUserId"></span>
+     </div>
+     <div class="checkbox">
+       <label>
+         <input id="enable-data-roaming"
+             pref="cros.signed.data_roaming_enabled"
+             metric="Options_Internet_DataRoaming" type="checkbox">
+         <span i18n-content="enableDataRoaming"></span>
+       </label>
+     </div>
    </div>
   </section>
-  <section id="wiredSection">
+  <section id="wired-section">
     <h3 i18n-content="wired_title"></h3>
-    <div class="networks" id="wiredList"></div>
+    <div class="networks" id="wired-list"></div>
   </section>
-  <section id="wirelessSection">
+  <section id="wireless-section">
     <h3 i18n-content="wireless_title"></h3>
-    <div class="networks" id="wirelessList"></div>
+    <div class="networks" id="wireless-list"></div>
   </section>
-  <section id="rememberedSection">
+  <section id="remembered-section">
     <h3 i18n-content="remembered_title"></h3>
-    <div class="networks" id="rememberedList"></div>
+    <div class="networks" id="remembered-list"></div>
   </section>
 </div>

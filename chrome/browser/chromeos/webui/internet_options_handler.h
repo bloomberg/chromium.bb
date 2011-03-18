@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/ui/webui/options/options_ui.h"
+#include "chrome/browser/chromeos/webui/cros_options_page_ui_handler.h"
 
 class SkBitmap;
 namespace views {
@@ -17,7 +17,7 @@ class WindowDelegate;
 
 // ChromeOS internet options page UI handler.
 class InternetOptionsHandler
-  : public OptionsPageUIHandler,
+  : public chromeos::CrosOptionsPageUIHandler,
     public chromeos::NetworkLibrary::NetworkManagerObserver,
     public chromeos::NetworkLibrary::NetworkObserver,
     public chromeos::NetworkLibrary::CellularDataPlanObserver {

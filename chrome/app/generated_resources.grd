@@ -9709,6 +9709,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_OTHER_NETWORKS" desc="In the settings tab, the text on the button to display other networks.">
         Join other network...
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING" desc="In the settings tab, the text next to the checkbox for data roaming.">
+        Enable data roaming
+      </message>      
       <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
         Enable guest browsing
       </message>

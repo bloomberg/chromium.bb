@@ -15,6 +15,8 @@ extern const char kAccountsPrefAllowNewUser[];
 extern const char kAccountsPrefShowUserNamesOnSignIn[];
 extern const char kAccountsPrefUsers[];
 
+extern const char kSignedDataRoamingEnabled[];
+
 extern const char kSystemTimezone[];
 
 extern const char kDeviceOwner[];

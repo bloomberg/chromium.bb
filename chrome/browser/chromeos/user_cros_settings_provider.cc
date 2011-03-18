@@ -33,10 +33,12 @@ const char kTrustedSuffix[] = "/trusted";
 
 // For all our boolean settings following is applicable:
 // true is default permissive value and false is safe prohibitic value.
+// Exception: kSignedDataRoamingEnabled which has default value of false.
 const char* kBooleanSettings[] = {
   kAccountsPrefAllowNewUser,
   kAccountsPrefAllowGuest,
-  kAccountsPrefShowUserNamesOnSignIn
+  kAccountsPrefShowUserNamesOnSignIn,
+  kSignedDataRoamingEnabled,
 };
 
 const char* kStringSettings[] = {
@@ -48,10 +50,13 @@ const char* kListSettings[] = {
 };
 
 bool IsControlledBooleanSetting(const std::string& pref_path) {
-  return std::find(kBooleanSettings,
-                   kBooleanSettings + arraysize(kBooleanSettings),
-                   pref_path) !=
-      kBooleanSettings + arraysize(kBooleanSettings);
+  // TODO(nkostylev): Using std::find for 4 value array generates this warning
+  // in chroot stl_algo.h:231: error: array subscript is above array bounds.
+  // GCC 4.4.3
+  return (pref_path == kAccountsPrefAllowNewUser) ||
+         (pref_path == kAccountsPrefAllowGuest) ||
+         (pref_path == kAccountsPrefShowUserNamesOnSignIn) ||
+         (pref_path == kSignedDataRoamingEnabled);
 }
 
 bool IsControlledStringSetting(const std::string& pref_path) {
@@ -72,7 +77,10 @@ void RegisterSetting(PrefService* local_state, const std::string& pref_path) {
   local_state->RegisterBooleanPref((pref_path + kTrustedSuffix).c_str(),
                                    false);
   if (IsControlledBooleanSetting(pref_path)) {
-    local_state->RegisterBooleanPref(pref_path.c_str(), true);
+    if (pref_path == kSignedDataRoamingEnabled)
+      local_state->RegisterBooleanPref(pref_path.c_str(), false);
+    else
+      local_state->RegisterBooleanPref(pref_path.c_str(), true);
   } else if (IsControlledStringSetting(pref_path)) {
     local_state->RegisterStringPref(pref_path.c_str(), "");
   } else {
@@ -278,7 +286,6 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
         else
           VLOG(1) << "Retrieved cros setting " << name << "=" << value;
         if (IsControlledBooleanSetting(name)) {
-          // We assume our boolean settings are true before explicitly set.
           UpdateCacheBool(name, (value == kTrueIncantation),
               fallback_to_default ? USE_VALUE_DEFAULT : USE_VALUE_SUPPLIED);
         } else if (IsControlledStringSetting(name)) {
@@ -408,6 +415,12 @@ bool UserCrosSettingsProvider::RequestTrustedShowUsersOnSignin(Task* callback) {
       kAccountsPrefShowUserNamesOnSignIn, callback);
 }
 
+bool UserCrosSettingsProvider::RequestTrustedDataRoamingEnabled(
+    Task* callback) {
+  return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
+      kSignedDataRoamingEnabled, callback);
+}
+
 bool UserCrosSettingsProvider::RequestTrustedOwner(Task* callback) {
   return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
       kDeviceOwner, callback);
@@ -425,7 +438,15 @@ bool UserCrosSettingsProvider::cached_allow_new_user() {
   // Trigger prefetching if singleton object still does not exist.
   UserCrosSettingsTrust::GetInstance();
   return g_browser_process->local_state()->GetBoolean(
-    kAccountsPrefAllowNewUser);
+      kAccountsPrefAllowNewUser);
+}
+
+// static
+bool UserCrosSettingsProvider::cached_data_roaming_enabled() {
+  // Trigger prefetching if singleton object still does not exist.
+  UserCrosSettingsTrust::GetInstance();
+  return g_browser_process->local_state()->GetBoolean(
+      kSignedDataRoamingEnabled);
 }
 
 // static
@@ -503,7 +524,8 @@ bool UserCrosSettingsProvider::Get(const std::string& path,
 }
 
 bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) {
-  return ::StartsWithASCII(path, "cros.accounts.", true);
+  return ::StartsWithASCII(path, "cros.accounts.", true) ||
+      ::StartsWithASCII(path, "cros.signed.", true);
 }
 
 void UserCrosSettingsProvider::WhitelistUser(const std::string& email) {

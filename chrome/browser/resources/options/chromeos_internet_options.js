@@ -35,18 +35,19 @@ cr.define('options', function() {
         page.setAttribute('accesslocked', true);
       }
 
-      options.internet.NetworkElement.decorate($('wiredList'));
-      $('wiredList').load(templateData.wiredList);
-      options.internet.NetworkElement.decorate($('wirelessList'));
-      $('wirelessList').load(templateData.wirelessList);
-      options.internet.NetworkElement.decorate($('rememberedList'));
-      $('rememberedList').load(templateData.rememberedList);
+      options.internet.NetworkElement.decorate($('wired-list'));
+      $('wired-list').load(templateData.wiredList);
+      options.internet.NetworkElement.decorate($('wireless-list'));
+      $('wireless-list').load(templateData.wirelessList);
+      options.internet.NetworkElement.decorate($('remembered-list'));
+      $('remembered-list').load(templateData.rememberedList);
 
       options.internet.CellularPlanElement.decorate($('planList'));
 
-      $('wiredSection').hidden = (templateData.wiredList.length == 0);
-      $('wirelessSection').hidden = (templateData.wirelessList.length == 0);
-      $('rememberedSection').hidden = (templateData.rememberedList.length == 0);
+      $('wired-section').hidden = (templateData.wiredList.length == 0);
+      $('wireless-section').hidden = (templateData.wirelessList.length == 0);
+      $('remembered-section').hidden =
+          (templateData.rememberedList.length == 0);
       InternetOptions.setupAttributes(templateData);
       $('detailsInternetDismiss').addEventListener('click', function(event) {
         InternetOptions.setDetails();
@@ -57,19 +58,19 @@ cr.define('options', function() {
       $('activateDetails').addEventListener('click', function(event) {
         InternetOptions.activateFromDetails();
       });
-      $('enableWifi').addEventListener('click', function(event) {
+      $('enable-wifi').addEventListener('click', function(event) {
         event.target.disabled = true;
         chrome.send('enableWifi', []);
       });
-      $('disableWifi').addEventListener('click', function(event) {
+      $('disable-wifi').addEventListener('click', function(event) {
         event.target.disabled = true;
         chrome.send('disableWifi', []);
       });
-      $('enableCellular').addEventListener('click', function(event) {
+      $('enable-cellular').addEventListener('click', function(event) {
         event.target.disabled = true;
         chrome.send('enableCellular', []);
       });
-      $('disableCellular').addEventListener('click', function(event) {
+      $('disable-cellular').addEventListener('click', function(event) {
         event.target.disabled = true;
         chrome.send('disableCellular', []);
       });
@@ -146,29 +147,32 @@ cr.define('options', function() {
   };
 
   InternetOptions.setupAttributes = function(data) {
-    var buttons = $('wirelessButtons');
+    var buttons = $('wireless-buttons');
     if (data.wifiEnabled) {
-      $('disableWifi').disabled = false;
-      $('disableWifi').classList.remove('hidden');
-      $('enableWifi').classList.add('hidden');
+      $('disable-wifi').disabled = false;
+      $('disable-wifi').hidden = false;
+      $('enable-wifi').hidden = true;
     } else {
-      $('enableWifi').disabled = false;
-      $('enableWifi').classList.remove('hidden');
-      $('disableWifi').classList.add('hidden');
+      $('enable-wifi').disabled = false;
+      $('enable-wifi').hidden = false;
+      $('disable-wifi').hidden = true;
     }
     if (data.cellularAvailable) {
       if (data.cellularEnabled) {
-        $('disableCellular').disabled = false;
-        $('disableCellular').classList.remove('hidden');
-        $('enableCellular').classList.add('hidden');
+        $('disable-cellular').disabled = false;
+        $('disable-cellular').hidden = false;
+        $('enable-cellular').hidden = true;
       } else {
-        $('enableCellular').disabled = false;
-        $('enableCellular').classList.remove('hidden');
-        $('disableCellular').classList.add('hidden');
+        $('enable-cellular').disabled = false;
+        $('enable-cellular').hidden = false;
+        $('disable-cellular').hidden = true;
       }
+      if (!AccountsOptions.currentUserIsOwner())
+        $('internet-owner-only-warning').hidden = false;
     } else {
-      $('enableCellular').classList.add('hidden');
-      $('disableCellular').classList.add('hidden');
+      $('enable-cellular').hidden = true;
+      $('disable-cellular').hidden = true;
+      $('enable-data-roaming').hidden = true;
     }
 
     InternetOptions.useSettingsUI = data.networkUseSettingsUI;
@@ -200,14 +204,14 @@ cr.define('options', function() {
       InternetOptions.updateData = data;
       InternetOptions.updatePending = true;
     } else {
-      $('wiredList').load(data.wiredList);
-      $('wirelessList').load(data.wirelessList);
-      $('rememberedList').load(data.rememberedList);
+      $('wired-list').load(data.wiredList);
+      $('wireless-list').load(data.wirelessList);
+      $('remembered-list').load(data.rememberedList);
 
-      $('wiredSection').hidden = (data.wiredList.length == 0);
-      $('wirelessSection').hidden = (data.wirelessList.length == 0);
+      $('wired-section').hidden = (data.wiredList.length == 0);
+      $('wireless-section').hidden = (data.wirelessList.length == 0);
       InternetOptions.setupAttributes(data);
-      $('rememberedSection').hidden = (data.rememberedList.length == 0);
+      $('remembered-section').hidden = (data.rememberedList.length == 0);
       InternetOptions.updateData = null;
       InternetOptions.updatePending = false;
     }

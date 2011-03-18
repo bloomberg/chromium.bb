@@ -18,6 +18,9 @@ class Task;
 
 namespace chromeos {
 
+// CrosSettingsProvider implementation that works with SignedSettings.
+// TODO(nkostylev): Rename this class to indicate that it is
+// SignedSettings specific.
 class UserCrosSettingsProvider : public CrosSettingsProvider {
  public:
   UserCrosSettingsProvider();
@@ -33,12 +36,14 @@ class UserCrosSettingsProvider : public CrosSettingsProvider {
   // In latter case passed task will be posted when ready.
   bool RequestTrustedAllowGuest(Task* callback);
   bool RequestTrustedAllowNewUser(Task* callback);
+  bool RequestTrustedDataRoamingEnabled(Task* callback);
   bool RequestTrustedShowUsersOnSignin(Task* callback);
   bool RequestTrustedOwner(Task* callback);
 
   // Helper functions to access cached settings.
   static bool cached_allow_guest();
   static bool cached_allow_new_user();
+  static bool cached_data_roaming_enabled();
   static bool cached_show_users_on_signin();
   static const ListValue* cached_whitelist();
   static std::string cached_owner();
