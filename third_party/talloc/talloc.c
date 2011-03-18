@@ -1722,11 +1722,9 @@ char *talloc_vasprintf(const void *t, const char *fmt, va_list ap)
 	int len;
 	char *ret;
 	va_list ap2;
-	char c;
 
-	/* this call looks strange, but it makes it work on older solaris boxes */
 	va_copy(ap2, ap);
-	len = vsnprintf(&c, 1, fmt, ap2);
+	len = vsnprintf(NULL, 0, fmt, ap2);
 	va_end(ap2);
 	if (unlikely(len < 0)) {
 		return NULL;
@@ -1773,10 +1771,9 @@ static INLINE char *__talloc_vaslenprintf_append(char *s, size_t slen,
 	size_t alen;
 #endif
 	va_list ap2;
-	char c;
 
 	va_copy(ap2, ap);
-	alen = vsnprintf(&c, 1, fmt, ap2);
+	alen = vsnprintf(NULL, 0, fmt, ap2);
 	va_end(ap2);
 
 	if (alen <= 0) {

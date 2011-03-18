@@ -1,6 +1,6 @@
 diff -c -r talloc-2.0.1/talloc.c talloc/talloc.c
 *** talloc-2.0.1/talloc.c	Tue Dec 15 06:16:57 2009
---- talloc/talloc.c	Mon Oct 25 13:58:42 2010
+--- talloc/talloc.c	Fri Mar 18 13:03:11 2011
 ***************
 *** 30,36 ****
     inspired by http://swapped.cc/halloc/
@@ -285,7 +285,30 @@ diff -c -r talloc-2.0.1/talloc.c talloc/talloc.c
   {
   	char *ret;
 ***************
-*** 1736,1749 ****
+*** 1699,1709 ****
+  	int len;
+  	char *ret;
+  	va_list ap2;
+- 	char c;
+  
+- 	/* this call looks strange, but it makes it work on older solaris boxes */
+  	va_copy(ap2, ap);
+! 	len = vsnprintf(&c, 1, fmt, ap2);
+  	va_end(ap2);
+  	if (unlikely(len < 0)) {
+  		return NULL;
+--- 1722,1730 ----
+  	int len;
+  	char *ret;
+  	va_list ap2;
+  
+  	va_copy(ap2, ap);
+! 	len = vsnprintf(NULL, 0, fmt, ap2);
+  	va_end(ap2);
+  	if (unlikely(len < 0)) {
+  		return NULL;
+***************
+*** 1736,1754 ****
   	return ret;
   }
   
@@ -298,9 +321,14 @@ diff -c -r talloc-2.0.1/talloc.c talloc/talloc.c
   {
   	ssize_t alen;
   	va_list ap2;
-  	char c;
+- 	char c;
   
---- 1759,1777 ----
+  	va_copy(ap2, ap);
+! 	alen = vsnprintf(&c, 1, fmt, ap2);
+  	va_end(ap2);
+  
+  	if (alen <= 0) {
+--- 1757,1779 ----
   	return ret;
   }
   
@@ -318,11 +346,15 @@ diff -c -r talloc-2.0.1/talloc.c talloc/talloc.c
 + 	size_t alen;
 + #endif
   	va_list ap2;
-  	char c;
   
+  	va_copy(ap2, ap);
+! 	alen = vsnprintf(NULL, 0, fmt, ap2);
+  	va_end(ap2);
+  
+  	if (alen <= 0) {
 diff -c -r talloc-2.0.1/talloc.h talloc/talloc.h
 *** talloc-2.0.1/talloc.h	Wed Oct 28 16:14:20 2009
---- talloc/talloc.h	Mon Oct 25 15:11:18 2010
+--- talloc/talloc.h	Fri Mar 18 13:03:02 2011
 ***************
 *** 28,33 ****
 --- 28,37 ----
