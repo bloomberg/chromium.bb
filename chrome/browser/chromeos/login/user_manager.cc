@@ -372,6 +372,14 @@ void UserManager::RemoveUser(const std::string& email,
   // Get a copy of the current users.
   std::vector<User> users = GetUsers();
 
+  // Sanity check: we must not remove single user. This check may seem
+  // redundant at a first sight because this single user must be an owner and
+  // we perform special check later in order not to remove an owner.  However
+  // due to non-instant nature of ownership assignment this later check may
+  // sometimes fail. See http://crosbug.com/12723
+  if (users.size() < 2)
+    return;
+
   bool user_found = false;
   for (size_t i = 0; !user_found && i < users.size(); ++i)
     user_found = (email == users[i].email());
