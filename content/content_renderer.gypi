@@ -10,6 +10,7 @@
       'type': '<(library)',
       'dependencies': [
         'content_common',
+        '../ppapi/ppapi.gyp:ppapi_proxy',
         '../skia/skia.gyp:skia',
         '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
         '../third_party/libjingle/libjingle.gyp:libjingle',
