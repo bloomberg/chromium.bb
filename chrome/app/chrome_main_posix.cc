@@ -9,7 +9,7 @@
 #include "base/global_descriptors_posix.h"
 #include "base/logging.h"
 #include "base/process_util.h"
-#include "chrome/common/chrome_descriptors.h"
+#include "content/common/chrome_descriptors.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/app/breakpad_mac.h"
