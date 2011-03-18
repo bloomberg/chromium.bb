@@ -30,9 +30,7 @@
 
 #include "CFRuntime.h"
 
-struct ChromeCFAllocator {
-
-
+struct ChromeCFAllocator9and10 {
     ChromeCFRuntimeBase _base;
 #if DEPLOYMENT_TARGET_MACOSX || DEPLOYMENT_TARGET_EMBEDDED
     size_t (*size)(struct _malloc_zone_t *zone, const void *ptr); /* returns the size of a block or 0 if not in this zone; must be fast, especially for negative answers */
@@ -50,6 +48,31 @@ struct ChromeCFAllocator {
 #endif
     CFAllocatorRef _allocator;
     CFAllocatorContext _context;
+};
+
+// TODO(avi): update upon source release; http://crbug.com/74589
+struct ChromeCFAllocator11 {
+  ChromeCFRuntimeBase _base;
+  // CFAllocator in Darwin 9 included a complete copy of _malloc_zone_t. The
+  // version in Darwin 10 had an abbreviated _malloc_zone_t that ended after the
+  // version/"reserved" field (see above). Darwin 11 appears to have a truncated
+  // _malloc_zone_t as well, but two fields larger than 9/10.
+  void* presumedSizeFunctionPtr;
+  void* presumedMallocFunctionPtr;
+  void* presumedCallocFunctionPtr;
+  void* presumedVallocFunctionPtr;
+  void* presumedFreeFunctionPtr;
+  void* presumedReallocFunctionPtr;
+  void* presumedDestroyFunctionPtr;
+  const char *zone_name;
+  void* presumedBatchMallocFunctionPtr;
+  void* presumedBatchFreeFunctionPtr;
+  void* presumedIntrospectStructPtr;
+  void* presumedReservedSlashVersion;  // always 6 in CFAllocators
+  void* presumedMemalignFunctionPtr;
+  void* presumedFreeDefiniteSizeFunctionPtr;
+  CFAllocatorRef _allocator;
+  CFAllocatorContext _context;
 };
 
 #endif  // THIRD_PARTY_APPLE_APSL_CFBASE_H_
