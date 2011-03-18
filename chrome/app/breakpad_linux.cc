@@ -32,11 +32,11 @@
 #include "breakpad/src/common/linux/linux_libc_support.h"
 #include "breakpad/src/common/memory.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info_posix.h"
 #include "chrome/common/env_vars.h"
+#include "content/common/chrome_descriptors.h"
 #include "seccompsandbox/linux_syscall_support.h"
 
 // Some versions of gcc are prone to warn about unused return values. In cases
@@ -163,8 +163,6 @@ class MimeWriter {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MimeWriter);
-
   void AddItem(const void* base, size_t size);
   // Minor performance trade-off for easier-to-maintain code.
   void AddString(const char* str) {
@@ -178,6 +176,8 @@ class MimeWriter {
   int fd_;
 
   const char* const mime_boundary_;
+
+  DISALLOW_COPY_AND_ASSIGN(MimeWriter);
 };
 
 MimeWriter::MimeWriter(int fd, const char* const mime_boundary)
@@ -265,7 +265,7 @@ void MimeWriter::AddItem(const void* base, size_t size) {
   ++iov_index_;
 }
 
-} // namespace
+}  // namespace
 
 pid_t HandleCrashDump(const BreakpadInfo& info) {
   // WARNING: this code runs in a compromised context. It may not call into
