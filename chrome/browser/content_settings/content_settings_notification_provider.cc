@@ -372,8 +372,6 @@ void NotificationProvider::PersistPermissionChange(
       // Add to the allowed list.
       if (allowed_sites->AppendIfNotPresent(value))
         allowed_changed = true;
-      else
-        delete value;
     } else {
       // Remove from the allowed list.
       if (allowed_sites->Remove(*value) != -1)
@@ -382,8 +380,6 @@ void NotificationProvider::PersistPermissionChange(
       // Add to the denied list.
       if (denied_sites->AppendIfNotPresent(value))
         denied_changed = true;
-      else
-        delete value;
     }
   }
 

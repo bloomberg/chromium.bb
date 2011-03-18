@@ -272,8 +272,7 @@ Value* PreferenceModelAssociator::MergeListValues(const Value& from_value,
   for (ListValue::const_iterator i = from_list_value.begin();
        i != from_list_value.end(); ++i) {
     Value* value = (*i)->DeepCopy();
-    if (!result->AppendIfNotPresent(value))
-      delete value;
+    result->AppendIfNotPresent(value);
   }
   return result;
 }
