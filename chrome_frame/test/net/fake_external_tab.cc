@@ -23,6 +23,7 @@
 #include "base/win/scoped_handle.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
@@ -493,10 +494,14 @@ int main(int argc, char** argv) {
   // Initialize the content client which that code uses to talk to Chrome.
   chrome::ChromeContentClient chrome_content_client;
   content::SetContentClient(&chrome_content_client);
+
   // Override the default ContentBrowserClient to let Chrome participate in
   // content logic.  Must be done before any tabs are created.
-  content::GetContentClient()->set_browser(
-      new chrome::ChromeContentBrowserClient);
+  chrome::ChromeContentBrowserClient browser_client;
+  content::GetContentClient()->set_browser(&browser_client);
+
+  chrome::ChromeContentRendererClient renderer_client;
+  content::GetContentClient()->set_renderer(&renderer_client);
 
   // TODO(tommi): Stuff be broke. Needs a fixin'.
   // This is awkward: the TestSuite derived CFUrlRequestUnittestRunner contains
