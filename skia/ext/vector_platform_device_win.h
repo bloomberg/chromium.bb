@@ -18,8 +18,8 @@ class VectorPlatformDeviceFactory : public SkDeviceFactory {
   virtual SkDevice* newDevice(SkCanvas* ignored, SkBitmap::Config config,
                               int width, int height,
                               bool isOpaque, bool isForLayer) OVERRIDE;
-  static PlatformDevice* CreateDevice(int width, int height, bool isOpaque,
-                                      HANDLE shared_section);
+  static SkDevice* CreateDevice(int width, int height, bool isOpaque,
+                                HANDLE shared_section);
 };
 
 // A device is basically a wrapper around SkBitmap that provides a surface for

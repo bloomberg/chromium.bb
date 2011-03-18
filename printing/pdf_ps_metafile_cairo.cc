@@ -145,19 +145,6 @@ bool PdfPsMetafile::SetRawData(const void* src_buffer,
   return true;
 }
 
-skia::PlatformDevice* PdfPsMetafile::StartPageForVectorCanvas(
-    const gfx::Size& page_size, const gfx::Point& content_origin,
-    const float& scale_factor) {
-  DCHECK_EQ(1.0f, scale_factor);  // We don't yet support scale_factor.
-  if (!StartPage(page_size, content_origin.y(), content_origin.x()))
-    return NULL;
-
-  return skia::VectorPlatformDeviceFactory::CreateDevice(context_,
-                                                         page_size.width(),
-                                                         page_size.height(),
-                                                         true);
-}
-
 cairo_t* PdfPsMetafile::StartPage(const gfx::Size& page_size,
                                   double margin_top_in_points,
                                   double margin_left_in_points) {

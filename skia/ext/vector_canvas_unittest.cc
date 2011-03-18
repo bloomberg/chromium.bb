@@ -14,7 +14,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "skia/ext/vector_canvas.h"
-#include "skia/ext/vector_platform_device.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -387,8 +386,7 @@ class VectorCanvasTest : public ImageTest {
     size_ = size;
     context_ = new Context();
     bitmap_ = new Bitmap(*context_, size_, size_);
-    vcanvas_ = new VectorCanvas(VectorPlatformDeviceFactory::CreateDevice(
-        size_, size_, true, context_->context()));
+    vcanvas_ = new VectorCanvas(context_->context(), size_, size_);
     pcanvas_ = new PlatformCanvas(size_, size_, false);
 
     // Clear white.
@@ -454,8 +452,7 @@ TEST_F(VectorCanvasTest, Uninitialized) {
 
   context_ = new Context();
   bitmap_ = new Bitmap(*context_, size_, size_);
-  vcanvas_ = new VectorCanvas(VectorPlatformDeviceFactory::CreateDevice(
-      size_, size_, true, context_->context()));
+  vcanvas_ = new VectorCanvas(context_->context(), size_, size_);
   pcanvas_ = new PlatformCanvas(size_, size_, false);
 
   // VectorCanvas default initialization is black.
