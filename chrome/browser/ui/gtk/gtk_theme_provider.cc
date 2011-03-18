@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include <set>
+#include <string>
 
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
@@ -635,8 +636,10 @@ void GtkThemeProvider::NotifyThemeChanged(const Extension* extension) {
         GTK_CHROME_BUTTON(*it), use_gtk_);
   }
 
-  GtkWindow* window = BrowserList::GetLastActive()->window()->GetNativeHandle();
-  gtk_util::SetDefaultWindowIcon(window);
+  Browser* browser = BrowserList::GetLastActive();
+  if (browser && browser->window()) {
+    gtk_util::SetDefaultWindowIcon(browser->window()->GetNativeHandle());
+  }
 }
 
 void GtkThemeProvider::FreePlatformCaches() {
