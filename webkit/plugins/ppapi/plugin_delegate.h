@@ -226,7 +226,8 @@ class PluginDelegate {
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       const PP_VideoDecoderConfig_Dev& decoder_config) = 0;
 
-  // The caller will own the pointer returned from this.
+  // The caller is responsible for calling Shutdown() on the returned pointer
+  // to clean up the corresponding resources allocated during this call.
   virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
                                      uint32_t sample_count,
                                      PlatformAudio::Client* client) = 0;

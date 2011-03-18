@@ -650,6 +650,23 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef,
                            pp::proxy::HostResource /* response */,
                            pp::proxy::PPBFileRef_CreateInfo /* result */)
 
+// PPB_URLUtil.
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLUtil_ResolveRelativeToDocument,
+                           PP_Instance /* instance */,
+                           pp::proxy::SerializedVar /* relative */,
+                           pp::proxy::SerializedVar /* result */)
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLUtil_DocumentCanRequest,
+                           PP_Instance /* instance */,
+                           pp::proxy::SerializedVar /* relative */,
+                           PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLUtil_DocumentCanAccessDocument,
+                           PP_Instance /* active */,
+                           PP_Instance /* target */,
+                           PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLUtil_GetDocumentURL,
+                           PP_Instance /* active */,
+                           pp::proxy::SerializedVar /* result */)
+
 // PPB_Var.
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVar_AddRefObject,
                     int64 /* object_id */)

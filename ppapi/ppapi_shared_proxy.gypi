@@ -10,6 +10,7 @@
       'dependencies': [
         'ppapi_c',
         '../base/base.gyp:base',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icuuc',
       ],
@@ -23,6 +24,8 @@
         'shared_impl/char_set_impl.h',
         'shared_impl/image_data_impl.cc',
         'shared_impl/image_data_impl.h',
+        'shared_impl/url_util_impl.cc',
+        'shared_impl/url_util_impl.h',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -132,6 +135,8 @@
         'proxy/ppb_url_request_info_proxy.h',
         'proxy/ppb_url_response_info_proxy.cc',
         'proxy/ppb_url_response_info_proxy.h',
+        'proxy/ppb_url_util_proxy.cc',
+        'proxy/ppb_url_util_proxy.h',
         'proxy/ppb_var_deprecated_proxy.cc',
         'proxy/ppb_var_deprecated_proxy.h',
         'proxy/ppp_class_proxy.cc',

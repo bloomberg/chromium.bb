@@ -220,7 +220,11 @@ PPB_Audio_Impl::PPB_Audio_Impl(PluginInstance* instance)
 }
 
 PPB_Audio_Impl::~PPB_Audio_Impl() {
-  // Calling ShutDown() makes sure StreamCreated cannot be called anymore.
+  // Calling ShutDown() makes sure StreamCreated cannot be called anymore and
+  // releases the audio data associated with the pointer. Note however, that
+  // until ShutDown returns, StreamCreated may still be called. This will be
+  // OK since we'll just immediately clean up the data it stored later in this
+  // destructor.
   if (audio_) {
     audio_->ShutDown();
     audio_ = NULL;

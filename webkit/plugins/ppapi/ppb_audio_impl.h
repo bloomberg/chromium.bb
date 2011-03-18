@@ -81,7 +81,8 @@ class PPB_Audio_Impl : public Resource,
   // AudioConfig used for creating this Audio object.
   scoped_refptr<PPB_AudioConfig_Impl> config_;
 
-  // PluginDelegate audio object that we delegate audio IPC through.
+  // PluginDelegate audio object that we delegate audio IPC through. We don't
+  // own this pointer but are responsible for calling Shutdown on it.
   PluginDelegate::PlatformAudio* audio_;
 
   // Is a create callback pending to fire?

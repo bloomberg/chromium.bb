@@ -24,6 +24,7 @@
 #include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
+#include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_audio.h"
@@ -71,6 +72,7 @@
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_url_request_info_proxy.h"
 #include "ppapi/proxy/ppb_url_response_info_proxy.h"
+#include "ppapi/proxy/ppb_url_util_proxy.h"
 #include "ppapi/proxy/ppb_var_deprecated_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/ppp_instance_proxy.h"
@@ -132,6 +134,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_URLLoaderTrusted_Proxy::GetInfo());
   AddPPB(PPB_URLRequestInfo_Proxy::GetInfo());
   AddPPB(PPB_URLResponseInfo_Proxy::GetInfo());
+  AddPPB(PPB_URLUtil_Proxy::GetInfo());
   AddPPB(PPB_Var_Deprecated_Proxy::GetInfo());
 
   // PPP (plugin) interfaces.
