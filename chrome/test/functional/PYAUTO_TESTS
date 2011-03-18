@@ -56,6 +56,8 @@
       # crbug.com/72664
       '-infobars.InfobarTest.testPluginCrashForMultiTabs',
       'instant',
+      # crbug.com/76639
+      '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
       'navigation',
       'notifications',
       # crbug.com/66072
