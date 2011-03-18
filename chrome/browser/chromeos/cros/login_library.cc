@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
@@ -130,6 +131,12 @@ class LoginLibraryImpl : public LoginLibrary {
   }
 
   bool RestartJob(int pid, const std::string& command_line) {
+    if (g_browser_process && g_browser_process->local_state()) {
+      // XXX: normally this call must not be needed, however it turned out that
+      // without this explicit call to SavePersistentPrefs it is possible for
+      // preferences to be lost. See http://crosbug.com/13102
+      g_browser_process->local_state()->SavePersistentPrefs();
+    }
     return chromeos::RestartJob(pid, command_line.c_str());
   }
 
