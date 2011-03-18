@@ -36,8 +36,7 @@ struct NeedsScopedRefptrButGetsRawPtr {
     // raw pointer type and are convertible to a RefCounted(Base|ThreadSafeBase)
     // type.
     value = (is_pointer<T>::value &&
-             (is_convertible<T, subtle::RefCountedBase*>::value ||
-              is_convertible<T, subtle::RefCountedThreadSafeBase*>::value))
+             (is_convertible<T, subtle::RefCountedThreadSafeBase*>::value))
   };
 #endif
 };

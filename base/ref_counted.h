@@ -13,32 +13,6 @@ namespace base {
 
 namespace subtle {
 
-class RefCountedBase {
- public:
-  static bool ImplementsThreadSafeReferenceCounting() { return false; }
-
-  bool HasOneRef() const { return ref_count_ == 1; }
-
- protected:
-  RefCountedBase();
-  ~RefCountedBase();
-
-  void AddRef() const;
-
-  // Returns true if the object should self-delete.
-  bool Release() const;
-
- private:
-  mutable int ref_count_;
-#ifndef NDEBUG
-  mutable bool in_dtor_;
-#endif
-
-  DFAKE_MUTEX(add_release_);
-
-  DISALLOW_COPY_AND_ASSIGN(RefCountedBase);
-};
-
 class RefCountedThreadSafeBase {
  public:
   static bool ImplementsThreadSafeReferenceCounting() { return true; }
@@ -80,23 +54,23 @@ class RefCountedThreadSafeBase {
 // You should always make your destructor private, to avoid any code deleting
 // the object accidently while there are references to it.
 template <class T>
-class RefCounted : public subtle::RefCountedBase {
+class RefCounted : public subtle::RefCountedThreadSafeBase {
  public:
   RefCounted() { }
   ~RefCounted() { }
 
   void AddRef() const {
-    subtle::RefCountedBase::AddRef();
+    subtle::RefCountedThreadSafeBase::AddRef();
   }
 
   void Release() const {
-    if (subtle::RefCountedBase::Release()) {
+    if (subtle::RefCountedThreadSafeBase::Release()) {
       delete static_cast<const T*>(this);
     }
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RefCounted<T>);
+  DISALLOW_COPY_AND_ASSIGN(RefCounted);
 };
 
 // Forward declaration.
