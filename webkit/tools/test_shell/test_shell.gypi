@@ -323,7 +323,7 @@
           ],
         }, { # OS != "mac"
           'dependencies': [
-            '<(DEPTH)/ui/gfx/gfx.gyp:gfx_resources',
+            '<(DEPTH)/ui/ui.gyp:gfx_resources',
             '<(DEPTH)/net/net.gyp:net_resources',
             '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
             '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',

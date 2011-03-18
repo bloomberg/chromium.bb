@@ -11,7 +11,7 @@
       'target_name': 'webkit_support',
       'type': '<(library)',
       'dependencies': [
-        '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
+        '<(DEPTH)/ui/ui.gyp:ui_gfx',
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',

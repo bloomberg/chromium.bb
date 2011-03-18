@@ -180,7 +180,7 @@
         'gpu_common',
         '../app/app.gyp:app_base',
         '../base/base.gyp:base',
-        '../ui/gfx/gfx.gyp:gfx',
+        '../ui/ui.gyp:ui_gfx',
         '../third_party/angle/src/build_angle.gyp:translator_glsl',
       ],
       'sources': [

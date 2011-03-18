@@ -63,7 +63,7 @@
         # target, but it doesn't work due to a bug in gyp
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
-        '../ui/gfx/gfx.gyp:gfx',
+        '../ui/ui.gyp:ui_gfx',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
