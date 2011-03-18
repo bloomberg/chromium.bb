@@ -19,14 +19,9 @@ class ExtensionHistoryApiTest : public ExtensionApiTest {
   }
 };
 
-#if defined(OS_CHROMEOS)
-// Full text search indexing sometimes exceeds a timeout on ChromeOS.
+// Full text search indexing sometimes exceeds a timeout.
 // Fix this as part of crbug/76170.
-#define MAYBE_MiscSearch FLAKY_MiscSearch
-#else
-#define MAYBE_MiscSearch MiscSearch
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, MAYBE_MiscSearch) {
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_MiscSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "misc_search.html")) << message_;
 }
 
