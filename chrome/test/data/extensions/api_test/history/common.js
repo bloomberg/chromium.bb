@@ -151,23 +151,28 @@ function addUrlsWithTimeline(urls, callback) {
   waitAFewSeconds(1, function() {
     chrome.history.addUrl({url: urls[1]});
 
-    // Use search to get the times of the two URLs, and compute times
-    // to pass to the callback.
-    chrome.history.search({text: ''}, function(historyItems) {
-      // Check that both URLs were added.
-      assertEq(urls.length, historyItems.length);
+    // TODO(skerner): If addUrl() had a callback, waiting would not be
+    // necessary.  When crbug/76170 is fixed, use a callback.
+    waitAFewSeconds(1, function() {
 
-      // Don't assume anything about the order of history records in
-      // |historyItems|.
-      var firstUrlTime = Math.min(historyItems[0].lastVisitTime,
-                                  historyItems[1].lastVisitTime);
-      var secondUrlTime = Math.max(historyItems[0].lastVisitTime,
-                                   historyItems[1].lastVisitTime);
+      // Use search to get the times of the two URLs, and compute times
+      // to pass to the callback.
+      chrome.history.search({text: ''}, function(historyItems) {
+        // Check that both URLs were added.
+        assertEq(urls.length, historyItems.length);
 
-      callback({
-        before: firstUrlTime - 100.0,
-        between: (firstUrlTime + secondUrlTime) / 2.0,
-        after: secondUrlTime + 100.0
+        // Don't assume anything about the order of history records in
+        // |historyItems|.
+        var firstUrlTime = Math.min(historyItems[0].lastVisitTime,
+                                    historyItems[1].lastVisitTime);
+        var secondUrlTime = Math.max(historyItems[0].lastVisitTime,
+                                     historyItems[1].lastVisitTime);
+
+        callback({
+          before: firstUrlTime - 100.0,
+          between: (firstUrlTime + secondUrlTime) / 2.0,
+          after: secondUrlTime + 100.0
+        });
       });
     });
   });
