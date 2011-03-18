@@ -51,16 +51,19 @@ Layer::~Layer() {
 Layer::Layer(ServiceLocator* service_locator)
     : ObjectBase(service_locator),
       visible_(true),
-      everywhere_(false),
-      alpha_(0.0),
-      x_(0),
-      y_(0),
+      alpha_(0),
+      region_(false, 0, 0, 0, 0),
+      inner_clip_region_(false, 0, 0, 0, 0),
+      outer_clip_region_(false, 0, 0, 0, 0),
       z_(0),
-      width_(0),
-      height_(0),
       scale_x_(1.0),
       scale_y_(1.0),
-      paint_operator_(BLEND) {
+      paint_operator_(BLEND),
+      z_dirty_(true),
+      region_dirty_(false),
+      content_dirty_(true),
+      saved_should_paint_(false),
+      saved_outer_clip_region_(false, 0, 0, 0, 0) {
   DLOG(INFO) << "Create Layer";
   Renderer* renderer = service_locator->GetService<Renderer>();
   RendererCairo* renderer_cairo = down_cast<RendererCairo*>(renderer);

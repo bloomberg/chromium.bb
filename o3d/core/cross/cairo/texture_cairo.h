@@ -81,6 +81,14 @@ class TextureCairo : public Texture2D {
     return image_surface_;
   }
 
+  bool content_dirty() const {
+    return content_dirty_;
+  }
+
+  void set_content_dirty(bool content_dirty) {
+    content_dirty_ = content_dirty;
+  }
+
  protected:
   // Overridden from Texture2D
   virtual bool PlatformSpecificLock(int level, void** texture_data, int* pitch,
@@ -107,6 +115,10 @@ class TextureCairo : public Texture2D {
 
   // The Cairo image for this texture.
   cairo_surface_t* image_surface_;
+
+  // Whether or not this texture's content has changed since it was last updated
+  // on-screen.
+  bool content_dirty_;
 };
 
 }  // namespace o2d

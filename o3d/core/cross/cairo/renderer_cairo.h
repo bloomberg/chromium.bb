@@ -169,11 +169,12 @@ class RendererCairo : public Renderer {
   void PopRenderStates();
 
  protected:
-  typedef std::list<Layer*> LayerList;
-
   // Keep the constructor protected so only factory methods can create
   // renderers.
   explicit RendererCairo(ServiceLocator* service_locator);
+
+  // Sets the client's size. Overridden from Renderer.
+  void SetClientSize(int width, int height);
 
   // Sets rendering to the back buffer.
   virtual void SetBackBufferPlatformSpecific();
@@ -235,10 +236,13 @@ class RendererCairo : public Renderer {
                                    float min_z,
                                    float max_z);
 
-  // Clip the area of the current layer that will collide with other images.
-  void ClipArea(cairo_t* cr, LayerList::iterator it);
-
  private:
+  typedef std::vector<Layer*> LayerList;
+  typedef std::vector<Layer::Region> RegionList;
+
+  // Clip the area of the current layer that will collide with other images.
+  void ClipArea(cairo_t* cr, LayerList::const_iterator it);
+
   void CreateDisplaySurface();
   void DestroyDisplaySurface();
 
@@ -246,6 +250,9 @@ class RendererCairo : public Renderer {
   void CreateImageSurface();
   void DestroyImageSurface();
 #endif
+
+  void AddDisplayRegion(cairo_t* cr);
+  void AddRegion(cairo_t* cr, const Layer::Region& region);
 
 #if defined(OS_LINUX)
   // Linux Client Display
@@ -266,11 +273,19 @@ class RendererCairo : public Renderer {
   cairo_surface_t* image_surface_;
 #endif
 
-  // Array of Layer
+  // List of all layers.
   LayerList layer_list_;
+
+  // Saved regions of formerly visible layers deleted since the previous frame
+  // was rendered.
+  RegionList layer_ghost_list_;
 
   // Fullscreen mode.
   bool fullscreen_;
+
+  // Whether or not the display window has been resized since the last frame was
+  // rendered.
+  bool size_dirty_;
 };
 
 }  // namespace o2d

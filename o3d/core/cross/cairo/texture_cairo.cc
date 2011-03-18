@@ -83,7 +83,8 @@ TextureCairo::TextureCairo(ServiceLocator* service_locator,
                 format,
                 levels,
                 enable_render_surfaces),
-      image_surface_(image_surface) {
+      image_surface_(image_surface),
+      content_dirty_(false) {
   DLOG(INFO) << "Texture2D Construct";
   DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
 }
@@ -194,6 +195,8 @@ void TextureCairo::SetRect(int level,
   }
 
   cairo_surface_mark_dirty(image_surface_);
+
+  set_content_dirty(true);
 
   TextureUpdated();
 }

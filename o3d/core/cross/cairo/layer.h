@@ -48,6 +48,22 @@ namespace o2d {
 
 class Layer : public ObjectBase {
  public:
+  struct Region {
+    Region(bool everywhere, double x, double y, double width, double height)
+        : everywhere(everywhere),
+          x(x),
+          y(y),
+          width(width),
+          height(height) {
+    }
+
+    bool everywhere;
+    double x;
+    double y;
+    double width;
+    double height;
+  };
+
   typedef SmartPointer<Layer> Ref;
 
   enum PaintOperator {
@@ -67,6 +83,7 @@ class Layer : public ObjectBase {
 
   void set_pattern(Pattern* pattern) {
     pattern_ = Pattern::Ref(pattern);
+    set_content_dirty(true);
   }
 
   bool visible() const {
@@ -78,11 +95,12 @@ class Layer : public ObjectBase {
   }
 
   bool everywhere() const {
-    return everywhere_;
+    return region_.everywhere;
   }
 
   void set_everywhere(bool everywhere) {
-    everywhere_ = everywhere;
+    region_.everywhere = everywhere;
+    set_region_dirty(true);
   }
 
   double alpha() const {
@@ -91,22 +109,25 @@ class Layer : public ObjectBase {
 
   void set_alpha(double alpha) {
     alpha_ = alpha;
+    set_content_dirty(true);
   }
 
   double x() const {
-    return x_;
+    return region_.x;
   }
 
   void set_x(double x) {
-    x_ = x;
+    region_.x = x;
+    set_region_dirty(true);
   }
 
   double y() const {
-    return y_;
+    return region_.y;
   }
 
   void set_y(double y) {
-    y_ = y;
+    region_.y = y;
+    set_region_dirty(true);
   }
 
   double z() const {
@@ -115,22 +136,26 @@ class Layer : public ObjectBase {
 
   void set_z(double z) {
     z_ = z;
+    set_z_dirty(true);
+    set_content_dirty(true);
   }
 
   double width() const {
-    return width_;
+    return region_.width;
   }
 
   void set_width(double width) {
-    width_ = width;
+    region_.width = width;
+    set_region_dirty(true);
   }
 
   double height() const {
-    return height_;
+    return region_.height;
   }
 
   void set_height(double height) {
-    height_ = height;
+    region_.height = height;
+    set_region_dirty(true);
   }
 
   double scale_x() const {
@@ -139,6 +164,7 @@ class Layer : public ObjectBase {
 
   void set_scale_x(double scale_x) {
     scale_x_ = scale_x;
+    set_content_dirty(true);
   }
 
   double scale_y() const {
@@ -147,6 +173,7 @@ class Layer : public ObjectBase {
 
   void set_scale_y(double scale_y) {
     scale_y_ = scale_y;
+    set_content_dirty(true);
   }
 
   PaintOperator paint_operator() const {
@@ -155,9 +182,54 @@ class Layer : public ObjectBase {
 
   void set_paint_operator(PaintOperator paint_operator) {
     paint_operator_ = paint_operator;
+    set_content_dirty(true);
   }
 
   // Methods not exposed to JS.
+
+  bool z_dirty() const {
+    return z_dirty_;
+  }
+
+  void set_z_dirty(bool z_dirty) {
+    z_dirty_ = z_dirty;
+  }
+
+  bool region_dirty() const {
+    return region_dirty_;
+  }
+
+  void set_region_dirty(bool region_dirty) {
+    region_dirty_ = region_dirty;
+  }
+
+  bool content_dirty() const {
+    return content_dirty_;
+  }
+
+  void set_content_dirty(bool content_dirty) {
+    content_dirty_ = content_dirty;
+  }
+
+  const Region& region() const {
+    return region_;
+  }
+
+  const Region& inner_clip_region() const {
+    return inner_clip_region_;
+  }
+
+  const Region& outer_clip_region() const {
+    return outer_clip_region_;
+  }
+
+  Region& inner_clip_region() {
+    return inner_clip_region_;
+  }
+
+  Region& outer_clip_region() {
+    return outer_clip_region_;
+  }
 
   // Whether we should currently paint this layer.
   bool ShouldPaint() const {
@@ -173,40 +245,49 @@ class Layer : public ObjectBase {
         (paint_operator() == COPY || paint_operator() == COPY_WITH_FADING);
   }
 
+  void SaveShouldPaint() {
+    saved_should_paint_ = ShouldPaint();
+  }
+
+  bool GetSavedShouldPaint() const {
+    return saved_should_paint_;
+  }
+
+  void SaveOuterClipRegion() {
+    saved_outer_clip_region_ = outer_clip_region();
+  }
+
+  const Region& GetSavedOuterClipRegion() const {
+    return saved_outer_clip_region_;
+  }
+
  private:
   explicit Layer(ServiceLocator* service_locator);
 
   friend class o3d::IClassManager;
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  // The pattern used to paint this Layer.
+  // The pattern used to paint this layer.
   Pattern::Ref pattern_;
 
   // Whether this layer should be visible or not.
   bool visible_;
 
-  // Paint everywhere rather than just within the region defined by the x, y,
-  // width, and height.
-  bool everywhere_;
-
   // The transparency for the BLEND_WITH_TRANSPARENCY operator or the fading for
   // the COPY_WITH_FADING operator.
   double alpha_;
 
-  // The x coordinate of the top-left corner of this layer.
-  double x_;
+  // The region of screen space occupied by this layer.
+  Region region_;
 
-  // The y coordinate of the top-left corner of this layer.
-  double y_;
+  // A version of region_ that excludes any fractional pixels.
+  Region inner_clip_region_;
+
+  // A version of region_ that fully includes any fractional pixels.
+  Region outer_clip_region_;
 
   // The z coordinate of the layer (used only to determine stacking order).
   double z_;
-
-  // The width of this layer.
-  double width_;
-
-  // The height of this layer.
-  double height_;
 
   // A scaling factor to apply to the pattern's x-axis.
   double scale_x_;
@@ -214,8 +295,27 @@ class Layer : public ObjectBase {
   // A scaling factor to apply to the pattern's y-axis.
   double scale_y_;
 
-  // The paint operator to use for painting this Layer.
+  // The paint operator to use for painting this layer.
   PaintOperator paint_operator_;
+
+  // Whether or not this layer's z property has changed since the last frame was
+  // rendered.
+  bool z_dirty_;
+
+  // Whether or not this layer's region properties have changed since the layer
+  // was last updated on-screen.
+  bool region_dirty_;
+
+  // Whether or not this layer's content properties (pattern, alpha, z, scale_x,
+  // scale_y, paint_operator) have changed since the layer was last updated
+  // on-screen.
+  bool content_dirty_;
+
+  // The value of ShouldPaint() when the last frame was rendered.
+  bool saved_should_paint_;
+
+  // The value of outer_clip_region() when the layer was last updated on-screen.
+  Region saved_outer_clip_region_;
 
   O3D_DECL_CLASS(Layer, ObjectBase)
 };  // Layer

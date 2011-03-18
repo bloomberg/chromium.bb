@@ -35,13 +35,13 @@
 #define O3D_CORE_CROSS_CAIRO_PATTERN_H_
 
 #include "core/cross/object_base.h"
+#include "core/cross/cairo/texture_cairo.h"
 
 typedef struct _cairo_pattern cairo_pattern_t;
 
 namespace o3d {
 
 class Pack;
-class Texture;
 
 namespace o2d {
 
@@ -84,6 +84,16 @@ class Pattern : public ObjectBase {
 
   cairo_pattern_t* pattern() const { return pattern_; }
 
+  TextureCairo* texture() const { return texture_; }
+
+  bool content_dirty() const {
+    return content_dirty_;
+  }
+
+  void set_content_dirty(bool content_dirty) {
+    content_dirty_ = content_dirty;
+  }
+
   // Set the affine transformation matrix that maps user space to pattern space.
   // The default matrix is the identity matrix, so that no transformation
   // occurs.
@@ -99,11 +109,24 @@ class Pattern : public ObjectBase {
   void set_filter(FilterType filter);
 
  private:
-  Pattern(ServiceLocator* service_locator, cairo_pattern_t* pattern);
+  Pattern(ServiceLocator* service_locator,
+          cairo_pattern_t* pattern,
+          TextureCairo* texture);
 
-  static Pattern* WrapCairoPattern(Pack* pack, cairo_pattern_t* pattern);
+  static Pattern* WrapCairoPattern(Pack* pack,
+                                   cairo_pattern_t* pattern,
+                                   TextureCairo* texture);
 
+  // The underlying Cairo pattern.
   cairo_pattern_t* pattern_;
+
+  // The TextureCairo that wraps the pattern's texture, or NULL if not a texture
+  // pattern.
+  TextureCairo::Ref texture_;
+
+  // Whether or not this pattern's content has changed since it was last updated
+  // on-screen.
+  bool content_dirty_;
 
   O3D_DECL_CLASS(Pattern, ObjectBase)
 };  // Pattern

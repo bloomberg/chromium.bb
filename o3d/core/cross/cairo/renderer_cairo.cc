@@ -42,6 +42,7 @@
 #include <cairo-win32.h>
 #endif
 
+#include <algorithm>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -72,7 +73,8 @@ RendererCairo::RendererCairo(ServiceLocator* service_locator)
 #ifdef COMPOSITING_TO_IMAGE
       image_surface_(NULL),
 #endif
-      fullscreen_(false) {
+      fullscreen_(false),
+      size_dirty_(false) {
   // Don't need to do anything.
 }
 
@@ -106,8 +108,31 @@ void RendererCairo::Destroy() {
 }
 
 // Comparison predicate for STL sort.
-bool LayerZValueLessThan(const Layer* first, const Layer* second) {
+static bool LayerZValueLessThan(const Layer* first, const Layer* second) {
   return first->z() < second->z();
+}
+
+static void AddRectangleRegion(cairo_t* cr, const Layer::Region& region) {
+  cairo_rectangle(cr,
+                  region.x,
+                  region.y,
+                  region.width,
+                  region.height);
+}
+
+typedef double (*rounding_fn)(double);
+
+static void RoundRegion(const Layer::Region& in_region,
+                        rounding_fn round_x1y1,
+                        rounding_fn round_x2y2,
+                        Layer::Region* out_region) {
+  out_region->everywhere = in_region.everywhere;
+  out_region->x = (*round_x1y1)(in_region.x);
+  out_region->y = (*round_x1y1)(in_region.y);
+  out_region->width = (*round_x2y2)(in_region.x + in_region.width)
+      - out_region->x;
+  out_region->height = (*round_x2y2)(in_region.y + in_region.height)
+      - out_region->y;
 }
 
 void RendererCairo::Paint() {
@@ -125,7 +150,7 @@ void RendererCairo::Paint() {
   }
 
   // TODO(tschmelcher): Don't keep creating and destroying the drawing context.
-  cairo_t* current_drawing = cairo_create(
+  cairo_t* cr = cairo_create(
 #ifdef COMPOSITING_TO_IMAGE
       image_surface_
 #else
@@ -136,77 +161,166 @@ void RendererCairo::Paint() {
 #ifndef COMPOSITING_TO_IMAGE
   // Redirect drawing to an off-screen surface (holding only colour information,
   // without an alpha channel).
-  cairo_push_group_with_content(current_drawing, CAIRO_CONTENT_COLOR);
+  cairo_push_group_with_content(cr, CAIRO_CONTENT_COLOR);
 #endif
 
-  // Set fill (and clip) rule.
-  cairo_set_fill_rule(current_drawing, CAIRO_FILL_RULE_EVEN_ODD);
+  cairo_save(cr);
 
-  // Sort layers by z value.
-  // TODO(tschmelcher): Only sort when changes are made.
-  layer_list_.sort(LayerZValueLessThan);
+  // Set clip rule for building the initial clip region.
+  cairo_set_fill_rule(cr, CAIRO_FILL_RULE_WINDING);
+
+  // If we have been resized then we must redraw everything, since the new
+  // surface will be uninitialized.
+  if (size_dirty_) {
+#ifdef COMPOSITING_TO_IMAGE
+    AddDisplayRegion(cr);
+#endif
+  }
+
+  // Build an initial clip region for all drawing operations that restricts
+  // drawing to only areas of the screen that have changed.
+  bool needs_sort = false;
+  for (LayerList::const_iterator i = layer_list_.begin();
+       i != layer_list_.end(); i++) {
+    Layer* layer = *i;
+
+    // Aggregate all content dirtiness into the layer's dirtiness property.
+    Pattern* pattern = layer->pattern();
+    if (pattern) {
+      if (pattern->content_dirty()) {
+        layer->set_content_dirty(true);
+      } else {
+        TextureCairo* texture = pattern->texture();
+        if (texture && texture->content_dirty()) {
+          layer->set_content_dirty(true);
+        }
+      }
+    }
+
+    if (!layer->ShouldPaint() && !layer->GetSavedShouldPaint()) {
+      // Won't be painted now and wasn't painted on the last frame either, so
+      // doesn't need to be redrawn.
+      continue;
+    }
+
+    if (layer->ShouldPaint() && layer->z_dirty()) {
+      // If the z-value has changed and it is going to be painted then we need
+      // to re-sort.
+      needs_sort = true;
+    }
+
+    if (layer->region_dirty()) {
+      // Recompute clip regions.
+      RoundRegion(layer->region(), &ceil, &floor, &layer->inner_clip_region());
+      RoundRegion(layer->region(), &floor, &ceil, &layer->outer_clip_region());
+    }
+
+    if (layer->ShouldPaint() && (layer->region_dirty() ||
+                                 layer->content_dirty() ||
+                                 !layer->GetSavedShouldPaint())) {
+      // If it is visible and the region, content, or visibility has changed
+      // then the current region must be redrawn.
+#ifdef COMPOSITING_TO_IMAGE
+      AddRegion(cr, layer->outer_clip_region());
+#endif
+    }
+
+    if (layer->GetSavedShouldPaint() && (layer->region_dirty() ||
+                                         !layer->ShouldPaint())) {
+      // If the region or visibility has changed and it was visible before then
+      // the old region must be redrawn.
+#ifdef COMPOSITING_TO_IMAGE
+      AddRegion(cr, layer->GetSavedOuterClipRegion());
+#endif
+    }
+  }
+
+  // Must also redraw the regions of any formerly visible layers.
+  for (RegionList::const_iterator i = layer_ghost_list_.begin();
+       i != layer_ghost_list_.end(); ++i) {
+#ifdef COMPOSITING_TO_IMAGE
+    AddRegion(cr, *i);
+#endif
+  }
+
+  // Clip everything outside the regions defined by the above.
+#ifdef COMPOSITING_TO_IMAGE
+  // TODO(tschmelcher): Perform this clipping for the non-COMPOSITING_TO_IMAGE
+  // case too.
+  cairo_clip(cr);
+#endif
+
+  // If any visible layer has had its z-value modified, re-sort the list to get
+  // the right draw order.
+  if (needs_sort) {
+    std::sort(layer_list_.begin(), layer_list_.end(), LayerZValueLessThan);
+  }
+
+  // Change clip rule for the paint operations.
+  cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
 
   // Core process of painting.
-  for (LayerList::iterator i = layer_list_.begin();
+  for (LayerList::const_iterator i = layer_list_.begin();
        i != layer_list_.end(); i++) {
-    Layer* cur = *i;
-    if (!cur->ShouldPaint()) continue;
+    Layer* layer = *i;
+    if (!layer->ShouldPaint()) continue;
 
-    Pattern* pattern = cur->pattern();
+    Pattern* pattern = layer->pattern();
 
     // Save the current drawing state.
-    cairo_save(current_drawing);
+    cairo_save(cr);
 
-    if (!cur->everywhere()) {
-      // Clip the region outside the current Layer.
-      cairo_rectangle(current_drawing,
-                      cur->x(),
-                      cur->y(),
-                      cur->width(),
-                      cur->height());
-      cairo_clip(current_drawing);
+    // Clip the region outside the current Layer.
+    if (!layer->everywhere()) {
+      // This should really be layer->region(), but there is a bug in cairo with
+      // complex unaligned clip regions so we use an aligned one instead. See
+      // http://lists.cairographics.org/archives/cairo/2011-March/021827.html
+      // This doesn't really matter though because any sensible web app will
+      // align everything to pixel boundaries.
+      AddRectangleRegion(cr, layer->outer_clip_region());
+      cairo_clip(cr);
     }
 
     // Clip the regions within other Layers that will obscure this one.
-    LayerList::iterator start_mask_it = i;
+    LayerList::const_iterator start_mask_it = i;
     start_mask_it++;
-    ClipArea(current_drawing, start_mask_it);
+    ClipArea(cr, start_mask_it);
 
     // Transform the pattern to fit into the Layer's region.
-    cairo_translate(current_drawing, cur->x(), cur->y());
-    cairo_scale(current_drawing, cur->scale_x(), cur->scale_y());
+    cairo_translate(cr, layer->x(), layer->y());
+    cairo_scale(cr, layer->scale_x(), layer->scale_y());
 
     // Set source pattern.
-    cairo_set_source(current_drawing, pattern->pattern());
+    cairo_set_source(cr, pattern->pattern());
 
     // Paint the pattern to the off-screen surface.
-    switch (cur->paint_operator()) {
+    switch (layer->paint_operator()) {
       case Layer::BLEND:
-        cairo_paint(current_drawing);
+        cairo_paint(cr);
         break;
 
       case Layer::BLEND_WITH_TRANSPARENCY:
-        cairo_paint_with_alpha(current_drawing, cur->alpha());
+        cairo_paint_with_alpha(cr, layer->alpha());
         break;
 
       case Layer::COPY:
         // Set Cairo to copy the pattern's alpha content instead of blending.
-        cairo_set_operator(current_drawing, CAIRO_OPERATOR_SOURCE);
-        cairo_paint(current_drawing);
+        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+        cairo_paint(cr);
         break;
 
       case Layer::COPY_WITH_FADING:
         // TODO(tschmelcher): This can also be done in a single operation with:
         //
-        //   cairo_set_operator(current_drawing, CAIRO_OPERATOR_IN);
-        //   cairo_paint_with_alpha(current_drawing, cur->alpha());
+        //   cairo_set_operator(cr, CAIRO_OPERATOR_IN);
+        //   cairo_paint_with_alpha(cr, layer->alpha());
         //
         // but surprisingly that is slightly slower for me. We should figure out
         // why.
-        cairo_set_operator(current_drawing, CAIRO_OPERATOR_CLEAR);
-        cairo_paint(current_drawing);
-        cairo_set_operator(current_drawing, CAIRO_OPERATOR_OVER);
-        cairo_paint_with_alpha(current_drawing, cur->alpha());
+        cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+        cairo_paint(cr);
+        cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+        cairo_paint_with_alpha(cr, layer->alpha());
         break;
 
       default:
@@ -214,56 +328,109 @@ void RendererCairo::Paint() {
     }
 
     // Restore to a clean state.
-    cairo_restore(current_drawing);
+    cairo_restore(cr);
   }
+
+  cairo_restore(cr);
 
 #ifdef COMPOSITING_TO_IMAGE
   // Finish drawing to the image and set up a new context for painting the image
   // to the screen.
-  cairo_destroy(current_drawing);
-  current_drawing = cairo_create(display_surface_);
-  cairo_set_source_surface(current_drawing, image_surface_, 0, 0);
-  cairo_set_operator(current_drawing, CAIRO_OPERATOR_SOURCE);
+  cairo_destroy(cr);
+  cr = cairo_create(display_surface_);
+  cairo_set_source_surface(cr, image_surface_, 0, 0);
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 #else
   // Finish off-screen drawing and make the off-screen surface the source for
   // paints to the screen.
-  cairo_pop_group_to_source(current_drawing);
+  cairo_pop_group_to_source(cr);
 #endif
 
   // Paint to the screen.
-  cairo_paint(current_drawing);
+  // TODO(tschmelcher): We can clip here too if we know that the on-screen
+  // window hasn't been damaged by another window.
+  cairo_paint(cr);
 
-  cairo_destroy(current_drawing);
+  cairo_destroy(cr);
+
+  // Clear dirtiness.
+
+  size_dirty_ = false;
+
+  for (LayerList::const_iterator i = layer_list_.begin();
+       i != layer_list_.end(); i++) {
+    Layer* layer = *i;
+
+    // Clear pattern/texture content dirtiness on all layers, since it has been
+    // aggregated into the layer.
+    Pattern* pattern = layer->pattern();
+    if (pattern) {
+      pattern->set_content_dirty(false);
+      TextureCairo* texture = pattern->texture();
+      if (texture) {
+        texture->set_content_dirty(false);
+      }
+    }
+
+    if (needs_sort) {
+      // If we sorted the list, clear the z dirty flag for everyone, since even
+      // layers that were not updated will have been sorted into the right
+      // order.
+      layer->set_z_dirty(false);
+    }
+
+    if (!layer->ShouldPaint() && !layer->GetSavedShouldPaint()) {
+      // Was not updated, so any layer dirtiness persists.
+      continue;
+    }
+
+    // Clear layer dirtiness.
+    layer->set_region_dirty(false);
+    layer->set_content_dirty(false);
+
+    // Save current region and paintability for reference on the next frame.
+    layer->SaveShouldPaint();
+    layer->SaveOuterClipRegion();
+  }
+
+  layer_ghost_list_.clear();
 
 #ifdef OS_MACOSX
   DestroyDisplaySurface();
 #endif
 }
 
-void RendererCairo::ClipArea(cairo_t* cr,  LayerList::iterator it) {
-  for (LayerList::iterator i = it; i != layer_list_.end(); i++) {
+void RendererCairo::ClipArea(cairo_t* cr,  LayerList::const_iterator it) {
+  for (LayerList::const_iterator i = it; i != layer_list_.end(); i++) {
     // Preparing and updating the Layer.
-    Layer* cur = *i;
-    if (!cur->ShouldClip()) continue;
+    Layer* layer = *i;
+    if (!layer->ShouldClip()) continue;
 
-    if (!cur->everywhere()) {
-      cairo_rectangle(cr, 0, 0, display_width(), display_height());
-      cairo_rectangle(cr,
-                      cur->x(),
-                      cur->y(),
-                      cur->width(),
-                      cur->height());
+    if (!layer->everywhere()) {
+      AddDisplayRegion(cr);
+      AddRectangleRegion(cr, layer->inner_clip_region());
     }
     cairo_clip(cr);
   }
 }
 
-void RendererCairo::AddLayer(Layer* image) {
-  layer_list_.push_front(image);
+void RendererCairo::AddLayer(Layer* layer) {
+  layer_list_.push_back(layer);
 }
 
-void RendererCairo::RemoveLayer(Layer* image) {
-  layer_list_.remove(image);
+void RendererCairo::RemoveLayer(Layer* layer) {
+  LayerList::iterator i = std::find(layer_list_.begin(),
+                                    layer_list_.end(),
+                                    layer);
+  if (layer_list_.end() == i) {
+    return;
+  }
+  layer_list_.erase(i);
+  if (layer->GetSavedShouldPaint()) {
+    // Need to remember this layer's region so we can redraw it on the next
+    // frame.
+    layer_ghost_list_.push_back(layer->GetSavedOuterClipRegion());
+  }
 }
 
 void RendererCairo::InitCommon() {
@@ -356,6 +523,18 @@ void RendererCairo::DestroyImageSurface() {
 }
 #endif
 
+void RendererCairo::AddDisplayRegion(cairo_t* cr) {
+  cairo_rectangle(cr, 0, 0, display_width(), display_height());
+}
+
+void RendererCairo::AddRegion(cairo_t* cr, const Layer::Region& region) {
+  if (region.everywhere) {
+    AddDisplayRegion(cr);
+  } else {
+    AddRectangleRegion(cr, region);
+  }
+}
+
 void RendererCairo::UninitCommon() {
   // Don't need to do anything.
 }
@@ -398,7 +577,6 @@ void RendererCairo::Resize(int width, int height) {
   SetClientSize(width, height);
 
 #if defined(OS_LINUX)
-  // Resize the mainSurface and buffer
   cairo_xlib_surface_set_size(display_surface_, width, height);
 #elif defined(OS_WIN)
   DestroyDisplaySurface();
@@ -562,6 +740,12 @@ bool RendererCairo::CancelFullscreen(const DisplayWindow& display,
 // Tells whether we're currently displayed fullscreen or not.
 bool RendererCairo::fullscreen() const {
   return fullscreen_;
+}
+
+// Sets the client's size. Overridden from Renderer.
+void RendererCairo::SetClientSize(int width, int height) {
+  Renderer::SetClientSize(width, height);
+  size_dirty_ = true;
 }
 
 // TODO(fransiskusx): This function is not applicable to 2D rendering.
