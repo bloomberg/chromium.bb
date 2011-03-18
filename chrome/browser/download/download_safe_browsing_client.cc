@@ -126,13 +126,7 @@ void DownloadSBClient::SafeBrowsingCheckUrlDone(
   DVLOG(1) << "SafeBrowsingCheckUrlDone with result: " << result;
 
   bool is_dangerous = result != SafeBrowsingService::SAFE;
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  if (!cmdline->HasSwitch(switches::kSbEnableDownloadWarningUI)) {
-    // Always ignore the safebrowsing result without the flag.
-    url_done_callback_->Run(info_, false);
-  } else {
-    url_done_callback_->Run(info_, is_dangerous);
-  }
+  url_done_callback_->Run(info_, is_dangerous);
 
   UMA_HISTOGRAM_TIMES("SB2.DownloadUrlCheckDuration",
                       base::TimeTicks::Now() - start_time_);

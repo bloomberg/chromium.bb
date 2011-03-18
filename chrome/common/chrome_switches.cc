@@ -927,12 +927,6 @@ const char kSbDisableAutoUpdate[] = "safebrowsing-disable-auto-update";
 const char kSbDisableDownloadProtection[] =
     "safebrowsing-disable-download-protection";
 
-// When this flag is absent, we won't show the warning ui. The purpose of this
-// flag is to make sure we roll out download url detection smoothly. We will
-// remove this flag once we verify that the download url detection works as
-// expectecd according to UMA reports.
-const char kSbEnableDownloadWarningUI[] = "safebrowsing-download-warning-ui";
-
 // Enable support for SDCH filtering (dictionary based expansion of content).
 // Optional argument is *the* only domain name that will have SDCH suppport.
 // Default is  "-enable-sdch" to advertise SDCH on all domains.

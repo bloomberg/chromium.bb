@@ -258,7 +258,6 @@ extern const char kSbInfoURLPrefix[];
 extern const char kSbMacKeyURLPrefix[];
 extern const char kSbDisableAutoUpdate[];
 extern const char kSbDisableDownloadProtection[];
-extern const char kSbEnableDownloadWarningUI[];
 extern const char kSdchFilter[];
 extern const char kSearchInOmniboxHint[];
 extern const char kServiceAccountLsid[];
