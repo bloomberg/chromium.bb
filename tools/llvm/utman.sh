@@ -2381,7 +2381,6 @@ organize-native-code() {
   StepBanner "PNACL" "Organizing Native Code"
 
   readonly arm_src=${INSTALL_ROOT}
-  readonly x86_src=${NACL_TOOLCHAIN}
   readonly arm_llvm_gcc=${INSTALL_DIR}
 
   StepBanner "PNaCl" "arm native code: ${PNACL_ARM_ROOT}"
