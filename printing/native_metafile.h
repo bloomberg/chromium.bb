@@ -101,6 +101,29 @@ class NativeMetafile {
   virtual gfx::NativeDrawingContext context() const = 0;
 
 #if defined(OS_WIN)
+  // Generates a virtual HDC that will record every GDI commands and compile it
+  // in a EMF data stream.
+  // hdc is used to setup the default DPI and color settings. hdc is optional.
+  // rect specifies the dimensions (in .01-millimeter units) of the EMF. rect is
+  // optional.
+  virtual bool CreateDc(gfx::NativeDrawingContext sibling,
+                        const RECT* rect) = 0;
+
+  // Similar to the above method but the metafile is backed by a file.
+  virtual bool CreateFileBackedDc(gfx::NativeDrawingContext sibling,
+                                  const RECT* rect,
+                                  const FilePath& path) = 0;
+
+  // TODO(maruel): CreateFromFile(). If ever used. Maybe users would like to
+  // have the ability to save web pages to an EMF file? Afterward, it is easy to
+  // convert to PDF or PS.
+  // Load a metafile fromdisk.
+  virtual bool CreateFromFile(const FilePath& metafile_path) = 0;
+
+  // Closes the HDC created by CreateDc() and generates the compiled EMF
+  // data.
+  virtual void CloseEmf() = 0;
+
   // "Plays" the EMF buffer in a HDC. It is the same effect as calling the
   // original GDI function that were called when recording the EMF. |rect| is in
   // "logical units" and is optional. If |rect| is NULL, the natural EMF bounds

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/backend/win_helper.h"
-#include "printing/emf_win.h"
+#include "printing/native_metafile.h"
 #include "printing/page_range.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
@@ -448,7 +448,7 @@ class PrintSystemWin : public PrintSystem {
 
       // ServiceUtilityProcessHost::Client implementation.
       virtual void OnRenderPDFPagesToMetafileSucceeded(
-          const printing::Emf& metafile,
+          const printing::NativeMetafile& metafile,
           int highest_rendered_page_number) {
         metafile.SafePlayback(printer_dc_.Get());
         bool done_printing = (highest_rendered_page_number !=
