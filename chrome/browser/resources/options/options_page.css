@@ -791,3 +791,7 @@ list.autocomplete-suggestions:not([hasElementFocus]) > [selected],
 list.autocomplete-suggestions:not([hasElementFocus]) > [lead][selected] {
   background-color: #bbcee9;
 }
+
+html:not([hasFlashPlugin]) .flash-plugin-area {
+  display: none;
+}

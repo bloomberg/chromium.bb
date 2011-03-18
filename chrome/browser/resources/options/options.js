@@ -194,6 +194,8 @@ function load() {
   }
   if (cr.isViews)
     document.documentElement.setAttribute('toolkit', 'views');
+  if (navigator.plugins['Shockwave Flash'])
+    document.documentElement.setAttribute('hasFlashPlugin', '');
 
   // Clicking on the Settings title brings up the 'Basics' page.
   $('settings-title').onclick = function() {
