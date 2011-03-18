@@ -17,9 +17,5 @@ HttpNetworkTransactionTest.Incomplete100ThenEOF
 HttpNetworkTransactionTest.UseAlternateProtocolForNpnSpdyWithExistingSpdySession
 HttpNetworkTransactionTest.KeepAliveConnectionEOF
 
-# Crash, see http://crbug.com/76592
-HttpNetworkTransactionTest.AlternateProtocolWithSpdyLateBinding
-HttpNetworkTransactionTest.UseAlternateProtocolForTunneledNpnSpdy
-
 # Hangs, see http://crbug.com/61908
 DirectoryListerTest.BigDirRecursiveTest
