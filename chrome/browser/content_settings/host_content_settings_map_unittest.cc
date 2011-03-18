@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -514,6 +514,30 @@ TEST_F(HostContentSettingsMapTest, MigrateObsoletePrefs) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host, CONTENT_SETTINGS_TYPE_POPUPS, ""));
+}
+
+TEST_F(HostContentSettingsMapTest, MigrateObsoleteNotificationsPrefs) {
+  TestingProfile profile;
+  PrefService* prefs = profile.GetPrefs();
+
+  // Set obsolete data.
+  prefs->SetInteger(prefs::kDesktopNotificationDefaultContentSetting,
+                    CONTENT_SETTING_ALLOW);
+
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+
+  // Check if the pref was migrated correctly.
+  const DictionaryValue* default_settings_dictionary =
+      prefs->GetDictionary(prefs::kDefaultContentSettings);
+  int value;
+  default_settings_dictionary->GetIntegerWithoutPathExpansion(
+      "notifications", &value);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, ContentSetting(value));
 }
 
 // For a single Unicode encoded pattern, check if it gets converted to punycode

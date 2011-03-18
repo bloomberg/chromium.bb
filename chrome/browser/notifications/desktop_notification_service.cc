@@ -265,15 +265,12 @@ DesktopNotificationService::~DesktopNotificationService() {
 }
 
 void DesktopNotificationService::RegisterUserPrefs(PrefService* user_prefs) {
-  content_settings::NotificationDefaultProvider::RegisterUserPrefs(user_prefs);
   content_settings::NotificationProvider::RegisterUserPrefs(user_prefs);
 }
 
 // Initialize the cache with the allowed and denied origins, or
 // create the preferences if they don't exist yet.
 void DesktopNotificationService::InitPrefs() {
-  default_provider_.reset(new content_settings::NotificationDefaultProvider(
-      profile_));
   provider_.reset(new content_settings::NotificationProvider(profile_));
 
   std::vector<GURL> allowed_origins;
@@ -282,7 +279,7 @@ void DesktopNotificationService::InitPrefs() {
 
   if (!profile_->IsOffTheRecord()) {
     default_content_setting =
-        default_provider_->ProvideDefaultSetting(
+        profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
             CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
     allowed_origins = GetAllowedOrigins();
     denied_origins = GetBlockedOrigins();
@@ -297,12 +294,15 @@ void DesktopNotificationService::InitPrefs() {
 
 void DesktopNotificationService::StartObserving() {
   if (!profile_->IsOffTheRecord()) {
-    prefs_registrar_.Add(prefs::kDesktopNotificationDefaultContentSetting,
-                         this);
     prefs_registrar_.Add(prefs::kDesktopNotificationAllowedOrigins, this);
     prefs_registrar_.Add(prefs::kDesktopNotificationDeniedOrigins, this);
     notification_registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                                 NotificationService::AllSources());
+    notification_registrar_.Add(
+        this,
+        NotificationType::CONTENT_SETTINGS_CHANGED,
+        // TODO(markusheintz): Remember to change to HostContentSettingsMap.
+        NotificationService::AllSources());
   }
   notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                               Source<Profile>(profile_));
@@ -361,6 +361,18 @@ void DesktopNotificationService::Observe(NotificationType type,
   if (NotificationType::PREF_CHANGED == type) {
     const std::string& name = *Details<std::string>(details).ptr();
     OnPrefsChanged(name);
+  } else if (NotificationType::CONTENT_SETTINGS_CHANGED == type) {
+    // TODO(markusheintz): Check if content settings type default was changed;
+    const ContentSetting default_content_setting =
+        profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
+            CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+    // Schedule a cache update on the IO thread.
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            prefs_cache_.get(),
+            &NotificationsPrefsCache::SetCacheDefaultContentSetting,
+            default_content_setting));
   } else if (NotificationType::EXTENSION_UNLOADED == type) {
     // Remove all notifications currently shown or queued by the extension
     // which was unloaded.
@@ -392,38 +404,30 @@ void DesktopNotificationService::OnPrefsChanged(const std::string& pref_name) {
             prefs_cache_.get(),
             &NotificationsPrefsCache::SetCacheDeniedOrigins,
             denied_origins));
-  } else if (pref_name == prefs::kDesktopNotificationDefaultContentSetting) {
-    const ContentSetting default_content_setting =
-        default_provider_->ProvideDefaultSetting(
-            CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-    // Schedule a cache update on the IO thread.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            prefs_cache_.get(),
-            &NotificationsPrefsCache::SetCacheDefaultContentSetting,
-            default_content_setting));
+  } else {
+    NOTREACHED();
   }
 }
 
 ContentSetting DesktopNotificationService::GetDefaultContentSetting() {
-  return default_provider_->ProvideDefaultSetting(
+  return profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 void DesktopNotificationService::SetDefaultContentSetting(
     ContentSetting setting) {
-  default_provider_->UpdateDefaultSetting(
+  profile_->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
 }
 
 bool DesktopNotificationService::IsDefaultContentSettingManaged() const {
-  return default_provider_->DefaultSettingIsManaged(
+  return profile_->GetHostContentSettingsMap()->IsDefaultContentSettingManaged(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 void DesktopNotificationService::ResetToDefaultContentSetting() {
-  default_provider_->ResetToDefaults();
+  profile_->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_DEFAULT);
 }
 
 std::vector<GURL> DesktopNotificationService::GetAllowedOrigins() {

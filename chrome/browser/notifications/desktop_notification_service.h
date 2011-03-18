@@ -150,7 +150,6 @@ class DesktopNotificationService : public NotificationObserver {
   NotificationUIManager* ui_manager_;
 
   scoped_ptr<content_settings::NotificationProvider> provider_;
-  scoped_ptr<content_settings::NotificationDefaultProvider> default_provider_;
 
   PrefChangeRegistrar prefs_registrar_;
   NotificationRegistrar notification_registrar_;

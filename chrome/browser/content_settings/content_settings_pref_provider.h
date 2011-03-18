@@ -69,6 +69,8 @@ class PrefDefaultProvider : public DefaultProviderInterface,
   // true and the preference is missing, the local copy will be cleared as well.
   void ReadDefaultSettings(bool overwrite);
 
+  void MigrateObsoleteNotificationPref(PrefService* prefs);
+
   // Copies of the pref data, so that we can read it on the IO thread.
   ContentSettings default_content_settings_;
 
@@ -87,6 +89,8 @@ class PrefDefaultProvider : public DefaultProviderInterface,
   // Whether we are currently updating preferences, this is used to ignore
   // notifications from the preferences service that we triggered ourself.
   bool updating_preferences_;
+
+  bool initializing_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefDefaultProvider);
 };

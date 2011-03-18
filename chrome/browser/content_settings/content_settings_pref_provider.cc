@@ -63,7 +63,9 @@ const char* kTypeNames[] = {
   "plugins",
   "popups",
   NULL,  // Not used for Geolocation
-  NULL,  // Not used for Notifications
+  // TODO(markusheintz): Refactoring in progress. Content settings exceptions
+  // for notifications will be added next.
+  "notifications",  // Only used for default Notifications settings.
   NULL,  // Not used for Prerender
 };
 COMPILE_ASSERT(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
@@ -77,7 +79,10 @@ PrefDefaultProvider::PrefDefaultProvider(Profile* profile)
     : profile_(profile),
       is_off_the_record_(profile_->IsOffTheRecord()),
       updating_preferences_(false) {
+  initializing_ = true;
   PrefService* prefs = profile->GetPrefs();
+
+  MigrateObsoleteNotificationPref(prefs);
 
   // Read global defaults.
   DCHECK_EQ(arraysize(kTypeNames),
@@ -88,6 +93,7 @@ PrefDefaultProvider::PrefDefaultProvider(Profile* profile)
   pref_change_registrar_.Add(prefs::kDefaultContentSettings, this);
   notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                               Source<Profile>(profile_));
+  initializing_ = false;
 }
 
 PrefDefaultProvider::~PrefDefaultProvider() {
@@ -260,7 +266,7 @@ void PrefDefaultProvider::GetSettingsFromDictionary(
 void PrefDefaultProvider::NotifyObservers(
     const ContentSettingsDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (profile_ == NULL)
+  if (initializing_ || profile_ == NULL)
     return;
   NotificationService::current()->Notify(
       NotificationType::CONTENT_SETTINGS_CHANGED,
@@ -268,9 +274,23 @@ void PrefDefaultProvider::NotifyObservers(
       Details<const ContentSettingsDetails>(&details));
 }
 
+void PrefDefaultProvider::MigrateObsoleteNotificationPref(PrefService* prefs) {
+  if (prefs->HasPrefPath(prefs::kDesktopNotificationDefaultContentSetting)) {
+    ContentSetting setting = IntToContentSetting(
+        prefs->GetInteger(prefs::kDesktopNotificationDefaultContentSetting));
+    UpdateDefaultSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
+    prefs->ClearPref(prefs::kDesktopNotificationDefaultContentSetting);
+  }
+}
+
 // static
 void PrefDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings);
+
+  // Obsolete prefs, for migrations:
+  prefs->RegisterIntegerPref(
+      prefs::kDesktopNotificationDefaultContentSetting,
+          kDefaultSettings[CONTENT_SETTINGS_TYPE_NOTIFICATIONS]);
 }
 
 // ////////////////////////////////////////////////////////////////////////////

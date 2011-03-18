@@ -21,46 +21,6 @@ class Profile;
 
 namespace content_settings {
 
-class NotificationDefaultProvider : public DefaultProviderInterface,
-                                    public NotificationObserver {
- public:
-  static void RegisterUserPrefs(PrefService* user_prefs);
-
-  explicit NotificationDefaultProvider(Profile* profile);
-
-  virtual ~NotificationDefaultProvider();
-
-  // DefaultProviderInterface implementation
-  virtual ContentSetting ProvideDefaultSetting(
-      ContentSettingsType content_type) const;
-
-  virtual void UpdateDefaultSetting(ContentSettingsType content_type,
-                                    ContentSetting setting);
-
-  virtual void ResetToDefaults();
-
-  virtual bool DefaultSettingIsManaged(
-      ContentSettingsType content_type) const;
-
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
- private:
-  void StartObserving();
-  void StopObserving();
-
-  // Handles pref changed notifications.
-  void OnPrefsChanged(const std::string& pref_name);
-
-  Profile* profile_;
-
-  PrefChangeRegistrar prefs_registrar_;
-  NotificationRegistrar notification_registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationDefaultProvider);
-};
-
 class NotificationProvider : public ProviderInterface,
                              public NotificationObserver {
  public:
