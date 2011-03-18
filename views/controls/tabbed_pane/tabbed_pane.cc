@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
+#include "views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "views/widget/widget.h"
 
 namespace views {
@@ -25,8 +26,16 @@ TabbedPane::TabbedPane() : native_tabbed_pane_(NULL), listener_(NULL) {
 TabbedPane::~TabbedPane() {
 }
 
-void TabbedPane::SetListener(Listener* listener) {
-  listener_ = listener;
+int TabbedPane::GetTabCount() {
+  return native_tabbed_pane_->GetTabCount();
+}
+
+int TabbedPane::GetSelectedTabIndex() {
+  return native_tabbed_pane_->GetSelectedTabIndex();
+}
+
+View* TabbedPane::GetSelectedTab() {
+  return native_tabbed_pane_->GetSelectedTab();
 }
 
 void TabbedPane::AddTab(const std::wstring& title, View* contents) {
@@ -43,14 +52,6 @@ void TabbedPane::AddTabAtIndex(int index,
   PreferredSizeChanged();
 }
 
-int TabbedPane::GetSelectedTabIndex() {
-  return native_tabbed_pane_->GetSelectedTabIndex();
-}
-
-View* TabbedPane::GetSelectedTab() {
-  return native_tabbed_pane_->GetSelectedTab();
-}
-
 View* TabbedPane::RemoveTabAtIndex(int index) {
   View* tab = native_tabbed_pane_->RemoveTabAtIndex(index);
   PreferredSizeChanged();
@@ -65,17 +66,25 @@ void TabbedPane::SetAccessibleName(const string16& name) {
   accessible_name_ = name;
 }
 
-int TabbedPane::GetTabCount() {
-  return native_tabbed_pane_->GetTabCount();
+gfx::Size TabbedPane::GetPreferredSize() {
+  return native_tabbed_pane_ ?
+      native_tabbed_pane_->GetPreferredSize() : gfx::Size();
 }
 
 void TabbedPane::CreateWrapper() {
   native_tabbed_pane_ = NativeTabbedPaneWrapper::CreateNativeWrapper(this);
 }
 
-// View overrides:
-std::string TabbedPane::GetClassName() const {
-  return kViewClassName;
+void TabbedPane::LoadAccelerators() {
+  // Ctrl+Shift+Tab
+  AddAccelerator(views::Accelerator(ui::VKEY_TAB, true, true, false));
+  // Ctrl+Tab
+  AddAccelerator(views::Accelerator(ui::VKEY_TAB, false, true, false));
+}
+
+void TabbedPane::Layout() {
+  if (native_tabbed_pane_)
+    native_tabbed_pane_->GetView()->SetBounds(0, 0, width(), height());
 }
 
 void TabbedPane::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
@@ -105,16 +114,8 @@ bool TabbedPane::AcceleratorPressed(const views::Accelerator& accelerator) {
   return true;
 }
 
-void TabbedPane::LoadAccelerators() {
-  // Ctrl+Shift+Tab
-  AddAccelerator(views::Accelerator(ui::VKEY_TAB, true, true, false));
-  // Ctrl+Tab
-  AddAccelerator(views::Accelerator(ui::VKEY_TAB, false, true, false));
-}
-
-void TabbedPane::Layout() {
-  if (native_tabbed_pane_)
-    native_tabbed_pane_->GetView()->SetBounds(0, 0, width(), height());
+std::string TabbedPane::GetClassName() const {
+  return kViewClassName;
 }
 
 void TabbedPane::OnFocus() {
@@ -141,11 +142,6 @@ void TabbedPane::OnPaintFocusBorder(gfx::Canvas* canvas) {
 void TabbedPane::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PAGETABLIST;
   state->name = accessible_name_;
-}
-
-gfx::Size TabbedPane::GetPreferredSize() {
-  return native_tabbed_pane_ ?
-      native_tabbed_pane_->GetPreferredSize() : gfx::Size();
 }
 
 }  // namespace views

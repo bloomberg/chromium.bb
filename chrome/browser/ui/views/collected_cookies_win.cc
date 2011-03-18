@@ -20,6 +20,7 @@
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/separator.h"
+#include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/layout/box_layout.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
@@ -214,7 +215,7 @@ void CollectedCookiesWin::Init() {
   tabbed_pane->AddTab(label_allowed, CreateAllowedPane());
   tabbed_pane->AddTab(label_blocked, CreateBlockedPane());
   tabbed_pane->SelectTabAt(0);
-  tabbed_pane->SetListener(this);
+  tabbed_pane->set_listener(this);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_with_padding_layout_id);
@@ -390,7 +391,7 @@ void CollectedCookiesWin::ButtonPressed(views::Button* sender,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// views::TabbedPane::Listener implementation.
+// views::TabbedPaneListener implementation.
 
 void CollectedCookiesWin::TabSelectedAt(int index) {
   EnableControls();

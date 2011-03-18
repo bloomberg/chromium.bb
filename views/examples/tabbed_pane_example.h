@@ -6,30 +6,37 @@
 #define VIEWS_EXAMPLES_TABBED_PANE_EXAMPLE_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "views/controls/button/text_button.h"
+#include "views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "views/examples/example_base.h"
-#include "views/controls/tabbed_pane/tabbed_pane.h"
+
+namespace views {
+class TabbedPane;
+}
 
 namespace examples {
 
 // A TabbedPane example tests adding/removing/selecting tabs.
 class TabbedPaneExample : public ExampleBase,
                           public views::ButtonListener,
-                          public views::TabbedPane::Listener {
+                          public views::TabbedPaneListener {
  public:
   explicit TabbedPaneExample(ExamplesMain* main);
   virtual ~TabbedPaneExample();
 
-  // Overridden from ExampleBase:
-  virtual std::wstring GetExampleTitle();
-  virtual void CreateExampleView(views::View* container);
+  // ExampleBase:
+  virtual std::wstring GetExampleTitle() OVERRIDE;
+  virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
-  // Overridden from views::TabbedPane::Listener:
-  virtual void TabSelectedAt(int index);
+  // views::TabbedPaneListener:
+  virtual void TabSelectedAt(int index) OVERRIDE;
 
   // Print the status of the tab in the status area.
   void PrintStatus();
@@ -40,7 +47,10 @@ class TabbedPaneExample : public ExampleBase,
   views::TabbedPane* tabbed_pane_;
 
   // Control buttons to add, remove or select tabs.
-  views::Button* add_, *add_at_, *remove_at_, *select_at_;
+  views::Button* add_;
+  views::Button* add_at_;
+  views::Button* remove_at_;
+  views::Button* select_at_;
 
   DISALLOW_COPY_AND_ASSIGN(TabbedPaneExample);
 };

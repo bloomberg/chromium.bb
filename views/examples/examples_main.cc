@@ -11,24 +11,17 @@
 #include "base/process_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "views/controls/label.h"
 #include "views/controls/button/text_button.h"
+#include "views/controls/label.h"
+#include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/examples/button_example.h"
 #include "views/examples/combobox_example.h"
-#include "views/examples/message_box_example.h"
 #include "views/examples/menu_example.h"
+#include "views/examples/message_box_example.h"
 #include "views/examples/radio_button_example.h"
 #include "views/examples/scroll_view_example.h"
 #include "views/examples/single_split_view_example.h"
-// Slider is not yet ported to Windows.
-#if defined(OS_LINUX)
-#include "views/examples/slider_example.h"
-#endif
 #include "views/examples/tabbed_pane_example.h"
-#if defined(OS_WIN)
-// TableView is not yet ported to Linux.
-#include "views/examples/table_example.h"
-#endif
 #include "views/examples/table2_example.h"
 #include "views/examples/textfield_example.h"
 #include "views/examples/throbber_example.h"
@@ -37,10 +30,18 @@
 #include "views/layout/grid_layout.h"
 #include "views/window/window.h"
 
+#if defined(OS_LINUX)
+// Slider is not yet ported to Windows.
+#include "views/examples/slider_example.h"
+#endif
+#if defined(OS_WIN)
+// TableView is not yet ported to Linux.
+#include "views/examples/table_example.h"
+#endif
+
 namespace examples {
 
-ExamplesMain::ExamplesMain()
-    : contents_(NULL), status_label_(NULL) {}
+ExamplesMain::ExamplesMain() : contents_(NULL), status_label_(NULL) {}
 
 ExamplesMain::~ExamplesMain() {}
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,27 +6,28 @@
 #define VIEWS_CONTROLS_TABBED_PANE_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "views/view.h"
 
 namespace views {
 
 class NativeTabbedPaneWrapper;
+class TabbedPaneListener;
 
-// The TabbedPane class is a view that shows tabs.  When the user clicks on a
-// tab, the associated view is displayed.
+// TabbedPane is a view that shows tabs. When the user clicks on a tab, the
+// associated view is displayed.
 class TabbedPane : public View {
  public:
   TabbedPane();
   virtual ~TabbedPane();
 
-  // An interface an object can implement to be notified about events within
-  // the TabbedPane.
-  class Listener {
-   public:
-    // Called when the tab at the specified |index| is selected by the user.
-    virtual void TabSelectedAt(int index) = 0;
-  };
-  void SetListener(Listener* listener);
+  TabbedPaneListener* listener() const { return listener_; }
+  void set_listener(TabbedPaneListener* listener) { listener_ = listener; }
+
+  NativeTabbedPaneWrapper* native_wrapper() const {
+    return native_tabbed_pane_;
+  }
 
   // Returns the number of tabs.
   int GetTabCount();
@@ -42,7 +43,7 @@ class TabbedPane : public View {
   // the TabbedPane.
   void AddTab(const std::wstring& title, View* contents);
 
-  // Adds a new tab at the specified |index| with the specified |title|.
+  // Adds a new tab at |index| with |title|.
   // |contents| is the view displayed when the tab is selected and is owned by
   // the TabbedPane. If |select_if_first_tab| is true and the tabbed pane is
   // currently empty, the new tab is selected. If you pass in false for
@@ -53,33 +54,17 @@ class TabbedPane : public View {
                      View* contents,
                      bool select_if_first_tab);
 
-  // Removes the tab at the specified |index| and returns the associated content
-  // view.  The caller becomes the owner of the returned view.
+  // Removes the tab at |index| and returns the associated content view.
+  // The caller becomes the owner of the returned view.
   View* RemoveTabAtIndex(int index);
 
-  // Selects the tab at the specified |index|, which must be valid.
+  // Selects the tab at |index|, which must be valid.
   void SelectTabAt(int index);
-
-  Listener* listener() const { return listener_; }
 
   void SetAccessibleName(const string16& name);
 
-  // View overrides:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child)
-      OVERRIDE;
-  // Handles Ctrl+Tab and Ctrl+Shift+Tab navigation of pages.
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator)
-      OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  // View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-
-  NativeTabbedPaneWrapper* native_wrapper() const {
-    return native_tabbed_pane_;
-  }
 
  protected:
   // The object that actually implements the tabbed-pane.
@@ -96,8 +81,21 @@ class TabbedPane : public View {
   // We support Ctrl+Tab and Ctrl+Shift+Tab to navigate tabbed option pages.
   void LoadAccelerators();
 
+  // View:
+  virtual void Layout() OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
+  // Handles Ctrl+Tab and Ctrl+Shift+Tab navigation of pages.
+  virtual bool AcceleratorPressed(
+      const views::Accelerator& accelerator) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+
   // The listener we notify about tab selection changes.
-  Listener* listener_;
+  TabbedPaneListener* listener_;
 
   // The accessible name of this view.
   string16 accessible_name_;

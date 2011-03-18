@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,10 +22,10 @@
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/controls/native/native_view_host.h"
-#include "views/controls/textfield/textfield.h"
 #include "views/controls/scroll_view.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
+#include "views/controls/textfield/textfield.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/widget/root_view.h"
 #include "views/window/non_client_view.h"
@@ -39,8 +39,6 @@
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #include "views/window/window_gtk.h"
 #endif
-
-using ui::ComboboxModel;  // TODO(beng): remove
 
 namespace {
 const int kWindowWidth = 600;
@@ -322,7 +320,7 @@ class BorderView : public NativeViewHost {
   DISALLOW_COPY_AND_ASSIGN(BorderView);
 };
 
-class DummyComboboxModel : public ComboboxModel {
+class DummyComboboxModel : public ui::ComboboxModel {
  public:
   virtual int GetItemCount() { return 10; }
 
@@ -902,7 +900,7 @@ class TestTextfield : public Textfield {
   }
 };
 
-class TestCombobox : public Combobox, public ComboboxModel {
+class TestCombobox : public Combobox, public ui::ComboboxModel {
  public:
   TestCombobox() : Combobox(this) { }
   virtual gfx::NativeView TestGetNativeControlView() {

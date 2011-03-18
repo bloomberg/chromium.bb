@@ -4,6 +4,7 @@
 
 #include "views/examples/tabbed_pane_example.h"
 
+#include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/layout/grid_layout.h"
 
 namespace examples {
@@ -21,6 +22,7 @@ std::wstring TabbedPaneExample::GetExampleTitle() {
 
 void TabbedPaneExample::CreateExampleView(views::View* container) {
   tabbed_pane_ = new views::TabbedPane();
+  tabbed_pane_->set_listener(this);
   add_ = new views::TextButton(this, L"Add");
   add_at_ = new views::TextButton(this, L"Add At 1");
   remove_at_ = new views::TextButton(this, L"Remove At 1");

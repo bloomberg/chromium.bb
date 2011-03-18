@@ -14,6 +14,7 @@
 #include "ui/gfx/skia_utils_gtk.h"
 #include "views/background.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
+#include "views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "views/layout/fill_layout.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
@@ -33,13 +34,25 @@ NativeTabbedPaneGtk::~NativeTabbedPaneGtk() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NativeTabbedPaneGtk, NativeControlGtk implementation:
+
+void NativeTabbedPaneGtk::CreateNativeControl() {
+  GtkWidget* widget = gtk_notebook_new();
+  gtk_notebook_set_tab_pos(GTK_NOTEBOOK(widget), GTK_POS_TOP);
+  g_signal_connect(widget, "switch-page",
+                   G_CALLBACK(CallSwitchPage), this);
+  NativeControlCreated(widget);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NativeTabbedPaneGtk, NativeTabbedPaneWrapper implementation:
 
 void NativeTabbedPaneGtk::AddTab(const std::wstring& title, View* contents) {
   AddTabAtIndex(GetTabCount(), title, contents, true);
 }
 
-void NativeTabbedPaneGtk::AddTabAtIndex(int index, const std::wstring& title,
+void NativeTabbedPaneGtk::AddTabAtIndex(int index,
+                                        const std::wstring& title,
                                         View* contents,
                                         bool select_if_first_tab) {
   DCHECK(native_view());
@@ -126,18 +139,7 @@ gfx::NativeView NativeTabbedPaneGtk::GetTestingHandle() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeTabbedPaneGtk, NativeControlGtk override:
-
-void NativeTabbedPaneGtk::CreateNativeControl() {
-  GtkWidget* widget = gtk_notebook_new();
-  gtk_notebook_set_tab_pos(GTK_NOTEBOOK(widget), GTK_POS_TOP);
-  g_signal_connect(widget, "switch-page",
-                   G_CALLBACK(CallSwitchPage), this);
-  NativeControlCreated(widget);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeTabbedPaneGtk, View override:
+// NativeTabbedPaneGtk, View implementation:
 
 FocusTraversable* NativeTabbedPaneGtk::GetFocusTraversable() {
   return GetWidgetAt(GetSelectedTabIndex());
@@ -145,7 +147,8 @@ FocusTraversable* NativeTabbedPaneGtk::GetFocusTraversable() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabbedPaneGtk, private:
-void NativeTabbedPaneGtk::DoAddTabAtIndex(int index, const std::wstring& title,
+void NativeTabbedPaneGtk::DoAddTabAtIndex(int index,
+                                          const std::wstring& title,
                                           View* contents,
                                           bool select_if_first_tab) {
   int tab_count = GetTabCount();
@@ -208,7 +211,7 @@ View* NativeTabbedPaneGtk::GetTabViewAt(int index) {
 }
 
 void NativeTabbedPaneGtk::OnSwitchPage(int selected_tab_index) {
-  TabbedPane::Listener* listener = tabbed_pane_->listener();
+  TabbedPaneListener* listener = tabbed_pane_->listener();
   if (listener != NULL)
     listener->TabSelectedAt(selected_tab_index);
 }
