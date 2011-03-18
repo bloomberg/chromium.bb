@@ -371,9 +371,9 @@ const BookmarkNode* BookmarkModel::GetNodeByID(int64 id) {
   return GetNodeByID(&root_, id);
 }
 
-const BookmarkNode* BookmarkModel::AddGroup(const BookmarkNode* parent,
-                                            int index,
-                                            const string16& title) {
+const BookmarkNode* BookmarkModel::AddFolder(const BookmarkNode* parent,
+                                             int index,
+                                             const string16& title) {
   if (!loaded_ || parent == &root_ || !IsValidIndex(parent, index, true)) {
     // Can't add to the root.
     NOTREACHED();

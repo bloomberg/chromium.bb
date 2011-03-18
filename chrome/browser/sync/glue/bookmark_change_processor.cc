@@ -399,9 +399,9 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
       const BookmarkNode* parent = dst->parent();
       if (dst->child_count()) {
         if (!foster_parent) {
-          foster_parent = model->AddGroup(model->other_node(),
-                                          model->other_node()->child_count(),
-                                          string16());
+          foster_parent = model->AddFolder(model->other_node(),
+                                           model->other_node()->child_count(),
+                                           string16());
         }
         for (int i = dst->child_count() - 1; i >= 0; --i) {
           model->Move(dst->GetChild(i), foster_parent,
@@ -493,8 +493,8 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
 
   const BookmarkNode* node;
   if (sync_node->GetIsFolder()) {
-    node = model->AddGroup(parent, index,
-                           WideToUTF16Hack(sync_node->GetTitle()));
+    node = model->AddFolder(parent, index,
+                            WideToUTF16Hack(sync_node->GetTitle()));
   } else {
     node = model->AddURL(parent, index,
                          WideToUTF16Hack(sync_node->GetTitle()),

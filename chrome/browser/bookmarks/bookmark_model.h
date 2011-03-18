@@ -263,10 +263,10 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // the specified id.
   const BookmarkNode* GetNodeByID(int64 id);
 
-  // Adds a new group node at the specified position.
-  const BookmarkNode* AddGroup(const BookmarkNode* parent,
-                               int index,
-                               const string16& title);
+  // Adds a new folder node at the specified position.
+  const BookmarkNode* AddFolder(const BookmarkNode* parent,
+                                int index,
+                                const string16& title);
 
   // Adds a url at the specified position.
   const BookmarkNode* AddURL(const BookmarkNode* parent,

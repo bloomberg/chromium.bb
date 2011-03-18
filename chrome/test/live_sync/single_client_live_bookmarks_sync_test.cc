@@ -10,7 +10,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, OfflineToOnline) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   DisableNetwork(GetProfile(0));
-  const BookmarkNode* node = AddGroup(0, L"title");
+  const BookmarkNode* node = AddFolder(0, L"title");
   SetTitle(0, node, L"new_title");
   ASSERT_FALSE(GetClient(0)->AwaitSyncCycleCompletion("Offline state change."));
   ASSERT_EQ(ProfileSyncService::Status::OFFLINE_UNSYNCED,
@@ -35,9 +35,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, Sanity) {
   //        -> http://www.facebook.com "tier1_a_url2"
   //      -> tier1_b
   //        -> http://www.nhl.com "tier1_b_url0"
-  const BookmarkNode* top = AddGroup(0, GetOtherNode(0), 0, L"top");
-  const BookmarkNode* tier1_a = AddGroup(0, top, 0, L"tier1_a");
-  const BookmarkNode* tier1_b = AddGroup(0, top, 1, L"tier1_b");
+  const BookmarkNode* top = AddFolder(0, GetOtherNode(0), 0, L"top");
+  const BookmarkNode* tier1_a = AddFolder(0, top, 0, L"tier1_a");
+  const BookmarkNode* tier1_b = AddFolder(0, top, 1, L"tier1_b");
   const BookmarkNode* tier1_a_url0 = AddURL(0, tier1_a, 0, L"tier1_a_url0",
       GURL("http://mail.google.com"));
   const BookmarkNode* tier1_a_url1 = AddURL(0, tier1_a, 1, L"tier1_a_url1",
@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(bubble != NULL);
   const BookmarkNode* wired = AddURL(0, bar, 2, L"Wired News",
       GURL("http://www.wired.com"));
-  const BookmarkNode* tier2_b = AddGroup(0, tier1_b, 0, L"tier2_b");
+  const BookmarkNode* tier2_b = AddFolder(0, tier1_b, 0, L"tier2_b");
   Move(0, tier1_b_url0, tier2_b, 0);
   Move(0, porsche, bar, 0);
   SetTitle(0, wired, L"News Wired");
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, Sanity) {
   Remove(0, top, top->child_count() - 1);
   Move(0, wired, tier1_b, 0);
   Move(0, porsche, bar, 3);
-  const BookmarkNode* tier3_b = AddGroup(0, tier2_b, 1, L"tier3_b");
+  const BookmarkNode* tier3_b = AddFolder(0, tier2_b, 1, L"tier3_b");
   const BookmarkNode* leafs = AddURL(0, tier1_a, 0, L"Toronto Maple Leafs",
       GURL("http://mapleleafs.nhl.com"));
   const BookmarkNode* wynn = AddURL(0, bar, 1, L"Wynn",

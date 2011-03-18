@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,7 @@ bool BookmarkFolderEditorController::IsValid(const std::wstring& text) {
 
 void BookmarkFolderEditorController::InputAccepted(const std::wstring& text) {
   if (is_new_)
-    model_->AddGroup(node_, index_, WideToUTF16Hack(text));
+    model_->AddFolder(node_, index_, WideToUTF16Hack(text));
   else
     model_->SetTitle(node_, WideToUTF16Hack(text));
 }

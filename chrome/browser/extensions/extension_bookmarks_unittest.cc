@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,10 +19,10 @@ class ExtensionBookmarksTest : public testing::Test {
                      GURL("http://www.reddit.com"));
     model_->AddURL(model_->other_node(), 0, ASCIIToUTF16("News"),
                      GURL("http://www.foxnews.com"));
-    folder =
-        model_->AddGroup(model_->other_node(), 0, ASCIIToUTF16("outer folder"));
-    model_->AddGroup(folder, 0, ASCIIToUTF16("inner folder 1"));
-    model_->AddGroup(folder, 0, ASCIIToUTF16("inner folder 2"));
+    folder = model_->AddFolder(
+        model_->other_node(), 0, ASCIIToUTF16("outer folder"));
+    model_->AddFolder(folder, 0, ASCIIToUTF16("inner folder 1"));
+    model_->AddFolder(folder, 0, ASCIIToUTF16("inner folder 2"));
     model_->AddURL(folder, 0, ASCIIToUTF16("Digg"), GURL("http://reddit.com"));
     model_->AddURL(folder, 0, ASCIIToUTF16("CNet"), GURL("http://cnet.com"));
   }

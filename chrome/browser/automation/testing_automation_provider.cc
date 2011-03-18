@@ -1597,8 +1597,8 @@ void TestingAutomationProvider::AddBookmarkGroup(int handle,
       const BookmarkNode* parent = model->GetNodeByID(parent_id);
       DCHECK(parent);
       if (parent) {
-        const BookmarkNode* child = model->AddGroup(parent, index,
-                                                    WideToUTF16Hack(title));
+        const BookmarkNode* child = model->AddFolder(parent, index,
+                                                     WideToUTF16Hack(title));
         DCHECK(child);
         if (child)
           *success = true;

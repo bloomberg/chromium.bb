@@ -22,8 +22,8 @@ const char kUrl3Title[] = "url3";
 const char kUrl3Url[] = "http://www.url3.com";
 const char kUrl4Title[] = "url4";
 const char kUrl4Url[] = "http://www.url4.com";
-const char kGroup1Title[] = "group1";
-const char kGroup2Title[] = "group2";
+const char kFolder1Title[] = "folder1";
+const char kFolder2Title[] = "folder2";
 
 // Helper to get a mutable bookmark node.
 static BookmarkNode* AsMutable(const BookmarkNode* node) {
@@ -52,9 +52,9 @@ class BookmarkCodecTest : public testing::Test {
     scoped_ptr<BookmarkModel> model(new BookmarkModel(NULL));
     const BookmarkNode* bookmark_bar = model->GetBookmarkBarNode();
     model->AddURL(bookmark_bar, 0, ASCIIToUTF16(kUrl1Title), GURL(kUrl1Url));
-    const BookmarkNode* group1 = model->AddGroup(bookmark_bar, 1,
-                                                 ASCIIToUTF16(kGroup1Title));
-    model->AddURL(group1, 0, ASCIIToUTF16(kUrl2Title), GURL(kUrl2Url));
+    const BookmarkNode* folder1 = model->AddFolder(bookmark_bar, 1,
+                                                   ASCIIToUTF16(kFolder1Title));
+    model->AddURL(folder1, 0, ASCIIToUTF16(kUrl2Title), GURL(kUrl2Url));
     return model.release();
   }
 
@@ -272,9 +272,9 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
   decoded_model.AddURL(
       bookmark_bar, bookmark_bar->child_count(), ASCIIToUTF16(kUrl3Title),
       GURL(kUrl3Url));
-  const BookmarkNode* group2_node = decoded_model.AddGroup(
-      bookmark_bar, bookmark_bar->child_count(), ASCIIToUTF16(kGroup2Title));
-  decoded_model.AddURL(group2_node, 0, ASCIIToUTF16(kUrl4Title),
+  const BookmarkNode* folder2_node = decoded_model.AddFolder(
+      bookmark_bar, bookmark_bar->child_count(), ASCIIToUTF16(kFolder2Title));
+  decoded_model.AddURL(folder2_node, 0, ASCIIToUTF16(kUrl4Title),
                        GURL(kUrl4Url));
 
   BookmarkCodec encoder2;

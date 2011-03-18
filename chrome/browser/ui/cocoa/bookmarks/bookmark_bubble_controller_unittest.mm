@@ -139,16 +139,16 @@ TEST_F(BookmarkBubbleControllerTest, TestFillInFolder) {
   EXPECT_TRUE(model);
   const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
   EXPECT_TRUE(bookmarkBarNode);
-  const BookmarkNode* node1 = model->AddGroup(bookmarkBarNode, 0,
-                                              ASCIIToUTF16("one"));
+  const BookmarkNode* node1 = model->AddFolder(bookmarkBarNode, 0,
+                                               ASCIIToUTF16("one"));
   EXPECT_TRUE(node1);
-  const BookmarkNode* node2 = model->AddGroup(bookmarkBarNode, 1,
-                                              ASCIIToUTF16("two"));
+  const BookmarkNode* node2 = model->AddFolder(bookmarkBarNode, 1,
+                                               ASCIIToUTF16("two"));
   EXPECT_TRUE(node2);
-  const BookmarkNode* node3 = model->AddGroup(bookmarkBarNode, 2,
-                                              ASCIIToUTF16("three"));
+  const BookmarkNode* node3 = model->AddFolder(bookmarkBarNode, 2,
+                                               ASCIIToUTF16("three"));
   EXPECT_TRUE(node3);
-  const BookmarkNode* node4 = model->AddGroup(node2, 0, ASCIIToUTF16("sub"));
+  const BookmarkNode* node4 = model->AddFolder(node2, 0, ASCIIToUTF16("sub"));
   EXPECT_TRUE(node4);
   const BookmarkNode* node5 = model->AddURL(node1, 0, ASCIIToUTF16("title1"),
                                             GURL("http://www.google.com"));
@@ -156,8 +156,8 @@ TEST_F(BookmarkBubbleControllerTest, TestFillInFolder) {
   const BookmarkNode* node6 = model->AddURL(node3, 0, ASCIIToUTF16("title2"),
                                             GURL("http://www.google.com"));
   EXPECT_TRUE(node6);
-  const BookmarkNode* node7 = model->AddURL(node4, 0, ASCIIToUTF16("title3"),
-                                          GURL("http://www.google.com/reader"));
+  const BookmarkNode* node7 = model->AddURL(
+      node4, 0, ASCIIToUTF16("title3"), GURL("http://www.google.com/reader"));
   EXPECT_TRUE(node7);
 
   BookmarkBubbleController* controller = ControllerForNode(node4);
@@ -180,14 +180,14 @@ TEST_F(BookmarkBubbleControllerTest, TestFolderWithBlankName) {
   EXPECT_TRUE(model);
   const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
   EXPECT_TRUE(bookmarkBarNode);
-  const BookmarkNode* node1 = model->AddGroup(bookmarkBarNode, 0,
-                                              ASCIIToUTF16("one"));
+  const BookmarkNode* node1 = model->AddFolder(bookmarkBarNode, 0,
+                                               ASCIIToUTF16("one"));
   EXPECT_TRUE(node1);
-  const BookmarkNode* node2 = model->AddGroup(bookmarkBarNode, 1,
-                                              ASCIIToUTF16(""));
+  const BookmarkNode* node2 = model->AddFolder(bookmarkBarNode, 1,
+                                               ASCIIToUTF16(""));
   EXPECT_TRUE(node2);
-  const BookmarkNode* node3 = model->AddGroup(bookmarkBarNode, 2,
-                                              ASCIIToUTF16("three"));
+  const BookmarkNode* node3 = model->AddFolder(bookmarkBarNode, 2,
+                                               ASCIIToUTF16("three"));
   EXPECT_TRUE(node3);
   const BookmarkNode* node2_1 = model->AddURL(node2, 0, ASCIIToUTF16("title1"),
                                               GURL("http://www.google.com"));
@@ -261,11 +261,11 @@ TEST_F(BookmarkBubbleControllerTest, TestUserEdit) {
                                            0,
                                            ASCIIToUTF16("short-title"),
                                            GURL("http://www.google.com"));
-  const BookmarkNode* grandma = model->AddGroup(bookmarkBarNode, 0,
-                                                ASCIIToUTF16("grandma"));
+  const BookmarkNode* grandma = model->AddFolder(bookmarkBarNode, 0,
+                                                 ASCIIToUTF16("grandma"));
   EXPECT_TRUE(grandma);
-  const BookmarkNode* grandpa = model->AddGroup(bookmarkBarNode, 0,
-                                                ASCIIToUTF16("grandpa"));
+  const BookmarkNode* grandpa = model->AddFolder(bookmarkBarNode, 0,
+                                                 ASCIIToUTF16("grandpa"));
   EXPECT_TRUE(grandpa);
 
   BookmarkBubbleController* controller = ControllerForNode(node);
@@ -292,13 +292,13 @@ TEST_F(BookmarkBubbleControllerTest, TestNewParentSameName) {
                                              ASCIIToUTF16("short-title"),
                                              GURL("http://www.google.com"));
     EXPECT_TRUE(node);
-    const BookmarkNode* group = model->AddGroup(bookmarkBarNode, 0,
-                                                ASCIIToUTF16("NAME"));
-    EXPECT_TRUE(group);
-    group = model->AddGroup(bookmarkBarNode, 0, ASCIIToUTF16("NAME"));
-    EXPECT_TRUE(group);
-    group = model->AddGroup(bookmarkBarNode, 0, ASCIIToUTF16("NAME"));
-    EXPECT_TRUE(group);
+    const BookmarkNode* folder = model->AddFolder(bookmarkBarNode, 0,
+                                                 ASCIIToUTF16("NAME"));
+    EXPECT_TRUE(folder);
+    folder = model->AddFolder(bookmarkBarNode, 0, ASCIIToUTF16("NAME"));
+    EXPECT_TRUE(folder);
+    folder = model->AddFolder(bookmarkBarNode, 0, ASCIIToUTF16("NAME"));
+    EXPECT_TRUE(folder);
     BookmarkBubbleController* controller = ControllerForNode(node);
     EXPECT_TRUE(controller);
 
@@ -317,11 +317,11 @@ TEST_F(BookmarkBubbleControllerTest, TestDuplicateNodeNames) {
   BookmarkModel* model = GetBookmarkModel();
   const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
   EXPECT_TRUE(bookmarkBarNode);
-  const BookmarkNode* node1 = model->AddGroup(bookmarkBarNode, 0,
-                                              ASCIIToUTF16("NAME"));
+  const BookmarkNode* node1 = model->AddFolder(bookmarkBarNode, 0,
+                                               ASCIIToUTF16("NAME"));
   EXPECT_TRUE(node1);
-  const BookmarkNode* node2 = model->AddGroup(bookmarkBarNode, 0,
-                                              ASCIIToUTF16("NAME"));
+  const BookmarkNode* node2 = model->AddFolder(bookmarkBarNode, 0,
+                                               ASCIIToUTF16("NAME"));
   EXPECT_TRUE(node2);
   BookmarkBubbleController* controller = ControllerForNode(bookmarkBarNode);
   EXPECT_TRUE(controller);
@@ -417,17 +417,17 @@ TEST_F(BookmarkBubbleControllerTest, TestMenuIndentation) {
   EXPECT_TRUE(model);
   const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
   EXPECT_TRUE(bookmarkBarNode);
-  const BookmarkNode* node1 = model->AddGroup(bookmarkBarNode, 0,
-                                              ASCIIToUTF16("one"));
+  const BookmarkNode* node1 = model->AddFolder(bookmarkBarNode, 0,
+                                               ASCIIToUTF16("one"));
   EXPECT_TRUE(node1);
-  const BookmarkNode* node2 = model->AddGroup(bookmarkBarNode, 1,
-                                              ASCIIToUTF16("two"));
+  const BookmarkNode* node2 = model->AddFolder(bookmarkBarNode, 1,
+                                               ASCIIToUTF16("two"));
   EXPECT_TRUE(node2);
-  const BookmarkNode* node2_1 = model->AddGroup(node2, 0,
-                                                ASCIIToUTF16("two dot one"));
+  const BookmarkNode* node2_1 = model->AddFolder(node2, 0,
+                                                 ASCIIToUTF16("two dot one"));
   EXPECT_TRUE(node2_1);
-  const BookmarkNode* node3 = model->AddGroup(bookmarkBarNode, 2,
-                                              ASCIIToUTF16("three"));
+  const BookmarkNode* node3 = model->AddFolder(bookmarkBarNode, 2,
+                                               ASCIIToUTF16("three"));
   EXPECT_TRUE(node3);
 
   BookmarkBubbleController* controller = ControllerForNode(node1);

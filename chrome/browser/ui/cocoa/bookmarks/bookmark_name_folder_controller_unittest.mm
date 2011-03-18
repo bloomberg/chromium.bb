@@ -124,9 +124,9 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewBlankName) {
 TEST_F(BookmarkNameFolderControllerTest, Rename) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
-  const BookmarkNode* folder = model->AddGroup(parent,
-                                               parent->child_count(),
-                                               ASCIIToUTF16("group"));
+  const BookmarkNode* folder = model->AddFolder(parent,
+                                                parent->child_count(),
+                                                ASCIIToUTF16("folder"));
 
   // Rename the folder by creating a controller that originates from
   // the node.
@@ -137,7 +137,7 @@ TEST_F(BookmarkNameFolderControllerTest, Rename) {
                                  node:folder]);
   [controller window];  // force nib load
 
-  EXPECT_NSEQ(@"group", [controller folderName]);
+  EXPECT_NSEQ(@"folder", [controller folderName]);
   [controller setFolderName:@"Zobo"];
   [controller ok:nil];
   EXPECT_EQ(1, parent->child_count());

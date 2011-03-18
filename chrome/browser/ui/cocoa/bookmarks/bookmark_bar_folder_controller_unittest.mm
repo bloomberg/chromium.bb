@@ -131,18 +131,18 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
   BookmarkBarFolderControllerTest() {
     BookmarkModel* model = helper_.profile()->GetBookmarkModel();
     const BookmarkNode* parent = model->GetBookmarkBarNode();
-    const BookmarkNode* folderA = model->AddGroup(parent,
-                                                  parent->child_count(),
-                                                  ASCIIToUTF16("group"));
+    const BookmarkNode* folderA = model->AddFolder(parent,
+                                                   parent->child_count(),
+                                                   ASCIIToUTF16("folder"));
     folderA_ = folderA;
-    model->AddGroup(parent, parent->child_count(),
-                    ASCIIToUTF16("sibling group"));
-    const BookmarkNode* folderB = model->AddGroup(folderA,
-                                                  folderA->child_count(),
-                                                  ASCIIToUTF16("subgroup 1"));
-    model->AddGroup(folderA,
-                    folderA->child_count(),
-                    ASCIIToUTF16("subgroup 2"));
+    model->AddFolder(parent, parent->child_count(),
+                     ASCIIToUTF16("sibbling folder"));
+    const BookmarkNode* folderB = model->AddFolder(folderA,
+                                                   folderA->child_count(),
+                                                   ASCIIToUTF16("subfolder 1"));
+    model->AddFolder(folderA,
+                     folderA->child_count(),
+                     ASCIIToUTF16("subfolder 2"));
     model->AddURL(folderA, folderA->child_count(), ASCIIToUTF16("title a"),
                   GURL("http://www.google.com/a"));
     longTitleNode_ = model->AddURL(
@@ -296,8 +296,8 @@ TEST_F(BookmarkBarFolderControllerTest, PositionRightLeftRight) {
   const int count = 100;
   int i;
   // Make some super duper deeply nested folders.
-  for (i=0; i<count; i++) {
-    folder = model->AddGroup(folder, 0, ASCIIToUTF16("nested folder"));
+  for (i = 0; i < count; i++) {
+    folder = model->AddFolder(folder, 0, ASCIIToUTF16("nested folder"));
   }
 
   // Setup initial state for opening all folders.
@@ -1168,9 +1168,9 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   EXPECT_EQ(model_string, actualModelString);
 
   const BookmarkNode* parent = model.GetBookmarkBarNode();
-  const BookmarkNode* folder = model.AddGroup(parent,
-                                              parent->child_count(),
-                                              ASCIIToUTF16("BIG"));
+  const BookmarkNode* folder = model.AddFolder(parent,
+                                               parent->child_count(),
+                                               ASCIIToUTF16("BIG"));
 
   // Pop open the new folder window and verify it has one (empty) item.
   BookmarkButton* button = [bar_ buttonWithTitleEqualTo:@"BIG"];
@@ -1255,9 +1255,9 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
 TEST_F(BookmarkBarFolderControllerMenuTest, HoverThenDeleteBookmark) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
   const BookmarkNode* root = model.GetBookmarkBarNode();
-  const BookmarkNode* folder = model.AddGroup(root,
-                                              root->child_count(),
-                                              ASCIIToUTF16("BIG"));
+  const BookmarkNode* folder = model.AddFolder(root,
+                                               root->child_count(),
+                                               ASCIIToUTF16("BIG"));
   for (int i = 0; i < kLotsOfNodesCount; i++)
     model.AddURL(folder, folder->child_count(), ASCIIToUTF16("kid"),
                   GURL("http://kid.com/smile"));

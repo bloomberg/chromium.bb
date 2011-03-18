@@ -75,31 +75,34 @@ const BookmarkNode* LiveBookmarksSyncTest::AddURL(int profile,
                                   WideToUTF16(title), url);
 }
 
-const BookmarkNode* LiveBookmarksSyncTest::AddGroup(int profile,
-                                                    const std::wstring& title) {
-  return verifier_helper_->AddGroup(GetBookmarkModel(profile),
-                                    GetBookmarkBarNode(profile),
-                                    0, WideToUTF16(title));
+const BookmarkNode* LiveBookmarksSyncTest::AddFolder(
+    int profile,
+    const std::wstring& title) {
+  return verifier_helper_->AddFolder(GetBookmarkModel(profile),
+                                     GetBookmarkBarNode(profile),
+                                     0, WideToUTF16(title));
 }
 
-const BookmarkNode* LiveBookmarksSyncTest::AddGroup(int profile,
-                                                    int index,
-                                                    const std::wstring& title) {
-  return verifier_helper_->AddGroup(GetBookmarkModel(profile),
-                                    GetBookmarkBarNode(profile),
-                                    index, WideToUTF16(title));
+const BookmarkNode* LiveBookmarksSyncTest::AddFolder(
+    int profile,
+    int index,
+    const std::wstring& title) {
+  return verifier_helper_->AddFolder(GetBookmarkModel(profile),
+                                     GetBookmarkBarNode(profile),
+                                     index, WideToUTF16(title));
 }
 
-const BookmarkNode* LiveBookmarksSyncTest::AddGroup(int profile,
-                                                    const BookmarkNode* parent,
-                                                    int index,
-                                                    const std::wstring& title) {
+const BookmarkNode* LiveBookmarksSyncTest::AddFolder(
+    int profile,
+    const BookmarkNode* parent,
+    int index,
+    const std::wstring& title) {
   if (GetBookmarkModel(profile)->GetNodeByID(parent->id()) != parent) {
     LOG(ERROR) << "Node " << parent->GetTitle() << " does not belong to "
                << "Profile " << profile;
     return NULL;
   }
-  return verifier_helper_->AddGroup(
+  return verifier_helper_->AddFolder(
       GetBookmarkModel(profile), parent, index, WideToUTF16(title));
 }
 

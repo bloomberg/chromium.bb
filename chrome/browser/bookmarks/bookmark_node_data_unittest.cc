@@ -112,17 +112,17 @@ TEST_F(BookmarkNodeDataTest, URL) {
   EXPECT_EQ(title, read_title);
 }
 
-// Tests writing a group to the clipboard.
-TEST_F(BookmarkNodeDataTest, Group) {
+// Tests writing a folder to the clipboard.
+TEST_F(BookmarkNodeDataTest, Folder) {
   TestingProfile profile;
   profile.CreateBookmarkModel(false);
   profile.BlockUntilBookmarkModelLoaded();
   profile.SetID(L"id");
   BookmarkModel* model = profile.GetBookmarkModel();
   const BookmarkNode* root = model->GetBookmarkBarNode();
-  const BookmarkNode* g1 = model->AddGroup(root, 0, ASCIIToUTF16("g1"));
-  const BookmarkNode* g11 = model->AddGroup(g1, 0, ASCIIToUTF16("g11"));
-  const BookmarkNode* g12 = model->AddGroup(g1, 0, ASCIIToUTF16("g12"));
+  const BookmarkNode* g1 = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
+  const BookmarkNode* g11 = model->AddFolder(g1, 0, ASCIIToUTF16("g11"));
+  const BookmarkNode* g12 = model->AddFolder(g1, 0, ASCIIToUTF16("g12"));
 
   BookmarkNodeData drag_data(g12);
   EXPECT_TRUE(drag_data.is_valid());
@@ -152,21 +152,21 @@ TEST_F(BookmarkNodeDataTest, Group) {
 }
 
 // Tests reading/writing a folder with children.
-TEST_F(BookmarkNodeDataTest, GroupWithChild) {
+TEST_F(BookmarkNodeDataTest, FolderWithChild) {
   TestingProfile profile;
   profile.SetID(L"id");
   profile.CreateBookmarkModel(false);
   profile.BlockUntilBookmarkModelLoaded();
   BookmarkModel* model = profile.GetBookmarkModel();
   const BookmarkNode* root = model->GetBookmarkBarNode();
-  const BookmarkNode* group = model->AddGroup(root, 0, ASCIIToUTF16("g1"));
+  const BookmarkNode* folder = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
 
   GURL url(GURL("http://foo.com"));
   const string16 title(ASCIIToUTF16("blah2"));
 
-  model->AddURL(group, 0, title, url);
+  model->AddURL(folder, 0, title, url);
 
-  BookmarkNodeData drag_data(group);
+  BookmarkNodeData drag_data(folder);
 
   ui::OSExchangeData data;
   drag_data.Write(&profile, &data);
@@ -186,8 +186,8 @@ TEST_F(BookmarkNodeDataTest, GroupWithChild) {
   EXPECT_TRUE(read_child.is_url);
 
   // And make sure we get the node back.
-  const BookmarkNode* r_group = read_data.GetFirstNode(&profile);
-  EXPECT_TRUE(group == r_group);
+  const BookmarkNode* r_folder = read_data.GetFirstNode(&profile);
+  EXPECT_TRUE(folder == r_folder);
 }
 
 // Tests reading/writing of multiple nodes.
@@ -198,16 +198,16 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   profile.BlockUntilBookmarkModelLoaded();
   BookmarkModel* model = profile.GetBookmarkModel();
   const BookmarkNode* root = model->GetBookmarkBarNode();
-  const BookmarkNode* group = model->AddGroup(root, 0, ASCIIToUTF16("g1"));
+  const BookmarkNode* folder = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
 
   GURL url(GURL("http://foo.com"));
   const string16 title(ASCIIToUTF16("blah2"));
 
-  const BookmarkNode* url_node = model->AddURL(group, 0, title, url);
+  const BookmarkNode* url_node = model->AddURL(folder, 0, title, url);
 
   // Write the nodes to the clipboard.
   std::vector<const BookmarkNode*> nodes;
-  nodes.push_back(group);
+  nodes.push_back(folder);
   nodes.push_back(url_node);
   BookmarkNodeData drag_data(nodes);
   ui::OSExchangeData data;
@@ -221,10 +221,10 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   ASSERT_EQ(2, read_data.elements.size());
   ASSERT_EQ(1, read_data.elements[0].children.size());
 
-  const BookmarkNodeData::Element& read_group = read_data.elements[0];
-  EXPECT_FALSE(read_group.is_url);
-  EXPECT_EQ(L"g1", read_group.title);
-  EXPECT_EQ(1, read_group.children.size());
+  const BookmarkNodeData::Element& read_folder = read_data.elements[0];
+  EXPECT_FALSE(read_folder.is_url);
+  EXPECT_EQ(L"g1", read_folder.title);
+  EXPECT_EQ(1, read_folder.children.size());
 
   const BookmarkNodeData::Element& read_url = read_data.elements[1];
   EXPECT_TRUE(read_url.is_url);
@@ -234,7 +234,7 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   // And make sure we get the node back.
   std::vector<const BookmarkNode*> read_nodes = read_data.GetNodes(&profile);
   ASSERT_EQ(2, read_nodes.size());
-  EXPECT_TRUE(read_nodes[0] == group);
+  EXPECT_TRUE(read_nodes[0] == folder);
   EXPECT_TRUE(read_nodes[1] == url_node);
 
   // Asking for the first node should return NULL with more than one element

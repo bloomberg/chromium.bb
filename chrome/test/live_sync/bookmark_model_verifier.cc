@@ -205,18 +205,18 @@ void BookmarkModelVerifier::FindNodeInVerifier(BookmarkModel* foreign_model,
   *result = walker;
 }
 
-const BookmarkNode* BookmarkModelVerifier::AddGroup(BookmarkModel* model,
-                                                    const BookmarkNode* parent,
-                                                    int index,
-                                                    const string16& title) {
-  const BookmarkNode* result = model->AddGroup(parent, index, title);
+const BookmarkNode* BookmarkModelVerifier::AddFolder(BookmarkModel* model,
+                                                     const BookmarkNode* parent,
+                                                     int index,
+                                                     const string16& title) {
+  const BookmarkNode* result = model->AddFolder(parent, index, title);
   EXPECT_TRUE(result);
   if (!result)
     return NULL;
   if (use_verifier_model_) {
     const BookmarkNode* v_parent = NULL;
     FindNodeInVerifier(model, parent, &v_parent);
-    const BookmarkNode* v_node = verifier_model_->AddGroup(
+    const BookmarkNode* v_node = verifier_model_->AddFolder(
         v_parent, index, title);
     EXPECT_TRUE(v_node);
     if (!v_node)

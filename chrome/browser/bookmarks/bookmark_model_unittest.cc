@@ -200,11 +200,11 @@ TEST_F(BookmarkModelTest, AddURL) {
               new_node->id() != model.other_node()->id());
 }
 
-TEST_F(BookmarkModelTest, AddGroup) {
+TEST_F(BookmarkModelTest, AddFolder) {
   const BookmarkNode* root = model.GetBookmarkBarNode();
   const string16 title(ASCIIToUTF16("foo"));
 
-  const BookmarkNode* new_node = model.AddGroup(root, 0, title);
+  const BookmarkNode* new_node = model.AddFolder(root, 0, title);
   AssertObserverCount(1, 0, 0, 0, 0);
   observer_details.AssertEquals(root, NULL, 0, -1);
 
@@ -215,9 +215,9 @@ TEST_F(BookmarkModelTest, AddGroup) {
   EXPECT_TRUE(new_node->id() != root->id() &&
               new_node->id() != model.other_node()->id());
 
-  // Add another group, just to make sure group_ids are incremented correctly.
+  // Add another folder, just to make sure folder_ids are incremented correctly.
   ClearCounts();
-  model.AddGroup(root, 0, title);
+  model.AddFolder(root, 0, title);
   AssertObserverCount(1, 0, 0, 0, 0);
   observer_details.AssertEquals(root, NULL, 0, -1);
 }
@@ -240,18 +240,18 @@ TEST_F(BookmarkModelTest, RemoveURL) {
 
 TEST_F(BookmarkModelTest, RemoveGroup) {
   const BookmarkNode* root = model.GetBookmarkBarNode();
-  const BookmarkNode* group = model.AddGroup(root, 0, ASCIIToUTF16("foo"));
+  const BookmarkNode* folder = model.AddFolder(root, 0, ASCIIToUTF16("foo"));
 
   ClearCounts();
 
   // Add a URL as a child.
   const string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
-  model.AddURL(group, 0, title, url);
+  model.AddURL(folder, 0, title, url);
 
   ClearCounts();
 
-  // Now remove the group.
+  // Now remove the folder.
   model.Remove(root, 0);
   ASSERT_EQ(0, root->child_count());
   AssertObserverCount(0, 0, 1, 0, 0);
@@ -296,20 +296,20 @@ TEST_F(BookmarkModelTest, Move) {
   const string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
   const BookmarkNode* node = model.AddURL(root, 0, title, url);
-  const BookmarkNode* group1 = model.AddGroup(root, 0, ASCIIToUTF16("foo"));
+  const BookmarkNode* folder1 = model.AddFolder(root, 0, ASCIIToUTF16("foo"));
   ClearCounts();
 
-  model.Move(node, group1, 0);
+  model.Move(node, folder1, 0);
 
   AssertObserverCount(0, 1, 0, 0, 0);
-  observer_details.AssertEquals(root, group1, 1, 0);
-  EXPECT_TRUE(group1 == node->parent());
+  observer_details.AssertEquals(root, folder1, 1, 0);
+  EXPECT_TRUE(folder1 == node->parent());
   EXPECT_EQ(1, root->child_count());
-  EXPECT_EQ(group1, root->GetChild(0));
-  EXPECT_EQ(1, group1->child_count());
-  EXPECT_EQ(node, group1->GetChild(0));
+  EXPECT_EQ(folder1, root->GetChild(0));
+  EXPECT_EQ(1, folder1->child_count());
+  EXPECT_EQ(node, folder1->GetChild(0));
 
-  // And remove the group.
+  // And remove the folder.
   ClearCounts();
   model.Remove(root, 0);
   AssertObserverCount(0, 0, 1, 0, 0);
@@ -335,8 +335,8 @@ TEST_F(BookmarkModelTest, Copy) {
   EXPECT_EQ("a 1:[ b d c ] d 2:[ e f g ] h ", actualModelString);
 
   // Copy '1:d' to be after 'a': URL item from folder to bar.
-  const BookmarkNode* group = root->GetChild(1);
-  nodeToCopy = group->GetChild(1);
+  const BookmarkNode* folder = root->GetChild(1);
+  nodeToCopy = folder->GetChild(1);
   model.Copy(nodeToCopy, root, 1);
   actualModelString = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ("a d 1:[ b d c ] d 2:[ e f g ] h ", actualModelString);
@@ -349,9 +349,9 @@ TEST_F(BookmarkModelTest, Copy) {
   EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f g ] h ", actualModelString);
 
   // Copy '2:1' to be after '2:f': Folder within same folder.
-  group = root->GetChild(4);
-  nodeToCopy = group->GetChild(1);
-  model.Copy(nodeToCopy, group, 3);
+  folder = root->GetChild(4);
+  nodeToCopy = folder->GetChild(1);
+  model.Copy(nodeToCopy, folder, 3);
   actualModelString = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h ",
             actualModelString);
@@ -385,25 +385,25 @@ TEST_F(BookmarkModelTest, ParentForNewNodes) {
 
 // Make sure recently modified stays in sync when adding a URL.
 TEST_F(BookmarkModelTest, MostRecentlyModifiedGroups) {
-  // Add a group.
-  const BookmarkNode* group = model.AddGroup(model.other_node(), 0,
-                                             ASCIIToUTF16("foo"));
+  // Add a folder.
+  const BookmarkNode* folder = model.AddFolder(model.other_node(), 0,
+                                               ASCIIToUTF16("foo"));
   // Add a URL to it.
-  model.AddURL(group, 0, ASCIIToUTF16("blah"), GURL("http://foo.com"));
+  model.AddURL(folder, 0, ASCIIToUTF16("blah"), GURL("http://foo.com"));
 
-  // Make sure group is in the most recently modified.
-  std::vector<const BookmarkNode*> most_recent_groups =
+  // Make sure folder is in the most recently modified.
+  std::vector<const BookmarkNode*> most_recent_folders =
       bookmark_utils::GetMostRecentlyModifiedGroups(&model, 1);
-  ASSERT_EQ(1U, most_recent_groups.size());
-  ASSERT_EQ(group, most_recent_groups[0]);
+  ASSERT_EQ(1U, most_recent_folders.size());
+  ASSERT_EQ(folder, most_recent_folders[0]);
 
-  // Nuke the group and do another fetch, making sure group isn't in the
+  // Nuke the folder and do another fetch, making sure folder isn't in the
   // returned list.
-  model.Remove(group->parent(), 0);
-  most_recent_groups =
+  model.Remove(folder->parent(), 0);
+  most_recent_folders =
       bookmark_utils::GetMostRecentlyModifiedGroups(&model, 1);
-  ASSERT_EQ(1U, most_recent_groups.size());
-  ASSERT_TRUE(most_recent_groups[0] != group);
+  ASSERT_EQ(1U, most_recent_folders.size());
+  ASSERT_TRUE(most_recent_folders[0] != folder);
 }
 
 // Make sure MostRecentlyAddedEntries stays in sync.
@@ -579,18 +579,18 @@ static void PopulateNodeImpl(const std::vector<std::string>& description,
     const std::string& element = description[*index];
     (*index)++;
     if (element == "[") {
-      // Create a new group and recurse to add all the children.
+      // Create a new folder and recurse to add all the children.
       // Groups are given a unique named by way of an ever increasing integer
-      // value. The groups need not have a name, but one is assigned to help
+      // value. The folders need not have a name, but one is assigned to help
       // in debugging.
-      static int next_group_id = 1;
+      static int next_folder_id = 1;
       TestNode* new_node =
-          new TestNode(base::IntToString16(next_group_id++),
+          new TestNode(base::IntToString16(next_folder_id++),
                        BookmarkNode::FOLDER);
       parent->Add(parent->child_count(), new_node);
       PopulateNodeImpl(description, index, new_node);
     } else if (element == "]") {
-      // End the current group.
+      // End the current folder.
       return;
     } else {
       // Add a new URL.
@@ -609,19 +609,19 @@ static void PopulateNodeImpl(const std::vector<std::string>& description,
 // of the following tokens (all space separated):
 //   [ : creates a new USER_GROUP node. All elements following the [ until the
 //       next balanced ] is encountered are added as children to the node.
-//   ] : closes the last group created by [ so that any further nodes are added
-//       to the current groups parent.
+//   ] : closes the last folder created by [ so that any further nodes are added
+//       to the current folders parent.
 //   text: creates a new URL node.
 // For example, "a [b] c" creates the following nodes:
 //   a 1 c
 //     |
 //     b
-// In words: a node of type URL with the title a, followed by a group node with
+// In words: a node of type URL with the title a, followed by a folder node with
 // the title 1 having the single child of type url with name b, followed by
 // the url node with the title c.
 //
-// NOTE: each name must be unique, and groups are assigned a unique title by way
-// of an increasing integer.
+// NOTE: each name must be unique, and folders are assigned a unique title by
+// way of an increasing integer.
 static void PopulateNodeFromString(const std::string& description,
                                    TestNode* parent) {
   std::vector<std::string> elements;
@@ -638,7 +638,7 @@ static void PopulateBookmarkNode(TestNode* parent,
     TestNode* child = parent->GetChild(i);
     if (child->value == BookmarkNode::FOLDER) {
       const BookmarkNode* new_bb_node =
-          model->AddGroup(bb_node, i, child->GetTitle());
+          model->AddFolder(bb_node, i, child->GetTitle());
       PopulateBookmarkNode(child, model, new_bb_node);
     } else {
       model->AddURL(bb_node, i, child->GetTitle(),

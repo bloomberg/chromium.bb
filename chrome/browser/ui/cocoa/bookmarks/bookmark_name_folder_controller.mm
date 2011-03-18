@@ -93,9 +93,9 @@
   if (node_) {
     model->SetTitle(node_, base::SysNSStringToUTF16(name));
   } else {
-    model->AddGroup(parent_,
-                    newIndex_,
-                    base::SysNSStringToUTF16(name));
+    model->AddFolder(parent_,
+                     newIndex_,
+                     base::SysNSStringToUTF16(name));
   }
   [NSApp endSheet:[self window]];
 }

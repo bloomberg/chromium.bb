@@ -65,24 +65,24 @@ class LiveBookmarksSyncTest : public LiveSyncTest {
                              const std::wstring& title,
                              const GURL& url) WARN_UNUSED_RESULT;
 
-  // Adds a group named |title| to the bookmark bar of profile |profile|.
-  // Returns a pointer to the group that was added.
-  const BookmarkNode* AddGroup(int profile,
-                               const std::wstring& title) WARN_UNUSED_RESULT;
+  // Adds a folder named |title| to the bookmark bar of profile |profile|.
+  // Returns a pointer to the folder that was added.
+  const BookmarkNode* AddFolder(int profile,
+                                const std::wstring& title) WARN_UNUSED_RESULT;
 
-  // Adds a group named |title| to the bookmark bar of profile |profile| at
-  // position |index|. Returns a pointer to the group that was added.
-  const BookmarkNode* AddGroup(int profile,
-                               int index,
-                               const std::wstring& title) WARN_UNUSED_RESULT;
+  // Adds a folder named |title| to the bookmark bar of profile |profile| at
+  // position |index|. Returns a pointer to the folder that was added.
+  const BookmarkNode* AddFolder(int profile,
+                                int index,
+                                const std::wstring& title) WARN_UNUSED_RESULT;
 
-  // Adds a group named |title| to the node |parent| in the bookmark model of
+  // Adds a folder named |title| to the node |parent| in the bookmark model of
   // profile |profile| at position |index|. Returns a pointer to the node that
   // was added.
-  const BookmarkNode* AddGroup(int profile,
-                               const BookmarkNode* parent,
-                               int index,
-                               const std::wstring& title) WARN_UNUSED_RESULT;
+  const BookmarkNode* AddFolder(int profile,
+                                const BookmarkNode* parent,
+                                int index,
+                                const std::wstring& title) WARN_UNUSED_RESULT;
 
   // Changes the title of the node |node| in the bookmark model of profile
   // |profile| to |new_title|.

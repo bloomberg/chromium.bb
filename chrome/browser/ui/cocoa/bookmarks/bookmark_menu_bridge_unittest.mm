@@ -181,7 +181,7 @@ TEST_F(BookmarkMenuBridgeTest, TestAddNodeToMenu) {
   model->AddURL(root, 0, ASCIIToUTF16(short_url), GURL(short_url));
   bridge_->UpdateMenu(menu);
   int prev_count = [menu numberOfItems] - 1; // "extras" added at this point
-  node = model->AddGroup(root, 1, empty);
+  node = model->AddFolder(root, 1, empty);
   model->AddURL(root, 2, ASCIIToUTF16(long_url), GURL(long_url));
 
   // And the submenu fo the middle one
@@ -310,7 +310,7 @@ TEST_F(BookmarkMenuBridgeTest, TestGetMenuItemForNode) {
 
   BookmarkModel* model = bridge_->GetBookmarkModel();
   const BookmarkNode* bookmark_bar = model->GetBookmarkBarNode();
-  const BookmarkNode* root = model->AddGroup(bookmark_bar, 0, empty);
+  const BookmarkNode* root = model->AddFolder(bookmark_bar, 0, empty);
   EXPECT_TRUE(model && root);
 
   model->AddURL(root, 0, ASCIIToUTF16("Test Item"), GURL("http://test"));

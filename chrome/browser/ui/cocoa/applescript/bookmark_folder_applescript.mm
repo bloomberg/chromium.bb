@@ -44,9 +44,9 @@
   if (!model)
     return;
 
-  const BookmarkNode* node = model->AddGroup(bookmarkNode_,
-                                             bookmarkNode_->child_count(),
-                                             string16());
+  const BookmarkNode* node = model->AddFolder(bookmarkNode_,
+                                              bookmarkNode_->child_count(),
+                                              string16());
   if (!node) {
     AppleScript::SetError(AppleScript::errCreateBookmarkFolder);
     return;
@@ -66,9 +66,9 @@
   if (!model)
     return;
 
-  const BookmarkNode* node = model->AddGroup(bookmarkNode_,
-                                             position,
-                                             string16());
+  const BookmarkNode* node = model->AddFolder(bookmarkNode_,
+                                              position,
+                                              string16());
   if (!node) {
     AppleScript::SetError(AppleScript::errCreateBookmarkFolder);
     return;

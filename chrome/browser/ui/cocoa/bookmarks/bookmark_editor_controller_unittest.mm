@@ -207,10 +207,10 @@ class BookmarkEditorControllerTreeTest : public CocoaTest {
  public:
   BrowserTestHelper browser_helper_;
   BookmarkEditorController* controller_;
-  const BookmarkNode* group_a_;
-  const BookmarkNode* group_b_;
-  const BookmarkNode* group_bb_;
-  const BookmarkNode* group_c_;
+  const BookmarkNode* folder_a_;
+  const BookmarkNode* folder_b_;
+  const BookmarkNode* folder_bb_;
+  const BookmarkNode* folder_c_;
   const BookmarkNode* bookmark_bb_3_;
   GURL bb3_url_1_;
   GURL bb3_url_2_;
@@ -228,34 +228,34 @@ class BookmarkEditorControllerTreeTest : public CocoaTest {
     //            b-2
     BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
     const BookmarkNode* root = model.GetBookmarkBarNode();
-    group_a_ = model.AddGroup(root, 0, ASCIIToUTF16("a"));
-    model.AddURL(group_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
-    model.AddURL(group_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));
-    model.AddURL(group_a_, 2, ASCIIToUTF16("a-2"), GURL("http://a-2.com"));
+    folder_a_ = model.AddFolder(root, 0, ASCIIToUTF16("a"));
+    model.AddURL(folder_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
+    model.AddURL(folder_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));
+    model.AddURL(folder_a_, 2, ASCIIToUTF16("a-2"), GURL("http://a-2.com"));
 
-    group_b_ = model.AddGroup(root, 1, ASCIIToUTF16("b"));
-    model.AddURL(group_b_, 0, ASCIIToUTF16("b-0"), GURL("http://b-0.com"));
-    group_bb_ = model.AddGroup(group_b_, 1, ASCIIToUTF16("bb"));
-    model.AddURL(group_bb_, 0, ASCIIToUTF16("bb-0"), GURL("http://bb-0.com"));
-    model.AddURL(group_bb_, 1, ASCIIToUTF16("bb-1"), GURL("http://bb-1.com"));
-    model.AddURL(group_bb_, 2, ASCIIToUTF16("bb-2"), GURL("http://bb-2.com"));
+    folder_b_ = model.AddFolder(root, 1, ASCIIToUTF16("b"));
+    model.AddURL(folder_b_, 0, ASCIIToUTF16("b-0"), GURL("http://b-0.com"));
+    folder_bb_ = model.AddFolder(folder_b_, 1, ASCIIToUTF16("bb"));
+    model.AddURL(folder_bb_, 0, ASCIIToUTF16("bb-0"), GURL("http://bb-0.com"));
+    model.AddURL(folder_bb_, 1, ASCIIToUTF16("bb-1"), GURL("http://bb-1.com"));
+    model.AddURL(folder_bb_, 2, ASCIIToUTF16("bb-2"), GURL("http://bb-2.com"));
 
     // To find it later, this bookmark name must always have a URL
     // of http://bb-3.com or https://bb-3.com
     bb3_url_1_ = GURL("http://bb-3.com");
     bb3_url_2_ = GURL("https://bb-3.com");
-    bookmark_bb_3_ = model.AddURL(group_bb_, 3, ASCIIToUTF16("bb-3"),
+    bookmark_bb_3_ = model.AddURL(folder_bb_, 3, ASCIIToUTF16("bb-3"),
                                   bb3_url_1_);
 
-    model.AddURL(group_bb_, 4, ASCIIToUTF16("bb-4"), GURL("http://bb-4.com"));
-    model.AddURL(group_b_, 2, ASCIIToUTF16("b-1"), GURL("http://b-2.com"));
-    model.AddURL(group_b_, 3, ASCIIToUTF16("b-2"), GURL("http://b-3.com"));
+    model.AddURL(folder_bb_, 4, ASCIIToUTF16("bb-4"), GURL("http://bb-4.com"));
+    model.AddURL(folder_b_, 2, ASCIIToUTF16("b-1"), GURL("http://b-2.com"));
+    model.AddURL(folder_b_, 3, ASCIIToUTF16("b-2"), GURL("http://b-3.com"));
 
-    group_c_ = model.AddGroup(root, 2, ASCIIToUTF16("c"));
-    model.AddURL(group_c_, 0, ASCIIToUTF16("c-0"), GURL("http://c-0.com"));
-    model.AddURL(group_c_, 1, ASCIIToUTF16("c-1"), GURL("http://c-1.com"));
-    model.AddURL(group_c_, 2, ASCIIToUTF16("c-2"), GURL("http://c-2.com"));
-    model.AddURL(group_c_, 3, ASCIIToUTF16("c-3"), GURL("http://c-3.com"));
+    folder_c_ = model.AddFolder(root, 2, ASCIIToUTF16("c"));
+    model.AddURL(folder_c_, 0, ASCIIToUTF16("c-0"), GURL("http://c-0.com"));
+    model.AddURL(folder_c_, 1, ASCIIToUTF16("c-1"), GURL("http://c-1.com"));
+    model.AddURL(folder_c_, 2, ASCIIToUTF16("c-2"), GURL("http://c-2.com"));
+    model.AddURL(folder_c_, 3, ASCIIToUTF16("c-3"), GURL("http://c-3.com"));
 
     model.AddURL(root, 3, ASCIIToUTF16("d"), GURL("http://d-0.com"));
   }
@@ -264,7 +264,7 @@ class BookmarkEditorControllerTreeTest : public CocoaTest {
     return [[BookmarkEditorController alloc]
                initWithParentWindow:test_window()
                             profile:browser_helper_.profile()
-                             parent:group_bb_
+                             parent:folder_bb_
                                node:bookmark_bb_3_
                       configuration:BookmarkEditor::SHOW_TREE];
   }
@@ -370,22 +370,22 @@ TEST_F(BookmarkEditorControllerTreeTest, ChangeBookmarkURLInPlace) {
 }
 
 TEST_F(BookmarkEditorControllerTreeTest, ChangeBookmarkGroup) {
-  [controller_ selectTestNodeInBrowser:group_c_];
+  [controller_ selectTestNodeInBrowser:folder_c_];
   [controller_ ok:nil];
   UpdateBB3();
   const BookmarkNode* parent = bookmark_bb_3_->parent();
-  ASSERT_EQ(parent, group_c_);
+  ASSERT_EQ(parent, folder_c_);
   int childIndex = parent->GetIndexOf(bookmark_bb_3_);
   ASSERT_EQ(4, childIndex);
 }
 
 TEST_F(BookmarkEditorControllerTreeTest, ChangeNameAndBookmarkGroup) {
   [controller_ setDisplayName:@"NEW NAME"];
-  [controller_ selectTestNodeInBrowser:group_c_];
+  [controller_ selectTestNodeInBrowser:folder_c_];
   [controller_ ok:nil];
   UpdateBB3();
   const BookmarkNode* parent = bookmark_bb_3_->parent();
-  ASSERT_EQ(parent, group_c_);
+  ASSERT_EQ(parent, folder_c_);
   int childIndex = parent->GetIndexOf(bookmark_bb_3_);
   ASSERT_EQ(4, childIndex);
   EXPECT_EQ(bookmark_bb_3_->GetTitle(), ASCIIToUTF16("NEW NAME"));
@@ -395,7 +395,7 @@ TEST_F(BookmarkEditorControllerTreeTest, AddFolderWithGroupSelected) {
   // Folders are NOT added unless the OK button is pressed.
   [controller_ newFolder:nil];
   [controller_ cancel:nil];
-  EXPECT_EQ(5, group_bb_->child_count());
+  EXPECT_EQ(5, folder_bb_->child_count());
 }
 
 class BookmarkEditorControllerTreeNoNodeTest :
@@ -405,7 +405,7 @@ class BookmarkEditorControllerTreeNoNodeTest :
     return [[BookmarkEditorController alloc]
                initWithParentWindow:test_window()
                             profile:browser_helper_.profile()
-                             parent:group_bb_
+                             parent:folder_bb_
                                node:nil
                       configuration:BookmarkEditor::SHOW_TREE];
   }
@@ -416,7 +416,7 @@ TEST_F(BookmarkEditorControllerTreeNoNodeTest, NewBookmarkNoNode) {
   [controller_ setDisplayName:@"NEW BOOKMARK"];
   [controller_ setDisplayURL:@"http://NEWURL.com"];
   [controller_ ok:nil];
-  const BookmarkNode* new_node = group_bb_->GetChild(5);
+  const BookmarkNode* new_node = folder_bb_->GetChild(5);
   ASSERT_EQ(0, new_node->child_count());
   EXPECT_EQ(new_node->GetTitle(), ASCIIToUTF16("NEW BOOKMARK"));
   EXPECT_EQ(new_node->GetURL(), GURL("http://NEWURL.com"));

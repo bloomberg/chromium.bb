@@ -49,7 +49,7 @@ std::string::size_type AddNodesFromString(BookmarkModel& model,
       if (tell == folder_tell) {
         node_name = node_name.substr(0, part_length - 2);
         const BookmarkNode* new_node =
-            model.AddGroup(node, index, UTF8ToUTF16(node_name));
+            model.AddFolder(node, index, UTF8ToUTF16(node_name));
         end_pos = AddNodesFromString(model, new_node, model_string,
                                      end_pos + 1);
       } else {

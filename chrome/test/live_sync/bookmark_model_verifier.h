@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,11 +51,11 @@ class BookmarkModelVerifier {
                              const GURL& url);
 
   // Adds the same folder to |model| and |verifier_model_|. See
-  // BookmarkModel::AddGroup for details.
-  const BookmarkNode* AddGroup(BookmarkModel* model,
-                               const BookmarkNode* parent,
-                               int index,
-                               const string16& title);
+  // BookmarkModel::AddFolder for details.
+  const BookmarkNode* AddFolder(BookmarkModel* model,
+                                const BookmarkNode* parent,
+                                int index,
+                                const string16& title);
 
   // Sets the title of the same node in |model| and |verifier_model_|. See
   // BookmarkModel::SetTitle for details.

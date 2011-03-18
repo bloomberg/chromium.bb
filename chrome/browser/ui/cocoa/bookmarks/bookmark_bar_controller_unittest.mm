@@ -709,9 +709,9 @@ TEST_F(BookmarkBarControllerTest, MenuForFolderNode) {
 
   // Test with an actual folder as well
   const BookmarkNode* parent = model->GetBookmarkBarNode();
-  const BookmarkNode* folder = model->AddGroup(parent,
-                                               parent->child_count(),
-                                               ASCIIToUTF16("group"));
+  const BookmarkNode* folder = model->AddFolder(parent,
+                                                parent->child_count(),
+                                                ASCIIToUTF16("folder"));
   model->AddURL(folder, folder->child_count(),
                 ASCIIToUTF16("f1"), GURL("http://framma-lamma.com"));
   model->AddURL(folder, folder->child_count(),
@@ -719,7 +719,7 @@ TEST_F(BookmarkBarControllerTest, MenuForFolderNode) {
   menu = [bar_ menuForFolderNode:model->GetBookmarkBarNode()];
   EXPECT_EQ([menu numberOfItems], 3);
 
-  item = [menu itemWithTitle:@"group"];
+  item = [menu itemWithTitle:@"folder"];
   EXPECT_TRUE(item);
   EXPECT_TRUE([item hasSubmenu]);
   NSMenu *submenu = [item submenu];
@@ -1086,9 +1086,9 @@ TEST_F(BookmarkBarControllerTest, TestButtonOrBar) {
 TEST_F(BookmarkBarControllerTest, TestMenuNodeAndDisable) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
-  const BookmarkNode* folder = model->AddGroup(parent,
-                                               parent->child_count(),
-                                               ASCIIToUTF16("group"));
+  const BookmarkNode* folder = model->AddFolder(parent,
+                                                parent->child_count(),
+                                                ASCIIToUTF16("folder"));
   NSButton* button = [[bar_ buttons] objectAtIndex:0];
   EXPECT_TRUE(button);
 
@@ -1162,9 +1162,9 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   EXPECT_EQ(arraysize(titles), [[bar_ buttons] count]);
 
   // A drop on a folder button.
-  const BookmarkNode* folder = model->AddGroup(model->GetBookmarkBarNode(),
-                                               0,
-                                               ASCIIToUTF16("awesome group"));
+  const BookmarkNode* folder = model->AddFolder(model->GetBookmarkBarNode(),
+                                                0,
+                                                ASCIIToUTF16("awesome folder"));
   DCHECK(folder);
   model->AddURL(folder, 0, ASCIIToUTF16("already"),
                 GURL("http://www.google.com"));
@@ -1278,13 +1278,13 @@ TEST_F(BookmarkBarControllerTest, TestFolders) {
 
   // Create some folder buttons.
   const BookmarkNode* parent = model->GetBookmarkBarNode();
-  const BookmarkNode* folder = model->AddGroup(parent,
-                                               parent->child_count(),
-                                               ASCIIToUTF16("group"));
+  const BookmarkNode* folder = model->AddFolder(parent,
+                                                parent->child_count(),
+                                                ASCIIToUTF16("folder"));
   model->AddURL(folder, folder->child_count(),
                 ASCIIToUTF16("f1"), GURL("http://framma-lamma.com"));
-  folder = model->AddGroup(parent, parent->child_count(),
-                           ASCIIToUTF16("empty"));
+  folder = model->AddFolder(parent, parent->child_count(),
+                            ASCIIToUTF16("empty"));
 
   EXPECT_EQ([[bar_ buttons] count], 2U);
 
@@ -1470,8 +1470,8 @@ TEST_F(BookmarkBarControllerTest, DropDestination) {
   // Make some buttons.
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
-  model->AddGroup(parent, parent->child_count(), ASCIIToUTF16("group 1"));
-  model->AddGroup(parent, parent->child_count(), ASCIIToUTF16("group 2"));
+  model->AddFolder(parent, parent->child_count(), ASCIIToUTF16("folder 1"));
+  model->AddFolder(parent, parent->child_count(), ASCIIToUTF16("folder 2"));
   EXPECT_EQ([[bar_ buttons] count], 2U);
 
   // Confirm "off to left" and "off to right" match nothing.
@@ -1549,9 +1549,9 @@ TEST_F(BookmarkBarControllerTest, NodeDeletedWhileContextMenuIsOpen) {
   [bar_ loaded:model];
 
   const BookmarkNode* parent = model->GetBookmarkBarNode();
-  const BookmarkNode* folder = model->AddGroup(parent,
-                                               parent->child_count(),
-                                               ASCIIToUTF16("group"));
+  const BookmarkNode* folder = model->AddFolder(parent,
+                                                parent->child_count(),
+                                                ASCIIToUTF16("folder"));
   const BookmarkNode* framma = model->AddURL(folder, folder->child_count(),
                                              ASCIIToUTF16("f1"),
                                              GURL("http://framma-lamma.com"));
@@ -1573,11 +1573,11 @@ TEST_F(BookmarkBarControllerTest, NodeDeletedWhileContextMenuIsOpen) {
 TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
-  const BookmarkNode* folder = model->AddGroup(parent,
-                                               parent->child_count(),
-                                               ASCIIToUTF16("group"));
-  model->AddGroup(parent, parent->child_count(),
-                  ASCIIToUTF16("sibbling group"));
+  const BookmarkNode* folder = model->AddFolder(parent,
+                                                parent->child_count(),
+                                                ASCIIToUTF16("folder"));
+  model->AddFolder(parent, parent->child_count(),
+                  ASCIIToUTF16("sibbling folder"));
   model->AddURL(folder, folder->child_count(), ASCIIToUTF16("title a"),
                 GURL("http://www.google.com/a"));
   model->AddURL(folder, folder->child_count(),
@@ -1699,8 +1699,8 @@ public:
     // { one, { two-one, two-two }, three }
     model->AddURL(parent_, parent_->child_count(), ASCIIToUTF16("title"),
                   GURL("http://one.com"));
-    folder_ = model->AddGroup(parent_, parent_->child_count(),
-                              ASCIIToUTF16("group"));
+    folder_ = model->AddFolder(parent_, parent_->child_count(),
+                               ASCIIToUTF16("folder"));
     model->AddURL(folder_, folder_->child_count(),
                   ASCIIToUTF16("title"), GURL("http://two-one.com"));
     model->AddURL(folder_, folder_->child_count(),

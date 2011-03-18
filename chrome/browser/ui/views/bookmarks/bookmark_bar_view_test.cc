@@ -234,10 +234,10 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   void AddTestData(bool big_menu) {
     std::string test_base = "file:///c:/tmp/";
 
-    const BookmarkNode* f1 = model_->AddGroup(
+    const BookmarkNode* f1 = model_->AddFolder(
         model_->GetBookmarkBarNode(), 0, ASCIIToUTF16("F1"));
     model_->AddURL(f1, 0, ASCIIToUTF16("f1a"), GURL(test_base + "f1a"));
-    const BookmarkNode* f11 = model_->AddGroup(f1, 1, ASCIIToUTF16("F11"));
+    const BookmarkNode* f11 = model_->AddFolder(f1, 1, ASCIIToUTF16("F11"));
     model_->AddURL(f11, 0, ASCIIToUTF16("f11a"), GURL(test_base + "f11a"));
     if (big_menu) {
       for (int i = 1; i <= 100; ++i) {
@@ -255,12 +255,12 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
                    GURL(test_base + "d"));
     model_->AddURL(model_->other_node(), 0, ASCIIToUTF16("oa"),
                    GURL(test_base + "oa"));
-    const BookmarkNode* of = model_->AddGroup(model_->other_node(), 1,
-                                              ASCIIToUTF16("OF"));
+    const BookmarkNode* of = model_->AddFolder(model_->other_node(), 1,
+                                               ASCIIToUTF16("OF"));
     model_->AddURL(of, 0, ASCIIToUTF16("ofa"), GURL(test_base + "ofa"));
     model_->AddURL(of, 1, ASCIIToUTF16("ofb"), GURL(test_base + "ofb"));
-    const BookmarkNode* of2 = model_->AddGroup(model_->other_node(), 2,
-                                               ASCIIToUTF16("OF2"));
+    const BookmarkNode* of2 = model_->AddFolder(model_->other_node(), 2,
+                                                ASCIIToUTF16("OF2"));
     model_->AddURL(of2, 0, ASCIIToUTF16("of2a"), GURL(test_base + "of2a"));
     model_->AddURL(of2, 1, ASCIIToUTF16("of2b"), GURL(test_base + "of2b"));
   }

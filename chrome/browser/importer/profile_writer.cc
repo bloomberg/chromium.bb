@@ -74,7 +74,7 @@ void ProfileWriter::AddBookmarkEntry(
       GenerateUniqueFolderName(model, first_folder_name);
 
   bool show_bookmark_toolbar = false;
-  std::set<const BookmarkNode*> groups_added_to;
+  std::set<const BookmarkNode*> folders_added_to;
   bool import_mode = false;
   if (bookmark.size() > 1) {
     model->BeginImportMode();
@@ -93,8 +93,8 @@ void ProfileWriter::AddBookmarkEntry(
         real_first_folder, import_to_bookmark_bar))
       continue;
 
-    // Set up groups in BookmarkModel in such a way that path[i] is
-    // the subgroup of path[i-1]. Finally they construct a path in the
+    // Set up folders in BookmarkModel in such a way that path[i] is
+    // the subfolder of path[i-1]. Finally they construct a path in the
     // model:
     //   path[0] \ path[1] \ ... \ path[size() - 1]
     const BookmarkNode* parent =
@@ -115,14 +115,14 @@ void ProfileWriter::AddBookmarkEntry(
         }
       }
       if (child == NULL)
-        child = model->AddGroup(parent, parent->child_count(),
-                                WideToUTF16Hack(folder_name));
+        child = model->AddFolder(parent, parent->child_count(),
+                                 WideToUTF16Hack(folder_name));
       parent = child;
     }
-    groups_added_to.insert(parent);
+    folders_added_to.insert(parent);
     if (it->is_folder) {
-      model->AddGroup(parent, parent->child_count(),
-                      WideToUTF16Hack(it->title));
+      model->AddFolder(parent, parent->child_count(),
+                       WideToUTF16Hack(it->title));
     } else {
       model->AddURLWithCreationTime(parent, parent->child_count(),
           WideToUTF16Hack(it->title), it->url, it->creation_time);
@@ -134,12 +134,12 @@ void ProfileWriter::AddBookmarkEntry(
       show_bookmark_toolbar = true;
   }
 
-  // Reset the date modified time of the groups we added to. We do this to
+  // Reset the date modified time of the folders we added to. We do this to
   // make sure the 'recently added to' combobox in the bubble doesn't get random
-  // groups.
+  // folders.
   for (std::set<const BookmarkNode*>::const_iterator i =
-          groups_added_to.begin();
-       i != groups_added_to.end(); ++i) {
+          folders_added_to.begin();
+       i != folders_added_to.end(); ++i) {
     model->ResetDateFolderModified(*i);
   }
 

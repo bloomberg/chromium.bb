@@ -578,11 +578,11 @@ TEST_F(ProfileSyncServiceTest, BookmarkModelOperations) {
 
   // Test addition.
   const BookmarkNode* folder =
-      model_->AddGroup(model_->other_node(), 0, ASCIIToUTF16("foobar"));
+      model_->AddFolder(model_->other_node(), 0, ASCIIToUTF16("foobar"));
   ExpectSyncerNodeMatching(folder);
   ExpectModelMatch();
   const BookmarkNode* folder2 =
-      model_->AddGroup(folder, 0, ASCIIToUTF16("nested"));
+      model_->AddFolder(folder, 0, ASCIIToUTF16("nested"));
   ExpectSyncerNodeMatching(folder2);
   ExpectModelMatch();
   const BookmarkNode* url1 = model_->AddURL(
@@ -848,7 +848,7 @@ TEST_F(ProfileSyncServiceTest, CornerCaseNames) {
   // Create both folders and bookmarks using each name.
   GURL url("http://www.doublemint.com");
   for (size_t i = 0; i < arraysize(names); ++i) {
-    model_->AddGroup(model_->other_node(), 0, ASCIIToUTF16(names[i]));
+    model_->AddFolder(model_->other_node(), 0, ASCIIToUTF16(names[i]));
     model_->AddURL(model_->other_node(), 0, ASCIIToUTF16(names[i]), url);
   }
 
@@ -868,15 +868,15 @@ TEST_F(ProfileSyncServiceTest, RepeatedMiddleInsertion) {
   static const int kTimesToInsert = 256;
 
   // Create two book-end nodes to insert between.
-  model_->AddGroup(model_->other_node(), 0, ASCIIToUTF16("Alpha"));
-  model_->AddGroup(model_->other_node(), 1, ASCIIToUTF16("Omega"));
+  model_->AddFolder(model_->other_node(), 0, ASCIIToUTF16("Alpha"));
+  model_->AddFolder(model_->other_node(), 1, ASCIIToUTF16("Omega"));
   int count = 2;
 
   // Test insertion in first half of range by repeatedly inserting in second
   // position.
   for (int i = 0; i < kTimesToInsert; ++i) {
     string16 title = ASCIIToUTF16("Pre-insertion ") + base::IntToString16(i);
-    model_->AddGroup(model_->other_node(), 1, title);
+    model_->AddFolder(model_->other_node(), 1, title);
     count++;
   }
 
@@ -884,7 +884,7 @@ TEST_F(ProfileSyncServiceTest, RepeatedMiddleInsertion) {
   // second-to-last position.
   for (int i = 0; i < kTimesToInsert; ++i) {
     string16 title = ASCIIToUTF16("Post-insertion ") + base::IntToString16(i);
-    model_->AddGroup(model_->other_node(), count - 1, title);
+    model_->AddFolder(model_->other_node(), count - 1, title);
     count++;
   }
 
@@ -904,7 +904,7 @@ TEST_F(ProfileSyncServiceTest, UnrecoverableErrorSuspendsService) {
 
   // Add a node which will be the target of the consistency violation.
   const BookmarkNode* node =
-      model_->AddGroup(model_->other_node(), 0, ASCIIToUTF16("node"));
+      model_->AddFolder(model_->other_node(), 0, ASCIIToUTF16("node"));
   ExpectSyncerNodeMatching(node);
 
   // Now destroy the syncer node as if we were the ProfileSyncService without
@@ -924,13 +924,13 @@ TEST_F(ProfileSyncServiceTest, UnrecoverableErrorSuspendsService) {
 
   // Add a child to the inconsistent node.  This should cause detection of the
   // problem and the syncer should stop processing changes.
-  model_->AddGroup(node, 0, ASCIIToUTF16("nested"));
+  model_->AddFolder(node, 0, ASCIIToUTF16("nested"));
   EXPECT_FALSE(service_->ShouldPushChanges());
 
   // Try to add a node under a totally different parent.  This should also
   // fail -- the ProfileSyncService should stop processing changes after
   // encountering a consistency violation.
-  model_->AddGroup(model_->GetBookmarkBarNode(), 0, ASCIIToUTF16("unrelated"));
+  model_->AddFolder(model_->GetBookmarkBarNode(), 0, ASCIIToUTF16("unrelated"));
   EXPECT_FALSE(service_->ShouldPushChanges());
 
   // TODO(ncarter): We ought to test the ProfileSyncService state machine
@@ -1249,7 +1249,7 @@ void ProfileSyncServiceTestWithData::PopulateFromTestData(
     if (item.url) {
       model_->AddURL(node, i, WideToUTF16Hack(item.title), GURL(item.url));
     } else {
-      model_->AddGroup(node, i, WideToUTF16Hack(item.title));
+      model_->AddFolder(node, i, WideToUTF16Hack(item.title));
     }
   }
 }

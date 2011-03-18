@@ -100,9 +100,9 @@ class BookmarkEditorGtk : public BookmarkEditor,
   // the URL being edited.
   void ApplyEdits(GtkTreeIter* selected_parent);
 
-  // Adds a new group parented on |parent| and sets |child| to point to this
-  // new group.
-  void AddNewGroup(GtkTreeIter* parent, GtkTreeIter* child);
+  // Adds a new folder parented on |parent| and sets |child| to point to this
+  // new folder.
+  void AddNewFolder(GtkTreeIter* parent, GtkTreeIter* child);
 
   CHROMEGTK_CALLBACK_0(BookmarkEditorGtk, void, OnSelectionChanged);
   CHROMEGTK_CALLBACK_1(BookmarkEditorGtk, void, OnResponse, int);

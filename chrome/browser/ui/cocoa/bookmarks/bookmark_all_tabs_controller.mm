@@ -68,8 +68,8 @@
   NSString* newFolderName = [self displayName];
   string16 newFolderString = base::SysNSStringToUTF16(newFolderName);
   BookmarkModel* model = [self bookmarkModel];
-  const BookmarkNode* newFolder = model->AddGroup(newParentNode, newIndex,
-                                                  newFolderString);
+  const BookmarkNode* newFolder = model->AddFolder(newParentNode, newIndex,
+                                                   newFolderString);
   // Get a list of all open tabs, create nodes for them, and add
   // to the new folder node.
   [self UpdateActiveTabPairs];

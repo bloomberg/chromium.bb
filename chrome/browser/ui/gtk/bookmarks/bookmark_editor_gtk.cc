@@ -463,7 +463,7 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
     return;
   }
 
-  // Create the new groups and update the titles.
+  // Create the new folders and update the titles.
   const BookmarkNode* new_parent =
       bookmark_utils::CommitTreeStoreDifferencesBetween(
       bb_model_, tree_store_, selected_parent);
@@ -478,7 +478,7 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
       bb_model_, new_parent, details_, new_title, new_url);
 }
 
-void BookmarkEditorGtk::AddNewGroup(GtkTreeIter* parent, GtkTreeIter* child) {
+void BookmarkEditorGtk::AddNewFolder(GtkTreeIter* parent, GtkTreeIter* child) {
   gtk_tree_store_append(tree_store_, child, parent);
   gtk_tree_store_set(
       tree_store_, child,
@@ -569,7 +569,7 @@ void BookmarkEditorGtk::NewFolder() {
   }
 
   GtkTreeIter new_item_iter;
-  AddNewGroup(&iter, &new_item_iter);
+  AddNewFolder(&iter, &new_item_iter);
 
   GtkTreePath* path = gtk_tree_model_get_path(
       GTK_TREE_MODEL(tree_store_), &new_item_iter);

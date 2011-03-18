@@ -466,7 +466,7 @@ bool CreateBookmarkFunction::RunImpl() {
   if (url_string.length())
     node = model->AddURL(parent, index, title, url);
   else
-    node = model->AddGroup(parent, index, title);
+    node = model->AddFolder(parent, index, title);
   DCHECK(node);
   if (!node) {
     error_ = keys::kNoNodeError;

@@ -21,11 +21,11 @@ class BookmarkEditorBaseControllerTest : public CocoaTest {
  public:
   BrowserTestHelper browser_helper_;
   BookmarkEditorBaseController* controller_;  // weak
-  const BookmarkNode* group_a_;
-  const BookmarkNode* group_b_;
-  const BookmarkNode* group_b_0_;
-  const BookmarkNode* group_b_3_;
-  const BookmarkNode* group_c_;
+  const BookmarkNode* folder_a_;
+  const BookmarkNode* folder_b_;
+  const BookmarkNode* folder_b_0_;
+  const BookmarkNode* folder_b_3_;
+  const BookmarkNode* folder_c_;
 
   BookmarkEditorBaseControllerTest() {
     // Set up a small bookmark hierarchy, which will look as follows:
@@ -40,26 +40,26 @@ class BookmarkEditorBaseControllerTest : public CocoaTest {
     //            b-4
     BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
     const BookmarkNode* root = model.GetBookmarkBarNode();
-    group_a_ = model.AddGroup(root, 0, ASCIIToUTF16("a"));
-    model.AddURL(group_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
-    model.AddURL(group_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));
-    model.AddURL(group_a_, 2, ASCIIToUTF16("a-2"), GURL("http://a-2.com"));
+    folder_a_ = model.AddFolder(root, 0, ASCIIToUTF16("a"));
+    model.AddURL(folder_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
+    model.AddURL(folder_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));
+    model.AddURL(folder_a_, 2, ASCIIToUTF16("a-2"), GURL("http://a-2.com"));
 
-    group_b_ = model.AddGroup(root, 1, ASCIIToUTF16("b"));
-    group_b_0_ = model.AddGroup(group_b_, 0, ASCIIToUTF16("b-0"));
-    model.AddURL(group_b_0_, 0, ASCIIToUTF16("bb-0"), GURL("http://bb-0.com"));
-    model.AddURL(group_b_, 1, ASCIIToUTF16("b-1"), GURL("http://b-1.com"));
-    model.AddURL(group_b_, 2, ASCIIToUTF16("b-2"), GURL("http://b-2.com"));
-    group_b_3_ = model.AddGroup(group_b_, 3, ASCIIToUTF16("b-3"));
-    model.AddURL(group_b_3_, 0, ASCIIToUTF16("b-30"), GURL("http://b-30.com"));
-    model.AddURL(group_b_3_, 1, ASCIIToUTF16("b-31"), GURL("http://b-31.com"));
-    model.AddURL(group_b_, 4, ASCIIToUTF16("b-4"), GURL("http://b-4.com"));
+    folder_b_ = model.AddFolder(root, 1, ASCIIToUTF16("b"));
+    folder_b_0_ = model.AddFolder(folder_b_, 0, ASCIIToUTF16("b-0"));
+    model.AddURL(folder_b_0_, 0, ASCIIToUTF16("bb-0"), GURL("http://bb-0.com"));
+    model.AddURL(folder_b_, 1, ASCIIToUTF16("b-1"), GURL("http://b-1.com"));
+    model.AddURL(folder_b_, 2, ASCIIToUTF16("b-2"), GURL("http://b-2.com"));
+    folder_b_3_ = model.AddFolder(folder_b_, 3, ASCIIToUTF16("b-3"));
+    model.AddURL(folder_b_3_, 0, ASCIIToUTF16("b-30"), GURL("http://b-30.com"));
+    model.AddURL(folder_b_3_, 1, ASCIIToUTF16("b-31"), GURL("http://b-31.com"));
+    model.AddURL(folder_b_, 4, ASCIIToUTF16("b-4"), GURL("http://b-4.com"));
 
-    group_c_ = model.AddGroup(root, 2, ASCIIToUTF16("c"));
-    model.AddURL(group_c_, 0, ASCIIToUTF16("c-0"), GURL("http://c-0.com"));
-    model.AddURL(group_c_, 1, ASCIIToUTF16("c-1"), GURL("http://c-1.com"));
-    model.AddURL(group_c_, 2, ASCIIToUTF16("c-2"), GURL("http://c-2.com"));
-    model.AddURL(group_c_, 3, ASCIIToUTF16("c-3"), GURL("http://c-3.com"));
+    folder_c_ = model.AddFolder(root, 2, ASCIIToUTF16("c"));
+    model.AddURL(folder_c_, 0, ASCIIToUTF16("c-0"), GURL("http://c-0.com"));
+    model.AddURL(folder_c_, 1, ASCIIToUTF16("c-1"), GURL("http://c-1.com"));
+    model.AddURL(folder_c_, 2, ASCIIToUTF16("c-2"), GURL("http://c-2.com"));
+    model.AddURL(folder_c_, 3, ASCIIToUTF16("c-3"), GURL("http://c-3.com"));
 
     model.AddURL(root, 3, ASCIIToUTF16("d"), GURL("http://d-0.com"));
   }
@@ -69,7 +69,7 @@ class BookmarkEditorBaseControllerTest : public CocoaTest {
             initWithParentWindow:test_window()
                          nibName:@"BookmarkAllTabs"
                          profile:browser_helper_.profile()
-                          parent:group_b_0_
+                          parent:folder_b_0_
                    configuration:BookmarkEditor::SHOW_TREE];
   }
 
@@ -137,15 +137,15 @@ TEST_F(BookmarkEditorBaseControllerTest, VerifyBookmarkTestModel) {
 
 TEST_F(BookmarkEditorBaseControllerTest, NodeSelection) {
   EXPECT_TRUE([controller_ folderTreeArray]);
-  [controller_ selectTestNodeInBrowser:group_b_3_];
+  [controller_ selectTestNodeInBrowser:folder_b_3_];
   const BookmarkNode* node = [controller_ selectedNode];
-  EXPECT_EQ(node, group_b_3_);
+  EXPECT_EQ(node, folder_b_3_);
   [controller_ cancel:nil];
 }
 
 TEST_F(BookmarkEditorBaseControllerTest, CreateFolder) {
-  EXPECT_EQ(2, group_b_3_->child_count());
-  [controller_ selectTestNodeInBrowser:group_b_3_];
+  EXPECT_EQ(2, folder_b_3_->child_count());
+  [controller_ selectTestNodeInBrowser:folder_b_3_];
   NSString* expectedName =
       l10n_util::GetNSStringWithFixup(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME);
   [controller_ setDisplayName:expectedName];
@@ -160,7 +160,7 @@ TEST_F(BookmarkEditorBaseControllerTest, CreateFolder) {
   EXPECT_NSEQ(expectedName, newFolderName);
   [controller_ createNewFolders];
   // Verify that the tab folder was added to the new folder.
-  EXPECT_EQ(3, group_b_3_->child_count());
+  EXPECT_EQ(3, folder_b_3_->child_count());
   [controller_ cancel:nil];
 }
 
@@ -180,12 +180,12 @@ TEST_F(BookmarkEditorBaseControllerTest, CreateTwoFolders) {
 
 TEST_F(BookmarkEditorBaseControllerTest, SelectedFolderDeleted) {
   BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
-  [controller_ selectTestNodeInBrowser:group_b_3_];
-  EXPECT_EQ(group_b_3_, [controller_ selectedNode]);
+  [controller_ selectTestNodeInBrowser:folder_b_3_];
+  EXPECT_EQ(folder_b_3_, [controller_ selectedNode]);
 
   // Delete the selected node, and verify it's no longer selected:
-  model.Remove(group_b_, 3);
-  EXPECT_NE(group_b_3_, [controller_ selectedNode]);
+  model.Remove(folder_b_, 3);
+  EXPECT_NE(folder_b_3_, [controller_ selectedNode]);
 
   [controller_ cancel:nil];
 }
@@ -193,12 +193,12 @@ TEST_F(BookmarkEditorBaseControllerTest, SelectedFolderDeleted) {
 TEST_F(BookmarkEditorBaseControllerTest, SelectedFoldersParentDeleted) {
   BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
   const BookmarkNode* root = model.GetBookmarkBarNode();
-  [controller_ selectTestNodeInBrowser:group_b_3_];
-  EXPECT_EQ(group_b_3_, [controller_ selectedNode]);
+  [controller_ selectTestNodeInBrowser:folder_b_3_];
+  EXPECT_EQ(folder_b_3_, [controller_ selectedNode]);
 
   // Delete the selected node's parent, and verify it's no longer selected:
   model.Remove(root, 1);
-  EXPECT_NE(group_b_3_, [controller_ selectedNode]);
+  EXPECT_NE(folder_b_3_, [controller_ selectedNode]);
 
   [controller_ cancel:nil];
 }
@@ -207,11 +207,11 @@ TEST_F(BookmarkEditorBaseControllerTest, FolderAdded) {
   BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
   const BookmarkNode* root = model.GetBookmarkBarNode();
 
-  // Add a group node to the model, and verify it can be selected in the tree:
-  const BookmarkNode* group_added = model.AddGroup(root, 0,
-                                                   ASCIIToUTF16("added"));
-  [controller_ selectTestNodeInBrowser:group_added];
-  EXPECT_EQ(group_added, [controller_ selectedNode]);
+  // Add a folder node to the model, and verify it can be selected in the tree:
+  const BookmarkNode* folder_added = model.AddFolder(
+      root, 0, ASCIIToUTF16("added"));
+  [controller_ selectTestNodeInBrowser:folder_added];
+  EXPECT_EQ(folder_added, [controller_ selectedNode]);
 
   [controller_ cancel:nil];
 }

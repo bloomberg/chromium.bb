@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,7 +191,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   base::Time t2(t1 + base::TimeDelta::FromHours(1));
   base::Time t3(t1 + base::TimeDelta::FromHours(1));
   base::Time t4(t1 + base::TimeDelta::FromHours(1));
-  const BookmarkNode* f1 = model->AddGroup(
+  const BookmarkNode* f1 = model->AddFolder(
       model->GetBookmarkBarNode(), 0, f1_title);
   model->AddURLWithCreationTime(f1, 0, url1_title, url1, t1);
   profile.GetHistoryService(Profile::EXPLICIT_ACCESS)->AddPage(url1,
@@ -199,15 +199,15 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   profile.GetFaviconService(Profile::EXPLICIT_ACCESS)->SetFavicon(url1,
       url1_favicon, icon_data, history::FAVICON);
   message_loop.RunAllPending();
-  const BookmarkNode* f2 = model->AddGroup(f1, 1, f2_title);
+  const BookmarkNode* f2 = model->AddFolder(f1, 1, f2_title);
   model->AddURLWithCreationTime(f2, 0, url2_title, url2, t2);
   model->AddURLWithCreationTime(model->GetBookmarkBarNode(),
                                 1, url3_title, url3, t3);
 
   model->AddURLWithCreationTime(model->other_node(), 0, url1_title, url1, t1);
   model->AddURLWithCreationTime(model->other_node(), 1, url2_title, url2, t2);
-  const BookmarkNode* f3 = model->AddGroup(model->other_node(), 2, f3_title);
-  const BookmarkNode* f4 = model->AddGroup(f3, 0, f4_title);
+  const BookmarkNode* f3 = model->AddFolder(model->other_node(), 2, f3_title);
+  const BookmarkNode* f4 = model->AddFolder(f3, 0, f4_title);
   model->AddURLWithCreationTime(f4, 0, url1_title, url1, t1);
   model->AddURLWithCreationTime(model->GetBookmarkBarNode(), 2, url4_title,
                                 url4, t4);

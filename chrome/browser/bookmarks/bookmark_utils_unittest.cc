@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksContainingText) {
       model.AddURL(model.other_node(), 0, ASCIIToUTF16("baz buz"),
                    GURL("http://www.cnn.com"));
 
-  model.AddGroup(model.other_node(), 0, ASCIIToUTF16("foo"));
+  model.AddFolder(model.other_node(), 0, ASCIIToUTF16("foo"));
 
   std::vector<const BookmarkNode*> nodes;
   bookmark_utils::GetBookmarksContainingText(

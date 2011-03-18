@@ -94,9 +94,9 @@ void CloneBookmarkNodeImpl(BookmarkModel* model,
   if (element.is_url) {
     model->AddURL(parent, index_to_add_at, element.title, element.url);
   } else {
-    const BookmarkNode* new_folder = model->AddGroup(parent,
-                                                     index_to_add_at,
-                                                     element.title);
+    const BookmarkNode* new_folder = model->AddFolder(parent,
+                                                      index_to_add_at,
+                                                      element.title);
     for (int i = 0; i < static_cast<int>(element.children.size()); ++i)
       CloneBookmarkNodeImpl(model, element.children[i], new_folder, i);
   }
@@ -549,7 +549,7 @@ static const BookmarkNode* CreateNewNode(BookmarkModel* model,
   if (details.type == BookmarkEditor::EditDetails::NEW_URL) {
     node = model->AddURL(parent, parent->child_count(), new_title, new_url);
   } else if (details.type == BookmarkEditor::EditDetails::NEW_FOLDER) {
-    node = model->AddGroup(parent, parent->child_count(), new_title);
+    node = model->AddFolder(parent, parent->child_count(), new_title);
     for (size_t i = 0; i < details.urls.size(); ++i) {
       model->AddURL(node, node->child_count(), details.urls[i].second,
                     details.urls[i].first);
