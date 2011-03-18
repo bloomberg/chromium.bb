@@ -53,7 +53,7 @@ class GitWrapperTestCase(BaseSCMTestCase):
         'FetchUpstreamTuple',
         'GenerateDiff', 'GetBranch', 'GetBranchRef', 'GetCheckoutRoot',
         'GetDifferentFiles', 'GetEmail', 'GetPatchName', 'GetSVNBranch',
-        'GetUpstreamBranch', 'IsGitSvn', 'ShortBranchName',
+        'GetUpstreamBranch', 'IsGitSvn', 'MatchSvnGlob', 'ShortBranchName',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm.GIT, members)
@@ -65,6 +65,17 @@ class GitWrapperTestCase(BaseSCMTestCase):
     self.mox.ReplayAll()
     self.assertEqual(scm.GIT.GetEmail(self.root_dir), 'mini@me.com')
 
+  def testMatchSvnGlob(self):
+    self.assertEquals(scm.GIT.MatchSvnGlob(
+        'svn://svn.chromium.org/chrome/trunk/src',
+        'svn://svn.chromium.org/chrome',
+        'trunk/src:refs/remotes/origin/trunk',
+        False), 'refs/remotes/origin/trunk')
+    self.assertEquals(scm.GIT.MatchSvnGlob(
+        'https://v8.googlecode.com/svn/branches/bleeding_edge',
+        'https://v8.googlecode.com/svn',
+        'branches/*:refs/remotes/*',
+        True), 'refs/remotes/bleeding_edge')
 
 class SVNTestCase(BaseSCMTestCase):
   def setUp(self):

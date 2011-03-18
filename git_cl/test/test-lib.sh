@@ -5,6 +5,8 @@ set -e
 
 PWD=`pwd`
 REPO_URL=file://$PWD/svnrepo
+TRUNK_URL=$REPO_URL/trunk
+BRANCH_URL=$REPO_URL/branches/some_branch
 GITREPO_PATH=$PWD/gitrepo
 GITREPO_URL=file://$GITREPO_PATH
 GIT_CL=$PWD/../git-cl
@@ -14,12 +16,13 @@ setup_initsvn() {
   echo "Setting up test SVN repo..."
   rm -rf svnrepo
   svnadmin create svnrepo
-
   # Need this in order for Mac SnowLeopard to work
   echo "enable-rep-sharing = false" >> svnrepo/db/fsfs.conf
 
+  svn mkdir -q -m 'creating trunk' --parents $TRUNK_URL
+
   rm -rf svn
-  svn co -q $REPO_URL svn
+  svn co -q $TRUNK_URL svn
   (
     cd svn
     echo "test" > test
@@ -28,6 +31,8 @@ setup_initsvn() {
     echo "test2" >> test
     svn commit -q -m "second commit"
   )
+
+  svn cp -q -m 'branching' --parents $TRUNK_URL $BRANCH_URL
 }
 
 # Set up a git-svn checkout of the repo.
@@ -36,7 +41,7 @@ setup_gitsvn() {
   rm -rf git-svn
   # There appears to be no way to make git-svn completely shut up, so we
   # redirect its output.
-  git svn -q clone $REPO_URL git-svn >/dev/null 2>&1
+  git svn -q clone -s $REPO_URL git-svn >/dev/null 2>&1
 }
 
 # Set up a git repo that has a few commits to master.

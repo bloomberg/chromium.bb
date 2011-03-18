@@ -101,6 +101,47 @@ def FixUrl(server):
   return server
 
 
+def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
+  """Return the corresponding git ref if |base_url| together with |glob_spec|
+  matches the full |url|.
+
+  If |allow_wildcards| is true, |glob_spec| can contain wildcards (see below).
+  """
+  fetch_suburl, as_ref = glob_spec.split(':')
+  if allow_wildcards:
+    glob_match = re.match('(.+/)?(\*|{[^/]*})(/.+)?', fetch_suburl)
+    if glob_match:
+      # Parse specs like "branches/*/src:refs/remotes/svn/*" or
+      # "branches/{472,597,648}/src:refs/remotes/svn/*".
+      branch_re = re.escape(base_url)
+      if glob_match.group(1):
+        branch_re += '/' + re.escape(glob_match.group(1))
+      wildcard = glob_match.group(2)
+      if wildcard == '*':
+        branch_re += '([^/]*)'
+      else:
+        # Escape and replace surrounding braces with parentheses and commas
+        # with pipe symbols.
+        wildcard = re.escape(wildcard)
+        wildcard = re.sub('^\\\\{', '(', wildcard)
+        wildcard = re.sub('\\\\,', '|', wildcard)
+        wildcard = re.sub('\\\\}$', ')', wildcard)
+        branch_re += wildcard
+      if glob_match.group(3):
+        branch_re += re.escape(glob_match.group(3))
+      match = re.match(branch_re, url)
+      if match:
+        return re.sub('\*$', match.group(1), as_ref)
+
+  # Parse specs like "trunk/src:refs/remotes/origin/trunk".
+  if fetch_suburl:
+    full_url = base_url + '/' + fetch_suburl
+  else:
+    full_url = base_url
+  if full_url == url:
+    return as_ref
+  return None
+
 class Settings(object):
   def __init__(self):
     self.default_server = None
@@ -193,14 +234,26 @@ class Settings(object):
             remote = match.group(1)
             base_url = match.group(2)
             fetch_spec = RunGit(
-                ['config', 'svn-remote.'+remote+'.fetch']).strip().split(':')
-            if fetch_spec[0]:
-              full_url = base_url + '/' + fetch_spec[0]
-            else:
-              full_url = base_url
-            if full_url == url:
-              self.svn_branch = fetch_spec[1]
-              break
+                ['config', 'svn-remote.%s.fetch' % remote],
+                error_ok=True).strip()
+            if fetch_spec:
+              self.svn_branch = MatchSvnGlob(url, base_url, fetch_spec, False)
+              if self.svn_branch:
+                break
+            branch_spec = RunGit(
+                ['config', 'svn-remote.%s.branches' % remote],
+                error_ok=True).strip()
+            if branch_spec:
+              self.svn_branch = MatchSvnGlob(url, base_url, branch_spec, True)
+              if self.svn_branch:
+                break
+            tag_spec = RunGit(
+                ['config', 'svn-remote.%s.tags' % remote],
+                error_ok=True).strip()
+            if tag_spec:
+              self.svn_branch = MatchSvnGlob(url, base_url, tag_spec, True)
+              if self.svn_branch:
+                break
 
       if not self.svn_branch:
         DieWithError('Can\'t guess svn branch -- try specifying it on the '

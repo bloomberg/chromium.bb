@@ -158,6 +158,48 @@ class GIT(object):
       return False
 
   @staticmethod
+  def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
+    """Return the corresponding git ref if |base_url| together with |glob_spec|
+    matches the full |url|.
+
+    If |allow_wildcards| is true, |glob_spec| can contain wildcards (see below).
+    """
+    fetch_suburl, as_ref = glob_spec.split(':')
+    if allow_wildcards:
+      glob_match = re.match('(.+/)?(\*|{[^/]*})(/.+)?', fetch_suburl)
+      if glob_match:
+        # Parse specs like "branches/*/src:refs/remotes/svn/*" or
+        # "branches/{472,597,648}/src:refs/remotes/svn/*".
+        branch_re = re.escape(base_url)
+        if glob_match.group(1):
+          branch_re += '/' + re.escape(glob_match.group(1))
+        wildcard = glob_match.group(2)
+        if wildcard == '*':
+          branch_re += '([^/]*)'
+        else:
+          # Escape and replace surrounding braces with parentheses and commas
+          # with pipe symbols.
+          wildcard = re.escape(wildcard)
+          wildcard = re.sub('^\\\\{', '(', wildcard)
+          wildcard = re.sub('\\\\,', '|', wildcard)
+          wildcard = re.sub('\\\\}$', ')', wildcard)
+          branch_re += wildcard
+        if glob_match.group(3):
+          branch_re += re.escape(glob_match.group(3))
+        match = re.match(branch_re, url)
+        if match:
+          return re.sub('\*$', match.group(1), as_ref)
+
+    # Parse specs like "trunk/src:refs/remotes/origin/trunk".
+    if fetch_suburl:
+      full_url = base_url + '/' + fetch_suburl
+    else:
+      full_url = base_url
+    if full_url == url:
+      return as_ref
+    return None
+
+  @staticmethod
   def GetSVNBranch(cwd):
     """Returns the svn branch name if found."""
     # Try to figure out which remote branch we're based on.
@@ -189,15 +231,33 @@ class GIT(object):
         if match:
           remote = match.group(1)
           base_url = match.group(2)
-          fetch_spec = GIT.Capture(
-              ['config', 'svn-remote.%s.fetch' % remote],
-              cwd=cwd).strip().split(':')
-          if fetch_spec[0]:
-            full_url = base_url + '/' + fetch_spec[0]
-          else:
-            full_url = base_url
-          if full_url == url:
-            return fetch_spec[1]
+          try:
+            fetch_spec = GIT.Capture(
+                ['config', 'svn-remote.%s.fetch' % remote],
+                cwd=cwd).strip()
+            branch = GIT.MatchSvnGlob(url, base_url, fetch_spec, False)
+          except gclient_utils.CheckCallError:
+            branch = None
+          if branch:
+            return branch
+          try:
+            branch_spec = GIT.Capture(
+                ['config', 'svn-remote.%s.branches' % remote],
+                cwd=cwd).strip()
+            branch = GIT.MatchSvnGlob(url, base_url, branch_spec, True)
+          except gclient_utils.CheckCallError:
+            branch = None
+          if branch:
+            return branch
+          try:
+            tag_spec = GIT.Capture(
+                ['config', 'svn-remote.%s.tags' % remote],
+                cwd=cwd).strip()
+            branch = GIT.MatchSvnGlob(url, base_url, tag_spec, True)
+          except gclient_utils.CheckCallError:
+            branch = None
+          if branch:
+            return branch
 
   @staticmethod
   def FetchUpstreamTuple(cwd):
