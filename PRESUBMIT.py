@@ -147,6 +147,12 @@ def _CommonChecks(input_api, output_api):
   sources = lambda x: input_api.FilterSourceFile(x, black_list=black_list)
   text_files = lambda x: input_api.FilterSourceFile(x, black_list=black_list,
                                                     white_list=white_list)
+
+  # TODO(dpranke): enable upload as well
+  if input_api.is_committing:
+    results.extend(input_api.canned_checks.CheckOwners(
+        input_api, output_api, source_file_filter=sources))
+
   results.extend(input_api.canned_checks.CheckLongLines(
       input_api, output_api, source_file_filter=sources))
   results.extend(input_api.canned_checks.CheckChangeHasNoTabs(
