@@ -43,26 +43,26 @@ namespace printing {
 
 TEST(EmfTest, DC) {
   // Simplest use case.
-  printing::Emf emf;
-  RECT rect = {100, 100, 200, 200};
-  HDC hdc = CreateCompatibleDC(NULL);
-  EXPECT_TRUE(hdc != NULL);
-  EXPECT_TRUE(emf.CreateDc(hdc, &rect));
-  EXPECT_TRUE(emf.context() != NULL);
-  // In theory, you'd use the HDC with GDI functions here.
-  EXPECT_TRUE(emf.Close());
-  uint32 size = emf.GetDataSize();
-  EXPECT_EQ(size, EMF_HEADER_SIZE);
+  uint32 size;
   std::vector<BYTE> data;
-  EXPECT_TRUE(emf.GetData(&data));
-  EXPECT_EQ(data.size(), size);
-  emf.CloseEmf();
-  EXPECT_TRUE(DeleteDC(hdc));
+  {
+    printing::Emf emf;
+    EXPECT_TRUE(emf.Init());
+    EXPECT_TRUE(emf.context() != NULL);
+    // An empty EMF is invalid, so we put at least a rectangle in it.
+    ::Rectangle(emf.context(), 10, 10, 190, 190);
+    EXPECT_TRUE(emf.Close());
+    size = emf.GetDataSize();
+    EXPECT_GT(size, EMF_HEADER_SIZE);
+    EXPECT_TRUE(emf.GetData(&data));
+    EXPECT_EQ(data.size(), size);
+  }
 
   // Playback the data.
-  hdc = CreateCompatibleDC(NULL);
-  EXPECT_TRUE(hdc);
+  printing::Emf emf;
   EXPECT_TRUE(emf.InitFromData(&data.front(), size));
+  HDC hdc = CreateCompatibleDC(NULL);
+  EXPECT_TRUE(hdc);
   RECT output_rect = {0, 0, 10, 10};
   EXPECT_TRUE(emf.Playback(hdc, &output_rect));
   EXPECT_TRUE(DeleteDC(hdc));
@@ -126,28 +126,31 @@ TEST_F(EmfPrintingTest, PageBreak) {
       CreateDC(L"WINSPOOL", L"UnitTest Printer", NULL, NULL));
   if (!dc.Get())
     return;
-  printing::Emf emf;
-  EXPECT_TRUE(emf.CreateDc(dc.Get(), NULL));
-  EXPECT_TRUE(emf.context() != NULL);
-  int pages = 3;
-  while (pages) {
-    EXPECT_TRUE(emf.StartPage());
-    ::Rectangle(emf.context(), 10, 10, 190, 190);
-    EXPECT_TRUE(emf.FinishPage());
-    --pages;
-  }
-  EXPECT_TRUE(emf.Close());
-  uint32 size = emf.GetDataSize();
+  uint32 size;
   std::vector<BYTE> data;
-  EXPECT_TRUE(emf.GetData(&data));
-  EXPECT_EQ(data.size(), size);
-  emf.CloseEmf();
+  {
+    printing::Emf emf;
+    EXPECT_TRUE(emf.Init());
+    EXPECT_TRUE(emf.context() != NULL);
+    int pages = 3;
+    while (pages) {
+      EXPECT_TRUE(emf.StartPage());
+      ::Rectangle(emf.context(), 10, 10, 190, 190);
+      EXPECT_TRUE(emf.FinishPage());
+      --pages;
+    }
+    EXPECT_TRUE(emf.Close());
+    size = emf.GetDataSize();
+    EXPECT_TRUE(emf.GetData(&data));
+    EXPECT_EQ(data.size(), size);
+  }
 
   // Playback the data.
   DOCINFO di = {0};
   di.cbSize = sizeof(DOCINFO);
   di.lpszDocName = L"Test Job";
   int job_id = ::StartDoc(dc.Get(), &di);
+  printing::Emf emf;
   EXPECT_TRUE(emf.InitFromData(&data.front(), size));
   EXPECT_TRUE(emf.SafePlayback(dc.Get()));
   ::EndDoc(dc.Get());
@@ -160,41 +163,39 @@ TEST_F(EmfPrintingTest, PageBreak) {
   }
 }
 
-TEST(EmfTest, FileBackedDC) {
+TEST(EmfTest, FileBackedEmf) {
   // Simplest use case.
-  printing::Emf emf;
-  RECT rect = {100, 100, 200, 200};
-  HDC hdc = CreateCompatibleDC(NULL);
-  EXPECT_TRUE(hdc != NULL);
   ScopedTempDir scratch_metafile_dir;
   ASSERT_TRUE(scratch_metafile_dir.CreateUniqueTempDir());
   FilePath metafile_path;
   EXPECT_TRUE(file_util::CreateTemporaryFileInDir(scratch_metafile_dir.path(),
                                                   &metafile_path));
-  EXPECT_TRUE(emf.CreateFileBackedDc(hdc, &rect, metafile_path));
-  EXPECT_TRUE(emf.context() != NULL);
-  // In theory, you'd use the HDC with GDI functions here.
-  EXPECT_TRUE(emf.Close());
-
-  uint32 size = emf.GetDataSize();
-  EXPECT_EQ(size, EMF_HEADER_SIZE);
+  uint32 size;
   std::vector<BYTE> data;
-  EXPECT_TRUE(emf.GetData(&data));
-  EXPECT_EQ(data.size(), size);
-  emf.CloseEmf();
+  {
+    printing::Emf emf;
+    EXPECT_TRUE(emf.InitToFile(metafile_path));
+    EXPECT_TRUE(emf.context() != NULL);
+    // An empty EMF is invalid, so we put at least a rectangle in it.
+    ::Rectangle(emf.context(), 10, 10, 190, 190);
+    EXPECT_TRUE(emf.Close());
+    size = emf.GetDataSize();
+    EXPECT_GT(size, EMF_HEADER_SIZE);
+    EXPECT_TRUE(emf.GetData(&data));
+    EXPECT_EQ(data.size(), size);
+  }
   int64 file_size = 0;
   file_util::GetFileSize(metafile_path, &file_size);
   EXPECT_EQ(size, file_size);
-  EXPECT_TRUE(DeleteDC(hdc));
 
   // Playback the data.
-  hdc = CreateCompatibleDC(NULL);
+  HDC hdc = CreateCompatibleDC(NULL);
   EXPECT_TRUE(hdc);
-  EXPECT_TRUE(emf.CreateFromFile(metafile_path));
+  printing::Emf emf;
+  EXPECT_TRUE(emf.InitFromFile(metafile_path));
   RECT output_rect = {0, 0, 10, 10};
   EXPECT_TRUE(emf.Playback(hdc, &output_rect));
   EXPECT_TRUE(DeleteDC(hdc));
-  emf.CloseEmf();
 }
 
 }  // namespace printing

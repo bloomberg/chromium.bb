@@ -20,8 +20,7 @@
 #if defined(OS_WIN)
 #include "base/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
-#include "printing/native_metafile_factory.h"
-#include "printing/native_metafile.h"
+#include "printing/emf_win.h"
 #endif
 
 ServiceUtilityProcessHost::ServiceUtilityProcessHost(
@@ -204,15 +203,15 @@ void ServiceUtilityProcessHost::Client::MetafileAvailable(
   if (!scratch_metafile_dir.Set(metafile_path.DirName()))
     LOG(WARNING) << "Unable to set scratch metafile directory";
 #if defined(OS_WIN)
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
-  if (!metafile->CreateFromFile(metafile_path)) {
+  // It's important that metafile is declared after scratch_metafile_dir so
+  // that the metafile destructor closes the file before the ScopedTempDir
+  // destructor tries to remove the directory.
+  printing::Emf metafile;
+  if (!metafile.InitFromFile(metafile_path)) {
     OnRenderPDFPagesToMetafileFailed();
   } else {
-    OnRenderPDFPagesToMetafileSucceeded(*metafile,
+    OnRenderPDFPagesToMetafileSucceeded(metafile,
                                         highest_rendered_page_number);
-    // Close it so that ScopedTempDir can delete the folder.
-    metafile->CloseEmf();
   }
 #endif  // defined(OS_WIN)
 }

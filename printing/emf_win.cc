@@ -50,8 +50,30 @@ Emf::Emf() : emf_(NULL), hdc_(NULL) {
 }
 
 Emf::~Emf() {
-  CloseEmf();
+  DCHECK(!hdc_);
+  if (emf_)
+    DeleteEnhMetaFile(emf_);
+}
+
+bool Emf::InitToFile(const FilePath& metafile_path) {
   DCHECK(!emf_ && !hdc_);
+  hdc_ = CreateEnhMetaFile(NULL, metafile_path.value().c_str(), NULL, NULL);
+  DCHECK(hdc_);
+  return hdc_ != NULL;
+}
+
+bool Emf::InitFromFile(const FilePath& metafile_path) {
+  DCHECK(!emf_ && !hdc_);
+  emf_ = GetEnhMetaFile(metafile_path.value().c_str());
+  DCHECK(emf_);
+  return emf_ != NULL;
+}
+
+bool Emf::Init() {
+  DCHECK(!emf_ && !hdc_);
+  hdc_ = CreateEnhMetaFile(NULL, NULL, NULL, NULL);
+  DCHECK(hdc_);
+  return hdc_ != NULL;
 }
 
 bool Emf::InitFromData(const void* src_buffer, uint32 src_buffer_size) {
@@ -61,44 +83,12 @@ bool Emf::InitFromData(const void* src_buffer, uint32 src_buffer_size) {
   return emf_ != NULL;
 }
 
-bool Emf::CreateDc(HDC sibling, const RECT* rect) {
-  DCHECK(!emf_ && !hdc_);
-  hdc_ = CreateEnhMetaFile(sibling, NULL, rect, NULL);
-  DCHECK(hdc_);
-  return hdc_ != NULL;
-}
-
-bool Emf::CreateFileBackedDc(HDC sibling, const RECT* rect,
-                             const FilePath& path) {
-  DCHECK(!emf_ && !hdc_);
-  DCHECK(!path.empty());
-  hdc_ = CreateEnhMetaFile(sibling, path.value().c_str(), rect, NULL);
-  DCHECK(hdc_);
-  return hdc_ != NULL;
-}
-
-bool Emf::CreateFromFile(const FilePath& metafile_path) {
-  DCHECK(!emf_ && !hdc_);
-  emf_ = GetEnhMetaFile(metafile_path.value().c_str());
-  DCHECK(emf_);
-  return emf_ != NULL;
-}
-
-
 bool Emf::Close() {
   DCHECK(!emf_ && hdc_);
   emf_ = CloseEnhMetaFile(hdc_);
   DCHECK(emf_);
   hdc_ = NULL;
   return emf_ != NULL;
-}
-
-void Emf::CloseEmf() {
-  DCHECK(!hdc_);
-  if (emf_) {
-    DeleteEnhMetaFile(emf_);
-    emf_ = NULL;
-  }
 }
 
 bool Emf::Playback(HDC hdc, const RECT* rect) const {

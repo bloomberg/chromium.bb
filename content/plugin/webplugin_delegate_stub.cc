@@ -273,7 +273,7 @@ void WebPluginDelegateStub::OnPrint(base::SharedMemoryHandle* shared_memory,
 #if defined(OS_WIN)
   scoped_ptr<printing::NativeMetafile> metafile(
       printing::NativeMetafileFactory::CreateMetafile());
-  if (!metafile->CreateDc(NULL, NULL)) {
+  if (!metafile->Init()) {
     NOTREACHED();
     return;
   }

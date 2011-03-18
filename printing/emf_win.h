@@ -27,10 +27,20 @@ class Emf : public NativeMetafile {
   class Enumerator;
   struct EnumerationContext;
 
+  // Generates a virtual HDC that will record every GDI commands and compile
+  // it in a EMF data stream.
+  Emf();
   virtual ~Emf();
 
+  // Generates a new metafile that will record every GDI command, and will
+  // be saved to |metafile_path|.
+  virtual bool InitToFile(const FilePath& metafile_path);
+
+  // Initializes the Emf with the data in |metafile_path|.
+  virtual bool InitFromFile(const FilePath& metafile_path);
+
   // NativeMetafile methods.
-  virtual bool Init() { return true; }
+  virtual bool Init();
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 
   virtual bool StartPage();
@@ -57,14 +67,6 @@ class Emf : public NativeMetafile {
     return hdc_;
   }
 
-  virtual bool CreateDc(HDC sibling, const RECT* rect);
-  virtual bool CreateFileBackedDc(HDC sibling,
-                                  const RECT* rect,
-                                  const FilePath& path);
-  virtual bool CreateFromFile(const FilePath& file_path);
-
-  virtual void CloseEmf();
-
   virtual bool Playback(HDC hdc, const RECT* rect) const;
   virtual bool SafePlayback(HDC hdc) const;
 
@@ -74,16 +76,7 @@ class Emf : public NativeMetafile {
     return emf_;
   }
 
- protected:
-  Emf();
-
  private:
-  friend class NativeMetafileFactory;
-  FRIEND_TEST_ALL_PREFIXES(EmfTest, DC);
-  FRIEND_TEST_ALL_PREFIXES(EmfTest, FileBackedDC);
-  FRIEND_TEST_ALL_PREFIXES(EmfPrintingTest, Enumerate);
-  FRIEND_TEST_ALL_PREFIXES(EmfPrintingTest, PageBreak);
-
   // Playbacks safely one EMF record.
   static int CALLBACK SafePlaybackProc(HDC hdc,
                                        HANDLETABLE* handle_table,

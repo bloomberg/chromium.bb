@@ -30,8 +30,7 @@
 #include "app/win/iat_patch_function.h"
 #include "base/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
-#include "printing/native_metafile_factory.h"
-#include "printing/native_metafile.h"
+#include "printing/emf_win.h"
 #endif
 
 namespace {
@@ -257,18 +256,17 @@ bool UtilityThread::RenderPDFToWinMetafile(
   if (!get_info_proc(&buffer.front(), buffer.size(), &total_page_count, NULL))
     return false;
 
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
-  metafile->CreateFileBackedDc(NULL, NULL, metafile_path);
+  printing::Emf metafile;
+  metafile.InitToFile(metafile_path);
   // Since we created the metafile using the screen DPI (but we actually want
   // the PDF DLL to print using the passed in render_dpi, we apply the following
   // transformation.
-  SetGraphicsMode(metafile->context(), GM_ADVANCED);
+  SetGraphicsMode(metafile.context(), GM_ADVANCED);
   XFORM xform = {0};
   int screen_dpi = GetDeviceCaps(GetDC(NULL), LOGPIXELSX);
   xform.eM11 = xform.eM22 =
       static_cast<float>(screen_dpi) / static_cast<float>(render_dpi);
-  ModifyWorldTransform(metafile->context(), &xform, MWT_LEFTMULTIPLY);
+  ModifyWorldTransform(metafile.context(), &xform, MWT_LEFTMULTIPLY);
 
   bool ret = false;
   std::vector<printing::PageRange>::const_iterator iter;
@@ -276,18 +274,18 @@ bool UtilityThread::RenderPDFToWinMetafile(
     for (int page_number = iter->from; page_number <= iter->to; ++page_number) {
       if (page_number >= total_page_count)
         break;
-      metafile->StartPage();
+      metafile.StartPage();
       if (render_proc(&buffer.front(), buffer.size(), page_number,
-                      metafile->context(), render_dpi, render_dpi,
+                      metafile.context(), render_dpi, render_dpi,
                       render_area.x(), render_area.y(), render_area.width(),
                       render_area.height(), true, false, true, true))
         if (*highest_rendered_page_number < page_number)
           *highest_rendered_page_number = page_number;
         ret = true;
-      metafile->FinishPage();
+      metafile.FinishPage();
     }
   }
-  metafile->Close();
+  metafile.Close();
   return ret;
 }
 #endif  // defined(OS_WIN)
