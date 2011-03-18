@@ -18,9 +18,9 @@ What works:
 * Very limited 2d functionality, expects one image_data object to be
   flushed into one graphics object (of same size) periodically
 * Limited keyboard and mouse events
+* Sound support (only one audio and one audio_config object)
 
 Near term goals:
-* Sound support
 * Readonly file support
 * (Maybe) port to fake_browser
 

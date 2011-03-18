@@ -43,10 +43,17 @@ typedef struct InfoVideo {
 } InfoVideo;
 
 
+typedef struct InfoAudio {
+  int32_t frequency;
+  int32_t channels;
+  int32_t frame_size;
+} InfoAudio;
+
+
 typedef struct SDLInfo {
   int32_t initialized_sdl;
-  int32_t initialized_sdl_video;
   InfoVideo video;
+  InfoAudio audio;
 } InfoMultimedia;
 
 
@@ -70,7 +77,7 @@ class JobSdlInit: public Job {
 
   virtual void Action() {
     NaClLog(3, "JobSdlInit::Action\n");
-    const int flags =  SDL_INIT_VIDEO;
+    const int flags =  SDL_INIT_VIDEO | SDL_INIT_AUDIO;
     const uint32_t sdl_video_flags = SDL_DOUBLEBUF | SDL_HWSURFACE;
 
     memset(info_, 0, sizeof(*info_));
@@ -98,7 +105,6 @@ class JobSdlInit: public Job {
     info_->video.bits_per_pixel = 32;
     info_->video.bytes_per_pixel = 4;
 
-    info_->initialized_sdl_video = 1;
     // TODO(robertm): verify non-ownership of title_
     SDL_WM_SetCaption(title_, title_);
   }
@@ -124,6 +130,80 @@ class JobSdlQuit: public Job {
 };
 
 
+class JobSdlAudioStart: public Job {
+ private:
+  SDLInfo* info_;
+
+ public:
+  explicit JobSdlAudioStart(SDLInfo* info) : info_(info) {}
+
+  virtual void Action() {
+    NaClLog(3, "JobSdlAudioStart::Action\n");
+    if (!info_->initialized_sdl) {
+      NaClLog(LOG_FATAL, "sdl not initialized\n");
+    }
+    SDL_PauseAudio(0);
+  }
+};
+
+
+class JobSdlAudioStop: public Job {
+ private:
+  SDLInfo* info_;
+
+ public:
+  explicit JobSdlAudioStop(SDLInfo* info) : info_(info) {}
+
+  virtual void Action() {
+    NaClLog(3, "JobSdlAudioStop::Action\n");
+    if (!info_->initialized_sdl) {
+      NaClLog(LOG_FATAL, "sdl not initialized\n");
+    }
+    SDL_PauseAudio(1);
+  }
+};
+
+
+class JobSdlAudioInit: public Job {
+ private:
+  SDLInfo* info_;
+  AUDIO_CALLBACK cb_;
+
+ public:
+  explicit JobSdlAudioInit(SDLInfo* info,
+                           int frequency,
+                           int channels,
+                           int frame_size,
+                           AUDIO_CALLBACK cb) : info_(info), cb_(cb) {
+    info->audio.frequency = frequency;
+    info->audio.channels = channels;
+    info->audio.frame_size = frame_size;
+  }
+
+  virtual void Action() {
+    NaClLog(3, "JobSdlAudioInit::Action\n");
+    if (!info_->initialized_sdl) {
+      NaClLog(LOG_FATAL, "sdl not initialized\n");
+    }
+
+    SDL_AudioSpec fmt;
+    fmt.freq = info_->audio.frequency;
+    fmt.format = AUDIO_S16;
+    fmt.channels = info_->audio.channels;
+    // NOTE: SDL seems to halve that the sample count for the callback
+    //       so we compensate here by doubling
+    fmt.samples = info_->audio.frame_size * 2;
+    fmt.callback = cb_;
+    fmt.userdata = NULL;
+    NaClLog(LOG_INFO, "JobSdlAudioInit %d %d %d %d\n",
+            fmt.freq, fmt.format, fmt.channels, fmt.samples);
+    if (SDL_OpenAudio(&fmt, NULL) < 0) {
+      NaClLog(LOG_FATAL, "could not initialize SDL audio\n");
+    }
+  }
+};
+
+
 class JobSdlUpdate: public Job {
  public:
   JobSdlUpdate(SDLInfo* info, const void* data) : info_(info), data_(data) {}
@@ -134,7 +214,7 @@ class JobSdlUpdate: public Job {
     InfoVideo* video_info = &info_->video;
     image = NULL;
 
-    if (!info_->initialized_sdl_video) {
+    if (!info_->initialized_sdl) {
       NaClLog(LOG_FATAL, "MultimediaVideoUpdate: video not initialized\n");
     }
 
@@ -272,6 +352,26 @@ class MultimediaSDL : public IMultimedia {
     job.Wait();
   }
 
+  virtual void AudioInit16Bit(int frequency,
+                         int channels,
+                         int frame_size,
+                         AUDIO_CALLBACK cb) {
+    JobSdlAudioInit job(&sdl_info_, frequency, channels, frame_size, cb);
+    sdl_workqueue_.JobPut(&job);
+    job.Wait();
+  }
+
+  virtual void AudioStart() {
+    JobSdlAudioStart job(&sdl_info_);
+    sdl_workqueue_.JobPut(&job);
+    job.Wait();
+  }
+
+  virtual void AudioStop() {
+    JobSdlAudioStop job(&sdl_info_);
+    sdl_workqueue_.JobPut(&job);
+    job.Wait();
+  }
 
  private:
   ThreadedWorkQueue sdl_workqueue_;

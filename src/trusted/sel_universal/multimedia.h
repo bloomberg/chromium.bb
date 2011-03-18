@@ -20,6 +20,8 @@ int GetData2FromUserEvent(PP_InputEvent* event);
 
 void InvalidateEvent(PP_InputEvent* event);
 
+typedef void (*AUDIO_CALLBACK)(void* data, unsigned char* buffer, int length);
+
 class IMultimedia {
  public:
   virtual ~IMultimedia() {}
@@ -35,6 +37,13 @@ class IMultimedia {
   virtual void EventPoll(PP_InputEvent* event) = 0;
   // Get next event (blocking).
   virtual void EventGet(PP_InputEvent* event) = 0;
+  // Get next event (blocking).
+  virtual void AudioInit16Bit(int frequency,
+                              int channels,
+                              int frame_count,
+                              AUDIO_CALLBACK cb) = 0;
+  virtual void AudioStart() = 0;
+  virtual void AudioStop() = 0;
 };
 
 /* Currently, there is only an SDL implementation */
