@@ -19,10 +19,15 @@ node = env.PPAPIBrowserTester(
     files=[env.File('multiarch.html'),
            env.File('multiarch.js'),
            env.File('multiarch.nmf'),
-           env.File('${SCONSTRUCT_DIR}/tests/multiarch/srpc_hw_x86_32.nexe'),
-           env.File('${SCONSTRUCT_DIR}/tests/multiarch/srpc_hw_x86_64.nexe'),
-           env.File('${SCONSTRUCT_DIR}/tests/multiarch/srpc_hw_ARM.nexe'),
-    ])
+          ],
+    map_files=[('x86/srpc_hw.nexe',
+                 env.File('${SCONSTRUCT_DIR}/tests/prebuilt/x86/srpc_hw.nexe')),
+               ('x64/srpc_hw.nexe',
+                 env.File('${SCONSTRUCT_DIR}/tests/prebuilt/x64/srpc_hw.nexe')),
+               ('arm/srpc_hw.nexe',
+                 env.File('${SCONSTRUCT_DIR}/tests/prebuilt/arm/srpc_hw.nexe')),
+              ],
+    )
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

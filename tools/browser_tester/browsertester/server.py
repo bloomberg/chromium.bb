@@ -19,7 +19,10 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     bad = set((os.curdir, os.pardir, ''))
     words = [word for word in words if word not in bad]
-    return os.sep.join(words)
+    # The path of the request should always use POSIX-style path separators, so
+    # that the filename input of --map_file can be a POSIX-style path and still
+    # match correctly in translate_path().
+    return '/'.join(words)
 
   def translate_path(self, path):
     path = self.NormalizePath(path)

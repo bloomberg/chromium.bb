@@ -1,7 +1,7 @@
 {
   "nexes": {
-    "x86-32": "srpc_hw_x86_32.nexe",
-    "x86-64": "srpc_hw_x86_64.nexe",
-    "ARM": "srpc_hw_ARM.nexe"
+    "x86-32": "x86/srpc_hw.nexe",
+    "x86-64": "x64/srpc_hw.nexe",
+    "ARM": "arm/srpc_hw.nexe"
   }
 }
