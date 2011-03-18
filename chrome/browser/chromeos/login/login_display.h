@@ -27,6 +27,7 @@ class RemoveUserDelegate {
   virtual void OnUserRemoved(const std::string& username) = 0;
 };
 
+// TODO(nkostylev): Extract interface, create a BaseLoginDisplay class.
 // An abstract class that defines login UI implementation.
 class LoginDisplay : public RemoveUserDelegate {
  public:
@@ -52,15 +53,12 @@ class LoginDisplay : public RemoveUserDelegate {
     // Called when existing user pod is selected in the UI.
     virtual void OnUserSelected(const std::string& username) = 0;
    protected:
-    virtual ~Delegate() {}
+    virtual ~Delegate();
   };
 
   // |background_bounds| determines the bounds of login UI background.
-  LoginDisplay(Delegate* delegate, const gfx::Rect& background_bounds)
-      : delegate_(delegate),
-        parent_window_(NULL),
-        background_bounds_(background_bounds) {}
-  virtual ~LoginDisplay() {}
+  LoginDisplay(Delegate* delegate, const gfx::Rect& background_bounds);
+  virtual ~LoginDisplay();
 
   // Initializes login UI with the user pods based on list of known users and
   // guest, new user pods if those are enabled.

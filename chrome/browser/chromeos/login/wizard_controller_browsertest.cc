@@ -69,9 +69,7 @@ class WizardControllerTest : public chromeos::WizardInProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WizardControllerTest);
 };
 
-// TODO(zelidrag): Need to revisit this once translation for fr and ar is
-// complete.  See http://crosbug.com/8974
-IN_PROC_BROWSER_TEST_F(WizardControllerTest, FAILS_SwitchLanguage) {
+IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
   WizardController* const wizard = controller();
   ASSERT_TRUE(wizard != NULL);
   wizard->ShowFirstScreen(WizardController::kNetworkScreenName);
@@ -149,6 +147,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
   EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
   controller()->OnExit(chromeos::ScreenObserver::EULA_ACCEPTED);
+  // Let update screen smooth time process (time = 0ms).
+  ui_test_utils::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(controller()->GetUpdateScreen(), controller()->current_screen());
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(0);
@@ -172,6 +172,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
   EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
   controller()->OnExit(chromeos::ScreenObserver::EULA_ACCEPTED);
+  // Let update screen smooth time process (time = 0ms).
+  ui_test_utils::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(controller()->GetUpdateScreen(), controller()->current_screen());
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(0);

@@ -33,6 +33,7 @@ class Widget;
 
 namespace chromeos {
 
+class StartupCustomizationDocument;
 class NetworkLibrary;
 
 // View that provides interface for start/stop throbber above the view.
@@ -103,6 +104,10 @@ GURL GetAccountRecoveryHelpUrl();
 // If there are multiple connected networks, network priority:
 // Ethernet > WiFi > Cellular. Same for connecting network.
 string16 GetCurrentNetworkName(NetworkLibrary* network_library);
+
+// Load OEM partner startup customization manifest
+// containing locale, timezone, EULA, etc.
+const chromeos::StartupCustomizationDocument* LoadStartupManifest();
 
 // Define the constants in |login| namespace to avoid potential
 // conflict with other chromeos components.

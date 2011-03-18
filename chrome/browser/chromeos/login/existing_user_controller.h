@@ -12,7 +12,6 @@
 #include "base/string16.h"
 #include "base/task.h"
 #include "base/timer.h"
-#include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/captcha_view.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
@@ -27,6 +26,7 @@
 
 namespace chromeos {
 
+class LoginDisplayHost;
 class UserCrosSettingsProvider;
 
 // ExistingUserController is used to handle login when someone has
@@ -43,8 +43,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
                                public PasswordChangedView::Delegate {
  public:
   // All UI initialization is deferred till Init() call.
-  // |background_bounds| determines the bounds of background view.
-  explicit ExistingUserController(const gfx::Rect& background_bounds);
+  explicit ExistingUserController(LoginDisplayHost* host);
+  ~ExistingUserController();
 
   // Returns the current existing user controller if it has been created.
   static ExistingUserController* current_controller() {
@@ -52,15 +52,11 @@ class ExistingUserController : public LoginDisplay::Delegate,
   }
 
   void set_initial_start_page(const std::string& url) {
-      initial_start_page_ = url;
+    initial_start_page_ = url;
   }
 
   // Creates and shows login UI for known users.
   void Init(const UserVector& users);
-
-  // Takes ownership of the specified background widget and view.
-  void OwnBackground(views::Widget* background_widget,
-                     chromeos::BackgroundView* background_view);
 
   // LoginDisplay::Delegate: implementation
   virtual void CreateAccount();
@@ -77,10 +73,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
                        const NotificationDetails& details);
 
  private:
-  friend class DeleteTask<ExistingUserController>;
+  friend class ExistingUserControllerTest;
   friend class MockLoginPerformerDelegate;
-
-  ~ExistingUserController();
 
   // LoginPerformer::Delegate implementation:
   virtual void OnLoginFailure(const LoginFailure& error);
@@ -104,13 +98,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Starts WizardController with the specified screen.
   void ActivateWizard(const std::string& screen_name);
 
-  // Creates LoginDisplay instance based on command line options.
-  LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate,
-                                   const gfx::Rect& background_bounds);
-
-  // Wrapper for invoking the destructor. Used by delete_timer_.
-  void Delete();
-
   // Returns corresponding native window.
   gfx::NativeWindow GetNativeWindow() const;
 
@@ -126,13 +113,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
     login_performer_delegate_.reset(d);
   }
 
-  // Bounds of the background window.
-  const gfx::Rect background_bounds_;
-
-  // Background window/view.
-  views::Widget* background_window_;
-  BackgroundView* background_view_;
-
   // Used to execute login operations.
   scoped_ptr<LoginPerformer> login_performer_;
 
@@ -146,13 +126,12 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Username of the last login attempt.
   std::string last_login_attempt_username_;
 
+  // OOBE/login display host.
+  LoginDisplayHost* host_;
+
   // Number of login attempts. Used to show help link when > 1 unsuccessful
   // logins for the same user.
   size_t num_login_attempts_;
-
-  // Timer which is used to defer deleting and gave abitility to WM to smoothly
-  // hide the windows.
-  base::OneShotTimer<ExistingUserController> delete_timer_;
 
   // Pointer to the current instance of the controller to be used by
   // automation tests.
@@ -174,7 +153,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   ScopedRunnableMethodFactory<ExistingUserController> method_factory_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, NewUserLogin);
-  FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, CreateAccount);
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);
 };

@@ -16,6 +16,8 @@ class WizardController;
 
 namespace chromeos {
 
+class LoginDisplayHost;
+
 // Base class for test related to login wizard and its screens.
 // Instead of creating Chrome browser window it creates login wizard window
 // with specified parameters and allows to customize environment at the
@@ -41,6 +43,7 @@ class WizardInProcessBrowserTest : public CrosInProcessBrowserTest {
  private:
   std::string screen_name_;
   WizardController* controller_;
+  LoginDisplayHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardInProcessBrowserTest);
 };

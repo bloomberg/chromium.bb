@@ -14,8 +14,8 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/views_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
@@ -56,25 +56,19 @@ const char kCaptivePortalLaunchURL[] = "http://www.google.com/";
 }  // namespace
 
 // static
-ExistingUserController*
-  ExistingUserController::current_controller_ = NULL;
+ExistingUserController* ExistingUserController::current_controller_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, public:
 
-ExistingUserController::ExistingUserController(
-    const gfx::Rect& background_bounds)
-    : background_bounds_(background_bounds),
-      background_window_(NULL),
-      background_view_(NULL),
+ExistingUserController::ExistingUserController(LoginDisplayHost* host)
+    : host_(host),
       num_login_attempts_(0),
       user_settings_(new UserCrosSettingsProvider),
       method_factory_(this) {
-  if (current_controller_)
-    current_controller_->Delete();
   current_controller_ = this;
 
-  login_display_.reset(CreateLoginDisplay(this, background_bounds));
+  login_display_.reset(host_->CreateLoginDisplay(this));
 
   registrar_.Add(this,
                  NotificationType::LOGIN_USER_IMAGE_CHANGED,
@@ -97,20 +91,6 @@ void ExistingUserController::Init(const UserVector& users) {
         LanguageSwitchMenu::SwitchLanguage(owner_locale);
       }
     }
-  }
-  if (!background_window_) {
-    background_window_ = BackgroundView::CreateWindowContainingView(
-        background_bounds_,
-        GURL(),
-        &background_view_);
-    background_view_->EnableShutdownButton(true);
-
-    if (!WizardController::IsDeviceRegistered()) {
-      background_view_->SetOobeProgressBarVisible(true);
-      background_view_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
-    }
-
-    background_window_->Show();
   }
 
   UserVector filtered_users;
@@ -140,14 +120,6 @@ void ExistingUserController::Init(const UserVector& users) {
   }
 }
 
-void ExistingUserController::OwnBackground(
-    views::Widget* background_widget,
-    chromeos::BackgroundView* background_view) {
-  DCHECK(!background_window_);
-  background_window_ = background_widget;
-  background_view_ = background_view;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, NotificationObserver implementation:
 //
@@ -166,9 +138,6 @@ void ExistingUserController::Observe(NotificationType type,
 // ExistingUserController, private:
 
 ExistingUserController::~ExistingUserController() {
-  if (background_window_)
-    background_window_->Close();
-
   DCHECK(current_controller_ != NULL);
   current_controller_ = NULL;
 }
@@ -375,7 +344,7 @@ void ExistingUserController::OnLoginSuccess(
                                      pending_requests);
 
     // Delay deletion as we're on the stack.
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    host_->OnSessionStart();
   }
 }
 
@@ -450,42 +419,19 @@ void ExistingUserController::ResyncEncryptedData() {
 // ExistingUserController, private:
 
 void ExistingUserController::ActivateWizard(const std::string& screen_name) {
-  // WizardController takes care of deleting itself when done.
-  WizardController* controller = new WizardController();
-
-  // Give the background window to the controller.
-  controller->OwnBackground(background_window_, background_view_);
-  background_window_ = NULL;
-
+  GURL start_url;
   if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
-    controller->set_start_url(guest_mode_url_);
-
-  controller->Init(screen_name, background_bounds_);
-
+    start_url = guest_mode_url_;
+  host_->StartWizard(screen_name, NULL, start_url);
   login_display_->OnFadeOut();
-
-  delete_timer_.Start(base::TimeDelta::FromSeconds(1), this,
-                      &ExistingUserController::Delete);
-}
-
-LoginDisplay* ExistingUserController::CreateLoginDisplay(
-    LoginDisplay::Delegate* delegate, const gfx::Rect& background_bounds) {
-  // TODO(rharrison): Create Web UI implementation too. http://crosbug.com/6398.
-  return new ViewsLoginDisplay(delegate, background_bounds);
-}
-
-void ExistingUserController::Delete() {
-  delete this;
 }
 
 gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
-  return background_view_->GetNativeWindow();
+  return host_->GetNativeWindow();
 }
 
 void ExistingUserController::SetStatusAreaEnabled(bool enable) {
-  if (background_view_) {
-    background_view_->SetStatusAreaEnabled(enable);
-  }
+  host_->SetStatusAreaEnabled(enable);
 }
 
 void ExistingUserController::ShowError(int error_id,

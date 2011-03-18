@@ -14,8 +14,6 @@
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "ui/gfx/rect.h"
@@ -26,10 +24,10 @@ class WizardScreen;
 
 namespace chromeos {
 class AccountScreen;
-class BackgroundView;
 class EulaScreen;
 class ExistingUserController;
 class HTMLPageScreen;
+class LoginDisplayHost;
 class NetworkScreen;
 class RegistrationScreen;
 class StartupCustomizationDocument;
@@ -51,10 +49,10 @@ class WidgetGtk;
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
 class WizardController : public chromeos::ScreenObserver,
-                         public WizardScreenDelegate,
-                         public NotificationObserver {
+                         public WizardScreenDelegate {
  public:
-  WizardController();
+  explicit WizardController(chromeos::LoginDisplayHost* host,
+                            const gfx::Rect& screen_bounds);
   ~WizardController();
 
   // Returns the default wizard controller if it has been created.
@@ -86,18 +84,10 @@ class WizardController : public chromeos::ScreenObserver,
   // Shows the first screen defined by |first_screen_name| or by default
   // if the parameter is empty. |screen_bounds| are used to calculate position
   // of the wizard screen.
-  void Init(const std::string& first_screen_name,
-            const gfx::Rect& screen_bounds);
+  void Init(const std::string& first_screen_name);
 
   // Returns the view that contains all the other views.
   views::View* contents() { return contents_; }
-
-  // Creates and shows a background window.
-  void ShowBackground(const gfx::Rect& bounds);
-
-  // Takes ownership of the specified background widget and view.
-  void OwnBackground(views::Widget* background_widget,
-                     chromeos::BackgroundView* background_view);
 
   // Skips OOBE update screen if it's currently shown.
   void CancelOOBEUpdate();
@@ -119,9 +109,9 @@ class WizardController : public chromeos::ScreenObserver,
   void ShowEulaScreen();
   void ShowRegistrationScreen();
   void ShowHTMLPageScreen();
-  // Shows images login screen and returns the corresponding controller
-  // instance for optional tweaking.
-  chromeos::ExistingUserController* ShowLoginScreen();
+
+  // Shows images login screen.
+  void ShowLoginScreen();
 
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
@@ -157,11 +147,6 @@ class WizardController : public chromeos::ScreenObserver,
   static const char kTestNoScreenName[];
   static const char kEulaScreenName[];
   static const char kHTMLPageScreenName[];
-
-  // NotificationObserver implementation:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
 
  private:
   // Exit handlers:
@@ -226,10 +211,6 @@ class WizardController : public chromeos::ScreenObserver,
   // Widget we're showing in.
   views::Widget* widget_;
 
-  // Used to render the background.
-  views::Widget* background_widget_;
-  chromeos::BackgroundView* background_view_;
-
   // Contents view.
   views::View* contents_;
 
@@ -254,6 +235,9 @@ class WizardController : public chromeos::ScreenObserver,
   std::string username_;
   std::string password_;
 
+  // True if controller is active and should proceed things like Timer.
+  bool is_active_;
+
   // True if running official BUILD.
   bool is_official_build_;
 
@@ -262,6 +246,9 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Value of the screen name that WizardController was started with.
   std::string first_screen_name_;
+
+  // OOBE/login display host.
+  chromeos::LoginDisplayHost* host_;
 
   // NULL by default - controller itself is observer. Mock could be assigned.
   ScreenObserver* observer_;
@@ -274,8 +261,6 @@ class WizardController : public chromeos::ScreenObserver,
 
   // URL to open on browser launch.
   GURL start_url_;
-
-  NotificationRegistrar registrar_;
 
   base::OneShotTimer<WizardController> smooth_show_timer_;
 
