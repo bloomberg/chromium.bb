@@ -13,6 +13,7 @@
 #include "content/common/notification_registrar.h"
 
 @class CollectedCookiesWindowController;
+@class CookieDetailsViewController;
 @class VerticalGradientView;
 class TabContents;
 
@@ -77,11 +78,14 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegateCustomSheet,
   IBOutlet VerticalGradientView* infoBar_;
   IBOutlet NSImageView* infoBarIcon_;
   IBOutlet NSTextField* infoBarText_;
-  IBOutlet NSSplitView* splitView_;
-  IBOutlet NSScrollView* lowerScrollView_;
+  IBOutlet NSTabView* tabView_;
+  IBOutlet NSScrollView* blockedScrollView_;
   IBOutlet NSTextField* blockedCookiesText_;
+  IBOutlet NSView* cookieDetailsViewPlaceholder_;
 
   scoped_nsobject<NSViewAnimation> animation_;
+
+  scoped_nsobject<CookieDetailsViewController> detailsViewController_;
 
   TabContents* tabContents_;  // weak
 
@@ -103,19 +107,13 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegateCustomSheet,
 - (IBAction)allowForSessionFromOrigin:(id)sender;
 - (IBAction)blockOrigin:(id)sender;
 
-// NSSplitView delegate methods:
-- (CGFloat)    splitView:(NSSplitView *)sender
-  constrainMinCoordinate:(CGFloat)proposedMin
-             ofSubviewAt:(NSInteger)offset;
-- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview;
-
-// Returns the cocoaAllowedTreeModel_ and cocoaBlockedTreeModel_.
+// Returns the |cocoaAllowedTreeModel_| and |cocoaBlockedTreeModel_|.
 - (CocoaCookieTreeNode*)cocoaAllowedTreeModel;
 - (CocoaCookieTreeNode*)cocoaBlockedTreeModel;
 - (void)setCocoaAllowedTreeModel:(CocoaCookieTreeNode*)model;
 - (void)setCocoaBlockedTreeModel:(CocoaCookieTreeNode*)model;
 
-// Returns the allowedTreeModel_ and blockedTreeModel_.
+// Returns the |allowedTreeModel_| and |blockedTreeModel_|.
 - (CookiesTreeModel*)allowedTreeModel;
 - (CookiesTreeModel*)blockedTreeModel;
 

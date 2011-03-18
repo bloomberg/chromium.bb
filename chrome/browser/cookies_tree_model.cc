@@ -560,7 +560,7 @@ CookiesTreeModel::~CookiesTreeModel() {
 // this if you don't want to use the default folder icons.
 void CookiesTreeModel::GetIcons(std::vector<SkBitmap>* icons) {
   icons->push_back(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_DEFAULT_FAVICON));
+      IDR_OMNIBOX_HTTP));
   icons->push_back(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_COOKIE_ICON));
   icons->push_back(*ResourceBundle::GetSharedInstance().GetBitmapNamed(

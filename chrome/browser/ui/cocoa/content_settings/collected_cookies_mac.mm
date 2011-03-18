@@ -9,6 +9,7 @@
 #import "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#import "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
 #import "chrome/browser/ui/cocoa/vertical_gradient_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
@@ -32,8 +33,11 @@ const double kBannerGradientColorBottom[3] =
     {250.0 / 255.0, 230.0 / 255.0, 145.0 / 255.0};
 const double kBannerStrokeColor = 135.0 / 255.0;
 
-// Minimal height for the collected cookies dialog.
-const CGFloat kMinCollectedCookiesViewHeight = 116;
+enum TabViewItemIndices {
+  kAllowedCookiesTabIndex = 0,
+  kBlockedCookiesTabIndex
+};
+
 } // namespace
 
 #pragma mark Bridge between the constrained window delegate and the sheet
@@ -184,22 +188,27 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
     CGFloat textDeltaY = [GTMUILocalizerAndLayoutTweaker
         sizeToFitFixedWidthTextField:blockedCookiesText_];
 
-    // Shrink the upper custom view.
-    NSView* upperContentView = [[splitView_ subviews] objectAtIndex:0];
-    NSRect frame = [upperContentView frame];
-    [splitView_ setPosition:(frame.size.height - textDeltaY/2.0)
-           ofDividerAtIndex:0];
-
-    // Shrink the lower outline view.
-    frame = [lowerScrollView_ frame];
+    // Shrink the blocked cookies outline view.
+    NSRect frame = [blockedScrollView_ frame];
     frame.size.height -= textDeltaY;
-    [lowerScrollView_ setFrame:frame];
+    [blockedScrollView_ setFrame:frame];
 
     // Move the label down so it actually fits.
     frame = [blockedCookiesText_ frame];
     frame.origin.y -= textDeltaY;
     [blockedCookiesText_ setFrame:frame];
   }
+
+  detailsViewController_.reset([[CookieDetailsViewController alloc] init]);
+
+  NSView* detailView = [detailsViewController_.get() view];
+  NSRect viewFrameRect = [cookieDetailsViewPlaceholder_ frame];
+  [[detailsViewController_.get() view] setFrame:viewFrameRect];
+  [[cookieDetailsViewPlaceholder_ superview]
+      replaceSubview:cookieDetailsViewPlaceholder_
+                with:detailView];
+
+  [self tabView:tabView_ didSelectTabViewItem:[tabView_ selectedTabViewItem]];
 }
 
 - (void)windowWillClose:(NSNotification*)notif {
@@ -253,20 +262,6 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 - (IBAction)blockOrigin:(id)sender {
   [self    addException:CONTENT_SETTING_BLOCK
       forTreeController:allowedTreeController_];
-}
-
-- (CGFloat)    splitView:(NSSplitView *)sender
-  constrainMinCoordinate:(CGFloat)proposedMin
-             ofSubviewAt:(NSInteger)offset {
-  return proposedMin + kMinCollectedCookiesViewHeight;
-}
-- (CGFloat)    splitView:(NSSplitView *)sender
-  constrainMaxCoordinate:(CGFloat)proposedMax
-             ofSubviewAt:(NSInteger)offset {
-  return proposedMax - kMinCollectedCookiesViewHeight;
-}
-- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview {
-  return YES;
 }
 
 - (CocoaCookieTreeNode*)cocoaAllowedTreeModel {
@@ -450,16 +445,13 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
   NSWindow* sheet = [self window];
   NSRect sheetFrame = [sheet frame];
   NSRect infoBarFrame = [infoBar_ frame];
-  NSRect splitViewFrame = [splitView_ frame];
+  NSRect tabViewFrame = [tabView_ frame];
 
   // Calculate the end position of the info bar and set it to its start
   // position.
   infoBarFrame.origin.y = NSHeight(sheetFrame);
   infoBarFrame.size.width = NSWidth(sheetFrame);
-  NSRect infoBarStartFrame = infoBarFrame;
-  infoBarStartFrame.origin.y += NSHeight(infoBarFrame);
-  infoBarStartFrame.size.height = 0.0;
-  [infoBar_ setFrame:infoBarStartFrame];
+  [infoBar_ setFrame:infoBarFrame];
   [[[self window] contentView] addSubview:infoBar_];
 
   // Calculate the new position of the sheet.
@@ -472,14 +464,12 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
           infoBar_, NSViewAnimationTargetKey,
           [NSValue valueWithRect:infoBarFrame],
               NSViewAnimationEndFrameKey,
-          [NSValue valueWithRect:infoBarStartFrame],
-              NSViewAnimationStartFrameKey,
           nil]];
-  // Make sure the split view ends up in the right position.
+  // Make sure the tab view ends up in the right position.
   [animations addObject:
       [NSDictionary dictionaryWithObjectsAndKeys:
-          splitView_, NSViewAnimationTargetKey,
-          [NSValue valueWithRect:splitViewFrame],
+          tabView_, NSViewAnimationTargetKey,
+          [NSValue valueWithRect:tabViewFrame],
               NSViewAnimationEndFrameKey,
           nil]];
 
@@ -496,6 +486,23 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
   [animation_ gtm_setDuration:0.2
                     eventMask:NSLeftMouseUpMask];
   [animation_ startAnimation];
+}
+
+- (void)         tabView:(NSTabView*)tabView
+    didSelectTabViewItem:(NSTabViewItem*)tabViewItem {
+  NSTreeController* treeController = nil;
+  switch ([tabView indexOfTabViewItem:tabViewItem]) {
+    case kAllowedCookiesTabIndex:
+      treeController = allowedTreeController_;
+      break;
+    case kBlockedCookiesTabIndex:
+      treeController = blockedTreeController_;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+  [detailsViewController_ configureBindingsForTreeController:treeController];
 }
 
 @end
