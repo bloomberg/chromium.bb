@@ -150,7 +150,9 @@ void SyncNotifierImpl::UpdateCredentials(
     server_notifier_thread_ = NULL;
   }
   talk_mediator_->SetDelegate(this);
-  talk_mediator_->SetAuthToken(email, token, SYNC_SERVICE_NAME);
+  if (!talk_mediator_->SetAuthToken(email, token, SYNC_SERVICE_NAME)) {
+    LOG(ERROR) << "Could not set auth info for " << email;
+  }
   talk_mediator_->Login();
 }
 

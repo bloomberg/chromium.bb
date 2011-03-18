@@ -744,6 +744,8 @@
         'browser/sync/sessions/sync_session.h',
         'browser/sync/sessions/sync_session_context.cc',
         'browser/sync/sessions/sync_session_context.h',
+        'browser/sync/sync_constants.cc',
+        'browser/sync/sync_constants.h',
         'browser/sync/syncable/autofill_migration.h',
         'browser/sync/syncable/blob.h',
         'browser/sync/syncable/dir_open_result.h',

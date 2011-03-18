@@ -1942,8 +1942,6 @@
         'browser/sync/profile_sync_service_observer.h',
         'browser/sync/signin_manager.cc',
         'browser/sync/signin_manager.h',
-        'browser/sync/sync_constants.cc',
-        'browser/sync/sync_constants.h',
         'browser/sync/sync_setup_flow.cc',
         'browser/sync/sync_setup_flow.h',
         'browser/sync/sync_setup_wizard.cc',
