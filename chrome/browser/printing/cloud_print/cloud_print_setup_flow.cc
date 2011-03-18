@@ -98,6 +98,7 @@ CloudPrintSetupFlow::CloudPrintSetupFlow(
     bool setup_done)
     : web_ui_(NULL),
       dialog_start_args_(args),
+      last_auth_error_(GoogleServiceAuthError::None()),
       setup_done_(setup_done),
       process_control_(NULL),
       delegate_(delegate) {
@@ -208,6 +209,7 @@ void CloudPrintSetupFlow::OnClientLoginSuccess(
 
 void CloudPrintSetupFlow::OnClientLoginFailure(
     const GoogleServiceAuthError& error) {
+  last_auth_error_ = error;
   ShowGaiaFailed(error);
   authenticator_.reset();
 }
@@ -220,7 +222,8 @@ void CloudPrintSetupFlow::Attach(WebUI* web_ui) {
 
 void CloudPrintSetupFlow::OnUserSubmittedAuth(const std::string& user,
                                               const std::string& password,
-                                              const std::string& captcha) {
+                                              const std::string& captcha,
+                                              const std::string& access_code) {
   // Save the login name only.
   login_ = user;
 
@@ -229,10 +232,17 @@ void CloudPrintSetupFlow::OnUserSubmittedAuth(const std::string& user,
       new GaiaAuthFetcher(this, GaiaConstants::kChromeSource,
                           profile_->GetRequestContext()));
 
-  authenticator_->StartClientLogin(user, password,
-                                   GaiaConstants::kCloudPrintService,
-                                   "", captcha,
-                                   GaiaAuthFetcher::HostedAccountsAllowed);
+  if (!access_code.empty()) {
+    authenticator_->StartClientLogin(user, access_code,
+                                     GaiaConstants::kCloudPrintService,
+                                     std::string(), std::string(),
+                                     GaiaAuthFetcher::HostedAccountsAllowed);
+  } else {
+    authenticator_->StartClientLogin(user, password,
+                                     GaiaConstants::kCloudPrintService,
+                                     last_auth_error_.captcha().token, captcha,
+                                     GaiaAuthFetcher::HostedAccountsAllowed);
+  }
 }
 
 void CloudPrintSetupFlow::OnUserClickedLearnMore() {

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
@@ -98,7 +99,8 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   // registered.
   void OnUserSubmittedAuth(const std::string& user,
                            const std::string& password,
-                           const std::string& captcha);
+                           const std::string& captcha,
+                           const std::string& access_code);
 
   // Called by CloudPrintSetupMessageHandler when the user clicks on various
   // pieces of UI during setup.
@@ -121,10 +123,13 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   std::string dialog_start_args_;
   Profile* profile_;
 
-  // Fetcher to obtain the Chromoting Directory token.
+  // Fetcher to obtain the Cloud Print token.
   scoped_ptr<GaiaAuthFetcher> authenticator_;
   std::string login_;
   std::string lsid_;
+
+  // The last captcha or error state encountered.
+  GoogleServiceAuthError last_auth_error_;
 
   // Are we in the done state?
   bool setup_done_;
