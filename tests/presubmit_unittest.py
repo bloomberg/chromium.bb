@@ -119,6 +119,7 @@ def GetPreferredTrySlaves():
     presubmit.os.path.abspath = MockAbsPath
     presubmit.os.getcwd = self.RootDir
     presubmit.os.chdir = MockChdir
+    self.mox.StubOutWithMock(presubmit.scm, 'determine_scm')
     self.mox.StubOutWithMock(presubmit.scm.SVN, 'CaptureInfo')
     self.mox.StubOutWithMock(presubmit.scm.SVN, 'GetFileProperty')
     self.mox.StubOutWithMock(presubmit.gclient_utils, 'FileRead')
@@ -135,12 +136,12 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
     members = [
       'AffectedFile', 'Change', 'DoGetTrySlaves', 'DoPresubmitChecks',
-      'GetTrySlavesExecuter', 'GitAffectedFile', 'GitChange',
-      'InputApi', 'ListRelevantPresubmitFiles', 'Main',
+      'GetTrySlavesExecuter', 'GitAffectedFile',
+      'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'Main',
       'NotImplementedException', 'OutputApi', 'ParseFiles',
       'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
       'SvnAffectedFile', 'SvnChange', 'cPickle', 'cStringIO',
-      'exceptions', 'fnmatch', 'gclient_utils', 'glob', 'json',
+      'exceptions', 'fnmatch', 'gclient_utils', 'glob', 'json', 'load_files',
       'logging', 'marshal', 'normpath', 'optparse', 'os', 'owners', 'pickle',
       'presubmit_canned_checks', 'random', 're', 'scm', 'subprocess',
       'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest', 'urllib2',
@@ -662,19 +663,14 @@ def CheckChangeOnCommit(input_api, output_api):
                                               self.fake_root_dir, None, False,
                                               output))
 
-  def testMain(self):
+  def testMainUnversioned(self):
     # OptParser calls presubmit.os.path.exists and is a pain when mocked.
     self.UnMock(presubmit.os.path, 'exists')
     self.mox.StubOutWithMock(presubmit, 'DoPresubmitChecks')
     self.mox.StubOutWithMock(presubmit, 'ParseFiles')
-    presubmit.os.path.isdir(presubmit.os.path.join(self.fake_root_dir, '.svn')
-        ).AndReturn(False)
-    presubmit.os.path.isdir(presubmit.os.path.join(self.fake_root_dir, '.git')
-        ).AndReturn(False)
-    presubmit.subprocess.call(
-        ['git', 'rev-parse', '--show-cdup'],
-        cwd=self.fake_root_dir,
-        stdout=presubmit.subprocess.PIPE).AndReturn(1)
+    presubmit.scm.determine_scm(self.fake_root_dir).AndReturn(None)
+    presubmit.ParseFiles(['random_file.txt'], None
+        ).AndReturn(['random_file.txt'])
     output = self.mox.CreateMock(presubmit.PresubmitOutput)
     output.should_continue().AndReturn(False)
 
@@ -684,9 +680,30 @@ def CheckChangeOnCommit(input_api, output_api):
                                 None, False).AndReturn(output)
     self.mox.ReplayAll()
 
-    self.assertEquals(True,
-                      presubmit.Main(['presubmit', '--root',
-                                      self.fake_root_dir]))
+    self.assertEquals(
+        True,
+        presubmit.Main(['--root', self.fake_root_dir, 'random_file.txt']))
+
+  def testMainUnversionedFail(self):
+    # OptParser calls presubmit.os.path.exists and is a pain when mocked.
+    self.UnMock(presubmit.os.path, 'exists')
+    self.mox.StubOutWithMock(presubmit, 'DoPresubmitChecks')
+    self.mox.StubOutWithMock(presubmit, 'ParseFiles')
+    presubmit.scm.determine_scm(self.fake_root_dir).AndReturn(None)
+    self.mox.StubOutWithMock(presubmit.sys, 'stderr')
+    presubmit.sys.stderr.write(
+        'Usage: presubmit_unittest.py [options] <files...>\n')
+    presubmit.sys.stderr.write('\n')
+    presubmit.sys.stderr.write(
+        'presubmit_unittest.py: error: For unversioned directory, <files> is '
+        'not optional.\n')
+    self.mox.ReplayAll()
+
+    try:
+      presubmit.Main(['--root', self.fake_root_dir])
+      self.fail()
+    except SystemExit, e:
+      self.assertEquals(2, e.code)
 
 
 class InputApiUnittest(PresubmitTestsBase):

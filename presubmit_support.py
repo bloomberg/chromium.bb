@@ -6,7 +6,7 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.3.5'
+__version__ = '1.4'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
@@ -1083,9 +1083,12 @@ def DoPresubmitChecks(change,
   if total_time > 1.0:
     output.write("Presubmit checks took %.1fs to calculate.\n" % total_time)
 
-  if not errors and warnings and may_prompt:
-    output.prompt_yes_no('There were presubmit warnings. '
-                         'Are you sure you wish to continue? (y/N): ')
+  if not errors and warnings:
+    if may_prompt:
+      output.prompt_yes_no('There were presubmit warnings. '
+                          'Are you sure you wish to continue? (y/N): ')
+    else:
+      output.fail()
 
   global _ASKED_FOR_FEEDBACK
   # Ask for feedback one time out of 5.
@@ -1120,8 +1123,31 @@ def ParseFiles(args, recursive):
   return files
 
 
+def load_files(options, args):
+  """Tries to determine the SCM."""
+  change_scm = scm.determine_scm(options.root)
+  files = []
+  if change_scm == 'svn':
+    change_class = SvnChange
+    status_fn = scm.SVN.CaptureStatus
+  elif change_scm == 'git':
+    change_class = GitChange
+    status_fn = scm.GIT.CaptureStatus
+  else:
+    logging.info('Doesn\'t seem under source control. Got %d files' % len(args))
+    if not args:
+      return None, None
+    change_class = Change
+  if args:
+    files = ParseFiles(args, options.recursive)
+  else:
+    # Grab modified files.
+    files = status_fn([options.root])
+  return change_class, files
+
+
 def Main(argv):
-  parser = optparse.OptionParser(usage="%prog [options]",
+  parser = optparse.OptionParser(usage="%prog [options] <files...>",
                                  version="%prog " + str(__version__))
   parser.add_option("-c", "--commit", action="store_true", default=False,
                    help="Use commit instead of upload checks")
@@ -1131,7 +1157,6 @@ def Main(argv):
                    help="Act recursively")
   parser.add_option("-v", "--verbose", action="store_true", default=False,
                    help="Verbose output")
-  parser.add_option("--files")
   parser.add_option("--name", default='no name')
   parser.add_option("--description", default='')
   parser.add_option("--issue", type='int', default=0)
@@ -1146,43 +1171,15 @@ def Main(argv):
   options, args = parser.parse_args(argv)
   if options.verbose:
     logging.basicConfig(level=logging.DEBUG)
-  if os.path.isdir(os.path.join(options.root, '.svn')):
-    change_class = SvnChange
-    if not options.files:
-      if args:
-        options.files = ParseFiles(args, options.recursive)
-      else:
-        # Grab modified files.
-        options.files = scm.SVN.CaptureStatus([options.root])
-  else:
-    is_git = os.path.isdir(os.path.join(options.root, '.git'))
-    if not is_git:
-      is_git = (0 == subprocess.call(
-          ['git', 'rev-parse', '--show-cdup'],
-          stdout=subprocess.PIPE, cwd=options.root))
-    if is_git:
-      # Only look at the subdirectories below cwd.
-      change_class = GitChange
-      if not options.files:
-        if args:
-          options.files = ParseFiles(args, options.recursive)
-        else:
-          # Grab modified files.
-          options.files = scm.GIT.CaptureStatus([options.root])
-    else:
-      logging.info('Doesn\'t seem under source control.')
-      change_class = Change
+  change_class, files = load_files(options, args)
+  if not change_class:
+    parser.error('For unversioned directory, <files> is not optional.')
   if options.verbose:
-    if not options.files:
-      print "Found no files."
-    elif len(options.files) != 1:
-      print "Found %d files." % len(options.files)
-    else:
-      print "Found 1 file."
+    print "Found %d file(s)." % len(files)
   results = DoPresubmitChecks(change_class(options.name,
                                            options.description,
                                            options.root,
-                                           options.files,
+                                           files,
                                            options.issue,
                                            options.patchset),
                               options.commit,

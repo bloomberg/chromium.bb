@@ -65,6 +65,24 @@ def GenFakeDiff(filename):
   return result
 
 
+def determine_scm(root):
+  """Similar to upload.py's version but much simpler.
+
+  Returns 'svn', 'git' or None.
+  """
+  if os.path.isdir(os.path.join(root, '.svn')):
+    return 'svn'
+  elif os.path.isdir(os.path.join(root, '.svn')):
+    return 'git'
+  else:
+    if (0 == subprocess.call(
+          ['git', 'rev-parse', '--show-cdup'],
+          stdout=subprocess.PIPE, cwd=root)):
+      return 'git'
+    else:
+      return None
+
+
 class GIT(object):
   @staticmethod
   def Capture(args, **kwargs):

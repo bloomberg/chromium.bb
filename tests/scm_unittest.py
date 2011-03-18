@@ -39,8 +39,8 @@ class RootTestCase(BaseSCMTestCase):
     self.mox.ReplayAll()
     members = [
         'GetCasedPath', 'GenFakeDiff', 'GIT', 'SVN', 'ValidateEmail',
-        'cStringIO', 'gclient_utils', 'glob',  'logging', 'os', 're', 'shutil',
-        'subprocess', 'sys', 'tempfile', 'time', 'xml',
+        'cStringIO', 'determine_scm', 'gclient_utils', 'glob', 'logging', 'os',
+        're', 'shutil', 'subprocess', 'sys', 'tempfile', 'time', 'xml',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm, members)
