@@ -228,27 +228,42 @@ void RecordPrefixSetInfo(PrefixSetEvent event_type) {
                             PREFIX_SET_EVENT_MAX);
 }
 
-// Verify that |GetPrefixes()| returns the same set of prefixes as
-// |prefixes|.  This is necessary so that the
+// Generate a |PrefixSet| instance from the contents of
+// |add_prefixes|.  Additionally performs various checks to make sure
+// that the resulting prefix set is valid, so that the
 // PREFIX_SET_EVENT_BLOOM_MISS_PREFIX_HIT_INVALID histogram in
 // ContainsBrowseUrl() can be trustworthy.
-void CheckPrefixSet(const safe_browsing::PrefixSet& prefix_set,
-                    const std::vector<SBPrefix>& prefixes) {
-  std::vector<SBPrefix> restored;
-  prefix_set.GetPrefixes(&restored);
+safe_browsing::PrefixSet* PrefixSetFromAddPrefixes(
+    const std::vector<SBAddPrefix>& add_prefixes) {
+  // TODO(shess): If |add_prefixes| were sorted by the prefix, it
+  // could be passed directly to |PrefixSet()|, removing the need for
+  // |prefixes|.  For now, |prefixes| is useful while debugging
+  // things.
+  std::vector<SBPrefix> prefixes;
+  for (size_t i = 0; i < add_prefixes.size(); ++i) {
+    prefixes.push_back(add_prefixes[i].prefix);
+  }
 
-  const std::set<SBPrefix> unique(prefixes.begin(), prefixes.end());
+  std::sort(prefixes.begin(), prefixes.end());
+  prefixes.erase(std::unique(prefixes.begin(), prefixes.end()),
+                 prefixes.end());
+
+  scoped_ptr<safe_browsing::PrefixSet>
+      prefix_set(new safe_browsing::PrefixSet(prefixes));
+
+  std::vector<SBPrefix> restored;
+  prefix_set->GetPrefixes(&restored);
 
   // Expect them to be equal.
-  if (restored.size() == unique.size() &&
-      std::equal(unique.begin(), unique.end(), restored.begin()))
-    return;
+  if (restored.size() == prefixes.size() &&
+      std::equal(prefixes.begin(), prefixes.end(), restored.begin()))
+    return prefix_set.release();
 
   // Log BROKEN for continuity with previous release, and SIZE to
   // distinguish which test failed.
   NOTREACHED();
   RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN);
-  if (restored.size() != unique.size())
+  if (restored.size() != prefixes.size())
     RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN_SIZE);
 
   // Try to distinguish between updates from one broken user and a
@@ -263,6 +278,8 @@ void CheckPrefixSet(const safe_browsing::PrefixSet& prefix_set,
   // it could explain why GetPrefixes() seemed broken.
   if (sizeof(int) != sizeof(int32))
     RecordPrefixSetInfo(PREFIX_SET_SBPREFIX_WAS_BROKEN);
+
+  return prefix_set.release();
 }
 
 }  // namespace
@@ -1005,15 +1022,8 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
     filter->Insert(add_prefixes[i].prefix);
   }
 
-  std::vector<SBPrefix> prefixes;
-  for (size_t i = 0; i < add_prefixes.size(); ++i) {
-    prefixes.push_back(add_prefixes[i].prefix);
-  }
-  std::sort(prefixes.begin(), prefixes.end());
   scoped_ptr<safe_browsing::PrefixSet>
-      prefix_set(new safe_browsing::PrefixSet(prefixes));
-
-  CheckPrefixSet(*(prefix_set.get()), prefixes);
+      prefix_set(PrefixSetFromAddPrefixes(add_prefixes));
 
   // This needs to be in sorted order by prefix for efficient access.
   std::sort(add_full_hashes.begin(), add_full_hashes.end(),
@@ -1121,13 +1131,7 @@ void SafeBrowsingDatabaseNew::LoadBloomFilter() {
   // TODO(shess): Write/read for prefix set.
   std::vector<SBAddPrefix> add_prefixes;
   browse_store_->GetAddPrefixes(&add_prefixes);
-  std::vector<SBPrefix> prefixes;
-  for (size_t i = 0; i < add_prefixes.size(); ++i) {
-    prefixes.push_back(add_prefixes[i].prefix);
-  }
-  std::sort(prefixes.begin(), prefixes.end());
-  prefix_set_.reset(new safe_browsing::PrefixSet(prefixes));
-  CheckPrefixSet(*(prefix_set_.get()), prefixes);
+  prefix_set_.reset(PrefixSetFromAddPrefixes(add_prefixes));
 }
 
 bool SafeBrowsingDatabaseNew::Delete() {
