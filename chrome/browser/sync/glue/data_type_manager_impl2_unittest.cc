@@ -33,6 +33,7 @@ using testing::_;
 using testing::DoAll;
 using testing::DoDefault;
 using testing::InSequence;
+using testing::Mock;
 using testing::Property;
 using testing::Pointee;
 using testing::Return;
@@ -206,12 +207,12 @@ TEST_F(DataTypeManagerImpl2Test, ConfigureOneStopWhileAssociating) {
 
 TEST_F(DataTypeManagerImpl2Test, OneWaitingForCrypto) {
   DataTypeControllerMock* password_dtc = MakePasswordDTC();
-  EXPECT_CALL(*password_dtc, state()).
-      WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
+  EXPECT_CALL(*password_dtc, state()).Times(3).
+      WillRepeatedly(Return(DataTypeController::NOT_RUNNING)).
+      RetiresOnSaturation();
   EXPECT_CALL(*password_dtc, Start(_)).
-      WillOnce(InvokeCallback((DataTypeController::NEEDS_CRYPTO)));
-  EXPECT_CALL(*password_dtc, state()).
-      WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
+      WillOnce(InvokeCallback((DataTypeController::NEEDS_CRYPTO))).
+      RetiresOnSaturation();
 
   controllers_[syncable::PASSWORDS] = password_dtc;
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(1);
@@ -219,9 +220,24 @@ TEST_F(DataTypeManagerImpl2Test, OneWaitingForCrypto) {
   DataTypeManagerImpl2 dtm(&backend_, controllers_);
   types_.insert(syncable::PASSWORDS);
   SetConfigureStartExpectation();
-  SetConfigureDoneExpectation(DataTypeManager::OK);
+
   dtm.Configure(types_);
+  EXPECT_EQ(DataTypeManager::BLOCKED, dtm.state());
+
+  Mock::VerifyAndClearExpectations(&backend_);
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  SetConfigureDoneExpectation(DataTypeManager::OK);
+  EXPECT_CALL(*password_dtc, state()).
+      WillOnce(Return(DataTypeController::NOT_RUNNING)).
+      WillRepeatedly(Return(DataTypeController::RUNNING));
+  EXPECT_CALL(*password_dtc, Start(_)).
+      WillOnce(InvokeCallback((DataTypeController::OK)));
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(1);
+  dtm.Configure(types_);
+
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
+  EXPECT_CALL(*password_dtc, Stop()).Times(1);
   dtm.Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
 }

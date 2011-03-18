@@ -417,15 +417,14 @@ void SyncBackendHost::ScheduleSyncEventForConfigChange(bool deleted_type,
   // We can only nudge when we've either deleted a dataype or added one, else
   // we can cause unnecessary syncs. Unit tests cover this.
   if (using_new_syncer_thread_) {
-    if (added_types.size() > 0) {
+    if (added_types.size() > 0)
       RequestConfig(added_types);
-     // TODO(tim): If we've added and deleted types, because we don't want to
-     // nudge until association finishes, circumstances of bug 56416 exist. We
-     // may need a way to nudge only for data type cleanup. Alternatively, we
-     // can chain configure_ready_task_ by appending a task to nudge in this
-     // case.
-    } else if (deleted_type) {
-      RequestNudge();
+
+    // TODO(tim): Bug 76233.  Fix this once only one impl exists.
+    if (deleted_type) {
+      core_thread_.message_loop()->PostTask(FROM_HERE,
+          NewRunnableMethod(core_.get(),
+                            &SyncBackendHost::Core::DeferNudgeForCleanup));
     }
   } else if (deleted_type ||
              !core_->syncapi()->InitialSyncEndedForAllEnabledTypes()) {
@@ -481,9 +480,6 @@ void SyncBackendHost::DeactivateDataType(
   std::map<syncable::ModelType, ChangeProcessor*>::size_type erased =
       processors_.erase(data_type_controller->type());
   DCHECK_EQ(erased, 1U);
-
-  // TODO(sync): At this point we need to purge the data associated
-  // with this data type from the sync db.
 }
 
 bool SyncBackendHost::RequestPause() {
@@ -731,6 +727,9 @@ void SyncBackendHost::Core::DoUpdateEnabledTypes() {
 void SyncBackendHost::Core::DoStartSyncing() {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
   syncapi_->StartSyncing();
+  if (deferred_nudge_for_cleanup_requested_)
+    syncapi_->RequestNudge();
+  deferred_nudge_for_cleanup_requested_ = false;
 }
 
 void SyncBackendHost::Core::DoSetPassphrase(const std::string& passphrase,
@@ -1130,6 +1129,11 @@ void SyncBackendHost::Core::DoProcessMessage(
     const JsEventHandler* sender) {
   DCHECK_EQ(MessageLoop::current(), host_->core_thread_.message_loop());
   syncapi_->GetJsBackend()->ProcessMessage(name, args, sender);
+}
+
+void SyncBackendHost::Core::DeferNudgeForCleanup() {
+  DCHECK_EQ(MessageLoop::current(), host_->core_thread_.message_loop());
+  deferred_nudge_for_cleanup_requested_ = true;
 }
 
 }  // namespace browser_sync

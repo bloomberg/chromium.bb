@@ -341,6 +341,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void DoRequestResume();
     void DoRequestClearServerData();
 
+    // Sets |deferred_nudge_for_cleanup_requested_| to true. See comment below.
+    void DeferNudgeForCleanup();
+
     // Called on our SyncBackendHost's |core_thread_| to set the passphrase
     // on behalf of SyncBackendHost::SupplyPassphrase.
     void DoSetPassphrase(const std::string& passphrase, bool is_explicit);
@@ -500,6 +503,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // Note: after initialization, this variable should only ever be accessed or
     // modified from within the frontend_loop_ (UI thread).
     bool processing_passphrase_;
+
+    // True when a datatype has been disabled so that we nudge once sync is
+    // resumed (after configuration is finished).
+    bool deferred_nudge_for_cleanup_requested_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
