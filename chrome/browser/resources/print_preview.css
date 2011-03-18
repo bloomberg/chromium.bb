@@ -23,14 +23,10 @@ body {
 
 #navbar-container {
   background-color: #f8fafd;
-  width: 295px;
+  width: 231px;
   height: 100%;
   overflow: auto;
   padding: 18px;
-}
-
-#destination-container {
-  background-color: #fff;
 }
 
 #destination-container > h1 {
