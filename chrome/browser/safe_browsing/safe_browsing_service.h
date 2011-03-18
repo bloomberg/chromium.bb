@@ -165,7 +165,7 @@ class SafeBrowsingService
   // match and false otherwise.  To make sure we are conservative we will return
   // true if an error occurs. This method is expected to be called on the IO
   // thread.
-  virtual bool MatchCsdWhitelistUrl(const GURL& url);
+  bool MatchCsdWhitelistUrl(const GURL& url);
 
   // Called on the IO thread to cancel a pending check if the result is no
   // longer needed.
