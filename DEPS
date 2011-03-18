@@ -10,7 +10,7 @@ vars = {
   "nacl_revision": "4559",
   "libjingle_revision": "55",
   "libvpx_revision": "76510",
-  "ffmpeg_revision": "77796",
+  "ffmpeg_revision": "78339",
   "skia_revision": "945",
   "v8_revision": "7241",
 }
@@ -193,7 +193,7 @@ deps = {
     "/trunk/deps/third_party/yasm/patched-yasm@73761",
 
   "src/third_party/libjpeg_turbo":
-    "/trunk/deps/third_party/libjpeg_turbo@75235",
+    "/trunk/deps/third_party/libjpeg_turbo@78340",
 
   "src/third_party/flac":
     "/trunk/deps/third_party/flac@75901",
