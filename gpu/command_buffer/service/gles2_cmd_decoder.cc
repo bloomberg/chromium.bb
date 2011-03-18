@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1972,6 +1972,7 @@ bool GLES2DecoderImpl::Initialize(
       GLuint service_id = offscreen_saved_color_texture_->id();
       TextureManager::TextureInfo* info =
           parent_->CreateTextureInfo(parent_client_texture_id, service_id);
+      info->SetNotOwned();
       parent_->texture_manager()->SetInfoTarget(info, GL_TEXTURE_2D);
     }
 

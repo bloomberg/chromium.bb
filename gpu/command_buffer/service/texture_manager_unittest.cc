@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,6 +110,28 @@ TEST_F(TextureManagerTest, Destroy) {
       .RetiresOnSaturation();
   manager_.Destroy(true);
   // Check that resources got freed.
+  info1 = manager_.GetTextureInfo(kClient1Id);
+  ASSERT_TRUE(info1 == NULL);
+}
+
+TEST_F(TextureManagerTest, DestroyUnowned) {
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  EXPECT_FALSE(manager_.HaveUnrenderableTextures());
+  // Check we can create texture.
+  TextureManager::TextureInfo* created_info =
+      manager_.CreateTextureInfo(&feature_info_, kClient1Id, kService1Id);
+  created_info->SetNotOwned();
+
+  // Check texture got created.
+  TextureManager::TextureInfo* info1 = manager_.GetTextureInfo(kClient1Id);
+  ASSERT_TRUE(info1 != NULL);
+  EXPECT_CALL(*gl_, DeleteTextures(4, _))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  // Check that it is not freed if it is not owned.
+  manager_.Destroy(true);
   info1 = manager_.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info1 == NULL);
 }
