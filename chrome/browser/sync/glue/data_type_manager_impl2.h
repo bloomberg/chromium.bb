@@ -44,11 +44,6 @@ class DataTypeManagerImpl2 : public DataTypeManager {
   void FinishStop();
   void FinishStopAndNotify(ConfigureResult result);
 
-  // Returns true if any last_requested_types_ currently needs to start model
-  // association.  If non-null, fills |needs_start| with all such controllers.
-  bool GetControllersNeedingStart(
-      std::vector<DataTypeController*>* needs_start);
-
   void Restart();
   void DownloadReady();
   void NotifyStart();
@@ -59,6 +54,7 @@ class DataTypeManagerImpl2 : public DataTypeManager {
   // This list is determined at startup by various command line flags.
   const DataTypeController::TypeMap controllers_;
   State state_;
+  DataTypeController* current_dtc_;
   std::map<syncable::ModelType, int> start_order_;
   TypeSet last_requested_types_;
   std::vector<DataTypeController*> needs_start_;

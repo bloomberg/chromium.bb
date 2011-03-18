@@ -115,6 +115,7 @@ class ProfileSyncServiceSessionTest
             model_associator_, change_processor_)));
     EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
         WillOnce(ReturnNewDataTypeManager());
+    sync_service_->set_num_expected_resumes(will_fail_association ? 0 : 1);
     sync_service_->RegisterDataTypeController(
         new SessionDataTypeController(&factory_, sync_service_.get()));
     profile()->GetTokenService()->IssueAuthTokenForTest(

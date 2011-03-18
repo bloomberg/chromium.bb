@@ -115,12 +115,17 @@ class PasswordTestProfileSyncService : public TestProfileSyncService {
 
   virtual ~PasswordTestProfileSyncService() {}
 
+  virtual void OnPassphraseRequired(bool for_decryption) {
+    TestProfileSyncService::OnPassphraseRequired(for_decryption);
+    ADD_FAILURE();
+  }
+
   virtual void OnPassphraseAccepted() {
+    TestProfileSyncService::OnPassphraseAccepted();
+
     if (passphrase_accept_task_) {
       passphrase_accept_task_->Run();
     }
-
-    TestProfileSyncService::OnPassphraseAccepted();
   }
 
  private:
@@ -152,11 +157,19 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   }
 
   void StartSyncService(Task* root_task, Task* node_task) {
+    StartSyncService(root_task, node_task, 2, 2);
+  }
+
+  void StartSyncService(Task* root_task, Task* node_task,
+                        int num_resume_expectations,
+                        int num_pause_expectations) {
     if (!service_.get()) {
       service_.reset(new PasswordTestProfileSyncService(
           &factory_, &profile_, "test_user", false, root_task, node_task));
       service_->RegisterPreferences();
       profile_.GetPrefs()->SetBoolean(prefs::kSyncPasswords, true);
+      service_->set_num_expected_resumes(num_resume_expectations);
+      service_->set_num_expected_pauses(num_pause_expectations);
       PasswordDataTypeController* data_type_controller =
           new PasswordDataTypeController(&factory_,
                                          &profile_,
@@ -185,9 +198,16 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
               NotificationType(NotificationType::SYNC_CONFIGURE_DONE),_,_));
 
       service_->RegisterDataTypeController(data_type_controller);
-      service_->SetPassphrase("foo", false, true);
       service_->Initialize();
+      MessageLoop::current()->Run();
 
+      EXPECT_CALL(
+          observer_,
+          Observe(
+              NotificationType(NotificationType::SYNC_CONFIGURE_DONE),
+              _,_)).
+          WillOnce(QuitUIMessageLoop());
+      service_->SetPassphrase("foo", false, true);
       MessageLoop::current()->Run();
     }
   }
@@ -278,7 +298,7 @@ class AddPasswordEntriesTask : public Task {
 };
 
 TEST_F(ProfileSyncServicePasswordTest, FailModelAssociation) {
-  StartSyncService(NULL, NULL);
+  StartSyncService(NULL, NULL, 1, 2);
   EXPECT_TRUE(service_->unrecoverable_error_detected());
 }
 

@@ -83,6 +83,8 @@ class ProfileSyncServicePreferenceTest
     EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
         WillOnce(ReturnNewDataTypeManager());
 
+    service_->set_num_expected_resumes(will_fail_association ? 0 : 1);
+
     service_->RegisterDataTypeController(
         new PreferenceDataTypeController(&factory_,
                                          service_.get()));
