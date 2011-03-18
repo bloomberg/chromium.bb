@@ -21,6 +21,9 @@ bool FilePathWatcher::Watch(const FilePath& path,
   return impl_->Watch(path, delegate, loop);
 }
 
+FilePathWatcher::PlatformDelegate::PlatformDelegate() {
+}
+
 FilePathWatcher::PlatformDelegate::~PlatformDelegate() {
 }
 

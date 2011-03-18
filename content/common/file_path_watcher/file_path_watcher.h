@@ -57,6 +57,8 @@ class FilePathWatcher {
       : public base::RefCountedThreadSafe<PlatformDelegate,
                                           DeletePlatformDelegate> {
    public:
+    PlatformDelegate();
+
     // Start watching for the given |path| and notify |delegate| about changes.
     // |loop| is only used by the Mac implementation right now, and must be
     // backed by a CFRunLoop based MessagePump. This is usually going to be a
@@ -70,14 +72,10 @@ class FilePathWatcher {
     // allow to shut down properly while the object is still alive.
     virtual void Cancel() = 0;
 
- /*   scoped_refptr<base::MessageLoopProxy> message_loop() const {
-      return message_loop_;
-    }
-    void set_message_loop(base::MessageLoopProxy* loop);*/
-
    protected:
     friend class DeleteTask<PlatformDelegate>;
     friend struct DeletePlatformDelegate;
+
     virtual ~PlatformDelegate();
 
     scoped_refptr<base::MessageLoopProxy> message_loop() const {
@@ -89,7 +87,6 @@ class FilePathWatcher {
     }
 
    private:
-    // IO Message Loop.
     scoped_refptr<base::MessageLoopProxy> message_loop_;
   };
 
