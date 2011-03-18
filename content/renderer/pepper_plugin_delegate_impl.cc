@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/pepper_plugin_delegate_impl.h"
+#include "content/renderer/pepper_plugin_delegate_impl.h"
 
 #include <cmath>
 #include <queue>
@@ -18,7 +18,6 @@
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/renderer/pepper_platform_context_3d_impl.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "content/common/child_process_messages.h"
@@ -28,11 +27,12 @@
 #include "content/common/pepper_messages.h"
 #include "content/renderer/audio_message_filter.h"
 #include "content/renderer/command_buffer_proxy.h"
+#include "content/renderer/content_renderer_client.h"
 #include "content/renderer/ggl.h"
 #include "content/renderer/gpu_channel_host.h"
+#include "content/renderer/pepper_platform_context_3d_impl.h"
 #include "content/renderer/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
-#include "grit/locale_settings.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -44,7 +44,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/size.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/glue/context_menu.h"
@@ -918,7 +917,7 @@ gfx::Size PepperPluginDelegateImpl::GetScreenSize() {
 std::string PepperPluginDelegateImpl::GetDefaultEncoding() {
   // TODO(brettw) bug 56615: Somehow get the preference for the default
   // encoding here rather than using the global default for the UI language.
-  return l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING);
+  return content::GetContentClient()->renderer()->GetDefaultEncoding();
 }
 
 void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/web_ui_bindings.h"
+#include "content/renderer/web_ui_bindings.h"
 
 #include "base/json/json_writer.h"
 #include "base/scoped_ptr.h"

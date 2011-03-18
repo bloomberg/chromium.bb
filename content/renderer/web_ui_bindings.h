@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_WEB_UI_BINDINGS_H_
-#define CHROME_RENDERER_WEB_UI_BINDINGS_H_
+#ifndef CONTENT_RENDERER_WEB_UI_BINDINGS_H_
+#define CONTENT_RENDERER_WEB_UI_BINDINGS_H_
 #pragma once
 
 #include "ipc/ipc_message.h"
@@ -65,4 +65,4 @@ class WebUIBindings : public DOMBoundBrowserObject {
   DISALLOW_COPY_AND_ASSIGN(WebUIBindings);
 };
 
-#endif  // CHROME_RENDERER_WEB_UI_BINDINGS_H_
+#endif  // CONTENT_RENDERER_WEB_UI_BINDINGS_H_

@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_EXTERNAL_HOST_BINDINGS_H_
 #pragma once
 
-#include "chrome/renderer/web_ui_bindings.h"
+#include "content/renderer/web_ui_bindings.h"
 #include "ipc/ipc_message.h"
 
 // ExternalHostBindings is the class backing the "externalHost" object

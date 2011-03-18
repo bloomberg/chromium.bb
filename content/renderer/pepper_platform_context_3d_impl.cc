@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/pepper_platform_context_3d_impl.h"
+#include "content/renderer/pepper_platform_context_3d_impl.h"
 
 #include "chrome/renderer/render_thread.h"
 #include "content/renderer/command_buffer_proxy.h"

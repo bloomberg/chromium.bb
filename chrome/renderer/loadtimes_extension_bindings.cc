@@ -7,7 +7,7 @@
 #include <math.h>
 
 #include "base/time.h"
-#include "chrome/renderer/navigation_state.h"
+#include "content/renderer/navigation_state.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
 

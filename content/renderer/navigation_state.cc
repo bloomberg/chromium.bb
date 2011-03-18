@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/navigation_state.h"
+#include "content/renderer/navigation_state.h"
 
 #include "chrome/renderer/user_script_idle_scheduler.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"

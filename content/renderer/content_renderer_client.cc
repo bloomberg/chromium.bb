@@ -10,4 +10,8 @@ SkBitmap* ContentRendererClient::GetSadPluginBitmap() {
   return NULL;
 }
 
+std::string ContentRendererClient::GetDefaultEncoding() {
+  return std::string();
+}
+
 }  // namespace content

@@ -6,6 +6,8 @@
 #define CONTENT_RENDERER_CONTENT_RENDERER_CLIENT_H_
 #pragma once
 
+#include <string>
+
 #include "content/common/content_client.h"
 
 class SkBitmap;
@@ -16,6 +18,7 @@ namespace content {
 class ContentRendererClient {
  public:
   virtual SkBitmap* GetSadPluginBitmap();
+  virtual std::string GetDefaultEncoding();
 };
 
 }  // namespace content

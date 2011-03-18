@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/load_progress_tracker.h"
+#include "content/renderer/load_progress_tracker.h"
 
 #include "base/message_loop.h"
 #include "chrome/common/render_messages.h"

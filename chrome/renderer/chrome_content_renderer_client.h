@@ -13,6 +13,7 @@ namespace chrome {
 class ChromeContentRendererClient : public content::ContentRendererClient {
  public:
   virtual SkBitmap* GetSadPluginBitmap();
+  virtual std::string GetDefaultEncoding();
 };
 
 }  // namespace chrome

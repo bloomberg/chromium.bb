@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_LOAD_PROGRESS_TRACKER_H_
-#define CHROME_RENDERER_LOAD_PROGRESS_TRACKER_H_
+#ifndef CONTENT_RENDERER_LOAD_PROGRESS_TRACKER_H_
+#define CONTENT_RENDERER_LOAD_PROGRESS_TRACKER_H_
 
 #include "base/logging.h"
 #include "base/task.h"
@@ -42,5 +42,4 @@ class LoadProgressTracker {
   DISALLOW_COPY_AND_ASSIGN(LoadProgressTracker);
 };
 
-#endif  // CHROME_RENDERER_LOAD_PROGRESS_TRACKER_H_
-
+#endif  // CONTENT_RENDERER_LOAD_PROGRESS_TRACKER_H_

@@ -1,8 +1,8 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_RENDERER_PEPPER_PLATFORM_CONTEXT_3D_IMPL_H_
-#define CHROME_RENDERER_PEPPER_PLATFORM_CONTEXT_3D_IMPL_H_
+#ifndef CONTENT_RENDERER_PEPPER_PLATFORM_CONTEXT_3D_IMPL_H_
+#define CONTENT_RENDERER_PEPPER_PLATFORM_CONTEXT_3D_IMPL_H_
 
 #include "base/callback.h"
 #include "base/scoped_callback_factory.h"
@@ -53,4 +53,4 @@ class PlatformContext3DImpl
 
 #endif  // ENABLE_GPU
 
-#endif  // CHROME_RENDERER_PEPPER_PLATFORM_CONTEXT_3D_IMPL_H_
+#endif  // CONTENT_RENDERER_PEPPER_PLATFORM_CONTEXT_3D_IMPL_H_
