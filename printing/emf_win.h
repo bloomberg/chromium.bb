@@ -15,6 +15,7 @@
 class FilePath;
 
 namespace gfx {
+class Point;
 class Rect;
 }
 
@@ -33,6 +34,9 @@ class Emf : public NativeMetafile {
   virtual bool Init() { return true; }
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 
+  virtual skia::PlatformDevice* StartPageForVectorCanvas(
+      const gfx::Size& page_size, const gfx::Point& content_origin,
+      const float& scale_factor);
   virtual bool StartPage();
   virtual bool FinishPage();
   virtual bool Close();

@@ -62,6 +62,13 @@ bool PdfMetafile::InitFromData(const void* src_buffer, uint32 src_buffer_size) {
   return true;
 }
 
+skia::PlatformDevice* PdfMetafile::StartPageForVectorCanvas(
+    const gfx::Size& page_size, const gfx::Point& content_origin,
+    const float& scale_factor) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 CGContextRef PdfMetafile::StartPage(const gfx::Size& page_size,
     const gfx::Point& content_origin, const float& scale_factor) {
   DCHECK(context_.get());

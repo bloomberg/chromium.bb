@@ -33,6 +33,10 @@ class PdfMetafile : public NativeMetafile {
   virtual bool Init();
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 
+  // Not implemented on mac.
+  skia::PlatformDevice* StartPageForVectorCanvas(
+      const gfx::Size& page_size, const gfx::Point& content_origin,
+      const float& scale_factor);
   virtual CGContextRef StartPage(const gfx::Size& page_size,
                                  const gfx::Point& content_origin,
                                  const float& scale_factor);

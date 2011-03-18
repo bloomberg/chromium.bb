@@ -194,8 +194,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
 void PrintWebViewHelper::RenderPage(
     const ViewMsg_Print_Params& params, float* scale_factor, int page_number,
     WebFrame* frame, scoped_ptr<printing::NativeMetafile>* metafile) {
-  HDC hdc = (*metafile)->context();
-  DCHECK(hdc);
+  DCHECK(metafile->get()->context());
 
   double content_width_in_points;
   double content_height_in_points;
@@ -209,17 +208,12 @@ void PrintWebViewHelper::RenderPage(
   int width = static_cast<int>(content_width_in_points * params.max_shrink);
   int height = static_cast<int>(content_height_in_points * params.max_shrink);
 
-  bool result = (*metafile)->StartPage();
-  DCHECK(result);
-
-#if 0
-  // TODO(maruel): This code is kept for testing until the 100% GDI drawing
-  // code is stable. maruels use this code's output as a reference when the
-  // GDI drawing code fails.
-
-  // Mix of Skia and GDI based.
-  skia::PlatformCanvas canvas(width, height, true);
-  canvas.drawARGB(255, 255, 255, 255, SkXfermode::kSrc_Mode);
+  gfx::Size page_size(width, height);
+  gfx::Point content_origin;
+  skia::PlatformDevice* device = (*metafile)->StartPageForVectorCanvas(
+      page_size, content_origin, 1.0f);
+  DCHECK(device);
+  skia::VectorCanvas canvas(device);
   float webkit_scale_factor = frame->printPage(page_number, &canvas);
   if (*scale_factor <= 0 || webkit_scale_factor <= 0) {
     NOTREACHED() << "Printing page " << page_number << " failed.";
@@ -229,40 +223,11 @@ void PrintWebViewHelper::RenderPage(
     *scale_factor /= webkit_scale_factor;
   }
 
-  // Create a BMP v4 header that we can serialize.
-  BITMAPV4HEADER bitmap_header;
-  gfx::CreateBitmapV4Header(width, height, &bitmap_header);
-  const SkBitmap& src_bmp = canvas.getDevice()->accessBitmap(true);
-  SkAutoLockPixels src_lock(src_bmp);
-  int retval = StretchDIBits(hdc,
-                             0,
-                             0,
-                             width, height,
-                             0, 0,
-                             width, height,
-                             src_bmp.getPixels(),
-                             reinterpret_cast<BITMAPINFO*>(&bitmap_header),
-                             DIB_RGB_COLORS,
-                             SRCCOPY);
-  DCHECK(retval != GDI_ERROR);
-#else
-  // 100% GDI based.
-  skia::VectorCanvas canvas(hdc, width, height);
-  float webkit_scale_factor = frame->printPage(page_number, &canvas);
-  if (*scale_factor <= 0 || webkit_scale_factor <= 0) {
-    NOTREACHED() << "Printing page " << page_number << " failed.";
-  } else {
-    // Update the dpi adjustment with the "page |scale_factor|" calculated in
-    // webkit.
-    *scale_factor /= webkit_scale_factor;
-  }
-#endif
-
-  result = (*metafile)->FinishPage();
+  bool result = (*metafile)->FinishPage();
   DCHECK(result);
 
   skia::VectorPlatformDevice* platform_device =
-      static_cast<skia::VectorPlatformDevice*>(canvas.getDevice());
+      static_cast<skia::VectorPlatformDevice*>(device);
   if (platform_device->alpha_blend_used() && !params.supports_alpha_blend) {
     // Close the device context to retrieve the compiled metafile.
     if (!(*metafile)->Close())

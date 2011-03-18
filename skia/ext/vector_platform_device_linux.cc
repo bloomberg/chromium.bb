@@ -78,9 +78,9 @@ SkDevice* VectorPlatformDeviceFactory::newDevice(SkCanvas* ignored,
 }
 
 // static
-SkDevice* VectorPlatformDeviceFactory::CreateDevice(cairo_t* context,
-                                                    int width, int height,
-                                                    bool isOpaque) {
+PlatformDevice* VectorPlatformDeviceFactory::CreateDevice(cairo_t* context,
+                                                          int width, int height,
+                                                          bool isOpaque) {
   // TODO(myhuang): Here we might also have similar issues as those on Windows
   // (vector_canvas_win.cc, http://crbug.com/18382 & http://crbug.com/18383).
   // Please note that is_opaque is true when we use this class for printing.
