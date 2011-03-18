@@ -1172,7 +1172,7 @@ def CMDpatch(parser, args):
     return 1
   issue_arg = args[0]
 
-  if re.match(r'\d+', input):
+  if re.match(r'\d+', issue_arg):
     # Input is an issue id.  Figure out the URL.
     issue = issue_arg
     server = settings.GetDefaultServerUrl()
@@ -1188,7 +1188,7 @@ def CMDpatch(parser, args):
     match = re.match(r'.*?/issue(\d+)_\d+.diff', issue_url)
     if match:
       issue = match.group(1)
-      url = input
+      url = issue_arg
     else:
       DieWithError('Must pass an issue ID or full URL for '
           '\'Download raw patch set\'')
