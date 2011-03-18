@@ -1230,3 +1230,14 @@
    fun:ResolveProxyMsgHelperTest::GenerateReply
    fun:ResolveProxyMsgHelperTest_*_Test::TestBody
 }
+{
+   bug_76644_a
+   Heapcheck:Leak
+   ...
+   fun:UserStyleSheetWatcherTest_StyleLoad_Test::TestBody
+}
+{
+   bug_76644_b
+   Heapcheck:Leak
+   fun:UserStyleSheetWatcher::Init
+}
