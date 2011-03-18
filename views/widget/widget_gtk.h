@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -262,6 +262,7 @@ class WidgetGtk : public Widget,
   CHROMEGTK_CALLBACK_1(WidgetGtk, void, OnGrabNotify, gboolean);
   CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnDestroy);
   CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnShow);
+  CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnMap);
   CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnHide);
 
   void set_mouse_down(bool mouse_down) { is_mouse_down_ = mouse_down; }

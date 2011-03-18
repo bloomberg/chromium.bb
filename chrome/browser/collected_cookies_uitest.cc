@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,8 +20,7 @@ const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
 typedef UITest CollectedCookiesTest;
 
-// See crbug.com/76573
-TEST_F(CollectedCookiesTest, FAILS_DoubleDisplay) {
+TEST_F(CollectedCookiesTest, DoubleDisplay) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
@@ -43,8 +42,7 @@ TEST_F(CollectedCookiesTest, FAILS_DoubleDisplay) {
   ASSERT_TRUE(tab->ShowCollectedCookiesDialog());
 }
 
-// See crbug.com/76573
-TEST_F(CollectedCookiesTest, FAILS_NavigateAway) {
+TEST_F(CollectedCookiesTest, NavigateAway) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 

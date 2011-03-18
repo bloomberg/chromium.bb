@@ -549,6 +549,8 @@ void WidgetGtk::Init(GtkWidget* parent,
                    G_CALLBACK(&OnDestroyThunk), this);
   g_signal_connect(widget_, "show",
                    G_CALLBACK(&OnShowThunk), this);
+  g_signal_connect(widget_, "map",
+                   G_CALLBACK(&OnMapThunk), this);
   g_signal_connect(widget_, "hide",
                    G_CALLBACK(&OnHideThunk), this);
 
@@ -1247,8 +1249,11 @@ void WidgetGtk::OnDestroy(GtkWidget* object) {
 }
 
 void WidgetGtk::OnShow(GtkWidget* widget) {
+}
+
+void WidgetGtk::OnMap(GtkWidget* widget) {
   // Force an expose event to trigger OnPaint. This is necessary because earlier
-  // SchedulePaintInRect calls for the widget may have happened before the
+  // SchedulePaintInRect calls for the widget will have happened before the
   // widget was drawable. This means that gtk_widget_queue_draw_area wasn't
   // called, and so the widget will not get any expose events. Consequently, the
   // widget won't paint itself until something else triggers a paint call.
