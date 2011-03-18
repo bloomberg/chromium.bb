@@ -1,0 +1,18 @@
+{
+  "name": "Hello",
+  "version": "0.1",
+  "description": "Hello, world!",
+  "background_page": "background.html",
+  "permissions": [
+    "tabs",
+    "http://*/*",
+    "experimental",
+    "nativeclient"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["test_bridge.js"]
+    }
+  ]
+}

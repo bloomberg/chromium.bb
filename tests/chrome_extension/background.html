@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<!-- Copyright 2011 Native Client Authors.  All rights reserved.
+
+     This page is used as the background page of the extension.  It runs in the
+     extension's process, and cannot access the embedding page nor the code
+     in the content script (test_bridge.js).  This page actually loads the
+     NaCl module and runs some unit tests on it, outside of the Tester
+     framework.  The results are published to the embedding page via an
+     extension RPC request (see chrome.extension.onRequest.addListener() body).
+     For more info on how extensions run, see:
+         http://code.google.com/chrome/extensions/overview.html
+-->
+<head>
+  <title> Chrome Extension Background Page </title>
+  <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+  <META HTTP-EQUIV="Expires" CONTENT="-1" />
+  <script type="text/javascript">
+    var nacl_module = null;
+
+    /**
+     * This function is run from the embeding page, via the sendRequest()
+     * mechanism in chrome.extension.
+     * @return An object whose keys are the test ids, and values are the test
+     *     results.
+     */
+    function runAllNaClTests() {
+      nacl_module = document.getElementById('nacl_module');
+      // TODO(dspringer): really run this test on the NaCl module when it
+      // start working.  Note that these test property values are mocks until
+      // the NaCl module is available to provide the real ones.
+      testResults = {};
+      testResults.__nacl = 'chrome_extension.nmf';
+      testResults.__src = 'hello_world_isa_prefix.nexe';
+      testResults.helloWorld = 'hello, world';
+      return testResults;
+    }
+
+    /**
+     * Handle the 'runTests' RPC request.  This request is sent from the
+     * test_bridge script.  For more info, see:
+     *     http://code.google.com/chrome/extensions/messaging.html
+     */
+    chrome.extension.onRequest.addListener(
+        function(request, sender, sendResponse) {
+          var response = {};
+          if (request.type == 'runTests')
+            response = runAllNaClTests();
+          sendResponse(response);
+        });
+  </script>
+</head>
+<body>
+  <!-- TODO(dspringer): Remove this div when we are able to load a NaCl
+       module. -->
+  <div id="nacl_module"></div>
+  <!-- TODO(dspringer): Enable this when the test is able to pass.
+  <embed id="nacl_module"
+         name="nacl_module"
+         type="application/x-nacl"
+         hidden="true"
+         onload="moduleDidLoad()"
+         nacl="chrome_extension.nmf"
+         />
+  -->
+  </body>
+</html>
+

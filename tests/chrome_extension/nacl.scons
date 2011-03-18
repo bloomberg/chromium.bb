@@ -1,0 +1,31 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+# Test loading a NaCl-enabled Chrome Extension.
+
+Import('env')
+
+# BUG(adonovan): test is breaking on ARM.  Disable in haste...
+if env.Bit('target_arm'):
+  Return()
+
+test_nexe = 'ppapi_basic_object_%s.nexe' % env.get('TARGET_FULLARCH')
+
+# Use pre-built "basic_object" executables for several architectures.  Note:
+# this test uses manifest.json, background.html and test_bridge.js, but these
+# files are loaded from the disk as part of the installed Chrome extension and
+# not loaded through the tester's web server.
+node = env.PPAPIBrowserTester(
+    'chrome_extension_test.out',
+    url='chrome_extension_test.html',
+    extensions=[env.Dir('${SCONSTRUCT_DIR}/tests/chrome_extension')],
+    files=[env.File('chrome_extension_test.html'),
+           env.File('$STAGING_DIR/%s' % test_nexe),
+    ])
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_chrome_extension_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

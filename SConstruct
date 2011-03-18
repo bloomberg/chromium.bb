@@ -2183,6 +2183,7 @@ if nacl_env.Bit('build_av_apps'):
       'tests/mandel_nav/nacl.scons',
       'tests/many/nacl.scons',
       'tests/multiarch/nacl.scons',
+      'tests/chrome_extension/nacl.scons',
       ])
 
 nacl_env.Append(
