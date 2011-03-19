@@ -186,6 +186,14 @@ static const char* kSynchronizedPreferences[] = {
   // Whether to show mobile plan notifications.
   //   Settings -> Internet -> Mobile plan details
   prefs::kShowPlanNotifications,
+
+  // Whether to require password to wake up from sleep
+  //   Settings -> Personal Stuff -> Account
+  prefs::kEnableScreenLock,
+
+  // Whether to enable tap-to-click
+  //   Settings -> System -> Touchpad
+  prefs::kTapToClickEnabled,
 #endif
 };
 
