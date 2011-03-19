@@ -217,6 +217,8 @@ enum PrefixSetEvent {
   PREFIX_SET_GETPREFIXES_BROKEN_SIZE,
   PREFIX_SET_GETPREFIXES_FIRST_BROKEN,
   PREFIX_SET_SBPREFIX_WAS_BROKEN,
+  PREFIX_SET_GETPREFIXES_BROKEN_SORTING,
+  PREFIX_SET_GETPREFIXES_BROKEN_DUPLICATION,
 
   // Memory space for histograms is determined by the max.  ALWAYS ADD
   // NEW VALUES BEFORE THIS ONE.
@@ -278,6 +280,57 @@ safe_browsing::PrefixSet* PrefixSetFromAddPrefixes(
   // it could explain why GetPrefixes() seemed broken.
   if (sizeof(int) != sizeof(int32))
     RecordPrefixSetInfo(PREFIX_SET_SBPREFIX_WAS_BROKEN);
+
+  // Check whether |restored| is unsorted, or has duplication.
+  if (restored.size()) {
+    bool unsorted = false;
+    bool duplicates = false;
+    std::vector<SBPrefix>::const_iterator prev = restored.begin();
+    for (std::vector<SBPrefix>::const_iterator iter = prev + 1;
+         iter != restored.end(); prev = iter, ++iter) {
+      if (*prev > *iter)
+        unsorted = true;
+      if (*prev == *iter)
+        duplicates = true;
+    }
+
+    // Record findings.
+    if (unsorted)
+      RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN_SORTING);
+    if (duplicates)
+      RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN_DUPLICATION);
+
+    // Fix the problems noted.  If |restored| was unsorted, then
+    // |duplicates| may give a false negative.
+    if (unsorted)
+      std::sort(restored.begin(), restored.end());
+    if (unsorted || duplicates)
+      restored.erase(std::unique(restored.begin(), restored.end()),
+                     restored.end());
+  }
+
+  // NOTE(shess): The following could be done using a single
+  // uber-loop, but it's complicated by needing multiple parallel
+  // iterators.  Didn't seem worthwhile for something that will only
+  // live for a short period and only fires for one in a million
+  // updates.
+
+  // Find elements in |restored| which are not in |prefixes|.
+  std::vector<SBPrefix> difference;
+  std::set_difference(restored.begin(), restored.end(),
+                      prefixes.begin(), prefixes.end(),
+                      std::back_inserter(difference));
+  if (difference.size())
+    UMA_HISTOGRAM_COUNTS_100("SB2.PrefixSetRestoredExcess", difference.size());
+
+  // Find elements in |prefixes| which are not in |restored|.
+  difference.clear();
+  std::set_difference(prefixes.begin(), prefixes.end(),
+                      restored.begin(), restored.end(),
+                      std::back_inserter(difference));
+  if (difference.size())
+    UMA_HISTOGRAM_COUNTS_100("SB2.PrefixSetRestoredShortfall",
+                             difference.size());
 
   return prefix_set.release();
 }
