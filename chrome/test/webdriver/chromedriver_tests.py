@@ -119,8 +119,6 @@ class BasicTest(unittest.TestCase):
 class CookieTest(unittest.TestCase):
   """Cookie test for the json webdriver protocol"""
 
-  SEARCH = "http://www.google.com/webhp?hl=en"
-
   def setUp(self):
     self._launcher = ChromeDriverLauncher()
     self._driver = WebDriver(self._launcher.GetURL(), {})
@@ -130,16 +128,16 @@ class CookieTest(unittest.TestCase):
     self._launcher.Kill()
 
   def testAddCookie(self):
-    self._driver.get(self.SEARCH)
+    self._driver.get(self._launcher.GetURL() + '/test_page.html')
     cookie_dict = None
     cookie_dict = self._driver.get_cookie("chromedriver_cookie_test")
     cookie_dict = {}
-    cookie_dict["name"]= "chromedriver_cookie_test";
-    cookie_dict["value"] = "this is a test";
+    cookie_dict["name"]= "chromedriver_cookie_test"
+    cookie_dict["value"] = "this is a test"
     self._driver.add_cookie(cookie_dict)
     cookie_dict = self._driver.get_cookie("chromedriver_cookie_test")
     self.assertNotEqual(cookie_dict, None)
-    self.assertEqual(cookie_dict["value"], "this is a test");
+    self.assertEqual(cookie_dict["value"], "this is a test")
 
   def testDeleteCookie(self):
     self.testAddCookie();

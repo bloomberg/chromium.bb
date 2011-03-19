@@ -33,7 +33,7 @@ class Main(object):
     'darwin': 'mac',
     'linux2': 'linux',
   }
-  TEST_PREFIX = 'test.selenium.webdriver.common.'
+  TEST_PREFIX = 'selenium.test.selenium.webdriver.common.'
 
   def __init__(self):
     self._tests_path = os.path.join(os.path.dirname(__file__),

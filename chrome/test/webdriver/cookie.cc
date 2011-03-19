@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,12 @@
 
 #include <time.h>
 
-#include "base/string_util.h"
-#include "base/values.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/test/webdriver/utility_functions.h"
 #include "net/base/cookie_monster.h"
 
@@ -18,7 +20,6 @@ namespace webdriver {
 // Convert from a string format.
 Cookie::Cookie(const std::string& cookie) {
   net::CookieMonster::ParsedCookie pc(cookie);
-  expires_ = "";
 
   valid_ = pc.IsValid();
   if (!valid_)
@@ -38,13 +39,14 @@ Cookie::Cookie(const std::string& cookie) {
   }
 
   if (pc.HasExpires()) {
-    expires_ = pc.Expires();
+    base::Time parsed_time;
+    if (base::Time::FromString(UTF8ToWide(pc.Expires()).c_str(), &parsed_time))
+      expiration_ = parsed_time;
   }
 }
 
 // Convert from a webdriver JSON representation of a cookie.
 Cookie::Cookie(const DictionaryValue& dict) {
-  int expiry;
   valid_ = false;
   http_ = false;
 
@@ -65,31 +67,38 @@ Cookie::Cookie(const DictionaryValue& dict) {
     secure_ = false;
   }
 
-  // Convert the time passed into human-readable format.
-  if (dict.GetInteger("expiry", &expiry)) {
-    time_t clock = (time_t) expiry;
-#if defined(OS_WIN)
-    char* buff = ctime(&clock);
-    if (NULL == buff) {
-      valid_ = false;
-      return;
+  if (dict.HasKey("expiry")) {
+    // The expiration time need only be a number with seconds since UTC epcoh;
+    // it could be either a floating point or integer number.
+    double expiry;
+    if (!dict.GetDouble("expiry", &expiry)) {
+      int tmp;
+      if (!dict.GetInteger("expiry", &tmp))
+        return;  // Expiry is not a number, so the cookie is invalid.
+      expiry = static_cast<double>(tmp);
     }
-#else
-    char buff[128];
-    memset(buff, 0, sizeof(buff));
 
-    if (NULL == ctime_r(&clock, buff)) {
-      valid_ = false;
-      return;
-    }
-#endif
-    expires_ = std::string(buff);
+    expiration_ = base::Time::FromDoubleT(expiry);
   }
 
   valid_ = true;
 }
 
 Cookie::~Cookie() {}
+
+// static
+std::string Cookie::ToDateString(const base::Time& time) {
+  static const char* kMonths[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+  struct base::Time::Exploded exploded;
+  time.UTCExplode(&exploded);
+
+  // DD MMM YYYY HH:mm:ss GMT
+  return base::StringPrintf("%02d %s %04d %02d:%02d:%02d GMT",
+      exploded.day_of_month, kMonths[exploded.month - 1], exploded.year,
+      exploded.hour, exploded.minute, exploded.second);
+}
 
 // Convert's to webdriver's cookie spec, see:
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol#/session/:sessionId/cookie
@@ -102,7 +111,11 @@ DictionaryValue* Cookie::ToDictionary() {
   cookie->SetString("path", path_);
   cookie->SetString("domain", domain_);
   cookie->SetBoolean("secure", secure_);
-  cookie->SetString("expiry", expires_);
+
+  if (!expiration_.is_null()) {
+    cookie->SetDouble("expiry",
+        (expiration_ - base::Time::UnixEpoch()).InSecondsF());
+  }
 
   // Chrome specific additons which are not a part of the JSON over HTTP spec.
   cookie->SetBoolean("http_only", http_);
@@ -128,23 +141,26 @@ std::string Cookie::ToString() {
   cookie += name_ + "=" + value_ + ";";
 
   if (path_ != "") {
-    cookie += "path=" + path_ + ";";
+    cookie += " path=" + path_ + ";";
   }
   if (domain_ != "") {
-    cookie += "domain=" + domain_ + ";";
+    // The domain must contain at least (2) periods to be valid. This will not
+    // be the case for localhost, so we special case that and omit it from the
+    // cookie string.
+    // See http://curl.haxx.se/rfc/cookie_spec.html
+    cookie += " domain=" + (domain_ != "localhost" ? domain_ : "") + ";";
+  }
+  if (!expiration_.is_null()) {
+    cookie += " expires=" + ToDateString(expiration_) + ";";
   }
   if (secure_) {
-    cookie += "secure;";
-  }
-  if (expires_ != "") {
-    cookie += expires_ + ";";
+    cookie += " secure;";
   }
   if (http_) {
-    cookie += "http_only;";
+    cookie += " http_only;";
   }
 
   return cookie;
 }
 
 }  // namespace webdriver
-

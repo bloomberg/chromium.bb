@@ -864,6 +864,7 @@
       'sources': [
         '../base/test/run_all_unittests.cc',
         'test/webdriver/commands/implicit_wait_command_unittest.cc',
+        'test/webdriver/cookie_unittest.cc',
         'test/webdriver/dispatch_unittest.cc',
         'test/webdriver/frame_path_unittest.cc',
         'test/webdriver/http_response_unittest.cc',

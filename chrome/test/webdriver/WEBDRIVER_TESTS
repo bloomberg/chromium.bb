@@ -24,7 +24,10 @@
 {
   'all': [
     'children_finding_tests',
-#   'cookie_tests',
+    'cookie_tests',
+    # Automation proxy only returns cookie name=value pairs.
+    '-cookie_tests.CookieTest.testAddCookie',
+    '-cookie_tests.CookieTest.testGetGoogleCookie',
 #   'correct_event_firing_tests',
     'driver_element_finding_test',
     'element_attribute_tests',
