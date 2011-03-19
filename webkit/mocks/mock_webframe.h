@@ -196,6 +196,7 @@ class MockWebFrame : public WebKit::WebFrame {
       const WebInputElement&);
   virtual WebString contentAsText(size_t maxChars) const;
   virtual WebString contentAsMarkup() const;
+  virtual WebString renderTreeAsText(bool showDebugInfo) const;
   virtual WebString renderTreeAsText() const;
   virtual WebString counterValueForElementById(const WebString& id) const;
   virtual WebString markerTextForListItem(const WebElement&) const;
@@ -207,6 +208,7 @@ class MockWebFrame : public WebKit::WebFrame {
   virtual bool pauseSVGAnimation(const WebString& animationId,
                                  double time,
                                  const WebString& elementId);
+  virtual WebString layerTreeAsText(bool showDebugInfo) const;
   virtual WebString layerTreeAsText() const;
 
  private:

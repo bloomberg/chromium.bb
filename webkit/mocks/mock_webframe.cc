@@ -363,6 +363,10 @@ WebString MockWebFrame::contentAsMarkup() const {
   return WebString();
 }
 
+WebString MockWebFrame::renderTreeAsText(bool showDebugInfo) const {
+  return WebString();
+}
+
 WebString MockWebFrame::renderTreeAsText() const {
   return WebString();
 }
@@ -394,6 +398,10 @@ bool MockWebFrame::pauseSVGAnimation(const WebString& animationId,
                                      double time,
                                      const WebString& elementId) {
   return false;
+}
+
+WebString MockWebFrame::layerTreeAsText(bool showDebugInfo) const {
+  return WebString();
 }
 
 WebString MockWebFrame::layerTreeAsText() const {
