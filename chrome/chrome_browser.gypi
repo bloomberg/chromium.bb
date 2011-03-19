@@ -2802,8 +2802,6 @@
         'browser/ui/views/chrome_views_delegate.h',
         'browser/ui/views/collected_cookies_win.cc',
         'browser/ui/views/collected_cookies_win.h',
-        'browser/ui/views/confirm_message_box_dialog.cc',
-        'browser/ui/views/confirm_message_box_dialog.h',
         'browser/ui/views/constrained_html_delegate_gtk.cc',
         'browser/ui/views/constrained_html_delegate_win.cc',
         'browser/ui/views/constrained_window_win.cc',
