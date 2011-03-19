@@ -29,7 +29,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 // Forward declarations.
-struct Geoposition;
 class SkBitmap;
 class DictionaryValue;
 class ListValue;
@@ -145,14 +144,6 @@ struct ParamTraits<ThumbnailScore> {
   typedef ThumbnailScore param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<Geoposition> {
-  typedef Geoposition param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 

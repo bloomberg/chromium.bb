@@ -23,6 +23,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/glue/npruntime_util.h"
@@ -377,6 +378,11 @@ struct ParamTraits<TransportDIB::Id> {
   }
 };
 #endif
+
+template <>
+struct SimilarTypeTraits<WebKit::WebTextDirection> {
+  typedef int Type;
+};
 
 }  // namespace IPC
 

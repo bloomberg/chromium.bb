@@ -6,9 +6,9 @@
 
 #include "base/message_loop.h"
 #include "base/string16.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/common/desktop_notification_messages.h"
 
 NotificationObjectProxy::NotificationObjectProxy(int process_id, int route_id,
     int notification_id, bool worker)
@@ -19,22 +19,21 @@ NotificationObjectProxy::NotificationObjectProxy(int process_id, int route_id,
 }
 
 void NotificationObjectProxy::Display() {
-  Send(new ViewMsg_PostDisplayToNotificationObject(
-      route_id_, notification_id_));
+  Send(new DesktopNotificationMsg_PostDisplay(route_id_, notification_id_));
 }
 
 void NotificationObjectProxy::Error() {
-  Send(new ViewMsg_PostErrorToNotificationObject(
+  Send(new DesktopNotificationMsg_PostError(
       route_id_, notification_id_, string16()));
 }
 
 void NotificationObjectProxy::Close(bool by_user) {
-  Send(new ViewMsg_PostCloseToNotificationObject(
+  Send(new DesktopNotificationMsg_PostClose(
       route_id_, notification_id_, by_user));
 }
 
 void NotificationObjectProxy::Click() {
-  Send(new ViewMsg_PostClickToNotificationObject(route_id_, notification_id_));
+  Send(new DesktopNotificationMsg_PostClick(route_id_, notification_id_));
 }
 
 std::string NotificationObjectProxy::id() const {

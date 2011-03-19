@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "chrome/common/common_param_traits.h"
 #include "content/common/common_param_traits.h"
-#include "content/common/geoposition.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
@@ -176,45 +175,6 @@ TEST(IPCMessageTest, DictionaryValue) {
   bad_msg.WriteInt(99);
   iter = NULL;
   EXPECT_FALSE(IPC::ReadParam(&bad_msg, &iter, &output));
-}
-
-TEST(IPCMessageTest, Geoposition) {
-  Geoposition input;
-  input.latitude = 0.1;
-  input.longitude = 51.3;
-  input.accuracy = 13.7;
-  input.altitude = 42.24;
-  input.altitude_accuracy = 9.3;
-  input.speed = 55;
-  input.heading = 120;
-  input.timestamp = base::Time::FromInternalValue(1977);
-  input.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
-  input.error_message = "unittest error message for geoposition";
-
-  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
-  IPC::WriteParam(&msg, input);
-
-  Geoposition output;
-  void* iter = NULL;
-  EXPECT_TRUE(IPC::ReadParam(&msg, &iter, &output));
-  EXPECT_EQ(input.altitude, output.altitude);
-  EXPECT_EQ(input.altitude_accuracy, output.altitude_accuracy);
-  EXPECT_EQ(input.latitude, output.latitude);
-  EXPECT_EQ(input.longitude, output.longitude);
-  EXPECT_EQ(input.accuracy, output.accuracy);
-  EXPECT_EQ(input.heading, output.heading);
-  EXPECT_EQ(input.speed, output.speed);
-  EXPECT_EQ(input.error_code, output.error_code);
-  EXPECT_EQ(input.error_message, output.error_message);
-
-  std::string log_message;
-  IPC::LogParam(output, &log_message);
-  EXPECT_STREQ("<Geoposition>"
-               "0.100000 51.300000 13.700000 42.240000 "
-               "9.300000 55.000000 120.000000 "
-               "1977 unittest error message for geoposition"
-               "<Geoposition::ErrorCode>2",
-               log_message.c_str());
 }
 
 // Tests printing::PageRange serialization

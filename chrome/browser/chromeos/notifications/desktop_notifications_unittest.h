@@ -19,11 +19,12 @@
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+struct DesktopNotificationHostMsg_Show_Params;
 
 namespace chromeos {
 
@@ -84,7 +85,7 @@ class DesktopNotificationsTest : public testing::Test {
   }
 
   // Constructs a notification parameter structure for use in tests.
-  ViewHostMsg_ShowNotification_Params StandardTestNotification();
+  DesktopNotificationHostMsg_Show_Params StandardTestNotification();
 
   // Create a message loop to allow notifications code to post tasks,
   // and a thread so that notifications code runs on the expected thread.

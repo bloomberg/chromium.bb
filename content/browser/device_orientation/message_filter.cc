@@ -5,13 +5,12 @@
 #include "content/browser/device_orientation/message_filter.h"
 
 #include "base/scoped_ptr.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/device_orientation/orientation.h"
 #include "content/browser/device_orientation/provider.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_notification_task.h"
+#include "content/common/device_orientation_messages.h"
 
 namespace device_orientation {
 
@@ -60,7 +59,7 @@ MessageFilter::ObserverDelegate::~ObserverDelegate() {
 
 void MessageFilter::ObserverDelegate::OnOrientationUpdate(
     const Orientation& orientation) {
-  ViewMsg_DeviceOrientationUpdated_Params params;
+  DeviceOrientationMsg_Updated_Params params;
   params.can_provide_alpha = orientation.can_provide_alpha_;
   params.alpha = orientation.alpha_;
   params.can_provide_beta = orientation.can_provide_beta_;
@@ -68,7 +67,7 @@ void MessageFilter::ObserverDelegate::OnOrientationUpdate(
   params.can_provide_gamma = orientation.can_provide_gamma_;
   params.gamma = orientation.gamma_;
 
-  sender_->Send(new ViewMsg_DeviceOrientationUpdated(render_view_id_, params));
+  sender_->Send(new DeviceOrientationMsg_Updated(render_view_id_, params));
 }
 
 bool MessageFilter::OnMessageReceived(const IPC::Message& message,
@@ -76,10 +75,8 @@ bool MessageFilter::OnMessageReceived(const IPC::Message& message,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(MessageFilter, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DeviceOrientation_StartUpdating,
-                        OnStartUpdating)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DeviceOrientation_StopUpdating,
-                        OnStopUpdating)
+    IPC_MESSAGE_HANDLER(DeviceOrientationHostMsg_StartUpdating, OnStartUpdating)
+    IPC_MESSAGE_HANDLER(DeviceOrientationHostMsg_StopUpdating, OnStopUpdating)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

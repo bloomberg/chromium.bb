@@ -28,7 +28,7 @@ class NotificationsPrefsCache;
 class PrefService;
 class Profile;
 class TabContents;
-struct ViewHostMsg_ShowNotification_Params;
+struct DesktopNotificationHostMsg_Show_Params;
 
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
@@ -57,7 +57,7 @@ class DesktopNotificationService : public NotificationObserver {
   // whether the script is in a worker or page. |params| contains all the
   // other parameters supplied by the worker or page.
   bool ShowDesktopNotification(
-      const ViewHostMsg_ShowNotification_Params& params,
+      const DesktopNotificationHostMsg_Show_Params& params,
       int process_id, int route_id, DesktopNotificationSource source);
 
   // Cancels a notification.  If it has already been shown, it will be

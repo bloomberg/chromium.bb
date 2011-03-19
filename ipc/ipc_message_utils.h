@@ -77,6 +77,9 @@ enum IPCMessageStart {
   ClipboardMsgStart,
   BlobMsgStart,
   AppCacheMsgStart,
+  DeviceOrientationMsgStart,
+  DesktopNotificationMsgStart,
+  GeolocationMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

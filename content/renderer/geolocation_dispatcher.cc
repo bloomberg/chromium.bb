@@ -4,13 +4,14 @@
 
 #include "content/renderer/geolocation_dispatcher.h"
 
-#include "chrome/common/render_messages.h"
+#include "content/common/geolocation_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPermissionRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPermissionRequestManager.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPosition.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 using namespace WebKit;
 
@@ -26,10 +27,8 @@ GeolocationDispatcher::~GeolocationDispatcher() {}
 bool GeolocationDispatcher::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GeolocationDispatcher, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_Geolocation_PermissionSet,
-                        OnGeolocationPermissionSet)
-    IPC_MESSAGE_HANDLER(ViewMsg_Geolocation_PositionUpdated,
-                        OnGeolocationPositionUpdated)
+    IPC_MESSAGE_HANDLER(GeolocationMsg_PermissionSet, OnPermissionSet)
+    IPC_MESSAGE_HANDLER(GeolocationMsg_PositionUpdated, OnPositionUpdated)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -42,13 +41,13 @@ void GeolocationDispatcher::geolocationDestroyed() {
 
 void GeolocationDispatcher::startUpdating() {
   GURL url;
-  Send(new ViewHostMsg_Geolocation_StartUpdating(
+  Send(new GeolocationHostMsg_StartUpdating(
       routing_id(), url, enable_high_accuracy_));
   updating_ = true;
 }
 
 void GeolocationDispatcher::stopUpdating() {
-  Send(new ViewHostMsg_Geolocation_StopUpdating(routing_id()));
+  Send(new GeolocationHostMsg_StopUpdating(routing_id()));
   updating_ = false;
 }
 
@@ -83,7 +82,7 @@ void GeolocationDispatcher::requestPermission(
     const WebGeolocationPermissionRequest& permissionRequest) {
   int bridge_id = pending_permissions_->add(permissionRequest);
   string16 origin = permissionRequest.securityOrigin().toString();
-  Send(new ViewHostMsg_Geolocation_RequestPermission(
+  Send(new GeolocationHostMsg_RequestPermission(
       routing_id(), bridge_id, GURL(origin)));
 }
 
@@ -95,13 +94,12 @@ void GeolocationDispatcher::cancelPermissionRequest(
   if (!pending_permissions_->remove(permissionRequest, bridge_id))
     return;
   string16 origin = permissionRequest.securityOrigin().toString();
-  Send(new ViewHostMsg_Geolocation_CancelPermissionRequest(
+  Send(new GeolocationHostMsg_CancelPermissionRequest(
       routing_id(), bridge_id, GURL(origin)));
 }
 
 // Permission for using geolocation has been set.
-void GeolocationDispatcher::OnGeolocationPermissionSet(
-    int bridge_id, bool is_allowed) {
+void GeolocationDispatcher::OnPermissionSet(int bridge_id, bool is_allowed) {
   WebGeolocationPermissionRequest permissionRequest;
   if (!pending_permissions_->remove(bridge_id, permissionRequest))
     return;
@@ -109,8 +107,7 @@ void GeolocationDispatcher::OnGeolocationPermissionSet(
 }
 
 // We have an updated geolocation position or error code.
-void GeolocationDispatcher::OnGeolocationPositionUpdated(
-    const Geoposition& geoposition) {
+void GeolocationDispatcher::OnPositionUpdated(const Geoposition& geoposition) {
   // It is possible for the browser process to have queued an update message
   // before receiving the stop updating message.
   if (!updating_)

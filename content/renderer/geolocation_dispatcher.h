@@ -47,10 +47,10 @@ class GeolocationDispatcher : public RenderViewObserver,
       const WebKit::WebGeolocationPermissionRequest& permissionRequest);
 
   // Permission for using geolocation has been set.
-  void OnGeolocationPermissionSet(int bridge_id, bool is_allowed);
+  void OnPermissionSet(int bridge_id, bool is_allowed);
 
   // We have an updated geolocation position or error code.
-  void OnGeolocationPositionUpdated(const Geoposition& geoposition);
+  void OnPositionUpdated(const Geoposition& geoposition);
 
   // The controller_ is valid for the lifetime of the underlying
   // WebCore::GeolocationController. geolocationDestroyed() is

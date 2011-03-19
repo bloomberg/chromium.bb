@@ -8,7 +8,7 @@
 
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
-struct ViewHostMsg_ShowNotification_Params;
+struct DesktopNotificationHostMsg_Show_Params;
 class RenderProcessHost;
 
 // Per-tab Desktop notification handler. Handles desktop notification IPCs
@@ -27,14 +27,12 @@ class DesktopNotificationHandler {
 
  private:
   // IPC handlers.
-  void OnShowDesktopNotification(
-      const IPC::Message& message,
-      const ViewHostMsg_ShowNotification_Params& params);
-  void OnCancelDesktopNotification(const IPC::Message& message,
-                                   int notification_id);
-  void OnRequestNotificationPermission(const IPC::Message& message,
-                                       const GURL& origin,
-                                       int callback_id);
+  void OnShow(const IPC::Message& message,
+              const DesktopNotificationHostMsg_Show_Params& params);
+  void OnCancel(const IPC::Message& message, int notification_id);
+  void OnRequestPermission(const IPC::Message& message,
+                           const GURL& origin,
+                           int callback_id);
 
  private:
   TabContents* tab_;

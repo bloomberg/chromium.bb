@@ -10,7 +10,6 @@
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/web_apps.h"
 #include "content/common/common_param_traits.h"
-#include "content/common/geoposition.h"
 #include "googleurl/src/gurl.h"
 #include "printing/backend/print_backend.h"
 #include "printing/native_metafile.h"
@@ -231,67 +230,6 @@ bool ParamTraits<ThumbnailScore>::Read(const Message* m, void** iter,
 void ParamTraits<ThumbnailScore>::Log(const param_type& p, std::string* l) {
   l->append(base::StringPrintf("(%f, %d, %d)",
                                p.boring_score, p.good_clipping, p.at_top));
-}
-
-template <>
-struct ParamTraits<Geoposition::ErrorCode> {
-  typedef Geoposition::ErrorCode param_type;
-  static void Write(Message* m, const param_type& p) {
-    int error_code = p;
-    WriteParam(m, error_code);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int error_code_param = 0;
-    bool ret = ReadParam(m, iter, &error_code_param);
-    *p = static_cast<Geoposition::ErrorCode>(error_code_param);
-    return ret;
-  }
-  static void Log(const param_type& p, std::string* l)  {
-    int error_code = p;
-    l->append(base::StringPrintf("<Geoposition::ErrorCode>%d", error_code));
-  }
-};
-
-void ParamTraits<Geoposition>::Write(Message* m, const Geoposition& p) {
-  WriteParam(m, p.latitude);
-  WriteParam(m, p.longitude);
-  WriteParam(m, p.accuracy);
-  WriteParam(m, p.altitude);
-  WriteParam(m, p.altitude_accuracy);
-  WriteParam(m, p.speed);
-  WriteParam(m, p.heading);
-  WriteParam(m, p.timestamp);
-  WriteParam(m, p.error_code);
-  WriteParam(m, p.error_message);
-}
-
-bool ParamTraits<Geoposition>::Read(
-      const Message* m, void** iter, Geoposition* p) {
-  bool ret = ReadParam(m, iter, &p->latitude);
-  ret = ret && ReadParam(m, iter, &p->longitude);
-  ret = ret && ReadParam(m, iter, &p->accuracy);
-  ret = ret && ReadParam(m, iter, &p->altitude);
-  ret = ret && ReadParam(m, iter, &p->altitude_accuracy);
-  ret = ret && ReadParam(m, iter, &p->speed);
-  ret = ret && ReadParam(m, iter, &p->heading);
-  ret = ret && ReadParam(m, iter, &p->timestamp);
-  ret = ret && ReadParam(m, iter, &p->error_code);
-  ret = ret && ReadParam(m, iter, &p->error_message);
-  return ret;
-}
-
-void ParamTraits<Geoposition>::Log(const Geoposition& p, std::string* l) {
-  l->append(
-      base::StringPrintf(
-          "<Geoposition>"
-          "%.6f %.6f %.6f %.6f "
-          "%.6f %.6f %.6f ",
-          p.latitude, p.longitude, p.accuracy, p.altitude,
-          p.altitude_accuracy, p.speed, p.heading));
-  LogParam(p.timestamp, l);
-  l->append(" ");
-  l->append(p.error_message);
-  LogParam(p.error_code, l);
 }
 
 void ParamTraits<webkit_glue::PasswordForm>::Write(Message* m,

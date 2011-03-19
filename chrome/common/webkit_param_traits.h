@@ -32,7 +32,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
 
 namespace WebKit {
@@ -150,11 +149,6 @@ struct ParamTraits<WebKit::WebCache::ResourceTypeStats> {
     LogParam(p.fonts, l);
     l->append("</WebCoreStats>");
   }
-};
-
-template <>
-struct SimilarTypeTraits<WebKit::WebTextDirection> {
-  typedef int Type;
 };
 
 template <>

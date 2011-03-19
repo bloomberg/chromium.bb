@@ -18,12 +18,12 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/geolocation/geolocation_provider.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/geolocation_messages.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
@@ -596,7 +596,7 @@ void GeolocationPermissionContext::NotifyPermissionSet(
 
   RenderViewHost* r = RenderViewHost::FromID(render_process_id, render_view_id);
   if (r) {
-    r->Send(new ViewMsg_Geolocation_PermissionSet(
+    r->Send(new GeolocationMsg_PermissionSet(
         render_view_id, bridge_id, allowed));
   }
 

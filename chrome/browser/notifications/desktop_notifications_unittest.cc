@@ -8,9 +8,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/test/testing_pref_service.h"
+#include "content/common/desktop_notification_messages.h"
 
 // static
 const int MockBalloonCollection::kMockBalloonSpace = 5;
@@ -99,9 +98,9 @@ void DesktopNotificationsTest::TearDown() {
   profile_.reset(NULL);
 }
 
-ViewHostMsg_ShowNotification_Params
+DesktopNotificationHostMsg_Show_Params
 DesktopNotificationsTest::StandardTestNotification() {
-  ViewHostMsg_ShowNotification_Params params;
+  DesktopNotificationHostMsg_Show_Params params;
   params.notification_id = 0;
   params.origin = GURL("http://www.google.com");
   params.is_html = false;
@@ -113,7 +112,7 @@ DesktopNotificationsTest::StandardTestNotification() {
 }
 
 TEST_F(DesktopNotificationsTest, TestShow) {
-  ViewHostMsg_ShowNotification_Params params = StandardTestNotification();
+  DesktopNotificationHostMsg_Show_Params params = StandardTestNotification();
   params.notification_id = 1;
 
   EXPECT_TRUE(service_->ShowDesktopNotification(
@@ -121,7 +120,7 @@ TEST_F(DesktopNotificationsTest, TestShow) {
   MessageLoopForUI::current()->RunAllPending();
   EXPECT_EQ(1, balloon_collection_->count());
 
-  ViewHostMsg_ShowNotification_Params params2;
+  DesktopNotificationHostMsg_Show_Params params2;
   params2.origin = GURL("http://www.google.com");
   params2.is_html = true;
   params2.contents_url = GURL("http://www.google.com/notification.html");
@@ -138,7 +137,7 @@ TEST_F(DesktopNotificationsTest, TestShow) {
 }
 
 TEST_F(DesktopNotificationsTest, TestClose) {
-  ViewHostMsg_ShowNotification_Params params = StandardTestNotification();
+  DesktopNotificationHostMsg_Show_Params params = StandardTestNotification();
   params.notification_id = 1;
 
   // Request a notification; should open a balloon.
@@ -162,7 +161,7 @@ TEST_F(DesktopNotificationsTest, TestCancel) {
   int route_id = 0;
   int notification_id = 1;
 
-  ViewHostMsg_ShowNotification_Params params = StandardTestNotification();
+  DesktopNotificationHostMsg_Show_Params params = StandardTestNotification();
   params.notification_id = notification_id;
 
   // Request a notification; should open a balloon.
@@ -187,7 +186,7 @@ TEST_F(DesktopNotificationsTest, TestCancel) {
 
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
 TEST_F(DesktopNotificationsTest, TestPositioning) {
-  ViewHostMsg_ShowNotification_Params params = StandardTestNotification();
+  DesktopNotificationHostMsg_Show_Params params = StandardTestNotification();
   std::string expected_log;
   // Create some toasts.  After each but the first, make sure there
   // is a minimum separation between the toasts.
@@ -207,7 +206,7 @@ TEST_F(DesktopNotificationsTest, TestPositioning) {
 }
 
 TEST_F(DesktopNotificationsTest, TestVariableSize) {
-  ViewHostMsg_ShowNotification_Params params;
+  DesktopNotificationHostMsg_Show_Params params;
   params.origin = GURL("http://long.google.com");
   params.is_html = false;
   params.icon_url = GURL("/icon.png");
@@ -254,7 +253,7 @@ TEST_F(DesktopNotificationsTest, TestQueueing) {
   int route_id = 0;
 
   // Request lots of identical notifications.
-  ViewHostMsg_ShowNotification_Params params = StandardTestNotification();
+  DesktopNotificationHostMsg_Show_Params params = StandardTestNotification();
   const int kLotsOfToasts = 20;
   for (int id = 1; id <= kLotsOfToasts; ++id) {
     params.notification_id = id;
@@ -308,7 +307,7 @@ TEST_F(DesktopNotificationsTest, TestQueueing) {
 TEST_F(DesktopNotificationsTest, TestEarlyDestruction) {
   // Create some toasts and then prematurely delete the notification service,
   // just to make sure nothing crashes/leaks.
-  ViewHostMsg_ShowNotification_Params params = StandardTestNotification();
+  DesktopNotificationHostMsg_Show_Params params = StandardTestNotification();
   for (int id = 0; id <= 3; ++id) {
     params.notification_id = id;
     EXPECT_TRUE(service_->ShowDesktopNotification(
@@ -320,7 +319,7 @@ TEST_F(DesktopNotificationsTest, TestEarlyDestruction) {
 TEST_F(DesktopNotificationsTest, TestUserInputEscaping) {
   // Create a test script with some HTML; assert that it doesn't get into the
   // data:// URL that's produced for the balloon.
-  ViewHostMsg_ShowNotification_Params params = StandardTestNotification();
+  DesktopNotificationHostMsg_Show_Params params = StandardTestNotification();
   params.title = ASCIIToUTF16("<script>window.alert('uh oh');</script>");
   params.body = ASCIIToUTF16("<i>this text is in italics</i>");
   params.notification_id = 1;
@@ -340,7 +339,7 @@ TEST_F(DesktopNotificationsTest, TestUserInputEscaping) {
 
 TEST_F(DesktopNotificationsTest, TestBoundingBox) {
   // Create some notifications.
-  ViewHostMsg_ShowNotification_Params params = StandardTestNotification();
+  DesktopNotificationHostMsg_Show_Params params = StandardTestNotification();
   for (int id = 0; id <= 3; ++id) {
     params.notification_id = id;
     EXPECT_TRUE(service_->ShowDesktopNotification(
@@ -377,7 +376,7 @@ TEST_F(DesktopNotificationsTest, TestPositionPreference) {
                           BalloonCollection::LOWER_RIGHT);
 
   // Create some notifications.
-  ViewHostMsg_ShowNotification_Params params = StandardTestNotification();
+  DesktopNotificationHostMsg_Show_Params params = StandardTestNotification();
   for (int id = 0; id <= 3; ++id) {
     params.notification_id = id;
     EXPECT_TRUE(service_->ShowDesktopNotification(

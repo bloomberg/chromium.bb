@@ -18,8 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/browser_thread.h"
@@ -28,6 +26,7 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
+#include "content/common/desktop_notification_messages.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "grit/browser_resources.h"
@@ -156,8 +155,10 @@ void NotificationPermissionInfoBarDelegate::InfoBarClosed() {
     UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Ignored", 1);
 
   RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
-  if (host)
-    host->Send(new ViewMsg_PermissionRequestDone(route_id_, callback_context_));
+  if (host) {
+    host->Send(new DesktopNotificationMsg_PermissionRequestDone(
+        route_id_, callback_context_));
+  }
 
   delete this;
 }
@@ -516,8 +517,10 @@ void DesktopNotificationService::RequestPermission(
   } else {
     // Notify renderer immediately.
     RenderViewHost* host = RenderViewHost::FromID(process_id, route_id);
-    if (host)
-      host->Send(new ViewMsg_PermissionRequestDone(route_id, callback_context));
+    if (host) {
+      host->Send(new DesktopNotificationMsg_PermissionRequestDone(
+          route_id, callback_context));
+    }
   }
 }
 
@@ -536,7 +539,7 @@ bool DesktopNotificationService::CancelDesktopNotification(
 
 
 bool DesktopNotificationService::ShowDesktopNotification(
-    const ViewHostMsg_ShowNotification_Params& params,
+    const DesktopNotificationHostMsg_Show_Params& params,
     int process_id, int route_id, DesktopNotificationSource source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const GURL& origin = params.origin;

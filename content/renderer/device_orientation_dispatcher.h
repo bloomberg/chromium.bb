@@ -10,9 +10,11 @@
 #include "base/scoped_ptr.h"
 #include "content/renderer/render_view_observer.h"
 
-namespace WebKit { class WebDeviceOrientation; }
+namespace WebKit {
+class WebDeviceOrientation;
+}
 
-struct ViewMsg_DeviceOrientationUpdated_Params;
+struct DeviceOrientationMsg_Updated_Params;
 
 class DeviceOrientationDispatcher : public RenderViewObserver,
                                     public WebKit::WebDeviceOrientationClient {
@@ -32,7 +34,7 @@ class DeviceOrientationDispatcher : public RenderViewObserver,
   virtual WebKit::WebDeviceOrientation lastOrientation() const;
 
   void OnDeviceOrientationUpdated(
-      const ViewMsg_DeviceOrientationUpdated_Params& p);
+      const DeviceOrientationMsg_Updated_Params& p);
 
   scoped_ptr<WebKit::WebDeviceOrientationController> controller_;
   scoped_ptr<WebKit::WebDeviceOrientation> last_orientation_;

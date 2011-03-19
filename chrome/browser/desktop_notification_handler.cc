@@ -7,10 +7,9 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/desktop_notification_messages.h"
 
 DesktopNotificationHandler::DesktopNotificationHandler(
     TabContents* tab, RenderProcessHost* process)
@@ -23,21 +22,19 @@ bool DesktopNotificationHandler::OnMessageReceived(
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(DesktopNotificationHandler, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDesktopNotification,
-                        OnShowDesktopNotification)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CancelDesktopNotification,
-                        OnCancelDesktopNotification)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestNotificationPermission,
-                        OnRequestNotificationPermission)
+    IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Show, OnShow)
+    IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Cancel, OnCancel)
+    IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
+                        OnRequestPermission)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
 }
 
-void DesktopNotificationHandler::OnShowDesktopNotification(
+void DesktopNotificationHandler::OnShow(
     const IPC::Message& message,
-    const ViewHostMsg_ShowNotification_Params& params) {
+    const DesktopNotificationHostMsg_Show_Params& params) {
   RenderProcessHost* process = GetRenderProcessHost();
   DesktopNotificationService* service =
       process->profile()->GetDesktopNotificationService();
@@ -49,8 +46,8 @@ void DesktopNotificationHandler::OnShowDesktopNotification(
     DesktopNotificationService::PageNotification);
 }
 
-void DesktopNotificationHandler::OnCancelDesktopNotification(
-    const IPC::Message& message, int notification_id) {
+void DesktopNotificationHandler::OnCancel(const IPC::Message& message,
+                                          int notification_id) {
   RenderProcessHost* process = GetRenderProcessHost();
   DesktopNotificationService* service =
       process->profile()->GetDesktopNotificationService();
@@ -61,7 +58,7 @@ void DesktopNotificationHandler::OnCancelDesktopNotification(
       notification_id);
 }
 
-void DesktopNotificationHandler::OnRequestNotificationPermission(
+void DesktopNotificationHandler::OnRequestPermission(
     const IPC::Message& message, const GURL& source_origin,
     int callback_context) {
   RenderProcessHost* process = GetRenderProcessHost();

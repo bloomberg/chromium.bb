@@ -8,12 +8,12 @@
 #include <set>
 #include <utility>
 
-#include "chrome/common/render_messages.h"
 #include "content/browser/geolocation/geolocation_permission_context.h"
 #include "content/browser/geolocation/geolocation_provider.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/common/geolocation_messages.h"
 #include "content/common/geoposition.h"
 
 namespace {
@@ -85,14 +85,12 @@ bool GeolocationDispatcherHostImpl::OnMessageReceived(
   *msg_was_ok = true;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(GeolocationDispatcherHostImpl, msg, *msg_was_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Geolocation_CancelPermissionRequest,
+    IPC_MESSAGE_HANDLER(GeolocationHostMsg_CancelPermissionRequest,
                         OnCancelPermissionRequest)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Geolocation_RequestPermission,
+    IPC_MESSAGE_HANDLER(GeolocationHostMsg_RequestPermission,
                         OnRequestPermission)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Geolocation_StartUpdating,
-                        OnStartUpdating)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Geolocation_StopUpdating,
-                        OnStopUpdating)
+    IPC_MESSAGE_HANDLER(GeolocationHostMsg_StartUpdating, OnStartUpdating)
+    IPC_MESSAGE_HANDLER(GeolocationHostMsg_StopUpdating, OnStopUpdating)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -103,7 +101,7 @@ void GeolocationDispatcherHostImpl::OnLocationUpdate(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   for (std::set<int>::iterator it = geolocation_renderer_ids_.begin();
        it != geolocation_renderer_ids_.end(); ++it) {
-    Send(new ViewMsg_Geolocation_PositionUpdated(*it, geoposition));
+    Send(new GeolocationMsg_PositionUpdated(*it, geoposition));
   }
 }
 

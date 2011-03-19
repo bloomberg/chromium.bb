@@ -6,10 +6,10 @@
 
 #include "base/string_util.h"
 #include "base/task.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
+#include "content/common/desktop_notification_messages.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -46,7 +46,7 @@ void NotificationProvider::cancel(const WebNotification& notification) {
   bool id_found = manager_.GetId(notification, id);
   // Won't be found if the notification has already been closed by the user.
   if (id_found)
-    Send(new ViewHostMsg_CancelDesktopNotification(routing_id(), id));
+    Send(new DesktopNotificationHostMsg_Cancel(routing_id(), id));
 }
 
 void NotificationProvider::objectDestroyed(
@@ -61,7 +61,7 @@ void NotificationProvider::objectDestroyed(
 WebNotificationPresenter::Permission NotificationProvider::checkPermission(
     const WebURL& url) {
   int permission;
-  Send(new ViewHostMsg_CheckNotificationPermission(
+  Send(new DesktopNotificationHostMsg_CheckPermission(
           routing_id(),
           url,
           &permission));
@@ -77,19 +77,18 @@ void NotificationProvider::requestPermission(
 
   int id = manager_.RegisterPermissionRequest(callback);
 
-  Send(new ViewHostMsg_RequestNotificationPermission(routing_id(),
-                                                     GURL(origin.toString()),
-                                                     id));
+  Send(new DesktopNotificationHostMsg_RequestPermission(
+      routing_id(), GURL(origin.toString()), id));
 }
 
 bool NotificationProvider::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NotificationProvider, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_PostDisplayToNotificationObject, OnDisplay);
-    IPC_MESSAGE_HANDLER(ViewMsg_PostErrorToNotificationObject, OnError);
-    IPC_MESSAGE_HANDLER(ViewMsg_PostCloseToNotificationObject, OnClose);
-    IPC_MESSAGE_HANDLER(ViewMsg_PostClickToNotificationObject, OnClick);
-    IPC_MESSAGE_HANDLER(ViewMsg_PermissionRequestDone,
+    IPC_MESSAGE_HANDLER(DesktopNotificationMsg_PostDisplay, OnDisplay);
+    IPC_MESSAGE_HANDLER(DesktopNotificationMsg_PostError, OnError);
+    IPC_MESSAGE_HANDLER(DesktopNotificationMsg_PostClose, OnClose);
+    IPC_MESSAGE_HANDLER(DesktopNotificationMsg_PostClick, OnClick);
+    IPC_MESSAGE_HANDLER(DesktopNotificationMsg_PermissionRequestDone,
                         OnPermissionRequestComplete);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -112,20 +111,20 @@ bool NotificationProvider::ShowHTML(const WebNotification& notification,
     return false;
 
   DCHECK(notification.isHTML());
-  ViewHostMsg_ShowNotification_Params params;
+  DesktopNotificationHostMsg_Show_Params params;
   params.origin =
       GURL(render_view()->webview()->mainFrame()->url()).GetOrigin();
   params.is_html = true;
   params.contents_url = notification.url();
   params.notification_id = id;
   params.replace_id = notification.replaceId();
-  return Send(new ViewHostMsg_ShowDesktopNotification(routing_id(), params));
+  return Send(new DesktopNotificationHostMsg_Show(routing_id(), params));
 }
 
 bool NotificationProvider::ShowText(const WebNotification& notification,
                                     int id) {
   DCHECK(!notification.isHTML());
-  ViewHostMsg_ShowNotification_Params params;
+  DesktopNotificationHostMsg_Show_Params params;
   params.is_html = false;
   params.origin = GURL(
       render_view()->webview()->mainFrame()->url()).GetOrigin();
@@ -135,7 +134,7 @@ bool NotificationProvider::ShowText(const WebNotification& notification,
   params.direction = notification.direction();
   params.notification_id = id;
   params.replace_id = notification.replaceId();
-  return Send(new ViewHostMsg_ShowDesktopNotification(routing_id(), params));
+  return Send(new DesktopNotificationHostMsg_Show(routing_id(), params));
 }
 
 void NotificationProvider::OnDisplay(int id) {

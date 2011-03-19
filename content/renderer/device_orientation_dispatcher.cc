@@ -4,8 +4,7 @@
 
 #include "content/renderer/device_orientation_dispatcher.h"
 
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/device_orientation_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDeviceOrientation.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDeviceOrientationController.h"
 
@@ -24,7 +23,7 @@ DeviceOrientationDispatcher::~DeviceOrientationDispatcher() {
 bool DeviceOrientationDispatcher::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DeviceOrientationDispatcher, msg)
-    IPC_MESSAGE_HANDLER(ViewMsg_DeviceOrientationUpdated,
+    IPC_MESSAGE_HANDLER(DeviceOrientationMsg_Updated,
                         OnDeviceOrientationUpdated)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -37,12 +36,12 @@ void DeviceOrientationDispatcher::setController(
 }
 
 void DeviceOrientationDispatcher::startUpdating() {
-  Send(new ViewHostMsg_DeviceOrientation_StartUpdating(routing_id()));
+  Send(new DeviceOrientationHostMsg_StartUpdating(routing_id()));
   started_ = true;
 }
 
 void DeviceOrientationDispatcher::stopUpdating() {
-  Send(new ViewHostMsg_DeviceOrientation_StopUpdating(routing_id()));
+  Send(new DeviceOrientationHostMsg_StopUpdating(routing_id()));
   started_ = false;
 }
 
@@ -55,7 +54,7 @@ WebKit::WebDeviceOrientation DeviceOrientationDispatcher::lastOrientation()
 }
 
 namespace {
-bool OrientationsEqual(const ViewMsg_DeviceOrientationUpdated_Params& a,
+bool OrientationsEqual(const DeviceOrientationMsg_Updated_Params& a,
                        WebKit::WebDeviceOrientation* b) {
   if (a.can_provide_alpha != b->canProvideAlpha())
     return false;
@@ -75,8 +74,7 @@ bool OrientationsEqual(const ViewMsg_DeviceOrientationUpdated_Params& a,
 }  // namespace
 
 void DeviceOrientationDispatcher::OnDeviceOrientationUpdated(
-    const ViewMsg_DeviceOrientationUpdated_Params& p) {
-
+    const DeviceOrientationMsg_Updated_Params& p) {
   if (last_orientation_.get() && OrientationsEqual(p, last_orientation_.get()))
     return;
 

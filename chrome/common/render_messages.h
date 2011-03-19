@@ -38,7 +38,6 @@
 #include "chrome/common/webkit_param_traits.h"
 #include "chrome/common/window_container_type.h"
 #include "content/common/common_param_traits.h"
-#include "content/common/geoposition.h"
 #include "content/common/notification_type.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/page_zoom.h"
@@ -992,30 +991,6 @@ IPC_MESSAGE_ROUTED4(ViewMsg_DetermineIfPageSupportsInstant,
 IPC_MESSAGE_ROUTED1(ViewMsg_DisableScrollbarsForSmallWindows,
                     gfx::Size /* disable_scrollbar_size_limit */)
 
-// Used to inform the renderer that the browser has displayed its
-// requested notification.
-IPC_MESSAGE_ROUTED1(ViewMsg_PostDisplayToNotificationObject,
-                    int /* notification_id */)
-
-// Used to inform the renderer that the browser has encountered an error
-// trying to display a notification.
-IPC_MESSAGE_ROUTED2(ViewMsg_PostErrorToNotificationObject,
-                    int /* notification_id */,
-                    string16 /* message */)
-
-// Informs the renderer that the one if its notifications has closed.
-IPC_MESSAGE_ROUTED2(ViewMsg_PostCloseToNotificationObject,
-                    int /* notification_id */,
-                    bool /* by_user */)
-
-// Informs the renderer that one of its notifications was clicked on.
-IPC_MESSAGE_ROUTED1(ViewMsg_PostClickToNotificationObject,
-                    int /* notification_id */)
-
-// Informs the renderer that the one if its notifications has closed.
-IPC_MESSAGE_ROUTED1(ViewMsg_PermissionRequestDone,
-                    int /* request_id */)
-
 // Activate/deactivate the RenderView (i.e., set its controls' tint
 // accordingly, etc.).
 IPC_MESSAGE_ROUTED1(ViewMsg_SetActive,
@@ -1093,17 +1068,6 @@ IPC_MESSAGE_ROUTED4(ViewMsg_TranslatePage,
 IPC_MESSAGE_ROUTED1(ViewMsg_RevertTranslation,
                     int /* page id */)
 
-// Reply in response to ViewHostMsg_Geolocation_RequestPermission.
-IPC_MESSAGE_ROUTED2(ViewMsg_Geolocation_PermissionSet,
-                    int /* bridge_id */,
-                    bool /* is_allowed */)
-
-// Sent after ViewHostMsg_Geolocation_StartUpdating iff the user has granted
-// permission and we have a position available or an error occurs (such as
-// permission denied, position unavailable, etc.)
-IPC_MESSAGE_ROUTED1(ViewMsg_Geolocation_PositionUpdated,
-                    Geoposition /* geoposition */)
-
 // Sent on process startup to indicate whether this process is running in
 // incognito mode.
 IPC_MESSAGE_CONTROL1(ViewMsg_SetIsIncognitoProcess,
@@ -1124,10 +1088,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_AccessibilityDoDefaultAction,
 // Tells the render view that a ViewHostMsg_AccessibilityNotifications
 // message was processed and it can send addition notifications.
 IPC_MESSAGE_ROUTED0(ViewMsg_AccessibilityNotifications_ACK)
-
-// Notification that the device's orientation has changed.
-IPC_MESSAGE_ROUTED1(ViewMsg_DeviceOrientationUpdated,
-                    ViewMsg_DeviceOrientationUpdated_Params)
 
 // The response to ViewHostMsg_AsyncOpenFile.
 IPC_MESSAGE_ROUTED3(ViewMsg_AsyncOpenFile_ACK,
@@ -2112,19 +2072,6 @@ IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_LookupSharedWorker,
 IPC_MESSAGE_CONTROL1(ViewHostMsg_DocumentDetached,
                      uint64 /* document_id */)
 
-// A message sent to the browser on behalf of a renderer which wants to show
-// a desktop notification.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowDesktopNotification,
-                    ViewHostMsg_ShowNotification_Params)
-IPC_MESSAGE_ROUTED1(ViewHostMsg_CancelDesktopNotification,
-                    int /* notification_id */)
-IPC_MESSAGE_ROUTED2(ViewHostMsg_RequestNotificationPermission,
-                    GURL /* origin */,
-                    int /* callback_context */)
-IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_CheckNotificationPermission,
-                           GURL /* source page */,
-                           int /* permission_result */)
-
 // Sent if the worker object has sent a ViewHostMsg_CreateDedicatedWorker
 // message and not received a ViewMsg_WorkerCreated reply, but in the
 // mean time it's destroyed.  This tells the browser to not create the queued
@@ -2266,39 +2213,6 @@ IPC_MESSAGE_CONTROL4(ViewHostMsg_SpellChecker_PlatformRequestTextCheck,
                      int /* document tag */,
                      string16 /* sentence */)
 
-//---------------------------------------------------------------------------
-// Geolocation services messages
-
-// The |render_view_id| and |bridge_id| representing |host| is requesting
-// permission to access geolocation position.
-// This will be replied by ViewMsg_Geolocation_PermissionSet.
-IPC_MESSAGE_CONTROL3(ViewHostMsg_Geolocation_RequestPermission,
-                     int /* render_view_id */,
-                     int /* bridge_id */,
-                     GURL /* GURL of the frame requesting geolocation */)
-
-// The |render_view_id| and |bridge_id| representing |GURL| is cancelling its
-// previous permission request to access geolocation position.
-IPC_MESSAGE_CONTROL3(ViewHostMsg_Geolocation_CancelPermissionRequest,
-                     int /* render_view_id */,
-                     int /* bridge_id */,
-                     GURL /* GURL of the frame */)
-
-// The |render_view_id| requests Geolocation service to start updating.
-// This is an asynchronous call, and the browser process may eventually reply
-// with the updated geoposition, or an error (access denied, location
-// unavailable, etc.)
-IPC_MESSAGE_CONTROL3(ViewHostMsg_Geolocation_StartUpdating,
-                     int /* render_view_id */,
-                     GURL /* GURL of the frame requesting geolocation */,
-                     bool /* enable_high_accuracy */)
-
-// The |render_view_id| requests Geolocation service to stop updating.
-// Note that the geolocation service may continue to fetch geolocation data
-// for other origins.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_Geolocation_StopUpdating,
-                     int /* render_view_id */)
-
 // Updates the minimum/maximum allowed zoom percent for this tab from the
 // default values.  If |remember| is true, then the zoom setting is applied to
 // other pages in the site and is saved, otherwise it only applies to this
@@ -2307,17 +2221,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateZoomLimits,
                     int /* minimum_percent */,
                     int /* maximum_percent */,
                     bool /* remember */)
-
-//---------------------------------------------------------------------------
-// Device orientation services messages:
-
-// A RenderView requests to start receiving device orientation updates.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_DeviceOrientation_StartUpdating,
-                     int /* render_view_id */)
-
-// A RenderView requests to stop receiving device orientation updates.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_DeviceOrientation_StopUpdating,
-                     int /* render_view_id */)
 
 // Suggest results -----------------------------------------------------------
 

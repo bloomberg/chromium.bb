@@ -4,6 +4,8 @@
 
 #include "content/renderer/content_renderer_client.h"
 
+#include "content/renderer/render_view.h"
+
 namespace content {
 
 SkBitmap* ContentRendererClient::GetSadPluginBitmap() {
@@ -18,7 +20,7 @@ WebKit::WebPlugin* ContentRendererClient::CreatePlugin(
     RenderView* render_view,
     WebKit::WebFrame* frame,
     const WebKit::WebPluginParams& params) {
-  return NULL;
+  return render_view->CreatePluginNoCheck(frame, params);
 }
 
 std::string ContentRendererClient::GetNavigationErrorHtml(

@@ -197,15 +197,6 @@ ViewHostMsg_CreateWorker_Params::ViewHostMsg_CreateWorker_Params()
 ViewHostMsg_CreateWorker_Params::~ViewHostMsg_CreateWorker_Params() {
 }
 
-ViewHostMsg_ShowNotification_Params::ViewHostMsg_ShowNotification_Params()
-    : is_html(false),
-      direction(WebKit::WebTextDirectionDefault),
-      notification_id(0) {
-}
-
-ViewHostMsg_ShowNotification_Params::~ViewHostMsg_ShowNotification_Params() {
-}
-
 ViewMsg_New_Params::ViewMsg_New_Params()
     : parent_window(0),
       view_id(0),
@@ -231,20 +222,6 @@ ViewHostMsg_RunFileChooser_Params::ViewHostMsg_RunFileChooser_Params()
 }
 
 ViewHostMsg_RunFileChooser_Params::~ViewHostMsg_RunFileChooser_Params() {
-}
-
-ViewMsg_DeviceOrientationUpdated_Params::
-    ViewMsg_DeviceOrientationUpdated_Params()
-    : can_provide_alpha(false),
-      alpha(0),
-      can_provide_beta(false),
-      beta(0),
-      can_provide_gamma(false),
-      gamma(0) {
-}
-
-ViewMsg_DeviceOrientationUpdated_Params::
-    ~ViewMsg_DeviceOrientationUpdated_Params() {
 }
 
 ViewHostMsg_DomMessage_Params::ViewHostMsg_DomMessage_Params()
@@ -1191,60 +1168,6 @@ void ParamTraits<ViewHostMsg_CreateWorker_Params>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<ViewHostMsg_ShowNotification_Params>::Write(
-    Message* m,
-    const param_type& p) {
-  WriteParam(m, p.origin);
-  WriteParam(m, p.is_html);
-  WriteParam(m, p.contents_url);
-  WriteParam(m, p.icon_url);
-  WriteParam(m, p.title);
-  WriteParam(m, p.body);
-  WriteParam(m, p.direction);
-  WriteParam(m, p.replace_id);
-  WriteParam(m, p.notification_id);
-}
-
-bool ParamTraits<ViewHostMsg_ShowNotification_Params>::Read(
-    const Message* m,
-    void** iter,
-    param_type* p) {
-  return
-      ReadParam(m, iter, &p->origin) &&
-      ReadParam(m, iter, &p->is_html) &&
-      ReadParam(m, iter, &p->contents_url) &&
-      ReadParam(m, iter, &p->icon_url) &&
-      ReadParam(m, iter, &p->title) &&
-      ReadParam(m, iter, &p->body) &&
-      ReadParam(m, iter, &p->direction) &&
-      ReadParam(m, iter, &p->replace_id) &&
-      ReadParam(m, iter, &p->notification_id);
-}
-
-void ParamTraits<ViewHostMsg_ShowNotification_Params>::Log(
-    const param_type &p,
-    std::string* l) {
-  l->append("(");
-  LogParam(p.origin, l);
-  l->append(", ");
-  LogParam(p.is_html, l);
-  l->append(", ");
-  LogParam(p.contents_url, l);
-  l->append(", ");
-  LogParam(p.icon_url, l);
-  l->append(", ");
-  LogParam(p.title, l);
-  l->append(",");
-  LogParam(p.body, l);
-  l->append(",");
-  LogParam(p.direction, l);
-  l->append(",");
-  LogParam(p.replace_id, l);
-  l->append(",");
-  LogParam(p.notification_id, l);
-  l->append(")");
-}
-
 void ParamTraits<ViewMsg_New_Params>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.parent_window);
   WriteParam(m, p.renderer_preferences);
@@ -1406,48 +1329,6 @@ bool ParamTraits<ViewMsg_ExtensionLoaded_Params>::Read(const Message* m,
 void ParamTraits<ViewMsg_ExtensionLoaded_Params>::Log(const param_type& p,
                                                       std::string* l) {
   l->append(p.id);
-}
-
-void ParamTraits<ViewMsg_DeviceOrientationUpdated_Params>::Write(
-    Message* m,
-    const param_type& p) {
-  WriteParam(m, p.can_provide_alpha);
-  WriteParam(m, p.alpha);
-  WriteParam(m, p.can_provide_beta);
-  WriteParam(m, p.beta);
-  WriteParam(m, p.can_provide_gamma);
-  WriteParam(m, p.gamma);
-}
-
-bool ParamTraits<ViewMsg_DeviceOrientationUpdated_Params>::Read(
-    const Message* m,
-    void** iter,
-    param_type* p) {
-  return
-      ReadParam(m, iter, &p->can_provide_alpha) &&
-      ReadParam(m, iter, &p->alpha) &&
-      ReadParam(m, iter, &p->can_provide_beta) &&
-      ReadParam(m, iter, &p->beta) &&
-      ReadParam(m, iter, &p->can_provide_gamma) &&
-      ReadParam(m, iter, &p->gamma);
-}
-
-void ParamTraits<ViewMsg_DeviceOrientationUpdated_Params>::Log(
-    const param_type& p,
-    std::string* l) {
-  l->append("(");
-  LogParam(p.can_provide_alpha, l);
-  l->append(", ");
-  LogParam(p.alpha, l);
-  l->append(", ");
-  LogParam(p.can_provide_beta, l);
-  l->append(", ");
-  LogParam(p.beta, l);
-  l->append(", ");
-  LogParam(p.can_provide_gamma, l);
-  l->append(", ");
-  LogParam(p.gamma, l);
-  l->append(")");
 }
 
 void ParamTraits<ViewHostMsg_DomMessage_Params>::Write(Message* m,

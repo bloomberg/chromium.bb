@@ -21,14 +21,14 @@ class TabContents;
 // GeolocationPermissionContext manages Geolocation permissions flow,
 // and delegates UI handling via GeolocationInfoBarQueueController.
 // It always notifies the requesting render_view asynchronously via
-// ViewMsg_Geolocation_PermissionSet.
+// GeolocationMsg_PermissionSet.
 class GeolocationPermissionContext
     : public base::RefCountedThreadSafe<GeolocationPermissionContext> {
  public:
   explicit GeolocationPermissionContext(Profile* profile);
 
   // The render is requesting permission to use Geolocation.
-  // Response will be sent asynchronously as ViewMsg_Geolocation_PermissionSet.
+  // Response will be sent asynchronously as GeolocationMsg_PermissionSet.
   void RequestGeolocationPermission(
       int render_process_id, int render_view_id, int bridge_id,
       const GURL& requesting_frame);
@@ -39,7 +39,7 @@ class GeolocationPermissionContext
       const GURL& requesting_frame);
 
   // Notifies whether or not the corresponding bridge is allowed to use
-  // geolocation via ViewMsg_Geolocation_PermissionSet.
+  // geolocation via GeolocationMsg_PermissionSet.
   void NotifyPermissionSet(
       int render_process_id, int render_view_id, int bridge_id,
       const GURL& requesting_frame, bool allowed);

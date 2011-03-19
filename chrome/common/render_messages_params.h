@@ -28,7 +28,6 @@
 #include "ipc/ipc_param_traits.h"
 #include "media/audio/audio_parameters.h"
 #include "net/base/host_port_pair.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/password_form.h"
@@ -653,36 +652,6 @@ struct ViewHostMsg_CreateWorker_Params {
   int64 script_resource_appcache_id;
 };
 
-// Parameters for the message that creates a desktop notification.
-struct ViewHostMsg_ShowNotification_Params {
-  ViewHostMsg_ShowNotification_Params();
-  ~ViewHostMsg_ShowNotification_Params();
-
-  // URL which is the origin that created this notification.
-  GURL origin;
-
-  // True if this is HTML
-  bool is_html;
-
-  // URL which contains the HTML contents (if is_html is true), otherwise empty.
-  GURL contents_url;
-
-  // Contents of the notification if is_html is false.
-  GURL icon_url;
-  string16 title;
-  string16 body;
-
-  // Directionality of the notification.
-  WebKit::WebTextDirection direction;
-
-  // ReplaceID if this notification should replace an existing one; may be
-  // empty if no replacement is called for.
-  string16 replace_id;
-
-  // Notification ID for sending events back for this notification.
-  int notification_id;
-};
-
 // Creates a new view via a control message since the view doesn't yet exist.
 struct ViewMsg_New_Params {
   ViewMsg_New_Params();
@@ -799,19 +768,6 @@ struct ViewMsg_ExtensionLoaded_Params {
 
   // We keep this separate so that it can be used in logging.
   std::string id;
-};
-
-struct ViewMsg_DeviceOrientationUpdated_Params {
-  ViewMsg_DeviceOrientationUpdated_Params();
-  ~ViewMsg_DeviceOrientationUpdated_Params();
-
-  // These fields have the same meaning as in device_orientation::Orientation.
-  bool can_provide_alpha;
-  double alpha;
-  bool can_provide_beta;
-  double beta;
-  bool can_provide_gamma;
-  double gamma;
 };
 
 // Parameters structure for ViewHostMsg_ExtensionRequest.
@@ -1045,14 +1001,6 @@ struct ParamTraits<ViewHostMsg_CreateWorker_Params> {
   static void Log(const param_type& p, std::string* l);
 };
 
-template <>
-struct ParamTraits<ViewHostMsg_ShowNotification_Params> {
-  typedef ViewHostMsg_ShowNotification_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type &p, std::string* l);
-};
-
 template<>
 struct ParamTraits<ViewMsg_New_Params> {
   typedef ViewMsg_New_Params param_type;
@@ -1080,14 +1028,6 @@ struct ParamTraits<ViewHostMsg_RunFileChooser_Params> {
 template <>
 struct ParamTraits<ViewMsg_ExtensionLoaded_Params> {
   typedef ViewMsg_ExtensionLoaded_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewMsg_DeviceOrientationUpdated_Params> {
-  typedef ViewMsg_DeviceOrientationUpdated_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

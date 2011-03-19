@@ -45,6 +45,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
+#include "content/common/desktop_notification_messages.h"
 #include "content/common/notification_service.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/cookie_monster.h"
@@ -364,7 +365,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_RendererHistograms, OnRendererHistograms)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
         render_widget_helper_->DidReceiveUpdateMsg(message))
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CheckNotificationPermission,
+    IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_CheckPermission,
                         OnCheckNotificationPermission)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RevealFolderInOS, OnRevealFolderInOS)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
