@@ -67,9 +67,7 @@ class GpuChannel : public IPC::Channel::Listener,
 #if defined(OS_MACOSX)
   virtual void AcceleratedSurfaceBuffersSwapped(
       int32 route_id, uint64 swap_buffers_count);
-  void DidDestroySurface(int32 renderer_route_id);
-
-  bool IsRenderViewGone(int32 renderer_route_id);
+  void DestroyCommandBufferByViewId(int32 render_view_id);
 #endif
 
  private:
@@ -113,10 +111,6 @@ class GpuChannel : public IPC::Channel::Listener,
 #if defined(ENABLE_GPU)
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
   StubMap stubs_;
-
-#if defined(OS_MACOSX)
-  std::set<int32> destroyed_renderer_routes_;
-#endif  // defined (OS_MACOSX)
 #endif  // defined (ENABLE_GPU)
 
   bool log_messages_;  // True if we should log sent and received messages.

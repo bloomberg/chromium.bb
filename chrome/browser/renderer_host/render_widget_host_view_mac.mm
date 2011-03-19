@@ -1073,9 +1073,10 @@ void RenderWidgetHostViewMac::DeallocFakePluginWindowHandle(
   // process until the command queue is empty. If a paint is pending, the GPU
   // process won't process any GL commands until the browser sends a paint ack,
   // but since the browser window is already closed, it will never arrive.
-  // To break this infinite loop, the browser tells the GPU process that the
-  // surface became invalid, which causes the GPU process to not wait for paint
-  // acks.
+  // To resolve this we ask the GPU process to destroy the command buffer
+  // associated with the given render widget.  Once the command buffer is
+  // destroyed, all GL commands from the renderer will immediately receive
+  // channel error.
   if (render_widget_host_ &&
       plugin_container_manager_.IsRootContainer(window)) {
     GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(

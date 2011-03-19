@@ -286,11 +286,6 @@ void GpuCommandBufferStub::OnAsyncGetState() {
 
 void GpuCommandBufferStub::OnFlush(int32 put_offset,
                                    gpu::CommandBuffer::State* state) {
-#if defined(OS_MACOSX)
-  // See comment in |DidDestroySurface()| in gpu_processor_mac.cc.
-  if (channel_->IsRenderViewGone(render_view_id_))
-    processor_->DidDestroySurface();
-#endif
   *state = command_buffer_->FlushSync(put_offset);
 }
 

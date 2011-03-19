@@ -163,12 +163,12 @@ IPC_MESSAGE_CONTROL3(GpuMsg_AcceleratedSurfaceBuffersSwappedACK,
                      int32 /* route_id */,
                      uint64 /* swap_buffers_count */)
 
-// Tells the GPU process that the IOSurface of the buffer belonging to
-// |renderer_route_id| a given id was destroyed, either by the user closing the
-// tab hosting the surface, or by the renderer navigating to a new page.
-IPC_MESSAGE_CONTROL2(GpuMsg_DidDestroyAcceleratedSurface,
+// Requests the GPU process to destroy the command buffer and remove the
+// associated route. Further messages to this command buffer will result in a
+// channel error.
+IPC_MESSAGE_CONTROL2(GpuMsg_DestroyCommandBuffer,
                      int /* renderer_id */,
-                     int32 /* renderer_route_id */)
+                     int32 /* render_view_id */)
 #endif
 
 // Tells the GPU process to crash.

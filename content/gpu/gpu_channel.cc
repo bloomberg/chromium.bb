@@ -113,17 +113,17 @@ void GpuChannel::AcceleratedSurfaceBuffersSwapped(
   stub->AcceleratedSurfaceBuffersSwapped(swap_buffers_count);
 }
 
-void GpuChannel::DidDestroySurface(int32 renderer_route_id) {
-  // Since acclerated views are created in the renderer process and then sent
-  // to the browser process during GPU channel construction, it is possible that
-  // this is called before a GpuCommandBufferStub for |renderer_route_id| was
-  // put into |stubs_|. Hence, do not walk |stubs_| here but instead remember
-  // all |renderer_route_id|s this was called for and use them later.
-  destroyed_renderer_routes_.insert(renderer_route_id);
-}
-
-bool GpuChannel::IsRenderViewGone(int32 renderer_route_id) {
-  return destroyed_renderer_routes_.count(renderer_route_id) > 0;
+void GpuChannel::DestroyCommandBufferByViewId(int32 render_view_id) {
+  // This responds to a message from the browser process to destroy the command
+  // buffer when the window with a GPUProcessor is closed (see
+  // RenderWidgetHostViewMac::DeallocFakePluginWindowHandle).  Find the route id
+  // that matches the given render_view_id and delete the route.
+  for (StubMap::const_iterator iter(&stubs_); !iter.IsAtEnd(); iter.Advance()) {
+    if (iter.GetCurrentValue()->render_view_id() == render_view_id) {
+      OnDestroyCommandBuffer(iter.GetCurrentKey());
+      return;
+    }
+  }
 }
 #endif
 

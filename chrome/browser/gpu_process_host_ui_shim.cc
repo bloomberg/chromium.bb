@@ -333,8 +333,9 @@ void GpuProcessHostUIShim::CreateViewCommandBuffer(
 #if defined(OS_MACOSX)
 
 void GpuProcessHostUIShim::DidDestroyAcceleratedSurface(int renderer_id,
-                                                        int renderer_route_id) {
-  Send(new GpuMsg_DidDestroyAcceleratedSurface(renderer_id, renderer_route_id));
+                                                        int render_view_id) {
+  // Destroy the command buffer that owns the accelerated surface.
+  Send(new GpuMsg_DestroyCommandBuffer(renderer_id, render_view_id));
 }
 
 #endif

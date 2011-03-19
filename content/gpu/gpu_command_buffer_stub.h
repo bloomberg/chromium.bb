@@ -51,12 +51,15 @@ class GpuCommandBufferStub
   // Get the GLContext associated with this object.
   gpu::GPUProcessor* processor() const { return processor_.get(); }
 
+  // Identifies the renderer process.
+  int32 renderer_id() const { return renderer_id_; }
+
+  // Identifies a particular renderer belonging to the same renderer process.
+  int32 render_view_id() const { return render_view_id_; }
+
   // Identifies the various GpuCommandBufferStubs in the GPU process belonging
   // to the same renderer process.
   int32 route_id() const { return route_id_; }
-
-  // Identifies the various render views in the renderer process.
-  int32 renderer_route_id() const { return renderer_id_; }
 
 #if defined(OS_WIN)
   // Called only by the compositor window's window proc

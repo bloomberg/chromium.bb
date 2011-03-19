@@ -67,7 +67,7 @@ class GpuThread : public ChildThread {
 #if defined(OS_MACOSX)
   void OnAcceleratedSurfaceBuffersSwappedACK(
       int renderer_id, int32 route_id, uint64 swap_buffers_count);
-  void OnDidDestroyAcceleratedSurface(int renderer_id, int32 renderer_route_id);
+  void OnDestroyCommandBuffer(int renderer_id, int32 render_view_id);
 #endif
   void OnCrash();
   void OnHang();

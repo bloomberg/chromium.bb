@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,7 +109,7 @@ class GpuProcessHostUIShim
 
 #if defined(OS_MACOSX)
   // Notify the GPU process that an accelerated surface was destroyed.
-  void DidDestroyAcceleratedSurface(int renderer_id, int32 renderer_route_id);
+  void DidDestroyAcceleratedSurface(int renderer_id, int32 render_view_id);
 #endif
 
   // Sends a message to the browser process to collect the information from the
