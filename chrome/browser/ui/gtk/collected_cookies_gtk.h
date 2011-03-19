@@ -114,6 +114,8 @@ class CollectedCookiesGtk : public ConstrainedDialogDelegate,
   // The tab contents.
   TabContents* tab_contents_;
 
+  bool status_changed_;
+
   // The Cookies Table model.
   scoped_ptr<CookiesTreeModel> allowed_cookies_tree_model_;
   scoped_ptr<CookiesTreeModel> blocked_cookies_tree_model_;

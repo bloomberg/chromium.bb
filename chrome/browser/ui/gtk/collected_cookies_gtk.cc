@@ -8,6 +8,7 @@
 
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_cookie_view.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -74,7 +75,8 @@ const std::string GetInfobarLabel(ContentSetting setting,
 
 CollectedCookiesGtk::CollectedCookiesGtk(GtkWindow* parent,
                                          TabContents* tab_contents)
-    : tab_contents_(tab_contents) {
+    : tab_contents_(tab_contents),
+      status_changed_(false) {
   TabSpecificContentSettings* content_settings =
       tab_contents->GetTabSpecificContentSettings();
   registrar_.Add(this, NotificationType::COLLECTED_COOKIES_SHOWN,
@@ -422,6 +424,10 @@ void CollectedCookiesGtk::Observe(NotificationType type,
 }
 
 void CollectedCookiesGtk::OnClose(GtkWidget* close_button) {
+  if (status_changed_) {
+    tab_contents_->AddInfoBar(
+        new CollectedCookiesInfoBarDelegate(tab_contents_));
+  }
   window_->CloseConstrainedWindow();
 }
 
@@ -462,6 +468,7 @@ void CollectedCookiesGtk::AddExceptions(GtkTreeSelection* selection,
             setting, multiple_domains_added, last_domain_name).c_str());
     gtk_widget_show(infobar_);
   }
+  status_changed_ = true;
 }
 
 void CollectedCookiesGtk::OnBlockAllowedButtonClicked(GtkWidget* button) {
