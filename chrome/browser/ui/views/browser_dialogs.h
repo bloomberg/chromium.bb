@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "chrome/common/content_settings_types.h"
 #include "ui/gfx/native_widget_types.h"
 
 // This file contains functions for running a variety of browser dialogs and
@@ -18,11 +17,9 @@
 // TODO: Make as many of these methods as possible cross platform, and move them
 // into chrome/browser/ui/browser_dialogs.h.
 
-class Browser;
 class BrowserView;
 class EditSearchEngineControllerDelegate;
 class Extension;
-class FilePath;
 class FindBar;
 class GURL;
 class InfoBubbleDelegate;
@@ -33,19 +30,13 @@ class TemplateURL;
 namespace gfx {
 class Rect;
 class Size;
-}  // namespace gfx
+}
 
 namespace views {
-class Widget;
 class Window;
-}  // namespace views
+}
 
 namespace browser {
-
-// Shows the "Report a problem with this page" dialog box. See BugReportView.
-void ShowBugReportView(views::Window* parent,
-                       Profile* profile,
-                       TabContents* tab);
 
 // Shows or hides the global bookmark bubble for the star button.
 void ShowBookmarkBubbleView(views::Window* parent,
@@ -57,18 +48,12 @@ void ShowBookmarkBubbleView(views::Window* parent,
 void HideBookmarkBubbleView();
 bool IsBookmarkBubbleViewShowing();
 
-// Shows the bookmark manager.
-void ShowBookmarkManagerView(Profile* profile);
-
 // Shows the about dialog. See AboutChromeView.
 views::Window* ShowAboutChromeView(gfx::NativeWindow parent,
                                    Profile* profile);
 
 // Creates and returns a find bar for the given browser window. See FindBarWin.
 FindBar* CreateFindBar(BrowserView* browser_view);
-
-// Shows the keyword editor. See KeywordEditorView.
-void ShowKeywordEditorView(Profile* profile);
 
 // Shows the Task Manager.
 void ShowTaskManager();
