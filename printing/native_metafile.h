@@ -26,10 +26,6 @@ class Rect;
 class Size;
 }
 
-namespace skia {
-class PlatformDevice;
-}
-
 #if defined(OS_CHROMEOS)
 namespace base {
 class  FileDescriptor;
@@ -53,13 +49,6 @@ class NativeMetafile {
   // on success.
   // Note: It should only be called from within the browser process.
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size) = 0;
-
-  // This method calls StartPage and then returns an appropriate
-  // VectorPlatformDevice implementation bound to the context created by
-  // StartPage or NULL on error.
-  virtual skia::PlatformDevice* StartPageForVectorCanvas(
-      const gfx::Size& page_size, const gfx::Point& content_origin,
-      const float& scale_factor) = 0;
 
   // Prepares a context for rendering a new page at the specified
   // |content_origin| with the given |page_size| and a |scale_factor| to use for
