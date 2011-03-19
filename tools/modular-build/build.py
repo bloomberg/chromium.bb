@@ -428,7 +428,16 @@ int main() {
     AddSconsModule(
         "scons_tests_%s" % arch_bits,
         deps=full_glibc_toolchain_deps,
-        scons_args=["--nacl_glibc", "small_tests", "-k",
+        scons_args=["--nacl_glibc", "-k",
+                    "small_tests",
+                    "dynamic_library_browser_tests",
+                    "browser_headless=1",
+                    # Share the download directory in the original
+                    # source tree.  This avoids re-downloading
+                    # Chromium on each run, but it is a hole in our
+                    # ability to track incrementalness of builds.
+                    "chrome_binaries_dir=%s" %
+                        os.path.join(nacl_dir, "chromebinaries"),
                     "platform=x86-%s" % arch_bits])
     AddSconsModule(
         "scons_tests_static_%s" % arch_bits,

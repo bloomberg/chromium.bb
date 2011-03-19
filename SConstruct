@@ -87,6 +87,8 @@ ACCEPTABLE_ARGUMENTS = set([
     'SILENT',
     # set build platform
     'buildplatform',
+    # Location to download Chromium binaries to and/or read them from.
+    'chrome_binaries_dir',
     # used for browser_tests: path to the browser
     'chrome_browser_path',
     # used for browser_tests: which plugin to use (npapi,ppapi,internal)
@@ -259,6 +261,14 @@ def SetUpArgumentBits(env):
 
   BitFromArgument(env, 'use_sandboxed_translator', default=False,
     desc='use pnacl sandboxed translator for linking (not available for arm)')
+
+  BitFromArgument(env, 'browser_headless', default=False,
+    desc='Where possible, set up a dummy display to run the browser on '
+      'when running browser tests.  On Linux, this runs the browser through '
+      'xvfb-run.  This Scons does not need to be run with an X11 display '
+      'and we do not open a browser window on the user\'s desktop.  '
+      'Unfortunately there is no equivalent on Mac OS X.')
+
 
 def CheckArguments():
   for key in ARGUMENTS:
@@ -984,6 +994,14 @@ def SetupBrowserEnv(env):
       env['ENV'][var_name] = os.environ[var_name]
 
 
+def GetHeadlessPrefix(env):
+  if env.Bit('browser_headless') and env.Bit('host_linux'):
+    return ['xvfb-run', '--auto-servernum']
+  else:
+    # Mac and Windows do not seem to have an equivalent.
+    return []
+
+
 SELENIUM_TEST_SCRIPT = '${SCONSTRUCT_DIR}/tools/selenium_tester.py'
 
 def BrowserTester(env,
@@ -1000,7 +1018,8 @@ def BrowserTester(env,
                         'google-chrome-wrapper.py"')
 
   deps = [SELENIUM_TEST_SCRIPT] + files
-  command = ['${SOURCES[0].abspath}', '--url', url, '--browser', browser]
+  command = (GetHeadlessPrefix(env) +
+             ['${SOURCES[0].abspath}', '--url', url, '--browser', browser])
   for i in range(len(files)):
     command.append('--file')
     command.append('${SOURCES[%d].abspath}' % (i + 1))
@@ -1051,7 +1070,8 @@ def BrowserTester(env,
 pre_base_env.AddMethod(BrowserTester)
 
 
-pre_base_env['CHROME_DOWNLOAD_DIR'] = pre_base_env.Dir('#chromebinaries')
+pre_base_env['CHROME_DOWNLOAD_DIR'] = \
+    pre_base_env.Dir(ARGUMENTS.get('chrome_binaries_dir', '#chromebinaries'))
 
 def ChromeBinaryArch(env):
   arch = env['BUILD_FULLARCH']
@@ -1104,7 +1124,7 @@ def PPAPIBrowserTester(env,
   env = env.Clone()
   SetupBrowserEnv(env)
 
-  command = [
+  command = GetHeadlessPrefix(env) + [
       '${PYTHON}', env.File('${SCONSTRUCT_DIR}/tools/browser_tester'
                             '/browser_tester.py'),
       '--browser_path', ARGUMENTS.get('chrome_browser_path',
@@ -1172,8 +1192,9 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
   else:
     chrome_flags += '--enable-nacl'
 
-  command = [pyauto_python, test, pyautolib_dir, '-v', '--no-http-server',
-             '--chrome-flags="%s"' % chrome_flags]
+  command = (GetHeadlessPrefix(env) +
+             [pyauto_python, test, pyautolib_dir, '-v', '--no-http-server',
+              '--chrome-flags="%s"' % chrome_flags])
   command.extend(args)
 
   node = env.AutoDepsCommand(target, command)

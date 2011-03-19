@@ -117,7 +117,9 @@ def NaClSourceSubset(input_tree):
   #       native_client/tools/modular-build/out
   paths_to_copy = [
       # From NaCl SVN
+      "native_client/DEPS",
       "native_client/SConstruct",
+      "native_client/build",
       "native_client/common",
       "native_client/installer",
       "native_client/scons",
@@ -133,6 +135,7 @@ def NaClSourceSubset(input_tree):
       "native_client/tools/tests",
       "third_party/gles2_book",
       "third_party/npapi",
+      "third_party/pylib",
       "third_party/scons",
       # Pulled in from SVN repos via DEPS
       "base",
