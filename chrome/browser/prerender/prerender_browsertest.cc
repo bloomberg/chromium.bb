@@ -353,4 +353,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExcessiveMemory) {
                    FINAL_STATUS_MEMORY_LIMIT_EXCEEDED, 1);
 }
 
+// Checks that we don't prerender in an infinite loop.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
+  PrerenderTestURL("prerender_infinite_a.html", FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
+}
+
 }  // namespace prerender

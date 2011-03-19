@@ -55,6 +55,10 @@ PrerenderResourceHandler* PrerenderResourceHandler::MaybeCreate(
     ResourceHandler* next_handler) {
   if (!context || !context->prerender_manager())
     return NULL;
+  if (request.load_flags() & net::LOAD_PRERENDER) {
+    RecordFinalStatus(FINAL_STATUS_NESTED);
+    return NULL;
+  }
   if (!(request.load_flags() & net::LOAD_PREFETCH))
     return NULL;
   if (!ShouldPrerenderURL(request.url()))
