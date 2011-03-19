@@ -781,6 +781,20 @@ static void TestCondvar() {
   TEST_FUNCTION_END;
 }
 
+void TestStackSize() {
+  pthread_attr_t attr;
+  size_t stack_size, stack_size2;
+
+  CHECK_OK(pthread_attr_init(&attr));
+  CHECK_OK(pthread_attr_getstacksize(&attr, &stack_size));
+  stack_size *= 2;
+
+  CHECK_OK(pthread_attr_setstacksize(&attr, stack_size));
+  CHECK_OK(pthread_attr_getstacksize(&attr, &stack_size2));
+
+  EXPECT_EQ(stack_size, stack_size2);
+}
+
 int main(int argc, char *argv[]) {
   if (argc > 1) {
     g_num_test_loops = atoi(argv[1]);
@@ -807,6 +821,7 @@ int main(int argc, char *argv[]) {
   TestMallocSmall();
   TestMallocLarge();
   TestRealloc();
+  TestStackSize();
 
   /* We have disabled this test by default since it is flaky under VMWARE. */
   if (g_run_intrinsic) TestIntrinsics();

@@ -846,7 +846,8 @@ int pthread_attr_getstacksize(pthread_attr_t *attr,
   if (NULL == attr) {
     return EINVAL;
   }
-  return attr->stacksize;
+  *stacksize = attr->stacksize;
+  return 0;
 }
 
 void __local_lock_init(_LOCK_T* lock);
