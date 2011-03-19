@@ -1836,6 +1836,12 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   NSPoint originInScreenCoords =
       [[view window] convertBaseToScreen:frame.origin];
   frame.origin = originInScreenCoords;
+
+  // Account for the bookmark bar height if it is currently in the detached
+  // state on the new tab page.
+  if ([bookmarkBarController_ isInState:(bookmarks::kDetachedState)])
+    frame.size.height += [[bookmarkBarController_ view] bounds].size.height;
+
   return frame;
 }
 
