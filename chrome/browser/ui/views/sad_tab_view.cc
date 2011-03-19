@@ -138,16 +138,7 @@ void SadTabView::LinkActivated(views::Link* source, int event_flags) {
         google_util::AppendGoogleLocaleParam(GURL(kind_ == CRASHED ?
                                                   chrome::kCrashReasonURL :
                                                   chrome::kKillReasonURL));
-    WindowOpenDisposition disposition(CURRENT_TAB);
-#if defined(OS_CHROMEOS)
-    if (tab_contents_->delegate() &&
-        tab_contents_->delegate()->IsPopup(tab_contents_)) {
-      // Popup windows are generally too small to effectively show help,
-      // so open the help content in a new foregreound tab.
-      disposition = NEW_FOREGROUND_TAB;
-    }
-#endif
-    tab_contents_->OpenURL(help_url, GURL(), disposition, PageTransition::LINK);
+    tab_contents_->OpenURL(help_url, GURL(), CURRENT_TAB, PageTransition::LINK);
   }
 }
 
