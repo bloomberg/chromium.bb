@@ -63,12 +63,12 @@ class ClientSideDetectionHost : public TabContentsObserver {
   void set_safe_browsing_service(SafeBrowsingService* service);
 
   // This pointer may be NULL if client-side phishing detection is disabled.
-  ClientSideDetectionService* csd_service_;
+  ClientSideDetectionService* service_;
   // This pointer may be NULL if SafeBrowsing is disabled.
   scoped_refptr<SafeBrowsingService> sb_service_;
   // Keep a handle to the latest classification request so that we can cancel
   // it if necessary.
-  scoped_refptr<ShouldClassifyUrlRequest> classification_request_;
+  scoped_ptr<ShouldClassifyUrlRequest> classification_request_;
 
   base::ScopedCallbackFactory<ClientSideDetectionHost> cb_factory_;
 
