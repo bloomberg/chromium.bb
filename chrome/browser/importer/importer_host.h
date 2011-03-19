@@ -6,9 +6,6 @@
 #define CHROME_BROWSER_IMPORTER_IMPORTER_HOST_H_
 #pragma once
 
-#include <string>
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/ref_counted.h"
@@ -21,26 +18,13 @@
 #include "content/common/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 
-class ExternalProcessImporterClient;
 class FirefoxProfileLock;
-class GURL;
 class Importer;
-class InProcessImporterBridge;
 class Profile;
 class Task;
-class TemplateURL;
-
-namespace history {
-class URLRow;
-struct ImportedFaviconUsage;
-}
 
 namespace importer {
 class ImporterProgressObserver;
-}
-
-namespace webkit_glue {
-struct PasswordForm;
 }
 
 // This class hosts the importers. It enumerates profiles from other
@@ -61,13 +45,13 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // the "Continue" button.
   void OnImportLockDialogEnd(bool is_continue);
 
-  // Starts the process of importing the settings and data depending on what
-  // the user selected.
-  // |profile_info| -- browser profile to import.
-  // |target_profile| -- profile to import into.
-  // |items| -- specifies which data to import (mask of ImportItems).
-  // |writer| -- called to actually write data back to the profile.
-  // |first_run| -- true if this method is being called during first run.
+  // Starts the process of importing the settings and data depending on what the
+  // user selected.
+  // |profile_info| - browser profile to import.
+  // |target_profile| - profile to import into.
+  // |items| - specifies which data to import (bitmask of importer::ImportItem).
+  // |writer| - called to actually write data back to the profile.
+  // |first_run| - true if this method is being called during first run.
   virtual void StartImportSettings(const importer::ProfileInfo& profile_info,
                                    Profile* target_profile,
                                    uint16 items,
@@ -126,7 +110,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // The task is the process of importing settings from other browsers.
   Task* task_;
 
-  // The importer used in the task;
+  // The importer used in the task.
   Importer* importer_;
 
   // True if we're waiting for the model to finish loading.
@@ -146,7 +130,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
 
  private:
   // Launches the thread that starts the import task, unless bookmark or
-  // template model are not yet loaded.  If load is not detected, this method
+  // template model are not yet loaded. If load is not detected, this method
   // will be called when the loading observer sees that model loading is
   // complete.
   virtual void InvokeTaskIfDone();
@@ -165,7 +149,8 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // True if UI is not to be shown.
   bool headless_;
 
-  // Parent Window to use when showing any modal dialog boxes.
+  // Parent window that we pass to the import lock dialog (i.e, the Firefox
+  // warning dialog).
   gfx::NativeWindow parent_window_;
 
   // The observer that we need to notify about changes in the import process.
@@ -176,6 +161,5 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
 
   DISALLOW_COPY_AND_ASSIGN(ImporterHost);
 };
-
 
 #endif  // CHROME_BROWSER_IMPORTER_IMPORTER_HOST_H_
