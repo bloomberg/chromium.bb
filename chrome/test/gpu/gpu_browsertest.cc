@@ -46,9 +46,8 @@ class GPUBrowserTest : public InProcessBrowserTest {
   FilePath gpu_test_dir_;
 };
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_WIN)
 // Flaky on Windows (dbg): http://crbug.com/72608
-// For ChromeOS: http://crbug.com/76217
 #define MAYBE_BrowserTestCanLaunchWithOSMesa DISABLED_BrowserTestCanLaunchWithOSMesa
 #else
 #define MAYBE_BrowserTestCanLaunchWithOSMesa BrowserTestCanLaunchWithOSMesa
