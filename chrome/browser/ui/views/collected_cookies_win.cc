@@ -6,6 +6,7 @@
 
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/views/cookie_info_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
@@ -169,7 +170,8 @@ CollectedCookiesWin::CollectedCookiesWin(gfx::NativeWindow parent_window,
       block_allowed_button_(NULL),
       allow_blocked_button_(NULL),
       for_session_blocked_button_(NULL),
-      infobar_(NULL) {
+      infobar_(NULL),
+      status_changed_(false) {
   TabSpecificContentSettings* content_settings =
       tab_contents->GetTabSpecificContentSettings();
   registrar_.Add(this, NotificationType::COLLECTED_COOKIES_SHOWN,
@@ -370,6 +372,11 @@ void CollectedCookiesWin::DeleteDelegate() {
 }
 
 bool CollectedCookiesWin::Cancel() {
+  if (status_changed_) {
+    tab_contents_->AddInfoBar(
+        new CollectedCookiesInfoBarDelegate(tab_contents_));
+  }
+
   return true;
 }
 
@@ -476,6 +483,7 @@ void CollectedCookiesWin::AddContentException(views::TreeView* tree_view,
   gfx::Size size = GetRootView()->GetPreferredSize();
   bounds.SetRect(topleft.x, topleft.y, size.width(), size.height());
   GetWidget()->SetBounds(bounds);
+  status_changed_ = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

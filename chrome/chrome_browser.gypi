@@ -2472,6 +2472,8 @@
         'browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.mm',
         'browser/ui/cocoa/wrench_menu/wrench_menu_controller.h',
         'browser/ui/cocoa/wrench_menu/wrench_menu_controller.mm',
+        'browser/ui/collected_cookies_infobar_delegate.h',
+        'browser/ui/collected_cookies_infobar_delegate.cc',
         'browser/ui/crypto_module_password_dialog.h',
         'browser/ui/crypto_module_password_dialog_nss.cc',
         'browser/ui/crypto_module_password_dialog_openssl.cc',

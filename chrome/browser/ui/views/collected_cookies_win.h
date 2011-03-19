@@ -106,6 +106,8 @@ class CollectedCookiesWin : public ConstrainedDialogDelegate,
 
   InfobarView* infobar_;
 
+  bool status_changed_;
+
   DISALLOW_COPY_AND_ASSIGN(CollectedCookiesWin);
 };
 
