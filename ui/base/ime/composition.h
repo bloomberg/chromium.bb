@@ -14,6 +14,7 @@ namespace ui {
 
 // A struct represents the status of an ongoing composition.
 struct Composition {
+  Composition();
   void Clear();
 
   // Content of the composition text.

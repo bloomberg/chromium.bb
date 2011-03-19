@@ -6,6 +6,9 @@
 
 namespace ui {
 
+Composition::Composition() {
+}
+
 void Composition::Clear() {
   text.clear();
   underlines.clear();
