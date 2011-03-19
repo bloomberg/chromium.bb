@@ -46,10 +46,6 @@ class TestPersonalDataManager : public PersonalDataManager {
     CreateTestCreditCards(&credit_cards_);
   }
 
-  virtual void InitializeIfNeeded() {}
-  virtual void SaveImportedFormData() {}
-  virtual bool IsDataLoaded() const { return true; }
-
   // Overridden to avoid a trip to the database. This should be a no-op except
   // for the side-effect of logging the profile count.
   virtual void LoadProfiles() {

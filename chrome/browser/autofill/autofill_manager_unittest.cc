@@ -29,6 +29,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_test_sink.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/form_data.h"
@@ -56,9 +57,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     CreateTestCreditCards(&credit_cards_);
   }
 
-  virtual void InitializeIfNeeded() {}
-  virtual void SaveImportedFormData() {}
-  virtual bool IsDataLoaded() const { return true; }
+  MOCK_METHOD1(SaveImportedProfile, void(const AutofillProfile&));
 
   AutofillProfile* GetProfileWithGUID(const char* guid) {
     for (std::vector<AutofillProfile *>::iterator it = web_profiles_.begin();
@@ -492,6 +491,10 @@ class AutofillManagerTest : public RenderViewHostTestHarness {
 
   void FormsSeen(const std::vector<webkit_glue::FormData>& forms) {
     autofill_manager_->OnFormsSeen(forms);
+  }
+
+  void FormSubmitted(const FormData& form) {
+    autofill_manager_->OnFormSubmitted(form);
   }
 
   void FillAutoFillFormData(int query_id,
@@ -1759,6 +1762,30 @@ TEST_F(AutofillManagerTest, FormChangesAddField) {
   FormData results;
   EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
   ExpectFilledAddressFormElvis(page_id, results, kDefaultPageID, false);
+}
+
+// Test that we are able to save form data when forms are submitted.
+TEST_F(AutofillManagerTest, FormSubmitted) {
+  // Set up our form data.
+  FormData form;
+  CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Fill the form.
+  std::string guid = "00000000-0000-0000-0000-000000000001";
+  FillAutoFillFormData(kDefaultPageID, form, form.fields[0],
+                       autofill_manager_->PackGUIDs(std::string(), guid));
+
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
+  ExpectFilledAddressFormElvis(page_id, results, kDefaultPageID, false);
+
+  // Simulate form submission. We should call into the PDM to try to save the
+  // filled data.
+  EXPECT_CALL(*test_personal_data_, SaveImportedProfile(::testing::_)).Times(1);
+  FormSubmitted(results);
 }
 
 // Checks that resetting the auxiliary profile enabled preference does the right

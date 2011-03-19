@@ -234,6 +234,7 @@ class AutofillManager : public TabContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillPhoneNumber);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormChangesRemoveField);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormChangesAddField);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormSubmitted);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetrics);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
                            NoQualityMetricsForNonAutofillableForms);

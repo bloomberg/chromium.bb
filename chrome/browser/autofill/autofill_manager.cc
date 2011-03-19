@@ -301,6 +301,7 @@ void AutofillManager::OnFormSubmitted(const FormData& form) {
 
   UploadFormData(submitted_form);
 
+  submitted_form.DetermineHeuristicTypes();
   if (!submitted_form.IsAutoFillable(true))
     return;
 
