@@ -4,6 +4,7 @@
 
 #include "webkit/support/test_webkit_client.h"
 
+#include "app/gfx/gl/gl_bindings_skia.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
@@ -352,5 +353,6 @@ WebKit::WebSharedWorkerRepository* TestWebKitClient::sharedWorkerRepository() {
 }
 
 WebKit::WebGraphicsContext3D* TestWebKitClient::createGraphicsContext3D() {
+  gfx::BindSkiaToHostGL();
   return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
 }

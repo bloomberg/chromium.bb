@@ -260,6 +260,8 @@ class MockGLInterface : public GLInterface {
 
   MOCK_METHOD1(LinkProgram, void(GLuint program));
 
+  MOCK_METHOD2(MapBuffer, void*(GLenum target, GLenum access));
+
   MOCK_METHOD2(PixelStorei, void(GLenum pname, GLint param));
 
   MOCK_METHOD2(PolygonOffset, void(GLfloat factor, GLfloat units));
@@ -375,6 +377,8 @@ class MockGLInterface : public GLInterface {
   MOCK_METHOD4(UniformMatrix4fv, void(
       GLint location, GLsizei count, GLboolean transpose,
       const GLfloat* value));
+
+  MOCK_METHOD1(UnmapBuffer, GLboolean(GLenum target));
 
   MOCK_METHOD1(UseProgram, void(GLuint program));
 

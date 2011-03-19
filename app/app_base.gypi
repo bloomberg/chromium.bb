@@ -198,6 +198,8 @@
         '../ui/base/x/x11_util.h',
         '../ui/base/x/x11_util_internal.h',
         'gfx/gl/gl_bindings.h',
+        'gfx/gl/gl_bindings_skia.cc',
+        'gfx/gl/gl_bindings_skia.h',
         'gfx/gl/gl_context.cc',
         'gfx/gl/gl_context.h',
         'gfx/gl/gl_context_linux.cc',
