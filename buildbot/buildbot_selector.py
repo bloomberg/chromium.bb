@@ -58,12 +58,12 @@ BOT_ASSIGNMENT = {
     # Toolchain.
     'lucid64-glibc': 'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
     'mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
-    'win7-glibc': 'buildbot/buildbot_windows-glibc-makefile.bat',
+    'win7-glibc': 'buildbot\\buildbot_windows-glibc-makefile.bat',
 
     # Toolchain trybots.
     'nacl-lucid64-glibc': 'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
     'nacl-mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
-    'nacl-win7-glibc': 'buildbot/buildbot_windows-glibc-makefile.bat',
+    'nacl-win7-glibc': 'buildbot\\buildbot_windows-glibc-makefile.bat',
 }
 
 
