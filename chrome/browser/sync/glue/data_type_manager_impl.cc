@@ -56,8 +56,8 @@ DataTypeManagerImpl::DataTypeManagerImpl(
     : backend_(backend),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
-      current_dtc_(NULL),
       pause_pending_(false),
+      syncer_paused_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(backend_);
@@ -76,6 +76,25 @@ DataTypeManagerImpl::DataTypeManagerImpl(
 DataTypeManagerImpl::~DataTypeManagerImpl() {
 }
 
+bool DataTypeManagerImpl::GetControllersNeedingStart(
+    std::vector<DataTypeController*>* needs_start) {
+  // Add any data type controllers into the needs_start_ list that are
+  // currently NOT_RUNNING or STOPPING.
+  bool found_any = false;
+  for (TypeSet::const_iterator it = last_requested_types_.begin();
+       it != last_requested_types_.end(); ++it) {
+    DataTypeController::TypeMap::const_iterator dtc = controllers_.find(*it);
+    if (dtc != controllers_.end() &&
+        (dtc->second->state() == DataTypeController::NOT_RUNNING ||
+         dtc->second->state() == DataTypeController::STOPPING)) {
+      found_any = true;
+      if (needs_start)
+        needs_start->push_back(dtc->second.get());
+    }
+  }
+  return found_any;
+}
+
 void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (state_ == STOPPING) {
@@ -85,19 +104,8 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
   }
 
   last_requested_types_ = desired_types;
-  // Add any data type controllers into the needs_start_ list that are
-  // currently NOT_RUNNING or STOPPING.
   needs_start_.clear();
-  for (TypeSet::const_iterator it = desired_types.begin();
-       it != desired_types.end(); ++it) {
-    DataTypeController::TypeMap::const_iterator dtc = controllers_.find(*it);
-    if (dtc != controllers_.end() &&
-        (dtc->second->state() == DataTypeController::NOT_RUNNING ||
-         dtc->second->state() == DataTypeController::STOPPING)) {
-      needs_start_.push_back(dtc->second.get());
-      VLOG(1) << "Will start " << dtc->second->name();
-    }
-  }
+  GetControllersNeedingStart(&needs_start_);
   // Sort these according to kStartOrder.
   std::sort(needs_start_.begin(),
             needs_start_.end(),
@@ -150,8 +158,8 @@ void DataTypeManagerImpl::Restart() {
                  << " configuring.";
     return;
   }
-  DCHECK(state_ == STOPPED || state_ == RESTARTING || state_ == CONFIGURED);
-  current_dtc_ = NULL;
+  DCHECK(state_ == STOPPED || state_ == RESTARTING || state_ == CONFIGURED ||
+         state_ == BLOCKED);
 
   // Starting from a "steady state" (stopped or configured) state
   // should send a start notification.
@@ -216,6 +224,12 @@ void DataTypeManagerImpl::DownloadReady() {
     return;
   }
 
+  if (syncer_paused_) {
+    state_ = CONFIGURING;
+    StartNextType();
+    return;
+  }
+
   // Pause the sync backend before starting the data types.
   state_ = PAUSE_PENDING;
   PauseSyncer();
@@ -225,16 +239,24 @@ void DataTypeManagerImpl::StartNextType() {
   // If there are any data types left to start, start the one at the
   // front of the list.
   if (!needs_start_.empty()) {
-    current_dtc_ = needs_start_[0];
-    VLOG(1) << "Starting " << current_dtc_->name();
-    current_dtc_->Start(
+    VLOG(1) << "Starting " << needs_start_[0]->name();
+    needs_start_[0]->Start(
         NewCallback(this, &DataTypeManagerImpl::TypeStartCallback));
     return;
   }
 
-  // If no more data types need starting, we're done.  Resume the sync
-  // backend to finish.
   DCHECK_EQ(state_, CONFIGURING);
+
+  // Do a fresh calculation to see if controllers need starting to account for
+  // things like encryption, which may still need to be sorted out before we
+  // can announce we're "Done" configuration entirely.
+  if (GetControllersNeedingStart(NULL)) {
+    state_ = BLOCKED;
+    return;
+  }
+
+  // If no more data types need starting, we're done.  Resume the sync backend
+  // to finish.
   state_ = RESUME_PENDING;
   ResumeSyncer();
 }
@@ -244,7 +266,6 @@ void DataTypeManagerImpl::TypeStartCallback(
   // When the data type controller invokes this callback, it must be
   // on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(current_dtc_);
 
   // If configuration changed while this data type was starting, we
   // need to reset.  Resume the syncer.
@@ -254,11 +275,10 @@ void DataTypeManagerImpl::TypeStartCallback(
   }
 
   // We're done with the data type at the head of the list -- remove it.
-  DataTypeController* started_dtc = current_dtc_;
+  DataTypeController* started_dtc = needs_start_[0];
   DCHECK(needs_start_.size());
   DCHECK_EQ(needs_start_[0], started_dtc);
   needs_start_.erase(needs_start_.begin());
-  current_dtc_ = NULL;
 
   // If we reach this callback while stopping, this means that
   // DataTypeManager::Stop() was called while the current data type
@@ -324,7 +344,9 @@ void DataTypeManagerImpl::Stop() {
   // which will synchronously invoke the start callback.
   if (state_ == CONFIGURING) {
     state_ = STOPPING;
-    current_dtc_->Stop();
+
+    DCHECK_LT(0U, needs_start_.size());
+    needs_start_[0]->Stop();
 
     // By this point, the datatype should have invoked the start callback,
     // triggering FinishStop to be called, and the state to reach STOPPED. If we
@@ -376,7 +398,8 @@ void DataTypeManagerImpl::FinishStop() {
   DCHECK(state_== CONFIGURING ||
          state_ == STOPPING ||
          state_ == PAUSE_PENDING ||
-         state_ == RESUME_PENDING);
+         state_ == RESUME_PENDING ||
+         state_ == BLOCKED);
   // Simply call the Stop() method on all running data types.
   for (DataTypeController::TypeMap::const_iterator it = controllers_.begin();
        it != controllers_.end(); ++it) {
@@ -405,7 +428,7 @@ void DataTypeManagerImpl::Observe(NotificationType type,
       DCHECK(state_ == PAUSE_PENDING || state_ == RESTARTING);
       DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
       pause_pending_ = false;
-
+      syncer_paused_ = true;
       RemoveObserver(NotificationType::SYNC_PAUSED);
 
       // If the state changed to RESTARTING while waiting to be
@@ -421,6 +444,7 @@ void DataTypeManagerImpl::Observe(NotificationType type,
     case NotificationType::SYNC_RESUMED:
       DCHECK(state_ == RESUME_PENDING || state_ == RESTARTING);
       RemoveObserver(NotificationType::SYNC_RESUMED);
+      syncer_paused_ = false;
 
       // If we are resuming because of a restart, continue the restart.
       if (state_ == RESTARTING) {

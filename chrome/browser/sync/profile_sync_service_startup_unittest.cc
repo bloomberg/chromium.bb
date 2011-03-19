@@ -24,6 +24,7 @@
 using browser_sync::DataTypeManager;
 using browser_sync::DataTypeManagerMock;
 using testing::_;
+using testing::AnyNumber;
 using testing::DoAll;
 using testing::InvokeArgument;
 using testing::Mock;
@@ -58,8 +59,6 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     service_.reset(new TestProfileSyncService(&factory_, &profile_,
                                               "test", true, NULL));
     service_->AddObserver(&observer_);
-    service_->set_num_expected_resumes(0);
-    service_->set_num_expected_pauses(0);
     service_->set_synchronous_sync_configuration();
   }
 
@@ -92,7 +91,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFirstTime)) {
 
   // Should not actually start, rather just clean things up and wait
   // to be enabled.
-  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   service_->Initialize();
 
   // Preferences should be back to defaults.
@@ -101,11 +100,11 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFirstTime)) {
   Mock::VerifyAndClearExpectations(data_type_manager);
 
   // Then start things up.
-  EXPECT_CALL(*data_type_manager, Configure(_)).Times(2);
+  EXPECT_CALL(*data_type_manager, Configure(_)).Times(3);
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
-  EXPECT_CALL(observer_, OnStateChanged()).Times(5);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   // Create some tokens in the token service; the service will startup when
   // it is notified that tokens are available.
@@ -119,12 +118,12 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFirstTime)) {
 
 TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartNormal)) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  EXPECT_CALL(*data_type_manager, Configure(_)).Times(1);
+  EXPECT_CALL(*data_type_manager, Configure(_)).Times(2);
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
 
-  EXPECT_CALL(observer_, OnStateChanged()).Times(3);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   // Pre load the tokens
   profile_.GetTokenService()->IssueAuthTokenForTest(
@@ -137,7 +136,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(ManagedStartup)) {
   profile_.GetPrefs()->SetBoolean(prefs::kSyncManaged, true);
 
   EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).Times(0);
-  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   // Service should not be started by Initialize() since it's managed.
   profile_.GetTokenService()->IssueAuthTokenForTest(
@@ -147,8 +146,8 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(ManagedStartup)) {
 
 TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(SwitchManaged)) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  EXPECT_CALL(*data_type_manager, Configure(_)).Times(1);
-  EXPECT_CALL(observer_, OnStateChanged()).Times(3);
+  EXPECT_CALL(*data_type_manager, Configure(_)).Times(2);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   profile_.GetTokenService()->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
@@ -159,21 +158,21 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(SwitchManaged)) {
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
-  EXPECT_CALL(observer_, OnStateChanged()).Times(2);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   profile_.GetPrefs()->SetBoolean(prefs::kSyncManaged, true);
 
   // When switching back to unmanaged, the state should change, but the service
   // should not start up automatically (kSyncSetupCompleted will be false).
   Mock::VerifyAndClearExpectations(data_type_manager);
   EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).Times(0);
-  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   profile_.GetPrefs()->ClearPref(prefs::kSyncManaged);
 }
 
 TEST_F(ProfileSyncServiceStartupTest, ClearServerData) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  EXPECT_CALL(*data_type_manager, Configure(_)).Times(1);
-  EXPECT_CALL(observer_, OnStateChanged()).Times(3);
+  EXPECT_CALL(*data_type_manager, Configure(_)).Times(2);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   profile_.GetTokenService()->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
@@ -187,12 +186,12 @@ TEST_F(ProfileSyncServiceStartupTest, ClearServerData) {
   EXPECT_TRUE(ProfileSyncService::CLEAR_NOT_STARTED ==
       service_->GetClearServerDataState());
 
-  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   service_->OnClearServerDataFailed();
   EXPECT_TRUE(ProfileSyncService::CLEAR_FAILED ==
       service_->GetClearServerDataState());
 
-  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   service_->OnClearServerDataSucceeded();
   EXPECT_TRUE(ProfileSyncService::CLEAR_SUCCEEDED ==
       service_->GetClearServerDataState());
@@ -206,12 +205,12 @@ TEST_F(ProfileSyncServiceStartupTest, ClearServerData) {
   EXPECT_TRUE(ProfileSyncService::CLEAR_NOT_STARTED ==
       service_->GetClearServerDataState());
 
-  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   service_->OnClearServerDataTimeout();
   EXPECT_TRUE(ProfileSyncService::CLEAR_FAILED ==
       service_->GetClearServerDataState());
 
-  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   service_->OnClearServerDataSucceeded();
   EXPECT_TRUE(ProfileSyncService::CLEAR_SUCCEEDED ==
       service_->GetClearServerDataState());
@@ -230,7 +229,7 @@ TEST_F(ProfileSyncServiceStartupTest, ClearServerData) {
       service_->GetClearServerDataState());
 
   // Stop the timer and reset the state
-  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   service_->OnClearServerDataSucceeded();
   service_->ResetClearServerDataState();
 }
@@ -240,7 +239,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFailure)) {
   DataTypeManager::ConfigureResult result =
       DataTypeManager::ASSOCIATION_FAILED;
   EXPECT_CALL(*data_type_manager, Configure(_)).
-      WillOnce(DoAll(NotifyFromDataTypeManager(data_type_manager,
+      WillRepeatedly(DoAll(NotifyFromDataTypeManager(data_type_manager,
                          NotificationType::SYNC_CONFIGURE_START),
                      NotifyFromDataTypeManagerWithResult(data_type_manager,
                          NotificationType::SYNC_CONFIGURE_DONE,
@@ -248,7 +247,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFailure)) {
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::STOPPED));
 
-  EXPECT_CALL(observer_, OnStateChanged()).Times(3);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   profile_.GetTokenService()->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");

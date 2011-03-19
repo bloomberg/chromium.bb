@@ -55,6 +55,7 @@ using browser_sync::SyncBackendHost;
 using browser_sync::SyncBackendHostMock;
 using browser_sync::UnrecoverableErrorHandler;
 using testing::_;
+using testing::AtLeast;
 using testing::AtMost;
 using testing::Return;
 using testing::StrictMock;
@@ -560,7 +561,6 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicy) {
 TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   service_.reset(new TestProfileSyncService(&factory_, profile_.get(),
                                             "test", true, NULL));
-  service_->set_num_expected_resumes(0);
   EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).Times(0);
   EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_, _)).Times(0);
   service_->RegisterDataTypeController(
@@ -990,7 +990,7 @@ TEST_F(ProfileSyncServiceTest,
   StrictMock<MockJsEventHandler> event_handler;
   EXPECT_CALL(event_handler,
               HandleJsEvent("onSyncServiceStateChanged",
-                            HasArgs(JsArgList()))).Times(3);
+                            HasArgs(JsArgList()))).Times(AtLeast(3));
   // For some reason, these events may or may not fire.
   EXPECT_CALL(event_handler, HandleJsEvent("onChangesApplied", _))
       .Times(AtMost(1));
@@ -1108,7 +1108,7 @@ TEST_F(ProfileSyncServiceTest,
   const JsArgList kNoArgs;
 
   EXPECT_CALL(event_handler, HandleJsEvent("onSyncServiceStateChanged",
-                                           HasArgs(kNoArgs))).Times(3);
+      HasArgs(kNoArgs))).Times(AtLeast(3));
 
   browser_sync::JsFrontend* js_backend = service_->GetJsFrontend();
 

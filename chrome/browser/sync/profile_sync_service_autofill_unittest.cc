@@ -311,7 +311,6 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     EXPECT_CALL(profile_, GetTokenService()).
         WillRepeatedly(Return(&token_service_));
 
-    service_->set_num_expected_resumes(will_fail_association ? 0 : 1);
     service_->RegisterDataTypeController(data_type_controller);
     service_->Initialize();
     MessageLoop::current()->Run();

@@ -36,8 +36,6 @@ class SyncBackendHostForProfileSyncTest
   //     completed setting itself up and called us back.
   SyncBackendHostForProfileSyncTest(
       Profile* profile,
-      int num_expected_resumes,
-      int num_expected_pauses,
       bool set_initial_sync_ended_on_init,
       bool synchronous_init);
   virtual ~SyncBackendHostForProfileSyncTest();
@@ -101,9 +99,6 @@ class TestProfileSyncService : public ProfileSyncService {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  void set_num_expected_resumes(int times);
-  void set_num_expected_pauses(int num);
-
   // If this is called, configuring data types will require a syncer
   // nudge.
   void dont_set_initial_sync_ended_on_init();
@@ -133,8 +128,6 @@ class TestProfileSyncService : public ProfileSyncService {
   // step is performed synchronously.
   bool synchronous_sync_configuration_;
   bool set_expect_resume_expectations_;
-  int num_expected_resumes_;
-  int num_expected_pauses_;
 
   Task* initial_condition_setup_task_;
   bool set_initial_sync_ended_on_init_;

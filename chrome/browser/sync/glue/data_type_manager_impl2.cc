@@ -59,7 +59,6 @@ DataTypeManagerImpl2::DataTypeManagerImpl2(SyncBackendHost* backend,
     : backend_(backend),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
-      current_dtc_(NULL),
       method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(backend_);
   // Ensure all data type controllers are stopped.
@@ -75,6 +74,25 @@ DataTypeManagerImpl2::DataTypeManagerImpl2(SyncBackendHost* backend,
 
 DataTypeManagerImpl2::~DataTypeManagerImpl2() {}
 
+bool DataTypeManagerImpl2::GetControllersNeedingStart(
+    std::vector<DataTypeController*>* needs_start) {
+  // Add any data type controllers into the needs_start_ list that are
+  // currently NOT_RUNNING or STOPPING.
+  bool found_any = false;
+  for (TypeSet::const_iterator it = last_requested_types_.begin();
+       it != last_requested_types_.end(); ++it) {
+    DataTypeController::TypeMap::const_iterator dtc = controllers_.find(*it);
+    if (dtc != controllers_.end() &&
+        (dtc->second->state() == DataTypeController::NOT_RUNNING ||
+         dtc->second->state() == DataTypeController::STOPPING)) {
+      found_any = true;
+      if (needs_start)
+        needs_start->push_back(dtc->second.get());
+    }
+  }
+  return found_any;
+}
+
 void DataTypeManagerImpl2::Configure(const TypeSet& desired_types) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (state_ == STOPPING) {
@@ -84,19 +102,8 @@ void DataTypeManagerImpl2::Configure(const TypeSet& desired_types) {
   }
 
   last_requested_types_ = desired_types;
-  // Add any data type controllers into the needs_start_ list that are
-  // currently NOT_RUNNING or STOPPING.
   needs_start_.clear();
-  for (TypeSet::const_iterator it = desired_types.begin();
-       it != desired_types.end(); ++it) {
-    DataTypeController::TypeMap::const_iterator dtc = controllers_.find(*it);
-    if (dtc != controllers_.end() &&
-        (dtc->second->state() == DataTypeController::NOT_RUNNING ||
-         dtc->second->state() == DataTypeController::STOPPING)) {
-      needs_start_.push_back(dtc->second.get());
-      VLOG(1) << "Will start " << dtc->second->name();
-    }
-  }
+  GetControllersNeedingStart(&needs_start_);
   // Sort these according to kStartOrder.
   std::sort(needs_start_.begin(),
             needs_start_.end(),
@@ -143,8 +150,8 @@ void DataTypeManagerImpl2::Restart() {
     return;
   }
 
-  DCHECK(state_ == STOPPED || state_ == RESTARTING || state_ == CONFIGURED);
-  current_dtc_ = NULL;
+  DCHECK(state_ == STOPPED || state_ == RESTARTING || state_ == CONFIGURED ||
+         state_ == BLOCKED);
 
   // Starting from a "steady state" (stopped or configured) state
   // should send a start notification.
@@ -187,15 +194,23 @@ void DataTypeManagerImpl2::StartNextType() {
   // If there are any data types left to start, start the one at the
   // front of the list.
   if (!needs_start_.empty()) {
-    current_dtc_ = needs_start_[0];
-    VLOG(1) << "Starting " << current_dtc_->name();
-    current_dtc_->Start(
+    VLOG(1) << "Starting " << needs_start_[0]->name();
+    needs_start_[0]->Start(
         NewCallback(this, &DataTypeManagerImpl2::TypeStartCallback));
     return;
   }
 
-  // If no more data types need starting, we're done.
   DCHECK_EQ(state_, CONFIGURING);
+
+  // Do a fresh calculation to see if controllers need starting to account for
+  // things like encryption, which may still need to be sorted out before we
+  // can announce we're "Done" configuration entirely.
+  if (GetControllersNeedingStart(NULL)) {
+    state_ = BLOCKED;
+    return;
+  }
+
+  // If no more data types need starting, we're done.
   state_ = CONFIGURED;
   NotifyDone(OK);
 }
@@ -205,7 +220,6 @@ void DataTypeManagerImpl2::TypeStartCallback(
   // When the data type controller invokes this callback, it must be
   // on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(current_dtc_);
 
   if (state_ == RESTARTING) {
     // If configuration changed while this data type was starting, we
@@ -227,11 +241,10 @@ void DataTypeManagerImpl2::TypeStartCallback(
   }
 
   // We're done with the data type at the head of the list -- remove it.
-  DataTypeController* started_dtc = current_dtc_;
+  DataTypeController* started_dtc = needs_start_[0];
   DCHECK(needs_start_.size());
   DCHECK_EQ(needs_start_[0], started_dtc);
   needs_start_.erase(needs_start_.begin());
-  current_dtc_ = NULL;
 
   // If the type started normally, continue to the next type.
   // If the type is waiting for the cryptographer, continue to the next type.
@@ -275,7 +288,9 @@ void DataTypeManagerImpl2::Stop() {
   // which will synchronously invoke the start callback.
   if (state_ == CONFIGURING) {
     state_ = STOPPING;
-    current_dtc_->Stop();
+
+    DCHECK_LT(0U, needs_start_.size());
+    needs_start_[0]->Stop();
 
     // By this point, the datatype should have invoked the start callback,
     // triggering FinishStop to be called, and the state to reach STOPPED. If we
@@ -299,7 +314,7 @@ void DataTypeManagerImpl2::Stop() {
 }
 
 void DataTypeManagerImpl2::FinishStop() {
-  DCHECK(state_== CONFIGURING || state_ == STOPPING);
+  DCHECK(state_== CONFIGURING || state_ == STOPPING || state_ == BLOCKED);
   // Simply call the Stop() method on all running data types.
   for (DataTypeController::TypeMap::const_iterator it = controllers_.begin();
        it != controllers_.end(); ++it) {

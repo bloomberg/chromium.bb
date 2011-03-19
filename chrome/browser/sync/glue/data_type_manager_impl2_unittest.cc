@@ -30,9 +30,11 @@ using browser_sync::DataTypeController;
 using browser_sync::DataTypeControllerMock;
 using browser_sync::SyncBackendHostMock;
 using testing::_;
+using testing::AtLeast;
 using testing::DoAll;
 using testing::DoDefault;
 using testing::InSequence;
+using testing::Mock;
 using testing::Property;
 using testing::Pointee;
 using testing::Return;
@@ -84,10 +86,14 @@ class DataTypeManagerImpl2Test : public testing::Test {
 
   DataTypeControllerMock* MakePasswordDTC() {
     DataTypeControllerMock* dtc = new DataTypeControllerMock();
+    SetPasswordDTCExpectations(dtc);
+    return dtc;
+  }
+
+  void SetPasswordDTCExpectations(DataTypeControllerMock* dtc) {
     EXPECT_CALL(*dtc, enabled()).WillRepeatedly(Return(true));
     EXPECT_CALL(*dtc, type()).WillRepeatedly(Return(syncable::PASSWORDS));
     EXPECT_CALL(*dtc, name()).WillRepeatedly(Return("passwords"));
-    return dtc;
   }
 
   void SetStartStopExpectations(DataTypeControllerMock* mock_dtc) {
@@ -206,12 +212,10 @@ TEST_F(DataTypeManagerImpl2Test, ConfigureOneStopWhileAssociating) {
 
 TEST_F(DataTypeManagerImpl2Test, OneWaitingForCrypto) {
   DataTypeControllerMock* password_dtc = MakePasswordDTC();
-  EXPECT_CALL(*password_dtc, state()).
+  EXPECT_CALL(*password_dtc, state()).Times(AtLeast(2)).
       WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
   EXPECT_CALL(*password_dtc, Start(_)).
       WillOnce(InvokeCallback((DataTypeController::NEEDS_CRYPTO)));
-  EXPECT_CALL(*password_dtc, state()).
-      WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
 
   controllers_[syncable::PASSWORDS] = password_dtc;
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(1);
@@ -219,9 +223,26 @@ TEST_F(DataTypeManagerImpl2Test, OneWaitingForCrypto) {
   DataTypeManagerImpl2 dtm(&backend_, controllers_);
   types_.insert(syncable::PASSWORDS);
   SetConfigureStartExpectation();
-  SetConfigureDoneExpectation(DataTypeManager::OK);
+
   dtm.Configure(types_);
+  EXPECT_EQ(DataTypeManager::BLOCKED, dtm.state());
+
+  Mock::VerifyAndClearExpectations(&backend_);
+  Mock::VerifyAndClearExpectations(&observer_);
+  Mock::VerifyAndClearExpectations(password_dtc);
+
+  SetConfigureDoneExpectation(DataTypeManager::OK);
+  SetPasswordDTCExpectations(password_dtc);
+  EXPECT_CALL(*password_dtc, state()).
+      WillOnce(Return(DataTypeController::NOT_RUNNING)).
+      WillRepeatedly(Return(DataTypeController::RUNNING));
+  EXPECT_CALL(*password_dtc, Start(_)).
+      WillOnce(InvokeCallback((DataTypeController::OK)));
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(1);
+  dtm.Configure(types_);
+
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
+  EXPECT_CALL(*password_dtc, Stop()).Times(1);
   dtm.Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
 }
