@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "skia/ext/vector_platform_device_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -412,10 +413,21 @@ bool Emf::Record::SafePlayback(const XFORM* base_matrix) const {
   return res;
 }
 
+skia::PlatformDevice* Emf::StartPageForVectorCanvas(
+    const gfx::Size& page_size, const gfx::Point& content_origin,
+    const float& scale_factor) {
+  if (!StartPage(page_size, content_origin, scale_factor))
+    return NULL;
+
+  return skia::VectorPlatformDeviceFactory::CreateDevice(page_size.width(),
+                                                         page_size.height(),
+                                                         true, hdc_);
+}
+
 bool Emf::StartPage(const gfx::Size& /*page_size*/,
                     const gfx::Point& /*content_origin*/,
                     const float& scale_factor) {
-  DCHECK_EQ(scale_factor, 1);
+  DCHECK_EQ(1.0f, scale_factor);  // We don't support scaling here.
   DCHECK(hdc_);
   if (!hdc_)
     return false;

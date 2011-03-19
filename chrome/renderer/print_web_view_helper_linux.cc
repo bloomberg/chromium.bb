@@ -220,15 +220,14 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
           margin_left_in_points,
       content_height_in_points + margin_top_in_points +
           margin_bottom_in_points);
+  gfx::Point content_origin(margin_left_in_points, margin_top_in_points);
 
-  gfx::Point content_origin(margin_top_in_points, margin_left_in_points);
-
-  if (!metafile->StartPage(page_size, content_origin, 1))
+  skia::PlatformDevice* device = metafile->StartPageForVectorCanvas(
+      page_size, content_origin, 1.0f);
+  if (!device)
     return;
 
-  canvas->reset(new skia::VectorCanvas(metafile->context(),
-                                       canvas_size.width(),
-                                       canvas_size.height()));
+  canvas->reset(new skia::VectorCanvas(device));
   frame->printPage(params.page_number, canvas->get());
 
   // TODO(myhuang): We should handle transformation for paper margins.

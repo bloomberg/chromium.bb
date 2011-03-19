@@ -35,6 +35,9 @@ class Emf : public NativeMetafile {
   virtual bool Init() { return true; }
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 
+  virtual skia::PlatformDevice* StartPageForVectorCanvas(
+      const gfx::Size& page_size, const gfx::Point& content_origin,
+      const float& scale_factor);
   // Inserts a custom GDICOMMENT records indicating StartPage/EndPage calls
   // (since StartPage and EndPage do not work in a metafile DC). Only valid
   // when hdc_ is non-NULL. |page_size| and |content_origin| are ignored.
