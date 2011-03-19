@@ -74,9 +74,18 @@ void MenuHostRootView::OnMouseExited(const MouseEvent& event) {
 }
 
 bool MenuHostRootView::OnMouseWheel(const MouseWheelEvent& event) {
+#if defined(OS_LINUX)
+  // ChromeOS uses MenuController to forward events like other
+  // mouse events.
+  return GetMenuController() &&
+      GetMenuController()->OnMouseWheel(submenu_, event);
+#else
+  // Windows uses focus_util_win::RerouteMouseWheel to forward events to
+  // the right menu.
   // RootView::OnMouseWheel forwards to the focused view. We don't have a
   // focused view, so we need to override this then forward to the menu.
   return submenu_->OnMouseWheel(event);
+#endif
 }
 
 MenuController* MenuHostRootView::GetMenuController() {

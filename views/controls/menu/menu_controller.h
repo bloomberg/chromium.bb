@@ -93,6 +93,10 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   void OnMouseReleased(SubmenuView* source, const MouseEvent& event);
   void OnMouseMoved(SubmenuView* source, const MouseEvent& event);
   void OnMouseEntered(SubmenuView* source, const MouseEvent& event);
+#if defined(OS_LINUX)
+  bool OnMouseWheel(SubmenuView* source, const MouseWheelEvent& event);
+#endif
+
   bool GetDropFormats(
       SubmenuView* source,
       int* formats,
@@ -184,7 +188,7 @@ class MenuController : public MessageLoopForUI::Dispatcher {
     // parent of the menu item the user clicked on. Otherwise this is NULL.
     MenuItemView* parent;
 
-    // If type is SCROLL_*, this is the submenu the mouse is over.
+    // This is the submenu the mouse is over.
     SubmenuView* submenu;
   };
 

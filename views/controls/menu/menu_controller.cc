@@ -579,6 +579,14 @@ void MenuController::OnMouseEntered(SubmenuView* source,
   // do anything here.
 }
 
+#if defined(OS_LINUX)
+bool MenuController::OnMouseWheel(SubmenuView* source,
+                                  const MouseWheelEvent& event) {
+  MenuPart part = GetMenuPartByScreenCoordinate(source, event.x(), event.y());
+  return part.submenu && part.submenu->OnMouseWheel(event);
+}
+#endif
+
 bool MenuController::GetDropFormats(
       SubmenuView* source,
       int* formats,
@@ -1192,6 +1200,7 @@ bool MenuController::GetMenuPartByScreenCoordinateImpl(
     View::ConvertPointToView(NULL, menu, &menu_loc);
     part->menu = GetMenuItemAt(menu, menu_loc.x(), menu_loc.y());
     part->type = MenuPart::MENU_ITEM;
+    part->submenu = menu;
     if (!part->menu)
       part->parent = menu->GetMenuItem();
     return true;
