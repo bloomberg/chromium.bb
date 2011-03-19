@@ -9,6 +9,9 @@ namespace ui {
 Composition::Composition() {
 }
 
+Composition::~Composition() {
+}
+
 void Composition::Clear() {
   text.clear();
   underlines.clear();
