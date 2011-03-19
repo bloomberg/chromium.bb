@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/render_view.h"
+#include "content/renderer/render_view.h"
 
-#include "chrome/common/renderer_preferences.h"
+#include "content/common/renderer_preferences.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontRendering.h"
 
 using WebKit::WebFontRendering;

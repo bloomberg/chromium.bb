@@ -47,7 +47,7 @@
 
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
-#include "chrome/renderer/render_view_visitor.h"
+#include "content/renderer/render_view_visitor.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

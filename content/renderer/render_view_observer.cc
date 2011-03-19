@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/render_view_observer.h"
+#include "content/renderer/render_view_observer.h"
 
-#include "chrome/renderer/render_view.h"
+#include "content/renderer/render_view.h"
 
 RenderViewObserver::RenderViewObserver(RenderView* render_view)
     : render_view_(render_view),

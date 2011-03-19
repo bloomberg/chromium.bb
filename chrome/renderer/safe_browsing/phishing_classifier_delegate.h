@@ -10,7 +10,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/renderer/render_view_observer.h"
+#include "content/renderer/render_view_observer.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_platform_file.h"
 

@@ -9,7 +9,7 @@
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/time.h"
-#include "chrome/renderer/render_view_observer.h"
+#include "content/renderer/render_view_observer.h"
 #include "printing/native_metafile.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"

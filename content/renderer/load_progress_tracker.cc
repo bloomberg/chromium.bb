@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/render_view.h"
+#include "content/renderer/render_view.h"
 
 namespace {
 

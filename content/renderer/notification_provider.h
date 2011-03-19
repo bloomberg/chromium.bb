@@ -6,8 +6,8 @@
 #define CONTENT_RENDERER_NOTIFICATION_PROVIDER_H_
 #pragma once
 
-#include "chrome/renderer/render_view_observer.h"
 #include "content/renderer/active_notification_tracker.h"
+#include "content/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotification.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 

@@ -9,7 +9,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/render_thread.h"
-#include "chrome/renderer/render_view.h"
+#include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
 

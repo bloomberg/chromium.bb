@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/renderer/render_view_observer.h"
+#include "content/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
 
 namespace WebKit {

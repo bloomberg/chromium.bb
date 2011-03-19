@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_RENDERER_PREFERENCES_UTIL_H_
 #pragma once
 
-#include "chrome/common/renderer_preferences.h"
+#include "content/common/renderer_preferences.h"
 
 class Profile;
 

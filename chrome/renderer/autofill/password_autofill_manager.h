@@ -11,7 +11,7 @@
 
 #include "base/task.h"
 #include "chrome/renderer/page_click_listener.h"
-#include "chrome/renderer/render_view_observer.h"
+#include "content/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/password_form_dom_manager.h"
 

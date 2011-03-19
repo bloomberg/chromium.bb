@@ -5,8 +5,8 @@
 #include "chrome/renderer/searchbox.h"
 
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/render_view.h"
 #include "chrome/renderer/searchbox_extension.h"
+#include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebView;

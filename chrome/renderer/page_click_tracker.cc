@@ -6,7 +6,7 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/page_click_listener.h"
-#include "chrome/renderer/render_view.h"
+#include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMMouseEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"

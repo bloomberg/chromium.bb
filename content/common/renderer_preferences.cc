@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/renderer_preferences.h"
+#include "content/common/renderer_preferences.h"
 
 RendererPreferences::RendererPreferences()
     : can_accept_load_drops(true),

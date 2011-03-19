@@ -8,7 +8,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDeviceOrientationClient.h"
 
 #include "base/scoped_ptr.h"
-#include "chrome/renderer/render_view_observer.h"
+#include "content/renderer/render_view_observer.h"
 
 namespace WebKit { class WebDeviceOrientation; }
 

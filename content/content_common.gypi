@@ -140,6 +140,8 @@
         'common/process_watcher_win.cc',
         'common/property_bag.cc',
         'common/property_bag.h',
+        'common/renderer_preferences.cc',
+        'common/renderer_preferences.h',
         'common/resource_dispatcher.cc',
         'common/resource_dispatcher.h',
         'common/resource_messages.h',

@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "chrome/renderer/render_view_observer.h"
+#include "content/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMEventListener.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 

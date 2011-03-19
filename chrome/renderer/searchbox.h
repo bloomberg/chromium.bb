@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/renderer/render_view_observer.h"
 #include "chrome/common/instant_types.h"
+#include "content/renderer/render_view_observer.h"
 #include "ui/gfx/rect.h"
 
 class SearchBox : public RenderViewObserver {

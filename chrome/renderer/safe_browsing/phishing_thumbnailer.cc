@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
-#include "chrome/renderer/render_view.h"
+#include "content/renderer/render_view.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"

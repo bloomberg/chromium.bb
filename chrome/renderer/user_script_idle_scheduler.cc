@@ -5,7 +5,7 @@
 #include "chrome/renderer/user_script_idle_scheduler.h"
 
 #include "base/message_loop.h"
-#include "chrome/renderer/render_view.h"
+#include "content/renderer/render_view.h"
 
 namespace {
 // The length of time to wait after the DOM is complete to try and run user

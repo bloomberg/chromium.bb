@@ -8,8 +8,8 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/renderer/render_view.h"
 #include "chrome/renderer/render_thread.h"
+#include "content/renderer/render_view.h"
 #include "media/base/filter_host.h"
 
 namespace {

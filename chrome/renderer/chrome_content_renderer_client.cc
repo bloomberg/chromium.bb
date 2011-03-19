@@ -14,7 +14,7 @@
 #include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/render_thread.h"
-#include "chrome/renderer/render_view.h"
+#include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/renderer_resources.h"

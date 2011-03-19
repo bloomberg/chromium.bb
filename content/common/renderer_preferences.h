@@ -9,8 +9,8 @@
 // Adding new values to this class probably involves updating
 // common/render_messages.h, browser/browser.cc, etc.
 
-#ifndef CHROME_COMMON_RENDERER_PREFERENCES_H_
-#define CHROME_COMMON_RENDERER_PREFERENCES_H_
+#ifndef CONTENT_COMMON_RENDERER_PREFERENCES_H_
+#define CONTENT_COMMON_RENDERER_PREFERENCES_H_
 #pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
@@ -75,4 +75,4 @@ struct RendererPreferences {
   double caret_blink_interval;
 };
 
-#endif  // CHROME_COMMON_RENDERER_PREFERENCES_H_
+#endif  // CONTENT_COMMON_RENDERER_PREFERENCES_H_

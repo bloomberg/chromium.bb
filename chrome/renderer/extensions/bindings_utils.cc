@@ -7,7 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "chrome/renderer/render_view.h"
+#include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
 using WebKit::WebFrame;

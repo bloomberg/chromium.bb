@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_BLOCKED_PLUGIN_H_
 #pragma once
 
-#include "chrome/renderer/render_view_observer.h"
+#include "content/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "webkit/glue/cpp_bound_class.h"
 #include "webkit/plugins/npapi/webview_plugin.h"

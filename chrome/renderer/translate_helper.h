@@ -10,7 +10,7 @@
 
 #include "base/task.h"
 #include "chrome/common/translate_errors.h"
-#include "chrome/renderer/render_view_observer.h"
+#include "content/renderer/render_view_observer.h"
 
 class RenderView;
 namespace WebKit {

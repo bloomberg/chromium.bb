@@ -20,8 +20,8 @@
 #include "base/metrics/histogram.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/render_thread.h"
-#include "chrome/renderer/render_view.h"
 #include "content/renderer/gpu_channel_host.h"
+#include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()

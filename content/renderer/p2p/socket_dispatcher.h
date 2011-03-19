@@ -22,9 +22,9 @@
 #include <vector>
 
 #include "base/id_map.h"
-#include "chrome/renderer/render_view_observer.h"
 #include "content/common/p2p_sockets.h"
 #include "content/renderer/p2p/socket_client.h"
+#include "content/renderer/render_view_observer.h"
 
 namespace base {
 class MessageLoopProxy;

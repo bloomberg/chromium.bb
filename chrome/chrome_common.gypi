@@ -211,8 +211,6 @@
         'common/render_messages.h',
         'common/render_messages_params.cc',
         'common/render_messages_params.h',
-        'common/renderer_preferences.cc',
-        'common/renderer_preferences.h',
         'common/security_style.h',
         'common/service_messages.h',
         'common/service_process_util.cc',

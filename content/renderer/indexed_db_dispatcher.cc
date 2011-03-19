@@ -5,8 +5,8 @@
 #include "content/renderer/indexed_db_dispatcher.h"
 
 #include "chrome/renderer/render_thread.h"
-#include "chrome/renderer/render_view.h"
 #include "content/common/indexed_db_messages.h"
+#include "content/renderer/render_view.h"
 #include "content/renderer/renderer_webidbcursor_impl.h"
 #include "content/renderer/renderer_webidbdatabase_impl.h"
 #include "content/renderer/renderer_webidbindex_impl.h"

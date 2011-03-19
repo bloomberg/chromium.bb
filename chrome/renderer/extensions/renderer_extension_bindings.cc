@@ -16,7 +16,7 @@
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/render_thread.h"
-#include "chrome/renderer/render_view.h"
+#include "content/renderer/render_view.h"
 #include "grit/renderer_resources.h"
 
 using bindings_utils::GetStringResource;

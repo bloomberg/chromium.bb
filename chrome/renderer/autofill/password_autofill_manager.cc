@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/autofill_messages.h"
-#include "chrome/renderer/render_view.h"
+#include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
