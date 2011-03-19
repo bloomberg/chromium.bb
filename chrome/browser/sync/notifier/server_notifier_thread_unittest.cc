@@ -22,7 +22,7 @@ class FakeServerNotifierThread : public ServerNotifierThread {
  public:
    FakeServerNotifierThread()
       : ServerNotifierThread(notifier::NotifierOptions(),
-                             "fake client info", "fake state",
+                             "fake client info",
                              ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
   virtual ~FakeServerNotifierThread() {}
@@ -129,30 +129,24 @@ TEST_F(ServerNotifierThreadTest, Basic) {
   server_notifier_thread.Start();
   server_notifier_thread.Login(buzz::XmppClientSettings());
   server_notifier_thread.SimulateConnect();
-  server_notifier_thread.ListenForUpdates();
-  server_notifier_thread.SubscribeForUpdates(notifier::SubscriptionList());
   server_notifier_thread.Logout();
 }
 
-TEST_F(ServerNotifierThreadTest, DisconnectBeforeListen) {
+TEST_F(ServerNotifierThreadTest, LoginLogout) {
   FakeServerNotifierThread server_notifier_thread;
 
   server_notifier_thread.Start();
   server_notifier_thread.Login(buzz::XmppClientSettings());
-  server_notifier_thread.ListenForUpdates();
-  server_notifier_thread.SubscribeForUpdates(notifier::SubscriptionList());
   server_notifier_thread.Logout();
 }
 
-TEST_F(ServerNotifierThreadTest, Disconnected) {
+TEST_F(ServerNotifierThreadTest, DisconnectLogout) {
   FakeServerNotifierThread server_notifier_thread;
 
   server_notifier_thread.Start();
   server_notifier_thread.Login(buzz::XmppClientSettings());
   server_notifier_thread.SimulateConnect();
   server_notifier_thread.SimulateDisconnect();
-  server_notifier_thread.ListenForUpdates();
-  server_notifier_thread.SubscribeForUpdates(notifier::SubscriptionList());
   server_notifier_thread.Logout();
 }
 

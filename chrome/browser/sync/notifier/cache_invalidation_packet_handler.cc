@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/sync/sync_constants.h"
 #include "google/cacheinvalidation/invalidation-client.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "talk/xmpp/constants.h"
@@ -25,6 +24,7 @@ namespace sync_notifier {
 namespace {
 
 const char kBotJid[] = "tango@bot.talk.google.com";
+const char kServiceUrl[] = "http://www.google.com/chrome/sync";
 
 const buzz::QName kQnData("google:notifier", "data");
 const buzz::QName kQnSeq("", "seq");
@@ -167,8 +167,7 @@ class CacheInvalidationSendMessageTask : public buzz::XmppTask {
     iq->AddElement(cache_invalidation_iq_packet);
     cache_invalidation_iq_packet->SetAttr(kQnSeq, base::IntToString(seq));
     cache_invalidation_iq_packet->SetAttr(kQnSid, sid);
-    cache_invalidation_iq_packet->SetAttr(
-        kQnServiceUrl, browser_sync::kSyncNotificationChannel);
+    cache_invalidation_iq_packet->SetAttr(kQnServiceUrl, kServiceUrl);
     cache_invalidation_iq_packet->SetBodyText(msg);
     return iq;
   }

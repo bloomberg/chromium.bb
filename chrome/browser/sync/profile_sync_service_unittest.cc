@@ -991,10 +991,12 @@ TEST_F(ProfileSyncServiceTest,
   EXPECT_CALL(event_handler,
               HandleJsEvent("onSyncServiceStateChanged",
                             HasArgs(JsArgList()))).Times(3);
-  // For some reason, these two events don't fire on Linux.
+  // For some reason, these events may or may not fire.
   EXPECT_CALL(event_handler, HandleJsEvent("onChangesApplied", _))
       .Times(AtMost(1));
   EXPECT_CALL(event_handler, HandleJsEvent("onChangesComplete", _))
+      .Times(AtMost(1));
+  EXPECT_CALL(event_handler, HandleJsEvent("onSyncNotificationStateChange", _))
       .Times(AtMost(1));
 
   EXPECT_EQ(NULL, service_->GetBackendForTest());
@@ -1076,10 +1078,12 @@ TEST_F(ProfileSyncServiceTest,
   StartSyncServiceAndSetInitialSyncEnded(true, false);
 
   StrictMock<MockJsEventHandler> event_handler;
-  // For some reason, these two events don't fire on Linux.
+  // For some reason, these events may or may not fire.
   EXPECT_CALL(event_handler, HandleJsEvent("onChangesApplied", _))
       .Times(AtMost(1));
   EXPECT_CALL(event_handler, HandleJsEvent("onChangesComplete", _))
+      .Times(AtMost(1));
+  EXPECT_CALL(event_handler, HandleJsEvent("onSyncNotificationStateChange", _))
       .Times(AtMost(1));
 
   ListValue arg_list1;

@@ -25,7 +25,6 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/sync/sync_constants.h"
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/change_reorder_buffer.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"

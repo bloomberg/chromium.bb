@@ -5,9 +5,8 @@
 // This class is the (hackish) way to use the XMPP parts of
 // MediatorThread for server-issued notifications.
 //
-// TODO(akalin): Decomp MediatorThread into an XMPP service part and a
-// notifications-specific part and use the XMPP service part for
-// server-issued notifications.
+// TODO(akalin): Separate this code from notifier::MediatorThreadImpl
+// and combine it with InvalidationNotifier.
 
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_SERVER_NOTIFIER_THREAD_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_SERVER_NOTIFIER_THREAD_H_
@@ -40,23 +39,22 @@ class ServerNotifierThread
   explicit ServerNotifierThread(
       const notifier::NotifierOptions& notifier_options,
       const std::string& client_info,
-      const std::string& state, StateWriter* state_writer);
+      StateWriter* state_writer);
 
   virtual ~ServerNotifierThread();
 
-  // Overridden to start listening to server notifications.
-  virtual void ListenForUpdates();
+  // Should be called exactly once before Login().
+  void SetState(const std::string& state);
 
-  // Overridden to immediately notify the delegate that subscriptions
-  // (i.e., notifications) are on.  Must be called only after a call
-  // to ListenForUpdates().
-  virtual void SubscribeForUpdates(
-      const notifier::SubscriptionList& subscriptions);
+  // Must be called after Start() is called and before Logout() is
+  // called.
+  void UpdateEnabledTypes(const syncable::ModelTypeSet& types);
 
-  // Overridden to stop listening to server notifications.
+  // Overridden to stop the invalidation listener.
   virtual void Logout();
 
-  virtual void SendNotification(const notifier::Notification& data);
+  // Overridden to do actual login.
+  virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task);
 
   // ChromeInvalidationClient::Listener implementation.
   // We pass on two pieces of information to observers through the
@@ -65,6 +63,9 @@ class ServerNotifierThread
   //       |channel| member.
   // - the invalidation payload for that model type, through the
   //       Notification's |data| member.
+  //
+  // TODO(akalin): Remove this hack once we merge with
+  // InvalidationNotifier.
   virtual void OnInvalidate(syncable::ModelType model_type,
                             const std::string& payload);
   virtual void OnInvalidateAll();
@@ -72,22 +73,21 @@ class ServerNotifierThread
   // StateWriter implementation.
   virtual void WriteState(const std::string& state);
 
-  virtual void UpdateEnabledTypes(const syncable::ModelTypeSet& types);
-
  private:
-  // Posted to the worker thread by ListenForUpdates().
-  void DoListenForUpdates();
+  // Made private because this function shouldn't be called.
+  virtual void SendNotification(const notifier::Notification& data);
 
-  // Posted to the worker thread by SubscribeForUpdates().
-  void RegisterTypes();
+  // Posted to the worker thread by UpdateEnabledTypes().
+  void DoUpdateEnabledTypes(const syncable::ModelTypeSet& types);
 
-  void SignalSubscribed();
+  // Posted to the worker thread by UpdateEnabledTypes() and also
+  // called by OnConnect().
+  void RegisterEnabledTypes();
 
   // Posted to the worker thread by Logout().
   void StopInvalidationListener();
 
   const std::string client_info_;
-  std::string state_;
   // Hack to get the nice thread-safe behavior for |state_writer_|.
   scoped_refptr<ObserverListThreadSafe<StateWriter> > state_writers_;
   // We still need to keep |state_writer_| around to remove it from
@@ -95,9 +95,12 @@ class ServerNotifierThread
   StateWriter* state_writer_;
   scoped_ptr<ChromeInvalidationClient> chrome_invalidation_client_;
 
-  syncable::ModelTypeSet registered_types_;
+  // The state to pass to |chrome_invalidation_client_|.
+  std::string state_;
 
-  void SetRegisteredTypes(const syncable::ModelTypeSet& types);
+  // The types to register.  Should only be accessed on the worker
+  // thread.
+  syncable::ModelTypeSet enabled_types_;
 };
 
 }  // namespace sync_notifier

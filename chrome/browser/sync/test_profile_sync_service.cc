@@ -96,7 +96,7 @@ sync_api::HttpPostProviderFactory*
 
 void SyncBackendHostForProfileSyncTest::InitCore(
     const Core::DoInitializeOptions& options) {
-  std::wstring user = L"testuser";
+  std::wstring user = L"testuser@gmail.com";
   core_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(core_.get(),
