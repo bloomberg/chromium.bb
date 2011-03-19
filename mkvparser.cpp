@@ -3737,6 +3737,7 @@ long long CuePoint::GetTime(const Segment* pSegment) const
 }
 
 
+#if 0
 long long Segment::Unparsed() const
 {
     if (m_size < 0)
@@ -3749,6 +3750,29 @@ long long Segment::Unparsed() const
 
     return result;
 }
+#else
+bool Segment::DoneParsing() const
+{
+    if (m_size < 0)
+    {
+        long long total, avail;
+
+        const int status = m_pReader->Length(&total, &avail);
+
+        if (status < 0)  //error
+            return true;  //must assume done
+
+        if (total < 0)
+            return false;  //assume live stream
+
+        return (m_pos >= total);
+    }
+
+    const long long stop = m_start + m_size;
+
+    return (m_pos >= stop);
+}
+#endif
 
 
 const Cluster* Segment::GetFirst() const
@@ -4972,11 +4996,19 @@ long Track::GetFirst(const BlockEntry*& pBlockEntry) const
 
         if (pCluster->EOS())
         {
+#if 0
             if (m_pSegment->Unparsed() <= 0)  //all clusters have been loaded
             {
                 pBlockEntry = GetEOS();
                 return 1;
             }
+#else
+            if (m_pSegment->DoneParsing())
+            {
+                pBlockEntry = GetEOS();
+                return 1;
+            }
+#endif
 
             pBlockEntry = 0;
             return E_BUFFER_NOT_FULL;
@@ -5062,11 +5094,19 @@ long Track::GetNext(
 
         if (pCluster->EOS())
         {
+#if 0
             if (m_pSegment->Unparsed() <= 0)   //all clusters have been loaded
             {
                 pNextEntry = GetEOS();
                 return 1;
             }
+#else
+            if (m_pSegment->DoneParsing())
+            {
+                pNextEntry = GetEOS();
+                return 1;
+            }
+#endif
 
             //TODO: there is a potential O(n^2) problem here: we tell the
             //caller to (pre)load another cluster, which he does, but then he
@@ -5297,12 +5337,16 @@ long VideoTrack::Seek(
         assert(pCluster);
         assert(pCluster->GetTime() <= time_ns);
 
+#if 0
         //TODO:
         //We need to handle the case when a cluster
         //contains multiple keyframes.  Simply returning
         //the largest keyframe on the cluster isn't
         //good enough.
         pResult = pCluster->GetMaxKey(this);
+#else
+        pResult = pCluster->GetEntry(this, time_ns);
+#endif
 
         if ((pResult != 0) && !pResult->EOS())
             return 0;
@@ -6695,7 +6739,7 @@ long Cluster::GetEntry(long index, const mkvparser::BlockEntry*& pEntry) const
 {
     assert(m_pos >= m_element_start);
 
-    pEntry = 0;
+    pEntry = NULL;
 
     if (index < 0)
         return -1;  //generic error
@@ -7111,7 +7155,7 @@ long Cluster::HasBlockEntries(
     }
 }
 
-
+#if 0
 void Cluster::LoadBlockEntries() const
 {
     //LoadBlockEntries loads all of the entries on the cluster.
@@ -7302,6 +7346,7 @@ void Cluster::LoadBlockEntries() const
     assert(m_pos == cluster_stop);
     assert((ppEntry - m_entries) == m_entries_count);
 }
+#endif
 
 
 
@@ -7353,6 +7398,7 @@ long long Cluster::GetFirstTime() const
 }
 
 
+#if 0
 long long Cluster::GetLastTime() const
 {
     const BlockEntry* const pEntry = GetLast();
@@ -7365,6 +7411,7 @@ long long Cluster::GetLastTime() const
 
     return pBlock->GetTime(this);
 }
+#endif
 
 
 void Cluster::CreateBlock(
@@ -7468,10 +7515,27 @@ void Cluster::CreateSimpleBlock(
 
 const BlockEntry* Cluster::GetFirst() const
 {
+#if 0
     LoadBlockEntries();
 
     if ((m_entries == NULL) || (m_entries_count <= 0))
         return NULL;
+#else
+    if (m_entries_count <= 0)
+    {
+        long long pos;
+        long len;
+
+        const long status = Parse(pos, len);
+        assert(status >= 0);
+
+        if (m_entries_count <= 0)
+            return NULL;  //empty cluster
+
+        assert(m_entries);
+        assert(m_entries_count > 0);
+    }
+#endif
 
     const BlockEntry* const pFirst = m_entries[0];
     assert(pFirst);
@@ -7480,6 +7544,7 @@ const BlockEntry* Cluster::GetFirst() const
 }
 
 
+#if 0
 const BlockEntry* Cluster::GetLast() const
 {
     LoadBlockEntries();
@@ -7494,6 +7559,7 @@ const BlockEntry* Cluster::GetLast() const
 
     return pLast;
 }
+#endif
 
 
 const BlockEntry* Cluster::GetNext(const BlockEntry* pEntry) const
@@ -7508,8 +7574,29 @@ const BlockEntry* Cluster::GetNext(const BlockEntry* pEntry) const
 
     ++idx;
 
+#if 0
     if (idx >= size_t(m_entries_count))
       return NULL;
+#else
+    if (idx >= size_t(m_entries_count))
+    {
+        long long pos;
+        long len;
+
+        const long status = Parse(pos, len);
+        assert(status >= 0);
+
+        if (status < 0)
+            return NULL;
+
+        if (status > 0)
+            return NULL;
+
+        assert(m_entries);
+        assert(m_entries_count > 0);
+        assert(idx < size_t(m_entries_count));
+    }
+#endif
 
     return m_entries[idx];
 }
@@ -7529,6 +7616,8 @@ const BlockEntry* Cluster::GetEntry(
 
     if (m_pSegment == NULL)  //this is the special EOS cluster
         return pTrack->GetEOS();
+
+#if 0
 
     LoadBlockEntries();
 
@@ -7576,6 +7665,70 @@ const BlockEntry* Cluster::GetEntry(
     }
 
     return pResult;
+
+#else
+
+    const BlockEntry* pResult = pTrack->GetEOS();
+
+    long index = 0;
+
+    for (;;)
+    {
+        if (index >= m_entries_count)
+        {
+            long long pos;
+            long len;
+
+            const long status = Parse(pos, len);
+            assert(status >= 0);
+
+            if (status > 0)  //completely parsed, and no more entries
+                return pResult;
+
+            if (status < 0)  //should never happen
+                return 0;
+
+            assert(m_entries);
+            assert(index < m_entries_count);
+        }
+
+        const BlockEntry* const pEntry = m_entries[index];
+        assert(pEntry);
+        assert(!pEntry->EOS());
+
+        const Block* const pBlock = pEntry->GetBlock();
+        assert(pBlock);
+
+        if (pBlock->GetTrackNumber() != pTrack->GetNumber())
+        {
+            ++index;
+            continue;
+        }
+
+        if (pTrack->VetEntry(pEntry))
+        {
+            if (time_ns < 0)  //just want first candidate block
+                return pEntry;
+
+            const long long ns = pBlock->GetTime(this);
+
+            if (ns > time_ns)
+                return pResult;
+
+            pResult = pEntry;  //have a candidate
+        }
+        else if (time_ns >= 0)
+        {
+            const long long ns = pBlock->GetTime(this);
+
+            if (ns > time_ns)
+                return pResult;
+        }
+
+        ++index;
+    }
+
+#endif
 }
 
 
@@ -7585,6 +7738,8 @@ Cluster::GetEntry(
     const CuePoint::TrackPosition& tp) const
 {
     assert(m_pSegment);
+
+#if 0
 
     LoadBlockEntries();
 
@@ -7670,9 +7825,122 @@ Cluster::GetEntry(
     }
 
     return NULL;
+
+#else
+
+    const long long tc = cp.GetTimeCode();
+
+    if (tp.m_block > 0)
+    {
+        const long block = static_cast<long>(tp.m_block);
+        const long index = block - 1;
+
+        while (index >= m_entries_count)
+        {
+            long long pos;
+            long len;
+
+            const long status = Parse(pos, len);
+
+            if (status < 0)  //TODO: can this happen?
+                return NULL;
+
+            if (status > 1)  //nothing remains to be parsed
+                return NULL;
+
+            assert(m_entries);
+            assert(index < m_entries_count);
+        }
+
+        const BlockEntry* const pEntry = m_entries[index];
+        assert(pEntry);
+        assert(!pEntry->EOS());
+
+        const Block* const pBlock = pEntry->GetBlock();
+        assert(pBlock);
+
+        if ((pBlock->GetTrackNumber() == tp.m_track) &&
+            (pBlock->GetTimeCode(this) == tc))
+        {
+            return pEntry;
+        }
+    }
+
+    long index = 0;
+
+    for (;;)
+    {
+        if (index >= m_entries_count)
+        {
+            long long pos;
+            long len;
+
+            const long status = Parse(pos, len);
+
+            if (status < 0)  //TODO: can this happen?
+                return NULL;
+
+            if (status > 1)  //nothing remains to be parsed
+                return NULL;
+
+            assert(m_entries);
+            assert(index < m_entries_count);
+        }
+
+        const BlockEntry* const pEntry = m_entries[index];
+        assert(pEntry);
+        assert(!pEntry->EOS());
+
+        const Block* const pBlock = pEntry->GetBlock();
+        assert(pBlock);
+
+        if (pBlock->GetTrackNumber() != tp.m_track)
+        {
+            ++index;
+            continue;
+        }
+
+        const long long tc_ = pBlock->GetTimeCode(this);
+        assert(tc_ >= 0);
+
+        if (tc_ < tc)
+        {
+            ++index;
+            continue;
+        }
+
+        if (tc_ > tc)
+            return NULL;
+
+        const Tracks* const pTracks = m_pSegment->GetTracks();
+        assert(pTracks);
+
+        const long tn = static_cast<long>(tp.m_track);
+        const Track* const pTrack = pTracks->GetTrackByNumber(tn);
+
+        if (pTrack == NULL)
+            return NULL;
+
+        const long long type = pTrack->GetType();
+
+        if (type == 2)  //audio
+            return pEntry;
+
+        if (type != 1)  //not video
+            return NULL;
+
+        if (!pBlock->IsKey())
+            return NULL;
+
+        return pEntry;
+    }
+
+#endif
+
 }
 
 
+#if 0
 const BlockEntry* Cluster::GetMaxKey(const VideoTrack* pTrack) const
 {
     assert(pTrack);
@@ -7706,7 +7974,7 @@ const BlockEntry* Cluster::GetMaxKey(const VideoTrack* pTrack) const
 
     return pTrack->GetEOS();  //no satisfactory block found
 }
-
+#endif
 
 
 BlockEntry::BlockEntry()

@@ -560,16 +560,16 @@ public:
     long long GetTimeCode() const;   //absolute, but not scaled
     long long GetTime() const;       //absolute, and scaled (nanosecond units)
     long long GetFirstTime() const;  //time (ns) of first (earliest) block
-    long long GetLastTime() const;   //time (ns) of last (latest) block
+    //long long GetLastTime() const;   //time (ns) of last (latest) block
 
     const BlockEntry* GetFirst() const;
-    const BlockEntry* GetLast() const;
+    //const BlockEntry* GetLast() const;
     const BlockEntry* GetNext(const BlockEntry*) const;
     const BlockEntry* GetEntry(const Track*, long long ns = -1) const;
     const BlockEntry* GetEntry(
         const CuePoint&,
         const CuePoint::TrackPosition&) const;
-    const BlockEntry* GetMaxKey(const VideoTrack*) const;
+    //const BlockEntry* GetMaxKey(const VideoTrack*) const;
 
 //    static bool HasBlockEntries(const Segment*, long long);
 
@@ -584,7 +584,7 @@ public:
     //void Load() const;
     long Load(long long& pos, long& size) const;
 
-    void LoadBlockEntries() const;
+    //void LoadBlockEntries() const;
 
     long Parse(long long& pos, long& size) const;
     long GetEntry(long index, const mkvparser::BlockEntry*&) const;
@@ -650,7 +650,8 @@ public:
     long Load();  //loads headers and all clusters
 
     //for incremental loading
-    long long Unparsed() const;
+    //long long Unparsed() const;
+    bool DoneParsing() const;
     long long ParseHeaders();  //stops when first cluster is found
     //long FindNextCluster(long long& pos, long& size) const;
     long LoadCluster(long long& pos, long& size);  //load one cluster
