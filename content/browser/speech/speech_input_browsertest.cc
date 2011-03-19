@@ -222,12 +222,7 @@ IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, MAYBE_GrammarAttribute) {
 }
 
 // Marked as DISABLED due to http://crbug.com/71227
-#if defined(GOOGLE_CHROME_BUILD)
-#define MAYBE_TestCancelAll DISABLED_TestCancelAll
-#else
-#define MAYBE_TestCancelAll TestCancelAll
-#endif
-IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, MAYBE_TestCancelAll) {
+IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, DISABLED_TestCancelAll) {
   // The test checks that the cancel-all callback gets issued when a session
   // is pending, so don't send a fake response.
   fake_speech_input_manager_.set_send_fake_response(false);
