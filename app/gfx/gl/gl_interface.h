@@ -261,8 +261,6 @@ class GLInterface {
 
   virtual GLboolean IsTexture(GLuint texture) = 0;
 
-  virtual void* MapBuffer(GLenum target, GLenum access) = 0;
-
   virtual void LineWidth(GLfloat width) = 0;
 
   virtual void LinkProgram(GLuint program) = 0;
@@ -378,8 +376,6 @@ class GLInterface {
   virtual void UniformMatrix4fv(
       GLint location, GLsizei count, GLboolean transpose,
       const GLfloat* value) = 0;
-
-  virtual GLboolean UnmapBuffer(GLenum target) = 0;
 
   virtual void UseProgram(GLuint program) = 0;
 

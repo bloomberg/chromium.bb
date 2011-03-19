@@ -160,7 +160,6 @@ GL_FUNCTIONS = [
 ['GLboolean', ['glIsTexture'], 'GLuint texture'],
 ['void', ['glLineWidth'], 'GLfloat width'],
 ['void', ['glLinkProgram'], 'GLuint program'],
-['void*', ['glMapBuffer'], 'GLenum target, GLenum access'],
 ['void', ['glPixelStorei'], 'GLenum pname, GLint param'],
 ['void', ['glPolygonOffset'], 'GLfloat factor, GLfloat units'],
 ['void', ['glReadPixels'],
@@ -228,7 +227,6 @@ GL_FUNCTIONS = [
     'GLint location, GLsizei count, GLboolean transpose, const GLfloat* value'],
 ['void', ['glUniformMatrix4fv'],
     'GLint location, GLsizei count, GLboolean transpose, const GLfloat* value'],
-['GLboolean', ['glUnmapBuffer'], 'GLenum target'],
 ['void', ['glUseProgram'], 'GLuint program'],
 ['void', ['glValidateProgram'], 'GLuint program'],
 ['void', ['glVertexAttrib1f'], 'GLuint indx, GLfloat x'],
@@ -250,7 +248,7 @@ GL_FUNCTIONS = [
 ['GLboolean', ['glTestFenceNV'], 'GLuint fence'],
 ['void', ['glFinishFenceNV'], 'GLuint fence'],
 ['GLboolean', ['glIsFenceNV'], 'GLuint fence'],
-['void', ['glGetFenceivNV'], 'GLuint fence, GLenum pname, GLint* params']
+['void', ['glGetFenceivNV'], 'GLuint fence, GLenum pname, GLint* params'],
 ]
 
 OSMESA_FUNCTIONS = [
