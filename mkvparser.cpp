@@ -3059,10 +3059,11 @@ bool Cues::LoadCuePoint() const
         m_pos += size;  //consume payload
         assert(m_pos <= stop);
 
-        break;
+        return true;  //yes, we loaded a cue point
     }
 
-    return (m_pos < stop);
+    //return (m_pos < stop);
+    return false;  //no, we did not load a cue point
 }
 
 
