@@ -58,8 +58,8 @@ void NetworkLoginObserver::RefreshStoredNetworks(
   }
 }
 
-void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
-  const WifiNetworkVector& wifi_networks = obj->wifi_networks();
+void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
+  const WifiNetworkVector& wifi_networks = cros->wifi_networks();
 
   NetworkConfigView* view = NULL;
   // Check to see if we have any newly failed wifi network.

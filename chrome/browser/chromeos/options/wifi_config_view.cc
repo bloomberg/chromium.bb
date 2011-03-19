@@ -165,7 +165,7 @@ class Phase2AuthComboboxModel : public ui::ComboboxModel {
 WifiConfigView::WifiConfigView(NetworkConfigView* parent, WifiNetwork* wifi)
     : parent_(parent),
       is_8021x_(false),
-      wifi_(wifi),
+      service_path_(wifi->service_path()),
       ssid_textfield_(NULL),
       eap_method_combobox_(NULL),
       phase_2_auth_combobox_(NULL),
@@ -177,13 +177,12 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent, WifiNetwork* wifi)
       passphrase_textfield_(NULL),
       passphrase_visible_button_(NULL),
       error_label_(NULL) {
-  Init();
+  Init(wifi);
 }
 
 WifiConfigView::WifiConfigView(NetworkConfigView* parent)
     : parent_(parent),
       is_8021x_(false),
-      wifi_(NULL),
       ssid_textfield_(NULL),
       eap_method_combobox_(NULL),
       phase_2_auth_combobox_(NULL),
@@ -195,7 +194,7 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent)
       passphrase_textfield_(NULL),
       passphrase_visible_button_(NULL),
       error_label_(NULL) {
-  Init();
+  Init(NULL);
 }
 
 WifiConfigView::~WifiConfigView() {
@@ -204,7 +203,7 @@ WifiConfigView::~WifiConfigView() {
 bool WifiConfigView::CanLogin() {
   static const size_t kMinWirelessPasswordLen = 5;
 
-  if (!wifi_) {
+  if (service_path_.empty()) {
     // Enforce ssid is non empty.
     if (GetSSID().empty())
       return false;
@@ -241,12 +240,16 @@ void WifiConfigView::UpdateDialogButtons() {
 void WifiConfigView::UpdateErrorLabel(bool failed) {
   static const int kNoError = -1;
   int id = kNoError;
-  if (wifi_) {
-    // Right now, only displaying bad_passphrase and bad_wepkey errors.
-    if (wifi_->error() == ERROR_BAD_PASSPHRASE)
-      id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE;
-    else if (wifi_->error() == ERROR_BAD_WEPKEY)
-      id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY;
+  if (!service_path_.empty()) {
+    NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+    const WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path_);
+    if (wifi) {
+      // Right now, only displaying bad_passphrase and bad_wepkey errors.
+      if (wifi->error() == ERROR_BAD_PASSPHRASE)
+        id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE;
+      else if (wifi->error() == ERROR_BAD_WEPKEY)
+        id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY;
+    }
   }
   if (id == kNoError && failed) {
     // We don't know what the error was. For now assume bad identity or
@@ -354,7 +357,7 @@ bool WifiConfigView::Login() {
     identity_string = UTF16ToUTF8(identity_textfield_->text());
   }
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  if (!wifi_) {
+  if (service_path_.empty()) {
     ConnectionSecurity sec = SECURITY_UNKNOWN;
     int index = security_combobox_->selected_item();
     if (index == SECURITY_INDEX_NONE)
@@ -369,15 +372,18 @@ bool WifiConfigView::Login() {
         sec, GetSSID(), GetPassphrase(),
         identity_string, certificate_path_, true);
   } else {
+    WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path_);
+    if (!wifi) {
+      // Flimflam no longer knows about this wifi network (edge case).
+      // TODO(stevenjb): Add a notification (chromium-os13225).
+      LOG(WARNING) << "Wifi network: " << service_path_ << " no longer exists.";
+      return true;
+    }
     if (is_8021x_) {
       // TODO(chocobo): Set 802.1x properties
     }
-
-    const std::string passphrase = GetPassphrase();
-    if (passphrase != wifi_->passphrase())
-      wifi_->SetPassphrase(passphrase);
-
-    cros->ConnectToWifiNetwork(wifi_);
+    wifi->SetPassphrase(GetPassphrase());
+    cros->ConnectToWifiNetwork(wifi);
     // Connection failures are responsible for updating the UI, including
     // reopening dialogs.
   }
@@ -385,14 +391,9 @@ bool WifiConfigView::Login() {
 }
 
 void WifiConfigView::Cancel() {
-  // If we have a bad passphrase error, clear the passphrase.
-  if (wifi_ && (wifi_->error() == ERROR_BAD_PASSPHRASE ||
-                wifi_->error() == ERROR_BAD_WEPKEY)) {
-    wifi_->SetPassphrase(std::string());
-  }
 }
 
-const std::string WifiConfigView::GetSSID() const {
+std::string WifiConfigView::GetSSID() const {
   std::string result;
   if (ssid_textfield_ != NULL) {
     std::string untrimmed = UTF16ToUTF8(ssid_textfield_->text());
@@ -401,7 +402,7 @@ const std::string WifiConfigView::GetSSID() const {
   return result;
 }
 
-const std::string WifiConfigView::GetPassphrase() const {
+std::string WifiConfigView::GetPassphrase() const {
   std::string result;
   if (passphrase_textfield_ != NULL)
     result = UTF16ToUTF8(passphrase_textfield_->text());
@@ -414,7 +415,7 @@ const std::string WifiConfigView::GetPassphrase() const {
 // If we are creating the "Join other network..." dialog, we will allow user
 // to enter the data. And if they select the 802.1x encryption, we will show
 // the 802.1x fields.
-void WifiConfigView::Init() {
+void WifiConfigView::Init(WifiNetwork* wifi) {
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
@@ -434,21 +435,21 @@ void WifiConfigView::Init() {
   layout->StartRow(0, column_view_set_id);
   layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID))));
-  if (!wifi_) {
+  if (!wifi) {
     ssid_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
     ssid_textfield_->SetController(this);
     ssid_textfield_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID));
     layout->AddView(ssid_textfield_);
   } else {
-    views::Label* label = new views::Label(ASCIIToWide(wifi_->name()));
+    views::Label* label = new views::Label(ASCIIToWide(wifi->name()));
     label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     layout->AddView(label);
   }
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Security select
-  if (!wifi_) {
+  if (!wifi) {
     layout->StartRow(0, column_view_set_id);
     layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY))));
@@ -468,8 +469,8 @@ void WifiConfigView::Init() {
   // in general, but very common. WPA Supplicant doesn't report the
   // EAP type because it's unknown until the process begins, and we'd
   // need some kind of callback.
-  is_8021x_ = wifi_ && wifi_->encrypted() &&
-      wifi_->encryption() == SECURITY_8021X;
+  is_8021x_ = wifi && wifi->encrypted() &&
+      wifi->encryption() == SECURITY_8021X;
   if (is_8021x_) {
     // EAP Method
     layout->StartRow(0, column_view_set_id);
@@ -495,9 +496,9 @@ void WifiConfigView::Init() {
     layout->StartRow(0, column_view_set_id);
     layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT))));
-    if (!wifi_->cert_path().empty()) {
-      certificate_path_ = wifi_->cert_path();
-      certificate_loaded = wifi_->IsCertificateLoaded();
+    if (!wifi->cert_path().empty()) {
+      certificate_path_ = wifi->cert_path();
+      certificate_loaded = wifi->IsCertificateLoaded();
     }
     if (certificate_loaded) {
       std::wstring label = UTF16ToWide(l10n_util::GetStringUTF16(
@@ -524,8 +525,8 @@ void WifiConfigView::Init() {
     identity_textfield_ = new views::Textfield(
         views::Textfield::STYLE_DEFAULT);
     identity_textfield_->SetController(this);
-    if (!wifi_->identity().empty())
-      identity_textfield_->SetText(UTF8ToUTF16(wifi_->identity()));
+    if (!wifi->identity().empty())
+      identity_textfield_->SetText(UTF8ToUTF16(wifi->identity()));
     layout->AddView(identity_textfield_);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
@@ -553,10 +554,10 @@ void WifiConfigView::Init() {
   passphrase_textfield_ = new views::Textfield(
       views::Textfield::STYLE_PASSWORD);
   passphrase_textfield_->SetController(this);
-  if (wifi_ && !wifi_->passphrase().empty())
-    passphrase_textfield_->SetText(UTF8ToUTF16(wifi_->passphrase()));
+  if (wifi && !wifi->GetPassphrase().empty())
+    passphrase_textfield_->SetText(UTF8ToUTF16(wifi->GetPassphrase()));
   // Disable passphrase input initially for other network.
-  if (!wifi_)
+  if (!wifi)
     passphrase_textfield_->SetEnabled(false);
   passphrase_textfield_->SetAccessibleName(l10n_util::GetStringUTF16(
       label_text_id));

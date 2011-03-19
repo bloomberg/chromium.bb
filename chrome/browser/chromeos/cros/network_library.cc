@@ -202,6 +202,8 @@ const char* kErrorNeedEvdo = "need-evdo";
 const char* kErrorNeedHomeNetwork = "need-home-network";
 const char* kErrorOtaspFailed = "otasp-failed";
 const char* kErrorAaaFailed = "aaa-failed";
+// Flimflam error messages.
+const char* kErrorPassphraseRequiredMsg = "Passphrase required";
 
 const char* kUnknownString = "UNKNOWN";
 
@@ -1210,8 +1212,17 @@ bool WifiNetwork::ParseValue(int index, const Value* value) {
       }
       break;
     }
-    case PROPERTY_INDEX_PASSPHRASE:
-      return value->GetAsString(&passphrase_);
+    case PROPERTY_INDEX_PASSPHRASE: {
+      std::string passphrase;
+      if (value->GetAsString(&passphrase)) {
+        // Only store the passphrase if we are the owner.
+        // TODO(stevenjb): Remove this when chromium-os:12948 is resolved.
+        if (chromeos::UserManager::Get()->current_user_is_owner())
+          passphrase_ = passphrase;
+        return true;
+      }
+      break;
+    }
     case PROPERTY_INDEX_PASSPHRASE_REQUIRED:
       return value->GetAsBoolean(&passphrase_required_);
     case PROPERTY_INDEX_IDENTITY:
@@ -1224,8 +1235,22 @@ bool WifiNetwork::ParseValue(int index, const Value* value) {
   return false;
 }
 
+const std::string& WifiNetwork::GetPassphrase() const {
+  if (!user_passphrase_.empty())
+    return user_passphrase_;
+  return passphrase_;
+}
+
 void WifiNetwork::SetPassphrase(const std::string& passphrase) {
-  passphrase_ = passphrase;
+  // Set the user_passphrase_ only; passphrase_ stores the flimflam value.
+  // If the user sets an empty passphrase, restore it to the passphrase
+  // remembered by flimflam.
+  if (!passphrase.empty())
+    user_passphrase_ = passphrase;
+  else
+    user_passphrase_ = passphrase_;
+  // Send the change to flimflam. If the format is valid, it will propagate to
+  // passphrase_ with a service update.
   SetStringProperty(kPassphraseProperty, passphrase);
 }
 
@@ -1392,7 +1417,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (is_locked_)
       return;
     is_locked_ = true;
-    NotifyNetworkManagerChanged();
+    NotifyNetworkManagerChanged(true);  // Forced update.
   }
 
   virtual void Unlock() {
@@ -1400,7 +1425,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (!is_locked_)
       return;
     is_locked_ = false;
-    NotifyNetworkManagerChanged();
+    NotifyNetworkManagerChanged(true);  // Forced update.
   }
 
   virtual bool IsLocked() {
@@ -1510,14 +1535,34 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return NULL;
   }
 
-  virtual WifiNetwork* FindWifiNetworkByPath(
-      const std::string& path) const {
-    return GetWifiNetworkByPath(path);
+  virtual Network* FindNetworkByPath(const std::string& path) const {
+    NetworkMap::const_iterator iter = network_map_.find(path);
+    if (iter != network_map_.end())
+      return iter->second;
+    return NULL;
+  }
+
+  WirelessNetwork* FindWirelessNetworkByPath(const std::string& path) const {
+    Network* network = FindNetworkByPath(path);
+    if (network &&
+        (network->type() == TYPE_WIFI || network->type() == TYPE_CELLULAR))
+      return static_cast<WirelessNetwork*>(network);
+    return NULL;
+  }
+
+  virtual WifiNetwork* FindWifiNetworkByPath(const std::string& path) const {
+    Network* network = FindNetworkByPath(path);
+    if (network && network->type() == TYPE_WIFI)
+      return static_cast<WifiNetwork*>(network);
+    return NULL;
   }
 
   virtual CellularNetwork* FindCellularNetworkByPath(
       const std::string& path) const {
-    return GetCellularNetworkByPath(path);
+    Network* network = FindNetworkByPath(path);
+    if (network && network->type() == TYPE_CELLULAR)
+      return static_cast<CellularNetwork*>(network);
+    return NULL;
   }
 
   virtual const CellularDataPlanVector* GetDataPlans(
@@ -1581,19 +1626,27 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
     DCHECK(networklib);
 
-    if (error != NETWORK_METHOD_ERROR_NONE) {
-      LOG(ERROR) << "Error from ServiceConnect callback: "
-                 << error_message;
-      return;
-    }
-
-    WirelessNetwork* wireless = networklib->GetWirelessNetworkByPath(path);
+    WirelessNetwork* wireless = networklib->FindWirelessNetworkByPath(path);
     if (!wireless) {
       LOG(ERROR) << "No wireless network for path: " << path;
       return;
     }
 
-    wireless->set_connecting(true);
+    if (error != NETWORK_METHOD_ERROR_NONE) {
+      if (error_message &&
+          strcmp(error_message, kErrorPassphraseRequiredMsg) == 0) {
+        // This will trigger the connection failed notification.
+        // TODO(stevenjb): Remove if chromium-os:13203 gets fixed.
+        wireless->set_state(STATE_FAILURE);
+        wireless->set_error(ERROR_BAD_PASSPHRASE);
+        networklib->NotifyNetworkManagerChanged(true);  // Forced update.
+      } else {
+        LOG(WARNING) << "Error from ServiceConnect callback: "
+                     << error_message;
+      }
+      return;
+    }
+
     // Update local cache and notify listeners.
     if (wireless->type() == TYPE_WIFI)
       networklib->active_wifi_ = static_cast<WifiNetwork *>(wireless);
@@ -1606,36 +1659,40 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     // TODO(stevenjb): flimflam should do this automatically.
     networklib->RequestRememberedNetworksUpdate();
     // Notify observers.
-    networklib->NotifyNetworkManagerChanged();
+    networklib->NotifyNetworkManagerChanged(false);  // Not forced.
     networklib->NotifyUserConnectionInitiated(wireless);
   }
 
 
-  void CallConnectToNetworkForWifi(const std::string& service_path) {
-    RequestNetworkServiceConnect(service_path.c_str(),
+  void CallConnectToNetworkForWifi(WifiNetwork* wifi) {
+    // If we haven't correctly set the parameters (e.g. passphrase), flimflam
+    // might fail without attempting a connection. In order to trigger any
+    // notifications, set the state locally and notify observers.
+    // TODO(stevenjb): Remove if chromium-os:13203 gets fixed.
+    wifi->set_connecting(true);
+    NotifyNetworkManagerChanged(true);  // Forced update.
+    RequestNetworkServiceConnect(wifi->service_path().c_str(),
                                  WirelessConnectCallback, this);
   }
 
-  // Use this when the code needs to cache a copy of the WifiNetwork and
-  // expects |network|->error_ to be set on failure.
-  virtual void ConnectToWifiNetwork(WifiNetwork* network) {
-    DCHECK(network);
-    if (!EnsureCrosLoaded() || !network)
+  virtual void ConnectToWifiNetwork(WifiNetwork* wifi) {
+    DCHECK(wifi);
+    if (!EnsureCrosLoaded() || !wifi)
       return;
-    CallConnectToNetworkForWifi(network->service_path());
+    CallConnectToNetworkForWifi(wifi);
   }
 
   // Use this to connect to a wifi network by service path.
   virtual void ConnectToWifiNetwork(const std::string& service_path) {
     if (!EnsureCrosLoaded())
       return;
-    WifiNetwork* wifi = GetWifiNetworkByPath(service_path);
+    WifiNetwork* wifi = FindWifiNetworkByPath(service_path);
     if (!wifi) {
       LOG(WARNING) << "Attempt to connect to non existing network: "
                    << service_path;
       return;
     }
-    CallConnectToNetworkForWifi(service_path);
+    CallConnectToNetworkForWifi(wifi);
   }
 
   // Use this to connect to an unlisted wifi network.
@@ -1643,7 +1700,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   // The connection attempt will occur in the callback.
   virtual void ConnectToWifiNetwork(ConnectionSecurity security,
                                     const std::string& ssid,
-                                    const std::string& password,
+                                    const std::string& passphrase,
                                     const std::string& identity,
                                     const std::string& certpath,
                                     bool auto_connect) {
@@ -1654,7 +1711,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                              WifiServiceUpdateAndConnect,
                              this);
     // Store the connection data to be used by the callback.
-    connect_data_.SetData(ssid, password, identity, certpath, auto_connect);
+    connect_data_.SetData(ssid, passphrase, identity, certpath, auto_connect);
   }
 
   // Callback
@@ -1682,18 +1739,18 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
 
     WifiNetwork *wifi = static_cast<WifiNetwork *>(network);
-    if (!data.password.empty())
-      wifi->SetPassphrase(data.password);
+    if (!data.passphrase.empty())
+      wifi->SetPassphrase(data.passphrase);
     if (!data.identity.empty())
       wifi->SetIdentity(data.identity);
     if (!data.certpath.empty())
       wifi->SetCertPath(data.certpath);
     wifi->SetAutoConnect(data.auto_connect);
 
-    CallConnectToNetworkForWifi(wifi->service_path());
+    CallConnectToNetworkForWifi(wifi);
   }
 
-  virtual void ConnectToCellularNetwork(const CellularNetwork* network) {
+  virtual void ConnectToCellularNetwork(CellularNetwork* network) {
     DCHECK(network);
     if (!EnsureCrosLoaded() || !network)
       return;
@@ -1721,7 +1778,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (DisconnectFromNetwork(network->service_path().c_str())) {
       // Update local cache and notify listeners.
       WirelessNetwork* wireless =
-          GetWirelessNetworkByPath(network->service_path());
+          FindWirelessNetworkByPath(network->service_path());
       if (wireless) {
         wireless->set_connected(false);
         if (wireless == active_wifi_)
@@ -1729,7 +1786,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         else if (wireless == active_cellular_)
           active_cellular_ = NULL;
       }
-      NotifyNetworkManagerChanged();
+      NotifyNetworkManagerChanged(false);  // Not forced.
     }
   }
 
@@ -1744,7 +1801,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     // https://crosbug.com/9295
     if (DeleteRememberedService(service_path.c_str())) {
       DeleteRememberedNetwork(service_path);
-      NotifyNetworkManagerChanged();
+      NotifyNetworkManagerChanged(false);  // Not forced.
     }
   }
 
@@ -1989,7 +2046,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       case PROPERTY_INDEX_OFFLINE_MODE: {
         DCHECK_EQ(value->GetType(), Value::TYPE_BOOLEAN);
         value->GetAsBoolean(&offline_mode_);
-        NotifyNetworkManagerChanged();
+        NotifyNetworkManagerChanged(false);  // Not forced.
         break;
       }
       case PROPERTY_INDEX_ACTIVE_PROFILE: {
@@ -2146,7 +2203,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       }
     }
     *bitfieldp = bitfield;
-    NotifyNetworkManagerChanged();
+    NotifyNetworkManagerChanged(false);  // Not forced.
   }
 
   void UpdateAvailableTechnologies(const ListValue* technologies) {
@@ -2442,11 +2499,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   Network* ParseNetwork(const std::string& service_path,
                         const DictionaryValue* info) {
-    Network* network;
-    NetworkMap::iterator found = network_map_.find(service_path);
-    if (found != network_map_.end()) {
-      network = found->second;
-    } else {
+    Network* network = FindNetworkByPath(service_path);
+    if (!network) {
       ConnectionType type = ParseTypeFromDictionary(info);
       network = CreateNewNetwork(type, service_path);
       AddNetwork(network);
@@ -2466,12 +2520,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         wifi_scanning_ = false;
       }
     } else {
-      LOG(WARNING) << "ParseNetwork called with no update request entry: "
-                   << service_path;
+      // TODO(stevenjb): Enable warning once UpdateNetworkServiceList is fixed.
+      // LOG(WARNING) << "ParseNetwork called with no update request entry: "
+      //              << service_path;
     }
 
     VLOG(1) << "ParseNetwork:" << network->name();
-    NotifyNetworkManagerChanged();
+    NotifyNetworkManagerChanged(false);  // Not forced.
     return network;
   }
 
@@ -2488,7 +2543,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
     network->ParseInfo(info);  // virtual.
     VLOG(1) << "ParseRememberedNetwork:" << network->name();
-    NotifyNetworkManagerChanged();
+    NotifyNetworkManagerChanged(false);  // Not forced.
     return network;
   }
 
@@ -2569,34 +2624,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
     device->ParseInfo(info);
     VLOG(1) << "ParseNetworkDevice:" << device->name();
-    NotifyNetworkManagerChanged();
+    NotifyNetworkManagerChanged(false);  // Not forced.
   }
 
   ////////////////////////////////////////////////////////////////////////////
-
-  WirelessNetwork* GetWirelessNetworkByPath(const std::string& path) const {
-    NetworkMap::const_iterator iter = network_map_.find(path);
-    if (iter != network_map_.end()) {
-      Network* network = iter->second;
-      if (network->type() == TYPE_WIFI || network->type() == TYPE_CELLULAR)
-        return static_cast<WirelessNetwork*>(network);
-    }
-    return NULL;
-  }
-
-  WifiNetwork* GetWifiNetworkByPath(const std::string& path) const {
-    WirelessNetwork* network = GetWirelessNetworkByPath(path);
-    if (network && network->type() == TYPE_WIFI)
-      return static_cast<WifiNetwork*>(network);
-    return NULL;
-  }
-
-  CellularNetwork* GetCellularNetworkByPath(const std::string& path) const {
-    WirelessNetwork* network = GetWirelessNetworkByPath(path);
-    if (network && network->type() == TYPE_CELLULAR)
-      return static_cast<CellularNetwork*>(network);
-    return NULL;
-  }
 
   void EnableNetworkDeviceType(ConnectionType device, bool enable) {
     if (!EnsureCrosLoaded())
@@ -2623,15 +2654,23 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   // We call this any time something in NetworkLibrary changes.
   // TODO(stevenjb): We should consider breaking this into multiplie
   // notifications, e.g. connection state, devices, services, etc.
-  void NotifyNetworkManagerChanged() {
+  void NotifyNetworkManagerChanged(bool force_update) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    // Limit the frequency of notifications.
-    if (notify_task_)
+    // Cancel any pending signals.
+    if (notify_task_) {
       notify_task_->Cancel();
-    notify_task_ = NewRunnableMethod(
-        this, &NetworkLibraryImpl::SignalNetworkManagerObservers);
-    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE, notify_task_,
-                                   kNetworkNotifyDelayMs);
+      notify_task_ = NULL;
+    }
+    if (force_update) {
+      // Signal observers now.
+      SignalNetworkManagerObservers();
+    } else {
+      // Schedule a deleayed signal to limit the frequency of notifications.
+      notify_task_ = NewRunnableMethod(
+          this, &NetworkLibraryImpl::SignalNetworkManagerObservers);
+      BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE, notify_task_,
+                                     kNetworkNotifyDelayMs);
+    }
   }
 
   void SignalNetworkManagerObservers() {
@@ -2677,10 +2716,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (key == NULL || value == NULL)
       return;
-    NetworkMap::iterator iter = network_map_.find(path);
-    if (iter != network_map_.end()) {
-      VLOG(1) << "UpdateNetworkStatus: " << path << "." << key;
-      Network* network = iter->second;
+    Network* network = FindNetworkByPath(path);
+    if (network) {
+      VLOG(1) << "UpdateNetworkStatus: " << network->name() << "." << key;
       // Note: ParseValue is virtual.
       int index = property_index_parser().Get(std::string(key));
       if (!network->ParseValue(index, value)) {
@@ -2688,6 +2726,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                      << path << "." << key;
       }
       NotifyNetworkChanged(network);
+      // Anything observing the manager needs to know about any service change.
+      NotifyNetworkManagerChanged(false);  // Not forced.
     }
   }
 
@@ -2758,7 +2798,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
               << " : " << plan->GetDataRemainingDesciption();
     }
     // Now, update any matching cellular network's cached data
-    CellularNetwork* cellular = GetCellularNetworkByPath(service_path);
+    CellularNetwork* cellular = FindCellularNetworkByPath(service_path);
     if (cellular) {
       CellularNetwork::DataLeft data_left;
       // If the network needs a new plan, then there's no data.
@@ -2973,13 +3013,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                  const std::string& cert,
                  bool autocon) {
       name = n;
-      password = p;
+      passphrase = p;
       identity = id;
       certpath = cert;
       auto_connect = autocon;
     }
     std::string name;
-    std::string password;
+    std::string passphrase;
     std::string identity;
     std::string certpath;
     bool auto_connect;
@@ -3061,6 +3101,8 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
 
   virtual const NetworkDevice* FindNetworkDeviceByPath(
       const std::string& path) const { return NULL; }
+  virtual Network* FindNetworkByPath(
+      const std::string& path) const { return NULL; }
   virtual WifiNetwork* FindWifiNetworkByPath(
       const std::string& path) const { return NULL; }
   virtual CellularNetwork* FindCellularNetworkByPath(
@@ -3079,11 +3121,11 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual void ConnectToWifiNetwork(const std::string& service_path) {}
   virtual void ConnectToWifiNetwork(ConnectionSecurity security,
                                     const std::string& ssid,
-                                    const std::string& password,
+                                    const std::string& passphrase,
                                     const std::string& identity,
                                     const std::string& certpath,
                                     bool auto_connect) {}
-  virtual void ConnectToCellularNetwork(const CellularNetwork* network) {}
+  virtual void ConnectToCellularNetwork(CellularNetwork* network) {}
   virtual void SignalCellularPlanPayment() {}
   virtual bool HasRecentCellularPlanPayment() { return false; }
   virtual void DisconnectFromWirelessNetwork(const WirelessNetwork* network) {}

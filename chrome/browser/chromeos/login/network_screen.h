@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
-#include "chrome/browser/chromeos/network_list.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 
 class WizardScreenDelegate;

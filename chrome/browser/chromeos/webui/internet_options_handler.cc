@@ -605,7 +605,7 @@ void InternetOptionsHandler::PopulateWifiDetails(
       dictionary->SetString("certPath", wifi->cert_path());
       dictionary->SetString("ident", wifi->identity());
       dictionary->SetBoolean("certNeeded", true);
-      dictionary->SetString("certPass", wifi->passphrase());
+      dictionary->SetString("certPass", wifi->GetPassphrase());
     } else {
       dictionary->SetBoolean("certNeeded", false);
     }
@@ -702,16 +702,13 @@ void InternetOptionsHandler::LoginCertCallback(const ListValue* args) {
   }
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  // If password does not come from the input, use one saved with the
-  // network details.
-  std::string password;
-  if (args->GetSize() != 4 || !args->GetString(3, &password)) {
-    const chromeos::WifiNetwork* network =
-        cros->FindWifiNetworkByPath(service_path);
-    if (network)
-      password = network->passphrase();
+  chromeos::WifiNetwork* network = cros->FindWifiNetworkByPath(service_path);
+  if (network) {
+    std::string passphrase;
+    if (args->GetSize() == 4 && args->GetString(3, &passphrase))
+      network->SetPassphrase(passphrase);
+    cros->ConnectToWifiNetwork(network);
   }
-  cros->ConnectToWifiNetwork(service_path);
 }
 
 void InternetOptionsHandler::LoginToOtherCallback(const ListValue* args) {
@@ -789,7 +786,7 @@ void InternetOptionsHandler::HandleWifiButtonClick(
     const std::string& command) {
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  chromeos::WifiNetwork* network = NULL;
+  chromeos::WifiNetwork* wifi = NULL;
   if (command == "forget") {
     if (!chromeos::UserManager::Get()->current_user_is_owner()) {
       LOG(WARNING) << "Non-owner tried to forget a network.";
@@ -799,29 +796,30 @@ void InternetOptionsHandler::HandleWifiButtonClick(
   } else if (!use_settings_ui_ && service_path == kOtherNetworksFakePath) {
     // Other wifi networks.
     CreateModalPopup(new chromeos::NetworkConfigView());
-  } else if ((network = cros->FindWifiNetworkByPath(service_path))) {
+  } else if ((wifi = cros->FindWifiNetworkByPath(service_path))) {
     if (command == "connect") {
       // Connect to wifi here. Open password page if appropriate.
-      if (network->IsPassphraseRequired()) {
+      if (wifi->IsPassphraseRequired()) {
         if (use_settings_ui_) {
-          if (network->encryption() == chromeos::SECURITY_8021X) {
-            PopulateDictionaryDetails(network, cros);
+          if (wifi->encryption() == chromeos::SECURITY_8021X) {
+            PopulateDictionaryDetails(wifi, cros);
           } else {
             DictionaryValue dictionary;
-            dictionary.SetString("servicePath", network->service_path());
+            dictionary.SetString("servicePath", wifi->service_path());
             web_ui_->CallJavascriptFunction(
                 "options.InternetOptions.showPasswordEntry", dictionary);
           }
         } else {
-          CreateModalPopup(new chromeos::NetworkConfigView(network));
+          CreateModalPopup(
+              new chromeos::NetworkConfigView(wifi));
         }
       } else {
-        cros->ConnectToWifiNetwork(service_path);
+        cros->ConnectToWifiNetwork(wifi);
       }
     } else if (command == "disconnect") {
-      cros->DisconnectFromWirelessNetwork(network);
+      cros->DisconnectFromWirelessNetwork(wifi);
     } else if (command == "options") {
-      PopulateDictionaryDetails(network, cros);
+      PopulateDictionaryDetails(wifi, cros);
     }
   }
 }
@@ -831,7 +829,7 @@ void InternetOptionsHandler::HandleCellularButtonClick(
     const std::string& command) {
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  const chromeos::CellularNetwork* cellular =
+  chromeos::CellularNetwork* cellular =
       cros->FindCellularNetworkByPath(service_path);
   if (cellular) {
     if (command == "connect") {

@@ -588,8 +588,6 @@
         'browser/chromeos/native_dialog_window.h',
         'browser/chromeos/native_theme_chromeos.cc',
         'browser/chromeos/native_theme_chromeos.h',
-        'browser/chromeos/network_list.cc',
-        'browser/chromeos/network_list.h',
         'browser/chromeos/network_login_observer.cc',
         'browser/chromeos/network_login_observer.h',
         'browser/chromeos/network_message_observer.cc',

@@ -57,6 +57,8 @@ class MockNetworkLibrary : public NetworkLibrary {
 
   MOCK_CONST_METHOD1(FindNetworkDeviceByPath,
                      NetworkDevice*(const std::string&));
+  MOCK_CONST_METHOD1(FindNetworkByPath,
+                     Network*(const std::string&));
   MOCK_CONST_METHOD1(FindWifiNetworkByPath,
                      WifiNetwork*(const std::string&));
   MOCK_CONST_METHOD1(FindCellularNetworkByPath,
@@ -76,7 +78,7 @@ class MockNetworkLibrary : public NetworkLibrary {
                                           const std::string&,
                                           const std::string&,
                                           bool));
-  MOCK_METHOD1(ConnectToCellularNetwork, void(const CellularNetwork*));
+  MOCK_METHOD1(ConnectToCellularNetwork, void(CellularNetwork*));
   MOCK_METHOD0(SignalCellularPlanPayment, void(void));
   MOCK_METHOD0(HasRecentCellularPlanPayment, bool(void));
 

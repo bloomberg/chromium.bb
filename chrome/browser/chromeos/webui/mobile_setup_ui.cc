@@ -245,24 +245,24 @@ class MobileSetupHandler
   // Starts OTASP process.
   void StartOTASP();
   // Checks if we need to reconnect due to failed connection attempt.
-  bool NeedsReconnecting(const chromeos::CellularNetwork* network,
+  bool NeedsReconnecting(chromeos::CellularNetwork* network,
                          PlanActivationState* new_state,
                          std::string* error_description);
   // Disconnect from network.
-  void DisconnectFromNetwork(const chromeos::CellularNetwork* network);
+  void DisconnectFromNetwork(chromeos::CellularNetwork* network);
   // Connects to cellular network, resets connection timer.
-  bool ConnectToNetwork(const chromeos::CellularNetwork* network, int delay);
+  bool ConnectToNetwork(chromeos::CellularNetwork* network, int delay);
   // Forces disconnect / reconnect when we detect portal connectivity issues.
-  void ForceReconnect(const chromeos::CellularNetwork* network, int delay);
+  void ForceReconnect(chromeos::CellularNetwork* network, int delay);
   // Reports connection timeout.
   bool ConnectionTimeout();
   // Verify the state of cellular network and modify internal state.
   void EvaluateCellularNetwork(chromeos::CellularNetwork* network);
   // Check the current cellular network for error conditions.
-  bool GotActivationError(const chromeos::CellularNetwork* network,
+  bool GotActivationError(chromeos::CellularNetwork* network,
                           std::string* error);
   // Sends status updates to WebUI page.
-  void UpdatePage(const chromeos::CellularNetwork* network,
+  void UpdatePage(chromeos::CellularNetwork* network,
                   const std::string& error_description);
   // Changes internal state.
   void ChangeState(chromeos::CellularNetwork* network,
@@ -281,7 +281,7 @@ class MobileSetupHandler
   void ReEnableOtherConnections();
 
   // Converts the currently active CellularNetwork device into a JS object.
-  static void GetDeviceInfo(const chromeos::CellularNetwork* network,
+  static void GetDeviceInfo(chromeos::CellularNetwork* network,
                             DictionaryValue* value);
   static bool ShouldReportDeviceState(std::string* state, std::string* error);
 
@@ -620,7 +620,7 @@ void MobileSetupHandler::ReconnectTimerFired() {
 }
 
 void MobileSetupHandler::DisconnectFromNetwork(
-    const chromeos::CellularNetwork* network) {
+    chromeos::CellularNetwork* network) {
   DCHECK(network);
   LOG(INFO) << "Disconnecting from: " << network->service_path();
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
@@ -631,7 +631,7 @@ void MobileSetupHandler::DisconnectFromNetwork(
 }
 
 bool MobileSetupHandler::NeedsReconnecting(
-    const chromeos::CellularNetwork* network,
+    chromeos::CellularNetwork* network,
     PlanActivationState* new_state,
     std::string* error_description) {
   DCHECK(network);
@@ -655,7 +655,7 @@ bool MobileSetupHandler::NeedsReconnecting(
 }
 
 bool MobileSetupHandler::ConnectToNetwork(
-    const chromeos::CellularNetwork* network,
+    chromeos::CellularNetwork* network,
     int delay) {
   if (network && network->connecting_or_connected())
     return true;
@@ -686,7 +686,7 @@ bool MobileSetupHandler::ConnectToNetwork(
 }
 
 void MobileSetupHandler::ForceReconnect(
-    const chromeos::CellularNetwork* network,
+    chromeos::CellularNetwork* network,
     int delay) {
   DCHECK(network);
   UMA_HISTOGRAM_COUNTS("Cellular.ActivationRetry", 1);
@@ -1052,7 +1052,7 @@ void MobileSetupHandler::CompleteActivation(
 }
 
 void MobileSetupHandler::UpdatePage(
-    const chromeos::CellularNetwork* network,
+    chromeos::CellularNetwork* network,
     const std::string& error_description) {
   DictionaryValue device_dict;
   if (network)
@@ -1218,7 +1218,7 @@ void MobileSetupHandler::DisableOtherNetworks() {
 }
 
 bool MobileSetupHandler::GotActivationError(
-    const chromeos::CellularNetwork* network, std::string* error) {
+    chromeos::CellularNetwork* network, std::string* error) {
   DCHECK(network);
   bool got_error = false;
   const char* error_code = kErrorDefault;
@@ -1262,7 +1262,7 @@ bool MobileSetupHandler::GotActivationError(
   return got_error;
 }
 
-void MobileSetupHandler::GetDeviceInfo(const chromeos::CellularNetwork* network,
+void MobileSetupHandler::GetDeviceInfo(chromeos::CellularNetwork* network,
                                        DictionaryValue* value) {
   DCHECK(network);
   chromeos::NetworkLibrary* cros =
@@ -1322,7 +1322,7 @@ void MobileSetupHandler::LoadCellularConfig() {
 ////////////////////////////////////////////////////////////////////////////////
 
 MobileSetupUI::MobileSetupUI(TabContents* contents) : WebUI(contents) {
-  const chromeos::CellularNetwork* network = GetCellularNetwork();
+  chromeos::CellularNetwork* network = GetCellularNetwork();
   std::string service_path = network ? network->service_path() : std::string();
   MobileSetupHandler* handler = new MobileSetupHandler(service_path);
   AddMessageHandler((handler)->Attach(this));

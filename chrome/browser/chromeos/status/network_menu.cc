@@ -215,7 +215,7 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
         ShowNetworkConfigView(new NetworkConfigView(wifi));
         return true;
       } else {
-        cros->ConnectToWifiNetwork(service_path);
+        cros->ConnectToWifiNetwork(wifi);
         // Connection failures are responsible for updating the UI, including
         // reopening dialogs.
         return true;
@@ -226,7 +226,7 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
       // TODO(stevenjb): Show notification.
     }
   } else if (flags & FLAG_CELLULAR) {
-    const CellularNetwork* cellular = cros->FindCellularNetworkByPath(
+    CellularNetwork* cellular = cros->FindCellularNetworkByPath(
         service_path);
     if (cellular) {
       if ((cellular->activation_state() != ACTIVATION_STATE_ACTIVATED &&

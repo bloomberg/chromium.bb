@@ -34,7 +34,8 @@ class WifiConfigView : public views::View,
                        public views::Combobox::Listener,
                        public SelectFileDialog::Listener {
  public:
-  // Wifi login dialog for wifi network |wifi|
+  // Wifi login dialog for wifi network |wifi|. |wifi| must be a non NULL
+  // pointer to a WifiNetwork in NetworkLibrary.
   WifiConfigView(NetworkConfigView* parent, WifiNetwork* wifi);
   // Wifi login dialog for "Joining other network..."
   explicit WifiConfigView(NetworkConfigView* parent);
@@ -63,16 +64,16 @@ class WifiConfigView : public views::View,
   virtual void Cancel();
 
   // Get the typed in ssid.
-  const std::string GetSSID() const;
+  std::string GetSSID() const;
   // Get the typed in passphrase.
-  const std::string GetPassphrase() const;
+  std::string GetPassphrase() const;
 
   // Returns whether or not we can login.
   bool CanLogin();
 
  private:
   // Initializes UI.
-  void Init();
+  void Init(WifiNetwork* wifi);
 
   // Updates state of the Login button.
   void UpdateDialogButtons();
@@ -85,7 +86,7 @@ class WifiConfigView : public views::View,
   // Whether or not it is an 802.1x network.
   bool is_8021x_;
 
-  WifiNetwork* wifi_;
+  std::string service_path_;
 
   views::Textfield* ssid_textfield_;
   views::Combobox* eap_method_combobox_;

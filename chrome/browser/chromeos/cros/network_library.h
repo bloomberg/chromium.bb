@@ -438,18 +438,7 @@ class WifiNetwork : public WirelessNetwork {
   const std::string& identity() const { return identity_; }
   const std::string& cert_path() const { return cert_path_; }
 
-  void set_encryption(ConnectionSecurity encryption) {
-    encryption_ = encryption;
-  }
-  void set_passphrase(const std::string& passphrase) {
-    passphrase_ = passphrase;
-  }
-  void set_identity(const std::string& identity) {
-    identity_ = identity;
-  }
-  void set_cert_path(const std::string& cert_path) {
-    cert_path_ = cert_path;
-  }
+  const std::string& GetPassphrase() const;
 
   void SetPassphrase(const std::string& passphrase);
   void SetIdentity(const std::string& identity);
@@ -470,8 +459,20 @@ class WifiNetwork : public WirelessNetwork {
   virtual bool ParseValue(int index, const Value* value);
 
  private:
+  void set_encryption(ConnectionSecurity encryption) {
+    encryption_ = encryption;
+  }
+  void set_passphrase(const std::string& passphrase) {
+    passphrase_ = passphrase;
+  }
   void set_passphrase_required(bool passphrase_required) {
     passphrase_required_ = passphrase_required;
+  }
+  void set_identity(const std::string& identity) {
+    identity_ = identity;
+  }
+  void set_cert_path(const std::string& cert_path) {
+    cert_path_ = cert_path;
   }
 
   ConnectionSecurity encryption_;
@@ -479,6 +480,10 @@ class WifiNetwork : public WirelessNetwork {
   bool passphrase_required_;
   std::string identity_;
   std::string cert_path_;
+
+  // Internal state (not stored in flimflam).
+  // Passphrase set by user (stored for UI).
+  std::string user_passphrase_;
 
   friend class NetworkLibraryImpl;
 };
@@ -696,8 +701,15 @@ class NetworkLibrary {
       const std::string& path) const = 0;
 
   // Return a pointer to the network, if it exists, or NULL.
-  virtual WifiNetwork* FindWifiNetworkByPath(
-      const std::string& path) const = 0;
+  // NOTE: Never store these results, store service paths instead.
+  // The pattern for doing an operation on a Network is:
+  // Network* network = cros->FindNetworkByPath(service_path);
+  // network->SetFoo();
+  // network->Connect();
+  // As long as this is done in sequence on the UI thread it will be safe;
+  // the network list only gets updated on the UI thread.
+  virtual Network* FindNetworkByPath(const std::string& path) const = 0;
+  virtual WifiNetwork* FindWifiNetworkByPath(const std::string& path) const = 0;
   virtual CellularNetwork* FindCellularNetworkByPath(
       const std::string& path) const = 0;
 
@@ -728,24 +740,22 @@ class NetworkLibrary {
 
   // TODO(joth): Add GetCellTowers to retrieve a CellTowerVector.
 
-  // TODO(stevenjb): eliminate Network* version of Connect functions.
-  // Instead, always use service_path and improve the error handling.
-  // Connect to the specified wireless network with password.
+  // Connect to the specified wireless network.
   virtual void ConnectToWifiNetwork(WifiNetwork* network) = 0;
 
   // Same as above but searches for an existing network by name.
   virtual void ConnectToWifiNetwork(const std::string& service_path) = 0;
 
-  // Connect to the specified network with security, ssid, and password.
+  // Connect to the specified network with security, ssid, and passphrase.
   virtual void ConnectToWifiNetwork(ConnectionSecurity security,
                                     const std::string& ssid,
-                                    const std::string& password,
+                                    const std::string& passphrase,
                                     const std::string& identity,
                                     const std::string& certpath,
                                     bool auto_connect) = 0;
 
   // Connect to the specified cellular network.
-  virtual void ConnectToCellularNetwork(const CellularNetwork* network) = 0;
+  virtual void ConnectToCellularNetwork(CellularNetwork* network) = 0;
 
   // Records information that cellular play payment had happened.
   virtual void SignalCellularPlanPayment() = 0;
