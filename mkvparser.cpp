@@ -7399,7 +7399,6 @@ long long Cluster::GetFirstTime() const
 }
 
 
-#if 0
 long long Cluster::GetLastTime() const
 {
     const BlockEntry* const pEntry = GetLast();
@@ -7412,7 +7411,6 @@ long long Cluster::GetLastTime() const
 
     return pBlock->GetTime(this);
 }
-#endif
 
 
 void Cluster::CreateBlock(
@@ -7545,13 +7543,31 @@ const BlockEntry* Cluster::GetFirst() const
 }
 
 
-#if 0
 const BlockEntry* Cluster::GetLast() const
 {
+#if 0
     LoadBlockEntries();
 
     if ((m_entries == NULL) || (m_entries_count <= 0))
         return NULL;
+#else
+    for (;;)
+    {
+        long long pos;
+        long len;
+
+        const long status = Parse(pos, len);
+        assert(status >= 0);
+
+        if (status != 0)  //no new block
+            break;
+    }
+
+    if (m_entries_count <= 0)
+        return NULL;
+
+    assert(m_entries);
+#endif
 
     const long idx = m_entries_count - 1;
 
@@ -7560,7 +7576,6 @@ const BlockEntry* Cluster::GetLast() const
 
     return pLast;
 }
-#endif
 
 
 const BlockEntry* Cluster::GetNext(const BlockEntry* pEntry) const

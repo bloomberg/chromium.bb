@@ -560,10 +560,10 @@ public:
     long long GetTimeCode() const;   //absolute, but not scaled
     long long GetTime() const;       //absolute, and scaled (nanosecond units)
     long long GetFirstTime() const;  //time (ns) of first (earliest) block
-    //long long GetLastTime() const;   //time (ns) of last (latest) block
+    long long GetLastTime() const;   //time (ns) of last (latest) block
 
     const BlockEntry* GetFirst() const;
-    //const BlockEntry* GetLast() const;
+    const BlockEntry* GetLast() const;
     const BlockEntry* GetNext(const BlockEntry*) const;
     const BlockEntry* GetEntry(const Track*, long long ns = -1) const;
     const BlockEntry* GetEntry(
