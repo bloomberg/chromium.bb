@@ -1,11 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/net/metadata_url_request.h"
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
+#include "base/task.h"
 #include "build/build_config.h"
 #include "chrome/browser/parsers/metadata_parser_manager.h"
 #include "chrome/browser/parsers/metadata_parser.h"
@@ -37,12 +39,14 @@ class MetadataRequestHandler : public net::URLRequestJob {
   std::string result_;
   bool parsed;
   int data_offset_;
+  ScopedRunnableMethodFactory<MetadataRequestHandler> method_factory_;
   DISALLOW_COPY_AND_ASSIGN(MetadataRequestHandler);
 };
 
 MetadataRequestHandler::MetadataRequestHandler(net::URLRequest* request)
     : net::URLRequestJob(request),
-      data_offset_(0) {
+      data_offset_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   parsed = false;
 }
 
@@ -57,8 +61,9 @@ net::URLRequestJob* MetadataRequestHandler::Factory(net::URLRequest* request,
 void MetadataRequestHandler::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &MetadataRequestHandler::StartAsync));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(&MetadataRequestHandler::StartAsync));
 }
 
 void MetadataRequestHandler::Kill() {

@@ -1,11 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/net/view_http_cache_job_factory.h"
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/task.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
@@ -24,7 +26,8 @@ class ViewHttpCacheJob : public net::URLRequestJob {
         cancel_(false),
         busy_(false),
         ALLOW_THIS_IN_INITIALIZER_LIST(
-            callback_(this, &ViewHttpCacheJob::OnIOComplete)) {}
+            callback_(this, &ViewHttpCacheJob::OnIOComplete)),
+        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
 
   virtual void Start();
   virtual void Kill();
@@ -44,6 +47,7 @@ class ViewHttpCacheJob : public net::URLRequestJob {
   bool busy_;
   net::ViewCacheHelper cache_helper_;
   net::CompletionCallbackImpl<ViewHttpCacheJob> callback_;
+  ScopedRunnableMethodFactory<ViewHttpCacheJob> method_factory_;
 };
 
 void ViewHttpCacheJob::Start() {
@@ -68,8 +72,9 @@ void ViewHttpCacheJob::Start() {
   if (rv != net::ERR_IO_PENDING) {
     // Start reading asynchronously so that all error reporting and data
     // callbacks happen as they would for network requests.
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &ViewHttpCacheJob::OnIOComplete, rv));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        method_factory_.NewRunnableMethod(&ViewHttpCacheJob::OnIOComplete, rv));
   }
 }
 
