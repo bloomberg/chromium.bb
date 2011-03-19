@@ -747,6 +747,9 @@ const char kNaClBrokerProcess[]             = "nacl-broker";
 // Causes the Native Client process to display a dialog on launch.
 const char kNaClStartupDialog[]             = "nacl-startup-dialog";
 
+// Use the latest incarnation of the new tab page.
+const char kNewTabPage4[]                   = "new-tab-page-4";
+
 // Disables the default browser check. Useful for UI/browser tests where we
 // want to avoid having the default browser info-bar displayed.
 const char kNoDefaultBrowserCheck[]         = "no-default-browser-check";

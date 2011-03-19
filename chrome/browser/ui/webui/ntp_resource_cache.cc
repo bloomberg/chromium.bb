@@ -395,8 +395,11 @@ void NTPResourceCache::CreateNewTabHTML() {
   // do here (all of the template data, etc.), but we keep the back end
   // consistent across builds, supporting the union of all NTP front-ends
   // for simplicity.
+  int ntp_resource_id =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4) ?
+          IDR_NEW_TAB_4_HTML : IDR_NEW_TAB_HTML;
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
-      GetRawDataResource(IDR_NEW_TAB_HTML));
+      GetRawDataResource(ntp_resource_id));
 
   // Inject the template data into the HTML so that it is available before any
   // layout is needed.
@@ -547,11 +550,13 @@ void NTPResourceCache::CreateNewTabCSS() {
       SkColorSetA(color_section_header_rule, 0)));  // $$$2
   subst3.push_back(SkColorToRGBAString(color_text_light));  // $$$3
 
-
   // Get our template.
+  int ntp_css_resource_id =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4) ?
+          IDR_NEW_TAB_4_THEME_CSS : IDR_NEW_TAB_THEME_CSS;
   static const base::StringPiece new_tab_theme_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_NEW_TAB_THEME_CSS));
+          ntp_css_resource_id));
 
   // Create the string from our template and the replacements.
   std::string css_string;

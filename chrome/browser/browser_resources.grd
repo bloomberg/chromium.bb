@@ -56,7 +56,8 @@ without changes to the corresponding grd file. etaa -->
         <include name="IDR_NEW_TAB_HTML" file="resources\touch_ntp\newtab.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_NEW_TAB_THEME_CSS" file="resources\touch_ntp\newtab.css" flattenhtml="true" type="BINDATA" />
       </if>
-      <include name="IDR_TOUCH_NEW_TAB_HTML" file="resources\touch_ntp\newtab.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_NEW_TAB_4_HTML" file="resources\ntp4\new_tab.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_NEW_TAB_4_THEME_CSS" file="resources\ntp4\new_tab.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NOTIFICATION_1LINE_HTML" file="resources\notification_1line.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NOTIFICATION_2LINE_HTML" file="resources\notification_2line.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NOTIFICATION_ICON_HTML" file="resources\notification_icon.html" type="BINDATA" />

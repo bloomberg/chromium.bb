@@ -288,6 +288,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kFocusExistingTabOnOpen)
   },
+  {
+    "new-tab-page-4",
+    IDS_FLAGS_NEW_TAB_PAGE_4_NAME,
+    IDS_FLAGS_NEW_TAB_PAGE_4_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kNewTabPage4)
+  },
 };
 
 const Experiment* experiments = kExperiments;
