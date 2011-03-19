@@ -3,8 +3,14 @@
 This is used to test prerendering in the case of HTML redirection.
 -->
 <head>
-<title>Prerender Redirect</title>
-<meta http-equiv="REFRESH" content="0;REPLACE_WITH_URL">
+  <title>Prerender Redirect</title>
 </head>
-<body></body>
+<body>
+  <script>
+    function OnIteration() {
+      document.location = 'REPLACE_WITH_URL';
+      return true;
+    }
+  </script>
+</body>
 </html>

@@ -101,7 +101,8 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
 
 class PrerenderBrowserTest : public InProcessBrowserTest {
  public:
-  PrerenderBrowserTest() : use_https_src_server_(false) {
+  PrerenderBrowserTest() : use_https_src_server_(false),
+                           on_iteration_succeeded_(true) {
     EnableDOMAutomation();
   }
 
@@ -167,6 +168,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     while (true) {
       ui_test_utils::RunMessageLoop();
       ++navigations;
+      EXPECT_TRUE(on_iteration_succeeded_);
 
       prerender_contents =
           static_cast<TestPrerenderContents*>(
@@ -178,6 +180,11 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         break;
       }
       prerender_contents->set_did_finish_loading(false);
+      MessageLoopForUI::current()->PostTask(
+          FROM_HERE,
+          NewRunnableMethod(this,
+                            &PrerenderBrowserTest::CallOnIteration,
+                            prerender_contents->render_view_host()));
     }
 
     switch (expected_final_status) {
@@ -226,8 +233,16 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   }
 
  private:
+  void CallOnIteration(RenderViewHost* rvh) {
+    on_iteration_succeeded_ = ui_test_utils::ExecuteJavaScript(
+        rvh,
+        L"",
+        L"if (typeof(OnIteration) != 'undefined') {OnIteration();}");
+  }
+
   GURL dest_url_;
   bool use_https_src_server_;
+  bool on_iteration_succeeded_;
 };
 
 // Checks that a page is correctly prerendered in the case of a
@@ -300,8 +315,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadIFrame) {
 // Javascript changing the window.location. This should not prerender
 // successfully.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadLocation) {
-  PrerenderTestURL("prerender_download_location.html",
-                   FINAL_STATUS_DOWNLOAD, 2);
+  std::string redirect_path;
+  ASSERT_TRUE(CreateRedirect("../download-test1.lib", &redirect_path));
+  PrerenderTestURL(redirect_path, FINAL_STATUS_DOWNLOAD, 2);
 }
 
 // Prerenders a page that contains an automatic download triggered through a
