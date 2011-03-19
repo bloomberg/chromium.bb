@@ -745,13 +745,17 @@ def _GenerateMSVSProject(project, options, version):
 
   # Get directory project file is in.
   gyp_dir = os.path.split(project.path)[0]
+  gyp_file = posixpath.split(project.build_file)[1]
+  gyp_path = _NormalizedSource(gyp_file)
+  relative_path_of_gyp_file = gyp.common.RelativePath(gyp_path, gyp_dir)
 
   config_type = _GetMSVSConfigurationType(spec, project.build_file)
   for config_name, config in spec['configurations'].iteritems():
     _AddConfigurationToMSVSProject(p, spec, config_type, config_name, config)
 
   # Prepare list of sources and excluded sources.
-  sources, excluded_sources = _PrepareListOfSources(project, spec)
+  sources, excluded_sources = _PrepareListOfSources(project, spec,
+                                                    relative_path_of_gyp_file)
 
   # Add rules.
   actions_to_add = {}
@@ -767,7 +771,7 @@ def _GenerateMSVSProject(project, options, version):
 
   _AddToolFilesToMSVS(p, spec)
   _HandlePreCompileHeaderStubs(p, spec)
-  _AddActions(actions_to_add, spec, project.build_file)
+  _AddActions(actions_to_add, spec, relative_path_of_gyp_file)
   _AddCopies(actions_to_add, spec)
   _WriteMSVSUserFile(project.path, version, spec)
 
@@ -1091,7 +1095,7 @@ def _AddNormalizedSources(sources_set, sources_array):
   sources = [_NormalizedSource(s) for s in sources_array]
   sources_set.update(set(sources))
 
-def _PrepareListOfSources(project, spec):
+def _PrepareListOfSources(project, spec, relative_path_of_gyp_file):
   """Prepare list of sources and excluded sources.
 
   Besides the sources specified directly in the spec, adds the gyp file so
@@ -1102,6 +1106,7 @@ def _PrepareListOfSources(project, spec):
   Arguments:
     project: the MSVSProject object.
     spec: The target dictionary containing the properties of the target.
+    relative_path_of_gyp_file: The relative path of the gyp file.
   Returns:
     A pair of (list of sources, list of excluded sources)
   """
@@ -1109,10 +1114,7 @@ def _PrepareListOfSources(project, spec):
   _AddNormalizedSources(sources, spec.get('sources', []))
   excluded_sources = set()
   # Add in the gyp file.
-  gyp_file = posixpath.split(project.build_file)[1]
-  gyp_path = _NormalizedSource(gyp_file)
-  project_dir = os.path.split(project.path)[0]
-  sources.add(gyp.common.RelativePath(gyp_path, project_dir))
+  sources.add(relative_path_of_gyp_file)
 
   # Add in 'action' inputs and outputs.
   for a in spec.get('actions', []):
@@ -1252,13 +1254,13 @@ def _HandlePreCompileHeaderStubs(p, spec):
                       {}, tools=[tool])
 
 
-def _AddActions(actions_to_add, spec, gyp_file):
+def _AddActions(actions_to_add, spec, relative_path_of_gyp_file):
   # Add actions.
   actions = spec.get('actions', [])
   for a in actions:
     cmd = _BuildCommandLineForRule(spec, a, has_input_path=False)
     # Attach actions to the gyp file if nothing else is there.
-    inputs = a.get('inputs') or [gyp_file]
+    inputs = a.get('inputs') or [relative_path_of_gyp_file]
     # Add the action.
     _AddActionStep(actions_to_add,
                    inputs=inputs,
