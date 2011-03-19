@@ -72,6 +72,12 @@ class FramebufferManager {
       return has_been_bound_ && !IsDeleted();
     }
 
+    // We can't know if the frame buffer is complete since that is
+    // implementation  dependent and we'd have to check after every glTexImage
+    // call but we can know in certain cases that it's NOT complete which we
+    // need to enforce the OpenGL ES 2.0 spec on top of DesktopGL.
+    bool IsNotComplete() const;
+
    private:
     friend class FramebufferManager;
     friend class base::RefCounted<FramebufferInfo>;

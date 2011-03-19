@@ -780,15 +780,15 @@ _ENUM_LISTS = {
   'RenderBufferParameter': {
     'type': 'GLenum',
     'valid': [
-      'GL_RENDERBUFFER_WIDTH',
-      'GL_RENDERBUFFER_HEIGHT',
-      'GL_RENDERBUFFER_INTERNAL_FORMAT',
       'GL_RENDERBUFFER_RED_SIZE',
       'GL_RENDERBUFFER_GREEN_SIZE',
       'GL_RENDERBUFFER_BLUE_SIZE',
       'GL_RENDERBUFFER_ALPHA_SIZE',
       'GL_RENDERBUFFER_DEPTH_SIZE',
       'GL_RENDERBUFFER_STENCIL_SIZE',
+      'GL_RENDERBUFFER_WIDTH',
+      'GL_RENDERBUFFER_HEIGHT',
+      'GL_RENDERBUFFER_INTERNAL_FORMAT',
     ],
   },
   'ShaderParameter': {
@@ -1093,6 +1093,7 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glCheckFramebufferStatusEXT',
     'result': ['GLenum'],
   },
+  'Clear': {'decoder_func': 'DoClear'},
   'ClearColor': {'decoder_func': 'DoClearColor'},
   'ClearDepthf': {
     'decoder_func': 'DoClearDepthf',

@@ -1491,15 +1491,15 @@ TEST_F(GLES2DecoderTest1, GetRenderbufferParameterivValidArgs) {
   Result* result = static_cast<Result*>(shared_memory_address_);
   EXPECT_CALL(
       *gl_, GetRenderbufferParameterivEXT(
-          GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, result->GetData()));
+          GL_RENDERBUFFER, GL_RENDERBUFFER_RED_SIZE, result->GetData()));
   result->size = 0;
   GetRenderbufferParameteriv cmd;
   cmd.Init(
-      GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, shared_memory_id_,
+      GL_RENDERBUFFER, GL_RENDERBUFFER_RED_SIZE, shared_memory_id_,
       shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
-                GL_RENDERBUFFER_WIDTH),
+                GL_RENDERBUFFER_RED_SIZE),
             result->GetNumResults());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1512,7 +1512,7 @@ TEST_F(GLES2DecoderTest1, GetRenderbufferParameterivInvalidArgs0_0) {
   result->size = 0;
   GetRenderbufferParameteriv cmd;
   cmd.Init(
-      GL_FRAMEBUFFER, GL_RENDERBUFFER_WIDTH, shared_memory_id_,
+      GL_FRAMEBUFFER, GL_RENDERBUFFER_RED_SIZE, shared_memory_id_,
       shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0u, result->size);
@@ -1526,7 +1526,8 @@ TEST_F(GLES2DecoderTest1, GetRenderbufferParameterivInvalidArgs2_0) {
       static_cast<GetRenderbufferParameteriv::Result*>(shared_memory_address_);
   result->size = 0;
   GetRenderbufferParameteriv cmd;
-  cmd.Init(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, kInvalidSharedMemoryId, 0);
+  cmd.Init(
+      GL_RENDERBUFFER, GL_RENDERBUFFER_RED_SIZE, kInvalidSharedMemoryId, 0);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   EXPECT_EQ(0u, result->size);
 }
@@ -1539,7 +1540,7 @@ TEST_F(GLES2DecoderTest1, GetRenderbufferParameterivInvalidArgs2_1) {
   result->size = 0;
   GetRenderbufferParameteriv cmd;
   cmd.Init(
-      GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, shared_memory_id_,
+      GL_RENDERBUFFER, GL_RENDERBUFFER_RED_SIZE, shared_memory_id_,
       kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   EXPECT_EQ(0u, result->size);

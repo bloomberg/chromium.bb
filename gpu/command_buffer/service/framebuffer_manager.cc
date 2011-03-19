@@ -169,6 +169,17 @@ void FramebufferManager::FramebufferInfo::MarkAttachedRenderbuffersAsCleared() {
   }
 }
 
+bool FramebufferManager::FramebufferInfo::IsNotComplete() const {
+  for (AttachmentMap::const_iterator it = attachments_.begin();
+       it != attachments_.end(); ++it) {
+    Attachment* attachment = it->second;
+    if (attachment->width() == 0 || attachment->height() == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 FramebufferManager::FramebufferInfo* FramebufferManager::GetFramebufferInfo(
     GLuint client_id) {
   FramebufferInfoMap::iterator it = framebuffer_infos_.find(client_id);

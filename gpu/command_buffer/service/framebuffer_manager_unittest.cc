@@ -147,6 +147,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
+  EXPECT_FALSE(info_->IsNotComplete());
 
   RenderbufferManager rb_manager(kMaxRenderbufferSize);
   rb_manager.CreateRenderbufferInfo(
@@ -159,16 +160,19 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   info_->AttachRenderbuffer(GL_COLOR_ATTACHMENT0, rb_info1);
   EXPECT_TRUE(info_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
+  EXPECT_TRUE(info_->IsNotComplete());
 
   // check adding another
   info_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, rb_info1);
   EXPECT_TRUE(info_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_TRUE(info_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
+  EXPECT_TRUE(info_->IsNotComplete());
 
   // check marking them as cleared.
   info_->MarkAttachedRenderbuffersAsCleared();
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
+  EXPECT_TRUE(info_->IsNotComplete());
 
   // Check adding one that is already cleared.
   info_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, rb_info1);
@@ -176,6 +180,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
 
   // Check marking the renderbuffer as unclared.
   rb_info1->SetInfo(kSamples1, kFormat1, kWidth1, kHeight1);
+  EXPECT_FALSE(info_->IsNotComplete());
 
   const FramebufferManager::FramebufferInfo::Attachment* attachment =
       info_->GetAttachment(GL_COLOR_ATTACHMENT0);
@@ -259,6 +264,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
+  EXPECT_FALSE(info_->IsNotComplete());
 
   FeatureInfo feature_info;
   TextureManager tex_manager(kMaxTextureSize, kMaxTextureSize);
@@ -267,14 +273,17 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   TextureManager::TextureInfo* tex_info1 =
       tex_manager.GetTextureInfo(kTextureClient1Id);
   ASSERT_TRUE(tex_info1 != NULL);
-  tex_manager.SetInfoTarget(tex_info1, GL_TEXTURE_2D);
-  tex_manager.SetLevelInfo(
-      &feature_info, tex_info1, GL_TEXTURE_2D, kLevel1,
-      kFormat1, kWidth1, kHeight1, kDepth, kBorder, kFormat1, kType);
 
   // check adding one attachment
   info_->AttachTexture(GL_COLOR_ATTACHMENT0, tex_info1, kTarget1, kLevel1);
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_TRUE(info_->IsNotComplete());
+
+  tex_manager.SetInfoTarget(tex_info1, GL_TEXTURE_2D);
+  tex_manager.SetLevelInfo(
+      &feature_info, tex_info1, GL_TEXTURE_2D, kLevel1,
+      kFormat1, kWidth1, kHeight1, kDepth, kBorder, kFormat1, kType);
+  EXPECT_FALSE(info_->IsNotComplete());
 
   const FramebufferManager::FramebufferInfo::Attachment* attachment =
       info_->GetAttachment(GL_COLOR_ATTACHMENT0);

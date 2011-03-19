@@ -989,6 +989,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Remembers the state of some capabilities.
   void SetCapabilityState(GLenum cap, bool enabled);
 
+  // Check that the current frame buffer is complete. Generates error if not.
+  bool CheckFramebufferComplete(const char* func_name);
+
   // Checks if the current program exists and is valid. If not generates the
   // appropriate GL error.  Returns true if the current program is in a usable
   // state.
@@ -1049,6 +1052,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Wrapper for glCheckFramebufferStatus
   GLenum DoCheckFramebufferStatus(GLenum target);
+
+  // Wrapper for glClear
+  void DoClear(GLbitfield mask);
 
   // Wrappers for clear and mask settings functions.
   void DoClearColor(
@@ -2218,6 +2224,15 @@ void GLES2DecoderImpl::RestoreCurrentTexture2DBindings() {
   glActiveTexture(GL_TEXTURE0 + active_texture_unit_);
 }
 
+bool GLES2DecoderImpl::CheckFramebufferComplete(const char* func_name) {
+  if (bound_draw_framebuffer_ && bound_draw_framebuffer_->IsNotComplete()) {
+    SetGLError(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT,
+               (std::string(func_name) + " framebuffer incomplete").c_str());
+    return false;
+  }
+  return true;
+}
+
 gfx::Size GLES2DecoderImpl::GetBoundReadFrameBufferSize() {
   if (bound_read_framebuffer_ != 0) {
     const FramebufferManager::FramebufferInfo::Attachment* attachment =
@@ -3268,8 +3283,17 @@ error::Error GLES2DecoderImpl::HandleRegisterSharedIdsCHROMIUM(
   return error::kNoError;
 }
 
+void GLES2DecoderImpl::DoClear(GLbitfield mask) {
+  if (CheckFramebufferComplete("glClear")) {
+    glClear(mask);
+  }
+}
+
 void GLES2DecoderImpl::DoDrawArrays(
     GLenum mode, GLint first, GLsizei count) {
+  if (!CheckFramebufferComplete("glDrawArrays")) {
+    return;
+  }
   // We have to check this here because the prototype for glDrawArrays
   // is GLint not GLsizei.
   if (first < 0) {
@@ -3539,11 +3563,20 @@ void GLES2DecoderImpl::DoGetRenderbufferParameteriv(
                "glGetRenderbufferParameteriv: no renderbuffer bound");
     return;
   }
-  if (pname == GL_RENDERBUFFER_INTERNAL_FORMAT) {
+  switch (pname) {
+  case GL_RENDERBUFFER_INTERNAL_FORMAT:
     *params = bound_renderbuffer_->internal_format();
-    return;
+    break;
+  case GL_RENDERBUFFER_WIDTH:
+    *params = bound_renderbuffer_->width();
+    break;
+  case GL_RENDERBUFFER_HEIGHT:
+    *params = bound_renderbuffer_->height();
+    break;
+  default:
+    glGetRenderbufferParameterivEXT(target, pname, params);
+    break;
   }
-  glGetRenderbufferParameterivEXT(target, pname, params);
 }
 
 void GLES2DecoderImpl::DoBlitFramebufferEXT(
@@ -4172,6 +4205,10 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
   }
   if (!validators_->index_type.IsValid(type)) {
     SetGLError(GL_INVALID_ENUM, "glDrawElements: type GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+
+  if (!CheckFramebufferComplete("glDrawElements")) {
     return error::kNoError;
   }
 
