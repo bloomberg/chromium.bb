@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,7 +120,7 @@ void UrlInfo::RemoveFromQueue() {
   }
   // Make a custom linear histogram for the region from 0 to boundary.
   const size_t kBucketCount = 52;
-  static scoped_refptr<base::Histogram> histogram =
+  scoped_refptr<base::Histogram> histogram =
       base::LinearHistogram::FactoryTimeGet(
           "DNS.QueueRecycledUnder2", TimeDelta(), kBoundary, kBucketCount,
           base::Histogram::kUmaTargetedHistogramFlag);

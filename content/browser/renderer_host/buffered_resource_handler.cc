@@ -29,18 +29,18 @@ namespace {
 void RecordSnifferMetrics(bool sniffing_blocked,
                           bool we_would_like_to_sniff,
                           const std::string& mime_type) {
-  static scoped_refptr<base::Histogram> nosniff_usage =
+  scoped_refptr<base::Histogram> nosniff_usage =
       base::BooleanHistogram::FactoryGet(
           "nosniff.usage", base::Histogram::kUmaTargetedHistogramFlag);
   nosniff_usage->AddBoolean(sniffing_blocked);
 
   if (sniffing_blocked) {
-    static scoped_refptr<base::Histogram> nosniff_otherwise =
+    scoped_refptr<base::Histogram> nosniff_otherwise =
         base::BooleanHistogram::FactoryGet(
             "nosniff.otherwise", base::Histogram::kUmaTargetedHistogramFlag);
     nosniff_otherwise->AddBoolean(we_would_like_to_sniff);
 
-    static scoped_refptr<base::Histogram> nosniff_empty_mime_type =
+    scoped_refptr<base::Histogram> nosniff_empty_mime_type =
         base::BooleanHistogram::FactoryGet(
             "nosniff.empty_mime_type",
             base::Histogram::kUmaTargetedHistogramFlag);
