@@ -87,7 +87,7 @@ bool Emf::CreateFromFile(const FilePath& metafile_path) {
 }
 
 
-bool Emf::Close() {
+bool Emf::FinishDocument() {
   DCHECK(!emf_ && hdc_);
   emf_ = CloseEnhMetaFile(hdc_);
   DCHECK(emf_);

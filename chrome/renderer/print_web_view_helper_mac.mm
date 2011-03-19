@@ -20,7 +20,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
                                    const gfx::Size& canvas_size,
                                    WebFrame* frame) {
   scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+      printing::NativeMetafileFactory::Create());
   if (!metafile->Init())
     return;
 
@@ -31,7 +31,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   gfx::Point origin(0.0f, 0.0f);
   RenderPage(params.params.printable_size, origin, scale_factor, page_number,
       frame, metafile.get());
-  metafile->Close();
+  metafile->FinishDocument();
 
   ViewHostMsg_DidPrintPage_Params page_params;
   page_params.data_size = metafile->GetDataSize();
@@ -67,7 +67,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
     return;
 
   scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+      printing::NativeMetafileFactory::Create());
   if (!metafile->Init())
     return;
 
@@ -86,7 +86,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
           static_cast<int>(params.pages[i]), frame, metafile.get());
     }
   }
-  metafile->Close();
+  metafile->FinishDocument();
 
   ViewHostMsg_DidPreviewDocument_Params preview_params;
   preview_params.data_size = metafile->GetDataSize();

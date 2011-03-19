@@ -1094,7 +1094,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
   canvas->endPlatformPaint();
 #elif defined(OS_MACOSX)
   scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+      printing::NativeMetafileFactory::Create());
   // Create a PDF metafile and render from there into the passed in context.
   if (metafile->InitFromData(buffer->mapped_buffer(), buffer->size())) {
     // Flip the transform.

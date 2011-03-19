@@ -96,7 +96,7 @@ bool PdfMetafile::FinishPage() {
   return true;
 }
 
-bool PdfMetafile::Close() {
+bool PdfMetafile::FinishDocument() {
   DCHECK(context_.get());
   DCHECK(!page_is_open_);
 

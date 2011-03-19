@@ -52,7 +52,7 @@ TEST(EmfTest, DC) {
   EXPECT_TRUE(emf.CreateDc(hdc, &rect));
   EXPECT_TRUE(emf.context() != NULL);
   // In theory, you'd use the HDC with GDI functions here.
-  EXPECT_TRUE(emf.Close());
+  EXPECT_TRUE(emf.FinishDocument());
   uint32 size = emf.GetDataSize();
   EXPECT_EQ(size, EMF_HEADER_SIZE);
   std::vector<BYTE> data;
@@ -138,7 +138,7 @@ TEST_F(EmfPrintingTest, PageBreak) {
     EXPECT_TRUE(emf.FinishPage());
     --pages;
   }
-  EXPECT_TRUE(emf.Close());
+  EXPECT_TRUE(emf.FinishDocument());
   uint32 size = emf.GetDataSize();
   std::vector<BYTE> data;
   EXPECT_TRUE(emf.GetData(&data));
@@ -176,7 +176,7 @@ TEST(EmfTest, FileBackedDC) {
   EXPECT_TRUE(emf.CreateFileBackedDc(hdc, &rect, metafile_path));
   EXPECT_TRUE(emf.context() != NULL);
   // In theory, you'd use the HDC with GDI functions here.
-  EXPECT_TRUE(emf.Close());
+  EXPECT_TRUE(emf.FinishDocument());
 
   uint32 size = emf.GetDataSize();
   EXPECT_EQ(size, EMF_HEADER_SIZE);

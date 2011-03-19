@@ -43,7 +43,7 @@ class Emf : public NativeMetafile {
                          const gfx::Point& content_origin,
                          const float& scale_factor);
   virtual bool FinishPage();
-  virtual bool Close();
+  virtual bool FinishDocument();
 
   virtual uint32 GetDataSize() const;
   virtual bool GetData(void* buffer, uint32 size) const;

@@ -272,7 +272,7 @@ void WebPluginDelegateStub::OnPrint(base::SharedMemoryHandle* shared_memory,
                                     uint32* size) {
 #if defined(OS_WIN)
   scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+      printing::NativeMetafileFactory::Create());
   if (!metafile->CreateDc(NULL, NULL)) {
     NOTREACHED();
     return;
@@ -280,7 +280,7 @@ void WebPluginDelegateStub::OnPrint(base::SharedMemoryHandle* shared_memory,
   HDC hdc = metafile->context();
   skia::PlatformDevice::InitializeDC(hdc);
   delegate_->Print(hdc);
-  if (!metafile->Close()) {
+  if (!metafile->FinishDocument()) {
     NOTREACHED();
     return;
   }
@@ -448,4 +448,3 @@ void WebPluginDelegateStub::OnSetFakeAcceleratedSurfaceWindowHandle(
   delegate_->set_windowed_handle(window);
 }
 #endif
-

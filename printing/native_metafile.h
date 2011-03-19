@@ -64,7 +64,7 @@ class NativeMetafile {
 
   // Closes the metafile. No further rendering is allowed (the current page
   // is implicitly closed).
-  virtual bool Close() = 0;
+  virtual bool FinishDocument() = 0;
 
   // Returns the size of the underlying data stream. Only valid after Close()
   // has been called.

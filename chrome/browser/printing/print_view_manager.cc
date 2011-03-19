@@ -134,7 +134,7 @@ void PrintViewManager::OnDidPrintPage(
     }
   }
 
-  scoped_ptr<NativeMetafile> metafile(NativeMetafileFactory::CreateMetafile());
+  scoped_ptr<NativeMetafile> metafile(NativeMetafileFactory::Create());
   if (metafile_must_be_valid) {
     if (!metafile->InitFromData(shared_buf.memory(), params.data_size)) {
       NOTREACHED() << "Invalid metafile header";

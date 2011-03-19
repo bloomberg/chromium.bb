@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -238,17 +238,17 @@ TEST(IPCMessageTest, PageRange) {
 #if defined(OS_WIN)
 TEST(IPCMessageTest, Metafile) {
   scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+      printing::NativeMetafileFactory::Create());
   RECT test_rect = {0, 0, 100, 100};
   // Create a metafile using the screen DC as a reference.
   metafile->CreateDc(NULL, NULL);
-  metafile->Close();
+  metafile->FinishDocument();
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::ParamTraits<printing::NativeMetafile>::Write(&msg, *metafile);
 
   scoped_ptr<printing::NativeMetafile> output(
-      printing::NativeMetafileFactory::CreateMetafile());
+      printing::NativeMetafileFactory::Create());
   void* iter = NULL;
   EXPECT_TRUE(IPC::ParamTraits<printing::NativeMetafile>::Read(
       &msg, &iter, output.get()));
@@ -267,7 +267,7 @@ TEST(IPCMessageTest, Metafile) {
   bad_msg.WriteData(bogus_data.get(), bogus_data_size);
   // Make sure we don't read out the metafile!
   scoped_ptr<printing::NativeMetafile> bad_output(
-      printing::NativeMetafileFactory::CreateMetafile());
+      printing::NativeMetafileFactory::Create());
   iter = NULL;
   EXPECT_FALSE(IPC::ParamTraits<printing::NativeMetafile>::Read(
       &bad_msg, &iter, bad_output.get()));

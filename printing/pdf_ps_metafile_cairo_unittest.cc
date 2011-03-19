@@ -43,7 +43,7 @@ TEST_F(PdfPsTest, Pdf) {
   EXPECT_TRUE(pdf.FinishPage());
 
   // Closes the file.
-  pdf.Close();
+  pdf.FinishDocument();
 
   // Checks data size.
   uint32 size = pdf.GetDataSize();
@@ -75,7 +75,7 @@ TEST_F(PdfPsTest, Pdf) {
   std::string test_raw_data = "Dummy PDF";
   EXPECT_TRUE(pdf3.SetRawData(test_raw_data.c_str(), test_raw_data.size()));
   EXPECT_TRUE(pdf3.FinishPage());
-  pdf3.Close();
+  pdf3.FinishDocument();
   size = pdf3.GetDataSize();
   EXPECT_EQ(test_raw_data.size(), size);
   std::string output;

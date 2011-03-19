@@ -18,7 +18,7 @@ class NativeMetafileFactory {
  public:
   // This method returns a pointer to the appropriate NativeMetafile object
   // according to the platform.
-  static printing::NativeMetafile* CreateMetafile();
+  static printing::NativeMetafile* Create();
 
  private:
   NativeMetafileFactory();

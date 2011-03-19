@@ -32,7 +32,7 @@ TEST(PdfMetafileTest, Pdf) {
   pdf.StartPage(size_2, origin_2, 2.0);
   pdf.FinishPage();
 
-  pdf.Close();
+  pdf.FinishDocument();
 
   // Check data size.
   uint32 size = pdf.GetDataSize();

@@ -176,7 +176,7 @@ bool PdfPsMetafile::FinishPage() {
   return true;
 }
 
-bool PdfPsMetafile::Close() {
+bool PdfPsMetafile::FinishDocument() {
   DCHECK(IsSurfaceValid(surface_));
   DCHECK(IsContextValid(context_));
 

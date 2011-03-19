@@ -37,7 +37,7 @@ class PdfMetafile : public NativeMetafile {
                          const gfx::Point& content_origin,
                          const float& scale_factor);
   virtual bool FinishPage();
-  virtual bool Close();
+  virtual bool FinishDocument();
 
   virtual uint32 GetDataSize() const;
   virtual bool GetData(void* dst_buffer, uint32 dst_buffer_size) const;

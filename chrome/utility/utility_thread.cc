@@ -260,7 +260,7 @@ bool UtilityThread::RenderPDFToWinMetafile(
     return false;
 
   scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+      printing::NativeMetafileFactory::Create());
   metafile->CreateFileBackedDc(NULL, NULL, metafile_path);
   // Since we created the metafile using the screen DPI (but we actually want
   // the PDF DLL to print using the passed in render_dpi, we apply the following
@@ -291,7 +291,7 @@ bool UtilityThread::RenderPDFToWinMetafile(
       metafile->FinishPage();
     }
   }
-  metafile->Close();
+  metafile->FinishDocument();
   return ret;
 }
 #endif  // defined(OS_WIN)

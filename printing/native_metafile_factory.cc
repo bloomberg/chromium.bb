@@ -15,7 +15,7 @@
 namespace printing {
 
 // static
-printing::NativeMetafile* NativeMetafileFactory::CreateMetafile() {
+printing::NativeMetafile* NativeMetafileFactory::Create() {
 #if defined(OS_WIN)
   return new printing::Emf;
 #elif defined(OS_MACOSX)

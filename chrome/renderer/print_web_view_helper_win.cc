@@ -73,7 +73,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   // Generate a memory-based metafile. It will use the current screen's DPI.
   // Each metafile contains a single page.
   scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+      printing::NativeMetafileFactory::Create());
   metafile->CreateDc(NULL, NULL);
   DCHECK(metafile->context());
   skia::PlatformDevice::InitializeDC(metafile->context());
@@ -88,7 +88,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   RenderPage(params.params, &scale_factor, page_number, frame, &metafile);
 
   // Close the device context to retrieve the compiled metafile.
-  if (!metafile->Close())
+  if (!metafile->FinishDocument())
     NOTREACHED();
 
   // Get the size of the compiled metafile.
@@ -141,7 +141,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
   // EMF with PDF metafile.
   // http://code.google.com/p/chromium/issues/detail?id=62889
   scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+      printing::NativeMetafileFactory::Create());
   metafile->CreateDc(NULL, NULL);
   DCHECK(metafile->context());
   skia::PlatformDevice::InitializeDC(metafile->context());
@@ -166,7 +166,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
   }
 
   // Close the device context to retrieve the compiled metafile.
-  if (!metafile->Close())
+  if (!metafile->FinishDocument())
     NOTREACHED();
 
   // Get the size of the compiled metafile.
@@ -276,11 +276,11 @@ void PrintWebViewHelper::RenderPage(
       static_cast<skia::VectorPlatformDevice*>(canvas.getDevice());
   if (platform_device->alpha_blend_used() && !params.supports_alpha_blend) {
     // Close the device context to retrieve the compiled metafile.
-    if (!(*metafile)->Close())
+    if (!(*metafile)->FinishDocument())
       NOTREACHED();
 
     scoped_ptr<printing::NativeMetafile> metafile2(
-        printing::NativeMetafileFactory::CreateMetafile());
+        printing::NativeMetafileFactory::Create());
     // Page used alpha blend, but printer doesn't support it.  Rewrite the
     // metafile and flatten out the transparency.
     HDC bitmap_dc = CreateCompatibleDC(GetDC(NULL));

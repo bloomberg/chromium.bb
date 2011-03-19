@@ -205,7 +205,7 @@ void ServiceUtilityProcessHost::Client::MetafileAvailable(
     LOG(WARNING) << "Unable to set scratch metafile directory";
 #if defined(OS_WIN)
   scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+      printing::NativeMetafileFactory::Create());
   if (!metafile->CreateFromFile(metafile_path)) {
     OnRenderPDFPagesToMetafileFailed();
   } else {
