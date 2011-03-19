@@ -11,6 +11,7 @@
 #include "chrome/browser/importer/external_process_importer_client.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,11 +40,10 @@ ImporterHost::ImporterHost()
 }
 
 void ImporterHost::ShowWarningDialog() {
-  if (headless_) {
+  if (headless_)
     OnImportLockDialogEnd(false);
-  } else {
+  else
     importer::ShowImportLockDialog(parent_window_, this);
-  }
 }
 
 void ImporterHost::OnImportLockDialogEnd(bool is_continue) {
@@ -66,6 +66,32 @@ void ImporterHost::OnImportLockDialogEnd(bool is_continue) {
     importer_ = NULL;
     NotifyImportEnded();
   }
+}
+
+void ImporterHost::SetObserver(importer::ImporterProgressObserver* observer) {
+  observer_ = observer;
+}
+
+void ImporterHost::NotifyImportStarted() {
+  if (observer_)
+    observer_->ImportStarted();
+}
+
+void ImporterHost::NotifyImportItemStarted(importer::ImportItem item) {
+  if (observer_)
+    observer_->ImportItemStarted(item);
+}
+
+void ImporterHost::NotifyImportItemEnded(importer::ImportItem item) {
+  if (observer_)
+    observer_->ImportItemEnded(item);
+}
+
+void ImporterHost::NotifyImportEnded() {
+  firefox_lock_.reset();  // Release the Firefox profile lock.
+  if (observer_)
+    observer_->ImportEnded();
+  Release();
 }
 
 void ImporterHost::StartImportSettings(
@@ -133,32 +159,6 @@ void ImporterHost::Cancel() {
     importer_->Cancel();
 }
 
-void ImporterHost::SetObserver(importer::ImporterProgressObserver* observer) {
-  observer_ = observer;
-}
-
-void ImporterHost::NotifyImportStarted() {
-  if (observer_)
-    observer_->ImportStarted();
-}
-
-void ImporterHost::NotifyImportItemStarted(importer::ImportItem item) {
-  if (observer_)
-    observer_->ImportItemStarted(item);
-}
-
-void ImporterHost::NotifyImportItemEnded(importer::ImportItem item) {
-  if (observer_)
-    observer_->ImportItemEnded(item);
-}
-
-void ImporterHost::NotifyImportEnded() {
-  firefox_lock_.reset();  // Release the Firefox profile lock.
-  if (observer_)
-    observer_->ImportEnded();
-  Release();
-}
-
 ImporterHost::~ImporterHost() {
   if (NULL != importer_)
     importer_->Release();
@@ -168,38 +168,6 @@ ImporterHost::~ImporterHost() {
                        // is if we have a profile.
     profile_->GetBookmarkModel()->RemoveObserver(this);
   }
-}
-
-void ImporterHost::InvokeTaskIfDone() {
-  if (waiting_for_bookmarkbar_model_ || !registrar_.IsEmpty() ||
-      !is_source_readable_)
-    return;
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, task_);
-}
-
-void ImporterHost::Loaded(BookmarkModel* model) {
-  DCHECK(model->IsLoaded());
-  model->RemoveObserver(this);
-  waiting_for_bookmarkbar_model_ = false;
-  installed_bookmark_observer_ = false;
-
-  importer_->set_import_to_bookmark_bar(!model->HasBookmarks());
-  InvokeTaskIfDone();
-}
-
-void ImporterHost::BookmarkModelBeingDeleted(BookmarkModel* model) {
-  installed_bookmark_observer_ = false;
-}
-
-void ImporterHost::BookmarkModelChanged() {
-}
-
-void ImporterHost::Observe(NotificationType type,
-                           const NotificationSource& source,
-                           const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TEMPLATE_URL_MODEL_LOADED);
-  registrar_.RemoveAll();
-  InvokeTaskIfDone();
 }
 
 bool ImporterHost::ShouldImportToBookmarkBar(bool first_run) {
@@ -245,4 +213,36 @@ void ImporterHost::CheckForLoadedModels(uint16 items) {
       model->Load();
     }
   }
+}
+
+void ImporterHost::InvokeTaskIfDone() {
+  if (waiting_for_bookmarkbar_model_ || !registrar_.IsEmpty() ||
+      !is_source_readable_)
+    return;
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, task_);
+}
+
+void ImporterHost::Loaded(BookmarkModel* model) {
+  DCHECK(model->IsLoaded());
+  model->RemoveObserver(this);
+  waiting_for_bookmarkbar_model_ = false;
+  installed_bookmark_observer_ = false;
+
+  importer_->set_import_to_bookmark_bar(!model->HasBookmarks());
+  InvokeTaskIfDone();
+}
+
+void ImporterHost::BookmarkModelBeingDeleted(BookmarkModel* model) {
+  installed_bookmark_observer_ = false;
+}
+
+void ImporterHost::BookmarkModelChanged() {
+}
+
+void ImporterHost::Observe(NotificationType type,
+                           const NotificationSource& source,
+                           const NotificationDetails& details) {
+  DCHECK(type == NotificationType::TEMPLATE_URL_MODEL_LOADED);
+  registrar_.RemoveAll();
+  InvokeTaskIfDone();
 }

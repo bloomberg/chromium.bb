@@ -12,7 +12,6 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/importer/importer_data_types.h"
-#include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/profile_writer.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -45,22 +44,6 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // the "Continue" button.
   void OnImportLockDialogEnd(bool is_continue);
 
-  // Starts the process of importing the settings and data depending on what the
-  // user selected.
-  // |profile_info| - browser profile to import.
-  // |target_profile| - profile to import into.
-  // |items| - specifies which data to import (bitmask of importer::ImportItem).
-  // |writer| - called to actually write data back to the profile.
-  // |first_run| - true if this method is being called during first run.
-  virtual void StartImportSettings(const importer::ProfileInfo& profile_info,
-                                   Profile* target_profile,
-                                   uint16 items,
-                                   ProfileWriter* writer,
-                                   bool first_run);
-
-  // Cancel import.
-  virtual void Cancel();
-
   void SetObserver(importer::ImporterProgressObserver* observer);
 
   // A series of functions invoked at the start, during and end of the import
@@ -80,31 +63,47 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
     parent_window_ = parent_window;
   }
 
- protected:
-  friend class base::RefCountedThreadSafe<ImporterHost>;
+  // Starts the process of importing the settings and data depending on what the
+  // user selected.
+  // |profile_info| - browser profile to import.
+  // |target_profile| - profile to import into.
+  // |items| - specifies which data to import (bitmask of importer::ImportItem).
+  // |writer| - called to actually write data back to the profile.
+  // |first_run| - true if this method is being called during first run.
+  virtual void StartImportSettings(const importer::ProfileInfo& profile_info,
+                                   Profile* target_profile,
+                                   uint16 items,
+                                   ProfileWriter* writer,
+                                   bool first_run);
 
+  // Cancels the import process.
+  virtual void Cancel();
+
+ protected:
   ~ImporterHost();
 
   // Returns true if importer should import to bookmark bar.
   bool ShouldImportToBookmarkBar(bool first_run);
 
   // Make sure that Firefox isn't running, if import browser is Firefox. Show
-  // the user a dialog to notify that they need to close FF to continue.
-  // |profile_info| holds the browser type and source path.
-  // |items| is a mask of all ImportItems that are to be imported.
-  // |first_run| is true if this method is being called during first run.
+  // to the user a dialog that notifies that is necessary to close Firefox
+  // prior to continue.
+  // |profile_info| - browser profile to import.
+  // |items| - specifies which data to import (bitmask of importer::ImportItem).
+  // |first_run| - true if this method is being called during first run.
   void CheckForFirefoxLock(const importer::ProfileInfo& profile_info,
-                           uint16 items, bool first_run);
+                           uint16 items,
+                           bool first_run);
 
   // Make sure BookmarkModel and TemplateURLModel are loaded before import
-  // process starts, if bookmarks and / or search engines are among the items
+  // process starts, if bookmarks and/or search engines are among the items
   // which are to be imported.
   void CheckForLoadedModels(uint16 items);
 
   // Profile we're importing from.
   Profile* profile_;
 
-  // TODO(mirandac): task_ and importer_ should be private.  Can't just put
+  // TODO(mirandac): |task_| and |importer_| should be private. Can't just put
   // them there without changing the order of construct/destruct, so do this
   // after main CL has been committed.
   // The task is the process of importing settings from other browsers.
@@ -129,6 +128,8 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   scoped_refptr<ProfileWriter> writer_;
 
  private:
+  friend class base::RefCountedThreadSafe<ImporterHost>;
+
   // Launches the thread that starts the import task, unless bookmark or
   // template model are not yet loaded. If load is not detected, this method
   // will be called when the loading observer sees that model loading is

@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_host.h"
+#include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -27,8 +28,8 @@
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
 
-// TODO(port): move more code in back from the first_run_win.cc module.
 #if defined(OS_WIN)
+// TODO(port): move more code in back from the first_run_win.cc module.
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #endif
