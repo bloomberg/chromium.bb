@@ -363,6 +363,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // True if we are in fullscreen mode. Note: it is false during the transition.
   bool fullscreen_;
 
+  // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.
+  SkBitmap* sad_plugin_;
+
   typedef std::set<PluginObject*> PluginObjectSet;
   PluginObjectSet live_plugin_objects_;
 

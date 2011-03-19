@@ -24,6 +24,7 @@
 class AudioMessageFilter;
 class GURL;
 class P2PSocketDispatcher;
+class SkBitmap;
 
 namespace base {
 class MessageLoopProxy;
@@ -208,6 +209,11 @@ class PluginDelegate {
         PP_VideoUncompressedDataBuffer_Dev& buffer) = 0;
   };
 
+  // Notification that the given plugin has crashed. When a plugin crashes, all
+  // instances associated with that plugin will notify that they've crashed via
+  // this function.
+  virtual void PluginCrashed(PluginInstance* instance) = 0;
+
   // Indicates that the given instance has been created.
   virtual void InstanceCreated(PluginInstance* instance) = 0;
 
@@ -215,6 +221,10 @@ class PluginDelegate {
   // the destructor, so it's important that the instance is not dereferenced
   // from this call.
   virtual void InstanceDeleted(PluginInstance* instance) = 0;
+
+  // Returns a pointer (ownership not transferred) to the bitmap to paint the
+  // sad plugin screen with. Returns NULL on failure.
+  virtual SkBitmap* GetSadPluginBitmap() = 0;
 
   // The caller will own the pointer returned from this.
   virtual PlatformImage2D* CreateImage2D(int width, int height) = 0;

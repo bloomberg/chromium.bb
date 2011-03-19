@@ -45,6 +45,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/plugins/sad_plugin.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_POSIX)
@@ -1152,39 +1153,8 @@ void WebPluginDelegateProxy::PaintSadPlugin(WebKit::WebCanvas* native_context,
   // Lazily load the sad plugin image.
   if (!sad_plugin_)
     sad_plugin_ = content::GetContentClient()->renderer()->GetSadPluginBitmap();
-
-  if (!sad_plugin_)
-    return;
-
-  // Make a temporary canvas for the background image.
-  const int width = plugin_rect_.width();
-  const int height = plugin_rect_.height();
-  gfx::CanvasSkia canvas(width, height, false);
-#if defined(OS_MACOSX)
-  // Flip the canvas, since the context expects flipped data.
-  canvas.translate(0, height);
-  canvas.scale(1, -1);
-#endif
-  SkPaint paint;
-
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(SK_ColorBLACK);
-  canvas.drawRectCoords(0, 0, SkIntToScalar(width), SkIntToScalar(height),
-                        paint);
-  canvas.DrawBitmapInt(*sad_plugin_,
-                       std::max(0, (width - sad_plugin_->width())/2),
-                       std::max(0, (height - sad_plugin_->height())/2));
-
-  // It's slightly less code to make a big SkBitmap of the sad tab image and
-  // then copy that to the screen than to use the native APIs. The small speed
-  // penalty is not important when drawing crashed plugins.
-#if WEBKIT_USING_SKIA
-  gfx::NativeDrawingContext context = native_context->beginPlatformPaint();
-  BlitCanvasToContext(context, plugin_rect_, &canvas, gfx::Point(0, 0));
-  native_context->endPlatformPaint();
-#elif WEBKIT_USING_CG
-  BlitCanvasToContext(native_context, plugin_rect_, &canvas, gfx::Point(0, 0));
-#endif
+  if (sad_plugin_)
+    webkit::PaintSadPlugin(native_context, plugin_rect_, *sad_plugin_);
 }
 
 void WebPluginDelegateProxy::CopyFromTransportToBacking(const gfx::Rect& rect) {

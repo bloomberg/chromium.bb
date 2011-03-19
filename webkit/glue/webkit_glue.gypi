@@ -356,6 +356,8 @@
         '../plugins/ppapi/var.h',
         '../plugins/ppapi/var_object_class.cc',
         '../plugins/ppapi/var_object_class.h',
+        '../plugins/sad_plugin.cc',
+        '../plugins/sad_plugin.h',
         'media/audio_decoder.cc',
         'media/audio_decoder.h',
         'media/buffered_data_source.cc',

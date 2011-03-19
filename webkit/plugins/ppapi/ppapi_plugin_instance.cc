@@ -53,6 +53,7 @@
 #include "webkit/plugins/ppapi/ppp_pdf.h"
 #include "webkit/plugins/ppapi/string.h"
 #include "webkit/plugins/ppapi/var.h"
+#include "webkit/plugins/sad_plugin.h"
 
 #if defined(OS_POSIX)
 #include "printing/native_metafile.h"
@@ -335,7 +336,8 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       plugin_graphics_3d_interface_(NULL),
       always_on_top_(false),
       fullscreen_container_(NULL),
-      fullscreen_(false) {
+      fullscreen_(false),
+      sad_plugin_(NULL) {
   pp_instance_ = ResourceTracker::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
@@ -394,6 +396,15 @@ const PPB_Zoom_Dev* PluginInstance::GetZoomInterface() {
 void PluginInstance::Paint(WebCanvas* canvas,
                            const gfx::Rect& plugin_rect,
                            const gfx::Rect& paint_rect) {
+  if (module()->is_crashed()) {
+    // Crashed plugin painting.
+    if (!sad_plugin_)  // Lazily initialize bitmap.
+      sad_plugin_ = delegate_->GetSadPluginBitmap();
+    if (sad_plugin_)
+      webkit::PaintSadPlugin(canvas, plugin_rect, *sad_plugin_);
+    return;
+  }
+
   if (bound_graphics_2d())
     bound_graphics_2d()->Paint(canvas, plugin_rect, paint_rect);
 }
@@ -451,7 +462,7 @@ void PluginInstance::InstanceCrashed() {
   bound_graphics_ = NULL;
   InvalidateRect(gfx::Rect());
 
-  // TODO(brettw) show a crashed plugin screen.
+  delegate()->PluginCrashed(this);
 }
 
 PP_Var PluginInstance::GetWindowObject() {

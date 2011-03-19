@@ -15,8 +15,10 @@ class MockPluginDelegate : public PluginDelegate {
   MockPluginDelegate();
   ~MockPluginDelegate();
 
+  virtual void PluginCrashed(PluginInstance* instance);
   virtual void InstanceCreated(PluginInstance* instance);
   virtual void InstanceDeleted(PluginInstance* instance);
+  virtual SkBitmap* GetSadPluginBitmap();
   virtual PlatformImage2D* CreateImage2D(int width, int height);
   virtual PlatformContext3D* CreateContext3D();
   virtual PlatformVideoDecoder* CreateVideoDecoder(

@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/native_library.h"
 #include "base/process.h"
 #include "base/ref_counted.h"
@@ -75,6 +76,7 @@ class PluginModule : public base::RefCounted<PluginModule>,
   // all plugin modules. In practice it will be a global singleton that
   // tracks which modules are alive.
   PluginModule(const std::string& name,
+               const FilePath& path,
                PluginDelegate::ModuleLifetime* lifetime_delegate);
 
   ~PluginModule();
@@ -103,6 +105,7 @@ class PluginModule : public base::RefCounted<PluginModule>,
   PP_Module pp_module() const { return pp_module_; }
 
   const std::string& name() const { return name_; }
+  const FilePath& path() const { return path_; }
 
   PluginInstance* CreateInstance(PluginDelegate* delegate);
 
@@ -127,6 +130,8 @@ class PluginModule : public base::RefCounted<PluginModule>,
   // Called when running out of process and the plugin crashed. This will
   // release relevant resources and update all affected instances.
   void PluginCrashed();
+
+  bool is_crashed() const { return is_crashed_; }
 
   // Reserves the given instance is unique within the plugin, checking for
   // collisions. See PPB_Proxy_Private for more information.
@@ -173,8 +178,9 @@ class PluginModule : public base::RefCounted<PluginModule>,
   // presence of the out_of_process_proxy_ value.
   EntryPoints entry_points_;
 
-  // The name of the module.
+  // The name and file location of the module.
   const std::string name_;
+  const FilePath path_;
 
   // Non-owning pointers to all instances associated with this module. When
   // there are no more instances, this object should be deleted.

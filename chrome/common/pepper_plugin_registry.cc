@@ -310,7 +310,7 @@ PepperPluginRegistry::PepperPluginRegistry() {
       continue;  // Out of process plugins need no special pre-initialization.
 
     scoped_refptr<webkit::ppapi::PluginModule> module =
-        new webkit::ppapi::PluginModule(current.name, this);
+        new webkit::ppapi::PluginModule(current.name, current.path, this);
     AddLiveModule(current.path, module);
     if (current.is_internal) {
       if (!module->InitAsInternalPlugin(current.internal_entry_points)) {

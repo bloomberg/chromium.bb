@@ -12,6 +12,8 @@
 #include "base/file_path.h"
 #include "content/browser/browser_child_process_host.h"
 
+struct PepperPluginInfo;
+
 class PpapiPluginProcessHost : public BrowserChildProcessHost {
  public:
   class Client {
@@ -32,9 +34,9 @@ class PpapiPluginProcessHost : public BrowserChildProcessHost {
   explicit PpapiPluginProcessHost();
   virtual ~PpapiPluginProcessHost();
 
-  // Actually launches the process with the given plugin path. Returns true
+  // Actually launches the process with the given plugin info. Returns true
   // on success (the process was spawned).
-  bool Init(const FilePath& path);
+  bool Init(const PepperPluginInfo& info);
 
   // Opens a new channel to the plugin. The client will be notified when the
   // channel is ready or if there's an error.

@@ -16,10 +16,17 @@ MockPluginDelegate::MockPluginDelegate() {
 MockPluginDelegate::~MockPluginDelegate() {
 }
 
+void MockPluginDelegate::PluginCrashed(PluginInstance* instance) {
+}
+
 void MockPluginDelegate::InstanceCreated(PluginInstance* instance) {
 }
 
 void MockPluginDelegate::InstanceDeleted(PluginInstance* instance) {
+}
+
+SkBitmap* MockPluginDelegate::GetSadPluginBitmap() {
+  return NULL;
 }
 
 MockPluginDelegate::PlatformImage2D* MockPluginDelegate::CreateImage2D(

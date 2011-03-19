@@ -381,12 +381,14 @@ PluginModule::EntryPoints::EntryPoints()
 // PluginModule ----------------------------------------------------------------
 
 PluginModule::PluginModule(const std::string& name,
+                           const FilePath& path,
                            PluginDelegate::ModuleLifetime* lifetime_delegate)
     : lifetime_delegate_(lifetime_delegate),
       callback_tracker_(new CallbackTracker),
       is_crashed_(false),
       library_(NULL),
       name_(name),
+      path_(path),
       reserve_instance_id_(NULL) {
   pp_module_ = ResourceTracker::Get()->AddModule(this);
   GetMainThreadMessageLoop();  // Initialize the main thread message loop.

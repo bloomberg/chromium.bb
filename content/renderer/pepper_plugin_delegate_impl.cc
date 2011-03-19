@@ -454,7 +454,7 @@ PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
   // Create a new HostDispatcher for the proxying, and hook it to a new
   // PluginModule. Note that AddLiveModule must be called before any early
   // returns since the module's destructor will remove itself.
-  module = new webkit::ppapi::PluginModule(info->name,
+  module = new webkit::ppapi::PluginModule(info->name, path,
                                            PepperPluginRegistry::GetInstance());
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, module);
   scoped_ptr<DispatcherWrapper> dispatcher(new DispatcherWrapper);
@@ -523,6 +523,11 @@ PepperPluginDelegateImpl::GetBitmapForOptimizedPluginPaint(
   return NULL;
 }
 
+void PepperPluginDelegateImpl::PluginCrashed(
+    webkit::ppapi::PluginInstance* instance) {
+  render_view_->PluginCrashed(instance->module()->path());
+}
+
 void PepperPluginDelegateImpl::InstanceCreated(
     webkit::ppapi::PluginInstance* instance) {
   active_instances_.insert(instance);
@@ -534,6 +539,10 @@ void PepperPluginDelegateImpl::InstanceCreated(
 void PepperPluginDelegateImpl::InstanceDeleted(
     webkit::ppapi::PluginInstance* instance) {
   active_instances_.erase(instance);
+}
+
+SkBitmap* PepperPluginDelegateImpl::GetSadPluginBitmap() {
+  return content::GetContentClient()->renderer()->GetSadPluginBitmap();
 }
 
 webkit::ppapi::PluginDelegate::PlatformImage2D*

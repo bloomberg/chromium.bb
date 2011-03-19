@@ -76,10 +76,12 @@ class PepperPluginDelegateImpl
   void OnSetFocus(bool has_focus);
 
   // PluginDelegate implementation.
+  virtual void PluginCrashed(webkit::ppapi::PluginInstance* instance);
   virtual void InstanceCreated(
       webkit::ppapi::PluginInstance* instance);
   virtual void InstanceDeleted(
       webkit::ppapi::PluginInstance* instance);
+  virtual SkBitmap* GetSadPluginBitmap();
   virtual PlatformAudio* CreateAudio(
       uint32_t sample_rate,
       uint32_t sample_count,

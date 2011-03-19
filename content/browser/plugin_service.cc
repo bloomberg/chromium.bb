@@ -281,7 +281,7 @@ PpapiPluginProcessHost* PluginService::FindOrStartPpapiPluginProcess(
 
   // This plugin isn't loaded by any plugin process, so create a new process.
   scoped_ptr<PpapiPluginProcessHost> new_host(new PpapiPluginProcessHost);
-  if (!new_host->Init(plugin_path)) {
+  if (!new_host->Init(*info)) {
     NOTREACHED();  // Init is not expected to fail.
     return NULL;
   }

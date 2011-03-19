@@ -7,7 +7,9 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/process_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_message_filter.h"
@@ -24,8 +26,10 @@ PpapiPluginProcessHost::~PpapiPluginProcessHost() {
   CancelRequests();
 }
 
-bool PpapiPluginProcessHost::Init(const FilePath& path) {
-  plugin_path_ = path;
+bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
+  plugin_path_ = info.path;
+  set_name(UTF8ToWide(info.name));
+  set_version(UTF8ToWide(info.version));
 
   if (!CreateChannel())
     return false;
