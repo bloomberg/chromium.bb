@@ -1182,6 +1182,8 @@
         'browser/idle_win.cc',
         'browser/ime_input.cc',
         'browser/ime_input.h',
+        'browser/importer/external_process_importer_bridge.cc',
+        'browser/importer/external_process_importer_bridge.h',
         'browser/importer/external_process_importer_client.cc',
         'browser/importer/external_process_importer_client.h',
         'browser/importer/external_process_importer_host.cc',
