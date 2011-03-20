@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,47 +72,6 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
   virtual ~ImporterBridge();
 
   DISALLOW_COPY_AND_ASSIGN(ImporterBridge);
-};
-
-class InProcessImporterBridge : public ImporterBridge {
- public:
-  InProcessImporterBridge(ProfileWriter* writer,
-                          ImporterHost* host);
-
-  // Methods inherited from ImporterBridge.  On the internal side, these
-  // methods launch tasks to write the data to the profile with the |writer_|.
-  virtual void AddBookmarkEntries(
-      const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
-      const std::wstring& first_folder_name,
-      int options);
-  virtual void AddHomePage(const GURL &home_page);
-
-#if defined(OS_WIN)
-  virtual void AddIE7PasswordInfo(const IE7PasswordInfo password_info);
-#endif
-
-  virtual void SetFavicons(
-      const std::vector<history::ImportedFaviconUsage>& favicons);
-  virtual void SetHistoryItems(const std::vector<history::URLRow> &rows,
-                               history::VisitSource visit_source);
-  virtual void SetKeywords(const std::vector<TemplateURL*>& template_urls,
-                           int default_keyword_index,
-                           bool unique_on_host_and_path);
-  virtual void SetPasswordForm(const webkit_glue::PasswordForm& form);
-
-  virtual void NotifyItemStarted(importer::ImportItem item);
-  virtual void NotifyItemEnded(importer::ImportItem item);
-  virtual void NotifyStarted();
-  virtual void NotifyEnded();
-  virtual std::wstring GetLocalizedString(int message_id);
-
- private:
-  virtual ~InProcessImporterBridge();
-
-  ProfileWriter* const writer_;  // weak
-  ImporterHost* const host_;  // weak
-
-  DISALLOW_COPY_AND_ASSIGN(InProcessImporterBridge);
 };
 
 // When the importer is run in an external process, the bridge is effectively

@@ -1219,6 +1219,8 @@
         'browser/importer/importer_observer.h',
         'browser/importer/importer_progress_dialog.h',
         'browser/importer/importer_progress_observer.h',
+        'browser/importer/in_process_importer_bridge.cc',
+        'browser/importer/in_process_importer_bridge.h',
         'browser/importer/mork_reader.cc',
         'browser/importer/mork_reader.h',
         'browser/importer/nss_decryptor.cc',

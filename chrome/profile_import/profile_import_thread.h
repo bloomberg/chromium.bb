@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,6 @@
 class DictionaryValue;
 class ExternalProcessImporterBridge;
 class Importer;
-class InProcessImporterBridge;
 
 // This class represents the background thread which communicates with the
 // importer work thread in the importer process.
@@ -90,7 +89,7 @@ class ProfileImportThread : public ChildThread {
   // struct in importer.
   int browser_type_;
 
-  // A mask of importer::ImportItems.
+  // A bitmask of importer::ImportItem.
   uint16 items_to_import_;
 
   // Importer of the appropriate type (Firefox, Safari, IE, etc.)
