@@ -79,12 +79,12 @@
                 'd3d10_1.lib',
               ],
             },
-            'link_settings': {
-              'libraries': [
-                '-limm32.lib',
-                '-loleacc.lib',
-              ],
-            },
+          },
+          'link_settings': {
+            'libraries': [
+              '-limm32.lib',
+              '-loleacc.lib',
+            ],
           },
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
