@@ -105,6 +105,10 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   static void InitNineBoxes();
 
+  // Show popup context menu. If |button| is not NULL, show the menu dropping
+  // down from |button|. Otherwise, show the menu where the user clicks.
+  void ShowPopupMenu(GtkWidget* button, GdkEventButton* event);
+
   // Draws everything in GTK rendering mode.
   CHROMEGTK_CALLBACK_1(DownloadItemGtk, gboolean, OnHboxExpose,
                        GdkEventExpose*);
@@ -114,6 +118,11 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   // Called when |body_| is clicked.
   CHROMEGTK_CALLBACK_0(DownloadItemGtk, void, OnClick);
+
+  // Called when |body_| is pressed with mouse button. This function is used to
+  // show popup menu with right button click.
+  CHROMEGTK_CALLBACK_1(DownloadItemGtk, gboolean, OnButtonPress,
+                       GdkEventButton*);
 
   // Used for the download icon.
   CHROMEGTK_CALLBACK_1(DownloadItemGtk, gboolean, OnProgressAreaExpose,

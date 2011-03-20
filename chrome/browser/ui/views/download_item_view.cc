@@ -492,14 +492,21 @@ bool DownloadItemView::OnMousePressed(const views::MouseEvent& event) {
   if (complete_animation_.get() && complete_animation_->is_animating())
     complete_animation_->End();
 
+  gfx::Point menu_location(event.location());
   if (event.IsOnlyLeftMouseButton()) {
     if (!InDropDownButtonXCoordinateRange(event.x())) {
       SetState(PUSHED, NORMAL);
       return true;
     }
 
-    ShowContextMenu(event.location(), false);
+    // Anchor the menu below the dropmarker.
+    menu_location.SetPoint(base::i18n::IsRTL() ?
+                               drop_down_x_right_ : drop_down_x_left_,
+                           height());
+    drop_down_pressed_ = true;
+    SetState(NORMAL, PUSHED);
   }
+  ShowContextMenu(menu_location, true);
   return true;
 }
 
@@ -603,8 +610,6 @@ bool DownloadItemView::GetTooltipText(const gfx::Point& p,
 void DownloadItemView::ShowContextMenu(const gfx::Point& p,
                                        bool is_mouse_gesture) {
   gfx::Point point = p;
-  drop_down_pressed_ = true;
-  SetState(NORMAL, PUSHED);
 
   // Similar hack as in MenuButton.
   // We're about to show the menu from a mouse press. By showing from the
@@ -616,14 +621,18 @@ void DownloadItemView::ShowContextMenu(const gfx::Point& p,
   // to NULL.
   GetRootView()->SetMouseHandler(NULL);
 
-  // The menu's position is different depending on the UI layout.
-  // DownloadShelfContextMenu will take care of setting the right anchor for
-  // the menu depending on the locale.
-  point.set_y(height());
-  if (base::i18n::IsRTL())
-    point.set_x(drop_down_x_right_);
-  else
-    point.set_x(drop_down_x_left_);
+  // If |is_mouse_gesture| is false, |p| is ignored. The menu is shown aligned
+  // to drop down arrow button.
+  if (!is_mouse_gesture) {
+    drop_down_pressed_ = true;
+    SetState(NORMAL, PUSHED);
+
+    point.set_y(height());
+    if (base::i18n::IsRTL())
+      point.set_x(drop_down_x_right_);
+    else
+      point.set_x(drop_down_x_left_);
+  }
 
   views::View::ConvertPointToScreen(this, &point);
 

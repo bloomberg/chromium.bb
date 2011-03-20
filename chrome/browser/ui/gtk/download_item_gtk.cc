@@ -104,7 +104,12 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
       menu_.reset(new MenuGtk(this, GetFinishedMenuModel()));
     else
       menu_.reset(new MenuGtk(this, GetInProgressMenuModel()));
-    menu_->PopupForWidget(widget, event->button, event->time);
+
+    if (widget)
+      menu_->PopupForWidget(widget, event->button, event->time);
+    else
+      menu_->PopupAsContext(gfx::Point(event->x_root, event->y_root),
+                            event->time);
   }
 
   // MenuGtk::Delegate implementation:
@@ -181,6 +186,8 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
                    G_CALLBACK(OnExposeThunk), this);
   g_signal_connect(body_.get(), "clicked",
                    G_CALLBACK(OnClickThunk), this);
+  g_signal_connect(body_.get(), "button-press-event",
+                   G_CALLBACK(OnButtonPressThunk), this);
   GTK_WIDGET_UNSET_FLAGS(body_.get(), GTK_CAN_FOCUS);
   // Remove internal padding on the button.
   GtkRcStyle* no_padding_style = gtk_rc_style_new();
@@ -827,6 +834,16 @@ void DownloadItemGtk::OnClick(GtkWidget* widget) {
   parent_shelf_->ItemOpened();
 }
 
+gboolean DownloadItemGtk::OnButtonPress(GtkWidget* button,
+                                        GdkEventButton* event) {
+  if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
+    ShowPopupMenu(NULL, event);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
                                                GdkEventExpose* event) {
   // Create a transparent canvas.
@@ -861,24 +878,25 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
 
 gboolean DownloadItemGtk::OnMenuButtonPressEvent(GtkWidget* button,
                                                  GdkEventButton* event) {
+  if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
+    ShowPopupMenu(button, event);
+    menu_showing_ = true;
+    gtk_widget_queue_draw(button);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+void DownloadItemGtk::ShowPopupMenu(GtkWidget* button,
+                                    GdkEventButton* event) {
   // Stop any completion animation.
   if (complete_animation_.get() && complete_animation_->is_animating())
     complete_animation_->End();
 
-  if (event->type == GDK_BUTTON_PRESS) {
-    GdkEventButton* event_button = reinterpret_cast<GdkEventButton*>(event);
-    if (event_button->button == 1) {
-      if (menu_.get() == NULL) {
-        menu_.reset(new DownloadShelfContextMenuGtk(
-            download_model_.get(), this));
-      }
-      menu_->Popup(button, event);
-      menu_showing_ = true;
-      gtk_widget_queue_draw(button);
-    }
-  }
-
-  return FALSE;
+  if (!menu_.get())
+    menu_.reset(new DownloadShelfContextMenuGtk(download_model_.get(), this));
+  menu_->Popup(button, event);
 }
 
 gboolean DownloadItemGtk::OnDangerousPromptExpose(GtkWidget* widget,
