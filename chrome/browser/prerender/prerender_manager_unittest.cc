@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,11 +53,17 @@ class TestPrerenderManager : public PrerenderManager {
   TestPrerenderManager()
       : PrerenderManager(NULL),
         time_(base::Time::Now()),
+        time_ticks_(base::TimeTicks::Now()),
         next_pc_(NULL) {
+    rate_limit_enabled_ = false;
   }
 
   void AdvanceTime(base::TimeDelta delta) {
     time_ += delta;
+  }
+
+  void AdvanceTimeTicks(base::TimeDelta delta) {
+    time_ticks_ += delta;
   }
 
   void SetNextPrerenderContents(PrerenderContents* pc) {
@@ -68,6 +74,8 @@ class TestPrerenderManager : public PrerenderManager {
   bool AddSimplePreload(const GURL& url) {
     return AddPreload(url, std::vector<GURL>(), GURL());
   }
+
+  void set_rate_limit_enabled(bool enabled) { rate_limit_enabled_ = true; }
 
   PrerenderContents* next_pc() { return next_pc_.get(); }
 
@@ -84,6 +92,10 @@ class TestPrerenderManager : public PrerenderManager {
     return time_;
   }
 
+  virtual base::TimeTicks GetCurrentTimeTicks() const OVERRIDE {
+    return time_ticks_;
+  }
+
   virtual PrerenderContents* CreatePrerenderContents(
       const GURL& url,
       const std::vector<GURL>& alias_urls,
@@ -93,6 +105,7 @@ class TestPrerenderManager : public PrerenderManager {
   }
 
   base::Time time_;
+  base::TimeTicks time_ticks_;
   scoped_ptr<PrerenderContents> next_pc_;
 };
 
@@ -272,4 +285,54 @@ TEST_F(PrerenderManagerTest, AliasURLTest) {
   delete pc;
 }
 
-}  // naemspace prerender
+// Ensure that we ignore prerender requests within the rate limit.
+TEST_F(PrerenderManagerTest, RateLimitInWindowTest) {
+  GURL url("http://www.google.com/");
+  DummyPrerenderContents* pc =
+      new DummyPrerenderContents(prerender_manager_.get(), url,
+                                 FINAL_STATUS_MANAGER_SHUTDOWN);
+  DummyPrerenderContents* null = NULL;
+  prerender_manager_->SetNextPrerenderContents(pc);
+  EXPECT_TRUE(prerender_manager_->AddSimplePreload(url));
+  EXPECT_EQ(null, prerender_manager_->next_pc());
+  EXPECT_TRUE(pc->has_started());
+
+  prerender_manager_->set_rate_limit_enabled(true);
+  prerender_manager_->AdvanceTimeTicks(base::TimeDelta::FromMilliseconds(1));
+
+  GURL url1("http://news.google.com/");
+  DummyPrerenderContents* rate_limit_pc =
+      new DummyPrerenderContents(prerender_manager_.get(), url1,
+                                 FINAL_STATUS_MANAGER_SHUTDOWN);
+  prerender_manager_->SetNextPrerenderContents(rate_limit_pc);
+  EXPECT_FALSE(prerender_manager_->AddSimplePreload(url1));
+  prerender_manager_->set_rate_limit_enabled(false);
+}
+
+// Ensure that we don't ignore prerender requests outside the rate limit.
+TEST_F(PrerenderManagerTest, RateLimitOutsideWindowTest) {
+  GURL url("http://www.google.com/");
+  DummyPrerenderContents* pc =
+      new DummyPrerenderContents(prerender_manager_.get(), url,
+                                 FINAL_STATUS_EVICTED);
+  DummyPrerenderContents* null = NULL;
+  prerender_manager_->SetNextPrerenderContents(pc);
+  EXPECT_TRUE(prerender_manager_->AddSimplePreload(url));
+  EXPECT_EQ(null, prerender_manager_->next_pc());
+  EXPECT_TRUE(pc->has_started());
+
+  prerender_manager_->set_rate_limit_enabled(true);
+  prerender_manager_->AdvanceTimeTicks(base::TimeDelta::FromMilliseconds(2000));
+
+  GURL url1("http://news.google.com/");
+  DummyPrerenderContents* rate_limit_pc =
+      new DummyPrerenderContents(prerender_manager_.get(), url1,
+                                 FINAL_STATUS_MANAGER_SHUTDOWN);
+  prerender_manager_->SetNextPrerenderContents(rate_limit_pc);
+  EXPECT_TRUE(prerender_manager_->AddSimplePreload(url1));
+  EXPECT_EQ(null, prerender_manager_->next_pc());
+  EXPECT_TRUE(rate_limit_pc->has_started());
+  prerender_manager_->set_rate_limit_enabled(false);
+}
+
+}  // namespace prerender

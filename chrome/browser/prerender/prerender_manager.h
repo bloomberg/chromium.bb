@@ -106,6 +106,7 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
 
   void SetPrerenderContentsFactory(
       PrerenderContents::Factory* prerender_contents_factory);
+  bool rate_limit_enabled_;
 
  private:
   // Test that needs needs access to internal functions.
@@ -126,6 +127,7 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   bool IsPrerenderElementFresh(const base::Time start) const;
   void DeleteOldEntries();
   virtual base::Time GetCurrentTime() const;
+  virtual base::TimeTicks GetCurrentTimeTicks() const;
   virtual PrerenderContents* CreatePrerenderContents(
       const GURL& url,
       const std::vector<GURL>& alias_urls,
@@ -139,6 +141,8 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   static bool ShouldRecordWindowedPPLT();
 
   static void RecordPrefetchTagObservedOnUIThread();
+
+  bool DoesRateLimitAllowPrerender() const;
 
   Profile* profile_;
 
@@ -168,6 +172,9 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // Time interval at which periodic cleanups are performed.
   static const int kPeriodicCleanupIntervalMs = 1000;
 
+  // Time interval before a new prerender is allowed.
+  static const int kMinTimeBetweenPrerendersMs = 500;
+
   scoped_ptr<PrerenderContents::Factory> prerender_contents_factory_;
 
   static PrerenderManagerMode mode_;
@@ -181,6 +188,9 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // RepeatingTimer to perform periodic cleanups of pending prerendered
   // pages.
   base::RepeatingTimer<PrerenderManager> repeating_timer_;
+
+  // Track time of last prerender to limit prerender spam.
+  base::TimeTicks last_prerender_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

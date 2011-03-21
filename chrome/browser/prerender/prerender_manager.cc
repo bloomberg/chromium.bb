@@ -61,11 +61,14 @@ struct PrerenderManager::PrerenderContentsData {
 };
 
 PrerenderManager::PrerenderManager(Profile* profile)
-    : profile_(profile),
+    : rate_limit_enabled_(true),
+      profile_(profile),
       max_prerender_age_(base::TimeDelta::FromSeconds(
           kDefaultMaxPrerenderAgeSeconds)),
       max_elements_(kDefaultMaxPrerenderElements),
-      prerender_contents_factory_(PrerenderContents::CreateFactory()) {
+      prerender_contents_factory_(PrerenderContents::CreateFactory()),
+      last_prerender_start_time_(GetCurrentTimeTicks() -
+          base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs)) {
 }
 
 PrerenderManager::~PrerenderManager() {
@@ -101,12 +104,24 @@ bool PrerenderManager::AddPreload(const GURL& url,
       RecordFinalStatus(FINAL_STATUS_TOO_MANY_PROCESSES);
     return false;
   }
+
+  // Check if enough time has passed since the last prerender.
+  if (!DoesRateLimitAllowPrerender()) {
+    // Cancel the prerender. We could add it to the pending prerender list but
+    // this doesn't make sense as the next prerender request will be triggered
+    // by a navigation and is unlikely to be the same site.
+    RecordFinalStatus(FINAL_STATUS_RATE_LIMIT_EXCEEDED);
+    return false;
+  }
+
   // TODO(cbentzel): Move invalid checks here instead of PrerenderContents?
   PrerenderContentsData data(CreatePrerenderContents(url, alias_urls, referrer),
                              GetCurrentTime());
   prerender_list_.push_back(data);
-  if (!IsControlGroup())
+  if (!IsControlGroup()) {
+    last_prerender_start_time_ = GetCurrentTimeTicks();
     data.contents_->StartPrerendering();
+  }
   while (prerender_list_.size() > max_elements_) {
     data = prerender_list_.front();
     prerender_list_.pop_front();
@@ -161,7 +176,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
   }
 
   if (!pc->load_start_time().is_null())
-    RecordTimeUntilUsed(base::TimeTicks::Now() - pc->load_start_time());
+    RecordTimeUntilUsed(GetCurrentTimeTicks() - pc->load_start_time());
   pc->set_final_status(FINAL_STATUS_USED);
 
   RenderViewHost* rvh = pc->render_view_host();
@@ -206,6 +221,10 @@ void PrerenderManager::RemoveEntry(PrerenderContents* entry) {
 
 base::Time PrerenderManager::GetCurrentTime() const {
   return base::Time::Now();
+}
+
+base::TimeTicks PrerenderManager::GetCurrentTimeTicks() const {
+  return base::TimeTicks::Now();
 }
 
 bool PrerenderManager::IsPrerenderElementFresh(const base::Time start) const {
@@ -314,6 +333,18 @@ bool PrerenderManager::ShouldRecordWindowedPPLT() {
   base::TimeDelta elapsed_time =
       base::TimeTicks::Now() - last_prefetch_seen_time_;
   return elapsed_time <= base::TimeDelta::FromSeconds(kWindowedPPLTSeconds);
+}
+
+bool PrerenderManager::DoesRateLimitAllowPrerender() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::TimeDelta elapsed_time =
+      GetCurrentTimeTicks() - last_prerender_start_time_;
+  UMA_HISTOGRAM_TIMES("Prerender.TimeBetweenPrerenderRequests",
+                      elapsed_time);
+  if (!rate_limit_enabled_)
+    return true;
+  return elapsed_time >
+      base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs);
 }
 
 void PrerenderManager::StartSchedulingPeriodicCleanups() {
