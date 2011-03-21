@@ -79,12 +79,24 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
 #endif  // defined(OS_POSIX)
 }
 
+void PrintPreviewMessageHandler::OnPrintPreviewNodeUnderContextMenu() {
+  tab_contents()->PrintPreview();
+}
+
+void PrintPreviewMessageHandler::OnScriptInitiatedPrintPreview() {
+  tab_contents()->PrintPreview();
+}
+
 bool PrintPreviewMessageHandler::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintPreviewMessageHandler, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PagesReadyForPreview,
                         OnPagesReadyForPreview)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PrintPreviewNodeUnderContextMenu,
+                        OnPrintPreviewNodeUnderContextMenu)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptInitiatedPrintPreview,
+                        OnScriptInitiatedPrintPreview)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

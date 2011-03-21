@@ -109,6 +109,8 @@ PrepareFrameAndViewForPrint::~PrepareFrameAndViewForPrint() {
 PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
     : RenderViewObserver(render_view),
       print_web_view_(NULL),
+      script_initiated_preview_frame_(NULL),
+      context_menu_preview_node_(NULL),
       user_cancelled_scripted_print_count_(0) {
   is_preview_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnablePrintPreview);
@@ -122,8 +124,17 @@ void PrintWebViewHelper::ScriptInitiatedPrint(WebKit::WebFrame* frame) {
   if (IsScriptInitiatedPrintTooFrequent(frame))
     return;
   IncrementScriptedPrintCount();
-  // TODO(thestig) Handle print preview case. http://crbug.com/75505.
-  Print(frame, NULL);
+
+  if (is_preview_) {
+    script_initiated_preview_frame_ = frame;
+    if (!render_view()->Send(new ViewHostMsg_ScriptInitiatedPrintPreview(
+        render_view()->routing_id()))) {
+      NOTREACHED();
+      return;
+    }
+  } else {
+    Print(frame, NULL);
+  }
 }
 
 bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
@@ -136,6 +147,8 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_PrintPreview, OnPrintPreview)
     IPC_MESSAGE_HANDLER(ViewMsg_PrintNodeUnderContextMenu,
                         OnPrintNodeUnderContextMenu)
+    IPC_MESSAGE_HANDLER(ViewMsg_ResetScriptedPrintCount,
+                        ResetScriptedPrintCount)
     IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
   return handled;
@@ -181,27 +194,47 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
 #endif
 }
 
-void PrintWebViewHelper::OnPrint() {
+bool PrintWebViewHelper::GetPrintFrame(WebKit::WebFrame** frame) {
+  DCHECK(frame);
   DCHECK(render_view()->webview());
   if (!render_view()->webview())
-    return;
+    return false;
 
   // If the user has selected text in the currently focused frame we print
   // only that frame (this makes print selection work for multiple frames).
-  WebFrame* frame = render_view()->webview()->focusedFrame()->hasSelection() ?
+  *frame = render_view()->webview()->focusedFrame()->hasSelection() ?
       render_view()->webview()->focusedFrame() :
       render_view()->webview()->mainFrame();
-  Print(frame, NULL);
+  return true;
 }
 
 void PrintWebViewHelper::OnPrintPages() {
   DCHECK(!is_preview_);
-  OnPrint();
+  WebFrame* frame;
+  if (GetPrintFrame(&frame))
+    Print(frame, NULL);
 }
 
-void PrintWebViewHelper::OnPrintPreview() {
+void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
   DCHECK(is_preview_);
-  OnPrint();
+
+  if (script_initiated_preview_frame_) {
+    // Script initiated print preview.
+    DCHECK(!context_menu_preview_node_.get());
+    PrintPreview(script_initiated_preview_frame_, NULL, settings);
+    script_initiated_preview_frame_ = NULL;
+  } else if (context_menu_preview_node_.get()) {
+    // User initiated - print node under context menu.
+    DCHECK(!script_initiated_preview_frame_);
+    PrintPreview(context_menu_preview_node_->document().frame(),
+                 context_menu_preview_node_.get(), settings);
+    context_menu_preview_node_.reset();
+  } else {
+    // User initiated - normal print preview.
+    WebFrame* frame;
+    if (GetPrintFrame(&frame))
+      PrintPreview(frame, NULL, settings);
+  }
 }
 
 void PrintWebViewHelper::OnPrintingDone(int document_cookie, bool success) {
@@ -211,20 +244,29 @@ void PrintWebViewHelper::OnPrintingDone(int document_cookie, bool success) {
 }
 
 void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
-  if (render_view()->context_menu_node().isNull()) {
+  const WebNode& context_menu_node = render_view()->context_menu_node();
+  if (context_menu_node.isNull()) {
     NOTREACHED();
     return;
   }
 
-  // TODO(thestig) Handle print preview case. http://crbug.com/75505.
-
-  // Make a copy of the node, since we will do a sync call to the browser and
-  // during that time OnContextMenuClosed might reset context_menu_node_.
-  WebNode context_menu_node(render_view()->context_menu_node());
-  Print(context_menu_node.document().frame(), &context_menu_node);
+  // Make a copy of the node, in case RenderView::OnContextMenuClosed resets
+  // its |context_menu_node_|.
+  if (is_preview_) {
+    context_menu_preview_node_.reset(new WebNode(context_menu_node));
+    if (!render_view()->Send(new ViewHostMsg_PrintPreviewNodeUnderContextMenu(
+        render_view()->routing_id()))) {
+      NOTREACHED();
+      return;
+    }
+  } else {
+    WebNode duplicate_node(context_menu_node);
+    Print(duplicate_node.document().frame(), &duplicate_node);
+  }
 }
 
 void PrintWebViewHelper::Print(WebKit::WebFrame* frame, WebKit::WebNode* node) {
+  DCHECK(!is_preview_);
   // If still not finished with earlier print request simply ignore.
   if (print_web_view_)
     return;
@@ -246,38 +288,42 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame, WebKit::WebNode* node) {
       use_browser_overlays = prep_frame_view.ShouldUseBrowserOverlays();
   }
 
-  bool print_cancelled = false;
-
   // Some full screen plugins can say they don't want to print.
-  if (expected_pages_count) {
-    if (!is_preview_) {
-      // Ask the browser to show UI to retrieve the final print settings.
-      if (!GetPrintSettingsFromUser(frame, expected_pages_count,
-                                    use_browser_overlays)) {
-        print_cancelled = true;
-      }
-    }
-
-    // Render Pages for printing.
-    if (!print_cancelled) {
-      if (is_preview_)
-        RenderPagesForPreview(frame, node);
-      else
-        RenderPagesForPrint(frame, node);
-
-      ResetScriptedPrintCount();
-      return;  // All went well.
-    }
-  } else {
-    // Nothing to print.
-    print_cancelled = true;
+  if (!expected_pages_count) {
+    DidFinishPrinting(true);  // Release all printing resources.
+    return;
   }
-  // When |print_cancelled| is true, we treat it as success so that
-  // DidFinishPrinting() won't show any error alert. we call
-  // DidFinishPrinting() here to release printing resources, since
-  // we don't need them anymore.
-  if (print_cancelled)
-    DidFinishPrinting(print_cancelled);
+
+  // Ask the browser to show UI to retrieve the final print settings.
+  if (!GetPrintSettingsFromUser(frame, expected_pages_count,
+                                use_browser_overlays)) {
+    DidFinishPrinting(true);  // Release all printing resources.
+    return;
+  }
+
+  // Render Pages for printing.
+  RenderPagesForPrint(frame, node);
+  ResetScriptedPrintCount();
+}
+
+void PrintWebViewHelper::PrintPreview(WebKit::WebFrame* frame,
+                                      WebKit::WebNode* node,
+                                      const DictionaryValue& settings) {
+  DCHECK(is_preview_);
+
+  if (!InitPrintSettings(frame, node)) {
+    NOTREACHED() << "Failed to initialize print page settings";
+    return;
+  }
+
+  if (!UpdatePrintSettings(settings)) {
+    NOTREACHED() << "Failed to update print page settings";
+    DidFinishPrinting(true);  // Release all printing resources.
+    return;
+  }
+
+  // Render Pages for printing.
+  RenderPagesForPreview(frame, node);
 }
 
 void PrintWebViewHelper::DidFinishPrinting(bool success) {
@@ -628,7 +674,7 @@ bool PrintWebViewHelper::IsScriptInitiatedPrintTooFrequent(
 }
 
 void PrintWebViewHelper::ResetScriptedPrintCount() {
-  // Reset cancel counter on first successful print.
+  // Reset cancel counter on successful print.
   user_cancelled_scripted_print_count_ = 0;
 }
 

@@ -20,15 +20,18 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
   explicit PrintPreviewMessageHandler(TabContents* tab_contents);
   virtual ~PrintPreviewMessageHandler();
 
-  void OnPagesReadyForPreview(
-      const ViewHostMsg_DidPreviewDocument_Params& params);
-
   // TabContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
   // Gets the print preview tab associated with |owner_|.
   TabContents* GetPrintPreviewTab();
+
+  void OnPagesReadyForPreview(
+      const ViewHostMsg_DidPreviewDocument_Params& params);
+  void OnPrintPreviewNodeUnderContextMenu();
+  void OnScriptInitiatedPrintPreview();
+
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewMessageHandler);
 };

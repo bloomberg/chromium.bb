@@ -96,12 +96,11 @@ class PrintWebViewHelper : public RenderViewObserver ,
 
   // Message handlers ---------------------------------------------------------
 
-  // Print the document or generate a print preview.
+  // Print the document.
   void OnPrintPages();
-  void OnPrintPreview();
 
-  // Common method for OnPrintPages() and OnPrintPreview().
-  void OnPrint();
+  // Generate a print preview using |settings|.
+  void OnPrintPreview(const DictionaryValue& settings);
 
   // Print / preview the node under the context menu.
   void OnPrintNodeUnderContextMenu();
@@ -115,6 +114,10 @@ class PrintWebViewHelper : public RenderViewObserver ,
   // Main printing code -------------------------------------------------------
 
   void Print(WebKit::WebFrame* frame, WebKit::WebNode* node);
+
+  void PrintPreview(WebKit::WebFrame* frame,
+                    WebKit::WebNode* node,
+                    const DictionaryValue& settings);
 
   // Notification when printing is done - signal teardown.
   void DidFinishPrinting(bool success);
@@ -167,7 +170,8 @@ class PrintWebViewHelper : public RenderViewObserver ,
   // On success, Send ViewHostMsg_PagesReadyForPreview message with a
   // valid metafile data handle.
   void CreatePreviewDocument(const ViewMsg_PrintPages_Params& params,
-      WebKit::WebFrame* frame, WebKit::WebNode* node);
+                             WebKit::WebFrame* frame,
+                             WebKit::WebNode* node);
 
   // Platform specific helper function for rendering page(s) to |metafile|.
 #if defined(OS_WIN)
@@ -209,6 +213,8 @@ class PrintWebViewHelper : public RenderViewObserver ,
                                             WebKit::WebNode* node,
                                             ViewMsg_Print_Params* params);
 
+  bool GetPrintFrame(WebKit::WebFrame** frame);
+
   // Script Initiated Printing ------------------------------------------------
 
   // Returns true if script initiated printing occurs too often.
@@ -223,6 +229,13 @@ class PrintWebViewHelper : public RenderViewObserver ,
   void IncrementScriptedPrintCount();
 
   WebKit::WebView* print_web_view_;
+
+  // The frame to print for script initiated print preview.
+  WebKit::WebFrame* script_initiated_preview_frame_;
+
+  // The node under the context menu to print preview.
+  scoped_ptr<WebKit::WebNode> context_menu_preview_node_;
+
   scoped_ptr<ViewMsg_PrintPages_Params> print_pages_params_;
   base::Time last_cancelled_script_print_;
   int user_cancelled_scripted_print_count_;

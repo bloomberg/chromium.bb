@@ -399,8 +399,12 @@ IPC_MESSAGE_ROUTED2(ViewMsg_PrintingDone,
                     bool /* success */)
 
 // Tells the render view to switch the CSS to print media type, renders every
-// requested pages for print preview.
-IPC_MESSAGE_ROUTED0(ViewMsg_PrintPreview)
+// requested pages for print preview using the given |settngs|.
+IPC_MESSAGE_ROUTED1(ViewMsg_PrintPreview,
+                    DictionaryValue /* settings */)
+
+// Tells a renderer to stop blocking script initiated printing.
+IPC_MESSAGE_ROUTED0(ViewMsg_ResetScriptedPrintCount)
 
 // Sends back to the browser the rendered "printed document" for preview that
 // was requested by a ViewMsg_PrintPreview message. The memory handle in this
@@ -1825,6 +1829,12 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_TempFileForPrintingWritten,
                      int /* fd in browser */)
 #endif
 
+// Asks the browser to do print preview for the node under the context menu.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_PrintPreviewNodeUnderContextMenu)
+
+// Asks the browser to do print preview for window.print().
+IPC_MESSAGE_ROUTED0(ViewHostMsg_ScriptInitiatedPrintPreview)
+
 // Asks the browser to create a block of shared memory for the renderer to
 // fill in and pass back to the browser.
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_AllocateSharedMemoryBuffer,
@@ -2172,4 +2182,3 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_RegisterProtocolHandler,
                     std::string /* scheme */,
                     GURL /* url */,
                     string16 /* title */)
-

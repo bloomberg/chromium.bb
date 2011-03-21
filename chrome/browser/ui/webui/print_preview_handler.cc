@@ -4,14 +4,29 @@
 
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 
+#include <string>
+
 #include "base/json/json_reader.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "printing/backend/print_backend.h"
+
+namespace {
+
+TabContents* GetInitiatorTab(TabContents* preview_tab) {
+  printing::PrintPreviewTabController* tab_controller =
+      printing::PrintPreviewTabController::GetInstance();
+  if (!tab_controller)
+    return NULL;
+  return tab_controller->GetInitiatorTab(preview_tab);
+}
+
+}  // namespace
 
 class EnumeratePrintersTaskProxy
     : public base::RefCountedThreadSafe<EnumeratePrintersTaskProxy,
@@ -85,18 +100,19 @@ void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
 }
 
 void PrintPreviewHandler::HandleGetPreview(const ListValue*) {
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
-  if (!tab_controller)
-    return;
-  TabContents* initiator_tab =
-      tab_controller->GetInitiatorTab(web_ui_->tab_contents());
+  TabContents* initiator_tab = GetInitiatorTab(web_ui_->tab_contents());
   if (!initiator_tab)
     return;
   initiator_tab->render_view_host()->PrintPreview();
 }
 
 void PrintPreviewHandler::HandlePrint(const ListValue* args) {
+  TabContents* initiator_tab = GetInitiatorTab(web_ui_->tab_contents());
+  if (initiator_tab) {
+    RenderViewHost* rvh = initiator_tab->render_view_host();
+    rvh->Send(new ViewMsg_ResetScriptedPrintCount(rvh->routing_id()));
+  }
+
   std::string json_str;
   if (!args->GetString(0, &json_str)) {
     NOTREACHED() << "Could not read JSON argument";
