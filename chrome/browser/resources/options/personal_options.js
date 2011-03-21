@@ -143,6 +143,18 @@ cr.define('options', function() {
       this.setElementVisible_($('sync-action-link'), status.length != 0);
     },
 
+    setProfilesSectionVisible_: function(visible) {
+      this.setElementVisible_($('profiles-create'), visible);
+    },
+
+    setNewProfileButtonEnabled_: function(enabled) {
+      $('new-profile').disabled = !enabled;
+      if (enabled)
+        $('profiles-create').classList.remove('disabled');
+      else
+        $('profiles-create').classList.add('disabled');
+    },
+
     setStartStopButtonVisible_: function(visible) {
       this.setElementVisible_($('start-stop-sync'), visible);
     },
@@ -206,6 +218,8 @@ cr.define('options', function() {
     'setSyncStatusErrorVisible',
     'setSyncActionLinkEnabled',
     'setSyncActionLinkLabel',
+    'setProfilesSectionVisible',
+    'setNewProfileButtonEnabled',
     'setStartStopButtonVisible',
     'setStartStopButtonEnabled',
     'setStartStopButtonLabel',

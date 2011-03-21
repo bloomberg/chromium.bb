@@ -74,6 +74,9 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
 
   scoped_ptr<OptionsManagedBannerHandler> banner_handler_;
 
+  // True if the multiprofiles switch is enabled.
+  bool multiprofile_;
+
   DISALLOW_COPY_AND_ASSIGN(PersonalOptionsHandler);
 };
 

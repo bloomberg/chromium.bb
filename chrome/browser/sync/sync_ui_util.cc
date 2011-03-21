@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/sync_ui_util.h"
 
+#include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_util.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/options/options_window.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
@@ -73,9 +75,13 @@ string16 GetSyncedStateStatusLabel(ProfileSyncService* service) {
   if (user_name.empty())
     return label;
 
-  return l10n_util::GetStringFUTF16(IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME,
-                                    user_name,
-                                    service->GetLastSyncedTimeString());
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  return l10n_util::GetStringFUTF16(
+      browser_command_line.HasSwitch(switches::kMultiProfiles) ?
+          IDS_PROFILES_SYNCED_TO_USER_WITH_TIME :
+          IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME,
+      user_name,
+      service->GetLastSyncedTimeString());
 }
 
 // TODO(akalin): Write unit tests for these three functions below.
@@ -170,9 +176,13 @@ MessageType GetStatusInfo(ProfileSyncService* service,
       }
     } else {
       if (status_label) {
+        const CommandLine& browser_command_line =
+            *CommandLine::ForCurrentProcess();
         status_label->assign(
-            l10n_util::GetStringFUTF16(IDS_SYNC_NOT_SET_UP_INFO,
-                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+            browser_command_line.HasSwitch(switches::kMultiProfiles) ?
+                l10n_util::GetStringUTF16(IDS_PROFILES_NOT_SET_UP_INFO) :
+                l10n_util::GetStringFUTF16(IDS_SYNC_NOT_SET_UP_INFO,
+                    l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
       }
     }
   }

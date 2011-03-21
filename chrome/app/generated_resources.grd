@@ -7648,10 +7648,66 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <!-- Multiprofile -->
+      <!-- Multi-profile -->
+      <message name="IDS_PROFILES_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
+        Profile
+      </message>
       <message name="IDS_PROFILES_CREATE_NEW_PROFILE_OPTION" desc="Create new profile menu item and button title.">
         Create a new profile...
       </message>
+      <message name="IDS_PROFILES_NOT_SET_UP_INFO" desc="The message that appears in the options dialog when the user has not connected a Google Account to their profile.">
+        You can use a Google Account to sync your bookmarks and other settings and access the Chrome Web Store.
+      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_CONNECT_BUTTON_LABEL" desc="The label that appears on the profile connect button in the options dialog when the user has not connected a Google Account to their profile.">
+          Enable these features...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_CONNECT_BUTTON_LABEL" desc="In Title Case. The label that appears on the profile connect button in the options dialog when the user has not connected a Google Account to their profile.">
+          Enable These Features...
+        </message>
+      </if>
+      <message name="IDS_PROFILES_CREATE_INFO" desc="The message that appears in the options dialog to explain why to create additional profiles.">
+        If you want to allow multiple people to use and customize Chrome, you can create additional profiles.
+      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_CREATE_BUTTON_LABEL" desc="The label that appears on the profile create button in the options dialog to allow a user to create a new profile.">
+          Create new profile
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_CREATE_BUTTON_LABEL" desc="In Title Case. The label that appears on the profile create button in the options dialog to allow a user to create a new profile.">
+          Create New Profile
+        </message>
+      </if>
+      <message name="IDS_PROFILES_SYNCED_TO_USER_WITH_TIME" desc="The message that appears in the options dialog indicating that account is synced to a user with the given email address. The last sync also appears in the message.">
+        Using Chrome profile <ph name="USER_EMAIL_ADDRESS">
+          $1<ex>foo@gmail.com</ex>
+        </ph>. Last synced: <ph name="LAST_SYNC_TIME">
+          $2<ex>12 seconds ago</ex>
+        </ph>
+      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_DISCONNECT_BUTTON_LABEL" desc="The text to display on the button to indicate profile disconnect (i.e., stop syncing) functionality.">
+          Disconnect this account...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_DISCONNECT_BUTTON_LABEL" desc="The text to display on the button to indicate profile disconnect (i.e., stop syncing) functionality.">
+          Disconnect This Account...
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize the profile's sync preferences.">
+          Customize sync settings...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize the profile's sync preferences.">
+          Customize Sync Settings...
+        </message>
+      </if>
 
       <!-- SafeBrowsing -->
       <message name="IDS_SAFE_BROWSING_MALWARE_TITLE" desc="SafeBrowsing Malware HTML title">
@@ -8548,7 +8604,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <!-- Success dialog strings-->
+      <!-- Success dialog strings -->
       <message name="IDS_SYNC_SETUP_ALL_DONE" desc="The text shown on the confirmation dialog after setting up sync when there were already bookmarks in the cloud.">
         Your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data will now be synchronized between all your computers where you have enabled syncing.
       </message>

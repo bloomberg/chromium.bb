@@ -14,6 +14,14 @@
   margin-right: 5px;
 }
 
+#profiles-create {
+  margin-top: 15px;
+}
+
+#profiles-create-button {
+  margin: 10px 0;
+}
+
 #themes-gallery-div {
   margin: 10px 0;
 }

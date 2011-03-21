@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
 #include "base/stringprintf.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_service.h"
@@ -45,6 +47,8 @@
 #endif  // defined(TOOLKIT_GTK)
 
 PersonalOptionsHandler::PersonalOptionsHandler() {
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  multiprofile_ = browser_command_line.HasSwitch(switches::kMultiProfiles);
 #if defined(OS_CHROMEOS)
   registrar_.Add(this,
                  NotificationType::LOGIN_USER_IMAGE_CHANGED,
@@ -71,9 +75,20 @@ void PersonalOptionsHandler::GetLocalizedValues(
                 IDS_OPTIONS_CONTENT_TAB_LABEL);
 
   localized_strings->SetString("syncSection",
-      l10n_util::GetStringUTF16(IDS_SYNC_OPTIONS_GROUP_NAME));
+      multiprofile_ ?
+          l10n_util::GetStringUTF16(IDS_PROFILES_OPTIONS_GROUP_NAME) :
+          l10n_util::GetStringUTF16(IDS_SYNC_OPTIONS_GROUP_NAME));
   localized_strings->SetString("customizeSync",
-      l10n_util::GetStringUTF16(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL));
+      multiprofile_ ?
+          l10n_util::GetStringUTF16(IDS_PROFILES_SYNC_CUSTOMIZE_BUTTON_LABEL) :
+          l10n_util::GetStringUTF16(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL));
+  if (multiprofile_) {
+    localized_strings->SetString("createNewProfile",
+        l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_INFO));
+    localized_strings->SetString("createProfileButton",
+        l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_BUTTON_LABEL));
+  }
+
   localized_strings->SetString("privacyDashboardLink",
       l10n_util::GetStringUTF16(IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL));
 
@@ -230,7 +245,8 @@ void PersonalOptionsHandler::OnStateChanged() {
   bool is_start_stop_button_visible = false;
   bool is_start_stop_button_enabled = false;
   if (sync_setup_completed) {
-    start_stop_button_label =
+    start_stop_button_label = multiprofile_ ?
+        l10n_util::GetStringUTF16(IDS_PROFILES_DISCONNECT_BUTTON_LABEL) :
         l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
 #if defined(OS_CHROMEOS)
     is_start_stop_button_visible = false;
@@ -245,7 +261,9 @@ void PersonalOptionsHandler::OnStateChanged() {
     is_start_stop_button_enabled = false;
   } else {
     start_stop_button_label =
-        l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+        multiprofile_ ?
+            l10n_util::GetStringUTF16(IDS_PROFILES_CONNECT_BUTTON_LABEL) :
+            l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
     is_start_stop_button_visible = true;
     is_start_stop_button_enabled = !managed;
   }
@@ -282,6 +300,22 @@ void PersonalOptionsHandler::OnStateChanged() {
   visible.reset(Value::CreateBooleanValue(status_has_error));
   web_ui_->CallJavascriptFunction("PersonalOptions.setSyncStatusErrorVisible",
                                   *visible);
+
+  // Set profile creation text and button if multi-profiles switch is on.
+  if (multiprofile_) {
+    visible.reset(Value::CreateBooleanValue(true));
+    web_ui_->CallJavascriptFunction("PersonalOptions.setProfilesSectionVisible",
+                                    *visible);
+
+    // TODO(mirandac): enable when back end is ready.
+    enabled.reset(Value::CreateBooleanValue(false));
+    web_ui_->CallJavascriptFunction(
+        "PersonalOptions.setNewProfileButtonEnabled", *enabled);
+  } else {
+    visible.reset(Value::CreateBooleanValue(false));
+    web_ui_->CallJavascriptFunction("PersonalOptions.setProfilesSectionVisible",
+                                    *visible);
+  }
 }
 
 void PersonalOptionsHandler::OnLoginSuccess() {
