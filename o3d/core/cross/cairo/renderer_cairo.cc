@@ -50,6 +50,17 @@
 #include "core/cross/cairo/layer.h"
 #include "core/cross/cairo/texture_cairo.h"
 
+#ifdef OS_MACOSX
+// As of OS X 10.6.4, the Quartz 2D drawing API has hardware acceleration
+// disabled by default, and if you force-enable it then it actually hurts
+// performance instead of improving it (really, go google it). It also turns out
+// that the performance of the software implementation in Pixman is about 12%
+// faster than the OS X software implementation (measured as CPU usage per
+// rendered frame), so we do all compositing with Pixman via an image surface
+// and only use the OS to paint the final frame to the screen.
+#define COMPOSITING_TO_IMAGE 1
+#endif
+
 namespace o3d {
 
 // This is a factory function for creating 2D Renderer objects.
@@ -70,9 +81,7 @@ RendererCairo::RendererCairo(ServiceLocator* service_locator)
       hwnd_(NULL),
 #endif
       display_surface_(NULL),
-#ifdef COMPOSITING_TO_IMAGE
-      image_surface_(NULL),
-#endif
+      offscreen_surface_(NULL),
       fullscreen_(false),
       size_dirty_(false) {
   // Don't need to do anything.
@@ -90,9 +99,7 @@ RendererCairo* RendererCairo::CreateDefault(ServiceLocator* service_locator) {
 void RendererCairo::Destroy() {
   DLOG(INFO) << "To Destroy";
 
-#ifdef COMPOSITING_TO_IMAGE
-  DestroyImageSurface();
-#endif
+  DestroyOffscreenSurface();
 #if defined(OS_LINUX) || defined(OS_WIN)
   DestroyDisplaySurface();
 #endif
@@ -138,31 +145,28 @@ static void RoundRegion(const Layer::Region& in_region,
 void RendererCairo::Paint() {
 #ifdef OS_MACOSX
   // On OSX we can't persist the display surface across Paint() calls because
-  // of issues in Safari with unbalanced CGContextSaveGState/RestoreGState calls
-  // causing crashes, so we have to create and destroy the surface for every
-  // frame.
+  // of issues with unbalanced CGContextSaveGState/RestoreGState calls, so we
+  // have to create and destroy the surface for every frame.
   CreateDisplaySurface();
 #endif
 
-  if (!display_surface_) {
-    DLOG(INFO) << "No target surface, cannot paint";
+#if !defined(COMPOSITING_TO_IMAGE) && defined(OS_LINUX)
+  if (!offscreen_surface_) {
+    // Have to call this here because strangely it breaks rendering if we call
+    // it during InitCommon() on Linux. Possibly the X11 Window underlying the
+    // display_surface_ is not fully initialized until sometime after
+    // NPP_SetWindow().
+    CreateOffscreenSurface();
+  }
+#endif
+
+  if (!display_surface_ || !offscreen_surface_) {
+    DLOG(INFO) << "No target surface(s), cannot paint";
     return;
   }
 
   // TODO(tschmelcher): Don't keep creating and destroying the drawing context.
-  cairo_t* cr = cairo_create(
-#ifdef COMPOSITING_TO_IMAGE
-      image_surface_
-#else
-      display_surface_
-#endif
-      );
-
-#ifndef COMPOSITING_TO_IMAGE
-  // Redirect drawing to an off-screen surface (holding only colour information,
-  // without an alpha channel).
-  cairo_push_group_with_content(cr, CAIRO_CONTENT_COLOR);
-#endif
+  cairo_t* cr = cairo_create(offscreen_surface_);
 
   cairo_save(cr);
 
@@ -170,11 +174,9 @@ void RendererCairo::Paint() {
   cairo_set_fill_rule(cr, CAIRO_FILL_RULE_WINDING);
 
   // If we have been resized then we must redraw everything, since the new
-  // surface will be uninitialized.
+  // offscreen surface will be uninitialized.
   if (size_dirty_) {
-#ifdef COMPOSITING_TO_IMAGE
     AddDisplayRegion(cr);
-#endif
   }
 
   // Build an initial clip region for all drawing operations that restricts
@@ -220,35 +222,25 @@ void RendererCairo::Paint() {
                                  !layer->GetSavedShouldPaint())) {
       // If it is visible and the region, content, or visibility has changed
       // then the current region must be redrawn.
-#ifdef COMPOSITING_TO_IMAGE
       AddRegion(cr, layer->outer_clip_region());
-#endif
     }
 
     if (layer->GetSavedShouldPaint() && (layer->region_dirty() ||
                                          !layer->ShouldPaint())) {
       // If the region or visibility has changed and it was visible before then
       // the old region must be redrawn.
-#ifdef COMPOSITING_TO_IMAGE
       AddRegion(cr, layer->GetSavedOuterClipRegion());
-#endif
     }
   }
 
   // Must also redraw the regions of any formerly visible layers.
   for (RegionList::const_iterator i = layer_ghost_list_.begin();
        i != layer_ghost_list_.end(); ++i) {
-#ifdef COMPOSITING_TO_IMAGE
     AddRegion(cr, *i);
-#endif
   }
 
   // Clip everything outside the regions defined by the above.
-#ifdef COMPOSITING_TO_IMAGE
-  // TODO(tschmelcher): Perform this clipping for the non-COMPOSITING_TO_IMAGE
-  // case too.
   cairo_clip(cr);
-#endif
 
   // If any visible layer has had its z-value modified, re-sort the list to get
   // the right draw order.
@@ -333,17 +325,16 @@ void RendererCairo::Paint() {
 
   cairo_restore(cr);
 
-#ifdef COMPOSITING_TO_IMAGE
-  // Finish drawing to the image and set up a new context for painting the image
-  // to the screen.
+  // Finish drawing to the offscreen surface.
   cairo_destroy(cr);
+
+  // Set up a new context for painting the offscreen surface to the screen.
   cr = cairo_create(display_surface_);
-  cairo_set_source_surface(cr, image_surface_, 0, 0);
+  cairo_set_source_surface(cr, offscreen_surface_, 0, 0);
+  // Painting to a Win32 window with the SOURCE operator interacts poorly with
+  // window resizing, so on Windows we use the default of OVER.
+#ifndef OS_WIN
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-#else
-  // Finish off-screen drawing and make the off-screen surface the source for
-  // paints to the screen.
-  cairo_pop_group_to_source(cr);
 #endif
 
   // Paint to the screen.
@@ -437,8 +428,8 @@ void RendererCairo::InitCommon() {
 #if defined(OS_LINUX) || defined(OS_WIN)
   CreateDisplaySurface();
 #endif
-#ifdef COMPOSITING_TO_IMAGE
-  CreateImageSurface();
+#if defined(COMPOSITING_TO_IMAGE) || !defined(OS_LINUX)
+  CreateOffscreenSurface();
 #endif
 }
 
@@ -471,7 +462,15 @@ void RendererCairo::CreateDisplaySurface() {
   HDC hdc = GetDC(hwnd_);
 
   display_surface_ = cairo_win32_surface_create(hdc);
+#endif
 
+  if (CAIRO_STATUS_SUCCESS != cairo_surface_status(display_surface_)) {
+    DLOG(ERROR) << "Failed to create display surface";
+    DestroyDisplaySurface();
+    return;
+  }
+
+#ifdef OS_WIN
   // Check the surface to make sure it has the correct clip box.
   cairo_win32_surface_t* cairo_surface =
       reinterpret_cast<cairo_win32_surface_t*>(display_surface_);
@@ -508,20 +507,44 @@ void RendererCairo::DestroyDisplaySurface() {
   }
 }
 
-#ifdef COMPOSITING_TO_IMAGE
-void RendererCairo::CreateImageSurface() {
-  image_surface_ = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
-                                              display_width(),
-                                              display_height());
-}
+void RendererCairo::CreateOffscreenSurface() {
+#if defined(COMPOSITING_TO_IMAGE)
+  offscreen_surface_ = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
+                                                  display_width(),
+                                                  display_height());
+#elif defined(OS_LINUX) || defined(OS_WIN)
+  if (!display_surface_) {
+    DLOG(INFO) << "No display surface, cannot create offscreen surface";
+    return;
+  }
+  offscreen_surface_ = cairo_surface_create_similar(display_surface_,
+                                                    CAIRO_CONTENT_COLOR,
+                                                    display_width(),
+                                                    display_height());
+#else  // OS_MACOSX
+  // On OSX we can't use cairo_surface_create_similar() because display_surface_
+  // is only valid during Paint(), so instead hard-code what a
+  // cairo_surface_create_similar() call would do.
+  // (Note that this code path is not actually taken right now because we use
+  // COMPOSITING_TO_IMAGE on OSX.)
+  offscreen_surface_ = cairo_quartz_surface_create(CAIRO_FORMAT_RGB24,
+                                                   display_width(),
+                                                   display_height());
+#endif
 
-void RendererCairo::DestroyImageSurface() {
-  if (image_surface_) {
-    cairo_surface_destroy(image_surface_);
-    image_surface_ = NULL;
+  if (CAIRO_STATUS_SUCCESS != cairo_surface_status(offscreen_surface_)) {
+    DLOG(ERROR) << "Failed to create offscreen surface";
+    DestroyOffscreenSurface();
+    return;
   }
 }
-#endif
+
+void RendererCairo::DestroyOffscreenSurface() {
+  if (offscreen_surface_) {
+    cairo_surface_destroy(offscreen_surface_);
+    offscreen_surface_ = NULL;
+  }
+}
 
 void RendererCairo::AddDisplayRegion(cairo_t* cr) {
   cairo_rectangle(cr, 0, 0, display_width(), display_height());
@@ -577,14 +600,17 @@ void RendererCairo::Resize(int width, int height) {
   SetClientSize(width, height);
 
 #if defined(OS_LINUX)
-  cairo_xlib_surface_set_size(display_surface_, width, height);
+  if (display_surface_) {
+    cairo_xlib_surface_set_size(display_surface_, width, height);
+  }
 #elif defined(OS_WIN)
   DestroyDisplaySurface();
   CreateDisplaySurface();
 #endif
-#ifdef COMPOSITING_TO_IMAGE
-  DestroyImageSurface();
-  CreateImageSurface();
+
+  DestroyOffscreenSurface();
+#if defined(COMPOSITING_TO_IMAGE) || !defined(OS_LINUX)
+  CreateOffscreenSurface();
 #endif
 }
 
@@ -665,7 +691,6 @@ void RendererCairo::SetViewportInPixels(int left,
   NOTIMPLEMENTED();
 }
 
-// TODO(fransiskusx): Need to implement it later.
 // Turns fullscreen display on.
 // Parameters:
 //  display: a platform-specific display identifier
@@ -686,6 +711,10 @@ bool RendererCairo::GoFullscreen(const DisplayWindow& display,
       SetClientSize(window_attributes.width, window_attributes.height);
       DestroyDisplaySurface();
       CreateDisplaySurface();
+      DestroyOffscreenSurface();
+#ifdef COMPOSITING_TO_IMAGE
+      CreateOffscreenSurface();
+#endif
     }
 #elif defined(OS_WIN)
     DEVMODE dev_mode;
@@ -702,7 +731,6 @@ bool RendererCairo::GoFullscreen(const DisplayWindow& display,
   return fullscreen_;
 }
 
-// TODO(fransiskusx): Need to implement it later.
 // Cancels fullscreen display. Restores rendering to windowed mode
 // with the given width and height.
 // Parameters:
@@ -724,6 +752,10 @@ bool RendererCairo::CancelFullscreen(const DisplayWindow& display,
     SetClientSize(width, height);
     DestroyDisplaySurface();
     CreateDisplaySurface();
+    DestroyOffscreenSurface();
+#ifdef COMPOSITING_TO_IMAGE
+    CreateOffscreenSurface();
+#endif
 #elif defined(OS_WIN)
     if (hwnd_ == NULL) {
       // Not initialized.
