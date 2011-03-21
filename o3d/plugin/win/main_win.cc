@@ -48,6 +48,7 @@
 #if !defined(O3D_INTERNAL_PLUGIN)
 #include "breakpad/win/exception_handler_win32.h"
 #endif
+#include "plugin/cross/o3d_glue.h"
 
 using glue::_o3d::PluginObject;
 using glue::StreamManager;
@@ -720,7 +721,6 @@ NPError PlatformPreNPInitialize() {
 NPError PlatformPostNPInitialize() {
   if (!RegisterO3DWindowClass())
     return NPERR_MODULE_LOAD_FAILED_ERROR;
-
   return NPERR_NO_ERROR;
 }
 
@@ -747,6 +747,12 @@ NPError PlatformPostNPShutdown() {
 }
 
 NPError PlatformNPPNew(NPP instance, PluginObject *obj) {
+  if (obj->IsChrome()) {
+    // We want our O3D process to take priority over the browser and other apps.
+    HANDLE process = ::GetCurrentProcess();
+    DWORD priority = ABOVE_NORMAL_PRIORITY_CLASS;
+    ::SetPriorityClass(process, priority);
+  }
   return NPERR_NO_ERROR;
 }
 
