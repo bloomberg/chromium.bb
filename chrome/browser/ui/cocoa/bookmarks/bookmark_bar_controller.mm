@@ -2499,7 +2499,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       [self closeAllBookmarkFolders];
     }
     NSPoint poofPoint = [oldButton screenLocationForRemoveAnimation];
-    NSRect oldFrame = [oldButton frame];
     [oldButton setDelegate:nil];
     [oldButton removeFromSuperview];
     if (animate && !ignoreAnimations_ && [self isVisible])
