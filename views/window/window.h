@@ -197,9 +197,7 @@ class Window : public internal::NativeWindowDelegate {
  protected:
   // TODO(beng): Temporarily provided as a way to associate the subclass'
   //             implementation of NativeWidget with this.
-  void set_native_window(NativeWindow* native_window) {
-    native_window_ = native_window;
-  }
+  void SetNativeWindow(NativeWindow* native_window);
 
   // Overridden from NativeWindowDelegate:
   virtual bool CanActivate() const OVERRIDE;

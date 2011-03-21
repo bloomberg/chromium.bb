@@ -418,7 +418,7 @@ WindowGtk::WindowGtk(WindowDelegate* window_delegate)
       ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
       window_state_(GDK_WINDOW_STATE_WITHDRAWN),
       window_closed_(false) {
-  set_native_window(this);
+  SetNativeWindow(this);
   is_window_ = true;
 }
 

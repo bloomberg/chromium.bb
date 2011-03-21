@@ -15,6 +15,29 @@
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
+// Widget, CreateParams:
+
+Widget::CreateParams::CreateParams()
+    : type(TYPE_TOPLEVEL),
+      transparent(false),
+      accept_events(true),
+      delete_on_destroy(true),
+      mirror_origin_in_rtl(true),
+      has_dropshadow(false),
+      native_widget(NULL) {
+}
+
+Widget::CreateParams::CreateParams(Type type)
+    : type(type),
+      transparent(false),
+      accept_events(true),
+      delete_on_destroy(true),
+      mirror_origin_in_rtl(true),
+      has_dropshadow(false),
+      native_widget(NULL) {
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 
 Widget::Widget()

@@ -99,10 +99,10 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
   static_cast<views::WidgetGtk*>(border_widget_)->MakeTransparent();
   static_cast<views::WidgetGtk*>(border_widget_)->make_transient_to_parent();
 #else
-  border_widget_ = Widget::CreatePopupWidget(Widget::Transparent,
-                                             Widget::NotAcceptEvents,
-                                             Widget::DeleteOnDestroy,
-                                             Widget::MirrorOriginInRTL);
+  Widget::CreateParams params(Widget::CreateParams::TYPE_POPUP);
+  params.transparent = true;
+  params.accept_events = false;
+  border_widget_ = Widget::CreatePopupWidget(params);
 #endif
   border_widget_->Init(native_window, bounds());
 #if defined(OS_CHROMEOS)

@@ -60,43 +60,36 @@ class Window;
 class Widget : public internal::NativeWidgetDelegate,
                public FocusTraversable {
  public:
-  enum TransparencyParam {
-    Transparent,
-    NotTransparent
+  struct CreateParams {
+    enum Type {
+      TYPE_TOPLEVEL,
+      TYPE_CHILD,
+      TYPE_POPUP,
+      TYPE_MENU
+    };
+
+    CreateParams();
+    explicit CreateParams(Type type);
+
+    Type type;
+
+    bool transparent;
+    bool accept_events;
+    bool delete_on_destroy;
+    bool mirror_origin_in_rtl;
+    bool has_dropshadow;
+    NativeWidget* native_widget;
   };
 
-  enum EventsParam {
-    AcceptEvents,
-    NotAcceptEvents
-  };
-
-  enum DeleteParam {
-    DeleteOnDestroy,
-    NotDeleteOnDestroy
-  };
-
-  enum MirroringParam {
-    MirrorOriginInRTL,
-    DontMirrorOriginInRTL
-  };
-
+  Widget();
   virtual ~Widget();
 
-  // Creates a transient popup widget specific to the current platform.
-  // If |mirror_in_rtl| is set to MirrorOriginInRTL, the contents of the
-  // popup will be mirrored if the current locale is RTL.  You should use
-  // DontMirrorOriginInRTL if you are aleady handling the RTL layout within
-  // the widget.
-  static Widget* CreatePopupWidget(TransparencyParam transparent,
-                                   EventsParam accept_events,
-                                   DeleteParam delete_on_destroy,
-                                   MirroringParam mirror_in_rtl);
+  // Creates a Widget instance suitable for use as a transient popup.
+  static Widget* CreatePopupWidget(const CreateParams& params);
 
   // Enumerates all windows pertaining to us and notifies their
   // view hierarchies that the locale has changed.
   static void NotifyLocaleChanged();
-
-  Widget();
 
   // Unconverted methods -------------------------------------------------------
 

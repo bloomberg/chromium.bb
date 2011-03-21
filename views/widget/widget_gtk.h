@@ -64,6 +64,9 @@ class WidgetGtk : public Widget,
   explicit WidgetGtk(Type type);
   virtual ~WidgetGtk();
 
+  // Initializes native widget properties based on |params|.
+  void SetCreateParams(const CreateParams& params);
+
   // Marks this window as transient to its parent. A window that is transient
   // to its parent results in the parent rendering active when the child is
   // active.

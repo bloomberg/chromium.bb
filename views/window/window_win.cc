@@ -311,7 +311,7 @@ WindowWin::WindowWin(WindowDelegate* window_delegate)
       force_hidden_count_(0),
       is_right_mouse_pressed_on_caption_(false),
       last_monitor_(NULL) {
-  set_native_window(this);
+  SetNativeWindow(this);
   is_window_ = true;
   InitClass();
   // Initialize these values to 0 so that subclasses can override the default

@@ -316,19 +316,16 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gfx::Rect contents_rect = GetContentsRectangle();
   html_contents_.reset(new BalloonViewHost(balloon));
   html_contents_->SetPreferredSize(gfx::Size(10000, 10000));
-  html_container_ = Widget::CreatePopupWidget(Widget::NotTransparent,
-                                              Widget::AcceptEvents,
-                                              Widget::DeleteOnDestroy,
-                                              Widget::DontMirrorOriginInRTL);
+  Widget::CreateParams params(Widget::CreateParams::TYPE_POPUP);
+  params.mirror_origin_in_rtl = false;
+  html_container_ = Widget::CreatePopupWidget(params);
   html_container_->SetAlwaysOnTop(true);
   html_container_->Init(NULL, contents_rect);
   html_container_->SetContentsView(html_contents_->view());
 
   gfx::Rect balloon_rect(x(), y(), GetTotalWidth(), GetTotalHeight());
-  frame_container_ = Widget::CreatePopupWidget(Widget::Transparent,
-                                               Widget::AcceptEvents,
-                                               Widget::DeleteOnDestroy,
-                                               Widget::DontMirrorOriginInRTL);
+  params.transparent = true;
+  frame_container_ = Widget::CreatePopupWidget(params);
   frame_container_->set_widget_delegate(this);
   frame_container_->SetAlwaysOnTop(true);
   frame_container_->Init(NULL, balloon_rect);

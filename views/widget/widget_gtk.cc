@@ -298,6 +298,16 @@ WidgetGtk::~WidgetGtk() {
     ActiveWindowWatcherX::RemoveObserver(this);
 }
 
+void WidgetGtk::SetCreateParams(const CreateParams& params) {
+  // Set non-style attributes.
+  set_delete_on_destroy(params.delete_on_destroy);
+
+  if (params.transparent)
+    MakeTransparent();
+  if (!params.accept_events)
+    MakeIgnoreEvents();
+}
+
 GtkWindow* WidgetGtk::GetTransientParent() const {
   return (type_ != TYPE_CHILD && widget_) ?
       gtk_window_get_transient_for(GTK_WINDOW(widget_)) : NULL;
@@ -1540,16 +1550,9 @@ void WidgetGtk::DrawTransparentBackground(GtkWidget* widget,
 // Widget, public:
 
 // static
-Widget* Widget::CreatePopupWidget(TransparencyParam transparent,
-                                  EventsParam accept_events,
-                                  DeleteParam delete_on_destroy,
-                                  MirroringParam mirror_in_rtl) {
+Widget* Widget::CreatePopupWidget(const CreateParams& params) {
   WidgetGtk* popup = new WidgetGtk(WidgetGtk::TYPE_POPUP);
-  popup->set_delete_on_destroy(delete_on_destroy == DeleteOnDestroy);
-  if (transparent == Transparent)
-    popup->MakeTransparent();
-  if (accept_events == NotAcceptEvents)
-    popup->MakeIgnoreEvents();
+  popup->SetCreateParams(params);
   return popup;
 }
 

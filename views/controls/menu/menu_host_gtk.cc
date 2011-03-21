@@ -40,6 +40,10 @@ MenuHostGtk::MenuHostGtk(SubmenuView* submenu)
     }
     gdk_event_free(event);
   }
+  CreateParams params;
+  params.type = CreateParams::TYPE_MENU;
+  params.has_dropshadow = true;
+  SetCreateParams(params);
 }
 
 MenuHostGtk::~MenuHostGtk() {

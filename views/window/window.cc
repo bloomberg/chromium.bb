@@ -236,6 +236,15 @@ const Widget* Window::AsWidget() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Window, protected:
+
+void Window::SetNativeWindow(NativeWindow* native_window) {
+  native_window_ = native_window;
+  native_window->AsNativeWidget()->GetWidget()->set_widget_delegate(
+      window_delegate_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Window, internal::NativeWindowDelegate implementation:
 
 bool Window::CanActivate() const {

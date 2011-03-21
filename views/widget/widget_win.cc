@@ -153,6 +153,56 @@ WidgetWin::~WidgetWin() {
   DestroyRootView();
 }
 
+void WidgetWin::SetCreateParams(const CreateParams& params) {
+  // Set non-style attributes.
+  set_delete_on_destroy(params.delete_on_destroy);
+
+  DWORD style = 0;
+  DWORD ex_style = 0;
+  DWORD class_style = CS_DBLCLKS;
+
+  // Set type-independent style attributes.
+  if (params.accept_events)
+    ex_style |= WS_EX_TRANSPARENT;
+  if (params.mirror_origin_in_rtl)
+    ex_style |= l10n_util::GetExtendedTooltipStyles();
+  if (params.transparent)
+    ex_style |= WS_EX_LAYERED;
+  if (params.has_dropshadow) {
+    class_style |= (base::win::GetVersion() < base::win::VERSION_XP) ?
+        0 : CS_DROPSHADOW;
+  }
+
+  // Set type-dependent style attributes.
+  switch (params.type) {
+    case CreateParams::TYPE_TOPLEVEL:
+      break;
+    case CreateParams::TYPE_CHILD:
+      style |= WS_CHILD;
+      break;
+    case CreateParams::TYPE_POPUP:
+      style |= WS_POPUP;
+      ex_style |=  WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
+      break;
+    case CreateParams::TYPE_MENU:
+      style |= WS_POPUP;
+      ex_style |= WS_EX_TOPMOST | WS_EX_NOACTIVATE;
+      is_mouse_down_ =
+          ((GetKeyState(VK_LBUTTON) & 0x80) ||
+          (GetKeyState(VK_RBUTTON) & 0x80) ||
+          (GetKeyState(VK_MBUTTON) & 0x80) ||
+          (GetKeyState(VK_XBUTTON1) & 0x80) ||
+          (GetKeyState(VK_XBUTTON2) & 0x80));
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  set_initial_class_style(class_style);
+  set_window_style(style);
+  set_window_ex_style(ex_style);
+}
+
 // static
 WidgetWin* WidgetWin::GetWidget(HWND hwnd) {
   // TODO(jcivelli): http://crbug.com/44499 We need a way to test that hwnd is
@@ -1147,21 +1197,9 @@ gfx::AcceleratedWidget WidgetWin::GetAcceleratedWidget() {
 // Widget, public:
 
 // static
-Widget* Widget::CreatePopupWidget(TransparencyParam transparent,
-                                  EventsParam accept_events,
-                                  DeleteParam delete_on_destroy,
-                                  MirroringParam mirror_in_rtl) {
+Widget* Widget::CreatePopupWidget(const CreateParams& params) {
   WidgetWin* popup = new WidgetWin;
-  DWORD ex_style = WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
-  if (mirror_in_rtl == MirrorOriginInRTL)
-    ex_style |= l10n_util::GetExtendedTooltipStyles();
-  if (transparent == Transparent)
-    ex_style |= WS_EX_LAYERED;
-  if (accept_events != AcceptEvents)
-    ex_style |= WS_EX_TRANSPARENT;
-  popup->set_window_style(WS_POPUP);
-  popup->set_window_ex_style(ex_style);
-  popup->set_delete_on_destroy(delete_on_destroy == DeleteOnDestroy);
+  popup->SetCreateParams(params);
   return popup;
 }
 

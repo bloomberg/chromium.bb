@@ -557,10 +557,11 @@ StatusBubbleViews::~StatusBubbleViews() {
 
 void StatusBubbleViews::Init() {
   if (!popup_.get()) {
-    popup_.reset(Widget::CreatePopupWidget(Widget::Transparent,
-                                           Widget::NotAcceptEvents,
-                                           Widget::NotDeleteOnDestroy,
-                                           Widget::MirrorOriginInRTL));
+    Widget::CreateParams params(Widget::CreateParams::TYPE_POPUP);
+    params.transparent = true;
+    params.accept_events = false;
+    params.delete_on_destroy = false;
+    popup_.reset(Widget::CreatePopupWidget(params));
     views::Widget* frame = base_view_->GetWidget();
     if (!view_)
       view_ = new StatusView(this, popup_.get(), frame->GetThemeProvider());

@@ -37,16 +37,13 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
 
   void BuildButton(views::View* container, const std::wstring& label, int tag);
 
-  void InitWidget(views::Widget* widget,
-                  const views::Widget::TransparencyParam transparency);
+  void InitWidget(views::Widget* widget, bool transparent);
 
 #if defined(OS_LINUX)
-  void CreateChild(views::View* parent,
-                   const views::Widget::TransparencyParam transparency);
+  void CreateChild(views::View* parent, bool transparent);
 #endif
 
-  void CreatePopup(views::View* parent,
-                   const views::Widget::TransparencyParam transparency);
+  void CreatePopup(views::View* parent, bool transparent);
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,

@@ -21,18 +21,10 @@ MenuHostWin::MenuHostWin(SubmenuView* submenu)
     : destroying_(false),
       submenu_(submenu),
       owns_capture_(false) {
-  set_window_style(WS_POPUP);
-  set_initial_class_style(
-      (base::win::GetVersion() < base::win::VERSION_XP) ?
-      0 : CS_DROPSHADOW);
-  is_mouse_down_ =
-      ((GetKeyState(VK_LBUTTON) & 0x80) ||
-       (GetKeyState(VK_RBUTTON) & 0x80) ||
-       (GetKeyState(VK_MBUTTON) & 0x80) ||
-       (GetKeyState(VK_XBUTTON1) & 0x80) ||
-       (GetKeyState(VK_XBUTTON2) & 0x80));
-  // Mouse clicks shouldn't give us focus.
-  set_window_ex_style(WS_EX_TOPMOST | WS_EX_NOACTIVATE);
+  CreateParams params;
+  params.type = CreateParams::TYPE_MENU;
+  params.has_dropshadow = true;
+  SetCreateParams(params);
 }
 
 MenuHostWin::~MenuHostWin() {
