@@ -15,8 +15,8 @@ namespace skia {
 
 class VectorPlatformDeviceFactory : public SkDeviceFactory {
  public:
-  static SkDevice* CreateDevice(cairo_t* context, int width, int height,
-                                bool isOpaque);
+  static PlatformDevice* CreateDevice(cairo_t* context, int width, int height,
+                                      bool isOpaque);
 
   // Overridden from SkDeviceFactory:
   virtual SkDevice* newDevice(SkCanvas* ignored, SkBitmap::Config config,

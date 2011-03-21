@@ -7,13 +7,10 @@
 #pragma once
 
 #include "skia/ext/platform_canvas.h"
-#include "skia/ext/vector_platform_device.h"
-
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
-typedef struct _cairo cairo_t;
-#endif
 
 namespace skia {
+
+class PlatformDevice;
 
 // This class is a specialization of the regular PlatformCanvas. It is designed
 // to work with a VectorDevice to manage platform-specific drawing. It allows
@@ -21,23 +18,9 @@ namespace skia {
 // support reading back from the bitmap backstore since it is not used.
 class SK_API VectorCanvas : public PlatformCanvas {
  public:
-  VectorCanvas();
-  explicit VectorCanvas(SkDeviceFactory* factory);
-#if defined(WIN32)
-  VectorCanvas(HDC dc, int width, int height);
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
-  // Caller owns |context|. Ownership is not transferred.
-  VectorCanvas(cairo_t* context, int width, int height);
-#endif
+  // Ownership of |device| is transfered to VectorCanvas.
+  explicit VectorCanvas(PlatformDevice* device);
   virtual ~VectorCanvas();
-
-  // For two-part init, call if you use the no-argument constructor above
-#if defined(WIN32)
-  bool initialize(HDC context, int width, int height);
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
-  // Ownership of |context| is not transferred.
-  bool initialize(cairo_t* context, int width, int height);
-#endif
 
   virtual SkBounder* setBounder(SkBounder* bounder);
   virtual SkDrawFilter* setDrawFilter(SkDrawFilter* filter);
