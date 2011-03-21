@@ -40,6 +40,7 @@
 #include "plugin/cross/whitelist.h"
 #ifdef OS_WIN
 #include "breakpad/win/bluescreen_detector.h"
+#include <intrin.h>
 #endif
 
 using glue::_o3d::PluginObject;
@@ -300,12 +301,52 @@ namespace o3d {
 extern "C" {
 #endif
 
+// Detect CPU has SSE2
+#if defined(__pic__) && defined(__i386__)
+void __cpuid(int cpu_info[4], int info_type) {
+  __asm__ volatile (
+    "mov %%ebx, %%edi\n"
+    "cpuid\n"
+    "xchg %%edi, %%ebx\n"
+    : "=a"(cpu_info[0]), "=D"(cpu_info[1]), "=c"(cpu_info[2]), "=d"(cpu_info[3])
+    : "a"(info_type)
+  );
+}
+#elif defined(__i386__) || defined(__x86_64__)
+void __cpuid(int cpu_info[4], int info_type) {
+  __asm__ volatile (
+    "cpuid\n"
+    : "=a"(cpu_info[0]), "=b"(cpu_info[1]), "=c"(cpu_info[2]), "=d"(cpu_info[3])
+    : "a"(info_type)
+  );
+}
+#endif
+
+#if defined(__x86_64__) || defined(_M_X64) || \
+    defined(__i386__) || defined(_M_IX86)
+bool CpuHasSSE2() {
+  int cpu_info[4];
+  __cpuid(cpu_info, 1);
+  return (cpu_info[3] & 0x04000000) != 0;
+}
+#endif
+
 NPError EXPORT_SYMBOL OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs
 #ifdef OS_LINUX
                                            ,
                                            NPPluginFuncs *pluginFuncs
 #endif
                                            ) {
+
+// On x86, detect lack of SSE2 and quit before a crash occurs.
+// TODO(fbarchard): Remove this when -msse2 is removed or SSE2 is required.
+#if defined(__x86_64__) || defined(_M_X64) || \
+    defined(__i386__) || defined(_M_IX86)
+  if (!CpuHasSSE2()) {
+    return NPERR_MODULE_LOAD_FAILED_ERROR;
+  }
+#endif
+
   HANDLE_CRASHES;
   NPError err = InitializeNPNApi(browserFuncs);
   if (err != NPERR_NO_ERROR) {
