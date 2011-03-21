@@ -6420,36 +6420,46 @@ Keep your key file in a safe place. You will need it to create new versions of y
        Unlock
       </message>
 
-      <!-- Advanced Font/Language settings -->
-      <message name="IDS_FONT_LANGUAGE_SETTING_WINDOWS_TITLE" desc="Title that appears in the dialogue title bar for advanced font/encoding and language settings">
-        Fonts and Languages
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE" desc="Title that appears in the sub-dialogue for Fonts and Encoding">
+      <!-- Font settings -->
+      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE" desc="Title that appears in the Fonts and Encoding subpage">
         Fonts and Encoding
       </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL" desc="Dialog label for Serif font selection">
-        Serif Font:
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL" desc="Dialog label for Sans Serif font selection">
-        Sans-Serif Font:
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL" desc="Label of the standard fonts section of the Fonts and Encoding subpage">
-        Standard font:
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="Label of the fixed-width fonts section of the Fonts and Encoding subpage">
-        Fixed-width font:
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE" desc="Title that appears in the sub-dialogue for Encoding within Fonts and Encoding tab">
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL" desc="In Title Case: Label of the Standard font section of the Fonts and Encoding subpage">
+          Standard Font
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL" desc="In Title Case: Label of the Serif font section of the Fonts and Encoding subpage">
+          Serif Font
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL" desc="In Title Case: Label of the Sans-serif font section of the Fonts and Encoding subpage">
+          Sans-Serif Font
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="In Title Case: Label of the Fixed-width font section of the Fonts and Encoding subpage">
+          Fixed-width Font
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE" desc="In Title Case: Label of the Minimum font size section of the Fonts and Encoding subpage">
+          Minimum Font Size
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL" desc="In sentence case: Label of the Standard font section of the Fonts and Encoding subpage">
+          Standard font
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL" desc="In sentence case: Label of the Serif font section of the Fonts and Encoding subpage">
+          Serif font
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL" desc="In sentence case: Label of the Sans-serif font section of the Fonts and Encoding subpage">
+          Sans-serif font
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="In sentence case: Label of the Fixed-width font section of the Fonts and Encoding subpage">
+          Fixed-width font
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE" desc="In sentence case: Label of the Minimum font size section of the Fonts and Encoding subpage">
+          Minimum font size
+        </message>
+      </if>
+      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE" desc="Label of the Encoding section of the Fonts and Encoding subpage">
         Encoding
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_DEFAULT_ENCODING_SELECTOR_LABEL" desc="Dialog label for Default Encoding selection">
-        Default Encoding:
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_SELECTOR_LABEL" desc="Dialog label for font size selection">
-        Size:
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE" desc="Section title for minimum font size selection">
-        Minimum font size
       </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_TINY" desc="Label for the 'Tiny' side of the font size range selector">
         Tiny
