@@ -1,0 +1,29 @@
+<!doctype html>
+<!--
+ * Copyright (c) 2011 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
+<html>
+  <head>
+    <title>WebNavigation Sample Extension Background Page</title>
+  </head>
+  <body>
+    <script src='./navigation_collector.js'></script>
+    <script>
+      var nav = new NavigationCollector();
+
+      var eventList = ['onBeforeNavigate', 'onBeforeRetarget', 'onCommitted',
+          'onCompleted', 'onDOMContentLoaded', 'onErrorOccurred'];
+
+      eventList.forEach(function(e) {
+        chrome.experimental.webNavigation[e].addListener(function(data) {
+          if (typeof data)
+            console.log(chrome.i18n.getMessage('inHandler'), e, data);
+          else
+            console.error(chrome.i18n.getMessage('inHandlerError'), e);
+        });
+      });
+    </script>
+  </body>
+</html>

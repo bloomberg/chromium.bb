@@ -38,6 +38,11 @@
     "chrome.experimental.clipboard.executeCopy": "experimental.clipboard.html#method-executeCopy", 
     "chrome.experimental.clipboard.executeCut": "experimental.clipboard.html#method-executeCut", 
     "chrome.experimental.clipboard.executePaste": "experimental.clipboard.html#method-executePaste", 
+    "chrome.experimental.debugger.attach": "experimental.debugger.html#method-attach", 
+    "chrome.experimental.debugger.detach": "experimental.debugger.html#method-detach", 
+    "chrome.experimental.debugger.onDetach": "experimental.debugger.html#event-onDetach", 
+    "chrome.experimental.debugger.onMessage": "experimental.debugger.html#event-onMessage", 
+    "chrome.experimental.debugger.postMessage": "experimental.debugger.html#method-postMessage", 
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show", 
     "chrome.experimental.processes.getProcessIdForTab": "experimental.processes.html#method-getProcessIdForTab", 
     "chrome.experimental.processes.onUpdated": "experimental.processes.html#event-onUpdated", 
@@ -1646,6 +1651,42 @@
       ], 
       "source_hash": "72d5c3586feefc692c63039ce8bdb5f9d366c0e2", 
       "zip_path": "examples/api/history/showHistory.zip"
+    }, 
+    {
+      "api_calls": [
+        "chrome.experimental.webNavigation.onBeforeNavigate", 
+        "chrome.experimental.webNavigation.onBeforeRetarget", 
+        "chrome.experimental.webNavigation.onCommitted", 
+        "chrome.experimental.webNavigation.onCompleted", 
+        "chrome.experimental.webNavigation.onErrorOccurred", 
+        "chrome.extension.onRequest", 
+        "chrome.extension.sendRequest", 
+        "chrome.i18n.getMessage"
+      ], 
+      "description": "Demonstration of the WebNavigation extension API.", 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "experimental", 
+        "extension", 
+        "popup", 
+        "webNavigation"
+      ], 
+      "icon": null, 
+      "id": "a3c674f7eb93621c590562ad3fa04de4f03f53a0", 
+      "name": "WebNavigation Tech Demo", 
+      "path": "examples/api/webNavigation/basic/", 
+      "protocols": [], 
+      "search_string": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION EXPERIMENTAL EXTENSION POPUP WEBNAVIGATION CHROME.EXPERIMENTAL.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.EXPERIMENTAL.WEBNAVIGATION.ONBEFORERETARGET CHROME.EXPERIMENTAL.WEBNAVIGATION.ONCOMMITTED CHROME.EXPERIMENTAL.WEBNAVIGATION.ONCOMPLETED CHROME.EXPERIMENTAL.WEBNAVIGATION.ONERROROCCURRED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE", 
+      "source_files": [
+        "_locales/en/messages.json", 
+        "background.html", 
+        "manifest.json", 
+        "navigation_collector.js", 
+        "popup.html"
+      ], 
+      "source_hash": "efa16032a02c474f9c9bafb90a964fd57c667ea2", 
+      "zip_path": "examples/api/webNavigation/basic.zip"
     }
   ]
 }
