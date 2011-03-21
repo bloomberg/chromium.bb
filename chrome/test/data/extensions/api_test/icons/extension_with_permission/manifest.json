@@ -4,6 +4,7 @@
   "name": "test",
   "version": "0.1",
   "permissions": [ "management" ],
+  "incognito": "split",
   "icons": {
     "128": "128.png",
     "32": "32.png",

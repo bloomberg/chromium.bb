@@ -93,6 +93,8 @@ class URLRequestChromeJob : public net::URLRequestJob {
   // Separate from ReadRawData so we can handle async I/O.
   void CompleteRead(net::IOBuffer* buf, int buf_size, int* bytes_read);
 
+  ScopedRunnableMethodFactory<URLRequestChromeJob> method_factory_;
+
   // The actual data we're serving.  NULL until it's been fetched.
   scoped_refptr<RefCountedMemory> data_;
   // The current offset into the data that we're handing off to our
@@ -273,6 +275,7 @@ net::URLRequestJob* ChromeURLDataManagerBackend::Factory(
 
 URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request)
     : net::URLRequestJob(request),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       data_offset_(0),
       pending_buf_size_(0),
       backend_(GetBackend(request)) {
@@ -285,8 +288,8 @@ URLRequestChromeJob::~URLRequestChromeJob() {
 void URLRequestChromeJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &URLRequestChromeJob::StartAsync));
+  MessageLoop::current()->PostTask(FROM_HERE, method_factory_.NewRunnableMethod(
+      &URLRequestChromeJob::StartAsync));
 }
 
 void URLRequestChromeJob::Kill() {
