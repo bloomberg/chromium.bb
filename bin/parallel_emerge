@@ -51,6 +51,7 @@ import tempfile
 import time
 import traceback
 import urllib2
+import urlparse
 
 # If PORTAGE_USERNAME isn't specified, scrape it from the $HOME variable. On
 # Chromium OS, the default "portage" user doesn't have the necessary
@@ -714,7 +715,7 @@ class DepGraphGenerator(object):
       print "%s %s (%s)" % (depth, entry, action)
       self.PrintTree(deps[entry]["deps"], depth=depth + "  ")
 
-  def RemotePackageDatabase(self, binhost_url):
+  def RemotePackageDatabase(self, binhost_url, settings):
     """Grab the latest binary package database from the prebuilt server.
 
     We need to know the modification times of the prebuilt packages so that we
@@ -759,13 +760,32 @@ class DepGraphGenerator(object):
         time.sleep(10)
 
     url = os.path.join(binhost_url, "Packages")
-    try:
-      f = retry_urlopen(url)
-    except urllib2.HTTPError as e:
-      if e.code == 404:
+    tmp_filename = None
+    if url.startswith("http://"):
+      try:
+        f = retry_urlopen(url)
+      except urllib2.HTTPError as e:
+        if e.code == 404:
+          return {}
+        else:
+          raise
+    else:
+      parsed_url = urlparse.urlparse(url)
+      setting = 'FETCHCOMMAND_' + parsed_url.scheme.upper()
+      fcmd = settings.get(setting)
+      if not fcmd:
+        print >>sys.stderr, "Unrecognized URL:", url
+        sys.exit(1)
+      fd, tmp_filename = tempfile.mkstemp()
+      tmp_dirname, tmp_basename = os.path.split(tmp_filename)
+      os.close(fd)
+      success = portage.getbinpkg.file_get(url, tmp_dirname, fcmd=fcmd,
+                                           filename=tmp_basename)
+      if not success:
+        os.unlink(tmp_filename)
         return {}
-      else:
-        raise
+      f = open(tmp_filename)
+
     prebuilt_pkgs = {}
     for line in f:
       if line.startswith("CPV: "):
@@ -773,6 +793,9 @@ class DepGraphGenerator(object):
       elif line.startswith("MTIME: "):
         prebuilt_pkgs[pkg] = int(line[:-1].replace("MTIME: ", ""))
     f.close()
+
+    if tmp_filename:
+      os.unlink(tmp_filename)
 
     return prebuilt_pkgs
 
@@ -1835,7 +1858,7 @@ def main():
     binhosts = emerge.settings["PORTAGE_BINHOST"]
     for binhost in binhosts.split():
       try:
-        remote_pkgs.update(deps.RemotePackageDatabase(binhost))
+        remote_pkgs.update(deps.RemotePackageDatabase(binhost, emerge.settings))
       except (urllib2.HTTPError, urllib2.URLError):
         pass
     if not remote_pkgs:
