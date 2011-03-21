@@ -147,6 +147,25 @@
 
 @end
 
+// 10.7 adds public APIs for full-screen support. Provide the declaration so it
+// can be called below when building with the 10.5 SDK.
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+@interface NSWindow (LionSDKDeclarations)
+- (void)toggleFullScreen:(id)sender;
+@end
+
+enum {
+  NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7,
+  NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8
+};
+
+enum {
+  NSWindowFullScreenButton = 7
+};
+
+#endif  // MAC_OS_X_VERSION_10_7
 
 // IncognitoImageView subclasses NSView to allow mouse events to pass through it
 // so you can drag the window by dragging on the spy guy.
@@ -386,6 +405,21 @@
     // on the window bounds to determine whether to show buttons or not.
     if ([self hasToolbar])  // Do not create the buttons in popups.
       [toolbarController_ createBrowserActionButtons];
+
+    // For versions of Mac OS that provide an "enter fullscreen" button, make
+    // one appear (in a rather hacky manner). http://crbug.com/74065 : When
+    // switching the fullscreen implementation to the new API, revisit how much
+    // of this hacky code is necessary.
+    if ([window respondsToSelector:@selector(toggleFullScreen:)]) {
+      NSWindowCollectionBehavior behavior = [window collectionBehavior];
+      behavior |= NSWindowCollectionBehaviorFullScreenPrimary;
+      [window setCollectionBehavior:behavior];
+
+      NSButton* fullscreenButton =
+          [window standardWindowButton:NSWindowFullScreenButton];
+      [fullscreenButton setAction:@selector(enterFullscreen:)];
+      [fullscreenButton setTarget:self];
+    }
 
     // We are done initializing now.
     initializing_ = NO;
@@ -1855,6 +1889,10 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 
 @implementation BrowserWindowController(Fullscreen)
+
+- (IBAction)enterFullscreen:(id)sender {
+  browser_->ExecuteCommand(IDC_FULLSCREEN);
+}
 
 - (void)setFullscreen:(BOOL)fullscreen {
   // The logic in this function is a bit complicated and very carefully

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,21 @@
 #include "ui/gfx/image.h"
 
 NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
+
+// 10.7 adds public APIs for full-screen support. Provide the declaration so it
+// can be called below when building with the 10.5 SDK.
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+@interface NSWindow (LionSDKDeclarations)
+- (void)toggleFullScreen:(id)sender;
+@end
+
+enum {
+  NSWindowFullScreenButton = 7
+};
+
+#endif  // MAC_OS_X_VERSION_10_7
 
 namespace {
 
@@ -761,10 +776,19 @@ private:
       availableSpace = availableResizeWidth_;
     } else {
       availableSpace = NSWidth([tabStripView_ frame]);
-      // Account for the new tab button and the incognito badge.
+
+      // Account for the widths of the new tab button, the incognito badge, and
+      // the fullscreen button if any/all are present.
       availableSpace -= NSWidth([newTabButton_ frame]) + kNewTabButtonOffset;
       if (browser_->profile()->IsOffTheRecord())
         availableSpace -= kIncognitoBadgeTabStripShrink;
+      if ([[tabStripView_ window]
+          respondsToSelector:@selector(toggleFullScreen:)]) {
+        NSButton* fullscreenButton = [[tabStripView_ window]
+            standardWindowButton:NSWindowFullScreenButton];
+        if (fullscreenButton)
+          availableSpace -= [fullscreenButton frame].size.width;
+      }
     }
     availableSpace -= [self indentForControls];
   }
