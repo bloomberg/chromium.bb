@@ -80,7 +80,6 @@ class WrenchMenuModel;
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::NotificationBridge> notificationBridge_;
   BooleanPrefMember showHomeButton_;
-  BooleanPrefMember showPageOptionButtons_;
   BOOL hasToolbar_;  // If NO, we may have only the location bar.
   BOOL hasLocationBar_;  // If |hasToolbar_| is YES, this must also be YES.
   BOOL locationBarAtMinSize_; // If the location bar is at the minimum size.

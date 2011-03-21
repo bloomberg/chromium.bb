@@ -22,7 +22,6 @@ static const char* kSynchronizedPreferences[] = {
   prefs::kHomePageIsNewTabPage,
   prefs::kHomePage,
   prefs::kShowHomeButton,
-  prefs::kShowPageOptionsButtons,
   // Default Search is not synced, needs a new data type.  See
   // http://crbug.com/40482
 

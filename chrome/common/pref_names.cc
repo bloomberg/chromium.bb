@@ -486,11 +486,6 @@ const char kIpcDisabledMessages[] = "ipc_log_disabled_messages";
 // visible on the toolbar.
 const char kShowHomeButton[] = "browser.show_home_button";
 
-// A boolean pref set to true if the Page and Options menu buttons should be
-// visible on the toolbar. This is only used for Mac where the default is to
-// have these menu in the main menubar, not as buttons on the toolbar.
-const char kShowPageOptionsButtons[] = "browser.show_page_options_buttons";
-
 // A string value which saves short list of recently user selected encodings
 // separated with comma punctuation mark.
 const char kRecentlySelectedEncoding[] = "profile.recently_selected_encodings";

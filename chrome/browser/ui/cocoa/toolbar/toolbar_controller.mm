@@ -261,8 +261,6 @@ class NotificationBridge : public NotificationObserver {
   PrefService* prefs = profile_->GetPrefs();
   showHomeButton_.Init(prefs::kShowHomeButton, prefs,
                        notificationBridge_.get());
-  showPageOptionButtons_.Init(prefs::kShowPageOptionsButtons, prefs,
-                              notificationBridge_.get());
   [self showOptionalHomeButton];
   [self installWrenchMenu];
 

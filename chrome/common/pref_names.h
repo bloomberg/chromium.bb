@@ -170,7 +170,6 @@ extern const char kShowPlanNotifications[];
 #endif
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];
-extern const char kShowPageOptionsButtons[];
 extern const char kRecentlySelectedEncoding[];
 extern const char kDeleteBrowsingHistory[];
 extern const char kDeleteDownloadHistory[];
