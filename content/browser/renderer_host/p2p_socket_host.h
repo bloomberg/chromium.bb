@@ -14,15 +14,14 @@ class P2PSocketsHost;
 // Base class for P2P sockets used by P2PSocketsHost.
 class P2PSocketHost {
  public:
-  // Creates P2PSocketHost for the current platform. Must be
-  // implemented in a platform-specific file.
+  // Creates P2PSocketHost of the specific type.
   static P2PSocketHost* Create(P2PSocketsHost* host, int routing_id, int id,
                                P2PSocketType type);
 
   virtual ~P2PSocketHost();
 
   // Initalizes the socket. Returns false when initiazations fails.
-  virtual bool Init() = 0;
+  virtual bool Init(const net::IPEndPoint& local_address) = 0;
 
   // Sends |data| on the socket to |socket_address|.
   virtual void Send(const net::IPEndPoint& socket_address,

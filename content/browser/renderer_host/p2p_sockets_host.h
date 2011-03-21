@@ -31,6 +31,18 @@ class P2PSocketsHost : public BrowserMessageFilter {
               const std::vector<char>& data);
   void OnDestroySocket(const IPC::Message& msg, int socket_id);
 
+  // Helpers for OnCreateSocket().
+  //
+  // TODO(sergeyu): Remove these methods. |local_address| should be a
+  // parameter in the CreateSocket() message.
+  void GetLocalAddressAndCreateSocket(
+      int routing_id, P2PSocketType type, int socket_id,
+      const net::IPEndPoint& remote_address);
+  void FinishCreateSocket(
+      int routing_id, const net::IPEndPoint& local_address, P2PSocketType type,
+      int socket_id, const net::IPEndPoint& remote_address);
+
+
   IDMap<P2PSocketHost, IDMapOwnPointer> sockets_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketsHost);
