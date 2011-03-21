@@ -66,7 +66,6 @@ extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kDisableBackgroundMode[];
 extern const char kDisableBackgroundNetworking[];
 extern const char kDisableBlockContentAnimation[];
-extern const char kDisableConfirmToQuit[];
 extern const char kDisableConnectBackupJobs[];
 extern const char kDisableCustomJumpList[];
 extern const char kDisableDevTools[];

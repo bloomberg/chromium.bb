@@ -101,7 +101,6 @@ const NSTimeInterval kWindowFadeAnimationDuration = 0.2;
 
 @interface ConfirmQuitPanelController (Private)
 - (void)animateFadeOut;
-- (NSString*)keyCommandString;
 - (NSEvent*)pumpEventQueueForKeyUp:(NSApplication*)app untilDate:(NSDate*)date;
 - (void)hideAllWindowsForApplication:(NSApplication*)app
                         withDuration:(NSTimeInterval)duration;
@@ -143,7 +142,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 
     // Set the proper string.
     NSString* message = l10n_util::GetNSStringF(IDS_CONFIRM_TO_QUIT_DESCRIPTION,
-        base::SysNSStringToUTF16([self keyCommandString]));
+        base::SysNSStringToUTF16([[self class] keyCommandString]));
     [contentView_ setMessageText:message];
   }
   return self;
@@ -299,9 +298,9 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 // This looks at the Main Menu and determines what the user has set as the
 // key combination for quit. It then gets the modifiers and builds a string
 // to display them.
-- (NSString*)keyCommandString {
++ (NSString*)keyCommandString {
   ui::AcceleratorCocoa accelerator = [[self class] quitAccelerator];
-  return [self keyCombinationForAccelerator:accelerator];
+  return [[self class] keyCombinationForAccelerator:accelerator];
 }
 
 // Runs a nested loop that pumps the event queue until the next KeyUp event.
@@ -331,7 +330,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
   [NSAnimationContext endGrouping];
 }
 
-- (NSString*)keyCombinationForAccelerator:(const ui::AcceleratorCocoa&)item {
++ (NSString*)keyCombinationForAccelerator:(const ui::AcceleratorCocoa&)item {
   NSMutableString* string = [NSMutableString string];
   NSUInteger modifiers = item.modifiers();
 

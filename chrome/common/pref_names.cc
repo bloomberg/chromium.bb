@@ -161,6 +161,10 @@ const char kIncognitoEnabled[] = "incognito.enabled";
 // Boolean that is true when Suggest support is enabled.
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 
+// Boolean that indicates whether the browser should put up a confirmation
+// window when the user is attempting to quit. Mac only.
+const char kConfirmToQuitEnabled[] = "browser.confirm_to_quit";
+
 // OBSOLETE.  Enum that specifies whether to enforce a third-party cookie
 // blocking policy.  This has been superseded by kDefaultContentSettings +
 // kBlockThirdPartyCookies.

@@ -20,6 +20,7 @@
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -46,6 +47,7 @@
 #include "chrome/common/app_mode_common_mac.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -141,8 +143,9 @@ void RecordLastRunAppBundlePath() {
 
 }  // anonymous namespace
 
-@interface AppController(Private)
+@interface AppController (Private)
 - (void)initMenuState;
+- (void)updateConfirmToQuitPrefMenuItem:(NSMenuItem*)item;
 - (void)registerServicesMenuTypesTo:(NSApplication*)app;
 - (void)openUrls:(const std::vector<GURL>&)urls;
 - (void)getUrl:(NSAppleEventDescriptor*)event
@@ -273,9 +276,9 @@ void RecordLastRunAppBundlePath() {
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)app {
-  // Check if the experiment is enabled.
-  const CommandLine* commandLine(CommandLine::ForCurrentProcess());
-  if (commandLine->HasSwitch(switches::kDisableConfirmToQuit))
+  // Check if the preference is turned on.
+  const PrefService* prefs = [self defaultProfile]->GetPrefs();
+  if (!prefs->GetBoolean(prefs::kConfirmToQuitEnabled))
     return NSTerminateNow;
 
   // If the application is going to terminate as the result of a Cmd+Q
@@ -709,6 +712,9 @@ void RecordLastRunAppBundlePath() {
     enable = YES;
   } else if (action == @selector(commandFromDock:)) {
     enable = YES;
+  } else if (action == @selector(toggleConfirmToQuit:)) {
+    [self updateConfirmToQuitPrefMenuItem:static_cast<NSMenuItem*>(item)];
+    enable = YES;
   }
   return enable;
 }
@@ -954,6 +960,21 @@ void RecordLastRunAppBundlePath() {
   menuState_->UpdateCommandEnabled(IDC_TASK_MANAGER, true);
 }
 
+// The Confirm to Quit preference is atypical in that the preference lives in
+// the app menu right above the Quit menu item. This method will refresh the
+// display of that item depending on the preference state.
+- (void)updateConfirmToQuitPrefMenuItem:(NSMenuItem*)item {
+  // Format the string so that the correct key equivalent is displayed.
+  NSString* acceleratorString = [ConfirmQuitPanelController keyCommandString];
+  NSString* title = l10n_util::GetNSStringF(IDS_CONFIRM_TO_QUIT_OPTION,
+      base::SysNSStringToUTF16(acceleratorString));
+  [item setTitle:title];
+
+  const PrefService* prefService = [self defaultProfile]->GetPrefs();
+  bool enabled = prefService->GetBoolean(prefs::kConfirmToQuitEnabled);
+  [item setState:enabled ? NSOnState : NSOffState];
+}
+
 - (void)registerServicesMenuTypesTo:(NSApplication*)app {
   // Note that RenderWidgetHostViewCocoa implements NSServicesRequests which
   // handles requests from services.
@@ -1061,6 +1082,12 @@ void RecordLastRunAppBundlePath() {
   }
 
   [aboutController_ showWindow:self];
+}
+
+- (IBAction)toggleConfirmToQuit:(id)sender {
+  PrefService* prefService = [self defaultProfile]->GetPrefs();
+  bool enabled = prefService->GetBoolean(prefs::kConfirmToQuitEnabled);
+  prefService->SetBoolean(prefs::kConfirmToQuitEnabled, !enabled);
 }
 
 // Explicitly bring to the foreground when creating new windows from the dock.

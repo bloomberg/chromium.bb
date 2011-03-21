@@ -187,9 +187,6 @@ const char kDisableBackgroundMode[] = "disable-background-mode";
 // in the measurements.
 const char kDisableBackgroundNetworking[] = "disable-background-networking";
 
-// Disable the Confirm to Quit experiment (Mac only).
-const char kDisableConfirmToQuit[]          = "disable-confirm-to-quit";
-
 // Disables blocked content warning animation. Currently shows animation for
 // blocked pop-ups only.
 const char kDisableBlockContentAnimation[]  =

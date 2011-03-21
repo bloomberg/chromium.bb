@@ -143,7 +143,7 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
     // It is possible that we may receive a change to a preference we
     // do not want to sync.  For example if the user is syncing a Mac
     // client and a Windows client, the Windows client does not
-    // support kShowPageOptionsButtons.  Ignore updates from these
+    // support kConfirmToQuitEnabled.  Ignore updates from these
     // preferences.
     const char* pref_name = name.c_str();
     if (model_associator_->synced_preferences().count(pref_name) == 0)

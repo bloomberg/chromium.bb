@@ -112,6 +112,9 @@ static const char* kSynchronizedPreferences[] = {
   // Cookie prompt dialog.
   prefs::kCookiePromptExpanded,
 
+  // (Mac) Application menu.
+  prefs::kConfirmToQuitEnabled,
+
 #if defined(OS_CHROMEOS)
   // IME prefs
   prefs::kLanguageChewingAddPhraseDirection,

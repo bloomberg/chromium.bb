@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,6 +79,9 @@ class Profile;
 // Redirect in the menu item from the expected target of "File's
 // Owner" (NSAppliation) for a Branded About Box
 - (IBAction)orderFrontStandardAboutPanel:(id)sender;
+
+// Toggles the "Confirm to Quit" preference.
+- (IBAction)toggleConfirmToQuit:(id)sender;
 
 // Delegate method to return the dock menu.
 - (NSMenu*)applicationDockMenu:(NSApplication*)sender;

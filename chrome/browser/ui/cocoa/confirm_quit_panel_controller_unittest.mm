@@ -40,8 +40,7 @@ TEST_F(ConfirmQuitPanelControllerTest, ShowAndDismiss) {
 }
 
 TEST_F(ConfirmQuitPanelControllerTest, KeyCombinationForAccelerator) {
-  scoped_nsobject<ConfirmQuitPanelController> controller(
-      [[ConfirmQuitPanelController alloc] init]);
+  Class controller = [ConfirmQuitPanelController class];
 
   ui::AcceleratorCocoa item = ui::AcceleratorCocoa(@"q", NSCommandKeyMask);
   EXPECT_NSEQ(TestString(@"{Cmd}Q"),
