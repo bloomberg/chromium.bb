@@ -351,6 +351,7 @@ void CollectedCookiesGtk::ShowSelectionInfo(GtkTreeSelection* selection,
     gtk_chrome_cookie_view_clear(GTK_CHROME_COOKIE_VIEW(cookie_info_view_));
   }
 
+  g_list_foreach(paths, reinterpret_cast<GFunc>(gtk_tree_path_free), NULL);
   g_list_free(paths);
 }
 
