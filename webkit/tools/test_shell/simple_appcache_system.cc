@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -194,6 +194,18 @@ class SimpleBackendProxy
           this, &SimpleBackendProxy::UnregisterHost, host_id));
     } else if (system_->is_io_thread()) {
       system_->backend_impl_->UnregisterHost(host_id);
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  virtual void SetSpawningHostId(int host_id, int spawning_host_id) {
+    if (system_->is_ui_thread()) {
+      system_->io_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+          this, &SimpleBackendProxy::SetSpawningHostId,
+          host_id, spawning_host_id));
+    } else if (system_->is_io_thread()) {
+      system_->backend_impl_->SetSpawningHostId(host_id, spawning_host_id);
     } else {
       NOTREACHED();
     }

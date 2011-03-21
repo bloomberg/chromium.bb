@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,6 +110,7 @@ class AppCacheBackend {
  public:
   virtual void RegisterHost(int host_id) = 0;
   virtual void UnregisterHost(int host_id) = 0;
+  virtual void SetSpawningHostId(int host_id, int spawning_host_id) = 0;
   virtual void SelectCache(int host_id,
                            const GURL& document_url,
                            const int64 cache_document_was_loaded_from,

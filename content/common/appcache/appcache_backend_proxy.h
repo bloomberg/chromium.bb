@@ -20,6 +20,7 @@ class AppCacheBackendProxy : public appcache::AppCacheBackend {
   // AppCacheBackend methods
   virtual void RegisterHost(int host_id);
   virtual void UnregisterHost(int host_id);
+  virtual void SetSpawningHostId(int host_id, int spawning_host_id);
   virtual void SelectCache(int host_id,
                            const GURL& document_url,
                            const int64 cache_document_was_loaded_from,

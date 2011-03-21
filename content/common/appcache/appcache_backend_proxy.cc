@@ -14,6 +14,12 @@ void AppCacheBackendProxy::UnregisterHost(int host_id) {
   sender_->Send(new AppCacheHostMsg_UnregisterHost(host_id));
 }
 
+void AppCacheBackendProxy::SetSpawningHostId(int host_id,
+                                             int spawning_host_id) {
+  sender_->Send(new AppCacheHostMsg_SetSpawningHostId(
+                                    host_id, spawning_host_id));
+}
+
 void AppCacheBackendProxy::SelectCache(
     int host_id,
     const GURL& document_url,

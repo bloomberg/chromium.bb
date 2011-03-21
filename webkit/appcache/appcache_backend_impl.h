@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,7 @@ class AppCacheBackendImpl {
   // by the backend impl.
   bool RegisterHost(int host_id);
   bool UnregisterHost(int host_id);
+  bool SetSpawningHostId(int host_id, int spawning_host_id);
   bool SelectCache(int host_id,
                    const GURL& document_url,
                    const int64 cache_document_was_loaded_from,

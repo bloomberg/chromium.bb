@@ -51,6 +51,7 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
   // IPC message handlers
   void OnRegisterHost(int host_id);
   void OnUnregisterHost(int host_id);
+  void OnSetSpawningHostId(int host_id, int spawning_host_id);
   void OnSelectCache(int host_id, const GURL& document_url,
                      int64 cache_document_was_loaded_from,
                      const GURL& opt_manifest_url);

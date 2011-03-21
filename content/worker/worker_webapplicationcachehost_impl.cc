@@ -21,7 +21,26 @@ WorkerWebApplicationCacheHostImpl::WorkerWebApplicationCacheHostImpl(
                                     init_info.parent_appcache_host_id);
 }
 
+void WorkerWebApplicationCacheHostImpl::willStartMainResourceRequest(
+    WebKit::WebURLRequest&, const WebKit::WebFrame*) {
+}
+
+void WorkerWebApplicationCacheHostImpl::didReceiveResponseForMainResource(
+    const WebKit::WebURLResponse&) {
+}
+
+void WorkerWebApplicationCacheHostImpl::didReceiveDataForMainResource(
+    const char*, int) {
+}
+
+void WorkerWebApplicationCacheHostImpl::didFinishLoadingMainResource(
+    bool) {
+}
+
+void WorkerWebApplicationCacheHostImpl::selectCacheWithoutManifest() {
+}
+
 bool WorkerWebApplicationCacheHostImpl::selectCacheWithManifest(
-    const WebKit::WebURL& manifestURL) {
+    const WebKit::WebURL&) {
   return true;
 }

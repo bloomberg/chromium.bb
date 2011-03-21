@@ -43,6 +43,14 @@ IPC_MESSAGE_CONTROL1(AppCacheHostMsg_RegisterHost,
 IPC_MESSAGE_CONTROL1(AppCacheHostMsg_UnregisterHost,
                      int /* host_id */)
 
+// Informs the browser of which host caused another to be created.
+// This can influence which appcache should be utilized for the main
+// resource load into the newly created host, so it should be sent
+// prior to the main resource request being initiated.
+IPC_MESSAGE_CONTROL2(AppCacheHostMsg_SetSpawningHostId,
+                     int /* host_id */,
+                     int /* spawning_host_id */)
+
 // Initiates the cache selection algorithm for the given host.
 // This is sent prior to any subresource loads. An AppCacheMsg_CacheSelected
 // message will be sent in response.

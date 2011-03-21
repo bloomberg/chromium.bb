@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,15 +36,18 @@ class WorkerWebApplicationCacheHostImpl
 
   // Main resource loading is different for workers. The resource is
   // loaded by the creator of the worker rather than the worker itself.
-  virtual void willStartMainResourceRequest(WebKit::WebURLRequest&) {}
+  // These overrides are stubbed out.
+  virtual void willStartMainResourceRequest(
+      WebKit::WebURLRequest&, const WebKit::WebFrame*);
   virtual void didReceiveResponseForMainResource(
-      const WebKit::WebURLResponse&) {}
-  virtual void didReceiveDataForMainResource(const char* data, int len) {}
-  virtual void didFinishLoadingMainResource(bool success) {}
+      const WebKit::WebURLResponse&);
+  virtual void didReceiveDataForMainResource(const char* data, int len);
+  virtual void didFinishLoadingMainResource(bool success);
 
   // Cache selection is also different for workers. We know at construction
   // time what cache to select and do so then.
-  virtual void selectCacheWithoutManifest() {}
+  // These overrides are stubbed out.
+  virtual void selectCacheWithoutManifest();
   virtual bool selectCacheWithManifest(const WebKit::WebURL& manifestURL);
 };
 

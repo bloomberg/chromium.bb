@@ -63,6 +63,7 @@ bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message,
   IPC_BEGIN_MESSAGE_MAP_EX(AppCacheDispatcherHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(AppCacheHostMsg_RegisterHost, OnRegisterHost)
     IPC_MESSAGE_HANDLER(AppCacheHostMsg_UnregisterHost, OnUnregisterHost)
+    IPC_MESSAGE_HANDLER(AppCacheHostMsg_SetSpawningHostId, OnSetSpawningHostId)
     IPC_MESSAGE_HANDLER(AppCacheHostMsg_GetResourceList, OnGetResourceList)
     IPC_MESSAGE_HANDLER(AppCacheHostMsg_SelectCache, OnSelectCache)
     IPC_MESSAGE_HANDLER(AppCacheHostMsg_SelectCacheForWorker,
@@ -98,6 +99,14 @@ void AppCacheDispatcherHost::OnUnregisterHost(int host_id) {
     if (!backend_impl_.UnregisterHost(host_id)) {
       BadMessageReceived();
     }
+  }
+}
+
+void AppCacheDispatcherHost::OnSetSpawningHostId(
+    int host_id, int spawning_host_id) {
+  if (appcache_service_.get()) {
+    if (!backend_impl_.SetSpawningHostId(host_id, spawning_host_id))
+      BadMessageReceived();
   }
 }
 
