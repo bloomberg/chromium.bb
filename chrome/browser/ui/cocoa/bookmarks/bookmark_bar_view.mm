@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@
 @synthesize dropIndicatorShown = dropIndicatorShown_;
 @synthesize dropIndicatorPosition = dropIndicatorPosition_;
 @synthesize noItemContainer = noItemContainer_;
+
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -105,27 +106,18 @@
   return controller_;
 }
 
+// Internal method, needs to be called whenever a change has been made to
+// dropIndicatorShown_ or dropIndicatorPosition_ so it can get the controller
+// to reflect the change by moving buttons around.
+-(void)dropIndicatorChanged {
+  if (dropIndicatorShown_)
+    [controller_ setDropInsertionPos:dropIndicatorPosition_];
+  else
+    [controller_ clearDropInsertionPos];
+}
+
 -(void)drawRect:(NSRect)dirtyRect {
   [super drawRect:dirtyRect];
-
-  // Draw the bookmark-button-dragging drop indicator if necessary.
-  if (dropIndicatorShown_) {
-    const CGFloat kBarWidth = 1;
-    const CGFloat kBarHalfWidth = kBarWidth / 2.0;
-    const CGFloat kBarVertPad = 4;
-    const CGFloat kBarOpacity = 0.85;
-
-    // Prevent the indicator from being clipped on the left.
-    CGFloat xLeft = MAX(dropIndicatorPosition_ - kBarHalfWidth, 0);
-
-    NSRect uglyBlackBar =
-        NSMakeRect(xLeft, kBarVertPad,
-                   kBarWidth, NSHeight([self bounds]) - 2 * kBarVertPad);
-    NSColor* uglyBlackBarColor = [[self window] themeProvider]->
-        GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT, true);
-    [[uglyBlackBarColor colorWithAlphaComponent:kBarOpacity] setFill];
-    [[NSBezierPath bezierPathWithRect:uglyBlackBar] fill];
-  }
 }
 
 // Shim function to assist in unit testing.
@@ -146,7 +138,7 @@
     if (!showIt) {
       if (dropIndicatorShown_) {
         dropIndicatorShown_ = NO;
-        [self setNeedsDisplay:YES];
+        [self dropIndicatorChanged];
       }
     } else {
       CGFloat x =
@@ -156,7 +148,7 @@
       if (!dropIndicatorShown_ || dropIndicatorPosition_ != x) {
         dropIndicatorShown_ = YES;
         dropIndicatorPosition_ = x;
-        [self setNeedsDisplay:YES];
+        [self dropIndicatorChanged];
       }
     }
 
@@ -171,26 +163,25 @@
   // drop indicator if one was shown.
   if (dropIndicatorShown_) {
     dropIndicatorShown_ = NO;
-    [self setNeedsDisplay:YES];
+    [self dropIndicatorChanged];
   }
 }
 
 - (void)draggingEnded:(id<NSDraggingInfo>)info {
-  // For now, we just call |-draggingExited:|.
-  [self draggingExited:info];
+  [[BookmarkButton draggedButton] setHidden:NO];
+  if (dropIndicatorShown_) {
+    dropIndicatorShown_ = NO;
+    [self dropIndicatorChanged];
+  }
+  [controller_ draggingEnded:info];
 }
 
 - (BOOL)wantsPeriodicDraggingUpdates {
-  // TODO(port): This should probably return |YES| and the controller should
-  // slide the existing bookmark buttons interactively to the side to make
-  // room for the about-to-be-dropped bookmark.
   return YES;
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info {
   // For now it's the same as draggingEntered:.
-  // TODO(jrg): once we return YES for wantsPeriodicDraggingUpdates,
-  // this should ping the controller_ to perform animations.
   return [self draggingEntered:info];
 }
 

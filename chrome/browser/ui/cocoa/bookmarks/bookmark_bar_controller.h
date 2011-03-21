@@ -260,6 +260,13 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // Set to YES to prevent any node animations. Useful for unit testing so that
   // incomplete animations do not cause valgrind complaints.
   BOOL ignoreAnimations_;
+
+  // YES if there is a possible drop about to happen in the bar.
+  BOOL hasInsertionPos_;
+
+  // The x point on the bar where the left edge of the new item will end
+  // up if it is dropped.
+  CGFloat insertionPos_;
 }
 
 @property(readonly, nonatomic) bookmarks::VisualState visualState;

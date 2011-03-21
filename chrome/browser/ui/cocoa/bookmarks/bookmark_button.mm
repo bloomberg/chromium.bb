@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -197,13 +197,13 @@ BookmarkButton* gDraggedButton = nil; // Weak
   dragMouseOffset_ = [self convertPointFromBase:[event locationInWindow]];
   dragPending_ = YES;
   gDraggedButton = self;
-  [[self animator] setHidden:YES];
 
   CGFloat yAt = [self bounds].size.height;
   NSSize dragOffset = NSMakeSize(0.0, 0.0);
-  [self dragImage:[self dragImage] at:NSMakePoint(0, yAt) offset:dragOffset
+  NSImage* image = [self dragImage];
+  [self setHidden:YES];
+  [self dragImage:image at:NSMakePoint(0, yAt) offset:dragOffset
             event:event pasteboard:pboard source:self slideBack:YES];
-
   [self setHidden:NO];
 
   // And we're done.
@@ -242,7 +242,8 @@ BookmarkButton* gDraggedButton = nil; // Weak
   gDraggedButton = nil;
   // Inform delegate of drag source that we're finished dragging,
   // so it can close auto-opened bookmark folders etc.
-  [delegate_ bookmarkDragDidEnd:self];
+  [delegate_ bookmarkDragDidEnd:self
+                      operation:operation];
   // Tell delegate if it should delete us.
   if (operation & NSDragOperationDelete) {
     dragEndScreenLocation_ = aPoint;
@@ -352,7 +353,8 @@ BookmarkButton* gDraggedButton = nil; // Weak
   } else {
     // Mouse tracked out of button during menu track. Hide menus.
     if (!wasInside)
-      [delegate_ bookmarkDragDidEnd:self];
+      [delegate_ bookmarkDragDidEnd:self
+                          operation:NSDragOperationNone];
   }
 }
 

@@ -208,8 +208,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (void)addButtonsToView;
 - (void)centerNoItemsLabel;
 - (void)setNodeForBarMenu;
-
 - (void)watchForExitEvent:(BOOL)watch;
+- (void)resetAllButtonPositionsWithAnimation:(BOOL)animate;
 
 @end
 
@@ -1556,12 +1556,12 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   CGFloat delta = desiredSize - frame.size.width;
   if (delta) {
     frame.size.width = desiredSize;
-    [[button animator] setFrame:frame];
+    [button setFrame:frame];
     for (NSButton* button in buttons_.get()) {
       NSRect buttonFrame = [button frame];
       if (buttonFrame.origin.x > frame.origin.x) {
         buttonFrame.origin.x += delta;
-        [[button animator] setFrame:buttonFrame];
+        [button setFrame:buttonFrame];
       }
     }
   }
@@ -1806,6 +1806,70 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (void)draggingEnded:(id<NSDraggingInfo>)info {
   [self closeFolderAndStopTrackingMenus];
+  [[BookmarkButton draggedButton] setHidden:NO];
+  [self resetAllButtonPositionsWithAnimation:YES];
+}
+
+// Set insertionPos_ and hasInsertionPos_, and make insertion space for a
+// hypothetical drop with the new button having a left edge of |where|.
+// Gets called only by our view.
+- (void)setDropInsertionPos:(CGFloat)where {
+  if (!hasInsertionPos_ || where != insertionPos_) {
+    insertionPos_ = where;
+    hasInsertionPos_ = YES;
+    CGFloat left = bookmarks::kBookmarkHorizontalPadding;
+    CGFloat paddingWidth = bookmarks::kDefaultBookmarkWidth;
+    BookmarkButton* draggedButton = [BookmarkButton draggedButton];
+    if (draggedButton) {
+      paddingWidth = std::min(bookmarks::kDefaultBookmarkWidth,
+                              NSWidth([draggedButton frame]));
+    }
+    // Put all the buttons where they belong, with all buttons to the right
+    // of the insertion point shuffling right to make space for it.
+    for (NSButton* button in buttons_.get()) {
+      // Hidden buttons get no space.
+      if ([button isHidden])
+        continue;
+      NSRect buttonFrame = [button frame];
+      buttonFrame.origin.x = left;
+      // Update "left" for next time around.
+      left += buttonFrame.size.width;
+      if (left > insertionPos_)
+        buttonFrame.origin.x += paddingWidth;
+      left += bookmarks::kBookmarkHorizontalPadding;
+      [[button animator] setFrame:buttonFrame];
+    }
+  }
+}
+
+// Put all visible bookmark bar buttons in their normal locations, either with
+// or without animation according to the |animate| flag.
+// This is generally useful, so is called from various places internally.
+- (void)resetAllButtonPositionsWithAnimation:(BOOL)animate {
+  CGFloat left = bookmarks::kBookmarkHorizontalPadding;
+
+  for (NSButton* button in buttons_.get()) {
+    // Hidden buttons get no space.
+    if ([button isHidden])
+      continue;
+    NSRect buttonFrame = [button frame];
+    buttonFrame.origin.x = left;
+    left += buttonFrame.size.width + bookmarks::kBookmarkHorizontalPadding;
+    if (animate)
+      [[button animator] setFrame:buttonFrame];
+    else
+      [button setFrame:buttonFrame];
+  }
+}
+
+// Clear insertion flag, remove insertion space and put all visible bookmark
+// bar buttons in their normal locations.
+// Gets called only by our view.
+- (void)clearDropInsertionPos {
+  if (hasInsertionPos_) {
+    hasInsertionPos_ = NO;
+    [self resetAllButtonPositionsWithAnimation:YES];
+  }
 }
 
 #pragma mark Bridge Notification Handlers
@@ -2067,8 +2131,14 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
 }
 
-- (void)bookmarkDragDidEnd:(BookmarkButton*)button {
+- (void)bookmarkDragDidEnd:(BookmarkButton*)button
+                 operation:(NSDragOperation)operation {
   [self closeFolderAndStopTrackingMenus];
+
+  if (operation == NSDragOperationNone) {
+    [button setHidden:NO];
+    [self resetAllButtonPositionsWithAnimation:YES];
+  }
 }
 
 
@@ -2211,13 +2281,16 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   int numButtons = displayedButtonCount_;
 
   // If it's a drop strictly between existing buttons ...
-  if (destIndex >= 0 && destIndex < numButtons) {
+
+  if (destIndex == 0) {
+    x = 0.5 * bookmarks::kBookmarkHorizontalPadding;
+  } else if (destIndex > 0 && destIndex < numButtons) {
     // ... put the indicator right between the buttons.
     BookmarkButton* button =
-        [buttons_ objectAtIndex:static_cast<NSUInteger>(destIndex)];
+        [buttons_ objectAtIndex:static_cast<NSUInteger>(destIndex-1)];
     DCHECK(button);
     NSRect buttonFrame = [button frame];
-    x = buttonFrame.origin.x - 0.5 * bookmarks::kBookmarkHorizontalPadding;
+    x = NSMaxX(buttonFrame) + 0.5 * bookmarks::kBookmarkHorizontalPadding;
 
     // If it's a drop at the end (past the last button, if there are any) ...
   } else if (destIndex == numButtons) {
@@ -2320,19 +2393,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
           bookmarks::kBookmarkHorizontalPadding;
     }
     BookmarkButton* newButton = [self buttonForNode:node xOffset:&newOffset];
-    CGFloat xOffset =
-        NSWidth([newButton frame]) + bookmarks::kBookmarkHorizontalPadding;
-    NSUInteger buttonCount = [buttons_ count];
-    for (NSUInteger i = buttonIndex; i < buttonCount; ++i) {
-      BookmarkButton* button = [buttons_ objectAtIndex:i];
-      NSPoint buttonOrigin = [button frame].origin;
-      buttonOrigin.x += xOffset;
-      [[button animator] setFrameOrigin:buttonOrigin];
-    }
     ++displayedButtonCount_;
     [buttons_ insertObject:newButton atIndex:buttonIndex];
     [buttonView_ addSubview:newButton];
-
+    [self resetAllButtonPositionsWithAnimation:NO];
     // See if any buttons need to be pushed off to or brought in from the side.
     [self reconfigureBookmarkBar];
   } else  {
@@ -2386,7 +2450,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return nodesWereAdded;
 }
 
-// TODO(mrossetti): jrg wants this broken up into smaller functions.
 - (void)moveButtonFromIndex:(NSInteger)fromIndex toIndex:(NSInteger)toIndex {
   if (fromIndex != toIndex) {
     NSInteger buttonCount = (NSInteger)[buttons_ count];
@@ -2396,38 +2459,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     // both button indexes are in the visible space.
     if (fromIndex < buttonCount && toIndex < buttonCount) {
       BookmarkButton* movedButton = [buttons_ objectAtIndex:fromIndex];
-      NSRect movedFrame = [movedButton frame];
-      NSPoint toOrigin = movedFrame.origin;
-      CGFloat xOffset =
-          NSWidth(movedFrame) + bookmarks::kBookmarkHorizontalPadding;
-      // Hide the button to reduce flickering while drawing the window.
-      [movedButton setHidden:YES];
       [buttons_ removeObjectAtIndex:fromIndex];
-      if (fromIndex < toIndex) {
-        // Move the button from left to right within the bar.
-        BookmarkButton* targetButton = [buttons_ objectAtIndex:toIndex - 1];
-        NSRect toFrame = [targetButton frame];
-        toOrigin.x = toFrame.origin.x - NSWidth(movedFrame) + NSWidth(toFrame);
-        for (NSInteger i = fromIndex; i < toIndex; ++i) {
-          BookmarkButton* button = [buttons_ objectAtIndex:i];
-          NSRect frame = [button frame];
-          frame.origin.x -= xOffset;
-          [[button animator] setFrameOrigin:frame.origin];
-        }
-      } else {
-        // Move the button from right to left within the bar.
-        BookmarkButton* targetButton = [buttons_ objectAtIndex:toIndex];
-        toOrigin = [targetButton frame].origin;
-        for (NSInteger i = fromIndex - 1; i >= toIndex; --i) {
-          BookmarkButton* button = [buttons_ objectAtIndex:i];
-          NSRect buttonFrame = [button frame];
-          buttonFrame.origin.x += xOffset;
-          [[button animator] setFrameOrigin:buttonFrame.origin];
-        }
-      }
       [buttons_ insertObject:movedButton atIndex:toIndex];
-      [movedButton setFrameOrigin:toOrigin];
       [movedButton setHidden:NO];
+      [self resetAllButtonPositionsWithAnimation:NO];
     } else if (fromIndex < buttonCount) {
       // A button is being removed from the bar and added to off-the-side.
       // By now the node has already been inserted into the model so the
@@ -2470,19 +2505,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     if (animate && !ignoreAnimations_ && [self isVisible])
       NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, poofPoint,
                             NSZeroSize, nil, nil, nil);
-    CGFloat xOffset = NSWidth(oldFrame) + bookmarks::kBookmarkHorizontalPadding;
     [buttons_ removeObjectAtIndex:buttonIndex];
-    NSUInteger buttonCount = [buttons_ count];
-    for (NSUInteger i = buttonIndex; i < buttonCount; ++i) {
-      BookmarkButton* button = [buttons_ objectAtIndex:i];
-      NSRect buttonFrame = [button frame];
-      buttonFrame.origin.x -= xOffset;
-      [[button animator] setFrame:buttonFrame];
-      // If this button is showing its menu then we need to move the menu, too.
-      if (button == [folderController_ parentButton])
-        [folderController_ offsetFolderMenuWindow:NSMakeSize(xOffset, 0.0)];
-    }
     --displayedButtonCount_;
+    [self resetAllButtonPositionsWithAnimation:YES];
     [self reconfigureBookmarkBar];
   } else if (folderController_ &&
              [folderController_ parentButton] == offTheSideButton_) {

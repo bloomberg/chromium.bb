@@ -1229,6 +1229,14 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return wasCopiedOrMoved;
 }
 
+// TODO(maf): Implement live drag & drop animation using this hook.
+- (void)setDropInsertionPos:(CGFloat)where {
+}
+
+// TODO(maf): Implement live drag & drop animation using this hook.
+- (void)clearDropInsertionPos {
+}
+
 #pragma mark NSWindowDelegate Functions
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -1313,8 +1321,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
 }
 
-- (void)bookmarkDragDidEnd:(BookmarkButton*)button {
-  [barController_ bookmarkDragDidEnd:button];
+- (void)bookmarkDragDidEnd:(BookmarkButton*)button
+                 operation:(NSDragOperation)operation {
+  [barController_ bookmarkDragDidEnd:button
+                           operation:operation];
 }
 
 

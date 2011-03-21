@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,8 @@ class ThemeProvider;
 // This is called after the drag has finished, for any reason.
 // We particularly need this so we can hide bookmark folder menus and stop
 // doing that hover thing.
-- (void)bookmarkDragDidEnd:(BookmarkButton*)button;
+- (void)bookmarkDragDidEnd:(BookmarkButton*)button
+                 operation:(NSDragOperation)operation;
 
 @end
 
@@ -121,6 +122,12 @@ class ThemeProvider;
 // TODO(viettrungluu,jrg): instead of this, make buttons move around.
 // http://crbug.com/35968
 - (CGFloat)indicatorPosForDragToPoint:(NSPoint)point;
+
+// Used to tell the controller that room should be made for a drop.
+- (void)setDropInsertionPos:(CGFloat)where;
+
+// Used to tell the controller to stop making room for a drop.
+- (void)clearDropInsertionPos;
 
 // Return the theme provider associated with this browser window.
 - (ui::ThemeProvider*)themeProvider;
