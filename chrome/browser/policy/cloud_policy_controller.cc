@@ -52,7 +52,7 @@ static const int64 kPolicyRefreshDeviationMaxInMilliseconds = 30 * 60 * 1000;
 // These are the base values for delays before retrying after an error. They
 // will be doubled each time they are used.
 static const int64 kPolicyRefreshErrorDelayInMilliseconds =
-    3 * 1000;  // 3 seconds
+    5 * 60 * 1000;  // 5 minutes
 
 // Default value for the policy refresh rate.
 static const int kPolicyRefreshRateInMilliseconds =
@@ -115,11 +115,13 @@ void CloudPolicyController::OnError(DeviceManagementBackend::ErrorCode code) {
       code == DeviceManagementBackend::kErrorServiceManagementTokenInvalid) {
     LOG(WARNING) << "The device token was either invalid or unknown to the "
                  << "device manager, re-registering device.";
-    SetState(STATE_TOKEN_UNAVAILABLE);
+    // Will retry fetching a token but gracefully backing off.
+    SetState(STATE_TOKEN_ERROR);
   } else if (code ==
              DeviceManagementBackend::kErrorServiceManagementNotSupported) {
-    VLOG(1) << "The device is no longer managed, resetting device token.";
-    SetState(STATE_TOKEN_UNAVAILABLE);
+    VLOG(1) << "The device is no longer managed.";
+    token_fetcher_->SetUnmanagedState();
+    SetState(STATE_TOKEN_UNMANAGED);
   } else {
     SetState(STATE_POLICY_ERROR);
   }
@@ -137,6 +139,7 @@ void CloudPolicyController::OnDeviceTokenChanged() {
 }
 
 void CloudPolicyController::OnCredentialsChanged() {
+  effective_policy_refresh_error_delay_ms_ = policy_refresh_error_delay_ms_;
   SetState(STATE_TOKEN_UNAVAILABLE);
 }
 
@@ -237,12 +240,15 @@ void CloudPolicyController::DoDelayedWork() {
 
   switch (state_) {
     case STATE_TOKEN_UNAVAILABLE:
+    case STATE_TOKEN_ERROR:
       FetchToken();
       return;
     case STATE_TOKEN_VALID:
     case STATE_POLICY_VALID:
     case STATE_POLICY_ERROR:
       SendPolicyRequest();
+      return;
+    case STATE_TOKEN_UNMANAGED:
       return;
   }
 
@@ -268,15 +274,25 @@ void CloudPolicyController::SetState(
 
   // Determine when to take the next step.
   switch (state_) {
+    case STATE_TOKEN_UNMANAGED:
+      break;
     case STATE_TOKEN_UNAVAILABLE:
+      // The controller is not yet initialized and needs to immediately fetch
+      // token and policy if present.
     case STATE_TOKEN_VALID:
+      // Immediately try to fetch the token on initialization or policy after a
+      // token update. Subsequent retries will respect the back-off strategy.
       refresh_at = now;
       break;
     case STATE_POLICY_VALID:
+      // Delay is only reset if the policy fetch operation was successful. This
+      // will ensure the server won't get overloaded with retries in case of
+      // a bug on either side.
       effective_policy_refresh_error_delay_ms_ = policy_refresh_error_delay_ms_;
       refresh_at =
           last_refresh + base::TimeDelta::FromMilliseconds(GetRefreshDelay());
       break;
+    case STATE_TOKEN_ERROR:
     case STATE_POLICY_ERROR:
       refresh_at = now + base::TimeDelta::FromMilliseconds(
                              effective_policy_refresh_error_delay_ms_);

@@ -61,6 +61,10 @@ class CloudPolicyController
   enum ControllerState {
     // The controller is initializing, policy information not yet available.
     STATE_TOKEN_UNAVAILABLE,
+    // The device is not managed. Should retry fetching the token after delay.
+    STATE_TOKEN_UNMANAGED,
+    // The token is not valid and should be refetched with exponential back-off.
+    STATE_TOKEN_ERROR,
     // The token is valid, but policy is yet to be fetched.
     STATE_TOKEN_VALID,
     // Policy information is available and valid.

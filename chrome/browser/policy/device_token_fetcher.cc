@@ -81,6 +81,14 @@ void DeviceTokenFetcher::FetchTokenInternal() {
   backend_->ProcessRegisterRequest(auth_token_, device_id_, request, this);
 }
 
+void DeviceTokenFetcher::SetUnmanagedState() {
+  // The call to |cache_->SetUnmanaged()| has to happen first because it sets
+  // the timestamp that |SetState()| needs to determine the correct refresh
+  // time.
+  cache_->SetUnmanaged();
+  SetState(STATE_UNMANAGED);
+}
+
 const std::string& DeviceTokenFetcher::GetDeviceToken() {
   return device_token_;
 }

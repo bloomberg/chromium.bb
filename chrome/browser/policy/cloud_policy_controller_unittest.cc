@@ -62,6 +62,7 @@ class MockDeviceTokenFetcher : public DeviceTokenFetcher {
   MOCK_METHOD4(FetchToken,
       void(const std::string&, const std::string&,
            em::DeviceRegisterRequest_Type, const std::string&));
+  MOCK_METHOD0(SetUnmanagedState, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDeviceTokenFetcher);
@@ -205,7 +206,7 @@ TEST_F(CloudPolicyControllerTest, RefreshAfterSuccessfulPolicy) {
   ExpectHasSpdyPolicy();
 }
 
-// If poliy fetching failed, it should be retried.
+// If policy fetching failed, it should be retried.
 TEST_F(CloudPolicyControllerTest, RefreshAfterError) {
   SetupIdentityStrategy("device_token", "device_id", "machine_id",
                         "google/chromeos/user", em::DeviceRegisterRequest::USER,
@@ -231,7 +232,7 @@ TEST_F(CloudPolicyControllerTest, InvalidToken) {
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorServiceManagementTokenInvalid));
   EXPECT_CALL(*token_fetcher_.get(), FetchToken(_, _, _, _)).Times(1);
-  CreateNewController(backend);
+  CreateNewController(backend, 1000 * 1000, 0, 0, 0);
   loop_.RunAllPending();
 }
 
@@ -246,12 +247,12 @@ TEST_F(CloudPolicyControllerTest, DeviceNotFound) {
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorServiceDeviceNotFound));
   EXPECT_CALL(*token_fetcher_.get(), FetchToken(_, _, _, _)).Times(1);
-  CreateNewController(backend);
+  CreateNewController(backend, 1000 * 1000, 0, 0, 0);
   loop_.RunAllPending();
 }
 
 // If the backend reports that the device is no longer managed, the controller
-// shoud instruct the token fetcher to fetch a new token (which will in turn
+// should instruct the token fetcher to fetch a new token (which will in turn
 // set and persist the correct 'unmanaged' state).
 TEST_F(CloudPolicyControllerTest, NoLongerManaged) {
   SetupIdentityStrategy("device_token", "device_id", "machine_id",
@@ -261,8 +262,8 @@ TEST_F(CloudPolicyControllerTest, NoLongerManaged) {
   EXPECT_CALL(*backend, ProcessPolicyRequest(_, _, _, _)).WillOnce(
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorServiceManagementNotSupported));
-  EXPECT_CALL(*token_fetcher_.get(), FetchToken(_, _, _, _)).Times(1);
-  CreateNewController(backend);
+  EXPECT_CALL(*token_fetcher_.get(), SetUnmanagedState()).Times(1);
+  CreateNewController(backend, 0, 0, 0, 1000 * 1000);
   loop_.RunAllPending();
 }
 

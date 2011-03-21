@@ -53,6 +53,8 @@ class DeviceTokenFetcher
                           em::DeviceRegisterRequest_Type policy_type,
                           const std::string& machine_id);
 
+  virtual void SetUnmanagedState();
+
   // Returns the device management token or the empty string if not available.
   // Declared virtual so it can be overridden by mocks.
   virtual const std::string& GetDeviceToken();
