@@ -11,7 +11,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/toolbar_importer.h"
 #include "chrome/common/libxml_utils.h"
 #include "googleurl/src/gurl.h"

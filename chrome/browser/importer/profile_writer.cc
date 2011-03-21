@@ -8,7 +8,6 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,10 +16,9 @@
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
 
-using webkit_glue::PasswordForm;
-
-ProfileWriter::BookmarkEntry::BookmarkEntry() : in_toolbar(false),
-    is_folder(false) {}
+ProfileWriter::BookmarkEntry::BookmarkEntry()
+    : in_toolbar(false),
+      is_folder(false) {}
 
 ProfileWriter::BookmarkEntry::~BookmarkEntry() {}
 
@@ -34,7 +32,7 @@ bool ProfileWriter::TemplateURLModelIsLoaded() const {
   return profile_->GetTemplateURLModel()->loaded();
 }
 
-void ProfileWriter::AddPasswordForm(const PasswordForm& form) {
+void ProfileWriter::AddPasswordForm(const webkit_glue::PasswordForm& form) {
   profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS)->AddLogin(form);
 }
 

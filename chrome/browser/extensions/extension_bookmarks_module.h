@@ -10,12 +10,11 @@
 #include <set>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/ref_counted.h"
 #include "base/singleton.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/importer/importer_host.h"
-#include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -33,29 +32,29 @@ class ExtensionBookmarkEventRouter : public BookmarkModelObserver {
   // model.
   void Observe(BookmarkModel* model);
 
-  // BookmarkModelObserver
-  virtual void Loaded(BookmarkModel* model);
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) { }
+  // BookmarkModelObserver:
+  virtual void Loaded(BookmarkModel* model) OVERRIDE;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE {}
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index);
+                                 int new_index) OVERRIDE;
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index);
+                                 int index) OVERRIDE;
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
-                                   const BookmarkNode* node);
+                                   const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node);
+                                   const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node);
+                                         const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node);
-  virtual void BookmarkImportBeginning(BookmarkModel* model);
-  virtual void BookmarkImportEnding(BookmarkModel* model);
+                                             const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkImportBeginning(BookmarkModel* model) OVERRIDE;
+  virtual void BookmarkImportEnding(BookmarkModel* model) OVERRIDE;
 
  private:
   ExtensionBookmarkEventRouter();
@@ -77,7 +76,9 @@ class ExtensionBookmarkEventRouter : public BookmarkModelObserver {
 class BookmarksFunction : public AsyncExtensionFunction,
                           public NotificationObserver {
  public:
-  virtual void Run();
+  // AsyncExtensionFunction:
+  virtual void Run() OVERRIDE;
+
   virtual bool RunImpl() = 0;
 
  protected:
@@ -87,43 +88,50 @@ class BookmarksFunction : public AsyncExtensionFunction,
   bool GetBookmarkIdAsInt64(const std::string& id_string, int64* id);
 
  private:
+  // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
+
   NotificationRegistrar registrar_;
 };
 
 class GetBookmarksFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
+
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.get")
 };
 
 class GetBookmarkChildrenFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
+
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getChildren")
 };
 
 class GetBookmarkRecentFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
+
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getRecent")
 };
 
 class GetBookmarkTreeFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
+
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getTree")
 };
 
 class SearchBookmarksFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
+
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.search")
 };
@@ -134,9 +142,11 @@ class RemoveBookmarkFunction : public BookmarksFunction {
   // from id string to int64 failed.
   static bool ExtractIds(const ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
-  virtual bool RunImpl();
+  // BookmarksFunction:
+  virtual bool RunImpl() OVERRIDE;
   virtual void GetQuotaLimitHeuristics(
       std::list<QuotaLimitHeuristic*>* heuristics) const;
+
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.remove")
 };
@@ -149,7 +159,9 @@ class CreateBookmarkFunction : public BookmarksFunction {
  public:
   virtual void GetQuotaLimitHeuristics(
       std::list<QuotaLimitHeuristic*>* heuristics) const;
-  virtual bool RunImpl();
+  // BookmarksFunction:
+  virtual bool RunImpl() OVERRIDE;
+
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.create")
 };
@@ -160,7 +172,9 @@ class MoveBookmarkFunction : public BookmarksFunction {
                          bool* invalid_id);
   virtual void GetQuotaLimitHeuristics(
       std::list<QuotaLimitHeuristic*>* heuristics) const;
-  virtual bool RunImpl();
+  // BookmarksFunction:
+  virtual bool RunImpl() OVERRIDE;
+
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.move")
 };
@@ -182,11 +196,13 @@ class BookmarksIOFunction : public BookmarksFunction,
   BookmarksIOFunction();
   virtual ~BookmarksIOFunction();
 
-  // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params) = 0;
+
+  // SelectFileDialog::Listener:
   virtual void MultiFilesSelected(const std::vector<FilePath>& files,
-                                  void* params);
-  virtual void FileSelectionCanceled(void* params);
+                                  void* params) OVERRIDE;
+  virtual void FileSelectionCanceled(void* params) OVERRIDE;
+
   void SelectFile(SelectFileDialog::Type type);
 
  protected:
@@ -195,9 +211,10 @@ class BookmarksIOFunction : public BookmarksFunction,
 
 class ImportBookmarksFunction : public BookmarksIOFunction {
  public:
-  // BookmarkManagerIOFunction implementation.
-  virtual bool RunImpl();
-  virtual void FileSelected(const FilePath& path, int index, void* params);
+  // BookmarkManagerIOFunction:
+  virtual bool RunImpl() OVERRIDE;
+  virtual void FileSelected(const FilePath& path, int index, void* params)
+      OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.import");
@@ -205,9 +222,10 @@ class ImportBookmarksFunction : public BookmarksIOFunction {
 
 class ExportBookmarksFunction : public BookmarksIOFunction {
  public:
-  // Override BookmarkManagerIOFunction.
-  virtual bool RunImpl();
-  virtual void FileSelected(const FilePath& path, int index, void* params);
+  // BookmarkManagerIOFunction:
+  virtual bool RunImpl() OVERRIDE;
+  virtual void FileSelected(const FilePath& path, int index, void* params)
+      OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.export");
