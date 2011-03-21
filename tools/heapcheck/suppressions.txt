@@ -1210,7 +1210,7 @@
    bug_75224
    Heapcheck:Leak
    fun:AutofillDownloadTestHelper
-   fun:AutoFillDownloadTest_*Test_Test::TestBody
+   fun:AutofillDownloadTest_*Test_Test::TestBody
 }
 {
    bug_75917
