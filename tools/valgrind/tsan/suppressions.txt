@@ -140,6 +140,7 @@
   ThreadSanitizer:Race
   ...
   fun:ObserverListBase*
+  ...
   fun:sync_api::SyncManager::SyncInternal::*
   fun:sync_api::SyncManager::*
   fun:browser_sync::*
