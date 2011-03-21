@@ -4,13 +4,13 @@
 
 #include "skia/ext/vector_canvas.h"
 
-#include "skia/ext/vector_platform_device.h"
-
 namespace skia {
 
-VectorCanvas::VectorCanvas(PlatformDevice* device)
-    : PlatformCanvas(device->getDeviceFactory()) {
-  setDevice(device)->unref(); // Created with refcount 1, and setDevice refs.
+VectorCanvas::VectorCanvas()
+    : PlatformCanvas(SkNEW(VectorPlatformDeviceFactory)) {
+}
+
+VectorCanvas::VectorCanvas(SkDeviceFactory* factory) : PlatformCanvas(factory) {
 }
 
 VectorCanvas::~VectorCanvas() {

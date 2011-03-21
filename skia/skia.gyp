@@ -642,6 +642,8 @@
         'ext/skia_utils_win.h',
         'ext/vector_canvas.cc',
         'ext/vector_canvas.h',
+        'ext/vector_canvas_linux.cc',
+        'ext/vector_canvas_win.cc',
         'ext/vector_platform_device.h',
         'ext/vector_platform_device_linux.cc',
         'ext/vector_platform_device_linux.h',
