@@ -230,12 +230,12 @@ extern const char kBlockNonsandboxedPlugins[];
 extern const char kClearSiteDataOnExit[];
 extern const char kDefaultZoomLevel[];
 extern const char kPerHostZoomLevels[];
-extern const char kAutoFillEnabled[];
-extern const char kAutoFillAuxiliaryProfilesEnabled[];
-extern const char kAutoFillDialogPlacement[];
-extern const char kAutoFillPositiveUploadRate[];
-extern const char kAutoFillNegativeUploadRate[];
-extern const char kAutoFillPersonalDataManagerFirstRun[];
+extern const char kAutofillEnabled[];
+extern const char kAutofillAuxiliaryProfilesEnabled[];
+extern const char kAutofillDialogPlacement[];
+extern const char kAutofillPositiveUploadRate[];
+extern const char kAutofillNegativeUploadRate[];
+extern const char kAutofillPersonalDataManagerFirstRun[];
 
 extern const char kUseVerticalTabs[];
 extern const char kEnableTranslate[];

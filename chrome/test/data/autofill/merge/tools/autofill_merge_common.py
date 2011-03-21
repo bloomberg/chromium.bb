@@ -32,7 +32,7 @@ def SerializeProfiles(profiles):
 
 
 def ColumnNameToFieldType(column_name):
-  """Converts the given |column_name| to the corresponding AutoFillField type.
+  """Converts the given |column_name| to the corresponding AutofillField type.
 
   |column_name| should be a string drawn from the column names of the
   autofill_profiles table in the Chromium "Web Data" database.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,9 +79,9 @@ cr.define('options.autoFillOptions', function() {
    * @constructor
    * @extends {options.DeletableItemList}
    */
-  var AutoFillAddressList = cr.ui.define('list');
+  var AutofillAddressList = cr.ui.define('list');
 
-  AutoFillAddressList.prototype = {
+  AutofillAddressList.prototype = {
     __proto__: DeletableItemList.prototype,
 
     decorate: function() {
@@ -105,12 +105,12 @@ cr.define('options.autoFillOptions', function() {
 
     /** @inheritDoc */
     activateItemAtIndex: function(index) {
-      AutoFillOptions.loadAddressEditor(this.dataModel.item(index)[0]);
+      AutofillOptions.loadAddressEditor(this.dataModel.item(index)[0]);
     },
 
     /** @inheritDoc */
     deleteItemAtIndex: function(index) {
-      AutoFillOptions.removeAddress(this.dataModel.item(index)[0]);
+      AutofillOptions.removeAddress(this.dataModel.item(index)[0]);
     },
   };
 
@@ -119,9 +119,9 @@ cr.define('options.autoFillOptions', function() {
    * @constructor
    * @extends {options.DeletableItemList}
    */
-  var AutoFillCreditCardList = cr.ui.define('list');
+  var AutofillCreditCardList = cr.ui.define('list');
 
-  AutoFillCreditCardList.prototype = {
+  AutofillCreditCardList.prototype = {
     __proto__: DeletableItemList.prototype,
 
     decorate: function() {
@@ -145,19 +145,19 @@ cr.define('options.autoFillOptions', function() {
 
     /** @inheritDoc */
     activateItemAtIndex: function(index) {
-      AutoFillOptions.loadCreditCardEditor(this.dataModel.item(index)[0]);
+      AutofillOptions.loadCreditCardEditor(this.dataModel.item(index)[0]);
     },
 
     /** @inheritDoc */
     deleteItemAtIndex: function(index) {
-      AutoFillOptions.removeCreditCard(this.dataModel.item(index)[0]);
+      AutofillOptions.removeCreditCard(this.dataModel.item(index)[0]);
     },
   };
 
   return {
     AddressListItem: AddressListItem,
     CreditCardListItem: CreditCardListItem,
-    AutoFillAddressList: AutoFillAddressList,
-    AutoFillCreditCardList: AutoFillCreditCardList,
+    AutofillAddressList: AutofillAddressList,
+    AutofillCreditCardList: AutofillCreditCardList,
   };
 });

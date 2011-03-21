@@ -559,7 +559,7 @@ class Browser : public TabHandlerDelegate,
   void OpenHelpTab();
   // Used by the "Get themes" link in the options dialog.
   void OpenThemeGalleryTabAndActivate();
-  void OpenAutoFillHelpTabAndActivate();
+  void OpenAutofillHelpTabAndActivate();
   void OpenPrivacyDashboardTabAndActivate();
   void OpenSearchEngineOptionsDialog();
 #if defined(OS_CHROMEOS)

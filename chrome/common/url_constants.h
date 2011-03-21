@@ -184,7 +184,7 @@ extern const char kGpuInternalsURL[];
 
 // Options sub-pages.
 extern const char kAdvancedOptionsSubPage[];
-extern const char kAutoFillSubPage[];
+extern const char kAutofillSubPage[];
 extern const char kBrowserOptionsSubPage[];
 extern const char kClearBrowserDataSubPage[];
 extern const char kContentSettingsSubPage[];

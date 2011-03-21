@@ -144,7 +144,7 @@ const struct AcceleratorMapping {
   { GDK_x, IDC_CUT, GDK_CONTROL_MASK },
   { GDK_v, IDC_PASTE, GDK_CONTROL_MASK },
 
-  // AutoFill.
+  // Autofill.
   { GDK_a, IDC_AUTOFILL_DEFAULT,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
 

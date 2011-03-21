@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,8 @@ typedef enum _AddressType {
 
 // NOTE: This list MUST not be modified.  The server aggregates and stores these
 // types over several versions, so we must remain fully compatible with the
-// AutoFill server, which is itself backward-compatible.  The list must be kept
-// up to date with the AutoFill server list.
+// Autofill server, which is itself backward-compatible.  The list must be kept
+// up to date with the Autofill server list.
 //
 // This is the list of all valid field types.
 typedef enum _FieldType {

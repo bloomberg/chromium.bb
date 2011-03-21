@@ -14,7 +14,7 @@ namespace {
 
 const char16 kAddressSplitChars[] = {'-', ',', '#', '.', ' ', 0};
 
-const AutofillType::FieldTypeSubGroup kAutoFillAddressTypes[] = {
+const AutofillType::FieldTypeSubGroup kAutofillAddressTypes[] = {
   AutofillType::ADDRESS_LINE1,
   AutofillType::ADDRESS_LINE2,
   AutofillType::ADDRESS_CITY,
@@ -23,7 +23,7 @@ const AutofillType::FieldTypeSubGroup kAutoFillAddressTypes[] = {
   AutofillType::ADDRESS_COUNTRY,
 };
 
-const int kAutoFillAddressLength = arraysize(kAutoFillAddressTypes);
+const int kAutofillAddressLength = arraysize(kAutofillAddressTypes);
 
 }  // namespace
 
@@ -107,8 +107,8 @@ void Address::FindInfoMatches(AutofillFieldType type,
 
   string16 match;
   if (type == UNKNOWN_TYPE) {
-    for (int i = 0; i < kAutoFillAddressLength; ++i) {
-      if (FindInfoMatchesHelper(kAutoFillAddressTypes[i], info, &match))
+    for (int i = 0; i < kAutofillAddressLength; ++i) {
+      if (FindInfoMatchesHelper(kAutofillAddressTypes[i], info, &match))
         matched_text->push_back(match);
     }
   } else {

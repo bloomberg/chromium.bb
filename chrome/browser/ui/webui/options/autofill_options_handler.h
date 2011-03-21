@@ -13,11 +13,11 @@
 class DictionaryValue;
 class ListValue;
 
-class AutoFillOptionsHandler : public OptionsPageUIHandler,
+class AutofillOptionsHandler : public OptionsPageUIHandler,
                                public PersonalDataManager::Observer {
  public:
-  AutoFillOptionsHandler();
-  virtual ~AutoFillOptionsHandler();
+  AutofillOptionsHandler();
+  virtual ~AutofillOptionsHandler();
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
@@ -33,8 +33,8 @@ class AutoFillOptionsHandler : public OptionsPageUIHandler,
   void SetAddressOverlayStrings(DictionaryValue* localized_strings);
   void SetCreditCardOverlayStrings(DictionaryValue* localized_strings);
 
-  // Loads AutoFill addresses and credit cards using the PersonalDataManager.
-  void LoadAutoFillData();
+  // Loads Autofill addresses and credit cards using the PersonalDataManager.
+  void LoadAutofillData();
 
   // Removes an address from the PersonalDataManager.
   // |args| - A string, the GUID of the address to remove.
@@ -68,11 +68,11 @@ class AutoFillOptionsHandler : public OptionsPageUIHandler,
   // credit card data.
   void SetCreditCard(const ListValue* args);
 
-  // The personal data manager, used to load AutoFill profiles and credit cards.
+  // The personal data manager, used to load Autofill profiles and credit cards.
   // Unowned pointer, may not be NULL.
   PersonalDataManager* personal_data_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutoFillOptionsHandler);
+  DISALLOW_COPY_AND_ASSIGN(AutofillOptionsHandler);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS_AUTOFILL_OPTIONS_HANDLER_H_

@@ -80,7 +80,7 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
   profile_ = tab_contents->profile();
   // May be NULL in unit tests.
   web_data_service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
-  autofill_enabled_.Init(prefs::kAutoFillEnabled, profile_->GetPrefs(), NULL);
+  autofill_enabled_.Init(prefs::kAutofillEnabled, profile_->GetPrefs(), NULL);
 }
 
 AutocompleteHistoryManager::~AutocompleteHistoryManager() {
@@ -91,7 +91,7 @@ bool AutocompleteHistoryManager::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutocompleteHistoryManager, message)
-    IPC_MESSAGE_HANDLER(AutoFillHostMsg_RemoveAutocompleteEntry,
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_RemoveAutocompleteEntry,
                         OnRemoveAutocompleteEntry)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -200,7 +200,7 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
       pending_query_handle_(0),
       query_id_(0) {
   autofill_enabled_.Init(
-      prefs::kAutoFillEnabled, profile_->GetPrefs(), NULL);
+      prefs::kAutofillEnabled, profile_->GetPrefs(), NULL);
 }
 
 void AutocompleteHistoryManager::CancelPendingQuery() {
@@ -215,7 +215,7 @@ void AutocompleteHistoryManager::CancelPendingQuery() {
 void AutocompleteHistoryManager::SendSuggestions(
     const std::vector<string16>* suggestions) {
   if (suggestions) {
-    // Combine AutoFill and Autocomplete values into values and labels.
+    // Combine Autofill and Autocomplete values into values and labels.
     for (size_t i = 0; i < suggestions->size(); ++i) {
       bool unique = true;
       for (size_t j = 0; j < autofill_values_.size(); ++j) {
@@ -235,7 +235,7 @@ void AutocompleteHistoryManager::SendSuggestions(
     }
   }
 
-  Send(new AutoFillMsg_SuggestionsReturned(routing_id(),
+  Send(new AutofillMsg_SuggestionsReturned(routing_id(),
                                            query_id_,
                                            autofill_values_,
                                            autofill_labels_,

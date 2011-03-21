@@ -9,19 +9,19 @@ cr.define('options', function() {
   var guid;
 
   /**
-   * AutoFillEditAddressOverlay class
+   * AutofillEditAddressOverlay class
    * Encapsulated handling of the 'Add Page' overlay page.
    * @class
    */
-  function AutoFillEditAddressOverlay() {
+  function AutofillEditAddressOverlay() {
     OptionsPage.call(this, 'autoFillEditAddress',
                      templateData.autoFillEditAddressTitle,
                      'autofill-edit-address-overlay');
   }
 
-  cr.addSingletonGetter(AutoFillEditAddressOverlay);
+  cr.addSingletonGetter(AutofillEditAddressOverlay);
 
-  AutoFillEditAddressOverlay.prototype = {
+  AutofillEditAddressOverlay.prototype = {
     __proto__: OptionsPage.prototype,
 
     /**
@@ -58,7 +58,7 @@ cr.define('options', function() {
 
     /**
      * Aggregates the values in the input fields into an array and sends the
-     * array to the AutoFill handler.
+     * array to the Autofill handler.
      * @private
      */
     saveAddress_: function() {
@@ -233,20 +233,20 @@ cr.define('options', function() {
     },
   };
 
-  AutoFillEditAddressOverlay.clearInputFields = function() {
-    AutoFillEditAddressOverlay.getInstance().clearInputFields_();
+  AutofillEditAddressOverlay.clearInputFields = function() {
+    AutofillEditAddressOverlay.getInstance().clearInputFields_();
   };
 
-  AutoFillEditAddressOverlay.loadAddress = function(address) {
-    AutoFillEditAddressOverlay.getInstance().loadAddress_(address);
+  AutofillEditAddressOverlay.loadAddress = function(address) {
+    AutofillEditAddressOverlay.getInstance().loadAddress_(address);
   };
 
-  AutoFillEditAddressOverlay.setTitle = function(title) {
+  AutofillEditAddressOverlay.setTitle = function(title) {
     $('autofill-address-title').textContent = title;
   };
 
   // Export
   return {
-    AutoFillEditAddressOverlay: AutoFillEditAddressOverlay
+    AutofillEditAddressOverlay: AutofillEditAddressOverlay
   };
 });

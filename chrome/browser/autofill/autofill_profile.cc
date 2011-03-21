@@ -274,7 +274,7 @@ bool AutofillProfile::IsEmpty() const {
 }
 
 int AutofillProfile::Compare(const AutofillProfile& profile) const {
-  // The following AutoFill field types are the only types we store in the WebDB
+  // The following Autofill field types are the only types we store in the WebDB
   // so far, so we're only concerned with matching these types in the profile.
   const AutofillFieldType types[] = { NAME_FIRST,
                                       NAME_MIDDLE,

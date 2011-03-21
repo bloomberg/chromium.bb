@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1050,10 +1050,10 @@ TEST_F(RenderViewTest, SendForms) {
   // Verify that "FormsSeen" sends the expected number of fields.
   ProcessPendingMessages();
   const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
-      AutoFillHostMsg_FormsSeen::ID);
+      AutofillHostMsg_FormsSeen::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  AutoFillHostMsg_FormsSeen::Param params;
-  AutoFillHostMsg_FormsSeen::Read(message, &params);
+  AutofillHostMsg_FormsSeen::Param params;
+  AutofillHostMsg_FormsSeen::Read(message, &params);
   const std::vector<FormData>& forms = params.a;
   ASSERT_EQ(1UL, forms.size());
   ASSERT_EQ(3UL, forms[0].fields.size());
@@ -1086,9 +1086,9 @@ TEST_F(RenderViewTest, SendForms) {
   WebInputElement firstname =
       document.getElementById("firstname").to<WebInputElement>();
 
-  // Accept suggestion that contains a label.  Labeled items indicate AutoFill
+  // Accept suggestion that contains a label.  Labeled items indicate Autofill
   // as opposed to Autocomplete.  We're testing this distinction below with
-  // the |AutoFillHostMsg_FillAutoFillFormData::ID| message.
+  // the |AutofillHostMsg_FillAutofillFormData::ID| message.
   autofill_agent_->didAcceptAutoFillSuggestion(
       firstname,
       WebKit::WebString::fromUTF8("Johnny"),
@@ -1098,10 +1098,10 @@ TEST_F(RenderViewTest, SendForms) {
 
   ProcessPendingMessages();
   const IPC::Message* message2 = render_thread_.sink().GetUniqueMessageMatching(
-      AutoFillHostMsg_FillAutoFillFormData::ID);
+      AutofillHostMsg_FillAutofillFormData::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message2);
-  AutoFillHostMsg_FillAutoFillFormData::Param params2;
-  AutoFillHostMsg_FillAutoFillFormData::Read(message2, &params2);
+  AutofillHostMsg_FillAutofillFormData::Param params2;
+  AutofillHostMsg_FillAutofillFormData::Read(message2, &params2);
   const FormData& form2 = params2.b;
   ASSERT_EQ(3UL, form2.fields.size());
   EXPECT_TRUE(form2.fields[0].StrictlyEqualsHack(
@@ -1141,7 +1141,7 @@ TEST_F(RenderViewTest, FillFormElement) {
   // Verify that "FormsSeen" isn't sent, as there are too few fields.
   ProcessPendingMessages();
   const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
-      AutoFillHostMsg_FormsSeen::ID);
+      AutofillHostMsg_FormsSeen::ID);
   ASSERT_EQ(static_cast<IPC::Message*>(NULL), message);
 
   // Verify that |didAcceptAutoFillSuggestion()| sets the value of the expected
@@ -1164,7 +1164,7 @@ TEST_F(RenderViewTest, FillFormElement) {
 
   ProcessPendingMessages();
   const IPC::Message* message2 = render_thread_.sink().GetUniqueMessageMatching(
-      AutoFillHostMsg_FillAutoFillFormData::ID);
+      AutofillHostMsg_FillAutofillFormData::ID);
 
   // No message should be sent in this case.  |firstname| is filled directly.
   ASSERT_EQ(static_cast<IPC::Message*>(NULL), message2);

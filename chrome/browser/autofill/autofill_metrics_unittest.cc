@@ -128,7 +128,7 @@ class TestAutofillManager : public AutofillManager {
   }
   virtual ~TestAutofillManager() {}
 
-  virtual bool IsAutoFillEnabled() const { return autofill_enabled_; }
+  virtual bool IsAutofillEnabled() const { return autofill_enabled_; }
 
   void set_autofill_enabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;
@@ -166,7 +166,7 @@ class TestFormStructure : public FormStructure {
       field->set_server_type(server_types[i]);
     }
 
-    UpdateAutoFillCount();
+    UpdateAutofillCount();
   }
 
   virtual std::string server_experiment_id() const OVERRIDE {
@@ -265,7 +265,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   EXPECT_NO_FATAL_FAILURE(autofill_manager_->OnFormSubmitted(form));
 }
 
-// Test that we log the appropriate additional metrics when AutoFill failed.
+// Test that we log the appropriate additional metrics when Autofill failed.
 TEST_F(AutofillMetricsTest, QualityMetricsForFailure) {
   // Set up our form data.
   FormData form;

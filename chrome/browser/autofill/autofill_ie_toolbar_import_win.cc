@@ -145,9 +145,9 @@ bool ImportSingleProfile(FormGroup* profile,
 
 // Imports profiles from the IE toolbar and stores them. Asynchronous
 // if PersonalDataManager has not been loaded yet. Deletes itself on completion.
-class AutoFillImporter : public PersonalDataManager::Observer {
+class AutofillImporter : public PersonalDataManager::Observer {
  public:
-  explicit AutoFillImporter(PersonalDataManager* personal_data_manager)
+  explicit AutofillImporter(PersonalDataManager* personal_data_manager)
     : personal_data_manager_(personal_data_manager) {
       personal_data_manager_->SetObserver(this);
   }
@@ -172,7 +172,7 @@ class AutoFillImporter : public PersonalDataManager::Observer {
   }
 
  private:
-  ~AutoFillImporter() {
+  ~AutofillImporter() {
     personal_data_manager_->RemoveObserver(this);
   }
 
@@ -183,7 +183,7 @@ class AutoFillImporter : public PersonalDataManager::Observer {
 
 }  // namespace
 
-// Imports AutoFill profiles and credit cards from IE Toolbar if present and not
+// Imports Autofill profiles and credit cards from IE Toolbar if present and not
 // password protected. Returns true if data is successfully retrieved. False if
 // there is no data, data is password protected or error occurred.
 bool ImportCurrentUserProfiles(std::vector<AutofillProfile>* profiles,
@@ -252,7 +252,7 @@ bool ImportAutofillDataWin(PersonalDataManager* pdm) {
   // In incognito mode we do not have PDM - and we should not import anything.
   if (!pdm)
     return false;
-  AutoFillImporter *importer = new AutoFillImporter(pdm);
+  AutofillImporter *importer = new AutofillImporter(pdm);
   // importer will self delete.
   return importer->ImportProfiles();
 }

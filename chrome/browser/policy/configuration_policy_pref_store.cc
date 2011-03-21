@@ -87,9 +87,9 @@ class ConfigurationPolicyPrefKeeper
   // Assumes ownership of |value| in that case.
   bool ApplySyncPolicy(ConfigurationPolicyType policy, Value* value);
 
-  // Handles policies that affect AutoFill. Returns true if the policy was
+  // Handles policies that affect Autofill. Returns true if the policy was
   // handled and assumes ownership of |value| in that case.
-  bool ApplyAutoFillPolicy(ConfigurationPolicyType policy, Value* value);
+  bool ApplyAutofillPolicy(ConfigurationPolicyType policy, Value* value);
 
   // Processes download directory policy. Returns true if the specified policy
   // is the download directory policy. ApplyDownloadDirPolicy assumes the
@@ -338,7 +338,7 @@ void ConfigurationPolicyPrefKeeper::Apply(ConfigurationPolicyType policy,
   if (ApplySyncPolicy(policy, value))
     return;
 
-  if (ApplyAutoFillPolicy(policy, value))
+  if (ApplyAutofillPolicy(policy, value))
     return;
 
   if (ApplyDownloadDirPolicy(policy, value))
@@ -429,12 +429,12 @@ bool ConfigurationPolicyPrefKeeper::ApplySyncPolicy(
   return false;
 }
 
-bool ConfigurationPolicyPrefKeeper::ApplyAutoFillPolicy(
+bool ConfigurationPolicyPrefKeeper::ApplyAutofillPolicy(
     ConfigurationPolicyType policy, Value* value) {
   if (policy == kPolicyAutoFillEnabled) {
     bool auto_fill_enabled;
     if (value->GetAsBoolean(&auto_fill_enabled) && !auto_fill_enabled)
-      prefs_.SetValue(prefs::kAutoFillEnabled,
+      prefs_.SetValue(prefs::kAutofillEnabled,
                        Value::CreateBooleanValue(false));
     delete value;
     return true;

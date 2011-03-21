@@ -24,7 +24,7 @@ const char kFormMethodPost[] = "post";
 
 // XML elements and attributes.
 const char kAttributeAcceptedFeatures[] = "accepts";
-const char kAttributeAutoFillUsed[] = "autofillused";
+const char kAttributeAutofillUsed[] = "autofillused";
 const char kAttributeAutofillType[] = "autofilltype";
 const char kAttributeClientVersion[] = "clientversion";
 const char kAttributeDataPresent[] = "datapresent";
@@ -33,8 +33,8 @@ const char kAttributeSignature[] = "signature";
 const char kAcceptedFeatures[] = "e"; // e=experiments
 const char kClientVersion[] = "6.1.1715.1442/en (GGLL)";
 const char kXMLDeclaration[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-const char kXMLElementAutoFillQuery[] = "autofillquery";
-const char kXMLElementAutoFillUpload[] = "autofillupload";
+const char kXMLElementAutofillQuery[] = "autofillquery";
+const char kXMLElementAutofillUpload[] = "autofillupload";
 const char kXMLElementForm[] = "form";
 const char kXMLElementField[] = "field";
 
@@ -56,7 +56,7 @@ FormStructure::FormStructure(const FormData& form)
   for (field = form.fields.begin();
        field != form.fields.end(); field++) {
     // Add all supported form fields (including with empty names) to the
-    // signature.  This is a requirement for AutoFill servers.
+    // signature.  This is a requirement for Autofill servers.
     form_signature_field_names_.append("&");
     form_signature_field_names_.append(UTF16ToUTF8(field->name));
 
@@ -123,12 +123,12 @@ bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
 
   // Set up the <autofillupload> element and its attributes.
   buzz::XmlElement autofill_request_xml(
-      (buzz::QName(kXMLElementAutoFillUpload)));
+      (buzz::QName(kXMLElementAutofillUpload)));
   autofill_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
                                kClientVersion);
   autofill_request_xml.SetAttr(buzz::QName(kAttributeFormSignature),
                                FormSignature());
-  autofill_request_xml.SetAttr(buzz::QName(kAttributeAutoFillUsed),
+  autofill_request_xml.SetAttr(buzz::QName(kAttributeAutofillUsed),
                                auto_fill_used ? "true" : "false");
   autofill_request_xml.SetAttr(buzz::QName(kAttributeDataPresent),
                                ConvertPresenceBitsToString().c_str());
@@ -155,7 +155,7 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
 
   // Set up the <autofillquery> element and attributes.
   buzz::XmlElement autofill_request_xml(
-      (buzz::QName(kXMLElementAutoFillQuery)));
+      (buzz::QName(kXMLElementAutofillQuery)));
   autofill_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
                                kClientVersion);
   autofill_request_xml.SetAttr(buzz::QName(kAttributeAcceptedFeatures),
@@ -204,7 +204,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   // Parse the field types from the server response to the query.
   std::vector<AutofillFieldType> field_types;
   std::string experiment_id;
-  AutoFillQueryXmlParser parse_handler(&field_types, upload_required,
+  AutofillQueryXmlParser parse_handler(&field_types, upload_required,
                                        &experiment_id);
   buzz::XmlParser parser(&parse_handler);
   parser.Parse(response_xml.c_str(), response_xml.length(), true);
@@ -255,7 +255,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
         form->has_autofillable_field_ = true;
     }
 
-    form->UpdateAutoFillCount();
+    form->UpdateAutofillCount();
   }
 
   AutofillMetrics::ServerQueryMetric metric;
@@ -289,14 +289,14 @@ std::string FormStructure::FormSignature() const {
   return Hash64Bit(form_string);
 }
 
-bool FormStructure::IsAutoFillable(bool require_method_post) const {
+bool FormStructure::IsAutofillable(bool require_method_post) const {
   if (autofill_count() < kRequiredFillableFields)
     return false;
 
   return ShouldBeParsed(require_method_post);
 }
 
-void FormStructure::UpdateAutoFillCount() {
+void FormStructure::UpdateAutofillCount() {
   autofill_count_ = 0;
   for (std::vector<AutofillField*>::const_iterator iter = begin();
        iter != end(); ++iter) {

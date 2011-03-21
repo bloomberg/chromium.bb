@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/scoped_vector.h"
-#include "base/string_util.h"
 #include "base/stl_util-inl.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
@@ -43,11 +43,11 @@ using WebKit::WebVector;
 
 namespace {
 
-// The number of fields required by AutoFill.  Ideally we could send the forms
-// to AutoFill no matter how many fields are in the forms; however, finding the
+// The number of fields required by Autofill.  Ideally we could send the forms
+// to Autofill no matter how many fields are in the forms; however, finding the
 // label for each field is a costly operation and we can't spare the cycles if
 // it's not necessary.
-const size_t kRequiredAutoFillFields = 3;
+const size_t kRequiredAutofillFields = 3;
 
 // The maximum length allowed for form data.
 const size_t kMaxDataLength = 1024;
@@ -69,7 +69,7 @@ bool IsOptionElement(const WebElement& element) {
   return element.hasTagName("option");
 }
 
-bool IsAutoFillableElement(const WebFormControlElement& element) {
+bool IsAutofillableElement(const WebFormControlElement& element) {
   const WebInputElement* input_element = toWebInputElement(&element);
   return IsTextInput(input_element) || IsSelectElement(element);
 }
@@ -337,7 +337,7 @@ void FormManager::WebFormControlElementToFormField(
   field->name = element.nameForAutofill();
   field->form_control_type = element.formControlType();
 
-  if (!IsAutoFillableElement(element))
+  if (!IsAutofillableElement(element))
     return;
 
   const WebInputElement* input_element = toWebInputElement(&element);
@@ -393,7 +393,7 @@ void FormManager::WebFormControlElementToFormField(
 // static
 string16 FormManager::LabelForElement(const WebFormControlElement& element) {
   // Don't scrape labels for elements we can't possibly autofill anyway.
-  if (!IsAutoFillableElement(element))
+  if (!IsAutofillableElement(element))
     return string16();
 
   WebNodeList labels = element.document().getElementsByTagName("label");
@@ -450,7 +450,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
   for (size_t i = 0; i < control_elements.size(); ++i) {
     const WebFormControlElement& control_element = control_elements[i];
 
-    if (!IsAutoFillableElement(control_element))
+    if (!IsAutofillableElement(control_element))
       continue;
 
     const WebInputElement* input_element = toWebInputElement(&control_element);
@@ -542,7 +542,7 @@ void FormManager::ExtractForms(const WebFrame* frame) {
     form_element->form_element.getFormControlElements(control_elements);
     for (size_t j = 0; j < control_elements.size(); ++j) {
       WebFormControlElement element = control_elements[j];
-      if (!IsAutoFillableElement(element))
+      if (!IsAutofillableElement(element))
         continue;
 
       form_element->control_elements.push_back(element);
@@ -574,9 +574,9 @@ void FormManager::GetFormsInFrame(const WebFrame* frame,
     if (form_element->form_element.document().frame() != frame)
       continue;
 
-    // We need at least |kRequiredAutoFillFields| fields before appending this
+    // We need at least |kRequiredAutofillFields| fields before appending this
     // form to |forms|.
-    if (form_element->control_elements.size() < kRequiredAutoFillFields)
+    if (form_element->control_elements.size() < kRequiredAutofillFields)
       continue;
 
     if (requirements & REQUIRE_AUTOCOMPLETE &&
@@ -586,7 +586,7 @@ void FormManager::GetFormsInFrame(const WebFrame* frame,
     FormData form;
     WebFormElementToFormData(
         form_element->form_element, requirements, EXTRACT_VALUE, &form);
-    if (form.fields.size() >= kRequiredAutoFillFields)
+    if (form.fields.size() >= kRequiredAutofillFields)
       forms->push_back(form);
   }
 }
@@ -755,7 +755,7 @@ void FormManager::ResetFrame(const WebFrame* frame) {
   }
 }
 
-bool FormManager::FormWithNodeIsAutoFilled(const WebNode& node) {
+bool FormManager::FormWithNodeIsAutofilled(const WebNode& node) {
   FormElement* form_element = NULL;
   if (!FindCachedFormElementWithNode(node, &form_element))
     return false;

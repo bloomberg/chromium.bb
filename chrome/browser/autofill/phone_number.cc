@@ -20,7 +20,7 @@ const size_t kPhoneNumberLength = 7;
 // The number of digits in an area code.
 const size_t kPhoneCityCodeLength = 3;
 
-const AutofillType::FieldTypeSubGroup kAutoFillPhoneTypes[] = {
+const AutofillType::FieldTypeSubGroup kAutofillPhoneTypes[] = {
   AutofillType::PHONE_NUMBER,
   AutofillType::PHONE_CITY_CODE,
   AutofillType::PHONE_COUNTRY_CODE,
@@ -28,7 +28,7 @@ const AutofillType::FieldTypeSubGroup kAutoFillPhoneTypes[] = {
   AutofillType::PHONE_WHOLE_NUMBER,
 };
 
-const int kAutoFillPhoneLength = arraysize(kAutoFillPhoneTypes);
+const int kAutofillPhoneLength = arraysize(kAutofillPhoneTypes);
 
 }  // namespace
 
@@ -126,8 +126,8 @@ void PhoneNumber::FindInfoMatches(AutofillFieldType type,
 
   string16 match;
   if (type == UNKNOWN_TYPE) {
-    for (int i = 0; i < kAutoFillPhoneLength; ++i) {
-      if (FindInfoMatchesHelper(kAutoFillPhoneTypes[i], info, &match))
+    for (int i = 0; i < kAutofillPhoneLength; ++i) {
+      if (FindInfoMatchesHelper(kAutofillPhoneTypes[i], info, &match))
         matched_text->push_back(match);
     }
   } else {

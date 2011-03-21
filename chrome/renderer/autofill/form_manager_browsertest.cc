@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSelectElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSelectElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/form_data.h"
@@ -2340,7 +2340,7 @@ TEST_F(FormManagerTest, MaxLengthFields) {
 }
 
 // This test re-creates the experience of typing in a field then selecting a
-// profile from the AutoFill suggestions popup.  The field that is being typed
+// profile from the Autofill suggestions popup.  The field that is being typed
 // into should be filled even though it's not technically empty.
 TEST_F(FormManagerTest, FillFormNonEmptyField) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
@@ -2819,7 +2819,7 @@ TEST_F(FormManagerTest, ClearPreviewedFormWithAutofilledInitiatingNode) {
   EXPECT_FALSE(phone.isAutofilled());
 }
 
-TEST_F(FormManagerTest, FormWithNodeIsAutoFilled) {
+TEST_F(FormManagerTest, FormWithNodeIsAutofilled) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
            "  <INPUT type=\"text\" id=\"firstname\" value=\"Wyatt\"/>"
            "  <INPUT type=\"text\" id=\"lastname\"/>"
@@ -2844,12 +2844,12 @@ TEST_F(FormManagerTest, FormWithNodeIsAutoFilled) {
       web_frame->document().getElementById("firstname").to<WebInputElement>();
 
   // Auto-filled attribute not set yet.
-  EXPECT_FALSE(form_manager.FormWithNodeIsAutoFilled(firstname));
+  EXPECT_FALSE(form_manager.FormWithNodeIsAutofilled(firstname));
 
   // Set the auto-filled attribute.
   firstname.setAutofilled(true);
 
-  EXPECT_TRUE(form_manager.FormWithNodeIsAutoFilled(firstname));
+  EXPECT_TRUE(form_manager.FormWithNodeIsAutofilled(firstname));
 }
 
 TEST_F(FormManagerTest, LabelForElementHidden) {

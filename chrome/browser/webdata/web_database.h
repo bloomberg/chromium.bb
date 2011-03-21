@@ -136,7 +136,7 @@ class WebDatabase {
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // AutoFill
+  // Autofill
   //
   //////////////////////////////////////////////////////////////////////////////
 
@@ -221,7 +221,7 @@ class WebDatabase {
   // added.
   virtual bool UpdateAutofillEntries(const std::vector<AutofillEntry>& entries);
 
-  // Records a single AutoFill profile in the autofill_profiles table.
+  // Records a single Autofill profile in the autofill_profiles table.
   virtual bool AddAutofillProfile(const AutofillProfile& profile);
 
   // Updates the database values for the specified profile.

@@ -28,7 +28,7 @@ GURL HTMLToDataURI(const std::string& html) {
 
 }  // namespace
 
-// A data-driven test for verifying AutoFill heuristics. Each input is an HTML
+// A data-driven test for verifying Autofill heuristics. Each input is an HTML
 // file that contains one or more forms. The corresponding output file lists the
 // heuristically detected type for eachfield.
 class FormStructureBrowserTest : public InProcessBrowserTest,

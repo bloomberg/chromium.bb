@@ -296,7 +296,7 @@ bool PasswordAutofillManager::TextFieldHandlingKeyDown(
   return true;
 }
 
-bool PasswordAutofillManager::DidAcceptAutoFillSuggestion(
+bool PasswordAutofillManager::DidAcceptAutofillSuggestion(
     const WebKit::WebNode& node,
     const WebKit::WebString& value) {
   WebKit::WebInputElement input;
@@ -311,7 +311,7 @@ bool PasswordAutofillManager::DidAcceptAutoFillSuggestion(
                                  password.fill_data, true, true);
 }
 
-bool PasswordAutofillManager::DidSelectAutoFillSuggestion(
+bool PasswordAutofillManager::DidSelectAutofillSuggestion(
     const WebKit::WebNode& node) {
   WebKit::WebInputElement input;
   PasswordInfo password;
@@ -347,17 +347,17 @@ void PasswordAutofillManager::SendPasswordForms(WebKit::WebFrame* frame,
     return;
 
   if (only_visible) {
-    Send(new AutoFillHostMsg_PasswordFormsVisible(
+    Send(new AutofillHostMsg_PasswordFormsVisible(
         routing_id(), password_forms));
   } else {
-    Send(new AutoFillHostMsg_PasswordFormsFound(routing_id(), password_forms));
+    Send(new AutofillHostMsg_PasswordFormsFound(routing_id(), password_forms));
   }
 }
 
 bool PasswordAutofillManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PasswordAutofillManager, message)
-    IPC_MESSAGE_HANDLER(AutoFillMsg_FillPasswordForm, OnFillPasswordForm)
+    IPC_MESSAGE_HANDLER(AutofillMsg_FillPasswordForm, OnFillPasswordForm)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -459,8 +459,8 @@ bool PasswordAutofillManager::ShowSuggestionPopup(
   std::vector<string16> labels(suggestions.size());
   std::vector<string16> icons(suggestions.size());
   std::vector<int> ids(suggestions.size(), 0);
-  webview->applyAutoFillSuggestions(user_input, suggestions, labels, icons, ids,
-                                    -1);
+  webview->applyAutoFillSuggestions(
+      user_input, suggestions, labels, icons, ids, -1);
   return true;
 }
 

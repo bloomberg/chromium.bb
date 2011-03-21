@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -2453,12 +2453,12 @@ class _GTestTextTestResult(unittest._TextTestResult):
   """A test result class that can print formatted text results to a stream.
 
   Results printed in conformance with gtest output format, like:
-  [ RUN        ] autofill.AutoFillTest.testAutofillInvalid: "test desc."
-  [         OK ] autofill.AutoFillTest.testAutofillInvalid
-  [ RUN        ] autofill.AutoFillTest.testFillProfile: "test desc."
-  [         OK ] autofill.AutoFillTest.testFillProfile
-  [ RUN        ] autofill.AutoFillTest.testFillProfileCrazyCharacters: "Test."
-  [         OK ] autofill.AutoFillTest.testFillProfileCrazyCharacters
+  [ RUN        ] autofill.AutofillTest.testAutofillInvalid: "test desc."
+  [         OK ] autofill.AutofillTest.testAutofillInvalid
+  [ RUN        ] autofill.AutofillTest.testFillProfile: "test desc."
+  [         OK ] autofill.AutofillTest.testFillProfile
+  [ RUN        ] autofill.AutofillTest.testFillProfileCrazyCharacters: "Test."
+  [         OK ] autofill.AutofillTest.testFillProfileCrazyCharacters
   """
   def __init__(self, stream, descriptions, verbosity):
     unittest._TextTestResult.__init__(self, stream, descriptions, verbosity)

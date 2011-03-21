@@ -92,18 +92,18 @@
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
-#include "content/renderer/renderer_webapplicationcachehost_impl.h"
-#include "content/renderer/renderer_webstoragenamespace_impl.h"
 #include "content/renderer/render_view_observer.h"
 #include "content/renderer/render_view_visitor.h"
 #include "content/renderer/render_widget_fullscreen.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
+#include "content/renderer/renderer_webapplicationcachehost_impl.h"
+#include "content/renderer/renderer_webstoragenamespace_impl.h"
 #include "content/renderer/speech_input_dispatcher.h"
+#include "content/renderer/web_ui_bindings.h"
 #include "content/renderer/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "content/renderer/webworker_proxy.h"
-#include "content/renderer/web_ui_bindings.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
 #include "media/base/message_loop_factory_impl.h"
@@ -279,7 +279,7 @@ using WebKit::WebWindowFeatures;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
 using appcache::WebApplicationCacheHostImpl;
-using autofill::AutoFillAgent;
+using autofill::AutofillAgent;
 using autofill::FormManager;
 using autofill::PasswordAutofillManager;
 using base::Time;
@@ -592,7 +592,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   devtools_agent_ = new DevToolsAgent(this);
   PasswordAutofillManager* password_autofill_manager =
       new PasswordAutofillManager(this);
-  AutoFillAgent* autofill_agent = new AutoFillAgent(this,
+  AutofillAgent* autofill_agent = new AutofillAgent(this,
                                                     password_autofill_manager);
 
   webwidget_ = WebView::create(this, devtools_agent_, autofill_agent);
@@ -3012,7 +3012,7 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
           static_cast<FormManager::ExtractMask>(
               FormManager::EXTRACT_VALUE | FormManager::EXTRACT_OPTION_TEXT),
           &form_data)) {
-    Send(new AutoFillHostMsg_FormSubmitted(routing_id_, form_data));
+    Send(new AutofillHostMsg_FormSubmitted(routing_id_, form_data));
   }
 }
 

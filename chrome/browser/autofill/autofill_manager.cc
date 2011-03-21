@@ -42,8 +42,8 @@ namespace {
 
 // We only send a fraction of the forms to upload server.
 // The rate for positive/negative matches potentially could be different.
-const double kAutoFillPositiveUploadRateDefaultValue = 0.01;
-const double kAutoFillNegativeUploadRateDefaultValue = 0.01;
+const double kAutofillPositiveUploadRateDefaultValue = 0.01;
+const double kAutofillNegativeUploadRateDefaultValue = 0.01;
 
 const string16::value_type kCreditCardPrefix[] = {'*', 0};
 const string16::value_type kLabelSeparator[] = {';', ' ', '*', 0};
@@ -165,12 +165,12 @@ void FindSectionBounds(const FormStructure& form,
 // logical form. Returns true if the relevant portion of |form| is auto-filled.
 // The "relevant" fields in |form| are ones corresponding to fields in
 // |form_structure| with indices in the range [section_start, section_end).
-bool SectionIsAutoFilled(const FormStructure* form_structure,
+bool SectionIsAutofilled(const FormStructure* form_structure,
                          const webkit_glue::FormData& form,
                          size_t section_start,
                          size_t section_end) {
   // TODO(isherman): It would be nice to share most of this code with the loop
-  // in |FillAutoFillFormData()|, but I don't see a particularly clean way to do
+  // in |FillAutofillFormData()|, but I don't see a particularly clean way to do
   // that.
 
   // The list of fields in |form_structure| and |form.fields| often match
@@ -231,21 +231,21 @@ AutofillManager::~AutofillManager() {
 
 // static
 void AutofillManager::RegisterBrowserPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kAutoFillDialogPlacement);
+  prefs->RegisterDictionaryPref(prefs::kAutofillDialogPlacement);
 }
 
 // static
 void AutofillManager::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kAutoFillEnabled, true);
+  prefs->RegisterBooleanPref(prefs::kAutofillEnabled, true);
 #if defined(OS_MACOSX)
-  prefs->RegisterBooleanPref(prefs::kAutoFillAuxiliaryProfilesEnabled, true);
+  prefs->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled, true);
 #else
-  prefs->RegisterBooleanPref(prefs::kAutoFillAuxiliaryProfilesEnabled, false);
+  prefs->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled, false);
 #endif
-  prefs->RegisterDoublePref(prefs::kAutoFillPositiveUploadRate,
-                            kAutoFillPositiveUploadRateDefaultValue);
-  prefs->RegisterDoublePref(prefs::kAutoFillNegativeUploadRate,
-                            kAutoFillNegativeUploadRateDefaultValue);
+  prefs->RegisterDoublePref(prefs::kAutofillPositiveUploadRate,
+                            kAutofillPositiveUploadRateDefaultValue);
+  prefs->RegisterDoublePref(prefs::kAutofillNegativeUploadRate,
+                            kAutofillNegativeUploadRateDefaultValue);
 }
 
 void AutofillManager::DidNavigateMainFramePostCommit(
@@ -257,18 +257,18 @@ void AutofillManager::DidNavigateMainFramePostCommit(
 bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutofillManager, message)
-    IPC_MESSAGE_HANDLER(AutoFillHostMsg_FormsSeen, OnFormsSeen)
-    IPC_MESSAGE_HANDLER(AutoFillHostMsg_FormSubmitted, OnFormSubmitted)
-    IPC_MESSAGE_HANDLER(AutoFillHostMsg_QueryFormFieldAutoFill,
-                        OnQueryFormFieldAutoFill)
-    IPC_MESSAGE_HANDLER(AutoFillHostMsg_ShowAutoFillDialog,
-                        OnShowAutoFillDialog)
-    IPC_MESSAGE_HANDLER(AutoFillHostMsg_FillAutoFillFormData,
-                        OnFillAutoFillFormData)
-    IPC_MESSAGE_HANDLER(AutoFillHostMsg_DidFillAutoFillFormData,
-                        OnDidFillAutoFillFormData)
-    IPC_MESSAGE_HANDLER(AutoFillHostMsg_DidShowAutoFillSuggestions,
-                        OnDidShowAutoFillSuggestions)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_FormsSeen, OnFormsSeen)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_FormSubmitted, OnFormSubmitted)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_QueryFormFieldAutofill,
+                        OnQueryFormFieldAutofill)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowAutofillDialog,
+                        OnShowAutofillDialog)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_FillAutofillFormData,
+                        OnFillAutofillFormData)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_DidFillAutofillFormData,
+                        OnDidFillAutofillFormData)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_DidShowAutofillSuggestions,
+                        OnDidShowAutofillSuggestions)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -279,7 +279,7 @@ void AutofillManager::OnFormSubmitted(const FormData& form) {
   // Let AutoComplete know as well.
   tab_contents()->autocomplete_history_manager()->OnFormSubmitted(form);
 
-  if (!IsAutoFillEnabled())
+  if (!IsAutofillEnabled())
     return;
 
   if (tab_contents()->profile()->IsOffTheRecord())
@@ -302,20 +302,20 @@ void AutofillManager::OnFormSubmitted(const FormData& form) {
   UploadFormData(submitted_form);
 
   submitted_form.DetermineHeuristicTypes();
-  if (!submitted_form.IsAutoFillable(true))
+  if (!submitted_form.IsAutofillable(true))
     return;
 
   ImportFormData(submitted_form);
 }
 
 void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms) {
-  if (!IsAutoFillEnabled())
+  if (!IsAutofillEnabled())
     return;
 
   ParseForms(forms);
 }
 
-void AutofillManager::OnQueryFormFieldAutoFill(
+void AutofillManager::OnQueryFormFieldAutofill(
     int query_id,
     const webkit_glue::FormData& form,
     const webkit_glue::FormField& field) {
@@ -331,7 +331,7 @@ void AutofillManager::OnQueryFormFieldAutoFill(
           personal_data_->profiles(), personal_data_->credit_cards(), &host) &&
       FindCachedFormAndField(form, field, &form_structure, &autofill_field) &&
       // Don't send suggestions for forms that aren't auto-fillable.
-      form_structure->IsAutoFillable(false)) {
+      form_structure->IsAutofillable(false)) {
     AutofillFieldType type = autofill_field->type();
     bool is_filling_credit_card =
         (AutofillType(type).group() == AutofillType::CREDIT_CARD);
@@ -348,11 +348,11 @@ void AutofillManager::OnQueryFormFieldAutoFill(
     DCHECK_EQ(values.size(), unique_ids.size());
 
     if (!values.empty()) {
-      // Don't provide AutoFill suggestions when AutoFill is disabled, and don't
+      // Don't provide Autofill suggestions when Autofill is disabled, and don't
       // provide credit card suggestions for non-HTTPS pages. However, provide a
       // warning to the user in these cases.
       int warning = 0;
-      if (!form_structure->IsAutoFillable(true))
+      if (!form_structure->IsAutofillable(true))
         warning = IDS_AUTOFILL_WARNING_FORM_DISABLED;
       else if (is_filling_credit_card && !FormIsHTTPS(form_structure))
         warning = IDS_AUTOFILL_WARNING_INSECURE_CONNECTION;
@@ -365,7 +365,7 @@ void AutofillManager::OnQueryFormFieldAutoFill(
         size_t section_start, section_end;
         FindSectionBounds(*form_structure, *autofill_field,
                           is_filling_credit_card, &section_start, &section_end);
-        if (SectionIsAutoFilled(form_structure, form, section_start,
+        if (SectionIsAutofilled(form_structure, form, section_start,
                                 section_end)) {
           // If the relevant section is auto-filled and the renderer is querying
           // for suggestions, then the user is editing the value of a field.
@@ -387,7 +387,7 @@ void AutofillManager::OnQueryFormFieldAutoFill(
       query_id, field.name, field.value, values, labels, icons, unique_ids);
 }
 
-void AutofillManager::OnFillAutoFillFormData(int query_id,
+void AutofillManager::OnFillAutofillFormData(int query_id,
                                              const FormData& form,
                                              const FormField& field,
                                              int unique_id) {
@@ -448,7 +448,7 @@ void AutofillManager::OnFillAutoFillFormData(int query_id,
 
   // If the relevant section is auto-filled, we should fill |field| but not the
   // rest of the form.
-  if (SectionIsAutoFilled(form_structure, form, section_start, section_end)) {
+  if (SectionIsAutofilled(form_structure, form, section_start, section_end)) {
     for (std::vector<FormField>::iterator iter = result.fields.begin();
          iter != result.fields.end(); ++iter) {
       if ((*iter) == field) {
@@ -466,7 +466,7 @@ void AutofillManager::OnFillAutoFillFormData(int query_id,
       }
     }
 
-    host->Send(new AutoFillMsg_FormDataFilled(host->routing_id(), query_id,
+    host->Send(new AutofillMsg_FormDataFilled(host->routing_id(), query_id,
                                               result));
     return;
   }
@@ -510,24 +510,24 @@ void AutofillManager::OnFillAutoFillFormData(int query_id,
   }
   autofilled_forms_signatures_.push_front(form_structure->FormSignature());
 
-  host->Send(new AutoFillMsg_FormDataFilled(
+  host->Send(new AutofillMsg_FormDataFilled(
       host->routing_id(), query_id, result));
 }
 
-void AutofillManager::OnShowAutoFillDialog() {
+void AutofillManager::OnShowAutofillDialog() {
   Browser* browser = BrowserList::GetLastActive();
   if (browser)
-    browser->ShowOptionsTab(chrome::kAutoFillSubPage);
+    browser->ShowOptionsTab(chrome::kAutofillSubPage);
 }
 
-void AutofillManager::OnDidFillAutoFillFormData() {
+void AutofillManager::OnDidFillAutofillFormData() {
   NotificationService::current()->Notify(
       NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
       Source<RenderViewHost>(tab_contents()->render_view_host()),
       NotificationService::NoDetails());
 }
 
-void AutofillManager::OnDidShowAutoFillSuggestions() {
+void AutofillManager::OnDidShowAutofillSuggestions() {
   NotificationService::current()->Notify(
       NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
       Source<RenderViewHost>(tab_contents()->render_view_host()),
@@ -554,19 +554,19 @@ void AutofillManager::OnHeuristicsRequestError(
     int http_error) {
 }
 
-bool AutofillManager::IsAutoFillEnabled() const {
+bool AutofillManager::IsAutofillEnabled() const {
   PrefService* prefs =
       const_cast<AutofillManager*>(this)->tab_contents()->profile()->GetPrefs();
 
-  // Migrate obsolete AutoFill pref.
+  // Migrate obsolete Autofill pref.
   if (prefs->FindPreference(prefs::kFormAutofillEnabled)) {
     bool enabled = prefs->GetBoolean(prefs::kFormAutofillEnabled);
     prefs->ClearPref(prefs::kFormAutofillEnabled);
-    prefs->SetBoolean(prefs::kAutoFillEnabled, enabled);
+    prefs->SetBoolean(prefs::kAutofillEnabled, enabled);
     return enabled;
   }
 
-  return prefs->GetBoolean(prefs::kAutoFillEnabled);
+  return prefs->GetBoolean(prefs::kAutofillEnabled);
 }
 
 void AutofillManager::DeterminePossibleFieldTypesForUpload(
@@ -605,7 +605,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   // it.
   if (imported_credit_card && tab_contents()) {
     imported_credit_card_.reset(imported_credit_card);
-    tab_contents()->AddInfoBar(new AutoFillCCInfoBarDelegate(tab_contents(),
+    tab_contents()->AddInfoBar(new AutofillCCInfoBarDelegate(tab_contents(),
                                                              this));
   }
 }
@@ -660,7 +660,7 @@ void AutofillManager::set_metric_logger(
 bool AutofillManager::GetHost(const std::vector<AutofillProfile*>& profiles,
                               const std::vector<CreditCard*>& credit_cards,
                               RenderViewHost** host) const {
-  if (!IsAutoFillEnabled())
+  if (!IsAutofillEnabled())
     return false;
 
   // No autofill data to return if the profiles are empty.

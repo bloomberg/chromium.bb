@@ -5,9 +5,9 @@
 var AddLanguageOverlay = options.AddLanguageOverlay;
 var AdvancedOptions = options.AdvancedOptions;
 var AlertOverlay = options.AlertOverlay;
-var AutoFillEditAddressOverlay = options.AutoFillEditAddressOverlay;
-var AutoFillEditCreditCardOverlay = options.AutoFillEditCreditCardOverlay;
-var AutoFillOptions = options.AutoFillOptions;
+var AutofillEditAddressOverlay = options.AutofillEditAddressOverlay;
+var AutofillEditCreditCardOverlay = options.AutofillEditCreditCardOverlay;
+var AutofillOptions = options.AutofillOptions;
 var BrowserOptions = options.BrowserOptions;
 var ClearBrowserDataOverlay = options.ClearBrowserDataOverlay;
 var ContentSettings = options.ContentSettings;
@@ -58,7 +58,7 @@ function load() {
                               BrowserOptions.getInstance(),
                               [$('defaultSearchManageEnginesButton')]);
   OptionsPage.register(PersonalOptions.getInstance());
-  OptionsPage.registerSubPage(AutoFillOptions.getInstance(),
+  OptionsPage.registerSubPage(AutofillOptions.getInstance(),
                               PersonalOptions.getInstance(),
                               [$('autofill-settings')]);
   OptionsPage.registerSubPage(PasswordManager.getInstance(),
@@ -127,10 +127,10 @@ function load() {
   OptionsPage.registerOverlay(AddLanguageOverlay.getInstance(),
                               LanguageOptions.getInstance());
   OptionsPage.registerOverlay(AlertOverlay.getInstance());
-  OptionsPage.registerOverlay(AutoFillEditAddressOverlay.getInstance(),
-                              AutoFillOptions.getInstance());
-  OptionsPage.registerOverlay(AutoFillEditCreditCardOverlay.getInstance(),
-                              AutoFillOptions.getInstance());
+  OptionsPage.registerOverlay(AutofillEditAddressOverlay.getInstance(),
+                              AutofillOptions.getInstance());
+  OptionsPage.registerOverlay(AutofillEditCreditCardOverlay.getInstance(),
+                              AutofillOptions.getInstance());
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('privacyClearDataButton')]);

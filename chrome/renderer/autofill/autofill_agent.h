@@ -21,22 +21,22 @@ namespace autofill {
 
 class PasswordAutofillManager;
 
-// AutoFillAgent deals with AutoFill related communications between WebKit and
-// the browser.  There is one AutoFillAgent per RenderView.
+// AutofillAgent deals with Autofill related communications between WebKit and
+// the browser.  There is one AutofillAgent per RenderView.
 // This code was originally part of RenderView.
-// Note that AutoFill encompasses:
+// Note that Autofill encompasses:
 // - single text field suggestions, that we usually refer to as Autocomplete,
-// - password form fill, refered to as password AutoFill, and
-// - entire form fill based on one field entry, referred to as form AutoFill.
+// - password form fill, refered to as password Autofill, and
+// - entire form fill based on one field entry, referred to as form Autofill.
 
-class AutoFillAgent : public RenderViewObserver,
+class AutofillAgent : public RenderViewObserver,
                       public PageClickListener,
                       public WebKit::WebAutoFillClient {
  public:
-  // PasswordAutofillManager is guaranteed to outlive AutoFillAgent.
-  AutoFillAgent(RenderView* render_view,
+  // PasswordAutofillManager is guaranteed to outlive AutofillAgent.
+  AutofillAgent(RenderView* render_view,
                 PasswordAutofillManager* password_autofill_manager);
-  virtual ~AutoFillAgent();
+  virtual ~AutofillAgent();
 
   // WebKit::WebAutoFillClient implementation.  Public for tests.
   virtual void didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
@@ -58,10 +58,10 @@ class AutoFillAgent : public RenderViewObserver,
       const WebKit::WebKeyboardEvent& event);
 
  private:
-  enum AutoFillAction {
+  enum AutofillAction {
     AUTOFILL_NONE,     // No state set.
-    AUTOFILL_FILL,     // Fill the AutoFill form data.
-    AUTOFILL_PREVIEW,  // Preview the AutoFill form data.
+    AUTOFILL_FILL,     // Fill the Autofill form data.
+    AUTOFILL_PREVIEW,  // Preview the Autofill form data.
   };
 
   // RenderView::Observer implementation.
@@ -95,7 +95,7 @@ class AutoFillAgent : public RenderViewObserver,
   // |requires_caret_at_end| specifies whether suggestions should be shown when
   // the caret is not after the last character in |element|.
   // |display_warning_if_disabled| specifies whether a warning should be
-  // displayed to the user if AutoFill has suggestions available, but cannot
+  // displayed to the user if Autofill has suggestions available, but cannot
   // fill them because it is disabled (e.g. when trying to fill a credit card
   // form on a non-secure website).
   void ShowSuggestions(const WebKit::WebInputElement& element,
@@ -103,18 +103,18 @@ class AutoFillAgent : public RenderViewObserver,
                        bool requires_caret_at_end,
                        bool display_warning_if_disabled);
 
-  // Queries the browser for Autocomplete and AutoFill suggestions for the given
+  // Queries the browser for Autocomplete and Autofill suggestions for the given
   // |node|.
-  void QueryAutoFillSuggestions(const WebKit::WebNode& node,
+  void QueryAutofillSuggestions(const WebKit::WebNode& node,
                                 bool display_warning_if_disabled);
 
   // Queries the AutofillManager for form data for the form containing |node|.
   // |value| is the current text in the field, and |unique_id| is the selected
   // profile's unique ID.  |action| specifies whether to Fill or Preview the
   // values returned from the AutofillManager.
-  void FillAutoFillFormData(const WebKit::WebNode& node,
+  void FillAutofillFormData(const WebKit::WebNode& node,
                             int unique_id,
-                            AutoFillAction action);
+                            AutofillAction action);
 
   // Scans the given frame for forms and sends them up to the browser.
   void SendForms(WebKit::WebFrame* frame);
@@ -130,15 +130,15 @@ class AutoFillAgent : public RenderViewObserver,
 
   PasswordAutofillManager* password_autofill_manager_;
 
-  // The ID of the last request sent for form field AutoFill.  Used to ignore
+  // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.
   int autofill_query_id_;
 
-  // The node corresponding to the last request sent for form field AutoFill.
+  // The node corresponding to the last request sent for form field Autofill.
   WebKit::WebNode autofill_query_node_;
 
-  // The action to take when receiving AutoFill data from the AutofillManager.
-  AutoFillAction autofill_action_;
+  // The action to take when receiving Autofill data from the AutofillManager.
+  AutofillAction autofill_action_;
 
   // Should we display a warning if autofill is disabled?
   bool display_warning_if_disabled_;
@@ -149,12 +149,12 @@ class AutoFillAgent : public RenderViewObserver,
   // The menu index of the "Clear" menu item.
   int suggestions_clear_index_;
 
-  // The menu index of the "AutoFill options..." menu item.
+  // The menu index of the "Autofill options..." menu item.
   int suggestions_options_index_;
 
-  ScopedRunnableMethodFactory<AutoFillAgent> method_factory_;
+  ScopedRunnableMethodFactory<AutofillAgent> method_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutoFillAgent);
+  DISALLOW_COPY_AND_ASSIGN(AutofillAgent);
 };
 
 }  // namespace autofill

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -300,7 +300,7 @@ void PasswordFormManager::OnRequestDone(int handle,
   if (wait_for_username)
     manager_action_ = kManagerActionNone;
   else
-    manager_action_ = kManagerActionAutoFilled;
+    manager_action_ = kManagerActionAutofilled;
   password_manager_->Autofill(observed_form_, best_matches_,
                               preferred_match_, wait_for_username);
 }

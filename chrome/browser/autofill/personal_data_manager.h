@@ -25,9 +25,9 @@ class AutofillMetrics;
 class FormStructure;
 class Profile;
 
-// Handles loading and saving AutoFill profile information to the web database.
+// Handles loading and saving Autofill profile information to the web database.
 // This class also stores the profiles loaded from the database for use during
-// AutoFill.
+// Autofill.
 class PersonalDataManager
     : public WebDataServiceConsumer,
       public ProfileSyncServiceObserver,
@@ -64,7 +64,7 @@ class PersonalDataManager
   virtual void OnStateChanged();
 
         // TODO(isherman): Update this comment
-  // If AutoFill is able to determine the field types of a significant number of
+  // If Autofill is able to determine the field types of a significant number of
   // field types that contain information in the FormStructures a profile will
   // be created with all of the information from recognized fields. Returns
   // whether a profile was created.
@@ -79,7 +79,7 @@ class PersonalDataManager
   //
   // The relationship between this and Refresh is subtle.
   // A call to |SetProfiles| could include out-of-date data that may conflict
-  // if we didn't refresh-to-latest before an AutoFill window was opened for
+  // if we didn't refresh-to-latest before an Autofill window was opened for
   // editing. |SetProfiles| is implemented to make a "best effort" to apply the
   // changes, but in extremely rare edge cases it is possible not all of the
   // updates in |profiles| make it to the DB.  This is why SetProfiles will
@@ -164,7 +164,7 @@ class PersonalDataManager
   // Make sure that only Profile and certain tests can create an instance of
   // PersonalDataManager.
   friend class base::RefCountedThreadSafe<PersonalDataManager>;
-  friend class AutoFillMergeTest;
+  friend class AutofillMergeTest;
   friend class PersonalDataManagerTest;
   friend class ProfileImpl;
   friend class ProfileSyncServiceAutofillTest;

@@ -1200,13 +1200,13 @@ class NotificationType {
     // object.
     GOOGLE_SIGNIN_FAILED,
 
-    // AutoFill Notifications --------------------------------------------------
+    // Autofill Notifications --------------------------------------------------
 
-    // Sent when a popup with AutoFill suggestions is shown in the renderer.
+    // Sent when a popup with Autofill suggestions is shown in the renderer.
     // The source is the corresponding RenderViewHost. There are not details.
     AUTOFILL_DID_SHOW_SUGGESTIONS,
 
-    // Sent when a form is previewed or filled with AutoFill suggestions.
+    // Sent when a form is previewed or filled with Autofill suggestions.
     // The source is the corresponding RenderViewHost. There are not details.
     AUTOFILL_DID_FILL_FORM_DATA,
 

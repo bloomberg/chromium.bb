@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,10 +16,10 @@
 #include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
 
 // The base class that contains common functionality between
-// AutoFillQueryXmlParser and AutoFillUploadXmlParser.
-class AutoFillXmlParser : public buzz::XmlParseHandler {
+// AutofillQueryXmlParser and AutofillUploadXmlParser.
+class AutofillXmlParser : public buzz::XmlParseHandler {
  public:
-  AutoFillXmlParser();
+  AutofillXmlParser();
 
   // Returns true if no parsing errors were encountered.
   bool succeeded() const { return succeeded_; }
@@ -46,10 +46,10 @@ class AutoFillXmlParser : public buzz::XmlParseHandler {
   // True if parsing succeeded.
   bool succeeded_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutoFillXmlParser);
+  DISALLOW_COPY_AND_ASSIGN(AutofillXmlParser);
 };
 
-// The XML parse handler for parsing AutoFill query responses.  A typical
+// The XML parse handler for parsing Autofill query responses.  A typical
 // response looks like:
 //
 // <autofillqueryresponse experimentid="1">
@@ -62,9 +62,9 @@ class AutoFillXmlParser : public buzz::XmlParseHandler {
 // Fields are returned in the same order they were sent to the server.
 // autofilltype: The server's guess at what type of field this is.  0 is
 // unknown, other types are documented in chrome/browser/autofill/field_types.h.
-class AutoFillQueryXmlParser : public AutoFillXmlParser {
+class AutofillQueryXmlParser : public AutofillXmlParser {
  public:
-  AutoFillQueryXmlParser(std::vector<AutofillFieldType>* field_types,
+  AutofillQueryXmlParser(std::vector<AutofillFieldType>* field_types,
                          UploadRequired* upload_required,
                          std::string* experiment_id);
 
@@ -85,7 +85,7 @@ class AutoFillQueryXmlParser : public AutoFillXmlParser {
   // The parsed field types.
   std::vector<AutofillFieldType>* field_types_;
 
-  // A flag indicating whether the client should upload AutoFill data when this
+  // A flag indicating whether the client should upload Autofill data when this
   // form is submitted.
   UploadRequired* upload_required_;
 
@@ -93,10 +93,10 @@ class AutoFillQueryXmlParser : public AutoFillXmlParser {
   // For the default server implementation, this is empty.
   std::string* experiment_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutoFillQueryXmlParser);
+  DISALLOW_COPY_AND_ASSIGN(AutofillQueryXmlParser);
 };
 
-// The XML parser for handling AutoFill upload responses.  Typical upload
+// The XML parser for handling Autofill upload responses.  Typical upload
 // responses look like:
 //
 // <autofilluploadresponse negativeuploadrate="0.00125" positiveuploadrate="1"/>
@@ -107,9 +107,9 @@ class AutoFillQueryXmlParser : public AutoFillXmlParser {
 // the form matches what's in the users profile.
 // The negative upload rate is typically much lower than the positive upload
 // rate.
-class AutoFillUploadXmlParser : public AutoFillXmlParser {
+class AutofillUploadXmlParser : public AutofillXmlParser {
  public:
-  AutoFillUploadXmlParser(double* positive_upload_rate,
+  AutofillUploadXmlParser(double* positive_upload_rate,
                           double* negative_upload_rate);
 
  private:
@@ -132,7 +132,7 @@ class AutoFillUploadXmlParser : public AutoFillXmlParser {
   double* positive_upload_rate_;
   double* negative_upload_rate_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutoFillUploadXmlParser);
+  DISALLOW_COPY_AND_ASSIGN(AutofillUploadXmlParser);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_XML_PARSER_H_

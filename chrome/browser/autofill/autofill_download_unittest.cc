@@ -112,9 +112,9 @@ class AutofillDownloadTestHelper : public AutofillDownloadManager::Observer {
   scoped_refptr<URLRequestContextGetter> request_context_getter;
 };
 
-typedef TestingBrowserProcessTest AutoFillDownloadTest;
+typedef TestingBrowserProcessTest AutofillDownloadTest;
 
-TEST_F(AutoFillDownloadTest, QueryAndUploadTest) {
+TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   MessageLoopForUI message_loop;
   // Create and register factory.
   AutofillDownloadTestHelper helper;
@@ -357,7 +357,7 @@ TEST_F(AutoFillDownloadTest, QueryAndUploadTest) {
   URLFetcher::set_factory(NULL);
 }
 
-TEST_F(AutoFillDownloadTest, CacheQueryTest) {
+TEST_F(AutofillDownloadTest, CacheQueryTest) {
   MessageLoopForUI message_loop;
   AutofillDownloadTestHelper helper;
   // Create and register factory.

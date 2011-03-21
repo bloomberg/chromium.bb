@@ -56,7 +56,7 @@ cr.define('options', function() {
       $('autofill-settings').onclick = function(event) {
         OptionsPage.navigateToPage('autofill');
         chrome.send('coreOptionsUserMetricsAction',
-            ['Options_ShowAutoFillSettings']);
+            ['Options_ShowAutofillSettings']);
       };
       $('themes-reset').onclick = function(event) {
         chrome.send('themesReset');

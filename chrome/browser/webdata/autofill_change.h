@@ -45,7 +45,7 @@ class AutofillChange : public GenericAutofillChange<AutofillKey> {
   }
 };
 
-// Change notification details for AutoFill profile changes.
+// Change notification details for Autofill profile changes.
 class AutofillProfileChange : public GenericAutofillChange<std::string> {
  public:
   // The |type| input specifies the change type.  The |key| input is the key,
@@ -66,7 +66,7 @@ class AutofillProfileChange : public GenericAutofillChange<std::string> {
   const AutofillProfile* profile_;
 };
 
-// Change notification details for AutoFill credit card changes.
+// Change notification details for Autofill credit card changes.
 class AutofillCreditCardChange : public GenericAutofillChange<std::string> {
  public:
   // The |type| input specifies the change type.  The |key| input is the key,

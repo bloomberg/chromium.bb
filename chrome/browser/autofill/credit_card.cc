@@ -24,7 +24,7 @@ namespace {
 
 const char* kCreditCardObfuscationString = "************";
 
-const AutofillFieldType kAutoFillCreditCardTypes[] = {
+const AutofillFieldType kAutofillCreditCardTypes[] = {
   CREDIT_CARD_NAME,
   CREDIT_CARD_NUMBER,
   CREDIT_CARD_TYPE,
@@ -32,7 +32,7 @@ const AutofillFieldType kAutoFillCreditCardTypes[] = {
   CREDIT_CARD_EXP_4_DIGIT_YEAR,
 };
 
-const int kAutoFillCreditCardLength = arraysize(kAutoFillCreditCardTypes);
+const int kAutofillCreditCardLength = arraysize(kAutofillCreditCardTypes);
 
 std::string GetCreditCardType(const string16& number) {
   // Don't check for a specific type if this is not a credit card number.
@@ -207,8 +207,8 @@ void CreditCard::FindInfoMatches(AutofillFieldType type,
       break;
 
     case UNKNOWN_TYPE:
-      for (int i = 0; i < kAutoFillCreditCardLength; ++i) {
-        if (FindInfoMatchesHelper(kAutoFillCreditCardTypes[i], info, &match))
+      for (int i = 0; i < kAutofillCreditCardLength; ++i) {
+        if (FindInfoMatchesHelper(kAutofillCreditCardTypes[i], info, &match))
           matched_text->push_back(match);
       }
       break;

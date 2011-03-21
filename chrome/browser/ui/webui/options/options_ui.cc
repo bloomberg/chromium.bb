@@ -168,7 +168,7 @@ OptionsUI::OptionsUI(TabContents* contents)
 #endif
 
   AddOptionsPageUIHandler(localized_strings, new AdvancedOptionsHandler());
-  AddOptionsPageUIHandler(localized_strings, new AutoFillOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new AutofillOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new BrowserOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new ClearBrowserDataHandler());
   AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());

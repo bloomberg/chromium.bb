@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,10 @@
 #pragma once
 
 #include <algorithm>
-#include <string>
-#include <vector>
 #include <map>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/format_macros.h"
 #include "base/string16.h"
@@ -67,7 +67,7 @@ enum IPCMessageStart {
   PepperFileMsgStart,
   SpeechInputMsgStart,
   PepperMsgStart,
-  AutoFillMsgStart,
+  AutofillMsgStart,
   SafeBrowsingMsgStart,
   P2PMsgStart,
   SocketStreamMsgStart,

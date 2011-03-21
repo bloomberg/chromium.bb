@@ -140,7 +140,7 @@ void AutofillIeToolbarImportTest::TearDown() {
   key.DeleteKey(L"");
 }
 
-TEST_F(AutofillIeToolbarImportTest, TestAutoFillImport) {
+TEST_F(AutofillIeToolbarImportTest, TestAutofillImport) {
   RegKey profile_key;
   profile_key.Create(HKEY_CURRENT_USER, kProfileKey, KEY_ALL_ACCESS);
   EXPECT_TRUE(profile_key.Valid());

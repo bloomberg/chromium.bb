@@ -186,7 +186,7 @@ const char kGpuInternalsURL[] = "chrome://gpu-internals/";
 
 // Option sub pages.
 const char kAdvancedOptionsSubPage[] =  "advanced";
-const char kAutoFillSubPage[] = "autofill";
+const char kAutofillSubPage[] = "autofill";
 const char kBrowserOptionsSubPage[] =  "browser";
 const char kClearBrowserDataSubPage[] = "clearBrowserData";
 const char kContentSettingsSubPage[] = "content";

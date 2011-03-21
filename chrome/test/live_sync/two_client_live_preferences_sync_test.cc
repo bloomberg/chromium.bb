@@ -226,21 +226,21 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kEnableTranslate) {
 }
 
 // TestScribe ID - 425648.
-IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kAutoFillEnabled) {
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kAutofillEnabled) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kAutoFillEnabled),
-            GetPrefs(1)->GetBoolean(prefs::kAutoFillEnabled));
+  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kAutofillEnabled),
+            GetPrefs(1)->GetBoolean(prefs::kAutofillEnabled));
 
-  bool new_kAutoFillEnabled = !GetVerifierPrefs()->GetBoolean(
-      prefs::kAutoFillEnabled);
-  GetVerifierPrefs()->SetBoolean(prefs::kAutoFillEnabled, new_kAutoFillEnabled);
-  GetPrefs(0)->SetBoolean(prefs::kAutoFillEnabled, new_kAutoFillEnabled);
+  bool new_kAutofillEnabled = !GetVerifierPrefs()->GetBoolean(
+      prefs::kAutofillEnabled);
+  GetVerifierPrefs()->SetBoolean(prefs::kAutofillEnabled, new_kAutofillEnabled);
+  GetPrefs(0)->SetBoolean(prefs::kAutofillEnabled, new_kAutofillEnabled);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
-  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kAutoFillEnabled),
-            GetPrefs(0)->GetBoolean(prefs::kAutoFillEnabled));
-  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kAutoFillEnabled),
-            GetPrefs(1)->GetBoolean(prefs::kAutoFillEnabled));
+  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kAutofillEnabled),
+            GetPrefs(0)->GetBoolean(prefs::kAutofillEnabled));
+  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kAutofillEnabled),
+            GetPrefs(1)->GetBoolean(prefs::kAutofillEnabled));
 }
 
 // TestScribe ID - 425666.
@@ -588,28 +588,28 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
 }
 
 // TestScribe ID - 433525.
-// The kAutoFillAuxiliaryProfilesEnabled preference key is currently only
+// The kAutofillAuxiliaryProfilesEnabled preference key is currently only
 // synced on Mac and not on Windows or Linux.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
-                       kAutoFillAuxiliaryProfilesEnabled) {
+                       kAutofillAuxiliaryProfilesEnabled) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled),
-            GetPrefs(1)->GetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled));
+  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled),
+            GetPrefs(1)->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled));
 
-  GetVerifierPrefs()->SetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled, 0);
-  GetPrefs(0)->SetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled, 1);
+  GetVerifierPrefs()->SetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled, 0);
+  GetPrefs(0)->SetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled, 1);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
 #if defined(OS_MACOSX)
   ASSERT_NE(GetVerifierPrefs()->GetBoolean(
-                                prefs::kAutoFillAuxiliaryProfilesEnabled),
+                                prefs::kAutofillAuxiliaryProfilesEnabled),
             GetPrefs(1)->GetBoolean(
-                         prefs::kAutoFillAuxiliaryProfilesEnabled));
-  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled),
-            GetPrefs(1)->GetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled));
+                         prefs::kAutofillAuxiliaryProfilesEnabled));
+  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled),
+            GetPrefs(1)->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled));
 #else
-  ASSERT_NE(GetPrefs(1)->GetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled),
-            GetPrefs(0)->GetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled));
+  ASSERT_NE(GetPrefs(1)->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled),
+            GetPrefs(0)->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled));
 #endif  // OS_MACOSX
 }
 

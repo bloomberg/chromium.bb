@@ -23,9 +23,9 @@
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
-#include "webkit/glue/form_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/glue/form_data.h"
 #include "webkit/glue/form_data.h"
 
 using webkit_glue::FormData;
@@ -495,7 +495,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   wds->RemoveAutofillProfile(profile2.guid());
 
   // Before telling the PDM to refresh, simulate an edit to one of the profiles
-  // via a SetProfile update (this would happen if the AutoFill window was
+  // via a SetProfile update (this would happen if the Autofill window was
   // open with a previous snapshot of the profiles, and something [e.g. sync]
   // removed a profile from the browser.  In this edge case, we will end up
   // in a consistent state by dropping the write).

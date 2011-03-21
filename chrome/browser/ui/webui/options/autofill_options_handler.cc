@@ -70,18 +70,18 @@ DictionaryValue* GetCountryData() {
 
 }  // namespace
 
-AutoFillOptionsHandler::AutoFillOptionsHandler()
+AutofillOptionsHandler::AutofillOptionsHandler()
     : personal_data_(NULL) {
 }
 
-AutoFillOptionsHandler::~AutoFillOptionsHandler() {
+AutofillOptionsHandler::~AutofillOptionsHandler() {
   if (personal_data_)
     personal_data_->RemoveObserver(this);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // OptionsPageUIHandler implementation:
-void AutoFillOptionsHandler::GetLocalizedValues(
+void AutofillOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
@@ -108,45 +108,45 @@ void AutoFillOptionsHandler::GetLocalizedValues(
   SetCreditCardOverlayStrings(localized_strings);
 }
 
-void AutoFillOptionsHandler::Initialize() {
+void AutofillOptionsHandler::Initialize() {
   personal_data_ = web_ui_->GetProfile()->GetPersonalDataManager();
   personal_data_->SetObserver(this);
 
-  LoadAutoFillData();
+  LoadAutofillData();
 }
 
-void AutoFillOptionsHandler::RegisterMessages() {
+void AutofillOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "removeAddress",
-      NewCallback(this, &AutoFillOptionsHandler::RemoveAddress));
+      NewCallback(this, &AutofillOptionsHandler::RemoveAddress));
   web_ui_->RegisterMessageCallback(
       "removeCreditCard",
-      NewCallback(this, &AutoFillOptionsHandler::RemoveCreditCard));
+      NewCallback(this, &AutofillOptionsHandler::RemoveCreditCard));
   web_ui_->RegisterMessageCallback(
       "loadAddressEditor",
-      NewCallback(this, &AutoFillOptionsHandler::LoadAddressEditor));
+      NewCallback(this, &AutofillOptionsHandler::LoadAddressEditor));
   web_ui_->RegisterMessageCallback(
       "loadCreditCardEditor",
-      NewCallback(this, &AutoFillOptionsHandler::LoadCreditCardEditor));
+      NewCallback(this, &AutofillOptionsHandler::LoadCreditCardEditor));
   web_ui_->RegisterMessageCallback(
       "setAddress",
-      NewCallback(this, &AutoFillOptionsHandler::SetAddress));
+      NewCallback(this, &AutofillOptionsHandler::SetAddress));
   web_ui_->RegisterMessageCallback(
       "setCreditCard",
-      NewCallback(this, &AutoFillOptionsHandler::SetCreditCard));
+      NewCallback(this, &AutofillOptionsHandler::SetCreditCard));
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // PersonalDataManager::Observer implementation:
-void  AutoFillOptionsHandler::OnPersonalDataLoaded() {
-  LoadAutoFillData();
+void  AutofillOptionsHandler::OnPersonalDataLoaded() {
+  LoadAutofillData();
 }
 
-void AutoFillOptionsHandler::OnPersonalDataChanged() {
-  LoadAutoFillData();
+void AutofillOptionsHandler::OnPersonalDataChanged() {
+  LoadAutofillData();
 }
 
-void AutoFillOptionsHandler::SetAddressOverlayStrings(
+void AutofillOptionsHandler::SetAddressOverlayStrings(
     DictionaryValue* localized_strings) {
   localized_strings->SetString("autoFillEditAddressTitle",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_ADDRESS_CAPTION));
@@ -176,7 +176,7 @@ void AutoFillOptionsHandler::SetAddressOverlayStrings(
   localized_strings->Set("autofillCountryData", GetCountryData());
 }
 
-void AutoFillOptionsHandler::SetCreditCardOverlayStrings(
+void AutofillOptionsHandler::SetCreditCardOverlayStrings(
     DictionaryValue* localized_strings) {
   localized_strings->SetString("autoFillEditCreditCardTitle",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION));
@@ -188,7 +188,7 @@ void AutoFillOptionsHandler::SetCreditCardOverlayStrings(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EXPIRATION_DATE));
 }
 
-void AutoFillOptionsHandler::LoadAutoFillData() {
+void AutofillOptionsHandler::LoadAutofillData() {
   if (!personal_data_->IsDataLoaded())
     return;
 
@@ -202,7 +202,7 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
     addresses.Append(entry);
   }
 
-  web_ui_->CallJavascriptFunction("AutoFillOptions.setAddressList", addresses);
+  web_ui_->CallJavascriptFunction("AutofillOptions.setAddressList", addresses);
 
   ListValue credit_cards;
   for (std::vector<CreditCard*>::const_iterator i =
@@ -217,11 +217,11 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
     credit_cards.Append(entry);
   }
 
-  web_ui_->CallJavascriptFunction("AutoFillOptions.setCreditCardList",
+  web_ui_->CallJavascriptFunction("AutofillOptions.setCreditCardList",
                                   credit_cards);
 }
 
-void AutoFillOptionsHandler::RemoveAddress(const ListValue* args) {
+void AutofillOptionsHandler::RemoveAddress(const ListValue* args) {
   DCHECK(personal_data_->IsDataLoaded());
 
   std::string guid;
@@ -233,7 +233,7 @@ void AutoFillOptionsHandler::RemoveAddress(const ListValue* args) {
   personal_data_->RemoveProfile(guid);
 }
 
-void AutoFillOptionsHandler::RemoveCreditCard(const ListValue* args) {
+void AutofillOptionsHandler::RemoveCreditCard(const ListValue* args) {
   DCHECK(personal_data_->IsDataLoaded());
 
   std::string guid;
@@ -245,7 +245,7 @@ void AutoFillOptionsHandler::RemoveCreditCard(const ListValue* args) {
   personal_data_->RemoveCreditCard(guid);
 }
 
-void AutoFillOptionsHandler::LoadAddressEditor(const ListValue* args) {
+void AutofillOptionsHandler::LoadAddressEditor(const ListValue* args) {
   DCHECK(personal_data_->IsDataLoaded());
 
   std::string guid;
@@ -278,10 +278,10 @@ void AutoFillOptionsHandler::LoadAddressEditor(const ListValue* args) {
   address.SetString("fax", profile->GetInfo(PHONE_FAX_WHOLE_NUMBER));
   address.SetString("email", profile->GetInfo(EMAIL_ADDRESS));
 
-  web_ui_->CallJavascriptFunction("AutoFillOptions.editAddress", address);
+  web_ui_->CallJavascriptFunction("AutofillOptions.editAddress", address);
 }
 
-void AutoFillOptionsHandler::LoadCreditCardEditor(const ListValue* args) {
+void AutofillOptionsHandler::LoadCreditCardEditor(const ListValue* args) {
   DCHECK(personal_data_->IsDataLoaded());
 
   std::string guid;
@@ -312,11 +312,11 @@ void AutoFillOptionsHandler::LoadCreditCardEditor(const ListValue* args) {
       "expirationYear",
       credit_card->GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
-  web_ui_->CallJavascriptFunction("AutoFillOptions.editCreditCard",
+  web_ui_->CallJavascriptFunction("AutofillOptions.editCreditCard",
                                   credit_card_data);
 }
 
-void AutoFillOptionsHandler::SetAddress(const ListValue* args) {
+void AutofillOptionsHandler::SetAddress(const ListValue* args) {
   if (!personal_data_->IsDataLoaded())
     return;
 
@@ -361,7 +361,7 @@ void AutoFillOptionsHandler::SetAddress(const ListValue* args) {
   }
 }
 
-void AutoFillOptionsHandler::SetCreditCard(const ListValue* args) {
+void AutofillOptionsHandler::SetCreditCard(const ListValue* args) {
   if (!personal_data_->IsDataLoaded())
     return;
 

@@ -9,19 +9,19 @@ cr.define('options', function() {
   var guid_;
 
   /**
-   * AutoFillEditCreditCardOverlay class
+   * AutofillEditCreditCardOverlay class
    * Encapsulated handling of the 'Add Page' overlay page.
    * @class
    */
-  function AutoFillEditCreditCardOverlay() {
+  function AutofillEditCreditCardOverlay() {
     OptionsPage.call(this, 'autoFillEditCreditCard',
                      templateData.autoFillEditCreditCardTitle,
                      'autofill-edit-credit-card-overlay');
   }
 
-  cr.addSingletonGetter(AutoFillEditCreditCardOverlay);
+  cr.addSingletonGetter(AutofillEditCreditCardOverlay);
 
-  AutoFillEditCreditCardOverlay.prototype = {
+  AutofillEditCreditCardOverlay.prototype = {
     __proto__: OptionsPage.prototype,
 
     /**
@@ -59,7 +59,7 @@ cr.define('options', function() {
 
     /**
      * Aggregates the values in the input fields into an array and sends the
-     * array to the AutoFill handler.
+     * array to the Autofill handler.
      * @private
      */
     saveCreditCard_: function() {
@@ -183,20 +183,20 @@ cr.define('options', function() {
     },
   };
 
-  AutoFillEditCreditCardOverlay.clearInputFields = function(title) {
-    AutoFillEditCreditCardOverlay.getInstance().clearInputFields_();
+  AutofillEditCreditCardOverlay.clearInputFields = function(title) {
+    AutofillEditCreditCardOverlay.getInstance().clearInputFields_();
   };
 
-  AutoFillEditCreditCardOverlay.loadCreditCard = function(creditCard) {
-    AutoFillEditCreditCardOverlay.getInstance().loadCreditCard_(creditCard);
+  AutofillEditCreditCardOverlay.loadCreditCard = function(creditCard) {
+    AutofillEditCreditCardOverlay.getInstance().loadCreditCard_(creditCard);
   };
 
-  AutoFillEditCreditCardOverlay.setTitle = function(title) {
+  AutofillEditCreditCardOverlay.setTitle = function(title) {
     $('autofill-credit-card-title').textContent = title;
   };
 
   // Export
   return {
-    AutoFillEditCreditCardOverlay: AutoFillEditCreditCardOverlay
+    AutofillEditCreditCardOverlay: AutofillEditCreditCardOverlay
   };
 });

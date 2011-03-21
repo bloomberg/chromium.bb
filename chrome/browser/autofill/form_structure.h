@@ -34,7 +34,7 @@ enum UploadRequired {
 class AutofillMetrics;
 
 // FormStructure stores a single HTML form together with the values entered
-// in the fields along with additional information needed by AutoFill.
+// in the fields along with additional information needed by Autofill.
 class FormStructure {
  public:
   explicit FormStructure(const webkit_glue::FormData& form);
@@ -70,15 +70,15 @@ class FormStructure {
   // Runs a quick heuristic to rule out forms that are obviously not
   // auto-fillable, like google/yahoo/msn search, etc. The requirement that the
   // form's method be POST is only applied if |require_method_post| is true.
-  bool IsAutoFillable(bool require_method_post) const;
+  bool IsAutofillable(bool require_method_post) const;
 
   // Resets |autofill_count_| and counts the number of auto-fillable fields.
   // This is used when we receive server data for form fields.  At that time,
   // we may have more known fields than just the number of fields we matched
   // heuristically.
-  void UpdateAutoFillCount();
+  void UpdateAutofillCount();
 
-  // Returns true if this form matches the structural requirements for AutoFill.
+  // Returns true if this form matches the structural requirements for Autofill.
   // The requirement that the form's method be POST is only applied if
   // |require_method_post| is true.
   bool ShouldBeParsed(bool require_method_post) const;

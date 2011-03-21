@@ -83,7 +83,7 @@ void DisableSystemServices(Profile* profile) {
   // Disable auxiliary profiles for unit testing.  These reach out to system
   // services on the Mac.
   if (profile) {
-    profile->GetPrefs()->SetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled,
+    profile->GetPrefs()->SetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled,
                                     false);
   }
 }

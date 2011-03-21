@@ -13,12 +13,12 @@ class AutofillManager;
 
 // An InfoBar delegate that enables the user to allow or deny storing credit
 // card information gathered from a form submission.
-class AutoFillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
+class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  AutoFillCCInfoBarDelegate(TabContents* tab_contents, AutofillManager* host);
+  AutofillCCInfoBarDelegate(TabContents* tab_contents, AutofillManager* host);
 
  private:
-  virtual ~AutoFillCCInfoBarDelegate();
+  virtual ~AutofillCCInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(
@@ -36,7 +36,7 @@ class AutoFillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
   // The AutofillManager that initiated this InfoBar.
   AutofillManager* host_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutoFillCCInfoBarDelegate);
+  DISALLOW_COPY_AND_ASSIGN(AutofillCCInfoBarDelegate);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_CC_INFOBAR_DELEGATE_H_

@@ -639,31 +639,31 @@ TEST_F(ConfigurationPolicyPrefStoreSyncTest, Disabled) {
   EXPECT_TRUE(FundamentalValue(true).Equals(value));
 }
 
-// Test cases for the AutoFill policy setting.
-class ConfigurationPolicyPrefStoreAutoFillTest
+// Test cases for the Autofill policy setting.
+class ConfigurationPolicyPrefStoreAutofillTest
     : public ConfigurationPolicyPrefStoreTestBase<testing::Test> {
 };
 
-TEST_F(ConfigurationPolicyPrefStoreAutoFillTest, Default) {
+TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Default) {
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_->GetValue(prefs::kSyncManaged, NULL));
 }
 
-TEST_F(ConfigurationPolicyPrefStoreAutoFillTest, Enabled) {
+TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Enabled) {
   provider_.AddPolicy(kPolicyAutoFillEnabled, Value::CreateBooleanValue(true));
   store_->OnUpdatePolicy();
-  // Enabling AutoFill should not set the pref.
+  // Enabling Autofill should not set the pref.
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_->GetValue(prefs::kSyncManaged, NULL));
 }
 
-TEST_F(ConfigurationPolicyPrefStoreAutoFillTest, Disabled) {
+TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Disabled) {
   provider_.AddPolicy(kPolicyAutoFillEnabled, Value::CreateBooleanValue(false));
   store_->OnUpdatePolicy();
-  // Disabling AutoFill should switch the pref to managed.
+  // Disabling Autofill should switch the pref to managed.
   Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
-            store_->GetValue(prefs::kAutoFillEnabled, &value));
+            store_->GetValue(prefs::kAutofillEnabled, &value));
   EXPECT_TRUE(FundamentalValue(false).Equals(value));
 }
 

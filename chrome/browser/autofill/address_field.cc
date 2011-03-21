@@ -24,7 +24,7 @@ bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
 
   switch (type_) {
     case kShippingAddress:
-     // Fall through. AutoFill does not support shipping addresses.
+     // Fall through. Autofill does not support shipping addresses.
     case kGenericAddress:
       address_company = COMPANY_NAME;
       address_line1 = ADDRESS_HOME_LINE1;

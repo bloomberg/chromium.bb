@@ -102,15 +102,15 @@ const std::vector<AutofillProfile*>& PersonalDataManagerMock::web_profiles() {
 
 }  // namespace
 
-// A data-driven test for verifying merging of AutoFill profiles. Each input is
+// A data-driven test for verifying merging of Autofill profiles. Each input is
 // a structured dump of a set of implicitly detected autofill profiles. The
 // corresponding output file is a dump of the saved profiles that result from
 // importing the input profiles. The output file format is identical to the
 // input format.
-class AutoFillMergeTest : public testing::Test, public DataDrivenTest {
+class AutofillMergeTest : public testing::Test, public DataDrivenTest {
  protected:
-  AutoFillMergeTest();
-  virtual ~AutoFillMergeTest();
+  AutofillMergeTest();
+  virtual ~AutofillMergeTest();
 
   // testing::Test:
   virtual void SetUp();
@@ -119,29 +119,29 @@ class AutoFillMergeTest : public testing::Test, public DataDrivenTest {
   virtual void GenerateResults(const std::string& input,
                                std::string* output) OVERRIDE;
 
-  // Deserializes a set of AutoFill profiles from |profiles|, imports each
+  // Deserializes a set of Autofill profiles from |profiles|, imports each
   // sequentially, and fills |merged_profiles| with the serialized result.
   void MergeProfiles(const std::string& profiles, std::string* merged_profiles);
 
   scoped_refptr<PersonalDataManagerMock> personal_data_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AutoFillMergeTest);
+  DISALLOW_COPY_AND_ASSIGN(AutofillMergeTest);
 };
 
-AutoFillMergeTest::AutoFillMergeTest() : DataDrivenTest() {
+AutofillMergeTest::AutofillMergeTest() : DataDrivenTest() {
 }
 
-AutoFillMergeTest::~AutoFillMergeTest() {
+AutofillMergeTest::~AutofillMergeTest() {
 }
 
-void AutoFillMergeTest::SetUp() {
+void AutofillMergeTest::SetUp() {
   autofill_test::DisableSystemServices(NULL);
 
   personal_data_ = new PersonalDataManagerMock();
 }
 
-void AutoFillMergeTest::GenerateResults(const std::string& input,
+void AutofillMergeTest::GenerateResults(const std::string& input,
                                         std::string* output) {
   MergeProfiles(input, output);
 
@@ -151,7 +151,7 @@ void AutoFillMergeTest::GenerateResults(const std::string& input,
   EXPECT_EQ(*output, merged_output);
 }
 
-void AutoFillMergeTest::MergeProfiles(const std::string& profiles,
+void AutofillMergeTest::MergeProfiles(const std::string& profiles,
                                       std::string* merged_profiles) {
   // Start with no saved profiles.
   personal_data_->Reset();
@@ -216,7 +216,7 @@ void AutoFillMergeTest::MergeProfiles(const std::string& profiles,
   *merged_profiles = SerializeProfiles(personal_data_->web_profiles());
 }
 
-TEST_F(AutoFillMergeTest, DataDrivenMergeProfiles) {
+TEST_F(AutofillMergeTest, DataDrivenMergeProfiles) {
   RunDataDrivenTest(GetInputDirectory(kTestName), GetOutputDirectory(kTestName),
                     kFileNamePattern);
 }

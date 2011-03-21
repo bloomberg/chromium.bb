@@ -45,9 +45,9 @@ using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
 
 // Constants for the |autofill_profile_phones| |type| column.
-enum AutoFillPhoneType {
-  kAutoFillPhoneNumber = 0,
-  kAutoFillFaxNumber = 1
+enum AutofillPhoneType {
+  kAutofillPhoneNumber = 0,
+  kAutofillFaxNumber = 1
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -113,8 +113,8 @@ enum AutoFillPhoneType {
 //   pair_id
 //   date_created
 //
-// autofill_profiles    This table contains AutoFill profile data added by the
-//                      user with the AutoFill dialog.  Most of the columns are
+// autofill_profiles    This table contains Autofill profile data added by the
+//                      user with the Autofill dialog.  Most of the columns are
 //                      standard entries in a contact information form.
 //
 //   guid               A guid string to uniquely identify the profile.
@@ -167,7 +167,7 @@ enum AutoFillPhoneType {
 //   guid               The guid string that identifies the trashed profile.
 //
 // credit_cards         This table contains credit card data added by the user
-//                      with the AutoFill dialog.  Most of the columns are
+//                      with the Autofill dialog.  Most of the columns are
 //                      standard entries in a credit card form.
 //
 //   guid               A guid string to uniquely identify the profile.
@@ -352,7 +352,7 @@ void AddAutofillProfilePhoneFromStatement(const sql::Statement& s,
                                        AutofillProfile* profile) {
   DCHECK_EQ(profile->guid(), s.ColumnString(0));
   DCHECK(guid::IsValidGUID(profile->guid()));
-  DCHECK_EQ(kAutoFillPhoneNumber, s.ColumnInt(1));
+  DCHECK_EQ(kAutofillPhoneNumber, s.ColumnInt(1));
   profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, s.ColumnString16(2));
 }
 
@@ -360,7 +360,7 @@ void AddAutofillProfileFaxFromStatement(const sql::Statement& s,
                                      AutofillProfile* profile) {
   DCHECK_EQ(profile->guid(), s.ColumnString(0));
   DCHECK(guid::IsValidGUID(profile->guid()));
-  DCHECK_EQ(kAutoFillFaxNumber, s.ColumnInt(1));
+  DCHECK_EQ(kAutofillFaxNumber, s.ColumnInt(1));
   profile->SetInfo(PHONE_FAX_WHOLE_NUMBER, s.ColumnString16(2));
 }
 
@@ -497,12 +497,12 @@ bool AddAutofillProfileEmail(const std::string& guid,
 
 bool AddAutofillProfilePhone(const std::string& guid,
                              const AutofillProfile& profile,
-                             AutoFillPhoneType phone_type,
+                             AutofillPhoneType phone_type,
                              sql::Connection* db) {
   AutofillFieldType field_type;
-  if (phone_type == kAutoFillPhoneNumber) {
+  if (phone_type == kAutofillPhoneNumber) {
     field_type = PHONE_HOME_WHOLE_NUMBER;
-  } else if (phone_type == kAutoFillFaxNumber) {
+  } else if (phone_type == kAutofillFaxNumber) {
     field_type = PHONE_FAX_WHOLE_NUMBER;
   } else {
     NOTREACHED();
@@ -555,10 +555,10 @@ bool AddAutofillProfilePieces(const std::string& guid,
   if (!AddAutofillProfileEmail(guid, profile, db))
     return false;
 
-  if (!AddAutofillProfilePhone(guid, profile, kAutoFillPhoneNumber, db))
+  if (!AddAutofillProfilePhone(guid, profile, kAutofillPhoneNumber, db))
     return false;
 
-  if (!AddAutofillProfilePhone(guid, profile, kAutoFillFaxNumber, db))
+  if (!AddAutofillProfilePhone(guid, profile, kAutofillFaxNumber, db))
     return false;
 
   return true;
@@ -1960,7 +1960,7 @@ bool WebDatabase::GetAutofillProfile(const std::string& guid,
     return false;
   }
   s4.BindString(0, guid);
-  s4.BindInt(1, kAutoFillPhoneNumber);
+  s4.BindInt(1, kAutofillPhoneNumber);
 
   if (s4.Step()) {
     AddAutofillProfilePhoneFromStatement(s4, p.get());
@@ -1976,7 +1976,7 @@ bool WebDatabase::GetAutofillProfile(const std::string& guid,
     return false;
   }
   s5.BindString(0, guid);
-  s5.BindInt(1, kAutoFillFaxNumber);
+  s5.BindInt(1, kAutofillFaxNumber);
 
   if (s5.Step()) {
     AddAutofillProfileFaxFromStatement(s5, p.get());
@@ -2249,12 +2249,12 @@ bool WebDatabase::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
       std::numeric_limits<time_t>::max() :
       delete_end.ToTimeT();
 
-  // Remove AutoFill profiles in the time range.
+  // Remove Autofill profiles in the time range.
   sql::Statement s_profiles(db_.GetUniqueStatement(
       "DELETE FROM autofill_profiles "
       "WHERE date_modified >= ? AND date_modified < ?"));
   if (!s_profiles) {
-    NOTREACHED() << "AutoFill profiles statement prepare failed";
+    NOTREACHED() << "Autofill profiles statement prepare failed";
     return false;
   }
 
@@ -2267,12 +2267,12 @@ bool WebDatabase::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
     return false;
   }
 
-  // Remove AutoFill profiles in the time range.
+  // Remove Autofill profiles in the time range.
   sql::Statement s_credit_cards(db_.GetUniqueStatement(
       "DELETE FROM credit_cards "
       "WHERE date_modified >= ? AND date_modified < ?"));
   if (!s_credit_cards) {
-    NOTREACHED() << "AutoFill credit cards statement prepare failed";
+    NOTREACHED() << "Autofill credit cards statement prepare failed";
     return false;
   }
 
@@ -2494,7 +2494,7 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(){
 
     case 23: {
       // One-time cleanup for Chromium bug 38364.  In the presence of
-      // multi-byte UTF-8 characters, that bug could cause AutoFill strings
+      // multi-byte UTF-8 characters, that bug could cause Autofill strings
       // to grow larger and more corrupt with each save.  The cleanup removes
       // any row with a string field larger than a reasonable size.  The string
       // fields examined here are precisely the ones that were subject to

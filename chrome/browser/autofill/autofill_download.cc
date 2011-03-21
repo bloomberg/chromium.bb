@@ -45,9 +45,9 @@ AutofillDownloadManager::AutofillDownloadManager(Profile* profile)
   if (profile_) {
     PrefService* preferences = profile_->GetPrefs();
     positive_upload_rate_ =
-        preferences->GetDouble(prefs::kAutoFillPositiveUploadRate);
+        preferences->GetDouble(prefs::kAutofillPositiveUploadRate);
     negative_upload_rate_ =
-        preferences->GetDouble(prefs::kAutoFillNegativeUploadRate);
+        preferences->GetDouble(prefs::kAutofillNegativeUploadRate);
   }
 }
 
@@ -156,7 +156,7 @@ void AutofillDownloadManager::SetPositiveUploadRate(double rate) {
   DCHECK_LE(rate, 1.0);
   DCHECK(profile_);
   PrefService* preferences = profile_->GetPrefs();
-  preferences->SetDouble(prefs::kAutoFillPositiveUploadRate, rate);
+  preferences->SetDouble(prefs::kAutofillPositiveUploadRate, rate);
 }
 
 void AutofillDownloadManager::SetNegativeUploadRate(double rate) {
@@ -167,7 +167,7 @@ void AutofillDownloadManager::SetNegativeUploadRate(double rate) {
   DCHECK_LE(rate, 1.0);
   DCHECK(profile_);
   PrefService* preferences = profile_->GetPrefs();
-  preferences->SetDouble(prefs::kAutoFillNegativeUploadRate, rate);
+  preferences->SetDouble(prefs::kAutofillNegativeUploadRate, rate);
 }
 
 bool AutofillDownloadManager::StartRequest(
@@ -324,7 +324,7 @@ void AutofillDownloadManager::OnURLFetchComplete(
     } else {
       double new_positive_upload_rate = 0;
       double new_negative_upload_rate = 0;
-      AutoFillUploadXmlParser parse_handler(&new_positive_upload_rate,
+      AutofillUploadXmlParser parse_handler(&new_positive_upload_rate,
                                             &new_negative_upload_rate);
       buzz::XmlParser parser(&parse_handler);
       parser.Parse(data.data(), data.length(), true);

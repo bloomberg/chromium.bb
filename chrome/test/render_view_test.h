@@ -23,7 +23,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
 namespace autofill {
-class AutoFillAgent;
+class AutofillAgent;
 class PasswordAutofillManager;
 }
 class MockRenderProcess;
@@ -107,7 +107,7 @@ class RenderViewTest : public testing::Test {
   scoped_ptr<SandboxInitWrapper> sandbox_init_wrapper_;
 
   autofill::PasswordAutofillManager* password_autofill_;
-  autofill::AutoFillAgent* autofill_agent_;
+  autofill::AutofillAgent* autofill_agent_;
 };
 
 #endif  // CHROME_TEST_RENDER_VIEW_TEST_H_

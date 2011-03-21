@@ -436,14 +436,14 @@ void Browser::InitBrowserWindow() {
     window_->GetLocationBar()->ShowFirstRunBubble(bubble_type);
   }
   if (local_state->FindPreference(
-      prefs::kAutoFillPersonalDataManagerFirstRun) &&
-      local_state->GetBoolean(prefs::kAutoFillPersonalDataManagerFirstRun)) {
+      prefs::kAutofillPersonalDataManagerFirstRun) &&
+      local_state->GetBoolean(prefs::kAutofillPersonalDataManagerFirstRun)) {
     // Notify PDM that this is a first run.
 #if defined(OS_WIN)
     ImportAutofillDataWin(profile_->GetPersonalDataManager());
 #endif  // defined(OS_WIN)
     // Reset the preference so we don't call it again for subsequent windows.
-    local_state->ClearPref(prefs::kAutoFillPersonalDataManagerFirstRun);
+    local_state->ClearPref(prefs::kAutofillPersonalDataManagerFirstRun);
   }
 }
 
@@ -1954,7 +1954,7 @@ void Browser::OpenPrivacyDashboardTabAndActivate() {
   window_->Activate();
 }
 
-void Browser::OpenAutoFillHelpTabAndActivate() {
+void Browser::OpenAutofillHelpTabAndActivate() {
   GURL help_url = google_util::AppendGoogleLocaleParam(GURL(kAutofillHelpUrl));
   AddSelectedTabWithURL(help_url, PageTransition::LINK);
 }
@@ -3690,7 +3690,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_FIND_NEXT, non_devtools_window);
   command_updater_.UpdateCommandEnabled(IDC_FIND_PREVIOUS, non_devtools_window);
 
-  // AutoFill
+  // Autofill
   command_updater_.UpdateCommandEnabled(IDC_AUTOFILL_DEFAULT,
                                         non_devtools_window);
 

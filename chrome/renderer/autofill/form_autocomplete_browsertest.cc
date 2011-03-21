@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,11 +32,11 @@ TEST_F(FormAutocompleteTest, NormalFormSubmit) {
   ProcessPendingMessages();
 
   const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
-      AutoFillHostMsg_FormSubmitted::ID);
+      AutofillHostMsg_FormSubmitted::ID);
   ASSERT_TRUE(message != NULL);
 
   Tuple1<FormData> forms;
-  AutoFillHostMsg_FormSubmitted::Read(message, &forms);
+  AutofillHostMsg_FormSubmitted::Read(message, &forms);
   ASSERT_EQ(2U, forms.a.fields.size());
 
   webkit_glue::FormField& form_field = forms.a.fields[0];
@@ -63,7 +63,7 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffFormSubmit) {
 
   // No FormSubmitted message should have been sent.
   EXPECT_FALSE(render_thread_.sink().GetFirstMessageMatching(
-      AutoFillHostMsg_FormSubmitted::ID));
+      AutofillHostMsg_FormSubmitted::ID));
 }
 
 // Tests that fields with autocomplete off are not submitted.
@@ -80,11 +80,11 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
 
   // No FormSubmitted message should have been sent.
   const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
-      AutoFillHostMsg_FormSubmitted::ID);
+      AutofillHostMsg_FormSubmitted::ID);
   ASSERT_TRUE(message != NULL);
 
   Tuple1<FormData> forms;
-  AutoFillHostMsg_FormSubmitted::Read(message, &forms);
+  AutofillHostMsg_FormSubmitted::Read(message, &forms);
   ASSERT_EQ(1U, forms.a.fields.size());
 
   webkit_glue::FormField& form_field = forms.a.fields[0];
@@ -117,5 +117,5 @@ TEST_F(FormAutocompleteTest, FAILS_DynamicAutoCompleteOffFormSubmit) {
 
   // No FormSubmitted message should have been sent.
   EXPECT_FALSE(render_thread_.sink().GetFirstMessageMatching(
-      AutoFillHostMsg_FormSubmitted::ID));
+      AutofillHostMsg_FormSubmitted::ID));
 }

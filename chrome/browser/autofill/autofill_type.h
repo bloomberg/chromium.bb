@@ -13,7 +13,7 @@
 #include "base/string16.h"
 #include "chrome/browser/autofill/field_types.h"
 
-// The high-level description of AutoFill types, used to categorize form fields
+// The high-level description of Autofill types, used to categorize form fields
 // and for associating form fields with form values in the Web Database.
 class AutofillType {
  public:

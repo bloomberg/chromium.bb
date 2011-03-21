@@ -12,14 +12,14 @@
 
 static const string16 kNameSplitChars = ASCIIToUTF16("-'. ");
 
-static const AutofillFieldType kAutoFillNameInfoTypes[] = {
+static const AutofillFieldType kAutofillNameInfoTypes[] = {
   NAME_FIRST,
   NAME_MIDDLE,
   NAME_LAST
 };
 
-static const size_t kAutoFillNameInfoLength =
-    arraysize(kAutoFillNameInfoTypes);
+static const size_t kAutofillNameInfoLength =
+    arraysize(kAutofillNameInfoTypes);
 
 NameInfo::NameInfo() {}
 
@@ -88,8 +88,8 @@ void NameInfo::FindInfoMatches(AutofillFieldType type,
 
   string16 match;
   if (type == UNKNOWN_TYPE) {
-    for (size_t i = 0; i < kAutoFillNameInfoLength; i++) {
-      if (FindInfoMatchesHelper(kAutoFillNameInfoTypes[i], info, &match))
+    for (size_t i = 0; i < kAutofillNameInfoLength; i++) {
+      if (FindInfoMatchesHelper(kAutofillNameInfoTypes[i], info, &match))
         matched_text->push_back(match);
     }
   } else if (FindInfoMatchesHelper(type, info, &match)) {

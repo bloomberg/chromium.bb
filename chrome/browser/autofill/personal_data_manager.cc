@@ -28,7 +28,7 @@
 namespace {
 
 // The minimum number of fields that must contain user data and have known types
-// before AutoFill will attempt to import the data into a profile or a credit
+// before Autofill will attempt to import the data into a profile or a credit
 // card.
 const int kMinProfileImportSize = 3;
 const int kMinCreditCardImportSize = 2;
@@ -600,7 +600,7 @@ bool PersonalDataManager::IsDataLoaded() const {
 const std::vector<AutofillProfile*>& PersonalDataManager::profiles() {
   // |profile_| is NULL in AutofillManagerTest.
   bool auxiliary_profiles_enabled = profile_ ? profile_->GetPrefs()->GetBoolean(
-      prefs::kAutoFillAuxiliaryProfilesEnabled) : false;
+      prefs::kAutofillAuxiliaryProfilesEnabled) : false;
   if (!auxiliary_profiles_enabled)
     return web_profiles();
 

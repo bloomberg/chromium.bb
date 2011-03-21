@@ -4,11 +4,11 @@
 
 #include <string>
 
-#include "base/utf_string_conversions.h"
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
@@ -62,9 +62,9 @@ static const char* kTestFormString =
     " <input type=\"text\" id=\"phone\" /><br />"
     "</form>";
 
-class AutoFillTest : public InProcessBrowserTest {
+class AutofillTest : public InProcessBrowserTest {
  protected:
-  AutoFillTest() {
+  AutofillTest() {
     set_show_window(true);
     EnableDOMAutomation();
   }
@@ -214,7 +214,7 @@ class AutoFillTest : public InProcessBrowserTest {
 };
 
 // Test that basic form fill is working.
-IN_PROC_BROWSER_TEST_F(AutoFillTest, BasicFormFill) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, BasicFormFill) {
   CreateTestProfile();
 
   // Load the test page.
@@ -222,12 +222,12 @@ IN_PROC_BROWSER_TEST_F(AutoFillTest, BasicFormFill) {
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
       GURL(std::string(kDataURIPrefix) + kTestFormString)));
 
-  // Invoke AutoFill.
+  // Invoke Autofill.
   TryBasicFormFill();
 }
 
 // Test that form filling can be initiated by pressing the down arrow.
-IN_PROC_BROWSER_TEST_F(AutoFillTest, AutoFillViaDownArrow) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillViaDownArrow) {
   CreateTestProfile();
 
   // Load the test page.
@@ -238,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(AutoFillTest, AutoFillViaDownArrow) {
   // Focus a fillable field.
   FocusFirstNameField();
 
-  // Press the down arrow to initiate AutoFill and wait for the popup to be
+  // Press the down arrow to initiate Autofill and wait for the popup to be
   // shown.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_DOWN, false, false, false, false,
@@ -263,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(AutoFillTest, AutoFillViaDownArrow) {
 }
 
 // Test that a JavaScript onchange event is fired after auto-filling a form.
-IN_PROC_BROWSER_TEST_F(AutoFillTest, OnChangeAfterAutoFill) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, OnChangeAfterAutofill) {
   CreateTestProfile();
 
   const char* kOnChangeScript =
@@ -319,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(AutoFillTest, OnChangeAfterAutoFill) {
 
 // Test that form filling works after reloading the current page.
 // This test brought to you by http://crbug.com/69204
-IN_PROC_BROWSER_TEST_F(AutoFillTest, AutoFillAfterReload) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterReload) {
   CreateTestProfile();
 
   // Load the test page.
@@ -333,12 +333,12 @@ IN_PROC_BROWSER_TEST_F(AutoFillTest, AutoFillAfterReload) {
   controller->Reload(false);
   ui_test_utils::WaitForLoadStop(controller);
 
-  // Invoke AutoFill.
+  // Invoke Autofill.
   TryBasicFormFill();
 }
 
 // Test that autofill works after page translation.
-IN_PROC_BROWSER_TEST_F(AutoFillTest, AutoFillAfterTranslate) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterTranslate) {
   CreateTestProfile();
 
   GURL url(std::string(kDataURIPrefix) +

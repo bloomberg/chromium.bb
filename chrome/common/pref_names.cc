@@ -142,10 +142,10 @@ const char kPasswordManagerEnabled[] = "profile.password_manager_enabled";
 const char kPasswordManagerAllowShowPasswords[] =
     "profile.password_manager_allow_show_passwords";
 
-// OBSOLETE.  Boolean that is true if the form AutoFill is on (will record
+// OBSOLETE.  Boolean that is true if the form Autofill is on (will record
 // values entered in text inputs in forms and shows them in a popup when user
 // type in a text input with the same name later on).  This has been superseded
-// by kAutoFillEnabled.
+// by kAutofillEnabled.
 const char kFormAutofillEnabled[] = "profile.form_autofill_enabled";
 
 // Boolean that is true when SafeBrowsing is enabled.
@@ -646,25 +646,25 @@ const char kDefaultZoomLevel[] = "profile.default_zoom_level";
 // be displayed at the default zoom level.
 const char kPerHostZoomLevels[] = "profile.per_host_zoom_levels";
 
-// Boolean that is true if AutoFill is enabled and allowed to save profile data.
-const char kAutoFillEnabled[] = "autofill.enabled";
+// Boolean that is true if Autofill is enabled and allowed to save profile data.
+const char kAutofillEnabled[] = "autofill.enabled";
 
-// Boolean that is true when auxiliary AutoFill profiles are enabled.
+// Boolean that is true when auxiliary Autofill profiles are enabled.
 // Currently applies to Address Book "me" card on Mac.  False on Win and Linux.
-const char kAutoFillAuxiliaryProfilesEnabled[] =
+const char kAutofillAuxiliaryProfilesEnabled[] =
     "autofill.auxiliary_profiles_enabled";
 
-// Position and size of the AutoFill dialog.
-const char kAutoFillDialogPlacement[] = "autofill.dialog_placement";
+// Position and size of the Autofill dialog.
+const char kAutofillDialogPlacement[] = "autofill.dialog_placement";
 
 // Double that indicates positive (for matched forms) upload rate.
-const char kAutoFillPositiveUploadRate[] = "autofill.positive_upload_rate";
+const char kAutofillPositiveUploadRate[] = "autofill.positive_upload_rate";
 
 // Double that indicates negative (for not matched forms) upload rate.
-const char kAutoFillNegativeUploadRate[] = "autofill.negative_upload_rate";
+const char kAutofillNegativeUploadRate[] = "autofill.negative_upload_rate";
 
 // Boolean option set to true on the first run. Non-persistent.
-const char kAutoFillPersonalDataManagerFirstRun[] = "autofill.pdm.first_run";
+const char kAutofillPersonalDataManagerFirstRun[] = "autofill.pdm.first_run";
 
 // Boolean that is true when the tabstrip is to be laid out vertically down the
 // side of the browser window.

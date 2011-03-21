@@ -14,7 +14,7 @@ namespace webkit_glue {
 struct FormField;
 }  // namespace webkit_glue
 
-// Common utilities shared amongst AutoFill tests.
+// Common utilities shared amongst Autofill tests.
 namespace autofill_test {
 
 // Provides a quick way to populate a FormField with c-strings.
@@ -24,7 +24,7 @@ void CreateTestFormField(const char* label,
                          const char* type,
                          webkit_glue::FormField* field);
 
-// A unit testing utility that is common to a number of the AutoFill unit
+// A unit testing utility that is common to a number of the Autofill unit
 // tests.  |SetProfileInfo| provides a quick way to populate a profile with
 // c-strings.
 void SetProfileInfo(AutofillProfile* profile,
@@ -41,7 +41,7 @@ void SetProfileInfoWithGuid(AutofillProfile* profile,
     const char* state, const char* zipcode, const char* country,
     const char* phone, const char* fax);
 
-// A unit testing utility that is common to a number of the AutoFill unit
+// A unit testing utility that is common to a number of the Autofill unit
 // tests.  |SetCreditCardInfo| provides a quick way to populate a credit card
 // with c-strings.
 void SetCreditCardInfo(CreditCard* credit_card,

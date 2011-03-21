@@ -17,7 +17,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
-class AutoFillCCInfoBarDelegate;
+class AutofillCCInfoBarDelegate;
 class AutofillProfile;
 class AutofillMetrics;
 class CreditCard;
@@ -50,7 +50,7 @@ class AutofillManager : public TabContentsObserver,
       const ViewHostMsg_FrameNavigate_Params& params);
   virtual bool OnMessageReceived(const IPC::Message& message);
 
-  // Called by the AutoFillCCInfoBarDelegate when the user interacts with the
+  // Called by the AutofillCCInfoBarDelegate when the user interacts with the
   // infobar.
   virtual void OnInfoBarClosed(bool should_save);
 
@@ -62,8 +62,8 @@ class AutofillManager : public TabContentsObserver,
       AutofillDownloadManager::AutofillRequestType request_type,
       int http_error);
 
-  // Returns the value of the AutoFillEnabled pref.
-  virtual bool IsAutoFillEnabled() const;
+  // Returns the value of the AutofillEnabled pref.
+  virtual bool IsAutofillEnabled() const;
 
   // Imports the form data, submitted by the user, into |personal_data_|.
   void ImportFormData(const FormStructure& submitted_form);
@@ -103,16 +103,16 @@ class AutofillManager : public TabContentsObserver,
  private:
   void OnFormSubmitted(const webkit_glue::FormData& form);
   void OnFormsSeen(const std::vector<webkit_glue::FormData>& forms);
-  void OnQueryFormFieldAutoFill(int query_id,
+  void OnQueryFormFieldAutofill(int query_id,
                                 const webkit_glue::FormData& form,
                                 const webkit_glue::FormField& field);
-  void OnFillAutoFillFormData(int query_id,
+  void OnFillAutofillFormData(int query_id,
                               const webkit_glue::FormData& form,
                               const webkit_glue::FormField& field,
                               int unique_id);
-  void OnShowAutoFillDialog();
-  void OnDidFillAutoFillFormData();
-  void OnDidShowAutoFillSuggestions();
+  void OnShowAutofillDialog();
+  void OnDidFillAutofillFormData();
+  void OnDidShowAutofillSuggestions();
 
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.
@@ -208,7 +208,7 @@ class AutofillManager : public TabContentsObserver,
 
   // The InfoBar that asks for permission to store credit card information.
   // Deletes itself when closed.
-  AutoFillCCInfoBarDelegate* cc_infobar_;
+  AutofillCCInfoBarDelegate* cc_infobar_;
 
   // The imported credit card that should be saved if the user accepts the
   // infobar.
@@ -230,7 +230,7 @@ class AutofillManager : public TabContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillAddressAndCreditCardForm);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillFormWithMultipleSections);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillFormWithMultipleEmails);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillAutoFilledForm);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillAutofilledForm);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillPhoneNumber);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormChangesRemoveField);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormChangesAddField);

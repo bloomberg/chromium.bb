@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,13 +30,13 @@ class AccountCreationTabContents : public WizardWebPageViewTabContents {
   virtual bool OnMessageReceived(const IPC::Message& message) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(AccountCreationTabContents, message)
-      IPC_MESSAGE_HANDLER(AutoFillHostMsg_FormSubmitted, OnFormSubmitted)
-      IPC_MESSAGE_HANDLER_GENERIC(AutoFillHostMsg_FormsSeen, )
-      IPC_MESSAGE_HANDLER_GENERIC(AutoFillHostMsg_QueryFormFieldAutoFill, )
-      IPC_MESSAGE_HANDLER_GENERIC(AutoFillHostMsg_ShowAutoFillDialog, )
-      IPC_MESSAGE_HANDLER_GENERIC(AutoFillHostMsg_FillAutoFillFormData, )
-      IPC_MESSAGE_HANDLER_GENERIC(AutoFillHostMsg_DidFillAutoFillFormData, )
-      IPC_MESSAGE_HANDLER_GENERIC(AutoFillHostMsg_DidShowAutoFillSuggestions, )
+      IPC_MESSAGE_HANDLER(AutofillHostMsg_FormSubmitted, OnFormSubmitted)
+      IPC_MESSAGE_HANDLER_GENERIC(AutofillHostMsg_FormsSeen, )
+      IPC_MESSAGE_HANDLER_GENERIC(AutofillHostMsg_QueryFormFieldAutofill, )
+      IPC_MESSAGE_HANDLER_GENERIC(AutofillHostMsg_ShowAutofillDialog, )
+      IPC_MESSAGE_HANDLER_GENERIC(AutofillHostMsg_FillAutofillFormData, )
+      IPC_MESSAGE_HANDLER_GENERIC(AutofillHostMsg_DidFillAutofillFormData, )
+      IPC_MESSAGE_HANDLER_GENERIC(AutofillHostMsg_DidShowAutofillSuggestions, )
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
 

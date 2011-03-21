@@ -1,11 +1,12 @@
 #!/usr/bin/python
+
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Converts profile datasets to dictionary list for Autofill profiles.
 
-Used for test autofill.AutoFillTest.testMergeDuplicateProfilesInAutofill.
+Used for test autofill.AutofillTest.testMergeDuplicateProfilesInAutofill.
 Can be used as a stand alone script with -h to print out help text by running:
 python autofill_dataset_converter.py -h
 """

@@ -387,10 +387,10 @@ bool FirstRun::SetPersonalDataManagerFirstRunPref() {
   if (!local_state)
     return false;
   if (!local_state->FindPreference(
-          prefs::kAutoFillPersonalDataManagerFirstRun)) {
+          prefs::kAutofillPersonalDataManagerFirstRun)) {
     local_state->RegisterBooleanPref(
-        prefs::kAutoFillPersonalDataManagerFirstRun, false);
-    local_state->SetBoolean(prefs::kAutoFillPersonalDataManagerFirstRun, true);
+        prefs::kAutofillPersonalDataManagerFirstRun, false);
+    local_state->SetBoolean(prefs::kAutofillPersonalDataManagerFirstRun, true);
   }
   return true;
 }

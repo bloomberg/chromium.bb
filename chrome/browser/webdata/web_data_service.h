@@ -416,7 +416,7 @@ class WebDataService
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // AutoFill.
+  // Autofill.
   //
   //////////////////////////////////////////////////////////////////////////////
 
@@ -438,17 +438,17 @@ class WebDataService
   void RemoveFormValueForElementName(const string16& name,
                                      const string16& value);
 
-  // Schedules a task to add an AutoFill profile to the web database.
+  // Schedules a task to add an Autofill profile to the web database.
   void AddAutofillProfile(const AutofillProfile& profile);
 
-  // Schedules a task to update an AutoFill profile in the web database.
+  // Schedules a task to update an Autofill profile in the web database.
   void UpdateAutofillProfile(const AutofillProfile& profile);
 
-  // Schedules a task to remove an AutoFill profile from the web database.
+  // Schedules a task to remove an Autofill profile from the web database.
   // |guid| is the identifer of the profile to remove.
   void RemoveAutofillProfile(const std::string& guid);
 
-  // Initiates the request for all AutoFill profiles.  The method
+  // Initiates the request for all Autofill profiles.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
   // finished, with the profiles included in the argument |result|.  The
   // consumer owns the profiles.
@@ -474,7 +474,7 @@ class WebDataService
   // consumer owns the credit cards.
   Handle GetCreditCards(WebDataServiceConsumer* consumer);
 
-  // Removes AutoFill records from the database.
+  // Removes Autofill records from the database.
   void RemoveAutofillProfilesAndCreditCardsModifiedBetween(
       const base::Time& delete_begin,
       const base::Time& delete_end);
@@ -592,7 +592,7 @@ class WebDataService
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // AutoFill.
+  // Autofill.
   //
   //////////////////////////////////////////////////////////////////////////////
   void AddFormElementsImpl(
