@@ -21,7 +21,6 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_bridge.h"
-#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/mork_reader.h"
 #include "chrome/browser/importer/nss_decryptor.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -32,11 +31,9 @@
 #include "net/base/data_url.h"
 #include "webkit/glue/password_form.h"
 
-Firefox2Importer::Firefox2Importer() : parsing_bookmarks_html_file_(false) {
-}
+Firefox2Importer::Firefox2Importer() : parsing_bookmarks_html_file_(false) {}
 
-Firefox2Importer::~Firefox2Importer() {
-}
+Firefox2Importer::~Firefox2Importer() {}
 
 void Firefox2Importer::StartImport(const importer::ProfileInfo& profile_info,
                                    uint16 items,
