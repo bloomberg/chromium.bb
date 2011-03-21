@@ -46,7 +46,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"                     // ifdefed typedef.
-#include "media/audio/audio_buffers_state.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
@@ -285,15 +284,6 @@ struct ParamTraits<ExtensionExtent> {
 template <>
 struct ParamTraits<webkit_glue::WebAccessibility> {
   typedef webkit_glue::WebAccessibility param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-// Traits for AudioBuffersState structure.
-template <>
-struct ParamTraits<AudioBuffersState> {
-  typedef AudioBuffersState param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
@@ -845,46 +835,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_DisassociateFromPopupCount)
 // blocked popup until notified otherwise.
 IPC_MESSAGE_ROUTED1(ViewMsg_AllowScriptToClose,
                     bool /* script_can_close */)
-
-// Sent by AudioRendererHost to renderer to request an audio packet.
-IPC_MESSAGE_ROUTED2(ViewMsg_RequestAudioPacket,
-                    int /* stream id */,
-                    AudioBuffersState)
-
-// Tell the renderer process that the audio stream has been created, renderer
-// process would be given a ShareMemoryHandle that it should write to from
-// then on.
-IPC_MESSAGE_ROUTED3(ViewMsg_NotifyAudioStreamCreated,
-                    int /* stream id */,
-                    base::SharedMemoryHandle /* handle */,
-                    uint32 /* length */)
-
-// Tell the renderer process that a low latency audio stream has been created,
-// renderer process would be given a SyncSocket that it should write to from
-// then on.
-#if defined(OS_WIN)
-IPC_MESSAGE_ROUTED4(ViewMsg_NotifyLowLatencyAudioStreamCreated,
-                    int /* stream id */,
-                    base::SharedMemoryHandle /* handle */,
-                    base::SyncSocket::Handle /* socket handle */,
-                    uint32 /* length */)
-#else
-IPC_MESSAGE_ROUTED4(ViewMsg_NotifyLowLatencyAudioStreamCreated,
-                    int /* stream id */,
-                    base::SharedMemoryHandle /* handle */,
-                    base::FileDescriptor /* socket handle */,
-                    uint32 /* length */)
-#endif
-
-// Notification message sent from AudioRendererHost to renderer for state
-// update after the renderer has requested a Create/Start/Close.
-IPC_MESSAGE_ROUTED2(ViewMsg_NotifyAudioStreamStateChanged,
-                    int /* stream id */,
-                    ViewMsg_AudioStreamState_Params /* new state */)
-
-IPC_MESSAGE_ROUTED2(ViewMsg_NotifyAudioStreamVolume,
-                    int /* stream id */,
-                    double /* volume */)
 
 // Notification that a move or resize renderer's containing window has
 // started.
@@ -1897,45 +1847,6 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_SuddenTerminationChanged,
 IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetRootWindowRect,
                            gfx::NativeViewId /* window */,
                            gfx::Rect /* Out: Window location */)
-
-// Request that got sent to browser for creating an audio output stream
-IPC_MESSAGE_ROUTED3(ViewHostMsg_CreateAudioStream,
-                    int /* stream_id */,
-                    ViewHostMsg_Audio_CreateStream_Params,
-                    bool /* low-latency */)
-
-// Tell the browser the audio buffer prepared for stream
-// (render_view_id, stream_id) is filled and is ready to be consumed.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_NotifyAudioPacketReady,
-                    int /* stream_id */,
-                    uint32 /* packet size */)
-
-// Start buffering and play the audio stream specified by
-// (render_view_id, stream_id).
-IPC_MESSAGE_ROUTED1(ViewHostMsg_PlayAudioStream,
-                    int /* stream_id */)
-
-// Pause the audio stream specified by (render_view_id, stream_id).
-IPC_MESSAGE_ROUTED1(ViewHostMsg_PauseAudioStream,
-                    int /* stream_id */)
-
-// Discard all buffered audio data for the specified audio stream.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_FlushAudioStream,
-                    int /* stream_id */)
-
-// Close an audio stream specified by (render_view_id, stream_id).
-IPC_MESSAGE_ROUTED1(ViewHostMsg_CloseAudioStream,
-                    int /* stream_id */)
-
-// Get audio volume of the stream specified by (render_view_id, stream_id).
-IPC_MESSAGE_ROUTED1(ViewHostMsg_GetAudioVolume,
-                    int /* stream_id */)
-
-// Set audio volume of the stream specified by (render_view_id, stream_id).
-// TODO(hclam): change this to vector if we have channel numbers other than 2.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_SetAudioVolume,
-                    int /* stream_id */,
-                    double /* volume */)
 
 // A renderer sends this message when an extension process starts an API
 // request. The browser will always respond with a ViewMsg_ExtensionResponse.

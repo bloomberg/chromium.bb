@@ -19,6 +19,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_thread.h"
+#include "content/common/audio_messages.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"
 #include "content/common/file_system/file_system_dispatcher.h"
@@ -142,8 +143,7 @@ class PlatformAudioImpl
 
  private:
   // I/O thread backends to above functions.
-  void InitializeOnIOThread(
-      const ViewHostMsg_Audio_CreateStream_Params& params);
+  void InitializeOnIOThread(const AudioParameters& params);
   void StartPlaybackOnIOThread();
   void StopPlaybackOnIOThread();
   void ShutDownOnIOThread();
@@ -152,7 +152,7 @@ class PlatformAudioImpl
     LOG(FATAL) << "Should never get OnRequestPacket in PlatformAudioImpl";
   }
 
-  virtual void OnStateChanged(const ViewMsg_AudioStreamState_Params& state) {}
+  virtual void OnStateChanged(AudioStreamState state) {}
 
   virtual void OnCreated(base::SharedMemoryHandle handle, uint32 length) {
     LOG(FATAL) << "Should never get OnCreated in PlatformAudioImpl";
@@ -191,12 +191,12 @@ bool PlatformAudioImpl::Initialize(
 
   client_ = client;
 
-  ViewHostMsg_Audio_CreateStream_Params params;
-  params.params.format = AudioParameters::AUDIO_PCM_LINEAR;
-  params.params.channels = 2;
-  params.params.sample_rate = sample_rate;
-  params.params.bits_per_sample = 16;
-  params.params.samples_per_packet = sample_count;
+  AudioParameters params;
+  params.format = AudioParameters::AUDIO_PCM_LINEAR;
+  params.channels = 2;
+  params.sample_rate = sample_rate;
+  params.bits_per_sample = 16;
+  params.samples_per_packet = sample_count;
 
   filter_->message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(this, &PlatformAudioImpl::InitializeOnIOThread,
@@ -230,20 +230,19 @@ void PlatformAudioImpl::ShutDown() {
       NewRunnableMethod(this, &PlatformAudioImpl::ShutDownOnIOThread));
 }
 
-void PlatformAudioImpl::InitializeOnIOThread(
-    const ViewHostMsg_Audio_CreateStream_Params& params) {
+void PlatformAudioImpl::InitializeOnIOThread(const AudioParameters& params) {
   stream_id_ = filter_->AddDelegate(this);
-  filter_->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params, true));
+  filter_->Send(new AudioHostMsg_CreateStream(0, stream_id_, params, true));
 }
 
 void PlatformAudioImpl::StartPlaybackOnIOThread() {
   if (stream_id_)
-    filter_->Send(new ViewHostMsg_PlayAudioStream(0, stream_id_));
+    filter_->Send(new AudioHostMsg_PlayStream(0, stream_id_));
 }
 
 void PlatformAudioImpl::StopPlaybackOnIOThread() {
   if (stream_id_)
-    filter_->Send(new ViewHostMsg_PauseAudioStream(0, stream_id_));
+    filter_->Send(new AudioHostMsg_PauseStream(0, stream_id_));
 }
 
 void PlatformAudioImpl::ShutDownOnIOThread() {
@@ -251,7 +250,7 @@ void PlatformAudioImpl::ShutDownOnIOThread() {
   if (!stream_id_)
     return;
 
-  filter_->Send(new ViewHostMsg_CloseAudioStream(0, stream_id_));
+  filter_->Send(new AudioHostMsg_CloseStream(0, stream_id_));
   filter_->RemoveDelegate(stream_id_);
   stream_id_ = 0;
 

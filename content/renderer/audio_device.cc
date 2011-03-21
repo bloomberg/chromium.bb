@@ -6,8 +6,8 @@
 
 #include "base/singleton.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_thread.h"
+#include "content/common/audio_messages.h"
 #include "media/audio/audio_util.h"
 
 scoped_refptr<AudioMessageFilter> AudioDevice::filter_;
@@ -76,15 +76,14 @@ bool AudioDevice::Start() {
 
   stream_id_ = filter_->AddDelegate(this);
 
-  ViewHostMsg_Audio_CreateStream_Params params;
-  params.params.format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
-  params.params.channels = channels_;
-  params.params.sample_rate = static_cast<int>(sample_rate_);
-  params.params.bits_per_sample = 16;
-  params.params.samples_per_packet = buffer_size_;
+  AudioParameters params;
+  params.format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
+  params.channels = channels_;
+  params.sample_rate = static_cast<int>(sample_rate_);
+  params.bits_per_sample = 16;
+  params.samples_per_packet = buffer_size_;
 
-  filter_->Send(
-      new ViewHostMsg_CreateAudioStream(0, stream_id_, params, true));
+  filter_->Send(new AudioHostMsg_CreateStream(0, stream_id_, params, true));
 
   return true;
 }
@@ -104,7 +103,7 @@ void AudioDevice::OnDestroy() {
     return;
 
   filter_->RemoveDelegate(stream_id_);
-  filter_->Send(new ViewHostMsg_CloseAudioStream(0, stream_id_));
+  filter_->Send(new AudioHostMsg_CloseStream(0, stream_id_));
   stream_id_ = 0;
   if (audio_thread_.get()) {
     socket_->Close();
@@ -117,8 +116,7 @@ void AudioDevice::OnRequestPacket(AudioBuffersState buffers_state) {
   NOTIMPLEMENTED();
 }
 
-void AudioDevice::OnStateChanged(
-    const ViewMsg_AudioStreamState_Params& state) {
+void AudioDevice::OnStateChanged(AudioStreamState state) {
   // Not needed in this simple implementation.
   NOTIMPLEMENTED();
 }
@@ -158,7 +156,7 @@ void AudioDevice::OnLowLatencyCreated(
       new base::DelegateSimpleThread(this, "renderer_audio_thread"));
   audio_thread_->Start();
 
-  filter_->Send(new ViewHostMsg_PlayAudioStream(0, stream_id_));
+  filter_->Send(new AudioHostMsg_PlayStream(0, stream_id_));
 }
 
 void AudioDevice::OnVolume(double volume) {

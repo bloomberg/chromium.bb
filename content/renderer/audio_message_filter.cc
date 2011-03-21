@@ -6,8 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/audio_messages.h"
 #include "ipc/ipc_logging.h"
 
 AudioMessageFilter::AudioMessageFilter(int32 route_id)
@@ -44,13 +43,12 @@ bool AudioMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AudioMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_RequestAudioPacket, OnRequestPacket)
-    IPC_MESSAGE_HANDLER(ViewMsg_NotifyAudioStreamCreated, OnStreamCreated)
-    IPC_MESSAGE_HANDLER(ViewMsg_NotifyLowLatencyAudioStreamCreated,
+    IPC_MESSAGE_HANDLER(AudioMsg_RequestPacket, OnRequestPacket)
+    IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamCreated, OnStreamCreated)
+    IPC_MESSAGE_HANDLER(AudioMsg_NotifyLowLatencyStreamCreated,
                         OnLowLatencyStreamCreated)
-    IPC_MESSAGE_HANDLER(ViewMsg_NotifyAudioStreamStateChanged,
-                        OnStreamStateChanged)
-    IPC_MESSAGE_HANDLER(ViewMsg_NotifyAudioStreamVolume, OnStreamVolume)
+    IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamStateChanged, OnStreamStateChanged)
+    IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamVolume, OnStreamVolume)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -117,8 +115,7 @@ void AudioMessageFilter::OnLowLatencyStreamCreated(
 }
 
 void AudioMessageFilter::OnStreamStateChanged(
-    int stream_id,
-    const ViewMsg_AudioStreamState_Params& state) {
+    int stream_id, AudioStreamState state) {
   Delegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {
     DLOG(WARNING) << "Got audio stream event for a non-existent or removed"

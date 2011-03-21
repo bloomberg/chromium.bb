@@ -6,9 +6,8 @@
 
 #include <math.h>
 
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_thread.h"
+#include "content/common/audio_messages.h"
 #include "content/renderer/render_view.h"
 #include "media/base/filter_host.h"
 
@@ -209,16 +208,15 @@ void AudioRendererImpl::OnRequestPacket(AudioBuffersState buffers_state) {
   NotifyPacketReadyTask();
 }
 
-void AudioRendererImpl::OnStateChanged(
-    const ViewMsg_AudioStreamState_Params& state) {
+void AudioRendererImpl::OnStateChanged(AudioStreamState state) {
   DCHECK(MessageLoop::current() == io_loop_);
 
   base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
 
-  switch (state.state) {
-    case ViewMsg_AudioStreamState_Params::kError:
+  switch (state) {
+    case kAudioStreamError:
       // We receive this error if we counter an hardware error on the browser
       // side. We can proceed with ignoring the audio stream.
       // TODO(hclam): We need more handling of these kind of error. For example
@@ -227,8 +225,8 @@ void AudioRendererImpl::OnStateChanged(
       host()->DisableAudioRenderer();
       break;
     // TODO(hclam): handle these events.
-    case ViewMsg_AudioStreamState_Params::kPlaying:
-    case ViewMsg_AudioStreamState_Params::kPaused:
+    case kAudioStreamPlaying:
+    case kAudioStreamPaused:
       break;
     default:
       NOTREACHED();
@@ -253,34 +251,32 @@ void AudioRendererImpl::CreateStreamTask(const AudioParameters& audio_params) {
   stream_id_ = filter_->AddDelegate(this);
   io_loop_->AddDestructionObserver(this);
 
-  ViewHostMsg_Audio_CreateStream_Params params;
-  params.params = audio_params;
-
+  AudioParameters params_to_send(audio_params);
   // Let the browser choose packet size.
-  params.params.samples_per_packet = 0;
+  params_to_send.samples_per_packet = 0;
 
-  filter_->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params,
-                                                  false));
+  filter_->Send(new AudioHostMsg_CreateStream(
+      0, stream_id_, params_to_send, false));
 }
 
 void AudioRendererImpl::PlayTask() {
   DCHECK(MessageLoop::current() == io_loop_);
 
-  filter_->Send(new ViewHostMsg_PlayAudioStream(0, stream_id_));
+  filter_->Send(new AudioHostMsg_PlayStream(0, stream_id_));
 }
 
 void AudioRendererImpl::PauseTask() {
   DCHECK(MessageLoop::current() == io_loop_);
 
-  filter_->Send(new ViewHostMsg_PauseAudioStream(0, stream_id_));
+  filter_->Send(new AudioHostMsg_PauseStream(0, stream_id_));
 }
 
 void AudioRendererImpl::SeekTask() {
   DCHECK(MessageLoop::current() == io_loop_);
 
   // We have to pause the audio stream before we can flush.
-  filter_->Send(new ViewHostMsg_PauseAudioStream(0, stream_id_));
-  filter_->Send(new ViewHostMsg_FlushAudioStream(0, stream_id_));
+  filter_->Send(new AudioHostMsg_PauseStream(0, stream_id_));
+  filter_->Send(new AudioHostMsg_FlushStream(0, stream_id_));
 }
 
 void AudioRendererImpl::DestroyTask() {
@@ -289,7 +285,7 @@ void AudioRendererImpl::DestroyTask() {
   // Make sure we don't call destroy more than once.
   DCHECK_NE(0, stream_id_);
   filter_->RemoveDelegate(stream_id_);
-  filter_->Send(new ViewHostMsg_CloseAudioStream(0, stream_id_));
+  filter_->Send(new AudioHostMsg_CloseStream(0, stream_id_));
   io_loop_->RemoveDestructionObserver(this);
   stream_id_ = 0;
 }
@@ -300,7 +296,7 @@ void AudioRendererImpl::SetVolumeTask(double volume) {
   base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
-  filter_->Send(new ViewHostMsg_SetAudioVolume(0, stream_id_, volume));
+  filter_->Send(new AudioHostMsg_SetVolume(0, stream_id_, volume));
 }
 
 void AudioRendererImpl::NotifyPacketReadyTask() {
@@ -343,8 +339,7 @@ void AudioRendererImpl::NotifyPacketReadyTask() {
                                request_buffers_state_.pending_bytes == 0);
     pending_request_ = false;
     // Then tell browser process we are done filling into the buffer.
-    filter_->Send(
-        new ViewHostMsg_NotifyAudioPacketReady(0, stream_id_, filled));
+    filter_->Send(new AudioHostMsg_NotifyPacketReady(0, stream_id_, filled));
   }
 }
 

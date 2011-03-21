@@ -80,6 +80,7 @@ enum IPCMessageStart {
   DeviceOrientationMsgStart,
   DesktopNotificationMsgStart,
   GeolocationMsgStart,
+  AudioMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

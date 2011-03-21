@@ -7,10 +7,9 @@
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/sync_socket.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/audio_renderer_host.h"
+#include "content/common/audio_messages.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/fake_audio_output_stream.h"
@@ -74,13 +73,13 @@ class MockAudioRendererHost : public AudioRendererHost {
     // we are the renderer.
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(MockAudioRendererHost, *message)
-      IPC_MESSAGE_HANDLER(ViewMsg_RequestAudioPacket, OnRequestPacket)
-      IPC_MESSAGE_HANDLER(ViewMsg_NotifyAudioStreamCreated, OnStreamCreated)
-      IPC_MESSAGE_HANDLER(ViewMsg_NotifyLowLatencyAudioStreamCreated,
+      IPC_MESSAGE_HANDLER(AudioMsg_RequestPacket, OnRequestPacket)
+      IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamCreated, OnStreamCreated)
+      IPC_MESSAGE_HANDLER(AudioMsg_NotifyLowLatencyStreamCreated,
                           OnLowLatencyStreamCreated)
-      IPC_MESSAGE_HANDLER(ViewMsg_NotifyAudioStreamStateChanged,
+      IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamStateChanged,
                           OnStreamStateChanged)
-      IPC_MESSAGE_HANDLER(ViewMsg_NotifyAudioStreamVolume, OnStreamVolume)
+      IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamVolume, OnStreamVolume)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     EXPECT_TRUE(handled);
@@ -135,12 +134,12 @@ class MockAudioRendererHost : public AudioRendererHost {
   }
 
   void OnStreamStateChanged(const IPC::Message& msg, int stream_id,
-                            const ViewMsg_AudioStreamState_Params& params) {
-    if (params.state == ViewMsg_AudioStreamState_Params::kPlaying) {
+                            AudioStreamState state) {
+    if (state == kAudioStreamPlaying) {
       OnStreamPlaying(msg.routing_id(), stream_id);
-    } else if (params.state == ViewMsg_AudioStreamState_Params::kPaused) {
+    } else if (state == kAudioStreamPaused) {
       OnStreamPaused(msg.routing_id(), stream_id);
-    } else if (params.state == ViewMsg_AudioStreamState_Params::kError) {
+    } else if (state == kAudioStreamError) {
       OnStreamError(msg.routing_id(), stream_id);
     } else {
       FAIL() << "Unknown stream state";
@@ -206,15 +205,15 @@ class AudioRendererHostTest : public testing::Test {
     IPC::Message msg;
     msg.set_routing_id(kRouteId);
 
-    ViewHostMsg_Audio_CreateStream_Params params;
+    AudioParameters params;
     if (mock_stream_)
-      params.params.format = AudioParameters::AUDIO_MOCK;
+      params.format = AudioParameters::AUDIO_MOCK;
     else
-      params.params.format = AudioParameters::AUDIO_PCM_LINEAR;
-    params.params.channels = 2;
-    params.params.sample_rate = AudioParameters::kAudioCDSampleRate;
-    params.params.bits_per_sample = 16;
-    params.params.samples_per_packet = 0;
+      params.format = AudioParameters::AUDIO_PCM_LINEAR;
+    params.channels = 2;
+    params.sample_rate = AudioParameters::kAudioCDSampleRate;
+    params.bits_per_sample = 16;
+    params.samples_per_packet = 0;
 
     // Send a create stream message to the audio output stream and wait until
     // we receive the created message.
@@ -232,15 +231,15 @@ class AudioRendererHostTest : public testing::Test {
     IPC::Message msg;
     msg.set_routing_id(kRouteId);
 
-    ViewHostMsg_Audio_CreateStream_Params params;
+    AudioParameters params;
     if (mock_stream_)
-      params.params.format = AudioParameters::AUDIO_MOCK;
+      params.format = AudioParameters::AUDIO_MOCK;
     else
-      params.params.format = AudioParameters::AUDIO_PCM_LINEAR;
-    params.params.channels = 2;
-    params.params.sample_rate = AudioParameters::kAudioCDSampleRate;
-    params.params.bits_per_sample = 16;
-    params.params.samples_per_packet = 0;
+      params.format = AudioParameters::AUDIO_PCM_LINEAR;
+    params.channels = 2;
+    params.sample_rate = AudioParameters::kAudioCDSampleRate;
+    params.bits_per_sample = 16;
+    params.samples_per_packet = 0;
 
     // Send a create stream message to the audio output stream and wait until
     // we receive the created message.

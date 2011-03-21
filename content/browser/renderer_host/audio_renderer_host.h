@@ -67,7 +67,7 @@
 #include "media/audio/simple_sources.h"
 
 class AudioManager;
-struct ViewHostMsg_Audio_CreateStream_Params;
+struct AudioParameters;
 
 class AudioRendererHost : public BrowserMessageFilter,
                           public media::AudioOutputController::EventHandler {
@@ -143,7 +143,7 @@ class AudioRendererHost : public BrowserMessageFilter,
   // successful this object would keep an internal entry of the stream for the
   // required properties.
   void OnCreateStream(const IPC::Message& msg, int stream_id,
-                      const ViewHostMsg_Audio_CreateStream_Params& params,
+                      const AudioParameters& params,
                       bool low_latency);
 
   // Play the audio stream referenced by |stream_id|.

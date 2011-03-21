@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/audio_messages.h"
 #include "content/renderer/audio_message_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,7 +20,7 @@ class MockAudioDelegate : public AudioMessageFilter::Delegate {
     buffers_state_ = buffers_state;
   }
 
-  virtual void OnStateChanged(const ViewMsg_AudioStreamState_Params& state) {
+  virtual void OnStateChanged(AudioStreamState state) {
     state_changed_received_ = true;
     state_ = state;
   }
@@ -48,7 +47,7 @@ class MockAudioDelegate : public AudioMessageFilter::Delegate {
     buffers_state_.timestamp = base::Time();
 
     state_changed_received_ = false;
-    state_.state = ViewMsg_AudioStreamState_Params::kError;
+    state_ = kAudioStreamError;
 
     created_received_ = false;
     handle_ = base::SharedMemory::NULLHandle();
@@ -62,7 +61,7 @@ class MockAudioDelegate : public AudioMessageFilter::Delegate {
   AudioBuffersState buffers_state() { return buffers_state_; }
 
   bool state_changed_received() { return state_changed_received_; }
-  ViewMsg_AudioStreamState_Params state() { return state_; }
+  AudioStreamState state() { return state_; }
 
   bool created_received() { return created_received_; }
   base::SharedMemoryHandle handle() { return handle_; }
@@ -76,7 +75,7 @@ class MockAudioDelegate : public AudioMessageFilter::Delegate {
   AudioBuffersState buffers_state_;
 
   bool state_changed_received_;
-  ViewMsg_AudioStreamState_Params state_;
+  AudioStreamState state_;
 
   bool created_received_;
   base::SharedMemoryHandle handle_;
@@ -99,12 +98,12 @@ TEST(AudioMessageFilterTest, Basic) {
   MockAudioDelegate delegate;
   int stream_id = filter->AddDelegate(&delegate);
 
-  // ViewMsg_RequestAudioPacket
+  // AudioMsg_RequestPacket
   const int kSizeInBuffer = 1024;
   AudioBuffersState buffers_state(kSizeInBuffer, 0);
 
   EXPECT_FALSE(delegate.request_packet_received());
-  filter->OnMessageReceived(ViewMsg_RequestAudioPacket(
+  filter->OnMessageReceived(AudioMsg_RequestPacket(
       kRouteId, stream_id, buffers_state));
   EXPECT_TRUE(delegate.request_packet_received());
   EXPECT_EQ(kSizeInBuffer, delegate.buffers_state().pending_bytes);
@@ -112,34 +111,33 @@ TEST(AudioMessageFilterTest, Basic) {
   EXPECT_TRUE(buffers_state.timestamp == delegate.buffers_state().timestamp);
   delegate.Reset();
 
-  // ViewMsg_NotifyAudioStreamStateChanged
-  const ViewMsg_AudioStreamState_Params kState(
-      ViewMsg_AudioStreamState_Params::kPlaying);
+  // AudioMsg_NotifyStreamStateChanged
   EXPECT_FALSE(delegate.state_changed_received());
   filter->OnMessageReceived(
-      ViewMsg_NotifyAudioStreamStateChanged(kRouteId, stream_id, kState));
+      AudioMsg_NotifyStreamStateChanged(kRouteId, stream_id,
+      kAudioStreamPlaying));
   EXPECT_TRUE(delegate.state_changed_received());
-  EXPECT_TRUE(kState.state == delegate.state().state);
+  EXPECT_TRUE(kAudioStreamPlaying == delegate.state());
   delegate.Reset();
 
-  // ViewMsg_NotifyAudioStreamCreated
+  // AudioMsg_NotifyStreamCreated
   const uint32 kLength = 1024;
   EXPECT_FALSE(delegate.created_received());
   filter->OnMessageReceived(
-      ViewMsg_NotifyAudioStreamCreated(kRouteId,
-                                       stream_id,
-                                       base::SharedMemory::NULLHandle(),
-                                       kLength));
+      AudioMsg_NotifyStreamCreated(kRouteId,
+                                   stream_id,
+                                   base::SharedMemory::NULLHandle(),
+                                   kLength));
   EXPECT_TRUE(delegate.created_received());
   EXPECT_FALSE(base::SharedMemory::IsHandleValid(delegate.handle()));
   EXPECT_EQ(kLength, delegate.length());
   delegate.Reset();
 
-  // ViewMsg_NotifyAudioStreamVolume
+  // AudioMsg_NotifyStreamVolume
   const double kVolume = 1.0;
   EXPECT_FALSE(delegate.volume_received());
   filter->OnMessageReceived(
-      ViewMsg_NotifyAudioStreamVolume(kRouteId, stream_id, kVolume));
+      AudioMsg_NotifyStreamVolume(kRouteId, stream_id, kVolume));
   EXPECT_TRUE(delegate.volume_received());
   EXPECT_EQ(kVolume, delegate.volume());
   delegate.Reset();
@@ -163,7 +161,7 @@ TEST(AudioMessageFilterTest, Delegates) {
   EXPECT_FALSE(delegate1.request_packet_received());
   EXPECT_FALSE(delegate2.request_packet_received());
   filter->OnMessageReceived(
-      ViewMsg_RequestAudioPacket(kRouteId, stream_id1, AudioBuffersState()));
+      AudioMsg_RequestPacket(kRouteId, stream_id1, AudioBuffersState()));
   EXPECT_TRUE(delegate1.request_packet_received());
   EXPECT_FALSE(delegate2.request_packet_received());
   delegate1.Reset();
@@ -171,7 +169,7 @@ TEST(AudioMessageFilterTest, Delegates) {
   EXPECT_FALSE(delegate1.request_packet_received());
   EXPECT_FALSE(delegate2.request_packet_received());
   filter->OnMessageReceived(
-      ViewMsg_RequestAudioPacket(kRouteId, stream_id2, AudioBuffersState()));
+      AudioMsg_RequestPacket(kRouteId, stream_id2, AudioBuffersState()));
   EXPECT_FALSE(delegate1.request_packet_received());
   EXPECT_TRUE(delegate2.request_packet_received());
   delegate2.Reset();
@@ -179,21 +177,20 @@ TEST(AudioMessageFilterTest, Delegates) {
   // Send a message of a different route id, a message is not received.
   EXPECT_FALSE(delegate1.request_packet_received());
   filter->OnMessageReceived(
-      ViewMsg_RequestAudioPacket(kRouteId + 1, stream_id1,
-                                 AudioBuffersState()));
+      AudioMsg_RequestPacket(kRouteId + 1, stream_id1, AudioBuffersState()));
   EXPECT_FALSE(delegate1.request_packet_received());
 
   // Remove the delegates. Make sure they won't get called.
   filter->RemoveDelegate(stream_id1);
   EXPECT_FALSE(delegate1.request_packet_received());
   filter->OnMessageReceived(
-      ViewMsg_RequestAudioPacket(kRouteId, stream_id1, AudioBuffersState()));
+      AudioMsg_RequestPacket(kRouteId, stream_id1, AudioBuffersState()));
   EXPECT_FALSE(delegate1.request_packet_received());
 
   filter->RemoveDelegate(stream_id2);
   EXPECT_FALSE(delegate2.request_packet_received());
   filter->OnMessageReceived(
-      ViewMsg_RequestAudioPacket(kRouteId, stream_id2, AudioBuffersState()));
+      AudioMsg_RequestPacket(kRouteId, stream_id2, AudioBuffersState()));
   EXPECT_FALSE(delegate2.request_packet_received());
 
   message_loop.RunAllPending();

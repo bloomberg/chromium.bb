@@ -15,10 +15,9 @@
 #include "base/id_map.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
+#include "content/common/audio_stream_state.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/audio/audio_buffers_state.h"
-
-struct ViewMsg_AudioStreamState_Params;
 
 namespace base {
 class Time;
@@ -32,8 +31,7 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
     virtual void OnRequestPacket(AudioBuffersState buffers_state) = 0;
 
     // Called when state of an audio stream has changed in the browser process.
-    virtual void OnStateChanged(
-        const ViewMsg_AudioStreamState_Params& state) = 0;
+    virtual void OnStateChanged(AudioStreamState state) = 0;
 
     // Called when an audio stream has been created in the browser process.
     virtual void OnCreated(base::SharedMemoryHandle handle, uint32 length) = 0;
@@ -100,8 +98,7 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   // Received when internal state of browser process' audio output device has
   // changed.
-  void OnStreamStateChanged(int stream_id,
-                            const ViewMsg_AudioStreamState_Params& state);
+  void OnStreamStateChanged(int stream_id, AudioStreamState state);
 
   // Notification of volume property of an audio output stream.
   void OnStreamVolume(int stream_id, double volume);

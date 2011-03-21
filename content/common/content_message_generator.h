@@ -5,6 +5,7 @@
 // Multiply-included file, hence no include guard.
 
 #include "content/common/appcache_messages.h"
+#include "content/common/audio_messages.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/database_messages.h"

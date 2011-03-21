@@ -26,7 +26,6 @@
 #include "content/common/serialized_script_value.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_param_traits.h"
-#include "media/audio/audio_parameters.h"
 #include "net/base/host_port_pair.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -108,28 +107,6 @@ struct ViewMsg_Navigate_Params {
 
   // Extra headers (separated by \n) to send during the request.
   std::string extra_headers;
-};
-
-// Current status of the audio output stream in the browser process. Browser
-// sends information about the current playback state and error to the
-// renderer process using this type.
-struct ViewMsg_AudioStreamState_Params {
-  enum State {
-    kPlaying,
-    kPaused,
-    kError
-  };
-
-  ViewMsg_AudioStreamState_Params()
-      : state(kPlaying) {
-  }
-
-  explicit ViewMsg_AudioStreamState_Params(State s)
-      : state(s) {
-  }
-
-  // Carries the current playback state.
-  State state;
 };
 
 // The user has completed a find-in-page; this type defines what actions the
@@ -545,17 +522,6 @@ struct ViewHostMsg_DidPrintPage_Params {
   bool has_visible_overlays;
 };
 
-// Parameters for creating an audio output stream.
-struct ViewHostMsg_Audio_CreateStream_Params {
-  ViewHostMsg_Audio_CreateStream_Params();
-  ~ViewHostMsg_Audio_CreateStream_Params();
-
-  // Parameters for the new audio stream.
-  // If |samples_per_packet| is set 0, the audio packet size is selected
-  // automatically by the browser process.
-  AudioParameters params;
-};
-
 // This message is used for supporting popup menus on Mac OS X using native
 // Cocoa controls. The renderer sends us this message which we use to populate
 // the popup menu.
@@ -866,14 +832,6 @@ struct ParamTraits<ViewMsg_Navigate_Params> {
 };
 
 template <>
-struct ParamTraits<ViewMsg_AudioStreamState_Params> {
-  typedef ViewMsg_AudioStreamState_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
 struct ParamTraits<ViewMsg_StopFinding_Params> {
   typedef ViewMsg_StopFinding_Params param_type;
   static void Write(Message* m, const param_type& p);
@@ -956,14 +914,6 @@ struct ParamTraits<ViewHostMsg_DidPreviewDocument_Params> {
 template <>
 struct ParamTraits<ViewHostMsg_DidPrintPage_Params> {
   typedef ViewHostMsg_DidPrintPage_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewHostMsg_Audio_CreateStream_Params> {
-  typedef ViewHostMsg_Audio_CreateStream_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

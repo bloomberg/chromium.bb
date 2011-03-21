@@ -7,9 +7,8 @@
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "content/browser/renderer_host/audio_sync_reader.h"
+#include "content/common/audio_messages.h"
 #include "ipc/ipc_logging.h"
 
 namespace {
@@ -167,7 +166,7 @@ void AudioRendererHost::DoCompleteCreation(
       return;
     }
 
-    Send(new ViewMsg_NotifyLowLatencyAudioStreamCreated(
+    Send(new AudioMsg_NotifyLowLatencyStreamCreated(
         entry->render_view_id, entry->stream_id, foreign_memory_handle,
         foreign_socket_handle, entry->shared_memory.created_size()));
     return;
@@ -175,7 +174,7 @@ void AudioRendererHost::DoCompleteCreation(
 
   // The normal audio stream has created, send a message to the renderer
   // process.
-  Send(new ViewMsg_NotifyAudioStreamCreated(
+  Send(new AudioMsg_NotifyStreamCreated(
       entry->render_view_id, entry->stream_id, foreign_memory_handle,
       entry->shared_memory.created_size()));
 }
@@ -188,10 +187,8 @@ void AudioRendererHost::DoSendPlayingMessage(
   if (!entry)
     return;
 
-  ViewMsg_AudioStreamState_Params params;
-  params.state = ViewMsg_AudioStreamState_Params::kPlaying;
-  Send(new ViewMsg_NotifyAudioStreamStateChanged(
-      entry->render_view_id, entry->stream_id, params));
+  Send(new AudioMsg_NotifyStreamStateChanged(
+    entry->render_view_id, entry->stream_id, kAudioStreamPlaying));
 }
 
 void AudioRendererHost::DoSendPausedMessage(
@@ -202,10 +199,8 @@ void AudioRendererHost::DoSendPausedMessage(
   if (!entry)
     return;
 
-  ViewMsg_AudioStreamState_Params params;
-  params.state = ViewMsg_AudioStreamState_Params::kPaused;
-  Send(new ViewMsg_NotifyAudioStreamStateChanged(
-      entry->render_view_id, entry->stream_id, params));
+  Send(new AudioMsg_NotifyStreamStateChanged(
+      entry->render_view_id, entry->stream_id, kAudioStreamPaused));
 }
 
 void AudioRendererHost::DoRequestMoreData(
@@ -220,7 +215,7 @@ void AudioRendererHost::DoRequestMoreData(
 
   DCHECK(!entry->controller->LowLatencyMode());
   entry->pending_buffer_request = true;
-  Send(new ViewMsg_RequestAudioPacket(
+  Send(new AudioMsg_RequestPacket(
       entry->render_view_id, entry->stream_id, buffers_state));
 }
 
@@ -241,14 +236,14 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
                                           bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(AudioRendererHost, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateAudioStream, OnCreateStream)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PlayAudioStream, OnPlayStream)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PauseAudioStream, OnPauseStream)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FlushAudioStream, OnFlushStream)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CloseAudioStream, OnCloseStream)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_NotifyAudioPacketReady, OnNotifyPacketReady)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetAudioVolume, OnGetVolume)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetAudioVolume, OnSetVolume)
+    IPC_MESSAGE_HANDLER(AudioHostMsg_CreateStream, OnCreateStream)
+    IPC_MESSAGE_HANDLER(AudioHostMsg_PlayStream, OnPlayStream)
+    IPC_MESSAGE_HANDLER(AudioHostMsg_PauseStream, OnPauseStream)
+    IPC_MESSAGE_HANDLER(AudioHostMsg_FlushStream, OnFlushStream)
+    IPC_MESSAGE_HANDLER(AudioHostMsg_CloseStream, OnCloseStream)
+    IPC_MESSAGE_HANDLER(AudioHostMsg_NotifyPacketReady, OnNotifyPacketReady)
+    IPC_MESSAGE_HANDLER(AudioHostMsg_GetVolume, OnGetVolume)
+    IPC_MESSAGE_HANDLER(AudioHostMsg_SetVolume, OnSetVolume)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -257,11 +252,11 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
 
 void AudioRendererHost::OnCreateStream(
     const IPC::Message& msg, int stream_id,
-    const ViewHostMsg_Audio_CreateStream_Params& params, bool low_latency) {
+    const AudioParameters& params, bool low_latency) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(LookupById(msg.routing_id(), stream_id) == NULL);
 
-  AudioParameters audio_params(params.params);
+  AudioParameters audio_params(params);
 
   // Select the hardware packet size if not specified.
   if (!audio_params.samples_per_packet) {
@@ -408,10 +403,8 @@ void AudioRendererHost::OnNotifyPacketReady(
 
 void AudioRendererHost::SendErrorMessage(int32 render_view_id,
                                          int32 stream_id) {
-  ViewMsg_AudioStreamState_Params state;
-  state.state = ViewMsg_AudioStreamState_Params::kError;
-  Send(new ViewMsg_NotifyAudioStreamStateChanged(
-      render_view_id, stream_id, state));
+  Send(new AudioMsg_NotifyStreamStateChanged(
+      render_view_id, stream_id, kAudioStreamError));
 }
 
 void AudioRendererHost::DeleteEntries() {

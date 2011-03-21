@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/process_util.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/audio_messages.h"
 #include "content/renderer/media/audio_renderer_impl.h"
 #include "media/base/data_buffer.h"
 #include "media/base/media_format.h"
@@ -95,14 +94,6 @@ TEST_F(AudioRendererImplTest, SetVolume) {
 }
 
 TEST_F(AudioRendererImplTest, Stop) {
-  // Declare some state messages.
-  const ViewMsg_AudioStreamState_Params kError(
-      ViewMsg_AudioStreamState_Params::kError);
-  const ViewMsg_AudioStreamState_Params kPlaying(
-      ViewMsg_AudioStreamState_Params::kPlaying);
-  const ViewMsg_AudioStreamState_Params kPaused(
-      ViewMsg_AudioStreamState_Params::kPaused);
-
   // Execute Stop() codepath to create an IPC message.
   renderer_->Stop(media::NewExpectedCallback());
   message_loop_->RunAllPending();
@@ -110,9 +101,9 @@ TEST_F(AudioRendererImplTest, Stop) {
   // Run AudioMessageFilter::Delegate methods, which can be executed after being
   // stopped.  AudioRendererImpl shouldn't create any messages.
   renderer_->OnRequestPacket(AudioBuffersState(kSize, 0));
-  renderer_->OnStateChanged(kError);
-  renderer_->OnStateChanged(kPlaying);
-  renderer_->OnStateChanged(kPaused);
+  renderer_->OnStateChanged(kAudioStreamError);
+  renderer_->OnStateChanged(kAudioStreamPlaying);
+  renderer_->OnStateChanged(kAudioStreamPaused);
   renderer_->OnCreated(shared_mem_.handle(), kSize);
   renderer_->OnVolume(0.5);
 
