@@ -238,14 +238,19 @@
           ],
         }],
         ['OS=="linux"', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+          ],
           'sources': [
             'host/capturer_linux.cc',
             'host/capturer_linux.h',
             'host/event_executor_linux.cc',
             'host/event_executor_linux.h',
+            'host/user_authenticator_linux.cc',
             'host/user_authenticator_pam.cc',
             'host/user_authenticator_pam.h',
-            'host/user_authenticator_linux.cc'
+            'host/x_server_pixel_buffer.cc',
+            'host/x_server_pixel_buffer.h',
           ],
           'link_settings': {
             'libraries': [
@@ -253,6 +258,7 @@
               '-lXdamage',
               '-lXtst',
               '-lpam',
+              '-lXext'
             ],
           },
         }],

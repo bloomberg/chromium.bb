@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,31 +11,9 @@
 #include <set>
 
 #include "remoting/base/types.h"
+#include "remoting/host/x_server_pixel_buffer.h"
 
 namespace remoting {
-
-static int IndexOfLowestBit(unsigned int mask) {
-  int i = 0;
-
-  // Extra-special do-while premature optimization, just to make dmaclach@
-  // happy.
-  do {
-    if (mask & 1) {
-      return i;
-    }
-    mask >>= 1;
-    ++i;
-  } while (mask);
-
-  NOTREACHED() << "mask should never be 0.";
-  return 0;
-}
-
-static bool IsRgb32(XImage* image) {
-  return (IndexOfLowestBit(image->red_mask) == 16) &&
-         (IndexOfLowestBit(image->green_mask) == 8) &&
-         (IndexOfLowestBit(image->blue_mask) == 0);
-}
 
 // Private Implementation pattern to avoid leaking the X11 types into the header
 // file.
@@ -53,10 +31,8 @@ class CapturerLinuxPimpl {
   void DeinitXlib();
   // We expose two forms of blitting to handle variations in the pixel format.
   // In FastBlit, the operation is effectively a memcpy.
-  void FastBlit(XImage* image, int dest_x, int dest_y,
-                CaptureData* capture_data);
-  void SlowBlit(XImage* image, int dest_x, int dest_y,
-                CaptureData* capture_data);
+  void FastBlit(uint8* image, const gfx::Rect& rect, CaptureData* capture_data);
+  void SlowBlit(uint8* image, const gfx::Rect& rect, CaptureData* capture_data);
 
   static const int kBytesPerPixel = 4;
 
@@ -75,6 +51,9 @@ class CapturerLinuxPimpl {
   Damage damage_handle_;
   int damage_event_base_;
   int damage_error_base_;
+
+  // Access to the X Server's pixel buffer.
+  XServerPixelBuffer x_server_pixel_buffer_;
 
   // Capture state.
   uint8* buffers_[CapturerLinux::kNumBuffers];
@@ -149,6 +128,8 @@ bool CapturerLinuxPimpl::Init() {
     LOG(ERROR) << "Unable to open display";
     return false;
   }
+
+  x_server_pixel_buffer_.Init(display_);
 
   root_window_ = RootWindow(display_, DefaultScreen(display_));
   if (root_window_ == BadValue) {
@@ -273,21 +254,18 @@ void CapturerLinuxPimpl::CaptureRects(
   for (InvalidRects::const_iterator it = rects.begin();
        it != rects.end();
        ++it) {
-    XImage* image = XGetImage(display_, root_window_, it->x(), it->y(),
-                              it->width(), it->height(), AllPlanes, ZPixmap);
-
+    uint8* image = x_server_pixel_buffer_.CaptureRect(*it);
     // Check if we can fastpath the blit.
-    if ((image->depth == 24 || image->depth == 32) &&
-        image->bits_per_pixel == 32 &&
-        IsRgb32(image)) {
+    int depth = x_server_pixel_buffer_.GetDepth();
+    int bpp = x_server_pixel_buffer_.GetBitsPerPixel();
+    bool is_rgb = x_server_pixel_buffer_.IsRgb();
+    if ((depth == 24 || depth == 32) && bpp == 32 && is_rgb) {
       VLOG(3) << "Fast blitting";
-      FastBlit(image, it->x(), it->y(), capture_data);
+      FastBlit(image, *it, capture_data);
     } else {
       VLOG(3) << "Slow blitting";
-      SlowBlit(image, it->x(), it->y(), capture_data);
+      SlowBlit(image, *it, capture_data);
     }
-
-    XDestroyImage(image);
   }
 
   // TODO(ajwong): We should only repair the rects that were copied!
@@ -314,60 +292,76 @@ void CapturerLinuxPimpl::DeinitXlib() {
   }
 }
 
-void CapturerLinuxPimpl::FastBlit(XImage* image, int dest_x, int dest_y,
+void CapturerLinuxPimpl::FastBlit(uint8* image, const gfx::Rect& rect,
                                   CaptureData* capture_data) {
-  uint8* src_pos = reinterpret_cast<uint8*>(image->data);
+  uint8* src_pos = image;
+  int src_stride = x_server_pixel_buffer_.GetStride();
+  int dst_x = rect.x(), dst_y = rect.y();
 
   DataPlanes planes = capture_data->data_planes();
   uint8* dst_buffer = planes.data[0];
 
   const int dst_stride = planes.strides[0];
-  const int src_stride = image->bytes_per_line;
 
-  uint8* dst_pos = dst_buffer + dst_stride * dest_y;
-  dst_pos += dest_x * kBytesPerPixel;
+  uint8* dst_pos = dst_buffer + dst_stride * dst_y;
+  dst_pos += dst_x * kBytesPerPixel;
 
-  for (int y = 0; y < image->height; ++y) {
-    memcpy(dst_pos, src_pos, image->width * kBytesPerPixel);
-
+  int height = rect.height(), row_bytes = rect.width() * kBytesPerPixel;
+  for (int y = 0; y < height; ++y) {
+    memcpy(dst_pos, src_pos, row_bytes);
     src_pos += src_stride;
     dst_pos += dst_stride;
   }
 }
 
-void CapturerLinuxPimpl::SlowBlit(XImage* image, int dest_x, int dest_y,
+void CapturerLinuxPimpl::SlowBlit(uint8* image, const gfx::Rect& rect,
                                   CaptureData* capture_data) {
   DataPlanes planes = capture_data->data_planes();
   uint8* dst_buffer = planes.data[0];
   const int dst_stride = planes.strides[0];
+  int src_stride = x_server_pixel_buffer_.GetStride();
+  int dst_x = rect.x(), dst_y = rect.y();
+  int width = rect.width(), height = rect.height();
 
-  unsigned int red_shift = IndexOfLowestBit(image->red_mask);
-  unsigned int blue_shift = IndexOfLowestBit(image->blue_mask);
-  unsigned int green_shift = IndexOfLowestBit(image->green_mask);
+  unsigned int red_mask = x_server_pixel_buffer_.GetRedMask();
+  unsigned int blue_mask = x_server_pixel_buffer_.GetBlueMask();
+  unsigned int green_mask = x_server_pixel_buffer_.GetGreenMask();
+  unsigned int red_shift = x_server_pixel_buffer_.GetRedShift();
+  unsigned int blue_shift = x_server_pixel_buffer_.GetBlueShift();
+  unsigned int green_shift = x_server_pixel_buffer_.GetGreenShift();
 
-  unsigned int max_red = image->red_mask >> red_shift;
-  unsigned int max_blue = image->blue_mask >> blue_shift;
-  unsigned int max_green = image->green_mask >> green_shift;
+  unsigned int max_red = red_mask >> red_shift;
+  unsigned int max_blue = blue_mask >> blue_shift;
+  unsigned int max_green = green_mask >> green_shift;
 
-  // Produce an upside-down image.
-  uint8* dst_pos = dst_buffer + dst_stride * (height_ - dest_y - 1);
-  dst_pos += dest_x * kBytesPerPixel;
-  // TODO(jamiewalch): Optimize, perhaps using MMX code or by converting to
+  unsigned int bits_per_pixel = x_server_pixel_buffer_.GetBitsPerPixel();
+
+  uint8* dst_pos = dst_buffer + dst_stride * dst_y;
+  uint8* src_pos = image;
+  dst_pos += dst_x * kBytesPerPixel;
+  // TODO(hclam): Optimize, perhaps using MMX code or by converting to
   // YUV directly
-  for (int y = 0; y < image->height; y++) {
+  for (int y = 0; y < height; y++) {
     uint32_t* dst_pos_32 = reinterpret_cast<uint32_t*>(dst_pos);
-    for (int x = 0; x < image->width; x++) {
-      unsigned long pixel = XGetPixel(image, x, y);
-      uint32_t r = (((pixel & image->red_mask) >> red_shift) * max_red) / 255;
-      uint32_t g =
-          (((pixel & image->green_mask) >> green_shift) * max_blue) / 255;
-      uint32_t b =
-          (((pixel & image->blue_mask) >> blue_shift) * max_green) / 255;
-
+    uint32_t* src_pos_32 = reinterpret_cast<uint32_t*>(src_pos);
+    uint16_t* src_pos_16 = reinterpret_cast<uint16_t*>(src_pos);
+    for (int x = 0; x < width; x++) {
+      // Dereference through an appropriately-aligned pointer.
+      uint32_t pixel;
+      if (bits_per_pixel == 32)
+        pixel = src_pos_32[x];
+      else if (bits_per_pixel == 16)
+        pixel = src_pos_16[x];
+      else
+        pixel = src_pos[x];
+      uint32_t r = (((pixel & red_mask) >> red_shift) * 255) / max_red;
+      uint32_t b = (((pixel & blue_mask) >> blue_shift) * 255) / max_blue;
+      uint32_t g = (((pixel & green_mask) >> green_shift) * 255) / max_green;
       // Write as 32-bit RGB.
       dst_pos_32[x] = r << 16 | g << 8 | b;
     }
-    dst_pos -= dst_stride;
+    dst_pos += dst_stride;
+    src_pos += src_stride;
   }
 }
 
