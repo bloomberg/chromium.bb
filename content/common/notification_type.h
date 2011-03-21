@@ -992,6 +992,21 @@ class NotificationType {
     // object.
     EXTENSION_PREF_CHANGED,
 
+    // Sent when the extension updater starts checking for updates to installed
+    // extensions. The source is a Profile, and there are no details.
+    EXTENSION_UPDATING_STARTED,
+
+    // Sent when the extension updater is finished checking for updates to
+    // installed extensions. The source is a Profile, and there are no details.
+    // NOTE: It's possible that there are extension updates still being
+    // installed by the extension service at the time this notification fires.
+    EXTENSION_UPDATING_FINISHED,
+
+    // The extension updater found an update and will attempt to download and
+    // install it. The source is a Profile, and the details are an extension id
+    // (const std::string).
+    EXTENSION_UPDATE_FOUND,
+
     // Desktop Notifications ---------------------------------------------------
 
     // This notification is sent when a balloon is connected to a renderer

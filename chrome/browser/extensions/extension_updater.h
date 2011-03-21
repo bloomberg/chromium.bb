@@ -241,8 +241,12 @@ class ExtensionUpdater
 
   // Called when a crx file has been written into a temp file, and is ready
   // to be installed.
-  void OnCRXFileWritten(const std::string& id, const FilePath& path,
+  void OnCRXFileWritten(const std::string& id,
+                        const FilePath& path,
                         const GURL& download_url);
+
+  // Called when we encountered an error writing a crx file to a temp file.
+  void OnCRXFileWriteError(const std::string& id);
 
   // Verifies downloaded blacklist. Based on the blacklist, calls extension
   // service to unload blacklisted extensions and update pref.
@@ -265,8 +269,9 @@ class ExtensionUpdater
     const std::string& hash, const std::string& version);
 
   // Once a manifest is parsed, this starts fetches of any relevant crx files.
+  // If |results| is null, it means something went wrong when parsing it.
   void HandleManifestResults(const ManifestFetchData& fetch_data,
-                             const UpdateManifest::Results& results);
+                             const UpdateManifest::Results* results);
 
   // Determines the version of an existing extension.
   // Returns true on success and false on failures.
@@ -276,6 +281,22 @@ class ExtensionUpdater
   // applicable (are actually a new version, etc.) in |result|.
   std::vector<int> DetermineUpdates(const ManifestFetchData& fetch_data,
       const UpdateManifest::Results& possible_updates);
+
+  // Send a notification that update checks are starting.
+  void NotifyStarted();
+
+  // Send a notification that an update was found for extension_id that we'll
+  // attempt to download and install.
+  void NotifyUpdateFound(const std::string& extension_id);
+
+  // Send a notification if we're finished updating.
+  void NotifyIfFinished();
+
+  // Adds a set of ids to in_progress_ids_.
+  void AddToInProgress(const std::set<std::string>& ids);
+
+  // Removes a set of ids from in_progress_ids_.
+  void RemoveFromInProgress(const std::set<std::string>& ids);
 
   // Whether Start() has been called but not Stop().
   bool alive_;
@@ -305,6 +326,9 @@ class ExtensionUpdater
 
   scoped_refptr<ExtensionUpdaterFileHandler> file_handler_;
   bool blacklist_checks_enabled_;
+
+  // The ids of extensions that have in-progress update checks.
+  std::set<std::string> in_progress_ids_;
 
   FRIEND_TEST(ExtensionUpdaterTest, TestStartUpdateCheckMemory);
   FRIEND_TEST(ExtensionUpdaterTest, TestAfterStopBehavior);

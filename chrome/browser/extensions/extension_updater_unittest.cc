@@ -961,7 +961,7 @@ class ExtensionUpdaterTest : public testing::Test {
     UpdateManifest::Results results;
     results.daystart_elapsed_seconds = 750;
 
-    updater->HandleManifestResults(fetch_data, results);
+    updater->HandleManifestResults(fetch_data, &results);
     Time last_ping_day =
         service.extension_prefs()->LastPingDay(extension->id());
     EXPECT_FALSE(last_ping_day.is_null());
@@ -1146,8 +1146,11 @@ TEST(ExtensionUpdaterTest, TestAfterStopBehavior) {
     updater->OnCRXFileWritten("", FilePath(), GURL());
     GURL dummy_gurl;
     ManifestFetchData dummy_manifest_fetch_data(dummy_gurl);
-    updater->HandleManifestResults(dummy_manifest_fetch_data,
-                                   UpdateManifest::Results());
+    UpdateManifest::Results results;
+    updater->HandleManifestResults(dummy_manifest_fetch_data, &results);
+    // The manifest results can be NULL if something goes wrong when parsing
+    // the manifest.  HandleManifestResults should handle this gracefully.
+    updater->HandleManifestResults(dummy_manifest_fetch_data, NULL);
 }
 
 // TODO(asargent) - (http://crbug.com/12780) add tests for:

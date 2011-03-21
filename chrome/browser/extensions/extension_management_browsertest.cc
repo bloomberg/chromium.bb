@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/ref_counted.h"
+#include "base/stl_util-inl.h"
 #include "chrome/browser/extensions/autoupdate_interceptor.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -193,8 +194,74 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DisableEnable) {
   ASSERT_TRUE(service->HasInstalledExtensions());
 }
 
+// Used for testing notifications sent during extension updates.
+class NotificationListener : public NotificationObserver {
+ public:
+  NotificationListener() : started_(false), finished_(false) {
+    NotificationType::Type types[] = {
+      NotificationType::EXTENSION_UPDATING_STARTED,
+      NotificationType::EXTENSION_UPDATING_FINISHED,
+      NotificationType::EXTENSION_UPDATE_FOUND
+    };
+    for (size_t i = 0; i < arraysize(types); i++) {
+      registrar_.Add(this, types[i], NotificationService::AllSources());
+    }
+  }
+  ~NotificationListener() {}
+
+  bool started() { return started_; }
+
+  bool finished() { return finished_; }
+
+  const std::set<std::string>& updates() { return updates_; }
+
+  void Reset() {
+    started_ = false;
+    finished_ = false;
+    updates_.clear();
+  }
+
+  // Implements NotificationObserver interface.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    switch (type.value) {
+      case NotificationType::EXTENSION_UPDATING_STARTED: {
+        DCHECK(!started_);
+        started_ = true;
+        break;
+      }
+      case NotificationType::EXTENSION_UPDATING_FINISHED: {
+        DCHECK(!finished_);
+        finished_ = true;
+        break;
+      }
+      case NotificationType::EXTENSION_UPDATE_FOUND: {
+        const std::string* id = Details<const std::string>(details).ptr();
+        updates_.insert(*id);
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
+  }
+
+ private:
+  NotificationRegistrar registrar_;
+
+  // Did we see EXTENSION_UPDATING_STARTED?
+  bool started_;
+
+  // Did we see EXTENSION_UPDATING_FINISHED?
+  bool finished_;
+
+  // The set of extension id's we've seen via EXTENSION_UPDATE_FOUND.
+  std::set<std::string> updates_;
+};
+
 // Tests extension autoupdate.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
+  NotificationListener notification_listener;
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   // Note: This interceptor gets requests on the IO thread.
   scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
@@ -232,6 +299,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
   ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf",
             extensions->at(size_before)->id());
   ASSERT_EQ("2.0", extensions->at(size_before)->VersionString());
+  ASSERT_TRUE(notification_listener.started());
+  ASSERT_TRUE(notification_listener.finished());
+  ASSERT_TRUE(ContainsKey(notification_listener.updates(),
+                          "ogjcoiohnmldgjemafoockdghcjciccf"));
+  notification_listener.Reset();
 
   // Now try doing an update to version 3, which has been incorrectly
   // signed. This should fail.
@@ -242,6 +314,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
 
   service->updater()->CheckNow();
   ASSERT_TRUE(WaitForExtensionInstallError());
+  ASSERT_TRUE(notification_listener.started());
+  ASSERT_TRUE(notification_listener.finished());
+  ASSERT_TRUE(ContainsKey(notification_listener.updates(),
+                          "ogjcoiohnmldgjemafoockdghcjciccf"));
 
   // Make sure the extension state is the same as before.
   extensions = service->extensions();

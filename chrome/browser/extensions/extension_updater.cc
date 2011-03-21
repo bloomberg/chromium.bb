@@ -19,6 +19,7 @@
 #include "base/time.h"
 #include "base/threading/thread.h"
 #include "base/version.h"
+#include "content/common/notification_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -371,26 +372,34 @@ class ExtensionUpdaterFileHandler
     // Make sure we're running in the right thread.
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
+    bool failed = false;
     FilePath path;
     if (!file_util::CreateTemporaryFile(&path)) {
       LOG(WARNING) << "Failed to create temporary file path";
-      return;
-    }
-    if (file_util::WriteFile(path, data.c_str(), data.length()) !=
+      failed = true;
+    } else if (file_util::WriteFile(path, data.c_str(), data.length()) !=
         static_cast<int>(data.length())) {
       // TODO(asargent) - It would be nice to back off updating altogether if
       // the disk is full. (http://crbug.com/12763).
       LOG(ERROR) << "Failed to write temporary file";
       file_util::Delete(path, false);
-      return;
+      failed = true;
     }
 
-    // The ExtensionUpdater now owns the temp file.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            updater.get(), &ExtensionUpdater::OnCRXFileWritten, extension_id,
-            path, download_url));
+    if (failed) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(
+              updater.get(), &ExtensionUpdater::OnCRXFileWriteError,
+              extension_id));
+    } else {
+      // The ExtensionUpdater now owns the temp file.
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(
+              updater.get(), &ExtensionUpdater::OnCRXFileWritten, extension_id,
+              path, download_url));
+    }
   }
 
  private:
@@ -536,6 +545,7 @@ void ExtensionUpdater::OnURLFetchComplete(
   } else {
     NOTREACHED();
   }
+  NotifyIfFinished();
 }
 
 // Utility class to handle doing xml parsing in a sandboxed utility process.
@@ -593,13 +603,14 @@ class SafeManifestParser : public UtilityProcessHost::Client {
   virtual void OnParseUpdateManifestSucceeded(
       const UpdateManifest::Results& results) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    updater_->HandleManifestResults(*fetch_data_, results);
+    updater_->HandleManifestResults(*fetch_data_, &results);
   }
 
   // Callback from the utility process when parsing failed.
   virtual void OnParseUpdateManifestFailed(const std::string& error_message) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     LOG(WARNING) << "Error parsing update manifest:\n" << error_message;
+    updater_->HandleManifestResults(*fetch_data_, NULL);
   }
 
  private:
@@ -628,6 +639,7 @@ void ExtensionUpdater::OnManifestFetchComplete(
     // TODO(asargent) Do exponential backoff here. (http://crbug.com/12546).
     VLOG(1) << "Failed to fetch manifest '" << url.possibly_invalid_spec()
             << "' response code:" << response_code;
+    RemoveFromInProgress(current_manifest_fetch_->extension_ids());
   }
   manifest_fetcher_.reset();
   current_manifest_fetch_.reset();
@@ -642,15 +654,28 @@ void ExtensionUpdater::OnManifestFetchComplete(
 
 void ExtensionUpdater::HandleManifestResults(
     const ManifestFetchData& fetch_data,
-    const UpdateManifest::Results& results) {
+    const UpdateManifest::Results* results) {
   // This can be called after we've been stopped.
   if (!alive_)
     return;
 
+  // Remove all the ids's from in_progress_ids_ (we will add them back in
+  // below if they actually have updates we need to fetch and install).
+  RemoveFromInProgress(fetch_data.extension_ids());
+
+  if (!results) {
+    NotifyIfFinished();
+    return;
+  }
+
   // Examine the parsed manifest and kick off fetches of any new crx files.
-  std::vector<int> updates = DetermineUpdates(fetch_data, results);
+  std::vector<int> updates = DetermineUpdates(fetch_data, *results);
   for (size_t i = 0; i < updates.size(); i++) {
-    const UpdateManifest::Result* update = &(results.list.at(updates[i]));
+    const UpdateManifest::Result* update = &(results->list.at(updates[i]));
+    const std::string& id = update->extension_id;
+    in_progress_ids_.insert(id);
+    if (id != std::string(kBlacklistAppID))
+      NotifyUpdateFound(update->extension_id);
     FetchUpdatedExtension(update->extension_id, update->crx_url,
         update->package_hash, update->version);
   }
@@ -658,9 +683,9 @@ void ExtensionUpdater::HandleManifestResults(
   // If the manifest response included a <daystart> element, we want to save
   // that value for any extensions which had sent a ping in the request.
   if (fetch_data.base_url().DomainIs("google.com") &&
-      results.daystart_elapsed_seconds >= 0) {
+      results->daystart_elapsed_seconds >= 0) {
     Time daystart =
-      Time::Now() - TimeDelta::FromSeconds(results.daystart_elapsed_seconds);
+      Time::Now() - TimeDelta::FromSeconds(results->daystart_elapsed_seconds);
 
     const std::set<std::string>& extension_ids = fetch_data.extension_ids();
     std::set<std::string>::const_iterator i;
@@ -679,6 +704,7 @@ void ExtensionUpdater::HandleManifestResults(
       }
     }
   }
+  NotifyIfFinished();
 }
 
 void ExtensionUpdater::ProcessBlacklist(const std::string& data) {
@@ -715,6 +741,7 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
       (response_code == 200 || (url.SchemeIsFile() && data.length() > 0))) {
     if (current_extension_fetch_.id == kBlacklistAppID) {
       ProcessBlacklist(data);
+      in_progress_ids_.erase(current_extension_fetch_.id);
     } else {
       // Successfully fetched - now write crx to a file so we can have the
       // ExtensionService install it.
@@ -752,8 +779,17 @@ void ExtensionUpdater::OnCRXFileWritten(const std::string& id,
   // The ExtensionService is now responsible for cleaning up the temp file
   // at |path|.
   service_->UpdateExtension(id, path, download_url);
+  in_progress_ids_.erase(id);
+  NotifyIfFinished();
 }
 
+void ExtensionUpdater::OnCRXFileWriteError(const std::string& id) {
+  // This can be called after we've been stopped.
+  if (!alive_)
+    return;
+  in_progress_ids_.erase(id);
+  NotifyIfFinished();
+}
 
 void ExtensionUpdater::ScheduleNextCheck(const TimeDelta& target_delay) {
   DCHECK(alive_);
@@ -802,6 +838,7 @@ void ExtensionUpdater::TimerFired() {
 
 void ExtensionUpdater::CheckNow() {
   DCHECK(alive_);
+  NotifyStarted();
   ManifestFetchesBuilder fetches_builder(service_);
 
   const ExtensionList* extensions = service_->extensions();
@@ -850,6 +887,8 @@ void ExtensionUpdater::CheckNow() {
   // We don't want to use fetches after this since StartUpdateCheck()
   // takes ownership of its argument.
   fetches.clear();
+
+  NotifyIfFinished();
 }
 
 bool ExtensionUpdater::GetExistingVersion(const std::string& id,
@@ -932,6 +971,8 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
 }
 
 void ExtensionUpdater::StartUpdateCheck(ManifestFetchData* fetch_data) {
+  AddToInProgress(fetch_data->extension_ids());
+
   scoped_ptr<ManifestFetchData> scoped_fetch_data(fetch_data);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableBackgroundNetworking))
@@ -993,4 +1034,40 @@ void ExtensionUpdater::FetchUpdatedExtension(const std::string& id,
     extension_fetcher_->Start();
     current_extension_fetch_ = ExtensionFetch(id, url, hash, version);
   }
+}
+
+void ExtensionUpdater::NotifyStarted() {
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_UPDATING_STARTED,
+      Source<Profile>(service_->profile()),
+      NotificationService::NoDetails());
+}
+
+void ExtensionUpdater::NotifyUpdateFound(const std::string& extension_id) {
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_UPDATE_FOUND,
+      Source<Profile>(service_->profile()),
+      Details<const std::string>(&extension_id));
+}
+
+void ExtensionUpdater::NotifyIfFinished() {
+  if (in_progress_ids_.empty()) {
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_UPDATING_FINISHED,
+        Source<Profile>(service_->profile()),
+        NotificationService::NoDetails());
+    VLOG(1) << "Sending EXTENSION_UPDATING_FINISHED";
+  }
+}
+
+void ExtensionUpdater::AddToInProgress(const std::set<std::string>& ids) {
+  std::set<std::string>::const_iterator i;
+  for (i = ids.begin(); i != ids.end(); ++i)
+    in_progress_ids_.insert(*i);
+}
+
+void ExtensionUpdater::RemoveFromInProgress(const std::set<std::string>& ids) {
+  std::set<std::string>::const_iterator i;
+  for (i = ids.begin(); i != ids.end(); ++i)
+    in_progress_ids_.erase(*i);
 }
