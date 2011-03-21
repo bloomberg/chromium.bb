@@ -585,6 +585,12 @@ void TabStripModel::ToggleSelectionAt(int index) {
   NotifySelectionChanged(old_selection);
 }
 
+void TabStripModel::AddSelectionFromAnchorTo(int index) {
+  int old_selection = selected_index();
+  selection_model_.AddSelectionFromAnchorTo(index);
+  NotifySelectionChanged(old_selection);
+}
+
 bool TabStripModel::IsTabSelected(int index) const {
   DCHECK(ContainsIndex(index));
   return selection_model_.IsSelected(index);

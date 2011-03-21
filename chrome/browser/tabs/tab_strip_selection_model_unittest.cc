@@ -139,3 +139,14 @@ TEST_F(TabStripSelectionModelTest, Copy) {
   model2.Copy(model);
   EXPECT_EQ("active=0 anchor=0 selection=0 4 10", StateAsString(model2));
 }
+
+TEST_F(TabStripSelectionModelTest, AddSelectionFromAnchorTo) {
+  TabStripSelectionModel model;
+  model.SetSelectedIndex(2);
+
+  model.AddSelectionFromAnchorTo(4);
+  EXPECT_EQ("active=4 anchor=2 selection=2 3 4", StateAsString(model));
+
+  model.AddSelectionFromAnchorTo(0);
+  EXPECT_EQ("active=0 anchor=2 selection=0 1 2 3 4", StateAsString(model));
+}

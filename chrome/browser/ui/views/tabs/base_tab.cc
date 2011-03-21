@@ -289,7 +289,9 @@ bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton()) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableMultiTabSelection)) {
-      if (event.IsShiftDown()) {
+      if (event.IsShiftDown() && event.IsControlDown()) {
+        controller()->AddSelectionFromAnchorTo(this);
+      } else if (event.IsShiftDown()) {
         controller()->ExtendSelectionTo(this);
       } else if (event.IsControlDown()) {
         controller()->ToggleSelected(this);

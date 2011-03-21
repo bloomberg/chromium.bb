@@ -375,6 +375,10 @@ class TabStripModel : public NotificationObserver {
   // and there are no other selected tabs.
   void ToggleSelectionAt(int index);
 
+  // Makes sure the tabs from the anchor to |index| are selected. This only
+  // adds to the selection.
+  void AddSelectionFromAnchorTo(int index);
+
   // Returns true if the tab at |index| is selected.
   bool IsTabSelected(int index) const;
 

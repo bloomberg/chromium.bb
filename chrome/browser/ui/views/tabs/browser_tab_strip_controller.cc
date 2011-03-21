@@ -227,6 +227,10 @@ void BrowserTabStripController::ToggleSelected(int model_index) {
   model_->ToggleSelectionAt(model_index);
 }
 
+void BrowserTabStripController::AddSelectionFromAnchorTo(int model_index) {
+  model_->AddSelectionFromAnchorTo(model_index);
+}
+
 void BrowserTabStripController::CloseTab(int model_index) {
   tabstrip_->PrepareForCloseAt(model_index);
   model_->CloseTabContentsAt(model_index,

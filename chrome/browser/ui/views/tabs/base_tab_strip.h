@@ -123,6 +123,7 @@ class BaseTabStrip : public AbstractTabStripView,
   virtual void SelectTab(BaseTab* tab) OVERRIDE;
   virtual void ExtendSelectionTo(BaseTab* tab) OVERRIDE;
   virtual void ToggleSelected(BaseTab* tab) OVERRIDE;
+  virtual void AddSelectionFromAnchorTo(BaseTab* tab) OVERRIDE;
   virtual void CloseTab(BaseTab* tab) OVERRIDE;
   virtual void ShowContextMenuForTab(BaseTab* tab,
                                      const gfx::Point& p) OVERRIDE;

@@ -83,15 +83,27 @@ void TabStripSelectionModel::RemoveIndexFromSelection(int index) {
 
 void TabStripSelectionModel::SetSelectionFromAnchorTo(int index) {
   if (anchor_ == kUnselectedIndex) {
-    anchor_ = index;
-    active_ = index;
-    std::sort(selected_indices_.begin(), selected_indices_.end());
+    SetSelectedIndex(index);
   } else {
     int delta = std::abs(index - anchor_);
     SelectedIndices new_selection(delta + 1, 0);
     for (int i = 0, min = std::min(index, anchor_); i <= delta; ++i)
       new_selection[i] = i + min;
     selected_indices_.swap(new_selection);
+    active_ = index;
+  }
+}
+
+void TabStripSelectionModel::AddSelectionFromAnchorTo(int index) {
+  if (anchor_ == kUnselectedIndex) {
+    SetSelectedIndex(index);
+  } else {
+    for (int i = std::min(index, anchor_), end = std::max(index, anchor_);
+         i <= end; ++i) {
+      if (!IsSelected(i))
+        selected_indices_.push_back(i);
+    }
+    std::sort(selected_indices_.begin(), selected_indices_.end());
     active_ = index;
   }
 }

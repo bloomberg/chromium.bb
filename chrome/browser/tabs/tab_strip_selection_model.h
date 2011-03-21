@@ -72,6 +72,10 @@ class TabStripSelectionModel {
   // this sets the anchor, selection and active indices to |index|.
   void SetSelectionFromAnchorTo(int index);
 
+  // Makes sure the indices from the anchor to |index| are selected. This only
+  // adds to the selection.
+  void AddSelectionFromAnchorTo(int index);
+
   // Invoked when an item moves. |from| is the original index, and |to| the
   // target index.
   // NOTE: this matches the TabStripModel API. If moving to a greater index,

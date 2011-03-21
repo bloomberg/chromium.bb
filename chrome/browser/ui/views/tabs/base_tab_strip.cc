@@ -258,6 +258,12 @@ void BaseTabStrip::ToggleSelected(BaseTab* tab) {
     controller_->ToggleSelected(model_index);
 }
 
+void BaseTabStrip::AddSelectionFromAnchorTo(BaseTab* tab) {
+  int model_index = GetModelIndexOfBaseTab(tab);
+  if (IsValidModelIndex(model_index))
+    controller_->AddSelectionFromAnchorTo(model_index);
+}
+
 void BaseTabStrip::CloseTab(BaseTab* tab) {
   // Find the closest model index. We do this so that the user can rapdily close
   // tabs and have the close click close the next tab.

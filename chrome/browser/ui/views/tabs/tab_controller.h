@@ -27,6 +27,9 @@ class TabController {
   // Toggles whether |tab| is selected.
   virtual void ToggleSelected(BaseTab* tab) = 0;
 
+  // Adds the selection the anchor to |tab|.
+  virtual void AddSelectionFromAnchorTo(BaseTab* tab) = 0;
+
   // Closes the tab.
   virtual void CloseTab(BaseTab* tab) = 0;
 
