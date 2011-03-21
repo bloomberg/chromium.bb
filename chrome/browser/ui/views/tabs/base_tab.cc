@@ -287,26 +287,20 @@ bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
     return false;
 
   if (event.IsOnlyLeftMouseButton()) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableMultiTabSelection)) {
-      if (event.IsShiftDown() && event.IsControlDown()) {
-        controller()->AddSelectionFromAnchorTo(this);
-      } else if (event.IsShiftDown()) {
-        controller()->ExtendSelectionTo(this);
-      } else if (event.IsControlDown()) {
-        controller()->ToggleSelected(this);
-        if (!IsSelected()) {
-          // Don't allow dragging non-selected tabs.
-          return false;
-        }
-      } else if (!IsSelected()) {
-        controller()->SelectTab(this);
+    if (event.IsShiftDown() && event.IsControlDown()) {
+      controller()->AddSelectionFromAnchorTo(this);
+    } else if (event.IsShiftDown()) {
+      controller()->ExtendSelectionTo(this);
+    } else if (event.IsControlDown()) {
+      controller()->ToggleSelected(this);
+      if (!IsSelected()) {
+        // Don't allow dragging non-selected tabs.
+        return false;
       }
-      controller()->MaybeStartDrag(this, event);
-    } else {
+    } else if (!IsSelected()) {
       controller()->SelectTab(this);
-      controller()->MaybeStartDrag(this, event);
     }
+    controller()->MaybeStartDrag(this, event);
   }
   return true;
 }
@@ -344,12 +338,11 @@ void BaseTab::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
       if (closest_tab)
         controller()->CloseTab(closest_tab);
     }
-  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kEnableMultiTabSelection) &&
-             event.IsOnlyLeftMouseButton() && !event.IsShiftDown() &&
+  } else if (event.IsOnlyLeftMouseButton() && !event.IsShiftDown() &&
              !event.IsControlDown()) {
     // If the tab was already selected mouse pressed doesn't change the
-    // selection. Reset it now.
+    // selection. Reset it now to handle the case where multiple tabs were
+    // selected.
     controller()->SelectTab(this);
   }
 }
