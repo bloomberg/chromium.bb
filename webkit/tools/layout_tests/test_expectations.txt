@@ -10,6 +10,3 @@ BUGWK44797 SKIP : fullscreen = PASS FAIL TIMEOUT
 
 // Skip this test until the expected results are updated upstream.
 BUGWK56621 SKIP : editing/pasteboard/onpaste-text-html-types.html = FAIL
-
-// Went from CRASH to TEXT in 78710; this expectation should be upstreamed.
-BUG_SENORBLANCO WIN : fast/canvas/webgl/uniform-location.html = TIMEOUT CRASH TEXT
