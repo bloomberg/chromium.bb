@@ -95,6 +95,7 @@
 #include "content/common/process_watcher.h"
 #include "content/common/resource_messages.h"
 #include "content/common/result_codes.h"
+#include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_platform_file.h"

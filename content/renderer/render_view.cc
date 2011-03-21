@@ -80,6 +80,7 @@
 #include "content/common/page_zoom.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/renderer_preferences.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/audio_message_filter.h"
 #include "content/renderer/content_renderer_client.h"
 #include "content/renderer/device_orientation_dispatcher.h"

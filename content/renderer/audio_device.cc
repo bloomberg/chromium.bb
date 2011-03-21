@@ -5,9 +5,9 @@
 #include "content/renderer/audio_device.h"
 
 #include "base/singleton.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "content/common/audio_messages.h"
+#include "content/common/view_messages.h"
 #include "media/audio/audio_util.h"
 
 scoped_refptr<AudioMessageFilter> AudioDevice::filter_;

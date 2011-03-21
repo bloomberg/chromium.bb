@@ -22,7 +22,6 @@
 #include "content/common/navigation_gesture.h"
 #include "content/common/navigation_types.h"
 #include "content/common/page_transition_types.h"
-#include "content/common/renderer_preferences.h"
 #include "content/common/serialized_script_value.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_param_traits.h"
@@ -32,7 +31,6 @@
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webmenuitem.h"
-#include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 // TODO(erg): Split this file into $1_db_params.h, $1_audio_params.h,
@@ -618,30 +616,6 @@ struct ViewHostMsg_CreateWorker_Params {
   int64 script_resource_appcache_id;
 };
 
-// Creates a new view via a control message since the view doesn't yet exist.
-struct ViewMsg_New_Params {
-  ViewMsg_New_Params();
-  ~ViewMsg_New_Params();
-
-  // The parent window's id.
-  gfx::NativeViewId parent_window;
-
-  // Renderer-wide preferences.
-  RendererPreferences renderer_preferences;
-
-  // Preferences for this view.
-  WebPreferences web_preferences;
-
-  // The ID of the view to be created.
-  int32 view_id;
-
-  // The session storage namespace ID this view should use.
-  int64 session_storage_namespace_id;
-
-  // The name of the frame associated with this view (or empty if none).
-  string16 frame_name;
-};
-
 struct ViewHostMsg_CreateWindow_Params {
   ViewHostMsg_CreateWindow_Params();
   ~ViewHostMsg_CreateWindow_Params();
@@ -946,14 +920,6 @@ struct ParamTraits<ViewMsg_ExecuteCode_Params> {
 template <>
 struct ParamTraits<ViewHostMsg_CreateWorker_Params> {
   typedef ViewHostMsg_CreateWorker_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<>
-struct ParamTraits<ViewMsg_New_Params> {
-  typedef ViewMsg_New_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

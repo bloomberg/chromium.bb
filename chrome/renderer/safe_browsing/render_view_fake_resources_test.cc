@@ -19,6 +19,7 @@
 #include "content/common/resource_messages.h"
 #include "content/common/resource_response.h"
 #include "content/common/sandbox_init_wrapper.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/upload_data.h"

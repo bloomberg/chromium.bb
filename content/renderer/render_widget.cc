@@ -16,6 +16,7 @@
 #include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/renderer_webkitclient_impl.h"
 #include "gpu/common/gpu_trace_event.h"
 #include "ipc/ipc_sync_message.h"

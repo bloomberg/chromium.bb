@@ -149,7 +149,6 @@
         'common/chrome_content_plugin_client.cc',
         'common/chrome_content_plugin_client.h',
         'common/common_glue.cc',
-        'common/css_colors.h',
         'common/default_plugin.cc',
         'common/default_plugin.h',
         'common/deprecated/event_sys-inl.h',

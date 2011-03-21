@@ -23,7 +23,6 @@
 #include "build/build_config.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/css_colors.h"
 #include "chrome/common/edit_command.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_extent.h"
@@ -38,6 +37,7 @@
 #include "chrome/common/webkit_param_traits.h"
 #include "chrome/common/window_container_type.h"
 #include "content/common/common_param_traits.h"
+#include "content/common/css_colors.h"
 #include "content/common/notification_type.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/page_zoom.h"
@@ -156,39 +156,6 @@ struct ParamTraits<webkit::npapi::WebPluginInfo> {
   static void Log(const param_type& p, std::string* l);
 };
 
-// Traits for reading/writing CSS Colors
-template <>
-struct ParamTraits<CSSColors::CSSColorName> {
-  typedef CSSColors::CSSColorName param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p));
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return ReadParam(m, iter, reinterpret_cast<int*>(p));
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("<CSSColorName>");
-  }
-};
-
-// Traits for RendererPreferences structure to pack/unpack.
-template <>
-struct ParamTraits<RendererPreferences> {
-  typedef RendererPreferences param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-// Traits for WebPreferences structure to pack/unpack.
-template <>
-struct ParamTraits<WebPreferences> {
-  typedef WebPreferences param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
 // Traits for WebDropData
 template <>
 struct ParamTraits<WebDropData> {
@@ -293,37 +260,11 @@ struct ParamTraits<webkit_glue::WebAccessibility> {
 
 #endif  // CHROME_COMMON_RENDER_MESSAGES_H_
 
-#define IPC_MESSAGE_START ViewMsgStart
+#define IPC_MESSAGE_START ChromeMsgStart
 
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the browser to the renderer process.
-
-// Used typically when recovering from a crash.  The new rendering process
-// sets its global "next page id" counter to the given value.
-IPC_MESSAGE_CONTROL1(ViewMsg_SetNextPageID,
-                     int32 /* next_page_id */)
-
-// Sends System Colors corresponding to a set of CSS color keywords
-// down the pipe.
-// This message must be sent to the renderer immediately on launch
-// before creating any new views.
-// The message can also be sent during a renderer's lifetime if system colors
-// are updated.
-// TODO(jeremy): Possibly change IPC format once we have this all hooked up.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetCSSColors,
-                    std::vector<CSSColors::CSSColorMapping>)
-
-// Asks the browser for a unique routing ID.
-IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GenerateRoutingID,
-                            int /* routing_id */)
-
-// Tells the renderer to create a new view.
-// This message is slightly different, the view it takes (via
-// ViewMsg_New_Params) is the view to create, the message itself is sent as a
-// non-view control message.
-IPC_MESSAGE_CONTROL1(ViewMsg_New,
-                     ViewMsg_New_Params)
 
 // Tells the renderer to set its maximum cache size to the supplied value.
 IPC_MESSAGE_CONTROL3(ViewMsg_SetCacheCapacities,
@@ -333,16 +274,6 @@ IPC_MESSAGE_CONTROL3(ViewMsg_SetCacheCapacities,
 
 // Tells the renderer to clear the cache.
 IPC_MESSAGE_CONTROL0(ViewMsg_ClearCache)
-
-// Reply in response to ViewHostMsg_ShowView or ViewHostMsg_ShowWidget.
-// similar to the new command, but used when the renderer created a view
-// first, and we need to update it.
-IPC_MESSAGE_ROUTED1(ViewMsg_CreatingNew_ACK,
-                    gfx::NativeViewId /* parent_hwnd */)
-
-// Sends updated preferences to the renderer.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetRendererPrefs,
-                    RendererPreferences)
 
 // Tells the renderer to perform the given action on the media player
 // located at the given point.
@@ -718,9 +649,6 @@ IPC_MESSAGE_ROUTED4(
 // This message confirms an ongoing composition.
 IPC_MESSAGE_ROUTED1(ViewMsg_ImeConfirmComposition,
                     string16 /* text */)
-
-// This passes a set of webkit preferences down to the renderer.
-IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences, WebPreferences)
 
 // Used to notify the render-view that the browser has received a reply for
 // the Find operation and is interested in receiving the next one. This is

@@ -44,6 +44,7 @@
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "content/common/result_codes.h"
+#include "content/common/view_messages.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"

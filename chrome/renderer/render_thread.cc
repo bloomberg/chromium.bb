@@ -58,6 +58,7 @@
 #include "content/common/renderer_preferences.h"
 #include "content/common/resource_dispatcher.h"
 #include "content/common/resource_messages.h"
+#include "content/common/view_messages.h"
 #include "content/common/web_database_observer_impl.h"
 #include "content/plugin/npobject_util.h"
 #include "content/renderer/cookie_message_filter.h"

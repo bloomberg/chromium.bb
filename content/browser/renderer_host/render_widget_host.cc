@@ -21,6 +21,7 @@
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_service.h"
 #include "content/common/result_codes.h"
+#include "content/common/view_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/glue/webcursor.h"

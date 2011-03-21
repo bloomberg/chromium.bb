@@ -190,15 +190,6 @@ ViewHostMsg_CreateWorker_Params::ViewHostMsg_CreateWorker_Params()
 ViewHostMsg_CreateWorker_Params::~ViewHostMsg_CreateWorker_Params() {
 }
 
-ViewMsg_New_Params::ViewMsg_New_Params()
-    : parent_window(0),
-      view_id(0),
-      session_storage_namespace_id(0) {
-}
-
-ViewMsg_New_Params::~ViewMsg_New_Params() {
-}
-
 ViewHostMsg_CreateWindow_Params::ViewHostMsg_CreateWindow_Params()
     : opener_id(0),
       user_gesture(false),
@@ -1052,43 +1043,6 @@ void ParamTraits<ViewHostMsg_CreateWorker_Params>::Log(const param_type& p,
   LogParam(p.parent_appcache_host_id, l);
   l->append(",");
   LogParam(p.script_resource_appcache_id, l);
-  l->append(")");
-}
-
-void ParamTraits<ViewMsg_New_Params>::Write(Message* m, const param_type& p) {
-  WriteParam(m, p.parent_window);
-  WriteParam(m, p.renderer_preferences);
-  WriteParam(m, p.web_preferences);
-  WriteParam(m, p.view_id);
-  WriteParam(m, p.session_storage_namespace_id);
-  WriteParam(m, p.frame_name);
-}
-
-bool ParamTraits<ViewMsg_New_Params>::Read(const Message* m,
-                                           void** iter,
-                                           param_type* p) {
-  return
-      ReadParam(m, iter, &p->parent_window) &&
-      ReadParam(m, iter, &p->renderer_preferences) &&
-      ReadParam(m, iter, &p->web_preferences) &&
-      ReadParam(m, iter, &p->view_id) &&
-      ReadParam(m, iter, &p->session_storage_namespace_id) &&
-      ReadParam(m, iter, &p->frame_name);
-}
-
-void ParamTraits<ViewMsg_New_Params>::Log(const param_type& p, std::string* l) {
-  l->append("(");
-  LogParam(p.parent_window, l);
-  l->append(", ");
-  LogParam(p.renderer_preferences, l);
-  l->append(", ");
-  LogParam(p.web_preferences, l);
-  l->append(", ");
-  LogParam(p.view_id, l);
-  l->append(", ");
-  LogParam(p.session_storage_namespace_id, l);
-  l->append(", ");
-  LogParam(p.frame_name, l);
   l->append(")");
 }
 
