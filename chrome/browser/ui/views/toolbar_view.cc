@@ -632,11 +632,13 @@ bool ToolbarView::ShouldShowIncompatibilityWarning() {
 }
 
 int ToolbarView::PopupTopSpacing() const {
-  DCHECK(parent());
-  DCHECK(const_cast<ToolbarView*>(this)->GetRootView());
-  DCHECK(GetWidget());
-  DCHECK(GetWindow());
-  DCHECK(GetWindow()->non_client_view());
+#if defined(OS_CHROMEOS)
+  CHECK(parent());
+  CHECK(const_cast<ToolbarView*>(this)->GetRootView());
+  CHECK(GetWidget());
+  CHECK(GetWindow());
+  CHECK(GetWindow()->non_client_view());
+#endif
   return GetWindow()->non_client_view()->UseNativeFrame() ?
       0 : kPopupTopSpacingNonGlass;
 }
