@@ -20,8 +20,13 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
-class GpuThread;
+class GpuRenderThread;
 struct GPUCreateCommandBufferConfig;
+class MessageLoop;
+
+namespace base {
+class WaitableEvent;
+}
 
 // Encapsulates an IPC channel between the GPU process and one renderer
 // process. On the renderer side there's a corresponding GpuChannelHost.
@@ -30,14 +35,14 @@ class GpuChannel : public IPC::Channel::Listener,
                    public base::RefCountedThreadSafe<GpuChannel> {
  public:
   // Takes ownership of the renderer process handle.
-  GpuChannel(GpuThread* gpu_thread,
+  GpuChannel(GpuRenderThread* gpu_render_thread,
              int renderer_id);
   virtual ~GpuChannel();
 
-  bool Init();
+  bool Init(MessageLoop* io_message_loop, base::WaitableEvent* shutdown_event);
 
   // Get the GpuThread that owns this channel.
-  GpuThread* gpu_thread() const { return gpu_thread_; }
+  GpuRenderThread* gpu_render_thread() const { return gpu_render_thread_; }
 
   // Returns the name of the associated IPC channel.
   std::string GetChannelName();
@@ -89,10 +94,10 @@ class GpuChannel : public IPC::Channel::Listener,
                             int32 decoder_host_id);
   void OnDestroyVideoDecoder(int32 decoder_id);
 
-  // The lifetime of objects of this class is managed by a GpuThread. The
-  // GpuThreadss destroy all the GpuChannels that they own when they
+  // The lifetime of objects of this class is managed by a GpuRenderThread. The
+  // GpuRenderThreads destroy all the GpuChannels that they own when they
   // are destroyed. So a raw pointer is safe.
-  GpuThread* gpu_thread_;
+  GpuRenderThread* gpu_render_thread_;
 
   scoped_ptr<IPC::SyncChannel> channel_;
 

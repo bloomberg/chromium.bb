@@ -206,9 +206,8 @@ IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_CreateViewCommandBuffer,
                             int32 /* route_id */)
 
 // Response from GPU to a GpuHostMsg_EstablishChannel message.
-IPC_MESSAGE_CONTROL2(GpuHostMsg_ChannelEstablished,
-                     IPC::ChannelHandle, /* channel_handle */
-                     GPUInfo /* GPU logging stats */)
+IPC_MESSAGE_CONTROL1(GpuHostMsg_ChannelEstablished,
+                     IPC::ChannelHandle /* channel_handle */)
 
 // Respond from GPU to a GpuMsg_CreateViewCommandBuffer message.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_CommandBufferCreated,

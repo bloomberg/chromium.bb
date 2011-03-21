@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
@@ -103,6 +104,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_db_thread_(false),
       created_process_launcher_thread_(false),
       created_cache_thread_(false),
+      created_gpu_thread_(false),
       created_watchdog_thread_(false),
       created_profile_manager_(false),
       created_local_state_(false),
@@ -207,6 +209,13 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 
   // Wait for removing plugin data to finish before shutting down the IO thread.
   WaitForPluginDataRemoverToFinish();
+
+  // Destroying the GpuProcessHostUIShims on the UI thread posts a task to
+  // delete related objects on the GPU thread. This must be done before
+  // stopping the GPU thread. The GPU thread will close IPC channels to renderer
+  // processes so this has to happen before stopping the IO thread.
+  GpuProcessHostUIShim::DestroyAll();
+  gpu_thread_.reset();
 
   // Need to stop io_thread_ before resource_dispatcher_host_, since
   // io_thread_ may still deref ResourceDispatcherHost and handle resource
@@ -390,6 +399,13 @@ base::Thread* BrowserProcessImpl::cache_thread() {
   if (!created_cache_thread_)
     CreateCacheThread();
   return cache_thread_.get();
+}
+
+base::Thread* BrowserProcessImpl::gpu_thread() {
+  DCHECK(CalledOnValidThread());
+  if (!created_gpu_thread_)
+    CreateGpuThread();
+  return gpu_thread_.get();
 }
 
 #if defined(USE_X11)
@@ -766,6 +782,29 @@ void BrowserProcessImpl::CreateCacheThread() {
   if (!thread->StartWithOptions(options))
     return;
   cache_thread_.swap(thread);
+}
+
+void BrowserProcessImpl::CreateGpuThread() {
+  DCHECK(!created_gpu_thread_ && !gpu_thread_.get());
+  created_gpu_thread_ = true;
+
+  scoped_ptr<base::Thread> thread(new BrowserThread(BrowserThread::GPU));
+
+  base::Thread::Options options;
+#if defined(OS_WIN)
+  // On Windows the GPU thread needs to pump the compositor child window's
+  // message loop. TODO(apatrick): make this an IO thread if / when we get rid
+  // of this child window. Unfortunately it might always be necessary for
+  // Windows XP because we cannot share the backing store textures between
+  // processes.
+  options.message_loop_type = MessageLoop::TYPE_UI;
+#else
+  options.message_loop_type = MessageLoop::TYPE_IO;
+#endif
+
+  if (!thread->StartWithOptions(options))
+    return;
+  gpu_thread_.swap(thread);
 }
 
 void BrowserProcessImpl::CreateWatchdogThread() {

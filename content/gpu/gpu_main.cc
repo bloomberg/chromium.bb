@@ -16,9 +16,9 @@
 #include "build/build_config.h"
 #include "content/common/content_switches.h"
 #include "content/common/main_function_params.h"
+#include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_config.h"
 #include "content/gpu/gpu_process.h"
-#include "content/gpu/gpu_thread.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/chrome_application_mac.h"
@@ -68,20 +68,20 @@ int GpuMain(const MainFunctionParams& parameters) {
   // the GpuMsg_Initialize message from the browser.
   GpuProcess gpu_process;
 
-  GpuThread* gpu_thread =
+  GpuChildThread* child_thread =
 #if defined(OS_WIN)
-      new GpuThread(parameters.sandbox_info_.TargetServices());
+      new GpuChildThread(parameters.sandbox_info_.TargetServices());
 #else
-      new GpuThread;
+      new GpuChildThread;
 #endif
 
-  gpu_thread->Init(start_time);
+  child_thread->Init(start_time);
 
-  gpu_process.set_main_thread(gpu_thread);
+  gpu_process.set_main_thread(child_thread);
 
   main_message_loop.Run();
 
-  gpu_thread->StopWatchdog();
+  child_thread->StopWatchdog();
 
   return 0;
 }

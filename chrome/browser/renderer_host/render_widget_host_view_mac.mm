@@ -1240,10 +1240,28 @@ void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
     // the latter identifies the channel from the GpuCommandBufferStub in the
     // GPU process to the corresponding command buffer client in the renderer.
   }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      new BuffersSwappedAcknowledger(
-          gpu_host_id, renderer_id, route_id, swap_buffers_count));
+
+  // TODO(apatrick): Send the acknowledgement via the UI thread when running in
+  // single process or in process GPU mode for now. This is bad from a
+  // performance point of view but the plan is to not use AcceleratedSurface at
+  // all in these cases.
+  if (gpu_host_id == 0) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        NewRunnableFunction(&GpuProcessHostUIShim::SendToGpuHost,
+                            gpu_host_id,
+                            new GpuMsg_AcceleratedSurfaceBuffersSwappedACK(
+                                renderer_id,
+                                route_id,
+                                swap_buffers_count)));
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        new BuffersSwappedAcknowledger(
+            gpu_host_id, renderer_id, route_id, swap_buffers_count));
+  }
 }
 
 void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {

@@ -7,11 +7,11 @@
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
-#include "content/common/child_thread.h"
 #include "content/common/gpu_messages.h"
+#include "content/common/child_thread.h"
 #include "content/gpu/gpu_channel.h"
 #include "content/gpu/gpu_command_buffer_stub.h"
-#include "content/gpu/gpu_thread.h"
+#include "content/gpu/gpu_render_thread.h"
 #include "gpu/common/gpu_trace_event.h"
 
 using gpu::Buffer;
@@ -140,8 +140,8 @@ bool GpuCommandBufferStub::CreateCompositorWindow() {
 }
 
 void GpuCommandBufferStub::OnCompositorWindowPainted() {
-  GpuThread* gpu_thread = channel_->gpu_thread();
-  gpu_thread->Send(new GpuHostMsg_ScheduleComposite(
+  GpuRenderThread* render_thread = channel_->gpu_render_thread();
+  render_thread->Send(new GpuHostMsg_ScheduleComposite(
       renderer_id_, render_view_id_));
 }
 #endif  // defined(OS_WIN)
@@ -158,8 +158,8 @@ GpuCommandBufferStub::~GpuCommandBufferStub() {
   }
 #endif  // defined(OS_WIN)
 
-  GpuThread* gpu_thread = channel_->gpu_thread();
-  gpu_thread->Send(new GpuHostMsg_DestroyCommandBuffer(
+  GpuRenderThread* render_thread = channel_->gpu_render_thread();
+  render_thread->Send(new GpuHostMsg_DestroyCommandBuffer(
       handle_, renderer_id_, render_view_id_));
 }
 
@@ -353,7 +353,7 @@ void GpuCommandBufferStub::OnSwapBuffers() {
 
 #if defined(OS_MACOSX)
 void GpuCommandBufferStub::OnSetWindowSize(const gfx::Size& size) {
-  GpuThread* gpu_thread = channel_->gpu_thread();
+  GpuRenderThread* gpu_render_thread = channel_->gpu_render_thread();
   // Try using the IOSurface version first.
   uint64 new_backing_store = processor_->SetWindowSizeForIOSurface(size);
   if (new_backing_store) {
@@ -364,7 +364,8 @@ void GpuCommandBufferStub::OnSetWindowSize(const gfx::Size& size) {
     params.width = size.width();
     params.height = size.height();
     params.identifier = new_backing_store;
-    gpu_thread->Send(new GpuHostMsg_AcceleratedSurfaceSetIOSurface(params));
+    gpu_render_thread->Send(
+        new GpuHostMsg_AcceleratedSurfaceSetIOSurface(params));
   } else {
     // TODO(kbr): figure out what to do here. It wouldn't be difficult
     // to support the compositor on 10.5, but the performance would be
@@ -375,7 +376,7 @@ void GpuCommandBufferStub::OnSetWindowSize(const gfx::Size& size) {
 
 void GpuCommandBufferStub::SwapBuffersCallback() {
   OnSwapBuffers();
-  GpuThread* gpu_thread = channel_->gpu_thread();
+  GpuRenderThread* gpu_render_thread = channel_->gpu_render_thread();
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.renderer_id = renderer_id_;
   params.render_view_id = render_view_id_;
@@ -383,7 +384,8 @@ void GpuCommandBufferStub::SwapBuffersCallback() {
   params.surface_id = processor_->GetSurfaceId();
   params.route_id = route_id();
   params.swap_buffers_count = processor_->swap_buffers_count();
-  gpu_thread->Send(new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
+  gpu_render_thread->Send(
+      new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
 }
 
 void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
@@ -400,9 +402,9 @@ void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
     processor_->decoder()->UpdateOffscreenFrameBufferSize();
   } else {
 #if defined(OS_LINUX) && !defined(TOUCH_UI)
-    GpuThread* gpu_thread = channel_->gpu_thread();
+    GpuRenderThread* gpu_render_thread = channel_->gpu_render_thread();
     bool result = false;
-    gpu_thread->Send(
+    gpu_render_thread->Send(
         new GpuHostMsg_ResizeXID(handle_, size, &result));
 #elif defined(OS_WIN)
     HWND hwnd = static_cast<HWND>(compositor_window_);

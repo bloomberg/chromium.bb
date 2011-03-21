@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/gpu/gpu_thread.h"
+#include "content/gpu/gpu_child_thread.h"
 
 #include <string>
 #include <vector>
@@ -13,8 +13,8 @@
 #include "base/command_line.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/common/child_process.h"
-#include "content/common/content_switches.h"
 #include "content/common/gpu_messages.h"
 #include "content/gpu/content_gpu_client.h"
 #include "content/gpu/gpu_info_collector.h"
@@ -44,64 +44,6 @@ bool InitializeGpuSandbox() {
 #endif
 }
 
-}  // namespace
-
-#if defined(OS_WIN)
-GpuThread::GpuThread(sandbox::TargetServices* target_services)
-    : target_services_(target_services),
-      collecting_dx_diagnostics_(false) {
-}
-#else
-GpuThread::GpuThread() {
-}
-#endif
-
-GpuThread::GpuThread(const std::string& channel_id)
-    : ChildThread(channel_id) {
-#if defined(OS_WIN)
-  target_services_ = NULL;
-#endif
-}
-
-
-GpuThread::~GpuThread() {
-  logging::SetLogMessageHandler(NULL);
-}
-
-void GpuThread::Init(const base::Time& process_start_time) {
-  process_start_time_ = process_start_time;
-}
-
-void GpuThread::RemoveChannel(int renderer_id) {
-  gpu_channels_.erase(renderer_id);
-}
-
-bool GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
-  bool msg_is_ok = true;
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(GpuThread, msg, msg_is_ok)
-    IPC_MESSAGE_HANDLER(GpuMsg_Initialize, OnInitialize)
-    IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel, OnEstablishChannel)
-    IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
-    IPC_MESSAGE_HANDLER(GpuMsg_CreateViewCommandBuffer,
-                        OnCreateViewCommandBuffer);
-    IPC_MESSAGE_HANDLER(GpuMsg_Synchronize, OnSynchronize)
-    IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo, OnCollectGraphicsInfo)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(GpuMsg_AcceleratedSurfaceBuffersSwappedACK,
-                        OnAcceleratedSurfaceBuffersSwappedACK)
-    IPC_MESSAGE_HANDLER(GpuMsg_DestroyCommandBuffer,
-                        OnDestroyCommandBuffer)
-#endif
-    IPC_MESSAGE_HANDLER(GpuMsg_Crash, OnCrash)
-    IPC_MESSAGE_HANDLER(GpuMsg_Hang, OnHang)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
-  return handled;
-}
-
-namespace {
-
 bool GpuProcessLogMessageHandler(int severity,
                                  const char* file, int line,
                                  size_t message_start,
@@ -115,13 +57,62 @@ bool GpuProcessLogMessageHandler(int severity,
 
 }  // namespace
 
-void GpuThread::OnInitialize() {
-  // Redirect LOG messages to the GpuProcessHost
-  bool single_process = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSingleProcess);
-  if (!single_process)
-    logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
+#if defined(OS_WIN)
+GpuChildThread::GpuChildThread(sandbox::TargetServices* target_services)
+    : target_services_(target_services),
+      collecting_dx_diagnostics_(false) {
+}
+#else
+GpuChildThread::GpuChildThread() {
+}
+#endif
 
+GpuChildThread::GpuChildThread(const std::string& channel_id)
+    : ChildThread(channel_id) {
+#if defined(OS_WIN)
+  target_services_ = NULL;
+#endif
+}
+
+
+GpuChildThread::~GpuChildThread() {
+  logging::SetLogMessageHandler(NULL);
+}
+
+void GpuChildThread::Init(const base::Time& process_start_time) {
+  process_start_time_ = process_start_time;
+}
+
+bool GpuChildThread::Send(IPC::Message* msg) {
+  // The GPU process must never send a synchronous IPC message to the browser
+  // process. This could result in deadlock. Unfortunately linux does this for
+  // GpuHostMsg_ResizeXID. TODO(apatrick): fix this before issuing any GL calls
+  // on the browser process' GPU thread.
+#if !defined(OS_LINUX)
+    DCHECK(!msg->is_sync());
+#endif
+
+  return ChildThread::Send(msg);
+}
+
+bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
+  bool msg_is_ok = true;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(GpuChildThread, msg, msg_is_ok)
+    IPC_MESSAGE_HANDLER(GpuMsg_Initialize, OnInitialize)
+    IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo, OnCollectGraphicsInfo)
+    IPC_MESSAGE_HANDLER(GpuMsg_Crash, OnCrash)
+    IPC_MESSAGE_HANDLER(GpuMsg_Hang, OnHang)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP_EX()
+
+  if (handled)
+    return true;
+
+  return render_thread_.get() && render_thread_->OnMessageReceived(msg);
+}
+
+void GpuChildThread::OnInitialize() {
   // Load the GL implementation and locate the bindings before starting the GPU
   // watchdog because this can take a lot of time and the GPU watchdog might
   // terminate the GPU process.
@@ -191,60 +182,27 @@ void GpuThread::OnInitialize() {
     watchdog_thread_ = new GpuWatchdogThread(kGpuTimeout);
     watchdog_thread_->Start();
   }
+
+  // Defer creation of the render thread. This is to prevent it from handling
+  // IPC messages before the sandbox has been enabled and all other necessary
+  // initialization has succeeded.
+  render_thread_.reset(new GpuRenderThread(
+      this,
+      ChildProcess::current()->io_message_loop(),
+      ChildProcess::current()->GetShutDownEvent()));
+
+  // Ensure the browser process receives the GPU info before a reply to any
+  // subsequent IPC it might send.
+  Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
 }
 
-void GpuThread::StopWatchdog() {
+void GpuChildThread::StopWatchdog() {
   if (watchdog_thread_.get()) {
     watchdog_thread_->Stop();
   }
 }
 
-void GpuThread::OnEstablishChannel(int renderer_id) {
-  scoped_refptr<GpuChannel> channel;
-  IPC::ChannelHandle channel_handle;
-  GPUInfo gpu_info;
-
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
-  if (iter == gpu_channels_.end())
-    channel = new GpuChannel(this, renderer_id);
-  else
-    channel = iter->second;
-
-  DCHECK(channel != NULL);
-
-  if (channel->Init())
-    gpu_channels_[renderer_id] = channel;
-  else
-    channel = NULL;
-
-  if (channel.get()) {
-    channel_handle.name = channel->GetChannelName();
-#if defined(OS_POSIX)
-    // On POSIX, pass the renderer-side FD. Also mark it as auto-close so
-    // that it gets closed after it has been sent.
-    int renderer_fd = channel->GetRendererFileDescriptor();
-    channel_handle.socket = base::FileDescriptor(renderer_fd, false);
-#endif
-  }
-
-  Send(new GpuHostMsg_ChannelEstablished(channel_handle, gpu_info_));
-}
-
-void GpuThread::OnCloseChannel(const IPC::ChannelHandle& channel_handle) {
-  for (GpuChannelMap::iterator iter = gpu_channels_.begin();
-       iter != gpu_channels_.end(); ++iter) {
-    if (iter->second->GetChannelName() == channel_handle.name) {
-      gpu_channels_.erase(iter);
-      return;
-    }
-  }
-}
-
-void GpuThread::OnSynchronize() {
-  Send(new GpuHostMsg_SynchronizeReply());
-}
-
-void GpuThread::OnCollectGraphicsInfo() {
+void GpuChildThread::OnCollectGraphicsInfo() {
 #if defined(OS_WIN)
   if (!gpu_info_.finalized && !collecting_dx_diagnostics_) {
     // Prevent concurrent collection of DirectX diagnostics.
@@ -254,9 +212,8 @@ void GpuThread::OnCollectGraphicsInfo() {
     // couple of seconds.
     if (!base::WorkerPool::PostTask(
         FROM_HERE,
-        NewRunnableFunction(&GpuThread::CollectDxDiagnostics, this),
+        NewRunnableFunction(&GpuChildThread::CollectDxDiagnostics, this),
         true)) {
-
       // Flag GPU info as complete if the DirectX diagnostics cannot be
       // collected.
       collecting_dx_diagnostics_ = false;
@@ -270,50 +227,14 @@ void GpuThread::OnCollectGraphicsInfo() {
   Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
 }
 
-void GpuThread::OnCreateViewCommandBuffer(
-    gfx::PluginWindowHandle window,
-    int32 render_view_id,
-    int32 renderer_id,
-    const GPUCreateCommandBufferConfig& init_params) {
-  int32 route_id = MSG_ROUTING_NONE;
-
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
-  if (iter != gpu_channels_.end()) {
-    iter->second->CreateViewCommandBuffer(
-        window, render_view_id, init_params, &route_id);
-  }
-
-  Send(new GpuHostMsg_CommandBufferCreated(route_id));
-}
-
-#if defined(OS_MACOSX)
-void GpuThread::OnAcceleratedSurfaceBuffersSwappedACK(
-    int renderer_id, int32 route_id, uint64 swap_buffers_count) {
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
-  if (iter == gpu_channels_.end())
-    return;
-  scoped_refptr<GpuChannel> channel = iter->second;
-  channel->AcceleratedSurfaceBuffersSwapped(route_id, swap_buffers_count);
-}
-
-void GpuThread::OnDestroyCommandBuffer(
-    int renderer_id, int32 render_view_id) {
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
-  if (iter == gpu_channels_.end())
-    return;
-  scoped_refptr<GpuChannel> channel = iter->second;
-  channel->DestroyCommandBufferByViewId(render_view_id);
-}
-#endif
-
-void GpuThread::OnCrash() {
+void GpuChildThread::OnCrash() {
   LOG(INFO) << "GPU: Simulating GPU crash";
   // Good bye, cruel world.
   volatile int* it_s_the_end_of_the_world_as_we_know_it = NULL;
   *it_s_the_end_of_the_world_as_we_know_it = 0xdead;
 }
 
-void GpuThread::OnHang() {
+void GpuChildThread::OnHang() {
   LOG(INFO) << "GPU: Simulating GPU hang";
   for (;;) {
     // Do not sleep here. The GPU watchdog timer tracks the amount of user
@@ -323,9 +244,9 @@ void GpuThread::OnHang() {
 
 #if defined(OS_WIN)
 
-// Runs on a worker thread. The GpuThread never terminates voluntarily so it is
-// safe to assume that its message loop is valid.
-void GpuThread::CollectDxDiagnostics(GpuThread* thread) {
+// Runs on a worker thread. The GPU process never terminates voluntarily so
+// it is safe to assume that its message loop is valid.
+void GpuChildThread::CollectDxDiagnostics(GpuChildThread* thread) {
   app::win::ScopedCOMInitializer com_initializer;
 
   DxDiagNode node;
@@ -333,11 +254,12 @@ void GpuThread::CollectDxDiagnostics(GpuThread* thread) {
 
   thread->message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableFunction(&GpuThread::SetDxDiagnostics, thread, node));
+      NewRunnableFunction(&GpuChildThread::SetDxDiagnostics, thread, node));
 }
 
-// Runs on the GPU thread.
-void GpuThread::SetDxDiagnostics(GpuThread* thread, const DxDiagNode& node) {
+// Runs on the main thread.
+void GpuChildThread::SetDxDiagnostics(GpuChildThread* thread,
+                                      const DxDiagNode& node) {
   thread->gpu_info_.dx_diagnostics = node;
   thread->gpu_info_.finalized = true;
   thread->collecting_dx_diagnostics_ = false;

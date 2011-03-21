@@ -59,6 +59,8 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual base::Thread* cache_thread();
 
+  virtual base::Thread* gpu_thread();
+
   virtual WatchDogThread* watchdog_thread();
 
   virtual ProfileManager* profile_manager();

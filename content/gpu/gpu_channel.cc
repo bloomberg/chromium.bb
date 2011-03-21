@@ -14,20 +14,20 @@
 #include "content/common/child_process.h"
 #include "content/common/content_switches.h"
 #include "content/common/gpu_messages.h"
-#include "content/gpu/gpu_thread.h"
+#include "content/gpu/gpu_render_thread.h"
 #include "content/gpu/gpu_video_service.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
 #endif
 
-GpuChannel::GpuChannel(GpuThread* gpu_thread,
+GpuChannel::GpuChannel(GpuRenderThread* gpu_render_thread,
                        int renderer_id)
-    : gpu_thread_(gpu_thread),
+    : gpu_render_thread_(gpu_render_thread),
       renderer_id_(renderer_id),
       renderer_process_(NULL),
       renderer_pid_(NULL) {
-  DCHECK(gpu_thread);
+  DCHECK(gpu_render_thread);
   DCHECK(renderer_id);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
@@ -65,7 +65,7 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
 }
 
 void GpuChannel::OnChannelError() {
-  gpu_thread_->RemoveChannel(renderer_id_);
+  gpu_render_thread_->RemoveChannel(renderer_id_);
 }
 
 void GpuChannel::OnChannelConnected(int32 peer_pid) {
@@ -233,7 +233,8 @@ void GpuChannel::OnDestroyVideoDecoder(int32 decoder_id) {
 #endif
 }
 
-bool GpuChannel::Init() {
+bool GpuChannel::Init(MessageLoop* io_message_loop,
+                      base::WaitableEvent* shutdown_event) {
   // Check whether we're already initialized.
   if (channel_.get())
     return true;
@@ -241,9 +242,12 @@ bool GpuChannel::Init() {
   // Map renderer ID to a (single) channel to that process.
   std::string channel_name = GetChannelName();
   channel_.reset(new IPC::SyncChannel(
-      channel_name, IPC::Channel::MODE_SERVER, this,
-      ChildProcess::current()->io_message_loop(), false,
-      ChildProcess::current()->GetShutDownEvent()));
+      channel_name,
+      IPC::Channel::MODE_SERVER,
+      this,
+      io_message_loop,
+      false,
+      shutdown_event));
 
   return true;
 }

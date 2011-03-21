@@ -17,12 +17,14 @@
 #include "base/callback.h"
 #include "base/linked_ptr.h"
 #include "base/process.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/gpu_feature_flags.h"
 #include "content/common/gpu_info.h"
 #include "content/common/message_router.h"
+#include "content/gpu/gpu_render_thread.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -38,6 +40,19 @@ namespace IPC {
 struct ChannelHandle;
 class Message;
 }
+
+// A task that will forward an IPC message to the UI shim.
+class RouteToGpuProcessHostUIShimTask : public Task {
+ public:
+  RouteToGpuProcessHostUIShimTask(int host_id, const IPC::Message& msg);
+  ~RouteToGpuProcessHostUIShimTask();
+
+ private:
+  virtual void Run();
+
+  int host_id_;
+  IPC::Message msg_;
+};
 
 class GpuProcessHostUIShim
     : public IPC::Channel::Listener,
@@ -56,6 +71,9 @@ class GpuProcessHostUIShim
   // be called on the UI thread. Only the GpuProcessHost should destroy the
   // UI shim.
   static void Destroy(int host_id);
+
+  // Destroy all remaining GpuProcessHostUIShims.
+  static void DestroyAll();
 
   // The GPU process is launched asynchronously. If it launches successfully,
   // this function is called on the UI thread with the process handle. On
@@ -110,6 +128,10 @@ class GpuProcessHostUIShim
 #if defined(OS_MACOSX)
   // Notify the GPU process that an accelerated surface was destroyed.
   void DidDestroyAcceleratedSurface(int renderer_id, int32 render_view_id);
+
+  // TODO(apatrick): Remove this when mac does not use AcceleratedSurfaces for
+  // when running the GPU thread in the browser process.
+  static void SendToGpuHost(int host_id, IPC::Message* msg);
 #endif
 
   // Sends a message to the browser process to collect the information from the
@@ -128,14 +150,13 @@ class GpuProcessHostUIShim
       const std::string& message);
 
  private:
-  GpuProcessHostUIShim();
+  explicit GpuProcessHostUIShim(int host_id);
   virtual ~GpuProcessHostUIShim();
 
   // Message handlers.
   bool OnControlMessageReceived(const IPC::Message& message);
 
-  void OnChannelEstablished(const IPC::ChannelHandle& channel_handle,
-                            const GPUInfo& gpu_info);
+  void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
   void OnCommandBufferCreated(const int32 route_id);
   void OnDestroyCommandBuffer(gfx::PluginWindowHandle window,
                               int32 renderer_id, int32 render_view_id);
@@ -185,6 +206,14 @@ class GpuProcessHostUIShim
   typedef std::multimap<ViewID, linked_ptr<ViewSurface> > ViewSurfaceMap;
   ViewSurfaceMap acquired_surfaces_;
 
+  // In single process and in process GPU mode, this references the
+  // GpuRenderThread or null otherwise. It must be called and deleted on the GPU
+  // thread.
+  GpuRenderThread* gpu_render_thread_;
+
+  // This is likewise single process / in process GPU specific. This is a Sender
+  // implementation that forwards IPC messages to this UI shim on the UI thread.
+  IPC::Channel::Sender* ui_thread_sender_;
 };
 
 #endif  // CHROME_BROWSER_GPU_PROCESS_HOST_UI_SHIM_H_

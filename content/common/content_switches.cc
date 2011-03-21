@@ -120,6 +120,9 @@ const char kGpuProcess[]                    = "gpu-process";
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 
+// Run the GPU process as a thread in the browser process.
+const char kInProcessGPU[]                  = "in-process-gpu";
+
 // Runs WebGL inside the renderer process.
 const char kInProcessWebGL[]                = "in-process-webgl";
 

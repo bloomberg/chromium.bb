@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_GPU_GPU_THREAD_H_
-#define CONTENT_GPU_GPU_THREAD_H_
+#ifndef CONTENT_GPU_GPU_CHILD_THREAD_H_
+#define CONTENT_GPU_GPU_CHILD_THREAD_H_
 #pragma once
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "build/build_config.h"
@@ -17,6 +18,7 @@
 #include "content/common/gpu_info.h"
 #include "content/gpu/gpu_channel.h"
 #include "content/gpu/gpu_config.h"
+#include "content/gpu/gpu_render_thread.h"
 #include "content/gpu/x_util.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -30,61 +32,44 @@ class TargetServices;
 
 class GpuWatchdogThread;
 
-class GpuThread : public ChildThread {
+// The main thread of the GPU child process. There will only ever be one of
+// these per process. It does process initialization and shutdown. It forwards
+// IPC messages to GpuRenderThread, which is responsible for issuing rendering
+// commands to the GPU.
+class GpuChildThread : public ChildThread {
  public:
 #if defined(OS_WIN)
-  explicit GpuThread(sandbox::TargetServices* target_services);
+  explicit GpuChildThread(sandbox::TargetServices* target_services);
 #else
-  GpuThread();
+  GpuChildThread();
 #endif
 
   // For single-process mode.
-  explicit GpuThread(const std::string& channel_id);
+  explicit GpuChildThread(const std::string& channel_id);
 
-  ~GpuThread();
+  ~GpuChildThread();
 
   void Init(const base::Time& process_start_time);
   void StopWatchdog();
 
-  // Remove the channel for a particular renderer.
-  void RemoveChannel(int renderer_id);
-
- private:
   // ChildThread overrides.
+  virtual bool Send(IPC::Message* msg);
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
+ private:
   // Message handlers.
   void OnInitialize();
-  void OnEstablishChannel(int renderer_id);
-  void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
-  void OnSynchronize();
   void OnCollectGraphicsInfo();
-  void OnCreateViewCommandBuffer(
-      gfx::PluginWindowHandle window,
-      int32 render_view_id,
-      int32 renderer_id,
-      const GPUCreateCommandBufferConfig& init_params);
-#if defined(OS_MACOSX)
-  void OnAcceleratedSurfaceBuffersSwappedACK(
-      int renderer_id, int32 route_id, uint64 swap_buffers_count);
-  void OnDestroyCommandBuffer(int renderer_id, int32 render_view_id);
-#endif
   void OnCrash();
   void OnHang();
 
 #if defined(OS_WIN)
-  static void CollectDxDiagnostics(GpuThread* thread);
-  static void SetDxDiagnostics(GpuThread* thread, const DxDiagNode& node);
+  static void CollectDxDiagnostics(GpuChildThread* thread);
+  static void SetDxDiagnostics(GpuChildThread* thread, const DxDiagNode& node);
 #endif
 
   base::Time process_start_time_;
   scoped_refptr<GpuWatchdogThread> watchdog_thread_;
-
-  typedef base::hash_map<int, scoped_refptr<GpuChannel> > GpuChannelMap;
-  GpuChannelMap gpu_channels_;
-
-  // Information about the GPU, such as device and vendor ID.
-  GPUInfo gpu_info_;
 
 #if defined(OS_WIN)
   // Windows specific client sandbox interface.
@@ -94,7 +79,12 @@ class GpuThread : public ChildThread {
   bool collecting_dx_diagnostics_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(GpuThread);
+  scoped_ptr<GpuRenderThread> render_thread_;
+
+  // Information about the GPU, such as device and vendor ID.
+  GPUInfo gpu_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };
 
-#endif  // CONTENT_GPU_GPU_THREAD_H_
+#endif  // CONTENT_GPU_GPU_CHILD_THREAD_H_

@@ -44,6 +44,7 @@ extern const char kExtraPluginDir[];
 extern const char kGpuLauncher[];
 extern const char kGpuProcess[];
 extern const char kGpuStartupDialog[];
+extern const char kInProcessGPU[];
 extern const char kInProcessWebGL[];
 extern const char kLevelDBIndexedDatabase[];
 extern const char kLoadPlugin[];

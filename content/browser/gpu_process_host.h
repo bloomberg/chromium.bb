@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,10 +34,10 @@ class GpuProcessHost : public BrowserChildProcessHost,
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
-  explicit GpuProcessHost(
-      int host_id,
-      const GpuFeatureFlags& gpu_feature_flags);
+  GpuProcessHost(int host_id,
+                 const GpuFeatureFlags& gpu_feature_flags);
   virtual ~GpuProcessHost();
+
   bool Init();
 
   // Post an IPC message to the UI shim's message handler on the UI thread.

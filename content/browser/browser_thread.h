@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,6 +61,9 @@ class BrowserThread : public base::Thread {
 
     // This is the thread that processes IPC and network messages.
     IO,
+
+    // This thread issues calls to the GPU in the browser process.
+    GPU,
 
 #if defined(USE_X11)
     // This thread has a second connection to the X server and is used to
