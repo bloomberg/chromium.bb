@@ -172,3 +172,6 @@ PREFIX: webcore::renderblock::marginbeforeforchild___webcore::renderblock::addov
 
 # 76031
 PREFIX: webcore::renderlineboxlist::deletelineboxes___webcore::renderblock::layoutinlinechildren___webcore::renderblock::layoutblock
+
+# 76955
+PREFIX: webcore::renderobject::destroy___webcore::renderobjectchildlist::destroyleftoverchildren___webcore::renderblock::destroy
