@@ -158,13 +158,11 @@ def SetupBoard(buildroot, board='x86-generic'):
 def Build(buildroot, emptytree, build_autotest=True, usepkg=True):
   """Wrapper around build_packages."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  if emptytree:
-    cmd = ['sh', '-c', 'EXTRA_BOARD_FLAGS=--emptytree ./build_packages']
-  else:
-    cmd = ['./build_packages']
-
+  cmd = ['./build_packages']
   if not build_autotest: cmd.append('--nowithautotest')
   if not usepkg: cmd.append('--nousepkg')
+  if emptytree:
+    cmd = ['sh', '-c', 'EXTRA_BOARD_FLAGS=--emptytree %s' % ' '.join(cmd)]
 
   cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True)
 
