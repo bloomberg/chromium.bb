@@ -306,7 +306,6 @@ void RecordLastRunAppBundlePath() {
   BrowserList::EndKeepAlive();
 
   // Close these off if they have open windows.
-  [prefsController_ close];
   [aboutController_ close];
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -498,11 +497,11 @@ void RecordLastRunAppBundlePath() {
   // current locale (see http://crbug.com/7647 for details).
   // We need a valid g_browser_process to get the profile which is why we can't
   // call this from awakeFromNib.
-  NSMenu* view_menu = [[[NSApp mainMenu] itemWithTag:IDC_VIEW_MENU] submenu];
-  NSMenuItem* encoding_menu_item = [view_menu itemWithTag:IDC_ENCODING_MENU];
-  NSMenu* encoding_menu = [encoding_menu_item submenu];
+  NSMenu* viewMenu = [[[NSApp mainMenu] itemWithTag:IDC_VIEW_MENU] submenu];
+  NSMenuItem* encodingMenuItem = [viewMenu itemWithTag:IDC_ENCODING_MENU];
+  NSMenu* encodingMenu = [encodingMenuItem submenu];
   EncodingMenuControllerDelegate::BuildEncodingMenu([self defaultProfile],
-                                                    encoding_menu);
+                                                    encodingMenu);
 
   // Since Chrome is localized to more languages than the OS, tell Cocoa which
   // menu is the Help so it can add the search item to it.

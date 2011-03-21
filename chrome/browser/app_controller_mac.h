@@ -18,7 +18,6 @@ class BookmarkMenuBridge;
 class CommandUpdater;
 class GURL;
 class HistoryMenuBridge;
-@class PreferencesWindowController;
 class Profile;
 
 // The application controller object, created by loading the MainMenu nib.
@@ -32,7 +31,6 @@ class Profile;
   // (and Browser*s).
   scoped_ptr<BookmarkMenuBridge> bookmarkMenuBridge_;
   scoped_ptr<HistoryMenuBridge> historyMenuBridge_;
-  PreferencesWindowController* prefsController_;  // Weak.
   AboutWindowController* aboutController_;  // Weak.
 
   // If we're told to open URLs (in particular, via |-application:openFiles:| by
