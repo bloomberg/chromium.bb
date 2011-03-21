@@ -1277,11 +1277,6 @@ pre_base_env.AddMethod(CommandGdbTestNacl)
 
 
 def SelUniversalTest(env, name, command, sel_universal_flags=None, **kwargs):
-  # sel_universal does not know how to invoke sel_ldr via QEMU, so it
-  # does not work when testing the ARM build on another architecture.
-  # See http://code.google.com/p/nativeclient/issues/detail?id=1300
-  if env.Bit('target_arm') and env.UsingEmulator():
-    return []
   # The dynamic linker's ability to receive arguments over IPC at
   # startup currently requires it to reject the plugin's first
   # connection, but this interferes with the sel_universal-based
@@ -1293,6 +1288,12 @@ def SelUniversalTest(env, name, command, sel_universal_flags=None, **kwargs):
 
   if sel_universal_flags is None:
     sel_universal_flags = []
+
+  # when run under qemu, sel_universal must sneeak in qemu to execv
+  # call that spawns sel_ldr.
+  if env.Bit('target_arm') and env.UsingEmulator():
+    sel_universal_flags.append('--command_prefix')
+    sel_universal_flags.append(env['EMULATOR'])
 
   node = CommandSelLdrTestNacl(env,
                                name,
