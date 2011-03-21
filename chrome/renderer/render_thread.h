@@ -15,6 +15,7 @@
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "content/common/child_thread.h"
 #include "content/common/css_colors.h"
@@ -409,6 +410,8 @@ class RenderThread : public RenderThreadBase,
 
   // Contains all loaded extensions.
   ExtensionSet extensions_;
+
+  chrome::ChromeContentRendererClient renderer_client_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThread);
 };

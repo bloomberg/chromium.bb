@@ -212,6 +212,11 @@ void EnableHeapProfiler(const CommandLine& command_line) {
 #endif
 }
 
+void InitializeChromeContentGpuClient() {
+  static chrome::ChromeContentGpuClient chrome_content_gpu_client;
+  content::GetContentClient()->set_gpu(&chrome_content_gpu_client);
+}
+
 void CommonSubprocessInit(const std::string& process_type) {
 #if defined(OS_WIN)
   // HACK: Let Windows know that we have started.  This is needed to suppress
@@ -237,8 +242,7 @@ void CommonSubprocessInit(const std::string& process_type) {
     static chrome::ChromeContentPluginClient chrome_content_plugin_client;
     content::GetContentClient()->set_plugin(&chrome_content_plugin_client);
   } else if (process_type == switches::kGpuProcess) {
-    static chrome::ChromeContentGpuClient chrome_content_gpu_client;
-    content::GetContentClient()->set_gpu(&chrome_content_gpu_client);
+    InitializeChromeContentGpuClient();
   }
 }
 
@@ -687,6 +691,8 @@ int ChromeMain(int argc, char** argv) {
     // architecture needed and where it should live.
     InitWebCoreSystemInterface();
 #endif
+
+    InitializeChromeContentGpuClient();
   }
 #endif  // GOOGLE_CHROME_BUILD
 

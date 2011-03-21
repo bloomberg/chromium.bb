@@ -566,12 +566,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       p2p_socket_dispatcher_(NULL),
       pending_app_icon_requests_(0),
       session_storage_namespace_id_(session_storage_namespace_id) {
-#if defined(OS_MACOSX)
-  // On Mac, the select popups are rendered by the browser.
-  // Note that we don't do this in RenderMain otherwise this would not be called
-  // in single-process mode.
-  WebKit::WebView::setUseExternalPopupMenus(true);
-#endif
 
   ClearBlockedContentSettings();
 

@@ -271,6 +271,13 @@ RenderThread::RenderThread(const std::string& channel_name)
 void RenderThread::Init() {
   TRACE_EVENT_BEGIN("RenderThread::Init", 0, "");
 
+  content::GetContentClient()->set_renderer(&renderer_client_);
+
+#if defined(OS_MACOSX)
+  // On Mac, the select popups are rendered by the browser.
+  WebKit::WebView::setUseExternalPopupMenus(true);
+#endif
+
   lazy_tls.Pointer()->Set(this);
 #if defined(OS_WIN)
   // If you are running plugins in this thread you need COM active but in
