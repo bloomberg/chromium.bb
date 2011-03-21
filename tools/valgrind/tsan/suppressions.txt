@@ -145,6 +145,17 @@
   fun:browser_sync::*
 }
 
+{
+  bug_76908
+  ThreadSanitizer:Race
+  ...
+  fun:browser_sync::Cryptographer::AddKeyImpl*
+  fun:browser_sync::Cryptographer::AddKey*
+  fun:sync_api::SyncManager::SyncInternal::SetPassphrase*
+  fun:sync_api::SyncManager::SetPassphrase*
+  fun:browser_sync::SyncBackendHost::Core::DoSetPassphrase*
+}
+
 ############################
 # Benign races
 {
