@@ -162,7 +162,7 @@ void WidgetWin::SetCreateParams(const CreateParams& params) {
   DWORD class_style = CS_DBLCLKS;
 
   // Set type-independent style attributes.
-  if (params.accept_events)
+  if (!params.accept_events)
     ex_style |= WS_EX_TRANSPARENT;
   if (params.mirror_origin_in_rtl)
     ex_style |= l10n_util::GetExtendedTooltipStyles();
