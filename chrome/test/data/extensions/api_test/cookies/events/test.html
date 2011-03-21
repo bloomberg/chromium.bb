@@ -1,23 +1,34 @@
 <script>
+var setChangeComplete = chrome.test.callbackAdded();
+var removeChangeComplete = chrome.test.callbackAdded();
+var removeCallbackCalled = false;
 chrome.cookies.onChanged.addListener(function (info) {
-    if (!info.removed &&
-        info.cookie.name == 'test' &&
-        info.cookie.value == '42' &&
-        info.cookie.domain == 'a.com' &&
-        info.cookie.hostOnly &&
-        info.cookie.path == '/' &&
-        !info.cookie.secure &&
-        !info.cookie.httpOnly &&
-        !info.cookie.session &&
-        info.cookie.expirationDate == 12345678900 &&
-        info.cookie.storeId == "0") {
-      chrome.test.notifyPass();
-    } else {
-      chrome.test.notifyFail("Got an invalid cookie: " +  JSON.stringify(info));
-    }
+  if (!info.removed &&
+      info.cookie.name == 'test' &&
+      info.cookie.value == '42' &&
+      info.cookie.domain == 'a.com' &&
+      info.cookie.hostOnly &&
+      info.cookie.path == '/' &&
+      !info.cookie.secure &&
+      !info.cookie.httpOnly &&
+      !info.cookie.session &&
+      info.cookie.expirationDate == 12345678900 &&
+      info.cookie.storeId == "0") {
+    setChangeComplete();
+  } else if (info.removed) {
+    chrome.test.assertFalse(removeCallbackCalled,
+        "onChanged should fire before the chrome.cookies.remove callback.");
+    removeChangeComplete();
+  } else {
+    chrome.test.notifyFail("Got an invalid cookie: " +  JSON.stringify(info));
+  }
 });
 chrome.cookies.set({url: 'http://a.com/path',
                     name: 'test',
                     value: '42',
                     expirationDate: 12345678900});
+
+chrome.cookies.remove({url: 'http://a.com/path', name: 'test'}, function () {
+  removeCallbackCalled = true;
+});
 </script>

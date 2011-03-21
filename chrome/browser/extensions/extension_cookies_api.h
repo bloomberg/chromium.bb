@@ -94,7 +94,7 @@ class CookiesFunction : public AsyncExtensionFunction {
 class GetCookieFunction : public CookiesFunction {
  public:
   GetCookieFunction();
-  ~GetCookieFunction();
+  virtual ~GetCookieFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.get")
 
@@ -112,7 +112,7 @@ class GetCookieFunction : public CookiesFunction {
 class GetAllCookiesFunction : public CookiesFunction {
  public:
   GetAllCookiesFunction();
-  ~GetAllCookiesFunction();
+  virtual ~GetAllCookiesFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAll")
 
@@ -130,7 +130,7 @@ class GetAllCookiesFunction : public CookiesFunction {
 class SetCookieFunction : public CookiesFunction {
  public:
   SetCookieFunction();
-  ~SetCookieFunction();
+  virtual ~SetCookieFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.set")
 
@@ -154,10 +154,20 @@ class SetCookieFunction : public CookiesFunction {
 // Implements the cookies.remove() extension function.
 class RemoveCookieFunction : public CookiesFunction {
  public:
+  RemoveCookieFunction();
+  virtual ~RemoveCookieFunction();
   virtual bool RunImpl();
-  // RemoveCookieFunction is sync.
-  virtual void Run();
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.remove")
+
+ private:
+  void RemoveCookieOnIOThread();
+  void RespondOnUIThread();
+
+  GURL url_;
+  std::string name_;
+  bool success_;
+  std::string store_id_;
+  scoped_refptr<URLRequestContextGetter> store_context_;
 };
 
 // Implements the cookies.getAllCookieStores() extension function.

@@ -370,31 +370,11 @@ void SetCookieFunction::RespondOnUIThread() {
   SendResponse(success_);
 }
 
-namespace {
+RemoveCookieFunction::RemoveCookieFunction() {
+}
 
-class RemoveCookieTask : public Task {
- public:
-  RemoveCookieTask(const GURL& url,
-                   const std::string& name,
-                   const scoped_refptr<URLRequestContextGetter>& context_getter)
-      : url_(url),
-        name_(name),
-        context_getter_(context_getter) {}
-
-  virtual void Run() {
-    net::CookieStore* cookie_store = context_getter_->GetCookieStore();
-    cookie_store->DeleteCookie(url_, name_);
-  }
-
- private:
-  const GURL url_;
-  const std::string name_;
-  const scoped_refptr<URLRequestContextGetter> context_getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoveCookieTask);
-};
-
-}  // namespace
+RemoveCookieFunction::~RemoveCookieFunction() {
+}
 
 bool RemoveCookieFunction::RunImpl() {
   // Return false if the arguments are malformed.
@@ -403,39 +383,52 @@ bool RemoveCookieFunction::RunImpl() {
   DCHECK(details);
 
   // Read/validate input parameters.
-  GURL url;
-  if (!ParseUrl(details, &url, true))
+  if (!ParseUrl(details, &url_, true))
     return false;
 
-  std::string name;
   // Get the cookie name string or return false.
-  EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kNameKey, &name));
+  EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kNameKey, &name_));
 
   URLRequestContextGetter* store_context = NULL;
-  std::string store_id;
-  if (!ParseStoreContext(details, &store_context, &store_id))
+  if (!ParseStoreContext(details, &store_context, &store_id_))
     return false;
   DCHECK(store_context);
+  store_context_ = store_context;
 
-  // We don't bother to synchronously wait for the result here, because
-  // CookieMonster is only ever accessed on the IO thread, so any other accesses
-  // should happen after this.
+  // Pass the work off to the IO thread.
   bool rv = BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      new RemoveCookieTask(url, name, make_scoped_refptr(store_context)));
+      NewRunnableMethod(this, &RemoveCookieFunction::RemoveCookieOnIOThread));
   DCHECK(rv);
 
-  DictionaryValue* resultDictionary = new DictionaryValue();
-  resultDictionary->SetString(keys::kNameKey, name);
-  resultDictionary->SetString(keys::kUrlKey, url.spec());
-  resultDictionary->SetString(keys::kStoreIdKey, store_id);
-  result_.reset(resultDictionary);
-
+  // Will return asynchronously.
   return true;
 }
 
-void RemoveCookieFunction::Run() {
-  SendResponse(RunImpl());
+void RemoveCookieFunction::RemoveCookieOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Remove the cookie
+  net::CookieStore* cookie_store = store_context_->GetCookieStore();
+  cookie_store->DeleteCookie(url_, name_);
+
+  // Build the callback result
+  DictionaryValue* resultDictionary = new DictionaryValue();
+  resultDictionary->SetString(keys::kNameKey, name_);
+  resultDictionary->SetString(keys::kUrlKey, url_.spec());
+  resultDictionary->SetString(keys::kStoreIdKey, store_id_);
+  result_.reset(resultDictionary);
+
+  // Return to UI thread
+  bool rv = BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &RemoveCookieFunction::RespondOnUIThread));
+  DCHECK(rv);
+}
+
+void RemoveCookieFunction::RespondOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  SendResponse(true);
 }
 
 bool GetAllCookieStoresFunction::RunImpl() {
