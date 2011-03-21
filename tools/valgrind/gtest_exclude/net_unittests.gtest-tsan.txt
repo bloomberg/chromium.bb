@@ -19,3 +19,6 @@ HttpNetworkTransactionTest.KeepAliveConnectionEOF
 
 # Hangs, see http://crbug.com/61908
 DirectoryListerTest.BigDirRecursiveTest
+
+# Crashes silently, see http://crbug.com/76911
+URLRequestTest.FileTest
