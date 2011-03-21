@@ -29,8 +29,6 @@
             '../ui/base/ui_base_switches.cc',
             'app_paths.h',
             'app_paths.cc',
-            'app_switches.h',
-            'app_switches.cc',
         ],
         'conditions': [
           ['OS!="linux" and OS!="freebsd" and OS!="openbsd"', {

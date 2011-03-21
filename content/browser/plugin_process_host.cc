@@ -12,7 +12,6 @@
 
 #include <vector>
 
-#include "app/app_switches.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -43,6 +42,7 @@
 #include "net/url_request/url_request_context.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 #if defined(USE_X11)
 #include "ui/gfx/gtk_native_view_id_manager.h"

@@ -15,7 +15,6 @@
 #include <utility>  // for pair<>
 #endif
 
-#include "app/app_switches.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -102,6 +101,7 @@
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/gl/gl_switches.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/glue/resource_type.h"
 #include "webkit/plugins/plugin_switches.h"

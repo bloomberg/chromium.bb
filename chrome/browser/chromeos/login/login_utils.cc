@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/app_switches.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -58,6 +57,7 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/url_request/url_request_context.h"
 #include "views/widget/widget_gtk.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 namespace chromeos {
 

@@ -1,11 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 #include <vector>
 
-#include "app/app_switches.h"
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -32,6 +31,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/size.h"
 
 namespace {

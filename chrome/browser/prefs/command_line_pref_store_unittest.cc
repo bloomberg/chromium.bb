@@ -4,7 +4,6 @@
 
 #include <gtest/gtest.h>
 
-#include "app/app_switches.h"
 #include "base/command_line.h"
 #include "base/ref_counted.h"
 #include "base/string_util.h"

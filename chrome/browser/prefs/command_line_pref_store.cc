@@ -4,7 +4,6 @@
 
 #include "chrome/browser/prefs/command_line_pref_store.h"
 
-#include "app/app_switches.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"

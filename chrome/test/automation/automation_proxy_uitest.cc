@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "app/app_switches.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"

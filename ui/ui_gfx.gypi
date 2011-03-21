@@ -81,6 +81,8 @@
         'gfx/gfx_paths.h',
         'gfx/gfx_module.cc',
         'gfx/gfx_module.h',
+        'gfx/gl/gl_switches.cc',
+        'gfx/gl/gl_switches.h',
         'gfx/image.cc',
         'gfx/image.h',
         'gfx/image_mac.mm',

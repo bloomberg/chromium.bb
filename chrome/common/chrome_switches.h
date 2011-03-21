@@ -16,9 +16,9 @@
 namespace switches {
 
 // -----------------------------------------------------------------------------
-// Can't find the switch you are looking for? Try looking in app/app_switches.cc
-// or base/base_switches.cc or content/common/content_switches.cc or
-// media/base/media_switches.cc instead.
+// Can't find the switch you are looking for? Try looking in
+// ui/gfx/gl/gl_switches.cc or base/base_switches.cc or
+// content/common/content_switches.cc or media/base/media_switches.cc instead.
 // -----------------------------------------------------------------------------
 
 // All switches in alphabetical order. The switches should be documented
