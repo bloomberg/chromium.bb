@@ -458,7 +458,7 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
   string16 new_title(GetInputTitle());
 
   if (!show_tree_ || !selected_parent) {
-    bookmark_utils::ApplyEditsWithNoGroupChange(
+    bookmark_utils::ApplyEditsWithNoFolderChange(
         bb_model_, parent_, details_, new_title, new_url);
     return;
   }
@@ -474,7 +474,7 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
     return;
   }
 
-  bookmark_utils::ApplyEditsWithPossibleGroupChange(
+  bookmark_utils::ApplyEditsWithPossibleFolderChange(
       bb_model_, new_parent, details_, new_title, new_url);
 }
 

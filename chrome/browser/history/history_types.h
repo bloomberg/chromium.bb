@@ -260,27 +260,27 @@ struct PageVisit {
 
 // StarredEntry ---------------------------------------------------------------
 
-// StarredEntry represents either a starred page, or a star grouping (where
-// a star grouping consists of child starred entries). Use the type to
-// determine the type of a particular entry.
+// StarredEntry represents either a starred page, or a folder (where a folder
+// consists of child starred entries). Use the type to determine the type of a
+// particular entry.
 //
 // The database internally uses the id field to uniquely identify a starred
 // entry. On the other hand, the UI, which is anything routed through
 // HistoryService and HistoryBackend (including BookmarkBarView), uses the
-// url field to uniquely identify starred entries of type URL and the group_id
-// field to uniquely identify starred entries of type USER_GROUP. For example,
+// url field to uniquely identify starred entries of type URL and the folder_id
+// field to uniquely identify starred entries of type USER_FOLDER. For example,
 // HistoryService::UpdateStarredEntry identifies the entry by url (if the
-// type is URL) or group_id (if the type is not URL).
+// type is URL) or folder_id (if the type is not URL).
 struct StarredEntry {
   enum Type {
-    // Type represents a starred URL (StarredEntry).
+    // Type represents a starred URL.
     URL,
 
-    // The bookmark bar grouping.
+    // The bookmark bar folder.
     BOOKMARK_BAR,
 
-    // User created group.
-    USER_GROUP,
+    // User created folder.
+    USER_FOLDER,
 
     // The "other bookmarks" folder that holds uncategorized bookmarks.
     OTHER
@@ -300,17 +300,17 @@ struct StarredEntry {
   // When this was added.
   base::Time date_added;
 
-  // Group ID of the star group this entry is in. If 0, this entry is not
-  // in a star group.
-  UIStarID parent_group_id;
+  // Folder ID of the folder this entry is in. If 0, this entry is not in a
+  // folder.
+  UIStarID parent_folder_id;
 
-  // Unique identifier for groups. This is assigned by the UI.
+  // Unique identifier for folders. This is assigned by the UI.
   //
   // WARNING: this is NOT the same as id, id is assigned by the database,
   // this is assigned by the UI. See note about StarredEntry for more info.
-  UIStarID group_id;
+  UIStarID folder_id;
 
-  // Visual order within the parent. Only valid if group_id is not 0.
+  // Visual order within the parent. Only valid if folder_id is not 0.
   int visual_order;
 
   // Type of this entry (see enum).
@@ -323,8 +323,8 @@ struct StarredEntry {
   // starred.
   URLID url_id;
 
-  // Time the entry was last modified. This is only used for groups and
-  // indicates the last time a URL was added as a child to the group.
+  // Time the entry was last modified. This is only used for folders and
+  // indicates the last time a URL was added as a child to the folder.
   base::Time date_folder_modified;
 };
 

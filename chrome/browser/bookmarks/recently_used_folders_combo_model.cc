@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ const size_t kMaxMRUFolders = 5;
 RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
     BookmarkModel* model, const BookmarkNode* node)
     // Use + 2 to account for bookmark bar and other node.
-    : nodes_(bookmark_utils::GetMostRecentlyModifiedGroups(
+    : nodes_(bookmark_utils::GetMostRecentlyModifiedFolders(
           model, kMaxMRUFolders + 2)),
       node_parent_index_(0) {
   // TODO(sky): bug 1173415 add a separator in the combobox here.

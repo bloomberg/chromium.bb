@@ -369,7 +369,7 @@ TEST_F(BookmarkEditorControllerTreeTest, ChangeBookmarkURLInPlace) {
   ASSERT_EQ(3, childIndex);
 }
 
-TEST_F(BookmarkEditorControllerTreeTest, ChangeBookmarkGroup) {
+TEST_F(BookmarkEditorControllerTreeTest, ChangeBookmarkFolder) {
   [controller_ selectTestNodeInBrowser:folder_c_];
   [controller_ ok:nil];
   UpdateBB3();
@@ -379,7 +379,7 @@ TEST_F(BookmarkEditorControllerTreeTest, ChangeBookmarkGroup) {
   ASSERT_EQ(4, childIndex);
 }
 
-TEST_F(BookmarkEditorControllerTreeTest, ChangeNameAndBookmarkGroup) {
+TEST_F(BookmarkEditorControllerTreeTest, ChangeNameAndBookmarkFolder) {
   [controller_ setDisplayName:@"NEW NAME"];
   [controller_ selectTestNodeInBrowser:folder_c_];
   [controller_ ok:nil];
@@ -391,7 +391,7 @@ TEST_F(BookmarkEditorControllerTreeTest, ChangeNameAndBookmarkGroup) {
   EXPECT_EQ(bookmark_bb_3_->GetTitle(), ASCIIToUTF16("NEW NAME"));
 }
 
-TEST_F(BookmarkEditorControllerTreeTest, AddFolderWithGroupSelected) {
+TEST_F(BookmarkEditorControllerTreeTest, AddFolderWithFolderSelected) {
   // Folders are NOT added unless the OK button is pressed.
   [controller_ newFolder:nil];
   [controller_ cancel:nil];

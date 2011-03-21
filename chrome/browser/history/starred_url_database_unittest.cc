@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,8 +34,8 @@ class StarredURLDatabaseTest : public testing::Test,
     EXPECT_EQ(entry.id, db_value.id);
     EXPECT_TRUE(entry.title == db_value.title);
     EXPECT_EQ(entry.date_added.ToTimeT(), db_value.date_added.ToTimeT());
-    EXPECT_EQ(entry.group_id, db_value.group_id);
-    EXPECT_EQ(entry.parent_group_id, db_value.parent_group_id);
+    EXPECT_EQ(entry.folder_id, db_value.folder_id);
+    EXPECT_EQ(entry.parent_folder_id, db_value.parent_folder_id);
     EXPECT_EQ(entry.visual_order, db_value.visual_order);
     EXPECT_EQ(entry.type, db_value.type);
     EXPECT_EQ(entry.url_id, db_value.url_id);
@@ -100,15 +100,15 @@ class StarredURLDatabaseTest : public testing::Test,
 
 //-----------------------------------------------------------------------------
 
-TEST_F(StarredURLDatabaseTest, FixOrphanedGroup) {
+TEST_F(StarredURLDatabaseTest, FixOrphanedFolder) {
   const int initial_count = GetStarredEntryCount();
 
-  // Create a group that isn't parented to the other/bookmark folders.
+  // Create a folder that isn't parented to the other/bookmark folders.
   StarredEntry g_entry;
-  g_entry.type = StarredEntry::USER_GROUP;
-  g_entry.parent_group_id = 100;
+  g_entry.type = StarredEntry::USER_FOLDER;
+  g_entry.parent_folder_id = 100;
   g_entry.visual_order = 10;
-  g_entry.group_id = 100;
+  g_entry.folder_id = 100;
   CreateStarredEntry(&g_entry);
 
   ASSERT_TRUE(EnsureStarredIntegrity());
@@ -116,9 +116,9 @@ TEST_F(StarredURLDatabaseTest, FixOrphanedGroup) {
   // Make sure no new entries were added.
   ASSERT_EQ(initial_count + 1, GetStarredEntryCount());
 
-  // Make sure the group was moved to the bookmark bar folder.
+  // Make sure the folder was moved to the bookmark bar folder.
   ASSERT_TRUE(GetStarredEntry(g_entry.id, &g_entry));
-  ASSERT_EQ(HistoryService::kBookmarkBarID, g_entry.parent_group_id);
+  ASSERT_EQ(HistoryService::kBookmarkBarID, g_entry.parent_folder_id);
   ASSERT_EQ(0, g_entry.visual_order);
 }
 
@@ -127,13 +127,13 @@ TEST_F(StarredURLDatabaseTest, FixOrphanedBookmarks) {
 
   // Create two bookmarks that aren't in a random folder no on the bookmark bar.
   StarredEntry entry1;
-  entry1.parent_group_id = 100;
+  entry1.parent_folder_id = 100;
   entry1.visual_order = 10;
   entry1.url = GURL("http://google.com/1");
   CreateStarredEntry(&entry1);
 
   StarredEntry entry2;
-  entry2.parent_group_id = 101;
+  entry2.parent_folder_id = 101;
   entry2.visual_order = 20;
   entry2.url = GURL("http://google.com/2");
   CreateStarredEntry(&entry2);
@@ -146,22 +146,22 @@ TEST_F(StarredURLDatabaseTest, FixOrphanedBookmarks) {
   // Make sure the entries were moved to the bookmark bar and the visual order
   // order was updated appropriately.
   ASSERT_TRUE(GetStarredEntry(entry1.id, &entry1));
-  ASSERT_EQ(HistoryService::kBookmarkBarID, entry1.parent_group_id);
+  ASSERT_EQ(HistoryService::kBookmarkBarID, entry1.parent_folder_id);
 
   ASSERT_TRUE(GetStarredEntry(entry2.id, &entry2));
-  ASSERT_EQ(HistoryService::kBookmarkBarID, entry2.parent_group_id);
+  ASSERT_EQ(HistoryService::kBookmarkBarID, entry2.parent_folder_id);
   ASSERT_TRUE((entry1.visual_order == 0 && entry2.visual_order == 1) ||
               (entry1.visual_order == 1 && entry2.visual_order == 0));
 }
 
-TEST_F(StarredURLDatabaseTest, FixGroupCycleDepth0) {
+TEST_F(StarredURLDatabaseTest, FixFolderCycleDepth0) {
   const int initial_count = GetStarredEntryCount();
 
-  // Create a group that is parented to itself.
+  // Create a folder that is parented to itself.
   StarredEntry entry1;
-  entry1.group_id = entry1.parent_group_id = 100;
+  entry1.folder_id = entry1.parent_folder_id = 100;
   entry1.visual_order = 10;
-  entry1.type = StarredEntry::USER_GROUP;
+  entry1.type = StarredEntry::USER_FOLDER;
   CreateStarredEntry(&entry1);
 
   ASSERT_TRUE(EnsureStarredIntegrity());
@@ -169,28 +169,28 @@ TEST_F(StarredURLDatabaseTest, FixGroupCycleDepth0) {
   // Make sure no new entries were added.
   ASSERT_EQ(initial_count + 1, GetStarredEntryCount());
 
-  // Make sure the group were moved to the bookmark bar and the visual order
+  // Make sure the folder were moved to the bookmark bar and the visual order
   // order was updated appropriately.
   ASSERT_TRUE(GetStarredEntry(entry1.id, &entry1));
-  ASSERT_EQ(HistoryService::kBookmarkBarID, entry1.parent_group_id);
+  ASSERT_EQ(HistoryService::kBookmarkBarID, entry1.parent_folder_id);
   ASSERT_EQ(0, entry1.visual_order);
 }
 
-TEST_F(StarredURLDatabaseTest, FixGroupCycleDepth1) {
+TEST_F(StarredURLDatabaseTest, FixFolderCycleDepth1) {
   const int initial_count = GetStarredEntryCount();
 
   StarredEntry entry1;
-  entry1.group_id = 100;
-  entry1.parent_group_id = 101;
+  entry1.folder_id = 100;
+  entry1.parent_folder_id = 101;
   entry1.visual_order = 10;
-  entry1.type = StarredEntry::USER_GROUP;
+  entry1.type = StarredEntry::USER_FOLDER;
   CreateStarredEntry(&entry1);
 
   StarredEntry entry2;
-  entry2.group_id = 101;
-  entry2.parent_group_id = 100;
+  entry2.folder_id = 101;
+  entry2.parent_folder_id = 100;
   entry2.visual_order = 11;
-  entry2.type = StarredEntry::USER_GROUP;
+  entry2.type = StarredEntry::USER_FOLDER;
   CreateStarredEntry(&entry2);
 
   ASSERT_TRUE(EnsureStarredIntegrity());
@@ -198,12 +198,12 @@ TEST_F(StarredURLDatabaseTest, FixGroupCycleDepth1) {
   // Make sure no new entries were added.
   ASSERT_EQ(initial_count + 2, GetStarredEntryCount());
 
-  // Because the groups caused a cycle, entry1 is moved the bookmark bar, which
+  // Because the folders caused a cycle, entry1 is moved the bookmark bar, which
   // breaks the cycle.
   ASSERT_TRUE(GetStarredEntry(entry1.id, &entry1));
   ASSERT_TRUE(GetStarredEntry(entry2.id, &entry2));
-  ASSERT_EQ(HistoryService::kBookmarkBarID, entry1.parent_group_id);
-  ASSERT_EQ(100, entry2.parent_group_id);
+  ASSERT_EQ(HistoryService::kBookmarkBarID, entry1.parent_folder_id);
+  ASSERT_EQ(100, entry2.parent_folder_id);
   ASSERT_EQ(0, entry1.visual_order);
   ASSERT_EQ(0, entry2.visual_order);
 }
@@ -214,14 +214,14 @@ TEST_F(StarredURLDatabaseTest, FixVisualOrder) {
   // Star two urls.
   StarredEntry entry1;
   entry1.url = GURL("http://google.com/1");
-  entry1.parent_group_id = HistoryService::kBookmarkBarID;
+  entry1.parent_folder_id = HistoryService::kBookmarkBarID;
   entry1.visual_order = 5;
   CreateStarredEntry(&entry1);
 
   // Add url2 and star it.
   StarredEntry entry2;
   entry2.url = GURL("http://google.com/2");
-  entry2.parent_group_id = HistoryService::kBookmarkBarID;
+  entry2.parent_folder_id = HistoryService::kBookmarkBarID;
   entry2.visual_order = 10;
   CreateStarredEntry(&entry2);
 
@@ -240,21 +240,21 @@ TEST_F(StarredURLDatabaseTest, FixVisualOrder) {
   CompareEntryByID(entry2);
 }
 
-TEST_F(StarredURLDatabaseTest, FixDuplicateGroupIDs) {
+TEST_F(StarredURLDatabaseTest, FixDuplicateFolderIDs) {
   const int initial_count = GetStarredEntryCount();
 
-  // Create two groups with the same group id.
+  // Create two folders with the same folder id.
   StarredEntry entry1;
-  entry1.type = StarredEntry::USER_GROUP;
-  entry1.group_id = 10;
-  entry1.parent_group_id = HistoryService::kBookmarkBarID;
+  entry1.type = StarredEntry::USER_FOLDER;
+  entry1.folder_id = 10;
+  entry1.parent_folder_id = HistoryService::kBookmarkBarID;
   CreateStarredEntry(&entry1);
   StarredEntry entry2 = entry1;
   CreateStarredEntry(&entry2);
 
   ASSERT_TRUE(EnsureStarredIntegrity());
 
-  // Make sure only one group exists.
+  // Make sure only one folder exists.
   ASSERT_EQ(initial_count + 1, GetStarredEntryCount());
 
   StarredEntry entry;
@@ -268,7 +268,7 @@ TEST_F(StarredURLDatabaseTest, RemoveStarredEntriesWithEmptyURL) {
   StarredEntry entry;
   entry.url = GURL("http://google.com");
   entry.title = UTF8ToUTF16("FOO");
-  entry.parent_group_id = HistoryService::kBookmarkBarID;
+  entry.parent_folder_id = HistoryService::kBookmarkBarID;
 
   ASSERT_NE(0, CreateStarredEntry(&entry));
 

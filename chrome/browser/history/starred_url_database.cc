@@ -6,8 +6,8 @@
 
 #include "app/sql/statement.h"
 #include "base/file_util.h"
-#include "base/logging.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/scoped_vector.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -24,17 +24,17 @@
 // starred
 //   id                 Unique identifier (primary key) for the entry.
 //   type               Type of entry, if 0 this corresponds to a URL, 1 for
-//                      a system grouping, 2 for a user created group, 3 for
+//                      a system folder, 2 for a user created folder, 3 for
 //                      other.
 //   url_id             ID of the url, only valid if type == 0
-//   group_id           ID of the group, only valid if type != 0. This id comes
+//   group_id           ID of the folder, only valid if type != 0. This id comes
 //                      from the UI and is NOT the same as id.
 //   title              User assigned title.
 //   date_added         Creation date.
 //   visual_order       Visual order within parent.
-//   parent_id          Group ID of the parent this entry is contained in, if 0
-//                      entry is not in a group.
-//   date_modified      Time the group was last modified. See comments in
+//   parent_id          Folder ID of the parent this entry is contained in, if 0
+//                      entry is not in a folder.
+//   date_modified      Time the folder was last modified. See comments in
 //                      StarredEntry::date_folder_modified
 // NOTE: group_id and parent_id come from the UI, id is assigned by the
 // db.
@@ -62,7 +62,7 @@ void FillInStarredEntry(const sql::Statement& s, StarredEntry* entry) {
       entry->type = history::StarredEntry::BOOKMARK_BAR;
       break;
     case 2:
-      entry->type = history::StarredEntry::USER_GROUP;
+      entry->type = history::StarredEntry::USER_FOLDER;
       break;
     case 3:
       entry->type = history::StarredEntry::OTHER;
@@ -74,9 +74,9 @@ void FillInStarredEntry(const sql::Statement& s, StarredEntry* entry) {
   entry->title = s.ColumnString16(2);
   entry->date_added = base::Time::FromInternalValue(s.ColumnInt64(3));
   entry->visual_order = s.ColumnInt(4);
-  entry->parent_group_id = s.ColumnInt64(5);
+  entry->parent_folder_id = s.ColumnInt64(5);
   entry->url_id = s.ColumnInt64(7);
-  entry->group_id = s.ColumnInt64(8);
+  entry->folder_id = s.ColumnInt64(8);
   entry->date_folder_modified = base::Time::FromInternalValue(s.ColumnInt64(9));
 }
 
@@ -132,16 +132,16 @@ bool StarredURLDatabase::GetAllStarredEntries(
 
 bool StarredURLDatabase::EnsureStarredIntegrity() {
   std::set<StarredNode*> roots;
-  std::set<StarID> groups_with_duplicate_ids;
+  std::set<StarID> folders_with_duplicate_ids;
   std::set<StarredNode*> unparented_urls;
   std::set<StarID> empty_url_ids;
 
-  if (!BuildStarNodes(&roots, &groups_with_duplicate_ids, &unparented_urls,
+  if (!BuildStarNodes(&roots, &folders_with_duplicate_ids, &unparented_urls,
                       &empty_url_ids)) {
     return false;
   }
 
-  bool valid = EnsureStarredIntegrityImpl(&roots, groups_with_duplicate_ids,
+  bool valid = EnsureStarredIntegrityImpl(&roots, folders_with_duplicate_ids,
                                           &unparented_urls, empty_url_ids);
 
   STLDeleteElements(&roots);
@@ -151,7 +151,7 @@ bool StarredURLDatabase::EnsureStarredIntegrity() {
 
 bool StarredURLDatabase::UpdateStarredEntryRow(StarID star_id,
                                                const string16& title,
-                                               UIStarID parent_group_id,
+                                               UIStarID parent_folder_id,
                                                int visual_order,
                                                base::Time date_modified) {
   DCHECK(star_id && visual_order >= 0);
@@ -162,17 +162,17 @@ bool StarredURLDatabase::UpdateStarredEntryRow(StarID star_id,
     return 0;
 
   statement.BindString16(0, title);
-  statement.BindInt64(1, parent_group_id);
+  statement.BindInt64(1, parent_folder_id);
   statement.BindInt(2, visual_order);
   statement.BindInt64(3, date_modified.ToInternalValue());
   statement.BindInt64(4, star_id);
   return statement.Run();
 }
 
-bool StarredURLDatabase::AdjustStarredVisualOrder(UIStarID parent_group_id,
+bool StarredURLDatabase::AdjustStarredVisualOrder(UIStarID parent_folder_id,
                                                   int start_visual_order,
                                                   int delta) {
-  DCHECK(parent_group_id && start_visual_order >= 0);
+  DCHECK(parent_folder_id && start_visual_order >= 0);
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE starred SET visual_order=visual_order+? "
       "WHERE parent_id=? AND visual_order >= ?"));
@@ -180,14 +180,14 @@ bool StarredURLDatabase::AdjustStarredVisualOrder(UIStarID parent_group_id,
     return false;
 
   statement.BindInt(0, delta);
-  statement.BindInt64(1, parent_group_id);
+  statement.BindInt64(1, parent_folder_id);
   statement.BindInt(2, start_visual_order);
   return statement.Run();
 }
 
 StarID StarredURLDatabase::CreateStarredEntryRow(URLID url_id,
-                                                 UIStarID group_id,
-                                                 UIStarID parent_group_id,
+                                                 UIStarID folder_id,
+                                                 UIStarID parent_folder_id,
                                                  const string16& title,
                                                  const base::Time& date_added,
                                                  int visual_order,
@@ -208,7 +208,7 @@ StarID StarredURLDatabase::CreateStarredEntryRow(URLID url_id,
     case history::StarredEntry::BOOKMARK_BAR:
       statement.BindInt(0, 1);
       break;
-    case history::StarredEntry::USER_GROUP:
+    case history::StarredEntry::USER_FOLDER:
       statement.BindInt(0, 2);
       break;
     case history::StarredEntry::OTHER:
@@ -218,11 +218,11 @@ StarID StarredURLDatabase::CreateStarredEntryRow(URLID url_id,
       NOTREACHED();
   }
   statement.BindInt64(1, url_id);
-  statement.BindInt64(2, group_id);
+  statement.BindInt64(2, folder_id);
   statement.BindString16(3, title);
   statement.BindInt64(4, date_added.ToInternalValue());
   statement.BindInt(5, visual_order);
-  statement.BindInt64(6, parent_group_id);
+  statement.BindInt64(6, parent_folder_id);
   statement.BindInt64(7, base::Time().ToInternalValue());
   if (statement.Run())
     return GetDB().GetLastInsertRowId();
@@ -260,14 +260,14 @@ StarID StarredURLDatabase::CreateStarredEntry(StarredEntry* entry) {
   entry->id = 0;  // Ensure 0 for failure case.
 
   // Adjust the visual order when we are inserting it somewhere.
-  if (entry->parent_group_id)
-    AdjustStarredVisualOrder(entry->parent_group_id, entry->visual_order, 1);
+  if (entry->parent_folder_id)
+    AdjustStarredVisualOrder(entry->parent_folder_id, entry->visual_order, 1);
 
   // Insert the new entry.
   switch (entry->type) {
-    case StarredEntry::USER_GROUP:
-      entry->id = CreateStarredEntryRow(0, entry->group_id,
-          entry->parent_group_id, entry->title, entry->date_added,
+    case StarredEntry::USER_FOLDER:
+      entry->id = CreateStarredEntryRow(0, entry->folder_id,
+          entry->parent_folder_id, entry->title, entry->date_added,
           entry->visual_order, entry->type);
       break;
 
@@ -285,8 +285,8 @@ StarID StarredURLDatabase::CreateStarredEntry(StarredEntry* entry) {
       }
 
       // Create the star entry referring to the URL row.
-      entry->id = CreateStarredEntryRow(entry->url_id, entry->group_id,
-          entry->parent_group_id, entry->title, entry->date_added,
+      entry->id = CreateStarredEntryRow(entry->url_id, entry->folder_id,
+          entry->parent_folder_id, entry->title, entry->date_added,
           entry->visual_order, entry->type);
 
       // Update the URL row to refer to this new starred entry.
@@ -301,23 +301,23 @@ StarID StarredURLDatabase::CreateStarredEntry(StarredEntry* entry) {
   return entry->id;
 }
 
-UIStarID StarredURLDatabase::GetMaxGroupID() {
-  sql::Statement max_group_id_statement(GetDB().GetUniqueStatement(
+UIStarID StarredURLDatabase::GetMaxFolderID() {
+  sql::Statement max_folder_id_statement(GetDB().GetUniqueStatement(
       "SELECT MAX(group_id) FROM starred"));
-  if (!max_group_id_statement) {
+  if (!max_folder_id_statement) {
     NOTREACHED() << GetDB().GetErrorMessage();
     return 0;
   }
-  if (!max_group_id_statement.Step()) {
+  if (!max_folder_id_statement.Step()) {
     NOTREACHED() << GetDB().GetErrorMessage();
     return 0;
   }
-  return max_group_id_statement.ColumnInt64(0);
+  return max_folder_id_statement.ColumnInt64(0);
 }
 
 bool StarredURLDatabase::BuildStarNodes(
     std::set<StarredURLDatabase::StarredNode*>* roots,
-    std::set<StarID>* groups_with_duplicate_ids,
+    std::set<StarID>* folders_with_duplicate_ids,
     std::set<StarredNode*>* unparented_urls,
     std::set<StarID>* empty_url_ids) {
   std::vector<StarredEntry> star_entries;
@@ -326,18 +326,18 @@ bool StarredURLDatabase::BuildStarNodes(
     return false;
   }
 
-  // Create the group/bookmark-bar/other nodes.
-  std::map<UIStarID, StarredNode*> group_id_to_node_map;
+  // Create the folder/bookmark-bar/other nodes.
+  std::map<UIStarID, StarredNode*> folder_id_to_node_map;
   for (size_t i = 0; i < star_entries.size(); ++i) {
     if (star_entries[i].type != StarredEntry::URL) {
-      if (group_id_to_node_map.find(star_entries[i].group_id) !=
-          group_id_to_node_map.end()) {
-        // There's already a group with this ID.
-        groups_with_duplicate_ids->insert(star_entries[i].id);
+      if (folder_id_to_node_map.find(star_entries[i].folder_id) !=
+          folder_id_to_node_map.end()) {
+        // There's already a folder with this ID.
+        folders_with_duplicate_ids->insert(star_entries[i].id);
       } else {
         // Create the node and update the mapping.
         StarredNode* node = new StarredNode(star_entries[i]);
-        group_id_to_node_map[star_entries[i].group_id] = node;
+        folder_id_to_node_map[star_entries[i].folder_id] = node;
       }
     }
   }
@@ -350,33 +350,33 @@ bool StarredURLDatabase::BuildStarNodes(
     if (star_entries[i].type == StarredEntry::URL) {
       if (star_entries[i].url.is_empty()) {
         empty_url_ids->insert(star_entries[i].id);
-      } else if (!star_entries[i].parent_group_id ||
-          group_id_to_node_map.find(star_entries[i].parent_group_id) ==
-          group_id_to_node_map.end()) {
+      } else if (!star_entries[i].parent_folder_id ||
+          folder_id_to_node_map.find(star_entries[i].parent_folder_id) ==
+          folder_id_to_node_map.end()) {
         // This entry has no parent, or we couldn't find the parent.
         StarredNode* node = new StarredNode(star_entries[i]);
         unparented_urls->insert(node);
       } else {
         // Add the node to its parent.
         StarredNode* parent =
-            group_id_to_node_map[star_entries[i].parent_group_id];
+            folder_id_to_node_map[star_entries[i].parent_folder_id];
         StarredNode* node = new StarredNode(star_entries[i]);
         parent->Add(node, parent->child_count());
       }
-    } else if (groups_with_duplicate_ids->find(star_entries[i].id) ==
-               groups_with_duplicate_ids->end()) {
-      // The entry is a group (or bookmark bar/other node) that isn't
+    } else if (folders_with_duplicate_ids->find(star_entries[i].id) ==
+               folders_with_duplicate_ids->end()) {
+      // The entry is a folder (or bookmark bar/other node) that isn't
       // marked as a duplicate.
-      if (!star_entries[i].parent_group_id ||
-          group_id_to_node_map.find(star_entries[i].parent_group_id) ==
-          group_id_to_node_map.end()) {
+      if (!star_entries[i].parent_folder_id ||
+          folder_id_to_node_map.find(star_entries[i].parent_folder_id) ==
+          folder_id_to_node_map.end()) {
         // Entry has no parent, or the parent wasn't found.
-        roots->insert(group_id_to_node_map[star_entries[i].group_id]);
+        roots->insert(folder_id_to_node_map[star_entries[i].folder_id]);
       } else {
-        // Parent the group node.
+        // Parent the folder node.
         StarredNode* parent =
-            group_id_to_node_map[star_entries[i].parent_group_id];
-        StarredNode* node = group_id_to_node_map[star_entries[i].group_id];
+            folder_id_to_node_map[star_entries[i].parent_folder_id];
+        StarredNode* node = folder_id_to_node_map[star_entries[i].folder_id];
         if (!node->HasAncestor(parent) && !parent->HasAncestor(node)) {
           parent->Add(node, parent->child_count());
         } else {
@@ -408,7 +408,7 @@ bool StarredURLDatabase::EnsureVisualOrder(
       StarredEntry& entry = node->GetChild(i)->value;
       entry.visual_order = i;
       LOG(WARNING) << "Bookmark visual order is wrong";
-      if (!UpdateStarredEntryRow(entry.id, entry.title, entry.parent_group_id,
+      if (!UpdateStarredEntryRow(entry.id, entry.title, entry.parent_folder_id,
                                  i, entry.date_folder_modified)) {
         NOTREACHED() << "Unable to update visual order";
         return false;
@@ -422,7 +422,7 @@ bool StarredURLDatabase::EnsureVisualOrder(
 
 bool StarredURLDatabase::EnsureStarredIntegrityImpl(
     std::set<StarredURLDatabase::StarredNode*>* roots,
-    const std::set<StarID>& groups_with_duplicate_ids,
+    const std::set<StarID>& folders_with_duplicate_ids,
     std::set<StarredNode*>* unparented_urls,
     const std::set<StarID>& empty_url_ids) {
   // Make sure the bookmark bar entry exists.
@@ -441,13 +441,13 @@ bool StarredURLDatabase::EnsureStarredIntegrityImpl(
   if (!other_node) {
     LOG(WARNING) << "No bookmark other folder in database";
     StarredEntry entry;
-    entry.group_id = GetMaxGroupID() + 1;
-    if (entry.group_id == 1) {
+    entry.folder_id = GetMaxFolderID() + 1;
+    if (entry.folder_id == 1) {
       NOTREACHED() << "Unable to get new id for other bookmarks folder";
       return false;
     }
     entry.id = CreateStarredEntryRow(
-        0, entry.group_id, 0, UTF8ToUTF16("other"), base::Time::Now(), 0,
+        0, entry.folder_id, 0, UTF8ToUTF16("other"), base::Time::Now(), 0,
         history::StarredEntry::OTHER);
     if (!entry.id) {
       NOTREACHED() << "Unable to create other bookmarks folder";
@@ -458,7 +458,7 @@ bool StarredURLDatabase::EnsureStarredIntegrityImpl(
     roots->insert(other_node);
   }
 
-  // We could potentially make sure only one group with type
+  // We could potentially make sure only one folder with type
   // BOOKMARK_BAR/OTHER, but history backend enforces this.
 
   // Nuke any entries with no url.
@@ -489,23 +489,23 @@ bool StarredURLDatabase::EnsureStarredIntegrityImpl(
     }
   }
 
-  // Nuke any groups with duplicate ids. A duplicate id means there are two
-  // folders in the starred table with the same group_id. We only keep the
-  // first folder, all other groups are removed.
-  for (std::set<StarID>::const_iterator i = groups_with_duplicate_ids.begin();
-       i != groups_with_duplicate_ids.end(); ++i) {
-    LOG(WARNING) << "Duplicate group id in bookmark database";
+  // Nuke any folders with duplicate ids. A duplicate id means there are two
+  // folders in the starred table with the same folder_id. We only keep the
+  // first folder, all other folders are removed.
+  for (std::set<StarID>::const_iterator i = folders_with_duplicate_ids.begin();
+       i != folders_with_duplicate_ids.end(); ++i) {
+    LOG(WARNING) << "Duplicate folder id in bookmark database";
     if (!DeleteStarredEntryRow(*i)) {
       NOTREACHED() << "Unable to delete folder";
       return false;
     }
   }
 
-  // Move unparented user groups back to the bookmark bar.
+  // Move unparented user folders back to the bookmark bar.
   {
     std::set<StarredNode*>::iterator i = roots->begin();
     while (i != roots->end()) {
-      if ((*i)->value.type == StarredEntry::USER_GROUP) {
+      if ((*i)->value.type == StarredEntry::USER_FOLDER) {
         LOG(WARNING) << "Bookmark folder not on bookmark bar found";
         if (!Move(*i, bookmark_node))
           return false;
@@ -522,9 +522,9 @@ bool StarredURLDatabase::EnsureStarredIntegrityImpl(
 bool StarredURLDatabase::Move(StarredNode* source, StarredNode* new_parent) {
   history::StarredEntry& entry = source->value;
   entry.visual_order = new_parent->child_count();
-  entry.parent_group_id = new_parent->value.group_id;
+  entry.parent_folder_id = new_parent->value.folder_id;
   if (!UpdateStarredEntryRow(entry.id, entry.title,
-                             entry.parent_group_id, entry.visual_order,
+                             entry.parent_folder_id, entry.visual_order,
                              entry.date_folder_modified)) {
     NOTREACHED() << "Unable to move folder";
     return false;
@@ -547,38 +547,38 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
   BookmarkNode other_node(0, GURL());
   other_node.Reset(entry);
 
-  std::map<history::UIStarID, history::StarID> group_id_to_id_map;
+  std::map<history::UIStarID, history::StarID> folder_id_to_id_map;
   typedef std::map<history::StarID, BookmarkNode*> IDToNodeMap;
   IDToNodeMap id_to_node_map;
 
-  history::UIStarID other_folder_group_id = 0;
+  history::UIStarID other_folder_folder_id = 0;
   history::StarID other_folder_id = 0;
 
-  // Iterate through the entries building a mapping between group_id and id.
+  // Iterate through the entries building a mapping between folder_id and id.
   for (std::vector<history::StarredEntry>::const_iterator i = entries.begin();
        i != entries.end(); ++i) {
     if (i->type != history::StarredEntry::URL) {
-      group_id_to_id_map[i->group_id] = i->id;
+      folder_id_to_id_map[i->folder_id] = i->id;
       if (i->type == history::StarredEntry::OTHER) {
         other_folder_id = i->id;
-        other_folder_group_id = i->group_id;
+        other_folder_folder_id = i->folder_id;
       }
     }
   }
 
   // Register the bookmark bar and other folder nodes in the maps.
   id_to_node_map[HistoryService::kBookmarkBarID] = &bookmark_bar_node;
-  group_id_to_id_map[HistoryService::kBookmarkBarID] =
+  folder_id_to_id_map[HistoryService::kBookmarkBarID] =
       HistoryService::kBookmarkBarID;
-  if (other_folder_group_id) {
+  if (other_folder_folder_id) {
     id_to_node_map[other_folder_id] = &other_node;
-    group_id_to_id_map[other_folder_group_id] = other_folder_id;
+    folder_id_to_id_map[other_folder_folder_id] = other_folder_id;
   }
 
   // Iterate through the entries again creating the nodes.
   for (std::vector<history::StarredEntry>::iterator i = entries.begin();
        i != entries.end(); ++i) {
-    if (!i->parent_group_id) {
+    if (!i->parent_folder_id) {
       DCHECK(i->type == history::StarredEntry::BOOKMARK_BAR ||
              i->type == history::StarredEntry::OTHER);
       // Only entries with no parent should be the bookmark bar and other
@@ -589,7 +589,7 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
     BookmarkNode* node = id_to_node_map[i->id];
     if (!node) {
       // Creating a node results in creating the parent. As such, it is
-      // possible for the node representing a group to have been created before
+      // possible for the node representing a folder to have been created before
       // encountering the details.
 
       // The created nodes are owned by the root node.
@@ -598,9 +598,9 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
     }
     node->Reset(*i);
 
-    DCHECK(group_id_to_id_map.find(i->parent_group_id) !=
-           group_id_to_id_map.end());
-    history::StarID parent_id = group_id_to_id_map[i->parent_group_id];
+    DCHECK(folder_id_to_id_map.find(i->parent_folder_id) !=
+           folder_id_to_id_map.end());
+    history::StarID parent_id = folder_id_to_id_map[i->parent_folder_id];
     BookmarkNode* parent = id_to_node_map[parent_id];
     if (!parent) {
       // Haven't encountered the parent yet, create it now.

@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/history/snippet.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -119,7 +119,7 @@ string16 GetNameForURL(const GURL& url);
 
 // Returns a vector containing up to |max_count| of the most recently modified
 // folders. This never returns an empty vector.
-std::vector<const BookmarkNode*> GetMostRecentlyModifiedGroups(
+std::vector<const BookmarkNode*> GetMostRecentlyModifiedFolders(
     BookmarkModel* model, size_t max_count);
 
 // Returns the most recently added bookmarks. This does not return folders,
@@ -162,7 +162,7 @@ bool DoesBookmarkContainText(const BookmarkNode* node,
 // done regarding moving from one folder to another).  If a new node is
 // explicitly being added, returns a pointer to the new node that was created.
 // Otherwise the return value is identically |node|.
-const BookmarkNode* ApplyEditsWithNoGroupChange(
+const BookmarkNode* ApplyEditsWithNoFolderChange(
     BookmarkModel* model,
     const BookmarkNode* parent,
     const BookmarkEditor::EditDetails& details,
@@ -173,7 +173,7 @@ const BookmarkNode* ApplyEditsWithNoGroupChange(
 // changed and the node will need to be removed and reinserted.  If a new node
 // is explicitly being added, returns a pointer to the new node that was
 // created.  Otherwise the return value is identically |node|.
-const BookmarkNode* ApplyEditsWithPossibleGroupChange(
+const BookmarkNode* ApplyEditsWithPossibleFolderChange(
     BookmarkModel* model,
     const BookmarkNode* new_parent,
     const BookmarkEditor::EditDetails& details,

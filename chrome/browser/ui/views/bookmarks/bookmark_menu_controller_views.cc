@@ -142,7 +142,7 @@ bool BookmarkMenuController::CanDrop(MenuItemView* menu,
 
   const BookmarkNode* drag_node = drop_data_.GetFirstNode(profile_);
   if (!drag_node) {
-    // Dragging a group from another profile, always accept.
+    // Dragging a folder from another profile, always accept.
     return true;
   }
 

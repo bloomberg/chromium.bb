@@ -146,7 +146,7 @@ void OpenAllImpl(const BookmarkNode* node,
       }  // else, new_browser == NULL, which happens during testing.
     }
   } else {
-    // Group, recurse through children.
+    // Folder, recurse through children.
     for (int i = 0; i < node->child_count(); ++i) {
       OpenAllImpl(node->GetChild(i), initial_disposition, navigator,
                   opened_url);
@@ -440,7 +440,7 @@ string16 GetNameForURL(const GURL& url) {
   }
 }
 
-std::vector<const BookmarkNode*> GetMostRecentlyModifiedGroups(
+std::vector<const BookmarkNode*> GetMostRecentlyModifiedFolders(
     BookmarkModel* model,
     size_t max_count) {
   std::vector<const BookmarkNode*> nodes;
@@ -563,7 +563,7 @@ static const BookmarkNode* CreateNewNode(BookmarkModel* model,
   return node;
 }
 
-const BookmarkNode* ApplyEditsWithNoGroupChange(BookmarkModel* model,
+const BookmarkNode* ApplyEditsWithNoFolderChange(BookmarkModel* model,
     const BookmarkNode* parent, const BookmarkEditor::EditDetails& details,
     const string16& new_title, const GURL& new_url) {
   if (details.type == BookmarkEditor::EditDetails::NEW_URL ||
@@ -581,7 +581,7 @@ const BookmarkNode* ApplyEditsWithNoGroupChange(BookmarkModel* model,
   return node;
 }
 
-const BookmarkNode* ApplyEditsWithPossibleGroupChange(BookmarkModel* model,
+const BookmarkNode* ApplyEditsWithPossibleFolderChange(BookmarkModel* model,
     const BookmarkNode* new_parent, const BookmarkEditor::EditDetails& details,
     const string16& new_title, const GURL& new_url) {
   if (details.type == BookmarkEditor::EditDetails::NEW_URL ||

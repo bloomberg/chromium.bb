@@ -69,7 +69,7 @@ void BookmarkNode::Reset(const history::StarredEntry& entry) {
     case history::StarredEntry::URL:
       type_ = BookmarkNode::URL;
       break;
-    case history::StarredEntry::USER_GROUP:
+    case history::StarredEntry::USER_FOLDER:
       type_ = BookmarkNode::FOLDER;
       break;
     case history::StarredEntry::BOOKMARK_BAR:
@@ -164,7 +164,7 @@ void BookmarkModel::Load() {
 
 const BookmarkNode* BookmarkModel::GetParentForNewNodes() {
   std::vector<const BookmarkNode*> nodes =
-      bookmark_utils::GetMostRecentlyModifiedGroups(this, 1);
+      bookmark_utils::GetMostRecentlyModifiedFolders(this, 1);
   return nodes.empty() ? bookmark_bar_node_ : nodes[0];
 }
 

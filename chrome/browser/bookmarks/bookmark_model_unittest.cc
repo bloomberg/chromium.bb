@@ -238,7 +238,7 @@ TEST_F(BookmarkModelTest, RemoveURL) {
   ASSERT_TRUE(model.GetMostRecentlyAddedNodeForURL(url) == NULL);
 }
 
-TEST_F(BookmarkModelTest, RemoveGroup) {
+TEST_F(BookmarkModelTest, RemoveFolder) {
   const BookmarkNode* root = model.GetBookmarkBarNode();
   const BookmarkNode* folder = model.AddFolder(root, 0, ASCIIToUTF16("foo"));
 
@@ -384,7 +384,7 @@ TEST_F(BookmarkModelTest, ParentForNewNodes) {
 }
 
 // Make sure recently modified stays in sync when adding a URL.
-TEST_F(BookmarkModelTest, MostRecentlyModifiedGroups) {
+TEST_F(BookmarkModelTest, MostRecentlyModifiedFolders) {
   // Add a folder.
   const BookmarkNode* folder = model.AddFolder(model.other_node(), 0,
                                                ASCIIToUTF16("foo"));
@@ -393,7 +393,7 @@ TEST_F(BookmarkModelTest, MostRecentlyModifiedGroups) {
 
   // Make sure folder is in the most recently modified.
   std::vector<const BookmarkNode*> most_recent_folders =
-      bookmark_utils::GetMostRecentlyModifiedGroups(&model, 1);
+      bookmark_utils::GetMostRecentlyModifiedFolders(&model, 1);
   ASSERT_EQ(1U, most_recent_folders.size());
   ASSERT_EQ(folder, most_recent_folders[0]);
 
@@ -401,7 +401,7 @@ TEST_F(BookmarkModelTest, MostRecentlyModifiedGroups) {
   // returned list.
   model.Remove(folder->parent(), 0);
   most_recent_folders =
-      bookmark_utils::GetMostRecentlyModifiedGroups(&model, 1);
+      bookmark_utils::GetMostRecentlyModifiedFolders(&model, 1);
   ASSERT_EQ(1U, most_recent_folders.size());
   ASSERT_TRUE(most_recent_folders[0] != folder);
 }
@@ -580,7 +580,7 @@ static void PopulateNodeImpl(const std::vector<std::string>& description,
     (*index)++;
     if (element == "[") {
       // Create a new folder and recurse to add all the children.
-      // Groups are given a unique named by way of an ever increasing integer
+      // Folders are given a unique named by way of an ever increasing integer
       // value. The folders need not have a name, but one is assigned to help
       // in debugging.
       static int next_folder_id = 1;
@@ -607,7 +607,7 @@ static void PopulateNodeImpl(const std::vector<std::string>& description,
 
 // Creates and adds nodes to parent based on description. description consists
 // of the following tokens (all space separated):
-//   [ : creates a new USER_GROUP node. All elements following the [ until the
+//   [ : creates a new USER_FOLDER node. All elements following the [ until the
 //       next balanced ] is encountered are added as children to the node.
 //   ] : closes the last folder created by [ so that any further nodes are added
 //       to the current folders parent.

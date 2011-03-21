@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ class StarredURLDatabase : public URLDatabase {
   // The unit tests poke our innards.
   friend class HistoryTest;
   friend class StarredURLDatabaseTest;
-  FRIEND_TEST_ALL_PREFIXES(HistoryTest, CreateStarGroup);
+  FRIEND_TEST_ALL_PREFIXES(HistoryTest, CreateStarFolder);
 
   // Writes bookmarks to the specified file.
   bool MigrateBookmarksToFile(const FilePath& path);
@@ -66,21 +66,21 @@ class StarredURLDatabase : public URLDatabase {
   // Gets all the starred entries.
   bool GetAllStarredEntries(std::vector<StarredEntry>* entries);
 
-  // Sets the title, parent_id, parent_group_id, visual_order and date_modifed
+  // Sets the title, parent_id, parent_folder_id, visual_order and date_modifed
   // of the specified star entry.
   //
   // WARNING: Does not update the visual order.
   bool UpdateStarredEntryRow(StarID star_id,
                              const string16& title,
-                             UIStarID parent_group_id,
+                             UIStarID parent_folder_id,
                              int visual_order,
                              base::Time date_modified);
 
-  // Adjusts the visual order of all children of parent_group_id with a
+  // Adjusts the visual order of all children of parent_folder_id with a
   // visual_order >= start_visual_order by delta. For example,
   // AdjustStarredVisualOrder(10, 0, 1) increments the visual order all children
-  // of group 10 with a visual order >= 0 by 1.
-  bool AdjustStarredVisualOrder(UIStarID parent_group_id,
+  // of folder 10 with a visual order >= 0 by 1.
+  bool AdjustStarredVisualOrder(UIStarID parent_folder_id,
                                 int start_visual_order,
                                 int delta);
 
@@ -89,8 +89,8 @@ class StarredURLDatabase : public URLDatabase {
   //
   // WARNING: Does not update the visual order.
   StarID CreateStarredEntryRow(URLID url_id,
-                               UIStarID group_id,
-                               UIStarID parent_group_id,
+                               UIStarID folder_id,
+                               UIStarID parent_folder_id,
                                const string16& title,
                                const base::Time& date_added,
                                int visual_order,
@@ -117,16 +117,16 @@ class StarredURLDatabase : public URLDatabase {
   // Used when checking integrity of starred table.
   typedef ui::TreeNodeWithValue<history::StarredEntry> StarredNode;
 
-  // Returns the max group id, or 0 if there is an error.
-  UIStarID GetMaxGroupID();
+  // Returns the max folder id, or 0 if there is an error.
+  UIStarID GetMaxFolderID();
 
   // Gets all the bookmarks and folders creating a StarredNode for each
   // bookmark and folder. On success all the root nodes (bookmark bar node,
   // other folder node, folders with no parent or folders with a parent that
   // would make a cycle) are added to roots.
   //
-  // If a group_id occurs more than once, all but the first ones id is added to
-  // groups_with_duplicate_ids.
+  // If a folder_id occurs more than once, all but the first ones id is added to
+  // folders_with_duplicate_ids.
   //
   // All bookmarks not on the bookmark bar/other folder are added to
   // unparented_urls.
@@ -137,7 +137,7 @@ class StarredURLDatabase : public URLDatabase {
   // This is used during integrity enforcing/checking of the starred table.
   bool BuildStarNodes(
       std::set<StarredNode*>* roots,
-      std::set<StarID>* groups_with_duplicate_ids,
+      std::set<StarID>* folders_with_duplicate_ids,
       std::set<StarredNode*>* unparented_urls,
       std::set<StarID>* empty_url_ids);
 
@@ -163,11 +163,11 @@ class StarredURLDatabase : public URLDatabase {
   // couldn't be repaired.
   bool EnsureStarredIntegrityImpl(
       std::set<StarredNode*>* roots,
-      const std::set<StarID>& groups_with_duplicate_ids,
+      const std::set<StarID>& folders_with_duplicate_ids,
       std::set<StarredNode*>* unparented_urls,
       const std::set<StarID>& empty_url_ids);
 
-  // Resets the visual order and parent_group_id of source's StarredEntry
+  // Resets the visual order and parent_folder_id of source's StarredEntry
   // and adds it to the end of new_parent's children.
   //
   // This is used if the starred table is an unexpected state and an entry

@@ -328,11 +328,11 @@ const BookmarkNode* BookmarkModelVerifier::SetURL(BookmarkModel* model,
   if (use_verifier_model_) {
     const BookmarkNode* v_node = NULL;
     FindNodeInVerifier(model, node, &v_node);
-    bookmark_utils::ApplyEditsWithNoGroupChange(
+    bookmark_utils::ApplyEditsWithNoFolderChange(
         verifier_model_, v_node->parent(),
         BookmarkEditor::EditDetails(v_node), v_node->GetTitle(), new_url);
   }
-  return bookmark_utils::ApplyEditsWithNoGroupChange(
+  return bookmark_utils::ApplyEditsWithNoFolderChange(
       model, node->parent(), BookmarkEditor::EditDetails(node),
       node->GetTitle(), new_url);
 }

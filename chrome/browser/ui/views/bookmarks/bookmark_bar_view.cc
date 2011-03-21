@@ -265,7 +265,7 @@ struct BookmarkBarView::DropInfo {
   // If true, the menu is being shown.
   bool is_menu_showing;
 
-  // If true, the user is dropping on a node. This is only used for group
+  // If true, the user is dropping on a node. This is only used for folder
   // nodes.
   bool drop_on;
 
@@ -326,8 +326,8 @@ const int BookmarkBarView::kNewtabVerticalPadding = 12;
 // static
 bool BookmarkBarView::testing_ = false;
 
-// Returns the bitmap to use for starred groups.
-static const SkBitmap& GetGroupIcon() {
+// Returns the bitmap to use for starred folders.
+static const SkBitmap& GetFolderIcon() {
   if (!kFolderIcon) {
     kFolderIcon = ResourceBundle::GetSharedInstance().
         GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
@@ -891,7 +891,7 @@ MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
       this,
       false);
   button->SetID(VIEW_ID_OTHER_BOOKMARKS);
-  button->SetIcon(GetGroupIcon());
+  button->SetIcon(GetFolderIcon());
   button->SetContextMenuController(this);
   button->set_tag(kOtherFolderButtonTag);
   button->SetAccessibleName(
@@ -1249,7 +1249,7 @@ views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
   } else {
     views::MenuButton* button = new BookmarkFolderButton(this,
         UTF16ToWide(node->GetTitle()), this, false);
-    button->SetIcon(GetGroupIcon());
+    button->SetIcon(GetFolderIcon());
     ConfigureButton(node, button);
     return button;
   }

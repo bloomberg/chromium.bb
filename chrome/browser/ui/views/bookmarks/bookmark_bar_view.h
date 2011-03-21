@@ -235,7 +235,7 @@ class BookmarkBarView : public DetachableToolbarView,
   // throbs.
   void StopThrobbing(bool immediate);
 
-  // Returns the number of buttons corresponding to starred urls/groups. This
+  // Returns the number of buttons corresponding to starred urls/folders. This
   // is equivalent to the number of children the bookmark bar node from the
   // bookmark bar model has.
   int GetBookmarkButtonCount();
@@ -469,16 +469,16 @@ class BookmarkBarView : public DetachableToolbarView,
   // Used for opening urls.
   PageNavigator* page_navigator_;
 
-  // Model providing details as to the starred entries/groups that should be
+  // Model providing details as to the starred entries/folders that should be
   // shown. This is owned by the Profile.
   BookmarkModel* model_;
 
   // Used to manage showing a Menu, either for the most recently bookmarked
-  // entries, or for the a starred group.
+  // entries, or for the starred folder.
   BookmarkMenuController* bookmark_menu_;
 
   // Used when showing a menu for drag and drop. That is, if the user drags
-  // over a group this becomes non-null and manages the menu showing the
+  // over a folder this becomes non-null and manages the menu showing the
   // contents of the node.
   BookmarkMenuController* bookmark_drop_menu_;
 

@@ -133,7 +133,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // Helper function which destroys all the bookmark buttons in the GtkToolbar.
   void RemoveAllBookmarkButtons();
 
-  // Returns the number of buttons corresponding to starred urls/groups. This
+  // Returns the number of buttons corresponding to starred urls/folders. This
   // is equivalent to the number of children the bookmark bar node from the
   // bookmark bar model has.
   int GetBookmarkButtonCount();
@@ -309,7 +309,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // Provides us with the offset into the background theme image.
   TabstripOriginProvider* tabstrip_origin_provider_;
 
-  // Model providing details as to the starred entries/groups that should be
+  // Model providing details as to the starred entries/folders that should be
   // shown. This is owned by the Profile.
   BookmarkModel* model_;
 

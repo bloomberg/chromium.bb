@@ -99,7 +99,7 @@ class HistoryService : public CancelableRequestProvider,
   // Miscellaneous commonly-used types.
   typedef std::vector<PageUsageData*> PageUsageDataList;
 
-  // ID (both star_id and group_id) of the bookmark bar.
+  // ID (both star_id and folder_id) of the bookmark bar.
   // This entry always exists.
   static const history::StarID kBookmarkBarID;
 
