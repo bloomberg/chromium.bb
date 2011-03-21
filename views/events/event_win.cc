@@ -217,6 +217,17 @@ KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native)
   NOTREACHED();
 }
 
+uint16 KeyEvent::GetCharacter() const {
+  return (native_event().message == WM_CHAR) ? key_code_ :
+      GetCharacterFromKeyCode(key_code_, flags());
+}
+
+uint16 KeyEvent::GetUnmodifiedCharacter() const {
+  // Looks like there is no way to get unmodified character on Windows.
+  return (native_event().message == WM_CHAR) ? key_code_ :
+      GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MouseEvent, public:
 

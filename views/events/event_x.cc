@@ -4,11 +4,14 @@
 
 #include "views/events/event.h"
 
+#include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #if defined(HAVE_XINPUT2)
 #include <X11/extensions/XInput2.h>
 #endif
+#include <X11/Xlib.h>
 
+#include "base/utf_string_conversions.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
@@ -213,6 +216,16 @@ int GetLocatedEventFlags(XEvent* xev, bool touch) {
   return 0;
 }
 
+uint16 GetCharacterFromXKeyEvent(XKeyEvent* key) {
+  char buf[6];
+  int bytes_written = XLookupString(key, buf, 6, NULL, NULL);
+  DCHECK_LE(bytes_written, 6);
+
+  string16 result;
+  return (bytes_written > 0 && UTF8ToUTF16(buf, bytes_written, &result) &&
+          result.length() == 1) ? result[0] : 0;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -246,6 +259,37 @@ KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native)
             GetEventFlagsFromXState(native_event_2->xkey.state),
             from_native),
       key_code_(ui::KeyboardCodeFromXKeyEvent(native_event_2)) {
+}
+
+uint16 KeyEvent::GetCharacter() const {
+  if (!native_event_2())
+    return GetCharacterFromKeyCode(key_code_, flags());
+
+  DCHECK(native_event_2()->type == KeyPress ||
+         native_event_2()->type == KeyRelease);
+
+  uint16 ch = GetCharacterFromXKeyEvent(&native_event_2()->xkey);
+  return ch ? ch : GetCharacterFromKeyCode(key_code_, flags());
+}
+
+uint16 KeyEvent::GetUnmodifiedCharacter() const {
+  if (!native_event_2())
+    return GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
+
+  DCHECK(native_event_2()->type == KeyPress ||
+         native_event_2()->type == KeyRelease);
+
+  XKeyEvent key = native_event_2()->xkey;
+
+  static const unsigned int kIgnoredModifiers = ControlMask | LockMask |
+      Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask;
+
+  // We can't use things like (key.state & ShiftMask), as it may mask out bits
+  // used by X11 internally.
+  key.state &= ~kIgnoredModifiers;
+  uint16 ch = GetCharacterFromXKeyEvent(&key);
+  return ch ? ch :
+      GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

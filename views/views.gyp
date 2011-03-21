@@ -481,6 +481,7 @@
         'controls/table/table_view_unittest.cc',
         'controls/textfield/native_textfield_views_unittest.cc',
         'controls/textfield/textfield_views_model_unittest.cc',
+        'events/event_unittest.cc',
         'focus/accelerator_handler_gtk_unittest.cc',
         'focus/focus_manager_unittest.cc',
         'layout/grid_layout_unittest.cc',

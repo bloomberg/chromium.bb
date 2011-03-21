@@ -77,6 +77,15 @@ unsigned int GetGdkStateFromNative(NativeEvent native_event) {
   return 0;
 }
 
+#if !defined(TOUCH_UI)
+uint16 GetCharacterFromGdkKeyval(guint keyval) {
+  guint32 ch = gdk_keyval_to_unicode(keyval);
+
+  // We only support BMP characters.
+  return ch < 0xFFFE ? static_cast<uint16>(ch) : 0;
+}
+#endif
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -178,6 +187,43 @@ KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native)
   // No one should ever call this on Gtk-views.
   // TODO(beng): remove once we rid views of Gtk/Gdk.
   NOTREACHED();
+}
+
+uint16 KeyEvent::GetCharacter() const {
+  // Gtk doesn't support control characters.
+  if (IsControlDown() || !native_event())
+    return GetCharacterFromKeyCode(key_code_, flags());
+
+  uint16 ch = GetCharacterFromGdkKeyval(
+      GetGdkEventKeyFromNative(native_event())->keyval);
+  return ch ? ch : GetCharacterFromKeyCode(key_code_, flags());
+}
+
+uint16 KeyEvent::GetUnmodifiedCharacter() const {
+  if (!native_event())
+    return GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
+
+  GdkEventKey* key = GetGdkEventKeyFromNative(native_event());
+
+  static const guint kIgnoredModifiers =
+      GDK_CONTROL_MASK | GDK_LOCK_MASK | GDK_MOD1_MASK | GDK_MOD2_MASK |
+      GDK_MOD3_MASK | GDK_MOD4_MASK | GDK_MOD5_MASK | GDK_SUPER_MASK |
+      GDK_HYPER_MASK | GDK_META_MASK;
+
+  // We can't use things like (key->state & GDK_SHIFT_MASK), as it may mask out
+  // bits used by X11 or Gtk internally.
+  GdkModifierType modifiers =
+      static_cast<GdkModifierType>(key->state & ~kIgnoredModifiers);
+  guint keyval = 0;
+  uint16 ch = 0;
+  if (gdk_keymap_translate_keyboard_state(NULL, key->hardware_keycode,
+                                          modifiers, key->group, &keyval,
+                                          NULL, NULL, NULL)) {
+    ch = GetCharacterFromGdkKeyval(keyval);
+  }
+
+  return ch ? ch :
+      GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
 }
 #endif
 
