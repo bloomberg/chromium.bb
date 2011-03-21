@@ -427,6 +427,7 @@ class ChromeTests:
     "ipc": TestIpc,              "ipc_tests": TestIpc,
     "interactive_ui": TestInteractiveUI,
     "layout": TestLayout,        "layout_tests": TestLayout,
+    "webkit": TestLayout,
     "media": TestMedia,          "media_unittests": TestMedia,
     "net": TestNet,              "net_unittests": TestNet,
     "notifier": TestNotifier,    "notifier_unittests": TestNotifier,
