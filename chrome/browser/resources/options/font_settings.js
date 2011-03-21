@@ -74,15 +74,15 @@ cr.define('options', function() {
      */
     standardRangeChanged_: function(el, value) {
       var fontSampleEl = $('standard-font-sample');
-      this.setupFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
+      this.setUpFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
                             true);
 
       fontSampleEl = $('serif-font-sample');
-      this.setupFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
+      this.setUpFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
                             true);
 
       fontSampleEl = $('sans-serif-font-sample');
-      this.setupFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
+      this.setUpFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
                             true);
     },
 
@@ -95,7 +95,7 @@ cr.define('options', function() {
      */
     minimumRangeChanged_: function(el, value) {
       var fontSampleEl = $('minimum-font-sample');
-      this.setupFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
+      this.setUpFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
                             true);
     },
 
@@ -119,7 +119,7 @@ cr.define('options', function() {
      * @param {bool} showSize True if the font size should appear in the sample.
      * @private
      */
-    setupFontSample_: function(el, size, font, showSize) {
+    setUpFontSample_: function(el, size, font, showSize) {
       var prefix = showSize ? (size + ': ') : '';
       el.textContent = prefix +
           localStrings.getString('fontSettingsLoremIpsum');
@@ -172,33 +172,33 @@ cr.define('options', function() {
                                                selectedValues[4]);
   };
 
-  FontSettings.setupStandardFontSample = function(font, size) {
-    FontSettings.getInstance().setupFontSample_($('standard-font-sample'), size,
+  FontSettings.setUpStandardFontSample = function(font, size) {
+    FontSettings.getInstance().setUpFontSample_($('standard-font-sample'), size,
                                                 font, true);
   };
 
-  FontSettings.setupSerifFontSample = function(font, size) {
-    FontSettings.getInstance().setupFontSample_($('serif-font-sample'), size,
+  FontSettings.setUpSerifFontSample = function(font, size) {
+    FontSettings.getInstance().setUpFontSample_($('serif-font-sample'), size,
                                                 font, true);
   };
 
-  FontSettings.setupSansSerifFontSample = function(font, size) {
-    FontSettings.getInstance().setupFontSample_($('sans-serif-font-sample'),
+  FontSettings.setUpSansSerifFontSample = function(font, size) {
+    FontSettings.getInstance().setUpFontSample_($('sans-serif-font-sample'),
                                                 size, font, true);
   };
 
-  FontSettings.setupFixedFontSample = function(font, size) {
-    FontSettings.getInstance().setupFontSample_($('fixed-font-sample'),
+  FontSettings.setUpFixedFontSample = function(font, size) {
+    FontSettings.getInstance().setUpFontSample_($('fixed-font-sample'),
                                                 size, font, false);
   };
 
-  FontSettings.setupMinimumFontSample = function(size) {
+  FontSettings.setUpMinimumFontSample = function(size) {
     // If size is less than 6, represent it as six in the sample to account
     // for the minimum logical font size.
     if (size < 6)
       size = 6;
-    FontSettings.getInstance().setupFontSample_($('minimum-font-sample'), size,
-                                                true);
+    FontSettings.getInstance().setUpFontSample_($('minimum-font-sample'), size,
+                                                null, true);
   };
 
   // Export
