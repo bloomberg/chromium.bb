@@ -13,6 +13,8 @@
 #include "printing/print_settings.h"
 #include "ui/gfx/native_widget_types.h"
 
+class DictionaryValue;
+
 namespace printing {
 
 // An abstraction of a printer context, implemented by objects that describe the
@@ -47,9 +49,10 @@ class PrintingContext {
   // default device settings.
   virtual Result UseDefaultSettings() = 0;
 
-  // Update print settings. As of now we are updating the page range settings.
-  // In the future, update other print job settings.
-  virtual Result UpdatePrintSettings(const PageRanges& ranges) = 0;
+  // Updates print settings. |job_settings| contains all print job settings
+  // information. |ranges| has the new page range settings.
+  virtual Result UpdatePrintSettings(const DictionaryValue* const job_settings,
+                                     const PageRanges& ranges) = 0;
 
   // Initializes with predefined settings.
   virtual Result InitWithSettings(const PrintSettings& settings) = 0;

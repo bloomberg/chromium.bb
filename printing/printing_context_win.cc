@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "printing/print_settings_initializer_win.h"
 #include "printing/printed_document.h"
 #include "skia/ext/platform_device_win.h"
@@ -209,7 +210,7 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
 }
 
 PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
-    const PageRanges& ranges) {
+    const DictionaryValue* const job_settings, const PageRanges& ranges) {
   DCHECK(!in_print_job_);
 
   settings_.ranges = ranges;

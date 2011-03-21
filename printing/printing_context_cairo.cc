@@ -5,6 +5,7 @@
 #include "printing/printing_context_cairo.h"
 
 #include "base/logging.h"
+#include "base/values.h"
 #include "printing/units.h"
 #include "printing/print_settings_initializer_gtk.h"
 
@@ -148,7 +149,7 @@ PrintingContext::Result PrintingContextCairo::UseDefaultSettings() {
 }
 
 PrintingContext::Result PrintingContextCairo::UpdatePrintSettings(
-    const PageRanges& ranges) {
+    const DictionaryValue* const job_settings, const PageRanges& ranges) {
   DCHECK(!in_print_job_);
 
   settings_.ranges = ranges;

@@ -29,7 +29,8 @@ class PrintingContextMac : public PrintingContext {
                                   bool has_selection,
                                   PrintSettingsCallback* callback);
   virtual Result UseDefaultSettings();
-  virtual Result UpdatePrintSettings(const PageRanges& ranges);
+  virtual Result UpdatePrintSettings(const DictionaryValue* const job_settings,
+                                     const PageRanges& ranges);
   virtual Result InitWithSettings(const PrintSettings& settings);
   virtual Result NewDocument(const string16& document_name);
   virtual Result NewPage();
@@ -42,6 +43,9 @@ class PrintingContextMac : public PrintingContext {
  private:
   // Read the settings from the given NSPrintInfo (and cache it for later use).
   void ParsePrintInfo(NSPrintInfo* print_info);
+
+  // Initializes PrintSettings from native print info object.
+  void InitPrintSettingsFromPrintInfo(const PageRanges& ranges);
 
   // The native print info object.
   scoped_nsobject<NSPrintInfo> print_info_;

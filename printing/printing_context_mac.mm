@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
+#include "base/values.h"
 #include "printing/print_settings_initializer_mac.h"
 
 namespace printing {
@@ -50,6 +51,7 @@ void PrintingContextMac::AskUserForSettings(gfx::NativeView parent_view,
   options |= NSPrintPanelShowsScaling;
   [panel setOptions:options];
 
+  // Set the print job title text.
   if (parent_view) {
     NSString* job_title = [[parent_view window] title];
     if (job_title) {
@@ -80,16 +82,45 @@ PrintingContext::Result PrintingContextMac::UseDefaultSettings() {
 }
 
 PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
-    const PageRanges& ranges) {
+    const DictionaryValue* const job_settings, const PageRanges& ranges) {
   DCHECK(!in_print_job_);
 
   // TODO (kmadhusu): Update other print job settings such as number of copies,
   // collate, etc.,
 
-  // Update the print range information.
-  settings_.ranges = ranges;
+  ResetSettings();
+  print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
 
+  std::string printer_name;
+  if (!job_settings->GetString("printerName", &printer_name))
+    return OnError();
+
+  NSString* new_printer_name = base::SysUTF8ToNSString(printer_name);
+  if (!new_printer_name)
+    return OnError();
+
+  if (![[[print_info_.get() printer] name] isEqualToString:new_printer_name]) {
+    NSPrinter* new_printer = [NSPrinter printerWithName:new_printer_name];
+    if (new_printer == nil)
+      return OnError();
+
+    [print_info_.get() setPrinter:new_printer];
+  }
+
+  InitPrintSettingsFromPrintInfo(ranges);
   return OK;
+}
+
+void PrintingContextMac::InitPrintSettingsFromPrintInfo(
+    const PageRanges& ranges) {
+  PMPrintSession print_session =
+      static_cast<PMPrintSession>([print_info_.get() PMPrintSession]);
+  PMPageFormat page_format =
+      static_cast<PMPageFormat>([print_info_.get() PMPageFormat]);
+  PMPrinter printer;
+  PMSessionGetCurrentPrinter(print_session, &printer);
+  PrintSettingsInitializerMac::InitPrintSettings(
+      printer, page_format, ranges, false, &settings_);
 }
 
 void PrintingContextMac::ParsePrintInfo(NSPrintInfo* print_info) {
@@ -103,15 +134,7 @@ void PrintingContextMac::ParsePrintInfo(NSPrintInfo* print_info) {
     range.to = [[print_info_dict objectForKey:NSPrintLastPage] intValue] - 1;
     page_ranges.push_back(range);
   }
-  PMPrintSession print_session =
-      static_cast<PMPrintSession>([print_info_.get() PMPrintSession]);
-  PMPageFormat page_format =
-      static_cast<PMPageFormat>([print_info_.get() PMPageFormat]);
-  PMPrinter printer;
-  PMSessionGetCurrentPrinter(print_session, &printer);
-
-  PrintSettingsInitializerMac::InitPrintSettings(
-          printer, page_format, page_ranges, false, &settings_);
+  InitPrintSettingsFromPrintInfo(page_ranges);
 }
 
 PrintingContext::Result PrintingContextMac::InitWithSettings(
