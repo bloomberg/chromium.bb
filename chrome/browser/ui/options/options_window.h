@@ -32,10 +32,4 @@ enum OptionsGroup {
   OPTIONS_GROUP_DEFAULT_SEARCH
 };
 
-// Show the Options window selecting the specified page. If an Options window
-// is currently open, this just activates it instead of opening a new one.
-void ShowOptionsWindow(OptionsPage page,
-                       OptionsGroup highlight_group,
-                       Profile* profile);
-
 #endif  // CHROME_BROWSER_UI_OPTIONS_OPTIONS_WINDOW_H_

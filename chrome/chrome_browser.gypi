@@ -1075,7 +1075,6 @@
         'browser/first_run/first_run_gtk.cc',
         'browser/first_run/first_run_mac.mm',
         'browser/first_run/first_run_win.cc',
-        'browser/fonts_languages_window.h',
         'browser/fullscreen.h',
         'browser/fullscreen_linux.cc',
         'browser/fullscreen_mac.mm',

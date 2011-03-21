@@ -8,7 +8,6 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
-#include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/ui/gtk/about_chrome_dialog.h"
 #include "chrome/browser/ui/gtk/collected_cookies_gtk.h"
 #include "chrome/browser/ui/gtk/edit_search_engine_dialog.h"

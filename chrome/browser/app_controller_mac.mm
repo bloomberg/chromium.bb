@@ -17,7 +17,6 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -1167,20 +1166,6 @@ void RecordLastRunAppBundlePath() {
 @end  // @implementation AppController
 
 //---------------------------------------------------------------------------
-
-void ShowOptionsWindow(OptionsPage page,
-                       OptionsGroup highlight_group,
-                       Profile* profile) {
-  // TODO(akalin): Use highlight_group.
-  AppController* appController = [NSApp delegate];
-  [appController showPreferences:nil];
-}
-
-void ShowFontsLanguagesWindow(gfx::NativeWindow window,
-                              FontsLanguagesPage page,
-                              Profile* profile) {
-  NOTIMPLEMENTED();
-}
 
 namespace browser {
 
