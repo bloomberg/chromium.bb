@@ -3519,14 +3519,11 @@ void Browser::CommitInstant(TabContentsWrapper* preview_contents) {
   int index =
       tab_handler_->GetTabStripModel()->GetIndexOfTabContents(tab_contents);
   DCHECK_NE(TabStripModel::kNoTab, index);
-  preview_contents->controller().CopyStateFromAndPrune(
-      &tab_contents->controller());
   // TabStripModel takes ownership of preview_contents.
-  TabContentsWrapper* old_contents =
-      tab_handler_->GetTabStripModel()->ReplaceTabContentsAt(
-          index, preview_contents);
-  // InstantUnloadHandler takes ownership of old_contents.
-  instant_unload_handler_->RunUnloadListenersOrDestroy(old_contents, index);
+  tab_handler_->GetTabStripModel()->ReplaceTabContentsAt(
+      index, preview_contents);
+  // InstantUnloadHandler takes ownership of tab_contents.
+  instant_unload_handler_->RunUnloadListenersOrDestroy(tab_contents, index);
 
   GURL url = preview_contents->tab_contents()->GetURL();
   DCHECK(profile_->GetExtensionService());

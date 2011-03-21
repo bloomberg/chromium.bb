@@ -430,15 +430,9 @@ void NavigationController::GoToOffset(int offset) {
 
 void NavigationController::RemoveEntryAtIndex(int index,
                                               const GURL& default_url) {
-  int size = static_cast<int>(entries_.size());
-  DCHECK(index < size);
-
-  DiscardNonCommittedEntries();
-
-  entries_.erase(entries_.begin() + index);
-
-  if (last_committed_entry_index_ == index) {
-    last_committed_entry_index_--;
+  bool is_current = index == last_committed_entry_index_;
+  RemoveEntryAtIndexInternal(index);
+  if (is_current) {
     // We removed the currently shown entry, so we have to load something else.
     if (last_committed_entry_index_ != -1) {
       pending_entry_index_ = last_committed_entry_index_;
@@ -448,8 +442,6 @@ void NavigationController::RemoveEntryAtIndex(int index,
       LoadURL(default_url.is_empty() ? GURL("about:blank") : default_url,
               GURL(), PageTransition::START_PAGE);
     }
-  } else if (last_committed_entry_index_ > index) {
-    last_committed_entry_index_--;
   }
 }
 
@@ -933,13 +925,31 @@ void NavigationController::CopyStateFrom(const NavigationController& source) {
   FinishRestore(source.last_committed_entry_index_, false);
 }
 
-void NavigationController::CopyStateFromAndPrune(NavigationController* source) {
+void NavigationController::CopyStateFromAndPrune(NavigationController* source,
+                                                 bool remove_first_entry) {
   // This code is intended for use when the last entry is the active entry.
   DCHECK((transient_entry_index_ != -1 &&
           transient_entry_index_ == entry_count() - 1) ||
          (pending_entry_ && (pending_entry_index_ == -1 ||
                              pending_entry_index_ == entry_count() - 1)) ||
          (!pending_entry_ && last_committed_entry_index_ == entry_count() - 1));
+
+  if (remove_first_entry && entry_count()) {
+    // Save then restore the pending entry (RemoveEntryAtIndexInternal chucks
+    // the pending entry).
+    NavigationEntry* pending_entry = pending_entry_;
+    pending_entry_ = NULL;
+    int pending_entry_index = pending_entry_index_;
+    RemoveEntryAtIndexInternal(0);
+    // Restore the pending entry.
+    if (pending_entry_index != -1) {
+      pending_entry_index_ = pending_entry_index - 1;
+      if (pending_entry_index_ != -1)
+        pending_entry_ = entries_[pending_entry_index_].get();
+    } else if (pending_entry) {
+      pending_entry_ = pending_entry;
+    }
+  }
 
   // Remove all the entries leaving the active entry.
   PruneAllButActive();
@@ -1003,6 +1013,18 @@ void NavigationController::PruneAllButActive() {
     // so the interstitial triggers a reload if the user doesn't proceed.
     tab_contents_->interstitial_page()->set_reload_on_dont_proceed(true);
   }
+}
+
+void NavigationController::RemoveEntryAtIndexInternal(int index) {
+  DCHECK(index < entry_count());
+
+  DiscardNonCommittedEntries();
+
+  entries_.erase(entries_.begin() + index);
+  if (last_committed_entry_index_ == index)
+    last_committed_entry_index_--;
+  else if (last_committed_entry_index_ > index)
+    last_committed_entry_index_--;
 }
 
 void NavigationController::DiscardNonCommittedEntries() {
