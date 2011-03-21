@@ -100,10 +100,6 @@
 #include "app/surface/io_surface_support_mac.h"
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/locale_change_guard.h"
-#endif  // defined(OS_CHROMEOS)
-
 // Cross-Site Navigations
 //
 // If a TabContents is told to navigate to a different web site (as determined
