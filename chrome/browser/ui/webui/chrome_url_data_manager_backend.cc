@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -93,8 +94,6 @@ class URLRequestChromeJob : public net::URLRequestJob {
   // Separate from ReadRawData so we can handle async I/O.
   void CompleteRead(net::IOBuffer* buf, int buf_size, int* bytes_read);
 
-  ScopedRunnableMethodFactory<URLRequestChromeJob> method_factory_;
-
   // The actual data we're serving.  NULL until it's been fetched.
   scoped_refptr<RefCountedMemory> data_;
   // The current offset into the data that we're handing off to our
@@ -109,6 +108,8 @@ class URLRequestChromeJob : public net::URLRequestJob {
 
   // The backend is owned by ChromeURLRequestContext and always outlives us.
   ChromeURLDataManagerBackend* backend_;
+
+  ScopedRunnableMethodFactory<URLRequestChromeJob> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestChromeJob);
 };
@@ -275,10 +276,10 @@ net::URLRequestJob* ChromeURLDataManagerBackend::Factory(
 
 URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request)
     : net::URLRequestJob(request),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       data_offset_(0),
       pending_buf_size_(0),
-      backend_(GetBackend(request)) {
+      backend_(GetBackend(request)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
 URLRequestChromeJob::~URLRequestChromeJob() {

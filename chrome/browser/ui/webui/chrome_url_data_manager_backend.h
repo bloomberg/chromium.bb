@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "base/task.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 
 #include <map>

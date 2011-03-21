@@ -116,9 +116,11 @@ bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
   // If we make it here, the first chunk has been sent and we need to wait
   // until a request is made for kFinishDownloadUrl.
   SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
-      this, &URLRequestSlowDownloadJob::CheckDoneStatus), 100);
-  AddRef();
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &URLRequestSlowDownloadJob::CheckDoneStatus),
+      100);
 
   // Return false to signal there is pending data.
   return false;
@@ -129,10 +131,12 @@ void URLRequestSlowDownloadJob::CheckDoneStatus() {
     should_send_second_chunk_ = true;
     SetStatus(net::URLRequestStatus());
     NotifyReadComplete(kSecondDownloadSize);
-    Release();
   } else {
-    MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
-        this, &URLRequestSlowDownloadJob::CheckDoneStatus), 100);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        method_factory_.NewRunnableMethod(
+            &URLRequestSlowDownloadJob::CheckDoneStatus),
+        100);
   }
 }
 
