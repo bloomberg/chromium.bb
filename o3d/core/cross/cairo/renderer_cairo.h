@@ -80,6 +80,11 @@ class RendererCairo : public Renderer {
   // Remove the given Layer from the array.
   void RemoveLayer(Layer* image);
 
+  // Create a cairo surface with a similar back-end as the display surface.
+  cairo_surface_t* CreateSimilarSurface(cairo_content_t content,
+                                        int width,
+                                        int height);
+
   // Handles the plugin resize event.
   virtual void Resize(int width, int height);
 

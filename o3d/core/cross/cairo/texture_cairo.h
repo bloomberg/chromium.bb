@@ -77,8 +77,8 @@ class TextureCairo : public Texture2D {
   // RGBA to the internal format used by the rendering API.
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
 
-  cairo_surface_t* image_surface() const {
-    return image_surface_;
+  cairo_surface_t* surface() const {
+    return surface_;
   }
 
   bool content_dirty() const {
@@ -106,15 +106,15 @@ class TextureCairo : public Texture2D {
  private:
   // Initializes the Texture2D.
   TextureCairo(ServiceLocator* service_locator,
-               cairo_surface_t* image_surface,
+               cairo_surface_t* surface,
                Texture::Format format,
                int levels,
                int width,
                int height,
                bool enable_render_surfaces);
 
-  // The Cairo image for this texture.
-  cairo_surface_t* image_surface_;
+  // The Cairo surface for this texture.
+  cairo_surface_t* surface_;
 
   // Whether or not this texture's content has changed since it was last updated
   // on-screen.

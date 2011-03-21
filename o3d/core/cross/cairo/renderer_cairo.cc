@@ -50,7 +50,7 @@
 #include "core/cross/cairo/layer.h"
 #include "core/cross/cairo/texture_cairo.h"
 
-#ifdef OS_MACOSX
+#if defined(OS_MACOSX) || defined(OS_WIN)
 // As of OS X 10.6.4, the Quartz 2D drawing API has hardware acceleration
 // disabled by default, and if you force-enable it then it actually hurts
 // performance instead of improving it (really, go google it). It also turns out
@@ -58,6 +58,11 @@
 // faster than the OS X software implementation (measured as CPU usage per
 // rendered frame), so we do all compositing with Pixman via an image surface
 // and only use the OS to paint the final frame to the screen.
+
+// On Windows COMPOSITING_TO_IMAGE is also slightly faster than compositing with
+// GDI.
+// TODO(tschmelcher): Profile Windows without COMPOSITING_TO_IMAGE and see if we
+// can make it faster.
 #define COMPOSITING_TO_IMAGE 1
 #endif
 
@@ -508,34 +513,11 @@ void RendererCairo::DestroyDisplaySurface() {
 }
 
 void RendererCairo::CreateOffscreenSurface() {
-#if defined(COMPOSITING_TO_IMAGE)
-  offscreen_surface_ = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
-                                                  display_width(),
-                                                  display_height());
-#elif defined(OS_LINUX) || defined(OS_WIN)
-  if (!display_surface_) {
-    DLOG(INFO) << "No display surface, cannot create offscreen surface";
-    return;
-  }
-  offscreen_surface_ = cairo_surface_create_similar(display_surface_,
-                                                    CAIRO_CONTENT_COLOR,
-                                                    display_width(),
-                                                    display_height());
-#else  // OS_MACOSX
-  // On OSX we can't use cairo_surface_create_similar() because display_surface_
-  // is only valid during Paint(), so instead hard-code what a
-  // cairo_surface_create_similar() call would do.
-  // (Note that this code path is not actually taken right now because we use
-  // COMPOSITING_TO_IMAGE on OSX.)
-  offscreen_surface_ = cairo_quartz_surface_create(CAIRO_FORMAT_RGB24,
-                                                   display_width(),
-                                                   display_height());
-#endif
-
-  if (CAIRO_STATUS_SUCCESS != cairo_surface_status(offscreen_surface_)) {
+  offscreen_surface_ = CreateSimilarSurface(CAIRO_CONTENT_COLOR,
+                                            display_width(),
+                                            display_height());
+  if (!offscreen_surface_) {
     DLOG(ERROR) << "Failed to create offscreen surface";
-    DestroyOffscreenSurface();
-    return;
   }
 }
 
@@ -544,6 +526,60 @@ void RendererCairo::DestroyOffscreenSurface() {
     cairo_surface_destroy(offscreen_surface_);
     offscreen_surface_ = NULL;
   }
+}
+
+#if defined(COMPOSITING_TO_IMAGE) || defined(OS_MACOSX)
+static cairo_format_t CairoFormatFromCairoContent(cairo_content_t content) {
+  switch (content) {
+    case CAIRO_CONTENT_COLOR:
+      return CAIRO_FORMAT_RGB24;
+    case CAIRO_CONTENT_ALPHA:
+      return CAIRO_FORMAT_A8;
+    case CAIRO_CONTENT_COLOR_ALPHA:
+      return CAIRO_FORMAT_ARGB32;
+    default:
+      DCHECK(false);
+      return CAIRO_FORMAT_ARGB32;
+  }
+}
+#endif
+
+cairo_surface_t* RendererCairo::CreateSimilarSurface(cairo_content_t content,
+                                                     int width,
+                                                     int height) {
+  cairo_surface_t* similar;
+#if defined(COMPOSITING_TO_IMAGE)
+  similar = cairo_image_surface_create(CairoFormatFromCairoContent(content),
+                                       width,
+                                       height);
+#elif defined(OS_LINUX) || defined(OS_WIN)
+  if (!display_surface_) {
+    DLOG(INFO) << "No display surface, cannot create similar surface";
+    return NULL;
+  }
+  similar = cairo_surface_create_similar(display_surface_,
+                                         content,
+                                         width,
+                                         height);
+#else  // OS_MACOSX
+  // On OSX we can't use cairo_surface_create_similar() because display_surface_
+  // is only valid during Paint(), so instead hard-code what a
+  // cairo_surface_create_similar() call would do. Conveniently the OSX
+  // implementation doesn't actually make use of the surface argument.
+  // (Note that this code path is not actually taken right now because we use
+  // COMPOSITING_TO_IMAGE on OSX.)
+  similar = cairo_quartz_surface_create(CairoFormatFromCairoContent(content),
+                                        width,
+                                        height);
+#endif
+
+  if (CAIRO_STATUS_SUCCESS != cairo_surface_status(similar)) {
+    DLOG(ERROR) << "Failed to create similar surface";
+    cairo_surface_destroy(similar);
+    similar = NULL;
+  }
+
+  return similar;
 }
 
 void RendererCairo::AddDisplayRegion(cairo_t* cr) {

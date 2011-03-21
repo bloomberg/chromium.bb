@@ -50,7 +50,7 @@ Pattern* Pattern::CreateTexturePattern(Pack* pack, Texture* texture) {
   TextureCairo* texture_cairo = down_cast<TextureCairo*>(texture);
   return WrapCairoPattern(
       pack,
-      cairo_pattern_create_for_surface(texture_cairo->image_surface()),
+      cairo_pattern_create_for_surface(texture_cairo->surface()),
       texture_cairo);
 }
 

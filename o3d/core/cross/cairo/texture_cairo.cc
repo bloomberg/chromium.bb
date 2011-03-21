@@ -49,29 +49,24 @@ Texture::RGBASwizzleIndices g_gl_abgr32f_swizzle_indices = {0, 1, 2, 3};
 
 namespace o2d {
 
-// This is equivalent to the CAIRO_FORMAT_INVALID enum value, but we can't refer
-// to that because it was only recently added to the Cairo headers and thus it
-// is not present on the Linux buildbots (where we use the OS version of Cairo
-// rather than the one in third_party).
-static const cairo_format_t kCairoFormatInvalid =
-    static_cast<cairo_format_t>(-1);
+static const cairo_content_t kCairoContentInvalid =
+    static_cast<cairo_content_t>(-1);
 
-static cairo_format_t CairoFormatFromO3DFormat(
+static cairo_content_t CairoContentFromO3DFormat(
     Texture::Format format) {
   switch (format) {
     case Texture::ARGB8:
-      return CAIRO_FORMAT_ARGB32;
+      return CAIRO_CONTENT_COLOR_ALPHA;
     case Texture::XRGB8:
-      return CAIRO_FORMAT_RGB24;
+      return CAIRO_CONTENT_COLOR;
     default:
-      return kCairoFormatInvalid;
+      return kCairoContentInvalid;
   }
-  // Cairo also supports two other pure-alpha formats, but we don't expose those
-  // capabilities.
+  // Cairo also supports a pure-alpha surface, but we don't expose that.
 }
 
 TextureCairo::TextureCairo(ServiceLocator* service_locator,
-                           cairo_surface_t* image_surface,
+                           cairo_surface_t* surface,
                            Texture::Format format,
                            int levels,
                            int width,
@@ -83,7 +78,7 @@ TextureCairo::TextureCairo(ServiceLocator* service_locator,
                 format,
                 levels,
                 enable_render_surfaces),
-      image_surface_(image_surface),
+      surface_(surface),
       content_dirty_(false) {
   DLOG(INFO) << "Texture2D Construct";
   DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
@@ -96,35 +91,34 @@ TextureCairo* TextureCairo::Create(ServiceLocator* service_locator,
                                    int width,
                                    int height,
                                    bool enable_render_surfaces) {
-  cairo_format_t cairo_format = CairoFormatFromO3DFormat(format);
-  cairo_surface_t* image_surface;
-  cairo_status_t status;
-  if (kCairoFormatInvalid == cairo_format) {
+  cairo_content_t content = CairoContentFromO3DFormat(format);
+  if (kCairoContentInvalid == content) {
     DLOG(ERROR) << "Texture format " << format << " not supported by Cairo";
-    goto fail0;
+    return NULL;
   }
-  image_surface = cairo_image_surface_create(
-      cairo_format,
+
+  RendererCairo* renderer = static_cast<RendererCairo*>(
+      service_locator->GetService<Renderer>());
+  // NOTE(tschmelcher): Strangely, on Windows if COMPOSITING_TO_IMAGE is turned
+  // off in RendererCairo then we actually get much better performance if we use
+  // an image surface for textures rather than using CreateSimilarSurface(). But
+  // the performance of COMPOSITING_TO_IMAGE narrowly takes first place.
+  cairo_surface_t* surface = renderer->CreateSimilarSurface(
+      content,
       width,
       height);
-  status = cairo_surface_status(image_surface);
-  if (CAIRO_STATUS_SUCCESS != status) {
-    DLOG(ERROR) << "Error creating Cairo image surface: " << status;
-    goto fail1;
+  if (!surface) {
+    DLOG(ERROR) << "Failed to create texture surface";
+    return NULL;
   }
 
   return new TextureCairo(service_locator,
-                          image_surface,
+                          surface,
                           format,
                           levels,
                           width,
                           height,
                           enable_render_surfaces);
-
- fail1:
-  cairo_surface_destroy(image_surface);
- fail0:
-  return NULL;
 }
 
 // In 2D: is not really used
@@ -134,8 +128,37 @@ const Texture::RGBASwizzleIndices& TextureCairo::GetABGR32FSwizzleIndices() {
 }
 
 TextureCairo::~TextureCairo() {
-  cairo_surface_destroy(image_surface_);
+  cairo_surface_destroy(surface_);
   DLOG(INFO) << "Texture2DCairo Destruct";
+}
+
+static void CopyNonPremultipliedAlphaToPremultipliedAlpha(
+    const unsigned char* src_data,
+    int src_pitch,
+    unsigned char* dst_data,
+    int dst_pitch,
+    unsigned width,
+    unsigned height) {
+  // Cairo supports only premultiplied alpha, but we get images as
+  // non-premultiplied alpha, so we have to convert.
+  for (unsigned i = 0; i < height; ++i) {
+    for (unsigned j = 0; j < width; ++j) {
+      // NOTE: This assumes a little-endian architecture (e.g., x86). It
+      // works for RGBA or BGRA where alpha is in byte 3.
+      // Get alpha.
+      uint8 alpha = src_data[3];
+      // Convert each colour.
+      for (int i = 0; i < 3; i++) {
+        dst_data[i] = (src_data[i] * alpha + 128U) / 255U;
+      }
+      // Copy alpha.
+      dst_data[3] = alpha;
+      src_data += 4;
+      dst_data += 4;
+    }
+    src_data += src_pitch - width * 4;
+    dst_data += dst_pitch - width * 4;
+  }
 }
 
 // Set the image data to the renderer
@@ -153,48 +176,84 @@ void TextureCairo::SetRect(int level,
     return;
   }
 
-  cairo_surface_flush(image_surface_);
+  unsigned char* src_data =
+      reinterpret_cast<unsigned char*>(const_cast<void*>(src_data_void));
 
-  const unsigned char* src_data = reinterpret_cast<const unsigned char*>(
-      src_data_void);
+  if (cairo_surface_get_type(surface_) == CAIRO_SURFACE_TYPE_IMAGE) {
+    // Copy directly to the image surface's data buffer.
 
-  unsigned char* dst_data = cairo_image_surface_get_data(image_surface_);
+    cairo_surface_flush(surface_);
 
-  int dst_pitch = cairo_image_surface_get_stride(image_surface_);
+    unsigned char* dst_data = cairo_image_surface_get_data(surface_);
 
-  dst_data += dst_top * dst_pitch + dst_left * 4;
+    int dst_pitch = cairo_image_surface_get_stride(surface_);
+
+    dst_data += dst_top * dst_pitch + dst_left * 4;
   
-  if (ARGB8 == format()) {
-    // Cairo supports only premultiplied alpha, but we get the images as
-    // non-premultiplied alpha, so we have to convert.
-    for (unsigned i = 0; i < src_height; ++i) {
-      for (unsigned j = 0; j < src_width; ++j) {
-        // NOTE: This assumes a little-endian architecture (e.g., x86). It works
-        // for RGBA or BGRA where alpha is in byte 3.
-        // Get alpha.
-        uint8 alpha = src_data[3];
-        // Convert each colour.
-        for (int i = 0; i < 3; i++) {
-          dst_data[i] = (src_data[i] * alpha + 128U) / 255U;
-        }
-        // Copy alpha.
-        dst_data[3] = alpha;
-        src_data += 4;
-        dst_data += 4;
+    if (ARGB8 == format()) {
+      CopyNonPremultipliedAlphaToPremultipliedAlpha(src_data,
+                                                    src_pitch,
+                                                    dst_data,
+                                                    dst_pitch,
+                                                    src_width,
+                                                    src_height);
+    } else {
+      for (unsigned i = 0; i < src_height; ++i) {
+        memcpy(dst_data, src_data, src_width * 4);
+        src_data += src_pitch;
+        dst_data += dst_pitch;
       }
-      src_data += src_pitch - src_width * 4;
-      dst_data += dst_pitch - src_width * 4;
     }
-  } else {
-    // Just copy the data.
-    for (unsigned i = 0; i < src_height; ++i) {
-      memcpy(dst_data, src_data, src_width * 4);
-      src_data += src_pitch;
-      dst_data += dst_pitch;
-    }
-  }
 
-  cairo_surface_mark_dirty(image_surface_);
+    cairo_surface_mark_dirty(surface_);
+  } else {
+    // No way to get a pointer to a data buffer for the surface, so we have to
+    // update it using cairo operations.
+
+    // Create a source surface for the paint operation.
+    cairo_surface_t* source_surface;
+    if (ARGB8 == format()) {
+      // Have to convert to premultiplied alpha, so we need to make a temporary
+      // image surface and copy to it.
+      source_surface = cairo_image_surface_create(
+          CAIRO_FORMAT_ARGB32,
+          src_width,
+          src_height);
+
+      cairo_surface_flush(source_surface);
+
+      unsigned char* dst_data = cairo_image_surface_get_data(source_surface);
+
+      int dst_pitch = cairo_image_surface_get_stride(source_surface);
+
+      CopyNonPremultipliedAlphaToPremultipliedAlpha(src_data,
+                                                    src_pitch,
+                                                    dst_data,
+                                                    dst_pitch,
+                                                    src_width,
+                                                    src_height);
+
+      cairo_surface_mark_dirty(source_surface);
+    } else {
+      // No conversion needed, so we can paint directly from the input buffer.
+      source_surface = cairo_image_surface_create_for_data(
+          src_data,
+          CAIRO_FORMAT_RGB24,
+          src_width,
+          src_height,
+          src_pitch);
+    }
+
+    // Now paint it to this texture's surface.
+    cairo_t* context = cairo_create(surface_);
+    cairo_set_operator(context, CAIRO_OPERATOR_SOURCE);
+    cairo_set_source_surface(context, source_surface, dst_left, dst_top);
+    cairo_rectangle(context, dst_left, dst_top, src_width, src_height);
+    cairo_fill(context);
+    cairo_destroy(context);
+
+    cairo_surface_destroy(source_surface);
+  }
 
   set_content_dirty(true);
 
