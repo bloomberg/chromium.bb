@@ -58,22 +58,15 @@
             'IgnoreAllDefaultLibraries': 'true',
             'OptimizeForWindows98': '1',
             'SubSystem': '2',     # Set /SUBSYSTEM:WINDOWS
+            'AdditionalDependencies': [
+              'shlwapi.lib',
+              'setupapi.lib',
+            ],
             'conditions': [
-              ['MSVS_VERSION=="2010"', {
-                'AdditionalDependencies': [
-                  # These two object files are included in Visual Studio 2008
-                  # but not 2010.
-                  # TODO(bradnelson):
-                  # http://code.google.com/p/chromium/issues/detail?id=72885
-                  '"$(VCInstallDir)..\\..\\Microsoft Visual Studio 9.0\\VC\\'
-                      'crt\\src\\intel\\mt_lib\\memset.obj"',
-                  '"$(VCInstallDir)..\\..\\Microsoft Visual Studio 9.0\\VC\\'
-                      'crt\\src\\intel\\mt_lib\\P4_memset.obj"',
-                ],
-              },{
-                'AdditionalDependencies': [
-                  '"$(VCInstallDir)crt\\src\\intel\\mt_lib\\memset.obj"',
-                  '"$(VCInstallDir)crt\\src\\intel\\mt_lib\\P4_memset.obj"',
+              ['MSVS_VERSION=="2005e"', {
+                'AdditionalDependencies': [ # Must explicitly link in VC2005E
+                  'advapi32.lib',
+                  'shell32.lib',
                 ],
               }],
             ],

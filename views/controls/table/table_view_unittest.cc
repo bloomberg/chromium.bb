@@ -2,7 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <vector>
+// Intentional header placing, including ATL, to avoid errors
+#include "build/build_config.h"  // NOLINT
+
+#if defined(OS_WIN)
+#include <atlbase.h>  // NOLINT
+#include <atlwin.h>  // NOLINT
+#endif
+
+#include <vector>  // NOLINT
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
@@ -21,7 +29,7 @@
 #endif
 
 using ui::TableModel;
-using ui::TableModelObserver; // TODO(beng): remove these
+using ui::TableModelObserver;  // TODO(beng): remove these
 
 // Put the tests in the views namespace to make it easier to declare them as
 // friend classes.

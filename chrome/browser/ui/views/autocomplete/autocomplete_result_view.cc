@@ -4,6 +4,14 @@
 
 #include "chrome/browser/ui/views/autocomplete/autocomplete_result_view.h"
 
+// Intentional header placing, including ATL, to avoid errors
+#include "build/build_config.h"  // NOLINT
+
+#if defined(OS_WIN)
+#include <atlbase.h>  // NOLINT
+#include <atlwin.h>  // NOLINT
+#endif
+
 #include "base/i18n/bidi_line_iterator.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_result_view_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"

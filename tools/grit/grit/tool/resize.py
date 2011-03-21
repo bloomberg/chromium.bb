@@ -75,8 +75,11 @@ RC_TEMPLATE = '''\
 // be ignored by GRIT.
 
 #include "resource.h"
-#include <winres.h>
 #include <winresrc.h>
+#ifdef IDC_STATIC
+#undef IDC_STATIC
+#endif
+#define IDC_STATIC (-1)
 
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 

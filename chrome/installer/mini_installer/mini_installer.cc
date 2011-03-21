@@ -6,10 +6,10 @@
 // installed or upgraded. It is designed to be extremely small (~5KB with no
 // extra resources linked) and it has two main jobs:
 //   1) unpack the resources (possibly decompressing some)
-//   2) run the real installer (setup.exe) with appropiate flags.
+//   2) run the real installer (setup.exe) with appropriate flags.
 //
-// In order to be really small we don't link against the CRT and we define the
-// following compiler/linker flags:
+// In order to be really small the app doesn't link against the CRT and
+// defines the following compiler/linker flags:
 //   EnableIntrinsicFunctions="true" compiler: /Oi
 //   BasicRuntimeChecks="0"
 //   BufferSecurityCheck="false" compiler: /GS-
@@ -17,15 +17,8 @@
 //   IgnoreAllDefaultLibraries="true" linker: /NODEFAULTLIB
 //   OptimizeForWindows98="1"  liker: /OPT:NOWIN98
 //   linker: /SAFESEH:NO
-// Also some built-in code that the compiler relies on is not defined so we
-// are forced to manually link against it. It comes in the form of two
-// object files that exist in $(VCInstallDir)\crt\src which are memset.obj and
-// P4_memset.obj. These two object files rely on the existence of a static
-// variable named __sse2_available which indicates the presence of intel sse2
-// extensions. We define it to false which causes a slower but safe code for
-// memcpy and memset intrinsics.
 
-// having the linker merge the sections is saving us ~500 bytes.
+// have the linker merge the sections, saving us ~500 bytes.
 #pragma comment(linker, "/MERGE:.rdata=.text")
 
 #include <windows.h>
@@ -42,9 +35,6 @@
 template <typename T, size_t N>
 char (&ArraySizeHelper(T (&array)[N]))[N];
 #define arraysize(array) (sizeof(ArraySizeHelper(array)))
-
-// Required linker symbol. See remarks above.
-extern "C" unsigned int __sse2_available = 0;
 
 namespace mini_installer {
 
@@ -822,3 +812,42 @@ int MainEntryPoint() {
   int result = mini_installer::WMain(::GetModuleHandle(NULL));
   ::ExitProcess(result);
 }
+
+// VC Express editions don't come with the memset CRT obj file and linking to
+// the obj files between versions becomes a bit problematic. Therefore,
+// simply implement memset.
+//
+// This also avoids having to explicitly set the __sse2_available hack when
+// linking with both the x64 and x86 obj files which is required when not
+// linking with the std C lib in certain instances (including Chromium) with
+// MSVC.  __sse2_available determines whether to use SSE2 intructions with
+// std C lib routines, and is set by MSVC's std C lib implementation normally.
+extern "C" {
+#pragma function(memset)
+void* memset(void* dest, int c, size_t count) {
+  // Simplistic 32-bit memset C implementation which assumes properly aligned
+  // memory; performance hit on memory that isn't properly aligned, but still
+  // better overall then a 8-bit implementation.
+  size_t adjcount = count >> 2;
+  UINT32 fill = (c << 24 | c << 16 | c << 8 | c);
+  UINT32* dest32 = reinterpret_cast<UINT32*>(dest);
+  UINT8* dest8 = reinterpret_cast<UINT8*>(dest);
+
+  // Take care of the ending 0-3 bytes (binary 11 = 3).  The lack of breaks is
+  // deliberate; it falls through for each byte. Think of it a simplified for
+  // loop.
+  switch (count - (adjcount << 2)) {
+    case 3:
+      dest8[count - 3] = c;
+    case 2:
+      dest8[count - 2] = c;
+    case 1:
+      dest8[count - 1] = c;
+  }
+
+  while (adjcount-- > 0)  // Copy the rest, 4 bytes/32 bits at a time
+    *(dest32++) = fill;
+
+  return dest;
+}
+}  // extern "C"

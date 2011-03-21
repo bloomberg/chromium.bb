@@ -4,6 +4,10 @@
 
 #include "chrome/default_plugin/plugin_database_handler.h"
 
+// The placing of the ATL headers is intentional to avoid errors
+#include <atlbase.h>
+#include <atlwin.h>
+
 #include "libxml/parser.h"
 #include "libxml/xpath.h"
 
@@ -118,7 +122,7 @@ int32 PluginDatabaseHandler::Write(NPStream* stream, int32 offset,
                                         FILE_SHARE_READ, NULL, CREATE_ALWAYS,
                                         FILE_ATTRIBUTE_NORMAL, NULL);
     if (plugin_downloads_file_ == INVALID_HANDLE_VALUE) {
-      unsigned long error = ::GetLastError();
+      DWORD error = ::GetLastError();
       if (error == ERROR_SHARING_VIOLATION) {
         // File may have been downloaded by another plugin instance on this
         // page.

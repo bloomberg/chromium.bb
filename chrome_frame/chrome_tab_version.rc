@@ -1,6 +1,6 @@
 #include "version.h"
 
-#include "winres.h"
+#include "winresrc.h"
 
 #ifdef APSTUDIO_INVOKED
 # error Do not open this in the GUI, it will be massacred on save. Do not do it.
