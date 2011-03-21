@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,14 +117,19 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   // Check if we should allow GL_EXT_texture_compression_dxt1 and
   // GL_EXT_texture_compression_s3tc.
   bool enable_dxt1 = false;
-  bool enable_s3tc = false;
+  bool enable_dxt3 = false;
+  bool enable_dxt5 = false;
+  bool have_s3tc = ext.Have("GL_EXT_texture_compression_s3tc");
 
-  if (ext.HaveAndDesire("GL_EXT_texture_compression_dxt1")) {
+  if (ext.Desire("GL_EXT_texture_compression_dxt1") &&
+      (ext.Have("GL_EXT_texture_compression_dxt1") || have_s3tc)) {
     enable_dxt1 = true;
   }
-  if (ext.HaveAndDesire("GL_EXT_texture_compression_s3tc")) {
-    enable_dxt1 = true;
-    enable_s3tc = true;
+  if (have_s3tc && ext.Desire("GL_CHROMIUM_texture_compression_dxt3")) {
+    enable_dxt3 = true;
+  }
+  if (have_s3tc && ext.Desire("GL_CHROMIUM_texture_compression_dxt5")) {
+    enable_dxt5 = true;
   }
 
   if (enable_dxt1) {
@@ -135,10 +140,20 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
         GL_COMPRESSED_RGBA_S3TC_DXT1_EXT);
   }
 
-  if (enable_s3tc) {
-    AddExtensionString("GL_EXT_texture_compression_s3tc");
+  if (enable_dxt3) {
+    // The difference between GL_EXT_texture_compression_s3tc and
+    // GL_CHROMIUM_texture_compression_dxt3 is that the former
+    // requires on the fly compression. The latter does not.
+    AddExtensionString("GL_CHROMIUM_texture_compression_dxt3");
     validators_.compressed_texture_format.AddValue(
         GL_COMPRESSED_RGBA_S3TC_DXT3_EXT);
+  }
+
+  if (enable_dxt5) {
+    // The difference between GL_EXT_texture_compression_s3tc and
+    // GL_CHROMIUM_texture_compression_dxt5 is that the former
+    // requires on the fly compression. The latter does not.
+    AddExtensionString("GL_CHROMIUM_texture_compression_dxt5");
     validators_.compressed_texture_format.AddValue(
         GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
   }

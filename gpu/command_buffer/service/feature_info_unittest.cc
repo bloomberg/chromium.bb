@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,6 +77,10 @@ TEST_F(FeatureInfoTest, InitializeNoExtensions) {
   EXPECT_THAT(info_.extensions(), Not(HasSubstr("GL_OES_texture_npot")));
   EXPECT_THAT(info_.extensions(),
               Not(HasSubstr("GL_EXT_texture_compression_dxt1")));
+  EXPECT_THAT(info_.extensions(),
+              Not(HasSubstr("GL_CHROMIUM_texture_compression_dxt3")));
+  EXPECT_THAT(info_.extensions(),
+              Not(HasSubstr("GL_CHROMIUM_texture_compression_dxt5")));
   EXPECT_FALSE(info_.feature_flags().npot_ok);
   EXPECT_FALSE(info_.feature_flags().chromium_webglsl);
   EXPECT_FALSE(info_.validators()->compressed_texture_format.IsValid(
@@ -153,7 +157,9 @@ TEST_F(FeatureInfoTest, InitializeDXTExtensionGL) {
   EXPECT_THAT(info_.extensions(),
               HasSubstr("GL_EXT_texture_compression_dxt1"));
   EXPECT_THAT(info_.extensions(),
-              HasSubstr("GL_EXT_texture_compression_s3tc"));
+              HasSubstr("GL_CHROMIUM_texture_compression_dxt3"));
+  EXPECT_THAT(info_.extensions(),
+              HasSubstr("GL_CHROMIUM_texture_compression_dxt5"));
   EXPECT_TRUE(info_.validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
   EXPECT_TRUE(info_.validators()->compressed_texture_format.IsValid(
