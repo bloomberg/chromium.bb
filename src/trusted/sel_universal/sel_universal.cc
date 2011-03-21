@@ -57,6 +57,8 @@ static map<string, string> initial_vars;
 static vector<string> initial_commands;
 static bool abort_on_error = false;
 static bool silenence_nexe = false;
+static string command_prefix = "";
+
 // When given argc and argv this function (a) extracts the nacl_file argument,
 // (b) populates sel_ldr_argv with sel_ldr arguments, and (c) populates
 // app_argv with nexe module args. Also see kUsage above for details.
@@ -84,11 +86,17 @@ static nacl::string ProcessArguments(int argc,
       abort_on_error = true;
     } else if (flag == "--silenence_nexe") {
       silenence_nexe = true;
+    } else if (flag == "--command_prefix") {
+      if (argc <= i + 1) {
+        NaClLog(LOG_FATAL,
+                "not enough args for --command_prefix option\n");
+      }
+      ++i;
+      command_prefix = argv[i];
     } else if (flag == "--command_file") {
       if (argc <= i + 1) {
         NaClLog(LOG_FATAL,
                 "not enough args for --command_file option\n");
-        exit(1);
       }
       NaClLog(LOG_INFO, "reading commands from %s\n", argv[i + 1]);
       ifstream f;
@@ -105,7 +113,6 @@ static nacl::string ProcessArguments(int argc,
     } else if (flag == "--var") {
       if (argc <= i + 2) {
         NaClLog(LOG_FATAL, "not enough args for --var option\n");
-        exit(1);
       }
 
       const string tag = string(argv[i + 1]);
@@ -132,7 +139,6 @@ static nacl::string ProcessArguments(int argc,
 
   if (app_name == "") {
     NaClLog(LOG_FATAL, "missing app\n");
-    exit(1);
   }
 
   return app_name;
@@ -168,6 +174,10 @@ int main(int argc, char* argv[]) {
   }
   // Start sel_ldr with the given application and arguments.
   nacl::SelLdrLauncher launcher;
+  if (command_prefix != "") {
+    launcher.SetCommandPrefix(command_prefix);
+  }
+
   if (!launcher.StartFromCommandLine(app_name, 5, sel_ldr_argv, app_argv)) {
     NaClLog(LOG_FATAL, "sel_universal: Failed to launch sel_ldr\n");
   }

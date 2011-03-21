@@ -31,6 +31,7 @@ namespace nacl {
 SelLdrLauncher::SelLdrLauncher()
   : child_process_(kInvalidHandle),
     channel_(kInvalidHandle),
+    command_prefix_(""),
     socket_address_(NULL),
     sel_ldr_locator_(new PluginSelLdrLocator()) {
 }
@@ -144,10 +145,15 @@ static char **GetEnviron() {
 }
 #endif
 
+void SelLdrLauncher::SetCommandPrefix(const nacl::string& prefix) {
+  command_prefix_ = prefix;
+}
 
 void SelLdrLauncher::BuildCommandLine(vector<nacl::string>* command) {
   assert(sel_ldr_ != NACL_NO_FILE_PATH);  // Set by InitCommandLine().
-
+  if (command_prefix_.size() > 0) {
+    command->push_back(command_prefix_);
+  }
   command->push_back(sel_ldr_);
   if (application_file_ != NACL_NO_FILE_PATH) {
     command->push_back("-f");
@@ -186,7 +192,6 @@ void SelLdrLauncher::BuildCommandLine(vector<nacl::string>* command) {
                     application_argv_.begin(), application_argv_.end());
   }
 }
-
 
 void SelLdrLauncher::InitCommandLine(const nacl::string& app_file,
                                      int imc_fd,

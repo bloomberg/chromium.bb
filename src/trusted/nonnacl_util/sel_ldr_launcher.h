@@ -115,6 +115,10 @@ struct SelLdrLauncher {
   // neither needs to be Dtor'd).
   bool OpenSrpcChannels(NaClSrpcChannel* command, NaClSrpcChannel* untrusted);
 
+  // Add a prefix shell program, like 'time', to run the sel_ldr in
+  // This is primarily intended to provide a hook for qemu emulation
+  void SetCommandPrefix(const nacl::string& prefix);
+
   // Kill the child process.  The channel() remains valid, but nobody
   // is talking on the other end.  Returns true if successful.
   bool KillChildProcess();
@@ -151,9 +155,17 @@ struct SelLdrLauncher {
   int channel_number_;  // IMC file descriptor.
 
   // The following members are used to initialize and build the command line.
+  // The detailed magic is in BuildCommandLine() but roughly we run
+  // <prefix> <sel_ldr> <extra stuff> -f <nexe> <sel_ldr_argv> -- <nexe_args>
+  // Path to prefix tool or empty if not used
+  nacl::string command_prefix_;
+  // Path to the sel_ldr executable
   nacl::string sel_ldr_;
+  // Path to the nexe (if it is loaded by sel_ldr directly
   nacl::string application_file_;
+  // arguments to sel_ldr
   std::vector<nacl::string> sel_ldr_argv_;
+  // arguments to the nexe
   std::vector<nacl::string> application_argv_;
 
   std::vector<Handle> close_after_launch_;
