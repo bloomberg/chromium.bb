@@ -182,6 +182,7 @@ extern const char kFileDescriptorLimit[];
 extern const char kFocusExistingTabOnOpen[];
 extern const char kFirstRun[];
 extern const char kForceAppsPromoVisible[];
+extern const char kForceCompositingMode[];
 extern const char kForceFieldTestNameAndValue[];
 extern const char kForceRendererAccessibility[];
 extern const char kForceStubLibcros[];

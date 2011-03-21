@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,6 +68,7 @@ WebPreferences::WebPreferences()
       show_fps_counter(false),
       asynchronous_spell_checking_enabled(true),
       accelerated_compositing_enabled(false),
+      force_compositing_mode(false),
       composite_to_texture_enabled(false),
       accelerated_layers_enabled(false),
       accelerated_video_enabled(false),
@@ -174,6 +175,9 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Enable gpu-accelerated compositing if requested on the command line.
   settings->setAcceleratedCompositingEnabled(accelerated_compositing_enabled);
+
+  // Always enter compositing if requested on the command line.
+  settings->setForceCompositingMode(force_compositing_mode);
 
   // Enable composite to offscreen texture if requested on the command line.
   settings->setCompositeToTextureEnabled(composite_to_texture_enabled);
