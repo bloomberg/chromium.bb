@@ -24,10 +24,61 @@ function load() {
   $('pages').addEventListener('blur', validatePageRangeInfo);
   $('all-pages').addEventListener('click', handlePrintAllPages);
   $('print-pages').addEventListener('click', validatePageRangeInfo);
+  $('copies').addEventListener('input', validateNumberOfCopies);
+  $('copies').addEventListener('blur', handleCopiesFieldBlur);
 
   chrome.send('getPrinters');
   chrome.send('getPreview');
 };
+
+/**
+ * Parses the copies field text for validation and updates the state of print
+ * button. If the specified value is invalid, displays an invalid warning icon
+ * on the text box and sets the error message as the title message of text box.
+ */
+function validateNumberOfCopies() {
+  var copiesField = $('copies');
+  var message = '';
+  if (!isNumberOfCopiesValid())
+    message = localStrings.getString('invalidNumberOfCopiesTitleToolTip');
+  copiesField.setCustomValidity(message);
+  copiesField.title = message;
+  updatePrintButtonState();
+}
+
+/**
+ * Handles copies field blur event.
+ */
+function handleCopiesFieldBlur() {
+  checkAndSetInputFieldDefaultValue($('copies'), 1);
+}
+
+/**
+ * Validates the copies text field value.
+ * NOTE: An empty copies field text is considered valid because the blur event
+ * listener of this field will set it back to a default value.
+ * @return {boolean} true if the number of copies is valid else returns false.
+ */
+function isNumberOfCopiesValid() {
+  var copiesFieldText = $('copies').value.replace(/\s/g, '');
+  if (copiesFieldText == '')
+    return true;
+
+  var numericExp = /^[0-9]+$/;
+  return (numericExp.test(copiesFieldText) && Number(copiesFieldText) > 0);
+}
+
+/**
+ * Checks whether the input field text is empty or not. If the value is empty,
+ * sets the input field default value.
+ * @param {HTMLElement} inpElement An input element.
+ * @param {string} defaultVal Input field default value.
+ */
+function checkAndSetInputFieldDefaultValue(inpElement, defaultVal) {
+  var inpElementText = inpElement.value.replace(/\s/g, '');
+  if (inpElementText == '')
+    inpElement.value = defaultVal;
+}
 
 /**
  * Validates the 'from' and 'to' values of page range.
@@ -202,10 +253,8 @@ function selectPageRange() {
  */
 function validatePageRangeInfo() {
   var pageRangeField = $('pages');
-  var pageRangeText = pageRangeField.value.replace(/\s/g, '');
 
-  if (pageRangeText == '')
-    pageRangeField.value = '1-' + expectedPageCount;
+  checkAndSetInputFieldDefaultValue(pageRangeField, ('1-' + expectedPageCount));
 
   if ($('print-pages').checked) {
     var message = '';
@@ -231,10 +280,13 @@ function handlePrintAllPages() {
  * If the user has selected 'All' pages option, enables the print button.
  * If the user has selected a page range, depending on the validity of page
  * range text enables/disables the print button.
+ * Depending on the validity of 'copies' value, enables/disables the print
+ * button.
  */
 function updatePrintButtonState() {
-  $('print-button').disabled = !($('all-pages').checked ||
-                                 $('pages').checkValidity());
+  $('print-button').disabled = (!($('all-pages').checked ||
+                                  $('pages').checkValidity()) ||
+                                !$('copies').checkValidity());
 }
 
 window.addEventListener('DOMContentLoaded', load);

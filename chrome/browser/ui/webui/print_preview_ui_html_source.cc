@@ -39,6 +39,8 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_COPIES_LABEL));
   localized_strings->SetString(std::string("examplePageRangeText"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_EXAMPLE_PAGE_RANGE_TEXT));
+  localized_strings->SetString(std::string("invalidNumberOfCopiesTitleToolTip"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_INVALID_COPIES_TOOL_TIP));
   localized_strings->SetString(std::string("layoutLabel"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_LAYOUT_LABEL));
   localized_strings->SetString(std::string("optionAllPages"),

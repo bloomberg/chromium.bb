@@ -5467,6 +5467,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="Tooltip text shown in invalid page range text">
         Invalid page range
       </message>
+      <message name="IDS_PRINT_PREVIEW_INVALID_COPIES_TOOL_TIP"
+               desc="Tooltip text shown in invalid number of copies text">
+        Invalid number
+      </message>
 
       <!-- Load State -->
       <message name="IDS_LOAD_STATE_WAITING_FOR_CACHE">

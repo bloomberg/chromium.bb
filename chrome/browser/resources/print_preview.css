@@ -97,6 +97,10 @@ select {
   -webkit-box-flex: 1;
 }
 
+#copies {
+  width: 100%;
+}
+
 input.validating {
   box-sizing: border-box;
 }
