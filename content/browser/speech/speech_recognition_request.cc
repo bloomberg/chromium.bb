@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -23,6 +24,10 @@ const char* const kDefaultSpeechRecognitionUrl =
 const char* const kHypothesesString = "hypotheses";
 const char* const kUtteranceString = "utterance";
 const char* const kConfidenceString = "confidence";
+
+// TODO(satish): Remove this hardcoded value once the page is allowed to
+// set this via an attribute.
+const int kMaxResults = 5;
 
 bool ParseServerResponse(const std::string& response_body,
                          speech_input::SpeechInputResultArray* result) {
@@ -145,9 +150,7 @@ void SpeechRecognitionRequest::Start(const std::string& language,
     parts.push_back("lm=" + EscapeQueryParamValue(grammar, true));
   if (!hardware_info.empty())
     parts.push_back("xhw=" + EscapeQueryParamValue(hardware_info, true));
-  // TODO(satish): Remove this hardcoded value once the page is allowed to
-  // set this via an attribute.
-  parts.push_back("maxresults=3");
+  parts.push_back("maxresults=" + base::IntToString(kMaxResults));
 
   GURL url(std::string(kDefaultSpeechRecognitionUrl) + JoinString(parts, '&'));
 
