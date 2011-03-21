@@ -129,23 +129,13 @@ class DataSource : public Filter {
   virtual bool IsStreaming() = 0;
 };
 
-
-class Demuxer : public Filter {
- public:
-  // Returns the number of streams available
-  virtual size_t GetNumberOfStreams() = 0;
-
-  // Returns the stream for the given index, NULL otherwise
-  virtual scoped_refptr<DemuxerStream> GetStream(int stream_id) = 0;
-};
-
-
 class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
  public:
   enum Type {
     UNKNOWN,
     AUDIO,
     VIDEO,
+    NUM_TYPES,  // Always keep this entry as the last one!
   };
 
   // Schedules a read.  When the |read_callback| is called, the downstream
@@ -184,6 +174,12 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
 
   friend class base::RefCountedThreadSafe<DemuxerStream>;
   virtual ~DemuxerStream();
+};
+
+class Demuxer : public Filter {
+ public:
+  // Returns the given stream type, or NULL if that type is not present.
+  virtual scoped_refptr<DemuxerStream> GetStream(DemuxerStream::Type type) = 0;
 };
 
 
