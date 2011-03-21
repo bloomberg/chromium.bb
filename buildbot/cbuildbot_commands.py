@@ -53,10 +53,7 @@ def _RepoSync(buildroot, retries=_DEFAULT_RETRIES):
   """
   while retries > 0:
     try:
-      # The --trace option ensures that repo shows the output from git. This
-      # is needed so that the buildbot can kill us if git is not making
-      # progress.
-      cros_lib.OldRunCommand(['repo', '--trace', 'sync'], cwd=buildroot)
+      cros_lib.OldRunCommand(['repo', 'sync'], cwd=buildroot)
       cros_lib.OldRunCommand(
           ['repo',
            'forall',
