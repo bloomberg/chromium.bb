@@ -767,9 +767,16 @@
           'include_dirs': [
             'config/win',
           ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              'config/win',
+            ],
+          },
         },],
         ['OS=="win" and component=="shared_library"', {
           'defines': [
+            'GR_DLL',
+            'GR_IMPLEMENTATION=1',
             'SKIA_DLL',
             'SKIA_IMPLEMENTATION=1',
           ],
@@ -782,6 +789,7 @@
           ],
           'direct_dependent_settings': {
             'defines': [
+              'GR_DLL',
               'SKIA_DLL',
             ],
           },
