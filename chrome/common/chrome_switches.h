@@ -53,7 +53,6 @@ extern const char kCloudPrintProxyId[];
 extern const char kCloudPrintServiceURL[];
 extern const char kConflictingModulesCheck[];
 extern const char kCountry[];
-extern const char kDebugDevTools[];
 extern const char kDebugPrint[];
 extern const char kDeviceManagementUrl[];
 extern const char kDevicePolicyCacheDir[];
