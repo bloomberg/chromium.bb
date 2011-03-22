@@ -309,9 +309,12 @@ TEST_F(TreeNodeModelTest, BasicOperations) {
   root->Remove(child2);
   EXPECT_EQ(1, root->child_count());
   EXPECT_EQ(NULL, child2->parent());
+  delete child2;
 
   delete root->Remove(child1);
   EXPECT_EQ(0, root->child_count());
+
+  delete root;
 }
 
 }  // namespace ui

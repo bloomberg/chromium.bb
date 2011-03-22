@@ -4047,9 +4047,3 @@
    fun:call_init
    fun:_dl_init
 }
-{
-   bug_77012
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN2ui38TreeNodeModelTest_BasicOperations_Test8TestBodyEv
-}
