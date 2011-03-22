@@ -176,22 +176,32 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
                                 std::string* error) {
   DCHECK(error);
 
-  // We always allow themes and external installs.
+  // Make sure the expected id matches.
+  if (!expected_id_.empty() && expected_id_ != extension->id()) {
+    *error = base::StringPrintf(
+        "ID in new CRX manifest (%s) does not match expected id (%s)",
+        extension->id().c_str(),
+        expected_id_.c_str());
+    return false;
+  }
+
+  if (expected_version_.get() &&
+      !expected_version_->Equals(*extension->version())) {
+    *error = base::StringPrintf(
+        "Version in new CRX %s manifest (%s) does not match expected "
+        "version (%s)",
+        extension->id().c_str(),
+        expected_version_->GetString().c_str(),
+        extension->version()->GetString().c_str());
+    return false;
+  }
+
+  // The checks below are skipped for themes and external installs.
   if (extension->is_theme() || Extension::IsExternalLocation(install_source_))
     return true;
 
   if (!extensions_enabled_) {
     *error = "Extensions are not enabled.";
-    return false;
-  }
-
-  // Make sure the expected id matches.
-  // TODO(aa): Also support expected version?
-  if (!expected_id_.empty() && expected_id_ != extension->id()) {
-    *error = base::StringPrintf(
-        "ID in new extension manifest (%s) does not match expected id (%s)",
-        extension->id().c_str(),
-        expected_id_.c_str());
     return false;
   }
 

@@ -957,8 +957,8 @@ static ExtensionInfo* GetInstalledExtensionInfoImpl(
     return NULL;
   }
   if (state_value == Extension::KILLBIT) {
-    LOG(WARNING) << "External extension has been uninstalled by the user "
-                 << *extension_id;
+    LOG(WARNING) << "External extension with id " << *extension_id
+                 << " has been uninstalled by the user";
     return NULL;
   }
   FilePath::StringType path;

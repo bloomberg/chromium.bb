@@ -688,7 +688,7 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
 }
 
 void ExtensionService::UninstallExtension(const std::string& extension_id,
-                                           bool external_uninstall) {
+                                          bool external_uninstall) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const Extension* extension =
@@ -1755,6 +1755,7 @@ void ExtensionService::OnExternalExtensionFileFound(
                        NULL));  // no client (silent install)
   installer->set_install_source(location);
   installer->set_expected_id(id);
+  installer->set_expected_version(*version),
   installer->InstallCrx(path);
 }
 

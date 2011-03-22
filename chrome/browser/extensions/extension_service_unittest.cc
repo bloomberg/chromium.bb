@@ -1124,7 +1124,7 @@ TEST_F(ExtensionServiceTest, KilledExtensions) {
   service_->OnExternalExtensionFileFound(good_crx, version.get(),
                                          path, Extension::EXTERNAL_PREF);
   loop_.RunAllPending();
-  ASSERT_TRUE(NULL != service_->GetExtensionById(good_crx, false));
+  ASSERT_TRUE(service_->GetExtensionById(good_crx, false));
 
   // Uninstall it and check that its killbit gets set.
   service_->UninstallExtension(good_crx, false);
@@ -1155,6 +1155,65 @@ TEST_F(ExtensionServiceTest, KilledExtensions) {
   const PendingExtensionMap& pending_extensions =
       service_->pending_extensions();
   ASSERT_TRUE(pending_extensions.find(good_crx) == pending_extensions.end());
+}
+
+// Test that external extensions with incorrect IDs are not installed.
+TEST_F(ExtensionServiceTest, FailOnWrongId) {
+  InitializeEmptyExtensionService();
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  set_extensions_enabled(true);
+
+  scoped_ptr<Version> version;
+  version.reset(Version::GetVersionFromString("1.0.0.0"));
+
+  const std::string wrong_id = all_zero;
+  const std::string correct_id = good_crx;
+  ASSERT_NE(correct_id, wrong_id);
+
+  // Install an external extension with an ID from the external
+  // source that is not equal to the ID in the extension manifest.
+  service_->OnExternalExtensionFileFound(
+      wrong_id, version.get(), path, Extension::EXTERNAL_PREF);
+
+  loop_.RunAllPending();
+  ASSERT_FALSE(service_->GetExtensionById(good_crx, false));
+
+  // Try again with the right ID. Expect success.
+  service_->OnExternalExtensionFileFound(
+      correct_id, version.get(), path, Extension::EXTERNAL_PREF);
+  loop_.RunAllPending();
+  ASSERT_TRUE(service_->GetExtensionById(good_crx, false));
+}
+
+// Test that external extensions with incorrect versions are not installed.
+TEST_F(ExtensionServiceTest, FailOnWrongVersion) {
+  InitializeEmptyExtensionService();
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  set_extensions_enabled(true);
+
+  // Install an external extension with a version from the external
+  // source that is not equal to the version in the extension manifest.
+  scoped_ptr<Version> wrong_version;
+  wrong_version.reset(Version::GetVersionFromString("1.2.3.4"));
+  service_->OnExternalExtensionFileFound(
+      good_crx, wrong_version.get(), path, Extension::EXTERNAL_PREF);
+
+  loop_.RunAllPending();
+  ASSERT_FALSE(service_->GetExtensionById(good_crx, false));
+
+  // Try again with the right version. Expect success.
+  scoped_ptr<Version> correct_version;
+  correct_version.reset(Version::GetVersionFromString("1.0.0.0"));
+  service_->OnExternalExtensionFileFound(
+      good_crx, correct_version.get(), path, Extension::EXTERNAL_PREF);
+  loop_.RunAllPending();
+  ASSERT_TRUE(service_->GetExtensionById(good_crx, false));
 }
 
 // Install a user script (they get converted automatically to an extension)
@@ -2672,7 +2731,7 @@ TEST_F(ExtensionServiceTest, UninstallExtensionHelper) {
   EXPECT_TRUE(file_util::PathExists(extension_path));
 
   bool result = ExtensionService::UninstallExtensionHelper(service_,
-                                                            extension_id);
+                                                           extension_id);
   total_successes_ = 0;
 
   EXPECT_TRUE(result);
@@ -2944,7 +3003,7 @@ void ExtensionServiceTest::TestExternalProvider(
   // Now test the case where user uninstalls and then the extension is removed
   // from the external provider.
 
-  provider->UpdateOrAddExtension(good_crx, "1.0", source_path);
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.1", source_path);
   service_->CheckForExternalUpdates();
   loop_.RunAllPending();
 
