@@ -136,6 +136,10 @@ void PrerenderContents::StartPrerendering() {
   load_start_time_ = base::TimeTicks::Now();
 
   ViewMsg_Navigate_Params params;
+  params.page_id = -1;
+  params.pending_history_list_offset = -1;
+  params.current_history_list_offset = -1;
+  params.current_history_list_length = 0;
   params.url = prerender_url_;
   params.transition = PageTransition::LINK;
   params.navigation_type = ViewMsg_Navigate_Type::PRERENDER;
