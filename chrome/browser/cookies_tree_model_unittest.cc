@@ -204,15 +204,14 @@ class CookiesTreeModelTest : public testing::Test {
                              CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB);
   }
 
-  // do not call on the root
+  // Do not call on the root.
   void DeleteStoredObjects(CookieTreeNode* node) {
     node->DeleteStoredObjects();
-    // find the parent and index
     CookieTreeNode* parent_node = node->parent();
     DCHECK(parent_node);
-    int ct_node_index = parent_node->GetIndexOf(node);
-    delete parent_node->GetModel()->Remove(parent_node, ct_node_index);
+    delete parent_node->GetModel()->Remove(parent_node, node);
   }
+
  protected:
   MessageLoop message_loop_;
   BrowserThread ui_thread_;

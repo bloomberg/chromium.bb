@@ -635,7 +635,7 @@ void CookiesTreeModel::DeleteAllStoredObjects() {
   root->DeleteStoredObjects();
   int num_children = root->child_count();
   for (int i = num_children - 1; i >= 0; --i)
-    delete Remove(root, i);
+    delete Remove(root, root->GetChild(i));
   NotifyObserverTreeNodeChanged(root);
   NotifyObserverEndBatch();
 }
@@ -644,10 +644,8 @@ void CookiesTreeModel::DeleteCookieNode(CookieTreeNode* cookie_node) {
   if (cookie_node == GetRoot())
     return;
   cookie_node->DeleteStoredObjects();
-  // find the parent and index
   CookieTreeNode* parent_node = cookie_node->parent();
-  int cookie_node_index = parent_node->GetIndexOf(cookie_node);
-  delete Remove(parent_node, cookie_node_index);
+  delete Remove(parent_node, cookie_node);
   if (parent_node->child_count() == 0)
     DeleteCookieNode(parent_node);
 }
@@ -657,7 +655,7 @@ void CookiesTreeModel::UpdateSearchResults(const std::wstring& filter) {
   int num_children = root->child_count();
   NotifyObserverBeginBatch();
   for (int i = num_children - 1; i >= 0; --i)
-    delete Remove(root, i);
+    delete Remove(root, root->GetChild(i));
   LoadCookiesWithFilter(filter);
   PopulateDatabaseInfoWithFilter(filter);
   PopulateLocalStorageInfoWithFilter(filter);

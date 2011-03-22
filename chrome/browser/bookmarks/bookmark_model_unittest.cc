@@ -975,10 +975,10 @@ TEST_F(BookmarkModelTest, Sort) {
 
   BookmarkNode* child1 = AsMutable(parent->GetChild(1));
   child1->set_title(ASCIIToUTF16("a"));
-  delete child1->Remove(0);
+  delete child1->Remove(child1->GetChild(0));
   BookmarkNode* child3 = AsMutable(parent->GetChild(3));
   child3->set_title(ASCIIToUTF16("C"));
-  delete child3->Remove(0);
+  delete child3->Remove(child3->GetChild(0));
 
   ClearCounts();
 

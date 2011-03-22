@@ -81,18 +81,19 @@ class TreeNode : public TreeModelNode {
     // If the node has a parent, remove it from its parent.
     NodeType* parent = node->parent();
     if (parent)
-      parent->Remove(parent->GetIndexOf(node));
+      parent->Remove(node);
     node->parent_ = static_cast<NodeType*>(this);
     children_->insert(children_->begin() + index, node);
   }
 
-  // Removes the node by index. This does NOT delete the specified node, it is
-  // up to the caller to delete it when done.
-  virtual NodeType* Remove(int index) {
-    DCHECK(index >= 0 && index < child_count());
-    NodeType* node = GetChild(index);
+  // Remove |node| from this Node and returns it. It's up to the caller to
+  // delete it.
+  virtual NodeType* Remove(NodeType* node) {
+    typename std::vector<NodeType*>::iterator i =
+        std::find(children_->begin(), children_->end(), node);
+    DCHECK(i != children_.end());
     node->parent_ = NULL;
-    children_->erase(index + children_->begin());
+    children_->erase(i);
     return node;
   }
 
@@ -213,17 +214,18 @@ class TreeNodeModel : public TreeModel {
     return static_cast<NodeType*>(model_node);
   }
 
-  void Add(NodeType* parent, NodeType* child, int index) {
-    DCHECK(parent && child);
-    parent->Add(child, index);
+  void Add(NodeType* parent, NodeType* node, int index) {
+    DCHECK(parent && node);
+    parent->Add(node, index);
     NotifyObserverTreeNodesAdded(parent, index, 1);
   }
 
-  NodeType* Remove(NodeType* parent, int index) {
+  NodeType* Remove(NodeType* parent, NodeType* node) {
     DCHECK(parent);
-    NodeType* child = parent->Remove(index);
+    int index = parent->GetIndexOf(node);
+    NodeType* delete_node = parent->Remove(node);
     NotifyObserverTreeNodesRemoved(parent, index, 1);
-    return child;
+    return delete_node;
   }
 
   void NotifyObserverTreeNodesAdded(NodeType* parent, int start, int count) {

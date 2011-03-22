@@ -601,7 +601,7 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
   BookmarkNode* parent = AsMutable(node->parent());
   DCHECK(parent);
   int index = parent->GetIndexOf(node.get());
-  parent->Remove(index);
+  parent->Remove(node.get());
   history::URLsStarredDetails details(false);
   {
     base::AutoLock url_lock(url_lock_);

@@ -114,7 +114,7 @@ TEST_F(TreeNodeModelTest, RemoveNode) {
   ASSERT_EQ(1, model.GetChildCount(root));
 
   // Now remove the |child1| from root and release the memory.
-  delete model.Remove(root, 0);
+  delete model.Remove(root, child1);
 
   AssertObserverCount(0, 1, 0);
 
@@ -290,6 +290,28 @@ TEST_F(TreeNodeModelTest, SetTitle) {
   model.SetTitle(root, title);
   AssertObserverCount(0, 0, 1);
   EXPECT_EQ(title, root->GetTitle());
+}
+
+TEST_F(TreeNodeModelTest, BasicOperations) {
+  TreeNodeWithValue<int>* root = new TreeNodeWithValue<int>(0);
+  EXPECT_EQ(0, root->child_count());
+
+  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>(1);
+  root->Add(child1, root->child_count());
+  EXPECT_EQ(1, root->child_count());
+  EXPECT_EQ(root, child1->parent());
+
+  TreeNodeWithValue<int>* child2 = new TreeNodeWithValue<int>(1);
+  root->Add(child2, root->child_count());
+  EXPECT_EQ(2, root->child_count());
+  EXPECT_EQ(child1->parent(), child2->parent());
+
+  root->Remove(child2);
+  EXPECT_EQ(1, root->child_count());
+  EXPECT_EQ(NULL, child2->parent());
+
+  delete root->Remove(child1);
+  EXPECT_EQ(0, root->child_count());
 }
 
 }  // namespace ui
