@@ -20,6 +20,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/shown_sections_handler.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
@@ -264,7 +265,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
       "true" : "false");
   localized_strings.SetString("hasattribution",
-      profile_->GetThemeProvider()->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ?
+      ThemeServiceFactory::GetForProfile(profile_)->HasCustomImage(
+          IDR_THEME_NTP_ATTRIBUTION) ?
       "true" : "false");
   localized_strings.SetString("apps", apps);
   localized_strings.SetString("title", title);
@@ -432,7 +434,7 @@ void NTPResourceCache::CreateNewTabHTML() {
 }
 
 void NTPResourceCache::CreateNewTabIncognitoCSS() {
-  ui::ThemeProvider* tp = profile_->GetThemeProvider();
+  ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
   DCHECK(tp);
 
   // Get our theme colors
@@ -468,7 +470,7 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
 }
 
 void NTPResourceCache::CreateNewTabCSS() {
-  ui::ThemeProvider* tp = profile_->GetThemeProvider();
+  ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
   DCHECK(tp);
 
   // Get our theme colors

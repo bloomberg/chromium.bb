@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/bindings_policy.h"
@@ -377,7 +378,7 @@ std::string SkColorToRGBAString(SkColor color) {
 }
 
 GURL DevToolsWindow::GetDevToolsUrl() {
-  BrowserThemeProvider* tp = profile_->GetThemeProvider();
+  BrowserThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
   CHECK(tp);
 
   SkColor color_toolbar =
@@ -395,7 +396,7 @@ GURL DevToolsWindow::GetDevToolsUrl() {
 }
 
 void DevToolsWindow::UpdateTheme() {
-  BrowserThemeProvider* tp = profile_->GetThemeProvider();
+  BrowserThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
   CHECK(tp);
 
   SkColor color_toolbar =

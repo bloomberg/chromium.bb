@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resources_util.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/webui/ntp_resource_cache.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -106,7 +107,7 @@ bool ThemeSource::ShouldReplaceExistingSource() const {
 void ThemeSource::SendThemeBitmap(int request_id, int resource_id) {
   if (BrowserThemeProvider::IsThemeableImage(resource_id)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    ui::ThemeProvider* tp = profile_->GetThemeProvider();
+    ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
     DCHECK(tp);
 
     scoped_refptr<RefCountedMemory> image_data(tp->GetRawData(resource_id));

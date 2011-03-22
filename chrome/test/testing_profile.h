@@ -185,12 +185,6 @@ class TestingProfile : public Profile {
   virtual fileapi::FileSystemContext* GetFileSystemContext();
   virtual BrowserSignin* GetBrowserSignin();
   virtual bool HasCreatedDownloadManager() const;
-  virtual void InitThemes();
-  virtual void SetTheme(const Extension* extension) {}
-  virtual void SetNativeTheme() {}
-  virtual void ClearTheme() {}
-  virtual const Extension* GetTheme();
-  virtual BrowserThemeProvider* GetThemeProvider();
 
   // Returns a testing ContextGetter (if one has been created via
   // CreateRequestContext) or NULL. This is not done on-demand for two reasons:
@@ -344,10 +338,6 @@ class TestingProfile : public Profile {
 
   // The SessionService. Defaults to NULL, but can be set using the setter.
   scoped_refptr<SessionService> session_service_;
-
-  // The theme provider. Created lazily by GetThemeProvider()/InitThemes().
-  scoped_ptr<BrowserThemeProvider> theme_provider_;
-  bool created_theme_provider_;
 
   // Internally, this is a TestURLRequestContextGetter that creates a dummy
   // request context. Currently, only the CookieMonster is hooked up.

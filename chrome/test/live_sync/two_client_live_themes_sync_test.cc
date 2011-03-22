@@ -53,8 +53,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeTheme) {
 
   ASSERT_TRUE(AwaitQuiescence());
 
-  GetProfile(0)->SetNativeTheme();
-  verifier()->SetNativeTheme();
+  SetNativeTheme(GetProfile(0));
+  SetNativeTheme(verifier());
   ASSERT_TRUE(UsingNativeTheme(GetProfile(0)));
   ASSERT_FALSE(UsingNativeTheme(GetProfile(1)));
   ASSERT_TRUE(UsingNativeTheme(verifier()));
@@ -75,8 +75,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DefaultTheme) {
 
   ASSERT_TRUE(AwaitQuiescence());
 
-  GetProfile(0)->ClearTheme();
-  verifier()->ClearTheme();
+  UseDefaultTheme(GetProfile(0));
+  UseDefaultTheme(verifier());
   ASSERT_TRUE(UsingDefaultTheme(GetProfile(0)));
   ASSERT_FALSE(UsingDefaultTheme(GetProfile(1)));
   ASSERT_TRUE(UsingDefaultTheme(verifier()));
@@ -91,8 +91,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DefaultTheme) {
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeDefaultRace) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  GetProfile(0)->SetNativeTheme();
-  GetProfile(1)->ClearTheme();
+  SetNativeTheme(GetProfile(0));
+  UseDefaultTheme(GetProfile(1));
   ASSERT_TRUE(UsingNativeTheme(GetProfile(0)));
   ASSERT_TRUE(UsingDefaultTheme(GetProfile(1)));
 
@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomNativeRace) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetTheme(GetProfile(0), GetTheme(0));
-  GetProfile(1)->SetNativeTheme();
+  SetNativeTheme(GetProfile(1));
   ASSERT_EQ(GetTheme(0), GetCustomTheme(GetProfile(0)));
   ASSERT_TRUE(UsingNativeTheme(GetProfile(1)));
 
@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomDefaultRace) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetTheme(GetProfile(0), GetTheme(0));
-  GetProfile(1)->ClearTheme();
+  UseDefaultTheme(GetProfile(1));
   ASSERT_EQ(GetTheme(0), GetCustomTheme(GetProfile(0)));
   ASSERT_TRUE(UsingDefaultTheme(GetProfile(1)));
 

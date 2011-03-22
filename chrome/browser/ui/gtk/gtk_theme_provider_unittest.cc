@@ -32,7 +32,6 @@ class GtkThemeProviderTest : public testing::Test {
   }
 
   void BuildProvider() {
-    profile_.InitThemes();
     provider_ = GtkThemeProvider::GetFrom(&profile_);
   }
 

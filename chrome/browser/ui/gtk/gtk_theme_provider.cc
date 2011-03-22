@@ -17,6 +17,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/chrome_gtk_frame.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
@@ -247,7 +248,8 @@ GdkPixbuf* GtkThemeProvider::default_bookmark_icon_ = NULL;
 
 // static
 GtkThemeProvider* GtkThemeProvider::GetFrom(Profile* profile) {
-  return static_cast<GtkThemeProvider*>(profile->GetThemeProvider());
+  return static_cast<GtkThemeProvider*>(
+      ThemeServiceFactory::GetForProfile(profile));
 }
 
 GtkThemeProvider::GtkThemeProvider()

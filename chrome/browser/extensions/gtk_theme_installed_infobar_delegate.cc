@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/gtk_theme_installed_infobar_delegate.h"
 
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 
 GtkThemeInstalledInfoBarDelegate::GtkThemeInstalledInfoBarDelegate(
     TabContents* tab_contents,
@@ -17,7 +17,7 @@ GtkThemeInstalledInfoBarDelegate::GtkThemeInstalledInfoBarDelegate(
 
 bool GtkThemeInstalledInfoBarDelegate::Cancel() {
   if (previous_use_gtk_theme_) {
-    profile()->SetNativeTheme();
+    provider()->SetNativeTheme();
     return true;
   } else {
     return ThemeInstalledInfoBarDelegate::Cancel();

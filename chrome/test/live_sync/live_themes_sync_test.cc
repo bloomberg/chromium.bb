@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/common/extensions/extension.h"
 
 LiveThemesSyncTest::LiveThemesSyncTest(TestType test_type)
@@ -23,15 +24,22 @@ void LiveThemesSyncTest::SetTheme(
   InstallExtension(profile, theme);
 }
 
+void LiveThemesSyncTest::SetNativeTheme(Profile* profile) {
+  ThemeServiceFactory::GetForProfile(profile)->SetNativeTheme();
+}
+
+void LiveThemesSyncTest::UseDefaultTheme(Profile* profile) {
+  ThemeServiceFactory::GetForProfile(profile)->UseDefaultTheme();
+}
+
 const Extension* LiveThemesSyncTest::GetCustomTheme(
     Profile* profile) {
-  return profile->GetTheme();
+  return ThemeServiceFactory::GetThemeForProfile(profile);
 }
 
 bool LiveThemesSyncTest::UsingDefaultTheme(Profile* profile) {
-  return
-      !profile->GetTheme() &&
-      profile->GetThemeProvider()->UsingDefaultTheme();
+  return !ThemeServiceFactory::GetThemeForProfile(profile) &&
+      ThemeServiceFactory::GetForProfile(profile)->UsingDefaultTheme();
 }
 
 bool LiveThemesSyncTest::UsingNativeTheme(Profile* profile) {
@@ -44,10 +52,9 @@ bool LiveThemesSyncTest::UsingNativeTheme(Profile* profile) {
   // Return true if we're not using a custom theme and we don't make a
   // distinction between the default and the system theme, or we do
   // and we're not using the default theme.
-  return
-      !profile->GetTheme() &&
+  return !ThemeServiceFactory::GetThemeForProfile(profile) &&
       (!kHasDistinctNativeTheme ||
-       !profile->GetThemeProvider()->UsingDefaultTheme());
+       !ThemeServiceFactory::GetForProfile(profile)->UsingDefaultTheme());
 }
 
 bool LiveThemesSyncTest::ExtensionIsPendingInstall(

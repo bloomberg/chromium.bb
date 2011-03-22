@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,12 @@ class LiveThemesSyncTest : public LiveExtensionsSyncTestBase {
   // Set the theme of the given profile to a custom theme from the
   // given theme extension.
   static void SetTheme(Profile* profile, scoped_refptr<Extension> theme);
+
+  // Sets |profile| so that it uses the native theme.
+  void SetNativeTheme(Profile* profile);
+
+  // Sets |profile| to the default theme.
+  void UseDefaultTheme(Profile* profile);
 
   // Gets the custom theme of the given profile, or NULL if the given
   // profile doesn't have one.

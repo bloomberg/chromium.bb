@@ -25,6 +25,7 @@
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
@@ -396,7 +397,7 @@ void NewTabUI::Observe(NotificationType type,
       InitializeCSSCaches();
       ListValue args;
       args.Append(Value::CreateStringValue(
-          GetProfile()->GetThemeProvider()->HasCustomImage(
+          ThemeServiceFactory::GetForProfile(GetProfile())->HasCustomImage(
               IDR_THEME_NTP_ATTRIBUTION) ?
           "true" : "false"));
       CallJavascriptFunction("themeChanged", args);

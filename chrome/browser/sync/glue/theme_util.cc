@@ -16,6 +16,8 @@
 #endif
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "googleurl/src/gurl.h"
@@ -113,7 +115,8 @@ void SetCurrentThemeFromThemeSpecifics(
       // Get previous theme info before we set the new theme.
       std::string previous_theme_id;
       {
-        const Extension* current_theme = profile->GetTheme();
+        const Extension* current_theme =
+            ThemeServiceFactory::GetThemeForProfile(profile);
         if (current_theme) {
           DCHECK(current_theme->is_theme());
           previous_theme_id = current_theme->id();
@@ -122,7 +125,7 @@ void SetCurrentThemeFromThemeSpecifics(
       bool previous_use_system_theme = UseSystemTheme(profile);
       // An enabled theme extension with the given id was found, so
       // just set the current theme to it.
-      profile->SetTheme(extension);
+      ThemeServiceFactory::GetForProfile(profile)->SetTheme(extension);
       // Pretend the theme was just installed.
       ExtensionInstallUI::ShowThemeInfoBar(
           previous_theme_id, previous_use_system_theme,
@@ -151,17 +154,18 @@ void SetCurrentThemeFromThemeSpecifics(
       extension_updater->CheckNow();
     }
   } else if (theme_specifics.use_system_theme_by_default()) {
-    profile->SetNativeTheme();
+    ThemeServiceFactory::GetForProfile(profile)->SetNativeTheme();
   } else {
-    profile->ClearTheme();
+    ThemeServiceFactory::GetForProfile(profile)->UseDefaultTheme();
   }
 }
 
 bool UpdateThemeSpecificsOrSetCurrentThemeIfNecessary(
     Profile* profile, sync_pb::ThemeSpecifics* theme_specifics) {
   if (!theme_specifics->use_custom_theme() &&
-      (profile->GetTheme() || (UseSystemTheme(profile) &&
-                               IsSystemThemeDistinctFromDefaultTheme()))) {
+      (ThemeServiceFactory::GetThemeForProfile(profile) ||
+       (UseSystemTheme(profile) &&
+        IsSystemThemeDistinctFromDefaultTheme()))) {
     GetThemeSpecificsFromCurrentTheme(profile, theme_specifics);
     return true;
   } else {
@@ -174,7 +178,8 @@ void GetThemeSpecificsFromCurrentTheme(
     Profile* profile,
     sync_pb::ThemeSpecifics* theme_specifics) {
   DCHECK(profile);
-  const Extension* current_theme = profile->GetTheme();
+  const Extension* current_theme =
+      ThemeServiceFactory::GetThemeForProfile(profile);
   if (current_theme) {
     DCHECK(current_theme->is_theme());
   }

@@ -48,6 +48,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/webui/shown_sections_handler.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
@@ -1350,7 +1351,7 @@ void ExtensionService::GarbageCollectExtensions() {
   // defensive; in the future, we may call GarbageCollectExtensions()
   // from somewhere other than Init() (e.g., in a timer).
   if (profile_) {
-    profile_->GetThemeProvider()->RemoveUnusedThemes();
+    ThemeServiceFactory::GetForProfile(profile_)->RemoveUnusedThemes();
   }
 }
 

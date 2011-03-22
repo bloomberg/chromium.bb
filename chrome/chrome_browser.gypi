@@ -2025,6 +2025,8 @@
         'browser/themes/browser_theme_provider.h',
         'browser/themes/browser_theme_provider_gtk.cc',
         'browser/themes/browser_theme_provider_mac.mm',
+        'browser/themes/theme_service.cc',
+        'browser/themes/theme_service.h',
         'browser/translate/languages_menu_model.cc',
         'browser/translate/languages_menu_model.h',
         'browser/translate/options_menu_model.cc',

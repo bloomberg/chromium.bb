@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
@@ -24,11 +25,12 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
     const std::string& previous_theme_id)
     : ConfirmInfoBarDelegate(tab_contents),
       profile_(tab_contents->profile()),
+      provider_(ThemeServiceFactory::GetForProfile(profile_)),
       name_(new_theme->name()),
       theme_id_(new_theme->id()),
       previous_theme_id_(previous_theme_id),
       tab_contents_(tab_contents) {
-  profile_->GetThemeProvider()->OnInfobarDisplayed();
+  provider_->OnInfobarDisplayed();
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
 }
@@ -41,7 +43,7 @@ ThemeInstalledInfoBarDelegate::~ThemeInstalledInfoBarDelegate() {
   // We don't want any notifications while we're running our destructor.
   registrar_.RemoveAll();
 
-  profile_->GetThemeProvider()->OnInfobarDestroyed();
+  provider_->OnInfobarDestroyed();
 }
 
 bool ThemeInstalledInfoBarDelegate::Cancel() {
@@ -51,13 +53,13 @@ bool ThemeInstalledInfoBarDelegate::Cancel() {
       const Extension* previous_theme =
           service->GetExtensionById(previous_theme_id_, true);
       if (previous_theme) {
-        profile_->SetTheme(previous_theme);
+        provider_->SetTheme(previous_theme);
         return true;
       }
     }
   }
 
-  profile_->ClearTheme();
+  provider_->UseDefaultTheme();
   return true;
 }
 

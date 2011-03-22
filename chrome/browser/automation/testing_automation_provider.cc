@@ -59,6 +59,8 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
@@ -3801,7 +3803,7 @@ void TestingAutomationProvider::GetThemeInfo(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  const Extension* theme = browser->profile()->GetTheme();
+  const Extension* theme = ThemeServiceFactory::GetThemeForProfile(profile());
   if (theme) {
     return_value->SetString("name", theme->name());
     return_value->Set("images", theme->GetThemeImages()->DeepCopy());
@@ -5140,7 +5142,7 @@ void TestingAutomationProvider::LoadBlockedPlugins(int tab_handle,
 }
 
 void TestingAutomationProvider::ResetToDefaultTheme() {
-  profile_->ClearTheme();
+  ThemeServiceFactory::GetForProfile(profile_)->UseDefaultTheme();
 }
 
 void TestingAutomationProvider::WaitForProcessLauncherThreadToGoIdle(

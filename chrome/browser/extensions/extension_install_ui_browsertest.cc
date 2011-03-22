@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
@@ -29,6 +30,10 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
     delegate->Cancel();
     ASSERT_EQ(0U, tab_contents->infobar_count());
   }
+
+  const Extension* GetTheme() const {
+    return ThemeServiceFactory::GetThemeForProfile(browser()->profile());
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
@@ -36,26 +41,26 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   // Install theme once and undo to verify we go back to default theme.
   FilePath theme_crx = PackExtension(test_data_dir_.AppendASCII("theme"));
   ASSERT_TRUE(InstallExtensionWithUI(theme_crx, 1));
-  const Extension* theme = browser()->profile()->GetTheme();
+  const Extension* theme = GetTheme();
   ASSERT_TRUE(theme);
   std::string theme_id = theme->id();
   VerifyThemeInfoBarAndUndoInstall();
-  ASSERT_EQ(NULL, browser()->profile()->GetTheme());
+  ASSERT_EQ(NULL, GetTheme());
 
   // Set the same theme twice and undo to verify we go back to default theme.
   // We set the |expected_change| to zero in these 'InstallExtensionWithUI'
   // calls since the theme has already been installed above and this is an
   // overinstall to set the active theme.
   ASSERT_TRUE(InstallExtensionWithUI(theme_crx, 0));
-  theme = browser()->profile()->GetTheme();
+  theme = GetTheme();
   ASSERT_TRUE(theme);
   ASSERT_EQ(theme_id, theme->id());
   ASSERT_TRUE(InstallExtensionWithUI(theme_crx, 0));
-  theme = browser()->profile()->GetTheme();
+  theme = GetTheme();
   ASSERT_TRUE(theme);
   ASSERT_EQ(theme_id, theme->id());
   VerifyThemeInfoBarAndUndoInstall();
-  ASSERT_EQ(NULL, browser()->profile()->GetTheme());
+  ASSERT_EQ(NULL, GetTheme());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
@@ -63,20 +68,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   // Install first theme.
   FilePath theme_path = test_data_dir_.AppendASCII("theme");
   ASSERT_TRUE(InstallExtensionWithUI(theme_path, 1));
-  const Extension* theme = browser()->profile()->GetTheme();
+  const Extension* theme = GetTheme();
   ASSERT_TRUE(theme);
   std::string theme_id = theme->id();
 
   // Then install second theme.
   FilePath theme_path2 = test_data_dir_.AppendASCII("theme2");
   ASSERT_TRUE(InstallExtensionWithUI(theme_path2, 1));
-  const Extension* theme2 = browser()->profile()->GetTheme();
+  const Extension* theme2 = GetTheme();
   ASSERT_TRUE(theme2);
   EXPECT_FALSE(theme_id == theme2->id());
 
   // Undo second theme will revert to first theme.
   VerifyThemeInfoBarAndUndoInstall();
-  EXPECT_EQ(theme, browser()->profile()->GetTheme());
+  EXPECT_EQ(theme, GetTheme());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
@@ -30,7 +31,8 @@ void ThemeBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
       background = rb.GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
   } else {
     Profile* profile = browser_view_->browser()->profile();
-    ui::ThemeProvider* theme = profile->GetThemeProvider();
+    ui::ThemeProvider* theme = ThemeServiceFactory::GetForProfile(profile);
+
     if (browser_view_->IsActive()) {
       background = theme->GetBitmapNamed(
           profile->IsOffTheRecord() ?

@@ -100,10 +100,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/database/database_tracker.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
-#endif
-
 #if defined(OS_WIN)
 #include "chrome/browser/instant/promo_counter.h"
 #include "chrome/browser/password_manager/password_store_win.h"
@@ -256,7 +252,6 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       created_web_data_service_(false),
       created_password_store_(false),
       created_download_manager_(false),
-      created_theme_provider_(false),
       start_time_(Time::Now()),
       spellcheck_host_(NULL),
       spellcheck_host_ready_(false),
@@ -282,10 +277,6 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   // to PathService.
   chrome::GetUserCacheDirectory(path_, &base_cache_path_);
   file_util::CreateDirectory(base_cache_path_);
-
-  // Listen for theme installations from our original profile.
-  registrar_.Add(this, NotificationType::THEME_INSTALLED,
-                 Source<Profile>(GetOriginalProfile()));
 
 #if !defined(OS_CHROMEOS)
   // Listen for bookmark model load, to bootstrap the sync service.
@@ -552,9 +543,6 @@ ProfileImpl::~ProfileImpl() {
     download_manager_->Shutdown();
     download_manager_ = NULL;
   }
-
-  // The theme provider provides bitmaps to whoever wants them.
-  theme_provider_.reset();
 
   // Remove pref observers
   pref_change_registrar_.RemoveAll();
@@ -1104,48 +1092,6 @@ fileapi::FileSystemContext* ProfileImpl::GetFileSystemContext() {
   return file_system_context_.get();
 }
 
-void ProfileImpl::InitThemes() {
-  if (!created_theme_provider_) {
-#if defined(TOOLKIT_USES_GTK)
-    theme_provider_.reset(new GtkThemeProvider);
-#else
-    theme_provider_.reset(new BrowserThemeProvider);
-#endif
-    theme_provider_->Init(this);
-    created_theme_provider_ = true;
-  }
-}
-
-void ProfileImpl::SetTheme(const Extension* extension) {
-  InitThemes();
-  theme_provider_.get()->SetTheme(extension);
-}
-
-void ProfileImpl::SetNativeTheme() {
-  InitThemes();
-  theme_provider_.get()->SetNativeTheme();
-}
-
-void ProfileImpl::ClearTheme() {
-  InitThemes();
-  theme_provider_.get()->UseDefaultTheme();
-}
-
-const Extension* ProfileImpl::GetTheme() {
-  InitThemes();
-
-  std::string id = theme_provider_.get()->GetThemeID();
-  if (id == BrowserThemeProvider::kDefaultThemeID)
-    return NULL;
-
-  return extensions_service_->GetExtensionById(id, false);
-}
-
-BrowserThemeProvider* ProfileImpl::GetThemeProvider() {
-  InitThemes();
-  return theme_provider_.get();
-}
-
 SessionService* ProfileImpl::GetSessionService() {
   if (!session_service_.get() && !shutdown_session_service_) {
     session_service_ = new SessionService(this);
@@ -1327,10 +1273,6 @@ void ProfileImpl::Observe(NotificationType type,
             clear_local_state_on_exit_);
       }
     }
-  } else if (NotificationType::THEME_INSTALLED == type) {
-    DCHECK_EQ(Source<Profile>(source).ptr(), GetOriginalProfile());
-    const Extension* extension = Details<const Extension>(details).ptr();
-    SetTheme(extension);
   } else if (NotificationType::BOOKMARK_MODEL_LOADED == type) {
     GetProfileSyncService();  // Causes lazy-load if sync is enabled.
     registrar_.Remove(this, NotificationType::BOOKMARK_MODEL_LOADED,

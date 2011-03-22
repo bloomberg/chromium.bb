@@ -315,25 +315,6 @@ class Profile {
   // Returns the BrowserSignin object assigned to this profile.
   virtual BrowserSignin* GetBrowserSignin() = 0;
 
-  // Init our themes system.
-  virtual void InitThemes() = 0;
-
-  // Set the theme to the specified extension.
-  virtual void SetTheme(const Extension* extension) = 0;
-
-  // Set the theme to the machine's native theme.
-  virtual void SetNativeTheme() = 0;
-
-  // Clear the theme and reset it to default.
-  virtual void ClearTheme() = 0;
-
-  // Gets the theme that was last set. Returns NULL if the theme is no longer
-  // installed, if there is no installed theme, or the theme was cleared.
-  virtual const Extension* GetTheme() = 0;
-
-  // Returns or creates the ThemeProvider associated with this profile
-  virtual BrowserThemeProvider* GetThemeProvider() = 0;
-
   // Returns the request context information associated with this profile.  Call
   // this only on the UI thread, since it can send notifications that should
   // happen on the UI thread.

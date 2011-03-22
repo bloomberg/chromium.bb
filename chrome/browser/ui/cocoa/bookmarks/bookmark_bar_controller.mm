@@ -15,6 +15,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/themes/browser_theme_provider.h"
+#import "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
@@ -2065,7 +2066,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (ui::ThemeProvider*)themeProvider {
-  return browser_->profile()->GetThemeProvider();
+  return ThemeServiceFactory::GetForProfile(browser_->profile());
 }
 
 #pragma mark BookmarkButtonDelegate Protocol

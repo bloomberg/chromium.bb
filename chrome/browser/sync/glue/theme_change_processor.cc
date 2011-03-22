@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/glue/theme_util.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -45,9 +46,11 @@ void ThemeChangeProcessor::Observe(NotificationType type,
   } else {
     extension = Details<const Extension>(details).ptr();
   }
-  std::string current_or_future_theme_id =
-      profile_->GetThemeProvider()->GetThemeID();
-  const Extension* current_theme = profile_->GetTheme();
+  BrowserThemeProvider* theme_provider =
+      ThemeServiceFactory::GetForProfile(profile_);
+  std::string current_or_future_theme_id = theme_provider->GetThemeID();
+  const Extension* current_theme =
+      ThemeServiceFactory::GetThemeForProfile(profile_);
   switch (type.value) {
     case NotificationType::BROWSER_THEME_CHANGED:
       // We pay attention to this notification only when it signifies
@@ -59,7 +62,7 @@ void ThemeChangeProcessor::Observe(NotificationType type,
       VLOG(1) << "Got BROWSER_THEME_CHANGED notification for theme "
               << GetThemeId(extension);
       DCHECK_EQ(Source<BrowserThemeProvider>(source).ptr(),
-                profile_->GetThemeProvider());
+                theme_provider);
       if (extension != NULL) {
         DCHECK(extension->is_theme());
         DCHECK_EQ(extension->id(), current_or_future_theme_id);
@@ -202,7 +205,8 @@ void ThemeChangeProcessor::StartObserving() {
              "EXTENSION_UNLOADED";
   notification_registrar_.Add(
       this, NotificationType::BROWSER_THEME_CHANGED,
-      Source<BrowserThemeProvider>(profile_->GetThemeProvider()));
+      Source<BrowserThemeProvider>(
+          ThemeServiceFactory::GetForProfile(profile_)));
   notification_registrar_.Add(
       this, NotificationType::EXTENSION_LOADED,
       Source<Profile>(profile_));

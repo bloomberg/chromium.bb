@@ -19,6 +19,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/extensions/extension.h"
@@ -103,7 +104,8 @@ ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
   // Remember the current theme in case the user presses undo.
   if (profile_) {
-    const Extension* previous_theme = profile_->GetTheme();
+    const Extension* previous_theme =
+        ThemeServiceFactory::GetThemeForProfile(profile_);
     if (previous_theme)
       previous_theme_id_ = previous_theme->id();
 #if defined(TOOLKIT_GTK)

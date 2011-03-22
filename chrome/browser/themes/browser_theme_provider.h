@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,7 +171,7 @@ class BrowserThemeProvider : public base::NonThreadSafe,
 
   // Gets the id of the last installed theme. (The theme may have been further
   // locally customized.)
-  std::string GetThemeID() const;
+  virtual std::string GetThemeID() const;
 
   // This class needs to keep track of the number of theme infobars so that we
   // clean up unused themes.

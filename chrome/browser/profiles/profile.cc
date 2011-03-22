@@ -397,30 +397,6 @@ class OffTheRecordProfileImpl : public Profile,
     return file_system_context_.get();
   }
 
-  virtual void InitThemes() {
-    profile_->InitThemes();
-  }
-
-  virtual void SetTheme(const Extension* extension) {
-    profile_->SetTheme(extension);
-  }
-
-  virtual void SetNativeTheme() {
-    profile_->SetNativeTheme();
-  }
-
-  virtual void ClearTheme() {
-    profile_->ClearTheme();
-  }
-
-  virtual const Extension* GetTheme() {
-    return profile_->GetTheme();
-  }
-
-  virtual BrowserThemeProvider* GetThemeProvider() {
-    return profile_->GetThemeProvider();
-  }
-
   virtual URLRequestContextGetter* GetRequestContext() {
     return io_data_.GetMainRequestContextGetter();
   }

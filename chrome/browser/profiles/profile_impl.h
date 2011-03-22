@@ -79,12 +79,6 @@ class ProfileImpl : public Profile,
   virtual DownloadManager* GetDownloadManager();
   virtual PersonalDataManager* GetPersonalDataManager();
   virtual fileapi::FileSystemContext* GetFileSystemContext();
-  virtual void InitThemes();
-  virtual void SetTheme(const Extension* extension);
-  virtual void SetNativeTheme();
-  virtual void ClearTheme();
-  virtual const Extension* GetTheme();
-  virtual BrowserThemeProvider* GetThemeProvider();
   virtual bool HasCreatedDownloadManager() const;
   virtual URLRequestContextGetter* GetRequestContext();
   virtual URLRequestContextGetter* GetRequestContextForPossibleApp(
@@ -246,7 +240,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebDataService> web_data_service_;
   scoped_refptr<PasswordStore> password_store_;
   scoped_refptr<SessionService> session_service_;
-  scoped_ptr<BrowserThemeProvider> theme_provider_;
   scoped_refptr<WebKitContext> webkit_context_;
   scoped_ptr<DesktopNotificationService> desktop_notification_service_;
   scoped_ptr<BackgroundContentsService> background_contents_service_;
@@ -261,7 +254,6 @@ class ProfileImpl : public Profile,
   bool created_web_data_service_;
   bool created_password_store_;
   bool created_download_manager_;
-  bool created_theme_provider_;
   bool clear_local_state_on_exit_;
   // Whether or not the last session exited cleanly. This is set only once.
   bool last_session_exited_cleanly_;

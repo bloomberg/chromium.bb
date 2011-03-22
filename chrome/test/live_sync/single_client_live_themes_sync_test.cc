@@ -50,8 +50,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, NativeTheme) {
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
       "Waiting for custom themes change."));
 
-  GetProfile(0)->SetNativeTheme();
-  verifier()->SetNativeTheme();
+  SetNativeTheme(GetProfile(0));
+  SetNativeTheme(verifier());
   ASSERT_TRUE(UsingNativeTheme(GetProfile(0)));
   ASSERT_TRUE(UsingNativeTheme(verifier()));
 
@@ -73,8 +73,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, DefaultTheme) {
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
       "Waiting for custom themes change."));
 
-  GetProfile(0)->ClearTheme();
-  verifier()->ClearTheme();
+  UseDefaultTheme(GetProfile(0));
+  UseDefaultTheme(verifier());
   ASSERT_TRUE(UsingDefaultTheme(GetProfile(0)));
   ASSERT_TRUE(UsingDefaultTheme(verifier()));
 

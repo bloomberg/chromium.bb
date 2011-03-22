@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
@@ -133,7 +134,8 @@ void BrowserFrameWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
 }
 
 ThemeProvider* BrowserFrameWin::GetThemeProvider() const {
-  return browser_view_->browser()->profile()->GetThemeProvider();
+  return ThemeServiceFactory::GetForProfile(
+      browser_view_->browser()->profile());
 }
 
 void BrowserFrameWin::OnScreenReaderDetected() {

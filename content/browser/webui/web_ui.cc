@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/webui/generic_handler.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/render_messages.h"
@@ -129,7 +130,7 @@ void WebUI::CallJavascriptFunction(
 }
 
 ui::ThemeProvider* WebUI::GetThemeProvider() const {
-  return GetProfile()->GetThemeProvider();
+  return ThemeServiceFactory::GetForProfile(GetProfile());
 }
 
 void WebUI::RegisterMessageCallback(const std::string &message,

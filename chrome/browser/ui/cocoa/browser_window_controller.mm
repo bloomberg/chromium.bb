@@ -20,6 +20,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
@@ -1525,7 +1526,7 @@ enum {
 }
 
 - (ui::ThemeProvider*)themeProvider {
-  return browser_->profile()->GetThemeProvider();
+  return ThemeServiceFactory::GetForProfile(browser_->profile());
 }
 
 - (ThemedWindowStyle)themedWindowStyle {

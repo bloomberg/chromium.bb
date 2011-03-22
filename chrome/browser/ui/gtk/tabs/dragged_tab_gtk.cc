@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
 #include "content/browser/renderer_host/backing_store_x.h"
@@ -48,7 +49,8 @@ DraggedTabGtk::DraggedTabGtk(TabContents* datasource,
                              const gfx::Size& contents_size,
                              bool mini)
     : data_source_(datasource),
-      renderer_(new TabRendererGtk(datasource->profile()->GetThemeProvider())),
+      renderer_(new TabRendererGtk(ThemeServiceFactory::GetForProfile(
+          datasource->profile()))),
       attached_(false),
       mouse_tab_offset_(mouse_tab_offset),
       attached_tab_size_(TabRendererGtk::GetMinimumSelectedSize()),

@@ -23,6 +23,7 @@
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/options/options_page_base.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
@@ -336,8 +337,7 @@ void PersonalOptionsHandler::ObserveThemeChanged() {
   web_ui_->CallJavascriptFunction(
       "options.PersonalOptions.setGtkThemeButtonEnabled", gtk_enabled);
 #else
-  BrowserThemeProvider* provider =
-      reinterpret_cast<BrowserThemeProvider*>(profile->GetThemeProvider());
+  BrowserThemeProvider* provider = ThemeServiceFactory::GetForProfile(profile);
   bool is_gtk_theme = false;
 #endif
 
@@ -418,13 +418,13 @@ void PersonalOptionsHandler::ShowCustomizeSyncDialog(const ListValue* args) {
 
 void PersonalOptionsHandler::ThemesReset(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_ThemesReset"));
-  web_ui_->GetProfile()->ClearTheme();
+  ThemeServiceFactory::GetForProfile(web_ui_->GetProfile())->UseDefaultTheme();
 }
 
 #if defined(TOOLKIT_GTK)
 void PersonalOptionsHandler::ThemesSetGTK(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_GtkThemeSet"));
-  web_ui_->GetProfile()->SetNativeTheme();
+  ThemeServiceFactory::GetForProfile(web_ui_->GetProfile())->SetNativeTheme();
 }
 #endif
 

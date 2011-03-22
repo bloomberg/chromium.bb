@@ -34,7 +34,6 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/ntp_resource_cache.h"
@@ -53,10 +52,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/database/database_tracker.h"
-
-#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
-#endif
 
 using base::Time;
 using testing::NiceMock;
@@ -149,7 +144,6 @@ class TestExtensionURLRequestContextGetter : public URLRequestContextGetter {
 TestingProfile::TestingProfile()
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
-      created_theme_provider_(false),
       has_history_service_(false),
       off_the_record_(false),
       last_session_exited_cleanly_(true) {
@@ -330,9 +324,7 @@ void TestingProfile::SetTemplateURLModel(TemplateURLModel* model) {
 }
 
 void TestingProfile::UseThemeProvider(BrowserThemeProvider* theme_provider) {
-  theme_provider->Init(this);
-  created_theme_provider_ = true;
-  theme_provider_.reset(theme_provider);
+  NOTREACHED() << "This needs to go away for a different testing interface.";
 }
 
 ExtensionService* TestingProfile::CreateExtensionService(
@@ -480,27 +472,6 @@ WebDataService* TestingProfile::GetWebDataServiceWithoutCreating() {
 
 PasswordStore* TestingProfile::GetPasswordStore(ServiceAccessType access) {
   return NULL;
-}
-
-void TestingProfile::InitThemes() {
-  if (!created_theme_provider_) {
-#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
-    theme_provider_.reset(new GtkThemeProvider);
-#else
-    theme_provider_.reset(new BrowserThemeProvider);
-#endif
-    theme_provider_->Init(this);
-    created_theme_provider_ = true;
-  }
-}
-
-const Extension* TestingProfile::GetTheme() {
-  return NULL;
-}
-
-BrowserThemeProvider* TestingProfile::GetThemeProvider() {
-  InitThemes();
-  return theme_provider_.get();
 }
 
 void TestingProfile::SetPrefService(PrefService* prefs) {
