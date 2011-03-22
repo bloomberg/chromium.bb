@@ -36,6 +36,14 @@ env.AddNodeToTestSuite(node,
                        ['toolchain_tests','small_tests'],
                        'run_setlongjmp_test')
 
+nexe = env.ComponentProgram('intrinsics.nexe', 'intrinsics.cc')
+node = env.CommandSelLdrTestNacl('intrinsics.out',
+                                 command=[nexe],
+                                 exit_status='55')
+env.AddNodeToTestSuite(node,
+                       ['toolchain_tests','small_tests'],
+                       'run_intrinsics_test')
+
 
 nexe = env.ComponentProgram('initfini.nexe', 'initfini.c')
 node = env.CommandSelLdrTestNacl('initfini.out',

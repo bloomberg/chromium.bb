@@ -28,12 +28,9 @@ env.Replace(LIBS=[],
             EXTRA_LIBS=[],
             LINKFLAGS=LINK_FLAGS_MULTILIB)
 
-env.Append(CFLAGS='-Wno-long-long')
-
 # This setting will affect the barebones_regs.c test
 if env.Bit('build_arm'):
   env.Append(CPPDEFINES='SMALL_REGS_TEST')
-
 
 
 # NOTE: the x86 linker wants _start() to be the very first function
@@ -43,7 +40,6 @@ for basename in ['addr_modes',
                  'exit',
                  'fib',
                  'hello_world',
-                 'long_long',
                  'negindex',
                  'only_bss',
                  'regs',
