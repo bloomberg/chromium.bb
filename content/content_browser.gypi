@@ -13,6 +13,7 @@
         '../ppapi/ppapi.gyp:ppapi_proxy',
         '../skia/skia.gyp:skia',
         '../third_party/flac/flac.gyp:libflac',
+        '../third_party/leveldb/leveldb.gyp:leveldb',
         '../third_party/speex/speex.gyp:libspeex',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/ui.gyp:ui_base',
