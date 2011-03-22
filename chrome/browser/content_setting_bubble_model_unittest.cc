@@ -73,7 +73,7 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_FALSE(bubble_content.title.empty());
-  EXPECT_TRUE(bubble_content.radio_group.radio_items.empty());
+  EXPECT_FALSE(bubble_content.radio_group.radio_items.empty());
   EXPECT_FALSE(bubble_content.custom_link.empty());
   EXPECT_TRUE(bubble_content.custom_link_enabled);
   EXPECT_FALSE(bubble_content.manage_link.empty());

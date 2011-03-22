@@ -2390,8 +2390,14 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       <message name="IDS_BLOCKED_IMAGES_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to display images.">
         Images were blocked on this page.
       </message>
+      <message name="IDS_BLOCKED_COOKIES_UNBLOCK" desc="Radio button choice to unblock a site from setting cookies, displayed in bubble when a page tries to set cookies.">
+        Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to set cookies
+      </message>
       <message name="IDS_BLOCKED_IMAGES_UNBLOCK" desc="Radio button choice to unblock a site from showing images, displayed in bubble when a page tries to display images.">
         Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to show images
+      </message>
+      <message name="IDS_BLOCKED_COOKIES_NO_ACTION" desc="Radio button choice to continue blocking a site from setting cookies, displayed in bubble when a page tries to set cookies.">
+        Continue blocking cookies
       </message>
       <message name="IDS_BLOCKED_IMAGES_NO_ACTION" desc="Radio button choice to continue blocking a site from showing images, displayed in bubble when a page tries to display images.">
         Continue blocking images
