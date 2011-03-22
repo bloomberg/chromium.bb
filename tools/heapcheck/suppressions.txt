@@ -1241,3 +1241,18 @@
    Heapcheck:Leak
    fun:UserStyleSheetWatcher::Init
 }
+{
+   bug_77012a
+   Heapcheck:Leak
+   fun:ui::TreeNodeModelTest_BasicOperations_Test::TestBody
+}
+{
+   bug_77012b
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_insert_aux
+   fun:std::vector::insert
+   fun:ui::TreeNode::Add
+   fun:ui::TreeNodeModelTest_BasicOperations_Test::TestBody
+}
