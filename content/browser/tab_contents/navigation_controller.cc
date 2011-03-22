@@ -494,15 +494,12 @@ bool NavigationController::RendererDidNavigate(
     details->previous_entry_index = -1;
   }
 
-  // Assign the current site instance to any pending entry, so we can find it
-  // later by calling GetEntryIndexWithPageID. We only care about this if the
-  // pending entry is an existing navigation and not a new one (or else we
-  // wouldn't care about finding it with GetEntryIndexWithPageID).
-  //
-  // TODO(brettw) this seems slightly bogus as we don't really know if the
-  // pending entry is what this navigation is for. There is a similar TODO
-  // w.r.t. the pending entry in RendererDidNavigateToNewPage.
-  if (pending_entry_index_ >= 0) {
+  // The pending_entry has no SiteInstance when we are restoring an entry.  We
+  // must fill it in here so we can find the entry later by calling
+  // GetEntryIndexWithPageID.  In all other cases, the SiteInstance should be
+  // assigned already and we shouldn't change it.
+  if (pending_entry_index_ >= 0 && !pending_entry_->site_instance()) {
+    DCHECK(pending_entry_->restore_type() != NavigationEntry::RESTORE_NONE);
     pending_entry_->set_site_instance(tab_contents_->GetSiteInstance());
     pending_entry_->set_restore_type(NavigationEntry::RESTORE_NONE);
   }
@@ -546,6 +543,9 @@ bool NavigationController::RendererDidNavigate(
   DCHECK(!params.content_state.empty());
   NavigationEntry* active_entry = GetActiveEntry();
   active_entry->set_content_state(params.content_state);
+
+  // The active entry's SiteInstance should match our SiteInstance.
+  DCHECK(active_entry->site_instance() == tab_contents_->GetSiteInstance());
 
   // WebKit doesn't set the "auto" transition on meta refreshes properly (bug
   // 1051891) so we manually set it for redirects which we normally treat as
@@ -691,9 +691,7 @@ void NavigationController::RendererDidNavigateToNewPage(
   if (pending_entry_) {
     // TODO(brettw) this assumes that the pending entry is appropriate for the
     // new page that was just loaded. I don't think this is necessarily the
-    // case! We should have some more tracking to know for sure. This goes along
-    // with a similar TODO at the top of RendererDidNavigate where we blindly
-    // set the site instance on the pending entry.
+    // case! We should have some more tracking to know for sure.
     new_entry = new NavigationEntry(*pending_entry_);
 
     // Don't use the page type from the pending entry. Some interstitial page
@@ -744,11 +742,14 @@ void NavigationController::RendererDidNavigateToExistingPage(
 
   // The entry we found in the list might be pending if the user hit
   // back/forward/reload. This load should commit it (since it's already in the
-  // list, we can just discard the pending pointer).
+  // list, we can just discard the pending pointer).  We should also discard the
+  // pending entry if it corresponds to a different navigation, since that one
+  // is now likely canceled.  If it is not canceled, we will treat it as a new
+  // navigation when it arrives, which is also ok.
   //
   // Note that we need to use the "internal" version since we don't want to
   // actually change any other state, just kill the pointer.
-  if (entry == pending_entry_)
+  if (pending_entry_)
     DiscardNonCommittedEntriesInternal();
 
   // If a transient entry was removed, the indices might have changed, so we

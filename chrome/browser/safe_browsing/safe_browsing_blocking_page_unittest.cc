@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,11 +105,16 @@ class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
     contents()->TestDidNavigate(contents_->render_view_host(), params);
   }
 
-  void GoBack() {
+  void GoBackCrossSite() {
     NavigationEntry* entry = contents()->controller().GetEntryAtOffset(-1);
     ASSERT_TRUE(entry);
     contents()->controller().GoBack();
-    Navigate(entry->url().spec().c_str(), entry->page_id());
+
+    // The navigation should commit in the pending RVH.
+    ViewHostMsg_FrameNavigate_Params params;
+    InitNavigateParams(&params, entry->page_id(), GURL(entry->url()),
+                       PageTransition::TYPED);
+    contents()->TestDidNavigate(contents_->pending_rvh(), params);
   }
 
   void ShowInterstitial(ResourceType::Type resource_type,
@@ -457,7 +462,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   // Proceed, then navigate back.
   ProceedThroughInterstitial(sb_interstitial);
   Navigate(kBadURL, 2);  // Commit the navigation.
-  GoBack();
+  GoBackCrossSite();
 
   // We are back on the good page.
   sb_interstitial = GetSafeBrowsingBlockingPage();

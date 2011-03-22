@@ -613,8 +613,8 @@ TEST_F(NavigationControllerTest, Back_OtherBackPending) {
   // match the pending one.
   rvh()->SendNavigate(0, kUrl1);
 
-  // The navigation should not have affected the pending entry.
-  EXPECT_EQ(1, controller().pending_entry_index());
+  // The committed navigation should clear the pending entry.
+  EXPECT_EQ(-1, controller().pending_entry_index());
 
   // But the navigated entry should be the last committed.
   EXPECT_EQ(0, controller().last_committed_entry_index());

@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -574,6 +575,99 @@ TEST_F(TabContentsTest, CrossSiteNavigationPreempted) {
   EXPECT_EQ(orig_rvh, rvh());
   EXPECT_EQ(instance1, instance2);
   EXPECT_TRUE(contents()->pending_rvh() == NULL);
+}
+
+TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
+  contents()->transition_cross_site = true;
+
+  // Start with NTP, which gets a new RVH with WebUI bindings.
+  const GURL url1("chrome://newtab");
+  controller().LoadURL(url1, GURL(), PageTransition::TYPED);
+  TestRenderViewHost* ntp_rvh = rvh();
+  ViewHostMsg_FrameNavigate_Params params1;
+  InitNavigateParams(&params1, 1, url1);
+  contents()->TestDidNavigate(ntp_rvh, params1);
+  NavigationEntry* entry1 = controller().GetLastCommittedEntry();
+  SiteInstance* instance1 = contents()->GetSiteInstance();
+
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(ntp_rvh, contents()->render_view_host());
+  EXPECT_EQ(url1, entry1->url());
+  EXPECT_EQ(instance1, entry1->site_instance());
+  EXPECT_TRUE(BindingsPolicy::is_web_ui_enabled(ntp_rvh->enabled_bindings()));
+
+  // Navigate to new site.
+  const GURL url2("http://www.google.com");
+  controller().LoadURL(url2, GURL(), PageTransition::TYPED);
+  EXPECT_TRUE(contents()->cross_navigation_pending());
+  TestRenderViewHost* google_rvh = contents()->pending_rvh();
+
+  // Simulate beforeunload approval.
+  EXPECT_TRUE(ntp_rvh->is_waiting_for_beforeunload_ack());
+  ntp_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true));
+
+  // DidNavigate from the pending page.
+  ViewHostMsg_FrameNavigate_Params params2;
+  InitNavigateParams(&params2, 1, url2);
+  contents()->TestDidNavigate(google_rvh, params2);
+  NavigationEntry* entry2 = controller().GetLastCommittedEntry();
+  SiteInstance* instance2 = contents()->GetSiteInstance();
+
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(google_rvh, contents()->render_view_host());
+  EXPECT_NE(instance1, instance2);
+  EXPECT_FALSE(contents()->pending_rvh());
+  EXPECT_EQ(url2, entry2->url());
+  EXPECT_EQ(instance2, entry2->site_instance());
+  EXPECT_FALSE(BindingsPolicy::is_web_ui_enabled(
+      google_rvh->enabled_bindings()));
+
+  // Navigate to third page on same site.
+  const GURL url3("http://news.google.com");
+  controller().LoadURL(url3, GURL(), PageTransition::TYPED);
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  ViewHostMsg_FrameNavigate_Params params3;
+  InitNavigateParams(&params3, 2, url3);
+  contents()->TestDidNavigate(google_rvh, params3);
+  NavigationEntry* entry3 = controller().GetLastCommittedEntry();
+  SiteInstance* instance3 = contents()->GetSiteInstance();
+
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(google_rvh, contents()->render_view_host());
+  EXPECT_EQ(instance2, instance3);
+  EXPECT_FALSE(contents()->pending_rvh());
+  EXPECT_EQ(url3, entry3->url());
+  EXPECT_EQ(instance3, entry3->site_instance());
+
+  // Go back within the site.
+  controller().GoBack();
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(entry2, controller().pending_entry());
+
+  // Before that commits, go back again.
+  controller().GoBack();
+  EXPECT_TRUE(contents()->cross_navigation_pending());
+  EXPECT_TRUE(contents()->pending_rvh());
+  EXPECT_EQ(entry1, controller().pending_entry());
+
+  // Simulate beforeunload approval.
+  EXPECT_TRUE(google_rvh->is_waiting_for_beforeunload_ack());
+  google_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true));
+
+  // DidNavigate from the first back. This aborts the second back's pending RVH.
+  contents()->TestDidNavigate(google_rvh, params2);
+
+  // We should commit this page and forget about the second back.
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_FALSE(controller().pending_entry());
+  EXPECT_EQ(google_rvh, contents()->render_view_host());
+  EXPECT_EQ(url2, controller().GetLastCommittedEntry()->url());
+
+  // We should not have corrupted the NTP entry.
+  EXPECT_EQ(instance3, entry3->site_instance());
+  EXPECT_EQ(instance2, entry2->site_instance());
+  EXPECT_EQ(instance1, entry1->site_instance());
+  EXPECT_EQ(url1, entry1->url());
 }
 
 // Test that during a slow cross-site navigation, a sub-frame navigation in the
