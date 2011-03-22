@@ -930,7 +930,7 @@ build: | \
   pinned-src-gcc \
   pinned-src-newlib \
   pinned-src-gdb
-	find SRC -print0 | xargs --null touch --reference=SRC
+	find SRC -print0 | xargs -0 touch -r SRC
 	$(MAKE) -f $(THISMAKEFILE) dev-build
 
 # Glibc toolchain for buildbot.
