@@ -4009,6 +4009,14 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
+{
+   bug_77042
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
+   fun:_ZN19ServiceProcessState10InitializeEv
+   fun:_ZN39ServiceProcessStateFileManipulationTest5SetUpEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
