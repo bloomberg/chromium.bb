@@ -38,3 +38,7 @@ BookmarkBarControllerTest.DeleteFromOffTheSideWhileItIsOpen
 # Crashes or fails.
 # See http://crbug.com/76932
 ProfileSyncServicePasswordTest.EmptyNativeEmptySync
+
+# Fails under Valgrind.
+# See http://crbug.com/77064
+ServiceProcessStateFileManipulationTest.DeleteBundle
