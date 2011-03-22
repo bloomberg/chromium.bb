@@ -39,9 +39,9 @@ var ntp = (function() {
 
   /**
    * The 'apps-page-list' element.
-   * @type {!Element}
+   * @type {!Element|undefined}
    */
-  var appsPageList = getRequiredElement('apps-page-list');
+  var appsPageList;
 
   /**
    * A list of all 'apps-page' elements.
@@ -51,9 +51,9 @@ var ntp = (function() {
 
   /**
    * The 'dots-list' element.
-   * @type {!Element}
+   * @type {!Element|undefined}
    */
-  var dotList = getRequiredElement('dot-list');
+  var dotList;
 
   /**
    * A list of all 'dots' elements.
@@ -65,9 +65,9 @@ var ntp = (function() {
    * The 'trash' element.  Note that technically this is unnecessary,
    * JavaScript creates the object for us based on the id.  But I don't want
    * to rely on the ID being the same, and JSCompiler doesn't know about it.
-   * @type {!Element}
+   * @type {!Element|undefined}
    */
-  var trash = getRequiredElement('trash');
+  var trash;
 
   /**
    * The time in milliseconds for most transitions.  This should match what's
@@ -94,7 +94,12 @@ var ntp = (function() {
   /**
    * Invoked at startup once the DOM is available to initialize the app.
    */
-  function initializeNtp() {
+  function initialize() {
+    dotList = getRequiredElement('dot-list');
+    appsPageList = getRequiredElement('apps-page-list');
+    trash = getRequiredElement('trash');
+    trash.hidden = true;
+
     // Request data on the apps so we can fill them in.
     // Note that this is kicked off asynchronously.  'getAppsCallback' will be
     // invoked at some point after this function returns.
@@ -278,6 +283,10 @@ var ntp = (function() {
       }
       appendApp(appsPages[pageIndex], app);
     }
+
+    // Add a couple blank apps pages for testing. TODO(estade): remove this.
+    createAppPage();
+    createAppPage();
 
     // Tell the slider about the pages
     updateSliderCards();
@@ -785,15 +794,15 @@ var ntp = (function() {
     assert: assert,
     appsPrefChangeCallback: appsPrefChangeCallback,
     getAppsCallback: getAppsCallback,
-    initialize: initializeNtp
+    initialize: initialize
   };
 })();
 
 // publish ntp globals
+// TODO(estade): update the content handlers to use ntp namespace instead of
+// making these global.
 var assert = ntp.assert;
 var getAppsCallback = ntp.getAppsCallback;
 var appsPrefChangeCallback = ntp.appsPrefChangeCallback;
 
-// Initialize immediately once globals are published (there doesn't seem to be
-// any need to wait for DOMContentLoaded)
-ntp.initialize();
+document.addEventListener('DOMContentLoaded', ntp.initialize);

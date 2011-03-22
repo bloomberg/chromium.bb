@@ -395,31 +395,35 @@ void NTPResourceCache::CreateNewTabHTML() {
   // do here (all of the template data, etc.), but we keep the back end
   // consistent across builds, supporting the union of all NTP front-ends
   // for simplicity.
-  int ntp_resource_id =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4) ?
-          IDR_NEW_TAB_4_HTML : IDR_NEW_TAB_HTML;
-  base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
-      GetRawDataResource(ntp_resource_id));
-
-  // Inject the template data into the HTML so that it is available before any
-  // layout is needed.
-  std::string json_html;
-  jstemplate_builder::AppendJsonHtml(&localized_strings, &json_html);
-
-  static const base::StringPiece template_data_placeholder(
-      "<!-- template data placeholder -->");
-  size_t pos = new_tab_html.find(template_data_placeholder);
-
   std::string full_html;
-  if (pos != base::StringPiece::npos) {
-    full_html.assign(new_tab_html.data(), pos);
-    full_html.append(json_html);
-    size_t after_offset = pos + template_data_placeholder.size();
-    full_html.append(new_tab_html.data() + after_offset,
-                     new_tab_html.size() - after_offset);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4)) {
+    base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
+        GetRawDataResource(IDR_NEW_TAB_4_HTML));
+    full_html = jstemplate_builder::GetI18nTemplateHtml(new_tab_html,
+                                                        &localized_strings);
   } else {
-    NOTREACHED();
-    full_html.assign(new_tab_html.data(), new_tab_html.size());
+    base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
+        GetRawDataResource(IDR_NEW_TAB_HTML));
+
+    // Inject the template data into the HTML so that it is available before any
+    // layout is needed.
+    std::string json_html;
+    jstemplate_builder::AppendJsonHtml(&localized_strings, &json_html);
+
+    static const base::StringPiece template_data_placeholder(
+        "<!-- template data placeholder -->");
+    size_t pos = new_tab_html.find(template_data_placeholder);
+
+    if (pos != base::StringPiece::npos) {
+      full_html.assign(new_tab_html.data(), pos);
+      full_html.append(json_html);
+      size_t after_offset = pos + template_data_placeholder.size();
+      full_html.append(new_tab_html.data() + after_offset,
+                       new_tab_html.size() - after_offset);
+    } else {
+      NOTREACHED();
+      full_html.assign(new_tab_html.data(), new_tab_html.size());
+    }
   }
 
   new_tab_html_ = new RefCountedBytes;

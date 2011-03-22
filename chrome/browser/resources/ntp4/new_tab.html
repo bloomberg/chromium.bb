@@ -1,26 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html i18n-values='dir:textdirection;'>
 <head>
-  <meta charset="utf-8">
-  <title i18n-content="title"></title>
-  <link rel="stylesheet" href="new_tab.css">
-  <!-- Don't scale the viewport in either portrait or landscape mode.
-       Note that this means apps will be reflowed when rotated (like iPad).
-       If we wanted to maintain position we could remove 'maximum-scale' so
-       that we'd zoom out in portrait mode, but then there would be a bunch
-       of unusable space at the bottom.
-  -->
-  <meta name="viewport" content="user-scalable=no, width=device-width, maximum-scale=1.0">
+<meta charset="utf-8">
+<title i18n-content="title"></title>
+<!-- Don't scale the viewport in either portrait or landscape mode.
+     Note that this means apps will be reflowed when rotated (like iPad).
+     If we wanted to maintain position we could remove 'maximum-scale' so
+     that we'd zoom out in portrait mode, but then there would be a bunch
+     of unusable space at the bottom.
+-->
+<meta name="viewport"
+      content="user-scalable=no, width=device-width, maximum-scale=1.0">
+
+<link rel="stylesheet" href="new_tab.css">
+
+<script src="../shared/js/util.js"></script>
+<script src="event_tracker.js"></script>
+<script src="touch_handler.js"></script>
+<script src="card_slider.js"></script>
+<script src="grabber.js"></script>
+<script src="new_tab.js"></script>
 </head>
+
 <body>
   <div id="apps-frame">
     <div id="apps-page-list">
       <div class="apps-page">
         <!-- This is used as a template which JS copies and fills in.  The
-        template itself is never actually displayed.  
-        An app-container is always a direct child of an apps-page, and is
-        expected to have a single 'app' child element holding the visible
-        content, and 'img' and 'span' tags as descendants somewhere.
+             template itself is never actually displayed.
+             An app-container is always a direct child of an apps-page, and is
+             expected to have a single 'app' child element holding the visible
+             content, and 'img' and 'span' tags as descendants somewhere.
         -->
         <div class="app-container" id="app-template">
           <div class="app">
@@ -32,25 +42,26 @@
     </div>
   </div>
   <div id="footer">
-    <ul id="dot-list">
-        <li class="dot"></li>
-    </ul>
-    <div id="trash">
+    <div id="footer-border"></div>
+    <div id="footer-content">
+      <!-- TODO(estade): this image has a lot of blank space on the right
+           that needs removing. -->
+      <img src="../../../app/theme/%DISTRIBUTION%/product_logo.png">
+      <div id="footer-divider-1" class="footer-divider"></div>
+
+      <ul id="dot-list">
+        <!-- This is another template node (see above). -->
+        <li class="dot" tabindex="0" role="button"></li>
+      </ul>
+
+      <span i18n-content="recentlyclosed"></span>
+      <div id="footer-divider-2" class="footer-divider"></div>
+      <!-- TODO(estade): replace this with actual user login. -->
+      <span id="user-login">example at gmail.com</span>
+
+      <!-- TODO(estade): may want to remove this. -->
+      <div id="trash"></div>
     </div>
   </div>
-  <!-- Substitute localized strings for all elements with il8n-content
-       attributes. -->
-  <script src="../shared/js/i18n_template.js"></script>
-  <!-- template data placeholder -->
-  <script>
-    i18nTemplate.process(document, templateData);
-  </script>
-
-  <script src="../shared/js/util.js"></script>
-  <script src="event_tracker.js"></script>
-  <script src="touch_handler.js"></script>
-  <script src="card_slider.js"></script>
-  <script src="grabber.js"></script>
-  <script src="new_tab.js"></script>
 </body>
 </html>

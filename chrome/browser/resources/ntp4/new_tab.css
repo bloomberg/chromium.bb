@@ -12,10 +12,6 @@ html {
 }
 
 body {
-  /* This newer linear-gradient form works on Chrome but not mobile Safari */
-  /*background: -webkit-linear-gradient(top,#252c39,#3e485b,#252c39); */
-  background: -webkit-gradient(linear, left top, left bottom, from(#252c39),
-              color-stop(0.5,#3e485b), to(#252c39));
   background-size: auto 100%;
   font-family: segoe ui, arial, helvetica, sans-serif;
   font-size: 14px;
@@ -137,45 +133,79 @@ body {
 }
 
 #footer {
-  width: 100%;
-  position: absolute;
   bottom: 0;
-  height: 60px;    /* must match #apps-frame bottom */
-  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* TODO(estade): remove this border hack and replace with a webkit-gradient
+ * border-image on #footer once WebKit supports border-image-slice.
+ * See https://bugs.webkit.org/show_bug.cgi?id=20127 */
+#footer-border {
+  background: -webkit-gradient(linear, left top, right top,
+                               from(#eee), color-stop(0.5, #ccc), to(#eee));
+  height: 1px;
+}
+
+#footer-content {
+  display: -webkit-box;
+  height: 59px;
+  -webkit-box-align: center;
+}
+
+#footer-content > * {
+  margin: 0 9px;
+}
+
+#footer-content > span {
+  color: #888;
+}
+
+.footer-divider {
+  background: -webkit-gradient(linear, left top, left bottom,
+                               from(#eee), color-stop(0.5, #bbb), to(#eee));
+  width: 1px;
+}
+
+#footer-divider-1 {
+  height: 60%;
+}
+
+#footer-divider-2 {
+  height: 40%;
 }
 
 #dot-list {
-  text-align: center;
+  list-style-type: none;
   margin: 0;
   padding: 0;
-  bottom: 0;
-  list-style-type: none;
-  margin-top: 20px;
+  -webkit-box-flex: 1;
 }
 
+/* TODO(estade): improve focus indicator. */
 .dot {
+  background-color: #bbb;
+  cursor: pointer;
   display: inline-block;
+  height: 13px;
   margin: 10px;
-  width: 10px;
-  height: 10px;
-  background-color: #3d465f;
-  -webkit-box-sizing: border-box;
-  border: 1px solid black;
+  width: 60px;
   -webkit-border-radius: 2px;
-  -webkit-transition-property: width, height, margin, -webkit-transform;
-  -webkit-transition-duration: 500ms;
+  -webkit-box-sizing: border-box;
   /* Work-around regression bug 74802 */
   -webkit-transform: translate3d(0, 0, 0);
+  -webkit-transition-duration: 500ms;
+  -webkit-transition-property: width, height, margin, -webkit-transform;
 }
 
 #footer.rearrange-mode .dot {
-  margin: 0px 20px;
+  margin: 0 20px;
   width: 30px;
   height: 30px;
 }
 
 .dot.selected {
-  background-color: #b3bbd3;
+  background-color: #888;
 }
 
 .dot.new {
@@ -186,8 +216,8 @@ body {
   position: absolute;
   width: 110px;
   height: 100%;
-  right: 0px;
-  bottom: 0px;
+  right: 0;
+  bottom: 0;
   background-image: url('../shared/images/trash.png');
   background-size: 40px 40px;
   background-repeat: no-repeat;
