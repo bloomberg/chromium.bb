@@ -22,6 +22,9 @@
 namespace prerender {
 
 // static
+int PrerenderManager::prerenders_per_session_count_ = 0;
+
+// static
 base::TimeTicks PrerenderManager::last_prefetch_seen_time_;
 
 // static
@@ -177,6 +180,9 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
 
   if (!pc->load_start_time().is_null())
     RecordTimeUntilUsed(GetCurrentTimeTicks() - pc->load_start_time());
+
+  UMA_HISTOGRAM_COUNTS("Prerender.PrerendersPerSessionCount",
+                       ++prerenders_per_session_count_);
   pc->set_final_status(FINAL_STATUS_USED);
 
   RenderViewHost* rvh = pc->render_view_host();

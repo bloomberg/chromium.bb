@@ -185,6 +185,10 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // This static variable should only be modified on the UI thread.
   static base::TimeTicks last_prefetch_seen_time_;
 
+  // A count of how many prerenders we do per session. Initialized to 0 then
+  // incremented and emitted to a histogram on each successful prerender.
+  static int prerenders_per_session_count_;
+
   // RepeatingTimer to perform periodic cleanups of pending prerendered
   // pages.
   base::RepeatingTimer<PrerenderManager> repeating_timer_;
