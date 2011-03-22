@@ -233,6 +233,14 @@ ITransport* ITransport::Accept(const char *addr) {
     // Override portions address that are provided
     if (addr) BuildSockAddr(addr, &saddr);
 
+    // This is necessary to ensure that the TCP port is released
+    // promptly when sel_ldr exits.  Without this, the TCP port might
+    // only be released after a timeout, and later processes can fail
+    // to bind it.
+    int reuse_address = 1;
+    setsockopt(s_ServerSock, SOL_SOCKET, SO_REUSEADDR,
+               (char *) &reuse_address, sizeof(reuse_address));
+
     struct sockaddr *psaddr = reinterpret_cast<struct sockaddr *>(&saddr);
     if (bind(s_ServerSock, psaddr, addrlen)) {
       IPlatform::LogError("Failed to bind server.\n");

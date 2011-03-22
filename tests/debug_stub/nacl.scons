@@ -1,0 +1,37 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+if 'TRUSTED_ENV' not in env:
+  Return()
+trusted_env = env['TRUSTED_ENV']
+
+# The debug stub currently only works on x86-64.
+if not env.Bit('target_x86_64'):
+  Return()
+# Our test uses inline assembly.
+if env.Bit('bitcode'):
+  Return()
+
+test_prog = env.ComponentProgram('debugger_test.nexe', 'debugger_test.c')
+
+sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
+env_vars = [
+    'NACL_SEL_LDR=%s' % sel_ldr,
+    'DEBUGGER_TEST_PROG=%s' % test_prog.abspath,
+    ]
+dependencies = [sel_ldr, test_prog]
+
+node = env.CommandTest(
+    'debug_stub_test.out',
+    command=['${PYTHON}', env.File('debug_stub_test.py'), '-v'],
+    osenv=','.join(env_vars),
+    extra_deps=dependencies)
+# This is disabled because currently the debug stub must be enabled by
+# uncommenting "#define NACL_DEBUG_STUB 1" lines in the source.
+# TODO(mseaborn): Find a way to enable this.
+env.AddNodeToTestSuite(node, ['large_tests'], 'run_debug_stub_test',
+                       is_broken=True)

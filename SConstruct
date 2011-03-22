@@ -2179,6 +2179,7 @@ nacl_env.Append(
     'tests/bundle_size/nacl.scons',
     'tests/computed_gotos/nacl.scons',
     'tests/data_not_executable/nacl.scons',
+    'tests/debug_stub/nacl.scons',
     'tests/dup/nacl.scons',
     'tests/dynamic_code_loading/nacl.scons',
     'tests/dynamic_linking/nacl.scons',
