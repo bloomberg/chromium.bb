@@ -165,21 +165,21 @@ class BrowserViewLayout : public ::BrowserViewLayout {
 
     // The toolbar is promoted to the title for vertical tabs.
     bool toolbar_visible = browser_view_->IsToolbarVisible();
-    toolbar_->SetVisible(toolbar_visible);
     int toolbar_height = 0;
-    if (toolbar_visible)
-      toolbar_height = toolbar_->GetPreferredSize().height();
-    int tabstrip_max_x = tabstrip_->bounds().right();
-    toolbar_->SetBounds(tabstrip_max_x,
-                        bounds.y() - kVerticalTabStripToolbarOffset,
-                        browser_view_->width() - tabstrip_max_x,
-                        toolbar_height);
-
+    if (toolbar_) {
+      toolbar_->SetVisible(toolbar_visible);
+      if (toolbar_visible)
+        toolbar_height = toolbar_->GetPreferredSize().height();
+      int tabstrip_max_x = tabstrip_->bounds().right();
+      toolbar_->SetBounds(tabstrip_max_x,
+                          bounds.y() - kVerticalTabStripToolbarOffset,
+                          browser_view_->width() - tabstrip_max_x,
+                          toolbar_height);
+    }
     // Adjust the available bounds for other components.
     gfx::Rect available_bounds = vertical_layout_rect();
     available_bounds.Inset(tabstrip_w, 0, 0, 0);
     set_vertical_layout_rect(available_bounds);
-
     return bounds.y() + toolbar_height;
   }
 
@@ -237,7 +237,8 @@ void BrowserView::Init() {
   gtk_frame->non_client_view()->SetContextMenuController(this);
 
   // Listen to wrench menu opens.
-  toolbar()->AddMenuListener(this);
+  if (toolbar())
+    toolbar()->AddMenuListener(this);
 
   // Make sure the window is set to the right type.
   std::vector<int> params;

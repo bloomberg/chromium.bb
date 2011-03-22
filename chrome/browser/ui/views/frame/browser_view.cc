@@ -472,10 +472,11 @@ BrowserView::~BrowserView() {
 
   // The TabStrip attaches a listener to the model. Make sure we shut down the
   // TabStrip first so that it can cleanly remove the listener.
-  tabstrip_->parent()->RemoveChildView(tabstrip_);
-  delete tabstrip_;
-  tabstrip_ = NULL;
-
+  if (tabstrip_) {
+    tabstrip_->parent()->RemoveChildView(tabstrip_);
+    delete tabstrip_;
+    tabstrip_ = NULL;
+  }
   // Child views maintain PrefMember attributes that point to
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
   RemoveAllChildViews(true);
@@ -1651,7 +1652,7 @@ void BrowserView::OnWidgetMove() {
   browser::HideBookmarkBubbleView();
 
   // Close the omnibox popup, if any.
-  if (toolbar_->location_bar())
+  if (toolbar_ && toolbar_->location_bar())
     toolbar_->location_bar()->location_entry()->ClosePopup();
 }
 
@@ -1661,8 +1662,8 @@ void BrowserView::OnWidgetMove() {
 bool BrowserView::CanClose() {
   // You cannot close a frame for which there is an active originating drag
   // session.
-  if (!tabstrip_->IsTabStripCloseable())
-    return false;
+    if (tabstrip_ && !tabstrip_->IsTabStripCloseable())
+      return false;
 
   // Give beforeunload handlers the chance to cancel the close before we hide
   // the window below.
@@ -1819,8 +1820,9 @@ void BrowserView::InitTabStrip(TabStripModel* model) {
   tabstrip_ = CreateTabStrip(browser_.get(), this, model, UseVerticalTabs());
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// BrowserView, private:
+ToolbarView* BrowserView::CreateToolbar() const {
+  return new ToolbarView(browser_.get());
+}
 
 void BrowserView::Init() {
   SetLayoutManager(CreateLayoutManager());
@@ -1844,9 +1846,7 @@ void BrowserView::Init() {
 
   InitTabStrip(browser_->tabstrip_model());
 
-  toolbar_ = new ToolbarView(browser_.get());
-  AddChildView(toolbar_);
-  toolbar_->Init(browser_->profile());
+  SetToolbar(CreateToolbar());
 
   infobar_container_ = new InfoBarContainer(this);
   AddChildView(infobar_container_);
@@ -1918,6 +1918,33 @@ void BrowserView::Init() {
   // We're now initialized and ready to process Layout requests.
   ignore_layout_ = false;
 }
+
+void BrowserView::LoadingAnimationCallback() {
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (!last_animation_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES(
+        "Tabs.LoadingAnimationTime",
+        now - last_animation_time_);
+  }
+  last_animation_time_ = now;
+  if (browser_->type() == Browser::TYPE_NORMAL) {
+    // Loading animations are shown in the tab for tabbed windows.  We check the
+    // browser type instead of calling IsTabStripVisible() because the latter
+    // will return false for fullscreen windows, but we still need to update
+    // their animations (so that when they come out of fullscreen mode they'll
+    // be correct).
+    tabstrip_->UpdateLoadingAnimations();
+  } else if (ShouldShowWindowIcon()) {
+    // ... or in the window icon area for popups and app windows.
+    TabContents* tab_contents = browser_->GetSelectedTabContents();
+    // GetSelectedTabContents can return NULL for example under Purify when
+    // the animations are running slowly and this function is called on a timer
+    // through LoadingAnimationCallback.
+    frame_->UpdateThrobber(tab_contents && tab_contents->is_loading());
+  }
+}
+
+// BrowserView, private --------------------------------------------------------
 
 #if defined(OS_WIN)
 void BrowserView::InitSystemMenu() {
@@ -2370,31 +2397,6 @@ int BrowserView::GetCommandIDForAppCommandID(int app_command_id) const {
 #endif
 }
 
-void BrowserView::LoadingAnimationCallback() {
-  base::TimeTicks now = base::TimeTicks::Now();
-  if (!last_animation_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES(
-        "Tabs.LoadingAnimationTime",
-        now - last_animation_time_);
-  }
-  last_animation_time_ = now;
-  if (browser_->type() == Browser::TYPE_NORMAL) {
-    // Loading animations are shown in the tab for tabbed windows.  We check the
-    // browser type instead of calling IsTabStripVisible() because the latter
-    // will return false for fullscreen windows, but we still need to update
-    // their animations (so that when they come out of fullscreen mode they'll
-    // be correct).
-    tabstrip_->UpdateLoadingAnimations();
-  } else if (ShouldShowWindowIcon()) {
-    // ... or in the window icon area for popups and app windows.
-    TabContents* tab_contents = browser_->GetSelectedTabContents();
-    // GetSelectedTabContents can return NULL for example under Purify when
-    // the animations are running slowly and this function is called on a timer
-    // through LoadingAnimationCallback.
-    frame_->UpdateThrobber(tab_contents && tab_contents->is_loading());
-  }
-}
-
 void BrowserView::InitHangMonitor() {
 #if defined(OS_WIN)
   PrefService* pref_service = g_browser_process->local_state();
@@ -2518,6 +2520,18 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents,
 
 gfx::Size BrowserView::GetResizeCornerSize() const {
   return ResizeCorner::GetSize();
+}
+
+void BrowserView::SetToolbar(ToolbarView* toolbar) {
+  if (toolbar_) {
+    RemoveChildView(toolbar_);
+    delete toolbar_;
+  }
+  toolbar_ = toolbar;
+  if (toolbar) {
+    AddChildView(toolbar_);
+    toolbar_->Init(browser_->profile());
+  }
 }
 
 #if !defined(OS_CHROMEOS)

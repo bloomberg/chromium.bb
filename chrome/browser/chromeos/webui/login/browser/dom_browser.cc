@@ -4,12 +4,12 @@
 
 #include "chrome/browser/chromeos/webui/login/browser/dom_browser.h"
 
+#include "chrome/browser/chromeos/webui/login/browser/dom_browser_view.h"
 #include "chrome/browser/ui/browser_window.h"
 
 namespace chromeos {
 
-/////////////////////////////////////////////////////////////////////////////
-// DOMBrowser: public
+// DOMBrowser: public ----------------------------------------------------------
 
 DOMBrowser::DOMBrowser(Profile* profile)
     : Browser(Browser::TYPE_NORMAL, profile) {
@@ -26,7 +26,7 @@ DOMBrowser* DOMBrowser::CreateForDOM(Profile* profile) {
 }
 
 BrowserWindow* DOMBrowser::CreateBrowserWindow() {
-  return BrowserWindow::CreateBrowserWindow(this);
+  return DOMBrowserView::CreateDOMWindow(this);
 }
 
 

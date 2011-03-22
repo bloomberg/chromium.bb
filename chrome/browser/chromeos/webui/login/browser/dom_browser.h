@@ -16,8 +16,6 @@ namespace chromeos {
 // DOMBrowser is an alternate implementation of Browser that is used to display
 // DOM login screens. These screens in addition to having a webpage in a DOMView
 // also display the Status Area and the touch enabled keyboard.
-// TODO(rharrison): Implement DOM versions of BrowserView, BrowserFrame,
-// BrowserFrameView.
 // TODO(rharrison): Add support for OOBE and screen lock DOM screens.
 class DOMBrowser : public Browser {
  public:
@@ -30,7 +28,6 @@ class DOMBrowser : public Browser {
 
  protected:
   // Creates Window for DOMBrowser.
-  // TODO(rharrison): Change to create window that uses DOMBrowser* objects.
   virtual BrowserWindow* CreateBrowserWindow();
 
  private:

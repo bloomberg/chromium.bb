@@ -106,7 +106,7 @@ class BrowserView : public BrowserBubbleHost,
   // These differ from |toolbar_.bounds()| in that they match where the toolbar
   // background image is drawn -- slightly outside the "true" bounds
   // horizontally, and, when using vertical tabs, behind the tab column.
-  gfx::Rect GetToolbarBounds() const;
+  virtual gfx::Rect GetToolbarBounds() const;
 
   // Returns the bounds of the content area, in the coordinates of the
   // BrowserView's parent.
@@ -121,7 +121,7 @@ class BrowserView : public BrowserBubbleHost,
 
   // Returns the preferred height of the TabStrip. Used to position the OTR
   // avatar icon.
-  int GetTabStripHeight() const;
+  virtual int GetTabStripHeight() const;
 
   // Takes some view's origin (relative to this BrowserView) and offsets it such
   // that it can be used as the source origin for seamlessly tiling the toolbar
@@ -139,7 +139,7 @@ class BrowserView : public BrowserBubbleHost,
   ToolbarView* toolbar() const { return toolbar_; }
 
   // Returns true if various window components are visible.
-  bool IsTabStripVisible() const;
+  virtual bool IsTabStripVisible() const;
 
   // Returns true if the vertical tabstrip is in use.
   bool UseVerticalTabs() const;
@@ -150,7 +150,7 @@ class BrowserView : public BrowserBubbleHost,
 
   // Returns true if the non-client view should render the Off-The-Record
   // avatar icon if the window is incognito.
-  bool ShouldShowOffTheRecordAvatar() const;
+  virtual bool ShouldShowOffTheRecordAvatar() const;
 
   // Handle the specified |accelerator| being pressed.
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
@@ -403,9 +403,9 @@ class BrowserView : public BrowserBubbleHost,
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // Factory Methods.
+  // Factory Method.
   // Returns a new LayoutManager for this browser view. A subclass may
-  // override to implemnet different layout pocily.
+  // override to implement different layout policy.
   virtual views::LayoutManager* CreateLayoutManager() const;
 
   // Initializes a new TabStrip for the browser view. This can be performed
@@ -413,8 +413,16 @@ class BrowserView : public BrowserBubbleHost,
   // mode for the tabstrip changes from horizontal to vertical.
   virtual void InitTabStrip(TabStripModel* tab_strip_model);
 
+  // Factory Method.
+  // Returns a new ToolbarView for this browser view. A subclass may
+  // override to implement different layout policy.
+  virtual ToolbarView* CreateToolbar() const;
+
   // Browser window related initializations.
   virtual void Init();
+
+  // Callback for the loading animation(s) associated with this view.
+  virtual void LoadingAnimationCallback();
 
  private:
   friend class BrowserViewLayout;
@@ -491,9 +499,6 @@ class BrowserView : public BrowserBubbleHost,
   // Retrieves the command id for the specified Windows app command.
   int GetCommandIDForAppCommandID(int app_command_id) const;
 
-  // Callback for the loading animation(s) associated with this view.
-  void LoadingAnimationCallback();
-
   // Initialize the hung plugin detector.
   void InitHangMonitor();
 
@@ -515,6 +520,9 @@ class BrowserView : public BrowserBubbleHost,
 
   // Shows the about chrome modal dialog and returns the Window object.
   views::Window* DoShowAboutChromeDialog();
+
+  // Set the value of |toolbar_| and hook it into the views hiearchy
+  void SetToolbar(ToolbarView* toolbar);
 
   // Last focused view that issued a tab traversal.
   int last_focused_view_storage_id_;

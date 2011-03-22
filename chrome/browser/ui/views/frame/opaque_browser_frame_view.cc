@@ -201,6 +201,10 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForReservedArea() const {
 
 gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
     views::View* tabstrip) const {
+  if (!tabstrip) {
+    return gfx::Rect();
+  }
+
   if (browser_view_->UseVerticalTabs()) {
     gfx::Size ps = tabstrip->GetPreferredSize();
     return gfx::Rect(NonClientBorderThickness(),
@@ -215,9 +219,11 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
   int tabstrip_width = minimize_button_->x() - tabstrip_x -
       (frame_->GetWindow()->IsMaximized() ?
       kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
+  int tabstrip_height = 0;
+  if (tabstrip)
+    tabstrip_height = tabstrip->GetPreferredSize().height();
   return gfx::Rect(tabstrip_x, GetHorizontalTabStripVerticalOffset(false),
-                   std::max(0, tabstrip_width),
-                   tabstrip->GetPreferredSize().height());
+                   std::max(0, tabstrip_width), tabstrip_height);
 }
 
 int OpaqueBrowserFrameView::GetHorizontalTabStripVerticalOffset(
@@ -387,7 +393,7 @@ bool OpaqueBrowserFrameView::HitTest(const gfx::Point& l) const {
 
   // Otherwise claim it only if it's in a non-tab portion of the tabstrip.
   bool vertical_tabs = browser_view_->UseVerticalTabs();
-  gfx::Rect tabstrip_bounds = browser_view_->tabstrip()->bounds();
+  gfx::Rect tabstrip_bounds = GetBoundsForTabStrip(browser_view_->tabstrip());
   gfx::Point tabstrip_origin(tabstrip_bounds.origin());
   View::ConvertPointToView(frame_->GetWindow()->client_view(),
                            this, &tabstrip_origin);

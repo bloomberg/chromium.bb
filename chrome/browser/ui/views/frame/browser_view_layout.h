@@ -69,7 +69,7 @@ class BrowserViewLayout : public views::LayoutManager {
   // Layout the following controls, starting at |top|, returns the coordinate
   // of the bottom of the control, for laying out the next control.
   virtual int LayoutToolbar(int top);
-  int LayoutBookmarkAndInfoBars(int top);
+  virtual int LayoutBookmarkAndInfoBars(int top);
   int LayoutBookmarkBar(int top);
   int LayoutInfoBar(int top);
 
