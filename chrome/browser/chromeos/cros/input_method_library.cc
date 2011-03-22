@@ -5,12 +5,13 @@
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 
 #include <glib.h>
-#include <signal.h>
 
 #include "unicode/uloc.h"
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
+#include "base/process_util.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -62,7 +63,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         defer_ime_startup_(false),
         enable_auto_ime_shutdown_(true),
         should_change_input_method_(false),
-        ibus_daemon_process_id_(0),
+        ibus_daemon_process_handle_(base::kNullProcessHandle),
         initialized_successfully_(false),
         candidate_window_controller_(NULL) {
     // Here, we use the fallback input method descriptor but
@@ -170,7 +171,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     tentative_current_input_method_id_ = input_method_id;
     // If the input method daemon is not running and the specified input
     // method is a keyboard layout, switch the keyboard directly.
-    if (ibus_daemon_process_id_ == 0 &&
+    if (ibus_daemon_process_handle_ == base::kNullProcessHandle &&
         chromeos::input_method::IsKeyboardLayout(input_method_id)) {
       // We shouldn't use SetCurrentKeyboardLayoutByName() here. See
       // comments at ChangeCurrentInputMethod() for details.
@@ -597,38 +598,36 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   }
 
   // Launches an input method procsess specified by the given command
-  // line. On success, returns true and stores the process ID in
-  // |process_id|. Otherwise, returns false, and the contents of
-  // |process_id| is untouched. OnImeShutdown will be called when the
+  // line. On success, returns true and stores the process handle in
+  // |process_handle|. Otherwise, returns false, and the contents of
+  // |process_handle| is untouched. OnImeShutdown will be called when the
   // process terminates.
   bool LaunchInputMethodProcess(const std::string& command_line,
-                                int* process_id) {
-    GError *error = NULL;
-    gchar **argv = NULL;
-    gint argc = NULL;
+                                base::ProcessHandle* process_handle) {
+    std::vector<std::string> argv;
+    base::file_handle_mapping_vector fds_to_remap;
+    base::ProcessHandle handle = base::kNullProcessHandle;
+
     // TODO(zork): export "LD_PRELOAD=/usr/lib/libcrash.so"
-    if (!g_shell_parse_argv(command_line.c_str(), &argc, &argv, &error)) {
-      LOG(ERROR) << "Could not parse command: " << error->message;
-      g_error_free(error);
+    base::SplitString(command_line, ' ', &argv);
+    const bool result = base::LaunchApp(argv,
+                                        fds_to_remap,  // no remapping
+                                        false,  // wait
+                                        &handle);
+    if (!result) {
+      LOG(ERROR) << "Could not launch: " << command_line;
       return false;
     }
 
-    int pid = 0;
-    const GSpawnFlags kFlags = G_SPAWN_DO_NOT_REAP_CHILD;
-    const gboolean result = g_spawn_async(NULL, argv, NULL,
-                                          kFlags, NULL, NULL,
-                                          &pid, &error);
-    g_strfreev(argv);
-    if (!result) {
-      LOG(ERROR) << "Could not launch: " << command_line << ": "
-                 << error->message;
-      g_error_free(error);
-      return false;
-    }
-    g_child_watch_add(pid, reinterpret_cast<GChildWatchFunc>(OnImeShutdown),
+    // g_child_watch_add is necessary to prevent the process from becoming a
+    // zombie.
+    // TODO(yusukes): port g_child_watch_add to base/process_utils_posix.cc.
+    const base::ProcessId pid = base::GetProcId(handle);
+    g_child_watch_add(pid,
+                      reinterpret_cast<GChildWatchFunc>(OnImeShutdown),
                       this);
 
-    *process_id = pid;
+    *process_handle = handle;
     VLOG(1) << command_line << " (PID=" << pid << ") is started";
     return  true;
   }
@@ -651,25 +650,25 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       }
     }
 
-    if (ibus_daemon_process_id_ == 0) {
+    if (ibus_daemon_process_handle_ == base::kNullProcessHandle) {
       // TODO(zork): Send output to /var/log/ibus.log
       const std::string ibus_daemon_command_line =
           StringPrintf("%s --panel=disable --cache=none --restart --replace",
                        kIBusDaemonPath);
       if (!LaunchInputMethodProcess(
-              ibus_daemon_command_line, &ibus_daemon_process_id_)) {
+              ibus_daemon_command_line, &ibus_daemon_process_handle_)) {
         LOG(ERROR) << "Failed to launch " << ibus_daemon_command_line;
       }
     }
   }
 
   // Called when the input method process is shut down.
-  static void OnImeShutdown(int pid,
-                            int status,
+  static void OnImeShutdown(GPid pid,
+                            gint status,
                             InputMethodLibraryImpl* library) {
-    g_spawn_close_pid(pid);
-    if (library->ibus_daemon_process_id_ == pid) {
-      library->ibus_daemon_process_id_ = 0;
+    if (library->ibus_daemon_process_handle_ != base::kNullProcessHandle &&
+        base::GetProcId(library->ibus_daemon_process_handle_) == pid) {
+      library->ibus_daemon_process_handle_ = base::kNullProcessHandle;
     }
 
     // Restart input method daemon if needed.
@@ -684,15 +683,15 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       return;
 
     should_launch_ime_ = false;
-    if (ibus_daemon_process_id_) {
+    if (ibus_daemon_process_handle_ != base::kNullProcessHandle) {
+      const base::ProcessId pid = base::GetProcId(ibus_daemon_process_handle_);
       if (!chromeos::StopInputMethodProcess(input_method_status_connection_)) {
         LOG(ERROR) << "StopInputMethodProcess IPC failed. Sending SIGTERM to "
-                   << "PID " << ibus_daemon_process_id_;
-        kill(ibus_daemon_process_id_, SIGTERM);
+                   << "PID " << pid;
+        base::KillProcess(ibus_daemon_process_handle_, -1, false /* wait */);
       }
-      VLOG(1) << "ibus-daemon (PID=" << ibus_daemon_process_id_ << ") is "
-              << "terminated";
-      ibus_daemon_process_id_ = 0;
+      VLOG(1) << "ibus-daemon (PID=" << pid << ") is terminated";
+      ibus_daemon_process_handle_ = base::kNullProcessHandle;
     }
   }
 
@@ -765,9 +764,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // requests becomes empty.
   bool should_change_input_method_;
 
-  // The process id of the IBus daemon. 0 if it's not running. The process
-  // ID 0 is not used in Linux, hence it's safe to use 0 for this purpose.
-  int ibus_daemon_process_id_;
+  // The process handle of the IBus daemon. kNullProcessHandle if it's not
+  // running.
+  base::ProcessHandle ibus_daemon_process_handle_;
 
   // True if initialization is successfully done, meaning that libcros is
   // loaded and input method status monitoring is started. This value
