@@ -82,7 +82,7 @@ PrintingContext::Result PrintingContextMac::UseDefaultSettings() {
 }
 
 PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
-    const DictionaryValue* const job_settings, const PageRanges& ranges) {
+    const DictionaryValue& job_settings, const PageRanges& ranges) {
   DCHECK(!in_print_job_);
 
   // TODO (kmadhusu): Update other print job settings such as number of copies,
@@ -92,7 +92,7 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
   print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
 
   std::string printer_name;
-  if (!job_settings->GetString("printerName", &printer_name))
+  if (!job_settings.GetString("printerName", &printer_name))
     return OnError();
 
   NSString* new_printer_name = base::SysUTF8ToNSString(printer_name);

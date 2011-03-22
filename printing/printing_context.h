@@ -51,7 +51,7 @@ class PrintingContext {
 
   // Updates print settings. |job_settings| contains all print job settings
   // information. |ranges| has the new page range settings.
-  virtual Result UpdatePrintSettings(const DictionaryValue* const job_settings,
+  virtual Result UpdatePrintSettings(const DictionaryValue& job_settings,
                                      const PageRanges& ranges) = 0;
 
   // Initializes with predefined settings.

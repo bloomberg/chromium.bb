@@ -128,7 +128,7 @@ void PrintJobWorker::UpdatePrintSettings(
     }
   }
   PrintingContext::Result result =
-      printing_context_->UpdatePrintSettings(new_settings, new_ranges);
+      printing_context_->UpdatePrintSettings(*new_settings, new_ranges);
   delete new_settings;
   GetSettingsDone(result);
 }

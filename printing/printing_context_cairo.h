@@ -40,7 +40,7 @@ class PrintingContextCairo : public PrintingContext {
                                   bool has_selection,
                                   PrintSettingsCallback* callback);
   virtual Result UseDefaultSettings();
-  virtual Result UpdatePrintSettings(const DictionaryValue* const job_settings,
+  virtual Result UpdatePrintSettings(const DictionaryValue& job_settings,
                                      const PageRanges& ranges);
   virtual Result InitWithSettings(const PrintSettings& settings);
   virtual Result NewDocument(const string16& document_name);

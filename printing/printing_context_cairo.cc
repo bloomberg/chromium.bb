@@ -149,7 +149,7 @@ PrintingContext::Result PrintingContextCairo::UseDefaultSettings() {
 }
 
 PrintingContext::Result PrintingContextCairo::UpdatePrintSettings(
-    const DictionaryValue* const job_settings, const PageRanges& ranges) {
+    const DictionaryValue& job_settings, const PageRanges& ranges) {
   DCHECK(!in_print_job_);
 
   settings_.ranges = ranges;

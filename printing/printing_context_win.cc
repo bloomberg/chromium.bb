@@ -210,7 +210,7 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
 }
 
 PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
-    const DictionaryValue* const job_settings, const PageRanges& ranges) {
+    const DictionaryValue& job_settings, const PageRanges& ranges) {
   DCHECK(!in_print_job_);
 
   settings_.ranges = ranges;
