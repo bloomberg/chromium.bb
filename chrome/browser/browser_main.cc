@@ -384,9 +384,9 @@ void BrowserMainParts::SpdyFieldTrial() {
         parsed_command_line().GetSwitchValueASCII(switches::kUseSpdy);
     net::HttpNetworkLayer::EnableSpdy(spdy_mode);
   } else {
+#if !defined(OS_CHROMEOS)
     const base::FieldTrial::Probability kSpdyDivisor = 100;
-    // 10% to preclude SPDY.
-    base::FieldTrial::Probability npnhttp_probability = 10;
+    base::FieldTrial::Probability npnhttp_probability = 5;
 
     // After June 30, 2011 builds, it will always be in default group.
     scoped_refptr<base::FieldTrial> trial(
@@ -409,6 +409,7 @@ void BrowserMainParts::SpdyFieldTrial() {
     } else {
       CHECK(!is_spdy_trial);
     }
+#endif  // !defined(OS_CHROMEOS)
   }
 
   // Setup SPDY CWND Field trial.
