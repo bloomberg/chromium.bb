@@ -89,7 +89,7 @@ class Client {
     }
 
     // Deal with received data here.
-    static base::StatsCounter bytes_read("FetchClient.bytes_read");
+    base::StatsCounter bytes_read("FetchClient.bytes_read");
     bytes_read.Add(result);
 
     // Issue a read for more data.
@@ -102,7 +102,7 @@ class Client {
   }
 
   void OnRequestComplete(int result) {
-    static base::StatsCounter requests("FetchClient.requests");
+    base::StatsCounter requests("FetchClient.requests");
     requests.Increment();
     g_driver.Get().ClientStopped();
     printf(".");

@@ -446,7 +446,7 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
     }
 
     // Tell the plugin to paint into the pixmap.
-    static base::StatsRate plugin_paint("Plugin.Paint");
+    base::StatsRate plugin_paint("Plugin.Paint");
     base::StatsScope<base::StatsRate> scope(plugin_paint);
     NPError err = instance()->NPP_HandleEvent(&np_event);
     DCHECK_EQ(err, NPERR_NO_ERROR);
@@ -477,7 +477,7 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
     event.drawable = GDK_PIXMAP_XID(pixmap_);
 
     // Tell the plugin to paint into the pixmap.
-    static base::StatsRate plugin_paint("Plugin.Paint");
+    base::StatsRate plugin_paint("Plugin.Paint");
     base::StatsScope<base::StatsRate> scope(plugin_paint);
     NPError err = instance()->NPP_HandleEvent(&np_event);
     DCHECK_EQ(err, NPERR_NO_ERROR);

@@ -1459,7 +1459,7 @@ void TabContents::OnDidFailProvisionalLoadWithError(
 void TabContents::OnDidLoadResourceFromMemoryCache(
     const GURL& url,
     const std::string& security_info) {
-  static base::StatsCounter cache("WebKit.CacheHit");
+  base::StatsCounter cache("WebKit.CacheHit");
   cache.Increment();
 
   // Send out a notification that we loaded a resource from our memory cache.

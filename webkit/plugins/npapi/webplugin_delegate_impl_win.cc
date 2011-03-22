@@ -1040,7 +1040,7 @@ void WebPluginDelegateImpl::WindowlessPaint(HDC hdc,
   // NOTE: NPAPI is not 64bit safe.  It puts pointers into 32bit values.
   paint_event.wParam = PtrToUlong(hdc);
   paint_event.lParam = PtrToUlong(&damage_rect_win);
-  static base::StatsRate plugin_paint("Plugin.Paint");
+  base::StatsRate plugin_paint("Plugin.Paint");
   base::StatsScope<base::StatsRate> scope(plugin_paint);
   instance()->NPP_HandleEvent(&paint_event);
   window_.window = old_dc;
