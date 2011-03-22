@@ -151,7 +151,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 + (BOOL)eventTriggersFeature:(NSEvent*)event {
   if ([event type] != NSKeyDown)
     return NO;
-  ui::AcceleratorCocoa eventAccelerator([event characters],
+  ui::AcceleratorCocoa eventAccelerator([event charactersIgnoringModifiers],
       [event modifierFlags] & NSDeviceIndependentModifierFlagsMask);
   return [self quitAccelerator] == eventAccelerator;
 }
