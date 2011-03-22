@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
     paint_manager_.Initialize(this, this, false);
   }
 
-  virtual void ViewChanged(const pp::Rect& position, const pp::Rect& clip) {
+  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
     paint_manager_.SetSize(position.size());
   }
 
@@ -71,7 +71,7 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
     }
 
     // Paint the background.
-    pp::ImageData updated_image(PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+    pp::ImageData updated_image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                                 paint_bounds.size(), false);
     FillRect(&updated_image, pp::Rect(updated_image.size()), 0xFF8888FF);
 

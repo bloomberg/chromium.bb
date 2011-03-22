@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
     paint_manager_.Initialize(this, this, false);
   }
 
-  virtual bool HandleEvent(const PP_InputEvent& event) {
+  virtual bool HandleInputEvent(const PP_InputEvent& event) {
     switch (event.type) {
       case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
         const PP_InputEvent_Mouse& mouse_event = event.u.mouse;
@@ -68,19 +68,19 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
     }
   }
 
-  virtual void ViewChanged(const pp::Rect& position, const pp::Rect& clip) {
+  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
     paint_manager_.SetSize(position.size());
   }
 
   // PaintManager::Client implementation.
-  virtual bool OnPaint(pp::Graphics2D& device,
+  virtual bool OnPaint(pp::Graphics2D&,
                        const std::vector<pp::Rect>& paint_rects,
                        const pp::Rect& paint_bounds) {
     // Make an image just large enough to hold all dirty rects. We won't
     // actually paint all of these pixels below, but rather just the dirty
     // ones. Since image allocation can be somewhat heavyweight, we wouldn't
     // want to allocate separate images in the case of multiple dirty rects.
-    pp::ImageData updated_image(PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+    pp::ImageData updated_image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                                 paint_bounds.size(), false);
 
     // We could repaint everything inside the image we made above. For this

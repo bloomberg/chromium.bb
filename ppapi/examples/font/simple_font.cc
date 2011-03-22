@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,19 +20,19 @@ class MyInstance : public pp::Instance {
       : pp::Instance(instance) {
   }
 
-  virtual void ViewChanged(const pp::Rect& position, const pp::Rect& clip) {
+  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
     if (position.size() == last_size_)
       return;
     last_size_ = position.size();
 
-    pp::ImageData image(PP_IMAGEDATAFORMAT_BGRA_PREMUL, last_size_, true);
-    pp::Graphics2D device(last_size_, false);
+    pp::ImageData image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL, last_size_, true);
+    pp::Graphics2D device(this, last_size_, false);
     BindGraphics(device);
 
     pp::FontDescription_Dev desc;
     desc.set_family(PP_FONTFAMILY_SANSSERIF);
     desc.set_size(30);
-    pp::Font_Dev font(desc);
+    pp::Font_Dev font(this, desc);
 
     pp::Rect text_clip(position.size());  // Use entire bounds for clip.
     font.DrawTextAt(&image,
