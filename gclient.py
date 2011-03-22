@@ -64,7 +64,6 @@ import urllib
 
 import breakpad  # pylint: disable=W0611
 
-import fix_encoding
 import gclient_scm
 import gclient_utils
 from third_party.repo.progress import Progress
@@ -1267,7 +1266,6 @@ def Main(argv):
 
 
 if '__main__' == __name__:
-  fix_encoding.fix_encoding()
   sys.exit(Main(sys.argv[1:]))
 
 # vim: ts=2:sw=2:tw=80:et:

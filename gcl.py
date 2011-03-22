@@ -40,7 +40,6 @@ import breakpad  # pylint: disable=W0611
 # gcl now depends on gclient.
 from scm import SVN
 
-import fix_encoding
 import gclient_utils
 import owners
 import presubmit_support
@@ -1474,5 +1473,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-  fix_encoding.fix_encoding()
   sys.exit(main(sys.argv[1:]))

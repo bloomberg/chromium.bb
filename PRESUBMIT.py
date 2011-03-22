@@ -9,7 +9,6 @@ details on the presubmit API built into gcl.
 """
 
 UNIT_TESTS = [
-  'tests.fix_encoding_test',
   'tests.gcl_unittest',
   'tests.gclient_scm_test',
   'tests.gclient_smoketest',

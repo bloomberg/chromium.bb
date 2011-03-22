@@ -50,7 +50,6 @@ except ImportError:
     import simplejson as json  # pylint: disable=F0401
 
 # Local imports.
-import fix_encoding
 import gclient_utils
 import owners
 import presubmit_canned_checks
@@ -143,18 +142,18 @@ class OutputApi(object):
     def handle(self, output):
       output.write(self._message)
       output.write('\n')
-      for index, item in enumerate(self._items):
-        output.write('  ')
-        # Write separately in case it's unicode.
-        output.write(item)
-        if index < len(self._items) - 1:
-          output.write(' \\')
-        output.write('\n')
+      if len(self._items) > 0:
+        output.write('  ' + ' \\\n  '.join(map(str, self._items)) + '\n')
       if self._long_text:
-        output.write('\n***************\n')
-        # Write separately in case it's unicode.
-        output.write(self._long_text)
-        output.write('\n***************\n')
+        # Sometimes self._long_text is a ascii string, a codepage string
+        # (on windows), or a unicode object.
+        try:
+          long_text = self._long_text.decode()
+        except UnicodeDecodeError:
+          long_text = self._long_text.decode('ascii', 'replace')
+
+        output.write('\n***************\n%s\n***************\n' %
+            long_text)
       if self.fatal:
         output.fail()
 
@@ -1193,5 +1192,4 @@ def Main(argv):
 
 
 if __name__ == '__main__':
-  fix_encoding.fix_encoding()
   sys.exit(Main(None))

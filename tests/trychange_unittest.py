@@ -45,8 +45,7 @@ class TryChangeUnittest(TryChangeTestsBase):
       'EPILOG', 'Escape', 'GIT', 'GuessVCS', 'GetMungedDiff', 'HELP_STRING',
       'InvalidScript', 'NoTryServerAccess', 'PrintSuccess', 'SCM', 'SVN',
       'TryChange', 'USAGE',
-      'breakpad', 'datetime', 'errno', 'fix_encoding', 'gcl', 'gclient_utils',
-      'getpass',
+      'breakpad', 'datetime', 'errno', 'gcl', 'gclient_utils', 'getpass',
       'json', 'logging', 'optparse', 'os', 'posixpath', 're', 'scm', 'shutil',
       'sys', 'tempfile', 'urllib',
     ]
