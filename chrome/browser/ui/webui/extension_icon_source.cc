@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/ref_counted_memory.h"
+#include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -81,11 +82,7 @@ struct ExtensionIconSource::ExtensionIconRequest {
 
 ExtensionIconSource::~ExtensionIconSource() {
   // Clean up all the temporary data we're holding for requests.
-  std::map<int, ExtensionIconRequest*>::iterator i;
-  for (i = request_map_.begin(); i != request_map_.end(); i++) {
-    delete i->second;
-    request_map_.erase(i);
-  }
+  STLDeleteValues(&request_map_);
 }
 
 // static
