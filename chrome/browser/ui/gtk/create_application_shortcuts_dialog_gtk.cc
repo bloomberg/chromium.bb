@@ -47,6 +47,10 @@ void CreateChromeApplicationShortcutsDialogGtk::Show(GtkWindow* parent,
 CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
     GtkWindow* parent)
   : parent_(parent),
+    desktop_checkbox_(NULL),
+    menu_checkbox_(NULL),
+    favicon_pixbuf_(NULL),
+    create_dialog_(NULL),
     error_dialog_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

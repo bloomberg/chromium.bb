@@ -149,7 +149,9 @@ ProfileImplIOData::LazyParams::LazyParams()
       io_thread(NULL) {}
 ProfileImplIOData::LazyParams::~LazyParams() {}
 
-ProfileImplIOData::ProfileImplIOData() : ProfileIOData(false) {}
+ProfileImplIOData::ProfileImplIOData()
+    : ProfileIOData(false),
+      clear_local_state_on_exit_(false) {}
 ProfileImplIOData::~ProfileImplIOData() {
   STLDeleteValues(&app_http_factory_map_);
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,9 @@ ViewMsg_PrintPages_Params::~ViewMsg_PrintPages_Params() {
 }
 
 ViewHostMsg_DidPreviewDocument_Params::ViewHostMsg_DidPreviewDocument_Params()
-    : data_size(0), expected_pages_count(0) {
+    : data_size(0),
+      document_cookie(0),
+      expected_pages_count(0) {
 #if defined(OS_WIN)
   // Initialize |metafile_data_handle| only on Windows because it maps
   // base::SharedMemoryHandle to HANDLE. We do not need to initialize this
@@ -229,7 +231,8 @@ ViewHostMsg_MalwareDOMDetails_Params::ViewHostMsg_MalwareDOMDetails_Params() {
 ViewHostMsg_MalwareDOMDetails_Params::~ViewHostMsg_MalwareDOMDetails_Params() {
 }
 
-ViewMsg_ExtensionLoaded_Params::ViewMsg_ExtensionLoaded_Params() {
+ViewMsg_ExtensionLoaded_Params::ViewMsg_ExtensionLoaded_Params()
+    : location(Extension::INVALID) {
 }
 
 ViewMsg_ExtensionLoaded_Params::~ViewMsg_ExtensionLoaded_Params() {

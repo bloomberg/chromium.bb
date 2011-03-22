@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,6 +95,7 @@ NavigationInfo::NavigationInfo()
     : navigation_type(0),
       relative_offset(0),
       navigation_index(0),
+      security_style(SECURITY_STYLE_UNKNOWN),
       displayed_insecure_content(0),
       ran_insecure_content(0) {
 }

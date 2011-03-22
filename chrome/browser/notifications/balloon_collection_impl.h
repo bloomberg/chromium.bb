@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,6 +72,7 @@ class BalloonCollectionImpl : public BalloonCollection
     // These enumerations all are based on a screen orientation where
     // the origin is the top-left.
     enum Placement {
+      INVALID,
       VERTICALLY_FROM_TOP_LEFT,
       VERTICALLY_FROM_TOP_RIGHT,
       VERTICALLY_FROM_BOTTOM_LEFT,

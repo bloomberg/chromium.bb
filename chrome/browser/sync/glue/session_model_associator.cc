@@ -35,7 +35,8 @@ static const int max_sync_navigation_count = 6;
 SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service)
     : tab_pool_(sync_service),
       local_session_syncid_(sync_api::kInvalidId),
-      sync_service_(sync_service) {
+      sync_service_(sync_service),
+      setup_for_test_(false) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
 }

@@ -90,13 +90,13 @@ class FaviconHelper : public TabContentsObserver {
 
  private:
   struct DownloadRequest {
-    DownloadRequest() {}
+    DownloadRequest() : callback(NULL) {}
     DownloadRequest(const GURL& url,
                     const GURL& image_url,
                     ImageDownloadCallback* callback)
         : url(url),
           image_url(image_url),
-          callback(callback) { }
+          callback(callback) {}
 
     GURL url;
     GURL image_url;

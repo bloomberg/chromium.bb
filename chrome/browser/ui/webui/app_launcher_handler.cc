@@ -63,6 +63,7 @@ extension_misc::AppLaunchBucket ParseLaunchSource(std::string launch_source) {
 
 AppLauncherHandler::AppLauncherHandler(ExtensionService* extension_service)
     : extensions_service_(extension_service),
+      extension_prompt_type_(ExtensionInstallUI::UNSET_PROMPT_TYPE),
       promo_active_(false),
       ignore_changes_(false) {
 }

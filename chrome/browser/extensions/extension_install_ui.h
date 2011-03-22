@@ -25,6 +25,7 @@ class TabContents;
 class ExtensionInstallUI : public ImageLoadingTracker::Observer {
  public:
   enum PromptType {
+    UNSET_PROMPT_TYPE = -1,
     INSTALL_PROMPT = 0,
     UNINSTALL_PROMPT,
     RE_ENABLE_PROMPT,
