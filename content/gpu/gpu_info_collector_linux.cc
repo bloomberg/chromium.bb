@@ -15,6 +15,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
+#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 
 namespace {
@@ -132,6 +133,34 @@ void FinalizeLibPci(PciInterface** interface) {
   *interface = NULL;
 }
 
+// Scan /etc/ati/amdpcsdb.default for "ReleaseVersion".
+// Return "" on failing.
+std::string CollectDriverVersionATI() {
+  const FilePath::CharType kATIFileName[] =
+      FILE_PATH_LITERAL("/etc/ati/amdpcsdb.default");
+  FilePath ati_file_path(kATIFileName);
+  if (!file_util::PathExists(ati_file_path))
+    return "";
+  std::string contents;
+  if (!file_util::ReadFileToString(ati_file_path, &contents))
+    return "";
+  StringTokenizer t(contents, "\r\n");
+  while (t.GetNext()) {
+    std::string line = t.token();
+    if (StartsWithASCII(line, "ReleaseVersion=", true)) {
+      size_t begin = line.find_first_of("0123456789");
+      if (begin != std::string::npos) {
+        size_t end = line.find_first_not_of("0123456789.", begin);
+        if (end == std::string::npos)
+          return line.substr(begin);
+        else
+          return line.substr(begin, end - begin);
+      }
+    }
+  }
+  return "";
+}
+
 }  // namespace anonymous
 
 namespace gpu_info_collector {
@@ -154,8 +183,13 @@ bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
   if (!CollectVideoCardInfo(gpu_info))
     rt = false;
 
-  // TODO(zmo): if vendor is ATI, consider passing /etc/ati/amdpcsdb.default
-  // for driver information.
+  if (gpu_info->vendor_id == 0x1002) {  // ATI
+    std::string ati_driver_version = CollectDriverVersionATI();
+    if (ati_driver_version != "") {
+      gpu_info->driver_vendor = "ATI / AMD";
+      gpu_info->driver_version = ati_driver_version;
+    }
+  }
 
   return rt;
 }
