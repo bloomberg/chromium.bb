@@ -775,7 +775,7 @@
         },],
         ['OS=="win" and component=="shared_library"', {
           'defines': [
-            'GR_DLL',
+            'GR_DLL=1',
             'GR_IMPLEMENTATION=1',
             'SKIA_DLL',
             'SKIA_IMPLEMENTATION=1',
