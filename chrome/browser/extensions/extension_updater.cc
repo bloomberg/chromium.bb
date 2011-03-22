@@ -324,6 +324,7 @@ void ManifestFetchesBuilder::AddExtensionData(
     case Extension::TYPE_HOSTED_APP:
     case Extension::TYPE_PACKAGED_APP:
       ++url_stats_.app_count;
+      break;
     case Extension::TYPE_UNKNOWN:
     default:
       ++url_stats_.pending_count;
