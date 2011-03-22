@@ -9,7 +9,6 @@
 # pylint: disable=E1101,E1103,W0212,W0403
 
 import StringIO
-import unittest
 
 # Fixes include path.
 from super_mox import mox, SuperMoxTestBase
@@ -136,8 +135,8 @@ class PresubmitUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'AffectedFile', 'Change', 'ChangeDescription', 'DoGetTrySlaves',
-      'DoPresubmitChecks', 'GetTrySlavesExecuter', 'GitAffectedFile',
+      'AffectedFile', 'Change', 'DoGetTrySlaves', 'DoPresubmitChecks',
+      'GetTrySlavesExecuter', 'GitAffectedFile',
       'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'Main',
       'NotImplementedException', 'OutputApi', 'ParseFiles',
       'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
@@ -1970,81 +1969,6 @@ mac|success|blew
     self.OwnersTest(is_committing=True,
         approvers=set(['ben@example.com']),
         uncovered_files=set(), host_url='https://localhost')
-
-
-def change_desc(editor=None, **kwargs):
-  if editor is None:
-    editor = lambda x: x
-  return presubmit.ChangeDescription(editor=editor, **kwargs)
-
-
-class ChangeDescriptionTests(unittest.TestCase):
-  def setUp(self):
-    self.editor_input = None
-    self.editor_output = None
-
-  def tearDown(self):
-    self.editor_input = None
-    self.editor_output = None
-
-  def editor(self, text):
-    if self.editor_input:
-      self.assertTrue(self.editor_input in text)
-    if self.editor_output is not None:
-      return self.editor_output
-    return text
-
-  def test_empty(self):
-    desc = change_desc()
-    self.assertTrue(desc.IsEmpty())
-    desc.UserEdit()
-    self.assertTrue(desc.IsEmpty())
-
-  def test_basic(self):
-    desc = change_desc(subject='foo', description='desc',
-                       reviewers=['joe@example.com'])
-    desc.UserEdit()
-    self.assertFalse(desc.IsEmpty())
-    self.assertEqual(desc.subject, 'foo')
-    self.assertEquals(desc.description,
-       'foo\n'
-       '\n'
-       'desc\n'
-       '\n'
-       'R=joe@example.com')
-    self.assertEquals(desc.reviewers, ['joe@example.com'])
-    self.assertFalse(desc.tbr)
-
-  def test_subject_only(self):
-    self.editor_input = 'foo\n\nR=\nBUG=\nTEST=\n'
-    desc = change_desc(subject='foo', editor=self.editor)
-    desc.UserEdit()
-    self.assertEquals(desc.description, 'foo')
-
-  def test_tbr_with_reviewer(self):
-    self.editor_input = 'TBR=\nBUG=\nTEST=\n'
-    self.editor_output = 'foo\n\nTBR=joe@example.com'
-    desc = change_desc(tbr=True, editor=self.editor)
-    self.assertFalse(desc.tbr)
-    self.assertEquals(desc.reviewers, [])
-    desc.UserEdit()
-    self.assertTrue(desc.tbr)
-    self.assertEquals(desc.reviewers, ['joe@example.com'])
-    self.assertEquals(desc.description,
-        'foo\n'
-        '\n'
-        'TBR=joe@example.com')
-
-  def test_tbr_without_reviewer(self):
-    desc = change_desc(subject='foo', tbr=True)
-    desc.UserEdit()
-    self.assertEquals(desc.description, 'foo\n\nTBR=')
-
-  def test_really_long_subject(self):
-    subject = 'foo' * 40
-    desc = change_desc(subject=subject)
-    self.assertEquals(desc.description, subject)
-    self.assertEquals(desc.subject, subject[:97] + '...')
 
 
 if __name__ == '__main__':

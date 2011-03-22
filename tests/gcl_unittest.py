@@ -84,7 +84,7 @@ class GclUnittest(GclTestsBase):
         'ErrorExit', 'FILES_CACHE', 'FilterFlag', 'GenUsage',
         'GenerateChangeName', 'GenerateDiff', 'GetCLs', 'GetCacheDir',
         'GetCachedFile', 'GetChangelistInfoFile', 'GetChangesDir',
-        'GetCodeReviewSetting', 'GetFilesNotInCL', 'GetInfoDir',
+        'GetCodeReviewSetting', 'GetEditor', 'GetFilesNotInCL', 'GetInfoDir',
         'GetModifiedFiles', 'GetRepositoryRoot', 'ListFiles',
         'LoadChangelistInfoForMultiple', 'MISSING_TEST_MSG',
         'OptionallyDoPresubmitChecks', 'REPOSITORY_ROOT', 'REVIEWERS_REGEX',

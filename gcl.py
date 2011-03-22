@@ -290,7 +290,9 @@ class ChangeInfo(object):
     self.name = name
     self.issue = int(issue)
     self.patchset = int(patchset)
-    self._change_desc = None
+    self._description = None
+    self._subject = None
+    self._reviewers = None
     self._set_description(description)
     if files is None:
       files = []
@@ -304,21 +306,42 @@ class ChangeInfo(object):
       self.rietveld = GetCodeReviewSetting('CODE_REVIEW_SERVER')
 
   def _get_description(self):
-    return self._change_desc.description
+    return self._description
 
   def _set_description(self, description):
-    self._change_desc = presubmit_support.ChangeDescription(
-        description=description)
+    # TODO(dpranke): Cloned from git_cl.py. These should be shared.
+    if not description:
+      self._description = description
+      return
+
+    parsed_lines = []
+    reviewers_re = re.compile(REVIEWERS_REGEX)
+    reviewers = ''
+    subject = ''
+    for l in description.splitlines():
+      if not subject:
+        subject = l
+      matched_reviewers = reviewers_re.match(l)
+      if matched_reviewers:
+        reviewers = matched_reviewers.group(1).split(',')
+      parsed_lines.append(l)
+
+    if len(subject) > 100:
+      subject = subject[:97] + '...'
+
+    self._subject = subject
+    self._reviewers = reviewers
+    self._description = '\n'.join(parsed_lines)
 
   description = property(_get_description, _set_description)
 
   @property
   def reviewers(self):
-    return self._change_desc.reviewers
+    return self._reviewers
 
   @property
   def subject(self):
-    return self._change_desc.subject
+    return self._subject
 
   def NeedsUpload(self):
     return self.needs_upload
@@ -355,7 +378,7 @@ class ChangeInfo(object):
           'patchset': self.patchset,
           'needs_upload': self.NeedsUpload(),
           'files': self.GetFiles(),
-          'description': self._change_desc.description,
+          'description': self.description,
           'rietveld': self.rietveld,
         }, sort_keys=True, indent=2)
     gclient_utils.FileWrite(GetChangelistInfoFile(self.name), data)
@@ -716,6 +739,20 @@ def ListFiles(show_unknown_files):
   return 0
 
 
+def GetEditor():
+  editor = os.environ.get("SVN_EDITOR")
+  if not editor:
+    editor = os.environ.get("EDITOR")
+
+  if not editor:
+    if sys.platform.startswith("win"):
+      editor = "notepad"
+    else:
+      editor = "vi"
+
+  return editor
+
+
 def GenerateDiff(files, root=None):
   return SVN.GenerateDiff(files, root=root)
 
@@ -1061,38 +1098,48 @@ def CMDchange(args):
   affected_files = [x for x in other_files if file_re.match(x[0])]
   unaffected_files = [x for x in other_files if not file_re.match(x[0])]
 
-  reviewers = change_info.reviewers
-  if not reviewers:
+  if not change_info.reviewers:
     files_for_review = affected_files[:]
     files_for_review.extend(change_info.GetFiles())
-    reviewers = suggest_reviewers(change_info, files_for_review)
+    suggested_reviewers = suggest_reviewers(change_info, files_for_review)
+    if suggested_reviewers:
+      reviewers_re = re.compile(REVIEWERS_REGEX)
+      if not any(reviewers_re.match(l) for l in description.splitlines()):
+        description += '\n\nR=' + ','.join(suggested_reviewers)
+
+  description = description.rstrip() + '\n'
 
   separator1 = ("\n---All lines above this line become the description.\n"
                 "---Repository Root: " + change_info.GetLocalRoot() + "\n"
                 "---Paths in this changelist (" + change_info.name + "):\n")
   separator2 = "\n\n---Paths modified but not in any changelist:\n\n"
-
-  footer = (separator1 + '\n' +
-            '\n'.join([f[0] + f[1] for f in change_info.GetFiles()]))
+  text = (description + separator1 + '\n' +
+          '\n'.join([f[0] + f[1] for f in change_info.GetFiles()]))
 
   if change_info.Exists():
-    footer += (separator2 +
-              '\n'.join([f[0] + f[1] for f in affected_files]) + '\n')
+    text += (separator2 +
+            '\n'.join([f[0] + f[1] for f in affected_files]) + '\n')
   else:
-    footer += ('\n'.join([f[0] + f[1] for f in affected_files]) + '\n' +
-              separator2)
-  footer += '\n'.join([f[0] + f[1] for f in unaffected_files]) + '\n'
+    text += ('\n'.join([f[0] + f[1] for f in affected_files]) + '\n' +
+            separator2)
+  text += '\n'.join([f[0] + f[1] for f in unaffected_files]) + '\n'
 
-  change_desc = presubmit_support.ChangeDescription(description=description,
-      reviewers=reviewers)
+  handle, filename = tempfile.mkstemp(text=True)
+  os.write(handle, text)
+  os.close(handle)
 
-  # These next few lines are equivalent to change_desc.UserUpdate(). We
-  # call them individually to avoid passing a lot of state back and forth.
-  original_description = change_desc.description
-
-  result = change_desc.EditableDescription() + footer
-  if not silent:
-    result = change_desc.editor(result)
+  # Open up the default editor in the system to get the CL description.
+  try:
+    if not silent:
+      cmd = '%s %s' % (GetEditor(), filename)
+      if sys.platform == 'win32' and os.environ.get('TERM') == 'msys':
+        # Msysgit requires the usage of 'env' to be present.
+        cmd = 'env ' + cmd
+      # shell=True to allow the shell to handle all forms of quotes in $EDITOR.
+      subprocess.check_call(cmd, shell=True)
+    result = gclient_utils.FileRead(filename, 'r')
+  finally:
+    os.remove(filename)
 
   if not result:
     return 0
@@ -1104,8 +1151,8 @@ def CMDchange(args):
   # Update the CL description if it has changed.
   new_description = split_result[0]
   cl_files_text = split_result[1]
-  change_desc.Parse(new_description)
-  if change_desc.description != original_description or override_description:
+  if new_description != description or override_description:
+    change_info.description = new_description
     change_info.needs_upload = True
 
   new_cl_files = []
@@ -1119,7 +1166,7 @@ def CMDchange(args):
     new_cl_files.append((status, filename))
 
   if (not len(change_info.GetFiles()) and not change_info.issue and
-      not len(change_desc.description) and not new_cl_files):
+      not len(new_description) and not new_cl_files):
     ErrorExit("Empty changelist not saved")
 
   change_info._files = new_cl_files

@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import textwrap
 import urlparse
 import urllib2
@@ -20,17 +21,17 @@ except ImportError:
 
 # TODO(dpranke): don't use relative import.
 import upload  # pylint: disable=W0403
-
-# TODO(dpranke): move this file up a directory so we don't need this.
-depot_tools_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(depot_tools_path)
-
-import breakpad  # pylint: disable=W0611
-
-import presubmit_support
-import scm
-import watchlists
-
+try:
+  # TODO(dpranke): We wrap this in a try block for a limited form of
+  # backwards-compatibility with older versions of git-cl that weren't
+  # dependent on depot_tools. This version should still work outside of
+  # depot_tools as long as --bypass-hooks is used. We should remove this
+  # once this has baked for a while and things seem safe.
+  depot_tools_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+  sys.path.append(depot_tools_path)
+  import breakpad  # pylint: disable=W0611
+except ImportError:
+  pass
 
 DEFAULT_SERVER = 'http://codereview.appspot.com'
 POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
@@ -332,7 +333,6 @@ class Changelist(object):
     self.description = None
     self.has_patchset = False
     self.patchset = None
-    self.tbr = False
 
   def GetBranch(self):
     """Returns the short branch name, e.g. 'master'."""
@@ -535,6 +535,53 @@ def GetCodereviewSettingsInteractively():
   # svn-based hackery.
 
 
+class ChangeDescription(object):
+  """Contains a parsed form of the change description."""
+  def __init__(self, subject, log_desc, reviewers):
+    self.subject = subject
+    self.log_desc = log_desc
+    self.reviewers = reviewers
+    self.description = self.log_desc
+
+  def Update(self):
+    initial_text = """# Enter a description of the change.
+# This will displayed on the codereview site.
+# The first line will also be used as the subject of the review.
+"""
+    initial_text += self.description
+    if 'R=' not in self.description and self.reviewers:
+      initial_text += '\nR=' + self.reviewers
+    if 'BUG=' not in self.description:
+      initial_text += '\nBUG='
+    if 'TEST=' not in self.description:
+      initial_text += '\nTEST='
+    self._ParseDescription(UserEditedLog(initial_text))
+
+  def _ParseDescription(self, description):
+    if not description:
+      self.description = description
+      return
+
+    parsed_lines = []
+    reviewers_regexp = re.compile('\s*R=(.+)')
+    reviewers = ''
+    subject = ''
+    for l in description.splitlines():
+      if not subject:
+        subject = l
+      matched_reviewers = reviewers_regexp.match(l)
+      if matched_reviewers:
+        reviewers = matched_reviewers.group(1)
+      parsed_lines.append(l)
+
+    self.description = '\n'.join(parsed_lines) + '\n'
+    self.subject = subject
+    self.reviewers = reviewers
+
+  def IsEmpty(self):
+    return not self.description
+
+
 def FindCodereviewSettingsFile(filename='codereview.settings'):
   """Finds the given file starting in the cwd and going up.
 
@@ -684,6 +731,36 @@ def CreateDescriptionFromLog(args):
   return RunGit(['log', '--pretty=format:%s\n\n%b'] + log_args)
 
 
+def UserEditedLog(starting_text):
+  """Given some starting text, let the user edit it and return the result."""
+  editor = os.getenv('EDITOR', 'vi')
+
+  (file_handle, filename) = tempfile.mkstemp()
+  fileobj = os.fdopen(file_handle, 'w')
+  fileobj.write(starting_text)
+  fileobj.close()
+
+  # Open up the default editor in the system to get the CL description.
+  try:
+    cmd = '%s %s' % (editor, filename)
+    if sys.platform == 'win32' and os.environ.get('TERM') == 'msys':
+      # Msysgit requires the usage of 'env' to be present.
+      cmd = 'env ' + cmd
+    # shell=True to allow the shell to handle all forms of quotes in $EDITOR.
+    subprocess.check_call(cmd, shell=True)
+    fileobj = open(filename)
+    text = fileobj.read()
+    fileobj.close()
+  finally:
+    os.remove(filename)
+
+  if not text:
+    return
+
+  stripcomment_re = re.compile(r'^#.*$', re.MULTILINE)
+  return stripcomment_re.sub('', text).strip()
+
+
 def ConvertToInteger(inputval):
   """Convert a string to integer, but returns either an int or None."""
   try:
@@ -692,20 +769,12 @@ def ConvertToInteger(inputval):
     return None
 
 
-class GitChangeDescription(presubmit_support.ChangeDescription):
-  def UserEdit(self):
-    header = (
-        "# Enter a description of the change.\n"
-        "# This will displayed on the codereview site.\n"
-        "# The first line will also be used as the subject of the review.\n"
-        "\n")
-    edited_text = self.editor(header + self.EditableDescription())
-    stripcomment_re = re.compile(r'^#.*$', re.MULTILINE)
-    self.Parse(stripcomment_re.sub('', edited_text).strip())
-
-
 def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt):
   """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
+  import presubmit_support
+  import scm
+  import watchlists
+
   root = RunCommand(['git', 'rev-parse', '--show-cdup']).strip()
   if not root:
     root = '.'
@@ -774,13 +843,13 @@ def CMDpresubmit(parser, args):
   if options.upload:
     print '*** Presubmit checks for UPLOAD would report: ***'
     RunHook(committing=False, upstream_branch=base_branch,
-            rietveld_server=cl.GetRietveldServer(), tbr=cl.tbr,
+            rietveld_server=cl.GetRietveldServer(), tbr=False,
             may_prompt=False)
     return 0
   else:
     print '*** Presubmit checks for DCOMMIT would report: ***'
     RunHook(committing=True, upstream_branch=base_branch,
-            rietveld_server=cl.GetRietveldServer, tbr=cl.tbr,
+            rietveld_server=cl.GetRietveldServer, tbr=False,
             may_prompt=False)
     return 0
 
@@ -824,10 +893,10 @@ def CMDupload(parser, args):
 
   if not options.bypass_hooks and not options.force:
     hook_results = RunHook(committing=False, upstream_branch=base_branch,
-                           rietveld_server=cl.GetRietveldServer(), tbr=cl.tbr,
+                           rietveld_server=cl.GetRietveldServer(), tbr=False,
                            may_prompt=True)
     if not options.reviewers and hook_results.reviewers:
-      options.reviewers = ','.join(hook_results.reviewers)
+      options.reviewers = hook_results.reviewers
 
 
   # --no-ext-diff is broken in some versions of Git, so try to work around
@@ -861,10 +930,10 @@ def CMDupload(parser, args):
            "Adding patch to that issue." % cl.GetIssue())
   else:
     log_desc = CreateDescriptionFromLog(args)
-    change_desc = GitChangeDescription(subject=options.message,
-        description=log_desc, reviewers=options.reviewers, tbr=cl.tbr)
-    if not options.from_logs and (not options.force):
-      change_desc.UserEdit()
+    change_desc = ChangeDescription(options.message, log_desc,
+                                    options.reviewers)
+    if not options.from_logs:
+      change_desc.Update()
 
     if change_desc.IsEmpty():
       print "Description is empty; aborting."
@@ -975,7 +1044,7 @@ def SendUpstream(parser, args, cmd):
 
   if not options.bypass_hooks and not options.force:
     RunHook(committing=True, upstream_branch=base_branch,
-            rietveld_server=cl.GetRietveldServer(), tbr=(cl.tbr or options.tbr),
+            rietveld_server=cl.GetRietveldServer(), tbr=options.tbr,
             may_prompt=True)
 
     if cmd == 'dcommit':
@@ -1014,15 +1083,17 @@ def SendUpstream(parser, args, cmd):
       # create a template description. Eitherway, give the user a chance to edit
       # it to fill in the TBR= field.
       if cl.GetIssue():
-        change_desc = GitChangeDescription(description=cl.GetDescription())
+        description = cl.GetDescription()
 
+      # TODO(dpranke): Update to use ChangeDescription object.
       if not description:
-        log_desc = CreateDescriptionFromLog(args)
-        change_desc = GitChangeDescription(description=log_desc, tbr=True)
+        description = """# Enter a description of the change.
+# This will be used as the change log for the commit.
 
-      if not options.force:
-        change_desc.UserEdit()
-      description = change_desc.description
+"""
+        description += CreateDescriptionFromLog(args)
+
+      description = UserEditedLog(description + '\nTBR=')
 
     if not description:
       print "Description empty; aborting."
