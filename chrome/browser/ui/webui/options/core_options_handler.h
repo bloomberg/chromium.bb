@@ -33,6 +33,10 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   virtual void RegisterMessages();
   virtual WebUIMessageHandler* Attach(WebUI* web_ui);
 
+  void set_handlers_host(OptionsPageUIHandlerHost* handlers_host) {
+    handlers_host_ = handlers_host;
+  }
+
  protected:
   // Fetches a pref value of given |pref_name|.
   // Note that caller owns the returned Value.
@@ -100,6 +104,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
 
   void NotifyPrefChanged(const std::string* pref_name);
 
+  OptionsPageUIHandlerHost* handlers_host_;
   PrefChangeRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreOptionsHandler);

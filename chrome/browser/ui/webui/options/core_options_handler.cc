@@ -24,7 +24,9 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-CoreOptionsHandler::CoreOptionsHandler() {}
+CoreOptionsHandler::CoreOptionsHandler()
+    : handlers_host_(NULL) {
+}
 
 CoreOptionsHandler::~CoreOptionsHandler() {}
 
@@ -115,7 +117,8 @@ void CoreOptionsHandler::RegisterMessages() {
 }
 
 void CoreOptionsHandler::HandleInitialize(const ListValue* args) {
-  static_cast<OptionsUI*>(web_ui_)->InitializeHandlers();
+  DCHECK(handlers_host_);
+  handlers_host_->InitializeHandlers();
 }
 
 Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {

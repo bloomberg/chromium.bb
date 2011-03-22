@@ -11,7 +11,7 @@
 namespace chromeos {
 
 // CoreChromeOSOptionsHandler handles ChromeOS settings.
-class CoreChromeOSOptionsHandler : public ::CoreOptionsHandler {
+class CoreChromeOSOptionsHandler : public CoreOptionsHandler {
  public:
   CoreChromeOSOptionsHandler();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,11 +51,10 @@ cr.define('options', function() {
     proxyListInitalized_: false,
 
     /**
-     * Handler for OptionsPage's visible property change event.
-     * @private
-     * @param {Event} e Property change event.
+     * Update controls state.
+     * @public
      */
-    handleVisibleChange_: function(e) {
+    updateControls: function() {
       this.toggleSingle_();
       if ($('manualProxy').checked) {
         this.enableManual_();
@@ -66,6 +65,15 @@ cr.define('options', function() {
         this.proxyListInitalized_ = true;
         $('ignoredHostList').redraw();
       }
+    },
+
+    /**
+     * Handler for OptionsPage's visible property change event.
+     * @private
+     * @param {Event} e Property change event.
+     */
+    handleVisibleChange_: function(e) {
+      this.updateControls();
     },
 
     /**
@@ -130,6 +138,7 @@ cr.define('options', function() {
       $('removeHost').disabled = false;
       $('addHost').disabled = false;
       $('advancedConfig').style.display = '-webkit-box';
+      $('ignoredHostList').redraw();
     },
 
     /**

@@ -77,6 +77,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+class OptionsUIHTMLSource : public ChromeURLDataManager::DataSource {
+ public:
+  // The constructor takes over ownership of |localized_strings|.
+  explicit OptionsUIHTMLSource(DictionaryValue* localized_strings);
+  virtual ~OptionsUIHTMLSource();
+
+  // Called when the network layer has requested a resource underneath
+  // the path we registered.
+  virtual void StartDataRequest(const std::string& path,
+                                bool is_off_the_record,
+                                int request_id);
+  virtual std::string GetMimeType(const std::string&) const;
+
+ private:
+   // Localized strings collection.
+  scoped_ptr<DictionaryValue> localized_strings_;
+
+  DISALLOW_COPY_AND_ASSIGN(OptionsUIHTMLSource);
+};
+
 OptionsUIHTMLSource::OptionsUIHTMLSource(DictionaryValue* localized_strings)
     : DataSource(chrome::kChromeUISettingsHost, MessageLoop::current()) {
   DCHECK(localized_strings);
@@ -160,12 +180,14 @@ OptionsUI::OptionsUI(TabContents* contents)
     : WebUI(contents), initialized_handlers_(false) {
   DictionaryValue* localized_strings = new DictionaryValue();
 
+  CoreOptionsHandler* core_handler;
 #if defined(OS_CHROMEOS)
-  AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::CoreChromeOSOptionsHandler());
+  core_handler = new chromeos::CoreChromeOSOptionsHandler();
 #else
-  AddOptionsPageUIHandler(localized_strings, new CoreOptionsHandler());
+  core_handler = new CoreOptionsHandler();
 #endif
+  core_handler->set_handlers_host(this);
+  AddOptionsPageUIHandler(localized_strings, core_handler);
 
   AddOptionsPageUIHandler(localized_strings, new AdvancedOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new AutofillOptionsHandler());

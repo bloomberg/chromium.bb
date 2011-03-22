@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "content/browser/webui/web_ui.h"
@@ -18,26 +19,6 @@
 class GURL;
 class PrefService;
 struct UserMetricsAction;
-
-class OptionsUIHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  // The constructor takes over ownership of |localized_strings|.
-  explicit OptionsUIHTMLSource(DictionaryValue* localized_strings);
-  virtual ~OptionsUIHTMLSource();
-
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_off_the_record,
-                                int request_id);
-  virtual std::string GetMimeType(const std::string&) const;
-
- private:
-   // Localized strings collection.
-  scoped_ptr<DictionaryValue> localized_strings_;
-
-  DISALLOW_COPY_AND_ASSIGN(OptionsUIHTMLSource);
-};
 
 // The base class handler of Javascript messages of options pages.
 class OptionsPageUIHandler : public WebUIMessageHandler,
@@ -92,16 +73,28 @@ class OptionsPageUIHandler : public WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(OptionsPageUIHandler);
 };
 
-class OptionsUI : public WebUI {
+// An interface for common operations that a host of OptionsPageUIHandlers
+// should provide.
+class OptionsPageUIHandlerHost {
+ public:
+  virtual void InitializeHandlers() = 0;
+};
+
+// The WebUI for chrome:settings.
+class OptionsUI : public WebUI,
+                  public OptionsPageUIHandlerHost {
  public:
   explicit OptionsUI(TabContents* contents);
   virtual ~OptionsUI();
 
   static RefCountedMemory* GetFaviconResourceBytes();
-  virtual void RenderViewCreated(RenderViewHost* render_view_host);
-  virtual void DidBecomeActiveForReusedRenderView();
 
-  void InitializeHandlers();
+  // Overridden from WebUI:
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidBecomeActiveForReusedRenderView() OVERRIDE;
+
+  // Overridden from OptionsPageUIHandlerHost:
+  virtual void InitializeHandlers() OVERRIDE;
 
  private:
   // Adds OptionsPageUiHandler to the handlers list if handler is enabled.

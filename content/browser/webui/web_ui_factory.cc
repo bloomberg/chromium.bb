@@ -40,6 +40,7 @@
 #include "chrome/browser/chromeos/webui/imageburner_ui.h"
 #include "chrome/browser/chromeos/webui/keyboard_overlay_ui.h"
 #include "chrome/browser/chromeos/webui/mobile_setup_ui.h"
+#include "chrome/browser/chromeos/webui/proxy_settings_ui.h"
 #include "chrome/browser/chromeos/webui/register_page_ui.h"
 #include "chrome/browser/chromeos/webui/system_info_ui.h"
 #include "chrome/browser/ui/webui/filebrowse_ui.h"
@@ -188,6 +189,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<MediaplayerUI>;
   if (url.host() == chrome::kChromeUIMobileSetupHost)
     return &NewWebUI<MobileSetupUI>;
+  if (url.host() == chrome::kChromeUIProxySettingsHost)
+    return &NewWebUI<chromeos::ProxySettingsUI>;
   if (url.host() == chrome::kChromeUIRegisterPageHost)
     return &NewWebUI<RegisterPageUI>;
   if (url.host() == chrome::kChromeUISettingsHost)

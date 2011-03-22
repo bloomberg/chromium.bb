@@ -714,6 +714,8 @@
         'browser/chromeos/webui/mobile_setup_ui.h',
         'browser/chromeos/webui/proxy_handler.cc',
         'browser/chromeos/webui/proxy_handler.h',
+        'browser/chromeos/webui/proxy_settings_ui.cc',
+        'browser/chromeos/webui/proxy_settings_ui.h',
         'browser/chromeos/webui/register_page_ui.cc',
         'browser/chromeos/webui/register_page_ui.h',
         'browser/chromeos/webui/stats_options_handler.cc',
