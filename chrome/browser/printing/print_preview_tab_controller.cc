@@ -31,7 +31,7 @@ PrintPreviewTabController* PrintPreviewTabController::GetInstance() {
 }
 
 TabContents* PrintPreviewTabController::GetOrCreatePreviewTab(
-    TabContents* initiator_tab, int browser_window_id ) {
+    TabContents* initiator_tab, SessionID::id_type browser_window_id ) {
   DCHECK(initiator_tab);
 
   // Get the print preview tab for |initiator_tab|.

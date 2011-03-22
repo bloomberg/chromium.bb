@@ -16,6 +16,7 @@
 #include <map>
 
 #include "base/ref_counted.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
@@ -37,7 +38,7 @@ class PrintPreviewTabController
   // Get/Create the print preview tab for |initiator_tab|.
   // |browser_window_id| is the browser window containing |initiator_tab|.
   TabContents* GetOrCreatePreviewTab(
-      TabContents* initiator_tab, int browser_window_id);
+      TabContents* initiator_tab, SessionID::id_type browser_window_id);
 
   // Returns preview tab for |tab|.
   // Returns |tab| if |tab| is a preview tab.
