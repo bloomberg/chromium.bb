@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,7 +112,8 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
     kQuicktimeVersionRange, arraysize(kQuicktimeVersionRange),
     "http://www.apple.com/quicktime/download/" },
   { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java",
-    kJavaVersionRange, arraysize(kJavaVersionRange), "http://www.java.com/" },
+    kJavaVersionRange, arraysize(kJavaVersionRange),
+    "http://www.java.com/download" },
   { "adobe-reader", PluginGroup::kAdobeReaderGroupName, "Adobe Acrobat",
     kAdobeReaderVersionRange, arraysize(kAdobeReaderVersionRange),
     "http://get.adobe.com/reader/" },
