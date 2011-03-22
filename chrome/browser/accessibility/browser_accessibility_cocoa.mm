@@ -233,7 +233,8 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
     } else if ([self role] == NSAccessibilityButtonRole) {
       // AXValue does not make sense for pure buttons.
       return @"";
-    } else if ([self role] == NSAccessibilityCheckBoxRole) {
+    } else if ([self role] == NSAccessibilityCheckBoxRole ||
+               [self role] == NSAccessibilityRadioButtonRole) {
       return [NSNumber numberWithInt:GetState(
           browserAccessibility_, WebAccessibility::STATE_CHECKED) ? 1 : 0];
     } else {
