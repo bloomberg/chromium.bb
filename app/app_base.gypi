@@ -166,6 +166,7 @@
         '../ui/base/models/button_menu_item_model.h',
         '../ui/base/models/menu_model.cc',
         '../ui/base/models/menu_model.h',
+        '../ui/base/models/menu_model_delegate.h',
         '../ui/base/models/simple_menu_model.cc',
         '../ui/base/models/simple_menu_model.h',
         '../ui/base/models/combobox_model.h',

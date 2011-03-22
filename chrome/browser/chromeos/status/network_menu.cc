@@ -279,7 +279,7 @@ bool NetworkMenu::IsItemCheckedAt(int index) const {
   return true;
 }
 
-bool NetworkMenu::GetIconAt(int index, SkBitmap* icon) const {
+bool NetworkMenu::GetIconAt(int index, SkBitmap* icon) {
   if (!menu_items_[index].icon.empty()) {
     *icon = menu_items_[index].icon;
     return true;

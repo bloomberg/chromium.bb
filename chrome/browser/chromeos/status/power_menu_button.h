@@ -41,7 +41,7 @@ class PowerMenuButton : public StatusAreaButton,
       ui::Accelerator* accelerator) const { return false; }
   virtual bool IsItemCheckedAt(int index) const { return false; }
   virtual int GetGroupIdAt(int index) const { return 0; }
-  virtual bool GetIconAt(int index, SkBitmap* icon) const { return false; }
+  virtual bool GetIconAt(int index, SkBitmap* icon) { return false; }
   virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const {
     return NULL;
   }
@@ -50,6 +50,7 @@ class PowerMenuButton : public StatusAreaButton,
   virtual void HighlightChangedTo(int index) {}
   virtual void ActivatedAt(int index) {}
   virtual void MenuWillShow() {}
+  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) {}
 
   // PowerLibrary::Observer implementation.
   virtual void PowerChanged(PowerLibrary* obj);

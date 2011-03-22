@@ -99,7 +99,7 @@ class NetworkMenu : public views::ViewMenuDelegate,
       ui::Accelerator* accelerator) const { return false; }
   virtual bool IsItemCheckedAt(int index) const;
   virtual int GetGroupIdAt(int index) const { return 0; }
-  virtual bool GetIconAt(int index, SkBitmap* icon) const;
+  virtual bool GetIconAt(int index, SkBitmap* icon);
   virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const {
     return NULL;
   }
@@ -108,6 +108,7 @@ class NetworkMenu : public views::ViewMenuDelegate,
   virtual void HighlightChangedTo(int index) {}
   virtual void ActivatedAt(int index);
   virtual void MenuWillShow() {}
+  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) {}
 
   void SetFirstLevelMenuWidth(int width);
 

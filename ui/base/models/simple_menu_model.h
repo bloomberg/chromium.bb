@@ -112,7 +112,7 @@ class SimpleMenuModel : public MenuModel {
                                 ui::Accelerator* accelerator) const;
   virtual bool IsItemCheckedAt(int index) const;
   virtual int GetGroupIdAt(int index) const;
-  virtual bool GetIconAt(int index, SkBitmap* icon) const;
+  virtual bool GetIconAt(int index, SkBitmap* icon);
   virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
   virtual bool IsEnabledAt(int index) const;
   virtual bool IsVisibleAt(int index) const;
@@ -120,6 +120,7 @@ class SimpleMenuModel : public MenuModel {
   virtual void ActivatedAt(int index);
   virtual MenuModel* GetSubmenuModelAt(int index) const;
   virtual void MenuClosed();
+  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* menu_model_delegate);
 
  protected:
   // Some variants of this model (SystemMenuModel) relies on items to be
@@ -130,6 +131,8 @@ class SimpleMenuModel : public MenuModel {
   virtual int FlipIndex(int index) const;
 
   Delegate* delegate() { return delegate_; }
+
+  MenuModelDelegate* menu_model_delegate() { return menu_model_delegate_; }
 
  private:
   struct Item;
@@ -145,6 +148,8 @@ class SimpleMenuModel : public MenuModel {
   std::vector<Item> items_;
 
   Delegate* delegate_;
+
+  MenuModelDelegate* menu_model_delegate_;
 
   ScopedRunnableMethodFactory<SimpleMenuModel> method_factory_;
 

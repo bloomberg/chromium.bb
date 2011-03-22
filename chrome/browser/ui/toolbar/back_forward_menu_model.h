@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_UI_TOOLBAR_BACK_FORWARD_MENU_MODEL_H_
 #pragma once
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
+#include "chrome/browser/favicon_service.h"
 #include "ui/base/models/menu_model.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -53,7 +55,7 @@ class BackForwardMenuModel : public ui::MenuModel {
                                 ui::Accelerator* accelerator) const;
   virtual bool IsItemCheckedAt(int index) const;
   virtual int GetGroupIdAt(int index) const;
-  virtual bool GetIconAt(int index, SkBitmap* icon) const;
+  virtual bool GetIconAt(int index, SkBitmap* icon);
   virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
   virtual bool IsEnabledAt(int index) const;
   virtual MenuModel* GetSubmenuModelAt(int index) const;
@@ -65,7 +67,28 @@ class BackForwardMenuModel : public ui::MenuModel {
   // Is the item at |index| a separator?
   bool IsSeparator(int index) const;
 
+  // Set the delegate for triggering OnIconChanged.
+  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* menu_model_delegate);
+
+ protected:
+   ui::MenuModelDelegate* menu_model_delegate() { return menu_model_delegate_; }
+
  private:
+  friend class BackFwdMenuModelTest;
+  FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, BasicCase);
+  FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, MaxItemsTest);
+  FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, ChapterStops);
+  FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, EscapeLabel);
+  FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, FaviconLoadTest);
+
+  // Requests a favicon from the FaviconService. Called by GetIconAt if the
+  // NavigationEntry has an invalid favicon.
+  void FetchFavicon(NavigationEntry* entry);
+
+  // Callback from the favicon service.
+  void OnFavIconDataAvailable(FaviconService::Handle handle,
+                              history::FaviconData favicon);
+
   // Allows the unit test to use its own dummy tab contents.
   void set_test_tab_contents(TabContents* test_tab_contents) {
     test_tab_contents_ = test_tab_contents;
@@ -160,11 +183,15 @@ class BackForwardMenuModel : public ui::MenuModel {
   // back button.
   ModelType model_type_;
 
-  friend class BackFwdMenuModelTest;
-  FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, BasicCase);
-  FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, MaxItemsTest);
-  FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, ChapterStops);
-  FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, EscapeLabel);
+  // Keeps track of which favicons have already been requested from the history
+  // to prevent duplicate requests, identified by NavigationEntry->unique_id().
+  std::set<int> requested_favicons_;
+
+  // Used for loading favicons from history.
+  CancelableRequestConsumerTSimple<int> load_consumer_;
+
+  // Used for receiving notifications when an icon is changed.
+  ui::MenuModelDelegate* menu_model_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BackForwardMenuModel);
 };

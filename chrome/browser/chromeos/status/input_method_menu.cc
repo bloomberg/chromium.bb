@@ -221,7 +221,7 @@ bool InputMethodMenu::HasIcons() const  {
   return false;
 }
 
-bool InputMethodMenu::GetIconAt(int index, SkBitmap* icon) const {
+bool InputMethodMenu::GetIconAt(int index, SkBitmap* icon) {
   return false;
 }
 
@@ -247,6 +247,10 @@ void InputMethodMenu::HighlightChangedTo(int index) {
 
 void InputMethodMenu::MenuWillShow() {
   // Views for Chromium OS does not support this interface yet.
+}
+
+void InputMethodMenu::SetMenuModelDelegate(ui::MenuModelDelegate* delegate) {
+  // Not needed for current usage.
 }
 
 int InputMethodMenu::GetItemCount() const {

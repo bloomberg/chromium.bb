@@ -22,6 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/gfx/codec/png_codec.h"
 
 const int BackForwardMenuModel::kMaxHistoryItems = 12;
 const int BackForwardMenuModel::kMaxChapterStops = 5;
@@ -31,7 +32,8 @@ BackForwardMenuModel::BackForwardMenuModel(Browser* browser,
                                            ModelType model_type)
     : browser_(browser),
       test_tab_contents_(NULL),
-      model_type_(model_type) {
+      model_type_(model_type),
+      menu_model_delegate_(NULL) {
 }
 
 bool BackForwardMenuModel::HasIcons() const {
@@ -113,7 +115,7 @@ int BackForwardMenuModel::GetGroupIdAt(int index) const {
   return false;
 }
 
-bool BackForwardMenuModel::GetIconAt(int index, SkBitmap* icon) const {
+bool BackForwardMenuModel::GetIconAt(int index, SkBitmap* icon) {
   if (!ItemHasIcon(index))
     return false;
 
@@ -123,6 +125,9 @@ bool BackForwardMenuModel::GetIconAt(int index, SkBitmap* icon) const {
   } else {
     NavigationEntry* entry = GetNavigationEntry(index);
     *icon = entry->favicon().bitmap();
+    if (!entry->favicon().is_valid() && menu_model_delegate()) {
+      FetchFavicon(entry);
+    }
   }
 
   return true;
@@ -182,6 +187,8 @@ void BackForwardMenuModel::ActivatedAtWithDisposition(
 void BackForwardMenuModel::MenuWillShow() {
   UserMetrics::RecordComputedAction(BuildActionName("Popup", -1),
                                     browser_->profile());
+  requested_favicons_.clear();
+  load_consumer_.CancelAllRequests();
 }
 
 bool BackForwardMenuModel::IsSeparator(int index) const {
@@ -201,6 +208,71 @@ bool BackForwardMenuModel::IsSeparator(int index) const {
 
   // Look to see if we have reached the separator for the history items.
   return index == history_items;
+}
+
+void BackForwardMenuModel::SetMenuModelDelegate(
+      ui::MenuModelDelegate* menu_model_delegate) {
+  menu_model_delegate_ = menu_model_delegate;
+}
+
+void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
+  // If the favicon has already been requested for this menu, don't do
+  // anything.
+  if (requested_favicons_.find(entry->unique_id()) !=
+      requested_favicons_.end()) {
+    return;
+  }
+  requested_favicons_.insert(entry->unique_id());
+  FaviconService* favicon_service =
+      browser_->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
+  if (!favicon_service)
+    return;
+  FaviconService::Handle handle = favicon_service->GetFaviconForURL(
+      entry->url(), history::FAVICON, &load_consumer_,
+      NewCallback(this, &BackForwardMenuModel::OnFavIconDataAvailable));
+  load_consumer_.SetClientData(favicon_service, handle, entry->unique_id());
+}
+
+void BackForwardMenuModel::OnFavIconDataAvailable(
+    FaviconService::Handle handle,
+    history::FaviconData favicon) {
+  if (favicon.is_valid()) {
+    int unique_id = load_consumer_.GetClientDataForCurrentRequest();
+    // Find the current model_index for the unique_id.
+    NavigationEntry* entry = NULL;
+    int model_index = -1;
+    for (int i = 0; i < GetItemCount() - 1; i++) {
+      if (IsSeparator(i))
+        continue;
+      if (GetNavigationEntry(i)->unique_id() == unique_id) {
+        model_index = i;
+        entry = GetNavigationEntry(i);
+        break;
+      }
+    }
+
+    if (!entry)
+      // The NavigationEntry wasn't found, this can happen if the user
+      // navigates to another page and a NavigatationEntry falls out of the
+      // range of kMaxHistoryItems.
+      return;
+
+    // Now that we have a valid NavigationEntry, decode the favicon and assign
+    // it to the NavigationEntry.
+    SkBitmap fav_icon;
+    if (gfx::PNGCodec::Decode(favicon.image_data->front(),
+                              favicon.image_data->size(),
+                              &fav_icon)) {
+      entry->favicon().set_is_valid(true);
+      entry->favicon().set_url(favicon.icon_url);
+      if (fav_icon.empty())
+        return;
+      entry->favicon().set_bitmap(fav_icon);
+      if (menu_model_delegate()) {
+        menu_model_delegate()->OnIconChanged(model_index);
+      }
+    }
+  }
 }
 
 int BackForwardMenuModel::GetHistoryItemCount() const {

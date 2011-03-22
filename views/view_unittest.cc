@@ -1232,7 +1232,7 @@ class MockMenuModel : public MenuModel {
       ui::Accelerator* accelerator));
   MOCK_CONST_METHOD1(IsItemCheckedAt, bool(int index));
   MOCK_CONST_METHOD1(GetGroupIdAt, int(int index));
-  MOCK_CONST_METHOD2(GetIconAt, bool(int index, SkBitmap* icon));
+  MOCK_METHOD2(GetIconAt, bool(int index, SkBitmap* icon));
   MOCK_CONST_METHOD1(GetButtonMenuItemAt, ButtonMenuItemModel*(int index));
   MOCK_CONST_METHOD1(IsEnabledAt, bool(int index));
   MOCK_CONST_METHOD1(IsVisibleAt, bool(int index));
@@ -1243,6 +1243,7 @@ class MockMenuModel : public MenuModel {
       int disposition));
   MOCK_METHOD0(MenuWillShow, void());
   MOCK_METHOD0(MenuClosed, void());
+  MOCK_METHOD1(SetMenuModelDelegate, void(MenuModelDelegate* delegate));
   MOCK_METHOD3(GetModelAndIndexForCommandId, bool(int command_id,
       MenuModel** model, int* index));
 };

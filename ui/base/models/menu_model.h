@@ -8,6 +8,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "ui/base/models/menu_model_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 
 class SkBitmap;
@@ -85,7 +86,7 @@ class MenuModel {
 
   // Gets the icon for the item at the specified index, returning true if there
   // is an icon, false otherwise.
-  virtual bool GetIconAt(int index, SkBitmap* icon) const = 0;
+  virtual bool GetIconAt(int index, SkBitmap* icon) = 0;
 
   // Returns the model for a menu item with a line of buttons at |index|.
   virtual ButtonMenuItemModel* GetButtonMenuItemAt(int index) const = 0;
@@ -115,6 +116,9 @@ class MenuModel {
 
   // Called when the menu has been closed.
   virtual void MenuClosed() {}
+
+  // Set the MenuModelDelegate. Owned by the caller of this function.
+  virtual void SetMenuModelDelegate(MenuModelDelegate* delegate) = 0;
 
   // Retrieves the model and index that contains a specific command id. Returns
   // true if an item with the specified command id is found. |model| is inout,

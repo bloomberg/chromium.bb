@@ -54,6 +54,7 @@ void SimpleMenuModel::Delegate::MenuClosed() {
 
 SimpleMenuModel::SimpleMenuModel(Delegate* delegate)
     : delegate_(delegate),
+      menu_model_delegate_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
@@ -245,7 +246,7 @@ int SimpleMenuModel::GetGroupIdAt(int index) const {
   return items_.at(FlipIndex(index)).group_id;
 }
 
-bool SimpleMenuModel::GetIconAt(int index, SkBitmap* icon) const {
+bool SimpleMenuModel::GetIconAt(int index, SkBitmap* icon) {
   if (IsItemDynamicAt(index))
     return delegate_->GetIconForCommandId(GetCommandIdAt(index), icon);
 
@@ -297,6 +298,11 @@ void SimpleMenuModel::MenuClosed() {
   MessageLoop::current()->PostTask(
       FROM_HERE,
       method_factory_.NewRunnableMethod(&SimpleMenuModel::OnMenuClosed));
+}
+
+void SimpleMenuModel::SetMenuModelDelegate(
+      ui::MenuModelDelegate* menu_model_delegate) {
+  menu_model_delegate_ = menu_model_delegate;
 }
 
 void SimpleMenuModel::OnMenuClosed() {
