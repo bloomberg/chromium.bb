@@ -151,7 +151,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
@@ -264,7 +263,6 @@ using WebKit::WebSize;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebTextAffinity;
-using WebKit::WebTextCheckingResult;
 using WebKit::WebTextDirection;
 using WebKit::WebURL;
 using WebKit::WebURLError;

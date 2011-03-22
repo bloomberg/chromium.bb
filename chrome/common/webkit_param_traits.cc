@@ -111,9 +111,15 @@ void ParamTraits<WebKit::WebCompositionUnderline>::Log(const param_type& p,
 
 void ParamTraits<WebKit::WebTextCheckingResult>::Write(Message* m,
                                                        const param_type& p) {
+#if defined(WEB_TEXT_CHECKING_RESULT_IS_A_STRUCT)
+  WriteParam(m, static_cast<int>(p.error));
+  WriteParam(m, p.position);
+  WriteParam(m, p.length);
+#else
   WriteParam(m, static_cast<int>(p.error()));
   WriteParam(m, p.position());
   WriteParam(m, p.length());
+#endif
 }
 
 bool ParamTraits<WebKit::WebTextCheckingResult>::Read(const Message* m,
@@ -142,11 +148,19 @@ bool ParamTraits<WebKit::WebTextCheckingResult>::Read(const Message* m,
 void ParamTraits<WebKit::WebTextCheckingResult>::Log(const param_type& p,
                                                      std::string* l) {
   l->append("(");
+#if defined(WEB_TEXT_CHECKING_RESULT_IS_A_STRUCT)
+  LogParam(static_cast<int>(p.error), l);
+  l->append(", ");
+  LogParam(p.position, l);
+  l->append(", ");
+  LogParam(p.length, l);
+#else
   LogParam(static_cast<int>(p.error()), l);
   l->append(", ");
   LogParam(p.position(), l);
   l->append(", ");
   LogParam(p.length(), l);
+#endif
   l->append(")");
 }
 
