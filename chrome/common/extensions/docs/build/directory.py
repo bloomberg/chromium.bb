@@ -225,7 +225,8 @@ class SamplesManifest(object):
     Args:
       path: The path to write the samples manifest file to.
     """
-    manifest_text = json.dumps(self._manifest_data, indent=2, sort_keys=True)
+    manifest_text = json.dumps(self._manifest_data, indent=2,
+                               sort_keys=True, separators=(',', ': '))
     output_path = os.path.realpath(path)
     try:
       output_file = open(output_path, 'w')
