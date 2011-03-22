@@ -16,8 +16,12 @@
       'target_name': 'gfx_unittests',
       'type': 'none',
       'msvs_guid': '1D386FA9-2501-41E2-8FE8-527DAF479CE6',
-      'dependencies': [
-        'ui_unittests',
+      'conditions': [
+        ['inside_chromium_build==1', {
+          'dependencies': [
+            'ui_unittests',
+          ],
+        }],
       ],
       'actions': [
         {
