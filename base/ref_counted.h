@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,14 @@
 #pragma once
 
 #include "base/atomic_ref_count.h"
+#include "base/base_api.h"
 #include "base/threading/thread_collision_warner.h"
 
 namespace base {
 
 namespace subtle {
 
-class RefCountedBase {
+class BASE_API RefCountedBase {
  public:
   static bool ImplementsThreadSafeReferenceCounting() { return false; }
 
@@ -39,7 +40,7 @@ class RefCountedBase {
   DISALLOW_COPY_AND_ASSIGN(RefCountedBase);
 };
 
-class RefCountedThreadSafeBase {
+class BASE_API RefCountedThreadSafeBase {
  public:
   static bool ImplementsThreadSafeReferenceCounting() { return true; }
 
