@@ -39,6 +39,7 @@ quick_vm -- If vm_tests is true, run a minimal au test harness suite.
 usepkg -- Use binary packages to bootstrap, when possible. (emerge --usepkg)
 chroot_replace -- wipe and replace chroot, but not source.
 
+gs_path -- Google Storage path to offload files to
 build_type -- Upload prebuilts under the specified category. Can be any of
               [preflight|full|chrome].
 test_mod -- Create a test mod image for archival.
@@ -141,6 +142,7 @@ config['x86-mario-pre-flight-queue'].update({
   'uprev' : True,
   'rev_overlays': 'both',
   'push_overlays': 'private',
+  'gs_path': 'gs://chromeos-x86-mario/pre-flight-master'
 })
 
 config['x86-alex-pre-flight-branch'] = default.copy()
