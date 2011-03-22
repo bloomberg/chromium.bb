@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -386,5 +386,35 @@ TEST_F(GpuBlacklistTest, MultipleDevicesEntry) {
       GpuBlacklist::kOsLinux, os_version.get(), gpu_info());
   EXPECT_EQ(flags.flags(),
             static_cast<uint32>(GpuFeatureFlags::kGpuFeatureMultisampling));
+}
+
+TEST_F(GpuBlacklistTest, ChromeOSEntry) {
+  const std::string devices_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"os\": {\n"
+      "        \"type\": \"chromeos\"\n"
+      "      },\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  scoped_ptr<Version> os_version(Version::GetVersionFromString("10.6.4"));
+  GpuBlacklist blacklist;
+
+  EXPECT_TRUE(blacklist.LoadGpuBlacklist(devices_json, false));
+  GpuFeatureFlags flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsChromeOS, os_version.get(), gpu_info());
+  EXPECT_EQ(flags.flags(),
+            static_cast<uint32>(GpuFeatureFlags::kGpuFeatureWebgl));
+  flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsLinux, os_version.get(), gpu_info());
+  EXPECT_EQ(flags.flags(), 0u);
 }
 

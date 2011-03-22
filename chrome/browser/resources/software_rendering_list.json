@@ -14,7 +14,8 @@
 // Each entry contains the following fields:
 // 1. "id" is an integer.  0 is reserved.  This field is mandatory.
 // 2. "os" contains "type" and an optional "version". "type" could be "macosx",
-//    "linux", "win", or "any".  "any" is the same as not specifying "os".
+//    "linux", "win", "chromeos", or "any".  "any" is the same as not specifying
+//    "os".
 //    "version" is a VERSION structure (defined below).
 // 3. "vendor_id" is a string.  0 is reserved.
 // 4. "device_id" is an array of strings.  0 is reserved.
