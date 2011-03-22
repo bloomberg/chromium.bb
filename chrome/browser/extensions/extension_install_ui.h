@@ -112,13 +112,6 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
       TabContents* tab_contents, const Extension* new_theme,
       const std::string& previous_theme_id, bool previous_use_system_theme);
 
-  // Implements the showing of the new install dialog. The implementations of
-  // this function are platform-specific.
-  static void ShowExtensionInstallUIPrompt2Impl(
-      Profile* profile, Delegate* delegate, const Extension* extension,
-      SkBitmap* icon, const std::vector<string16>& permissions,
-      PromptType type);
-
   Profile* profile_;
   MessageLoop* ui_loop_;
 

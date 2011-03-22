@@ -6,7 +6,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_dialog2.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
@@ -17,8 +18,6 @@
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
-
-class Profile;
 
 namespace {
 
@@ -306,9 +305,10 @@ void InstallDialogContent2::Layout() {
                              right_column_width_, permission_box_height);
 }
 
-// static
-void ExtensionInstallUI::ShowExtensionInstallUIPrompt2Impl(
-    Profile* profile, Delegate* delegate, const Extension* extension,
+void ShowExtensionInstallDialog2(
+    Profile* profile,
+    ExtensionInstallUI::Delegate* delegate,
+    const Extension* extension,
     SkBitmap* icon,
     const std::vector<string16>& permissions,
     ExtensionInstallUI::PromptType type) {

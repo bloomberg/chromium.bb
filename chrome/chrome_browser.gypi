@@ -955,6 +955,7 @@
         'browser/extensions/extension_input_api.cc',
         'browser/extensions/extension_input_api.h',
         'browser/extensions/extension_install_dialog.h',
+        'browser/extensions/extension_install_dialog2.h',
         'browser/extensions/extension_install_ui.cc',
         'browser/extensions/extension_install_ui.h',
         'browser/extensions/extension_management_api.cc',

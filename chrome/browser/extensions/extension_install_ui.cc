@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
+#include "chrome/browser/extensions/extension_install_dialog2.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -225,8 +226,8 @@ void ExtensionInstallUI::OnImageLoaded(
           NotificationService::NoDetails());
 
       std::vector<string16> warnings = extension_->GetPermissionMessages();
-      ShowExtensionInstallUIPrompt2Impl(profile_, delegate_, extension_, &icon_,
-                                        warnings, prompt_type_);
+      ShowExtensionInstallDialog2(
+          profile_, delegate_, extension_, &icon_, warnings, prompt_type_);
       break;
     }
     case UNINSTALL_PROMPT: {

@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_install_dialog2.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -191,10 +192,9 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
 
 @end  // ExtensionInstallPromptController
 
-
-void ExtensionInstallUI::ShowExtensionInstallUIPrompt2Impl(
+void ShowExtensionInstallDialog2(
     Profile* profile,
-    Delegate* delegate,
+    ExtensionInstallUI::Delegate* delegate,
     const Extension* extension,
     SkBitmap* icon,
     const std::vector<string16>& warnings,

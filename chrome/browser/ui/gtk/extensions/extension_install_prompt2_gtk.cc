@@ -8,7 +8,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_dialog2.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/extensions/extension.h"
@@ -16,8 +17,6 @@
 #include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
-
-class Profile;
 
 namespace {
 
@@ -170,9 +169,9 @@ void ShowInstallPromptDialog2(GtkWindow* parent, SkBitmap* skia_icon,
 
 }  // namespace
 
-void ExtensionInstallUI::ShowExtensionInstallUIPrompt2Impl(
+void ShowExtensionInstallDialog2(
     Profile* profile,
-    Delegate* delegate,
+    ExtensionInstallUI::Delegate* delegate,
     const Extension* extension,
     SkBitmap* icon,
     const std::vector<string16>& permissions,
