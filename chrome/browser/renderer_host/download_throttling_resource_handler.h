@@ -58,7 +58,6 @@ class DownloadThrottlingResourceHandler
   // DownloadRequestLimiter::Callback implementation:
   virtual void CancelDownload();
   virtual void ContinueDownload();
-  virtual int GetRequestId();
 
  private:
   virtual ~DownloadThrottlingResourceHandler();
@@ -90,6 +89,10 @@ class DownloadThrottlingResourceHandler
   // results in two calls to OnReadCompleted for the same data. This make sure
   // we ignore one of them.
   bool ignore_on_read_complete_;
+
+  // Have we received OnRequestClosed()?  If so, we shouldn't act on
+  // CancelDownload()/ContinueDownload().
+  bool request_closed_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadThrottlingResourceHandler);
 };

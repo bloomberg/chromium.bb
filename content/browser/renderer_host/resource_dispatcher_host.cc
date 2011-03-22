@@ -1170,14 +1170,17 @@ void ResourceDispatcherHost::CancelRequest(int child_id,
   }
   net::URLRequest* request = i->second;
   const bool started_before_cancel = request->is_pending();
-  CancelRequestInternal(request, from_renderer);
-  // If the request isn't in flight, then we won't get asyncronous notification,
-  // so we have to signal ourselves to finish this request.
-  if (!started_before_cancel)
+
+  if (CancelRequestInternal(request, from_renderer) &&
+      !started_before_cancel) {
+    // If the request isn't in flight, then we won't get asyncronous
+    // notification, so we have to signal ourselves to finish this
+    // request.
     OnResponseCompleted(request);
+  }
 }
 
-void ResourceDispatcherHost::CancelRequestInternal(net::URLRequest* request,
+bool ResourceDispatcherHost::CancelRequestInternal(net::URLRequest* request,
                                                    bool from_renderer) {
   VLOG(1) << "CancelRequest: " << request->url().spec();
 
@@ -1196,11 +1199,13 @@ void ResourceDispatcherHost::CancelRequestInternal(net::URLRequest* request,
     request->Cancel();
     // Our callers assume |request| is valid after we return.
     DCHECK(IsValidRequest(request));
+    return true;
   }
 
   // Do not remove from the pending requests, as the request will still
   // call AllDataReceived, and may even have more data before it does
   // that.
+  return false;
 }
 
 int ResourceDispatcherHost::IncrementOutstandingRequestsMemoryCost(

@@ -27,12 +27,18 @@ DownloadThrottlingResourceHandler::DownloadThrottlingResourceHandler(
       render_view_id_(render_view_id),
       request_id_(request_id),
       tmp_buffer_length_(0),
-      ignore_on_read_complete_(in_complete) {
+      ignore_on_read_complete_(in_complete),
+      request_closed_(false) {
   // Pause the request.
   host_->PauseRequest(render_process_host_id_, request_id_, true);
-  host_->download_request_limiter()->CanDownloadOnIOThread(
-      render_process_host_id_, render_view_id, this);
 
+  // Add a reference to ourselves to keep this object alive until we
+  // receive a callback from DownloadRequestLimiter. The reference is
+  // released in ContinueDownload() and CancelDownload().
+  AddRef();
+
+  host_->download_request_limiter()->CanDownloadOnIOThread(
+      render_process_host_id_, render_view_id, request_id, this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(&download_util::NotifyDownloadInitiated,
@@ -45,6 +51,7 @@ DownloadThrottlingResourceHandler::~DownloadThrottlingResourceHandler() {
 bool DownloadThrottlingResourceHandler::OnUploadProgress(int request_id,
                                                          uint64 position,
                                                          uint64 size) {
+  DCHECK(!request_closed_);
   if (download_handler_.get())
     return download_handler_->OnUploadProgress(request_id, position, size);
   return true;
@@ -55,6 +62,7 @@ bool DownloadThrottlingResourceHandler::OnRequestRedirected(
     const GURL& url,
     ResourceResponse* response,
     bool* defer) {
+  DCHECK(!request_closed_);
   if (download_handler_.get()) {
     return download_handler_->OnRequestRedirected(
         request_id, url, response, defer);
@@ -66,6 +74,7 @@ bool DownloadThrottlingResourceHandler::OnRequestRedirected(
 bool DownloadThrottlingResourceHandler::OnResponseStarted(
     int request_id,
     ResourceResponse* response) {
+  DCHECK(!request_closed_);
   if (download_handler_.get())
     return download_handler_->OnResponseStarted(request_id, response);
   response_ = response;
@@ -75,6 +84,7 @@ bool DownloadThrottlingResourceHandler::OnResponseStarted(
 bool DownloadThrottlingResourceHandler::OnWillStart(int request_id,
                                                     const GURL& url,
                                                     bool* defer) {
+  DCHECK(!request_closed_);
   if (download_handler_.get())
     return download_handler_->OnWillStart(request_id, url, defer);
   return true;
@@ -84,6 +94,7 @@ bool DownloadThrottlingResourceHandler::OnWillRead(int request_id,
                                                    net::IOBuffer** buf,
                                                    int* buf_size,
                                                    int min_size) {
+  DCHECK(!request_closed_);
   if (download_handler_.get())
     return download_handler_->OnWillRead(request_id, buf, buf_size, min_size);
 
@@ -103,6 +114,7 @@ bool DownloadThrottlingResourceHandler::OnWillRead(int request_id,
 
 bool DownloadThrottlingResourceHandler::OnReadCompleted(int request_id,
                                                         int* bytes_read) {
+  DCHECK(!request_closed_);
   if (ignore_on_read_complete_) {
     // See comments above definition for details on this.
     ignore_on_read_complete_ = false;
@@ -127,6 +139,7 @@ bool DownloadThrottlingResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info) {
+  DCHECK(!request_closed_);
   if (download_handler_.get())
     return download_handler_->OnResponseCompleted(request_id, status,
                                                   security_info);
@@ -142,38 +155,41 @@ bool DownloadThrottlingResourceHandler::OnResponseCompleted(
 }
 
 void DownloadThrottlingResourceHandler::OnRequestClosed() {
+  DCHECK(!request_closed_);
   if (download_handler_.get())
     download_handler_->OnRequestClosed();
+  request_closed_ = true;
 }
 
 void DownloadThrottlingResourceHandler::CancelDownload() {
-  host_->CancelRequest(render_process_host_id_, request_id_, false);
+  if (!request_closed_)
+    host_->CancelRequest(render_process_host_id_, request_id_, false);
+  Release();  // Release the additional reference from constructor.
 }
 
 void DownloadThrottlingResourceHandler::ContinueDownload() {
   DCHECK(!download_handler_.get());
-  download_handler_ =
-      new DownloadResourceHandler(host_,
-                                  render_process_host_id_,
-                                  render_view_id_,
-                                  request_id_,
-                                  url_,
-                                  host_->download_file_manager(),
-                                  request_,
-                                  false,
-                                  DownloadSaveInfo());
-  if (response_.get())
-    download_handler_->OnResponseStarted(request_id_, response_.get());
+  if (!request_closed_) {
+    download_handler_ =
+        new DownloadResourceHandler(host_,
+                                    render_process_host_id_,
+                                    render_view_id_,
+                                    request_id_,
+                                    url_,
+                                    host_->download_file_manager(),
+                                    request_,
+                                    false,
+                                    DownloadSaveInfo());
+    if (response_.get())
+      download_handler_->OnResponseStarted(request_id_, response_.get());
 
-  if (tmp_buffer_length_)
-    CopyTmpBufferToDownloadHandler();
+    if (tmp_buffer_length_)
+      CopyTmpBufferToDownloadHandler();
 
-  // And let the request continue.
-  host_->PauseRequest(render_process_host_id_, request_id_, false);
-}
-
-int DownloadThrottlingResourceHandler::GetRequestId() {
-  return request_id_;
+    // And let the request continue.
+    host_->PauseRequest(render_process_host_id_, request_id_, false);
+  }
+  Release();  // Release the addtional reference from constructor.
 }
 
 void DownloadThrottlingResourceHandler::CopyTmpBufferToDownloadHandler() {

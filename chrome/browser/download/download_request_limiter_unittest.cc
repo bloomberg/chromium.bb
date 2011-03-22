@@ -40,13 +40,9 @@ class DownloadRequestLimiterTest
     cancel_count_++;
   }
 
-  virtual int GetRequestId() {
-    return -1;
-  }
-
   void CanDownload() {
     download_request_limiter_->CanDownloadImpl(
-        controller().tab_contents(), this);
+        controller().tab_contents(), -1, this);
     message_loop_.RunAllPending();
   }
 

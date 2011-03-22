@@ -59,7 +59,6 @@ class DownloadRequestLimiter
    public:
     virtual void ContinueDownload() = 0;
     virtual void CancelDownload() = 0;
-    virtual int GetRequestId() = 0;
 
    protected:
     virtual ~Callback() {}
@@ -178,6 +177,7 @@ class DownloadRequestLimiter
   // the caller to ensure the callback is valid until the request is complete.
   void CanDownloadOnIOThread(int render_process_host_id,
                              int render_view_id,
+                             int request_id,
                              Callback* callback);
 
   // Invoked when the user presses the mouse, enter key or space bar. This may
@@ -218,11 +218,13 @@ class DownloadRequestLimiter
   // tab and invokes CanDownloadImpl.
   void CanDownload(int render_process_host_id,
                    int render_view_id,
+                   int request_id,
                    Callback* callback);
 
   // Does the work of updating the download status on the UI thread and
   // potentially prompting the user.
   void CanDownloadImpl(TabContents* originating_tab,
+                       int request_id,
                        Callback* callback);
 
   // Invoked on the UI thread. Schedules a call to NotifyCallback on the io

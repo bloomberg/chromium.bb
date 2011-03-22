@@ -317,8 +317,10 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   // Helper function for regular and download requests.
   void BeginRequestInternal(net::URLRequest* request);
 
-  // Helper function that cancels |request|.
-  void CancelRequestInternal(net::URLRequest* request, bool from_renderer);
+  // Helper function that cancels |request|.  Returns whether the
+  // request was actually cancelled.  If a renderer cancels a request
+  // for a download, we ignore the cancellation.
+  bool CancelRequestInternal(net::URLRequest* request, bool from_renderer);
 
   // Helper function that inserts |request| into the resource queue.
   void InsertIntoResourceQueue(
