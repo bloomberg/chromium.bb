@@ -103,7 +103,7 @@ class SafeBrowsingDatabase {
   // Returns false if |url| is not on the client-side phishing detection
   // whitelist.  Otherwise, this function returns true.  Note: the whitelist
   // only contains full-length hashes so we don't return any prefix hit.
-  // This function could ONLY be accessed from creation thread.
+  // This function should only be called from the IO thread.
   virtual bool ContainsCsdWhitelistedUrl(const GURL& url) = 0;
 
   // A database transaction should look like:

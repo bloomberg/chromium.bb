@@ -16,6 +16,7 @@
 #include "chrome/browser/safe_browsing/bloom_filter.h"
 #include "chrome/browser/safe_browsing/prefix_set.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
+#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -651,8 +652,8 @@ bool SafeBrowsingDatabaseNew::ContainsDownloadHashPrefix(
 
 bool SafeBrowsingDatabaseNew::ContainsCsdWhitelistedUrl(const GURL& url) {
   // This method is theoretically thread-safe but we expect all calls to
-  // originate from the creation thread.
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  // originate from the IO thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::AutoLock l(lookup_lock_);
   if (csd_whitelist_all_urls_)
     return true;
