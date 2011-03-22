@@ -96,7 +96,6 @@ ToolbarView::ToolbarView(Browser* browser)
       profile_(NULL),
       browser_(browser),
       profiles_menu_contents_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       destroyed_flag_(NULL) {
   SetID(VIEW_ID_TOOLBAR);
 

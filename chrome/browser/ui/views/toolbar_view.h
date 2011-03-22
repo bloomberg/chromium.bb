@@ -221,9 +221,6 @@ class ToolbarView : public AccessiblePaneView,
   // Vector of listeners to receive callbacks when the menu opens.
   std::vector<views::MenuListener*> menu_listeners_;
 
-  // Used to post tasks to switch to the next/previous menu.
-  ScopedRunnableMethodFactory<ToolbarView> method_factory_;
-
   NotificationRegistrar registrar_;
 
   // If non-null the destructor sets this to true. This is set to a non-null
