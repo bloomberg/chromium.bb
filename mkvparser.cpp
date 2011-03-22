@@ -7853,6 +7853,9 @@ Cluster::GetEntry(
 
         while (index >= m_entries_count)
         {
+            const long old_entries_count = m_entries_count;
+            old_entries_count;
+
             long long pos;
             long len;
 
@@ -7861,11 +7864,11 @@ Cluster::GetEntry(
             if (status < 0)  //TODO: can this happen?
                 return NULL;
 
-            if (status > 1)  //nothing remains to be parsed
+            if (status > 0)  //nothing remains to be parsed
                 return NULL;
 
             assert(m_entries);
-            assert(index < m_entries_count);
+            assert(m_entries_count > old_entries_count);
         }
 
         const BlockEntry* const pEntry = m_entries[index];
@@ -7896,7 +7899,7 @@ Cluster::GetEntry(
             if (status < 0)  //TODO: can this happen?
                 return NULL;
 
-            if (status > 1)  //nothing remains to be parsed
+            if (status > 0)  //nothing remains to be parsed
                 return NULL;
 
             assert(m_entries);
