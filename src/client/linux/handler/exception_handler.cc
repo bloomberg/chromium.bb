@@ -329,8 +329,13 @@ bool ExceptionHandler::HandleSignal(int sig, siginfo_t* info, void* uc) {
   if (filter_ && !filter_(callback_context_))
     return false;
 
-  // Allow ourselves to be dumped.
-  sys_prctl(PR_SET_DUMPABLE, 1);
+  // Allow ourselves to be dumped if the signal is trusted.
+  bool signal_trusted = info->si_code > 0;
+  bool signal_pid_trusted = info->si_code == SI_USER ||
+      info->si_code == SI_TKILL;
+  if (signal_trusted || (signal_pid_trusted && info->si_pid == getpid())) {
+    sys_prctl(PR_SET_DUMPABLE, 1);
+  }
   CrashContext context;
   memcpy(&context.siginfo, info, sizeof(siginfo_t));
   memcpy(&context.context, uc, sizeof(struct ucontext));
