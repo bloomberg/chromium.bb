@@ -1737,6 +1737,7 @@
         'common/net/gaia/gaia_auth_fetcher_unittest.cc',
         'common/net/gaia/gaia_auth_fetcher_unittest.h',
         'common/net/gaia/gaia_authenticator_unittest.cc',
+        'common/net/gaia/gaia_oauth_client_unittest.cc',
         'common/net/gaia/google_service_auth_error_unittest.cc',
         'common/net/url_fetcher_unittest.cc',
         'common/render_messages_unittest.cc',
