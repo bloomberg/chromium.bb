@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "jingle/notifier/communicator/gaia_token_pre_xmpp_auth.h"
+#include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
 #include "remoting/jingle_glue/http_port_allocator.h"
 #include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/jingle_thread.h"

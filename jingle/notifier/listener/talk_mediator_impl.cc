@@ -1,24 +1,20 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "jingle/notifier/listener/talk_mediator_impl.h"
 
 #include "base/logging.h"
-#include "jingle/notifier/listener/mediator_thread_impl.h"
-#include "talk/base/cryptstring.h"
-#include "talk/xmpp/xmppclientsettings.h"
-#include "talk/xmpp/xmppengine.h"
+#include "jingle/notifier/base/notifier_options_util.h"
 
 namespace notifier {
 
 TalkMediatorImpl::TalkMediatorImpl(
-    MediatorThread* mediator_thread, bool invalidate_xmpp_auth_token,
-    bool allow_insecure_connection)
+    MediatorThread* mediator_thread,
+    const NotifierOptions& notifier_options)
     : delegate_(NULL),
       mediator_thread_(mediator_thread),
-      invalidate_xmpp_auth_token_(invalidate_xmpp_auth_token),
-      allow_insecure_connection_(allow_insecure_connection) {
+      notifier_options_(notifier_options) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   mediator_thread_->Start();
   state_.started = 1;
@@ -73,29 +69,13 @@ void TalkMediatorImpl::SetDelegate(TalkMediator::Delegate* delegate) {
   delegate_ = delegate;
 }
 
-bool TalkMediatorImpl::SetAuthToken(const std::string& email,
+void TalkMediatorImpl::SetAuthToken(const std::string& email,
                                     const std::string& token,
                                     const std::string& token_service) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
 
-  // Verify that we can create a JID from the email provided.
-  buzz::Jid jid = buzz::Jid(email);
-  if (jid.node().empty() || !jid.IsValid()) {
-    return false;
-  }
-
-  // Construct the XmppSettings object for login to buzz.
-  xmpp_settings_.set_user(jid.node());
-  xmpp_settings_.set_resource("chrome-sync");
-  xmpp_settings_.set_host(jid.domain());
-  xmpp_settings_.set_use_tls(true);
-  xmpp_settings_.set_auth_cookie(invalidate_xmpp_auth_token_ ?
-                                 token + "bogus" : token);
-  xmpp_settings_.set_token_service(token_service);
-  if (allow_insecure_connection_) {
-    xmpp_settings_.set_allow_plain(true);
-    xmpp_settings_.set_use_tls(false);
-  }
+  xmpp_settings_ =
+      MakeXmppClientSettings(notifier_options_, email, token, token_service);
 
   // The auth token got updated and we are already in the logging_in or
   // logged_in state. Update the token.
@@ -104,7 +84,6 @@ bool TalkMediatorImpl::SetAuthToken(const std::string& email,
   }
 
   state_.initialized = 1;
-  return true;
 }
 
 void TalkMediatorImpl::AddSubscription(const Subscription& subscription) {

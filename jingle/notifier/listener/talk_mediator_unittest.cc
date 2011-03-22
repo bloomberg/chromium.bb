@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,11 +40,8 @@ class TalkMediatorImplTest : public testing::Test {
 
   TalkMediatorImpl* NewMockedTalkMediator(
       MockMediatorThread* mock_mediator_thread) {
-    const bool kInvalidateXmppAuthToken = false;
-    const bool kAllowInsecureConnection = false;
     return new TalkMediatorImpl(mock_mediator_thread,
-                                kInvalidateXmppAuthToken,
-                                kAllowInsecureConnection);
+                                NotifierOptions());
   }
 
   int last_message_;
@@ -56,40 +53,20 @@ class TalkMediatorImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TalkMediatorImplTest);
 };
 
-TEST_F(TalkMediatorImplTest, SetAuthTokenWithBadInput) {
+TEST_F(TalkMediatorImplTest, SetAuthToken) {
   scoped_ptr<TalkMediatorImpl> talk1(
       NewMockedTalkMediator(new MockMediatorThread()));
-  EXPECT_FALSE(talk1->SetAuthToken("@missinguser.com", "", "fake_service"));
-  EXPECT_FALSE(talk1->state_.initialized);
-
-  scoped_ptr<TalkMediatorImpl> talk2(
-      NewMockedTalkMediator(new MockMediatorThread()));
-  EXPECT_FALSE(talk2->SetAuthToken("", "1234567890", "fake_service"));
-  EXPECT_FALSE(talk2->state_.initialized);
-
-  scoped_ptr<TalkMediatorImpl> talk3(
-      NewMockedTalkMediator(new MockMediatorThread()));
-  EXPECT_FALSE(talk3->SetAuthToken("missingdomain", "abcde",  "fake_service"));
-  EXPECT_FALSE(talk3->state_.initialized);
-}
-
-TEST_F(TalkMediatorImplTest, SetAuthTokenWithGoodInput) {
-  scoped_ptr<TalkMediatorImpl> talk1(
-      NewMockedTalkMediator(new MockMediatorThread()));
-  EXPECT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
-                                  "fake_service"));
+  talk1->SetAuthToken("chromium@gmail.com", "token", "fake_service");
   EXPECT_TRUE(talk1->state_.initialized);
 
   scoped_ptr<TalkMediatorImpl> talk2(
       NewMockedTalkMediator(new MockMediatorThread()));
-  EXPECT_TRUE(talk2->SetAuthToken("chromium@mail.google.com", "token",
-                                  "fake_service"));
+  talk2->SetAuthToken("chromium@mail.google.com", "token", "fake_service");
   EXPECT_TRUE(talk2->state_.initialized);
 
   scoped_ptr<TalkMediatorImpl> talk3(
       NewMockedTalkMediator(new MockMediatorThread()));
-  EXPECT_TRUE(talk3->SetAuthToken("chromium@chromium.org", "token",
-                                  "fake_service"));
+  talk3->SetAuthToken("chromium@mail.google.com", "token", "fake_service");
   EXPECT_TRUE(talk3->state_.initialized);
 }
 
@@ -102,16 +79,14 @@ TEST_F(TalkMediatorImplTest, LoginWiring) {
   EXPECT_FALSE(talk1->Login());
   EXPECT_EQ(0, mock->login_calls);
 
-  EXPECT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
-                                  "fake_service"));
+  talk1->SetAuthToken("chromium@gmail.com", "token", "fake_service");
   EXPECT_EQ(0, mock->update_settings_calls);
 
   EXPECT_TRUE(talk1->Login());
   EXPECT_EQ(1, mock->login_calls);
 
   // We call SetAuthToken again to update the settings after an update.
-  EXPECT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
-                                  "fake_service"));
+  talk1->SetAuthToken("chromium@gmail.com", "token", "fake_service");
   EXPECT_EQ(1, mock->update_settings_calls);
 
   // Successive calls to login will fail.  One needs to create a new talk
@@ -137,8 +112,7 @@ TEST_F(TalkMediatorImplTest, SendNotification) {
   EXPECT_FALSE(talk1->SendNotification(data));
   EXPECT_EQ(0, mock->send_calls);
 
-  EXPECT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
-                                  "fake_service"));
+  talk1->SetAuthToken("chromium@gmail.com", "token", "fake_service");
   EXPECT_TRUE(talk1->Login());
   talk1->OnConnectionStateChange(true);
   EXPECT_EQ(1, mock->login_calls);
@@ -170,8 +144,7 @@ TEST_F(TalkMediatorImplTest, MediatorThreadCallbacks) {
 
   talk1->SetDelegate(&mock_delegate);
 
-  EXPECT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
-                                  "fake_service"));
+  talk1->SetAuthToken("chromium@gmail.com", "token", "fake_service");
   EXPECT_TRUE(talk1->Login());
   EXPECT_EQ(1, mock->login_calls);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -23,6 +23,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "jingle/notifier/base/server_information.h"
 #include "jingle/notifier/communicator/connection_options.h"
 #include "jingle/notifier/communicator/connection_settings.h"
 #include "net/base/net_errors.h"
@@ -41,8 +42,7 @@ XmppConnectionGenerator::XmppConnectionGenerator(
     net::HostResolver* host_resolver,
     const ConnectionOptions* options,
     bool try_ssltcp_first,
-    const ServerInformation* server_list,
-    int server_count)
+    const ServerList& servers)
     : delegate_(delegate),
       host_resolver_(host_resolver),
       resolve_callback_(
@@ -51,9 +51,8 @@ XmppConnectionGenerator::XmppConnectionGenerator(
                           &XmppConnectionGenerator::OnServerDNSResolved))),
       settings_list_(new ConnectionSettingsList()),
       settings_index_(0),
-      server_list_(new ServerInformation[server_count]),
-      server_count_(server_count),
-      server_index_(-1),
+      servers_(servers),
+      current_server_(servers_.end()),
       try_ssltcp_first_(try_ssltcp_first),
       successfully_resolved_dns_(false),
       first_dns_error_(0),
@@ -61,10 +60,7 @@ XmppConnectionGenerator::XmppConnectionGenerator(
   DCHECK(delegate_);
   DCHECK(host_resolver);
   DCHECK(options_);
-  DCHECK_GT(server_count_, 0);
-  for (int i = 0; i < server_count_; ++i) {
-    server_list_[i] = server_list[i];
-  }
+  DCHECK_GT(servers_.size(), 0u);
 }
 
 XmppConnectionGenerator::~XmppConnectionGenerator() {
@@ -109,8 +105,12 @@ void XmppConnectionGenerator::UseNextConnection() {
     }
 
     // Iterate to the next possible server.
-    server_index_++;
-    if (server_index_ >= server_count_) {
+    if (current_server_ == servers_.end()) {
+      current_server_ = servers_.begin();
+    } else {
+      ++current_server_;
+    }
+    if (current_server_ == servers_.end()) {
       // All out of possibilities.
       VLOG(1) << "(" << buzz::XmppEngine::ERROR_SOCKET
               << ", " << first_dns_error_ << ")";
@@ -120,8 +120,7 @@ void XmppConnectionGenerator::UseNextConnection() {
     }
 
     // Resolve the server.
-    const net::HostPortPair& server =
-        server_list_[server_index_].server;
+    const net::HostPortPair& server = current_server_->server;
     net::HostResolver::RequestInfo request_info(server);
     int status =
         host_resolver_.Resolve(
@@ -146,7 +145,7 @@ void XmppConnectionGenerator::HandleServerDNSResolved(int status) {
   DCHECK_NE(status, net::ERR_IO_PENDING);
   VLOG(1) << "XmppConnectionGenerator::HandleServerDNSResolved";
   // Print logging info.
-  VLOG(1) << "  server: " << server_list_[server_index_].server.ToString()
+  VLOG(1) << "  server: " << current_server_->server.ToString()
           << ", error: " << status;
   if (status != net::OK) {
     if (first_dns_error_ == 0)
@@ -175,10 +174,10 @@ void XmppConnectionGenerator::HandleServerDNSResolved(int status) {
   settings_index_ = -1;
   settings_list_->ClearPermutations();
   settings_list_->AddPermutations(
-      server_list_[server_index_].server.host(),
+      current_server_->server.host(),
       ip_list,
-      server_list_[server_index_].server.port(),
-      server_list_[server_index_].special_port_magic,
+      current_server_->server.port(),
+      current_server_->special_port_magic,
       try_ssltcp_first_);
 }
 

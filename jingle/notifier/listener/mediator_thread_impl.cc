@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,10 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "jingle/notifier/base/const_communicator.h"
+#include "jingle/notifier/base/notifier_options_util.h"
 #include "jingle/notifier/base/task_pump.h"
 #include "jingle/notifier/communicator/connection_options.h"
-#include "jingle/notifier/communicator/const_communicator.h"
 #include "jingle/notifier/communicator/xmpp_connection_generator.h"
 #include "jingle/notifier/listener/push_notifications_send_update_task.h"
 #include "net/base/cert_verifier.h"
@@ -138,37 +139,12 @@ void MediatorThreadImpl::DoLogin(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                     NULL, NULL));
   cert_verifier_.reset(new net::CertVerifier);
-
-  notifier::ServerInformation server_list[2];
-  int server_list_count = 0;
-
-  // Override the default servers with a test notification server if one was
-  // provided.
-  if (!notifier_options_.xmpp_host_port.host().empty()) {
-    server_list[0].server = notifier_options_.xmpp_host_port;
-    server_list[0].special_port_magic = false;
-    server_list_count = 1;
-  } else {
-    // The default servers know how to serve over port 443 (that's the magic).
-    server_list[0].server = net::HostPortPair("talk.google.com",
-                                              notifier::kDefaultXmppPort);
-    server_list[0].special_port_magic = true;
-    server_list[1].server = net::HostPortPair("talkx.l.google.com",
-                                              notifier::kDefaultXmppPort);
-    server_list[1].special_port_magic = true;
-    server_list_count = 2;
-  }
-
-  // Autodetect proxy is on by default.
-  notifier::ConnectionOptions options;
-
   login_.reset(new notifier::Login(this,
                                    settings,
-                                   options,
+                                   notifier::ConnectionOptions(),
                                    host_resolver_.get(),
                                    cert_verifier_.get(),
-                                   server_list,
-                                   server_list_count,
+                                   GetServerList(notifier_options_),
                                    notifier_options_.try_ssltcp_first,
                                    notifier_options_.auth_mechanism));
   login_->StartConnection();

@@ -4,8 +4,7 @@
 
 #include "jingle/notifier/base/notifier_options.h"
 
-// TODO(akalin): Fix the cross-directory dependency.
-#include "jingle/notifier/communicator/gaia_token_pre_xmpp_auth.h"
+#include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
 
 namespace notifier {
 

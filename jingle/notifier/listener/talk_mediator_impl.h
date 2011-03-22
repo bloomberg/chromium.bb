@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/mediator_thread.h"
 #include "jingle/notifier/listener/talk_mediator.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -29,15 +30,16 @@ class TalkMediatorImpl
   // This means that you can store a pointer to mediator_thread separately
   // and use it until this object is destroyed.
   TalkMediatorImpl(
-      MediatorThread* mediator_thread, bool invalidate_xmpp_auth_token,
-      bool allow_insecure_connection);
+      MediatorThread* mediator_thread,
+      const NotifierOptions& notifier_options);
   virtual ~TalkMediatorImpl();
 
   // TalkMediator implementation.
 
   virtual void SetDelegate(TalkMediator::Delegate* delegate);
 
-  virtual bool SetAuthToken(const std::string& email,
+  // |email| must be a valid email address (e.g., foo@bar.com).
+  virtual void SetAuthToken(const std::string& email,
                             const std::string& token,
                             const std::string& token_service);
   virtual bool Login();
@@ -86,13 +88,11 @@ class TalkMediatorImpl
   // The worker thread through which talk events are posted and received.
   scoped_ptr<MediatorThread> mediator_thread_;
 
-  const bool invalidate_xmpp_auth_token_;
-  const bool allow_insecure_connection_;
+  const NotifierOptions notifier_options_;
 
   SubscriptionList subscriptions_;
 
-  FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, SetAuthTokenWithBadInput);
-  FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, SetAuthTokenWithGoodInput);
+  FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, SetAuthToken);
   FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, SendNotification);
   FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, MediatorThreadCallbacks);
 

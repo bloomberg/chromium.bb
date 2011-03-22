@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/weak_ptr.h"
+#include "jingle/notifier/base/server_information.h"
 #include "jingle/notifier/communicator/single_login_attempt.h"
 #include "net/base/network_change_notifier.h"
 #include "talk/xmpp/xmppengine.h"
@@ -35,7 +36,6 @@ namespace notifier {
 
 class ConnectionOptions;
 class LoginSettings;
-struct ServerInformation;
 
 // Workaround for MSVS 2005 bug that fails to handle inheritance from a nested
 // class properly if it comes directly on a base class list.
@@ -62,8 +62,7 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
         const ConnectionOptions& options,
         net::HostResolver* host_resolver,
         net::CertVerifier* cert_verifier,
-        ServerInformation* server_list,
-        int server_count,
+        const ServerList& servers,
         bool try_ssltcp_first,
         const std::string& auth_mechanism);
   virtual ~Login();

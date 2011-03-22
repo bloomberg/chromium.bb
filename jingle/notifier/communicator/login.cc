@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,8 +35,7 @@ Login::Login(Delegate* delegate,
              const ConnectionOptions& options,
              net::HostResolver* host_resolver,
              net::CertVerifier* cert_verifier,
-             ServerInformation* server_list,
-             int server_count,
+             const ServerList& servers,
              bool try_ssltcp_first,
              const std::string& auth_mechanism)
     : delegate_(delegate),
@@ -44,8 +43,7 @@ Login::Login(Delegate* delegate,
                                         options,
                                         host_resolver,
                                         cert_verifier,
-                                        server_list,
-                                        server_count,
+                                        servers,
                                         try_ssltcp_first,
                                         auth_mechanism)),
       redirect_port_(0) {

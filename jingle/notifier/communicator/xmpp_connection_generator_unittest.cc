@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,9 +27,9 @@ class MockXmppConnectionGeneratorDelegate
 };
 
 const ServerInformation kXmppServers[] = {
-  { net::HostPortPair("www.foo.com", 5222), true },
-  { net::HostPortPair("www.bar.com", 8080), false },
-  { net::HostPortPair("www.baz.com", 80), true },
+  ServerInformation(net::HostPortPair("www.foo.com", 5222), true),
+  ServerInformation(net::HostPortPair("www.bar.com", 8080), false),
+  ServerInformation(net::HostPortPair("www.baz.com", 80), true),
 };
 
 class XmppConnectionGeneratorTest : public testing::Test {
@@ -40,8 +40,8 @@ class XmppConnectionGeneratorTest : public testing::Test {
           &mock_host_resolver_,
           &connection_options_,
           false /* try_ssltcp_first */,
-          kXmppServers,
-          arraysize(kXmppServers)) {}
+          ServerList(kXmppServers,
+                     kXmppServers + arraysize(kXmppServers))) {}
 
   virtual ~XmppConnectionGeneratorTest() {}
 

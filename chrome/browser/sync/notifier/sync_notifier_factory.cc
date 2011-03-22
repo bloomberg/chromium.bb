@@ -13,8 +13,8 @@
 #include "chrome/browser/sync/notifier/p2p_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/common/chrome_switches.h"
+#include "jingle/notifier/base/const_communicator.h"
 #include "jingle/notifier/base/notifier_options.h"
-#include "jingle/notifier/communicator/const_communicator.h"
 #include "net/base/host_port_pair.h"
 
 namespace sync_notifier {

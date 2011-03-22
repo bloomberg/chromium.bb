@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -42,7 +42,7 @@ class TalkMediator {
   virtual void SetDelegate(Delegate* delegate) = 0;
 
   // The following methods are for authorizaiton of the xmpp client.
-  virtual bool SetAuthToken(const std::string& email,
+  virtual void SetAuthToken(const std::string& email,
                             const std::string& token,
                             const std::string& token_service) = 0;
   virtual bool Login() = 0;

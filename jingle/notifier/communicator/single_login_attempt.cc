@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,10 +11,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "jingle/notifier/base/const_communicator.h"
+#include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
 #include "jingle/notifier/communicator/connection_options.h"
 #include "jingle/notifier/communicator/connection_settings.h"
-#include "jingle/notifier/communicator/const_communicator.h"
-#include "jingle/notifier/communicator/gaia_token_pre_xmpp_auth.h"
 #include "jingle/notifier/communicator/login_settings.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "talk/xmllite/xmlelement.h"
@@ -37,8 +37,7 @@ SingleLoginAttempt::SingleLoginAttempt(LoginSettings* login_settings,
           login_settings_->host_resolver(),
           &login_settings_->connection_options(),
           login_settings_->try_ssltcp_first(),
-          login_settings_->server_list(),
-          login_settings_->server_count()) {
+          login_settings_->servers()) {
   connection_generator_.StartGenerating();
 }
 

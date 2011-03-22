@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,12 @@
 
 #include <vector>
 
-#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
-#include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
 #include "net/base/net_log.h"
-#include "talk/base/scoped_ptr.h"
+#include "jingle/notifier/base/server_information.h"
 
 namespace talk_base {
 struct ProxyInfo;
@@ -25,11 +24,6 @@ namespace notifier {
 class ConnectionOptions;
 class ConnectionSettings;
 class ConnectionSettingsList;
-
-struct ServerInformation {
-  net::HostPortPair server;
-  bool special_port_magic;
-};
 
 // Resolves dns names and iterates through the various ip address and transport
 // combinations.
@@ -54,8 +48,7 @@ class XmppConnectionGenerator {
       net::HostResolver* host_resolver,
       const ConnectionOptions* options,
       bool try_ssltcp_first,
-      const ServerInformation* server_list,
-      int server_count);
+      const ServerList& servers);
   ~XmppConnectionGenerator();
 
   // Only call this once. Create a new XmppConnectionGenerator and delete the
@@ -73,11 +66,10 @@ class XmppConnectionGenerator {
   scoped_ptr<net::CompletionCallback> resolve_callback_;
   net::AddressList address_list_;
   net::BoundNetLog bound_net_log_;
-  talk_base::scoped_ptr<ConnectionSettingsList> settings_list_;
+  scoped_ptr<ConnectionSettingsList> settings_list_;
   int settings_index_;  // The setting that is currently being used.
-  talk_base::scoped_array<ServerInformation> server_list_;
-  int server_count_;
-  int server_index_;  // The server that is current being used.
+  const ServerList servers_;
+  ServerList::const_iterator current_server_;
   bool try_ssltcp_first_;  // Used when sync tests are run on chromium builders.
   bool successfully_resolved_dns_;
   int first_dns_error_;

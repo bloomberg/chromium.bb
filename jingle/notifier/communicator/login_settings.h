@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 #define JINGLE_NOTIFIER_COMMUNICATOR_LOGIN_SETTINGS_H_
 #include <string>
 
+#include "jingle/notifier/base/server_information.h"
 #include "jingle/notifier/communicator/xmpp_connection_generator.h"
-#include "talk/base/scoped_ptr.h"
 
 namespace buzz {
 class XmppClientSettings;
@@ -25,7 +25,6 @@ class SocketAddress;
 
 namespace notifier {
 class ConnectionOptions;
-struct ServerInformation;
 
 class LoginSettings {
  public:
@@ -33,8 +32,7 @@ class LoginSettings {
                 const ConnectionOptions& options,
                 net::HostResolver* host_resolver,
                 net::CertVerifier* cert_verifier,
-                ServerInformation* server_list,
-                int server_count,
+                const ServerList& servers,
                 bool try_ssltcp_first,
                 const std::string& auth_mechanism);
 
@@ -52,12 +50,9 @@ class LoginSettings {
     return cert_verifier_;
   }
 
-  const ServerInformation* server_list() const {
-    return server_override_.get() ? server_override_.get() : server_list_.get();
-  }
-
-  int server_count() const {
-    return server_override_.get() ? 1 : server_count_;
+  ServerList servers() const {
+    return
+        server_override_.get() ? ServerList(1, *server_override_) : servers_;
   }
 
   const buzz::XmppClientSettings& user_settings() const {
@@ -84,8 +79,7 @@ class LoginSettings {
 
   net::HostResolver* const host_resolver_;
   net::CertVerifier* const cert_verifier_;
-  talk_base::scoped_array<ServerInformation> server_list_;
-  int server_count_;
+  const ServerList servers_;
   // Used to handle redirects
   scoped_ptr<ServerInformation> server_override_;
 

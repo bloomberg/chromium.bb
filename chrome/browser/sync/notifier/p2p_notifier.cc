@@ -22,8 +22,7 @@ P2PNotifier::P2PNotifier(
     : talk_mediator_(
         new notifier::TalkMediatorImpl(
             new notifier::MediatorThreadImpl(notifier_options),
-            notifier_options.invalidate_xmpp_login,
-            notifier_options.allow_insecure_connection)),
+            notifier_options)),
       logged_in_(false),
       notifications_enabled_(false) {
   talk_mediator_->SetDelegate(this);
@@ -45,10 +44,7 @@ void P2PNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
   // If already logged in, the new credentials will take effect on the
   // next reconnection.
-  if (!talk_mediator_->SetAuthToken(email, token, SYNC_SERVICE_NAME)) {
-    LOG(DFATAL) << "Could not set auth token for " << email;
-    return;
-  }
+  talk_mediator_->SetAuthToken(email, token, SYNC_SERVICE_NAME);
   if (!logged_in_) {
     if (!talk_mediator_->Login()) {
       LOG(DFATAL) << "Could not login for " << email;

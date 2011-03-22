@@ -7,9 +7,8 @@
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/sessions/session_state.h"
+#include "jingle/notifier/base/notifier_options_util.h"
 #include "jingle/notifier/listener/notification_constants.h"
-#include "talk/xmpp/jid.h"
-#include "talk/xmpp/xmppclientsettings.h"
 
 namespace sync_notifier {
 
@@ -42,40 +41,11 @@ void InvalidationNotifier::SetState(const std::string& state) {
   server_notifier_thread_.SetState(state);
 }
 
-namespace {
-
-// TODO(akalin): Figure out a clean way to consolidate all
-// XmppClientSettings code, e.g., the code in
-// TalkMediatorImpl::SetAuthToken().
-buzz::XmppClientSettings MakeXmppClientSettings(
-    const std::string& email,
-    const std::string& token,
-    const notifier::NotifierOptions& notifier_options) {
-  buzz::Jid jid = buzz::Jid(email);
-  DCHECK(!jid.node().empty() && jid.IsValid());
-
-  buzz::XmppClientSettings xmpp_client_settings;
-  xmpp_client_settings.set_user(jid.node());
-  xmpp_client_settings.set_resource("chrome-sync");
-  xmpp_client_settings.set_host(jid.domain());
-  xmpp_client_settings.set_use_tls(true);
-  xmpp_client_settings.set_auth_cookie(
-      notifier_options.invalidate_xmpp_login ?
-      token + "bogus" : token);
-  xmpp_client_settings.set_token_service(SYNC_SERVICE_NAME);
-  if (notifier_options.allow_insecure_connection) {
-    xmpp_client_settings.set_allow_plain(true);
-    xmpp_client_settings.set_use_tls(false);
-  }
-  return xmpp_client_settings;
-}
-
-}  // namespace
-
 void InvalidationNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
   buzz::XmppClientSettings xmpp_client_settings =
-      MakeXmppClientSettings(email, token, notifier_options_);
+      notifier::MakeXmppClientSettings(notifier_options_,
+                                       email, token, SYNC_SERVICE_NAME);
   if (logged_in_) {
     server_notifier_thread_.UpdateXmppSettings(xmpp_client_settings);
   } else {
