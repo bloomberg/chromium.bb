@@ -77,6 +77,8 @@ const int kBorderThickness = 1;
 const int kFirstRunBubbleLeftMargin = 8;
 // Extra vertical spacing for first run bubble.
 const int kFirstRunBubbleTopMargin = 5;
+// Spacing needed to align the bubble with the left side of the omnibox.
+const int kFirstRunBubbleLeftSpacing = 4;
 
 // The padding around the top, bottom, and sides of the location bar hbox.
 // We don't want to edit control's text to be right against the edge,
@@ -1018,19 +1020,10 @@ void LocationBarViewGtk::ShowFirstRunBubbleInternal(
   if (!location_entry_.get() || !widget()->window)
     return;
 
-  GtkWidget* anchor = location_entry_->GetNativeView();
+  gfx::Rect bounds = gtk_util::WidgetBounds(location_icon_image_);
+  bounds.set_x(bounds.x() + kFirstRunBubbleLeftSpacing);
 
-  // The bubble needs to be just below the Omnibox and slightly to the right
-  // of star button, so shift x and y co-ordinates.
-  int y_offset = anchor->allocation.height + kFirstRunBubbleTopMargin;
-  int x_offset = 0;
-  if (!base::i18n::IsRTL())
-    x_offset = kFirstRunBubbleLeftMargin;
-  else
-    x_offset = anchor->allocation.width - kFirstRunBubbleLeftMargin;
-  gfx::Rect rect(x_offset, y_offset, 0, 0);
-
-  FirstRunBubble::Show(profile_, anchor, rect, bubble_type);
+  FirstRunBubble::Show(profile_, location_icon_image_, bounds, bubble_type);
 }
 
 gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
