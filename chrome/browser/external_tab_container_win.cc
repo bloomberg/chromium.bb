@@ -701,8 +701,12 @@ void ExternalTabContainer::BeforeUnloadFired(TabContents* tab,
     return;
   }
 
+  if (!unload_reply_message_) {
+    NOTREACHED() << "**** NULL unload reply message pointer.";
+    return;
+  }
+
   if (!proceed) {
-    DCHECK(unload_reply_message_);
     AutomationMsg_RunUnloadHandlers::WriteReplyParams(unload_reply_message_,
                                                       false);
     automation_->Send(unload_reply_message_);
@@ -835,12 +839,15 @@ void ExternalTabContainer::RunUnloadHandlers(IPC::Message* reply_message) {
      automation_->Send(reply_message);
      return;
   }
-  if (tab_contents_.get() &&
-      Browser::RunUnloadEventsHelper(tab_contents_->tab_contents())) {
-    unload_reply_message_ = reply_message;
-  } else {
+
+  unload_reply_message_ = reply_message;
+  bool wait_for_unload_handlers =
+      tab_contents_.get() &&
+      Browser::RunUnloadEventsHelper(tab_contents_->tab_contents());
+  if (!wait_for_unload_handlers) {
     AutomationMsg_RunUnloadHandlers::WriteReplyParams(reply_message, true);
     automation_->Send(reply_message);
+    unload_reply_message_ = NULL;
   }
 }
 
