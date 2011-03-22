@@ -1058,9 +1058,6 @@ class TabContents : public PageNavigator,
   // Handles print job for this contents.
   scoped_ptr<printing::PrintViewManager> printing_;
 
-  // Handles print preview for this contents.
-  scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
-
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;
 

@@ -43,7 +43,6 @@
 #include "chrome/browser/pdf_unsupported_feature.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_observer.h"
-#include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -384,7 +383,6 @@ TabContents::~TabContents() {
 
 void TabContents::AddObservers() {
   printing_.reset(new printing::PrintViewManager(this));
-  print_preview_.reset(new printing::PrintPreviewMessageHandler(this));
   favicon_helper_.reset(new FaviconHelper(this));
   autofill_manager_.reset(new AutofillManager(this));
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));

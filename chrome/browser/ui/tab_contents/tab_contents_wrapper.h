@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_TAB_CONTENTS_TAB_CONTENTS_WRAPPER_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/scoped_ptr.h"
@@ -49,7 +51,7 @@ class TabContentsWrapper : public NotificationObserver,
   // Initial title assigned to NavigationEntries from Navigate.
   static string16 GetDefaultTitle();
 
-   // Returns a human-readable description the tab's loading state.
+  // Returns a human-readable description the tab's loading state.
   string16 GetStatusText() const;
 
   // Create a TabContentsWrapper with the same state as this one. The returned
@@ -133,6 +135,9 @@ class TabContentsWrapper : public NotificationObserver,
 
   // Whether the current URL is starred.
   bool is_starred_;
+
+  // Handles Print Preview messages.
+  scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
 
   // Tab Helpers ---------------------------------------------------------------
   // (These provide API for callers and have a getter function listed in the
