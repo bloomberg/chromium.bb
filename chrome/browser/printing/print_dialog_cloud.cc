@@ -504,66 +504,23 @@ bool CloudPrintHtmlDialogDelegate::ShouldShowDialogTitle() const {
   return false;
 }
 
-}  // namespace internal_cloud_print_helpers
-
-// static, called on the IO thread.  This is the main entry point into
-// creating the dialog.
-
-// TODO(scottbyer): The signature here will need to change as the
-// workflow through the printing code changes to allow for dynamically
-// changing page setup parameters while the dialog is active.
-void PrintDialogCloud::CreatePrintDialogForFile(const FilePath& path_to_file,
-                                               const string16& print_job_title,
-                                               const std::string& file_type,
-                                               bool modal) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&PrintDialogCloud::CreateDialogImpl,
-                          path_to_file,
-                          print_job_title,
-                          file_type,
-                          modal));
-}
-
-// static, called from the UI thread.
-void PrintDialogCloud::CreateDialogImpl(const FilePath& path_to_file,
-                                        const string16& print_job_title,
-                                        const std::string& file_type,
-                                        bool modal) {
+// Called from the UI thread, starts up the dialog.
+void CreateDialogImpl(const FilePath& path_to_file,
+                      const string16& print_job_title,
+                      const std::string& file_type,
+                      bool modal) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  new PrintDialogCloud(path_to_file, print_job_title, file_type, modal);
-}
+  Browser* browser = BrowserList::GetLastActive();
 
-// Initialize the print dialog.  Called on the UI thread.
-PrintDialogCloud::PrintDialogCloud(const FilePath& path_to_file,
-                                   const string16& print_job_title,
-                                   const std::string& file_type,
-                                   bool modal)
-    : browser_(BrowserList::GetLastActive()) {
-  Init(path_to_file, print_job_title, file_type, modal);
-}
-
-PrintDialogCloud::~PrintDialogCloud() {
-}
-
-void PrintDialogCloud::Init(const FilePath& path_to_file,
-                            const string16& print_job_title,
-                            const std::string& file_type,
-                            bool modal) {
-  // TODO(scottbyer): Verify GAIA login valid, execute GAIA login if not (should
-  // be distilled out of bookmark sync.)
   const int kDefaultWidth = 497;
   const int kDefaultHeight = 332;
   string16 job_title = print_job_title;
   Profile* profile = NULL;
   if (modal) {
-    DCHECK(browser_);
-    if (job_title.empty() && browser_->GetSelectedTabContents())
-      job_title = browser_->GetSelectedTabContents()->GetTitle();
-    profile = browser_->GetProfile();
+    DCHECK(browser);
+    if (job_title.empty() && browser->GetSelectedTabContents())
+      job_title = browser->GetSelectedTabContents()->GetTitle();
+    profile = browser->GetProfile();
   } else {
     profile = ProfileManager::GetDefaultProfile();
   }
@@ -587,9 +544,37 @@ void PrintDialogCloud::Init(const FilePath& path_to_file,
           path_to_file, width, height, std::string(), job_title, file_type,
           modal);
   if (modal) {
-    DCHECK(browser_);
-    browser_->BrowserShowHtmlDialog(dialog_delegate, NULL);
+    DCHECK(browser);
+    browser->BrowserShowHtmlDialog(dialog_delegate, NULL);
   } else {
     browser::ShowHtmlDialog(NULL, profile, dialog_delegate);
   }
 }
+
+}  // namespace internal_cloud_print_helpers
+
+namespace print_dialog_cloud {
+
+// Called on the FILE or UI thread.  This is the main entry point into creating
+// the dialog.
+
+// TODO(scottbyer): The signature here will need to change as the
+// workflow through the printing code changes to allow for dynamically
+// changing page setup parameters while the dialog is active.
+void CreatePrintDialogForFile(const FilePath& path_to_file,
+                              const string16& print_job_title,
+                              const std::string& file_type,
+                              bool modal) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(&internal_cloud_print_helpers::CreateDialogImpl,
+                          path_to_file,
+                          print_job_title,
+                          file_type,
+                          modal));
+}
+
+}  // end namespace

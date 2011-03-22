@@ -199,7 +199,7 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
         test_data_directory_.AppendASCII("printing/cloud_print_uitest.pdf");
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&PrintDialogCloud::CreateDialogImpl,
+        NewRunnableFunction(&internal_cloud_print_helpers::CreateDialogImpl,
                             path_to_pdf,
                             string16(),
                             std::string("application/pdf"),

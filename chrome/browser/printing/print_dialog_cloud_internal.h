@@ -179,6 +179,11 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
   DISALLOW_COPY_AND_ASSIGN(CloudPrintHtmlDialogDelegate);
 };
 
+void CreateDialogImpl(const FilePath& path_to_file,
+                      const string16& print_job_title,
+                      const std::string& file_type,
+                      bool modal);
+
 }  // namespace internal_cloud_print_helpers
 
 #endif  // CHROME_BROWSER_PRINTING_PRINT_DIALOG_CLOUD_INTERNAL_H_

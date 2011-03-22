@@ -1750,10 +1750,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
         file_type = parsed_command_line.GetSwitchValueASCII(
             switches::kCloudPrintFileType);
       }
-      PrintDialogCloud::CreatePrintDialogForFile(cloud_print_file,
-                                                print_job_title,
-                                                file_type,
-                                                false);
+      print_dialog_cloud::CreatePrintDialogForFile(cloud_print_file,
+                                                   print_job_title,
+                                                   file_type,
+                                                   false);
     }
   }
 
