@@ -22,6 +22,7 @@
 #include "grit/platform_locale_settings.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job.h"
@@ -70,10 +71,13 @@ class URLRequestChromeJob : public net::URLRequestJob {
   explicit URLRequestChromeJob(net::URLRequest* request);
 
   // net::URLRequestJob implementation.
-  virtual void Start();
-  virtual void Kill();
-  virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int *bytes_read);
-  virtual bool GetMimeType(std::string* mime_type) const;
+  virtual void Start() OVERRIDE;
+  virtual void Kill() OVERRIDE;
+  virtual bool ReadRawData(net::IOBuffer* buf,
+                           int buf_size,
+                           int *bytes_read) OVERRIDE;
+  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
 
   // Called by ChromeURLDataManager to notify us that the data blob is ready
   // for us.
@@ -300,6 +304,14 @@ void URLRequestChromeJob::Kill() {
 bool URLRequestChromeJob::GetMimeType(std::string* mime_type) const {
   *mime_type = mime_type_;
   return !mime_type_.empty();
+}
+
+void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
+  DCHECK(!info->headers);
+  // Set the headers so that requests serviced by ChromeURLDataManager return a
+  // status code of 200. Without this they return a 0, which makes the status
+  // indistiguishable from other error types. Instant relies on getting a 200.
+  info->headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");
 }
 
 void URLRequestChromeJob::DataAvailable(RefCountedMemory* bytes) {

@@ -2285,6 +2285,7 @@
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/dom_view_browsertest.cc',
         'browser/ui/views/html_dialog_view_browsertest.cc',
+        'browser/ui/webui/chrome_url_data_manager_browsertest.cc',
         'browser/ui/webui/file_browse_browsertest.cc',
         'browser/ui/webui/mediaplayer_browsertest.cc',
         'browser/ui/webui/settings_browsertest.cc',
