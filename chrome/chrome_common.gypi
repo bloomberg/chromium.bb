@@ -196,6 +196,8 @@
         'common/json_schema_validator.h',
         'common/jstemplate_builder.cc',
         'common/jstemplate_builder.h',
+        'common/launchd_mac.h',
+        'common/launchd_mac.mm',
         'common/libxml_utils.cc',
         'common/libxml_utils.h',
         'common/native_window_notification_source.h',

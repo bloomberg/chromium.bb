@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,18 @@
 #import <Foundation/Foundation.h>
 #include <launch.h>
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/scoped_nsobject.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -21,20 +26,24 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/launchd_mac.h"
 #include "content/common/child_process_host.h"
-#include "third_party/GTM/Foundation/GTMServiceManagement.h"
 
 namespace {
 
-NSString* GetServiceProcessLaunchDFileName() {
-  NSString *bundle_id = [base::mac::MainAppBundle() bundleIdentifier];
-  NSString *label = [bundle_id stringByAppendingPathExtension:@"plist"];
-  return label;
+#define kServiceProcessSessionType "Background"
+
+CFStringRef CopyServiceProcessLaunchDName() {
+  base::mac::ScopedNSAutoreleasePool pool;
+  NSBundle* bundle = base::mac::MainAppBundle();
+  return CFStringCreateCopy(kCFAllocatorDefault,
+                            base::mac::NSToCFCast([bundle bundleIdentifier]));
 }
 
 NSString* GetServiceProcessLaunchDLabel() {
-  NSString *bundle_id = [base::mac::MainAppBundle() bundleIdentifier];
-  NSString *label = [bundle_id stringByAppendingString:@".service_process"];
+  scoped_nsobject<NSString> name(
+      base::mac::CFToNSCast(CopyServiceProcessLaunchDName()));
+  NSString *label = [name stringByAppendingString:@".service_process"];
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   std::string user_data_dir_path = user_data_dir.value();
@@ -58,36 +67,30 @@ NSString* GetServiceProcessLaunchDSocketEnvVar() {
   return env_var;
 }
 
-// Creates the path that it returns. Must be called on the FILE thread.
-NSURL* GetUserAgentPath() {
-  NSArray* library_paths = NSSearchPathForDirectoriesInDomains(
-      NSLibraryDirectory, NSUserDomainMask, true);
-  DCHECK_EQ([library_paths count], 1U);
-  NSString* library_path = [library_paths objectAtIndex:0];
-  NSString* launch_agents_path =
-      [library_path stringByAppendingPathComponent:@"LaunchAgents"];
-
-  NSError* err;
-  if (![[NSFileManager defaultManager] createDirectoryAtPath:launch_agents_path
-                                 withIntermediateDirectories:YES
-                                                  attributes:nil
-                                                       error:&err]) {
-    LOG(ERROR) << "GetUserAgentPath: " << err;
-  }
-
-  NSString* plist_file_path =
-      [launch_agents_path
-           stringByAppendingPathComponent:GetServiceProcessLaunchDFileName()];
-  return [NSURL fileURLWithPath:plist_file_path isDirectory:NO];
+bool GetParentFSRef(const FSRef& child, FSRef* parent) {
+  return FSGetCatalogInfo(&child, 0, NULL, NULL, NULL, parent) == noErr;
 }
 
-}
+class ExecFilePathWatcherDelegate : public FilePathWatcher::Delegate {
+ public:
+  ExecFilePathWatcherDelegate() : process_state_(NULL) { }
+  bool Init(const FilePath& path, ServiceProcessState *process_state);
+  virtual ~ExecFilePathWatcherDelegate() { }
+  virtual void OnFilePathChanged(const FilePath& path) OVERRIDE;
+
+ private:
+  FSRef executable_fsref_;
+  ServiceProcessState* process_state_;
+};
+
+}  // namespace
 
 // Gets the name of the service process IPC channel.
 IPC::ChannelHandle GetServiceProcessChannel() {
+  base::mac::ScopedNSAutoreleasePool pool;
   std::string socket_path;
   scoped_nsobject<NSDictionary> dictionary(
-      base::mac::CFToNSCast(GTMCopyLaunchdExports()));
+      base::mac::CFToNSCast(Launchd::GetInstance()->CopyExports()));
   NSString *ns_socket_path =
       [dictionary objectForKey:GetServiceProcessLaunchDSocketEnvVar()];
   if (ns_socket_path) {
@@ -98,9 +101,10 @@ IPC::ChannelHandle GetServiceProcessChannel() {
 
 bool ForceServiceProcessShutdown(const std::string& /* version */,
                                  base::ProcessId /* process_id */) {
-  NSString* label = GetServiceProcessLaunchDLabel();
+  base::mac::ScopedNSAutoreleasePool pool;
+  CFStringRef label = base::mac::NSToCFCast(GetServiceProcessLaunchDLabel());
   CFErrorRef err = NULL;
-  bool ret = GTMSMJobRemove(reinterpret_cast<CFStringRef>(label), &err);
+  bool ret = Launchd::GetInstance()->RemoveJob(label, &err);
   if (!ret) {
     LOG(ERROR) << "ForceServiceProcessShutdown: " << err;
     CFRelease(err);
@@ -109,10 +113,10 @@ bool ForceServiceProcessShutdown(const std::string& /* version */,
 }
 
 bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
-  CFStringRef label =
-      reinterpret_cast<CFStringRef>(GetServiceProcessLaunchDLabel());
-  scoped_nsobject<NSDictionary> launchd_conf(
-      base::mac::CFToNSCast(GTMSMJobCopyDictionary(label)));
+  base::mac::ScopedNSAutoreleasePool pool;
+  CFStringRef label = base::mac::NSToCFCast(GetServiceProcessLaunchDLabel());
+  scoped_nsobject<NSDictionary> launchd_conf(base::mac::CFToNSCast(
+      Launchd::GetInstance()->CopyJobDictionary(label)));
   if (!launchd_conf.get()) {
     return false;
   }
@@ -160,12 +164,16 @@ bool ServiceProcessState::Initialize() {
     return false;
   }
   CFErrorRef err = NULL;
-  state_->launchd_conf_.reset(GTMSMJobCheckIn(&err));
-  if (!state_->launchd_conf_.get()) {
-    LOG(ERROR) << "InitializePlatformState: " << err;
+  CFDictionaryRef dict =
+      Launchd::GetInstance()->CopyDictionaryByCheckingIn(&err);
+
+  if (!dict) {
+    LOG(ERROR) << "CopyLaunchdDictionaryByCheckingIn: " << err;
     CFRelease(err);
     return false;
   }
+  state_->launchd_conf_.reset(dict);
+  state_->ui_message_loop_= base::MessageLoopProxy::CreateForCurrentThread();
   return true;
 }
 
@@ -266,7 +274,7 @@ CFDictionaryRef CreateServiceProcessLaunchdPlist(CommandLine* cmd_line,
       [[NSDictionary alloc] initWithObjectsAndKeys:
         [NSNumber numberWithBool:YES], @ LAUNCH_JOBKEY_RUNATLOAD,
         keep_alive, @ LAUNCH_JOBKEY_KEEPALIVE,
-        @"Background", @ LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE,
+        @ kServiceProcessSessionType, @ LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE,
         nil];
     [launchd_plist addEntriesFromDictionary:auto_launchd_plist];
   }
@@ -280,25 +288,162 @@ bool ServiceProcessState::AddToAutoRun() {
   // We're creating directories and writing a file.
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(autorun_command_line_.get());
-
-  base::mac::ScopedNSAutoreleasePool pool;
-  scoped_nsobject<NSDictionary> plist(
-      base::mac::CFToNSCast(CreateServiceProcessLaunchdPlist(
-                                autorun_command_line_.get(), true)));
-  NSURL* plist_url = GetUserAgentPath();
-  return [plist writeToURL:plist_url atomically:YES];
+  base::mac::ScopedCFTypeRef<CFStringRef> name(CopyServiceProcessLaunchDName());
+  base::mac::ScopedCFTypeRef<CFDictionaryRef> plist(
+      CreateServiceProcessLaunchdPlist(autorun_command_line_.get(), true));
+  return Launchd::GetInstance()->WritePlistToFile(Launchd::User,
+                                                  Launchd::Agent,
+                                                  name,
+                                                  plist);
 }
 
 bool ServiceProcessState::RemoveFromAutoRun() {
   // We're killing a file.
   base::ThreadRestrictions::AssertIOAllowed();
+  base::mac::ScopedCFTypeRef<CFStringRef> name(CopyServiceProcessLaunchDName());
+  return Launchd::GetInstance()->DeletePlist(Launchd::User,
+                                             Launchd::Agent,
+                                             name);
+}
 
+void ServiceProcessState::StateData::WatchExecutable() {
   base::mac::ScopedNSAutoreleasePool pool;
-  NSURL* plist_url = GetUserAgentPath();
-  SInt32 error = 0;
-  if (!CFURLDestroyResource(reinterpret_cast<CFURLRef>(plist_url), &error)) {
-    LOG(ERROR) << "RemoveFromAutoRun: " << error;
+  NSDictionary* ns_launchd_conf = base::mac::CFToNSCast(launchd_conf_);
+  NSString* exe_path = [ns_launchd_conf objectForKey:@ LAUNCH_JOBKEY_PROGRAM];
+  if (!exe_path) {
+    LOG(ERROR) << "No " LAUNCH_JOBKEY_PROGRAM;
+    return;
+  }
+
+  FilePath executable_path = FilePath([exe_path fileSystemRepresentation]);
+  scoped_ptr<ExecFilePathWatcherDelegate> delegate(
+      new ExecFilePathWatcherDelegate);
+  if (!delegate->Init(executable_path, state_)) {
+    LOG(ERROR) << "executable_watcher_.Init " << executable_path.value();
+    return;
+  }
+  if (!executable_watcher_.Watch(executable_path,
+                                 delegate.release(),
+                                 ui_message_loop_)) {
+    LOG(ERROR) << "executable_watcher_.watch " << executable_path.value();
+    return;
+  }
+}
+
+bool ExecFilePathWatcherDelegate::Init(const FilePath& path,
+                                       ServiceProcessState *process_state) {
+  if (!process_state ||
+      !base::mac::FSRefFromPath(path.value(), &executable_fsref_)) {
     return false;
   }
+  process_state_ = process_state;
   return true;
+}
+
+void ExecFilePathWatcherDelegate::OnFilePathChanged(const FilePath& path) {
+  base::mac::ScopedNSAutoreleasePool pool;
+  bool needs_shutdown = false;
+  bool needs_restart = false;
+  bool good_bundle = false;
+
+  FSRef macos_fsref;
+  if (GetParentFSRef(executable_fsref_, &macos_fsref)) {
+    FSRef contents_fsref;
+    if (GetParentFSRef(macos_fsref, &contents_fsref)) {
+      FSRef bundle_fsref;
+      if (GetParentFSRef(contents_fsref, &bundle_fsref)) {
+        base::mac::ScopedCFTypeRef<CFURLRef> bundle_url(
+            CFURLCreateFromFSRef(kCFAllocatorDefault, &bundle_fsref));
+        if (bundle_url.get()) {
+          base::mac::ScopedCFTypeRef<CFBundleRef> bundle(
+              CFBundleCreate(kCFAllocatorDefault, bundle_url));
+          // Check to see if the bundle still has a minimal structure.
+          good_bundle = CFBundleGetIdentifier(bundle) != NULL;
+        }
+      }
+    }
+  }
+  if (!good_bundle) {
+    needs_shutdown = true;
+  } else {
+    Boolean in_trash;
+    OSErr err = FSDetermineIfRefIsEnclosedByFolder(kOnAppropriateDisk,
+                                                   kTrashFolderType,
+                                                   &executable_fsref_,
+                                                   &in_trash);
+    if (err == noErr && in_trash) {
+      needs_shutdown = true;
+    } else {
+      bool was_moved = true;
+      FSRef path_ref;
+      if (base::mac::FSRefFromPath(path.value(), &path_ref)) {
+        if (FSCompareFSRefs(&path_ref, &executable_fsref_) == noErr) {
+          was_moved = false;
+        }
+      }
+      if (was_moved) {
+        needs_restart = true;
+      }
+    }
+  }
+  if (needs_shutdown || needs_restart) {
+    // First deal with the plist.
+    base::mac::ScopedCFTypeRef<CFStringRef> name(
+        CopyServiceProcessLaunchDName());
+    if (needs_restart) {
+      base::mac::ScopedCFTypeRef<CFMutableDictionaryRef> plist(
+         Launchd::GetInstance()->CreatePlistFromFile(Launchd::User,
+                                                     Launchd::Agent,
+                                                     name));
+      if (plist.get()) {
+        NSMutableDictionary* ns_plist = base::mac::CFToNSCast(plist);
+        std::string new_path = base::mac::PathFromFSRef(executable_fsref_);
+        NSString* ns_new_path = base::SysUTF8ToNSString(new_path);
+        [ns_plist setObject:ns_new_path forKey:@ LAUNCH_JOBKEY_PROGRAM];
+        scoped_nsobject<NSMutableArray> args(
+            [[ns_plist objectForKey:@ LAUNCH_JOBKEY_PROGRAMARGUMENTS]
+             mutableCopy]);
+        [args replaceObjectAtIndex:0 withObject:ns_new_path];
+        [ns_plist setObject:args forKey:@ LAUNCH_JOBKEY_PROGRAMARGUMENTS];
+        if (!Launchd::GetInstance()->WritePlistToFile(Launchd::User,
+                                                      Launchd::Agent,
+                                                      name,
+                                                      plist)) {
+          LOG(ERROR) << "Unable to rewrite plist.";
+          needs_shutdown = true;
+        }
+      } else {
+        LOG(ERROR) << "Unable to read plist.";
+        needs_shutdown = true;
+      }
+    }
+    if (needs_shutdown) {
+      if (!process_state_->RemoveFromAutoRun()) {
+        LOG(ERROR) << "Unable to RemoveFromAutoRun.";
+      }
+    }
+
+    // Then deal with the process.
+    CFStringRef session_type = CFSTR(kServiceProcessSessionType);
+    if (needs_restart) {
+      if (!Launchd::GetInstance()->RestartJob(Launchd::User,
+                                              Launchd::Agent,
+                                              name,
+                                              session_type)) {
+        LOG(ERROR) << "RestartLaunchdJob";
+        needs_shutdown = true;
+      }
+    }
+    if (needs_shutdown) {
+      CFStringRef label =
+          base::mac::NSToCFCast(GetServiceProcessLaunchDLabel());
+      CFErrorRef err = NULL;
+      if (!Launchd::GetInstance()->RemoveJob(label, &err)) {
+        base::mac::ScopedCFTypeRef<CFErrorRef> scoped_err(err);
+        LOG(ERROR) << "RemoveJob " << err;
+        // Exiting with zero, so launchd doesn't restart the process.
+        exit(0);
+      }
+    }
+  }
 }

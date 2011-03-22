@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,6 @@ class CommandLine;
 namespace base {
   class MessageLoopProxy;
 }
-
-template <typename T> struct DefaultSingletonTraits;
 
 // Return the IPC channel to connect to the service process.
 IPC::ChannelHandle GetServiceProcessChannel();
@@ -60,8 +58,8 @@ bool ForceServiceProcessShutdown(const std::string& version,
 // and this class are shared.
 class ServiceProcessState {
  public:
-  // Returns the singleton instance.
-  static ServiceProcessState* GetInstance();
+  ServiceProcessState();
+  ~ServiceProcessState();
 
   // Tries to become the sole service process for the current user data dir.
   // Returns false if another service process is already running.
@@ -89,8 +87,6 @@ class ServiceProcessState {
   IPC::ChannelHandle GetServiceProcessChannel();
 
  private:
-  ServiceProcessState();
-  ~ServiceProcessState();
 
 #if !defined(OS_MACOSX)
   // Create the shared memory data for the service process.
@@ -121,8 +117,6 @@ class ServiceProcessState {
   StateData* state_;
   scoped_ptr<base::SharedMemory> shared_mem_service_data_;
   scoped_ptr<CommandLine> autorun_command_line_;
-
-  friend struct DefaultSingletonTraits<ServiceProcessState>;
 };
 
 #endif  // CHROME_COMMON_SERVICE_PROCESS_UTIL_H_

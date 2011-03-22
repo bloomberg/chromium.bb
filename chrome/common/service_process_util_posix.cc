@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,6 +96,7 @@ bool ServiceProcessState::SignalReady(
   CHECK(state_);
   CHECK_EQ(g_signal_socket, -1);
 
+  scoped_ptr<Task> scoped_shutdown_task(shutdown_task);
 #if defined(OS_LINUX)
   state_->running_lock_.reset(TakeServiceRunningLock(true));
   if (state_->running_lock_.get() == NULL) {
@@ -103,11 +104,17 @@ bool ServiceProcessState::SignalReady(
   }
 #endif // OS_LINUX
   state_->shut_down_monitor_.reset(
-      new ServiceProcessShutdownMonitor(shutdown_task));
+      new ServiceProcessShutdownMonitor(scoped_shutdown_task.release()));
   if (pipe(state_->sockets_) < 0) {
     PLOG(ERROR) << "pipe";
     return false;
   }
+#if defined(OS_MACOSX)
+  state_->state_ = this;
+  message_loop_proxy->PostTask(FROM_HERE,
+      NewRunnableMethod(state_,
+                        &ServiceProcessState::StateData::WatchExecutable));
+#endif  // OS_MACOSX
   message_loop_proxy->PostTask(FROM_HERE,
       NewRunnableMethod(state_, &ServiceProcessState::StateData::SignalReady));
   return true;

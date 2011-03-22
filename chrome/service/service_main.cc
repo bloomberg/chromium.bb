@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,8 @@ int ServiceProcessMain(const MainFunctionParams& parameters) {
   base::PlatformThread::SetName("CrServiceMain");
 
   // If there is already a service process running, quit now.
-  if (!ServiceProcessState::GetInstance()->Initialize())
+  scoped_ptr<ServiceProcessState> state(new ServiceProcessState);
+  if (!state->Initialize())
     return 0;
 
 #if defined(OS_WIN)
@@ -45,7 +46,8 @@ int ServiceProcessMain(const MainFunctionParams& parameters) {
 
   ServiceProcess service_process;
   if (service_process.Initialize(&main_message_loop,
-                                 parameters.command_line_)) {
+                                 parameters.command_line_,
+                                 state.release())) {
     MessageLoop::current()->Run();
   } else {
     LOG(ERROR) << "Service process failed to initialize";

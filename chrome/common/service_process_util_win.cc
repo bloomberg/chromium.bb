@@ -128,12 +128,13 @@ bool ServiceProcessState::SignalReady(
     base::MessageLoopProxy* message_loop_proxy, Task* shutdown_task) {
   DCHECK(state_);
   DCHECK(state_->ready_event.IsValid());
+  scoped_ptr<Task> scoped_shutdown_task(shutdown_task);
   if (!SetEvent(state_->ready_event.Get())) {
     return false;
   }
   if (shutdown_task) {
     state_->shutdown_monitor.reset(
-        new ServiceProcessShutdownMonitor(shutdown_task));
+        new ServiceProcessShutdownMonitor(scoped_shutdown_task.release()));
     state_->shutdown_monitor->Start();
   }
   return true;

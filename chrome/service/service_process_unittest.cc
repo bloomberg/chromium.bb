@@ -1,6 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "chrome/service/service_process.h"
 
 #include <vector>
 
@@ -9,7 +11,7 @@
 #include "base/crypto/rsa_private_key.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/service/service_process.h"
+#include "chrome/common/service_process_util.h"
 #include "remoting/host/host_key_pair.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,8 +19,9 @@
 TEST(ServiceProcessTest, DISABLED_Run) {
   MessageLoopForUI main_message_loop;
   ServiceProcess process;
+  ServiceProcessState state;
   CommandLine command_line(CommandLine::NO_PROGRAM);
-  EXPECT_TRUE(process.Initialize(&main_message_loop, command_line));
+  EXPECT_TRUE(process.Initialize(&main_message_loop, command_line, &state));
   EXPECT_TRUE(process.Teardown());
 }
 
@@ -27,8 +30,9 @@ TEST(ServiceProcessTest, DISABLED_Run) {
 TEST(ServiceProcessTest, DISABLED_RunChromoting) {
   MessageLoopForUI main_message_loop;
   ServiceProcess process;
+  ServiceProcessState state;
   CommandLine command_line(CommandLine::NO_PROGRAM);
-  EXPECT_TRUE(process.Initialize(&main_message_loop, command_line));
+  EXPECT_TRUE(process.Initialize(&main_message_loop, command_line, &state));
 
   // Then config the chromoting host and start it.
   process.remoting_host_manager()->SetCredentials("email", "token");
@@ -50,8 +54,9 @@ ACTION_P(QuitMessageLoop, message_loop) {
 TEST(ServiceProcessTest, DISABLED_RunChromotingUntilShutdown) {
   MessageLoopForUI main_message_loop;
   MockServiceProcess process;
+  ServiceProcessState state;
   CommandLine command_line(CommandLine::NO_PROGRAM);
-  EXPECT_TRUE(process.Initialize(&main_message_loop, command_line));
+  EXPECT_TRUE(process.Initialize(&main_message_loop, command_line, &state));
 
   // Expect chromoting shutdown be called because the login token is invalid.
   EXPECT_CALL(process, OnChromotingHostShutdown())

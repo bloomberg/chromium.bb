@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,9 @@ MultiProcessLock* TakeServiceRunningLock(bool waiting);
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_cftyperef.h"
+#include "base/message_loop_proxy.h"
+#include "content/common/file_path_watcher/file_path_watcher.h"
+
 class CommandLine;
 CFDictionaryRef CreateServiceProcessLaunchdPlist(CommandLine* cmd_line,
                                                  bool for_auto_launch);
@@ -61,7 +64,12 @@ struct ServiceProcessState::StateData
   // variables to remove the trailing underscore.
 
 #if defined(OS_MACOSX)
+  void WatchExecutable();
+
   base::mac::ScopedCFTypeRef<CFDictionaryRef> launchd_conf_;
+  FilePathWatcher executable_watcher_;
+  scoped_refptr<base::MessageLoopProxy> ui_message_loop_;
+  ServiceProcessState* state_;
 #endif  // OS_MACOSX
 #if defined(OS_LINUX)
   scoped_ptr<MultiProcessLock> initializing_lock_;
