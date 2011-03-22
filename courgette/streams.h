@@ -121,21 +121,21 @@ class SinkStream {
   ~SinkStream() {}
 
   // Appends |byte_count| bytes from |data| to the stream.
-  CheckBool Write(const void* data, size_t byte_count) WARN_UNUSED_RESULT;
+  CheckBool Write(const void* data, size_t byte_count);
 
   // Appends the 'varint32' encoding of |value| to the stream.
-  CheckBool WriteVarint32(uint32 value) WARN_UNUSED_RESULT;
+  CheckBool WriteVarint32(uint32 value);
 
   // Appends the 'varint32' encoding of |value| to the stream.
-  CheckBool WriteVarint32Signed(int32 value) WARN_UNUSED_RESULT;
+  CheckBool WriteVarint32Signed(int32 value);
 
   // Appends the 'varint32' encoding of |value| to the stream.
   // On platforms where sizeof(size_t) != sizeof(int32), do a safety check.
-  CheckBool WriteSizeVarint32(size_t value) WARN_UNUSED_RESULT;
+  CheckBool WriteSizeVarint32(size_t value);
 
   // Contents of |other| are appended to |this| stream.  The |other| stream
   // becomes retired.
-  CheckBool Append(SinkStream* other) WARN_UNUSED_RESULT;
+  CheckBool Append(SinkStream* other);
 
   // Returns the number of bytes in this SinkStream
   size_t Length() const { return buffer_.size(); }
@@ -149,7 +149,7 @@ class SinkStream {
 
   // Hints that the stream will grow by an additional |length| bytes.
   // Caller must be prepared to handle memory allocation problems.
-  CheckBool Reserve(size_t length) WARN_UNUSED_RESULT {
+  CheckBool Reserve(size_t length) {
     buffer_.reserve(length + buffer_.length());
     //TODO(tommi): return false when allocation fails.
     return true;
