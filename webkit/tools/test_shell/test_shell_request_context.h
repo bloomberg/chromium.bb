@@ -11,6 +11,10 @@
 
 class FilePath;
 
+namespace fileapi {
+class FileSystemContext;
+}
+
 namespace webkit_blob {
 class BlobStorageController;
 }
@@ -33,6 +37,10 @@ class TestShellRequestContext : public net::URLRequestContext {
     return blob_storage_controller_.get();
   }
 
+  fileapi::FileSystemContext* file_system_context() const {
+    return file_system_context_.get();
+  }
+
  private:
   ~TestShellRequestContext();
 
@@ -40,6 +48,7 @@ class TestShellRequestContext : public net::URLRequestContext {
             bool no_proxy);
 
   scoped_ptr<webkit_blob::BlobStorageController> blob_storage_controller_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_REQUEST_CONTEXT_H_

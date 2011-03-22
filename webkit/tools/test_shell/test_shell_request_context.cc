@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,12 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #include "webkit/blob/blob_storage_controller.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
 TestShellRequestContext::TestShellRequestContext() {
@@ -86,6 +90,8 @@ void TestShellRequestContext::Init(
   set_ftp_transaction_factory(new net::FtpNetworkLayer(host_resolver()));
 
   blob_storage_controller_.reset(new webkit_blob::BlobStorageController());
+  file_system_context_ = static_cast<SimpleFileSystem*>(
+      WebKit::webKitClient()->fileSystem())->file_system_context();
 }
 
 TestShellRequestContext::~TestShellRequestContext() {
