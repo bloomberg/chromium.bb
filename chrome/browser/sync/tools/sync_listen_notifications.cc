@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cstdio>
 #include <string>
 
 #include "base/at_exit.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/sync/notifier/sync_notifier_factory.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/syncable/model_type_payload_map.h"
 
 // This is a simple utility that initializes a sync notifier and
 // listens to any received notifications.
@@ -27,8 +29,8 @@ class NotificationPrinter : public sync_notifier::SyncNotifierObserver {
   virtual ~NotificationPrinter() {}
 
   virtual void OnIncomingNotification(
-      const browser_sync::sessions::TypePayloadMap& type_payloads) {
-    for (browser_sync::sessions::TypePayloadMap::const_iterator it =
+      const syncable::ModelTypePayloadMap& type_payloads) {
+    for (syncable::ModelTypePayloadMap::const_iterator it =
              type_payloads.begin(); it != type_payloads.end(); ++it) {
       LOG(INFO) << "Notification: type = "
                 << syncable::ModelTypeToString(it->first)
@@ -69,12 +71,13 @@ int main(int argc, char* argv[]) {
   // TODO(akalin): Write a wrapper script that gets a token for an
   // email and password and passes that in to this utility.
   if (email.empty() || token.empty()) {
-    printf("Usage: %s --email=foo@bar.com --token=token\n\n"
-           "See sync_notifier_factory.cc for more switches.\n\n"
-           "Run chrome and set a breakpoint on "
-           "SyncNotifierImpl::UpdateCredentials() after\n"
-           "logging into sync to get the token to pass into this utility.\n",
-           argv[0]);
+    std::printf("Usage: %s --email=foo@bar.com --token=token\n\n"
+                "See sync_notifier_factory.cc for more switches.\n\n"
+                "Run chrome and set a breakpoint on "
+                "SyncNotifierImpl::UpdateCredentials() after\n"
+                "logging into sync to get the token to pass into this "
+                "utility.\n",
+                argv[0]);
     return -1;
   }
 

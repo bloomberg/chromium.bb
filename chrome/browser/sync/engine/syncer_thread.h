@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
 
 #if defined(OS_LINUX)
@@ -149,7 +150,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   virtual void NudgeSyncerWithPayloads(
       int milliseconds_from_now,
       NudgeSource source,
-      const sessions::TypePayloadMap& model_types_with_payloads);
+      const syncable::ModelTypePayloadMap& model_types_with_payloads);
 
   void SetNotificationsEnabled(bool notifications_enabled);
 
@@ -209,7 +210,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
     // payload overwrites old ones). These payloads are used by the download
     // updates command and can contain datatype specific information the server
     // might use.
-    sessions::TypePayloadMap pending_nudge_types_;
+    syncable::ModelTypePayloadMap pending_nudge_types_;
 
     // null iff there is no pending nudge.
     base::TimeTicks pending_nudge_time_;
@@ -290,7 +291,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   sessions::SyncSourceInfo MakeSyncSourceInfo(
       bool nudged,
       NudgeSource nudge_source,
-      const sessions::TypePayloadMap& model_types_with_payloads,
+      const syncable::ModelTypePayloadMap& model_types_with_payloads,
       bool* initial_sync);
 
   int UserIdleTime();
@@ -337,7 +338,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   void NudgeSyncImpl(
       int milliseconds_from_now,
       NudgeSource source,
-      const sessions::TypePayloadMap& model_types_with_payloads);
+      const syncable::ModelTypePayloadMap& model_types_with_payloads);
 
 #if defined(OS_LINUX)
   // On Linux, we need this information in order to query idle time.

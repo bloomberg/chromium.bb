@@ -130,12 +130,13 @@ class SyncerThread2Test : public testing::Test {
     event->Signal();
   }
 
-  // Compare a ModelTyepBitSet to a TypePayloadMap, ignoring payload values.
-  bool CompareModelTypeBitSetToTypePayloadMap(
+  // Compare a ModelTypeBitSet to a ModelTypePayloadMap, ignoring
+  // payload values.
+  bool CompareModelTypeBitSetToModelTypePayloadMap(
       const syncable::ModelTypeBitSet& lhs,
-      const sessions::TypePayloadMap& rhs) {
+      const syncable::ModelTypePayloadMap& rhs) {
     size_t count = 0;
-    for (sessions::TypePayloadMap::const_iterator i = rhs.begin();
+    for (syncable::ModelTypePayloadMap::const_iterator i = rhs.begin();
          i != rhs.end(); ++i, ++count) {
       if (!lhs.test(i->first))
         return false;
@@ -192,7 +193,7 @@ TEST_F(SyncerThread2Test, Nudge) {
   done.TimedWait(timeout());
 
   EXPECT_EQ(1U, records.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeBitSetToTypePayloadMap(model_types,
+  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types,
       records.snapshots[0]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             records.snapshots[0]->source.updates_source);
@@ -208,7 +209,7 @@ TEST_F(SyncerThread2Test, Nudge) {
   done.TimedWait(timeout());
 
   EXPECT_EQ(1U, records2.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeBitSetToTypePayloadMap(model_types,
+  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types,
       records2.snapshots[0]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             records2.snapshots[0]->source.updates_source);
@@ -235,7 +236,8 @@ TEST_F(SyncerThread2Test, NudgeCoalescing) {
 
   EXPECT_EQ(1U, r.snapshots.size());
   EXPECT_GE(r.times[0], optimal_time);
-  EXPECT_TRUE(CompareModelTypeBitSetToTypePayloadMap(types1 | types2 | types3,
+  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(
+      types1 | types2 | types3,
       r.snapshots[0]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
             r.snapshots[0]->source.updates_source);
@@ -247,7 +249,7 @@ TEST_F(SyncerThread2Test, NudgeCoalescing) {
   syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_NOTIFICATION, types3);
   done.TimedWait(timeout());
   EXPECT_EQ(1U, r2.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeBitSetToTypePayloadMap(types3,
+  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(types3,
       r2.snapshots[0]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
             r2.snapshots[0]->source.updates_source);
@@ -258,7 +260,7 @@ TEST_F(SyncerThread2Test, NudgeWithPayloads) {
   syncer_thread()->Start(SyncerThread::NORMAL_MODE);
   base::WaitableEvent done(false, false);
   SyncShareRecords records;
-  sessions::TypePayloadMap model_types_with_payloads;
+  syncable::ModelTypePayloadMap model_types_with_payloads;
   model_types_with_payloads[syncable::BOOKMARKS] = "test";
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
@@ -299,7 +301,7 @@ TEST_F(SyncerThread2Test, NudgeWithPayloadsCoalescing) {
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
            WithArg<0>(RecordSyncShare(&r, 1U, &done))));
-  sessions::TypePayloadMap types1, types2, types3;
+  syncable::ModelTypePayloadMap types1, types2, types3;
   types1[syncable::BOOKMARKS] = "test1";
   types2[syncable::AUTOFILL] = "test2";
   types3[syncable::THEMES] = "test3";
@@ -315,10 +317,10 @@ TEST_F(SyncerThread2Test, NudgeWithPayloadsCoalescing) {
 
   EXPECT_EQ(1U, r.snapshots.size());
   EXPECT_GE(r.times[0], optimal_time);
-  sessions::TypePayloadMap coalesced_types;
-  sessions::CoalescePayloads(&coalesced_types, types1);
-  sessions::CoalescePayloads(&coalesced_types, types2);
-  sessions::CoalescePayloads(&coalesced_types, types3);
+  syncable::ModelTypePayloadMap coalesced_types;
+  syncable::CoalescePayloads(&coalesced_types, types1);
+  syncable::CoalescePayloads(&coalesced_types, types2);
+  syncable::CoalescePayloads(&coalesced_types, types3);
   EXPECT_EQ(coalesced_types, r.snapshots[0]->source.types);
   EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
             r.snapshots[0]->source.updates_source);
@@ -477,7 +479,7 @@ TEST_F(SyncerThread2Test, ConfigurationMode) {
   syncer_thread()->Stop();
 
   EXPECT_EQ(1U, records.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeBitSetToTypePayloadMap(config_types,
+  EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(config_types,
       records.snapshots[0]->source.types));
 }
 

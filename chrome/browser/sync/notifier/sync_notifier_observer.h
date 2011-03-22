@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/browser/sync/sessions/session_state.h"
+#include "chrome/browser/sync/syncable/model_type_payload_map.h"
 
 namespace sync_notifier {
 
@@ -18,7 +18,7 @@ class SyncNotifierObserver {
   virtual ~SyncNotifierObserver() {}
 
   virtual void OnIncomingNotification(
-      const browser_sync::sessions::TypePayloadMap& type_payloads) = 0;
+      const syncable::ModelTypePayloadMap& type_payloads) = 0;
   virtual void OnNotificationStateChange(bool notifications_enabled) = 0;
 
   // TODO(nileshagrawal): Find a way to hide state handling inside the

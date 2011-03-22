@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,8 +172,8 @@ class SyncerThreadWithSyncerTest : public testing::Test,
 
   // Compare a provided TypePayloadMap to the pending nudge info stored in the
   // SyncerThread vault.
-  bool CompareNudgeTypesToVault(const sessions::TypePayloadMap& lhs) {
-    const sessions::TypePayloadMap& vault_nudge_types =
+  bool CompareNudgeTypesToVault(const syncable::ModelTypePayloadMap& lhs) {
+    const syncable::ModelTypePayloadMap& vault_nudge_types =
         syncer_thread()->vault_.pending_nudge_types_;
     return lhs == vault_nudge_types;
   }
@@ -182,10 +182,10 @@ class SyncerThreadWithSyncerTest : public testing::Test,
   // SyncerThread vault. Nudge info in vault must not have any non-empty
   // payloads.
   bool CompareNudgeTypesBitSetToVault(const syncable::ModelTypeBitSet& lhs) {
-    sessions::TypePayloadMap model_types_with_payloads =
-        sessions::MakeTypePayloadMapFromBitSet(lhs, std::string());
+    syncable::ModelTypePayloadMap model_types_with_payloads =
+        syncable::ModelTypePayloadMapFromBitSet(lhs, std::string());
     size_t count = 0;
-    for (sessions::TypePayloadMap::const_iterator i =
+    for (syncable::ModelTypePayloadMap::const_iterator i =
              syncer_thread()->vault_.pending_nudge_types_.begin();
          i != syncer_thread()->vault_.pending_nudge_types_.end();
          ++i, ++count) {
@@ -832,7 +832,7 @@ TEST_F(SyncerThreadWithSyncerTest, NudgeWithPayloads) {
 
   // The SyncerThread should be waiting for the poll now.  Nudge it to sync
   // immediately (5ms).
-  sessions::TypePayloadMap nudge_types;
+  syncable::ModelTypePayloadMap nudge_types;
   nudge_types[syncable::BOOKMARKS] = "test";
   connection()->ExpectGetUpdatesRequestPayloads(nudge_types);
 
@@ -868,7 +868,7 @@ TEST_F(SyncerThreadWithSyncerTest, NudgeWithPayloadsCoalesced) {
 
   // The SyncerThread should be waiting for the poll now.  Nudge it to sync
   // immediately (5ms).
-  sessions::TypePayloadMap nudge_types;
+  syncable::ModelTypePayloadMap nudge_types;
   nudge_types[syncable::BOOKMARKS] = "books";
 
   // Paused so we can verify the nudge types safely.

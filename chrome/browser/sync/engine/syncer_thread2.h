@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/engine/nudge_source.h"
 #include "chrome/browser/sync/engine/polling_constants.h"
 #include "chrome/browser/sync/engine/syncer.h"
+#include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 
@@ -62,7 +63,7 @@ class SyncerThread : public sessions::SyncSession::Delegate {
                      const syncable::ModelTypeBitSet& types);
   void ScheduleNudgeWithPayloads(
       const base::TimeDelta& delay, NudgeSource source,
-      const sessions::TypePayloadMap& types_with_payloads);
+      const syncable::ModelTypePayloadMap& types_with_payloads);
   void ScheduleConfig(const syncable::ModelTypeBitSet& types);
   void ScheduleClearUserData();
 
@@ -150,9 +151,10 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   // 'Impl' here refers to real implementation of public functions, running on
   // |thread_|.
   void StartImpl(Mode mode);
-  void ScheduleNudgeImpl(const base::TimeDelta& delay,
-                         NudgeSource source,
-                         const sessions::TypePayloadMap& types_with_payloads);
+  void ScheduleNudgeImpl(
+      const base::TimeDelta& delay,
+      NudgeSource source,
+      const syncable::ModelTypePayloadMap& types_with_payloads);
   void ScheduleConfigImpl(const ModelSafeRoutingInfo& routing_info,
                           const std::vector<ModelSafeWorker*>& workers);
   void ScheduleClearUserDataImpl();

@@ -62,7 +62,7 @@ bool SyncerThreadAdapter::RequestResume() {
 }
 
 s3::NudgeSource LegacyToNewSyncerThreadSource(SyncerThread::NudgeSource s) {
-  switch(s) {
+  switch (s) {
     case SyncerThread::kNotification:
       return s3::NUDGE_SOURCE_NOTIFICATION;
     case SyncerThread::kContinuation:
@@ -110,7 +110,7 @@ void SyncerThreadAdapter::NudgeSyncerWithDataTypes(
 void SyncerThreadAdapter::NudgeSyncerWithPayloads(
       int milliseconds_from_now,
       SyncerThread::NudgeSource source,
-      const sessions::TypePayloadMap& model_types_with_payloads) {
+      const syncable::ModelTypePayloadMap& model_types_with_payloads) {
   DCHECK_NE(SyncerThread::kClearPrivateData, source);
   if (using_new_impl_) {
     new_impl_->ScheduleNudgeWithPayloads(

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ namespace browser_sync {
 using sessions::SyncSession;
 using sessions::SyncSessionSnapshot;
 using sessions::SyncSourceInfo;
-using sessions::TypePayloadMap;
+using syncable::ModelTypePayloadMap;
 
 // We use high values here to ensure that failure to receive poll updates from
 // the server doesn't result in rapid-fire polling from the client due to low
@@ -68,7 +68,7 @@ SyncerThread::ProtectedFields::~ProtectedFields() {}
 void SyncerThread::NudgeSyncerWithPayloads(
     int milliseconds_from_now,
     NudgeSource source,
-    const TypePayloadMap& model_types_with_payloads) {
+    const ModelTypePayloadMap& model_types_with_payloads) {
   base::AutoLock lock(lock_);
   if (vault_.syncer_ == NULL) {
     return;
@@ -86,8 +86,8 @@ void SyncerThread::NudgeSyncerWithDataTypes(
     return;
   }
 
-  TypePayloadMap model_types_with_payloads =
-      sessions::MakeTypePayloadMapFromBitSet(model_types, std::string());
+  ModelTypePayloadMap model_types_with_payloads =
+      syncable::ModelTypePayloadMapFromBitSet(model_types, std::string());
   NudgeSyncImpl(milliseconds_from_now, source, model_types_with_payloads);
 }
 
@@ -102,8 +102,8 @@ void SyncerThread::NudgeSyncer(
   // Set all enabled datatypes.
   ModelSafeRoutingInfo routes;
   session_context_->registrar()->GetModelSafeRoutingInfo(&routes);
-  TypePayloadMap model_types_with_payloads =
-      sessions::MakeTypePayloadMapFromRoutingInfo(routes, std::string());
+  ModelTypePayloadMap model_types_with_payloads =
+      syncable::ModelTypePayloadMapFromRoutingInfo(routes, std::string());
   NudgeSyncImpl(milliseconds_from_now, source, model_types_with_payloads);
 }
 
@@ -372,7 +372,7 @@ void SyncerThread::ThreadMainLoop() {
     // nudges.
     base::TimeTicks now = TimeTicks::Now();
     if (!last_sync_time.is_null()) {
-      TypePayloadMap::const_iterator iter;
+      ModelTypePayloadMap::const_iterator iter;
       for (iter = session->source().types.begin();
            iter != session->source().types.end();
            ++iter) {
@@ -604,7 +604,7 @@ SyncSourceInfo SyncerThread::GetAndResetNudgeSource(bool was_throttled,
                                                     bool* was_nudged) {
   bool nudged = false;
   NudgeSource nudge_source = kUnknown;
-  TypePayloadMap model_types_with_payloads;
+  ModelTypePayloadMap model_types_with_payloads;
   // Has the previous sync cycle completed?
   if (continue_sync_cycle)
     nudge_source = kContinuation;
@@ -634,7 +634,7 @@ SyncSourceInfo SyncerThread::GetAndResetNudgeSource(bool was_throttled,
 
 SyncSourceInfo SyncerThread::MakeSyncSourceInfo(bool nudged,
     NudgeSource nudge_source,
-    const TypePayloadMap& model_types_with_payloads,
+    const ModelTypePayloadMap& model_types_with_payloads,
     bool* initial_sync) {
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source =
       sync_pb::GetUpdatesCallerInfo::UNKNOWN;
@@ -664,12 +664,12 @@ SyncSourceInfo SyncerThread::MakeSyncSourceInfo(bool nudged,
     }
   }
 
-  TypePayloadMap sync_source_types;
+  ModelTypePayloadMap sync_source_types;
   if (model_types_with_payloads.empty()) {
     // No datatypes requested. This must be a poll so set all enabled datatypes.
     ModelSafeRoutingInfo routes;
     session_context_->registrar()->GetModelSafeRoutingInfo(&routes);
-    sync_source_types = sessions::MakeTypePayloadMapFromRoutingInfo(routes,
+    sync_source_types = syncable::ModelTypePayloadMapFromRoutingInfo(routes,
         std::string());
   } else {
     sync_source_types = model_types_with_payloads;
@@ -779,7 +779,7 @@ int SyncerThread::CalculateSyncWaitTime(int last_interval, int user_idle_ms) {
 void SyncerThread::NudgeSyncImpl(
     int milliseconds_from_now,
     NudgeSource source,
-    const TypePayloadMap& model_types_with_payloads) {
+    const ModelTypePayloadMap& model_types_with_payloads) {
   // TODO(sync): Add the option to reset the backoff state machine.
   // This is needed so nudges that are a result of the user's desire
   // to download updates for a new data type can be satisfied quickly.
@@ -790,11 +790,11 @@ void SyncerThread::NudgeSyncImpl(
     return;
   }
 
-  // Union the current TypePayloadMap with any from nudges that may have already
-  // posted (coalesce the nudge datatype information).
+  // Union the current ModelTypePayloadMap with any from nudges that may have
+  // already posted (coalesce the nudge datatype information).
   // TODO(tim): It seems weird to do this if the sources don't match up (e.g.
   // if pending_source is kLocal and |source| is kClearPrivateData).
-  sessions::CoalescePayloads(&vault_.pending_nudge_types_,
+  syncable::CoalescePayloads(&vault_.pending_nudge_types_,
                              model_types_with_payloads);
 
   const TimeTicks nudge_time = TimeTicks::Now() +

@@ -55,6 +55,7 @@
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
@@ -1194,7 +1195,7 @@ class SyncManager::SyncInternal
       bool notifications_enabled);
 
   virtual void OnIncomingNotification(
-      const browser_sync::sessions::TypePayloadMap& type_payloads);
+      const syncable::ModelTypePayloadMap& type_payloads);
 
   virtual void StoreState(const std::string& cookie);
 
@@ -2564,7 +2565,7 @@ void SyncManager::SyncInternal::OnNotificationStateChange(
 }
 
 void SyncManager::SyncInternal::OnIncomingNotification(
-    const browser_sync::sessions::TypePayloadMap& type_payloads) {
+    const syncable::ModelTypePayloadMap& type_payloads) {
   if (!type_payloads.empty()) {
     if (syncer_thread()) {
       syncer_thread()->NudgeSyncerWithPayloads(
@@ -2581,7 +2582,7 @@ void SyncManager::SyncInternal::OnIncomingNotification(
     ListValue args;
     ListValue* changed_types = new ListValue();
     args.Append(changed_types);
-    for (browser_sync::sessions::TypePayloadMap::const_iterator
+    for (syncable::ModelTypePayloadMap::const_iterator
              it = type_payloads.begin();
          it != type_payloads.end(); ++it) {
       const std::string& model_type_str =
@@ -2676,8 +2677,8 @@ void SyncManager::TriggerOnNotificationStateChangeForTest(
 
 void SyncManager::TriggerOnIncomingNotificationForTest(
     const syncable::ModelTypeBitSet& model_types) {
-  browser_sync::sessions::TypePayloadMap model_types_with_payloads =
-      browser_sync::sessions::MakeTypePayloadMapFromBitSet(model_types,
+  syncable::ModelTypePayloadMap model_types_with_payloads =
+      syncable::ModelTypePayloadMapFromBitSet(model_types,
           std::string());
 
   data_->OnIncomingNotification(model_types_with_payloads);

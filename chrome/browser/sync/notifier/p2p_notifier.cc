@@ -6,7 +6,7 @@
 
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
-#include "chrome/browser/sync/sessions/session_state.h"
+#include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "jingle/notifier/listener/mediator_thread_impl.h"
 #include "jingle/notifier/listener/talk_mediator_impl.h"
 
@@ -113,8 +113,8 @@ void P2PNotifier::MaybeEmitNotification() {
     VLOG(1) << "No enabled types -- not emitting notification";
     return;
   }
-  browser_sync::sessions::TypePayloadMap type_payloads =
-      browser_sync::sessions::MakeTypePayloadMapFromBitSet(
+  syncable::ModelTypePayloadMap type_payloads =
+      syncable::ModelTypePayloadMapFromBitSet(
           syncable::ModelTypeBitSetFromSet(enabled_types_), std::string());
   FOR_EACH_OBSERVER(SyncNotifierObserver, observer_list_,
                     OnIncomingNotification(type_payloads));

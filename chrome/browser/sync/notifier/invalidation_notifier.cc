@@ -86,8 +86,8 @@ void InvalidationNotifier::OnIncomingNotification(
     model_types.set();
   }
 
-  browser_sync::sessions::TypePayloadMap type_payloads =
-      browser_sync::sessions::MakeTypePayloadMapFromBitSet(
+  syncable::ModelTypePayloadMap type_payloads =
+      syncable::ModelTypePayloadMapFromBitSet(
           model_types, notification_payload);
   FOR_EACH_OBSERVER(SyncNotifierObserver, observer_list_,
                     OnIncomingNotification(type_payloads));

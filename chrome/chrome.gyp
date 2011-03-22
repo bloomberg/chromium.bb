@@ -754,6 +754,8 @@
         'browser/sync/syncable/directory_manager.h',
         'browser/sync/syncable/model_type.cc',
         'browser/sync/syncable/model_type.h',
+        'browser/sync/syncable/model_type_payload_map.cc',
+        'browser/sync/syncable/model_type_payload_map.h',
         'browser/sync/syncable/nigori_util.cc',
         'browser/sync/syncable/nigori_util.h',
         'browser/sync/syncable/syncable-inl.h',

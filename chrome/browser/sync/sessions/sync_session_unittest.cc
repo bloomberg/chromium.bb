@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -266,12 +266,14 @@ TEST_F(SyncSessionTest, ResetTransientState) {
 TEST_F(SyncSessionTest, Coalesce) {
   std::vector<ModelSafeWorker*> workers_one, workers_two;
   ModelSafeRoutingInfo routes_one, routes_two;
-  TypePayloadMap one_type = sessions::MakeTypePayloadMapFromBitSet(
-      ParamsMeaningJustOneEnabledType(),
-      std::string());;
-  TypePayloadMap all_types = sessions::MakeTypePayloadMapFromBitSet(
-      ParamsMeaningAllEnabledTypes(),
-      std::string());;
+  syncable::ModelTypePayloadMap one_type =
+      syncable::ModelTypePayloadMapFromBitSet(
+          ParamsMeaningJustOneEnabledType(),
+          std::string());
+  syncable::ModelTypePayloadMap all_types =
+      syncable::ModelTypePayloadMapFromBitSet(
+          ParamsMeaningAllEnabledTypes(),
+          std::string());
   SyncSourceInfo source_one(sync_pb::GetUpdatesCallerInfo::PERIODIC, one_type);
   SyncSourceInfo source_two(sync_pb::GetUpdatesCallerInfo::LOCAL, all_types);
 
@@ -302,15 +304,16 @@ TEST_F(SyncSessionTest, Coalesce) {
 TEST_F(SyncSessionTest, MakeTypePayloadMapFromBitSet) {
   syncable::ModelTypeBitSet types;
   std::string payload = "test";
-  TypePayloadMap types_with_payloads = MakeTypePayloadMapFromBitSet(types,
-      payload);
+  syncable::ModelTypePayloadMap types_with_payloads =
+      syncable::ModelTypePayloadMapFromBitSet(types,
+                                              payload);
   EXPECT_TRUE(types_with_payloads.empty());
 
   types[syncable::BOOKMARKS] = true;
   types[syncable::PASSWORDS] = true;
   types[syncable::AUTOFILL] = true;
   payload = "test2";
-  types_with_payloads = MakeTypePayloadMapFromBitSet(types, payload);
+  types_with_payloads = syncable::ModelTypePayloadMapFromBitSet(types, payload);
 
   ASSERT_EQ(3U, types_with_payloads.size());
   EXPECT_EQ(types_with_payloads[syncable::BOOKMARKS], payload);
@@ -320,8 +323,8 @@ TEST_F(SyncSessionTest, MakeTypePayloadMapFromBitSet) {
 
 TEST_F(SyncSessionTest, MakeTypePayloadMapFromRoutingInfo) {
   std::string payload = "test";
-  TypePayloadMap types_with_payloads
-      = MakeTypePayloadMapFromRoutingInfo(routes_, payload);
+  syncable::ModelTypePayloadMap types_with_payloads
+      = syncable::ModelTypePayloadMapFromRoutingInfo(routes_, payload);
   ASSERT_EQ(routes_.size(), types_with_payloads.size());
   for (ModelSafeRoutingInfo::iterator iter = routes_.begin();
        iter != routes_.end();
@@ -331,7 +334,7 @@ TEST_F(SyncSessionTest, MakeTypePayloadMapFromRoutingInfo) {
 }
 
 TEST_F(SyncSessionTest, CoalescePayloads) {
-  TypePayloadMap original;
+  syncable::ModelTypePayloadMap original;
   std::string empty_payload;
   std::string payload1 = "payload1";
   std::string payload2 = "payload2";
@@ -341,7 +344,7 @@ TEST_F(SyncSessionTest, CoalescePayloads) {
   original[syncable::AUTOFILL] = payload2;
   original[syncable::THEMES] = payload3;
 
-  TypePayloadMap update;
+  syncable::ModelTypePayloadMap update;
   update[syncable::BOOKMARKS] = empty_payload;  // Same.
   update[syncable::PASSWORDS] = empty_payload;  // Overwrite with empty.
   update[syncable::AUTOFILL] = payload1;        // Overwrite with non-empty.

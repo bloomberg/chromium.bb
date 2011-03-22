@@ -17,7 +17,7 @@ namespace browser_sync {
 using sessions::SyncSession;
 using sessions::SyncSessionSnapshot;
 using sessions::SyncSourceInfo;
-using sessions::TypePayloadMap;
+using syncable::ModelTypePayloadMap;
 using syncable::ModelTypeBitSet;
 using sync_pb::GetUpdatesCallerInfo;
 
@@ -190,15 +190,15 @@ void SyncerThread::ScheduleNudge(const TimeDelta& delay,
     return;
   }
 
-  TypePayloadMap types_with_payloads =
-      sessions::MakeTypePayloadMapFromBitSet(types, std::string());
+  ModelTypePayloadMap types_with_payloads =
+      syncable::ModelTypePayloadMapFromBitSet(types, std::string());
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &SyncerThread::ScheduleNudgeImpl, delay, source,
       types_with_payloads));
 }
 
 void SyncerThread::ScheduleNudgeWithPayloads(const TimeDelta& delay,
-    NudgeSource source, const TypePayloadMap& types_with_payloads) {
+    NudgeSource source, const ModelTypePayloadMap& types_with_payloads) {
   if (!thread_.IsRunning()) {
     NOTREACHED();
     return;
@@ -218,7 +218,7 @@ void SyncerThread::ScheduleClearUserDataImpl() {
 }
 
 void SyncerThread::ScheduleNudgeImpl(const TimeDelta& delay,
-    NudgeSource source, const TypePayloadMap& types_with_payloads) {
+    NudgeSource source, const ModelTypePayloadMap& types_with_payloads) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
   TimeTicks rough_start = TimeTicks::Now() + delay;
 
@@ -308,7 +308,7 @@ void SyncerThread::ScheduleConfigImpl(const ModelSafeRoutingInfo& routing_info,
   // TODO(tim): config-specific GetUpdatesCallerInfo value?
   SyncSession* session = new SyncSession(session_context_.get(), this,
       SyncSourceInfo(GetUpdatesCallerInfo::FIRST_UPDATE,
-          sessions::MakeTypePayloadMapFromRoutingInfo(
+          syncable::ModelTypePayloadMapFromRoutingInfo(
               routing_info, std::string())),
       routing_info, workers);
   ScheduleSyncSessionJob(TimeDelta::FromSeconds(0), CONFIGURATION, session);
@@ -382,7 +382,7 @@ void SyncerThread::FinishSyncSessionJob(const SyncSessionJob& job) {
   // Update timing information for how often datatypes are triggering nudges.
   base::TimeTicks now = TimeTicks::Now();
   if (!last_sync_session_end_time_.is_null()) {
-    TypePayloadMap::const_iterator iter;
+    ModelTypePayloadMap::const_iterator iter;
     for (iter = job.session->source().types.begin();
          iter != job.session->source().types.end();
          ++iter) {
@@ -525,8 +525,8 @@ void SyncerThread::PollTimerCallback() {
   std::vector<ModelSafeWorker*> w;
   session_context_->registrar()->GetModelSafeRoutingInfo(&r);
   session_context_->registrar()->GetWorkers(&w);
-  TypePayloadMap types_with_payloads =
-      sessions::MakeTypePayloadMapFromRoutingInfo(r, std::string());
+  ModelTypePayloadMap types_with_payloads =
+      syncable::ModelTypePayloadMapFromRoutingInfo(r, std::string());
   SyncSourceInfo info(GetUpdatesCallerInfo::PERIODIC, types_with_payloads);
   SyncSession* s = new SyncSession(session_context_.get(), this, info, r, w);
   ScheduleSyncSessionJob(TimeDelta::FromSeconds(0), POLL, s);

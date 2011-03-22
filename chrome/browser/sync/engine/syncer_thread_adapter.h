@@ -1,6 +1,9 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#ifndef CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD_ADAPTER_H_
+#define CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD_ADAPTER_H_
+#pragma once
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -9,6 +12,7 @@
 #include "chrome/browser/sync/engine/syncer_thread2.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/syncable/model_type_payload_map.h"
 
 namespace browser_sync {
 
@@ -33,7 +37,7 @@ class SyncerThreadAdapter {
   void NudgeSyncerWithPayloads(
       int milliseconds_from_now,
       SyncerThread::NudgeSource source,
-      const sessions::TypePayloadMap& model_types_with_payloads);
+      const syncable::ModelTypePayloadMap& model_types_with_payloads);
   void SetNotificationsEnabled(bool enabled);
   void CreateSyncer(const std::string& dirname);
 
@@ -48,3 +52,5 @@ class SyncerThreadAdapter {
 };
 
 }  //  namespace browser_sync
+
+#endif  // CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD_ADAPTER_H_

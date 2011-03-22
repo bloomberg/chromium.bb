@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,9 +87,9 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
 
   // Lazily create a session requesting all datatypes with no payload.
   sessions::SyncSession* session() {
-    sessions::TypePayloadMap types =
-        sessions::MakeTypePayloadMapFromRoutingInfo(routing_info_,
-                                                    std::string());
+    syncable::ModelTypePayloadMap types =
+        syncable::ModelTypePayloadMapFromRoutingInfo(routing_info_,
+                                                     std::string());
     return session(sessions::SyncSourceInfo(types));
   }
 

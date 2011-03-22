@@ -2868,6 +2868,7 @@
         'browser/sync/sessions/test_util.cc',
         'browser/sync/sessions/test_util.h',
         'browser/sync/syncable/directory_backing_store_unittest.cc',
+        'browser/sync/syncable/model_type_payload_map_unittest.cc',
         'browser/sync/syncable/model_type_unittest.cc',
         'browser/sync/syncable/nigori_util_unittest.cc',
         'browser/sync/syncable/syncable_id_unittest.cc',
