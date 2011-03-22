@@ -82,6 +82,7 @@
 #include "content/renderer/audio_message_filter.h"
 #include "content/renderer/content_renderer_client.h"
 #include "content/renderer/device_orientation_dispatcher.h"
+#include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/ggl.h"
 #include "content/renderer/load_progress_tracker.h"
@@ -963,7 +964,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderView, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_CaptureThumbnail, OnCaptureThumbnail)
     IPC_MESSAGE_HANDLER(ViewMsg_CaptureSnapshot, OnCaptureSnapshot)
     IPC_MESSAGE_HANDLER(ViewMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(ViewMsg_Stop, OnStop)

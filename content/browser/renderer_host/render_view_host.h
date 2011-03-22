@@ -302,9 +302,6 @@ class RenderViewHost : public RenderWidgetHost {
   // the data is available.
   void GetApplicationInfo(int32 page_id);
 
-  // Captures a thumbnail representation of the page.
-  void CaptureThumbnail();
-
   // Captures a snapshot of the page.
   void CaptureSnapshot();
 

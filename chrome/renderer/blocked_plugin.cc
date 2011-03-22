@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/render_messages.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"

@@ -7,7 +7,6 @@
 #include "base/format_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 
 namespace IPC {
@@ -104,44 +103,6 @@ void ParamTraits<WebKit::WebCache::ResourceTypeStat>::Log(
     const param_type& p, std::string* l) {
   l->append(base::StringPrintf("%" PRIuS " %" PRIuS " %" PRIuS " %" PRIuS,
                                p.count, p.size, p.liveSize, p.decodedSize));
-}
-
-void ParamTraits<WebKit::WebMediaPlayerAction>::Write(Message* m,
-                                                      const param_type& p) {
-  WriteParam(m, static_cast<int>(p.type));
-  WriteParam(m, p.enable);
-}
-
-bool ParamTraits<WebKit::WebMediaPlayerAction>::Read(const Message* m,
-                                                     void** iter,
-                                                     param_type* r) {
-  int temp;
-  if (!ReadParam(m, iter, &temp))
-    return false;
-  r->type = static_cast<param_type::Type>(temp);
-  return ReadParam(m, iter, &r->enable);
-}
-
-void ParamTraits<WebKit::WebMediaPlayerAction>::Log(const param_type& p,
-                                                    std::string* l) {
-  l->append("(");
-  switch (p.type) {
-    case WebKit::WebMediaPlayerAction::Play:
-      l->append("Play");
-      break;
-    case WebKit::WebMediaPlayerAction::Mute:
-      l->append("Mute");
-      break;
-    case WebKit::WebMediaPlayerAction::Loop:
-      l->append("Loop");
-      break;
-    default:
-      l->append("Unknown");
-      break;
-  }
-  l->append(", ");
-  LogParam(p.enable, l);
-  l->append(")");
 }
 
 void ParamTraits<WebKit::WebCompositionUnderline>::Write(Message* m,

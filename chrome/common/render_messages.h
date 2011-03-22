@@ -23,7 +23,6 @@
 #include "build/build_config.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/edit_command.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -52,12 +51,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/context_menu.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webdropdata.h"
-#include "webkit/glue/webmenuitem.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 
@@ -114,22 +111,6 @@ struct ParamTraits<FontDescriptor> {
   static void Log(const param_type& p, std::string* l);
 };
 #endif
-
-template <>
-struct ParamTraits<webkit_glue::CustomContextMenuContext> {
-  typedef webkit_glue::CustomContextMenuContext param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ContextMenuParams> {
-  typedef ContextMenuParams param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
 
 template <>
 struct ParamTraits<webkit::npapi::WebPluginGeometry> {
@@ -190,14 +171,6 @@ struct ParamTraits<gfx::NativeView> {
 
 #endif  // defined(OS_POSIX)
 
-template<>
-struct ParamTraits<WebMenuItem> {
-  typedef WebMenuItem param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
 template <>
 struct SimilarTypeTraits<ViewType::Type> {
   typedef int Type;
@@ -207,15 +180,6 @@ struct SimilarTypeTraits<ViewType::Type> {
 template <>
 struct ParamTraits<URLPattern> {
   typedef URLPattern param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-// Traits for EditCommand structure.
-template <>
-struct ParamTraits<EditCommand> {
-  typedef EditCommand param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
@@ -275,11 +239,15 @@ IPC_MESSAGE_CONTROL3(ViewMsg_SetCacheCapacities,
 // Tells the renderer to clear the cache.
 IPC_MESSAGE_CONTROL0(ViewMsg_ClearCache)
 
-// Tells the renderer to perform the given action on the media player
-// located at the given point.
-IPC_MESSAGE_ROUTED2(ViewMsg_MediaPlayerActionAt,
-                    gfx::Point, /* location */
-                    WebKit::WebMediaPlayerAction)
+// Tells the renderer to dump as much memory as it can, perhaps because we
+// have memory pressure or the renderer is (or will be) paged out.  This
+// should only result in purging objects we can recalculate, e.g. caches or
+// JS garbage, not in purging irreplaceable objects.
+IPC_MESSAGE_CONTROL0(ViewMsg_PurgeMemory)
+
+// Tells the render view to capture a thumbnail image of the page. The
+// render view responds with a ViewHostMsg_Snapshot.
+IPC_MESSAGE_ROUTED0(ViewMsg_CaptureSnapshot)
 
 IPC_MESSAGE_ROUTED0(ViewMsg_PrintNodeUnderContextMenu)
 
@@ -287,38 +255,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_PrintNodeUnderContextMenu)
 // showing the print dialog.
 IPC_MESSAGE_ROUTED1(ViewMsg_PrintForPrintPreview,
                     DictionaryValue /* settings*/)
-
-// Tells the render view to close.
-IPC_MESSAGE_ROUTED0(ViewMsg_Close)
-
-// Tells the render view to change its size.  A ViewHostMsg_PaintRect message
-// is generated in response provided new_size is not empty and not equal to
-// the view's current size.  The generated ViewHostMsg_PaintRect message will
-// have the IS_RESIZE_ACK flag set. It also receives the resizer rect so that
-// we don't have to fetch it every time WebKit asks for it.
-IPC_MESSAGE_ROUTED2(ViewMsg_Resize,
-                    gfx::Size /* new_size */,
-                    gfx::Rect /* resizer_rect */)
-
-// Sent to inform the view that it was hidden.  This allows it to reduce its
-// resource utilization.
-IPC_MESSAGE_ROUTED0(ViewMsg_WasHidden)
-
-// Tells the render view that it is no longer hidden (see WasHidden), and the
-// render view is expected to respond with a full repaint if needs_repainting
-// is true.  In that case, the generated ViewHostMsg_PaintRect message will
-// have the IS_RESTORE_ACK flag set.  If needs_repainting is false, then this
-// message does not trigger a message in response.
-IPC_MESSAGE_ROUTED1(ViewMsg_WasRestored,
-                    bool /* needs_repainting */)
-
-// Tells the render view to capture a thumbnail image of the page. The
-// render view responds with a ViewHostMsg_Thumbnail.
-IPC_MESSAGE_ROUTED0(ViewMsg_CaptureThumbnail)
-
-// Tells the render view to capture a thumbnail image of the page. The
-// render view responds with a ViewHostMsg_Snapshot.
-IPC_MESSAGE_ROUTED0(ViewMsg_CaptureSnapshot)
 
 // Tells the render view to switch the CSS to print media type, renders every
 // requested pages and switch back the CSS to display media type.
@@ -342,69 +278,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_ResetScriptedPrintCount)
 // message is already valid in the browser process.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_PagesReadyForPreview,
                     ViewHostMsg_DidPreviewDocument_Params /* params */)
-
-// Tells the renderer to dump as much memory as it can, perhaps because we
-// have memory pressure or the renderer is (or will be) paged out.  This
-// should only result in purging objects we can recalculate, e.g. caches or
-// JS garbage, not in purging irreplaceable objects.
-IPC_MESSAGE_CONTROL0(ViewMsg_PurgeMemory)
-
-// Sent to render the view into the supplied transport DIB, resize
-// the web widget to match the |page_size|, scale it by the
-// appropriate scale to make it fit the |desired_size|, and return
-// it.  In response to this message, the host generates a
-// ViewHostMsg_PaintAtSize_ACK message.  Note that the DIB *must* be
-// the right size to receive an RGBA image at the |desired_size|.
-// |tag| is sent along with ViewHostMsg_PaintAtSize_ACK unmodified to
-// identify the PaintAtSize message the ACK belongs to.
-IPC_MESSAGE_ROUTED4(ViewMsg_PaintAtSize,
-                    TransportDIB::Handle /* dib_handle */,
-                    int /* tag */,
-                    gfx::Size /* page_size */,
-                    gfx::Size /* desired_size */)
-
-// Tells the render view that a ViewHostMsg_UpdateRect message was processed.
-// This signals the render view that it can send another UpdateRect message.
-IPC_MESSAGE_ROUTED0(ViewMsg_UpdateRect_ACK)
-
-// Message payload includes:
-// 1. A blob that should be cast to WebInputEvent
-// 2. An optional boolean value indicating if a RawKeyDown event is associated
-//    to a keyboard shortcut of the browser.
-IPC_MESSAGE_ROUTED0(ViewMsg_HandleInputEvent)
-
-// This message notifies the renderer that the next key event is bound to one
-// or more pre-defined edit commands. If the next key event is not handled
-// by webkit, the specified edit commands shall be executed against current
-// focused frame.
-// Parameters
-// * edit_commands (see chrome/common/edit_command_types.h)
-//   Contains one or more edit commands.
-// See third_party/WebKit/Source/WebCore/editing/EditorCommand.cpp for detailed
-// definition of webkit edit commands.
-//
-// This message must be sent just before sending a key event.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetEditCommandsForNextKeyEvent,
-                    std::vector<EditCommand> /* edit_commands */)
-
-// Message payload is the name/value of a WebCore edit command to execute.
-IPC_MESSAGE_ROUTED2(ViewMsg_ExecuteEditCommand,
-                    std::string, /* name */
-                    std::string /* value */)
-
-IPC_MESSAGE_ROUTED0(ViewMsg_MouseCaptureLost)
-
-// TODO(darin): figure out how this meshes with RestoreFocus
-IPC_MESSAGE_ROUTED1(ViewMsg_SetFocus, bool /* enable */)
-
-// Tells the renderer to focus the first (last if reverse is true) focusable
-// node.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetInitialFocus, bool /* reverse */)
-
-// Tells the renderer to scroll the currently focused node into view only if
-// the currently focused node is a Text node (textfield, text area or content
-// editable divs).
-IPC_MESSAGE_ROUTED0(ViewMsg_ScrollFocusedEditableNodeIntoView)
 
 // Tells the renderer to perform the specified navigation, interrupting any
 // existing navigation.
@@ -930,11 +803,6 @@ IPC_MESSAGE_CONTROL1(ViewMsg_SpellChecker_WordAdded,
 IPC_MESSAGE_CONTROL1(ViewMsg_SpellChecker_EnableAutoSpellCorrect,
                      bool /* enable */)
 
-// Executes custom context menu action that was provided from WebKit.
-IPC_MESSAGE_ROUTED2(ViewMsg_CustomContextMenuAction,
-                    webkit_glue::CustomContextMenuContext /* custom_context */,
-                    unsigned /* action */)
-
 // Tells the renderer to translate the page contents from one language to
 // another.
 IPC_MESSAGE_ROUTED4(ViewMsg_TranslatePage,
@@ -994,11 +862,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_StartPhishingDetection, GURL)
 IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
                     int /* selected index, -1 means no selection */)
 
-// Sent in response to a ViewHostMsg_ContextMenu to let the renderer know that
-// the menu has been closed.
-IPC_MESSAGE_ROUTED1(ViewMsg_ContextMenuClosed,
-                    webkit_glue::CustomContextMenuContext /* custom_context */)
-
 // Tells the renderer that the network state has changed and that
 // window.navigator.onLine should be updated for all WebViews.
 IPC_MESSAGE_ROUTED1(ViewMsg_NetworkStateChanged,
@@ -1051,10 +914,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ShowWidget,
 // Message to show a full screen widget.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowFullscreenWidget,
                     int /* route_id */)
-
-// Message to show a popup menu using native cocoa controls (Mac only).
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowPopup,
-                    ViewHostMsg_ShowPopup_Params)
 
 // This message is sent after ViewHostMsg_ShowView to cause the RenderView
 // to run in a modal fashion until it is closed.
@@ -1394,12 +1253,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_Snapshot,
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateFaviconURL,
                     int32 /* page_id */,
                     GURL /* url of the favicon */)
-
-// Used to tell the parent that the user right clicked on an area of the
-// content area, and a context menu should be shown for it. The params
-// object contains information about the node(s) that were selected when the
-// user right clicked.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ContextMenu, ContextMenuParams)
 
 // Requests that the given URL be opened in the specified manner.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_OpenURL,

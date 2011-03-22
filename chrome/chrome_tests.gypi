@@ -2436,8 +2436,8 @@
             '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
           'sources': [
-            'renderer/external_popup_menu_unittest.cc',
             'browser/spellcheck_message_filter_browsertest.cc',
+            '../content/renderer/external_popup_menu_unittest.cc',
           ],
         }, { # else: OS != "mac"
           'sources!': [

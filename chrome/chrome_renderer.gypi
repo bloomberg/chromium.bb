@@ -66,8 +66,6 @@
         'renderer/extensions/js_only_v8_extensions.h',
         'renderer/extensions/renderer_extension_bindings.cc',
         'renderer/extensions/renderer_extension_bindings.h',
-        'renderer/external_popup_menu.cc',
-        'renderer/external_popup_menu.h',
         'renderer/loadtimes_extension_bindings.h',
         'renderer/loadtimes_extension_bindings.cc',
         'renderer/net/predictor_queue.cc',

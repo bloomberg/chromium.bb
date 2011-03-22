@@ -34,6 +34,8 @@
         'renderer/cookie_message_filter.h',
         'renderer/device_orientation_dispatcher.cc',
         'renderer/device_orientation_dispatcher.h',
+        'renderer/external_popup_menu.cc',
+        'renderer/external_popup_menu.h',
         'renderer/geolocation_dispatcher.cc',
         'renderer/geolocation_dispatcher.h',
         'renderer/ggl.cc',

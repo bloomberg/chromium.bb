@@ -11,7 +11,7 @@
 #include <string>
 
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
-#include "chrome/common/edit_command.h"
+#include "content/common/edit_command.h"
 
 struct NativeWebKeyboardEvent;
 

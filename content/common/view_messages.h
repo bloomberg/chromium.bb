@@ -5,9 +5,15 @@
 // IPC messages for page rendering.
 // Multiply-included message file, hence no include guard.
 
+#include "content/common/common_param_traits.h"
 #include "content/common/css_colors.h"
+#include "content/common/edit_command.h"
 #include "content/common/renderer_preferences.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
+#include "ui/gfx/rect.h"
+#include "webkit/glue/context_menu.h"
+#include "webkit/glue/webmenuitem.h"
 #include "webkit/glue/webpreferences.h"
 
 #define IPC_MESSAGE_START ViewMsgStart
@@ -15,6 +21,14 @@
 IPC_ENUM_TRAITS(CSSColors::CSSColorName)
 IPC_ENUM_TRAITS(RendererPreferencesHintingEnum)
 IPC_ENUM_TRAITS(RendererPreferencesSubpixelRenderingEnum)
+IPC_ENUM_TRAITS(WebKit::WebContextMenuData::MediaType)
+IPC_ENUM_TRAITS(WebKit::WebMediaPlayerAction::Type)
+IPC_ENUM_TRAITS(WebMenuItem::Type)
+
+IPC_STRUCT_TRAITS_BEGIN(EditCommand)
+  IPC_STRUCT_TRAITS_MEMBER(name)
+  IPC_STRUCT_TRAITS_MEMBER(value)
+IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(can_accept_load_drops)
@@ -31,6 +45,11 @@ IPC_STRUCT_TRAITS_BEGIN(RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(inactive_selection_fg_color)
   IPC_STRUCT_TRAITS_MEMBER(browser_handles_top_level_requests)
   IPC_STRUCT_TRAITS_MEMBER(caret_blink_interval)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(WebKit::WebMediaPlayerAction)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(enable)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(WebPreferences)
@@ -92,6 +111,74 @@ IPC_STRUCT_TRAITS_BEGIN(WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(fullscreen_enabled)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(WebMenuItem)
+  IPC_STRUCT_TRAITS_MEMBER(label)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(action)
+  IPC_STRUCT_TRAITS_MEMBER(rtl)
+  IPC_STRUCT_TRAITS_MEMBER(has_directional_override)
+  IPC_STRUCT_TRAITS_MEMBER(enabled)
+  IPC_STRUCT_TRAITS_MEMBER(checked)
+  IPC_STRUCT_TRAITS_MEMBER(submenu)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(webkit_glue::CustomContextMenuContext)
+  IPC_STRUCT_TRAITS_MEMBER(is_pepper_menu)
+  IPC_STRUCT_TRAITS_MEMBER(request_id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ContextMenuParams)
+  IPC_STRUCT_TRAITS_MEMBER(media_type)
+  IPC_STRUCT_TRAITS_MEMBER(x)
+  IPC_STRUCT_TRAITS_MEMBER(y)
+  IPC_STRUCT_TRAITS_MEMBER(link_url)
+  IPC_STRUCT_TRAITS_MEMBER(unfiltered_link_url)
+  IPC_STRUCT_TRAITS_MEMBER(src_url)
+  IPC_STRUCT_TRAITS_MEMBER(is_image_blocked)
+  IPC_STRUCT_TRAITS_MEMBER(page_url)
+  IPC_STRUCT_TRAITS_MEMBER(frame_url)
+  IPC_STRUCT_TRAITS_MEMBER(frame_content_state)
+  IPC_STRUCT_TRAITS_MEMBER(media_flags)
+  IPC_STRUCT_TRAITS_MEMBER(selection_text)
+  IPC_STRUCT_TRAITS_MEMBER(misspelled_word)
+  IPC_STRUCT_TRAITS_MEMBER(dictionary_suggestions)
+  IPC_STRUCT_TRAITS_MEMBER(spellcheck_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(is_editable)
+#if defined(OS_MACOSX)
+  IPC_STRUCT_TRAITS_MEMBER(writing_direction_default)
+  IPC_STRUCT_TRAITS_MEMBER(writing_direction_left_to_right)
+  IPC_STRUCT_TRAITS_MEMBER(writing_direction_right_to_left)
+#endif  // OS_MACOSX
+  IPC_STRUCT_TRAITS_MEMBER(edit_flags)
+  IPC_STRUCT_TRAITS_MEMBER(security_info)
+  IPC_STRUCT_TRAITS_MEMBER(frame_charset)
+  IPC_STRUCT_TRAITS_MEMBER(custom_context)
+  IPC_STRUCT_TRAITS_MEMBER(custom_items)
+IPC_STRUCT_TRAITS_END()
+
+// This message is used for supporting popup menus on Mac OS X using native
+// Cocoa controls. The renderer sends us this message which we use to populate
+// the popup menu.
+IPC_STRUCT_BEGIN(ViewHostMsg_ShowPopup_Params)
+  // Position on the screen.
+  IPC_STRUCT_MEMBER(gfx::Rect, bounds)
+
+  // The height of each item in the menu.
+  IPC_STRUCT_MEMBER(int, item_height)
+
+  // The size of the font to use for those items.
+  IPC_STRUCT_MEMBER(double, item_font_size)
+
+  // The currently selected (displayed) item in the menu.
+  IPC_STRUCT_MEMBER(int, selected_item)
+
+  // The entire list of items in the popup menu.
+  IPC_STRUCT_MEMBER(std::vector<WebMenuItem>, popup_items)
+
+  // Whether items should be right-aligned.
+  IPC_STRUCT_MEMBER(bool, right_aligned)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // The parent window's id.
   IPC_STRUCT_MEMBER(gfx::NativeViewId, parent_window)
@@ -151,7 +238,117 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetRendererPrefs,
                     RendererPreferences)
 
 // This passes a set of webkit preferences down to the renderer.
-IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences, WebPreferences)
+IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences,
+                    WebPreferences)
+
+// Tells the render view to close.
+IPC_MESSAGE_ROUTED0(ViewMsg_Close)
+
+// Tells the render view to change its size.  A ViewHostMsg_PaintRect message
+// is generated in response provided new_size is not empty and not equal to
+// the view's current size.  The generated ViewHostMsg_PaintRect message will
+// have the IS_RESIZE_ACK flag set. It also receives the resizer rect so that
+// we don't have to fetch it every time WebKit asks for it.
+IPC_MESSAGE_ROUTED2(ViewMsg_Resize,
+                    gfx::Size /* new_size */,
+                    gfx::Rect /* resizer_rect */)
+
+// Sent to inform the view that it was hidden.  This allows it to reduce its
+// resource utilization.
+IPC_MESSAGE_ROUTED0(ViewMsg_WasHidden)
+
+// Tells the render view that it is no longer hidden (see WasHidden), and the
+// render view is expected to respond with a full repaint if needs_repainting
+// is true.  In that case, the generated ViewHostMsg_PaintRect message will
+// have the IS_RESTORE_ACK flag set.  If needs_repainting is false, then this
+// message does not trigger a message in response.
+IPC_MESSAGE_ROUTED1(ViewMsg_WasRestored,
+                    bool /* needs_repainting */)
+
+// Sent to render the view into the supplied transport DIB, resize
+// the web widget to match the |page_size|, scale it by the
+// appropriate scale to make it fit the |desired_size|, and return
+// it.  In response to this message, the host generates a
+// ViewHostMsg_PaintAtSize_ACK message.  Note that the DIB *must* be
+// the right size to receive an RGBA image at the |desired_size|.
+// |tag| is sent along with ViewHostMsg_PaintAtSize_ACK unmodified to
+// identify the PaintAtSize message the ACK belongs to.
+IPC_MESSAGE_ROUTED4(ViewMsg_PaintAtSize,
+                    TransportDIB::Handle /* dib_handle */,
+                    int /* tag */,
+                    gfx::Size /* page_size */,
+                    gfx::Size /* desired_size */)
+
+// Tells the render view that a ViewHostMsg_UpdateRect message was processed.
+// This signals the render view that it can send another UpdateRect message.
+IPC_MESSAGE_ROUTED0(ViewMsg_UpdateRect_ACK)
+
+// Message payload includes:
+// 1. A blob that should be cast to WebInputEvent
+// 2. An optional boolean value indicating if a RawKeyDown event is associated
+//    to a keyboard shortcut of the browser.
+IPC_MESSAGE_ROUTED0(ViewMsg_HandleInputEvent)
+
+// This message notifies the renderer that the next key event is bound to one
+// or more pre-defined edit commands. If the next key event is not handled
+// by webkit, the specified edit commands shall be executed against current
+// focused frame.
+// Parameters
+// * edit_commands (see chrome/common/edit_command_types.h)
+//   Contains one or more edit commands.
+// See third_party/WebKit/Source/WebCore/editing/EditorCommand.cpp for detailed
+// definition of webkit edit commands.
+//
+// This message must be sent just before sending a key event.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetEditCommandsForNextKeyEvent,
+                    std::vector<EditCommand> /* edit_commands */)
+
+// Message payload is the name/value of a WebCore edit command to execute.
+IPC_MESSAGE_ROUTED2(ViewMsg_ExecuteEditCommand,
+                    std::string, /* name */
+                    std::string /* value */)
+
+IPC_MESSAGE_ROUTED0(ViewMsg_MouseCaptureLost)
+
+// TODO(darin): figure out how this meshes with RestoreFocus
+IPC_MESSAGE_ROUTED1(ViewMsg_SetFocus,
+                    bool /* enable */)
+
+// Tells the renderer to focus the first (last if reverse is true) focusable
+// node.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetInitialFocus,
+                    bool /* reverse */)
+
+// Tells the renderer to scroll the currently focused node into view only if
+// the currently focused node is a Text node (textfield, text area or content
+// editable divs).
+IPC_MESSAGE_ROUTED0(ViewMsg_ScrollFocusedEditableNodeIntoView)
+
+// Executes custom context menu action that was provided from WebKit.
+IPC_MESSAGE_ROUTED2(ViewMsg_CustomContextMenuAction,
+                    webkit_glue::CustomContextMenuContext /* custom_context */,
+                    unsigned /* action */)
+
+// Sent in response to a ViewHostMsg_ContextMenu to let the renderer know that
+// the menu has been closed.
+IPC_MESSAGE_ROUTED1(ViewMsg_ContextMenuClosed,
+                    webkit_glue::CustomContextMenuContext /* custom_context */)
+
+// Tells the renderer to perform the given action on the media player
+// located at the given point.
+IPC_MESSAGE_ROUTED2(ViewMsg_MediaPlayerActionAt,
+                    gfx::Point, /* location */
+                    WebKit::WebMediaPlayerAction)
+
 
 // Messages sent from the renderer to the browser.
 
+// Used to tell the parent that the user right clicked on an area of the
+// content area, and a context menu should be shown for it. The params
+// object contains information about the node(s) that were selected when the
+// user right clicked.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_ContextMenu, ContextMenuParams)
+
+// Message to show a popup menu using native cocoa controls (Mac only).
+IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowPopup,
+                    ViewHostMsg_ShowPopup_Params)

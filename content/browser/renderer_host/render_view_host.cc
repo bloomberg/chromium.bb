@@ -561,10 +561,6 @@ void RenderViewHost::GetApplicationInfo(int32 page_id) {
   Send(new ViewMsg_GetApplicationInfo(routing_id(), page_id));
 }
 
-void RenderViewHost::CaptureThumbnail() {
-  Send(new ViewMsg_CaptureThumbnail(routing_id()));
-}
-
 void RenderViewHost::CaptureSnapshot() {
   Send(new ViewMsg_CaptureSnapshot(routing_id()));
 }
@@ -1441,17 +1437,12 @@ void RenderViewHost::ForwardKeyboardEvent(
 
 void RenderViewHost::ForwardEditCommand(const std::string& name,
                                         const std::string& value) {
-  IPC::Message* message = new ViewMsg_ExecuteEditCommand(routing_id(),
-                                                         name,
-                                                         value);
-  Send(message);
+  Send(new ViewMsg_ExecuteEditCommand(routing_id(), name, value));
 }
 
 void RenderViewHost::ForwardEditCommandsForNextKeyEvent(
     const EditCommands& edit_commands) {
-  IPC::Message* message = new ViewMsg_SetEditCommandsForNextKeyEvent(
-      routing_id(), edit_commands);
-  Send(message);
+  Send(new ViewMsg_SetEditCommandsForNextKeyEvent(routing_id(), edit_commands));
 }
 
 void RenderViewHost::ForwardMessageFromExternalHost(const std::string& message,

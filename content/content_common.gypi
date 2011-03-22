@@ -69,6 +69,7 @@
         'common/dom_storage_messages.h',
         'common/dx_diag_node.cc',
         'common/dx_diag_node.h',
+        'common/edit_command.h',
         'common/file_path_watcher/file_path_watcher.cc',
         'common/file_path_watcher/file_path_watcher.h',
         'common/file_path_watcher/file_path_watcher_inotify.cc',

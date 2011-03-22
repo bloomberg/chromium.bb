@@ -141,16 +141,6 @@ ViewHostMsg_DidPrintPage_Params::ViewHostMsg_DidPrintPage_Params()
 ViewHostMsg_DidPrintPage_Params::~ViewHostMsg_DidPrintPage_Params() {
 }
 
-ViewHostMsg_ShowPopup_Params::ViewHostMsg_ShowPopup_Params()
-    : item_height(0),
-      item_font_size(0),
-      selected_item(0),
-      right_aligned(false) {
-}
-
-ViewHostMsg_ShowPopup_Params::~ViewHostMsg_ShowPopup_Params() {
-}
-
 ViewHostMsg_ScriptedPrint_Params::ViewHostMsg_ScriptedPrint_Params()
     : routing_id(0),
       host_window_id(0),
@@ -897,45 +887,6 @@ bool ParamTraits<ViewHostMsg_DidPrintPage_Params>::Read(const Message* m,
 void ParamTraits<ViewHostMsg_DidPrintPage_Params>::Log(const param_type& p,
                                                        std::string* l) {
   l->append("<ViewHostMsg_DidPrintPage_Params>");
-}
-
-void ParamTraits<ViewHostMsg_ShowPopup_Params>::Write(Message* m,
-                                                      const param_type& p) {
-  WriteParam(m, p.bounds);
-  WriteParam(m, p.item_height);
-  WriteParam(m, p.item_font_size);
-  WriteParam(m, p.selected_item);
-  WriteParam(m, p.popup_items);
-  WriteParam(m, p.right_aligned);
-}
-
-bool ParamTraits<ViewHostMsg_ShowPopup_Params>::Read(const Message* m,
-                                                     void** iter,
-                                                     param_type* p) {
-  return
-      ReadParam(m, iter, &p->bounds) &&
-      ReadParam(m, iter, &p->item_height) &&
-      ReadParam(m, iter, &p->item_font_size) &&
-      ReadParam(m, iter, &p->selected_item) &&
-      ReadParam(m, iter, &p->popup_items) &&
-      ReadParam(m, iter, &p->right_aligned);
-}
-
-void ParamTraits<ViewHostMsg_ShowPopup_Params>::Log(const param_type& p,
-                                                    std::string* l) {
-  l->append("(");
-  LogParam(p.bounds, l);
-  l->append(", ");
-  LogParam(p.item_height, l);
-  l->append(", ");
-  LogParam(p.item_font_size, l);
-  l->append(", ");
-  LogParam(p.selected_item, l);
-  l->append(", ");
-  LogParam(p.popup_items, l);
-  l->append(", ");
-  LogParam(p.right_aligned, l);
-  l->append(")");
 }
 
 void ParamTraits<ViewHostMsg_ScriptedPrint_Params>::Write(Message* m,

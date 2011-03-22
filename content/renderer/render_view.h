@@ -23,11 +23,10 @@
 #include "base/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/edit_command.h"
 #include "chrome/common/view_types.h"
-#include "chrome/renderer/external_popup_menu.h"
 #include "chrome/renderer/page_load_histograms.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
+#include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/page_zoom.h"
 #include "content/common/renderer_preferences.h"
@@ -59,8 +58,8 @@ class DeviceOrientationDispatcher;
 class DevToolsAgent;
 class DevToolsClient;
 class DomAutomationController;
-class WebUIBindings;
 class ExternalHostBindings;
+class ExternalPopupMenu;
 class FilePath;
 class GeolocationDispatcher;
 class GeolocationDispatcherOld;
@@ -80,6 +79,7 @@ class SpeechInputDispatcher;
 class SpellCheckProvider;
 class WebPluginDelegatePepper;
 class WebPluginDelegateProxy;
+class WebUIBindings;
 struct ContextMenuMediaParams;
 struct PP_Flash_NetAddress;
 struct ThumbnailScore;

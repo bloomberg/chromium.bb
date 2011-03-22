@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EDIT_COMMAND_H_
-#define CHROME_COMMON_EDIT_COMMAND_H_
+#ifndef CONTENT_COMMON_EDIT_COMMAND_H_
+#define CONTENT_COMMON_EDIT_COMMAND_H_
 #pragma once
 
 #include <string>
@@ -22,4 +22,4 @@ struct EditCommand {
 
 typedef std::vector<EditCommand> EditCommands;
 
-#endif  // CHROME_COMMON_EDIT_COMMAND_H_
+#endif  // CONTENT_COMMON_EDIT_COMMAND_H_

@@ -37,7 +37,6 @@
 namespace WebKit {
 struct WebCompositionUnderline;
 struct WebFindOptions;
-struct WebMediaPlayerAction;
 struct WebRect;
 struct WebScreenInfo;
 }
@@ -153,19 +152,6 @@ struct ParamTraits<WebKit::WebCache::ResourceTypeStats> {
 
 template <>
 struct SimilarTypeTraits<WebKit::WebDragOperation> {
-  typedef int Type;
-};
-
-template <>
-struct ParamTraits<WebKit::WebMediaPlayerAction> {
-  typedef WebKit::WebMediaPlayerAction param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct SimilarTypeTraits<WebKit::WebContextMenuData::MediaType> {
   typedef int Type;
 };
 

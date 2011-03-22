@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/external_popup_menu.h"
+#include "content/renderer/external_popup_menu.h"
 
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExternalPopupMenuClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"

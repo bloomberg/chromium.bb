@@ -35,45 +35,6 @@ namespace IPC {
 
 namespace IPC {
 
-template<>
-struct ParamTraits<WebMenuItem::Type> {
-  typedef WebMenuItem::Type param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int type;
-    if (!m->ReadInt(iter, &type))
-      return false;
-    *p = static_cast<WebMenuItem::Type>(type);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    std::string type;
-    switch (p) {
-      case WebMenuItem::OPTION:
-        type = "OPTION";
-        break;
-      case WebMenuItem::CHECKABLE_OPTION:
-        type = "CHECKABLE_OPTION";
-        break;
-      case WebMenuItem::GROUP:
-        type = "GROUP";
-        break;
-      case WebMenuItem::SEPARATOR:
-        type = "SEPARATOR";
-        break;
-      case WebMenuItem::SUBMENU:
-        type = "SUBMENU";
-        break;
-      default:
-        type = "UNKNOWN";
-        break;
-    }
-    LogParam(type, l);
-  }
-};
-
 #if defined(OS_MACOSX)
 void ParamTraits<FontDescriptor>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.font_name);
@@ -92,96 +53,6 @@ void ParamTraits<FontDescriptor>::Log(const param_type& p, std::string* l) {
   l->append("<FontDescriptor>");
 }
 #endif
-
-void ParamTraits<webkit_glue::CustomContextMenuContext>::Write(
-    Message* m,
-    const param_type& p) {
-  WriteParam(m, p.is_pepper_menu);
-  WriteParam(m, p.request_id);
-}
-
-bool ParamTraits<webkit_glue::CustomContextMenuContext>::Read(const Message* m,
-                                                              void** iter,
-                                                              param_type* p) {
-  return
-      ReadParam(m, iter, &p->is_pepper_menu) &&
-      ReadParam(m, iter, &p->request_id);
-}
-
-void ParamTraits<webkit_glue::CustomContextMenuContext>::Log(
-    const param_type& p,
-    std::string* l) {
-  l->append("(");
-  LogParam(p.is_pepper_menu, l);
-  l->append(", ");
-  LogParam(p.request_id, l);
-  l->append(")");
-}
-
-void ParamTraits<ContextMenuParams>::Write(Message* m, const param_type& p) {
-  WriteParam(m, p.media_type);
-  WriteParam(m, p.x);
-  WriteParam(m, p.y);
-  WriteParam(m, p.link_url);
-  WriteParam(m, p.unfiltered_link_url);
-  WriteParam(m, p.src_url);
-  WriteParam(m, p.is_image_blocked);
-  WriteParam(m, p.page_url);
-  WriteParam(m, p.frame_url);
-  WriteParam(m, p.frame_content_state);
-  WriteParam(m, p.media_flags);
-  WriteParam(m, p.selection_text);
-  WriteParam(m, p.misspelled_word);
-  WriteParam(m, p.dictionary_suggestions);
-  WriteParam(m, p.spellcheck_enabled);
-  WriteParam(m, p.is_editable);
-#if defined(OS_MACOSX)
-  WriteParam(m, p.writing_direction_default);
-  WriteParam(m, p.writing_direction_left_to_right);
-  WriteParam(m, p.writing_direction_right_to_left);
-#endif  // OS_MACOSX
-  WriteParam(m, p.edit_flags);
-  WriteParam(m, p.security_info);
-  WriteParam(m, p.frame_charset);
-  WriteParam(m, p.custom_context);
-  WriteParam(m, p.custom_items);
-}
-
-bool ParamTraits<ContextMenuParams>::Read(const Message* m, void** iter,
-                                          param_type* p) {
-  return
-      ReadParam(m, iter, &p->media_type) &&
-      ReadParam(m, iter, &p->x) &&
-      ReadParam(m, iter, &p->y) &&
-      ReadParam(m, iter, &p->link_url) &&
-      ReadParam(m, iter, &p->unfiltered_link_url) &&
-      ReadParam(m, iter, &p->src_url) &&
-      ReadParam(m, iter, &p->is_image_blocked) &&
-      ReadParam(m, iter, &p->page_url) &&
-      ReadParam(m, iter, &p->frame_url) &&
-      ReadParam(m, iter, &p->frame_content_state) &&
-      ReadParam(m, iter, &p->media_flags) &&
-      ReadParam(m, iter, &p->selection_text) &&
-      ReadParam(m, iter, &p->misspelled_word) &&
-      ReadParam(m, iter, &p->dictionary_suggestions) &&
-      ReadParam(m, iter, &p->spellcheck_enabled) &&
-      ReadParam(m, iter, &p->is_editable) &&
-#if defined(OS_MACOSX)
-      ReadParam(m, iter, &p->writing_direction_default) &&
-      ReadParam(m, iter, &p->writing_direction_left_to_right) &&
-      ReadParam(m, iter, &p->writing_direction_right_to_left) &&
-#endif  // OS_MACOSX
-      ReadParam(m, iter, &p->edit_flags) &&
-      ReadParam(m, iter, &p->security_info) &&
-      ReadParam(m, iter, &p->frame_charset) &&
-      ReadParam(m, iter, &p->custom_context) &&
-      ReadParam(m, iter, &p->custom_items);
-}
-
-void ParamTraits<ContextMenuParams>::Log(const param_type& p,
-                                         std::string* l) {
-  l->append("<ContextMenuParams>");
-}
 
 void ParamTraits<webkit::npapi::WebPluginGeometry>::Write(Message* m,
                                                           const param_type& p) {
@@ -320,51 +191,6 @@ void ParamTraits<WebDropData>::Log(const param_type& p, std::string* l) {
   l->append("<WebDropData>");
 }
 
-void ParamTraits<WebMenuItem>::Write(Message* m, const param_type& p) {
-  WriteParam(m, p.label);
-  WriteParam(m, p.type);
-  WriteParam(m, p.action);
-  WriteParam(m, p.rtl);
-  WriteParam(m, p.has_directional_override);
-  WriteParam(m, p.enabled);
-  WriteParam(m, p.checked);
-  WriteParam(m, p.submenu);
-}
-
-bool ParamTraits<WebMenuItem>::Read(const Message* m,
-                                    void** iter,
-                                    param_type* p) {
-  return
-      ReadParam(m, iter, &p->label) &&
-      ReadParam(m, iter, &p->type) &&
-      ReadParam(m, iter, &p->action) &&
-      ReadParam(m, iter, &p->rtl) &&
-      ReadParam(m, iter, &p->has_directional_override) &&
-      ReadParam(m, iter, &p->enabled) &&
-      ReadParam(m, iter, &p->checked) &&
-      ReadParam(m, iter, &p->submenu);
-}
-
-void ParamTraits<WebMenuItem>::Log(const param_type& p, std::string* l) {
-  l->append("(");
-  LogParam(p.label, l);
-  l->append(", ");
-  LogParam(p.type, l);
-  l->append(", ");
-  LogParam(p.action, l);
-  l->append(", ");
-  LogParam(p.rtl, l);
-  l->append(", ");
-  LogParam(p.has_directional_override, l);
-  l->append(", ");
-  LogParam(p.enabled, l);
-  l->append(", ");
-  LogParam(p.checked, l);
-  l->append(", ");
-  LogParam(p.submenu, l);
-  l->append(")");
-}
-
 void ParamTraits<URLPattern>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.valid_schemes());
   WriteParam(m, p.GetAsString());
@@ -384,24 +210,6 @@ bool ParamTraits<URLPattern>::Read(const Message* m, void** iter,
 
 void ParamTraits<URLPattern>::Log(const param_type& p, std::string* l) {
   LogParam(p.GetAsString(), l);
-}
-
-void ParamTraits<EditCommand>::Write(Message* m, const param_type& p) {
-  WriteParam(m, p.name);
-  WriteParam(m, p.value);
-}
-
-bool ParamTraits<EditCommand>::Read(const Message* m, void** iter,
-                                    param_type* p) {
-  return ReadParam(m, iter, &p->name) && ReadParam(m, iter, &p->value);
-}
-
-void ParamTraits<EditCommand>::Log(const param_type& p, std::string* l) {
-  l->append("(");
-  LogParam(p.name, l);
-  l->append(":");
-  LogParam(p.value, l);
-  l->append(")");
 }
 
 void ParamTraits<webkit_glue::WebCookie>::Write(Message* m,

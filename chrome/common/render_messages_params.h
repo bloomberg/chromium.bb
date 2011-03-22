@@ -30,7 +30,6 @@
 #include "ui/gfx/size.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/webaccessibility.h"
-#include "webkit/glue/webmenuitem.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 // TODO(erg): Split this file into $1_db_params.h, $1_audio_params.h,
@@ -520,32 +519,6 @@ struct ViewHostMsg_DidPrintPage_Params {
   bool has_visible_overlays;
 };
 
-// This message is used for supporting popup menus on Mac OS X using native
-// Cocoa controls. The renderer sends us this message which we use to populate
-// the popup menu.
-struct ViewHostMsg_ShowPopup_Params {
-  ViewHostMsg_ShowPopup_Params();
-  ~ViewHostMsg_ShowPopup_Params();
-
-  // Position on the screen.
-  gfx::Rect bounds;
-
-  // The height of each item in the menu.
-  int item_height;
-
-  // The size of the font to use for those items.
-  double item_font_size;
-
-  // The currently selected (displayed) item in the menu.
-  int selected_item;
-
-  // The entire list of items in the popup menu.
-  std::vector<WebMenuItem> popup_items;
-
-  // Whether items should be right-aligned.
-  bool right_aligned;
-};
-
 // Parameters for the IPC message ViewHostMsg_ScriptedPrint
 struct ViewHostMsg_ScriptedPrint_Params {
   ViewHostMsg_ScriptedPrint_Params();
@@ -888,14 +861,6 @@ struct ParamTraits<ViewHostMsg_DidPreviewDocument_Params> {
 template <>
 struct ParamTraits<ViewHostMsg_DidPrintPage_Params> {
   typedef ViewHostMsg_DidPrintPage_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewHostMsg_ShowPopup_Params> {
-  typedef ViewHostMsg_ShowPopup_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

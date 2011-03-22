@@ -25,6 +25,7 @@
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/pepper_file_messages.h"
 #include "content/common/pepper_messages.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/audio_message_filter.h"
 #include "content/renderer/command_buffer_proxy.h"
 #include "content/renderer/content_renderer_client.h"

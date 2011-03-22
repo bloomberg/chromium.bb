@@ -16,7 +16,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/timer.h"
-#include "chrome/common/edit_command.h"
+#include "content/common/edit_command.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/property_bag.h"
 #include "ipc/ipc_channel.h"
