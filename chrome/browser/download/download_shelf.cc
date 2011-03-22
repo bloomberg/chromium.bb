@@ -36,6 +36,8 @@ bool DownloadShelfContextMenu::IsCommandIdChecked(int command_id) const {
       return download_->open_when_complete();
     case ALWAYS_OPEN_TYPE:
       return download_->ShouldOpenFileBasedOnExtension();
+    case TOGGLE_PAUSE:
+      return download_->is_paused();
   }
   return false;
 }
