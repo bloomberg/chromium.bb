@@ -6,7 +6,6 @@
 
 #include "base/format_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 
 namespace IPC {
@@ -70,32 +69,6 @@ void ParamTraits<WebKit::WebScreenInfo>::Log(const param_type& p,
   LogParam(p.rect, l);
   l->append(", ");
   LogParam(p.availableRect, l);
-  l->append(")");
-}
-
-void ParamTraits<WebKit::WebFindOptions>::Write(Message* m,
-                                                const param_type& p) {
-  WriteParam(m, p.forward);
-  WriteParam(m, p.matchCase);
-  WriteParam(m, p.findNext);
-}
-
-bool ParamTraits<WebKit::WebFindOptions>::Read(const Message* m, void** iter,
-                                               param_type* p) {
-  return
-      ReadParam(m, iter, &p->forward) &&
-      ReadParam(m, iter, &p->matchCase) &&
-      ReadParam(m, iter, &p->findNext);
-}
-
-void ParamTraits<WebKit::WebFindOptions>::Log(const param_type& p,
-                                              std::string* l) {
-  l->append("(");
-  LogParam(p.forward, l);
-  l->append(", ");
-  LogParam(p.matchCase, l);
-  l->append(", ");
-  LogParam(p.findNext, l);
   l->append(")");
 }
 

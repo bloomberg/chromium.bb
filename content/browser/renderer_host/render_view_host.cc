@@ -237,7 +237,7 @@ void RenderViewHost::NavigateToURL(const GURL& url) {
   params.page_id = -1;
   params.url = url;
   params.transition = PageTransition::LINK;
-  params.navigation_type = ViewMsg_Navigate_Params::NORMAL;
+  params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
   Navigate(params);
 }
 
@@ -495,14 +495,6 @@ void RenderViewHost::InsertCSSInWebFrame(
   Send(new ViewMsg_CSSInsertRequest(routing_id(), frame_xpath, css, id));
 }
 
-void RenderViewHost::AddMessageToConsole(
-    const string16& frame_xpath,
-    const string16& message,
-    const WebConsoleMessage::Level& level) {
-  Send(new ViewMsg_AddMessageToConsole(
-      routing_id(), frame_xpath, message, level));
-}
-
 void RenderViewHost::Undo() {
   Send(new ViewMsg_Undo(routing_id()));
 }
@@ -745,7 +737,7 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
                         OnMsgDocumentOnLoadCompletedInMainFrame)
-    IPC_MESSAGE_HANDLER(ViewMsg_ExecuteCodeFinished,
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ExecuteCodeFinished,
                         OnExecuteCodeFinished)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContextMenu, OnMsgContextMenu)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenURL, OnMsgOpenURL)

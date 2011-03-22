@@ -15,7 +15,6 @@
 #include "base/file_util.h"
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
-#include "content/common/page_zoom.h"
 #include "ipc/ipc_message_utils.h"
 #include "printing/native_metafile.h"
 // !!! WARNING: DO NOT ADD NEW WEBKIT DEPENDENCIES !!!
@@ -93,25 +92,6 @@ struct ParamTraits<ContentSettings> {
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
-
-template <>
-struct ParamTraits<PageZoom::Function> {
-  typedef PageZoom::Function param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p));
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int value;
-    if (!ReadParam(m, iter, &value))
-      return false;
-    *r = static_cast<param_type>(value);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    LogParam(static_cast<int>(p), l);
-  }
-};
-
 
 template <>
 struct ParamTraits<WindowOpenDisposition> {

@@ -16,6 +16,7 @@
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/test/render_view_test.h"
 #include "content/common/native_web_keyboard_event.h"
+#include "content/common/view_messages.h"
 #include "net/base/net_errors.h"
 #include "printing/image.h"
 #include "printing/native_metafile.h"
@@ -1003,7 +1004,7 @@ TEST_F(RenderViewTest, JSBlockSentAfterPageLoad) {
   url_str.append(html);
   GURL url(url_str);
   params.url = url;
-  params.navigation_type = ViewMsg_Navigate_Params::RELOAD;
+  params.navigation_type = ViewMsg_Navigate_Type::RELOAD;
   view_->OnNavigate(params);
   ProcessPendingMessages();
 

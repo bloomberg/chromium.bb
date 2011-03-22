@@ -9,18 +9,6 @@
 #include "chrome/common/render_messages.h"
 #include "net/base/upload_data.h"
 
-ViewMsg_Navigate_Params::ViewMsg_Navigate_Params()
-    : page_id(-1),
-      pending_history_list_offset(-1),
-      current_history_list_offset(-1),
-      current_history_list_length(0),
-      transition(PageTransition::LINK),
-      navigation_type(NORMAL) {
-}
-
-ViewMsg_Navigate_Params::~ViewMsg_Navigate_Params() {
-}
-
 ViewHostMsg_FrameNavigate_Params::ViewHostMsg_FrameNavigate_Params()
     : page_id(0),
       frame_id(0),
@@ -282,52 +270,6 @@ scoped_refptr<Extension>
 
 namespace IPC {
 
-// Self contained templates which are only used inside serializing Params
-// structs.
-template<>
-struct ParamTraits<ViewMsg_Navigate_Params::NavigationType> {
-  typedef ViewMsg_Navigate_Params::NavigationType param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int type;
-    if (!m->ReadInt(iter, &type))
-      return false;
-    *p = static_cast<ViewMsg_Navigate_Params::NavigationType>(type);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    std::string event;
-    switch (p) {
-      case ViewMsg_Navigate_Params::RELOAD:
-        event = "NavigationType_RELOAD";
-        break;
-
-      case ViewMsg_Navigate_Params::RELOAD_IGNORING_CACHE:
-        event = "NavigationType_RELOAD_IGNORING_CACHE";
-        break;
-
-      case ViewMsg_Navigate_Params::RESTORE:
-        event = "NavigationType_RESTORE";
-        break;
-
-      case ViewMsg_Navigate_Params::PRERENDER:
-        event = "NavigationType_PRERENDER";
-        break;
-
-      case ViewMsg_Navigate_Params::NORMAL:
-        event = "NavigationType_NORMA";
-        break;
-
-      default:
-        event = "NavigationType_UNKNOWN";
-        break;
-    }
-    LogParam(event, l);
-  }
-};
-
 template<>
 struct ParamTraits<NavigationGesture> {
   typedef NavigationGesture param_type;
@@ -423,92 +365,6 @@ struct ParamTraits
     ParamTraits<int>::Log(static_cast<int>(p), l);
   }
 };
-
-
-void ParamTraits<ViewMsg_Navigate_Params>::Write(Message* m,
-                                                 const param_type& p) {
-  WriteParam(m, p.page_id);
-  WriteParam(m, p.pending_history_list_offset);
-  WriteParam(m, p.current_history_list_offset);
-  WriteParam(m, p.current_history_list_length);
-  WriteParam(m, p.url);
-  WriteParam(m, p.referrer);
-  WriteParam(m, p.transition);
-  WriteParam(m, p.state);
-  WriteParam(m, p.navigation_type);
-  WriteParam(m, p.request_time);
-  WriteParam(m, p.extra_headers);
-}
-
-bool ParamTraits<ViewMsg_Navigate_Params>::Read(const Message* m, void** iter,
-                                                param_type* p) {
-  return
-      ReadParam(m, iter, &p->page_id) &&
-      ReadParam(m, iter, &p->pending_history_list_offset) &&
-      ReadParam(m, iter, &p->current_history_list_offset) &&
-      ReadParam(m, iter, &p->current_history_list_length) &&
-      ReadParam(m, iter, &p->url) &&
-      ReadParam(m, iter, &p->referrer) &&
-      ReadParam(m, iter, &p->transition) &&
-      ReadParam(m, iter, &p->state) &&
-      ReadParam(m, iter, &p->navigation_type) &&
-      ReadParam(m, iter, &p->request_time) &&
-      ReadParam(m, iter, &p->extra_headers);
-}
-
-void ParamTraits<ViewMsg_Navigate_Params>::Log(const param_type& p,
-                                               std::string* l) {
-  l->append("(");
-  LogParam(p.page_id, l);
-  l->append(", ");
-  LogParam(p.url, l);
-  l->append(", ");
-  LogParam(p.transition, l);
-  l->append(", ");
-  LogParam(p.state, l);
-  l->append(", ");
-  LogParam(p.navigation_type, l);
-  l->append(", ");
-  LogParam(p.request_time, l);
-  l->append(", ");
-  LogParam(p.extra_headers, l);
-  l->append(")");
-}
-
-void ParamTraits<ViewMsg_StopFinding_Params>::Write(Message* m,
-                                                    const param_type& p) {
-  m->WriteInt(p.action);
-}
-
-bool ParamTraits<ViewMsg_StopFinding_Params>::Read(const Message* m,
-                                                   void** iter,
-                                                   param_type* p) {
-  int type;
-  if (!m->ReadInt(iter, &type))
-    return false;
-  p->action = static_cast<ViewMsg_StopFinding_Params::Action>(type);
-  return true;
-}
-
-void ParamTraits<ViewMsg_StopFinding_Params>::Log(const param_type& p,
-                                                  std::string* l) {
-  std::string action;
-  switch (p.action) {
-    case ViewMsg_StopFinding_Params::kClearSelection:
-      action = "ViewMsg_StopFinding_Params::kClearSelection";
-      break;
-    case ViewMsg_StopFinding_Params::kKeepSelection:
-      action = "ViewMsg_StopFinding_Params::kKeepSelection";
-      break;
-    case ViewMsg_StopFinding_Params::kActivateSelection:
-      action = "ViewMsg_StopFinding_Params::kActivateSelection";
-      break;
-    default:
-      action = "UNKNOWN";
-      break;
-  }
-  LogParam(action, l);
-}
 
 void ParamTraits<ViewHostMsg_PageHasOSDD_Type>::Write(Message* m,
                                                       const param_type& p) {

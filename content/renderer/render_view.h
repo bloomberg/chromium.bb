@@ -795,9 +795,6 @@ class RenderView : public RenderWidget,
   void OnAccessibilityDoDefaultAction(int acc_obj_id);
   void OnAccessibilityNotificationsAck();
   void OnAllowBindings(int enabled_bindings_flags);
-  void OnAddMessageToConsole(const string16& frame_xpath,
-                             const string16& message,
-                             const WebKit::WebConsoleMessage::Level&);
   void OnAdvanceToNextMisspelling();
   void OnAllowScriptToClose(bool script_can_close);
   void OnAsyncFileOpened(base::PlatformFileError error_code,

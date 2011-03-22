@@ -1001,7 +1001,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_DownloadFavicon, OnDownloadFavicon)
     IPC_MESSAGE_HANDLER(ViewMsg_ScriptEvalRequest, OnScriptEvalRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_CSSInsertRequest, OnCSSInsertRequest)
-    IPC_MESSAGE_HANDLER(ViewMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewMsg_ReservePageIDRange, OnReservePageIDRange)
     IPC_MESSAGE_HANDLER(ViewMsg_DragTargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(ViewMsg_DragTargetDragOver, OnDragTargetDragOver)
@@ -1331,8 +1330,8 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
   AboutHandler::MaybeHandle(params.url);
 
   bool is_reload =
-      params.navigation_type == ViewMsg_Navigate_Params::RELOAD ||
-      params.navigation_type == ViewMsg_Navigate_Params::RELOAD_IGNORING_CACHE;
+      params.navigation_type == ViewMsg_Navigate_Type::RELOAD ||
+      params.navigation_type == ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
 
   WebFrame* main_frame = webview()->mainFrame();
   if (is_reload && main_frame->currentHistoryItem().isNull()) {
@@ -1352,7 +1351,7 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
         params.pending_history_list_offset,
         params.transition,
         params.request_time);
-    if (params.navigation_type == ViewMsg_Navigate_Params::RESTORE) {
+    if (params.navigation_type == ViewMsg_Navigate_Type::RESTORE) {
       // We're doing a load of a page that was restored from the last session.
       // By default this prefers the cache over loading (LOAD_PREFERRING_CACHE)
       // which can result in stale data for pages that are set to expire. We
@@ -1373,7 +1372,7 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
     if (navigation_state)
       navigation_state->set_load_type(NavigationState::RELOAD);
     bool ignore_cache = (params.navigation_type ==
-                             ViewMsg_Navigate_Params::RELOAD_IGNORING_CACHE);
+                             ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE);
     main_frame->reload(ignore_cache);
   } else if (!params.state.empty()) {
     // We must know the page ID of the page we are navigating back to.
@@ -1407,7 +1406,7 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
     }
 
     if (navigation_state) {
-      if (params.navigation_type != ViewMsg_Navigate_Params::PRERENDER) {
+      if (params.navigation_type != ViewMsg_Navigate_Type::PRERENDER) {
         navigation_state->set_load_type(NavigationState::NORMAL_LOAD);
       } else {
         navigation_state->set_load_type(NavigationState::PRERENDER_LOAD);
@@ -4355,15 +4354,6 @@ void RenderView::OnCSSInsertRequest(const std::wstring& frame_xpath,
   Send(new ViewHostMsg_OnCSSInserted(routing_id_));
 }
 
-void RenderView::OnAddMessageToConsole(
-    const string16& frame_xpath,
-    const string16& message,
-    const WebConsoleMessage::Level& level) {
-  WebFrame* web_frame = GetChildFrame(UTF16ToWideHack(frame_xpath));
-  if (web_frame)
-    web_frame->addMessageToConsole(WebConsoleMessage(level, message));
-}
-
 void RenderView::OnAllowBindings(int enabled_bindings_flags) {
   enabled_bindings_ |= enabled_bindings_flags;
 }
@@ -4995,8 +4985,8 @@ void RenderView::OnSetEditCommandsForNextKeyEvent(
 void RenderView::OnExecuteCode(const ViewMsg_ExecuteCode_Params& params) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (!main_frame) {
-    Send(new ViewMsg_ExecuteCodeFinished(routing_id_, params.request_id,
-                                         false));
+    Send(new ViewHostMsg_ExecuteCodeFinished(routing_id_, params.request_id,
+                                             false));
     return;
   }
 
@@ -5046,7 +5036,8 @@ void RenderView::ExecuteCodeImpl(WebFrame* frame,
     }
   }
 
-  Send(new ViewMsg_ExecuteCodeFinished(routing_id_, params.request_id, true));
+  Send(new ViewHostMsg_ExecuteCodeFinished(
+      routing_id_, params.request_id, true));
 }
 
 void RenderView::Close() {

@@ -39,90 +39,6 @@ namespace net {
 class UploadData;
 }
 
-// Parameters structure for ViewMsg_Navigate, which has too many data
-// parameters to be reasonably put in a predefined IPC message.
-struct ViewMsg_Navigate_Params {
-  enum NavigationType {
-    // Reload the page.
-    RELOAD,
-
-    // Reload the page, ignoring any cache entries.
-    RELOAD_IGNORING_CACHE,
-
-    // The navigation is the result of session restore and should honor the
-    // page's cache policy while restoring form state. This is set to true if
-    // restoring a tab/session from the previous session and the previous
-    // session did not crash. If this is not set and the page was restored then
-    // the page's cache policy is ignored and we load from the cache.
-    RESTORE,
-
-    // Speculatively prerendering the page.
-    PRERENDER,
-
-    // Navigation type not categorized by the other types.
-    NORMAL
-  };
-
-  ViewMsg_Navigate_Params();
-  ~ViewMsg_Navigate_Params();
-
-  // The page_id for this navigation, or -1 if it is a new navigation.  Back,
-  // Forward, and Reload navigations should have a valid page_id.  If the load
-  // succeeds, then this page_id will be reflected in the resultant
-  // ViewHostMsg_FrameNavigate message.
-  int32 page_id;
-
-  // If page_id is -1, then pending_history_list_offset will also be -1.
-  // Otherwise, it contains the offset into the history list corresponding to
-  // the current navigation.
-  int pending_history_list_offset;
-
-  // Informs the RenderView of where its current page contents reside in
-  // session history and the total size of the session history list.
-  int current_history_list_offset;
-  int current_history_list_length;
-
-  // The URL to load.
-  GURL url;
-
-  // The URL to send in the "Referer" header field. Can be empty if there is
-  // no referrer.
-  // TODO: consider folding this into extra_headers.
-  GURL referrer;
-
-  // The type of transition.
-  PageTransition::Type transition;
-
-  // Opaque history state (received by ViewHostMsg_UpdateState).
-  std::string state;
-
-  // Type of navigation.
-  NavigationType navigation_type;
-
-  // The time the request was created
-  base::Time request_time;
-
-  // Extra headers (separated by \n) to send during the request.
-  std::string extra_headers;
-};
-
-// The user has completed a find-in-page; this type defines what actions the
-// renderer should take next.
-struct ViewMsg_StopFinding_Params {
-  enum Action {
-    kClearSelection,
-    kKeepSelection,
-    kActivateSelection
-  };
-
-  ViewMsg_StopFinding_Params()
-      : action(kClearSelection) {
-  }
-
-  // The action that should be taken when the find is completed.
-  Action action;
-};
-
 // The type of OSDD that the renderer is giving to the browser.
 struct ViewHostMsg_PageHasOSDD_Type {
   enum Type {
@@ -768,23 +684,6 @@ struct ViewHostMsg_MalwareDOMDetails_Params {
 namespace IPC {
 
 class Message;
-
-// Traits for ViewMsg_Navigate_Params structure to pack/unpack.
-template <>
-struct ParamTraits<ViewMsg_Navigate_Params> {
-  typedef ViewMsg_Navigate_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewMsg_StopFinding_Params> {
-  typedef ViewMsg_StopFinding_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
 
 template <>
 struct ParamTraits<ViewHostMsg_PageHasOSDD_Type> {

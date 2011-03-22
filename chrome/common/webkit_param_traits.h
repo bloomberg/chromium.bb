@@ -36,7 +36,6 @@
 
 namespace WebKit {
 struct WebCompositionUnderline;
-struct WebFindOptions;
 struct WebRect;
 struct WebScreenInfo;
 }
@@ -67,14 +66,6 @@ struct SimilarTypeTraits<WebKit::WebConsoleMessage::Level> {
 template <>
 struct SimilarTypeTraits<WebKit::WebPopupType> {
   typedef int Type;
-};
-
-template <>
-struct ParamTraits<WebKit::WebFindOptions> {
-  typedef WebKit::WebFindOptions param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
 };
 
 template <>

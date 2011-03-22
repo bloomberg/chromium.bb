@@ -87,6 +87,7 @@
 #include "content/browser/webui/web_ui.h"
 #include "content/common/navigation_types.h"
 #include "content/common/notification_service.h"
+#include "content/common/view_messages.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -179,23 +180,23 @@ BOOL CALLBACK InvalidateWindow(HWND hwnd, LPARAM lparam) {
 }
 #endif
 
-ViewMsg_Navigate_Params::NavigationType GetNavigationType(
+ViewMsg_Navigate_Type::Value GetNavigationType(
     Profile* profile, const NavigationEntry& entry,
     NavigationController::ReloadType reload_type) {
   switch (reload_type) {
     case NavigationController::RELOAD:
-      return ViewMsg_Navigate_Params::RELOAD;
+      return ViewMsg_Navigate_Type::RELOAD;
     case NavigationController::RELOAD_IGNORING_CACHE:
-      return ViewMsg_Navigate_Params::RELOAD_IGNORING_CACHE;
+      return ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
     case NavigationController::NO_RELOAD:
       break;  // Fall through to rest of function.
   }
 
   if (entry.restore_type() == NavigationEntry::RESTORE_LAST_SESSION &&
       profile->DidLastSessionExitCleanly())
-    return ViewMsg_Navigate_Params::RESTORE;
+    return ViewMsg_Navigate_Type::RESTORE;
 
-  return ViewMsg_Navigate_Params::NORMAL;
+  return ViewMsg_Navigate_Type::NORMAL;
 }
 
 void MakeNavigateParams(const NavigationEntry& entry,

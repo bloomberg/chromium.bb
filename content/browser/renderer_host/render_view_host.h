@@ -275,11 +275,6 @@ class RenderViewHost : public RenderWidgetHost {
                            const std::string& css,
                            const std::string& id);
 
-  // Logs a message to the console of a frame in the page.
-  void AddMessageToConsole(const string16& frame_xpath,
-                           const string16& message,
-                           const WebKit::WebConsoleMessage::Level&);
-
   // Edit operations.
   void Undo();
   void Redo();

@@ -46,7 +46,6 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"                     // ifdefed typedef.
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -279,52 +278,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_ResetScriptedPrintCount)
 IPC_MESSAGE_ROUTED1(ViewHostMsg_PagesReadyForPreview,
                     ViewHostMsg_DidPreviewDocument_Params /* params */)
 
-// Tells the renderer to perform the specified navigation, interrupting any
-// existing navigation.
-IPC_MESSAGE_ROUTED1(ViewMsg_Navigate, ViewMsg_Navigate_Params)
-
-IPC_MESSAGE_ROUTED0(ViewMsg_Stop)
-
-// Tells the renderer to reload the current focused frame
-IPC_MESSAGE_ROUTED0(ViewMsg_ReloadFrame)
-
-// This message notifies the renderer that the user has closed the FindInPage
-// window (and what action to take regarding the selection).
-IPC_MESSAGE_ROUTED1(ViewMsg_StopFinding,
-                    ViewMsg_StopFinding_Params /* action */)
-
-// These messages are typically generated from context menus and request the
-// renderer to apply the specified operation to the current selection.
-IPC_MESSAGE_ROUTED0(ViewMsg_Undo)
-IPC_MESSAGE_ROUTED0(ViewMsg_Redo)
-IPC_MESSAGE_ROUTED0(ViewMsg_Cut)
-IPC_MESSAGE_ROUTED0(ViewMsg_Copy)
-#if defined(OS_MACOSX)
-IPC_MESSAGE_ROUTED0(ViewMsg_CopyToFindPboard)
-#endif
-IPC_MESSAGE_ROUTED0(ViewMsg_Paste)
-// Replaces the selected region or a word around the cursor with the
-// specified string.
-IPC_MESSAGE_ROUTED1(ViewMsg_Replace, string16)
-IPC_MESSAGE_ROUTED0(ViewMsg_ToggleSpellCheck)
-IPC_MESSAGE_ROUTED0(ViewMsg_Delete)
-IPC_MESSAGE_ROUTED0(ViewMsg_SelectAll)
-IPC_MESSAGE_ROUTED1(ViewMsg_ToggleSpellPanel, bool)
-IPC_MESSAGE_ROUTED3(ViewMsg_SpellChecker_RespondTextCheck,
-                    int        /* request identifier given by WebKit */,
-                    int        /* document tag */,
-                    std::vector<WebKit::WebTextCheckingResult>)
-
-// This message tells the renderer to advance to the next misspelling. It is
-// sent when the user clicks the "Find Next" button on the spelling panel.
-IPC_MESSAGE_ROUTED0(ViewMsg_AdvanceToNextMisspelling)
-
-// Copies the image at location x, y to the clipboard (if there indeed is an
-// image at that location).
-IPC_MESSAGE_ROUTED2(ViewMsg_CopyImageAt,
-                    int /* x */,
-                    int /* y */)
-
 // History system notification that the visited link database has been
 // replaced. It has one SharedMemoryHandle argument consisting of the table
 // handle. This handle is valid in the context of the renderer
@@ -345,95 +298,16 @@ IPC_MESSAGE_CONTROL0(ViewMsg_VisitedLink_Reset)
 IPC_MESSAGE_CONTROL1(ViewMsg_UserScripts_UpdatedScripts,
                      base::SharedMemoryHandle)
 
-// Sent when the user wants to search for a word on the page (find in page).
-IPC_MESSAGE_ROUTED3(ViewMsg_Find,
-                    int /* request_id */,
-                    string16 /* search_text */,
-                    WebKit::WebFindOptions)
-
-// Send from the renderer to the browser to return the script running result.
-IPC_MESSAGE_ROUTED2(ViewMsg_ExecuteCodeFinished,
-                    int, /* request id */
-                    bool /* whether the script ran successfully */)
-
 // Sent when user prompting is required before a ViewHostMsg_GetCookies
 // message can complete.  This message indicates that the renderer should
 // pump messages while waiting for cookies.
 IPC_MESSAGE_CONTROL0(ViewMsg_SignalCookiePromptEvent)
-
-// Request for the renderer to evaluate an xpath to a frame and execute a
-// javascript: url in that frame's context. The message is completely
-// asynchronous and no corresponding response message is sent back.
-//
-// frame_xpath contains the modified xpath notation to identify an inner
-// subframe (starting from the root frame). It is a concatenation of
-// number of smaller xpaths delimited by '\n'. Each chunk in the string can
-// be evaluated to a frame in its parent-frame's context.
-//
-// Example: /html/body/iframe/\n/html/body/div/iframe/\n/frameset/frame[0]
-// can be broken into 3 xpaths
-// /html/body/iframe evaluates to an iframe within the root frame
-// /html/body/div/iframe evaluates to an iframe within the level-1 iframe
-// /frameset/frame[0] evaluates to first frame within the level-2 iframe
-//
-// jscript_url is the string containing the javascript: url to be executed
-// in the target frame's context. The string should start with "javascript:"
-// and continue with a valid JS text.
-//
-// If the fourth parameter is true the result is sent back to the renderer
-// using the message ViewHostMsg_ScriptEvalResponse.
-// ViewHostMsg_ScriptEvalResponse is passed the ID parameter so that the
-// client can uniquely identify the request.
-IPC_MESSAGE_ROUTED4(ViewMsg_ScriptEvalRequest,
-                    string16,  /* frame_xpath */
-                    string16,  /* jscript_url */
-                    int,  /* ID */
-                    bool  /* If true, result is sent back. */)
-
-// Request for the renderer to evaluate an xpath to a frame and insert css
-// into that frame's document. See ViewMsg_ScriptEvalRequest for details on
-// allowed xpath expressions.
-IPC_MESSAGE_ROUTED3(ViewMsg_CSSInsertRequest,
-                    std::wstring,  /* frame_xpath */
-                    std::string,  /* css string */
-                    std::string  /* element id */)
-
-// Log a message to the console of the target frame
-IPC_MESSAGE_ROUTED3(ViewMsg_AddMessageToConsole,
-                    string16 /* frame_xpath */,
-                    string16 /* message */,
-                    WebKit::WebConsoleMessage::Level /* message_level */)
 
 // RenderViewHostDelegate::RenderViewCreated method sends this message to a
 // new renderer to notify it that it will host developer tools UI and should
 // set up all neccessary bindings and create DevToolsClient instance that
 // will handle communication with inspected page DevToolsAgent.
 IPC_MESSAGE_ROUTED0(ViewMsg_SetupDevToolsClient)
-
-// Change the zoom level for the current main frame.  If the level actually
-// changes, a ViewHostMsg_DidZoomURL message will be sent back to the browser
-// telling it what url got zoomed and what its current zoom level is.
-IPC_MESSAGE_ROUTED1(ViewMsg_Zoom,
-                    PageZoom::Function /* function */)
-
-// Set the zoom level for the current main frame.  If the level actually
-// changes, a ViewHostMsg_DidZoomURL message will be sent back to the browser
-// telling it what url got zoomed and what its current zoom level is.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetZoomLevel,
-                    double /* zoom_level */)
-
-// Set the zoom level for a particular url that the renderer is in the
-// process of loading.  This will be stored, to be used if the load commits
-// and ignored otherwise.
-IPC_MESSAGE_ROUTED2(ViewMsg_SetZoomLevelForLoadingURL,
-                    GURL /* url */,
-                    double /* zoom_level */)
-
-// Set the zoom level for a particular url, so all render views
-// displaying this url can update their zoom levels to match.
-IPC_MESSAGE_CONTROL2(ViewMsg_SetZoomLevelForCurrentURL,
-                     GURL /* url */,
-                     double /* zoom_level */)
 
 // Set the content settings for a particular url that the renderer is in the
 // process of loading.  This will be stored, to be used if the load commits
@@ -522,12 +396,6 @@ IPC_MESSAGE_ROUTED4(
 // This message confirms an ongoing composition.
 IPC_MESSAGE_ROUTED1(ViewMsg_ImeConfirmComposition,
                     string16 /* text */)
-
-// Used to notify the render-view that the browser has received a reply for
-// the Find operation and is interested in receiving the next one. This is
-// used to prevent the renderer from spamming the browser process with
-// results.
-IPC_MESSAGE_ROUTED0(ViewMsg_FindReplyACK)
 
 // Used to notify the render-view that we have received a target URL. Used
 // to prevent target URLs spamming the browser.
@@ -785,6 +653,18 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ExecuteCode,
 
 // SpellChecker messages.
 
+IPC_MESSAGE_ROUTED0(ViewMsg_ToggleSpellCheck)
+IPC_MESSAGE_ROUTED1(ViewMsg_ToggleSpellPanel,
+                    bool)
+IPC_MESSAGE_ROUTED3(ViewMsg_SpellChecker_RespondTextCheck,
+                    int        /* request identifier given by WebKit */,
+                    int        /* document tag */,
+                    std::vector<WebKit::WebTextCheckingResult>)
+
+// This message tells the renderer to advance to the next misspelling. It is
+// sent when the user clicks the "Find Next" button on the spelling panel.
+IPC_MESSAGE_ROUTED0(ViewMsg_AdvanceToNextMisspelling)
+
 // Passes some initialization params to the renderer's spellchecker. This can
 // be called directly after startup or in (async) response to a
 // RequestDictionary ViewHost message.
@@ -857,10 +737,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_GetMalwareDOMDetails)
 // Tells the renderer to begin phishing detection for the given toplevel URL
 // which it has started loading.
 IPC_MESSAGE_ROUTED1(ViewMsg_StartPhishingDetection, GURL)
-
-// External popup menus.
-IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
-                    int /* selected index, -1 means no selection */)
 
 // Tells the renderer that the network state has changed and that
 // window.navigator.onLine should be updated for all WebViews.
@@ -1077,18 +953,6 @@ IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetWindowRect,
                            gfx::Rect /* Out: Window location */)
 
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SetCursor, WebCursor)
-// Result of string search in the page.
-// Response to ViewMsg_Find with the results of the requested find-in-page
-// search, the number of matches found and the selection rect (in screen
-// coordinates) for the string found. If |final_update| is false, it signals
-// that this is not the last Find_Reply message - more will be sent as the
-// scoping effort continues.
-IPC_MESSAGE_ROUTED5(ViewHostMsg_Find_Reply,
-                    int /* request_id */,
-                    int /* number of matches */,
-                    gfx::Rect /* selection_rect */,
-                    int /* active_match_ordinal */,
-                    bool /* final_update */)
 
 // Used to set a cookie. The cookie is set asynchronously, but will be
 // available to a subsequent ViewHostMsg_GetCookies request.
@@ -1935,14 +1799,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_InstantSupportDetermined,
                     int32 /* page_id */,
                     bool  /* result */)
 
-// Response from ViewMsg_ScriptEvalRequest. The ID is the parameter supplied
-// to ViewMsg_ScriptEvalRequest. The result has the value returned by the
-// script as it's only element, one of Null, Boolean, Integer, Real, Date, or
-// String.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_ScriptEvalResponse,
-                    int  /* id */,
-                    ListValue  /* result */)
-
 // Updates the content restrictions, i.e. to disable print/copy.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateContentRestrictions,
                     int /* restrictions */)
@@ -1963,3 +1819,8 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_RegisterProtocolHandler,
                     std::string /* scheme */,
                     GURL /* url */,
                     string16 /* title */)
+
+// Send from the renderer to the browser to return the script running result.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_ExecuteCodeFinished,
+                    int, /* request id */
+                    bool /* whether the script ran successfully */)

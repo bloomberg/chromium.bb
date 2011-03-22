@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/common/resource_response.h"
 #include "content/common/resource_messages.h"
+#include "content/common/view_messages.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_log.h"

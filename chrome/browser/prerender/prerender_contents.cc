@@ -24,6 +24,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/site_instance.h"
 #include "content/common/notification_service.h"
+#include "content/common/view_messages.h"
 #include "ui/gfx/rect.h"
 
 #if defined(OS_MACOSX)
@@ -137,7 +138,7 @@ void PrerenderContents::StartPrerendering() {
   ViewMsg_Navigate_Params params;
   params.url = prerender_url_;
   params.transition = PageTransition::LINK;
-  params.navigation_type = ViewMsg_Navigate_Params::PRERENDER;
+  params.navigation_type = ViewMsg_Navigate_Type::PRERENDER;
   params.referrer = referrer_;
 
   render_view_host_->Navigate(params);
