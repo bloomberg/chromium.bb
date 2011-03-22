@@ -61,12 +61,12 @@ void ShowExtensionInstalledBubble(
 
 void ExtensionInstalledBubbleGtk::Show(const Extension* extension,
                                        Browser* browser,
-                                       SkBitmap icon) {
+                                       const SkBitmap& icon) {
   new ExtensionInstalledBubbleGtk(extension, browser, icon);
 }
 
 ExtensionInstalledBubbleGtk::ExtensionInstalledBubbleGtk(
-    const Extension* extension, Browser *browser, SkBitmap icon)
+    const Extension* extension, Browser *browser, const SkBitmap& icon)
     : extension_(extension),
       browser_(browser),
       icon_(icon),

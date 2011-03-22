@@ -94,7 +94,7 @@ class ImageLoadingTracker::ImageLoader
                           image, resource, original_size, id));
   }
 
-  void ReportOnUIThread(SkBitmap* image, ExtensionResource resource,
+  void ReportOnUIThread(SkBitmap* image, const ExtensionResource& resource,
                         const gfx::Size& original_size, int id) {
     DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
 

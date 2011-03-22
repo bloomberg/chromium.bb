@@ -284,7 +284,6 @@ void ManifestFetchesBuilder::AddExtensionData(
     Extension::Type extension_type,
     GURL update_url,
     const std::string& update_url_data) {
-
   if (!Extension::IsAutoUpdateableLocation(location)) {
     return;
   }
