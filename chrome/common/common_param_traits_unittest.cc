@@ -201,7 +201,7 @@ TEST(IPCMessageTest, Metafile) {
       printing::NativeMetafileFactory::Create());
   RECT test_rect = {0, 0, 100, 100};
   // Create a metafile using the screen DC as a reference.
-  metafile->CreateDc(NULL, NULL);
+  metafile->Init();
   metafile->FinishDocument();
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
