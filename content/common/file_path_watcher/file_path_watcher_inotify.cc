@@ -80,7 +80,8 @@ class InotifyReader {
   DISALLOW_COPY_AND_ASSIGN(InotifyReader);
 };
 
-class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
+class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
+                            public MessageLoop::DestructionObserver {
  public:
   FilePathWatcherImpl();
 
@@ -103,8 +104,16 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
   // Cancel the watch. This unregisters the instance with InotifyReader.
   virtual void Cancel() OVERRIDE;
 
+  // Deletion of the FilePathWatcher will call Cancel() to dispose of this
+  // object in the right thread. This also observes destruction of the required
+  // cleanup thread, in case it quits before Cancel() is called.
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+
  private:
   virtual ~FilePathWatcherImpl() {}
+
+  // Cleans up and stops observing the |message_loop_| thread.
+  void CancelOnMessageLoopThread() OVERRIDE;
 
   // Inotify watches are installed for all directory components of |target_|. A
   // WatchEntry instance holds the watch descriptor for a component and the
@@ -363,6 +372,8 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
   set_message_loop(base::MessageLoopProxy::CreateForCurrentThread());
   delegate_ = delegate;
   target_ = path;
+  MessageLoop::current()->AddDestructionObserver(this);
+
   std::vector<FilePath::StringType> comps;
   target_.GetComponents(&comps);
   DCHECK(!comps.empty());
@@ -376,26 +387,39 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
 }
 
 void FilePathWatcherImpl::Cancel() {
-  if (!message_loop().get()) {
-    // Watch was never called, so exit.
+  if (!delegate_) {
+    // Watch was never called, or the |message_loop_| thread is already gone.
+    set_cancelled();
     return;
   }
 
   // Switch to the message_loop_ if necessary so we can access |watches_|.
   if (!message_loop()->BelongsToCurrentThread()) {
     message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &FilePathWatcherImpl::Cancel));
-    return;
+                             new FilePathWatcher::CancelTask(this));
+  } else {
+    CancelOnMessageLoopThread();
   }
+}
 
-  for (WatchVector::iterator watch_entry(watches_.begin());
-       watch_entry != watches_.end(); ++watch_entry) {
-    if (watch_entry->watch_ != InotifyReader::kInvalidWatch)
-      g_inotify_reader.Get().RemoveWatch(watch_entry->watch_, this);
+void FilePathWatcherImpl::CancelOnMessageLoopThread() {
+  if (!is_cancelled()) {
+    set_cancelled();
+    MessageLoop::current()->RemoveDestructionObserver(this);
+
+    for (WatchVector::iterator watch_entry(watches_.begin());
+         watch_entry != watches_.end(); ++watch_entry) {
+      if (watch_entry->watch_ != InotifyReader::kInvalidWatch)
+        g_inotify_reader.Get().RemoveWatch(watch_entry->watch_, this);
+    }
+    watches_.clear();
+    delegate_ = NULL;
+    target_.clear();
   }
-  watches_.clear();
-  delegate_ = NULL;
-  target_.clear();
+}
+
+void FilePathWatcherImpl::WillDestroyCurrentMessageLoop() {
+  CancelOnMessageLoopThread();
 }
 
 bool FilePathWatcherImpl::UpdateWatches() {

@@ -21,19 +21,10 @@ bool FilePathWatcher::Watch(const FilePath& path,
   return impl_->Watch(path, delegate, loop);
 }
 
-FilePathWatcher::PlatformDelegate::PlatformDelegate() {
+FilePathWatcher::PlatformDelegate::PlatformDelegate(): cancelled_(false) {
 }
 
 FilePathWatcher::PlatformDelegate::~PlatformDelegate() {
+  DCHECK(is_cancelled());
 }
 
-void FilePathWatcher::DeletePlatformDelegate::Destruct(
-    const PlatformDelegate* delegate) {
-  scoped_refptr<base::MessageLoopProxy> loop = delegate->message_loop();
-  if (loop.get() == NULL || loop->BelongsToCurrentThread()) {
-    delete delegate;
-  } else {
-    loop->PostNonNestableTask(FROM_HERE,
-                              new DeleteTask<PlatformDelegate>(delegate));
-  }
-}

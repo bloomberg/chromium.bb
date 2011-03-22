@@ -40,22 +40,35 @@ class FilePathWatcher {
   // by the Mac implementation right now, and must be backed by a CFRunLoop
   // based MessagePump. This is usually going to be a MessageLoop of type
   // TYPE_UI.
+  // OnFilePathChanged() will be called on the same thread as Watch() is called,
+  // which should have a MessageLoop of TYPE_IO.
   bool Watch(const FilePath& path,
              Delegate* delegate,
              base::MessageLoopProxy* loop) WARN_UNUSED_RESULT;
 
   class PlatformDelegate;
 
-  // Traits for PlatformDelegate, which must delete itself on the IO message
-  // loop that Watch was called from.
-  struct DeletePlatformDelegate {
-    static void Destruct(const PlatformDelegate* delegate);
+  // A custom Task that always cleans up the PlatformDelegate, either when
+  // executed or when deleted without having been executed at all, as can
+  // happen during shutdown.
+  class CancelTask : public Task {
+   public:
+    CancelTask(PlatformDelegate* delegate): delegate_(delegate) {}
+    virtual ~CancelTask() {
+      delegate_->CancelOnMessageLoopThread();
+    }
+
+    virtual void Run() {
+      delegate_->CancelOnMessageLoopThread();
+    }
+   private:
+    scoped_refptr<PlatformDelegate> delegate_;
+
+    DISALLOW_COPY_AND_ASSIGN(CancelTask);
   };
 
   // Used internally to encapsulate different members on different platforms.
-  class PlatformDelegate
-      : public base::RefCountedThreadSafe<PlatformDelegate,
-                                          DeletePlatformDelegate> {
+  class PlatformDelegate : public base::RefCountedThreadSafe<PlatformDelegate> {
    public:
     PlatformDelegate();
 
@@ -70,13 +83,16 @@ class FilePathWatcher {
 
     // Stop watching. This is called from FilePathWatcher's dtor in order to
     // allow to shut down properly while the object is still alive.
+    // It can be called from any thread.
     virtual void Cancel() = 0;
 
    protected:
-    friend class DeleteTask<PlatformDelegate>;
-    friend struct DeletePlatformDelegate;
-
     virtual ~PlatformDelegate();
+
+    // Stop watching. This is only called on the thread of the appropriate
+    // message loop. Since it can also be called more than once, it should
+    // check |is_cancelled()| to avoid duplicate work.
+    virtual void CancelOnMessageLoopThread() = 0;
 
     scoped_refptr<base::MessageLoopProxy> message_loop() const {
       return message_loop_;
@@ -86,8 +102,21 @@ class FilePathWatcher {
       message_loop_ = loop;
     }
 
+    // Must be called before the PlatformDelegate is deleted.
+    void set_cancelled() {
+      cancelled_ = true;
+    }
+
+    bool is_cancelled() const {
+      return cancelled_;
+    }
+
    private:
+    friend class base::RefCountedThreadSafe<PlatformDelegate>;
+    friend class CancelTask;
+
     scoped_refptr<base::MessageLoopProxy> message_loop_;
+    bool cancelled_;
   };
 
  private:

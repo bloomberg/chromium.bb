@@ -32,7 +32,8 @@ namespace {
 const CFAbsoluteTime kEventLatencySeconds = 0.3;
 
 // Mac-specific file watcher implementation based on the FSEvents API.
-class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
+class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
+                            public MessageLoop::DestructionObserver {
  public:
   FilePathWatcherImpl();
 
@@ -49,6 +50,11 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
                      base::MessageLoopProxy* loop) OVERRIDE;
   virtual void Cancel() OVERRIDE;
 
+  // Deletion of the FilePathWatcher will call Cancel() to dispose of this
+  // object in the right thread. This also observes destruction of the required
+  // cleanup thread, in case it quits before Cancel() is called.
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+
   scoped_refptr<base::MessageLoopProxy> run_loop_message_loop() {
     return run_loop_message_loop_;
   }
@@ -58,6 +64,13 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
 
   // Destroy the event stream.
   void DestroyEventStream();
+
+  // Start observing the destruction of the |run_loop_message_loop_| thread,
+  // and watching the FSEventStream.
+  void StartObserverAndEventStream(FSEventStreamEventId start_event);
+
+  // Cleans up and stops observing the |run_loop_message_loop_| thread.
+  void CancelOnMessageLoopThread() OVERRIDE;
 
   // Delegate to notify upon changes.
   scoped_refptr<FilePathWatcher::Delegate> delegate_;
@@ -78,9 +91,6 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
 
   // Run loop for FSEventStream to run on.
   scoped_refptr<base::MessageLoopProxy> run_loop_message_loop_;
-
-  // Used to detect early cancellation.
-  bool canceled_;
 
   DISALLOW_COPY_AND_ASSIGN(FilePathWatcherImpl);
 };
@@ -120,8 +130,7 @@ void FSEventsCallback(ConstFSEventStreamRef stream,
 // FilePathWatcherImpl implementation:
 
 FilePathWatcherImpl::FilePathWatcherImpl()
-    : fsevent_stream_(NULL),
-      canceled_(false) {
+    : fsevent_stream_(NULL) {
 }
 
 void FilePathWatcherImpl::OnFilePathChanged() {
@@ -191,15 +200,23 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
   }
 
   run_loop_message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &FilePathWatcherImpl::UpdateEventStream,
+      NewRunnableMethod(this, &FilePathWatcherImpl::StartObserverAndEventStream,
                         start_event));
 
   return true;
 }
 
+void FilePathWatcherImpl::StartObserverAndEventStream(
+    FSEventStreamEventId start_event) {
+  DCHECK(run_loop_message_loop()->BelongsToCurrentThread());
+  MessageLoop::current()->AddDestructionObserver(this);
+  UpdateEventStream(start_event);
+}
+
 void FilePathWatcherImpl::Cancel() {
   if (!run_loop_message_loop().get()) {
     // Watch was never called, so exit.
+    set_cancelled();
     return;
   }
 
@@ -207,13 +224,23 @@ void FilePathWatcherImpl::Cancel() {
   // the event stream.
   if (!run_loop_message_loop()->BelongsToCurrentThread()) {
     run_loop_message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &FilePathWatcherImpl::Cancel));
-    return;
+                                      new FilePathWatcher::CancelTask(this));
+  } else {
+    CancelOnMessageLoopThread();
   }
+}
 
-  canceled_ = true;
-  if (fsevent_stream_)
+void FilePathWatcherImpl::CancelOnMessageLoopThread() {
+  set_cancelled();
+  if (fsevent_stream_) {
     DestroyEventStream();
+    MessageLoop::current()->RemoveDestructionObserver(this);
+    delegate_ = NULL;
+  }
+}
+
+void FilePathWatcherImpl::WillDestroyCurrentMessageLoop() {
+  CancelOnMessageLoopThread();
 }
 
 void FilePathWatcherImpl::UpdateEventStream(FSEventStreamEventId start_event) {
@@ -222,7 +249,7 @@ void FilePathWatcherImpl::UpdateEventStream(FSEventStreamEventId start_event) {
 
   // It can happen that the watcher gets canceled while tasks that call this
   // function are still in flight, so abort if this situation is detected.
-  if (canceled_)
+  if (is_cancelled())
     return;
 
   if (fsevent_stream_)
@@ -259,7 +286,6 @@ void FilePathWatcherImpl::UpdateEventStream(FSEventStreamEventId start_event) {
 }
 
 void FilePathWatcherImpl::DestroyEventStream() {
-  DCHECK(run_loop_message_loop()->BelongsToCurrentThread());
   FSEventStreamStop(fsevent_stream_);
   FSEventStreamUnscheduleFromRunLoop(fsevent_stream_, CFRunLoopGetCurrent(),
                                      kCFRunLoopDefaultMode);
