@@ -613,7 +613,7 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   if (accessibility_enabled_)
     command_line->AppendSwitch(switches::kEnableAccessibility);
 
-  // Now send any options from our own command line we want to propogate.
+  // Now send any options from our own command line we want to propagate.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   PropagateBrowserCommandLineToRenderer(browser_command_line, command_line);
 

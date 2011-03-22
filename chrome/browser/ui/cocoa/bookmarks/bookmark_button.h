@@ -154,7 +154,7 @@ class ThemeProvider;
 // cut/paste/delete and drag/drop. Such changes may involve coordinating
 // the bookmark button contents of two controllers (such as when a bookmark is
 // dragged from one folder to another).  The bookmark bar controller
-// coordinates in response to notifications propogated by the bookmark model
+// coordinates in response to notifications propagated by the bookmark model
 // through BookmarkBarBridge calls. The following three functions are
 // implemented by the controllers and are dispatched by the bookmark bar
 // controller in response to notifications coming in from the BookmarkBarBridge.

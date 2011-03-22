@@ -115,7 +115,7 @@ class TraceContext {
   DISALLOW_COPY_AND_ASSIGN(TraceContext);
 };
 
-// Used to create a new tracer that NewRunnableMethod can propogate from.
+// Used to create a new tracer that NewRunnableMethod can propagate from.
 //
 // Declare this at the logical start of a "trace."  Calls to NewTracedMethod
 // that are done with the ScopedTracer object is alive will take a reference

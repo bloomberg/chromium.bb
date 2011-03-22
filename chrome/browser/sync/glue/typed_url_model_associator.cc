@@ -177,7 +177,7 @@ bool TypedUrlModelAssociator::AssociateModels() {
   // the history database after closing the write transaction, since
   // this is the only thread that writes to the database.  We also don't have
   // to worry about the sync model getting out of sync, because changes are
-  // propogated to the ChangeProcessor on this thread.
+  // propagated to the ChangeProcessor on this thread.
   return WriteToHistoryBackend(&titles, &new_urls, &updated_urls,
                                &new_visits, NULL);
 }

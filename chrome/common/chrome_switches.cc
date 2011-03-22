@@ -613,7 +613,7 @@ const char kForceAppsPromoVisible[]         = "force-apps-promo-visible";
 const char kForceCompositingMode[]          = "force-compositing-mode";
 
 // Some field tests may rendomized in the browser, and the randomly selected
-// outcome needs to be propogated to the renderer.  For instance, this is used
+// outcome needs to be propagated to the renderer.  For instance, this is used
 // to modify histograms recorded in the renderer, or to get the renderer to
 // also set of its state (initialize, or not initialize components) to match the
 // experiment(s).
@@ -755,7 +755,6 @@ const char kNoDefaultBrowserCheck[]         = "no-default-browser-check";
 // Don't record/playback events when using record & playback.
 const char kNoEvents[]                      = "no-events";
 
-// Bypass the First Run experience when the browser is started, regardless of
 // Disables all experiments set on about:flags. Does not disable about:flags
 // itself. Useful if an experiment makes chrome crash at startup: One can start
 // chrome with --no-experiments, disable the problematic lab at about:flags and

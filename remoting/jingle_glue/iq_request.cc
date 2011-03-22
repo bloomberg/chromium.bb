@@ -308,7 +308,7 @@ void SessionStartRequest::OnResponse(const buzz::XmlElement* response) {
   // Also, if no response is found, we are supposed to call
   // SessionManager::OnFailedSend().
   //
-  // However, for right now, we just ignore those, and only propogate
+  // However, for right now, we just ignore those, and only propagate
   // messages outside of the request/reply framework to
   // SessionManager::OnIncomingMessage.
 

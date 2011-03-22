@@ -82,7 +82,7 @@ bool SSLConfigServiceWin::GetSSLConfigNow(SSLConfig* config) {
   // http://support.microsoft.com/kb/245030 (pre-Vista) or
   // http://msdn.microsoft.com/en-us/library/bb870930(VS.85).aspx (post-Vista).
   // Currently, these values are respected implicitly when using
-  // SSLClientSocketWin, but they do not propogate to SSLClientSocketNSS
+  // SSLClientSocketWin, but they do not propagate to SSLClientSocketNSS
   // because we're not currently translating the keys.
 
   return true;

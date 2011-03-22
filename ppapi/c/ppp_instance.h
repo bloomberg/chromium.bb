@@ -120,9 +120,9 @@ struct PPP_Instance {
    * If the event was handled, it will not be forwarded to the web page or
    * browser. If it was not handled, it will bubble according to the normal
    * rules. So it is important that a module respond accurately with whether
-   * event propogation should continue.
+   * event propagation should continue.
    *
-   * Event propogation also controls focus. If you handle an event like a mouse
+   * Event propagation also controls focus. If you handle an event like a mouse
    * event, typically your module will be given focus. Returning false means
    * that the click will be given to a lower part of the page and your module
    * will not receive focus. This allows a module to be partially transparent,

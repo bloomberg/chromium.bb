@@ -161,7 +161,7 @@ class URLRow {
 };
 
 // The enumeration of all possible sources of visits is listed below.
-// The source will be propogated along with a URL or a visit item
+// The source will be propagated along with a URL or a visit item
 // and eventually be stored in the history database,
 // visit_source table specifically.
 // Different from page transition types, they describe the origins of visits.

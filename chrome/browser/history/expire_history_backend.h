@@ -168,7 +168,7 @@ class ExpireHistoryBackend {
   void DeleteURLs(const std::vector<URLRow>& urls,
                   DeleteDependencies* dependencies);
 
-  // Expiration involves removing visits, then propogating the visits out from
+  // Expiration involves removing visits, then propagating the visits out from
   // there and delete any orphaned URLs. These will be added to the deleted URLs
   // field of the dependencies and DeleteOneURL will handle deleting out from
   // there. This function does not handle favicons.
