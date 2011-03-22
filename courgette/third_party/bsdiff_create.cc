@@ -191,11 +191,12 @@ search(PagedArray<int>& I,const unsigned char *old,int oldsize,
 //  End of 'verbatim' code.
 // ------------------------------------------------------------------------
 
-static void WriteHeader(SinkStream* stream, MBSPatchHeader* header) {
-  stream->Write(header->tag, sizeof(header->tag));
-  stream->WriteVarint32(header->slen);
-  stream->WriteVarint32(header->scrc32);
-  stream->WriteVarint32(header->dlen);
+static CheckBool WriteHeader(SinkStream* stream, MBSPatchHeader* header) {
+  bool ok = stream->Write(header->tag, sizeof(header->tag));
+  ok &= stream->WriteVarint32(header->slen);
+  ok &= stream->WriteVarint32(header->scrc32);
+  ok &= stream->WriteVarint32(header->dlen);
+  return ok;
 }
 
 BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
@@ -375,16 +376,20 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
         uint8 diff_byte = newbuf[lastscan + i] - old[lastpos + i];
         if (diff_byte) {
           ++diff_bytes_nonzero;
-          diff_skips->WriteVarint32(pending_diff_zeros);
+          if (!diff_skips->WriteVarint32(pending_diff_zeros))
+            return MEM_ERROR;
           pending_diff_zeros = 0;
-          diff_bytes->Write(&diff_byte, 1);
+          if (!diff_bytes->Write(&diff_byte, 1))
+            return MEM_ERROR;
         } else {
           ++pending_diff_zeros;
         }
       }
       int gap = (scan - lenb) - (lastscan + lenf);
-      for (int i = 0;  i < gap;  i++)
-        extra_bytes->Write(&newbuf[lastscan + lenf + i], 1);
+      for (int i = 0;  i < gap;  i++) {
+        if (!extra_bytes->Write(&newbuf[lastscan + lenf + i], 1))
+          return MEM_ERROR;
+      }
 
       diff_bytes_length += lenf;
       extra_bytes_length += gap;
@@ -393,9 +398,12 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
       uint32 extra_count = gap;
       int32 seek_adjustment = ((pos - lenb) - (lastpos + lenf));
 
-      control_stream_copy_counts->WriteVarint32(copy_count);
-      control_stream_extra_counts->WriteVarint32(extra_count);
-      control_stream_seeks->WriteVarint32Signed(seek_adjustment);
+      if (!control_stream_copy_counts->WriteVarint32(copy_count) ||
+          !control_stream_extra_counts->WriteVarint32(extra_count) ||
+          !control_stream_seeks->WriteVarint32Signed(seek_adjustment)) {
+        return MEM_ERROR;
+      }
+
       ++control_length;
 #ifdef DEBUG_bsmedberg
       VLOG(1) << StringPrintf("Writing a block:  copy: %-8u extra: %-8u seek: "
@@ -409,7 +417,8 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
     }
   }
 
-  diff_skips->WriteVarint32(pending_diff_zeros);
+  if (!diff_skips->WriteVarint32(pending_diff_zeros))
+    return MEM_ERROR;
 
   I.clear();
 
@@ -422,10 +431,12 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
   header.scrc32   = CalculateCrc(old, oldsize);
   header.dlen     = newsize;
 
-  WriteHeader(patch_stream, &header);
+  if (!WriteHeader(patch_stream, &header))
+    return MEM_ERROR;
 
   size_t diff_skips_length = diff_skips->Length();
-  patch_streams.CopyTo(patch_stream);
+  if (!patch_streams.CopyTo(patch_stream))
+    return MEM_ERROR;
 
   VLOG(1) << "Control tuples: " << control_length
           << "  copy bytes: " << diff_bytes_length

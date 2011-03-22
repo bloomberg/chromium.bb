@@ -220,10 +220,13 @@ Status EnsemblePatchApplication::TransformDown(
     SinkStream* basic_elements) {
   // Construct blob of original input followed by reformed elements.
 
-  basic_elements->Reserve(final_patch_input_size_prediction_);
+  if (!basic_elements->Reserve(final_patch_input_size_prediction_)) {
+    return C_STREAM_ERROR;
+  }
 
   // The original input:
-  basic_elements->Write(base_region_.start(), base_region_.length());
+  if (!basic_elements->Write(base_region_.start(), base_region_.length()))
+    return C_STREAM_ERROR;
 
   for (size_t i = 0;  i < patchers_.size();  ++i) {
     SourceStreamSet single_corrected_element;

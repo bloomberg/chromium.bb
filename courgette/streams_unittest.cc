@@ -12,7 +12,7 @@ TEST(StreamsTest, SimpleWriteRead) {
   const unsigned int kValue1 = 12345;
   courgette::SinkStream sink;
 
-  sink.WriteVarint32(kValue1);
+  EXPECT_TRUE(sink.WriteVarint32(kValue1));
 
   const uint8* sink_buffer = sink.Buffer();
   size_t length = sink.Length();
@@ -30,7 +30,7 @@ TEST(StreamsTest, SimpleWriteRead) {
 TEST(StreamsTest, SimpleWriteRead2) {
   courgette::SinkStream sink;
 
-  sink.Write("Hello", 5);
+  EXPECT_TRUE(sink.Write("Hello", 5));
 
   const uint8* sink_buffer = sink.Buffer();
   size_t sink_length = sink.Length();
@@ -51,11 +51,11 @@ TEST(StreamsTest, StreamSetWriteRead) {
 
   const unsigned int kValue1 = 12345;
 
-  out.stream(3)->WriteVarint32(kValue1);
+  EXPECT_TRUE(out.stream(3)->WriteVarint32(kValue1));
 
   courgette::SinkStream collected;
 
-  out.CopyTo(&collected);
+  EXPECT_TRUE(out.CopyTo(&collected));
 
   const uint8* collected_buffer = collected.Buffer();
   size_t collected_length = collected.Length();
@@ -90,12 +90,12 @@ TEST(StreamsTest, StreamSetWriteRead2) {
   for (size_t i = 0;  data[i] != kEnd;  i += 2) {
     size_t id = data[i];
     size_t datum = data[i + 1];
-    out.stream(id)->WriteVarint32(datum);
+    EXPECT_TRUE(out.stream(id)->WriteVarint32(datum));
   }
 
   courgette::SinkStream collected;
 
-  out.CopyTo(&collected);
+  EXPECT_TRUE(out.CopyTo(&collected));
 
   courgette::SourceStreamSet in;
   bool can_init = in.Init(collected.Buffer(), collected.Length());
@@ -129,9 +129,9 @@ TEST(StreamsTest, SignedVarint32) {
   for (size_t i = 0;  i < sizeof(data)/sizeof(data[0]);  ++i) {
     int32 basis = data[i];
     for (int delta = -4; delta <= 4; ++delta) {
-      out.WriteVarint32Signed(basis + delta);
+      EXPECT_TRUE(out.WriteVarint32Signed(basis + delta));
       values.push_back(basis + delta);
-      out.WriteVarint32Signed(-basis + delta);
+      EXPECT_TRUE(out.WriteVarint32Signed(-basis + delta));
       values.push_back(-basis + delta);
     }
   }
@@ -155,18 +155,18 @@ TEST(StreamsTest, StreamSetReadWrite) {
 
   { // Local scope for temporary stream sets.
     courgette::SinkStreamSet subset1;
-    subset1.stream(3)->WriteVarint32(30000);
-    subset1.stream(5)->WriteVarint32(50000);
-    out.WriteSet(&subset1);
+    EXPECT_TRUE(subset1.stream(3)->WriteVarint32(30000));
+    EXPECT_TRUE(subset1.stream(5)->WriteVarint32(50000));
+    EXPECT_TRUE(out.WriteSet(&subset1));
 
     courgette::SinkStreamSet subset2;
-    subset2.stream(2)->WriteVarint32(20000);
-    subset2.stream(6)->WriteVarint32(60000);
-    out.WriteSet(&subset2);
+    EXPECT_TRUE(subset2.stream(2)->WriteVarint32(20000));
+    EXPECT_TRUE(subset2.stream(6)->WriteVarint32(60000));
+    EXPECT_TRUE(out.WriteSet(&subset2));
   }
 
   courgette::SinkStream collected;
-  out.CopyTo(&collected);
+  EXPECT_TRUE(out.CopyTo(&collected));
   courgette::SourceStreamSet in;
   bool can_init_in = in.Init(collected.Buffer(), collected.Length());
   EXPECT_TRUE(can_init_in);

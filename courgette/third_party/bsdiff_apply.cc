@@ -77,7 +77,8 @@ BSDiffStatus MBS_ApplyPatch(const MBSPatchHeader *header,
 
   const uint8* old_position = old_start;
 
-  new_stream->Reserve(header->dlen);
+  if (header->dlen && !new_stream->Reserve(header->dlen))
+    return MEM_ERROR;
 
   uint32 pending_diff_zeros = 0;
   if (!diff_skips->ReadVarint32(&pending_diff_zeros))
@@ -114,7 +115,8 @@ BSDiffStatus MBS_ApplyPatch(const MBSPatchHeader *header,
           return UNEXPECTED_ERROR;
       }
       uint8 byte = old_position[i] + diff_byte;
-      new_stream->Write(&byte, 1);
+      if (!new_stream->Write(&byte, 1))
+        return MEM_ERROR;
     }
     old_position += copy_count;
 
@@ -122,7 +124,9 @@ BSDiffStatus MBS_ApplyPatch(const MBSPatchHeader *header,
     if (extra_count > static_cast<size_t>(extra_end - extra_position))
       return UNEXPECTED_ERROR;
 
-    new_stream->Write(extra_position, extra_count);
+    if (!new_stream->Write(extra_position, extra_count))
+      return MEM_ERROR;
+
     extra_position += extra_count;
 
     // "seek" forwards (or backwards) in oldfile.

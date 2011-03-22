@@ -17,18 +17,18 @@ TEST(EncodedProgramTest, Test) {
   uint32 base = 0x00900000;
   program->set_image_base(base);
 
-  program->DefineRel32Label(5, 0);  // REL32 index 5 == base + 0
-  program->DefineAbs32Label(7, 4);  // ABS32 index 7 == base + 4
+  EXPECT_TRUE(program->DefineRel32Label(5, 0));  // REL32 index 5 == base + 0
+  EXPECT_TRUE(program->DefineAbs32Label(7, 4));  // ABS32 index 7 == base + 4
   program->EndLabels();
 
-  program->AddOrigin(0);  // Start at base.
-  program->AddAbs32(7);
-  program->AddRel32(5);
+  EXPECT_TRUE(program->AddOrigin(0));  // Start at base.
+  EXPECT_TRUE(program->AddAbs32(7));
+  EXPECT_TRUE(program->AddRel32(5));
 
   // Serialize and deserialize.
 
   courgette::SinkStreamSet sinks;
-  program->WriteTo(&sinks);
+  EXPECT_TRUE(program->WriteTo(&sinks));
 
   courgette::SinkStream sink;
   bool can_collect = sinks.CopyTo(&sink);

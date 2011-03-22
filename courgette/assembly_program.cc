@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
 
 #include "courgette/courgette.h"
 #include "courgette/encoded_program.h"
@@ -287,26 +288,35 @@ void AssemblyProgram::AssignRemainingIndexes(RVAToLabel* labels) {
           << "  infill " << fill_infill_count;
 }
 
-typedef void (EncodedProgram::*DefineLabelMethod)(int index, RVA value);
+typedef CheckBool (EncodedProgram::*DefineLabelMethod)(int index, RVA value);
 
 #if defined(OS_WIN)
 __declspec(noinline)
 #endif
-static void DefineLabels(const RVAToLabel& labels,
-                         EncodedProgram* encoded_format,
-                         DefineLabelMethod define_label) {
-  for (RVAToLabel::const_iterator p = labels.begin(); p != labels.end(); ++p) {
+static CheckBool DefineLabels(const RVAToLabel& labels,
+                              EncodedProgram* encoded_format,
+                              DefineLabelMethod define_label) {
+  bool ok = true;
+  for (RVAToLabel::const_iterator p = labels.begin();
+       ok && p != labels.end();
+       ++p) {
     Label* label = p->second;
-    (encoded_format->*define_label)(label->index_, label->rva_);
+    ok = (encoded_format->*define_label)(label->index_, label->rva_);
   }
+  return ok;
 }
 
 EncodedProgram* AssemblyProgram::Encode() const {
-  EncodedProgram* encoded = new EncodedProgram();
-
+  scoped_ptr<EncodedProgram> encoded(new EncodedProgram());
   encoded->set_image_base(image_base_);
-  DefineLabels(abs32_labels_, encoded, &EncodedProgram::DefineAbs32Label);
-  DefineLabels(rel32_labels_, encoded, &EncodedProgram::DefineRel32Label);
+
+  if (!DefineLabels(abs32_labels_, encoded.get(),
+                    &EncodedProgram::DefineAbs32Label) ||
+      !DefineLabels(rel32_labels_, encoded.get(),
+                    &EncodedProgram::DefineRel32Label)) {
+    return NULL;
+  }
+
   encoded->EndLabels();
 
   for (size_t i = 0;  i < instructions_.size();  ++i) {
@@ -315,26 +325,31 @@ EncodedProgram* AssemblyProgram::Encode() const {
     switch (instruction->op()) {
       case ORIGIN: {
         OriginInstruction* org = static_cast<OriginInstruction*>(instruction);
-        encoded->AddOrigin(org->origin_rva());
+        if (!encoded->AddOrigin(org->origin_rva()))
+          return NULL;
         break;
       }
       case DEFBYTE: {
         uint8 b = static_cast<ByteInstruction*>(instruction)->byte_value();
-        encoded->AddCopy(1, &b);
+        if (!encoded->AddCopy(1, &b))
+          return NULL;
         break;
       }
       case REL32: {
         Label* label = static_cast<InstructionWithLabel*>(instruction)->label();
-        encoded->AddRel32(label->index_);
+        if (!encoded->AddRel32(label->index_))
+          return NULL;
         break;
       }
       case ABS32: {
         Label* label = static_cast<InstructionWithLabel*>(instruction)->label();
-        encoded->AddAbs32(label->index_);
+        if (!encoded->AddAbs32(label->index_))
+          return NULL;
         break;
       }
       case MAKERELOCS: {
-        encoded->AddMakeRelocs();
+        if (!encoded->AddMakeRelocs())
+          return NULL;
         break;
       }
       default: {
@@ -343,7 +358,7 @@ EncodedProgram* AssemblyProgram::Encode() const {
     }
   }
 
-  return encoded;
+  return encoded.release();
 }
 
 Instruction* AssemblyProgram::GetByteInstruction(uint8 byte) {

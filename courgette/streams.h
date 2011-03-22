@@ -4,11 +4,11 @@
 
 // Streams classes.
 //
-// These memory-resident streams are used for serialzing data into a sequential
+// These memory-resident streams are used for serializing data into a sequential
 // region of memory.
 // Streams are divided into SourceStreams for reading and SinkStreams for
 // writing.  Streams are aggregated into Sets which allows several streams to be
-// used at once.  Example: we can write A1, B1, A2, B2 but achive the memory
+// used at once.  Example: we can write A1, B1, A2, B2 but achieve the memory
 // layout A1 A2 B1 B2 by writing 'A's to one stream and 'B's to another.
 #ifndef COURGETTE_STREAMS_H_
 #define COURGETTE_STREAMS_H_
@@ -17,9 +17,11 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 
 #include "courgette/memory_allocator.h"
 #include "courgette/region.h"
+
 
 namespace courgette {
 
@@ -109,7 +111,7 @@ class SourceStream {
 };
 
 // A SinkStream accumulates writes into a buffer that it owns.  The stream is
-// initialy in an 'accumulating' state where writes are permitted.  Accessing
+// initially in an 'accumulating' state where writes are permitted.  Accessing
 // the buffer moves the stream into a 'locked' state where no more writes are
 // permitted.  The stream may also be in a 'retired' state where the buffer
 // contents are no longer available.
@@ -119,21 +121,21 @@ class SinkStream {
   ~SinkStream() {}
 
   // Appends |byte_count| bytes from |data| to the stream.
-  void Write(const void* data, size_t byte_count);
+  CheckBool Write(const void* data, size_t byte_count) WARN_UNUSED_RESULT;
 
   // Appends the 'varint32' encoding of |value| to the stream.
-  void WriteVarint32(uint32 value);
+  CheckBool WriteVarint32(uint32 value) WARN_UNUSED_RESULT;
 
   // Appends the 'varint32' encoding of |value| to the stream.
-  void WriteVarint32Signed(int32 value);
+  CheckBool WriteVarint32Signed(int32 value) WARN_UNUSED_RESULT;
 
   // Appends the 'varint32' encoding of |value| to the stream.
   // On platforms where sizeof(size_t) != sizeof(int32), do a safety check.
-  void WriteSizeVarint32(size_t value);
+  CheckBool WriteSizeVarint32(size_t value) WARN_UNUSED_RESULT;
 
   // Contents of |other| are appended to |this| stream.  The |other| stream
   // becomes retired.
-  void Append(SinkStream* other);
+  CheckBool Append(SinkStream* other) WARN_UNUSED_RESULT;
 
   // Returns the number of bytes in this SinkStream
   size_t Length() const { return buffer_.size(); }
@@ -146,7 +148,12 @@ class SinkStream {
   }
 
   // Hints that the stream will grow by an additional |length| bytes.
-  void Reserve(size_t length) { buffer_.reserve(length + buffer_.length()); }
+  // Caller must be prepared to handle memory allocation problems.
+  CheckBool Reserve(size_t length) WARN_UNUSED_RESULT {
+    buffer_.reserve(length + buffer_.length());
+    //TODO(tommi): return false when allocation fails.
+    return true;
+  }
 
   // Finished with this stream and any storage it has.
   void Retire();
@@ -215,15 +222,15 @@ class SinkStreamSet {
   // CopyTo serializes the streams in this SinkStreamSet into a single target
   // stream.  The serialized format may be re-read by initializing a
   // SourceStreamSet with a buffer containing the data.
-  bool CopyTo(SinkStream* combined_stream);
+  CheckBool CopyTo(SinkStream* combined_stream);
 
   // Writes the streams of |set| into the corresponding streams of |this|.
   // Stream zero first has some metadata written to it.  |set| becomes retired.
   // Partner to SourceStreamSet::ReadSet.
-  bool WriteSet(SinkStreamSet* set);
+  CheckBool WriteSet(SinkStreamSet* set);
 
  private:
-  void CopyHeaderTo(SinkStream* stream);
+  CheckBool CopyHeaderTo(SinkStream* stream);
 
   size_t count_;
   SinkStream streams_[kMaxStreams];

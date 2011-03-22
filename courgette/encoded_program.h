@@ -32,27 +32,27 @@ class EncodedProgram {
   void set_image_base(uint64 base) { image_base_ = base; }
 
   // (2) Address tables and indexes defined first.
-  void DefineRel32Label(int index, RVA address);
-  void DefineAbs32Label(int index, RVA address);
+  CheckBool DefineRel32Label(int index, RVA address);
+  CheckBool DefineAbs32Label(int index, RVA address);
   void EndLabels();
 
   // (3) Add instructions in the order needed to generate bytes of file.
-  void AddOrigin(RVA rva);
-  void AddCopy(uint32 count, const void* bytes);
-  void AddRel32(int label_index);
-  void AddAbs32(int label_index);
-  void AddMakeRelocs();
+  CheckBool AddOrigin(RVA rva);
+  CheckBool AddCopy(uint32 count, const void* bytes);
+  CheckBool AddRel32(int label_index);
+  CheckBool AddAbs32(int label_index);
+  CheckBool AddMakeRelocs();
 
   // (3) Serialize binary assembly language tables to a set of streams.
-  void WriteTo(SinkStreamSet *streams);
+  CheckBool WriteTo(SinkStreamSet* streams);
 
   // Using an EncodedProgram to generate a byte stream:
   //
   // (4) Deserializes a fresh EncodedProgram from a set of streams.
-  bool ReadFrom(SourceStreamSet *streams);
+  bool ReadFrom(SourceStreamSet* streams);
 
   // (5) Assembles the 'binary assembly language' into final file.
-  bool AssembleTo(SinkStream *buffer);
+  CheckBool AssembleTo(SinkStream* buffer);
 
  private:
   // Binary assembly language operations.
@@ -74,8 +74,8 @@ class EncodedProgram {
   typedef std::vector<OP, MemoryAllocator<OP> > OPVector;
 
   void DebuggingSummary();
-  void GenerateBaseRelocations(SinkStream *buffer);
-  void DefineLabelCommon(RvaVector*, int, RVA);
+  CheckBool GenerateBaseRelocations(SinkStream *buffer);
+  CheckBool DefineLabelCommon(RvaVector*, int, RVA);
   void FinishLabelsCommon(RvaVector* addresses);
 
   // Binary assembly language tables.

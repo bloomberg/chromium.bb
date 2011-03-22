@@ -181,37 +181,43 @@ bool SourceStream::Skip(size_t byte_count) {
   return true;
 }
 
-void SinkStream::Write(const void* data, size_t byte_count) {
+CheckBool SinkStream::Write(const void* data, size_t byte_count) {
   buffer_.append(static_cast<const char*>(data), byte_count);
+  //TODO(tommi): return error on failure.
+  return true;
 }
 
-void SinkStream::WriteVarint32(uint32 value) {
+CheckBool SinkStream::WriteVarint32(uint32 value) {
   uint8 buffer[Varint::kMax32];
   uint8* end = Varint::Encode32(buffer, value);
-  Write(buffer, end - buffer);
+  return Write(buffer, end - buffer);
 }
 
-void SinkStream::WriteVarint32Signed(int32 value) {
+CheckBool SinkStream::WriteVarint32Signed(int32 value) {
   // Encode signed numbers so that numbers nearer zero have shorter
   // varint encoding.
   //  0000xxxx encoded as 000xxxx0.
   //  1111xxxx encoded as 000yyyy1 where yyyy is complement of xxxx.
+  bool ret;
   if (value < 0)
-    WriteVarint32(~value * 2 + 1);
+    ret = WriteVarint32(~value * 2 + 1);
   else
-    WriteVarint32(value * 2);
+    ret = WriteVarint32(value * 2);
+  return ret;
 }
 
-void SinkStream::WriteSizeVarint32(size_t value) {
+CheckBool SinkStream::WriteSizeVarint32(size_t value) {
   uint32 narrowed_value = static_cast<uint32>(value);
   // On 32-bit, the compiler should figure out this test always fails.
   LOG_ASSERT(value == narrowed_value);
-  WriteVarint32(narrowed_value);
+  return WriteVarint32(narrowed_value);
 }
 
-void SinkStream::Append(SinkStream* other) {
-  Write(other->buffer_.c_str(), other->buffer_.size());
-  other->Retire();
+CheckBool SinkStream::Append(SinkStream* other) {
+  bool ret = Write(other->buffer_.c_str(), other->buffer_.size());
+  if (ret)
+    other->Retire();
+  return ret;
 }
 
 void SinkStream::Retire() {
@@ -326,35 +332,41 @@ void SinkStreamSet::Init(size_t stream_index_limit) {
 
 // The header for a stream set for N streams is serialized as
 //   <version><N><length1><length2>...<lengthN>
-void SinkStreamSet::CopyHeaderTo(SinkStream* header) {
-  header->WriteVarint32(kStreamsSerializationFormatVersion);
-  header->WriteSizeVarint32(count_);
-  for (size_t i = 0; i < count_; ++i) {
-    header->WriteSizeVarint32(stream(i)->Length());
+CheckBool SinkStreamSet::CopyHeaderTo(SinkStream* header) {
+  bool ret = header->WriteVarint32(kStreamsSerializationFormatVersion);
+  if (ret) {
+    ret = header->WriteSizeVarint32(count_);
+    for (size_t i = 0; ret && i < count_; ++i) {
+      ret = header->WriteSizeVarint32(stream(i)->Length());
+    }
   }
+  return ret;
 }
 
 // Writes |this| to |combined_stream|.  See SourceStreamSet::Init for the layout
 // of the stream metadata and contents.
-bool SinkStreamSet::CopyTo(SinkStream *combined_stream) {
+CheckBool SinkStreamSet::CopyTo(SinkStream *combined_stream) {
   SinkStream header;
-  CopyHeaderTo(&header);
+  bool ret = CopyHeaderTo(&header);
+  if (!ret)
+    return ret;
 
   // Reserve the correct amount of storage.
   size_t length = header.Length();
   for (size_t i = 0; i < count_; ++i) {
     length += stream(i)->Length();
   }
-  combined_stream->Reserve(length);
-
-  combined_stream->Append(&header);
-  for (size_t i = 0; i < count_; ++i) {
-    combined_stream->Append(stream(i));
+  ret = combined_stream->Reserve(length);
+  if (ret) {
+    ret = combined_stream->Append(&header);
+    for (size_t i = 0; ret && i < count_; ++i) {
+      ret = combined_stream->Append(stream(i));
+    }
   }
-  return true;
+  return ret;
 }
 
-bool SinkStreamSet::WriteSet(SinkStreamSet* set) {
+CheckBool SinkStreamSet::WriteSet(SinkStreamSet* set) {
   uint32 lengths[kMaxStreams];
   // 'stream_count' includes all non-empty streams and all empty stream numbered
   // lower than a non-empty stream.
@@ -367,15 +379,15 @@ bool SinkStreamSet::WriteSet(SinkStreamSet* set) {
   }
 
   SinkStream* control_stream = this->stream(0);
-  control_stream->WriteSizeVarint32(stream_count);
-  for (size_t i = 0; i < stream_count; ++i) {
-    control_stream->WriteSizeVarint32(lengths[i]);
+  bool ret = control_stream->WriteSizeVarint32(stream_count);
+  for (size_t i = 0; ret && i < stream_count; ++i) {
+    ret = control_stream->WriteSizeVarint32(lengths[i]);
   }
 
-  for (size_t i = 0; i < stream_count; ++i) {
-    this->stream(i)->Append(set->stream(i));
+  for (size_t i = 0; ret && i < stream_count; ++i) {
+    ret = this->stream(i)->Append(set->stream(i));
   }
-  return true;
+  return ret;
 }
 
 }  // namespace

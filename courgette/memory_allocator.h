@@ -12,6 +12,47 @@
 #include "base/logging.h"
 #include "base/platform_file.h"
 
+#ifndef NDEBUG
+
+// A helper class to track down call sites that are not handling error cases.
+template<class T>
+class CheckReturnValue {
+ public:
+  // Not marked explicit on purpose.
+  CheckReturnValue(T value) : value_(value), checked_(false) {  // NOLINT
+  }
+  CheckReturnValue(const CheckReturnValue& other)
+      : value_(other.value_), checked_(other.checked_) {
+    other.checked_ = true;
+  }
+
+  CheckReturnValue& operator=(const CheckReturnValue& other) {
+    if (this != &other) {
+      DCHECK(checked_);
+      value_ = other.value_;
+      checked_ = other.checked_;
+      other.checked_ = true;
+    }
+  }
+
+  ~CheckReturnValue() {
+    DCHECK(checked_);
+  }
+
+  operator const T&() const {
+    checked_ = true;
+    return value_;
+  }
+
+ private:
+  T value_;
+  mutable bool checked_;
+};
+typedef CheckReturnValue<bool> CheckBool;
+#else
+typedef bool CheckBool;
+#endif
+
 namespace courgette {
 
 #ifdef OS_WIN
