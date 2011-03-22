@@ -29,12 +29,14 @@
 
 #include <string>
 
+#include <fcntl.h>
 #include <limits.h>
 #include <unistd.h>
 #include <signal.h>
 #include <stdint.h>
 #include <sys/mman.h>
 #include <sys/poll.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 
 #include "breakpad_googletest_includes.h"
