@@ -4017,6 +4017,15 @@
    fun:_ZN19ServiceProcessState10InitializeEv
    fun:_ZN39ServiceProcessStateFileManipulationTest5SetUpEv
 }
+{
+   bug_77049
+   Memcheck:Cond
+   fun:_ZN7WebCore8Gradient20sortStopsIfNecessaryEv
+   fun:_ZN7WebCore8Gradient16platformGradientEv
+   fun:_ZN7WebCore15GraphicsContext*EPNS_8GradientE
+   fun:_ZN7WebCore15GraphicsContext*EN3WTF10PassRefPtrINS_8GradientEEE
+   fun:_ZN7WebCore25RenderSVGResourceGradient13applyResourceEPNS_12RenderObjectEPNS_11RenderStyleERPNS_15GraphicsContextEt
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
