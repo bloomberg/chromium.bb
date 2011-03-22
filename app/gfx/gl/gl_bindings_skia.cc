@@ -412,7 +412,6 @@ void InitializeGrGLInterface(GrGLInterface* gl_interface) {
   gl_interface->fTexEnvi = NULL;
   gl_interface->fVertexPointer = NULL;
 
-  gl_interface->fFramebufferTexture2DMultisample = NULL;
   gl_interface->fResolveMultisampleFramebuffer = NULL;
   gl_interface->fActiveTexture = StubGLActiveTexture;
   gl_interface->fAttachShader = StubGLAttachShader;
