@@ -33,9 +33,7 @@ void ExternalProcessImporterBridge::AddBookmarkEntries(
       bookmarks, first_folder_name, options);
 }
 
-void ExternalProcessImporterBridge::AddHomePage(const GURL &home_page) {
-  // TODO(mirandac): remove home page import from code base.
-  // http://crbug.com/45678 :-)
+void ExternalProcessImporterBridge::AddHomePage(const GURL& home_page) {
   NOTIMPLEMENTED();
 }
 
