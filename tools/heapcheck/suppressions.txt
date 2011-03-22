@@ -1239,6 +1239,7 @@
 {
    bug_76644_b
    Heapcheck:Leak
+   ...
    fun:UserStyleSheetWatcher::Init
 }
 {
@@ -1255,13 +1256,4 @@
    fun:std::vector::insert
    fun:ui::TreeNode::Add
    fun:ui::TreeNodeModelTest_BasicOperations_Test::TestBody
-}
-{
-   bug_77094
-   Heapcheck:Leak
-   ...
-   fun:UserStyleSheetWatcher::Init
-   fun:void DispatchToMethod
-   fun:RunnableMethod::Run
-   fun:MessageLoop::RunTask
 }
