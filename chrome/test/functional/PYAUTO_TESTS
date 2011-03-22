@@ -59,7 +59,8 @@
       # crbug.com/76639
       '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
       'navigation',
-      'notifications',
+      # crbug.com/77082
+      '-notifications',
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       '-notifications.NotificationsTest.testKillNotificationProcess',
