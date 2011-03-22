@@ -378,13 +378,13 @@ void BrowserMainParts::ProxyConnectionsFieldTrial() {
 //           default group: no npn or spdy is involved. The "old" non-spdy
 //                          chrome behavior.
 void BrowserMainParts::SpdyFieldTrial() {
-  bool is_spdy_trial = false;
   if (parsed_command_line().HasSwitch(switches::kUseSpdy)) {
     std::string spdy_mode =
         parsed_command_line().GetSwitchValueASCII(switches::kUseSpdy);
     net::HttpNetworkLayer::EnableSpdy(spdy_mode);
   } else {
 #if !defined(OS_CHROMEOS)
+    bool is_spdy_trial = false;
     const base::FieldTrial::Probability kSpdyDivisor = 100;
     base::FieldTrial::Probability npnhttp_probability = 5;
 
