@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/download/download_file.h"
 #include "content/browser/renderer_host/global_request_id.h"
@@ -86,7 +87,7 @@ class DownloadResourceHandler : public ResourceHandler {
   net::URLRequest* request_;
   bool save_as_;  // Request was initiated via "Save As" by the user.
   DownloadSaveInfo save_info_;
-  DownloadBuffer* buffer_;
+  scoped_ptr<DownloadBuffer> buffer_;
   ResourceDispatcherHost* rdh_;
   bool is_paused_;
   base::OneShotTimer<DownloadResourceHandler> pause_timer_;

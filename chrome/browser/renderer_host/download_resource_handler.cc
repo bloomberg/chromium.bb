@@ -157,7 +157,7 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
         NewRunnableMethod(download_file_manager_,
                           &DownloadFileManager::UpdateDownload,
                           download_id_,
-                          buffer_));
+                          buffer_.get()));
   }
 
   // We schedule a pause outside of the read loop if there is too much file
@@ -176,16 +176,14 @@ bool DownloadResourceHandler::OnResponseCompleted(
            << " request_id = " << request_id
            << " status.status() = " << status.status()
            << " status.os_error() = " << status.os_error();
+  // Ownership of |buffer_| is passed to DownloadFileManager.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(download_file_manager_,
                         &DownloadFileManager::OnResponseCompleted,
                         download_id_,
-                        buffer_));
+                        buffer_.release()));
   read_buffer_ = NULL;
-
-  // 'buffer_' is deleted by the DownloadFileManager.
-  buffer_ = NULL;
   return true;
 }
 
@@ -209,7 +207,7 @@ void DownloadResourceHandler::set_content_disposition(
 }
 
 void DownloadResourceHandler::CheckWriteProgress() {
-  if (!buffer_)
+  if (!buffer_.get())
     return;  // The download completed while we were waiting to run.
 
   size_t contents_size;
