@@ -291,6 +291,24 @@ SetupPnaclArm() {
   SUFFIX=pnacl.arm
 }
 
+#@
+#@ SetupPnaclTranslatorArm
+#@    use pnacl arm translator (no lto)
+SetupPnaclTranslatorArm() {
+  CheckSelUniversal "arm"
+  SetupPnaclArmCommon
+  SUFFIX=pnacl_translator.arm
+}
+
+#@
+#@ SetupPnaclTranslatorArmOpt
+#@    use pnacl arm translator (with lto)
+SetupPnaclTranslatorArmOpt() {
+  CheckSelUniversal "arm"
+  SetupPnaclArmCommon
+  SUFFIX=pnacl_translator.opt.arm
+}
+
 SetupPnaclArmCommonHW() {
   SEL_LDR=$(GetSelLdr "arm")
   PREFIX="${SEL_LDR} -a -f"
@@ -313,8 +331,23 @@ SetupPnaclArmHW() {
   SUFFIX=pnacl.arm
 }
 
+#@
+#@ SetupPnaclTranslatorArmHW
+#@    use pnacl arm translator (no lto) -- run on ARM hardware
+SetupPnaclTranslatorArmHW() {
+  CheckSelUniversal "arm"
+  SetupPnaclArmCommonHW
+  SUFFIX=pnacl_translator.hw.arm
+}
 
-# TODO(robertm): add arm translator support
+#@
+#@ SetupPnaclTranslatorArmOptHW
+#@    use pnacl arm translator (with lto) -- run on ARM hardware
+SetupPnaclTranslatorArmOptHW() {
+  CheckSelUniversal "arm"
+  SetupPnaclArmCommonHW
+  SUFFIX=pnacl_translator.opt.hw.arm
+}
 
 ConfigInfo() {
   Banner "Config Info"

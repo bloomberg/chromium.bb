@@ -532,8 +532,9 @@ def PrepareFlags():
     env.append('BCLD_FINISH_ARGS', '-plugin-opt=PIC')
 
   if env.getbool('USE_EMULATOR'):
+    env.append('SEL_UNIVERSAL_FLAGS', '-Q')
     env.append('SEL_UNIVERSAL_FLAGS', '--command_prefix', '${EMULATOR_%arch%}')
-    env.append('SEL_UNIVERSAL_PREFIX', '${EMULATOR_%arch%}', '-Q')
+    env.append('SEL_UNIVERSAL_PREFIX', '${EMULATOR_%arch%}')
 
   if env.getbool('NOSTDINC'):
     env.clear('CC_STDINC')

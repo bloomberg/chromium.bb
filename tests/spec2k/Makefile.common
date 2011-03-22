@@ -174,6 +174,7 @@ PNACL_ROOT=$(TC_ROOT)/linux_arm-untrusted
 PNACL_BIN=$(PNACL_ROOT)/bin
 PNACL_TRANSLATOR=$(TIME_CMD) $(PNACL_BIN)/pnacl-translate
 PNACL_TRANSLATOR_SB=$(TIME_CMD) $(PNACL_BIN)/pnacl-translate --pnacl-sb
+PNACL_TRANSLATOR_SB_EMU=$(PNACL_TRANSLATOR_SB) --pnacl-use-emulator
 BC_GCC=$(PNACL_BIN)/pnacl-gcc
 BC_GPP=$(PNACL_BIN)/pnacl-g++
 BC_OPT=$(PNACL_BIN)/pnacl-opt
@@ -236,6 +237,22 @@ $(IT).pnacl.arm: $(IT).preopt.pexe
 
 $(IT).pnacl.opt.arm: $(IT).opt.pexe
 	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch arm
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
+
+$(IT).pnacl_translator.arm: $(IT).preopt.pexe
+	$(PNACL_TRANSLATOR_SB_EMU) $(PNACL_FLAGS) $^ -o $@ -arch arm
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
+
+$(IT).pnacl_translator.opt.arm: $(IT).opt.pexe
+	$(PNACL_TRANSLATOR_SB_EMU) $(PNACL_FLAGS) $^ -o $@ -arch arm
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
+
+$(IT).pnacl_translator.hw.arm: $(IT).preopt.pexe
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch arm
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
+
+$(IT).pnacl_translator.opt.hw.arm: $(IT).opt.pexe
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch arm
 	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 ######################################################################
