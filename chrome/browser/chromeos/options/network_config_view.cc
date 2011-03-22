@@ -89,8 +89,8 @@ void NetworkConfigView::Layout() {
 gfx::Size NetworkConfigView::GetPreferredSize() {
   // TODO(chocobo): Once UI is finalized, create locale settings.
   gfx::Size result(views::Window::GetLocalizedContentsSize(
-      IDS_IMPORT_DIALOG_WIDTH_CHARS,
-      IDS_IMPORT_DIALOG_HEIGHT_LINES));
+      IDS_ABOUT_DIALOG_WIDTH_CHARS,
+      IDS_ABOUT_DIALOG_MINIMUM_HEIGHT_LINES));
   result.set_height(wificonfig_view_->GetPreferredSize().height());
   return result;
 }

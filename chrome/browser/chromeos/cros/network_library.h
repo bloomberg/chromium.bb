@@ -111,6 +111,25 @@ enum ConnectionError {
   ERROR_AAA_FAILED        = 11,
 };
 
+// We are currently only supporting setting a single EAP Method.
+enum EAPMethod {
+  EAP_METHOD_UNKNOWN = 0,
+  EAP_METHOD_PEAP    = 1,
+  EAP_METHOD_TLS     = 2,
+  EAP_METHOD_TTLS    = 3,
+  EAP_METHOD_LEAP    = 4
+};
+
+// We are currently only supporting setting a single EAP phase 2 authentication.
+enum EAPPhase2Auth {
+  EAP_PHASE_2_AUTH_AUTO     = 0,
+  EAP_PHASE_2_AUTH_MD5      = 1,
+  EAP_PHASE_2_AUTH_MSCHAPV2 = 2,
+  EAP_PHASE_2_AUTH_MSCHAP   = 3,
+  EAP_PHASE_2_AUTH_PAP      = 4,
+  EAP_PHASE_2_AUTH_CHAP     = 5
+};
+
 // Cellular network is considered low data when less than 60 minues.
 static const int kCellularDataLowSecs = 60 * 60;
 
@@ -199,8 +218,8 @@ class Network {
   }
   ConnectionError error() const { return error_; }
   ConnectionState state() const { return state_; }
-  // Is this network connectable. Some networks are not yet ready to be
-  // connected. For example, an 8021X network without certificates.
+  // Is this network connectable. Currently, this is mainly used by 802.1x
+  // networks to specify that the network is not configured yet.
   bool connectable() const { return connectable_; }
   // Is this the active network, i.e, the one through which
   // network traffic is being routed? A network can be connected,
@@ -429,7 +448,10 @@ class WifiNetwork : public WirelessNetwork {
   explicit WifiNetwork(const std::string& service_path)
       : WirelessNetwork(service_path, TYPE_WIFI),
         encryption_(SECURITY_NONE),
-        passphrase_required_(false) {
+        passphrase_required_(false),
+        eap_method_(EAP_METHOD_UNKNOWN),
+        eap_phase_2_auth_(EAP_PHASE_2_AUTH_AUTO),
+        eap_use_system_cas_(true) {
   }
 
   bool encrypted() const { return encryption_ != SECURITY_NONE; }
@@ -438,11 +460,32 @@ class WifiNetwork : public WirelessNetwork {
   const std::string& identity() const { return identity_; }
   const std::string& cert_path() const { return cert_path_; }
 
+  EAPMethod eap_method() const { return eap_method_; }
+  EAPPhase2Auth eap_phase_2_auth() const { return eap_phase_2_auth_; }
+  const std::string& eap_server_ca_cert() const {
+    return eap_server_ca_cert_path_; }
+  const std::string& eap_client_cert() const { return eap_client_cert_path_; }
+  const bool eap_use_system_cas() const { return eap_use_system_cas_; }
+  const std::string& eap_identity() const { return eap_identity_; }
+  const std::string& eap_anonymous_identity() const {
+    return eap_anonymous_identity_; }
+  const std::string& eap_passphrase() const { return eap_passphrase_; }
+
   const std::string& GetPassphrase() const;
 
   void SetPassphrase(const std::string& passphrase);
   void SetIdentity(const std::string& identity);
   void SetCertPath(const std::string& cert_path);
+
+  // 802.1x properties
+  void SetEAPMethod(EAPMethod method);
+  void SetEAPPhase2Auth(EAPPhase2Auth auth);
+  void SetEAPServerCACert(const std::string& cert_path);
+  void SetEAPClientCert(const std::string& cert_path);
+  void SetEAPUseSystemCAs(bool use_system_cas);
+  void SetEAPIdentity(const std::string& identity);
+  void SetEAPAnonymousIdentity(const std::string& identity);
+  void SetEAPPassphrase(const std::string& passphrase);
 
   // Return a string representation of the encryption code.
   // This not translated and should be only used for debugging purposes.
@@ -480,6 +523,15 @@ class WifiNetwork : public WirelessNetwork {
   bool passphrase_required_;
   std::string identity_;
   std::string cert_path_;
+
+  EAPMethod eap_method_;
+  EAPPhase2Auth eap_phase_2_auth_;
+  std::string eap_server_ca_cert_path_;
+  std::string eap_client_cert_path_;
+  bool eap_use_system_cas_;
+  std::string eap_identity_;
+  std::string eap_anonymous_identity_;
+  std::string eap_passphrase_;
 
   // Internal state (not stored in flimflam).
   // Passphrase set by user (stored for UI).

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ cr.define('options.internet', function() {
           while (item && !item.data) {
             item = item.parentNode;
           }
-          if (item.connecting || !item.connectable)
+          if (item.connecting)
             return;
 
           if (item) {
@@ -226,10 +226,8 @@ cr.define('options.internet', function() {
                               'disconnect']);
                }));
         }
-        if (!this.data.connected && !this.data.connecting &&
-            this.data.connectable) {
-          // connect button (if not ethernet and not showing activate button
-          // and connectable)
+        if (!this.data.connected && !this.data.connecting) {
+          // connect button (if not ethernet and not showing activate button)
           if (this.data.networkType != Constants.TYPE_ETHERNET &&
               !show_activate && !no_plan) {
             buttonsDiv.appendChild(

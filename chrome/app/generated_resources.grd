@@ -9602,8 +9602,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY_ANONYMOUS" desc="In settings Internet options, the anonymous identity for authentication.">
         Anonymous Identity:
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA" desc="In settings Internet options, the server certificate to use.">
+        Server CA Certificate:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_USE_SYSTEM" desc="In settings Internet options, a string specifying to use installed system CA certificates.">
+        Use System Installed
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_DO_NOT_CHECK" desc="In settings Internet options, a string specifying to not check certificates.">
+        Do Not Check
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT" desc="In settings Internet options, the x509 certificate to use.">
         Certificate:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_NONE" desc="In settings Internet options, a string specifying no client certificate.">
+        None
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON" desc="In settings Internet options, the prompt on the certificate-selection button.">
         Select certificate file

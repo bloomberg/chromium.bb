@@ -78,6 +78,9 @@ class WifiConfigView : public views::View,
   // Updates state of the Login button.
   void UpdateDialogButtons();
 
+  // Enable/Disable EAP fields as appropriate based on selected EAP method.
+  void RefreshEAPFields();
+
   // Updates the error text label.
   void UpdateErrorLabel(bool failed);
 
@@ -91,6 +94,8 @@ class WifiConfigView : public views::View,
   views::Textfield* ssid_textfield_;
   views::Combobox* eap_method_combobox_;
   views::Combobox* phase_2_auth_combobox_;
+  views::Combobox* client_cert_combobox_;
+  views::Combobox* server_ca_cert_combobox_;
   views::Textfield* identity_textfield_;
   views::Textfield* identity_anonymous_textfield_;
   views::NativeButton* certificate_browse_button_;

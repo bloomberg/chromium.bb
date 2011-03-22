@@ -152,6 +152,38 @@ const char* kSecurityRsn = "rsn";
 const char* kSecurity8021x = "802_1x";
 const char* kSecurityNone = "none";
 
+// Flimflam EAP property names.
+const char* kEapIdentityProperty = "EAP.Identity";
+const char* kEapMethodProperty = "EAP.EAP";
+const char* kEapPhase2AuthProperty = "EAP.InnerEAP";
+const char* kEapAnonymousIdentityProperty = "EAP.AnonymousIdentity";
+const char* kEapClientCertProperty = "EAP.ClientCert";
+const char* kEapCertIDProperty = "EAP.CertID";
+const char* kEapPrivateKeyProperty = "EAP.PrivateKey";
+const char* kEapPrivateKeyPasswordProperty = "EAP.PrivateKeyPassword";
+const char* kEapKeyIDProperty = "EAP.KeyID";
+const char* kEapCACertProperty = "EAP.CACert";
+const char* kEapCACertIDProperty = "EAP.CACertID";
+const char* kEapUseSystemCAsProperty = "EAP.UseSystemCAs";
+const char* kEapPinProperty = "EAP.PIN";
+const char* kEapPasswordProperty = "EAP.Password";
+const char* kEapKeyMgmtProperty = "EAP.KeyMgmt";
+
+// Flimflam EAP method options.
+const std::string& kEapMethodPEAP = "PEAP";
+const std::string& kEapMethodTLS = "TLS";
+const std::string& kEapMethodTTLS = "TTLS";
+const std::string& kEapMethodLEAP = "LEAP";
+
+// Flimflam EAP phase 2 auth options.
+const std::string& kEapPhase2AuthPEAPMD5 = "auth=MD5";
+const std::string& kEapPhase2AuthPEAPMSCHAPV2 = "auth=MSCHAPV2";
+const std::string& kEapPhase2AuthTTLSMD5 = "autheap=MD5";
+const std::string& kEapPhase2AuthTTLSMSCHAPV2 = "autheap=MSCHAPV2";
+const std::string& kEapPhase2AuthTTLSMSCHAP = "autheap=MSCHAP";
+const std::string& kEapPhase2AuthTTLSPAP = "autheap=PAP";
+const std::string& kEapPhase2AuthTTLSCHAP = "autheap=CHAP";
+
 // Flimflam state options.
 const char* kStateIdle = "idle";
 const char* kStateCarrier = "carrier";
@@ -297,6 +329,21 @@ enum PropertyIndex {
   PROPERTY_INDEX_DEFAULT_TECHNOLOGY,
   PROPERTY_INDEX_DEVICE,
   PROPERTY_INDEX_DEVICES,
+  PROPERTY_INDEX_EAP_IDENTITY,
+  PROPERTY_INDEX_EAP_METHOD,
+  PROPERTY_INDEX_EAP_PHASE_2_AUTH,
+  PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY,
+  PROPERTY_INDEX_EAP_CLIENT_CERT,
+  PROPERTY_INDEX_EAP_CERT_ID,
+  PROPERTY_INDEX_EAP_PRIVATE_KEY,
+  PROPERTY_INDEX_EAP_PRIVATE_KEY_PASSWORD,
+  PROPERTY_INDEX_EAP_KEY_ID,
+  PROPERTY_INDEX_EAP_CA_CERT,
+  PROPERTY_INDEX_EAP_CA_CERT_ID,
+  PROPERTY_INDEX_EAP_USE_SYSTEM_CAS,
+  PROPERTY_INDEX_EAP_PIN,
+  PROPERTY_INDEX_EAP_PASSWORD,
+  PROPERTY_INDEX_EAP_KEY_MGMT,
   PROPERTY_INDEX_ENABLED_TECHNOLOGIES,
   PROPERTY_INDEX_ERROR,
   PROPERTY_INDEX_ESN,
@@ -349,6 +396,21 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kDefaultTechnologyProperty, PROPERTY_INDEX_DEFAULT_TECHNOLOGY },
   { kDeviceProperty, PROPERTY_INDEX_DEVICE },
   { kDevicesProperty, PROPERTY_INDEX_DEVICES },
+  { kEapIdentityProperty, PROPERTY_INDEX_EAP_IDENTITY },
+  { kEapMethodProperty, PROPERTY_INDEX_EAP_METHOD },
+  { kEapPhase2AuthProperty, PROPERTY_INDEX_EAP_PHASE_2_AUTH },
+  { kEapAnonymousIdentityProperty, PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY },
+  { kEapClientCertProperty, PROPERTY_INDEX_EAP_CLIENT_CERT },
+  { kEapCertIDProperty, PROPERTY_INDEX_EAP_CERT_ID },
+  { kEapPrivateKeyProperty, PROPERTY_INDEX_EAP_PRIVATE_KEY },
+  { kEapPrivateKeyPasswordProperty, PROPERTY_INDEX_EAP_PRIVATE_KEY_PASSWORD },
+  { kEapKeyIDProperty, PROPERTY_INDEX_EAP_KEY_ID },
+  { kEapCACertProperty, PROPERTY_INDEX_EAP_CA_CERT },
+  { kEapCACertIDProperty, PROPERTY_INDEX_EAP_CA_CERT_ID },
+  { kEapUseSystemCAsProperty, PROPERTY_INDEX_EAP_USE_SYSTEM_CAS },
+  { kEapPinProperty, PROPERTY_INDEX_EAP_PIN },
+  { kEapPasswordProperty, PROPERTY_INDEX_EAP_PASSWORD },
+  { kEapKeyMgmtProperty, PROPERTY_INDEX_EAP_KEY_MGMT },
   { kEnabledTechnologiesProperty, PROPERTY_INDEX_ENABLED_TECHNOLOGIES },
   { kErrorProperty, PROPERTY_INDEX_ERROR },
   { kEsnProperty, PROPERTY_INDEX_ESN },
@@ -528,6 +590,33 @@ static ConnectionSecurity ParseSecurity(const std::string& security) {
   static StringToEnum<ConnectionSecurity> parser(
       table, arraysize(table), SECURITY_UNKNOWN);
   return parser.Get(security);
+}
+
+static EAPMethod ParseEAPMethod(const std::string& method) {
+  static StringToEnum<EAPMethod>::Pair table[] = {
+    { kEapMethodPEAP.c_str(), EAP_METHOD_PEAP },
+    { kEapMethodTLS.c_str(), EAP_METHOD_TLS },
+    { kEapMethodTTLS.c_str(), EAP_METHOD_TTLS },
+    { kEapMethodLEAP.c_str(), EAP_METHOD_LEAP },
+  };
+  static StringToEnum<EAPMethod> parser(
+      table, arraysize(table), EAP_METHOD_UNKNOWN);
+  return parser.Get(method);
+}
+
+static EAPPhase2Auth ParseEAPPhase2Auth(const std::string& auth) {
+  static StringToEnum<EAPPhase2Auth>::Pair table[] = {
+    { kEapPhase2AuthPEAPMD5.c_str(), EAP_PHASE_2_AUTH_MD5 },
+    { kEapPhase2AuthPEAPMSCHAPV2.c_str(), EAP_PHASE_2_AUTH_MSCHAPV2 },
+    { kEapPhase2AuthTTLSMD5.c_str(), EAP_PHASE_2_AUTH_MD5 },
+    { kEapPhase2AuthTTLSMSCHAPV2.c_str(), EAP_PHASE_2_AUTH_MSCHAPV2 },
+    { kEapPhase2AuthTTLSMSCHAP.c_str(), EAP_PHASE_2_AUTH_MSCHAP },
+    { kEapPhase2AuthTTLSPAP.c_str(), EAP_PHASE_2_AUTH_PAP },
+    { kEapPhase2AuthTTLSCHAP.c_str(), EAP_PHASE_2_AUTH_CHAP },
+  };
+  static StringToEnum<EAPPhase2Auth> parser(
+      table, arraysize(table), EAP_PHASE_2_AUTH_AUTO);
+  return parser.Get(auth);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1229,6 +1318,43 @@ bool WifiNetwork::ParseValue(int index, const Value* value) {
       return value->GetAsString(&identity_);
     case PROPERTY_INDEX_CERT_PATH:
       return value->GetAsString(&cert_path_);
+    case PROPERTY_INDEX_EAP_METHOD: {
+      std::string method;
+      if (value->GetAsString(&method)) {
+        eap_method_ = ParseEAPMethod(method);
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_EAP_PHASE_2_AUTH: {
+      std::string auth;
+      if (value->GetAsString(&auth)) {
+        eap_phase_2_auth_ = ParseEAPPhase2Auth(auth);
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_EAP_IDENTITY:
+      return value->GetAsString(&eap_identity_);
+    case PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY:
+      return value->GetAsString(&eap_anonymous_identity_);
+    case PROPERTY_INDEX_EAP_CLIENT_CERT:
+      return value->GetAsString(&eap_client_cert_path_);
+    case PROPERTY_INDEX_EAP_CA_CERT:
+      return value->GetAsString(&eap_server_ca_cert_path_);
+    case PROPERTY_INDEX_EAP_PASSWORD:
+      return value->GetAsString(&eap_passphrase_);
+    case PROPERTY_INDEX_EAP_USE_SYSTEM_CAS:
+      return value->GetAsBoolean(&eap_use_system_cas_);
+    case PROPERTY_INDEX_EAP_CERT_ID:
+    case PROPERTY_INDEX_EAP_PRIVATE_KEY:
+    case PROPERTY_INDEX_EAP_PRIVATE_KEY_PASSWORD:
+    case PROPERTY_INDEX_EAP_KEY_ID:
+    case PROPERTY_INDEX_EAP_CA_CERT_ID:
+    case PROPERTY_INDEX_EAP_PIN:
+    case PROPERTY_INDEX_EAP_KEY_MGMT:
+      // These properties are currently not used in the UI.
+      return true;
     default:
       return WirelessNetwork::ParseValue(index, value);
   }
@@ -1264,6 +1390,86 @@ void WifiNetwork::SetCertPath(const std::string& cert_path) {
   SetStringProperty(kCertPathProperty, cert_path);
 }
 
+void WifiNetwork::SetEAPMethod(EAPMethod method) {
+  eap_method_ = method;
+  switch (method) {
+    case EAP_METHOD_PEAP:
+      SetStringProperty(kEapMethodProperty, kEapMethodPEAP);
+      break;
+    case EAP_METHOD_TLS:
+      SetStringProperty(kEapMethodProperty, kEapMethodTLS);
+      break;
+    case EAP_METHOD_TTLS:
+      SetStringProperty(kEapMethodProperty, kEapMethodTTLS);
+      break;
+    case EAP_METHOD_LEAP:
+      SetStringProperty(kEapMethodProperty, kEapMethodLEAP);
+      break;
+    default:
+      SetStringProperty(kEapMethodProperty, std::string());
+      break;
+  }
+}
+
+void WifiNetwork::SetEAPPhase2Auth(EAPPhase2Auth auth) {
+  eap_phase_2_auth_ = auth;
+  bool is_peap = (eap_method_ == EAP_METHOD_PEAP);
+  switch (auth) {
+    case EAP_PHASE_2_AUTH_AUTO:
+      SetStringProperty(kEapPhase2AuthProperty, std::string());
+      break;
+    case EAP_PHASE_2_AUTH_MD5:
+      SetStringProperty(kEapPhase2AuthProperty,
+                        is_peap ? kEapPhase2AuthPEAPMD5
+                                : kEapPhase2AuthTTLSMD5);
+      break;
+    case EAP_PHASE_2_AUTH_MSCHAPV2:
+      SetStringProperty(kEapPhase2AuthProperty,
+                        is_peap ? kEapPhase2AuthPEAPMSCHAPV2
+                                : kEapPhase2AuthTTLSMSCHAPV2);
+      break;
+    case EAP_PHASE_2_AUTH_MSCHAP:
+      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTTLSMSCHAP);
+      break;
+    case EAP_PHASE_2_AUTH_PAP:
+      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTTLSPAP);
+      break;
+    case EAP_PHASE_2_AUTH_CHAP:
+      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTTLSCHAP);
+      break;
+  }
+}
+
+void WifiNetwork::SetEAPServerCACert(const std::string& cert_path) {
+  eap_server_ca_cert_path_ = cert_path;
+  SetStringProperty(kEapCACertProperty, cert_path);
+}
+
+void WifiNetwork::SetEAPClientCert(const std::string& cert_path) {
+  eap_client_cert_path_ = cert_path;
+  SetStringProperty(kEapClientCertProperty, cert_path);
+}
+
+void WifiNetwork::SetEAPUseSystemCAs(bool use_system_cas) {
+  eap_use_system_cas_ = use_system_cas;
+  SetBooleanProperty(kEapUseSystemCAsProperty, use_system_cas);
+}
+
+void WifiNetwork::SetEAPIdentity(const std::string& identity) {
+  eap_identity_ = identity;
+  SetStringProperty(kEapIdentityProperty, identity);
+}
+
+void WifiNetwork::SetEAPAnonymousIdentity(const std::string& identity) {
+  eap_anonymous_identity_ = identity;
+  SetStringProperty(kEapAnonymousIdentityProperty, identity);
+}
+
+void WifiNetwork::SetEAPPassphrase(const std::string& passphrase) {
+  eap_passphrase_ = passphrase;
+  SetStringProperty(kEapPasswordProperty, passphrase);
+}
+
 std::string WifiNetwork::GetEncryptionString() {
   switch (encryption_) {
     case SECURITY_UNKNOWN:
@@ -1287,6 +1493,9 @@ bool WifiNetwork::IsPassphraseRequired() const {
   // (http://crosbug.com/10135).
   if (error_ == ERROR_BAD_PASSPHRASE || error_ == ERROR_BAD_WEPKEY)
     return true;
+  // For 802.1x networks, configuration is required if connectable is false.
+  if (encryption_ == SECURITY_8021X)
+    return !connectable_;
   return passphrase_required_;
 }
 
@@ -2864,13 +3073,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     AddNetwork(wifi3);
 
     WifiNetwork* wifi4 = new WifiNetwork("fw4");
-    wifi3->set_name("Fake Wifi 802.1x");
-    wifi3->set_strength(50);
-    wifi3->set_connected(false);
-    wifi3->set_encryption(SECURITY_8021X);
-    wifi3->set_identity("nobody@google.com");
-    wifi3->set_cert_path("SETTINGS:key_id=3,cert_id=3,pin=111111");
-    wifi3->set_passphrase_required(true);
+    wifi4->set_name("Fake Wifi 802.1x");
+    wifi4->set_strength(50);
+    wifi4->set_connected(false);
+    wifi4->set_connectable(false);
+    wifi4->set_encryption(SECURITY_8021X);
+    wifi4->set_identity("nobody@google.com");
+    wifi4->set_cert_path("SETTINGS:key_id=3,cert_id=3,pin=111111");
     AddNetwork(wifi4);
 
     active_wifi_ = wifi1;

@@ -612,7 +612,9 @@ void NetworkMenu::InitMenuItems() {
       const SkBitmap* badge = wifi_networks[i]->encrypted() ?
           rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : NULL;
       int flag = FLAG_WIFI;
-      if (!wifi_networks[i]->connectable())
+      // If a network is not connectable from login/oobe, we disable it.
+      // We do not allow configuring a network (e.g. 802.1x) from login/oobe.
+      if (!IsBrowserMode() && !wifi_networks[i]->connectable())
         flag |= FLAG_DISABLED;
       if (active_wifi
           && wifi_networks[i]->service_path() == active_wifi->service_path())
@@ -672,8 +674,6 @@ void NetworkMenu::InitMenuItems() {
       const SkBitmap* badge = BadgeForNetworkTechnology(cell_networks[i]);
       const SkBitmap* roaming_badge = BadgeForRoamingStatus(cell_networks[i]);
       int flag = FLAG_CELLULAR;
-      if (!cell_networks[i]->connectable())
-        flag |= FLAG_DISABLED;
       bool isActive = active_cellular &&
           cell_networks[i]->service_path() == active_cellular->service_path() &&
           (cell_networks[i]->connecting() || cell_networks[i]->connected());
