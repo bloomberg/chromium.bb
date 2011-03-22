@@ -551,5 +551,5 @@
   bug_70085b
   ThreadSanitizer:Race
   fun:WebCore::SecurityOrigin::~SecurityOrigin*
-  fun:WTF::ThreadSafeShared<WebCore::SecurityOrigin>::deref*
+  fun:WTF::ThreadSafe*<WebCore::SecurityOrigin>::deref*
 }
