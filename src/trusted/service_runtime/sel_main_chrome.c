@@ -92,12 +92,24 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
   /*
    * Ensure this operating system platform is supported.
    */
+
+  /*
+   * We enable the signal handler to verify properties of the platform such
+   * as the ability to trap a page on execute.
+   */
+  NaClSignalHandlerInit();
   errcode = NaClRunSelQualificationTests();
   if (LOAD_OK != errcode) {
     nap->module_load_status = errcode;
     fprintf(stderr, "Error while loading in SelMain: %s\n",
             NaClErrorString(errcode));
   }
+
+  /*
+   * Remove the handler and let error pass to Chrome's handlers.
+   */
+  NaClSignalHandlerFini();
+
 
   /* Give debuggers a well known point at which xlate_base is known.  */
   NaClGdbHook(&state);
@@ -186,3 +198,4 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
 
   return ret_code;
 }
+

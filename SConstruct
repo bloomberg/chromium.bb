@@ -1343,6 +1343,9 @@ def CommandSelLdrTestNacl(env, name, command,
   if sel_ldr_flags is None:
     sel_ldr_flags = []
 
+  # Always run tests with signal catching enabled
+  sel_ldr_flags += ['-S']
+
   # Skip platform qualification checks on configurations with known issues.
   if GetEmulator(env) or \
     env.Bit('disable_hardy64_vmware_failures') or \

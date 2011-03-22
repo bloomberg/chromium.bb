@@ -12,12 +12,11 @@
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
-#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 
-// #define NACL_DEBUG_STUB 1
+/* #define NACL_DEBUG_STUB 1 */
 
 void  NaClAllModulesInit(void) {
 #ifdef NACL_DEBUG_STUB
@@ -32,12 +31,10 @@ void  NaClAllModulesInit(void) {
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
   NaClHandlePassLdrInit();
 #endif
-  NaClSignalHandlerInit();
 }
 
 
 void NaClAllModulesFini(void) {
-  NaClSignalHandlerFini();
   NaClTlsFini();
   NaClSrpcModuleFini();
   NaClGlobalModuleFini();

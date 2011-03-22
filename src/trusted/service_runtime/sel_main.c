@@ -35,6 +35,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
 #include "native_client/src/trusted/service_runtime/nacl_debug.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/outer_sandbox.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -135,6 +136,7 @@ static void PrintUsage() {
           " -a allow file access! dangerous!\n"
           " -c ignore validator! dangerous!\n"
           " -F fuzz testing; quit after loading NaCl app\n"
+          " -S enable signal handling.\n"
           " -g enable gdb debug stub.\n"
           " -I disable ELF ABI version number check (safe)\n"
           " -l <file>  write log output to the given file\n"
@@ -183,6 +185,7 @@ int main(int  argc,
   int                           stub_out_mode = 0;
   int                           skip_qualification = 0;
   int                           start_broken = 0;
+  int                           handle_signals = 0;
 
   const char* sandbox_fd_string;
 
@@ -232,7 +235,7 @@ int main(int  argc,
   if (!DynArrayCtor(&env_vars, 0)) {
     NaClLog(LOG_FATAL, "Failed to allocate env var array\n");
   }
-  while ((opt = getopt(argc, argv, "abcE:f:Fgh:i:Il:Qr:Rsvw:X:")) != -1) {
+  while ((opt = getopt(argc, argv, "abcE:f:Fgh:i:Il:Qr:RsSvw:X:")) != -1) {
     switch (opt) {
       case 'c':
         fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
@@ -251,9 +254,16 @@ int main(int  argc,
       case 'F':
         fuzzing_quit_after_load = 1;
         break;
+
       case 'g':
+        handle_signals = 1;
         NaClDebugSetAllow(1);
         break;
+
+      case 'S':
+        handle_signals = 1;
+        break;
+
       case 'h':
       case 'r':
       case 'w':
@@ -462,6 +472,9 @@ int main(int  argc,
   /*
    * Ensure the platform qualification checks pass.
    */
+
+  /* We use the signal handler to verify a signal took place. */
+  NaClSignalHandlerInit();
   if (!skip_qualification) {
     NaClErrorCode pq_error = NaClRunSelQualificationTests();
     if (LOAD_OK != pq_error) {
@@ -473,6 +486,9 @@ int main(int  argc,
               NaClErrorString(errcode));
     }
   }
+
+  /* Remove the signal handler if we are not using it. */
+  if (!handle_signals) NaClSignalHandlerFini();
 
   if (!rpc_supplies_nexe) {
     if (0 == GioMemoryFileSnapshotCtor(&gf, nacl_file)) {
@@ -730,9 +746,11 @@ int main(int  argc,
   }
   fflush(stdout);
 
+  if (handle_signals) NaClSignalHandlerFini();
   NaClAllModulesFini();
 
   WINDOWS_EXCEPTION_CATCH;
 
   _exit(ret_code);
 }
+
