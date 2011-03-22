@@ -121,13 +121,41 @@ readonly PNACL_BITCODE_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-bitcode"
 readonly PNACL_SB_ROOT="${INSTALL_ROOT}/tools-sb"
 readonly PNACL_SB_X8632="${PNACL_SB_ROOT}/x8632"
 readonly PNACL_SB_X8664="${PNACL_SB_ROOT}/x8664"
+readonly PNACL_SB_UNIVERSAL="${PNACL_SB_ROOT}/universal"
 
 # Location of PNaCl gcc/g++/as
 readonly PNACL_GCC="${INSTALL_BIN}/pnacl-gcc"
 readonly PNACL_GPP="${INSTALL_BIN}/pnacl-g++"
+readonly PNACL_AR="${INSTALL_BIN}/pnacl-ar"
+readonly PNACL_RANLIB="${INSTALL_BIN}/pnacl-ranlib"
+readonly PNACL_AS="${INSTALL_BIN}/pnacl-as"
+readonly PNACL_LD="${INSTALL_BIN}/pnacl-ld"
+readonly PNACL_NM="${INSTALL_BIN}/pnacl-nm"
+readonly PNACL_TRANSLATE="${INSTALL_BIN}/pnacl-translate"
+
 readonly PNACL_AS_ARM="${INSTALL_BIN}/pnacl-arm-as"
 readonly PNACL_AS_X8632="${INSTALL_BIN}/pnacl-i686-as"
 readonly PNACL_AS_X8664="${INSTALL_BIN}/pnacl-x86_64-as"
+
+# For a production (release) build, we want the sandboxed
+# translator to only contain the code needed to handle
+# its own architecture. For example, the translator shipped with
+# an X86-32 browser would only be able to translate to X86-32 code.
+# This is so that the translator binary is as small as possible.
+#
+# If SBTC_PRODUCTION is true, then the translators are built
+# separately, one for each architecture, so that each translator
+# can only target its own architecture.
+#
+# If SBTC_PRODUCTION is false, then we instead use PNaCl to
+# build a `fat` translator which can target all supported
+# architectures. This translator is built as a .pexe
+# which can then be translated to each individual architecture.
+SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
+
+# Which toolchain to use for each arch.
+SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
+SBTC_BUILD_WITH_NNACL="x8664"
 
 # Current milestones in each repo
 # hg-update-stable  uses these
@@ -536,9 +564,27 @@ rebuild-pnacl-libs() {
   libstdcpp-bitcode
   # NOTE: currently also builds some native code
   extrasdk-make-install
+  barebones-hack
   organize-native-code
 }
 
+barebones-hack() {
+  # Gold cannot auto-detect the target type when the only
+  # input files are bitcode. The only time this happens is
+  # when linking the barebones tests.
+  #
+  # As a temporary fix, include an empty object (empty.o)
+  # for the target in the link arguments.
+  #
+  # TODO(pdox): Fix this by giving gold the ability to
+  #             detect or receive the target info from the
+  #             LLVM gold plugin.
+  # http://code.google.com/p/nativeclient/issues/detail?id=1553
+  StepBanner "DRIVER" "Barebones empty.o hack"
+  "${PNACL_AS_ARM}"   /dev/null -o "${PNACL_ARM_ROOT}/empty.o"
+  "${PNACL_AS_X8632}" /dev/null -o "${PNACL_X8632_ROOT}/empty.o"
+  "${PNACL_AS_X8664}" /dev/null -o "${PNACL_X8664_ROOT}/empty.o"
+}
 
 #@ everything            - Build and install untrusted SDK.
 everything() {
@@ -1560,56 +1606,67 @@ check-sb-mode() {
 }
 
 check-sb-arch() {
-  # TODO(pdox): allow ARM when we self-build.
   local arch=$1
-  if [ ${arch} != "x8632" ] && [ ${arch} != "x8664" ]; then
-    echo "ERROR: Unsupported arch. Choose one of: x8632, x8664"
+  for valid_arch in x8632 x8664 arm universal ; do
+    if [ "${arch}" == "${valid_arch}" ] ; then
+      return
+    fi
+  done
+
+  echo "ERROR: Unsupported arch. Choose one of: x8632, x8664, arm, universal"
+  exit -1
+}
+
+check-sb-toolchain() {
+  local toolchain=$1
+  if [ "${toolchain}" != "nnacl" ] && [ "${toolchain}" != "pnacl" ]; then
+    echo "ERROR: Unsupported toolchain. Choose one of: nnacl, pnacl"
     exit -1
   fi
 }
 
 #+-------------------------------------------------------------------------
-#+ llvm-tools-sb <arch> <mode> - Build and install llvm tools (sandboxed)
+#+ llvm-tools-sb <arch> <mode> <toolchain> - Build and install llvm tools
+#+                                           (sandboxed)
 llvm-tools-sb() {
   local srcdir="${TC_SRC_LLVM}"
 
   assert-dir "${srcdir}" "You need to checkout llvm."
 
-  if [ $# -ne 2 ]; then
+  if [ $# -ne 3 ]; then
     echo "ERROR: Usage llvm-tools-sb <arch> <mode>"
     exit -1
   fi
 
   local arch=$1
   local mode=$2
+  local toolchain=$3
   check-sb-arch ${arch}
   check-sb-mode ${mode}
+  check-sb-toolchain ${toolchain}
 
-  if [ ! -d ${NACL_TOOLCHAIN} ] ; then
-    echo "ERROR: Install Native Client toolchain"
-    exit -1
-  fi
-
-  if llvm-tools-sb-needs-configure "${arch}" "${mode}"; then
-    llvm-tools-sb-clean "${arch}" "${mode}"
-    llvm-tools-sb-configure "${arch}" "${mode}"
+  if llvm-tools-sb-needs-configure "${arch}" "${mode}" "${toolchain}" ; then
+    llvm-tools-sb-clean "${arch}" "${mode}" "${toolchain}"
+    llvm-tools-sb-configure "${arch}" "${mode}" "${toolchain}"
   else
-    SkipBanner "LLVM-TOOLS-SB" "configure ${arch} ${mode}"
+    SkipBanner "LLVM-TOOLS-SB" "configure ${arch} ${mode} ${toolchain}"
   fi
 
-  if llvm-tools-sb-needs-make "${arch}" "${mode}"; then
-    llvm-tools-sb-make "${arch}" "${mode}"
+  if llvm-tools-sb-needs-make "${arch}" "${mode}" "${toolchain}"; then
+    llvm-tools-sb-make "${arch}" "${mode}" "${toolchain}"
   else
-    SkipBanner "LLVM-TOOLS-SB" "make ${arch} ${mode}"
+    SkipBanner "LLVM-TOOLS-SB" "make ${arch} ${mode} ${toolchain}"
   fi
 
-  llvm-tools-sb-install "${arch}" "${mode}"
+  llvm-tools-sb-install "${arch}" "${mode}" "${toolchain}"
 }
 
 llvm-tools-sb-needs-configure() {
   local arch=$1
   local mode=$2
-  [ ! -f "${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed/config.status" ]
+  local toolchain=$3
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-${toolchain}-sandboxed"
+  [ ! -f "${objdir}/config.status" ]
   return $?
 }
 
@@ -1617,60 +1674,118 @@ llvm-tools-sb-needs-configure() {
 llvm-tools-sb-clean() {
   local arch=$1
   local mode=$2
+  local toolchain=$3
   StepBanner "LLVM-TOOLS-SB" "Clean ${arch} ${mode}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-${toolchain}-sandboxed"
 
   rm -rf "${objdir}"
   mkdir -p "${objdir}"
+}
+
+llvm-tools-sb-setup() {
+  local arch=$1
+  local mode=$2
+  local toolchain=$3
+  local bitsize
+  local prefix
+  local flags
+
+
+  flags="-static"
+  case ${mode} in
+    srpc)    flags+=" -DNACL_SRPC" ;;
+    nonsrpc) ;;
+  esac
+
+  if [ "${toolchain}" == "pnacl" ]; then
+    # Speed things up by avoiding an intermediate step
+    flags+=" --pnacl-skip-ll"
+
+    # Configure needs correct symbol resolution at bitcode link time.
+    # So we include --pnacl-bcld-finish during configure.
+    local configure_flags="--pnacl-bcld-finish"
+    LLVM_SB_CONFIGURE_ENV=(
+      AR="${PNACL_AR}" \
+      AS="${PNACL_AS}" \
+      CC="${PNACL_GCC} ${configure_flags} ${flags}" \
+      CXX="${PNACL_GPP} ${configure_flags} ${flags}" \
+      LD="${PNACL_LD} ${configure_flags} ${flags}" \
+      NM="${PNACL_NM}" \
+      RANLIB="${PNACL_RANLIB}" \
+      LDFLAGS="") # TODO(pdox): Support -s
+
+    # During make, bcld-finish will slow things down considerably.
+    # We cannot get rid of the argument (since it was passed to
+    # configure as part of CC/CXX, but we can override it using
+    # --pnacl-bcld-fast.
+    LLVM_SB_MAKE_OPTS=( \
+      CFLAGS="--pnacl-bcld-fast" \
+      CXXFLAGS="--pnacl-bcld-fast")
+
+  elif [ "${toolchain}" == "nnacl" ]; then
+    assert-dir "${NACL_TOOLCHAIN}" "Install Native Client toolchain"
+    case ${arch} in
+      x8632)
+          bitsize=32
+          prefix=nacl
+          ;;
+      x8664)
+          bitsize=64
+          prefix=nacl64
+          ;;
+    esac
+    flags+=" -m${bitsize} -I${NACL_TOOLCHAIN}/${prefix}/include"
+    flags+=" -L${NACL_TOOLCHAIN}/${prefix}/lib"
+    LLVM_SB_CONFIGURE_ENV=(
+      AR="${NACL_TOOLCHAIN}/bin/${prefix}-ar" \
+      AS="${NACL_TOOLCHAIN}/bin/${prefix}-as" \
+      CC="${NACL_TOOLCHAIN}/bin/${prefix}-gcc ${flags}" \
+      CXX="${NACL_TOOLCHAIN}/bin/${prefix}-g++ ${flags}" \
+      LD="${NACL_TOOLCHAIN}/bin/${prefix}-ld" \
+      RANLIB="${NACL_TOOLCHAIN}/bin/${prefix}-ranlib" \
+      LDFLAGS="-s")
+
+    # This should be empty, but bash can't have empty arrays!
+    # Passing a useless argument instead.
+    LLVM_SB_MAKE_OPTS=(UNUSEDVARIABLE=123)
+  else
+    echo "Unknown toolchain ${toolchain}"
+    exit -1
+  fi
 }
 
 # llvm-tools-sb-configure - Configure llvm tools (sandboxed) for x86
 llvm-tools-sb-configure() {
   local arch=$1
   local mode=$2
-  StepBanner "LLVM-TOOLS-SB" "Configure ${arch} ${mode}"
+  local toolchain=$3
+  llvm-tools-sb-setup ${arch} ${mode} ${toolchain}
+
+  StepBanner "LLVM-TOOLS-SB" "Configure ${arch} ${mode} ${toolchain}"
   local srcdir="${TC_SRC_LLVM}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-${toolchain}-sandboxed"
   local installdir="${PNACL_SB_ROOT}/${arch}/${mode}"
-  local bitsize=""
-  local nacl=""
-  local target""
-
-  if [ ${arch} == "x8632" ]; then
-    bitsize=32
-    nacl=nacl
-    target=x86
-  elif [ ${arch} == "x8664" ]; then
-    bitsize=64
-    nacl=nacl64
-    target=x86_64
-  fi
-
-  local flags="-m${bitsize} -static -I${NACL_TOOLCHAIN}/${nacl}/include \
-      -L${NACL_TOOLCHAIN}/${nacl}/lib"
-  if [ ${mode} == "srpc" ]; then
-    flags+=" -DNACL_SRPC"
-  fi
+  local targets=""
+  case ${arch} in
+    x8632) targets=x86 ;;
+    x8664) targets=x86_64 ;;
+    arm) targets=arm ;;
+    universal) targets=x86,x86_64,arm ;;
+  esac
 
   spushd ${objdir}
   RunWithLog \
-      llvm.tools.${arch}.${mode}.sandboxed.configure \
+      llvm.tools.${arch}.${mode}.${toolchain}.sandboxed.configure \
       env -i \
       PATH="/usr/bin:/bin" \
-      AR="${NACL_TOOLCHAIN}/bin/${nacl}-ar" \
-      AS="${NACL_TOOLCHAIN}/bin/${nacl}-as" \
-      CC="${NACL_TOOLCHAIN}/bin/${nacl}-gcc ${flags}" \
-      CXX="${NACL_TOOLCHAIN}/bin/${nacl}-g++ ${flags}" \
-      LD="${NACL_TOOLCHAIN}/bin/${nacl}-ld" \
-      RANLIB="${NACL_TOOLCHAIN}/bin/${nacl}-ranlib" \
-      LDFLAGS="-s" \
       ${srcdir}/llvm-trunk/configure \
+        "${LLVM_SB_CONFIGURE_ENV[@]}" \
         --prefix=${installdir} \
         --host=nacl \
         --disable-jit \
         --enable-optimized \
         --target=${CROSS_TARGET_ARM} \
-        --enable-targets=${target} \
+        --enable-targets=${targets} \
         --enable-pic=no \
         --enable-static \
         --enable-shared=no
@@ -1680,8 +1795,9 @@ llvm-tools-sb-configure() {
 llvm-tools-sb-needs-make() {
   local arch=$1
   local mode=$2
+  local toolchain=$3
   local srcdir="${TC_SRC_LLVM}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-${toolchain}-sandboxed"
 
   ts-modified "$srcdir" "$objdir"
   return $?
@@ -1691,10 +1807,13 @@ llvm-tools-sb-needs-make() {
 llvm-tools-sb-make() {
   local arch=$1
   local mode=$2
-  StepBanner "LLVM-TOOLS-SB" "Make ${arch} ${mode}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed"
-  spushd ${objdir}
+  local toolchain=$3
+  llvm-tools-sb-setup ${arch} ${mode} ${toolchain}
 
+  StepBanner "LLVM-TOOLS-SB" "Make ${arch} ${mode} ${toolchain}"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-${toolchain}-sandboxed"
+
+  spushd ${objdir}
   ts-touch-open "${objdir}"
 
   local build_with_srpc=0
@@ -1702,14 +1821,15 @@ llvm-tools-sb-make() {
     build_with_srpc=1
   fi
 
-  RunWithLog llvm.tools.${arch}.${mode}.sandboxed.make \
+  RunWithLog llvm.tools.${arch}.${mode}.${toolchain}.sandboxed.make \
       env -i PATH="/usr/bin:/bin" \
       ONLY_TOOLS=llc \
       NACL_SANDBOX=1 \
       NACL_SRPC=${build_with_srpc} \
       KEEP_SYMBOLS=1 \
       VERBOSE=1 \
-      make ENABLE_OPTIMIZED=1 OPTIMIZE_OPTION=-O3 tools-only ${MAKE_OPTS}
+      make ENABLE_OPTIMIZED=1 OPTIMIZE_OPTION=-O3 \
+           "${LLVM_SB_MAKE_OPTS[@]}" ${MAKE_OPTS} tools-only
 
   ts-touch-commit "${objdir}"
 
@@ -1719,19 +1839,67 @@ llvm-tools-sb-make() {
 # llvm-tools-sb-install - Install llvm tools (sandboxed) for x86
 llvm-tools-sb-install() {
   local arch=$1
-  local srpc=$2
-  StepBanner "LLVM-TOOLS-SB" "Install ${arch} ${srpc}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-${srpc}-sandboxed"
+  local mode=$2
+  local toolchain=$3
+  llvm-tools-sb-setup ${arch} ${mode} ${toolchain}
+
+  StepBanner "LLVM-TOOLS-SB" "Install ${arch} ${mode} ${toolchain}"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-${toolchain}-sandboxed"
   spushd ${objdir}
 
-  RunWithLog llvm.tools.${arch}.${srpc}.sandboxed.install \
+  RunWithLog llvm.tools.${arch}.${mode}.${toolchain}.sandboxed.install \
       env -i PATH="/usr/bin:/bin" \
       ONLY_TOOLS=llc \
       NACL_SANDBOX=1 \
       KEEP_SYMBOLS=1 \
-      make install ${MAKE_OPTS}
+      make "${LLVM_SB_MAKE_OPTS[@]}" ${MAKE_OPTS} install
 
   spopd
+
+  if [ "${toolchain}" == "pnacl" ]; then
+    translate-and-install-sb-tool ${arch} ${mode} llc
+  fi
+}
+
+translate-and-install-sb-tool() {
+  local arch=$1
+  local mode=$2
+  local name=$3
+
+  # Translate bitcode program into an actual native executable.
+  # If arch = universal, we need to translate and install multiple times.
+  local bindir="${PNACL_SB_ROOT}/${arch}/${mode}/bin"
+  local pexe="${bindir}/${name}.pexe"
+
+  # Rename to .pexe
+  mv "${bindir}/${name}" "${pexe}"
+
+  local arches
+  if [ "${arch}" == "universal" ]; then
+    arches="${SBTC_BUILD_WITH_PNACL}"
+  else
+    arches="${arch}"
+  fi
+
+  local installer
+  if [ "${arch}" == "universal" ]; then
+    installer="cp -f"
+  else
+    installer="mv -f"
+  fi
+
+  # TODO(pdox): Parallelize these translations if UTMAN_CONCURRENCY > 1
+  # In universal/mode/bin directory, we'll end up with every translation:
+  # e.g. llc.arm.nexe, llc.x8632.nexe, llc.x8664.nexe
+  # In arch/mode/bin directories, we'll end up with just one copy
+  for tarch in ${arches}; do
+    local nexe="${bindir}/${name}.${tarch}.nexe"
+    local bindir_tarch="${PNACL_SB_ROOT}/${tarch}/${mode}/bin"
+    StepBanner "TRANSLATE" "Translating ${name}.pexe to ${tarch}"
+    ${PNACL_TRANSLATE} -arch ${tarch} "${pexe}" -o "${nexe}"
+    mkdir -p "${bindir_tarch}"
+    ${installer} "${nexe}" "${bindir_tarch}/${name}"
+  done
 }
 
 #+-------------------------------------------------------------------------
@@ -1889,6 +2057,36 @@ binutils-sb-install() {
   spopd
 }
 
+
+#+ tools-sb {arch} {mode} {toolchain} - Build all sandboxed tools for arch, mode, toolchain
+tools-sb() {
+  local arch=$1
+  local mode=$2
+  local toolchain=$3
+
+  StepBanner "${arch}"    "Sandboxing (using ${toolchain} toolchain)"
+  StepBanner "----------" "--------------------------------------"
+  llvm-tools-sb ${arch} ${mode} ${toolchain}
+
+  # Use nnacl toolchain for building binutils.
+  # This is a temporary hack because we can't build binutils with pnacl yet.
+  # TODO(pdox): Make binutils buildable with pnacl.
+  local arches
+  if [[ "${arch}" == "universal" ]] ; then
+    arches="${SBTC_BUILD_WITH_PNACL}"
+  else
+    arches="${arch}"
+  fi
+  for arch in ${arches} ; do
+    if [[ "${arch}" == "arm" ]] ; then
+      StepBanner "BINUTILS-SB" "Skipping ARM build (not yet sandboxed)"
+    else
+      binutils-sb ${arch} ${mode}
+    fi
+  done
+}
+
+
 #+--------------------------------------------------------------------------
 #@ install-translators {srpc/nonsrpc} - Builds and installs sandboxed
 #@                                      translator components
@@ -1903,46 +2101,30 @@ install-translators() {
 
   StepBanner "INSTALL SANDBOXED TRANSLATORS (${srpc_kind})"
 
-  # StepBanner "ARM" "Sandboxing"
-  # StepBanner "---" "----------"
-  # TODO(abetul): Missing arm translator work.
-
   StepBanner "X86" "Prepare"
   StepBanner "---" "-------"
   binutils-liberty-x86
   echo ""
 
-  StepBanner "32-bit X86" "Sandboxing"
-  StepBanner "----------" "----------"
-  binutils-sb x8632 ${srpc_kind}
-  llvm-tools-sb x8632 ${srpc_kind}
-  echo ""
+  if ${SBTC_PRODUCTION}; then
+    # Build each architecture separately.
+    for arch in ${SBTC_BUILD_WITH_PNACL} ; do
+      tools-sb ${arch} ${srpc_kind} pnacl
+    done
+    for arch in ${SBTC_BUILD_WITH_NNACL} ; do
+      tools-sb ${arch} ${srpc_kind} nnacl
+    done
+  else
+    # Using arch `universal` builds the sandboxed tools to a .pexe
+    # which support all targets. This .pexe is then translated to
+    # each architecture specified in ${SBTC_BUILD_WITH_PNACL}.
+    tools-sb universal ${srpc_kind} pnacl
 
-  mkdir -p ${PNACL_SB_X8632}/script
-  assert-file "$(pwd)/tools/llvm/ld_script_x8632_untrusted" \
-        "Install NaCl toolchain."
-  cp "$(pwd)/tools/llvm/ld_script_x8632_untrusted" \
-        "${PNACL_SB_X8632}/script/ld_script"
-
-  assert-file "$(pwd)/tools/llvm/dummy_translator_x8632.sh" \
-        "Install NaCl toolchain."
-  cp tools/llvm/dummy_translator_x8632.sh "${PNACL_SB_X8632}/translator"
-
-  StepBanner "64-bit X86" "Sandboxing"
-  StepBanner "----------" "----------"
-  binutils-sb x8664 ${srpc_kind}
-  llvm-tools-sb x8664 ${srpc_kind}
-  echo ""
-
-  mkdir -p ${PNACL_SB_X8664}/script
-  assert-file "$(pwd)/tools/llvm/ld_script_x8664_untrusted" \
-        "Install NaCl toolchain."
-  cp "$(pwd)/tools/llvm/ld_script_x8664_untrusted" \
-        "${PNACL_SB_X8664}/script/ld_script"
-
-  assert-file "$(pwd)/tools/llvm/dummy_translator_x8664.sh" \
-        "Install NaCl toolchain."
-  cp tools/llvm/dummy_translator_x8664.sh "${PNACL_SB_X8664}/translator"
+    # Build for NNaCl separately.
+    for arch in ${SBTC_BUILD_WITH_NNACL} ; do
+      tools-sb ${arch} ${srpc_kind} nnacl
+    done
+  fi
 
   echo "Done"
 }
@@ -1969,6 +2151,15 @@ prune-translator-install() {
   rm -rf include lib nacl64 share
   rm -rf bin/llvm-config bin/tblgen
   spopd
+
+  if ! ${SBTC_PRODUCTION}; then
+    spushd "${PNACL_SB_UNIVERSAL}/${srpc_kind}"
+    rm -rf include lib share
+    rm -f bin/llvm-config bin/tblgen
+    # Delete intermediate files generated by the driver
+    rm -f -- bin/llc*---llc.pexe---*
+    spopd
+  fi
 
   echo "Done"
 }

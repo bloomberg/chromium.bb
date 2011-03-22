@@ -52,7 +52,10 @@ INITIAL_ENV = {
   'WHICH_LD'    : 'BFD',  # Which ld to use for native linking: GOLD or BFD
   'CLEANUP'     : '0',    # Clean up temporary files
                           # TODO(pdox): Enable for SDK version
-  'SANDBOXED'   : '0',    # Use sandboxed toolchain for this arch.
+  'SANDBOXED'   : '0',    # Use sandboxed toolchain for this arch. (main switch)
+  'SANDBOXED_LLC': '0',   # Use sandboxed LLC
+  'SANDBOXED_AS': '0',    # Use sandboxed AS
+  'SANDBOXED_LD': '0',    # Use sandboxed LD
   'SRPC'        : '1',    # Use SRPC sandboxed toolchain
   'GOLD_FIX'    : '0',    # Use linker script instead of -Ttext for gold.
                           # Needed for dynamic_code_loading tests which create
@@ -60,6 +63,18 @@ INITIAL_ENV = {
                           # TODO(pdox): Either eliminate gold native linking or
                           #             figure out why this is broken in the
                           #             first place.
+  'BCLD_FINISH' : '0',    # Force bitcode linking to go all the way to native
+                          # linking. This lets the toolchain determine if there
+                          # are missing symbols and/or gather dependency
+                          # information, but it produces a native executable
+                          # which we discard. (waste of CPU time)
+                          # TODO(pdox): Modify gold so that we can stop the
+                          #             linking process exactly where we want
+                          #             it to stop.
+  'BCLD_EXT'    : '',     # This extension is tacked onto the end of the output
+                          # filename for BCLD. When BCLD_FINISH is enabled,
+                          # this becomes '.discard' because the output is a
+                          # native executable we don't use.
   'BIAS'        : 'NONE', # This can be 'NONE', 'ARM', 'X8632', or 'X8664'.
                           # When not set to none, this causes the front-end to
                           # act like a target-specific compiler. This bias is
@@ -87,8 +102,10 @@ INITIAL_ENV = {
 
   'BASE_NACL'       : '', # Filled in later
   'BASE'            : '${BASE_NACL}/toolchain/linux_arm-untrusted',
+  'BASE_TRUSTED'    : '${BASE_NACL}/toolchain/linux_arm-trusted',
   'BASE_ARM'        : '${BASE}/arm-none-linux-gnueabi',
   'BASE_ARM_INCLUDE': '${BASE_ARM}/arm-none-linux-gnueabi/include',
+  'BASE_BIN'        : '${BASE}/bin',
 
   'DRY_RUN'              : '0',
 
@@ -97,8 +114,20 @@ INITIAL_ENV = {
   'LOG_FILE_SIZE_LIMIT'  : str(20 * 1024 * 1024),
   'LOG_PRETTY_PRINT'     : '1',
 
+  'PNACL_AS_ARM'         : '${BASE_BIN}/pnacl-arm-as',
+  'PNACL_AS_X8632'       : '${BASE_BIN}/pnacl-i686-as',
+  'PNACL_AS_X8664'       : '${BASE_BIN}/pnacl-x86_64-as',
+
   'GOLD_PLUGIN_SO'  : '${BASE_ARM}/lib/libLLVMgold.so',
-  'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} -plugin-opt=emit-llvm',
+  'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
+                      '-plugin-opt=emit-llvm',
+
+  'BCLD_FINISH_ARGS'  : # "also-emit-llvm" overwrites "emit-llvm"
+                        '-plugin-opt="also-emit-llvm=${output}" ' +
+                        '-plugin-opt="${LLC_FLAGS_BASE}" ' +
+                        '-plugin-opt="as=${PNACL_AS_%arch%}" ' +
+                        '-plugin-opt="mtriple=${TRIPLE_%arch%}" ' +
+                        '-plugin-opt="mcpu=${LLC_MCPU_%arch%}"',
 
   'ROOT_ARM'    : '${BASE}/libs-arm',
   'ROOT_X8632'  : '${BASE}/libs-x8632',
@@ -152,22 +181,34 @@ INITIAL_ENV = {
   # Sandboxed tools
   'SCONS_STAGING_X8632' : '${BASE_NACL}/scons-out/opt-linux-x86-32/staging',
   'SCONS_STAGING_X8664' : '${BASE_NACL}/scons-out/opt-linux-x86-64/staging',
+  'SCONS_STAGING_ARM'   : '${BASE_NACL}/scons-out/opt-linux-arm/staging',
 
+  'USE_EMULATOR'        : '0',
+  'SEL_UNIVERSAL_PREFIX': '',
   'SEL_UNIVERSAL_X8632' : '${SCONS_STAGING_X8632}/sel_universal',
   'SEL_UNIVERSAL_X8664' : '${SCONS_STAGING_X8664}/sel_universal',
+  'SEL_UNIVERSAL_ARM'   : '${SCONS_STAGING_ARM}/sel_universal',
   'SEL_UNIVERSAL_FLAGS' : '--abort_on_error',
 
+  'EMULATOR_ARM'        : '${BASE_TRUSTED}/run_under_qemu_arm',
+
+  # TODO(pdox): Clean this up so there is one define for each item
+  #             instead of 3.
   'SEL_LDR_X8632' : '${SCONS_STAGING_X8632}/sel_ldr',
   'SEL_LDR_X8664' : '${SCONS_STAGING_X8664}/sel_ldr',
+  'SEL_LDR_ARM'   : '${SCONS_STAGING_ARM}/sel_ldr',
 
   'BASE_SB_X8632' : '${BASE}/tools-sb/x8632',
   'BASE_SB_X8664' : '${BASE}/tools-sb/x8664',
+  'BASE_SB_ARM'   : '${BASE}/tools-sb/arm',
 
   'LLC_SRPC_X8632': '${BASE_SB_X8632}/srpc/bin/llc',
   'LLC_SRPC_X8664': '${BASE_SB_X8664}/srpc/bin/llc',
+  'LLC_SRPC_ARM'  : '${BASE_SB_ARM}/srpc/bin/llc',
 
   'LD_SRPC_X8632': '${BASE_SB_X8632}/srpc/bin/ld',
   'LD_SRPC_X8664': '${BASE_SB_X8664}/srpc/bin/ld',
+  'LD_SRPC_ARM'  : '${BASE_SB_ARM}/srpc/bin/ld',
 
   'LLC_SB_X8632'  : '${SEL_LDR_X8632} -a -- ${BASE_SB_X8632}/nonsrpc/bin/llc',
   'AS_SB_X8632'   : '${SEL_LDR_X8632} -a -- ${BASE_SB_X8632}/nonsrpc/bin/as',
@@ -177,6 +218,10 @@ INITIAL_ENV = {
   'AS_SB_X8664'   : '${SEL_LDR_X8664} -a -- ${BASE_SB_X8664}/nonsrpc/bin/as',
   'LD_SB_X8664'   : '${SEL_LDR_X8664} -a -- ${BASE_SB_X8664}/nonsrpc/bin/ld',
 
+  'LLC_SB_ARM'    : '${SEL_LDR_ARM} -a -- ${BASE_SB_ARM}/nonsrpc/bin/llc',
+  'AS_SB_ARM'     : '${SEL_LDR_ARM} -a -- ${BASE_SB_ARM}/nonsrpc/bin/as',
+  'LD_SB_ARM'     : '${SEL_LDR_ARM} -a -- ${BASE_SB_ARM}/nonsrpc/bin/ld',
+
   'LLVM_MC'       : '${BASE_ARM}/bin/llvm-mc',
   'LLVM_AS'       : '${BASE_ARM}/bin/llvm-as',
   'LLVM_DIS'      : '${BASE_ARM}/bin/llvm-dis',
@@ -184,19 +229,33 @@ INITIAL_ENV = {
 
   'LLC'           : '${BASE_ARM}/bin/llc',
 
-  'LLC_FLAGS_COMMON' : '',
+  'LLC_FLAGS_COMMON' : '-asm-verbose=false',
   'LLC_FLAGS_ARM' :
     # The following options might come in hand and are left here as comments:
     # TODO(robertm): describe their purpose
     #     '-soft-float -aeabi-calls -sfi-zero-mask',
     # NOTE: we need a fairly high fudge factor because of
     # some vfp instructions which only have a 9bit offset
-    ('-march=arm -mcpu=cortex-a8 -mattr=-neon -mattr=+vfp2 -arm-reserve-r9 ' +
-     '-sfi-disable-cp -arm_static_tls -asm-verbose=false ' +
+    ('-arm-reserve-r9 -sfi-disable-cp -arm_static_tls ' +
      '-sfi-store -sfi-stack -sfi-branch -sfi-data ' +
      '-no-inline-jumptables'),
-  'LLC_FLAGS_X8632' : '-march=x86 -mcpu=pentium4 -asm-verbose=false',
-  'LLC_FLAGS_X8664' : '-march=x86-64 -mcpu=core2 -asm-verbose=false',
+  'LLC_FLAGS_X8632' : '',
+  'LLC_FLAGS_X8664' : '',
+
+  # LLC flags which set the target and output type.
+  # These are handled separately by libLTO.
+  'LLC_FLAGS_TARGET' : '-march=${LLC_MARCH_%arch%} -mcpu=${LLC_MCPU_%arch%} ' +
+                       '-mtriple=${TRIPLE_%arch%} -filetype=${filetype}',
+  'LLC_FLAGS_BASE': '${LLC_FLAGS_COMMON} ${LLC_FLAGS_%arch%}',
+  'LLC_FLAGS'     : '${LLC_FLAGS_TARGET} ${LLC_FLAGS_BASE}',
+
+  'LLC_MARCH_ARM'   : 'arm',
+  'LLC_MARCH_X8632' : 'x86',
+  'LLC_MARCH_X8664' : 'x86-64',
+
+  'LLC_MCPU_ARM'    : 'cortex-a8',
+  'LLC_MCPU_X8632'  : 'pentium4',
+  'LLC_MCPU_X8664'  : 'core2',
 
   'OPT'      : '${BASE_ARM}/bin/opt',
   'OPT_FLAGS': '-std-compile-opts -O3 -strip',
@@ -231,6 +290,7 @@ INITIAL_ENV = {
   'LD_GOLD_FLAGS'  : '--native-client',
   'LD_GOLD'        : '${BINUTILS_BASE}ld.gold',
 
+  'LD_WRAP_SYMBOLS': '',
   'LD_FLAGS'       : '-nostdlib ${LD_SEARCH_DIRS}',
   'LD_SEARCH_DIRS' : '',
 
@@ -244,8 +304,14 @@ INITIAL_ENV = {
   'LD_SCRIPT_X8664': '${LDSCRIPTS_DIR}/ld_script_x8664_untrusted',
 
   'BCLD'      : '${BINUTILS_BASE}ld.gold',
-  'BCLD_FLAGS': '${GOLD_PLUGIN_ARGS} ${LD_SEARCH_DIRS}',
+  'BCLD_FLAGS': '--native-client -T ${LD_SCRIPT_X8632} ' +
+                '${GOLD_PLUGIN_ARGS} ${LD_SEARCH_DIRS}',
 
+  # TODO(pdox): empty.o is an empty native object file.
+  #             This is a temporary hack so that gold can auto-detect
+  #             which architecture is being targetted for the
+  #             barebones tests.
+  'EMPTY_OBJECT'        : '${ROOT_%arch%}/empty.o',
 
   'STDLIB_NATIVE_PREFIX': '${ROOT_%arch%}/crt1.o',
 
@@ -260,10 +326,6 @@ INITIAL_ENV = {
 
   # Build actual command lines below
   'RUN_OPT': '${OPT} ${OPT_FLAGS} "${input}" -f -o "${output}"',
-
-  'LLC_FLAGS': '${LLC_FLAGS_COMMON} ${LLC_FLAGS_%arch%} ' +
-               '-mtriple=${TRIPLE_%arch%} ' +
-               '-filetype=${filetype}',
 
   'RUN_LLC': '${LLC} ${LLC_FLAGS} ' +
              '"${input}" -o "${output}"',
@@ -291,7 +353,7 @@ INITIAL_ENV = {
               '${STDLIB_NATIVE_PREFIX} ${STDLIB_BC_PREFIX} ${inputs} ' +
               '${STDLIB_BC_SUFFIX} ${STDLIB_NATIVE_SUFFIX} ' +
               '${BASE}/llvm-intrinsics.bc ${BASE}/llvm-preserve.bc ' +
-              '-o "${output}"'
+              '-o "${output}${BCLD_EXT}"'
 }
 
 ######################################################################
@@ -313,13 +375,16 @@ DriverPatterns = [
   ( '--pnacl-translate',               "env.set('INCARNATION', 'translate')"),
   ( ('--add-llc-option', '(.+)'),      "env.append('LLC_FLAGS_COMMON', $0)"),
   ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
+  ( '--pnacl-use-emulator',            "env.set('USE_EMULATOR', '1')"),
   ( '--dry-run',                       "env.set('DRY_RUN', '1')"),
   ( '--pnacl-gold-fix',                "env.set('GOLD_FIX', '1')"),
   ( '--pnacl-arm-bias',                "env.set('BIAS', 'ARM')"),
   ( '--pnacl-i686-bias',               "env.set('BIAS', 'X8632')"),
   ( '--pnacl-x86_64-bias',             "env.set('BIAS', 'X8664')"),
   ( '--pnacl-bias=(.+)',               "env.set('BIAS', FixArch($0))"),
-
+  ( '--pnacl-bcld-finish',             "env.set('BCLD_FINISH', '1')"),
+  ( '--pnacl-bcld-fast',               "env.set('BCLD_FINISH', '0')"),
+  ( '--pnacl-skip-ll',                 "env.set('EMIT_LL', '0')"),
 
   # Catch all pattern (must be last)
   ( '(.*)',                            "env.append('ARGV', $0)"),
@@ -337,24 +402,28 @@ GCCPatterns = [
   ( '-nostdinc',       "env.set('NOSTDINC', '1')"),
   ( '-nostdlib',       "env.set('NOSTDLIB', '1')"),
 
-  ( '(.+\\.c)',        "env.append('INPUTS', $0)"),
-  ( '(.+\\.cc)',       "env.append('INPUTS', $0)"),
-  ( '(.+\\.cpp)',      "env.append('INPUTS', $0)"),
-  ( '(.+\\.C)',        "env.append('INPUTS', $0)"),
-  ( '(.+\\.s)',        "env.append('INPUTS', $0)"),
-  ( '(.+\\.S)',        "env.append('INPUTS', $0)"),
-  ( '(.+\\.asm)',      "env.append('INPUTS', $0)"),
-  ( '(.+\\.bc)',       "env.append('INPUTS', $0)"),
-  ( '(.+\\.o)',        "env.append('INPUTS', $0)"),
-  ( '(.+\\.os)',       "env.append('INPUTS', $0)"),
-  ( '(.+\\.ll)',       "env.append('INPUTS', $0)"),
-  ( '(.+\\.nexe)',     "env.append('INPUTS', $0)"),
-  ( '(.+\\.pexe)',     "env.append('INPUTS', $0)"),
+  # Call ForceFileType for all input files at the time they are
+  # parsed on the command-line. This ensures that the gcc "-x"
+  # setting is correctly applied.
+  ( '(.+\\.c)',        "env.append('INPUTS', $0); ForceFileType($0)"),
+  ( '(.+\\.cc)',       "env.append('INPUTS', $0); ForceFileType($0)"),
+  ( '(.+\\.cpp)',      "env.append('INPUTS', $0); ForceFileType($0)"),
+  ( '(.+\\.C)',        "env.append('INPUTS', $0); ForceFileType($0)"),
+  ( '(.+\\.s)',        "env.append('INPUTS', $0); ForceFileType($0)"),
+  ( '(.+\\.S)',        "env.append('INPUTS', $0); ForceFileType($0)"),
+  ( '(.+\\.asm)',      "env.append('INPUTS', $0); ForceFileType($0)"),
+  ( '(.+\\.bc)',       "env.append('INPUTS', $0); ForceFileType($0)"),
+  ( '(.+\\.o)',        "env.append('INPUTS', $0); ForceFileType($0)"),
+  ( '(.+\\.os)',       "env.append('INPUTS', $0); ForceFileType($0)"),
+  ( '(.+\\.ll)',       "env.append('INPUTS', $0); ForceFileType($0)"),
+  ( '(.+\\.nexe)',     "env.append('INPUTS', $0); ForceFileType($0)"),
+  ( '(.+\\.pexe)',     "env.append('INPUTS', $0); ForceFileType($0)"),
   ( '(-l.+)',          "env.append('INPUTS', $0)"),
 
   ( '(-O.+)',          "env.set('OPT_LEVEL', $0)"),
 
-  ( '-Wl,(.*)',        "env.append('LD_FLAGS', *($0.split(',')))"),
+  ( '-Wl,(.*)',        "env.append('LD_FLAGS', *($0.split(',')))\n"
+                       "env.append('BCLD_FLAGS', *($0.split(',')))"),
   ( '(-W.*)',          "env.append('CC_FLAGS', $0)"),
   ( '(-std=.*)',       "env.append('CC_FLAGS', $0)"),
   ( '(-B.*)',          "env.append('CC_FLAGS', $0)"),
@@ -377,6 +446,18 @@ GCCPatterns = [
   ( '(-Wp,.*)',               "env.append('CC_FLAGS', $0)"),
   ( '(-soname=.*)',           "env.append('LD_FLAGS', $0)"),
 
+  ( '(-MMD)',                 "env.append('CC_FLAGS', $0)"),
+  ( '(-MP)',                  "env.append('CC_FLAGS', $0)"),
+  ( '(-MD)',                  "env.append('CC_FLAGS', $0)"),
+  ( ('(-MF)','(.*)'),         "env.append('CC_FLAGS', $0, $1)"),
+  ( ('(-MT)','(.*)'),         "env.append('CC_FLAGS', $0, $1)"),
+
+  # With -xc, GCC considers future inputs to be an input source file.
+  # The following is not the correct handling of -x,
+  # but it works in the limited case used by llvm/configure.
+  # TODO(pdox): Make this really work in the general case.
+  ( '-xc',                    "env.append('CC_FLAGS', '-xc')\n"
+                              "SetForcedFileType('src')"),
 
   # Ignore these gcc flags
   ( '(-msse)',                ""),
@@ -413,18 +494,25 @@ GCCPatterns = [
   ( '(-d.*)',                 "env.set('DIAGNOSTIC', '1')"),
 
   # Catch all pattern (must be last)
-  ( '(.*)',                   "env.append('UNMATCHED', $0)"),
+  ( '(.*)',                   "if ForcedFileType:\n"
+                              "  env.append('INPUTS', $0)\n"
+                              "  ForceFileType($0)\n"
+                              "else:\n"
+                              "  env.append('UNMATCHED', $0)"),
+
 ]
 
 def FixArch(arch):
   archfix = { 'x86-32': 'X8632',
               'x86_32': 'X8632',
+              'x8632' : 'X8632',
               'i686'  : 'X8632',
               'ia32'  : 'X8632',
 
               'amd64' : 'X8664',
               'x86_64': 'X8664',
               'x86-64': 'X8664',
+              'x8664' : 'X8664',
 
               'arm'   : 'ARM',
               'armv7' : 'ARM' }
@@ -441,6 +529,11 @@ def ClearStandardLibs():
 def PrepareFlags():
   if env.getbool('PIC'):
     env.append('LLC_FLAGS_COMMON', '-relocation-model=pic')
+    env.append('BCLD_FINISH_ARGS', '-plugin-opt=PIC')
+
+  if env.getbool('USE_EMULATOR'):
+    env.append('SEL_UNIVERSAL_FLAGS', '--command_prefix', '${EMULATOR_%arch%}')
+    env.append('SEL_UNIVERSAL_PREFIX', '${EMULATOR_%arch%}', '-Q')
 
   if env.getbool('NOSTDINC'):
     env.clear('CC_STDINC')
@@ -448,13 +541,18 @@ def PrepareFlags():
   if env.getbool('NOSTDLIB'):
     ClearStandardLibs()
 
-  # Disable MC and sandboxing for ARM until we have it working
+  if env.getbool('SANDBOXED'):
+    env.set('SANDBOXED_LLC', '1')
+    env.set('SANDBOXED_AS', '1')
+    env.set('SANDBOXED_LD', '1')
+
+  # Disable MC and sandboxed as/ld for ARM until we have it working
   arch = GetArch()
   if arch and arch == 'ARM':
     env.set('USE_MC_ASM', '0')
     env.set('MC_DIRECT', '0')
-    env.set('SANDBOXED', '0')
-    env.set('SRPC', '0')
+    env.set('SANDBOXED_AS', '0')
+    env.set('SANDBOXED_LD', '0')
 
   if env.getbool('SHARED'):
     env.append('LD_FLAGS', '-shared')
@@ -471,10 +569,47 @@ def PrepareFlags():
       env.append('LD_GOLD_FLAGS', '-static', '-Ttext=0x00020000')
     env.append('LD_BFD_FLAGS', '-static')
 
-  if env.getbool('SANDBOXED') and arch:
-    env.set('LLC', '${LLC_SB_%s}' % arch)
-    env.set('AS', '${AS_SB_%s}' % arch)
-    env.set('LD', '${LD_SB_%s} ${LD_BFD_FLAGS}' % arch)
+  if arch:
+    if env.getbool('SANDBOXED_LLC'):
+      env.set('LLC', '${LLC_SB_%s}' % arch)
+    if env.getbool('SANDBOXED_AS'):
+      env.set('AS', '${AS_SB_%s}' % arch)
+    if env.getbool('SANDBOXED_LD'):
+      env.set('LD', '${LD_SB_%s} ${LD_BFD_FLAGS}' % arch)
+
+  # If --wrap is in LD_FLAGS, prepare to handle it ourselves
+  # instead of passing onto the linker. Store the wrapped
+  # symbol list in LD_WRAP_SYMBOLS.
+  ld_flags = shell.split(env.get('LD_FLAGS'))
+  symbols,ld_flags = ExtractWrapSymbols(ld_flags)
+  env.set('LD_FLAGS', shell.join(ld_flags))
+  env.set('LD_WRAP_SYMBOLS', shell.join(symbols))
+  if len(symbols) > 0:
+    # Currently, BCLD cannot finish when --wrap is given, since
+    # we don't have a way of modifying the bitcode or notifying gold
+    # of the symbol change. For now, disable BCLD_FINISH if it is
+    # enabled. This is OK for now because BCLD_FINISH is only needed
+    # during configure and --wrap is never used by configure.
+    # TODO(pdox): Figure out how to handle this properly.
+    env.set('BCLD_FINISH', '0')
+    bcld_flags = shell.split(env.get('BCLD_FLAGS'))
+    _,bcld_flags = ExtractWrapSymbols(bcld_flags)
+    env.set('BCLD_FLAGS', shell.join(bcld_flags))
+
+  if env.getbool('BCLD_FINISH'):
+    env.append('GOLD_PLUGIN_ARGS', '${BCLD_FINISH_ARGS}')
+    env.set('BCLD_EXT', '.discard')
+
+def ExtractWrapSymbols(ld_flags):
+  symbols = []
+  leftover = []
+  for arg in ld_flags:
+    if arg.startswith('--wrap='):
+      symbols.append(arg[len('--wrap='):])
+    else:
+      leftover.append(arg)
+  return (symbols,leftover)
+
 
 ######################################################################
 # Chain Map
@@ -514,7 +649,9 @@ def PrepareChainMap():
   EmitLL = env.getbool('EMIT_LL')
   MCDirect = env.getbool('MC_DIRECT')
   UseMCAsm = env.getbool('USE_MC_ASM')
-  SrpcSB = env.getbool('SANDBOXED') and env.getbool('SRPC')
+  UseSRPC = env.getbool('SANDBOXED_LLC') and env.getbool('SRPC')
+  SrpcObjSB = UseSRPC and MCDirect
+  SrpcAsmSB = UseSRPC
 
   ChainMapInit = [
     # Condition, Inputs -> Out , Function,                Environment
@@ -523,8 +660,9 @@ def PrepareChainMap():
     (True,     'src -> ll'   , 'RunWithEnv("RUN_GCC")', { 'mode': '-S' }),
     (True,     'src -> pp'   , 'RunWithEnv("RUN_PP")', {}),
     (True,     'll -> bc'    , 'RunWithEnv("RUN_LLVM_AS")', {}),
-    (SrpcSB,   'bc|pexe -> o', 'RunLLCSRPC()', { 'filetype': 'obj' }),
+    (SrpcObjSB,'bc|pexe -> o', 'RunLLCSRPC()', { 'filetype': 'obj' }),
     (MCDirect, 'bc|pexe -> o', 'RunWithEnv("RUN_LLC")', { 'filetype': 'obj' }),
+    (SrpcAsmSB,'bc|pexe -> s', 'RunLLCSRPC()', { 'filetype': 'asm' }),
     (True,     'bc|pexe -> s', 'RunWithEnv("RUN_LLC")', { 'filetype': 'asm' }),
     (True,     'S -> s'      , 'RunWithEnv("RUN_PP")', {}),
     (UseMCAsm, 's -> o'      , 'RunWithEnv("RUN_LLVM_MC")', {}),
@@ -762,6 +900,16 @@ def Incarnation_translate(argv):
   return 0
 
 def Incarnation_as(argv):
+  # Unmatched parameters should be treated as
+  # assembly inputs by the "as" incarnation.
+  arch = GetArch()
+  if arch:
+    output_type = 'o'
+    SetForcedFileType('s')
+  else:
+    output_type = 'bc'
+    SetForcedFileType('ll')
+
   ParseArgs(argv, GCCPatterns)
 
   if env.getbool('DIAGNOSTIC'):
@@ -774,11 +922,6 @@ def Incarnation_as(argv):
 
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
-  arch = GetArch()
-  if arch:
-    output_type = 'o'
-  else:
-    output_type = 'bc'
 
   if len(inputs) != 1:
     Log.Fatal('Expecting one input file')
@@ -978,6 +1121,12 @@ def NeedsBCLinking(inputs):
       needs_linking = True
   return needs_linking
 
+def HasNativeObject(inputs):
+  for i in inputs:
+    intype = FileType(i)
+    if intype == 'o':
+      return True
+  return False
 
 def LinkBC(inputs, output = None):
   '''Input: a bunch of bc/o/lib input files
@@ -997,7 +1146,6 @@ def LinkBC(inputs, output = None):
       output = TempNameForOutput('opt.pexe')
     bcld_output = TempNameForOutput('bc')
 
-  # Produce combined bitcode file
   # There is an architecture bias here. To link the bitcode together,
   # we need to specify the native libraries to be used in the final linking,
   # just so the linker can resolve the symbols. We'd like to eliminate
@@ -1005,9 +1153,28 @@ def LinkBC(inputs, output = None):
   arch = GetArch()
   if not arch:
     arch = 'ARM'
+
+  # If there are no native input files at all (e.g. barebones tests),
+  # then include empty.o so that gold knows the target arch.
+  if (env.getbool('BCLD_FINISH') and
+      env.getbool('NOSTDLIB') and
+      not HasNativeObject(inputs)):
+    env.append('BCLD_FLAGS', '${EMPTY_OBJECT}')
+
+  # Produce combined bitcode file
   RunWithEnv('RUN_BCLD', arch = arch,
              inputs = shell.join(inputs),
              output = bcld_output)
+
+  #### Manually apply symbol wrap to unoptimized bitcode
+  symbols = shell.split(env.get('LD_WRAP_SYMBOLS'))
+  if len(symbols) > 0:
+    before = TempNameForOutput('before_wrap.ll')
+    after = TempNameForOutput('after_wrap.ll')
+    RunWithEnv('RUN_LLVM_DIS', input=bcld_output, output=before)
+    WrapSymbols(symbols, before, after)
+    RunWithEnv('RUN_LLVM_AS', input=after, output=bcld_output)
+  ####
 
   if not skip_opt:
     OptimizeBC(bcld_output, output)
@@ -1030,7 +1197,7 @@ def LinkNative(arch, inputs, output):
   env.setmany(arch=arch, inputs=shell.join(inputs), output=output)
 
   # TODO(pdox): Unify this into the chain compile
-  if env.getbool('SANDBOXED') and env.getbool('SRPC'):
+  if env.getbool('SANDBOXED_LD') and env.getbool('SRPC'):
     RunLDSRPC()
   else:
     RunWithEnv('RUN_LD')
@@ -1275,16 +1442,16 @@ def ParseArgs(argv, patternlist):
 
 def SimpleCache(f):
   """ Cache results of a one-argument function using a dictionary """
-  f._cache = dict()
-
+  cache = dict()
   def wrapper(arg):
-    if arg in f._cache:
-      return f._cache[arg]
+    if arg in cache:
+      return cache[arg]
     else:
       result = f(arg)
-      f._cache[arg] = result
+      cache[arg] = result
       return result
   wrapper.__name__ = f.__name__
+  wrapper.__cache = cache
   return wrapper
 
 @SimpleCache
@@ -1300,6 +1467,25 @@ def IsBitcode(filename):
     return True
   return False
 
+# If ForcedFileType is set, FileType() will return ForcedFileType for all
+# future input files. This is useful for the "as" incarnation, which
+# needs to accept files of any extension and treat them as ".s" (or ".ll")
+# files. Also useful for gcc's "-x", which causes all files to be treated
+# in a certain way.
+ForcedFileType = None
+def SetForcedFileType(t):
+  global ForcedFileType
+  ForcedFileType = t
+
+def ForceFileType(filename, newtype = None):
+  if newtype is None:
+    if ForcedFileType is None:
+      return
+    newtype = ForcedFileType
+  FileType.__cache[filename] = newtype
+
+# The SimpleCache decorator is required for correctness, due to the
+# ForceFileType mechanism.
 @SimpleCache
 def FileType(filename):
   if filename.startswith('-l'):
@@ -1684,8 +1870,8 @@ def RunLLCSRPC():
   flags = shell.split(env.get("LLC_FLAGS"))
   script = MakeSelUniversalScriptForLLC(infile, outfile, flags)
 
-  RunWithLog('"${SEL_UNIVERSAL_%arch%}" ${SEL_UNIVERSAL_FLAGS} ' +
-             '-- "${LLC_SRPC_%arch%}"',
+  RunWithLog('${SEL_UNIVERSAL_PREFIX} "${SEL_UNIVERSAL_%arch%}" ' +
+             '${SEL_UNIVERSAL_FLAGS} -- "${LLC_SRPC_%arch%}"',
              stdin=script, silent = True)
 
 
@@ -1809,6 +1995,44 @@ def RunLDSRPC():
   RunWithLog('"${SEL_UNIVERSAL_%arch%}" ${SEL_UNIVERSAL_FLAGS} -- ' +
              '"${LD_SRPC_%arch%}"', stdin=script, silent = True)
 
+
+######################################################################
+# Bitcode Link Wrap Symbols Hack
+######################################################################
+
+def WrapSymbols(symbols, infile, outfile):
+  assert(FileType(infile) == 'll')
+  Log.Info('Wrapping symbols: ' + ' '.join(symbols))
+
+  try:
+    fp = open(infile, 'r')
+  except Exception:
+    print "Failed to open input file " + infile
+    NiceExit(1)
+
+  result = []
+  for line in fp.readlines():
+    for s in symbols:
+      # Relabel the real function
+      if line.startswith('define'):
+        line = line.replace('@' + s + '(', '@__real_' + s + '(')
+
+      # Remove declarations of __real_xyz symbol.
+      # Because we are actually defining it now, leaving the declaration around
+      # would cause an error. (bitcode should have either a define or declare,
+      # not both).
+      if line.startswith('declare') and '__real_' in line:
+        line = ''
+
+      # Relabel the wrapper to the original name
+      line = line.replace('@__wrap_' + s + '(', '@' + s + '(')
+    result.append(line)
+  fp.close()
+
+  fp = open(outfile, 'w')
+  for line in result:
+    fp.write(line)
+  fp.close()
 
 ######################################################################
 # TLS Hack
