@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/net/view_http_cache_job_factory.h"
 #include "chrome/browser/ui/webui/shared_resources_data_source.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/appcache/view_appcache_internals_job_factory.h"
 #include "content/browser/browser_thread.h"
@@ -253,10 +255,13 @@ void ChromeURLDataManagerBackend::DataAvailable(RequestID request_id,
 net::URLRequestJob* ChromeURLDataManagerBackend::Factory(
     net::URLRequest* request,
     const std::string& scheme) {
-  // Try first with a file handler
-  FilePath path;
-  if (DevToolsJobFactory::IsSupportedURL(request->url(), &path))
-    return DevToolsJobFactory::CreateJobForRequest(request, path);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugDevTools)) {
+    // Try loading chrome-devtools:// files from disk.
+    FilePath path;
+    if (DevToolsJobFactory::IsSupportedURL(request->url(), &path))
+      return DevToolsJobFactory::CreateJobForRequest(request, path);
+  }
 
   // Next check for chrome://view-http-cache/*, which uses its own job type.
   if (ViewHttpCacheJobFactory::IsSupportedURL(request->url()))

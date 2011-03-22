@@ -77,7 +77,7 @@ const char kAuthSchemes[]                   = "auth-schemes";
 
 // Whitelist of servers which NTLM and Negotiate can automatically authenticate
 // with using the default credentials of the currently logged in user.
-const char kAuthServerWhitelist[] = "auth-server-whitelist";
+const char kAuthServerWhitelist[]           = "auth-server-whitelist";
 
 // The value of this switch tells the app to listen for and broadcast
 // automation-related messages on IPC channel with the given ID.
@@ -135,6 +135,10 @@ const char kConflictingModulesCheck[]       = "conflicting-modules-check";
 // system during first run and cached in the preferences afterwards.  This is a
 // string value, the 2 letter code from ISO 3166-1.
 const char kCountry[]                       = "country";
+
+// If enabled, tries to load inspector files from disk (allows reloading of
+// devtool files without having to restart the browser).
+const char kDebugDevTools[]                 = "debug-devtools";
 
 // Enables support to debug printing subsystem.
 const char kDebugPrint[]                    = "debug-print";
@@ -240,10 +244,10 @@ const char kDisableHangMonitor[]            = "disable-hang-monitor";
 const char kDisableHistoryQuickProvider[]   = "disable-history-quick-provider";
 
 // Disable the use of the HistoryURLProvider for autocomplete results.
-const char kDisableHistoryURLProvider[]   = "disable-history-url-provider";
+const char kDisableHistoryURLProvider[]     = "disable-history-url-provider";
 
 // Disable the Indexed Database API.
-const char kDisableIndexedDatabase[]         = "disable-indexed-database";
+const char kDisableIndexedDatabase[]        = "disable-indexed-database";
 
 // Disables HTML5 Forms interactive validation.
 const char kDisableInteractiveFormValidation[] =
@@ -390,7 +394,7 @@ extern const char kLogNetLog[]              = "log-net-log";
 const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
 
 // Enables the hardware acceleration of plugins.
-const char kEnableAcceleratedPlugins[]       = "enable-accelerated-plugins";
+const char kEnableAcceleratedPlugins[]      = "enable-accelerated-plugins";
 
 // Enables WebKit accessibility within the renderer process.
 const char kEnableAccessibility[]           = "enable-accessibility";
@@ -422,7 +426,7 @@ const char kEnableClientSidePhishingInterstitial[] =
 const char kEnableClearServerData[]         = "enable-clear-server-data";
 
 // Enable click-to-play for blocked plug-ins.
-const char kEnableClickToPlay[]            = "enable-click-to-play";
+const char kEnableClickToPlay[]             = "enable-click-to-play";
 
 // This applies only when the process type is "service". Enables the
 // Cloud Print Proxy component within the service process.
@@ -627,7 +631,7 @@ const char kForceFieldTestNameAndValue[]    = "force-fieldtest";
 // Force renderer accessibility to be on instead of enabling it on demand when
 // a screen reader is detected. The disable-renderer-accessibility switch
 // overrides this if present.
-const char kForceRendererAccessibility[]   = "force-renderer-accessibility";
+const char kForceRendererAccessibility[]    = "force-renderer-accessibility";
 
 // Specifies a custom name for the GSSAPI library to load.
 const char kGSSAPILibraryName[]             = "gssapi-library-name";
@@ -791,7 +795,7 @@ const char kNoStartupWindow[]               = "no-startup-window";
 
 // Show a desktop notification that the cloud print token has expired and
 // that user needs to re-authenticate.
-const char kNotifyCloudPrintTokenExpired[] = "notify-cp-token-expired";
+const char kNotifyCloudPrintTokenExpired[]  = "notify-cp-token-expired";
 
 // Specifies the maximum number of threads to use for running the Proxy
 // Autoconfig (PAC) script.
@@ -1002,7 +1006,7 @@ const char kSyncServiceURL[]                = "sync-url";
 const char kSyncTrySsltcpFirstForXmpp[]     = "sync-try-ssltcp-first-for-xmpp";
 
 // Use new experimental SyncerThread implementation and friends.
-const char kNewSyncerThread[]           = "new-syncer-thread";
+const char kNewSyncerThread[]               = "new-syncer-thread";
 
 // Pass the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";

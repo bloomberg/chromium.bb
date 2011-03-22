@@ -1325,6 +1325,7 @@
               'variables': {
                 'pak_inputs': [
                   '<(grit_out_dir)/component_extension_resources.pak',
+                  '<(grit_out_dir)/devtools_resources.pak',
                   '<(grit_out_dir)/net_internals_resources.pak',
                   '<(grit_out_dir)/shared_resources.pak',
                   '<(grit_out_dir)/sync_internals_resources.pak',

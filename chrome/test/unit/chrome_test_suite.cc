@@ -126,6 +126,11 @@ void ChromeTestSuite::Initialize() {
   // Force unittests to run using en-US so if we test against string
   // output, it'll pass regardless of the system language.
   ResourceBundle::InitSharedInstance("en-US");
+  FilePath resources_pack_path;
+  PathService::Get(base::DIR_MODULE, &resources_pack_path);
+  resources_pack_path =
+      resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
+  ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
 
   // initialize the global StatsTable for unit_tests (make sure the file
   // doesn't exist before opening it so the test gets a clean slate)
