@@ -11,8 +11,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "views/controls/button/text_button.h"
-#include "views/controls/message_box_view.h"
 #include "views/examples/example_base.h"
+
+namespace views {
+class MessageBoxView;
+}
 
 namespace examples {
 
@@ -33,7 +36,7 @@ class MessageBoxExample : public ExampleBase,
                              const views::Event& event) OVERRIDE;
 
   // The MessageBoxView to be tested.
-  MessageBoxView* message_box_view_;
+  views::MessageBoxView* message_box_view_;
 
   // Control buttons to show the status and toggle checkbox in the
   // message box.

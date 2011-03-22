@@ -4,6 +4,7 @@
 
 #include "views/examples/message_box_example.h"
 
+#include "views/controls/message_box_view.h"
 #include "views/layout/grid_layout.h"
 #include "views/view.h"
 
@@ -21,7 +22,7 @@ std::wstring MessageBoxExample::GetExampleTitle() {
 }
 
 void MessageBoxExample::CreateExampleView(views::View* container) {
-  message_box_view_ = new MessageBoxView(
+  message_box_view_ = new views::MessageBoxView(
       0, L"Message Box Message", L"Default Prompt");
   status_ = new views::TextButton(this, L"Show Status");
   toggle_ = new views::TextButton(this, L"Toggle Checkbox");

@@ -30,7 +30,7 @@ UserDataDirDialog::UserDataDirDialog(const FilePath& user_data_dir)
       IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY,
       user_data_dir.LossyDisplayName()));
   const int kDialogWidth = 400;
-  message_box_view_ = new MessageBoxView(
+  message_box_view_ = new views::MessageBoxView(
       ui::MessageBoxFlags::kIsConfirmMessageBox,
       message_text.c_str(), std::wstring(), kDialogWidth);
 

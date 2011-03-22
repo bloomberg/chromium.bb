@@ -89,7 +89,7 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox(
 #endif
   const string16 product_name = l10n_util::GetStringUTF16(kProductNameId);
   // Also deleted when the window closes.
-  message_box_view_ = new MessageBoxView(
+  message_box_view_ = new views::MessageBoxView(
       ui::MessageBoxFlags::kFlagHasMessage |
           ui::MessageBoxFlags::kFlagHasOKButton,
       UTF16ToWide(l10n_util::GetStringFUTF16(IDS_UPDATE_RECOMMENDED,

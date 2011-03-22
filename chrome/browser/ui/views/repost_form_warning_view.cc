@@ -34,7 +34,7 @@ RepostFormWarningView::RepostFormWarningView(
     TabContents* tab_contents)
       : controller_(new RepostFormWarningController(tab_contents)),
         message_box_view_(NULL) {
-  message_box_view_ = new MessageBoxView(
+  message_box_view_ = new views::MessageBoxView(
       ui::MessageBoxFlags::kIsConfirmMessageBox,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING)),
       std::wstring());

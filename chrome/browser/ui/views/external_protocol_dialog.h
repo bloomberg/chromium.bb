@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,11 @@
 #include "googleurl/src/gurl.h"
 #include "views/window/dialog_delegate.h"
 
-class MessageBoxView;
 class TabContents;
+
+namespace views {
+class MessageBoxView;
+}
 
 class ExternalProtocolDialog : public views::DialogDelegate {
  public:
@@ -42,7 +45,7 @@ class ExternalProtocolDialog : public views::DialogDelegate {
 
  private:
   // The message box view whose commands we handle.
-  MessageBoxView* message_box_view_;
+  views::MessageBoxView* message_box_view_;
 
   // The associated TabContents.
   TabContents* tab_contents_;

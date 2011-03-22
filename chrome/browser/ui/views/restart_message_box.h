@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,9 @@
 #include "ui/gfx/native_widget_types.h"
 #include "views/window/dialog_delegate.h"
 
+namespace views {
 class MessageBoxView;
+}
 
 // A dialog box that tells the user that s/he needs to restart Chrome
 // for a change to take effect.
@@ -35,7 +37,7 @@ class RestartMessageBox : public views::DialogDelegate {
   explicit RestartMessageBox(gfx::NativeWindow parent_window);
   virtual ~RestartMessageBox();
 
-  MessageBoxView* message_box_view_;
+  views::MessageBoxView* message_box_view_;
 
   DISALLOW_COPY_AND_ASSIGN(RestartMessageBox);
 };

@@ -141,7 +141,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
   message_text +=
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_WARNING));
 
-  message_box_view_ = new MessageBoxView(
+  message_box_view_ = new views::MessageBoxView(
       ui::MessageBoxFlags::kIsConfirmMessageBox,
       message_text,
       std::wstring(),

@@ -96,7 +96,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
       ASCIIToUTF16(url.scheme() + ":"),
       elided_url_without_scheme) + ASCIIToUTF16("\n\n"));
 
-  message_box_view_ = new MessageBoxView(
+  message_box_view_ = new views::MessageBoxView(
       ui::MessageBoxFlags::kIsConfirmMessageBox,
       message_text,
       std::wstring(),

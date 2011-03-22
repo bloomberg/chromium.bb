@@ -12,6 +12,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/message_box_flags.h"
 #include "views/controls/message_box_view.h"
+#include "views/controls/textfield/textfield.h"
 #include "views/window/window.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -20,7 +21,7 @@
 JSModalDialogViews::JSModalDialogViews(
     JavaScriptAppModalDialog* parent)
     : parent_(parent),
-      message_box_view_(new MessageBoxView(
+      message_box_view_(new views::MessageBoxView(
           parent->dialog_flags() | ui::MessageBoxFlags::kAutoDetectAlignment,
           parent->message_text(), parent->default_prompt_text())) {
   DCHECK(message_box_view_);

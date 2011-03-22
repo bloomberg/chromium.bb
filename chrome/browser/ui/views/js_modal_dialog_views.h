@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,9 @@
 #include "ui/base/message_box_flags.h"
 #include "views/window/dialog_delegate.h"
 
+namespace views {
 class MessageBoxView;
+}
 
 class JSModalDialogViews : public NativeAppModalDialog,
                            public views::DialogDelegate {
@@ -52,7 +54,7 @@ class JSModalDialogViews : public NativeAppModalDialog,
   JavaScriptAppModalDialog* parent_;
 
   // The message box view whose commands we handle.
-  MessageBoxView* message_box_view_;
+  views::MessageBoxView* message_box_view_;
 
   DISALLOW_COPY_AND_ASSIGN(JSModalDialogViews);
 };

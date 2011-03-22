@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,19 +9,19 @@
 #include <string>
 
 #include "base/task.h"
-#include "views/controls/image_view.h"
-#include "views/controls/label.h"
-#include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 
 namespace views {
+
 class Checkbox;
-}
+class ImageView;
+class Label;
+class Textfield;
 
 // This class displays the contents of a message box. It is intended for use
 // within a constrained window, and has options for a message, prompt, OK
 // and Cancel buttons.
-class MessageBoxView : public views::View {
+class MessageBoxView : public View {
  public:
   MessageBoxView(int dialog_flags,
                  const std::wstring& message,
@@ -57,13 +57,13 @@ class MessageBoxView : public views::View {
   void SetCheckBoxSelected(bool selected);
 
  protected:
-  // Layout and Painting functions.
+  // View:
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
-
+                                    views::View* child) OVERRIDE;
   // Handles Ctrl-C and writes the message in the system clipboard.
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+  virtual bool AcceleratorPressed(
+      const views::Accelerator& accelerator) OVERRIDE;
 
  private:
   // Sets up the layout manager and initializes the prompt field. This should
@@ -75,16 +75,16 @@ class MessageBoxView : public views::View {
   void ResetLayoutManager();
 
   // Message for the message box.
-  views::Label* message_label_;
+  Label* message_label_;
 
   // Input text field for the message box.
-  views::Textfield* prompt_field_;
+  Textfield* prompt_field_;
 
   // Icon displayed in the upper left corner of the message box.
-  views::ImageView* icon_;
+  ImageView* icon_;
 
   // Checkbox for the message box.
-  views::Checkbox* checkbox_;
+  Checkbox* checkbox_;
 
   // Maximum width of the message label.
   int message_width_;
@@ -93,5 +93,7 @@ class MessageBoxView : public views::View {
 
   DISALLOW_COPY_AND_ASSIGN(MessageBoxView);
 };
+
+}  // namespace views
 
 #endif  // VIEWS_CONTROLS_MESSAGE_BOX_VIEW_H_

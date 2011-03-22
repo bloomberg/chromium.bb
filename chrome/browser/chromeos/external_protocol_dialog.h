@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,11 @@
 #include "views/window/dialog_delegate.h"
 
 class GURL;
-class MessageBoxView;
 class TabContents;
+
+namespace views {
+class MessageBoxView;
+}
 
 // An external protocol dialog for ChromeOS. Unlike other platforms,
 // ChromeOS does not support launching external program, therefore,
@@ -38,7 +41,7 @@ class ExternalProtocolDialog : public views::DialogDelegate {
 
  private:
   // The message box view whose commands we handle.
-  MessageBoxView* message_box_view_;
+  views::MessageBoxView* message_box_view_;
 
   // The time at which this dialog was created.
   base::TimeTicks creation_time_;

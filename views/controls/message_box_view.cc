@@ -11,12 +11,17 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/message_box_flags.h"
 #include "views/controls/button/checkbox.h"
+#include "views/controls/image_view.h"
+#include "views/controls/label.h"
+#include "views/controls/textfield/textfield.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/views_delegate.h"
 #include "views/window/client_view.h"
 
 static const int kDefaultMessageWidth = 320;
+
+namespace views {
 
 ///////////////////////////////////////////////////////////////////////////////
 // MessageBoxView, public:
@@ -25,7 +30,7 @@ MessageBoxView::MessageBoxView(int dialog_flags,
                                const std::wstring& message,
                                const std::wstring& default_prompt,
                                int message_width)
-    : message_label_(new views::Label(message)),
+    : message_label_(new Label(message)),
       prompt_field_(NULL),
       icon_(NULL),
       checkbox_(NULL),
@@ -37,7 +42,7 @@ MessageBoxView::MessageBoxView(int dialog_flags,
 MessageBoxView::MessageBoxView(int dialog_flags,
                                const std::wstring& message,
                                const std::wstring& default_prompt)
-    : message_label_(new views::Label(message)),
+    : message_label_(new Label(message)),
       prompt_field_(NULL),
       icon_(NULL),
       checkbox_(NULL),
@@ -60,7 +65,7 @@ bool MessageBoxView::IsCheckBoxSelected() {
 
 void MessageBoxView::SetIcon(const SkBitmap& icon) {
   if (!icon_)
-    icon_ = new views::ImageView();
+    icon_ = new ImageView();
   icon_->SetImage(icon);
   icon_->SetBounds(0, 0, icon.width(), icon.height());
   ResetLayoutManager();
@@ -68,7 +73,7 @@ void MessageBoxView::SetIcon(const SkBitmap& icon) {
 
 void MessageBoxView::SetCheckBoxLabel(const std::wstring& label) {
   if (!checkbox_)
-    checkbox_ = new views::Checkbox(label);
+    checkbox_ = new Checkbox(label);
   else
     checkbox_->SetLabel(label);
   ResetLayoutManager();
@@ -81,11 +86,11 @@ void MessageBoxView::SetCheckBoxSelected(bool selected) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// MessageBoxView, views::View overrides:
+// MessageBoxView, View overrides:
 
 void MessageBoxView::ViewHierarchyChanged(bool is_add,
-                                          views::View* parent,
-                                          views::View* child) {
+                                          View* parent,
+                                          View* child) {
   if (child == this && is_add) {
     if (prompt_field_)
       prompt_field_->SelectAll();
@@ -93,7 +98,7 @@ void MessageBoxView::ViewHierarchyChanged(bool is_add,
 }
 
 bool MessageBoxView::AcceleratorPressed(
-    const views::Accelerator& accelerator) {
+    const Accelerator& accelerator) {
   // We only accepts Ctrl-C.
   DCHECK(accelerator.GetKeyCode() == 'C' && accelerator.IsCtrlDown());
 
@@ -101,11 +106,10 @@ bool MessageBoxView::AcceleratorPressed(
   if (prompt_field_ && prompt_field_->HasFocus())
     return false;
 
-  if (!views::ViewsDelegate::views_delegate)
+  if (!ViewsDelegate::views_delegate)
     return false;
 
-  ui::Clipboard* clipboard =
-      views::ViewsDelegate::views_delegate->GetClipboard();
+  ui::Clipboard* clipboard = ViewsDelegate::views_delegate->GetClipboard();
   if (!clipboard)
     return false;
 
@@ -126,22 +130,22 @@ void MessageBoxView::Init(int dialog_flags,
     // with strong directionality.
     base::i18n::TextDirection direction =
         base::i18n::GetFirstStrongCharacterDirection(message_label_->GetText());
-    views::Label::Alignment alignment;
+    Label::Alignment alignment;
     if (direction == base::i18n::RIGHT_TO_LEFT)
-      alignment = views::Label::ALIGN_RIGHT;
+      alignment = Label::ALIGN_RIGHT;
     else
-      alignment = views::Label::ALIGN_LEFT;
+      alignment = Label::ALIGN_LEFT;
     // In addition, we should set the RTL alignment mode as
     // AUTO_DETECT_ALIGNMENT so that the alignment will not be flipped around
     // in RTL locales.
-    message_label_->set_rtl_alignment_mode(views::Label::AUTO_DETECT_ALIGNMENT);
+    message_label_->set_rtl_alignment_mode(Label::AUTO_DETECT_ALIGNMENT);
     message_label_->SetHorizontalAlignment(alignment);
   } else {
-    message_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    message_label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
   }
 
   if (dialog_flags & ui::MessageBoxFlags::kFlagHasPromptField) {
-    prompt_field_ = new views::Textfield;
+    prompt_field_ = new Textfield;
     prompt_field_->SetText(WideToUTF16Hack(default_prompt));
   }
 
@@ -149,9 +153,6 @@ void MessageBoxView::Init(int dialog_flags,
 }
 
 void MessageBoxView::ResetLayoutManager() {
-  using views::GridLayout;
-  using views::ColumnSet;
-
   // Initialize the Grid Layout Manager used for this dialog box.
   GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
@@ -168,7 +169,7 @@ void MessageBoxView::ResetLayoutManager() {
     column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                           GridLayout::FIXED, icon_size.width(),
                           icon_size.height());
-    column_set->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
+    column_set->AddPaddingColumn(0, kUnrelatedControlHorizontalSpacing);
   }
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::FIXED, message_width_, 0);
@@ -179,7 +180,7 @@ void MessageBoxView::ResetLayoutManager() {
     column_set = layout->AddColumnSet(textfield_column_view_set_id);
     if (icon_) {
       column_set->AddPaddingColumn(
-          0, icon_size.width() + views::kUnrelatedControlHorizontalSpacing);
+          0, icon_size.width() + kUnrelatedControlHorizontalSpacing);
     }
     column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                           GridLayout::USE_PREF, 0, 0);
@@ -191,7 +192,7 @@ void MessageBoxView::ResetLayoutManager() {
     column_set = layout->AddColumnSet(checkbox_column_view_set_id);
     if (icon_) {
       column_set->AddPaddingColumn(
-          0, icon_size.width() + views::kUnrelatedControlHorizontalSpacing);
+          0, icon_size.width() + kUnrelatedControlHorizontalSpacing);
     }
     column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                           GridLayout::USE_PREF, 0, 0);
@@ -204,16 +205,18 @@ void MessageBoxView::ResetLayoutManager() {
   layout->AddView(message_label_);
 
   if (prompt_field_) {
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
     layout->StartRow(0, textfield_column_view_set_id);
     layout->AddView(prompt_field_);
   }
 
   if (checkbox_) {
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
     layout->StartRow(0, checkbox_column_view_set_id);
     layout->AddView(checkbox_);
   }
 
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 }
+
+}  // namespace views

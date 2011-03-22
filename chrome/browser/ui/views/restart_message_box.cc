@@ -53,7 +53,7 @@ views::View* RestartMessageBox::GetContentsView() {
 RestartMessageBox::RestartMessageBox(gfx::NativeWindow parent_window) {
   const int kDialogWidth = 400;
   // Also deleted when the window closes.
-  message_box_view_ = new MessageBoxView(
+  message_box_view_ = new views::MessageBoxView(
       ui::MessageBoxFlags::kFlagHasMessage |
           ui::MessageBoxFlags::kFlagHasOKButton,
       UTF16ToWide(

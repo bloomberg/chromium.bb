@@ -11,11 +11,12 @@
 #include "views/window/dialog_delegate.h"
 
 class ConstrainedWindow;
-class MessageBoxView;
 class NavigationController;
 class RepostFormWarningController;
 class TabContents;
+
 namespace views {
+class MessageBoxView;
 class Window;
 }
 
@@ -46,7 +47,7 @@ class RepostFormWarningView : public ConstrainedDialogDelegate {
   virtual ~RepostFormWarningView();
 
   // The message box view whose commands we handle.
-  MessageBoxView* message_box_view_;
+  views::MessageBoxView* message_box_view_;
 
   scoped_ptr<RepostFormWarningController> controller_;
 
