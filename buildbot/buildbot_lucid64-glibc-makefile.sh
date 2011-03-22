@@ -72,8 +72,9 @@ echo @@@BUILD_STEP small_tests64@@@
 echo @@@BUILD_STEP archive_build@@@
 if [[ ${RETCODE} == 0 ]]; then
   /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    tools/out/toolchain.tgz \
+    tools/toolchain.tgz \
     gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_linux_x86.tar.gz
+  echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
 fi
 
 exit ${RETCODE}
