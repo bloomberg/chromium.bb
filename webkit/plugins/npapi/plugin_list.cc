@@ -29,7 +29,7 @@ FilePath::CharType kDefaultPluginLibraryName[] =
 // Some version ranges can be shared across operating systems. This should be
 // done where possible to avoid duplication.
 static const VersionRangeDefinition kFlashVersionRange[] = {
-    { "", "", "10.2.152", false }
+    { "", "", "10.2.153", false }
 };
 static const VersionRangeDefinition kShockwaveVersionRange[] = {
     { "",  "", "11.5.9.620", true }
@@ -93,7 +93,7 @@ static const VersionRangeDefinition kJavaVersionRange[] = {
 };
 static const VersionRangeDefinition kAdobeReaderVersionRange[] = {
     { "10", "11", "10.0.1", false },
-    { "9", "10", "9.4.2", false },
+    { "9", "10", "9.4.3", false },
     { "0", "9", "8.2.6", false }
 };
 static const VersionRangeDefinition kSilverlightVersionRange[] = {
