@@ -78,6 +78,8 @@ PPB_Surface3D_Impl::PPB_Surface3D_Impl(PluginInstance* instance)
 }
 
 PPB_Surface3D_Impl::~PPB_Surface3D_Impl() {
+  if (context_)
+    context_->BindSurfaces(NULL, NULL);
 }
 
 const PPB_Surface3D_Dev* PPB_Surface3D_Impl::GetInterface() {
