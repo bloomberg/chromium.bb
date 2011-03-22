@@ -812,6 +812,96 @@ class GitChange(Change):
     self.scm = 'git'
 
 
+class ChangeDescription(object):
+  """Contains a parsed form of the change description."""
+  MAX_SUBJECT_LENGTH = 100
+
+  def __init__(self, subject=None, description=None, reviewers=None, tbr=False,
+               editor=None):
+    self.subject = (subject or '').strip()
+    self.description = (description or '').strip()
+    self.reviewers = reviewers or []
+    self.tbr = tbr
+    self.editor = editor or gclient_utils.UserEdit
+
+    if self.description:
+      if not self.description.startswith(self.subject):
+        self.description = self.subject + '\n\n' + self.description
+    elif self.subject:
+      self.description = self.subject
+    self.Parse(self.EditableDescription())
+
+  def EditableDescription(self):
+    text = self.description.strip()
+    if text:
+      text += '\n'
+
+    tbr_present = False
+    r_present = False
+    bug_present = False
+    test_present = False
+    for l in text.splitlines():
+      l = l.strip()
+      r_present = r_present or l.startswith('R=')
+      tbr_present = tbr_present or l.startswith('TBR=')
+
+    if text and not (r_present or tbr_present):
+      text += '\n'
+
+    if not tbr_present and not r_present:
+      if self.tbr:
+        text += 'TBR=' + ','.join(self.reviewers) + '\n'
+      else:
+        text += 'R=' + ','.join(self.reviewers) + '\n'
+    if not bug_present:
+      text += 'BUG=\n'
+    if not test_present:
+      text += 'TEST=\n'
+
+    return text
+
+  def UserEdit(self):
+    """Allows the user to update the description.
+
+    Uses the editor callback passed to the constructor."""
+    self.Parse(self.editor(self.EditableDescription()))
+
+  def Parse(self, text):
+    """Parse the text returned from UserEdit() and update our state."""
+    parsed_lines = []
+    reviewers_regexp = re.compile('\s*(TBR|R)=(.+)')
+    reviewers = []
+    subject = ''
+    tbr = False
+    for l in text.splitlines():
+      l = l.strip()
+
+      # Throw away empty BUG=, TEST=, and R= lines. We leave in TBR= lines
+      # to indicate that this change was meant to be "unreviewed".
+      if l in ('BUG=', 'TEST=', 'R='):
+        continue
+
+      if not subject:
+        subject = l
+      matched_reviewers = reviewers_regexp.match(l)
+      if matched_reviewers:
+        tbr = (matched_reviewers.group(1) == 'TBR')
+        reviewers.extend(matched_reviewers.group(2).split(','))
+      parsed_lines.append(l)
+
+    if len(subject) > self.MAX_SUBJECT_LENGTH:
+      subject = subject[:self.MAX_SUBJECT_LENGTH - 3] + '...'
+
+    self.description = '\n'.join(parsed_lines).strip()
+    self.subject = subject
+    self.reviewers = reviewers
+    self.tbr = tbr
+
+  def IsEmpty(self):
+    return not self.description
+
+
+
 def ListRelevantPresubmitFiles(files, root):
   """Finds all presubmit files that apply to a given set of source files.
 

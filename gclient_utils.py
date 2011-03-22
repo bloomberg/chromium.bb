@@ -12,6 +12,7 @@ import re
 import stat
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import xml.dom.minidom
@@ -710,3 +711,37 @@ class ExecutionQueue(object):
         work_queue.ready_cond.notifyAll()
       finally:
         work_queue.ready_cond.release()
+
+
+def GetEditor():
+  editor = os.environ.get("SVN_EDITOR")
+  if not editor:
+    editor = os.environ.get("EDITOR")
+
+  if not editor:
+    if sys.platform.startswith("win"):
+      editor = "notepad"
+    else:
+      editor = "vi"
+
+  return editor
+
+
+def UserEdit(text):
+  """Open an editor, edit the text, and return the result."""
+  (file_handle, filename) = tempfile.mkstemp()
+  fileobj = os.fdopen(file_handle, 'w')
+  fileobj.write(text)
+  fileobj.close()
+
+  # Open up the default editor in the system to get the CL description.
+  try:
+    cmd = '%s %s' % (GetEditor(), filename)
+    if sys.platform == 'win32' and os.environ.get('TERM') == 'msys':
+      # Msysgit requires the usage of 'env' to be present.
+      cmd = 'env ' + cmd
+    # shell=True to allow the shell to handle all forms of quotes in $EDITOR.
+    subprocess.check_call(cmd, shell=True)
+    return FileRead(filename, 'r')
+  finally:
+    os.remove(filename)
