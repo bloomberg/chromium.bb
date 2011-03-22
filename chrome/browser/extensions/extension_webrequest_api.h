@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "ipc/ipc_message.h"
 #include "net/base/completion_callback.h"
+#include "webkit/glue/resource_type.h"
 
 class ExtensionEventRouterForwarder;
 class GURL;
@@ -83,7 +84,12 @@ class ExtensionWebRequestEventRouter {
   // Returns a list of event listeners that care about the given event, based
   // on their filter parameters.
   std::vector<const EventListener*> GetMatchingListeners(
-      ProfileId profile_id, const std::string& event_name, const GURL& url);
+      ProfileId profile_id,
+      const std::string& event_name,
+      const GURL& url,
+      int tab_id,
+      int window_id,
+      ResourceType::Type resource_type);
 
   // Decrements the count of event handlers blocking the given request. When the
   // count reaches 0 (or immediately if the request is being cancelled), we

@@ -25,6 +25,7 @@
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
+#include "chrome/browser/extensions/extension_tab_id_map.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
@@ -135,6 +136,8 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
   net_log_.reset(new ChromeNetLog);
 
   extension_event_router_forwarder_ = new ExtensionEventRouterForwarder;
+
+  ExtensionTabIdMap::GetInstance()->Init();
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {
@@ -197,6 +200,8 @@ BrowserProcessImpl::~BrowserProcessImpl() {
     // Cancel pending requests and prevent new requests.
     resource_dispatcher_host()->Shutdown();
   }
+
+  ExtensionTabIdMap::GetInstance()->Shutdown();
 
   // The policy providers managed by |browser_policy_connector_| need to shut
   // down while the IO and FILE threads are still alive.

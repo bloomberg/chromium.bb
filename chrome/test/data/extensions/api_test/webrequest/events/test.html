@@ -2,8 +2,10 @@
 var getURL = chrome.extension.getURL;
 var expectedEventData;
 var capturedEventData;
+var startTime;
 
 function expect(data, filter, extraInfoSpec) {
+  startTime = new Date();
   expectedEventData = data;
   capturedEventData = [];
   removeListeners();
@@ -21,11 +23,17 @@ function checkExpectations() {
 }
 
 function captureEvent(name, details) {
-  // TODO(mpcomplete): implement the rest of the parameters.
+  // Basic sanity check for timeStamp.
+  var now = new Date();
+  var requestTime = new Date(details.timeStamp);
+  chrome.test.assertTrue(startTime <= requestTime,
+      "requestTime: " + requestTime.getTime() +
+      " is before startTime: " + startTime.getTime());
+  chrome.test.assertTrue(requestTime <= now,
+      "requestTime: " + requestTime.getTime() +
+      " is after now: " + now.getTime());
   delete details.requestId;
-  delete details.tabId;
   delete details.timeStamp;
-  delete details.type;
   capturedEventData.push([name, details]);
   checkExpectations();
 }
@@ -91,6 +99,8 @@ chrome.tabs.getSelected(null, function(tab) {
         [ "onBeforeRequest",
           {
             method: "GET",
+            tabId: tabId,
+            type: "main_frame",
             url: getURL("simpleLoad/a.html")
           }
         ],
@@ -106,18 +116,24 @@ chrome.tabs.getSelected(null, function(tab) {
         [ "onBeforeRequest",
           {
             method: "GET",
+            tabId: tabId,
+            type: "main_frame",
             url: getURL("complexLoad/a.html")
           }
         ],
         [ "onBeforeRequest",
           {
             method: "GET",
+            tabId: tabId,
+            type: "sub_frame",
             url: getURL("complexLoad/b.html")
           }
         ],
         [ "onBeforeRequest",
           {
             method: "GET",
+            tabId: tabId,
+            type: "image",
             url: getURL("complexLoad/b.jpg")
           }
         ],
@@ -133,6 +149,8 @@ chrome.tabs.getSelected(null, function(tab) {
         [ "onBeforeRequest",
           {
             method: "GET",
+            tabId: tabId,
+            type: "main_frame",
             url: getURL("complexLoad/a.html")
           }
         ]
@@ -140,19 +158,34 @@ chrome.tabs.getSelected(null, function(tab) {
       chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });
     },
 
-    // Loads several resources, but should only see the simpleLoad
-    // due to the filter.
-    function simpleLoadFiltered() {
+    // Loads several resources, but should only see the complexLoad main_frame
+    // and image due to the filter.
+    function complexLoadFiltered() {
       expect([
         [ "onBeforeRequest",
           {
             method: "GET",
-            url: getURL("simpleLoad/a.html")
+            tabId: tabId,
+            type: "main_frame",
+            url: getURL("complexLoad/a.html")
           }
         ],
-      ], {urls: [getURL("simpleLoad/*")]}, []);
-      chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });
-      chrome.tabs.create({ url: getURL("simpleLoad/a.html") });
+        [ "onBeforeRequest",
+          {
+            method: "GET",
+            tabId: tabId,
+            type: "image",
+            url: getURL("complexLoad/b.jpg")
+          }
+        ]
+      ], {urls: [getURL("complexLoad/*")],
+          types: ["main_frame", "image"],
+          tabId: tabId}, []);
+      chrome.tabs.create({ url: getURL("simpleLoad/a.html") },
+          function(newTab) {
+        chrome.tabs.remove(newTab.id);
+        chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });
+      });
     },
   ]);
 });

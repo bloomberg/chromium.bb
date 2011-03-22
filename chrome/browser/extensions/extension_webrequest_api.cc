@@ -11,12 +11,15 @@
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
+#include "chrome/browser/extensions/extension_tab_id_map.h"
 #include "chrome/browser/extensions/extension_webrequest_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 #include "googleurl/src/gurl.h"
@@ -35,8 +38,7 @@ static const char *kWebRequestEvents[] = {
   keys::kOnRequestSent
 };
 
-// TODO(mpcomplete): should this be a set of flags?
-static const char* kRequestFilterTypes[] = {
+static const char* kResourceTypeStrings[] = {
   "main_frame",
   "sub_frame",
   "stylesheet",
@@ -46,18 +48,64 @@ static const char* kRequestFilterTypes[] = {
   "other",
 };
 
+static ResourceType::Type kResourceTypeValues[] = {
+  ResourceType::MAIN_FRAME,
+  ResourceType::SUB_FRAME,
+  ResourceType::STYLESHEET,
+  ResourceType::SCRIPT,
+  ResourceType::IMAGE,
+  ResourceType::OBJECT,
+  ResourceType::LAST_TYPE,  // represents "other"
+};
+
+COMPILE_ASSERT(
+    arraysize(kResourceTypeStrings) == arraysize(kResourceTypeValues),
+    keep_resource_types_in_sync);
+
+#define ARRAYEND(array) (array + arraysize(array))
+
 static bool IsWebRequestEvent(const std::string& event_name) {
-  return std::find(kWebRequestEvents,
-                   kWebRequestEvents + arraysize(kWebRequestEvents),
-                   event_name) !=
-         kWebRequestEvents + arraysize(kWebRequestEvents);
+  return std::find(kWebRequestEvents, ARRAYEND(kWebRequestEvents),
+                   event_name) != ARRAYEND(kWebRequestEvents);
 }
 
-static bool IsValidRequestFilterType(const std::string& type) {
-  return std::find(kRequestFilterTypes,
-                   kRequestFilterTypes + arraysize(kRequestFilterTypes),
-                   type) !=
-         kRequestFilterTypes + arraysize(kRequestFilterTypes);
+static const char* ResourceTypeToString(ResourceType::Type type) {
+  ResourceType::Type* iter =
+      std::find(kResourceTypeValues, ARRAYEND(kResourceTypeValues), type);
+  if (iter == ARRAYEND(kResourceTypeValues))
+    return "other";
+
+  return kResourceTypeStrings[iter - kResourceTypeValues];
+}
+
+static bool ParseResourceType(const std::string& type_str,
+                              ResourceType::Type* type) {
+  const char** iter =
+      std::find(kResourceTypeStrings, ARRAYEND(kResourceTypeStrings), type_str);
+  if (iter == ARRAYEND(kResourceTypeStrings))
+    return false;
+  *type = kResourceTypeValues[iter - kResourceTypeStrings];
+  return true;
+}
+
+static void ExtractRequestInfo(net::URLRequest* request,
+                               int* tab_id,
+                               int* window_id,
+                               ResourceType::Type* resource_type) {
+  if (!request->GetUserData(NULL))
+    return;
+
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request);
+  ExtensionTabIdMap::GetInstance()->GetTabAndWindowId(
+      info->child_id(), info->route_id(), tab_id, window_id);
+
+  // Restrict the resource type to the values we care about.
+  ResourceType::Type* iter =
+      std::find(kResourceTypeValues, ARRAYEND(kResourceTypeValues),
+                info->resource_type());
+  *resource_type = (iter != ARRAYEND(kResourceTypeValues)) ?
+      *iter : ResourceType::LAST_TYPE;
 }
 
 static void AddEventListenerOnIOThread(
@@ -89,10 +137,11 @@ static void EventHandledOnIOThread(
 // filter what network events an extension cares about.
 struct ExtensionWebRequestEventRouter::RequestFilter {
   ExtensionExtent urls;
-  std::vector<std::string> types;
+  std::vector<ResourceType::Type> types;
   int tab_id;
   int window_id;
 
+  RequestFilter() : tab_id(-1), window_id(-1) {}
   bool InitFromValue(const DictionaryValue& value);
 };
 
@@ -167,12 +216,13 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
       }
     } else if (*key == "types") {
       ListValue* types_value = NULL;
-      if (!value.GetList("urls", &types_value))
+      if (!value.GetList("types", &types_value))
         return false;
       for (size_t i = 0; i < types_value->GetSize(); ++i) {
-        std::string type;
-        if (!types_value->GetString(i, &type) ||
-            !IsValidRequestFilterType(type))
+        std::string type_str;
+        ResourceType::Type type;
+        if (!types_value->GetString(i, &type_str) ||
+            !ParseResourceType(type_str, &type))
           return false;
         types.push_back(type);
       }
@@ -238,21 +288,28 @@ bool ExtensionWebRequestEventRouter::OnBeforeRequest(
   // TODO(jochen): Figure out what to do with events from the system context.
   if (profile_id == Profile::kInvalidProfileId)
     return false;
+
+  int tab_id = -1;
+  int window_id = -1;
+  ResourceType::Type resource_type = ResourceType::LAST_TYPE;
+  ExtractRequestInfo(request, &tab_id, &window_id, &resource_type);
+
   std::vector<const EventListener*> listeners =
-      GetMatchingListeners(profile_id, keys::kOnBeforeRequest, request->url());
+      GetMatchingListeners(profile_id, keys::kOnBeforeRequest, request->url(),
+                           tab_id, window_id, resource_type);
   if (listeners.empty())
     return false;
 
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(keys::kUrlKey, request->url().spec());
-  dict->SetString(keys::kMethodKey, request->method());
-  // TODO(mpcomplete): implement
-  dict->SetInteger(keys::kTabIdKey, 0);
   dict->SetString(keys::kRequestIdKey,
                   base::Uint64ToString(request->identifier()));
-  dict->SetString(keys::kTypeKey, "main_frame");
-  dict->SetInteger(keys::kTimeStampKey, 1);
+  dict->SetString(keys::kUrlKey, request->url().spec());
+  dict->SetString(keys::kMethodKey, request->method());
+  dict->SetInteger(keys::kTabIdKey, tab_id);
+  dict->SetString(keys::kTypeKey, ResourceTypeToString(resource_type));
+  dict->SetDouble(keys::kTimeStampKey,
+                  request->request_time().ToDoubleT() * 1000);
   args.Append(dict);
 
   std::string json_args;
@@ -361,15 +418,28 @@ std::vector<const ExtensionWebRequestEventRouter::EventListener*>
 ExtensionWebRequestEventRouter::GetMatchingListeners(
     ProfileId profile_id,
     const std::string& event_name,
-    const GURL& url) {
+    const GURL& url,
+    int tab_id,
+    int window_id,
+    ResourceType::Type resource_type) {
   // TODO(mpcomplete): handle profile_id == invalid (should collect all
   // listeners).
   std::vector<const EventListener*> matching_listeners;
   std::set<EventListener>& listeners = listeners_[profile_id][event_name];
   for (std::set<EventListener>::iterator it = listeners.begin();
        it != listeners.end(); ++it) {
-    if (it->filter.urls.is_empty() || it->filter.urls.ContainsURL(url))
-      matching_listeners.push_back(&(*it));
+    if (!it->filter.urls.is_empty() && !it->filter.urls.ContainsURL(url))
+      continue;
+    if (it->filter.tab_id != -1 && tab_id != it->filter.tab_id)
+      continue;
+    if (it->filter.window_id != -1 && window_id != it->filter.window_id)
+      continue;
+    if (!it->filter.types.empty() &&
+        std::find(it->filter.types.begin(), it->filter.types.end(),
+                  resource_type) == it->filter.types.end())
+      continue;
+
+    matching_listeners.push_back(&(*it));
   }
   return matching_listeners;
 }
