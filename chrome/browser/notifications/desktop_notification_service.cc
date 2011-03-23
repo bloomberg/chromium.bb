@@ -45,8 +45,6 @@ const ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
 
 namespace {
 
-const std::string HTTP_PREFIX("http://");
-
 typedef content_settings::ProviderInterface::Rules Rules;
 
 void GetOriginsWithSettingFromContentSettingsRules(
@@ -64,17 +62,19 @@ void GetOriginsWithSettingFromContentSettingsRules(
         // TODO(markusheintz): This will be removed in one of the next
         // refactoring steps as this entire function will disapear.
         LOG(DFATAL) << "Ignoring invalid content settings pattern: "
-                   << url_str;
+                    << url_str;
       } else if (url_str.find(ContentSettingsPattern::kDomainWildcard) == 0) {
         // TODO(markusheintz): This must be changed once the UI code is
         // refactored and content_settings patterns are fully supported for
         // notifications settings.
         LOG(DFATAL) << "Ignoring unsupported content settings pattern: "
-                   << url_str << ". Content settings patterns other than "
-                   << "hostnames (e.g. wildcard patterns) are not supported "
-                   << "for notification content settings yet.";
+                    << url_str << ". Content settings patterns other than "
+                    << "hostnames (e.g. wildcard patterns) are not supported "
+                    << "for notification content settings yet.";
       } else {
-        origins->push_back(GURL(HTTP_PREFIX + url_str));
+        origins->push_back(
+            content_settings::NotificationProvider::ToGURL(
+                rule->requesting_url_pattern));
       }
     }
   }
@@ -318,7 +318,7 @@ void DesktopNotificationService::StopObserving() {
 
 void DesktopNotificationService::GrantPermission(const GURL& origin) {
   ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromURLNoWildcard(origin);
+      content_settings::NotificationProvider::ToContentSettingsPattern(origin);
   provider_->SetContentSetting(
       pattern,
       pattern,
@@ -335,11 +335,10 @@ void DesktopNotificationService::GrantPermission(const GURL& origin) {
           origin));
 }
 
-
 void DesktopNotificationService::DenyPermission(const GURL& origin) {
   // Update content settings
   ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromURLNoWildcard(origin);
+      content_settings::NotificationProvider::ToContentSettingsPattern(origin);
   provider_->SetContentSetting(
       pattern,
       pattern,

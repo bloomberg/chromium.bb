@@ -26,6 +26,10 @@ class NotificationProvider : public ProviderInterface,
  public:
   static void RegisterUserPrefs(PrefService* user_prefs);
 
+  static ContentSettingsPattern ToContentSettingsPattern(const GURL& origin);
+
+  static GURL ToGURL(const ContentSettingsPattern& pattern);
+
   explicit NotificationProvider(Profile* profile);
 
   virtual ~NotificationProvider();

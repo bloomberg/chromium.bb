@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,12 +11,14 @@
 #include "googleurl/src/url_canon.h"
 
 namespace {
+
 bool IsValidHostlessPattern(const std::string& pattern) {
   std::string file_scheme_plus_separator(chrome::kFileScheme);
   file_scheme_plus_separator += chrome::kStandardSchemeSeparator;
 
   return StartsWithASCII(pattern, file_scheme_plus_separator, false);
 }
+
 }  // namespace
 
 // The version of the pattern format implemented. Version 1 includes the
@@ -35,6 +37,7 @@ const size_t ContentSettingsPattern::kDomainWildcardLength = 4;
 // static
 ContentSettingsPattern ContentSettingsPattern::FromURL(
     const GURL& url) {
+  // TODO(markusheintz): Add scheme wildcard;
   return ContentSettingsPattern(!url.has_host() || url.HostIsIPAddress() ?
       net::GetHostOrSpecFromURL(url) :
       std::string(kDomainWildcard) + url.host());
@@ -43,7 +46,7 @@ ContentSettingsPattern ContentSettingsPattern::FromURL(
 // static
 ContentSettingsPattern ContentSettingsPattern::FromURLNoWildcard(
     const GURL& url) {
-  return ContentSettingsPattern(net::GetHostOrSpecFromURL(url));
+  return ContentSettingsPattern(net::GetHostOrSpecFromURL(url), url.scheme());
 }
 
 bool ContentSettingsPattern::IsValid() const {

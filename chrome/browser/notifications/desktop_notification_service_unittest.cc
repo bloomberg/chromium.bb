@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,6 +135,42 @@ TEST_F(DesktopNotificationServiceTest, DefaultContentSettingSentToCache) {
 
   // Now that IO thread events have been processed, it should be there.
   EXPECT_EQ(CONTENT_SETTING_BLOCK, cache_->CachedDefaultContentSetting());
+}
+
+TEST_F(DesktopNotificationServiceTest, SettingsForSchemes) {
+  GURL url("file:///html/test.html");
+
+  EXPECT_EQ(CONTENT_SETTING_ASK, cache_->CachedDefaultContentSetting());
+  EXPECT_EQ(WebKit::WebNotificationPresenter::PermissionNotAllowed,
+            proxy_->CacheHasPermission(cache_, url));
+
+  service_->GrantPermission(url);
+  EXPECT_EQ(WebKit::WebNotificationPresenter::PermissionAllowed,
+            proxy_->CacheHasPermission(cache_, url));
+
+  service_->DenyPermission(url);
+  EXPECT_EQ(WebKit::WebNotificationPresenter::PermissionDenied,
+            proxy_->CacheHasPermission(cache_, url));
+
+  GURL https_url("https://testurl");
+  GURL http_url("http://testurl");
+  EXPECT_EQ(CONTENT_SETTING_ASK, cache_->CachedDefaultContentSetting());
+  EXPECT_EQ(WebKit::WebNotificationPresenter::PermissionNotAllowed,
+            proxy_->CacheHasPermission(cache_, http_url));
+  EXPECT_EQ(WebKit::WebNotificationPresenter::PermissionNotAllowed,
+            proxy_->CacheHasPermission(cache_, https_url));
+
+  service_->GrantPermission(https_url);
+  EXPECT_EQ(WebKit::WebNotificationPresenter::PermissionAllowed,
+            proxy_->CacheHasPermission(cache_, https_url));
+  EXPECT_EQ(WebKit::WebNotificationPresenter::PermissionNotAllowed,
+            proxy_->CacheHasPermission(cache_, http_url));
+
+  service_->DenyPermission(http_url);
+  EXPECT_EQ(WebKit::WebNotificationPresenter::PermissionDenied,
+            proxy_->CacheHasPermission(cache_, http_url));
+  EXPECT_EQ(WebKit::WebNotificationPresenter::PermissionAllowed,
+            proxy_->CacheHasPermission(cache_, https_url));
 }
 
 TEST_F(DesktopNotificationServiceTest, GrantPermissionSentToCache) {

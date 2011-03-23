@@ -5,6 +5,7 @@
 
 #include "chrome/browser/content_settings/content_settings_notification_provider.h"
 
+#include "base/string_util.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -13,13 +14,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
 
-const std::string HTTP_PREFIX("http://");
 const ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
 
 }  // namespace
@@ -36,6 +37,45 @@ void NotificationProvider::RegisterUserPrefs(PrefService* user_prefs) {
     user_prefs->RegisterListPref(prefs::kDesktopNotificationAllowedOrigins);
   if (!user_prefs->FindPreference(prefs::kDesktopNotificationDeniedOrigins))
     user_prefs->RegisterListPref(prefs::kDesktopNotificationDeniedOrigins);
+}
+
+// TODO(markusheintz): Re-factoring in progress. Do not move or touch the
+// following two static methods as you might cause trouble. Thanks!
+
+// static
+ContentSettingsPattern NotificationProvider::ToContentSettingsPattern(
+    const GURL& origin) {
+  // Fix empty GURLs.
+  if (origin.spec().empty()) {
+    std::string pattern_spec(chrome::kFileScheme);
+    pattern_spec += chrome::kStandardSchemeSeparator;
+    return ContentSettingsPattern(pattern_spec);
+  }
+  return ContentSettingsPattern::FromURLNoWildcard(origin);
+}
+
+// static
+GURL NotificationProvider::ToGURL(const ContentSettingsPattern& pattern) {
+  std::string pattern_spec(pattern.AsString());
+
+  if (pattern_spec.empty() ||
+      StartsWithASCII(pattern_spec,
+                      std::string(ContentSettingsPattern::kDomainWildcard),
+                      true)) {
+    NOTREACHED();
+  }
+
+  std::string url_spec("");
+  if (StartsWithASCII(pattern_spec, std::string(chrome::kFileScheme), false)) {
+    url_spec += pattern_spec;
+  } else if (!pattern.scheme().empty()) {
+    url_spec += pattern.scheme();
+    url_spec += chrome::kStandardSchemeSeparator;
+    url_spec += pattern_spec;
+  }
+
+  LOG(ERROR) << " url_spec=" << url_spec;
+  return GURL(url_spec);
 }
 
 NotificationProvider::NotificationProvider(
@@ -74,13 +114,7 @@ void NotificationProvider::SetContentSetting(
   if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
     return;
 
-  std::string origin_str(requesting_url_pattern.AsString());
-
-  if (0 == origin_str.find_first_of(ContentSettingsPattern::kDomainWildcard)) {
-    NOTREACHED();
-  }
-
-  GURL origin(HTTP_PREFIX + origin_str);
+  GURL origin = ToGURL(requesting_url_pattern);
   if (CONTENT_SETTING_ALLOW == content_setting) {
     GrantPermission(origin);
   } else if (CONTENT_SETTING_BLOCK == content_setting) {
@@ -241,7 +275,6 @@ void NotificationProvider::PersistPermissionChange(
   // Don't persist changes when off the record.
   if (profile_->IsOffTheRecord())
     return;
-
   PrefService* prefs = profile_->GetPrefs();
 
   // |Observe()| updates the whole permission set in the cache, but only a
@@ -300,6 +333,7 @@ void NotificationProvider::PersistPermissionChange(
 ContentSetting NotificationProvider::GetContentSetting(
     const GURL& origin) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (profile_->IsOffTheRecord())
     return kDefaultSetting;
 
