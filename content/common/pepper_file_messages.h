@@ -10,20 +10,11 @@
 #include "webkit/plugins/ppapi/dir_contents.h"
 #include "webkit/plugins/ppapi/file_path.h"
 
-// Singly-included section, still not converted
-#ifndef CHROME_COMMON_PEPPER_FILE_MESSAGES_H_
-#define CHROME_COMMON_PEPPER_FILE_MESSAGES_H_
+// Singly-included section since need custom serialization.
+#ifndef CONTENT_COMMON_PEPPER_FILE_MESSAGES_H_
+#define CONTENT_COMMON_PEPPER_FILE_MESSAGES_H_
 
 namespace IPC {
-
-// Also needed for Serializing DirContents, which is just a vector of DirEntry.
-template <>
-struct ParamTraits<webkit::ppapi::DirEntry> {
-  typedef webkit::ppapi::DirEntry param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
 
 template <>
 struct ParamTraits<webkit::ppapi::PepperFilePath> {
@@ -35,9 +26,14 @@ struct ParamTraits<webkit::ppapi::PepperFilePath> {
 
 }  // namespace IPC
 
-#endif  // CHROME_COMMON_PEPPER_FILE_MESSAGES_H_
+#endif  // CONTENT_COMMON_PEPPER_FILE_MESSAGES_H_
 
 #define IPC_MESSAGE_START PepperFileMsgStart
+
+IPC_STRUCT_TRAITS_BEGIN(webkit::ppapi::DirEntry)
+  IPC_STRUCT_TRAITS_MEMBER(name)
+  IPC_STRUCT_TRAITS_MEMBER(is_dir)
+IPC_STRUCT_TRAITS_END()
 
 // Trusted Pepper Filesystem messages from the renderer to the browser.
 
