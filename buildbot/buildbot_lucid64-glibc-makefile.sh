@@ -13,24 +13,35 @@ set -x
 set -e
 set -u
 
+export TOOLCHAINLOC=toolchain
+export TOOLCHAINNAME=linux_x86
 
 echo @@@BUILD_STEP gclient_runhooks@@@
 gclient runhooks --force
 
 echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out tools/SRC tools/BUILD tools/out tools/toolchain \
-  tools/toolchain.tgz toolchain .tmp || echo already_clean
+  tools/glibc tools/glibc.tar tools/toolchain.tgz toolchain .tmp ||
+  echo already_clean
 
 echo @@@BUILD_STEP compile_toolchain@@@
 (
   cd tools
-  make -j8 buildbot-build-with-glibc TOOLCHAINLOC=toolchain SDKNAME=linux_x86
+  make -j8 buildbot-build-with-glibc
+  make install-glibc INST_GLIBC_PREFIX="$PWD"
 )
 
 echo @@@BUILD_STEP tar_toolchain@@@
 (
   cd tools
   tar cSvfz toolchain.tgz toolchain/ && chmod a+r toolchain.tgz
+)
+
+echo @@@BUILD_STEP tar_glibc@@@
+(
+  DST="$PWD"
+  cd tools/glibc/toolchain/linux_x86
+  tar cSvfz "$DST"/glibc.tgz * && chmod a+r "$DST"/glibc.tgz
 )
 
 echo @@@BUILD_STEP untar_toolchain@@@
@@ -69,12 +80,16 @@ echo @@@BUILD_STEP small_tests64@@@
 
 # TODO(pasko): add medium_tests, large_tests, {chrome_}browser_tests.
 
-echo @@@BUILD_STEP archive_build@@@
-if [[ ${RETCODE} == 0 ]]; then
-  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    tools/toolchain.tgz \
-    gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_linux_x86.tar.gz
-  echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
-fi
+[[ ${RETCODE} == 0 ]] || exit ${RETCODE}
 
-exit ${RETCODE}
+echo @@@BUILD_STEP archive_build@@@
+/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+  tools/toolchain.tgz \
+  gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_linux_x86.tar.gz
+echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
+
+echo @@@BUILD_STEP archive_glibc@@@
+/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+  tools/glibc.tgz \
+  gs://nativeclient-archive2/between_builders/x86_glibc/r"$(tools/glibc_revision.sh)"/glibc_x86.tar.gz
+echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_glibc/r"$(tools/glibc_revision.sh)"/@@@

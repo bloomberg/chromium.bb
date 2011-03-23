@@ -51,7 +51,8 @@ GIT_BASE_URL=http://git.chromium.org/git
 CROSSARCH=nacl64
 TOOLCHAINLOC?=out
 SDKLOC?=$(abspath $(TOOLCHAINLOC))
-SDKNAME=nacl-sdk
+TOOLCHAINNAME?=nacl-sdk
+SDKNAME?=TOOLCHAINNAME
 SDKROOT=$(SDKLOC)/$(SDKNAME)
 DESTDIR?=
 BUILDNCCDIR=$(SDKROOT)/$(CROSSARCH)
@@ -560,7 +561,7 @@ BUILD/stamp-glibc32: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
 	    --with-headers=$(LINUX_HEADERS) \
 	    --enable-kernel=2.2.0
 	$(MAKE) -C BUILD/build-glibc32
-	$(MAKE) -C BUILD/build-glibc32 DESTDIR=$(DESTDIR) install
+	$(MAKE) -C BUILD/build-glibc32 install_root=$(DESTDIR) install
 	touch $@
 
 BUILD/stamp-glibc64: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
@@ -579,8 +580,22 @@ BUILD/stamp-glibc64: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
 	    --with-headers=$(LINUX_HEADERS) \
 	    --enable-kernel=2.2.0
 	$(MAKE) -C BUILD/build-glibc64
-	$(MAKE) -C BUILD/build-glibc64 DESTDIR=$(DESTDIR) install
+	$(MAKE) -C BUILD/build-glibc64 install_root=$(DESTDIR) install
 	touch $@
+
+# Can be used to make a glibc archive separately from the main install tree.
+# Used, i.e., on buildbots.
+INST_GLIBC_PREFIX?=PREFIX
+.PHONY: install-glibc
+install-glibc: BUILD/stamp-glibc32 BUILD/stamp-glibc64
+	rm -rf "$(dir $(THISMAKEFILE))"/glibc
+	mkdir "$(dir $(THISMAKEFILE))"/glibc
+	mkdir -p "$(INST_GLIBC_PREFIX)/$(PREFIX)"
+	rmdir "$(INST_GLIBC_PREFIX)/$(PREFIX)" || \
+	  rm "$(INST_GLIBC_PREFIX)/$(PREFIX)"
+	ln -sfn "$(INST_GLIBC_PREFIX)/glibc" "$(INST_GLIBC_PREFIX)/$(PREFIX)"
+	$(MAKE) -C BUILD/build-glibc32 install_root=$(INST_GLIBC_PREFIX) install
+	$(MAKE) -C BUILD/build-glibc64 install_root=$(INST_GLIBC_PREFIX) install
 
 .PHONY: export-headers
 export-headers:
