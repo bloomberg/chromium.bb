@@ -39,6 +39,7 @@ try:
 except ImportError:
   gcl = None
 
+import fix_encoding
 import gclient_utils
 import scm
 
@@ -769,4 +770,5 @@ def TryChange(argv,
 
 
 if __name__ == "__main__":
+  fix_encoding.fix_encoding()
   sys.exit(TryChange(None, [], False))
