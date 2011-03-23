@@ -162,6 +162,7 @@ IPC::ChannelHandle GetServiceProcessChannel() {
 
 ServiceProcessState::ServiceProcessState() : state_(NULL) {
   CreateAutoRunCommandLine();
+  CreateState();
 }
 
 ServiceProcessState::~ServiceProcessState() {
@@ -180,9 +181,6 @@ void ServiceProcessState::SignalStopped() {
 
 #if !defined(OS_MACOSX)
 bool ServiceProcessState::Initialize() {
-  if (!CreateState()) {
-    return false;
-  }
   if (!TakeSingletonLock()) {
     return false;
   }

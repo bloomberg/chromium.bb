@@ -71,16 +71,25 @@ bool GetParentFSRef(const FSRef& child, FSRef* parent) {
   return FSGetCatalogInfo(&child, 0, NULL, NULL, NULL, parent) == noErr;
 }
 
+bool RemoveFromLaunchd() {
+  // We're killing a file.
+  base::ThreadRestrictions::AssertIOAllowed();
+  base::mac::ScopedCFTypeRef<CFStringRef> name(CopyServiceProcessLaunchDName());
+  return Launchd::GetInstance()->DeletePlist(Launchd::User,
+                                             Launchd::Agent,
+                                             name);
+}
+
 class ExecFilePathWatcherDelegate : public FilePathWatcher::Delegate {
  public:
-  ExecFilePathWatcherDelegate() : process_state_(NULL) { }
-  bool Init(const FilePath& path, ServiceProcessState *process_state);
+  ExecFilePathWatcherDelegate() { }
   virtual ~ExecFilePathWatcherDelegate() { }
+
+  bool Init(const FilePath& path);
   virtual void OnFilePathChanged(const FilePath& path) OVERRIDE;
 
  private:
   FSRef executable_fsref_;
-  ServiceProcessState* process_state_;
 };
 
 }  // namespace
@@ -160,9 +169,6 @@ bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
 }
 
 bool ServiceProcessState::Initialize() {
-  if (!CreateState()) {
-    return false;
-  }
   CFErrorRef err = NULL;
   CFDictionaryRef dict =
       Launchd::GetInstance()->CopyDictionaryByCheckingIn(&err);
@@ -298,46 +304,36 @@ bool ServiceProcessState::AddToAutoRun() {
 }
 
 bool ServiceProcessState::RemoveFromAutoRun() {
-  // We're killing a file.
-  base::ThreadRestrictions::AssertIOAllowed();
-  base::mac::ScopedCFTypeRef<CFStringRef> name(CopyServiceProcessLaunchDName());
-  return Launchd::GetInstance()->DeletePlist(Launchd::User,
-                                             Launchd::Agent,
-                                             name);
+  return RemoveFromLaunchd();
 }
 
-void ServiceProcessState::StateData::WatchExecutable() {
+bool ServiceProcessState::StateData::WatchExecutable() {
   base::mac::ScopedNSAutoreleasePool pool;
   NSDictionary* ns_launchd_conf = base::mac::CFToNSCast(launchd_conf_);
   NSString* exe_path = [ns_launchd_conf objectForKey:@ LAUNCH_JOBKEY_PROGRAM];
   if (!exe_path) {
     LOG(ERROR) << "No " LAUNCH_JOBKEY_PROGRAM;
-    return;
+    return false;
   }
 
   FilePath executable_path = FilePath([exe_path fileSystemRepresentation]);
   scoped_ptr<ExecFilePathWatcherDelegate> delegate(
       new ExecFilePathWatcherDelegate);
-  if (!delegate->Init(executable_path, state_)) {
+  if (!delegate->Init(executable_path)) {
     LOG(ERROR) << "executable_watcher_.Init " << executable_path.value();
-    return;
+    return false;
   }
   if (!executable_watcher_.Watch(executable_path,
                                  delegate.release(),
                                  ui_message_loop_)) {
     LOG(ERROR) << "executable_watcher_.watch " << executable_path.value();
-    return;
-  }
-}
-
-bool ExecFilePathWatcherDelegate::Init(const FilePath& path,
-                                       ServiceProcessState *process_state) {
-  if (!process_state ||
-      !base::mac::FSRefFromPath(path.value(), &executable_fsref_)) {
     return false;
   }
-  process_state_ = process_state;
   return true;
+}
+
+bool ExecFilePathWatcherDelegate::Init(const FilePath& path) {
+  return base::mac::FSRefFromPath(path.value(), &executable_fsref_);
 }
 
 void ExecFilePathWatcherDelegate::OnFilePathChanged(const FilePath& path) {
@@ -418,8 +414,8 @@ void ExecFilePathWatcherDelegate::OnFilePathChanged(const FilePath& path) {
       }
     }
     if (needs_shutdown) {
-      if (!process_state_->RemoveFromAutoRun()) {
-        LOG(ERROR) << "Unable to RemoveFromAutoRun.";
+      if (!RemoveFromLaunchd()) {
+        LOG(ERROR) << "Unable to RemoveFromLaunchd.";
       }
     }
 

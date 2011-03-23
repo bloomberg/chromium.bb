@@ -64,12 +64,11 @@ struct ServiceProcessState::StateData
   // variables to remove the trailing underscore.
 
 #if defined(OS_MACOSX)
-  void WatchExecutable();
+  bool WatchExecutable();
 
   base::mac::ScopedCFTypeRef<CFDictionaryRef> launchd_conf_;
   FilePathWatcher executable_watcher_;
   scoped_refptr<base::MessageLoopProxy> ui_message_loop_;
-  ServiceProcessState* state_;
 #endif  // OS_MACOSX
 #if defined(OS_LINUX)
   scoped_ptr<MultiProcessLock> initializing_lock_;

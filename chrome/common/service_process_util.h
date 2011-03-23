@@ -102,7 +102,7 @@ class ServiceProcessState {
 #endif  // !OS_MACOSX
 
   // Creates the platform specific state.
-  bool CreateState();
+  void CreateState();
 
   // Tear down the platform specific state.
   void TearDownState();

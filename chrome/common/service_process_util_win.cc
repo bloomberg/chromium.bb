@@ -103,10 +103,9 @@ struct ServiceProcessState::StateData {
   scoped_ptr<ServiceProcessShutdownMonitor> shutdown_monitor;
 };
 
-bool ServiceProcessState::CreateState() {
-  DCHECK(!state_);
+void ServiceProcessState::CreateState() {
+  CHECK(!state_);
   state_ = new StateData;
-  return true;
 }
 
 bool ServiceProcessState::TakeSingletonLock() {

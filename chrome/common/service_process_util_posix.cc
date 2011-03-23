@@ -5,6 +5,7 @@
 #include "chrome/common/service_process_util_posix.h"
 
 #include "base/basictypes.h"
+#include "base/eintr_wrapper.h"
 #include "base/message_loop_proxy.h"
 
 namespace {
@@ -77,18 +78,43 @@ void ServiceProcessState::StateData::SignalReady() {
 #if defined(OS_LINUX)
     initializing_lock_.reset();
 #endif  // OS_LINUX
+#if defined(OS_MACOSX)
+    if (!WatchExecutable()) {
+      LOG(ERROR) << "WatchExecutable";
+    }
+#endif  // OS_MACOSX
   } else {
     PLOG(ERROR) << "sigaction";
   }
 }
 
-ServiceProcessState::StateData::~StateData() {}
+ServiceProcessState::StateData::~StateData() {
+  if (sockets_[0] != -1) {
+    if (HANDLE_EINTR(close(sockets_[0]))) {
+      PLOG(ERROR) << "close";
+    }
+  }
+  if (sockets_[1] != -1) {
+    if (HANDLE_EINTR(close(sockets_[1]))) {
+      PLOG(ERROR) << "close";
+    }
+  }
+  if (set_action_) {
+    if (sigaction(SIGTERM, &old_action_, NULL) < 0) {
+      PLOG(ERROR) << "sigaction";
+    }
+  }
+}
 
-bool ServiceProcessState::CreateState() {
+void ServiceProcessState::CreateState() {
   CHECK(!state_);
   state_ = new StateData;
+
+  // Explicitly adding a reference here (and removing it in TearDownState)
+  // because StateData is refcounted on Mac and Linux so that methods can
+  // be called on other threads.
+  // It is not refcounted on Windows at this time.
   state_->AddRef();
-  return true;
 }
 
 bool ServiceProcessState::SignalReady(
@@ -109,12 +135,6 @@ bool ServiceProcessState::SignalReady(
     PLOG(ERROR) << "pipe";
     return false;
   }
-#if defined(OS_MACOSX)
-  state_->state_ = this;
-  message_loop_proxy->PostTask(FROM_HERE,
-      NewRunnableMethod(state_,
-                        &ServiceProcessState::StateData::WatchExecutable));
-#endif  // OS_MACOSX
   message_loop_proxy->PostTask(FROM_HERE,
       NewRunnableMethod(state_, &ServiceProcessState::StateData::SignalReady));
   return true;
@@ -123,17 +143,6 @@ bool ServiceProcessState::SignalReady(
 void ServiceProcessState::TearDownState() {
   g_signal_socket = -1;
   if (state_) {
-    if (state_->sockets_[0] != -1) {
-      close(state_->sockets_[0]);
-    }
-    if (state_->sockets_[1] != -1) {
-      close(state_->sockets_[1]);
-    }
-    if (state_->set_action_) {
-      if (sigaction(SIGTERM, &state_->old_action_, NULL) < 0) {
-        PLOG(ERROR) << "sigaction";
-      }
-    }
     state_->Release();
     state_ = NULL;
   }
