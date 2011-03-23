@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "base/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/importer/importer_data_types.h"
 // TODO: remove this, see friend declaration in ImporterBridge.
@@ -57,7 +58,7 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
   // this calls the set of strings we've ported over to the external process.
   // It's good to avoid having to create a separate ResourceBundle for the
   // external import process, since the importer only needs a few strings.
-  virtual std::wstring GetLocalizedString(int message_id) = 0;
+  virtual string16 GetLocalizedString(int message_id) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<ImporterBridge>;

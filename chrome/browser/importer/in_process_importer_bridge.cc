@@ -106,8 +106,8 @@ void InProcessImporterBridge::NotifyEnded() {
       NewRunnableMethod(host_, &ImporterHost::NotifyImportEnded));
 }
 
-std::wstring InProcessImporterBridge::GetLocalizedString(int message_id) {
-  return UTF16ToWideHack(l10n_util::GetStringUTF16(message_id));
+string16 InProcessImporterBridge::GetLocalizedString(int message_id) {
+  return l10n_util::GetStringUTF16(message_id);
 }
 
 InProcessImporterBridge::~InProcessImporterBridge() {}

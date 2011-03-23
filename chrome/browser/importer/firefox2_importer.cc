@@ -291,9 +291,9 @@ void Firefox2Importer::ImportBookmarks() {
   if (!parsing_bookmarks_html_file_)
     file = file.AppendASCII("bookmarks.html");
   std::wstring first_folder_name;
-  first_folder_name = bridge_->GetLocalizedString(
+  first_folder_name = UTF16ToWideHack(bridge_->GetLocalizedString(
       parsing_bookmarks_html_file_ ? IDS_BOOKMARK_GROUP :
-                                     IDS_BOOKMARK_GROUP_FROM_FIREFOX);
+                                     IDS_BOOKMARK_GROUP_FROM_FIREFOX));
 
   ImportBookmarksFile(file, default_urls, import_to_bookmark_bar(),
                       first_folder_name, this, &bookmarks, &template_urls,

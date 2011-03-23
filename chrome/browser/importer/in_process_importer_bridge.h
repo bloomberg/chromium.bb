@@ -47,7 +47,7 @@ class InProcessImporterBridge : public ImporterBridge {
   virtual void NotifyItemEnded(importer::ImportItem item) OVERRIDE;
   virtual void NotifyEnded() OVERRIDE;
 
-  virtual std::wstring GetLocalizedString(int message_id) OVERRIDE;
+  virtual string16 GetLocalizedString(int message_id) OVERRIDE;
   // End ImporterBridge implementation.
 
  private:
