@@ -197,9 +197,6 @@ static void Stats_BadInstLength(struct NCValidatorState *vstate) {
 }
 
 static void Stats_Init(struct NCValidatorState *vstate) {
-  static int inited = 0;
-  if (inited) return;
-
   vstate->stats.instructions = 0;
   vstate->stats.segments = 0;
   vstate->stats.checktarget = 0;
@@ -214,7 +211,6 @@ static void Stats_Init(struct NCValidatorState *vstate) {
   vstate->stats.badprefix = 0;
   vstate->stats.sawfailure = 0;
   InitOpcodeHisto(vstate);
-  inited = 1;
 }
 
 void Stats_Print(FILE *f, struct NCValidatorState *vstate) {
