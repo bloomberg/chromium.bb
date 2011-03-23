@@ -88,7 +88,8 @@ echo @@@BUILD_STEP archive_build@@@
 echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
 
 echo @@@BUILD_STEP archive_glibc@@@
+wget http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$(tools/glibc_revision.sh)"/glibc_x86.tar.gz -O /dev/null ||
 /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
   tools/glibc.tgz \
   gs://nativeclient-archive2/between_builders/x86_glibc/r"$(tools/glibc_revision.sh)"/glibc_x86.tar.gz
-echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_glibc/r"$(tools/glibc_revision.sh)"/@@@
+echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$(tools/glibc_revision.sh)"/@@@
