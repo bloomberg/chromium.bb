@@ -39,6 +39,8 @@ def test_repo():
     '/chrome/renderer/safe_browsing/scorer.h': '',
     '/content/OWNERS': owners_file(john, darin, comment='foo', noparent=True),
     '/content/content.gyp': '',
+    '/content/views/OWNERS': owners_file(ben, john, owners.EVERYONE,
+                                         noparent=True),
   })
 
 
@@ -69,6 +71,10 @@ class OwnersDatabaseTest(unittest.TestCase):
   def test_covered_by__explicit(self):
     self.assert_covered_by(['content/content.gyp'], [john])
     self.assert_covered_by(['chrome/gpu/OWNERS'], [ken])
+
+  def test_covered_by__owners_plus_everyone(self):
+    self.assert_covered_by(['/content/views/OWNERS'], [ben])
+    self.assert_covered_by(['/content/views/OWNERS'], [ken])
 
   def test_covered_by__owners_propagates_down(self):
     self.assert_covered_by(['chrome/gpu/OWNERS'], [ben])
