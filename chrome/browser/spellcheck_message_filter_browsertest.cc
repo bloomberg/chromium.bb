@@ -63,9 +63,9 @@ IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterBrowserTest,
       target->sent_messages_[0], &sent_identifier, &sent_tag, &sent_results);
   EXPECT_TRUE(ok);
   EXPECT_EQ(1U, sent_results.size());
-  EXPECT_EQ(sent_results[0].position(), 0);
-  EXPECT_EQ(sent_results[0].length(), 2);
-  EXPECT_EQ(sent_results[0].error(),
+  EXPECT_EQ(sent_results[0].position, 0);
+  EXPECT_EQ(sent_results[0].length, 2);
+  EXPECT_EQ(sent_results[0].error,
             WebKit::WebTextCheckingResult::ErrorSpelling);
 }
 
