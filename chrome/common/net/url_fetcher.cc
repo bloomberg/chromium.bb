@@ -26,8 +26,6 @@
 
 static const int kBufferSize = 4096;
 
-bool URLFetcher::g_interception_enabled = false;
-
 class URLFetcher::Core
     : public base::RefCountedThreadSafe<URLFetcher::Core>,
       public net::URLRequest::Delegate {
@@ -35,7 +33,7 @@ class URLFetcher::Core
   // For POST requests, set |content_type| to the MIME type of the content
   // and set |content| to the data to upload.  |flags| are flags to apply to
   // the load operation--these should be one or more of the LOAD_* flags
-  // defined in url_request.h.
+  // defined in net/base/load_flags.h.
   Core(URLFetcher* fetcher,
        const GURL& original_url,
        RequestType request_type,
@@ -87,7 +85,7 @@ class URLFetcher::Core
     DISALLOW_COPY_AND_ASSIGN(Registry);
   };
 
-  ~Core();
+  virtual ~Core();
 
   // Wrapper functions that allow us to ensure actions happen on the right
   // thread.
@@ -195,6 +193,9 @@ base::LazyInstance<URLFetcher::Core::Registry>
 
 // static
 URLFetcher::Factory* URLFetcher::factory_ = NULL;
+
+// static
+bool URLFetcher::g_interception_enabled = false;
 
 URLFetcher::URLFetcher(const GURL& url,
                        RequestType request_type,
