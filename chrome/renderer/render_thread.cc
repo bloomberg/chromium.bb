@@ -1135,6 +1135,7 @@ void RenderThread::OnGpuChannelEstablished(
     base::ProcessHandle renderer_process_for_gpu,
     const GPUInfo& gpu_info) {
   gpu_channel_->set_gpu_info(gpu_info);
+  child_process_logging::SetGpuInfo(gpu_info);
 
   if (!channel_handle.name.empty()) {
     // Connect to the GPU process if a channel name was received.
