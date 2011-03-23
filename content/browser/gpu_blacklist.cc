@@ -295,7 +295,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     driver_vendor_value->GetString("op", &vendor_op);
     driver_vendor_value->GetString("value", &vendor_value);
     if (!entry->SetDriverVendorInfo(vendor_op, vendor_value)) {
-      LOG(WARNING) << "Malformed device_vendor entry " << entry->id();
+      LOG(WARNING) << "Malformed driver_vendor entry " << entry->id();
       return NULL;
     }
   }
@@ -310,7 +310,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     driver_version_value->GetString("number2", &driver_version_string2);
     if (!entry->SetDriverVersionInfo(driver_version_op, driver_version_string,
                                      driver_version_string2)) {
-      LOG(WARNING) << "Malformed device_version entry " << entry->id();
+      LOG(WARNING) << "Malformed driver_version entry " << entry->id();
       return NULL;
     }
   }
@@ -325,7 +325,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     driver_date_value->GetString("number2", &driver_date_string2);
     if (!entry->SetDriverDateInfo(driver_date_op, driver_date_string,
                                   driver_date_string2)) {
-      LOG(WARNING) << "Malformed device_date entry " << entry->id();
+      LOG(WARNING) << "Malformed driver_date entry " << entry->id();
       return NULL;
     }
   }
