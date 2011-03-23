@@ -73,14 +73,18 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     if (params_.was_fetched_via_proxy) {
       VLOG(1) << "Skipping phishing classification for URL: " << params_.url
               << " because it was fetched via a proxy.";
-      UMA_HISTOGRAM_COUNTS("SBClientPhishing.NoClassifyProxyFetch", 1);
+      UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PreClassificationCheckFail",
+                                NO_CLASSIFY_PROXY_FETCH,
+                                NO_CLASSIFY_MAX);
       return;
     }
     if (csd_service_->IsPrivateIPAddress(params_.socket_address.host())) {
       VLOG(1) << "Skipping phishing classification for URL: " << params_.url
               << " because of hosting on private IP: "
               << params_.socket_address.host();
-      UMA_HISTOGRAM_COUNTS("SBClientPhishing.NoClassifyPrivateIP", 1);
+      UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PreClassificationCheckFail",
+                                NO_CLASSIFY_PRIVATE_IP,
+                                NO_CLASSIFY_MAX);
       return;
     }
 
@@ -88,7 +92,10 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     if (tab_contents_->profile()->IsOffTheRecord()) {
       VLOG(1) << "Skipping phishing classification for URL: " << params_.url
               << " because we're browsing off-the-record.";
-      UMA_HISTOGRAM_COUNTS("SBClientPhishing.NoClassifyOffTheRecord", 1);
+      UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PreClassificationCheckFail",
+                                NO_CLASSIFY_OFF_THE_RECORD,
+                                NO_CLASSIFY_MAX);
+
       return;
     }
 
@@ -118,6 +125,18 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
  private:
   friend class base::RefCountedThreadSafe<
       ClientSideDetectionHost::ShouldClassifyUrlRequest>;
+
+  // Enum used to keep stats about why the pre-classification check failed.
+  enum PreClassificationCheckFailures {
+    NO_CLASSIFY_PROXY_FETCH,
+    NO_CLASSIFY_PRIVATE_IP,
+    NO_CLASSIFY_OFF_THE_RECORD,
+    NO_CLASSIFY_MATCH_CSD_WHITELIST,
+    NO_CLASSIFY_TOO_MANY_REPORTS,
+
+    NO_CLASSIFY_MAX  // Always add new values before this one.
+  };
+
   // The destructor can be called either from the UI or the IO thread.
   virtual ~ShouldClassifyUrlRequest() { }
 
@@ -125,7 +144,9 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     if (!sb_service_ || sb_service_->MatchCsdWhitelistUrl(url)) {
       // We're done.  There is no point in going back to the UI thread.
-      UMA_HISTOGRAM_COUNTS("SBClientPhishing.NoClassifyMatchCsdWhitelist", 1);
+      UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PreClassificationCheckFail",
+                                NO_CLASSIFY_MATCH_CSD_WHITELIST,
+                                NO_CLASSIFY_MAX);
       return;
     }
 
@@ -163,7 +184,9 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     } else if (csd_service_->OverReportLimit()) {
       VLOG(1) << "Too many report phishing requests sent recently, "
               << "not running classification for " << params_.url;
-      UMA_HISTOGRAM_COUNTS("SBClientPhishing.NoClassifyTooManyReports", 1);
+      UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PreClassificationCheckFail",
+                                NO_CLASSIFY_TOO_MANY_REPORTS,
+                                NO_CLASSIFY_MAX);
       return;
     }
 
