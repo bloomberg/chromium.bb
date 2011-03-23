@@ -1,0 +1,28 @@
+INT 1 INT 123 INT 12345
+SYMBOL A123 SYMBOL A_A
+COMMENT //abc
+COMMENT // abc
+COMMENT //  abc
+COMMENT //abc def
+
+COMMENT // abc def
+COMMENT //  abc def
+
+
+COMMENT /*abc*/ COMMENT /* abc */ COMMENT /* abc
+ */
+COMMENT /* abc def */ COMMENT /* abc def 
+*/ COMMENT //  abc def
+
+
+FLOAT 1.1
+FLOAT 1e1
+FLOAT -1.1
+FLOAT -1e1
+FLOAT 1e-1
+FLOAT -1e-1
+
+HEX 0x1
+HEX 0x0
+HEX 0x10
+HEX 0x112312
