@@ -27,6 +27,11 @@
 /**
  * PP_ImageDataFormat is an enumeration of the different types of
  * image data formats.
+ *
+ * The third part of each enumeration value describes the memory layout from
+ * the lowest address to the highest. For example, BGRA means the B component
+ * is stored in the lowest address, no matter what endianness the platform is
+ * using.
  */
 typedef enum {
   PP_IMAGEDATAFORMAT_BGRA_PREMUL,
@@ -170,4 +175,3 @@ struct PPB_ImageData {
  */
 
 #endif  /* PPAPI_C_PPB_IMAGE_DATA_H_ */
-

@@ -33,7 +33,7 @@ class Var;
 // This class maintains a global list of all live pepper resources. It allows
 // us to check resource ID validity and to map them to a specific module.
 //
-// This object is threadsafe.
+// This object is NOT threadsafe.
 class ResourceTracker {
  public:
   // Returns the pointer to the singleton object.
