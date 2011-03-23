@@ -157,15 +157,13 @@ void WidgetWin::SetCreateParams(const CreateParams& params) {
   // Set non-style attributes.
   set_delete_on_destroy(params.delete_on_destroy);
 
-  DWORD style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+  DWORD style = 0;
   DWORD ex_style = 0;
   DWORD class_style = CS_DBLCLKS;
 
   // Set type-independent style attributes.
   if (!params.accept_events)
     ex_style |= WS_EX_TRANSPARENT;
-  if (!params.can_activate)
-    ex_style |= WS_EX_NOACTIVATE;
   if (params.mirror_origin_in_rtl)
     ex_style |= l10n_util::GetExtendedTooltipStyles();
   if (params.transparent)
@@ -184,11 +182,11 @@ void WidgetWin::SetCreateParams(const CreateParams& params) {
       break;
     case CreateParams::TYPE_POPUP:
       style |= WS_POPUP;
-      ex_style |= WS_EX_TOOLWINDOW;
+      ex_style |=  WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
       break;
     case CreateParams::TYPE_MENU:
       style |= WS_POPUP;
-      ex_style |= WS_EX_TOPMOST;
+      ex_style |= WS_EX_TOPMOST | WS_EX_NOACTIVATE;
       is_mouse_down_ =
           ((GetKeyState(VK_LBUTTON) & 0x80) ||
           (GetKeyState(VK_RBUTTON) & 0x80) ||
@@ -356,8 +354,8 @@ void WidgetWin::SetBounds(const gfx::Rect& bounds) {
                SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
-void WidgetWin::MoveAbove(gfx::NativeView native_view) {
-  SetWindowPos(native_view, 0, 0, 0, 0,
+void WidgetWin::MoveAbove(Widget* other) {
+  SetWindowPos(other->GetNativeView(), 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
 }
 
@@ -742,8 +740,6 @@ void WidgetWin::OnKillFocus(HWND focused_window) {
 LRESULT WidgetWin::OnMouseActivate(UINT message,
                                    WPARAM w_param,
                                    LPARAM l_param) {
-  if (GetWindowLong(GWL_EXSTYLE) & WS_EX_NOACTIVATE)
-    return MA_NOACTIVATE;
   SetMsgHandled(FALSE);
   return MA_ACTIVATE;
 }

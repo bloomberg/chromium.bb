@@ -9,18 +9,17 @@
 #include "base/weak_ptr.h"
 #include "views/widget/widget_gtk.h"
 
+class AutocompleteEditView;
+class AutocompletePopupContentsView;
+
 class AutocompletePopupGtk
     : public views::WidgetGtk,
       public base::SupportsWeakPtr<AutocompletePopupGtk> {
  public:
   // Creates the popup and shows it. |edit_view| is the edit that created us.
-  AutocompletePopupGtk();
+  AutocompletePopupGtk(AutocompleteEditView* edit_view,
+                       AutocompletePopupContentsView* contents);
   virtual ~AutocompletePopupGtk();
-
-  // Returns the window the popup should be relative to. |edit_native_view| is
-  // the native view of the autocomplete edit.
-  gfx::NativeView GetRelativeWindowForPopup(
-      gfx::NativeView edit_native_view) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupGtk);

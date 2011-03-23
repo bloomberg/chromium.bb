@@ -602,9 +602,9 @@ class TryChromeDialog : public views::ButtonListener,
       return Upgrade::TD_DIALOG_ERROR;
     }
 
-    views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
-    params.can_activate = true;
-    popup->SetCreateParams(params);
+    popup->set_delete_on_destroy(true);
+    popup->set_window_style(WS_POPUP | WS_CLIPCHILDREN);
+    popup->set_window_ex_style(WS_EX_TOOLWINDOW);
     popup->Init(NULL, pos);
 
     views::RootView* root_view = popup->GetRootView();

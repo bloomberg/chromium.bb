@@ -24,11 +24,12 @@ NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
 
 views::Widget* DropdownBarHost::CreateHost() {
   views::WidgetWin* widget = new views::WidgetWin();
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CHILD);
   // Don't let WidgetWin manage our lifetime. We want our lifetime to
   // coincide with TabContents.
-  params.delete_on_destroy = false;
-  widget->SetCreateParams(params);
+  widget->set_delete_on_destroy(false);
+  widget->set_window_style(WS_CHILD | WS_CLIPCHILDREN);
+  widget->set_window_ex_style(WS_EX_TOPMOST);
+
   return widget;
 }
 

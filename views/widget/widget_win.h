@@ -212,7 +212,7 @@ class WidgetWin : public ui::WindowImpl,
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void MoveAbove(gfx::NativeView native_view) OVERRIDE;
+  virtual void MoveAbove(Widget* widget) OVERRIDE;
   virtual void SetShape(gfx::NativeRegion shape) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;

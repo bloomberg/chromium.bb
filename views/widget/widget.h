@@ -75,7 +75,6 @@ class Widget : public internal::NativeWidgetDelegate,
 
     bool transparent;
     bool accept_events;
-    bool can_activate;
     bool delete_on_destroy;
     bool mirror_origin_in_rtl;
     bool has_dropshadow;
@@ -165,8 +164,7 @@ class Widget : public internal::NativeWidgetDelegate,
   void SetBounds(const gfx::Rect& bounds);
 
   // Places the widget in front of the specified widget in z-order.
-  void MoveAboveWidget(Widget* widget);
-  void MoveAbove(gfx::NativeView native_view);
+  void MoveAbove(Widget* widget);
 
   // Sets a shape on the widget. This takes ownership of shape.
   void SetShape(gfx::NativeRegion shape);

@@ -123,7 +123,7 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
   border_widget_->SetContentsView(border_view_);
   // Ensure that the popup contents are always displayed ontop of the border
   // widget.
-  border_widget_->MoveAboveWidget(popup_);
+  border_widget_->MoveAbove(popup_);
 }
 
 ExtensionPopup::~ExtensionPopup() {

@@ -9,20 +9,24 @@
 #include "base/weak_ptr.h"
 #include "views/widget/widget_win.h"
 
+class AutocompleteEditView;
+class AutocompletePopupContentsView;
+
 class AutocompletePopupWin
     : public views::WidgetWin,
       public base::SupportsWeakPtr<AutocompletePopupWin> {
  public:
   // Creates the popup and shows it. |edit_view| is the edit that created us.
-  AutocompletePopupWin();
+  AutocompletePopupWin(AutocompleteEditView* edit_view,
+                       AutocompletePopupContentsView* contents);
   virtual ~AutocompletePopupWin();
 
-  // Returns the window the popup should be relative to. |edit_native_view| is
-  // the native view of the autocomplete edit.
-  gfx::NativeView GetRelativeWindowForPopup(
-      gfx::NativeView edit_native_view) const;
-
  private:
+  // Overridden from WidgetWin:
+  virtual LRESULT OnMouseActivate(UINT message,
+                                  WPARAM w_param,
+                                  LPARAM l_param) OVERRIDE;
+
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWin);
 };
 

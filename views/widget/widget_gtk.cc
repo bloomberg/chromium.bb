@@ -18,7 +18,6 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
-#include "ui/base/gtk/gtk_windowing.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/path.h"
@@ -816,8 +815,13 @@ void WidgetGtk::SetBounds(const gfx::Rect& bounds) {
   }
 }
 
-void WidgetGtk::MoveAbove(gfx::NativeView native_view) {
-  ui::StackPopupWindow(GetNativeView(), native_view);
+void WidgetGtk::MoveAbove(Widget* widget) {
+  DCHECK(widget_);
+  DCHECK(widget_->window);
+  // TODO(oshima): gdk_window_restack is not available in gtk2.0, so
+  // we're simply raising the window to the top. We should switch to
+  // gdk_window_restack when we upgrade gtk to 2.18 or up.
+  gdk_window_raise(widget_->window);
 }
 
 void WidgetGtk::SetShape(gfx::NativeRegion region) {
