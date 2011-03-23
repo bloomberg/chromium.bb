@@ -63,6 +63,17 @@ struct PrerenderManager::PrerenderContentsData {
   }
 };
 
+struct PrerenderManager::PendingContentsData {
+  PendingContentsData(const GURL& url, const std::vector<GURL>& alias_urls,
+                      const GURL& referrer)
+      : url_(url), alias_urls_(alias_urls), referrer_(referrer) { }
+  ~PendingContentsData() {}
+  GURL url_;
+  std::vector<GURL> alias_urls_;
+  GURL referrer_;
+};
+
+
 PrerenderManager::PrerenderManager(Profile* profile)
     : rate_limit_enabled_(true),
       profile_(profile),
@@ -95,6 +106,7 @@ bool PrerenderManager::AddPreload(const GURL& url,
   DeleteOldEntries();
   if (FindEntry(url))
     return false;
+
   // Do not prerender if there are too many render processes, and we would
   // have to use an existing one.  We do not want prerendering to happen in
   // a shared process, so that we can always reliably lower the CPU
@@ -114,6 +126,7 @@ bool PrerenderManager::AddPreload(const GURL& url,
     // this doesn't make sense as the next prerender request will be triggered
     // by a navigation and is unlikely to be the same site.
     RecordFinalStatus(FINAL_STATUS_RATE_LIMIT_EXCEEDED);
+
     return false;
   }
 
@@ -133,6 +146,52 @@ bool PrerenderManager::AddPreload(const GURL& url,
   }
   StartSchedulingPeriodicCleanups();
   return true;
+}
+
+void PrerenderManager::AddPendingPreload(
+    const std::pair<int,int>& child_route_id_pair,
+    const GURL& url,
+    const std::vector<GURL>& alias_urls,
+    const GURL& referrer) {
+  // Check if this is coming from a valid prerender rvh.
+  bool is_valid_prerender = false;
+  for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
+       it != prerender_list_.end(); ++it) {
+    PrerenderContents* pc = it->contents_;
+
+    int child_id;
+    int route_id;
+    bool has_child_id = pc->GetChildId(&child_id);
+    bool has_route_id = has_child_id && pc->GetRouteId(&route_id);
+
+    if (has_child_id && has_route_id &&
+        child_id == child_route_id_pair.first &&
+        route_id == child_route_id_pair.second) {
+      is_valid_prerender = true;
+      break;
+    }
+  }
+
+  // If not, we could check to see if the RenderViewHost specified by the
+  // child_route_id_pair exists and if so just start prerendering, as this
+  // suggests that the link was clicked, though this might prerender something
+  // that the user has already navigated away from. For now, we'll be
+  // conservative and skip the prerender which will mean some prerender requests
+  // from prerendered pages will be missed if the user navigates quickly.
+  if (!is_valid_prerender) {
+    RecordFinalStatus(FINAL_STATUS_PENDING_SKIPPED);
+    return;
+  }
+
+  PendingPrerenderList::iterator it =
+      pending_prerender_list_.find(child_route_id_pair);
+  if (it == pending_prerender_list_.end()) {
+    PendingPrerenderList::value_type el = std::make_pair(child_route_id_pair,
+                                            std::vector<PendingContentsData>());
+    it = pending_prerender_list_.insert(el).first;
+  }
+
+  it->second.push_back(PendingContentsData(url, alias_urls, referrer));
 }
 
 void PrerenderManager::DeleteOldEntries() {
@@ -185,6 +244,11 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
                        ++prerenders_per_session_count_);
   pc->set_final_status(FINAL_STATUS_USED);
 
+  int child_id;
+  int route_id;
+  CHECK(pc->GetChildId(&child_id));
+  CHECK(pc->GetRouteId(&route_id));
+
   RenderViewHost* rvh = pc->render_view_host();
   // RenderViewHosts in PrerenderContents start out hidden.
   // Since we are actually using it now, restore it.
@@ -193,6 +257,21 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
   rvh->Send(new ViewMsg_DisplayPrerenderedPage(rvh->routing_id()));
   tc->SwapInRenderViewHost(rvh);
   MarkTabContentsAsPrerendered(tc);
+
+  // See if we have any pending prerender requests for this routing id and start
+  // the preload if we do.
+  std::pair<int, int> child_route_pair = std::make_pair(child_id, route_id);
+  PendingPrerenderList::iterator pending_it =
+      pending_prerender_list_.find(child_route_pair);
+  if (pending_it != pending_prerender_list_.end()) {
+    for (std::vector<PendingContentsData>::iterator content_it =
+            pending_it->second.begin();
+         content_it != pending_it->second.end(); ++content_it) {
+      AddPreload(content_it->url_, content_it->alias_urls_,
+                 content_it->referrer_);
+    }
+    pending_prerender_list_.erase(pending_it);
+  }
 
   ViewHostMsg_FrameNavigate_Params* p = pc->navigate_params();
   if (p != NULL)
@@ -218,6 +297,7 @@ void PrerenderManager::RemoveEntry(PrerenderContents* entry) {
        it != prerender_list_.end();
        ++it) {
     if (it->contents_ == entry) {
+      RemovePendingPreload(entry);
       prerender_list_.erase(it);
       break;
     }
@@ -305,6 +385,24 @@ PrerenderContents* PrerenderManager::FindEntry(const GURL& url) {
   return NULL;
 }
 
+PrerenderManager::PendingContentsData*
+    PrerenderManager::FindPendingEntry(const GURL& url) {
+  for (PendingPrerenderList::iterator map_it = pending_prerender_list_.begin();
+       map_it != pending_prerender_list_.end();
+       ++map_it) {
+    for (std::vector<PendingContentsData>::iterator content_it =
+            map_it->second.begin();
+         content_it != map_it->second.end();
+         ++content_it) {
+      if (content_it->url_ == url) {
+        return &(*content_it);
+      }
+    }
+  }
+
+  return NULL;
+}
+
 // static
 void PrerenderManager::RecordPrefetchTagObserved() {
   // Ensure that we are in the UI thread, and post to the UI thread if
@@ -329,6 +427,20 @@ void PrerenderManager::RecordPrefetchTagObservedOnUIThread() {
   // reset the window to begin at the most recent occurrence, so that we will
   // always be in a window in the 30 seconds from each occurrence.
   last_prefetch_seen_time_ = base::TimeTicks::Now();
+}
+
+void PrerenderManager::RemovePendingPreload(PrerenderContents* entry) {
+  int child_id;
+  int route_id;
+  bool has_child_id = entry->GetChildId(&child_id);
+  bool has_route_id = has_child_id && entry->GetRouteId(&route_id);
+
+  // If the entry doesn't have a RenderViewHost then it didn't start
+  // prerendering and there shouldn't be any pending preloads to remove.
+  if (has_child_id && has_route_id) {
+    std::pair<int, int> child_route_pair = std::make_pair(child_id, route_id);
+    pending_prerender_list_.erase(child_route_pair);
+  }
 }
 
 // static

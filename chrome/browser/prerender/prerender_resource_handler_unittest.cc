@@ -110,8 +110,9 @@ class PrerenderResourceHandlerTest : public testing::Test {
     loop_.RunAllPending();
   }
 
-  void SetLastHandledURL(const GURL& url, const std::vector<GURL>& alias_urls,
-                         const GURL& referrer) {
+  void SetLastHandledURL(const std::pair<int, int>& child_route_id_pair,
+                         const GURL& url, const std::vector<GURL>& alias_urls,
+                         const GURL& referrer, bool make_pending) {
     last_handled_url_ = url;
     alias_urls_ = alias_urls;
     referrer_ = referrer;

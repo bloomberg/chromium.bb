@@ -460,9 +460,12 @@ void ResourceDispatcherHost::BeginRequest(
   // but after the BufferedResourceHandler since it depends on the MIME
   // sniffing capabilities in the BufferedResourceHandler.
   prerender::PrerenderResourceHandler* pre_handler =
-      prerender::PrerenderResourceHandler::MaybeCreate(*request,
-                                                       context,
-                                                       handler);
+      prerender::PrerenderResourceHandler::MaybeCreate(
+          *request,
+          context,
+          handler,
+          ((load_flags & net::LOAD_PRERENDER) != 0),
+          child_id, route_id);
   if (pre_handler)
     handler = pre_handler;
 

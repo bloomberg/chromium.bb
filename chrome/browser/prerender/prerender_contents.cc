@@ -148,6 +148,24 @@ void PrerenderContents::StartPrerendering() {
   render_view_host_->Navigate(params);
 }
 
+bool PrerenderContents::GetChildId(int* child_id) const {
+  CHECK(child_id);
+  if (render_view_host_) {
+    *child_id = render_view_host_->process()->id();
+    return true;
+  }
+  return false;
+}
+
+bool PrerenderContents::GetRouteId(int* route_id) const {
+  CHECK(route_id);
+  if (render_view_host_) {
+    *route_id = render_view_host_->routing_id();
+    return true;
+  }
+  return false;
+}
+
 void PrerenderContents::set_final_status(FinalStatus final_status) {
   DCHECK(final_status >= FINAL_STATUS_USED && final_status < FINAL_STATUS_MAX);
   DCHECK_EQ(FINAL_STATUS_MAX, final_status_);

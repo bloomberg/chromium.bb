@@ -85,24 +85,45 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
       : expected_final_status_(expected_final_status) {
   }
 
+  void set_expected_final_status(FinalStatus expected_final_status) {
+    expected_final_status_ = expected_final_status;
+  }
+
+  void set_expected_final_status_for_url(const GURL& url,
+                                         FinalStatus expected_final_status) {
+    DCHECK(expected_final_status_map_.find(url) ==
+           expected_final_status_map_.end());
+    expected_final_status_map_[url] = expected_final_status;
+  }
+
   virtual PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
       const std::vector<GURL>& alias_urls, const GURL& referrer) {
+    FinalStatus expected_final_status = expected_final_status_;
+    std::map<GURL, FinalStatus>::iterator it =
+        expected_final_status_map_.find(url);
+    if (it != expected_final_status_map_.end()) {
+      expected_final_status = it->second;
+      expected_final_status_map_.erase(it);
+    }
     return new TestPrerenderContents(prerender_manager, profile, url,
                                      alias_urls, referrer,
-                                     expected_final_status_);
+                                     expected_final_status);
   }
 
  private:
   FinalStatus expected_final_status_;
+  std::map<GURL, FinalStatus> expected_final_status_map_;
 };
 
 }  // namespace
 
 class PrerenderBrowserTest : public InProcessBrowserTest {
  public:
-  PrerenderBrowserTest() : use_https_src_server_(false),
-                           on_iteration_succeeded_(true) {
+  PrerenderBrowserTest()
+      : prc_factory_(NULL),
+        use_https_src_server_(false),
+        on_iteration_succeeded_(true) {
     EnableDOMAutomation();
   }
 
@@ -124,9 +145,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
                         FinalStatus expected_final_status,
                         int total_navigations) {
     ASSERT_TRUE(test_server()->Start());
-    std::string dest_path = "files/prerender/";
-    dest_path.append(html_file);
-    dest_url_ = test_server()->GetURL(dest_path);
+    dest_url_ = UrlForHtmlFile(html_file);
 
     std::vector<net::TestServer::StringPair> replacement_text;
     replacement_text.push_back(
@@ -148,14 +167,13 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     }
     GURL src_url = src_server->GetURL(replacement_path);
 
-    Profile* profile = browser()->GetSelectedTabContents()->profile();
-    PrerenderManager* prerender_manager = profile->GetPrerenderManager();
-    ASSERT_TRUE(prerender_manager);
-
     // This is needed to exit the event loop once the prerendered page has
     // stopped loading or was cancelled.
-    prerender_manager->SetPrerenderContentsFactory(
-        new WaitForLoadPrerenderContentsFactory(expected_final_status));
+    ASSERT_TRUE(prerender_manager());
+    ASSERT_TRUE(prc_factory_ == NULL);
+    prc_factory_ =
+        new WaitForLoadPrerenderContentsFactory(expected_final_status);
+    prerender_manager()->SetPrerenderContentsFactory(prc_factory_);
 
     // ui_test_utils::NavigateToURL uses its own observer and message loop.
     // Since the test needs to wait until the prerendered page has stopped
@@ -172,7 +190,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
       prerender_contents =
           static_cast<TestPrerenderContents*>(
-              prerender_manager->FindEntry(dest_url_));
+              prerender_manager()->FindEntry(dest_url_));
       if (prerender_contents == NULL ||
           !prerender_contents->did_finish_loading() ||
           navigations >= total_navigations) {
@@ -212,12 +230,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   void NavigateToDestURL() const {
     ui_test_utils::NavigateToURL(browser(), dest_url_);
 
-    Profile* profile = browser()->GetSelectedTabContents()->profile();
-    PrerenderManager* prerender_manager = profile->GetPrerenderManager();
-    ASSERT_TRUE(prerender_manager);
-
     // Make sure the PrerenderContents found earlier was used or removed
-    EXPECT_TRUE(prerender_manager->FindEntry(dest_url_) == NULL);
+    EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) == NULL);
 
     // Check if page behaved as expected when actually displayed.
     bool display_test_result = false;
@@ -228,11 +242,54 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(display_test_result);
   }
 
+  bool UrlIsInPrerenderManager(const std::string& html_file) {
+    GURL dest_url = UrlForHtmlFile(html_file);
+
+    return (prerender_manager()->FindEntry(dest_url) != NULL);
+  }
+
+  bool UrlIsPendingInPrerenderManager(const std::string& html_file) {
+    GURL dest_url = UrlForHtmlFile(html_file);
+
+    return (prerender_manager()->FindPendingEntry(dest_url) != NULL);
+  }
+
   void set_use_https_src(bool use_https_src_server) {
     use_https_src_server_ = use_https_src_server;
   }
 
+  void SetExpectedFinalStatus(FinalStatus expected_final_status) {
+    DCHECK(prerender_manager()->prerender_contents_factory_.get() ==
+           prc_factory_);
+    prc_factory_->set_expected_final_status(expected_final_status);
+  }
+
+  void SetExpectedFinalStatusForUrl(const std::string& html_file,
+                                    FinalStatus expected_final_status) {
+    GURL url = UrlForHtmlFile(html_file);
+    DCHECK(prerender_manager()->prerender_contents_factory_.get() ==
+           prc_factory_);
+    prc_factory_->set_expected_final_status_for_url(url, expected_final_status);
+  }
+
+  void set_rate_limit_enabled(bool enabled) {
+    prerender_manager()->rate_limit_enabled_ = enabled;
+  }
+
  private:
+  PrerenderManager* prerender_manager() const {
+    Profile* profile = browser()->GetSelectedTabContents()->profile();
+    PrerenderManager* prerender_manager = profile->GetPrerenderManager();
+    return prerender_manager;
+  }
+
+  // Non-const as test_server()->GetURL() is not const
+  GURL UrlForHtmlFile(const std::string& html_file) {
+    std::string dest_path = "files/prerender/";
+    dest_path.append(html_file);
+    return test_server()->GetURL(dest_path);
+  }
+
   void CallOnIteration(RenderViewHost* rvh) {
     on_iteration_succeeded_ = ui_test_utils::ExecuteJavaScript(
         rvh,
@@ -240,6 +297,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         L"if (typeof(OnIteration) != 'undefined') {OnIteration();}");
   }
 
+  WaitForLoadPrerenderContentsFactory* prc_factory_;
   GURL dest_url_;
   bool use_https_src_server_;
   bool on_iteration_succeeded_;
@@ -257,17 +315,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
 // Checks that the prerendering of a page is canceled correctly when a
 // Javascript alert is called.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertBeforeOnload) {
-  PrerenderTestURL(
-      "prerender_alert_before_onload.html",
-      FINAL_STATUS_JAVASCRIPT_ALERT, 1);
+  PrerenderTestURL("prerender_alert_before_onload.html",
+                   FINAL_STATUS_JAVASCRIPT_ALERT, 1);
 }
 
 // Checks that the prerendering of a page is canceled correctly when a
 // Javascript alert is called.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
-  PrerenderTestURL(
-      "prerender_alert_after_onload.html",
-      FINAL_STATUS_JAVASCRIPT_ALERT, 1);
+  PrerenderTestURL("prerender_alert_after_onload.html",
+                   FINAL_STATUS_JAVASCRIPT_ALERT, 1);
 }
 
 // Checks that plugins are not loaded while a page is being preloaded, but
@@ -371,8 +427,66 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExcessiveMemory) {
 
 // Checks that we don't prerender in an infinite loop.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
-  PrerenderTestURL("prerender_infinite_a.html", FINAL_STATUS_USED, 1);
+  const char* const kHtmlFileA = "prerender_infinite_a.html";
+  const char* const kHtmlFileB = "prerender_infinite_b.html";
+
+  set_rate_limit_enabled(false);
+
+  PrerenderTestURL(kHtmlFileA, FINAL_STATUS_USED, 1);
+
+  // Next url should be in pending list but not an active entry.
+  EXPECT_FALSE(UrlIsInPrerenderManager(kHtmlFileB));
+  EXPECT_TRUE(UrlIsPendingInPrerenderManager(kHtmlFileB));
+
+  // We are not going to navigate back to kHtmlFileA but we will start the
+  // preload so we need to set the final status to expect here before
+  // navigating.
+  SetExpectedFinalStatus(FINAL_STATUS_APP_TERMINATING);
+
   NavigateToDestURL();
+
+  // Make sure the PrerenderContents for the next url is now in the manager
+  // and not pending.
+  EXPECT_TRUE(UrlIsInPrerenderManager(kHtmlFileB));
+  EXPECT_FALSE(UrlIsPendingInPrerenderManager(kHtmlFileB));
+
+  set_rate_limit_enabled(true);
+}
+
+// Checks that we don't prerender in an infinite loop and multiple links are
+// handled correctly.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoopMultiple) {
+  const char* const kHtmlFileA = "prerender_infinite_a_multiple.html";
+  const char* const kHtmlFileB = "prerender_infinite_b_multiple.html";
+  const char* const kHtmlFileC = "prerender_infinite_c_multiple.html";
+
+  set_rate_limit_enabled(false);
+
+  PrerenderTestURL(kHtmlFileA, FINAL_STATUS_USED, 1);
+
+  // Next url should be in pending list but not an active entry.
+  EXPECT_FALSE(UrlIsInPrerenderManager(kHtmlFileB));
+  EXPECT_FALSE(UrlIsInPrerenderManager(kHtmlFileC));
+  EXPECT_TRUE(UrlIsPendingInPrerenderManager(kHtmlFileB));
+  EXPECT_TRUE(UrlIsPendingInPrerenderManager(kHtmlFileC));
+
+  // We are not going to navigate back to kHtmlFileA but we will start the
+  // preload so we need to set the final status to expect here before
+  // navigating.
+  SetExpectedFinalStatusForUrl(kHtmlFileB, FINAL_STATUS_EVICTED);
+  SetExpectedFinalStatusForUrl(kHtmlFileC, FINAL_STATUS_APP_TERMINATING);
+
+  NavigateToDestURL();
+
+  // Make sure the PrerenderContents for the next urls are now in the manager
+  // and not pending. url_c was the last seen so should be the active
+  // entry.
+  EXPECT_FALSE(UrlIsInPrerenderManager(kHtmlFileB));
+  EXPECT_TRUE(UrlIsInPrerenderManager(kHtmlFileC));
+  EXPECT_FALSE(UrlIsPendingInPrerenderManager(kHtmlFileB));
+  EXPECT_FALSE(UrlIsPendingInPrerenderManager(kHtmlFileC));
+
+  set_rate_limit_enabled(true);
 }
 
 }  // namespace prerender

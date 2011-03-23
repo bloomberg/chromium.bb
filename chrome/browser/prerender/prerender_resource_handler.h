@@ -37,7 +37,8 @@ class PrerenderResourceHandler : public ResourceHandler {
   static PrerenderResourceHandler* MaybeCreate(
       const net::URLRequest& request,
       ChromeURLRequestContext* context,
-      ResourceHandler* next_handler);
+      ResourceHandler* next_handler,
+      bool is_from_prerender, int child_id, int route_id);
 
   // OnResponseStarted will ask the |prerender_manager_| to start
   // prerendering the requested resource if it is of an appropriate
@@ -69,13 +70,16 @@ class PrerenderResourceHandler : public ResourceHandler {
 
  private:
   friend class PrerenderResourceHandlerTest;
-  typedef Callback3<const GURL&,
+  typedef Callback5<const std::pair<int, int>&,
+                    const GURL&,
                     const std::vector<GURL>&,
-                    const GURL&>::Type PrerenderCallback;
+                    const GURL&,
+                    bool>::Type PrerenderCallback;
 
   PrerenderResourceHandler(const net::URLRequest& request,
                            ResourceHandler* next_handler,
-                           PrerenderManager* prerender_manager);
+                           PrerenderManager* prerender_manager,
+                           bool make_pending, int child_id, int route_id);
 
   // This constructor is only used from unit tests.
   PrerenderResourceHandler(const net::URLRequest& request,
@@ -84,12 +88,16 @@ class PrerenderResourceHandler : public ResourceHandler {
 
   virtual ~PrerenderResourceHandler();
 
-  void RunCallbackFromUIThread(const GURL& url,
+  void RunCallbackFromUIThread(const std::pair<int, int>& child_route_id_pair,
+                               const GURL& url,
                                const std::vector<GURL>& alias_urls,
-                               const GURL& referrer);
-  void StartPrerender(const GURL& url,
+                               const GURL& referrer,
+                               bool make_pending);
+  void StartPrerender(const std::pair<int, int>& child_route_id_pair,
+                      const GURL& url,
                       const std::vector<GURL>& alias_urls,
-                      const GURL& referrer);
+                      const GURL& referrer,
+                      bool make_pending);
 
   // The set of URLs that are aliases to the URL to be prerendered,
   // as a result of redirects, including the final URL.
@@ -102,6 +110,12 @@ class PrerenderResourceHandler : public ResourceHandler {
   // Used to obtain the referrer, but only after any redirections occur, as they
   // can result in the referrer being cleared.
   const net::URLRequest& request_;
+
+  int child_id_;
+  int route_id_;
+
+  // True if we want to make this a pending prerender for later
+  bool make_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderResourceHandler);
 };

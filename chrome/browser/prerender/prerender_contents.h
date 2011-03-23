@@ -84,6 +84,14 @@ class PrerenderContents : public RenderViewHostDelegate,
   bool has_stopped_loading() const { return has_stopped_loading_; }
   bool prerendering_has_started() const { return prerendering_has_started_; }
 
+  // Sets the parameter to the value of the associated RenderViewHost's child id
+  // and returns a boolean indicating the validity of that id.
+  virtual bool GetChildId(int* child_id) const;
+
+  // Sets the parameter to the value of the associated RenderViewHost's route id
+  // and returns a boolean indicating the validity of that id.
+  virtual bool GetRouteId(int* route_id) const;
+
   // Set the final status for how the PrerenderContents was used. This
   // should only be called once, and should be called before the prerender
   // contents are destroyed.

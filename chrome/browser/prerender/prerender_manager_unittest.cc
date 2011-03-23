@@ -6,6 +6,8 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_process_host.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,6 +43,16 @@ class DummyPrerenderContents : public PrerenderContents {
     has_started_ = true;
   }
 
+  virtual bool GetChildId(int* child_id) const OVERRIDE {
+    *child_id = 0;
+    return true;
+  }
+
+  virtual bool GetRouteId(int* route_id) const OVERRIDE {
+    *route_id = 0;
+    return true;
+  }
+
   bool has_started() const { return has_started_; }
 
  private:
@@ -73,6 +85,10 @@ class TestPrerenderManager : public PrerenderManager {
   // Shorthand to add a simple preload with no aliases.
   bool AddSimplePreload(const GURL& url) {
     return AddPreload(url, std::vector<GURL>(), GURL());
+  }
+
+  bool IsPendingEntry(const GURL& url) {
+    return (PrerenderManager::FindPendingEntry(url) != NULL);
   }
 
   void set_rate_limit_enabled(bool enabled) { rate_limit_enabled_ = true; }
@@ -333,6 +349,63 @@ TEST_F(PrerenderManagerTest, RateLimitOutsideWindowTest) {
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(rate_limit_pc->has_started());
   prerender_manager_->set_rate_limit_enabled(false);
+}
+
+TEST_F(PrerenderManagerTest, PendingPreloadTest) {
+  GURL url("http://www.google.com/");
+  DummyPrerenderContents* pc =
+      new DummyPrerenderContents(prerender_manager_.get(),
+                                 url,
+                                 FINAL_STATUS_USED);
+  prerender_manager_->SetNextPrerenderContents(pc);
+  EXPECT_TRUE(prerender_manager_->AddSimplePreload(url));
+
+  int child_id;
+  int route_id;
+  ASSERT_TRUE(pc->GetChildId(&child_id));
+  ASSERT_TRUE(pc->GetRouteId(&route_id));
+
+  GURL pending_url("http://news.google.com/");
+
+  prerender_manager_->AddPendingPreload(std::make_pair(child_id, route_id),
+                                        pending_url,
+                                        std::vector<GURL>(),
+                                        url);
+
+  EXPECT_TRUE(prerender_manager_->IsPendingEntry(pending_url));
+  EXPECT_TRUE(pc->has_started());
+  ASSERT_EQ(pc, prerender_manager_->GetEntry(url));
+  pc->set_final_status(FINAL_STATUS_USED);
+
+  delete pc;
+}
+
+TEST_F(PrerenderManagerTest, PendingPreloadSkippedTest) {
+  GURL url("http://www.google.com/");
+  DummyPrerenderContents* pc =
+      new DummyPrerenderContents(prerender_manager_.get(),
+                                 url,
+                                 FINAL_STATUS_TIMED_OUT);
+  prerender_manager_->SetNextPrerenderContents(pc);
+
+  int child_id;
+  int route_id;
+  ASSERT_TRUE(pc->GetChildId(&child_id));
+  ASSERT_TRUE(pc->GetRouteId(&route_id));
+
+  EXPECT_TRUE(prerender_manager_->AddSimplePreload(url));
+  prerender_manager_->AdvanceTime(prerender_manager_->max_prerender_age()
+                                  + base::TimeDelta::FromSeconds(1));
+  // GetEntry will cull old entries which should now include pc.
+  ASSERT_EQ(NULL, prerender_manager_->GetEntry(url));
+
+  GURL pending_url("http://news.google.com/");
+
+  prerender_manager_->AddPendingPreload(std::make_pair(child_id, route_id),
+                                        pending_url,
+                                        std::vector<GURL>(),
+                                        url);
+  EXPECT_FALSE(prerender_manager_->IsPendingEntry(pending_url));
 }
 
 }  // namespace prerender

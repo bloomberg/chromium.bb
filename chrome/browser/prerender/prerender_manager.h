@@ -7,6 +7,7 @@
 #pragma once
 
 #include <list>
+#include <map>
 #include <vector>
 
 #include "base/hash_tables.h"
@@ -58,6 +59,11 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   bool AddPreload(const GURL& url, const std::vector<GURL>& alias_urls,
                   const GURL& referrer);
 
+  void AddPendingPreload(const std::pair<int, int>& child_route_id_pair,
+                         const GURL& url,
+                         const std::vector<GURL>& alias_urls,
+                         const GURL& referrer);
+
   // For a given TabContents that wants to navigate to the URL supplied,
   // determines whether a preloaded version of the URL can be used,
   // and substitutes the prerendered RVH into the TabContents.  Returns
@@ -102,11 +108,15 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   bool WouldTabContentsBePrerendered(TabContents* tc) const;
 
  protected:
+  struct PendingContentsData;
+
   virtual ~PrerenderManager();
 
   void SetPrerenderContentsFactory(
       PrerenderContents::Factory* prerender_contents_factory);
   bool rate_limit_enabled_;
+
+  PendingContentsData* FindPendingEntry(const GURL& url);
 
  private:
   // Test that needs needs access to internal functions.
@@ -142,6 +152,10 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
 
   static void RecordPrefetchTagObservedOnUIThread();
 
+  // Called when removing a preload to ensure we clean up any pending preloads
+  // that might remain in the map.
+  void RemovePendingPreload(PrerenderContents* entry);
+
   bool DoesRateLimitAllowPrerender() const;
 
   Profile* profile_;
@@ -158,6 +172,11 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // Set of TabContents which would be displaying a prerendered page
   // (for the control group).
   base::hash_set<TabContents*> would_be_prerendered_tc_set_;
+
+  // Map of child/route id pairs to pending prerender data.
+  typedef std::map<std::pair<int, int>, std::vector<PendingContentsData> >
+      PendingPrerenderList;
+  PendingPrerenderList pending_prerender_list_;
 
   // Default maximum permitted elements to prerender.
   static const unsigned int kDefaultMaxPrerenderElements = 1;

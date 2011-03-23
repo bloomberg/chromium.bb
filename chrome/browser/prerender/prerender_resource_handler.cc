@@ -52,7 +52,10 @@ bool ShouldPrerender(const ResourceResponse* response) {
 PrerenderResourceHandler* PrerenderResourceHandler::MaybeCreate(
     const net::URLRequest& request,
     ChromeURLRequestContext* context,
-    ResourceHandler* next_handler) {
+    ResourceHandler* next_handler,
+    bool is_from_prerender,
+    int child_id,
+    int route_id) {
   if (!context || !context->prerender_manager())
     return NULL;
   if (!(request.load_flags() & net::LOAD_PREFETCH))
@@ -61,25 +64,31 @@ PrerenderResourceHandler* PrerenderResourceHandler::MaybeCreate(
     return NULL;
   if (request.method() != "GET")
     return NULL;
-  if (request.load_flags() & net::LOAD_PRERENDER) {
-    RecordFinalStatus(FINAL_STATUS_NESTED);
-    return NULL;
-  }
+
   return new PrerenderResourceHandler(request,
                                       next_handler,
-                                      context->prerender_manager());
+                                      context->prerender_manager(),
+                                      is_from_prerender,
+                                      child_id,
+                                      route_id);
 }
 
 PrerenderResourceHandler::PrerenderResourceHandler(
     const net::URLRequest& request,
     ResourceHandler* next_handler,
-    PrerenderManager* prerender_manager)
+    PrerenderManager* prerender_manager,
+    bool make_pending,
+    int child_id,
+    int route_id)
     : next_handler_(next_handler),
       prerender_manager_(prerender_manager),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           prerender_callback_(NewCallback(
               this, &PrerenderResourceHandler::StartPrerender))),
-      request_(request) {
+      request_(request),
+      child_id_(child_id),
+      route_id_(route_id),
+      make_pending_(make_pending) {
   DCHECK(next_handler);
   DCHECK(prerender_manager);
 }
@@ -129,9 +138,11 @@ bool PrerenderResourceHandler::OnResponseStarted(int request_id,
         NewRunnableMethod(
             this,
             &PrerenderResourceHandler::RunCallbackFromUIThread,
+            std::make_pair(child_id_, route_id_),
             url_,
             alias_urls_,
-            GURL(request_.referrer())));
+            GURL(request_.referrer()),
+            make_pending_));
   }
   return next_handler_->OnResponseStarted(request_id, response);
 }
@@ -173,19 +184,30 @@ void PrerenderResourceHandler::OnRequestClosed() {
 }
 
 void PrerenderResourceHandler::RunCallbackFromUIThread(
+    const std::pair<int, int>& child_route_id_pair,
     const GURL& url,
     const std::vector<GURL>& alias_urls,
-    const GURL& referrer) {
+    const GURL& referrer,
+    bool make_pending) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  prerender_callback_->Run(url, alias_urls, referrer);
+  prerender_callback_->Run(child_route_id_pair,
+                           url, alias_urls, referrer,
+                           make_pending);
 }
 
 void PrerenderResourceHandler::StartPrerender(
+    const std::pair<int, int>& child_route_id_pair,
     const GURL& url,
     const std::vector<GURL>& alias_urls,
-    const GURL& referrer) {
+    const GURL& referrer,
+    bool make_pending) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  prerender_manager_->AddPreload(url, alias_urls, referrer);
+  if (make_pending) {
+    prerender_manager_->AddPendingPreload(child_route_id_pair,
+                                          url, alias_urls, referrer);
+  } else {
+    prerender_manager_->AddPreload(url, alias_urls, referrer);
+  }
 }
 
 }  // namespace prerender
