@@ -3151,7 +3151,6 @@
       'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
         'test/gpu/gpu_pixel_browsertest.cc',
-        'test/gpu/gpu_crash.cc',
         'test/out_of_proc_test_runner.cc',
       ],
       'conditions': [
