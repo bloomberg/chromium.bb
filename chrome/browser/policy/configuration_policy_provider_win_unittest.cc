@@ -479,6 +479,9 @@ INSTANTIATE_TEST_CASE_P(
             key::kDefaultBrowserSettingEnabled),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyCloudPrintProxyEnabled,
-            key::kCloudPrintProxyEnabled)));
+            key::kCloudPrintProxyEnabled),
+        PolicyTestParams::ForBooleanPolicy(
+            kPolicyTranslateEnabled,
+            key::kTranslateEnabled)));
 
 }  // namespace policy

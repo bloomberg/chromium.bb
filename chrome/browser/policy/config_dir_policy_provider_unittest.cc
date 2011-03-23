@@ -350,6 +350,9 @@ INSTANTIATE_TEST_CASE_P(
             key::kDefaultBrowserSettingEnabled),
         ValueTestParams::ForBooleanPolicy(
             kPolicyCloudPrintProxyEnabled,
-            key::kCloudPrintProxyEnabled)));
+            key::kCloudPrintProxyEnabled),
+        ValueTestParams::ForBooleanPolicy(
+            kPolicyTranslateEnabled,
+            key::kTranslateEnabled)));
 
 }  // namespace policy

@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 79
+#   For your editing convenience: highest ID currently used: 80
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1402,6 +1402,22 @@
       If you disable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Instant is disabled.
 
       If you enable or disable this setting, users cannot change or override this setting.''',
+    },
+    {
+      'name': 'TranslateEnabled',
+      'type': 'main',
+      'supported_on': ['chrome.*:12-', 'chrome_os:0.11-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
+      'id': 80,
+      'caption': '''Enable Translate''',
+      'desc': '''Enables the integrated Google Translate service on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will show an integrated toolbar offering to translate the page for the user, when appropriate.
+
+      If you disable this setting, users will never see the translation bar.
+
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
     },
   ],
   'messages': {

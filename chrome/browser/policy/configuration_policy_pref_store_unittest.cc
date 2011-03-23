@@ -203,7 +203,9 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyDefaultBrowserSettingEnabled,
                     prefs::kDefaultBrowserSettingEnabled),
         TypeAndName(kPolicyDisable3DAPIs,
-                    prefs::kDisable3DAPIs)));
+                    prefs::kDisable3DAPIs),
+        TypeAndName(kPolicyTranslateEnabled,
+                    prefs::kEnableTranslate)));
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(

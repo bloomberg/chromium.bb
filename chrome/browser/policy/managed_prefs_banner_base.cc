@@ -94,6 +94,7 @@ void ManagedPrefsBannerBase::Init(PrefService* local_state,
       AddUserPref(prefs::kProxy);
       AddUserPref(prefs::kCloudPrintProxyEnabled);
       AddUserPref(prefs::kDownloadDefaultDirectory);
+      AddUserPref(prefs::kEnableTranslate);
       break;
 #if defined(OS_CHROMEOS)
     case OPTIONS_PAGE_ACCOUNTS:
