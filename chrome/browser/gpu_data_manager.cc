@@ -74,10 +74,9 @@ void GpuDataManager::RequestCompleteGpuInfoIfNeeded() {
 
 void GpuDataManager::UpdateGpuInfo(const GPUInfo& gpu_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (gpu_info_.finalized)
+  if (!gpu_info_.Merge(gpu_info))
     return;
-  gpu_info_ = gpu_info;
-  child_process_logging::SetGpuInfo(gpu_info);
+  child_process_logging::SetGpuInfo(gpu_info_);
   // Clear the flag to triger a re-computation of GpuFeatureFlags using the
   // updated GPU info.
   gpu_feature_flags_set_ = false;

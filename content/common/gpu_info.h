@@ -20,6 +20,14 @@ struct GPUInfo {
   GPUInfo();
   ~GPUInfo();
 
+  // If it's the same GPU, i.e., device id and vendor id are the same, then
+  // copy over the fields that are not set yet and ignore the rest.
+  // If it's a different GPU, then reset and copy over everything.
+  // Return true if something changes that may affect blacklisting; currently
+  // they are device_id, vendor_id, driver_vendor, driver_version, driver_date,
+  // and gl_renderer.
+  bool Merge(const GPUInfo& other);
+
   // Whether more GPUInfo fields might be collected in the future.
   bool finalized;
 
