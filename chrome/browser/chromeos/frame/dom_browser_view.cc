@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/webui/login/browser/dom_browser_view.h"
+#include "chrome/browser/chromeos/frame/dom_browser_view.h"
 
-#include "chrome/browser/chromeos/webui/login/browser/dom_browser_view_layout.h"
+#include "chrome/browser/chromeos/frame/dom_browser_view_layout.h"
 #include "ui/gfx/rect.h"
 #include "views/widget/widget.h"
 

@@ -8,7 +8,7 @@
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/webui/login/browser/dom_browser.h"
+#include "chrome/browser/chromeos/frame/dom_browser.h"
 #include "chrome/browser/chromeos/webui/login/login_ui_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

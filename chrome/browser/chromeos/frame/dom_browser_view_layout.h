@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_WEBUI_LOGIN_BROWSER_DOM_BROWSER_VIEW_LAYOUT_H_
-#define CHROME_BROWSER_CHROMEOS_WEBUI_LOGIN_BROWSER_DOM_BROWSER_VIEW_LAYOUT_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FRAME_DOM_BROWSER_VIEW_LAYOUT_H_
+#define CHROME_BROWSER_CHROMEOS_FRAME_DOM_BROWSER_VIEW_LAYOUT_H_
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/webui/login/browser/dom_browser_view.h"
+#include "chrome/browser/chromeos/frame/dom_browser_view.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 
@@ -74,4 +74,4 @@ class DOMBrowserViewLayout : public ::BrowserViewLayout {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_WEBUI_LOGIN_BROWSER_DOM_BROWSER_VIEW_LAYOUT_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FRAME_DOM_BROWSER_VIEW_LAYOUT_H_
