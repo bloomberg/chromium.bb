@@ -177,7 +177,7 @@ class BrowserTest(pyauto.PyUITest):
   def testPopupSharesProcess(self):
     """Verify that parent tab and popup share a process."""
     file_url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), 'popup_blocker', 'popup-blocked-to-post-blank.html'))
+        self.DataDir(), 'popup_blocker', 'popup-window-open.html'))
     self.NavigateToURL(file_url)
     blocked_popups = self.GetBlockedPopupsInfo()
     self.assertEqual(1, len(blocked_popups), msg='Popup not blocked')
@@ -194,7 +194,7 @@ class BrowserTest(pyauto.PyUITest):
     its popup process. Reloading both should share a process again.
     """
     file_url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), 'popup_blocker', 'popup-blocked-to-post-blank.html'))
+        self.DataDir(), 'popup_blocker', 'popup-window-open.html'))
     self.NavigateToURL(file_url)
     blocked_popups = self.GetBlockedPopupsInfo()
     self.assertEqual(1, len(blocked_popups), msg='Popup not blocked')
