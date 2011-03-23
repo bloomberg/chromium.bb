@@ -21,6 +21,7 @@
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -520,7 +521,10 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
   // but we don't have that yet.  So before start translation, we clear the
   // current form and re-parse it in AutofillManager first to get the new
   // labels.
-  tab->autofill_manager()->Reset();
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  if (wrapper)
+    wrapper->autofill_manager()->Reset();
 }
 
 void TranslateManager::PageTranslated(TabContents* tab,

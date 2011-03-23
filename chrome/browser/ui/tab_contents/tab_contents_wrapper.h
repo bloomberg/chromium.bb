@@ -19,6 +19,7 @@ namespace prerender {
 class PrerenderObserver;
 }
 
+class AutofillManager;
 class Extension;
 class FileSelectObserver;
 class FindTabHelper;
@@ -89,6 +90,8 @@ class TabContentsWrapper : public NotificationObserver,
 
   // Tab Helpers ---------------------------------------------------------------
 
+  AutofillManager* autofill_manager() { return autofill_manager_.get(); }
+
   FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
 
   PasswordManager* password_manager() { return password_manager_.get(); }
@@ -142,6 +145,8 @@ class TabContentsWrapper : public NotificationObserver,
   // Tab Helpers ---------------------------------------------------------------
   // (These provide API for callers and have a getter function listed in the
   // "Tab Helpers" section in the member functions area, above.)
+
+  scoped_ptr<AutofillManager> autofill_manager_;
 
   scoped_ptr<FindTabHelper> find_tab_helper_;
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 
 #include "base/lazy_instance.h"
+#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
@@ -46,6 +47,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   property_accessor()->SetProperty(contents->property_bag(), this);
 
   // Create the tab helpers.
+  autofill_manager_.reset(new AutofillManager(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(contents));
   password_manager_.reset(
