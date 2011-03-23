@@ -24,7 +24,7 @@ class RendererWebAudioDeviceImpl : public WebKit::WebAudioDevice,
   // WebKit::WebAudioDevice implementation.
   virtual void start();
   virtual void stop();
-  virtual double sampleRate() { return 44100.0; }
+  virtual double sampleRate();
 
   // AudioDevice::RenderCallback implementation.
   virtual void Render(const std::vector<float*>& audio_data,

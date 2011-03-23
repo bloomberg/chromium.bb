@@ -26,6 +26,11 @@ void RendererWebAudioDeviceImpl::stop() {
   audio_device_->Stop();
 }
 
+double RendererWebAudioDeviceImpl::sampleRate()
+{
+  return 44100.0;
+}
+
 void RendererWebAudioDeviceImpl::Render(const std::vector<float*>& audio_data,
                                 size_t number_of_frames) {
   // Make the client callback to get rendered audio.
