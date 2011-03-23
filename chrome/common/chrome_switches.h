@@ -166,7 +166,6 @@ extern const char kEnableSyncSessions[];
 extern const char kEnableSyncTypedUrls[];
 extern const char kEnableTcpFastOpen[];
 extern const char kEnableTopSites[];
-extern const char kEnableTouch[];
 extern const char kEnableVerticalTabs[];
 extern const char kEnableVideoFullscreen[];
 extern const char kEnableVideoLogging[];
@@ -345,6 +344,10 @@ extern const char kKioskMode[];
 
 #if defined(TOOLKIT_VIEWS)
 extern const char kDebugViewsPaint[];
+#endif
+
+#if defined(TOUCH_UI)
+extern const char kKeepMouseCursor[];
 #endif
 
 #ifndef NDEBUG

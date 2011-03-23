@@ -1669,6 +1669,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif
 
+#if defined(TOUCH_UI)
+  RootView::SetKeepMouseCursor(
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kKeepMouseCursor));
+#endif
+
   HandleTestParameters(parsed_command_line);
   RecordBreakpadStatusUMA(metrics);
   about_flags::RecordUMAStatistics(local_state);

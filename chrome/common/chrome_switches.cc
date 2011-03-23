@@ -546,9 +546,6 @@ const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";
 // SYN packet.
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 
-// Whether or not the touch events API is exposed.
-const char kEnableTouch[]                   = "enable-touch";
-
 // Enables the option to show tabs as a vertical stack down the side of the
 // browser window.
 const char kEnableVerticalTabs[]            = "enable-vertical-tabs";
@@ -1175,6 +1172,12 @@ const char kKioskMode[]                     = "kiosk";
 // region being painted to flash in red.
 #if defined(TOOLKIT_VIEWS)
 const char kDebugViewsPaint[]               = "debug-views-paint";
+#endif
+
+// Debug only switch to prevent the mouse cursor from disappearing when
+// touch is enabled
+#if defined(TOUCH_UI)
+const char kKeepMouseCursor[]               = "keep-mouse-cursor";
 #endif
 
 #ifndef NDEBUG

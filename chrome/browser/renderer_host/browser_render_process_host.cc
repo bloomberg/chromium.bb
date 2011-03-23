@@ -723,7 +723,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSearchProviderApiV2,
     switches::kEnableSeccompSandbox,
     switches::kEnableStatsTable,
-    switches::kEnableTouch,
     switches::kEnableVideoFullscreen,
     switches::kEnableVideoLogging,
     switches::kEnableWatchdog,
