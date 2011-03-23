@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/chrome_browser_window.h"
 
 #include "base/logging.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#include "ui/base/theme_provider.h"
 
 @implementation ChromeBrowserWindow
 

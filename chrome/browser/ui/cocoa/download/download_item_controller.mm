@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_util.h"
-#import "chrome/browser/themes/browser_theme_provider.h"
+#import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/download/download_item_button.h"
 #import "chrome/browser/ui/cocoa/download/download_item_cell.h"
 #include "chrome/browser/ui/cocoa/download/download_item_mac.h"
@@ -332,7 +332,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 // this is shown for the first time.
 - (void)updateTheme:(ui::ThemeProvider*)themeProvider {
   NSColor* color =
-      themeProvider->GetNSColor(BrowserThemeProvider::COLOR_TAB_TEXT, true);
+      themeProvider->GetNSColor(ThemeService::COLOR_TAB_TEXT, true);
   [dangerousDownloadLabel_ setTextColor:color];
 }
 

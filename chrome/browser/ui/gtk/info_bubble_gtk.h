@@ -25,7 +25,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
-class GtkThemeProvider;
+class GtkThemeService;
 class InfoBubbleGtk;
 namespace gfx {
 class Rect;
@@ -68,7 +68,7 @@ class InfoBubbleGtk : public NotificationObserver {
                              ArrowLocationGtk arrow_location,
                              bool match_system_theme,
                              bool grab_input,
-                             GtkThemeProvider* provider,
+                             GtkThemeService* provider,
                              InfoBubbleGtkDelegate* delegate);
 
   // Close the bubble if it's open.  This will delete the widgets and object,
@@ -96,7 +96,7 @@ class InfoBubbleGtk : public NotificationObserver {
     FRAME_STROKE,
   };
 
-  explicit InfoBubbleGtk(GtkThemeProvider* provider, bool match_system_theme);
+  explicit InfoBubbleGtk(GtkThemeService* provider, bool match_system_theme);
   virtual ~InfoBubbleGtk();
 
   // Creates the InfoBubble.
@@ -166,7 +166,7 @@ class InfoBubbleGtk : public NotificationObserver {
   GtkWidget* window_;
 
   // Provides colors and stuff.
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   // The accel group attached to |window_|, to handle closing with escape.
   GtkAccelGroup* accel_group_;

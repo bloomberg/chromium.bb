@@ -6,7 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
@@ -164,7 +164,7 @@ void SpeechInputBubbleGtk::Show() {
       kBubbleControlHorizontalSpacing, kBubbleControlHorizontalSpacing);
   gtk_container_add(GTK_CONTAINER(content), vbox);
 
-  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       tab_contents()->profile());
   gfx::Rect rect(
       element_rect_.x() + element_rect_.width() - kBubbleTargetOffsetX,

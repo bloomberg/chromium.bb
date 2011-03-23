@@ -9,7 +9,7 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "content/common/notification_registrar.h"
 
-class BrowserThemeProvider;
+class ThemeService;
 class Extension;
 class SkBitmap;
 class TabContents;
@@ -30,7 +30,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
  protected:
   virtual ~ThemeInstalledInfoBarDelegate();
 
-  BrowserThemeProvider* provider() { return provider_; }
+  ThemeService* theme_service() { return theme_service_; }
 
   // ConfirmInfoBarDelegate:
   virtual bool Cancel();
@@ -50,7 +50,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
                        const NotificationDetails& details);
 
   Profile* profile_;
-  BrowserThemeProvider* provider_;
+  ThemeService* theme_service_;
 
   // Name of theme that's just been installed.
   std::string name_;

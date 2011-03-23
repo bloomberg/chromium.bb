@@ -45,7 +45,6 @@ class AutocompleteClassifier;
 class BackgroundContentsService;
 class BookmarkModel;
 class BrowserSignin;
-class BrowserThemeProvider;
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class ChromeURLDataManager;

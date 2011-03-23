@@ -19,7 +19,7 @@
 #include "ui/gfx/rect.h"
 
 class CairoCachedSurface;
-class GtkThemeProvider;
+class GtkThemeService;
 class SkBitmap;
 
 // These classes implement two kinds of custom-drawn buttons.  They're
@@ -32,7 +32,7 @@ class CustomDrawButtonBase : public NotificationObserver {
  public:
   // If the images come from ResourceBundle rather than the theme provider,
   // pass in NULL for |theme_provider|.
-  CustomDrawButtonBase(GtkThemeProvider* theme_provider,
+  CustomDrawButtonBase(GtkThemeService* theme_provider,
                        int normal_id,
                        int pressed_id,
                        int hover_id,
@@ -81,7 +81,7 @@ class CustomDrawButtonBase : public NotificationObserver {
   int pressed_id_;
   int hover_id_;
   int disabled_id_;
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   // Whether the button is flipped horizontally. Not used for RTL (we get
   // flipped versions from the theme provider). Used for the flipped window
@@ -137,7 +137,7 @@ class CustomDrawButton : public NotificationObserver {
 
   // Same as above, but uses themed (and possibly tinted) images. |stock_id| and
   // |stock_size| are used for GTK+ theme mode.
-  CustomDrawButton(GtkThemeProvider* theme_provider,
+  CustomDrawButton(GtkThemeService* theme_provider,
                    int normal_id,
                    int pressed_id,
                    int hover_id,
@@ -147,7 +147,7 @@ class CustomDrawButton : public NotificationObserver {
 
   // As above, but uses an arbitrary GtkImage rather than a stock icon. This
   // constructor takes ownership of |native_widget|.
-  CustomDrawButton(GtkThemeProvider* theme_provider,
+  CustomDrawButton(GtkThemeService* theme_provider,
                    int normal_id,
                    int pressed_id,
                    int hover_id,
@@ -191,7 +191,7 @@ class CustomDrawButton : public NotificationObserver {
 
   // Returns a standard close button. Pass a |theme_provider| to use Gtk icons
   // in Gtk rendering mode.
-  static CustomDrawButton* CloseButton(GtkThemeProvider* theme_provider);
+  static CustomDrawButton* CloseButton(GtkThemeService* theme_provider);
 
  private:
   // Sets the button to themed or not.
@@ -216,7 +216,7 @@ class CustomDrawButton : public NotificationObserver {
   OwnedWidgetGtk native_widget_;
 
   // Our theme provider.
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   // Used to listen for theme change notifications.
   NotificationRegistrar registrar_;

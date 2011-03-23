@@ -22,8 +22,8 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/options/options_page_base.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
@@ -44,7 +44,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #endif  // defined(OS_CHROMEOS)
 #if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #endif  // defined(TOOLKIT_GTK)
 
 PersonalOptionsHandler::PersonalOptionsHandler() {
@@ -331,13 +331,13 @@ void PersonalOptionsHandler::OnLoginFailure(
 void PersonalOptionsHandler::ObserveThemeChanged() {
   Profile* profile = web_ui_->GetProfile();
 #if defined(TOOLKIT_GTK)
-  GtkThemeProvider* provider = GtkThemeProvider::GetFrom(profile);
+  GtkThemeService* provider = GtkThemeService::GetFrom(profile);
   bool is_gtk_theme = provider->UseGtkTheme();
   FundamentalValue gtk_enabled(!is_gtk_theme);
   web_ui_->CallJavascriptFunction(
       "options.PersonalOptions.setGtkThemeButtonEnabled", gtk_enabled);
 #else
-  BrowserThemeProvider* provider = ThemeServiceFactory::GetForProfile(profile);
+  ThemeService* provider = ThemeServiceFactory::GetForProfile(profile);
   bool is_gtk_theme = false;
 #endif
 

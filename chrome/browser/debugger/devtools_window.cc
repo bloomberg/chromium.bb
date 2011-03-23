@@ -17,8 +17,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/bindings_policy.h"
@@ -378,13 +378,13 @@ std::string SkColorToRGBAString(SkColor color) {
 }
 
 GURL DevToolsWindow::GetDevToolsUrl() {
-  BrowserThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
+  ThemeService* tp = ThemeServiceFactory::GetForProfile(profile_);
   CHECK(tp);
 
   SkColor color_toolbar =
-      tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+      tp->GetColor(ThemeService::COLOR_TOOLBAR);
   SkColor color_tab_text =
-      tp->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+      tp->GetColor(ThemeService::COLOR_BOOKMARK_TEXT);
 
   std::string url_string = StringPrintf(
       "%sdevtools.html?docked=%s&toolbar_color=%s&text_color=%s",
@@ -396,13 +396,13 @@ GURL DevToolsWindow::GetDevToolsUrl() {
 }
 
 void DevToolsWindow::UpdateTheme() {
-  BrowserThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
+  ThemeService* tp = ThemeServiceFactory::GetForProfile(profile_);
   CHECK(tp);
 
   SkColor color_toolbar =
-      tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+      tp->GetColor(ThemeService::COLOR_TOOLBAR);
   SkColor color_tab_text =
-      tp->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+      tp->GetColor(ThemeService::COLOR_BOOKMARK_TEXT);
   std::string command = StringPrintf(
       "WebInspector.setToolbarColors(\"%s\", \"%s\")",
       SkColorToRGBAString(color_toolbar).c_str(),

@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/common/notification_service.h"
 #include "grit/theme_resources.h"
@@ -16,7 +16,7 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/skbitmap_operations.h"
 
-CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
+CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeService* theme_provider,
                                            int normal_id,
                                            int pressed_id,
                                            int hover_id,
@@ -27,7 +27,7 @@ CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
       pressed_id_(pressed_id),
       hover_id_(hover_id),
       disabled_id_(disabled_id),
-      theme_provider_(theme_provider),
+      theme_service_(theme_provider),
       flipped_(false) {
   for (int i = 0; i < (GTK_STATE_INSENSITIVE + 1); ++i)
     surfaces_[i].reset(new CairoCachedSurface);
@@ -142,18 +142,18 @@ void CustomDrawButtonBase::SetBackground(SkColor color,
 
 void CustomDrawButtonBase::Observe(NotificationType type,
     const NotificationSource& source, const NotificationDetails& details) {
-  DCHECK(theme_provider_);
+  DCHECK(theme_service_);
   DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
 
   surfaces_[GTK_STATE_NORMAL]->UsePixbuf(normal_id_ ?
-      theme_provider_->GetRTLEnabledPixbufNamed(normal_id_) : NULL);
+      theme_service_->GetRTLEnabledPixbufNamed(normal_id_) : NULL);
   surfaces_[GTK_STATE_ACTIVE]->UsePixbuf(pressed_id_ ?
-      theme_provider_->GetRTLEnabledPixbufNamed(pressed_id_) : NULL);
+      theme_service_->GetRTLEnabledPixbufNamed(pressed_id_) : NULL);
   surfaces_[GTK_STATE_PRELIGHT]->UsePixbuf(hover_id_ ?
-      theme_provider_->GetRTLEnabledPixbufNamed(hover_id_) : NULL);
+      theme_service_->GetRTLEnabledPixbufNamed(hover_id_) : NULL);
   surfaces_[GTK_STATE_SELECTED]->UsePixbuf(NULL);
   surfaces_[GTK_STATE_INSENSITIVE]->UsePixbuf(disabled_id_ ?
-      theme_provider_->GetRTLEnabledPixbufNamed(disabled_id_) : NULL);
+      theme_service_->GetRTLEnabledPixbufNamed(disabled_id_) : NULL);
 }
 
 CairoCachedSurface* CustomDrawButtonBase::PixbufForState(int state) {
@@ -221,14 +221,14 @@ CustomDrawButton::CustomDrawButton(int normal_id,
                                    int hover_id,
                                    int disabled_id)
     : button_base_(NULL, normal_id, pressed_id, hover_id, disabled_id),
-      theme_provider_(NULL) {
+      theme_service_(NULL) {
   Init();
 
   // Initialize the theme stuff with no theme_provider.
   SetBrowserTheme();
 }
 
-CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
+CustomDrawButton::CustomDrawButton(GtkThemeService* theme_provider,
                                    int normal_id,
                                    int pressed_id,
                                    int hover_id,
@@ -237,18 +237,18 @@ CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
                                    GtkIconSize stock_size)
     : button_base_(theme_provider, normal_id, pressed_id, hover_id,
                    disabled_id),
-      theme_provider_(theme_provider) {
+      theme_service_(theme_provider) {
   native_widget_.Own(gtk_image_new_from_stock(stock_id, stock_size));
 
   Init();
 
-  theme_provider_->InitThemesFor(this);
+  theme_service_->InitThemesFor(this);
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
 }
 
-CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
+CustomDrawButton::CustomDrawButton(GtkThemeService* theme_provider,
                                    int normal_id,
                                    int pressed_id,
                                    int hover_id,
@@ -257,10 +257,10 @@ CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
     : button_base_(theme_provider, normal_id, pressed_id, hover_id,
                    disabled_id),
       native_widget_(native_widget),
-      theme_provider_(theme_provider) {
+      theme_service_(theme_provider) {
   Init();
 
-  theme_provider_->InitThemesFor(this);
+  theme_service_->InitThemesFor(this);
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
@@ -315,7 +315,7 @@ gboolean CustomDrawButton::OnCustomExpose(GtkWidget* sender,
 
 // static
 CustomDrawButton* CustomDrawButton::CloseButton(
-    GtkThemeProvider* theme_provider) {
+    GtkThemeService* theme_provider) {
   CustomDrawButton* button = new CustomDrawButton(theme_provider, IDR_CLOSE_BAR,
       IDR_CLOSE_BAR_P, IDR_CLOSE_BAR_H, 0, GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
   return button;
@@ -341,5 +341,5 @@ void CustomDrawButton::SetBrowserTheme() {
 }
 
 bool CustomDrawButton::UseGtkTheme() {
-  return theme_provider_ && theme_provider_->UseGtkTheme();
+  return theme_service_ && theme_service_->UseGtkTheme();
 }

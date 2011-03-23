@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #import "base/scoped_nsobject.h"
-#import "chrome/browser/themes/browser_theme_provider.h"
+#import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
@@ -392,8 +392,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
       } else {
         clickedGradient = themeProvider ? themeProvider->GetNSGradient(
             active ?
-              BrowserThemeProvider::GRADIENT_TOOLBAR_BUTTON_PRESSED :
-              BrowserThemeProvider::GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE) :
+                ThemeService::GRADIENT_TOOLBAR_BUTTON_PRESSED :
+                ThemeService::GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE) :
             nil;
       }
       [clickedGradient drawInBezierPath:innerPath angle:90.0];
@@ -438,8 +438,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
                                        alpha:0.3 * outerStrokeAlphaMult_];
   } else {
     strokeColor = themeProvider ? themeProvider->GetNSColor(
-        active ? BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE :
-                 BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
+        active ? ThemeService::COLOR_TOOLBAR_BUTTON_STROKE :
+                 ThemeService::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
         true) : [NSColor colorWithCalibratedWhite:0.0
                                             alpha:0.3 * outerStrokeAlphaMult_];
   }
@@ -551,8 +551,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     NSRect borderRect, contentRect;
     NSDivideRect(cellFrame, &borderRect, &contentRect, 1.0, NSMaxXEdge);
     NSColor* stroke = themeProvider ? themeProvider->GetNSColor(
-        active ? BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE :
-                 BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
+        active ? ThemeService::COLOR_TOOLBAR_BUTTON_STROKE :
+                 ThemeService::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
         true) : [NSColor blackColor];
 
     [[stroke colorWithAlphaComponent:0.2] set];
@@ -571,17 +571,17 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     CGContextRef context =
         (CGContextRef)([[NSGraphicsContext currentContext] graphicsPort]);
 
-    BrowserThemeProvider* themeProvider = static_cast<BrowserThemeProvider*>(
+    ThemeService* themeProvider = static_cast<ThemeService*>(
         [[controlView window] themeProvider]);
     NSColor* color = themeProvider ?
-        themeProvider->GetNSColorTint(BrowserThemeProvider::TINT_BUTTONS,
+        themeProvider->GetNSColorTint(ThemeService::TINT_BUTTONS,
                                       true) :
         [NSColor blackColor];
 
     if (isTemplate && themeProvider && themeProvider->UsingDefaultTheme()) {
       scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
       [shadow.get() setShadowColor:themeProvider->GetNSColor(
-          BrowserThemeProvider::COLOR_TOOLBAR_BEZEL, true)];
+          ThemeService::COLOR_TOOLBAR_BEZEL, true)];
       [shadow.get() setShadowOffset:NSMakeSize(0.0, -1.0)];
       [shadow setShadowBlurRadius:1.0];
       [shadow set];

@@ -250,7 +250,7 @@ class BrowserWindow {
   virtual void ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
                               gfx::NativeWindow parent_window) = 0;
 
-  // BrowserThemeProvider calls this when a user has changed his or her theme,
+  // ThemeService calls this when a user has changed his or her theme,
   // indicating that it's time to redraw everything.
   virtual void UserChangedTheme() = 0;
 

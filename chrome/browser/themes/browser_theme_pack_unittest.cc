@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/values.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_value_serializer.h"
 #include "content/browser/browser_thread.h"
@@ -35,9 +35,9 @@ class BrowserThemePackTest : public ::testing::Test {
   void GenerateDefaultFrameColor(std::map<int, SkColor>* colors,
                                  int color, int tint) {
     (*colors)[color] = HSLShift(
-        BrowserThemeProvider::GetDefaultColor(
-            BrowserThemeProvider::COLOR_FRAME),
-        BrowserThemeProvider::GetDefaultTint(tint));
+        ThemeService::GetDefaultColor(
+            ThemeService::COLOR_FRAME),
+        ThemeService::GetDefaultTint(tint));
   }
 
   // Returns a mapping from each COLOR_* constant to the default value for this
@@ -45,23 +45,23 @@ class BrowserThemePackTest : public ::testing::Test {
   // run the resulting thing through VerifyColorMap().
   std::map<int, SkColor> GetDefaultColorMap() {
     std::map<int, SkColor> colors;
-    for (int i = BrowserThemeProvider::COLOR_FRAME;
-         i <= BrowserThemeProvider::COLOR_BUTTON_BACKGROUND; ++i) {
-      colors[i] = BrowserThemeProvider::GetDefaultColor(i);
+    for (int i = ThemeService::COLOR_FRAME;
+         i <= ThemeService::COLOR_BUTTON_BACKGROUND; ++i) {
+      colors[i] = ThemeService::GetDefaultColor(i);
     }
 
-    GenerateDefaultFrameColor(&colors, BrowserThemeProvider::COLOR_FRAME,
-                              BrowserThemeProvider::TINT_FRAME);
+    GenerateDefaultFrameColor(&colors, ThemeService::COLOR_FRAME,
+                              ThemeService::TINT_FRAME);
     GenerateDefaultFrameColor(&colors,
-                              BrowserThemeProvider::COLOR_FRAME_INACTIVE,
-                              BrowserThemeProvider::TINT_FRAME_INACTIVE);
+                              ThemeService::COLOR_FRAME_INACTIVE,
+                              ThemeService::TINT_FRAME_INACTIVE);
     GenerateDefaultFrameColor(&colors,
-                              BrowserThemeProvider::COLOR_FRAME_INCOGNITO,
-                              BrowserThemeProvider::TINT_FRAME_INCOGNITO);
+                              ThemeService::COLOR_FRAME_INCOGNITO,
+                              ThemeService::TINT_FRAME_INCOGNITO);
     GenerateDefaultFrameColor(
         &colors,
-        BrowserThemeProvider::COLOR_FRAME_INCOGNITO_INACTIVE,
-        BrowserThemeProvider::TINT_FRAME_INCOGNITO_INACTIVE);
+        ThemeService::COLOR_FRAME_INCOGNITO_INACTIVE,
+        ThemeService::TINT_FRAME_INCOGNITO_INACTIVE);
 
     return colors;
   }
@@ -69,7 +69,7 @@ class BrowserThemePackTest : public ::testing::Test {
   void VerifyColorMap(const std::map<int, SkColor>& color_map) {
     for (std::map<int, SkColor>::const_iterator it = color_map.begin();
          it != color_map.end(); ++it) {
-      SkColor color = BrowserThemeProvider::GetDefaultColor(it->first);
+      SkColor color = ThemeService::GetDefaultColor(it->first);
       theme_pack_->GetColor(it->first, &color);
       EXPECT_EQ(it->second, color) << "Color id = " << it->first;
     }
@@ -148,25 +148,25 @@ class BrowserThemePackTest : public ::testing::Test {
   void VerifyStarGazing(BrowserThemePack* pack) {
     // First check that values we know exist, exist.
     SkColor color;
-    EXPECT_TRUE(pack->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT,
+    EXPECT_TRUE(pack->GetColor(ThemeService::COLOR_BOOKMARK_TEXT,
                                &color));
     EXPECT_EQ(SK_ColorBLACK, color);
 
-    EXPECT_TRUE(pack->GetColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND,
+    EXPECT_TRUE(pack->GetColor(ThemeService::COLOR_NTP_BACKGROUND,
                                &color));
     EXPECT_EQ(SkColorSetRGB(57, 137, 194), color);
 
     color_utils::HSL expected = { 0.6, 0.553, 0.5 };
     color_utils::HSL actual;
-    EXPECT_TRUE(pack->GetTint(BrowserThemeProvider::TINT_BUTTONS, &actual));
+    EXPECT_TRUE(pack->GetTint(ThemeService::TINT_BUTTONS, &actual));
     EXPECT_DOUBLE_EQ(expected.h, actual.h);
     EXPECT_DOUBLE_EQ(expected.s, actual.s);
     EXPECT_DOUBLE_EQ(expected.l, actual.l);
 
     int val;
     EXPECT_TRUE(pack->GetDisplayProperty(
-        BrowserThemeProvider::NTP_BACKGROUND_ALIGNMENT, &val));
-    EXPECT_EQ(BrowserThemeProvider::ALIGN_TOP, val);
+        ThemeService::NTP_BACKGROUND_ALIGNMENT, &val));
+    EXPECT_EQ(ThemeService::ALIGN_TOP, val);
 
     // The stargazing theme defines the following images:
     EXPECT_TRUE(pack->HasCustomImage(IDR_THEME_BUTTON_BACKGROUND));
@@ -185,9 +185,9 @@ class BrowserThemePackTest : public ::testing::Test {
     EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND_INCOGNITO));
 
     // Make sure we don't have phantom data.
-    EXPECT_FALSE(pack->GetColor(BrowserThemeProvider::COLOR_CONTROL_BACKGROUND,
+    EXPECT_FALSE(pack->GetColor(ThemeService::COLOR_CONTROL_BACKGROUND,
                                 &color));
-    EXPECT_FALSE(pack->GetTint(BrowserThemeProvider::TINT_FRAME, &actual));
+    EXPECT_FALSE(pack->GetTint(ThemeService::TINT_FRAME, &actual));
   }
 
   MessageLoop message_loop;
@@ -207,11 +207,11 @@ TEST_F(BrowserThemePackTest, DeriveUnderlineLinkColor) {
 
   std::map<int, SkColor> colors = GetDefaultColorMap();
   SkColor link_color = SkColorSetRGB(128, 128, 128);
-  colors[BrowserThemeProvider::COLOR_NTP_LINK] = link_color;
-  colors[BrowserThemeProvider::COLOR_NTP_LINK_UNDERLINE] =
+  colors[ThemeService::COLOR_NTP_LINK] = link_color;
+  colors[ThemeService::COLOR_NTP_LINK_UNDERLINE] =
       BuildThirdOpacity(link_color);
-  colors[BrowserThemeProvider::COLOR_NTP_SECTION_LINK] = link_color;
-  colors[BrowserThemeProvider::COLOR_NTP_SECTION_LINK_UNDERLINE] =
+  colors[ThemeService::COLOR_NTP_SECTION_LINK] = link_color;
+  colors[ThemeService::COLOR_NTP_SECTION_LINK_UNDERLINE] =
       BuildThirdOpacity(link_color);
 
   VerifyColorMap(colors);
@@ -229,10 +229,10 @@ TEST_F(BrowserThemePackTest, ProvideUnderlineLinkColor) {
   std::map<int, SkColor> colors = GetDefaultColorMap();
   SkColor link_color = SkColorSetRGB(128, 128, 128);
   SkColor underline_color = SkColorSetRGB(255, 255, 255);
-  colors[BrowserThemeProvider::COLOR_NTP_LINK] = link_color;
-  colors[BrowserThemeProvider::COLOR_NTP_LINK_UNDERLINE] = underline_color;
-  colors[BrowserThemeProvider::COLOR_NTP_SECTION_LINK] = link_color;
-  colors[BrowserThemeProvider::COLOR_NTP_SECTION_LINK_UNDERLINE] =
+  colors[ThemeService::COLOR_NTP_LINK] = link_color;
+  colors[ThemeService::COLOR_NTP_LINK_UNDERLINE] = underline_color;
+  colors[ThemeService::COLOR_NTP_SECTION_LINK] = link_color;
+  colors[ThemeService::COLOR_NTP_SECTION_LINK_UNDERLINE] =
       underline_color;
 
   VerifyColorMap(colors);
@@ -244,8 +244,8 @@ TEST_F(BrowserThemePackTest, UseSectionColorAsNTPHeader) {
 
   std::map<int, SkColor> colors = GetDefaultColorMap();
   SkColor ntp_color = SkColorSetRGB(190, 190, 190);
-  colors[BrowserThemeProvider::COLOR_NTP_HEADER] = ntp_color;
-  colors[BrowserThemeProvider::COLOR_NTP_SECTION] = ntp_color;
+  colors[ThemeService::COLOR_NTP_HEADER] = ntp_color;
+  colors[ThemeService::COLOR_NTP_SECTION] = ntp_color;
   VerifyColorMap(colors);
 }
 
@@ -257,8 +257,8 @@ TEST_F(BrowserThemePackTest, ProvideNtpHeaderColor) {
   std::map<int, SkColor> colors = GetDefaultColorMap();
   SkColor ntp_header = SkColorSetRGB(120, 120, 120);
   SkColor ntp_section = SkColorSetRGB(190, 190, 190);
-  colors[BrowserThemeProvider::COLOR_NTP_HEADER] = ntp_header;
-  colors[BrowserThemeProvider::COLOR_NTP_SECTION] = ntp_section;
+  colors[ThemeService::COLOR_NTP_HEADER] = ntp_header;
+  colors[ThemeService::COLOR_NTP_SECTION] = ntp_section;
   VerifyColorMap(colors);
 }
 
@@ -269,7 +269,7 @@ TEST_F(BrowserThemePackTest, CanReadTints) {
   color_utils::HSL expected = { 0.5, 0.5, 0.5 };
   color_utils::HSL actual = { -1, -1, -1 };
   EXPECT_TRUE(theme_pack_->GetTint(
-      BrowserThemeProvider::TINT_BUTTONS, &actual));
+      ThemeService::TINT_BUTTONS, &actual));
   EXPECT_DOUBLE_EQ(expected.h, actual.h);
   EXPECT_DOUBLE_EQ(expected.s, actual.s);
   EXPECT_DOUBLE_EQ(expected.l, actual.l);
@@ -283,15 +283,15 @@ TEST_F(BrowserThemePackTest, CanReadDisplayProperties) {
 
   int out_val;
   EXPECT_TRUE(theme_pack_->GetDisplayProperty(
-      BrowserThemeProvider::NTP_BACKGROUND_ALIGNMENT, &out_val));
-  EXPECT_EQ(BrowserThemeProvider::ALIGN_BOTTOM, out_val);
+      ThemeService::NTP_BACKGROUND_ALIGNMENT, &out_val));
+  EXPECT_EQ(ThemeService::ALIGN_BOTTOM, out_val);
 
   EXPECT_TRUE(theme_pack_->GetDisplayProperty(
-      BrowserThemeProvider::NTP_BACKGROUND_TILING, &out_val));
-  EXPECT_EQ(BrowserThemeProvider::REPEAT_X, out_val);
+      ThemeService::NTP_BACKGROUND_TILING, &out_val));
+  EXPECT_EQ(ThemeService::REPEAT_X, out_val);
 
   EXPECT_TRUE(theme_pack_->GetDisplayProperty(
-      BrowserThemeProvider::NTP_LOGO_ALTERNATE, &out_val));
+      ThemeService::NTP_LOGO_ALTERNATE, &out_val));
   EXPECT_EQ(0, out_val);
 }
 
@@ -335,7 +335,7 @@ TEST_F(BrowserThemePackTest, InvalidTints) {
 
   // We shouldn't have a buttons tint, as it was invalid.
   color_utils::HSL actual = { -1, -1, -1 };
-  EXPECT_FALSE(theme_pack_->GetTint(BrowserThemeProvider::TINT_BUTTONS,
+  EXPECT_FALSE(theme_pack_->GetTint(ThemeService::TINT_BUTTONS,
                                     &actual));
 }
 
@@ -346,7 +346,7 @@ TEST_F(BrowserThemePackTest, InvalidDisplayProperties) {
 
   int out_val;
   EXPECT_FALSE(theme_pack_->GetDisplayProperty(
-      BrowserThemeProvider::NTP_BACKGROUND_ALIGNMENT, &out_val));
+      ThemeService::NTP_BACKGROUND_ALIGNMENT, &out_val));
 }
 
 // These three tests should just not cause a segmentation fault.

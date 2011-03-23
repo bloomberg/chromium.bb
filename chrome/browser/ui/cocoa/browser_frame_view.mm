@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#import "chrome/browser/themes/browser_theme_provider.h"
+#import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
@@ -248,8 +248,8 @@ static BOOL gCanGetCornerRadius = NO;
   NSGradient* gradient = nil;
   if (!themeImageColor && incognito)
     gradient = themeProvider->GetNSGradient(
-        active ? BrowserThemeProvider::GRADIENT_FRAME_INCOGNITO :
-                 BrowserThemeProvider::GRADIENT_FRAME_INCOGNITO_INACTIVE);
+        active ? ThemeService::GRADIENT_FRAME_INCOGNITO :
+                 ThemeService::GRADIENT_FRAME_INCOGNITO_INACTIVE);
 
   BOOL themed = NO;
   if (themeImageColor) {
@@ -336,10 +336,10 @@ static BOOL gCanGetCornerRadius = NO;
   NSColor* titleColor = nil;
   if (popup && active) {
     titleColor = themeProvider->GetNSColor(
-        BrowserThemeProvider::COLOR_TAB_TEXT, false);
+        ThemeService::COLOR_TAB_TEXT, false);
   } else if (popup && !active) {
     titleColor = themeProvider->GetNSColor(
-        BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT, false);
+        ThemeService::COLOR_BACKGROUND_TAB_TEXT, false);
   }
 
   if (titleColor)

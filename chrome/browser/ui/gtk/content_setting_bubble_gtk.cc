@@ -15,7 +15,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/content_settings.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -87,7 +87,7 @@ void ContentSettingBubbleGtk::Observe(NotificationType type,
 }
 
 void ContentSettingBubbleGtk::BuildBubble() {
-  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(profile_);
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(profile_);
 
   GtkWidget* bubble_content = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(bubble_content), kContentBorder);

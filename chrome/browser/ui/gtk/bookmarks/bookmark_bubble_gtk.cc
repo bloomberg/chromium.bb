@@ -19,7 +19,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "content/common/notification_service.h"
@@ -67,9 +67,9 @@ void BookmarkBubbleGtk::Observe(NotificationType type,
 
   gtk_chrome_link_button_set_use_gtk_theme(
       GTK_CHROME_LINK_BUTTON(remove_button_),
-      theme_provider_->UseGtkTheme());
+      theme_service_->UseGtkTheme());
 
-  if (theme_provider_->UseGtkTheme()) {
+  if (theme_service_->UseGtkTheme()) {
     for (std::vector<GtkWidget*>::iterator it = labels_.begin();
          it != labels_.end(); ++it) {
       gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, NULL);
@@ -88,7 +88,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
                                      bool newly_bookmarked)
     : url_(url),
       profile_(profile),
-      theme_provider_(GtkThemeProvider::GetFrom(profile_)),
+      theme_service_(GtkThemeService::GetFrom(profile_)),
       anchor_(anchor),
       content_(NULL),
       name_entry_(NULL),
@@ -166,7 +166,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
                                 arrow_location,
                                 true,  // match_system_theme
                                 true,  // grab_input
-                                theme_provider_,
+                                theme_service_,
                                 this);  // delegate
   if (!bubble_) {
     NOTREACHED();
@@ -190,7 +190,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
-  theme_provider_->InitThemesFor(this);
+  theme_service_->InitThemesFor(this);
 }
 
 BookmarkBubbleGtk::~BookmarkBubbleGtk() {

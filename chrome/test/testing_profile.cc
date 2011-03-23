@@ -323,7 +323,7 @@ void TestingProfile::SetTemplateURLModel(TemplateURLModel* model) {
   template_url_model_.reset(model);
 }
 
-void TestingProfile::UseThemeProvider(BrowserThemeProvider* theme_provider) {
+void TestingProfile::UseThemeProvider(ThemeService* theme_provider) {
   NOTREACHED() << "This needs to go away for a different testing interface.";
 }
 

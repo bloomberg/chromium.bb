@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -149,7 +149,7 @@ SkColor TabRendererGtk::unselected_title_color_ = SkColorSetRGB(64, 64, 64);
 TabRendererGtk::LoadingAnimation::LoadingAnimation(
     ui::ThemeProvider* theme_provider)
     : data_(new Data(theme_provider)),
-      theme_provider_(theme_provider),
+      theme_service_(theme_provider),
       animation_state_(ANIMATION_NONE),
       animation_frame_(0) {
   registrar_.Add(this,
@@ -160,7 +160,7 @@ TabRendererGtk::LoadingAnimation::LoadingAnimation(
 TabRendererGtk::LoadingAnimation::LoadingAnimation(
     const LoadingAnimation::Data& data)
     : data_(new Data(data)),
-      theme_provider_(NULL),
+      theme_service_(NULL),
       animation_state_(ANIMATION_NONE),
       animation_frame_(0) {
 }
@@ -201,7 +201,7 @@ void TabRendererGtk::LoadingAnimation::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
-  data_.reset(new Data(theme_provider_));
+  data_.reset(new Data(theme_service_));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -285,7 +285,7 @@ void TabRendererGtk::UpdateData(TabContents* contents,
                                 bool app,
                                 bool loading_only) {
   DCHECK(contents);
-  theme_provider_ = GtkThemeProvider::GetFrom(contents->profile());
+  theme_service_ = GtkThemeService::GetFrom(contents->profile());
 
   if (!loading_only) {
     data_.title = contents->GetTitle();
@@ -391,10 +391,10 @@ void TabRendererGtk::PaintFaviconArea(GdkEventExpose* event) {
     } else {
       theme_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
     }
-    if (!theme_provider_->HasCustomImage(theme_id))
+    if (!theme_service_->HasCustomImage(theme_id))
       offset_y = background_offset_y_;
   }
-  SkBitmap* tab_bg = theme_provider_->GetBitmapNamed(theme_id);
+  SkBitmap* tab_bg = theme_service_->GetBitmapNamed(theme_id);
   canvas.TileImageInt(*tab_bg,
       x() + favicon_bounds_.x(), offset_y + favicon_bounds_.y(),
       favicon_bounds_.x(), favicon_bounds_.y(),
@@ -409,7 +409,7 @@ void TabRendererGtk::PaintFaviconArea(GdkEventExpose* event) {
       canvas.saveLayerAlpha(&bounds, static_cast<int>(throb_value * 0xff),
                             SkCanvas::kARGB_ClipLayer_SaveFlag);
       canvas.drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
-      SkBitmap* active_bg = theme_provider_->GetBitmapNamed(IDR_THEME_TOOLBAR);
+      SkBitmap* active_bg = theme_service_->GetBitmapNamed(IDR_THEME_TOOLBAR);
       canvas.TileImageInt(*active_bg,
           x() + favicon_bounds_.x(), favicon_bounds_.y(),
           favicon_bounds_.x(), favicon_bounds_.y(),
@@ -702,9 +702,9 @@ void TabRendererGtk::Layout() {
                                  close_button_height_);
 
     // If the close button color has changed, generate a new one.
-    if (theme_provider_) {
+    if (theme_service_) {
       SkColor tab_text_color =
-        theme_provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT);
+        theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT);
       if (!close_button_color_ || tab_text_color != close_button_color_) {
         close_button_color_ = tab_text_color;
         ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -837,8 +837,8 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
                             true);
     } else {
       if (!data_.favicon.isNull()) {
-        if (data_.is_default_favicon && theme_provider_->UseGtkTheme()) {
-          GdkPixbuf* favicon = GtkThemeProvider::GetDefaultFavicon(true);
+        if (data_.is_default_favicon && theme_service_->UseGtkTheme()) {
+          GdkPixbuf* favicon = GtkThemeService::GetDefaultFavicon(true);
           canvas->AsCanvasSkia()->DrawGdkPixbuf(
               favicon, favicon_bounds_.x(),
               favicon_bounds_.y() + favicon_hiding_offset_);
@@ -897,12 +897,12 @@ void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   int tab_id = data_.incognito ?
       IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
 
-  SkBitmap* tab_bg = theme_provider_->GetBitmapNamed(tab_id);
+  SkBitmap* tab_bg = theme_service_->GetBitmapNamed(tab_id);
 
   // If the theme is providing a custom background image, then its top edge
   // should be at the top of the tab. Otherwise, we assume that the background
   // image is a composited foreground + frame image.
-  int offset_y = theme_provider_->HasCustomImage(tab_id) ?
+  int offset_y = theme_service_->HasCustomImage(tab_id) ?
       0 : background_offset_y_;
 
   // Draw left edge.
@@ -932,7 +932,7 @@ void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 void TabRendererGtk::PaintActiveTabBackground(gfx::Canvas* canvas) {
   int offset_x = background_offset_x_;
 
-  SkBitmap* tab_bg = theme_provider_->GetBitmapNamed(IDR_THEME_TOOLBAR);
+  SkBitmap* tab_bg = theme_service_->GetBitmapNamed(IDR_THEME_TOOLBAR);
 
   // Draw left edge.
   SkBitmap* theme_l = GetMaskedBitmap(tab_alpha_.image_l, tab_bg, offset_x, 0);

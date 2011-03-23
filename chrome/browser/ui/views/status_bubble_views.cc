@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -82,7 +82,7 @@ class StatusBubbleViews::StatusView : public views::Label,
         popup_(popup),
         opacity_start_(0),
         opacity_end_(0),
-        theme_provider_(theme_provider) {
+        theme_service_(theme_provider) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     gfx::Font font(rb.GetFont(ResourceBundle::BaseFont));
     SetFont(font);
@@ -174,7 +174,7 @@ class StatusBubbleViews::StatusView : public views::Label,
   double opacity_end_;
 
   // Holds the theme provider of the frame that created us.
-  ui::ThemeProvider* theme_provider_;
+  ui::ThemeProvider* theme_service_;
 };
 
 void StatusBubbleViews::StatusView::SetText(const string16& text,
@@ -340,7 +340,7 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   paint.setStyle(SkPaint::kFill_Style);
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   SkColor toolbar_color =
-      theme_provider_->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+      theme_service_->GetColor(ThemeService::COLOR_TOOLBAR);
   paint.setColor(toolbar_color);
 
   gfx::Rect popup_bounds = popup_->GetWindowScreenBounds();
@@ -438,7 +438,7 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
                         std::max(0, text_height));
   body_bounds.set_x(GetMirroredXForRect(body_bounds));
   SkColor text_color =
-      theme_provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT);
+      theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT);
 
   // DrawStringInt doesn't handle alpha, so we'll do the blending ourselves.
   text_color = SkColorSetARGB(

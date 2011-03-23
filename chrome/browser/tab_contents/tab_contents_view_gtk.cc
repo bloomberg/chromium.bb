@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_expanded_container.h"
 #include "chrome/browser/ui/gtk/gtk_floating_container.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/sad_tab_gtk.h"
 #include "chrome/browser/ui/gtk/tab_contents_drag_source.h"

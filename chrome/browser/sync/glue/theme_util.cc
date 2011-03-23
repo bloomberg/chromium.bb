@@ -12,12 +12,12 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #endif
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "googleurl/src/gurl.h"
@@ -38,7 +38,7 @@ bool IsSystemThemeDistinctFromDefaultTheme() {
 
 bool UseSystemTheme(Profile* profile) {
 #if defined(TOOLKIT_USES_GTK)
-  return GtkThemeProvider::GetFrom(profile)->UseGtkTheme();
+  return GtkThemeService::GetFrom(profile)->UseGtkTheme();
 #else
   return false;
 #endif

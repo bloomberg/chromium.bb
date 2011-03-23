@@ -7,19 +7,19 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 OverflowButton::OverflowButton(Profile* profile) : profile_(profile) {
-  widget_.Own(GtkThemeProvider::GetFrom(profile)->BuildChromeButton());
+  widget_.Own(GtkThemeService::GetFrom(profile)->BuildChromeButton());
   gtk_widget_set_no_show_all(widget_.get(), TRUE);
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
-  GtkThemeProvider::GetFrom(profile)->InitThemesFor(this);
+  GtkThemeService::GetFrom(profile)->InitThemesFor(this);
 }
 
 OverflowButton::~OverflowButton() {
@@ -34,7 +34,7 @@ void OverflowButton::Observe(NotificationType type,
     gtk_widget_destroy(former_child);
 
   GtkWidget* new_child =
-      GtkThemeProvider::GetFrom(profile_)->UseGtkTheme() ?
+      GtkThemeService::GetFrom(profile_)->UseGtkTheme() ?
       gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE) :
       gtk_image_new_from_pixbuf(ResourceBundle::GetSharedInstance().
           GetRTLEnabledPixbufNamed(IDR_BOOKMARK_BAR_CHEVRONS));

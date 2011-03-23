@@ -10,7 +10,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profile_menu_button.h"
 #include "chrome/browser/ui/views/profile_menu_model.h"
@@ -464,7 +464,7 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   // where not covered by the toolbar image.  NOTE: We do this after drawing the
   // images because the images are meant to alpha-blend atop the frame whereas
   // these rects are meant to be fully opaque, without anything overlaid.
-  SkColor toolbar_color = tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+  SkColor toolbar_color = tp->GetColor(ThemeService::COLOR_TOOLBAR);
   canvas->FillRectInt(toolbar_color,
       client_area_bounds.x() - kClientEdgeThickness, client_area_top,
       kClientEdgeThickness,

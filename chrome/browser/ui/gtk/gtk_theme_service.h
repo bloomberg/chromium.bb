@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_GTK_THEME_PROVIDER_H_
-#define CHROME_BROWSER_UI_GTK_GTK_THEME_PROVIDER_H_
+#ifndef CHROME_BROWSER_UI_GTK_GTK_THEME_SERVICE_H_
+#define CHROME_BROWSER_UI_GTK_GTK_THEME_SERVICE_H_
 #pragma once
 
 #include <map>
@@ -11,7 +11,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/notification_observer.h"
 #include "ui/base/gtk/gtk_integers.h"
@@ -32,24 +32,24 @@ typedef struct _GtkIconSet GtkIconSet;
 typedef struct _GtkStyle GtkStyle;
 typedef struct _GtkWidget GtkWidget;
 
-// Specialization of BrowserThemeProvider which supplies system colors.
-class GtkThemeProvider : public BrowserThemeProvider,
-                         public NotificationObserver {
+// Specialization of ThemeService which supplies system colors.
+class GtkThemeService : public ThemeService,
+                        public NotificationObserver {
  public:
-  // Returns GtkThemeProvider, casted from our superclass.
-  static GtkThemeProvider* GetFrom(Profile* profile);
+  // Returns GtkThemeService, casted from our superclass.
+  static GtkThemeService* GetFrom(Profile* profile);
 
-  GtkThemeProvider();
-  virtual ~GtkThemeProvider();
+  GtkThemeService();
+  virtual ~GtkThemeService();
 
   // Calls |observer|.Observe() for the browser theme with this provider as the
   // source.
   void InitThemesFor(NotificationObserver* observer);
 
-  // Overridden from BrowserThemeProvider:
+  // Overridden from ThemeService:
   //
   // Sets that we aren't using the system theme, then calls
-  // BrowserThemeProvider's implementation.
+  // ThemeService's implementation.
   virtual void Init(Profile* profile);
   virtual SkBitmap* GetBitmapNamed(int id) const;
   virtual SkColor GetColor(int id) const;
@@ -107,7 +107,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
                                                 GtkWidget* widget_on_display);
 
   // Same as above, but gets the resource from the ResourceBundle instead of the
-  // BrowserThemeProvider.
+  // ThemeService.
   // NOTE: Never call this with resource IDs that are ever passed to the above
   // two functions!  Depending on which call comes first, all callers will
   // either get the themed or the unthemed version.
@@ -163,7 +163,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   virtual void FreePlatformCaches();
 
   // Extracts colors and tints from the GTK theme, both for the
-  // BrowserThemeProvider interface and the colors we send to webkit.
+  // ThemeService interface and the colors we send to webkit.
   void LoadGtkValues();
 
   // Reads in explicit theme frame colors from the ChromeGtkFrame style class
@@ -192,9 +192,9 @@ class GtkThemeProvider : public BrowserThemeProvider,
                                  int tint_id);
 
   // Split out from FreePlatformCaches so it can be called in our destructor;
-  // FreePlatformCaches() is called from the BrowserThemeProvider's destructor,
-  // but by the time ~BrowserThemeProvider() is run, the vtable no longer
-  // points to GtkThemeProvider's version.
+  // FreePlatformCaches() is called from the ThemeService's destructor,
+  // but by the time ~ThemeService() is run, the vtable no longer
+  // points to GtkThemeService's version.
   void FreePerDisplaySurfaces(PerDisplaySurfaceMap* per_display_map);
 
   // Frees all the created GtkIconSets we use for the chrome menu.
@@ -214,7 +214,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   SkBitmap* GenerateTabImage(int base_id) const;
 
   // Tints an icon based on tint.
-  SkBitmap* GenerateTintedIcon(int base_id, 
+  SkBitmap* GenerateTintedIcon(int base_id,
                                const color_utils::HSL& tint) const;
 
   // Returns the tint for buttons that contrasts with the normal window
@@ -235,13 +235,13 @@ class GtkThemeProvider : public BrowserThemeProvider,
                                           GtkWidget* widget_on_display);
 
   // Handles signal from GTK that our theme has been changed.
-  CHROMEGTK_CALLBACK_1(GtkThemeProvider, void, OnStyleSet, GtkStyle*);
+  CHROMEGTK_CALLBACK_1(GtkThemeService, void, OnStyleSet, GtkStyle*);
 
   // A notification from the GtkChromeButton GObject destructor that we should
   // remove it from our internal list.
-  CHROMEGTK_CALLBACK_0(GtkThemeProvider, void, OnDestroyChromeButton);
+  CHROMEGTK_CALLBACK_0(GtkThemeService, void, OnDestroyChromeButton);
 
-  CHROMEGTK_CALLBACK_1(GtkThemeProvider, gboolean, OnSeparatorExpose,
+  CHROMEGTK_CALLBACK_1(GtkThemeService, gboolean, OnSeparatorExpose,
                        GdkEventExpose*);
 
   // Whether we should be using gtk rendering.
@@ -310,4 +310,4 @@ class GtkThemeProvider : public BrowserThemeProvider,
   static GdkPixbuf* default_bookmark_icon_;
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_GTK_THEME_PROVIDER_H_
+#endif  // CHROME_BROWSER_UI_GTK_GTK_THEME_SERVICE_H_

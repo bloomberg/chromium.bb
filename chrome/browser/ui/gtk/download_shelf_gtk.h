@@ -24,7 +24,7 @@ class BaseDownloadItemModel;
 class Browser;
 class CustomDrawButton;
 class DownloadItemGtk;
-class GtkThemeProvider;
+class GtkThemeService;
 class SlideAnimatorGtk;
 
 namespace gfx {
@@ -132,7 +132,7 @@ class DownloadShelfGtk : public DownloadShelf,
   std::vector<DownloadItemGtk*> download_items_;
 
   // Gives us our colors and theme information.
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   NotificationRegistrar registrar_;
 

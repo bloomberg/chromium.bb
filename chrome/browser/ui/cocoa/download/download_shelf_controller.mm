@@ -9,8 +9,8 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
@@ -167,7 +167,7 @@ const NSTimeInterval kAutoCloseDelaySeconds = 5;
         ThemeServiceFactory::GetForProfile(bridge_->browser()->profile());
 
     color =
-        provider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT, false);
+        provider->GetNSColor(ThemeService::COLOR_BOOKMARK_TEXT, false);
   }
 
   if (!color)

@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
@@ -86,7 +86,7 @@ class PageInfoBubbleGtk : public PageInfoModel::PageInfoModelObserver,
   GtkWidget* anchor_;
 
   // Provides colors and stuff.
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   // The various elements in the interface we keep track of for theme changes.
   std::vector<GtkWidget*> labels_;
@@ -110,7 +110,7 @@ PageInfoBubbleGtk::PageInfoBubbleGtk(gfx::NativeWindow parent,
       cert_id_(ssl.cert_id()),
       parent_(parent),
       contents_(NULL),
-      theme_provider_(GtkThemeProvider::GetFrom(profile)) {
+      theme_service_(GtkThemeService::GetFrom(profile)) {
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
 
@@ -131,7 +131,7 @@ PageInfoBubbleGtk::PageInfoBubbleGtk(gfx::NativeWindow parent,
                                 arrow_location,
                                 true,  // |match_system_theme|
                                 true,  // |grab_input|
-                                theme_provider_,
+                                theme_service_,
                                 this);  // |delegate|
   if (!bubble_) {
     NOTREACHED();
@@ -155,10 +155,10 @@ void PageInfoBubbleGtk::Observe(NotificationType type,
        it != links_.end(); ++it) {
     gtk_chrome_link_button_set_use_gtk_theme(
         GTK_CHROME_LINK_BUTTON(*it),
-        theme_provider_->UseGtkTheme());
+        theme_service_->UseGtkTheme());
   }
 
-  if (theme_provider_->UseGtkTheme()) {
+  if (theme_service_->UseGtkTheme()) {
     for (std::vector<GtkWidget*>::iterator it = labels_.begin();
          it != labels_.end(); ++it) {
       gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, NULL);
@@ -206,7 +206,7 @@ void PageInfoBubbleGtk::InitContents() {
   g_signal_connect(help_link, "clicked",
                    G_CALLBACK(OnHelpLinkClickedThunk), this);
 
-  theme_provider_->InitThemesFor(this);
+  theme_service_->InitThemesFor(this);
   gtk_widget_show_all(contents_);
 }
 

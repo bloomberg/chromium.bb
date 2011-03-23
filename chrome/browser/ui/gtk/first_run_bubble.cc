@@ -12,7 +12,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -57,7 +57,7 @@ void FirstRunBubble::Observe(NotificationType type,
                              const NotificationDetails& details) {
   DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
 
-  if (theme_provider_->UseGtkTheme()) {
+  if (theme_service_->UseGtkTheme()) {
     for (std::vector<GtkWidget*>::iterator it = labels_.begin();
          it != labels_.end(); ++it) {
       gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, NULL);
@@ -75,7 +75,7 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
                                const gfx::Rect& rect,
                                FirstRun::BubbleType bubble_type)
     : profile_(profile),
-      theme_provider_(GtkThemeProvider::GetFrom(profile_)),
+      theme_service_(GtkThemeService::GetFrom(profile_)),
       anchor_(anchor),
       content_(NULL),
       bubble_(NULL) {
@@ -110,7 +110,7 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
                                 arrow_location,
                                 true,  // match_system_theme
                                 true,  // grab_input
-                                theme_provider_,
+                                theme_service_,
                                 this);  // delegate
   if (!bubble_) {
     NOTREACHED();
@@ -119,7 +119,7 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
-  theme_provider_->InitThemesFor(this);
+  theme_service_->InitThemesFor(this);
 }
 
 FirstRunBubble::~FirstRunBubble() {

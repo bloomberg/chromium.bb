@@ -67,7 +67,6 @@
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tabs/pinned_tab_service.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"

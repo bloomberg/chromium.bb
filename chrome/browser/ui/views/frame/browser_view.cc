@@ -33,7 +33,7 @@
 #include "chrome/browser/sidebar/sidebar_container.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -1855,7 +1855,7 @@ void BrowserView::Init() {
   contents_ = new ContentsContainer(contents_container_);
 
   SkColor bg_color = GetWidget()->GetThemeProvider()->
-      GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+      GetColor(ThemeService::COLOR_TOOLBAR);
 
   bool sidebar_allowed = SidebarManager::IsSidebarAllowed();
   if (sidebar_allowed) {

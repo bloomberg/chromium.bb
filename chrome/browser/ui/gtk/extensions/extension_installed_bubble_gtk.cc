@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/gtk/browser_actions_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/common/extensions/extension.h"
@@ -171,7 +171,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   if (reference_widget == NULL)
     reference_widget = browser_window->GetToolbar()->GetAppMenuButton();
 
-  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       browser_->profile());
 
   // Setup the InfoBubble content.

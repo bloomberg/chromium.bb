@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/cocoa/background_gradient_view.h"
 
-#import "chrome/browser/themes/browser_theme_provider.h"
+#import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
 
@@ -43,8 +43,8 @@
     } else {
       CGFloat winHeight = NSHeight([[self window] frame]);
       NSGradient* gradient = themeProvider->GetNSGradient(
-          isKey ? BrowserThemeProvider::GRADIENT_TOOLBAR :
-                  BrowserThemeProvider::GRADIENT_TOOLBAR_INACTIVE);
+          isKey ? ThemeService::GRADIENT_TOOLBAR :
+                  ThemeService::GRADIENT_TOOLBAR_INACTIVE);
       NSPoint startPoint =
           [self convertPoint:NSMakePoint(0, winHeight - kToolbarTopOffset)
                     fromView:nil];
@@ -74,8 +74,8 @@
   if (!themeProvider)
     return [NSColor blackColor];
   return themeProvider->GetNSColor(
-      isKey ? BrowserThemeProvider::COLOR_TOOLBAR_STROKE :
-              BrowserThemeProvider::COLOR_TOOLBAR_STROKE_INACTIVE, true);
+      isKey ? ThemeService::COLOR_TOOLBAR_STROKE :
+              ThemeService::COLOR_TOOLBAR_STROKE_INACTIVE, true);
 }
 
 @end

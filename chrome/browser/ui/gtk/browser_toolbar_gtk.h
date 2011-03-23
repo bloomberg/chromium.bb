@@ -28,7 +28,7 @@ class Browser;
 class BrowserActionsToolbarGtk;
 class BrowserWindowGtk;
 class CustomDrawButton;
-class GtkThemeProvider;
+class GtkThemeService;
 class LocationBar;
 class LocationBarViewGtk;
 class Profile;
@@ -186,7 +186,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;
 
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   scoped_ptr<MenuGtk> wrench_menu_;
 

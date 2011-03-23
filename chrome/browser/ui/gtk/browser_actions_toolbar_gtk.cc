@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_shrinkable_hbox.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/hover_controller_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
@@ -85,7 +85,7 @@ class BrowserActionButton : public NotificationObserver,
  public:
   BrowserActionButton(BrowserActionsToolbarGtk* toolbar,
                       const Extension* extension,
-                      GtkThemeProvider* theme_provider)
+                      GtkThemeService* theme_provider)
       : toolbar_(toolbar),
         extension_(extension),
         image_(NULL),
@@ -364,7 +364,7 @@ class BrowserActionButton : public NotificationObserver,
 BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
     : browser_(browser),
       profile_(browser->profile()),
-      theme_provider_(GtkThemeProvider::GetFrom(browser->profile())),
+      theme_service_(GtkThemeService::GetFrom(browser->profile())),
       model_(NULL),
       hbox_(gtk_hbox_new(FALSE, 0)),
       button_hbox_(gtk_chrome_shrinkable_hbox_new(TRUE, FALSE, kButtonPadding)),
@@ -380,7 +380,7 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
     return;
 
   overflow_button_.reset(new CustomDrawButton(
-      theme_provider_,
+      theme_service_,
       IDR_BROWSER_ACTIONS_OVERFLOW,
       IDR_BROWSER_ACTIONS_OVERFLOW_P,
       IDR_BROWSER_ACTIONS_OVERFLOW_H,
@@ -448,7 +448,7 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
-  theme_provider_->InitThemesFor(this);
+  theme_service_->InitThemesFor(this);
 }
 
 BrowserActionsToolbarGtk::~BrowserActionsToolbarGtk() {
@@ -477,7 +477,7 @@ void BrowserActionsToolbarGtk::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
   DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
-  if (theme_provider_->UseGtkTheme())
+  if (theme_service_->UseGtkTheme())
     gtk_widget_show(separator_);
   else
     gtk_widget_hide(separator_);
@@ -518,7 +518,7 @@ void BrowserActionsToolbarGtk::CreateButtonForExtension(
 
   RemoveButtonForExtension(extension);
   linked_ptr<BrowserActionButton> button(
-      new BrowserActionButton(this, extension, theme_provider_));
+      new BrowserActionButton(this, extension, theme_service_));
   gtk_chrome_shrinkable_hbox_pack_start(
       GTK_CHROME_SHRINKABLE_HBOX(button_hbox_.get()), button->widget(), 0);
   gtk_box_reorder_child(GTK_BOX(button_hbox_.get()), button->widget(), index);

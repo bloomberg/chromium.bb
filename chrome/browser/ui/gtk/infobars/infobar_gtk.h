@@ -18,7 +18,7 @@
 #include "ui/base/gtk/gtk_signal.h"
 
 class CustomDrawButton;
-class GtkThemeProvider;
+class GtkThemeService;
 class InfoBarContainerGtk;
 class InfoBarDelegate;
 
@@ -59,7 +59,7 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
   // Returns true if the infobar is showing the close animation.
   bool IsClosing();
 
-  void SetThemeProvider(GtkThemeProvider* theme_provider);
+  void SetThemeProvider(GtkThemeService* theme_provider);
 
   // Show an arrow that originates from another infobar (i.e. a bar was added
   // below this one). If |other| is NULL, stop showing the arrow.
@@ -124,7 +124,7 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
   InfoBarDelegate* delegate_;
 
   // The theme provider, used for getting border colors.
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   // The model that tracks the paint state of the arrow for the infobar
   // below this one (if it exists).

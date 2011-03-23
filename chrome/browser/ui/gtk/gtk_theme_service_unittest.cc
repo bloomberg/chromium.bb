@@ -6,7 +6,7 @@
 
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/theme_resources.h"
@@ -23,37 +23,37 @@ SkColor GdkToSkColor(GdkColor* color) {
 
 }  // namespace
 
-class GtkThemeProviderTest : public testing::Test {
+class GtkThemeServiceTest : public testing::Test {
  public:
-  GtkThemeProviderTest() : provider_(NULL) {}
+  GtkThemeServiceTest() : provider_(NULL) {}
 
   void SetUseGtkTheme(bool use_gtk_theme) {
     profile_.GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, use_gtk_theme);
   }
 
   void BuildProvider() {
-    provider_ = GtkThemeProvider::GetFrom(&profile_);
+    provider_ = GtkThemeService::GetFrom(&profile_);
   }
 
  protected:
   TestingProfile profile_;
 
-  GtkThemeProvider* provider_;
+  GtkThemeService* provider_;
 };
 
-TEST_F(GtkThemeProviderTest, DefaultValues) {
+TEST_F(GtkThemeServiceTest, DefaultValues) {
   SetUseGtkTheme(false);
   BuildProvider();
 
   // Test that we get the default theme colors back when in normal mode.
-  for (int i = BrowserThemeProvider::COLOR_FRAME;
-       i <= BrowserThemeProvider::COLOR_BUTTON_BACKGROUND; ++i) {
-    EXPECT_EQ(provider_->GetColor(i), BrowserThemeProvider::GetDefaultColor(i))
+  for (int i = ThemeService::COLOR_FRAME;
+       i <= ThemeService::COLOR_BUTTON_BACKGROUND; ++i) {
+    EXPECT_EQ(provider_->GetColor(i), ThemeService::GetDefaultColor(i))
         << "Wrong default color for " << i;
   }
 }
 
-TEST_F(GtkThemeProviderTest, UsingGtkValues) {
+TEST_F(GtkThemeServiceTest, UsingGtkValues) {
   SetUseGtkTheme(true);
   BuildProvider();
 
@@ -65,6 +65,6 @@ TEST_F(GtkThemeProviderTest, UsingGtkValues) {
   GtkWidget* fake_label = provider_->fake_label();
   GtkStyle* label_style = gtk_rc_get_style(fake_label);
   GdkColor label_color = label_style->fg[GTK_STATE_NORMAL];
-  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT),
+  EXPECT_EQ(provider_->GetColor(ThemeService::COLOR_TAB_TEXT),
             GdkToSkColor(&label_color));
 }

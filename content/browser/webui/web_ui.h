@@ -24,10 +24,6 @@ class TabContents;
 class Value;
 struct ViewHostMsg_DomMessage_Params;
 
-namespace ui {
-class ThemeProvider;
-}
-
 // A WebUI sets up the datasources and message handlers for a given HTML-based
 // UI. It is contained by a WebUIManager.
 class WebUI {
@@ -138,8 +134,6 @@ class WebUI {
                               const Value& arg4);
   void CallJavascriptFunction(const std::string& function_name,
                               const std::vector<const Value*>& args);
-
-  ui::ThemeProvider* GetThemeProvider() const;
 
   // May be overridden by WebUI's which do not have a tab contents.
   virtual Profile* GetProfile() const;

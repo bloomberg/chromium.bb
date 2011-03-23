@@ -20,7 +20,7 @@
 #include "chrome/browser/memory_purger.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_tree.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -724,7 +724,7 @@ GdkPixbuf* TaskManagerGtk::GetModelIcon(int row) {
       ResourceBundle::GetSharedInstance().GetBitmapNamed(
           IDR_DEFAULT_FAVICON)->pixelRef()) {
     return static_cast<GdkPixbuf*>(g_object_ref(
-        GtkThemeProvider::GetDefaultFavicon(true)));
+        GtkThemeService::GetDefaultFavicon(true)));
   }
 
   return gfx::GdkPixbufFromSkBitmap(&icon);

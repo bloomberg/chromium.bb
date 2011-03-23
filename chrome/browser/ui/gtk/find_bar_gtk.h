@@ -22,7 +22,7 @@ class Browser;
 class BrowserWindowGtk;
 class CustomDrawButton;
 class FindBarController;
-class GtkThemeProvider;
+class GtkThemeService;
 class NineBox;
 class SlideAnimatorGtk;
 class TabContentsContainerGtk;
@@ -172,7 +172,7 @@ class FindBarGtk : public FindBar,
   BrowserWindowGtk* window_;
 
   // Provides colors and information about GTK.
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   // The widget that animates the slide-in and -out of the findbar.
   scoped_ptr<SlideAnimatorGtk> slide_widget_;

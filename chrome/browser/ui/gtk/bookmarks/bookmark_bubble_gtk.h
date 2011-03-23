@@ -86,7 +86,7 @@ class BookmarkBubbleGtk : public InfoBubbleGtkDelegate,
   Profile* profile_;
 
   // Provides colors and stuff.
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   // The widget relative to which we are positioned.
   GtkWidget* anchor_;

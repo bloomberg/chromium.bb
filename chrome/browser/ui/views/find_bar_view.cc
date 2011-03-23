@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -572,7 +572,7 @@ void FindBarView::OnThemeChanged() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (GetThemeProvider()) {
     close_button_->SetBackground(
-        GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT),
+        GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT),
         rb.GetBitmapNamed(IDR_CLOSE_BAR),
         rb.GetBitmapNamed(IDR_CLOSE_BAR_MASK));
   }

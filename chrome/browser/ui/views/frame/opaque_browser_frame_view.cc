@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -109,7 +109,7 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
       frame_(frame),
       browser_view_(browser_view) {
   ui::ThemeProvider* tp = frame_->GetThemeProviderForFrame();
-  SkColor color = tp->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);
+  SkColor color = tp->GetColor(ThemeService::COLOR_BUTTON_BACKGROUND);
   SkBitmap* background =
       tp->GetBitmapNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND);
   minimize_button_->SetImage(views::CustomButton::BS_NORMAL,
@@ -589,18 +589,18 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   } else if (!browser_view_->IsOffTheRecord()) {
     if (ShouldPaintAsActive()) {
       theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME);
-      frame_color = tp->GetColor(BrowserThemeProvider::COLOR_FRAME);
+      frame_color = tp->GetColor(ThemeService::COLOR_FRAME);
     } else {
       theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
-      frame_color = tp->GetColor(BrowserThemeProvider::COLOR_FRAME_INACTIVE);
+      frame_color = tp->GetColor(ThemeService::COLOR_FRAME_INACTIVE);
     }
   } else if (ShouldPaintAsActive()) {
     theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO);
-    frame_color = tp->GetColor(BrowserThemeProvider::COLOR_FRAME_INCOGNITO);
+    frame_color = tp->GetColor(ThemeService::COLOR_FRAME_INCOGNITO);
   } else {
     theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO_INACTIVE);
     frame_color = tp->GetColor(
-        BrowserThemeProvider::COLOR_FRAME_INCOGNITO_INACTIVE);
+        ThemeService::COLOR_FRAME_INCOGNITO_INACTIVE);
   }
 
   // Fill with the frame color first so we have a constant background for
@@ -774,7 +774,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
 
   SkColor theme_toolbar_color =
-      tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+      tp->GetColor(ThemeService::COLOR_TOOLBAR);
   canvas->FillRectInt(theme_toolbar_color, x, bottom_y, w, bottom_edge_height);
 
   // Tile the toolbar image starting at the frame edge on the left and where the
@@ -872,7 +872,7 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   int image_top = client_area_top;
 
   gfx::Rect client_area_bounds = CalculateClientAreaBounds(width(), height());
-  SkColor toolbar_color = tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+  SkColor toolbar_color = tp->GetColor(ThemeService::COLOR_TOOLBAR);
 
   if (browser_view_->IsToolbarVisible()) {
     // The client edge images always start below the toolbar corner images.  The

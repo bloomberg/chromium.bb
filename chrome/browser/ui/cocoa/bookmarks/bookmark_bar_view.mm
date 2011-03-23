@@ -11,7 +11,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#import "chrome/browser/themes/browser_theme_provider.h"
+#import "chrome/browser/themes/theme_service.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
 @interface BookmarkBarView (Private)
@@ -83,7 +83,7 @@
     return;
 
   NSColor* color =
-      themeProvider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT,
+      themeProvider->GetNSColor(ThemeService::COLOR_BOOKMARK_TEXT,
                                 true);
   [noItemTextfield_ setTextColor:color];
 }

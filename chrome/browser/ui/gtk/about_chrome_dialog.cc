@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
@@ -84,8 +84,8 @@ gboolean OnEventBoxExpose(GtkWidget* event_box,
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(event_box->window));
   gdk_cairo_rectangle(cr, &expose->area);
   cairo_clip(cr);
-  GtkThemeProvider* theme_provider =
-      GtkThemeProvider::GetFrom(BrowserList::GetLastActive()->profile());
+  GtkThemeService* theme_provider =
+      GtkThemeService::GetFrom(BrowserList::GetLastActive()->profile());
   CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
       IDR_ABOUT_BACKGROUND_COLOR, event_box);
 

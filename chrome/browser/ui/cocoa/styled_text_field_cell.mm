@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/styled_text_field_cell.h"
 
 #include "base/logging.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
@@ -147,8 +147,8 @@ private:
 
   // Paint button background image if there is one (otherwise the border won't
   // look right).
-  BrowserThemeProvider* themeProvider =
-      static_cast<BrowserThemeProvider*>([[controlView window] themeProvider]);
+  ThemeService* themeProvider =
+      static_cast<ThemeService*>([[controlView window] themeProvider]);
   if (themeProvider) {
     NSColor* backgroundImageColor =
         themeProvider->GetNSImageColorNamed(IDR_THEME_BUTTON_BACKGROUND, false);
@@ -167,8 +167,8 @@ private:
     // Draw the outer stroke (over the background).
     BOOL active = [[controlView window] isMainWindow];
     NSColor* strokeColor = themeProvider->GetNSColor(
-        active ? BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE :
-                 BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
+        active ? ThemeService::COLOR_TOOLBAR_BUTTON_STROKE :
+                 ThemeService::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
         true);
     FrameRectWithInset(roundedFlags, frame, 0.0, radius, 1.0, strokeColor);
   }
@@ -195,7 +195,7 @@ private:
       themeProvider->UsingDefaultTheme()) {
 
     [themeProvider->GetNSColor(
-        BrowserThemeProvider::COLOR_TOOLBAR_BEZEL, true) set];
+        ThemeService::COLOR_TOOLBAR_BEZEL, true) set];
     NSRect bezelRect = NSMakeRect(cellFrame.origin.x,
                                   NSMaxY(cellFrame) - 0.5,
                                   NSWidth(cellFrame),

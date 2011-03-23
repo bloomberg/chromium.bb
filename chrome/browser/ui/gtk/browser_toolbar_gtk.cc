@@ -19,7 +19,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/back_forward_button_gtk.h"
@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/reload_button_gtk.h"
@@ -119,7 +119,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   // Make sure to tell the location bar the profile before calling its Init.
   SetProfile(profile);
 
-  theme_provider_ = GtkThemeProvider::GetFrom(profile);
+  theme_service_ = GtkThemeService::GetFrom(profile);
   offscreen_entry_.Own(gtk_entry_new());
 
   show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);
@@ -130,7 +130,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   event_box_ = gtk_event_box_new();
   // Make the event box transparent so themes can use transparent toolbar
   // backgrounds.
-  if (!theme_provider_->UseGtkTheme())
+  if (!theme_service_->UseGtkTheme())
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
 
   toolbar_ = gtk_hbox_new(FALSE, 0);
@@ -159,7 +159,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_box_pack_start(GTK_BOX(toolbar_left_), reload_->widget(), FALSE, FALSE,
                      0);
 
-  home_.reset(new CustomDrawButton(GtkThemeProvider::GetFrom(profile_),
+  home_.reset(new CustomDrawButton(GtkThemeService::GetFrom(profile_),
       IDR_HOME, IDR_HOME_P, IDR_HOME_H, 0, GTK_STOCK_HOME,
       GTK_ICON_SIZE_SMALL_TOOLBAR));
   gtk_widget_set_tooltip_text(home_->widget(),
@@ -190,9 +190,9 @@ void BrowserToolbarGtk::Init(Profile* profile,
   }
 
   wrench_menu_image_ = gtk_image_new_from_pixbuf(
-      theme_provider_->GetRTLEnabledPixbufNamed(IDR_TOOLS));
+      theme_service_->GetRTLEnabledPixbufNamed(IDR_TOOLS));
   wrench_menu_button_.reset(new CustomDrawButton(
-      GtkThemeProvider::GetFrom(profile_),
+      GtkThemeService::GetFrom(profile_),
       IDR_TOOLS, IDR_TOOLS_P, IDR_TOOLS_H, 0,
       wrench_menu_image_));
   GtkWidget* wrench_button = wrench_menu_button_->widget();
@@ -236,7 +236,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   location_bar_->UpdateContentSettingsIcons();
 
   SetViewIDs();
-  theme_provider_->InitThemesFor(this);
+  theme_service_->InitThemesFor(this);
 }
 
 void BrowserToolbarGtk::SetViewIDs() {
@@ -315,7 +315,7 @@ void BrowserToolbarGtk::StoppedShowing() {
 }
 
 GtkIconSet* BrowserToolbarGtk::GetIconSetForId(int idr) {
-  return theme_provider_->GetIconSetForId(idr);
+  return theme_service_->GetIconSetForId(idr);
 }
 
 // Always show images because we desire that some icons always show
@@ -345,7 +345,7 @@ void BrowserToolbarGtk::Observe(NotificationType type,
     NotifyPrefChanged(Details<std::string>(details).ptr());
   } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
     // Update the spacing around the menu buttons
-    bool use_gtk = theme_provider_->UseGtkTheme();
+    bool use_gtk = theme_service_->UseGtkTheme();
     int border = use_gtk ? 0 : 2;
     gtk_container_set_border_width(
         GTK_CONTAINER(wrench_menu_button_->widget()), border);
@@ -372,7 +372,7 @@ void BrowserToolbarGtk::Observe(NotificationType type,
       // we set the initial value in Init()).
       gtk_image_set_from_pixbuf(
           GTK_IMAGE(wrench_menu_image_),
-          theme_provider_->GetRTLEnabledPixbufNamed(IDR_TOOLS));
+          theme_service_->GetRTLEnabledPixbufNamed(IDR_TOOLS));
     }
 
     UpdateRoundedness();
@@ -428,7 +428,7 @@ bool BrowserToolbarGtk::UpdateRoundedness() {
   // We still round the corners if we are in chrome theme mode, but we do it by
   // drawing theme resources rather than changing the physical shape of the
   // widget.
-  bool should_be_rounded = theme_provider_->UseGtkTheme() &&
+  bool should_be_rounded = theme_service_->UseGtkTheme() &&
       window_->ShouldDrawContentDropShadow();
 
   if (should_be_rounded == gtk_util::IsActingAsRoundedWindow(alignment_))
@@ -453,7 +453,7 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
     return TRUE;
 
   // We don't need to render the toolbar image in GTK mode.
-  if (theme_provider_->UseGtkTheme())
+  if (theme_service_->UseGtkTheme())
     return FALSE;
 
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
@@ -463,8 +463,8 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
   gfx::Point tabstrip_origin =
       window_->tabstrip()->GetTabStripOriginForWidget(widget);
   // Fill the entire region with the toolbar color.
-  GdkColor color = theme_provider_->GetGdkColor(
-      BrowserThemeProvider::COLOR_TOOLBAR);
+  GdkColor color = theme_service_->GetGdkColor(
+      ThemeService::COLOR_TOOLBAR);
   gdk_cairo_set_source_color(cr, &color);
   cairo_fill(cr);
 
@@ -490,7 +490,7 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
     area = area.Subtract(right).Subtract(left);
   }
 
-  CairoCachedSurface* background = theme_provider_->GetSurfaceNamed(
+  CairoCachedSurface* background = theme_service_->GetSurfaceNamed(
       IDR_THEME_TOOLBAR, widget);
   background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
@@ -517,13 +517,13 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
 
     cairo_set_operator(copy_cr, CAIRO_OPERATOR_SOURCE);
     if (draw_left_corner) {
-      CairoCachedSurface* left_corner = theme_provider_->GetSurfaceNamed(
+      CairoCachedSurface* left_corner = theme_service_->GetSurfaceNamed(
           IDR_CONTENT_TOP_LEFT_CORNER_MASK, widget);
       left_corner->SetSource(copy_cr, left.x(), left.y());
       cairo_paint(copy_cr);
     }
     if (draw_right_corner) {
-      CairoCachedSurface* right_corner = theme_provider_->GetSurfaceNamed(
+      CairoCachedSurface* right_corner = theme_service_->GetSurfaceNamed(
           IDR_CONTENT_TOP_RIGHT_CORNER_MASK, widget);
       right_corner->SetSource(copy_cr, right.x(), right.y());
       // We fill a path rather than just painting because we don't want to
@@ -554,7 +554,7 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
 
 gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
                                                  GdkEventExpose* e) {
-  if (theme_provider_->UseGtkTheme()) {
+  if (theme_service_->UseGtkTheme()) {
     gtk_util::DrawTextEntryBackground(offscreen_entry_.get(),
                                       location_hbox, &e->area,
                                       &location_hbox->allocation);
@@ -629,7 +629,7 @@ gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,
                                                      GdkEventExpose* expose) {
   const SkBitmap* badge = NULL;
   if (UpgradeDetector::GetInstance()->notify_upgrade()) {
-    badge = theme_provider_->GetBitmapNamed(IDR_UPDATE_BADGE);
+    badge = theme_service_->GetBitmapNamed(IDR_UPDATE_BADGE);
   } else {
     return FALSE;
   }

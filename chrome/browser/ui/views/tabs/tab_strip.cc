@@ -10,7 +10,7 @@
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -558,7 +558,7 @@ void TabStrip::LoadNewTabButtonImage() {
   }
 
   SkBitmap* bitmap = tp->GetBitmapNamed(IDR_NEWTAB_BUTTON);
-  SkColor color = tp->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);
+  SkColor color = tp->GetColor(ThemeService::COLOR_BUTTON_BACKGROUND);
   SkBitmap* background = tp->GetBitmapNamed(
       IDR_THEME_WINDOW_CONTROL_BACKGROUND);
 

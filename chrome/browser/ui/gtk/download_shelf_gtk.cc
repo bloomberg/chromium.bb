@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/gtk/download_item_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_shrinkable_hbox.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -60,7 +60,7 @@ const int kShelfAuraSize = 40;
 DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
     : browser_(browser),
       is_showing_(false),
-      theme_provider_(GtkThemeProvider::GetFrom(browser->profile())),
+      theme_service_(GtkThemeService::GetFrom(browser->profile())),
       close_on_mouse_out_(false),
       mouse_in_shelf_(false),
       auto_close_factory_(this) {
@@ -109,7 +109,7 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
   gtk_container_add(GTK_CONTAINER(shelf_.get()), vbox);
 
   // Create and pack the close button.
-  close_button_.reset(CustomDrawButton::CloseButton(theme_provider_));
+  close_button_.reset(CustomDrawButton::CloseButton(theme_service_));
   gtk_util::CenterWidgetInHBox(outer_hbox, close_button_->widget(), true, 0);
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnButtonClickThunk), this);
@@ -140,7 +140,7 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
                                            kShelfAnimationDurationMs,
                                            false, true, this));
 
-  theme_provider_->InitThemesFor(this);
+  theme_service_->InitThemesFor(this);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
 
@@ -222,32 +222,32 @@ void DownloadShelfGtk::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
   if (type == NotificationType::BROWSER_THEME_CHANGED) {
-    GdkColor color = theme_provider_->GetGdkColor(
-        BrowserThemeProvider::COLOR_TOOLBAR);
+    GdkColor color = theme_service_->GetGdkColor(
+        ThemeService::COLOR_TOOLBAR);
     gtk_widget_modify_bg(padding_bg_, GTK_STATE_NORMAL, &color);
 
-    color = theme_provider_->GetBorderColor();
+    color = theme_service_->GetBorderColor();
     gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &color);
 
     gtk_chrome_link_button_set_use_gtk_theme(
-        GTK_CHROME_LINK_BUTTON(link_button_), theme_provider_->UseGtkTheme());
+        GTK_CHROME_LINK_BUTTON(link_button_), theme_service_->UseGtkTheme());
 
     // When using a non-standard, non-gtk theme, we make the link color match
     // the bookmark text color. Otherwise, standard link blue can look very
     // bad for some dark themes.
-    bool use_default_color = theme_provider_->GetColor(
-        BrowserThemeProvider::COLOR_BOOKMARK_TEXT) ==
-        BrowserThemeProvider::GetDefaultColor(
-            BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
-    GdkColor bookmark_color = theme_provider_->GetGdkColor(
-        BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+    bool use_default_color = theme_service_->GetColor(
+        ThemeService::COLOR_BOOKMARK_TEXT) ==
+        ThemeService::GetDefaultColor(
+            ThemeService::COLOR_BOOKMARK_TEXT);
+    GdkColor bookmark_color = theme_service_->GetGdkColor(
+        ThemeService::COLOR_BOOKMARK_TEXT);
     gtk_chrome_link_button_set_normal_color(
         GTK_CHROME_LINK_BUTTON(link_button_),
         use_default_color ? NULL : &bookmark_color);
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     close_button_->SetBackground(
-        theme_provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT),
+        theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT),
         rb.GetBitmapNamed(IDR_CLOSE_BAR),
         rb.GetBitmapNamed(IDR_CLOSE_BAR_MASK));
   }

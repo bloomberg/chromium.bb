@@ -23,7 +23,7 @@
 
 class BalloonCollection;
 class CustomDrawButton;
-class GtkThemeProvider;
+class GtkThemeService;
 class MenuGtk;
 class NotificationDetails;
 class NotificationOptionsMenuModel;
@@ -96,7 +96,7 @@ class BalloonViewImpl : public BalloonView,
   // Non-owned pointer to the balloon which owns this object.
   Balloon* balloon_;
 
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   // The window that contains the frame of the notification.
   GtkWidget* frame_container_;

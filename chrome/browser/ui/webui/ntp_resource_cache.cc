@@ -19,8 +19,8 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/shown_sections_handler.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
@@ -94,7 +94,7 @@ std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
                                    bool bar_attached) {
   int alignment;
   theme_provider->GetDisplayProperty(
-      BrowserThemeProvider::NTP_BACKGROUND_ALIGNMENT, &alignment);
+      ThemeService::NTP_BACKGROUND_ALIGNMENT, &alignment);
 
   // TODO(glen): This is a quick workaround to hide the notused.png image when
   // no image is provided - we don't have time right now to figure out why
@@ -105,7 +105,7 @@ std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
   }
 
   if (bar_attached)
-    return BrowserThemeProvider::AlignmentToString(alignment);
+    return ThemeService::AlignmentToString(alignment);
 
   // The bar is detached, so we must offset the background by the bar size
   // if it's a top-aligned bar.
@@ -119,24 +119,24 @@ std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
   int offset = 0;
 #endif
 
-  if (alignment & BrowserThemeProvider::ALIGN_TOP) {
-    if (alignment & BrowserThemeProvider::ALIGN_LEFT)
+  if (alignment & ThemeService::ALIGN_TOP) {
+    if (alignment & ThemeService::ALIGN_LEFT)
       return "0% " + base::IntToString(-offset) + "px";
-    else if (alignment & BrowserThemeProvider::ALIGN_RIGHT)
+    else if (alignment & ThemeService::ALIGN_RIGHT)
       return "100% " + base::IntToString(-offset) + "px";
     return "center " + base::IntToString(-offset) + "px";
   }
-  return BrowserThemeProvider::AlignmentToString(alignment);
+  return ThemeService::AlignmentToString(alignment);
 }
 
 // How the background image on the new tab page should be tiled (see tiling
-// masks in browser_theme_provider.h).
+// masks in theme_service.h).
 std::string GetNewTabBackgroundTilingCSS(
     const ui::ThemeProvider* theme_provider) {
   int repeat_mode;
   theme_provider->GetDisplayProperty(
-      BrowserThemeProvider::NTP_BACKGROUND_TILING, &repeat_mode);
-  return BrowserThemeProvider::TilingToString(repeat_mode);
+      ThemeService::NTP_BACKGROUND_TILING, &repeat_mode);
+  return ThemeService::TilingToString(repeat_mode);
 }
 
 // Is the current time within a given date range?
@@ -439,7 +439,7 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
 
   // Get our theme colors
   SkColor color_background =
-      tp->GetColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND);
+      tp->GetColor(ThemeService::COLOR_NTP_BACKGROUND);
 
   // Generate the replacements.
   std::vector<std::string> subst;
@@ -475,33 +475,33 @@ void NTPResourceCache::CreateNewTabCSS() {
 
   // Get our theme colors
   SkColor color_background =
-      tp->GetColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND);
-  SkColor color_text = tp->GetColor(BrowserThemeProvider::COLOR_NTP_TEXT);
-  SkColor color_link = tp->GetColor(BrowserThemeProvider::COLOR_NTP_LINK);
+      tp->GetColor(ThemeService::COLOR_NTP_BACKGROUND);
+  SkColor color_text = tp->GetColor(ThemeService::COLOR_NTP_TEXT);
+  SkColor color_link = tp->GetColor(ThemeService::COLOR_NTP_LINK);
   SkColor color_link_underline =
-      tp->GetColor(BrowserThemeProvider::COLOR_NTP_LINK_UNDERLINE);
+      tp->GetColor(ThemeService::COLOR_NTP_LINK_UNDERLINE);
 
   SkColor color_section =
-      tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION);
+      tp->GetColor(ThemeService::COLOR_NTP_SECTION);
   SkColor color_section_text =
-      tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_TEXT);
+      tp->GetColor(ThemeService::COLOR_NTP_SECTION_TEXT);
   SkColor color_section_link =
-      tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_LINK);
+      tp->GetColor(ThemeService::COLOR_NTP_SECTION_LINK);
   SkColor color_section_link_underline =
-      tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_LINK_UNDERLINE);
+      tp->GetColor(ThemeService::COLOR_NTP_SECTION_LINK_UNDERLINE);
   SkColor color_section_header_text =
-      tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_HEADER_TEXT);
+      tp->GetColor(ThemeService::COLOR_NTP_SECTION_HEADER_TEXT);
   SkColor color_section_header_text_hover =
-      tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_HEADER_TEXT_HOVER);
+      tp->GetColor(ThemeService::COLOR_NTP_SECTION_HEADER_TEXT_HOVER);
   SkColor color_section_header_rule =
-      tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_HEADER_RULE);
+      tp->GetColor(ThemeService::COLOR_NTP_SECTION_HEADER_RULE);
   SkColor color_section_header_rule_light =
-      tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_HEADER_RULE_LIGHT);
+      tp->GetColor(ThemeService::COLOR_NTP_SECTION_HEADER_RULE_LIGHT);
   SkColor color_text_light =
-      tp->GetColor(BrowserThemeProvider::COLOR_NTP_TEXT_LIGHT);
+      tp->GetColor(ThemeService::COLOR_NTP_TEXT_LIGHT);
 
   SkColor color_header =
-      tp->GetColor(BrowserThemeProvider::COLOR_NTP_HEADER);
+      tp->GetColor(ThemeService::COLOR_NTP_HEADER);
   // Generate a lighter color for the header gradients.
   color_utils::HSL header_lighter;
   color_utils::SkColorToHSL(color_header, &header_lighter);

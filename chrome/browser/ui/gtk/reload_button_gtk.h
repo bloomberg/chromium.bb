@@ -17,7 +17,7 @@
 #include "ui/base/gtk/gtk_signal.h"
 
 class Browser;
-class GtkThemeProvider;
+class GtkThemeService;
 class LocationBarViewGtk;
 class Task;
 
@@ -77,7 +77,7 @@ class ReloadButtonGtk : public NotificationObserver {
   // Used to listen for theme change notifications.
   NotificationRegistrar registrar_;
 
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   CustomDrawButtonBase reload_;
   CustomDrawButtonBase stop_;

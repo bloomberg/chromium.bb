@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/custom_drag.h"
 #include "chrome/browser/ui/gtk/download_shelf_gtk.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
@@ -167,7 +167,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
     : parent_shelf_(parent_shelf),
       arrow_(NULL),
       menu_showing_(false),
-      theme_provider_(GtkThemeProvider::GetFrom(
+      theme_service_(GtkThemeService::GetFrom(
                           parent_shelf->browser()->profile())),
       progress_angle_(download_util::kStartAngleDegrees),
       download_model_(download_model),
@@ -320,7 +320,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
-  theme_provider_->InitThemesFor(this);
+  theme_service_->InitThemesFor(this);
 
   // Set the initial width of the widget to be animated.
   if (IsDangerous()) {
@@ -448,7 +448,7 @@ void DownloadItemGtk::Observe(NotificationType type,
   if (type == NotificationType::BROWSER_THEME_CHANGED) {
     // Our GtkArrow is only visible in gtk mode. Otherwise, we let the custom
     // rendering code do whatever it wants.
-    if (theme_provider_->UseGtkTheme()) {
+    if (theme_service_->UseGtkTheme()) {
       if (!arrow_) {
         arrow_ = gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE);
         gtk_widget_set_size_request(arrow_,
@@ -546,9 +546,9 @@ void DownloadItemGtk::UpdateNameLabel() {
       get_download()->GetFileNameToReportUser(),
       gfx::Font(), kTextWidth);
 
-  GdkColor color = theme_provider_->GetGdkColor(
-      BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
-  gtk_util::SetLabelColor(name_label_, theme_provider_->UseGtkTheme() ?
+  GdkColor color = theme_service_->GetGdkColor(
+      ThemeService::COLOR_BOOKMARK_TEXT);
+  gtk_util::SetLabelColor(name_label_, theme_service_->UseGtkTheme() ?
                                        NULL : &color);
   gtk_label_set_text(GTK_LABEL(name_label_),
                      UTF16ToUTF8(elided_filename).c_str());
@@ -559,9 +559,9 @@ void DownloadItemGtk::UpdateStatusLabel(const std::string& status_text) {
     return;
 
   GdkColor text_color;
-  if (!theme_provider_->UseGtkTheme()) {
-    SkColor color = theme_provider_->GetColor(
-        BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+  if (!theme_service_->UseGtkTheme()) {
+    SkColor color = theme_service_->GetColor(
+        ThemeService::COLOR_BOOKMARK_TEXT);
     if (color_utils::RelativeLuminance(color) > 0.5) {
       color = SkColorSetRGB(
           static_cast<int>(kDownloadItemLuminanceMod *
@@ -579,7 +579,7 @@ void DownloadItemGtk::UpdateStatusLabel(const std::string& status_text) {
         color_utils::AlphaBlend(blend_color, color, 77));
   }
 
-  gtk_util::SetLabelColor(status_label_, theme_provider_->UseGtkTheme() ?
+  gtk_util::SetLabelColor(status_label_, theme_service_->UseGtkTheme() ?
                                         NULL : &text_color);
   gtk_label_set_text(GTK_LABEL(status_label_), status_text.c_str());
 }
@@ -612,11 +612,11 @@ void DownloadItemGtk::UpdateDangerWarning() {
       }
     }
 
-    if (theme_provider_->UseGtkTheme()) {
+    if (theme_service_->UseGtkTheme()) {
       gtk_util::SetLabelColor(dangerous_label_, NULL);
     } else {
-      GdkColor color = theme_provider_->GetGdkColor(
-          BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+      GdkColor color = theme_service_->GetGdkColor(
+          ThemeService::COLOR_BOOKMARK_TEXT);
       gtk_util::SetLabelColor(dangerous_label_, &color);
     }
 
@@ -647,7 +647,7 @@ void DownloadItemGtk::UpdateDangerWarning() {
 }
 
 void DownloadItemGtk::UpdateDangerIcon() {
-  if (theme_provider_->UseGtkTheme()) {
+  if (theme_service_->UseGtkTheme()) {
     const char* stock =
         get_download()->danger_type() == DownloadItem::DANGEROUS_URL ?
         GTK_STOCK_DIALOG_ERROR : GTK_STOCK_DIALOG_WARNING;
@@ -730,7 +730,7 @@ void DownloadItemGtk::InitNineBoxes() {
 }
 
 gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
-  if (theme_provider_->UseGtkTheme()) {
+  if (theme_service_->UseGtkTheme()) {
     int border_width = GTK_CONTAINER(widget)->border_width;
     int x = widget->allocation.x + border_width;
     int y = widget->allocation.y + border_width;
@@ -799,7 +799,7 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
 }
 
 gboolean DownloadItemGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e) {
-  if (!theme_provider_->UseGtkTheme()) {
+  if (!theme_service_->UseGtkTheme()) {
     bool is_body = widget == body_.get();
 
     NineBox* nine_box = NULL;
@@ -901,7 +901,7 @@ void DownloadItemGtk::ShowPopupMenu(GtkWidget* button,
 
 gboolean DownloadItemGtk::OnDangerousPromptExpose(GtkWidget* widget,
                                                   GdkEventExpose* event) {
-  if (!theme_provider_->UseGtkTheme()) {
+  if (!theme_service_->UseGtkTheme()) {
     // The hbox renderer will take care of the border when in GTK mode.
     dangerous_nine_box_->RenderToWidget(widget);
   }

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -625,8 +625,8 @@ const CGFloat kRapidCloseDist = 2.5;
   NSGraphicsContext* context = [NSGraphicsContext currentContext];
   [context saveGraphicsState];
 
-  BrowserThemeProvider* themeProvider =
-      static_cast<BrowserThemeProvider*>([[self window] themeProvider]);
+  ThemeService* themeProvider =
+      static_cast<ThemeService*>([[self window] themeProvider]);
   [context setPatternPhase:[[self window] themePatternPhase]];
 
   NSRect rect = [self bounds];
@@ -717,8 +717,8 @@ const CGFloat kRapidCloseDist = 2.5;
   NSColor* borderColor = [NSColor colorWithDeviceWhite:0.0 alpha:borderAlpha];
   NSColor* highlightColor = themeProvider ? themeProvider->GetNSColor(
       themeProvider->UsingDefaultTheme() ?
-          BrowserThemeProvider::COLOR_TOOLBAR_BEZEL :
-          BrowserThemeProvider::COLOR_TOOLBAR, true) : nil;
+          ThemeService::COLOR_TOOLBAR_BEZEL :
+          ThemeService::COLOR_TOOLBAR, true) : nil;
 
   // Draw the top inner highlight within the currently selected tab if using
   // the default theme.

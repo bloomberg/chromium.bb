@@ -16,7 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/download_shelf_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -434,7 +434,7 @@ void DownloadItemView::OnDownloadOpened(DownloadItem* download) {
 void DownloadItemView::Layout() {
   if (IsDangerousMode()) {
     dangerous_download_label_->SetColor(
-      GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
+      GetThemeProvider()->GetColor(ThemeService::COLOR_BOOKMARK_TEXT));
 
     int x = kLeftPadding + dangerous_mode_body_image_set_.top_left->width() +
       warning_icon_->width() + kLabelPadding;
@@ -743,7 +743,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
       int y = box_y_ + kVerticalPadding + font_.GetHeight() +
               kVerticalTextPadding;
       SkColor file_name_color = GetThemeProvider()->GetColor(
-          BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+          ThemeService::COLOR_BOOKMARK_TEXT);
       // If text is light-on-dark, lightening it alone will do nothing.
       // Therefore we mute luminance a wee bit before drawing in this case.
       if (color_utils::RelativeLuminance(file_name_color) > 0.5)
@@ -867,7 +867,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     int mirrored_x = GetMirroredXWithWidthInView(
         download_util::kSmallProgressIconSize, kTextWidth);
     SkColor file_name_color = GetThemeProvider()->GetColor(
-        BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+        ThemeService::COLOR_BOOKMARK_TEXT);
     int y =
         box_y_ + (show_status_text_ ? kVerticalPadding :
                                       (box_height_ - font_.GetHeight()) / 2);

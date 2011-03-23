@@ -9,8 +9,8 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/theme_util.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -46,7 +46,7 @@ void ThemeChangeProcessor::Observe(NotificationType type,
   } else {
     extension = Details<const Extension>(details).ptr();
   }
-  BrowserThemeProvider* theme_provider =
+  ThemeService* theme_provider =
       ThemeServiceFactory::GetForProfile(profile_);
   std::string current_or_future_theme_id = theme_provider->GetThemeID();
   const Extension* current_theme =
@@ -61,7 +61,7 @@ void ThemeChangeProcessor::Observe(NotificationType type,
       // and loaded (and we get an EXTENSION_LOADED notification).
       VLOG(1) << "Got BROWSER_THEME_CHANGED notification for theme "
               << GetThemeId(extension);
-      DCHECK_EQ(Source<BrowserThemeProvider>(source).ptr(),
+      DCHECK_EQ(Source<ThemeService>(source).ptr(),
                 theme_provider);
       if (extension != NULL) {
         DCHECK(extension->is_theme());
@@ -205,7 +205,7 @@ void ThemeChangeProcessor::StartObserving() {
              "EXTENSION_UNLOADED";
   notification_registrar_.Add(
       this, NotificationType::BROWSER_THEME_CHANGED,
-      Source<BrowserThemeProvider>(
+      Source<ThemeService>(
           ThemeServiceFactory::GetForProfile(profile_)));
   notification_registrar_.Add(
       this, NotificationType::EXTENSION_LOADED,

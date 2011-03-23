@@ -14,12 +14,12 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/dragged_tab_controller_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -697,10 +697,10 @@ TabStripGtk::TabStripGtk(TabStripModel* model, BrowserWindowGtk* window)
       tab_vertical_offset_(0),
       model_(model),
       window_(window),
-      theme_provider_(GtkThemeProvider::GetFrom(model->profile())),
+      theme_service_(GtkThemeService::GetFrom(model->profile())),
       resize_layout_factory_(this),
       added_as_message_loop_observer_(false) {
-  theme_provider_->InitThemesFor(this);
+  theme_service_->InitThemesFor(this);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
 }
@@ -1207,7 +1207,7 @@ bool TabStripGtk::HasAvailableDragActions() const {
 }
 
 ui::ThemeProvider* TabStripGtk::GetThemeProvider() {
-  return theme_provider_;
+  return theme_service_;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1235,10 +1235,10 @@ void TabStripGtk::Observe(NotificationType type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
   if (type == NotificationType::BROWSER_THEME_CHANGED) {
-    TabRendererGtk::SetSelectedTitleColor(theme_provider_->GetColor(
-        BrowserThemeProvider::COLOR_TAB_TEXT));
-    TabRendererGtk::SetUnselectedTitleColor(theme_provider_->GetColor(
-        BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT));
+    TabRendererGtk::SetSelectedTitleColor(theme_service_->GetColor(
+        ThemeService::COLOR_TAB_TEXT));
+    TabRendererGtk::SetUnselectedTitleColor(theme_service_->GetColor(
+        ThemeService::COLOR_BACKGROUND_TAB_TEXT));
   }
 }
 

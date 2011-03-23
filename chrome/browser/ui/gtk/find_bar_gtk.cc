@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_floating_container.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
@@ -176,7 +176,7 @@ void BuildBorder(GtkWidget* child,
 FindBarGtk::FindBarGtk(Browser* browser)
     : browser_(browser),
       window_(static_cast<BrowserWindowGtk*>(browser->window())),
-      theme_provider_(GtkThemeProvider::GetFrom(browser->profile())),
+      theme_service_(GtkThemeService::GetFrom(browser->profile())),
       container_width_(-1),
       container_height_(-1),
       match_label_failure_(false),
@@ -235,7 +235,7 @@ void FindBarGtk::InitWidgets() {
                                            SlideAnimatorGtk::DOWN,
                                            0, false, false, NULL));
 
-  close_button_.reset(CustomDrawButton::CloseButton(theme_provider_));
+  close_button_.reset(CustomDrawButton::CloseButton(theme_service_));
   gtk_util::CenterWidgetInHBox(hbox, close_button_->widget(), true,
                                kCloseButtonPaddingLeft);
   g_signal_connect(close_button_->widget(), "clicked",
@@ -243,7 +243,7 @@ void FindBarGtk::InitWidgets() {
   gtk_widget_set_tooltip_text(close_button_->widget(),
       l10n_util::GetStringUTF8(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP).c_str());
 
-  find_next_button_.reset(new CustomDrawButton(theme_provider_,
+  find_next_button_.reset(new CustomDrawButton(theme_service_,
       IDR_FINDINPAGE_NEXT, IDR_FINDINPAGE_NEXT_H, IDR_FINDINPAGE_NEXT_H,
       IDR_FINDINPAGE_NEXT_P, GTK_STOCK_GO_DOWN, GTK_ICON_SIZE_MENU));
   g_signal_connect(find_next_button_->widget(), "clicked",
@@ -253,7 +253,7 @@ void FindBarGtk::InitWidgets() {
   gtk_box_pack_end(GTK_BOX(hbox), find_next_button_->widget(),
                    FALSE, FALSE, 0);
 
-  find_previous_button_.reset(new CustomDrawButton(theme_provider_,
+  find_previous_button_.reset(new CustomDrawButton(theme_service_,
       IDR_FINDINPAGE_PREV, IDR_FINDINPAGE_PREV_H, IDR_FINDINPAGE_PREV_H,
       IDR_FINDINPAGE_PREV_P, GTK_STOCK_GO_UP, GTK_ICON_SIZE_MENU));
   g_signal_connect(find_previous_button_->widget(), "clicked",
@@ -302,7 +302,7 @@ void FindBarGtk::InitWidgets() {
               &border_bin_, &border_bin_alignment_);
   gtk_util::CenterWidgetInHBox(hbox, border_bin_, true, 0);
 
-  theme_provider_->InitThemesFor(this);
+  theme_service_->InitThemesFor(this);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
 
@@ -468,7 +468,7 @@ void FindBarGtk::Observe(NotificationType type,
   container_width_ = -1;
   container_height_ = -1;
 
-  if (theme_provider_->UseGtkTheme()) {
+  if (theme_service_->UseGtkTheme()) {
     gtk_widget_modify_cursor(text_entry_, NULL, NULL);
     gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_text(text_entry_, GTK_STATE_NORMAL, NULL);
@@ -535,7 +535,7 @@ void FindBarGtk::Observe(NotificationType type,
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     close_button_->SetBackground(
-        theme_provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT),
+        theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT),
         rb.GetBitmapNamed(IDR_CLOSE_BAR),
         rb.GetBitmapNamed(IDR_CLOSE_BAR_MASK));
   }
@@ -602,7 +602,7 @@ void FindBarGtk::FindEntryTextInContents(bool forward_search) {
 
 void FindBarGtk::UpdateMatchLabelAppearance(bool failure) {
   match_label_failure_ = failure;
-  bool use_gtk = theme_provider_->UseGtkTheme();
+  bool use_gtk = theme_service_->UseGtkTheme();
 
   if (use_gtk) {
     GtkStyle* style = gtk_rc_get_style(text_entry_);
@@ -812,7 +812,7 @@ void FindBarGtk::OnClicked(GtkWidget* button, FindBarGtk* find_bar) {
 gboolean FindBarGtk::OnContentEventBoxExpose(GtkWidget* widget,
                                              GdkEventExpose* event,
                                              FindBarGtk* bar) {
-  if (bar->theme_provider_->UseGtkTheme()) {
+  if (bar->theme_service_->UseGtkTheme()) {
     // Draw the text entry background around where we input stuff. Note the
     // decrement to |width|. We do this because some theme engines
     // (*cough*Clearlooks*cough*) don't do any blending and use thickness to
@@ -839,7 +839,7 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
   gtk_widget_size_request(widget, &req);
   gtk_widget_set_size_request(bar->widget(), req.width, -1);
 
-  if (bar->theme_provider_->UseGtkTheme()) {
+  if (bar->theme_service_->UseGtkTheme()) {
     if (bar->container_width_ != widget->allocation.width ||
         bar->container_height_ != widget->allocation.height) {
       std::vector<GdkPoint> mask_points = MakeFramePolygonPoints(
@@ -859,7 +859,7 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
     GdkDrawable* drawable = GDK_DRAWABLE(e->window);
     GdkGC* gc = gdk_gc_new(drawable);
     gdk_gc_set_clip_rectangle(gc, &e->area);
-    GdkColor color = bar->theme_provider_->GetBorderColor();
+    GdkColor color = bar->theme_service_->GetBorderColor();
     gdk_gc_set_rgb_fg_color(gc, &color);
 
     // Stroke the frame border.
@@ -887,7 +887,7 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
         bar->window_->tabstrip()->GetTabStripOriginForWidget(widget);
 
     gtk_util::DrawThemedToolbarBackground(widget, cr, e, tabstrip_origin,
-                                          bar->theme_provider_);
+                                          bar->theme_service_);
 
     // During chrome theme mode, we need to draw the border around content_hbox
     // now instead of when we render |border_bin_|. We don't use stacked event
@@ -897,7 +897,7 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
 
     // Blit the left part of the background image once on the left.
     CairoCachedSurface* background_left =
-        bar->theme_provider_->GetRTLEnabledSurfaceNamed(
+        bar->theme_service_->GetRTLEnabledSurfaceNamed(
         IDR_FIND_BOX_BACKGROUND_LEFT, widget);
     background_left->SetSource(cr, border_allocation.x, border_allocation.y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
@@ -906,7 +906,7 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
     cairo_fill(cr);
 
     // Blit the center part of the background image in all the space between.
-    CairoCachedSurface* background = bar->theme_provider_->GetSurfaceNamed(
+    CairoCachedSurface* background = bar->theme_service_->GetSurfaceNamed(
         IDR_FIND_BOX_BACKGROUND, widget);
     background->SetSource(cr,
                           border_allocation.x + background_left->Width(),

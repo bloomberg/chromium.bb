@@ -8,8 +8,8 @@
 #include "base/ref_counted_memory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resources_util.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/ntp_resource_cache.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -89,7 +89,7 @@ MessageLoop* ThemeSource::MessageLoopForRequestPath(
 
   // If it's not a themeable image, we don't need to go to the UI thread.
   int resource_id = ResourcesUtil::GetThemeResourceId(uncached_path);
-  if (!BrowserThemeProvider::IsThemeableImage(resource_id))
+  if (!ThemeService::IsThemeableImage(resource_id))
     return NULL;
 
   return DataSource::MessageLoopForRequestPath(path);
@@ -105,7 +105,7 @@ bool ThemeSource::ShouldReplaceExistingSource() const {
 // ThemeSource, private:
 
 void ThemeSource::SendThemeBitmap(int request_id, int resource_id) {
-  if (BrowserThemeProvider::IsThemeableImage(resource_id)) {
+  if (ThemeService::IsThemeableImage(resource_id)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
     DCHECK(tp);

@@ -31,7 +31,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -51,7 +51,7 @@
 #include "chrome/browser/ui/gtk/find_bar_gtk.h"
 #include "chrome/browser/ui/gtk/fullscreen_exit_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_floating_container.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
@@ -360,7 +360,7 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
 
 void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
   // Draw the shadow above the toolbar. Tabs on the tabstrip will draw over us.
-  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       browser()->profile());
   int left_x, top_y;
   gtk_widget_translate_coordinates(toolbar_->widget(),
@@ -487,7 +487,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
 void BrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
                                       GtkWidget* widget,
                                       GdkEventExpose* event) {
-  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       browser()->profile());
 
   // Like DrawCustomFrame(), except that we use the unthemed resources to draw
@@ -507,7 +507,7 @@ void BrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
 void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
                                        GtkWidget* widget,
                                        GdkEventExpose* event) {
-  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       browser()->profile());
 
   int image_name = GetThemeFrameResource();
@@ -1647,18 +1647,18 @@ void BrowserWindowGtk::InitWidgets() {
 
 void BrowserWindowGtk::SetBackgroundColor() {
   Profile* profile = browser()->profile();
-  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(profile);
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(profile);
   int frame_color_id;
   if (UsingCustomPopupFrame()) {
-    frame_color_id = BrowserThemeProvider::COLOR_TOOLBAR;
+    frame_color_id = ThemeService::COLOR_TOOLBAR;
   } else if (IsActive()) {
     frame_color_id = browser()->profile()->IsOffTheRecord()
-       ? BrowserThemeProvider::COLOR_FRAME_INCOGNITO
-       : BrowserThemeProvider::COLOR_FRAME;
+       ? ThemeService::COLOR_FRAME_INCOGNITO
+       : ThemeService::COLOR_FRAME;
   } else {
     frame_color_id = browser()->profile()->IsOffTheRecord()
-       ? BrowserThemeProvider::COLOR_FRAME_INCOGNITO_INACTIVE
-       : BrowserThemeProvider::COLOR_FRAME_INACTIVE;
+       ? ThemeService::COLOR_FRAME_INCOGNITO_INACTIVE
+       : ThemeService::COLOR_FRAME_INACTIVE;
   }
 
   SkColor frame_color = theme_provider->GetColor(frame_color_id);
@@ -1844,7 +1844,7 @@ gboolean BrowserWindowGtk::OnExposeDrawInfobarBits(GtkWidget* sender,
   Profile* profile = browser()->profile();
   infobar_arrow_model_.Paint(
       sender, expose, bounds,
-      GtkThemeProvider::GetFrom(profile)->GetBorderColor());
+      GtkThemeService::GetFrom(profile)->GetBorderColor());
   return FALSE;
 }
 
@@ -2148,7 +2148,7 @@ bool BrowserWindowGtk::IsBookmarkBarSupported() const {
 }
 
 bool BrowserWindowGtk::UsingCustomPopupFrame() const {
-  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       browser()->profile());
   return !theme_provider->UseGtkTheme() &&
       browser()->type() & Browser::TYPE_POPUP;

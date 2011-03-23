@@ -22,7 +22,7 @@
 class AutocompleteEditModel;
 class AutocompleteEditView;
 class AutocompletePopupModel;
-class GtkThemeProvider;
+class GtkThemeService;
 class Profile;
 class SkBitmap;
 
@@ -115,7 +115,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
   // The pango layout object created from the window, cached across exposes.
   PangoLayout* layout_;
 
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
   NotificationRegistrar registrar_;
 
   // Font used for suggestions after being derived from the constructor's

@@ -10,7 +10,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "content/common/notification_source.h"
@@ -32,10 +32,10 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
       browser_(browser),
       intended_mode_(MODE_RELOAD),
       visible_mode_(MODE_RELOAD),
-      theme_provider_(browser ?
-                      GtkThemeProvider::GetFrom(browser->profile()) : NULL),
-      reload_(theme_provider_, IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0),
-      stop_(theme_provider_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, IDR_STOP_D),
+      theme_service_(browser ?
+                     GtkThemeService::GetFrom(browser->profile()) : NULL),
+      reload_(theme_service_, IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0),
+      stop_(theme_service_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, IDR_STOP_D),
       widget_(gtk_chrome_button_new()),
       stop_to_reload_timer_delay_(base::TimeDelta::FromMilliseconds(1350)),
       testing_mouse_hovered_(false),
@@ -57,11 +57,11 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
   hover_controller_.Init(widget());
   gtk_util::SetButtonTriggersNavigation(widget());
 
-  if (theme_provider_) {
-    theme_provider_->InitThemesFor(this);
+  if (theme_service_) {
+    theme_service_->InitThemesFor(this);
     registrar_.Add(this,
                    NotificationType::BROWSER_THEME_CHANGED,
-                   Source<GtkThemeProvider>(theme_provider_));
+                   Source<GtkThemeService>(theme_service_));
   }
 
   // Set the default double-click timer delay to the system double-click time.
@@ -131,9 +131,9 @@ void ReloadButtonGtk::Observe(NotificationType type,
                               const NotificationDetails& /* details */) {
   DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
 
-  GtkThemeProvider* provider = static_cast<GtkThemeProvider*>(
-      Source<GtkThemeProvider>(source).ptr());
-  DCHECK_EQ(provider, theme_provider_);
+  GtkThemeService* provider = static_cast<GtkThemeService*>(
+      Source<GtkThemeService>(source).ptr());
+  DCHECK_EQ(provider, theme_service_);
   GtkButtonWidth = 0;
   UpdateThemeButtons();
 }
@@ -194,7 +194,7 @@ void ReloadButtonGtk::OnClicked(GtkWidget* /* sender */) {
 
 gboolean ReloadButtonGtk::OnExpose(GtkWidget* widget,
                                    GdkEventExpose* e) {
-  if (theme_provider_ && theme_provider_->UseGtkTheme())
+  if (theme_service_ && theme_service_->UseGtkTheme())
     return FALSE;
   return ((visible_mode_ == MODE_RELOAD) ? reload_ : stop_).OnExpose(
       widget, e, hover_controller_.GetCurrentValue());
@@ -222,7 +222,7 @@ gboolean ReloadButtonGtk::OnQueryTooltip(GtkWidget* /* sender */,
 }
 
 void ReloadButtonGtk::UpdateThemeButtons() {
-  bool use_gtk = theme_provider_ && theme_provider_->UseGtkTheme();
+  bool use_gtk = theme_service_ && theme_service_->UseGtkTheme();
 
   if (use_gtk) {
     gtk_widget_ensure_style(widget());

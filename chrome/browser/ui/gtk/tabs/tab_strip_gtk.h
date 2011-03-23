@@ -24,7 +24,7 @@
 class BrowserWindowGtk;
 class CustomDrawButton;
 class DraggedTabControllerGtk;
-class GtkThemeProvider;
+class GtkThemeService;
 
 class TabStripGtk : public TabStripModelObserver,
                     public TabGtk::TabDelegate,
@@ -438,7 +438,7 @@ class TabStripGtk : public TabStripModelObserver,
   BrowserWindowGtk* window_;
 
   // Theme resources.
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   // The currently running animation.
   scoped_ptr<TabAnimation> active_animation_;

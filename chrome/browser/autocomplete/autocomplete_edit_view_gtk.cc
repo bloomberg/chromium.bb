@@ -47,7 +47,7 @@
 #include "views/events/event.h"
 #else
 #include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #endif
 
@@ -186,7 +186,7 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
 #if defined(TOOLKIT_VIEWS)
       location_bar_view_(location_bar),
 #else
-      theme_provider_(GtkThemeProvider::GetFrom(profile)),
+      theme_service_(GtkThemeService::GetFrom(profile)),
 #endif
       enter_was_pressed_(false),
       tab_was_pressed_(false),
@@ -411,7 +411,7 @@ void AutocompleteEditViewGtk::Init() {
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
-  theme_provider_->InitThemesFor(this);
+  theme_service_->InitThemesFor(this);
 #else
   // Manually invoke SetBaseColor() because TOOLKIT_VIEWS doesn't observe
   // themes.
@@ -943,7 +943,7 @@ void AutocompleteEditViewGtk::SetBaseColor() {
 #if defined(TOOLKIT_VIEWS)
   bool use_gtk = false;
 #else
-  bool use_gtk = theme_provider_->UseGtkTheme();
+  bool use_gtk = theme_service_->UseGtkTheme();
 #endif
   if (use_gtk) {
     gtk_widget_modify_cursor(text_view_, NULL, NULL);
@@ -986,19 +986,19 @@ void AutocompleteEditViewGtk::SetBaseColor() {
     // Override the selected colors so we don't leak colors from the current
     // gtk theme into the chrome-theme.
     c = gfx::SkColorToGdkColor(
-        theme_provider_->get_active_selection_bg_color());
+        theme_service_->get_active_selection_bg_color());
     gtk_widget_modify_base(text_view_, GTK_STATE_SELECTED, &c);
 
     c = gfx::SkColorToGdkColor(
-        theme_provider_->get_active_selection_fg_color());
+        theme_service_->get_active_selection_fg_color());
     gtk_widget_modify_text(text_view_, GTK_STATE_SELECTED, &c);
 
     c = gfx::SkColorToGdkColor(
-        theme_provider_->get_inactive_selection_bg_color());
+        theme_service_->get_inactive_selection_bg_color());
     gtk_widget_modify_base(text_view_, GTK_STATE_ACTIVE, &c);
 
     c = gfx::SkColorToGdkColor(
-        theme_provider_->get_inactive_selection_fg_color());
+        theme_service_->get_inactive_selection_fg_color());
     gtk_widget_modify_text(text_view_, GTK_STATE_ACTIVE, &c);
 #endif
 
@@ -1021,7 +1021,7 @@ void AutocompleteEditViewGtk::UpdateInstantViewColors() {
 #if defined(TOOLKIT_VIEWS)
   bool use_gtk = false;
 #else
-  bool use_gtk = theme_provider_->UseGtkTheme();
+  bool use_gtk = theme_service_->UseGtkTheme();
 #endif
 
   if (use_gtk) {
@@ -1048,9 +1048,9 @@ void AutocompleteEditViewGtk::UpdateInstantViewColors() {
 #else
     normal_bg = LocationBarViewGtk::kBackgroundColor;
     selection_text =
-        theme_provider_->get_active_selection_fg_color();
+        theme_service_->get_active_selection_fg_color();
     selection_bg =
-        theme_provider_->get_active_selection_bg_color();
+        theme_service_->get_active_selection_bg_color();
 #endif
   }
 
@@ -1777,7 +1777,7 @@ gfx::Font AutocompleteEditViewGtk::GetFont() {
 #if defined(TOOLKIT_VIEWS)
   bool use_gtk = false;
 #else
-  bool use_gtk = theme_provider_->UseGtkTheme();
+  bool use_gtk = theme_service_->UseGtkTheme();
 #endif
 
   if (use_gtk) {

@@ -8,7 +8,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -206,8 +206,8 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
 
   SkColor title_color = GetThemeProvider()->
       GetColor(IsSelected() ?
-          BrowserThemeProvider::COLOR_TAB_TEXT :
-          BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT);
+          ThemeService::COLOR_TAB_TEXT :
+          ThemeService::COLOR_BACKGROUND_TAB_TEXT);
 
   if (!data().mini || width() > kMiniTabRendererAsNormalTabWidth)
     PaintTitle(canvas, title_color);

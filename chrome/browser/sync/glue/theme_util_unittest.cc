@@ -8,8 +8,8 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/testing_profile.h"
@@ -90,7 +90,7 @@ TEST_F(ThemeUtilTest, AreThemeSpecificsEqualHelper) {
   EXPECT_TRUE(AreThemeSpecificsEqualHelper(a, b, true));
 }
 
-class MockBrowserThemeProvider : public BrowserThemeProvider {
+class MockThemeService : public ThemeService {
  public:
   MOCK_METHOD0(SetNativeTheme, void());
   MOCK_METHOD0(UseDefaultTheme, void());
@@ -100,10 +100,10 @@ class MockBrowserThemeProvider : public BrowserThemeProvider {
 TEST_F(ThemeUtilTest, SetCurrentThemeDefaultTheme) {
   sync_pb::ThemeSpecifics theme_specifics;
   TestingProfile profile;
-  MockBrowserThemeProvider* mock_provider = new MockBrowserThemeProvider;
-  ThemeServiceFactory::ForceAssociationBetween(&profile, mock_provider);
+  MockThemeService* mock_theme_service = new MockThemeService;
+  ThemeServiceFactory::ForceAssociationBetween(&profile, mock_theme_service);
 
-  EXPECT_CALL(*mock_provider, UseDefaultTheme()).Times(1);
+  EXPECT_CALL(*mock_theme_service, UseDefaultTheme()).Times(1);
 
   SetCurrentThemeFromThemeSpecifics(theme_specifics, &profile);
 }
@@ -113,10 +113,10 @@ TEST_F(ThemeUtilTest, SetCurrentThemeSystemTheme) {
   theme_specifics.set_use_system_theme_by_default(true);
 
   TestingProfile profile;
-  MockBrowserThemeProvider* mock_provider = new MockBrowserThemeProvider;
-  ThemeServiceFactory::ForceAssociationBetween(&profile, mock_provider);
+  MockThemeService* mock_theme_service = new MockThemeService;
+  ThemeServiceFactory::ForceAssociationBetween(&profile, mock_theme_service);
 
-  EXPECT_CALL(*mock_provider, SetNativeTheme()).Times(1);
+  EXPECT_CALL(*mock_theme_service, SetNativeTheme()).Times(1);
 
   SetCurrentThemeFromThemeSpecifics(theme_specifics, &profile);
 }
@@ -213,11 +213,11 @@ TEST_F(ThemeUtilTest, GetThemeSpecificsHelperCustomThemeDistinct) {
 
 TEST_F(ThemeUtilTest, SetCurrentThemeIfNecessaryDefaultThemeNotNecessary) {
   TestingProfile profile;
-  MockBrowserThemeProvider* mock_provider = new MockBrowserThemeProvider;
-  ThemeServiceFactory::ForceAssociationBetween(&profile, mock_provider);
+  MockThemeService* mock_theme_service = new MockThemeService;
+  ThemeServiceFactory::ForceAssociationBetween(&profile, mock_theme_service);
 
-  EXPECT_CALL(*mock_provider, GetThemeID()).WillRepeatedly(Return(
-      BrowserThemeProvider::kDefaultThemeID));
+  EXPECT_CALL(*mock_theme_service, GetThemeID()).WillRepeatedly(Return(
+      ThemeService::kDefaultThemeID));
 
   // TODO(akalin): Mock out call to GetPrefs() under TOOLKIT_USES_GTK.
 

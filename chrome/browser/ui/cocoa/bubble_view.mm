@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/bubble_view.h"
 
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
@@ -90,7 +90,7 @@ const float kWindowEdge = 0.7f;
                         bottomRightCornerRadius:bottomRightRadius];
 
   if (themeProvider)
-    [themeProvider->GetNSColor(BrowserThemeProvider::COLOR_TOOLBAR, true) set];
+    [themeProvider->GetNSColor(ThemeService::COLOR_TOOLBAR, true) set];
   [border fill];
 
   [[NSColor colorWithDeviceWhite:kWindowEdge alpha:1.0f] set];
@@ -99,7 +99,7 @@ const float kWindowEdge = 0.7f;
   // Text
   NSColor* textColor = [NSColor blackColor];
   if (themeProvider)
-    textColor = themeProvider->GetNSColor(BrowserThemeProvider::COLOR_TAB_TEXT,
+    textColor = themeProvider->GetNSColor(ThemeService::COLOR_TAB_TEXT,
                                           true);
   NSFont* textFont = [self font];
   scoped_nsobject<NSShadow> textShadow([[NSShadow alloc] init]);

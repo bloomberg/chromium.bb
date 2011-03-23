@@ -27,7 +27,7 @@
 class Browser;
 class BrowserActionButton;
 class Extension;
-class GtkThemeProvider;
+class GtkThemeService;
 class Profile;
 
 typedef struct _GdkDragContext GdkDragContext;
@@ -170,7 +170,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   Browser* browser_;
 
   Profile* profile_;
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   ExtensionToolbarModel* model_;
 

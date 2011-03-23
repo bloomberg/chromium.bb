@@ -22,7 +22,6 @@ class CookieMonster;
 
 class AutocompleteClassifier;
 class BookmarkModel;
-class BrowserThemeProvider;
 class CommandLine;
 class DesktopNotificationService;
 class ExtensionPrefs;
@@ -40,6 +39,7 @@ class ProfileSyncService;
 class SessionService;
 class TemplateURLModel;
 class TestingPrefService;
+class ThemeService;
 class URLRequestContextGetter;
 class WebKitContext;
 
@@ -115,7 +115,7 @@ class TestingProfile : public Profile {
 
   // Uses a specific theme provider for this profile. TestingProfile takes
   // ownership of |theme_provider|.
-  void UseThemeProvider(BrowserThemeProvider* theme_provider);
+  void UseThemeProvider(ThemeService* theme_provider);
 
   // Creates an ExtensionService initialized with the testing profile and
   // returns it. The profile keeps its own copy of a scoped_refptr to the

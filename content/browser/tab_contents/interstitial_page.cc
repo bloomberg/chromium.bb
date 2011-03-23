@@ -35,10 +35,6 @@
 #include "content/common/page_transition_types.h"
 #include "net/base/escape.h"
 
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
-#endif
-
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 

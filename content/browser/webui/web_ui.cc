@@ -11,8 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
-#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/webui/generic_handler.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/render_messages.h"
@@ -127,10 +125,6 @@ void WebUI::CallJavascriptFunction(
     const std::vector<const Value*>& args) {
   DCHECK(IsStringASCII(function_name));
   ExecuteJavascript(GetJavascript(function_name, args));
-}
-
-ui::ThemeProvider* WebUI::GetThemeProvider() const {
-  return ThemeServiceFactory::GetForProfile(GetProfile());
 }
 
 void WebUI::RegisterMessageCallback(const std::string &message,

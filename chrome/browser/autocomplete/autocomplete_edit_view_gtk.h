@@ -45,7 +45,7 @@ class View;
 }
 
 #if !defined(TOOLKIT_VIEWS)
-class GtkThemeProvider;
+class GtkThemeService;
 #endif
 
 class AutocompleteEditViewGtk : public AutocompleteEditView,
@@ -465,7 +465,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   views::View* location_bar_view_;
 #else
   // Supplies colors, et cetera.
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   NotificationRegistrar registrar_;
 #endif

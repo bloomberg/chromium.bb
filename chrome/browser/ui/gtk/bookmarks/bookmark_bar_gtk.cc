@@ -26,7 +26,7 @@
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/hover_controller_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
@@ -133,7 +133,7 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       dragged_node_(NULL),
       drag_icon_(NULL),
       toolbar_drop_item_(NULL),
-      theme_provider_(GtkThemeProvider::GetFrom(profile)),
+      theme_service_(GtkThemeService::GetFrom(profile)),
       show_instructions_(true),
       menu_bar_helper_(this),
       slide_animation_(this),
@@ -204,7 +204,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
   paint_box_ = gtk_event_box_new();
   gtk_container_add(GTK_CONTAINER(ntp_padding_box_), paint_box_);
   GdkColor paint_box_color =
-      theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_TOOLBAR);
+      theme_service_->GetGdkColor(ThemeService::COLOR_TOOLBAR);
   gtk_widget_modify_bg(paint_box_, GTK_STATE_NORMAL, &paint_box_color);
   gtk_widget_add_events(paint_box_, GDK_POINTER_MOTION_MASK |
                                     GDK_BUTTON_PRESS_MASK);
@@ -240,7 +240,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), bookmark_toolbar_.get(),
                      TRUE, TRUE, 0);
 
-  overflow_button_ = theme_provider_->BuildChromeButton();
+  overflow_button_ = theme_service_->BuildChromeButton();
   g_object_set_data(G_OBJECT(overflow_button_), "left-align-popup",
                     reinterpret_cast<void*>(true));
   SetOverflowButtonAppearance();
@@ -258,13 +258,13 @@ void BookmarkBarGtk::Init(Profile* profile) {
   g_signal_connect(bookmark_toolbar_.get(), "drag-data-received",
                    G_CALLBACK(&OnDragReceivedThunk), this);
 
-  GtkWidget* vseparator = theme_provider_->CreateToolbarSeparator();
+  GtkWidget* vseparator = theme_service_->CreateToolbarSeparator();
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), vseparator,
                      FALSE, FALSE, 0);
 
   // We pack the button manually (rather than using gtk_button_set_*) so that
   // we can have finer control over its label.
-  other_bookmarks_button_ = theme_provider_->BuildChromeButton();
+  other_bookmarks_button_ = theme_service_->BuildChromeButton();
   ConnectFolderButtonEvents(other_bookmarks_button_, false);
   GtkWidget* other_padding = gtk_alignment_new(0, 0, 1, 1);
   gtk_alignment_set_padding(GTK_ALIGNMENT(other_padding),
@@ -276,7 +276,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), other_padding,
                      FALSE, FALSE, 0);
 
-  sync_error_button_ = theme_provider_->BuildChromeButton();
+  sync_error_button_ = theme_service_->BuildChromeButton();
   gtk_button_set_image(
       GTK_BUTTON(sync_error_button_),
       gtk_image_new_from_pixbuf(
@@ -311,7 +311,7 @@ void BookmarkBarGtk::Show(bool animate) {
   // Hide out behind the findbar. This is rather fragile code, it could
   // probably be improved.
   if (floating_) {
-    if (theme_provider_->UseGtkTheme()) {
+    if (theme_service_->UseGtkTheme()) {
       if (GTK_WIDGET_REALIZED(event_box_->parent))
         gdk_window_lower(event_box_->parent->window);
       if (GTK_WIDGET_REALIZED(event_box_.get()))
@@ -482,7 +482,7 @@ void BookmarkBarGtk::BookmarkNodeChanged(BookmarkModel* model,
   GtkToolItem* item = gtk_toolbar_get_nth_item(
       GTK_TOOLBAR(bookmark_toolbar_.get()), index);
   GtkWidget* button = gtk_bin_get_child(GTK_BIN(item));
-  bookmark_utils::ConfigureButtonForNode(node, model, button, theme_provider_);
+  bookmark_utils::ConfigureButtonForNode(node, model, button, theme_service_);
   SetChevronState();
 }
 
@@ -515,7 +515,7 @@ void BookmarkBarGtk::CreateAllBookmarkButtons() {
   }
 
   bookmark_utils::ConfigureButtonForNode(model_->other_node(),
-      model_, other_bookmarks_button_, theme_provider_);
+      model_, other_bookmarks_button_, theme_service_);
 
   SetInstructionState();
   SetChevronState();
@@ -572,7 +572,7 @@ void BookmarkBarGtk::SetOverflowButtonAppearance() {
   if (former_child)
     gtk_widget_destroy(former_child);
 
-  GtkWidget* new_child = theme_provider_->UseGtkTheme() ?
+  GtkWidget* new_child = theme_service_->UseGtkTheme() ?
       gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE) :
       gtk_image_new_from_pixbuf(ResourceBundle::GetSharedInstance().
           GetRTLEnabledPixbufNamed(IDR_BOOKMARK_BAR_CHEVRONS));
@@ -635,9 +635,9 @@ void BookmarkBarGtk::UpdateFloatingState() {
 #if !defined(OS_CHROMEOS)
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(paint_box_), TRUE);
 #endif
-    GdkColor stroke_color = theme_provider_->UseGtkTheme() ?
-        theme_provider_->GetBorderColor() :
-        theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_NTP_HEADER);
+    GdkColor stroke_color = theme_service_->UseGtkTheme() ?
+        theme_service_->GetBorderColor() :
+        theme_service_->GetGdkColor(ThemeService::COLOR_NTP_HEADER);
     gtk_util::ActAsRoundedWindow(paint_box_, stroke_color, kNTPRoundedness,
                                  gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
 
@@ -674,14 +674,14 @@ void BookmarkBarGtk::UpdateFloatingState() {
 
 void BookmarkBarGtk::UpdateEventBoxPaintability() {
   gtk_widget_set_app_paintable(event_box_.get(),
-                               !theme_provider_->UseGtkTheme() || floating_);
+                               !theme_service_->UseGtkTheme() || floating_);
   // When using the GTK+ theme, we need to have the event box be visible so
   // buttons don't get a halo color from the background.  When using Chromium
   // themes, we want to let the background show through the toolbar.
 
 #if !defined(OS_CHROMEOS)
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()),
-                                   theme_provider_->UseGtkTheme());
+                                   theme_service_->UseGtkTheme());
 #endif
 }
 
@@ -836,13 +836,13 @@ void BookmarkBarGtk::Observe(NotificationType type,
     UpdateEventBoxPaintability();
 
     GdkColor paint_box_color =
-        theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_TOOLBAR);
+        theme_service_->GetGdkColor(ThemeService::COLOR_TOOLBAR);
     gtk_widget_modify_bg(paint_box_, GTK_STATE_NORMAL, &paint_box_color);
 
     if (floating_) {
-      GdkColor stroke_color = theme_provider_->UseGtkTheme() ?
-          theme_provider_->GetBorderColor() :
-          theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_NTP_HEADER);
+      GdkColor stroke_color = theme_service_->UseGtkTheme() ?
+          theme_service_->GetBorderColor() :
+          theme_service_->GetGdkColor(ThemeService::COLOR_NTP_HEADER);
       gtk_util::SetRoundedWindowBorderColor(paint_box_, stroke_color);
     }
 
@@ -851,8 +851,8 @@ void BookmarkBarGtk::Observe(NotificationType type,
 }
 
 GtkWidget* BookmarkBarGtk::CreateBookmarkButton(const BookmarkNode* node) {
-  GtkWidget* button = theme_provider_->BuildChromeButton();
-  bookmark_utils::ConfigureButtonForNode(node, model_, button, theme_provider_);
+  GtkWidget* button = theme_service_->BuildChromeButton();
+  bookmark_utils::ConfigureButtonForNode(node, model_, button, theme_service_);
 
   // The tool item is also a source for dragging
   gtk_drag_source_set(button, GDK_BUTTON1_MASK, NULL, 0,
@@ -1040,7 +1040,7 @@ void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,
   DCHECK(dragged_node_);
 
   drag_icon_ = bookmark_utils::GetDragRepresentationForNode(
-      node, model_, theme_provider_);
+      node, model_, theme_service_);
 
   // We have to jump through some hoops to get the drag icon to line up because
   // it is a different size than the button.
@@ -1312,7 +1312,7 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
 
 gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
                                           GdkEventExpose* event) {
-  GtkThemeProvider* theme_provider = theme_provider_;
+  GtkThemeService* theme_provider = theme_service_;
 
   // We don't need to render the toolbar image in GTK mode, except when
   // detached.

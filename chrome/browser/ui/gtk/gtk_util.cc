@@ -25,7 +25,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "content/browser/disposition_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -809,17 +809,17 @@ void DrawThemedToolbarBackground(GtkWidget* widget,
                                  cairo_t* cr,
                                  GdkEventExpose* event,
                                  const gfx::Point& tabstrip_origin,
-                                 GtkThemeProvider* theme_provider) {
+                                 GtkThemeService* theme_service) {
   // Fill the entire region with the toolbar color.
-  GdkColor color = theme_provider->GetGdkColor(
-      BrowserThemeProvider::COLOR_TOOLBAR);
+  GdkColor color = theme_service->GetGdkColor(
+      ThemeService::COLOR_TOOLBAR);
   gdk_cairo_set_source_color(cr, &color);
   cairo_fill(cr);
 
   // The toolbar is supposed to blend in with the active tab, so we have to pass
   // coordinates for the IDR_THEME_TOOLBAR bitmap relative to the top of the
   // tab strip.
-  CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
+  CairoCachedSurface* background = theme_service->GetSurfaceNamed(
       IDR_THEME_TOOLBAR, widget);
   background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
   // We tile the toolbar background in both directions.

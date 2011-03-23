@@ -10,7 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 
 namespace {
 
@@ -25,7 +25,7 @@ void AddSingleNodeToTreeStore(GtkTreeStore* store, const BookmarkNode* node,
   // (and indeed, Nautilus does not render an expanded directory any
   // differently).
   gtk_tree_store_set(store, iter,
-      bookmark_utils::FOLDER_ICON, GtkThemeProvider::GetFolderIcon(true),
+      bookmark_utils::FOLDER_ICON, GtkThemeService::GetFolderIcon(true),
       bookmark_utils::FOLDER_NAME,
       UTF16ToUTF8(node->GetTitle()).c_str(),
       bookmark_utils::ITEM_ID, node->id(),

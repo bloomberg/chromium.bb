@@ -11,7 +11,7 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/download_item_view.h"
@@ -250,9 +250,9 @@ void DownloadShelfView::AnimationEnded(const ui::Animation *animation) {
 void DownloadShelfView::Layout() {
   // Now that we know we have a parent, we can safely set our theme colors.
   show_all_view_->SetColor(
-      GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
+      GetThemeProvider()->GetColor(ThemeService::COLOR_BOOKMARK_TEXT));
   set_background(views::Background::CreateSolidBackground(
-      GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TOOLBAR)));
+      GetThemeProvider()->GetColor(ThemeService::COLOR_TOOLBAR)));
 
   // Let our base class layout our child views
   views::View::Layout();
@@ -349,7 +349,7 @@ void DownloadShelfView::UpdateButtonColors() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (GetThemeProvider()) {
     close_button_->SetBackground(
-        GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT),
+        GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT),
         rb.GetBitmapNamed(IDR_CLOSE_BAR),
         rb.GetBitmapNamed(IDR_CLOSE_BAR_MASK));
   }

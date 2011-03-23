@@ -20,7 +20,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/extensions/extension.h"
@@ -38,7 +38,7 @@
 
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/extensions/gtk_theme_installed_infobar_delegate.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #endif
 
 // static
@@ -113,7 +113,7 @@ ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
     // On Linux, we also need to take the user's system settings into account
     // to undo theme installation.
     previous_use_system_theme_ =
-        GtkThemeProvider::GetFrom(profile_)->UseGtkTheme();
+        GtkThemeService::GetFrom(profile_)->UseGtkTheme();
 #else
     DCHECK(!previous_use_system_theme_);
 #endif

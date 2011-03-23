@@ -22,7 +22,7 @@
 
 class BrowserWindowGtk;
 class CustomDrawButton;
-class GtkThemeProvider;
+class GtkThemeService;
 class MenuGtk;
 class PopupPageMenuModel;
 class TabContents;
@@ -231,7 +231,7 @@ class BrowserTitlebar : public NotificationObserver,
   Throbber throbber_;
 
   // Theme provider for building buttons.
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   NotificationRegistrar registrar_;
 };

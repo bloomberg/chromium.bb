@@ -22,7 +22,7 @@ typedef struct _GdkColor GdkColor;
 typedef struct _GtkWidget GtkWidget;
 
 class BrowserWindow;
-class GtkThemeProvider;
+class GtkThemeService;
 class GURL;
 class Profile;
 struct RendererPreferences;  // from common/renderer_preferences.h
@@ -252,7 +252,7 @@ void DrawThemedToolbarBackground(GtkWidget* widget,
                                  cairo_t* cr,
                                  GdkEventExpose* event,
                                  const gfx::Point& tabstrip_origin,
-                                 GtkThemeProvider* provider);
+                                 GtkThemeService* provider);
 
 // Returns the two colors averaged together.
 GdkColor AverageColors(GdkColor color_one, GdkColor color_two);

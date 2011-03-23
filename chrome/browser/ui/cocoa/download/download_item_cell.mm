@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
-#import "chrome/browser/themes/browser_theme_provider.h"
+#import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/download/download_item_cell.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -142,7 +142,7 @@ NSColor* BackgroundTheme::GetNSColor(int id, bool allow_default) const {
 }
 
 NSColor* BackgroundTheme::GetNSColorTint(int id, bool allow_default) const {
-  if (id == BrowserThemeProvider::TINT_BUTTONS)
+  if (id == ThemeService::TINT_BUTTONS)
     return borderColor_.get();
 
   return provider_->GetNSColorTint(id, allow_default);
@@ -150,11 +150,11 @@ NSColor* BackgroundTheme::GetNSColorTint(int id, bool allow_default) const {
 
 NSGradient* BackgroundTheme::GetNSGradient(int id) const {
   switch (id) {
-    case BrowserThemeProvider::GRADIENT_TOOLBAR_BUTTON:
-    case BrowserThemeProvider::GRADIENT_TOOLBAR_BUTTON_INACTIVE:
+    case ThemeService::GRADIENT_TOOLBAR_BUTTON:
+    case ThemeService::GRADIENT_TOOLBAR_BUTTON_INACTIVE:
       return buttonGradient_.get();
-    case BrowserThemeProvider::GRADIENT_TOOLBAR_BUTTON_PRESSED:
-    case BrowserThemeProvider::GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE:
+    case ThemeService::GRADIENT_TOOLBAR_BUTTON_PRESSED:
+    case ThemeService::GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE:
       return buttonPressedGradient_.get();
     default:
       return provider_->GetNSGradient(id);
@@ -435,7 +435,7 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
   ui::ThemeProvider* themeProvider =
       [[[self controlView] window] themeProvider];
   NSColor* themeTextColor =
-      themeProvider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT,
+      themeProvider->GetNSColor(ThemeService::COLOR_BOOKMARK_TEXT,
                                 true);
   return [self pressedWithDefaultThemeOnPart:part]
       ? [NSColor alternateSelectedControlTextColor] : themeTextColor;
@@ -491,8 +491,8 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
   if (!isDefaultTheme) {
     themeProvider = [self backgroundThemeWrappingProvider:themeProvider];
     bgGradient = themeProvider->GetNSGradient(
-        active ? BrowserThemeProvider::GRADIENT_TOOLBAR_BUTTON :
-                 BrowserThemeProvider::GRADIENT_TOOLBAR_BUTTON_INACTIVE);
+        active ? ThemeService::GRADIENT_TOOLBAR_BUTTON :
+                 ThemeService::GRADIENT_TOOLBAR_BUTTON_INACTIVE);
   }
 
   NSRect buttonDrawRect, dropdownDrawRect;

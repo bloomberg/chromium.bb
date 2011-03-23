@@ -1304,7 +1304,7 @@
         'browser/ui/gtk/bookmarks/bookmark_utils_gtk_unittest.cc',
         'browser/ui/gtk/gtk_chrome_shrinkable_hbox_unittest.cc',
         'browser/ui/gtk/gtk_expanded_container_unittest.cc',
-        'browser/ui/gtk/gtk_theme_provider_unittest.cc',
+        'browser/ui/gtk/gtk_theme_service_unittest.cc',
         'browser/ui/gtk/reload_button_gtk_unittest.cc',
         'browser/ui/gtk/status_icons/status_tray_gtk_unittest.cc',
         'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
@@ -1524,7 +1524,7 @@
         'browser/tabs/tab_strip_selection_model_unittest.cc',
         'browser/task_manager/task_manager_unittest.cc',
         'browser/themes/browser_theme_pack_unittest.cc',
-        'browser/themes/browser_theme_provider_unittest.cc',
+        'browser/themes/theme_service_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list
         # without an explicit exclusion since gyp is smart enough to
         # exclude them from non-Mac builds.
@@ -1902,7 +1902,7 @@
                  'browser/ui/gtk/bookmarks/bookmark_editor_gtk_unittest.cc',
                  'browser/ui/gtk/gtk_chrome_shrinkable_hbox_unittest.cc',
                  'browser/ui/gtk/gtk_expanded_container_unittest.cc',
-                 'browser/ui/gtk/gtk_theme_provider_unittest.cc',
+                 'browser/ui/gtk/gtk_theme_service_unittest.cc',
                  'browser/ui/gtk/options/cookies_view_unittest.cc',
                  'browser/ui/gtk/options/languages_page_gtk_unittest.cc',
                  'browser/ui/gtk/reload_button_gtk_unittest.cc',

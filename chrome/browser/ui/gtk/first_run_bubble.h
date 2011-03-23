@@ -66,7 +66,7 @@ class FirstRunBubble : public InfoBubbleGtkDelegate,
   Profile* profile_;
 
   // Provides colors and stuff.
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   // The widget we anchor to, and a descendant of the toplevel window we
   // are transient for.

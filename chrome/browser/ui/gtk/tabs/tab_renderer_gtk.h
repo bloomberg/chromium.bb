@@ -27,7 +27,7 @@ class Size;
 }  // namespace gfx
 
 class CustomDrawButton;
-class GtkThemeProvider;
+class GtkThemeService;
 class TabContents;
 
 namespace ui {
@@ -93,7 +93,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     NotificationRegistrar registrar_;
 
     // Gives us our throbber images.
-    ui::ThemeProvider* theme_provider_;
+    ui::ThemeProvider* theme_service_;
 
     // Current state of the animation.
     AnimationState animation_state_;
@@ -439,7 +439,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // alignment in the BrowserTitlebar.
   int background_offset_y_;
 
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   // The close button.
   scoped_ptr<CustomDrawButton> close_button_;

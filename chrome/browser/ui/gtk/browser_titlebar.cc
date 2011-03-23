@@ -25,7 +25,7 @@
 #if defined(USE_GCONF)
 #include "chrome/browser/ui/gtk/gconf_titlebar_listener.h"
 #endif
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
@@ -214,7 +214,7 @@ BrowserTitlebar::BrowserTitlebar(BrowserWindowGtk* browser_window,
       app_mode_title_(NULL),
       using_custom_frame_(false),
       window_has_focus_(false),
-      theme_provider_(NULL) {
+      theme_service_(NULL) {
   Init();
 }
 
@@ -357,11 +357,11 @@ void BrowserTitlebar::Init() {
 
     // Register with the theme provider to set the |app_mode_title_| label
     // color.
-    theme_provider_ = GtkThemeProvider::GetFrom(
+    theme_service_ = GtkThemeService::GetFrom(
         browser_window_->browser()->profile());
     registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                    NotificationService::AllSources());
-    theme_provider_->InitThemesFor(this);
+    theme_service_->InitThemesFor(this);
     UpdateTitleAndIcon();
   }
 
@@ -671,7 +671,7 @@ void BrowserTitlebar::UpdateTextColor() {
   if (!app_mode_title_)
     return;
 
-  if (theme_provider_ && theme_provider_->UseGtkTheme()) {
+  if (theme_service_ && theme_service_->UseGtkTheme()) {
     // We don't really have any good options here.
     //
     // Colors from window manager themes aren't exposed in GTK; the window
@@ -687,11 +687,11 @@ void BrowserTitlebar::UpdateTextColor() {
     // color.
     GdkColor frame_color;
     if (window_has_focus_) {
-      frame_color = theme_provider_->GetGdkColor(
-          BrowserThemeProvider::COLOR_FRAME);
+      frame_color = theme_service_->GetGdkColor(
+          ThemeService::COLOR_FRAME);
     } else {
-      frame_color = theme_provider_->GetGdkColor(
-          BrowserThemeProvider::COLOR_FRAME_INACTIVE);
+      frame_color = theme_service_->GetGdkColor(
+          ThemeService::COLOR_FRAME_INACTIVE);
     }
     GdkColor text_color = PickLuminosityContrastingColor(
         &frame_color, &gtk_util::kGdkWhite, &gtk_util::kGdkBlack);

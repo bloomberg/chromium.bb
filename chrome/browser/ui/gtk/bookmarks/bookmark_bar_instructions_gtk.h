@@ -12,7 +12,7 @@
 #include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GtkWidget GtkWidget;
-class GtkThemeProvider;
+class GtkThemeService;
 class Profile;
 
 class BookmarkBarInstructionsGtk : public NotificationObserver {
@@ -47,7 +47,7 @@ class BookmarkBarInstructionsGtk : public NotificationObserver {
 
   Profile* profile_;
 
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   // HBox that holds the the label and link of bookmark bar import promotion.
   GtkWidget* instructions_hbox_;

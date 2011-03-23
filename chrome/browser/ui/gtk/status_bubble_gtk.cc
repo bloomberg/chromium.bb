@@ -11,7 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
@@ -38,7 +38,7 @@ const int kMousePadding = 20;
 }  // namespace
 
 StatusBubbleGtk::StatusBubbleGtk(Profile* profile)
-    : theme_provider_(GtkThemeProvider::GetFrom(profile)),
+    : theme_service_(GtkThemeService::GetFrom(profile)),
       padding_(NULL),
       flip_horizontally_(false),
       y_offset_(0),
@@ -48,7 +48,7 @@ StatusBubbleGtk::StatusBubbleGtk(Profile* profile)
       ignore_next_left_content_(false) {
   InitWidgets();
 
-  theme_provider_->InitThemesFor(this);
+  theme_service_->InitThemesFor(this);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
 }
@@ -278,7 +278,7 @@ void StatusBubbleGtk::InitWidgets() {
 }
 
 void StatusBubbleGtk::UserChangedTheme() {
-  if (theme_provider_->UseGtkTheme()) {
+  if (theme_service_->UseGtkTheme()) {
     gtk_widget_modify_fg(label_.get(), GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_bg(container_.get(), GTK_STATE_NORMAL, NULL);
   } else {
@@ -286,16 +286,16 @@ void StatusBubbleGtk::UserChangedTheme() {
     // toolbar" that I can find. Maybe in later iterations of the theme system,
     // there will be a better color to pick.
     GdkColor bookmark_text =
-        theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+        theme_service_->GetGdkColor(ThemeService::COLOR_BOOKMARK_TEXT);
     gtk_widget_modify_fg(label_.get(), GTK_STATE_NORMAL, &bookmark_text);
 
     GdkColor toolbar_color =
-        theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_TOOLBAR);
+        theme_service_->GetGdkColor(ThemeService::COLOR_TOOLBAR);
     gtk_widget_modify_bg(container_.get(), GTK_STATE_NORMAL, &toolbar_color);
   }
 
   gtk_util::SetRoundedWindowBorderColor(container_.get(),
-                                        theme_provider_->GetBorderColor());
+                                        theme_service_->GetBorderColor());
 }
 
 void StatusBubbleGtk::SetFlipHorizontally(bool flip_horizontally) {

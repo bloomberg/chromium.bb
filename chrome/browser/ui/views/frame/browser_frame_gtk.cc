@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/views/frame/app_panel_browser_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"

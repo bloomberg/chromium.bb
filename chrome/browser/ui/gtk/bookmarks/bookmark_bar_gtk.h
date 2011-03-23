@@ -32,7 +32,7 @@ class BookmarkMenuController;
 class Browser;
 class BrowserWindowGtk;
 class CustomContainerButton;
-class GtkThemeProvider;
+class GtkThemeService;
 class MenuGtk;
 class PageNavigator;
 class Profile;
@@ -361,7 +361,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   GtkToolItem* toolbar_drop_item_;
 
   // Theme provider for building buttons.
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   // Whether we should show the instructional text in the bookmark bar.
   bool show_instructions_;

@@ -23,7 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/common/notification_service.h"
 #include "grit/theme_resources.h"
@@ -276,7 +276,7 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
       location_bar_(location_bar),
       window_(gtk_window_new(GTK_WINDOW_POPUP)),
       layout_(NULL),
-      theme_provider_(GtkThemeProvider::GetFrom(profile)),
+      theme_service_(GtkThemeService::GetFrom(profile)),
       font_(font.DeriveFont(kEditFontAdjust)),
       ignore_mouse_drag_(false),
       opened_(false) {
@@ -313,7 +313,7 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
-  theme_provider_->InitThemesFor(this);
+  theme_service_->InitThemesFor(this);
 
   // TODO(erg): There appears to be a bug somewhere in something which shows
   // itself when we're in NX. Previously, we called
@@ -393,10 +393,10 @@ void AutocompletePopupViewGtk::Observe(NotificationType type,
                                        const NotificationDetails& details) {
   DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
 
-  if (theme_provider_->UseGtkTheme()) {
+  if (theme_service_->UseGtkTheme()) {
     gtk_util::UndoForceFontSize(window_);
 
-    border_color_ = theme_provider_->GetBorderColor();
+    border_color_ = theme_service_->GetBorderColor();
 
     gtk_util::GetTextColors(
         &background_color_, &selected_background_color_,
@@ -504,7 +504,7 @@ GdkPixbuf* AutocompletePopupViewGtk::IconForMatch(
   }
 
   // TODO(estade): Do we want to flip these for RTL?  (Windows doesn't).
-  return theme_provider_->GetPixbufNamed(icon);
+  return theme_service_->GetPixbufNamed(icon);
 }
 
 gboolean AutocompletePopupViewGtk::HandleMotion(GtkWidget* widget,

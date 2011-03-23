@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
@@ -11,15 +11,15 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/gtk_util.h"
 
-GdkPixbuf* BrowserThemeProvider::GetPixbufNamed(int id) const {
+GdkPixbuf* ThemeService::GetPixbufNamed(int id) const {
   return GetPixbufImpl(id, false);
 }
 
-GdkPixbuf* BrowserThemeProvider::GetRTLEnabledPixbufNamed(int id) const {
+GdkPixbuf* ThemeService::GetRTLEnabledPixbufNamed(int id) const {
   return GetPixbufImpl(id, true);
 }
 
-GdkPixbuf* BrowserThemeProvider::GetPixbufImpl(int id, bool rtl_enabled) const {
+GdkPixbuf* ThemeService::GetPixbufImpl(int id, bool rtl_enabled) const {
   DCHECK(CalledOnValidThread());
   // Use the negative |resource_id| for the key for BIDI-aware images.
   int key = rtl_enabled ? -id : id;
@@ -61,7 +61,7 @@ GdkPixbuf* BrowserThemeProvider::GetPixbufImpl(int id, bool rtl_enabled) const {
   return empty_bitmap;
 }
 
-void BrowserThemeProvider::FreePlatformCaches() {
+void ThemeService::FreePlatformCaches() {
   DCHECK(CalledOnValidThread());
 
   // Free GdkPixbufs.

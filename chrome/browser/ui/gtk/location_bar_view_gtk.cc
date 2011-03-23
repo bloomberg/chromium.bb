@@ -38,7 +38,7 @@
 #include "chrome/browser/ui/gtk/content_setting_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
 #include "chrome/browser/ui/gtk/first_run_bubble.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
@@ -164,7 +164,7 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       transition_(PageTransition::TYPED),
       first_run_bubble_(this),
       popup_window_mode_(false),
-      theme_provider_(NULL),
+      theme_service_(NULL),
       hbox_width_(0),
       entry_box_width_(0),
       show_selected_keyword_(false),
@@ -323,8 +323,8 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
-  theme_provider_ = GtkThemeProvider::GetFrom(profile_);
-  theme_provider_->InitThemesFor(this);
+  theme_service_ = GtkThemeService::GetFrom(profile_);
+  theme_service_->InitThemesFor(this);
 }
 
 void LocationBarViewGtk::BuildSiteTypeArea() {
@@ -452,7 +452,7 @@ void LocationBarViewGtk::Update(const TabContents* contents) {
   UpdatePageActions();
   location_entry_->Update(contents);
   // The security level (background color) could have changed, etc.
-  if (theme_provider_->UseGtkTheme()) {
+  if (theme_service_->UseGtkTheme()) {
     // In GTK mode, we need our parent to redraw, as it draws the text entry
     // border.
     gtk_widget_queue_draw(widget()->parent);
@@ -761,11 +761,11 @@ void LocationBarViewGtk::Observe(NotificationType type,
                                  const NotificationDetails& details) {
   DCHECK_EQ(type.value,  NotificationType::BROWSER_THEME_CHANGED);
 
-  if (theme_provider_->UseGtkTheme()) {
+  if (theme_service_->UseGtkTheme()) {
     gtk_widget_modify_bg(tab_to_search_box_, GTK_STATE_NORMAL, NULL);
 
-    GdkColor border_color = theme_provider_->GetGdkColor(
-        BrowserThemeProvider::COLOR_FRAME);
+    GdkColor border_color = theme_service_->GetGdkColor(
+        ThemeService::COLOR_FRAME);
     gtk_util::SetRoundedWindowBorderColor(tab_to_search_box_, border_color);
 
     gtk_util::SetLabelColor(tab_to_search_full_label_, NULL);
@@ -831,7 +831,7 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
   // If we're not using GTK theming, draw our own border over the edge pixels
   // of the background.
   if (!profile_ ||
-      !GtkThemeProvider::GetFrom(profile_)->UseGtkTheme()) {
+      !GtkThemeService::GetFrom(profile_)->UseGtkTheme()) {
     int left, center, right;
     if (popup_window_mode_) {
       left = right = IDR_LOCATIONBG_POPUPMODE_EDGE;
@@ -861,7 +861,7 @@ void LocationBarViewGtk::UpdateSiteTypeArea() {
 
   int resource_id = location_entry_->GetIcon();
   gtk_image_set_from_pixbuf(GTK_IMAGE(location_icon_image_),
-                            theme_provider_->GetPixbufNamed(resource_id));
+                            theme_service_->GetPixbufNamed(resource_id));
 
   if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
     if (!gtk_util::IsActingAsRoundedWindow(site_type_event_box_)) {
@@ -1085,7 +1085,7 @@ void LocationBarViewGtk::OnIconDragBegin(GtkWidget* sender,
   if (!pixbuf)
     return;
   drag_icon_ = bookmark_utils::GetDragRepresentation(pixbuf,
-      GetTitle(), theme_provider_);
+      GetTitle(), theme_service_);
   g_object_unref(pixbuf);
   gtk_drag_set_icon_widget(context, drag_icon_, 0, 0);
 }
@@ -1140,7 +1140,7 @@ void LocationBarViewGtk::UpdateStarIcon() {
     return;
 
   gtk_image_set_from_pixbuf(GTK_IMAGE(star_image_),
-      theme_provider_->GetPixbufNamed(
+      theme_service_->GetPixbufNamed(
           starred_ ? IDR_STAR_LIT : IDR_STAR));
 }
 
@@ -1270,7 +1270,7 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromTabContents(
   }
 
   gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()),
-      GtkThemeProvider::GetFrom(profile_)->GetPixbufNamed(
+      GtkThemeService::GetFrom(profile_)->GetPixbufNamed(
           content_setting_image_model_->get_icon()));
 
   gtk_widget_set_tooltip_text(widget(),

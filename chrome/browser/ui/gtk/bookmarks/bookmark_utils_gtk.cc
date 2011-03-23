@@ -13,7 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -51,7 +51,7 @@ void* AsVoid(const BookmarkNode* node) {
 
 // Creates the widget hierarchy for a bookmark button.
 void PackButton(GdkPixbuf* pixbuf, const string16& title, bool ellipsize,
-                GtkThemeProvider* provider, GtkWidget* button) {
+                GtkThemeService* provider, GtkWidget* button) {
   GtkWidget* former_child = gtk_bin_get_child(GTK_BIN(button));
   if (former_child)
     gtk_container_remove(GTK_CONTAINER(button), former_child);
@@ -165,11 +165,11 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
     if (model->GetFavicon(node).width() != 0) {
       pixbuf = gfx::GdkPixbufFromSkBitmap(&model->GetFavicon(node));
     } else {
-      pixbuf = GtkThemeProvider::GetDefaultFavicon(native);
+      pixbuf = GtkThemeService::GetDefaultFavicon(native);
       g_object_ref(pixbuf);
     }
   } else {
-    pixbuf = GtkThemeProvider::GetFolderIcon(native);
+    pixbuf = GtkThemeService::GetFolderIcon(native);
     g_object_ref(pixbuf);
   }
 
@@ -178,14 +178,14 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
 
 GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
                                  const string16& title,
-                                 GtkThemeProvider* provider) {
+                                 GtkThemeService* provider) {
   GtkWidget* window = gtk_window_new(GTK_WINDOW_POPUP);
 
   if (gtk_util::IsScreenComposited() &&
       gtk_util::AddWindowAlphaChannel(window)) {
     DragRepresentationData* data = new DragRepresentationData(
         pixbuf, title,
-        provider->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
+        provider->GetColor(ThemeService::COLOR_BOOKMARK_TEXT));
     g_signal_connect(window, "expose-event", G_CALLBACK(OnDragIconExpose),
                      data);
     g_object_ref(window);
@@ -198,7 +198,7 @@ GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
   } else {
     if (!provider->UseGtkTheme()) {
       GdkColor color = provider->GetGdkColor(
-          BrowserThemeProvider::COLOR_TOOLBAR);
+          ThemeService::COLOR_TOOLBAR);
       gtk_widget_modify_bg(window, GTK_STATE_NORMAL, &color);
     }
     gtk_widget_realize(window);
@@ -218,7 +218,7 @@ GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
 
 GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
                                         BookmarkModel* model,
-                                        GtkThemeProvider* provider) {
+                                        GtkThemeService* provider) {
   GdkPixbuf* pixbuf = GetPixbufForNode(node, model, provider->UseGtkTheme());
   GtkWidget* widget = GetDragRepresentation(pixbuf, node->GetTitle(), provider);
   g_object_unref(pixbuf);
@@ -226,7 +226,7 @@ GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
 }
 
 void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
-                            GtkWidget* button, GtkThemeProvider* provider) {
+                            GtkWidget* button, GtkThemeService* provider) {
   GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(node, model,
                                                        provider->UseGtkTheme());
   PackButton(pixbuf, node->GetTitle(), node != model->other_node(), provider,
@@ -278,12 +278,12 @@ const BookmarkNode* BookmarkNodeForWidget(GtkWidget* widget) {
       g_object_get_data(G_OBJECT(widget), bookmark_utils::kBookmarkNode));
 }
 
-void SetButtonTextColors(GtkWidget* label, GtkThemeProvider* provider) {
+void SetButtonTextColors(GtkWidget* label, GtkThemeService* provider) {
   if (provider->UseGtkTheme()) {
     gtk_util::SetLabelColor(label, NULL);
   } else {
     GdkColor color = provider->GetGdkColor(
-        BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+        ThemeService::COLOR_BOOKMARK_TEXT);
     gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &color);
     gtk_widget_modify_fg(label, GTK_STATE_INSENSITIVE, &color);
 

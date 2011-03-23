@@ -16,10 +16,10 @@ typedef struct _cairo_surface cairo_surface_t;
 // once. From then on, that cached version is used so we don't upload the same
 // image each and every time we expose.
 //
-// Most cached surfaces are owned by the GtkThemeProvider, which associates
+// Most cached surfaces are owned by the GtkThemeService, which associates
 // them with a certain XDisplay. Some users of surfaces (CustomDrawButtonBase,
 // for example) own their surfaces instead since they interact with the
-// ResourceBundle instead of the GtkThemeProvider.
+// ResourceBundle instead of the GtkThemeService.
 class CairoCachedSurface {
  public:
   CairoCachedSurface();

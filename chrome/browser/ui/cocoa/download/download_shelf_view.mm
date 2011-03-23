@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/download/download_shelf_view.h"
 
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/theme_resources.h"
@@ -16,8 +16,8 @@
   BOOL isKey = [[self window] isKeyWindow];
   ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   return themeProvider ? themeProvider->GetNSColor(
-      isKey ? BrowserThemeProvider::COLOR_TOOLBAR_STROKE :
-              BrowserThemeProvider::COLOR_TOOLBAR_STROKE_INACTIVE, true) :
+      isKey ? ThemeService::COLOR_TOOLBAR_STROKE :
+              ThemeService::COLOR_TOOLBAR_STROKE_INACTIVE, true) :
       [NSColor blackColor];
 }
 
@@ -38,8 +38,8 @@
     NSRectFill([self bounds]);
   } else {
     NSGradient* gradient = themeProvider->GetNSGradient(
-        isKey ? BrowserThemeProvider::GRADIENT_TOOLBAR :
-                BrowserThemeProvider::GRADIENT_TOOLBAR_INACTIVE);
+        isKey ? ThemeService::GRADIENT_TOOLBAR :
+                ThemeService::GRADIENT_TOOLBAR_INACTIVE);
     NSPoint startPoint = [self convertPoint:NSMakePoint(0, 0) fromView:nil];
     NSPoint endPoint =
         [self convertPoint:NSMakePoint(0, [self frame].size.height)

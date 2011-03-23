@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/detachable_toolbar_view.h"
 
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -28,7 +28,7 @@ void DetachableToolbarView::PaintBackgroundAttachedMode(
     const gfx::Point& background_origin) {
   ui::ThemeProvider* tp = view->GetThemeProvider();
   SkColor theme_toolbar_color =
-      tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+      tp->GetColor(ThemeService::COLOR_TOOLBAR);
   canvas->FillRectInt(theme_toolbar_color, 0, 0,
                       view->width(), view->height());
   canvas->TileImageInt(*tp->GetBitmapNamed(IDR_THEME_TOOLBAR),
@@ -67,7 +67,7 @@ void DetachableToolbarView::PaintContentAreaBackground(
     const SkRect& rect, double roundness) {
   SkPaint paint;
   paint.setAntiAlias(true);
-  paint.setColor(theme_provider->GetColor(BrowserThemeProvider::COLOR_TOOLBAR));
+  paint.setColor(theme_provider->GetColor(ThemeService::COLOR_TOOLBAR));
 
   canvas->AsCanvasSkia()->drawRoundRect(
       rect, SkDoubleToScalar(roundness), SkDoubleToScalar(roundness), paint);
@@ -79,7 +79,7 @@ void DetachableToolbarView::PaintContentAreaBorder(
     const SkRect& rect, double roundness) {
   SkPaint border_paint;
   border_paint.setColor(
-      theme_provider->GetColor(BrowserThemeProvider::COLOR_NTP_HEADER));
+      theme_provider->GetColor(ThemeService::COLOR_NTP_HEADER));
   border_paint.setStyle(SkPaint::kStroke_Style);
   border_paint.setAlpha(96);
   border_paint.setAntiAlias(true);

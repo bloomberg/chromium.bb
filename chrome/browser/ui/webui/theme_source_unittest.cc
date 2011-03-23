@@ -4,7 +4,6 @@
 
 #include "base/ref_counted_memory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"

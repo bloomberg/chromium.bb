@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_toolbar_view.h"
 
 #include "chrome/browser/ntp_background_util.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -95,7 +95,7 @@ const CGFloat kBorderRadius = 3.0;
 
   // Draw the rounded rectangle.
   NSColor* toolbarColor =
-      themeProvider->GetNSColor(BrowserThemeProvider::COLOR_TOOLBAR, true);
+      themeProvider->GetNSColor(ThemeService::COLOR_TOOLBAR, true);
   CGFloat alpha = morph * [toolbarColor alphaComponent];
   [[toolbarColor colorWithAlphaComponent:alpha] set];  // Set with opacity.
   [border fill];
@@ -113,7 +113,7 @@ const CGFloat kBorderRadius = 3.0;
 
   // Draw the border of the rounded rectangle.
   NSColor* borderColor = themeProvider->GetNSColor(
-      BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE, true);
+      ThemeService::COLOR_TOOLBAR_BUTTON_STROKE, true);
   alpha = morph * [borderColor alphaComponent];
   [[borderColor colorWithAlphaComponent:alpha] set];  // Set with opacity.
   [border stroke];

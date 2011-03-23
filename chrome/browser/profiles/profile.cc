@@ -29,7 +29,7 @@
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
 #include "chrome/browser/ssl/ssl_host_state.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
@@ -53,7 +53,7 @@
 #include "webkit/database/database_tracker.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #endif
 
 #if defined(OS_WIN)
@@ -104,11 +104,11 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect, true);
 #if defined(TOOLKIT_USES_GTK)
   prefs->RegisterBooleanPref(prefs::kUsesSystemTheme,
-                             GtkThemeProvider::DefaultUsesSystemTheme());
+                             GtkThemeService::DefaultUsesSystemTheme());
 #endif
   prefs->RegisterFilePathPref(prefs::kCurrentThemePackFilename, FilePath());
   prefs->RegisterStringPref(prefs::kCurrentThemeID,
-                            BrowserThemeProvider::kDefaultThemeID);
+                            ThemeService::kDefaultThemeID);
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeImages);
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeColors);
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeTints);

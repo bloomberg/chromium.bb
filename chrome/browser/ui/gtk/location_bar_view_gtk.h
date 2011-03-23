@@ -38,7 +38,7 @@ class CommandUpdater;
 class ContentSettingImageModel;
 class ContentSettingBubbleGtk;
 class ExtensionAction;
-class GtkThemeProvider;
+class GtkThemeService;
 class Profile;
 class SkBitmap;
 class TabContents;
@@ -430,7 +430,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   bool popup_window_mode_;
 
   // Provides colors and rendering mode.
-  GtkThemeProvider* theme_provider_;
+  GtkThemeService* theme_service_;
 
   NotificationRegistrar registrar_;
 

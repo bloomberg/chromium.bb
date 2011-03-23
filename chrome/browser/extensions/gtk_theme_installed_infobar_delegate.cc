@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/gtk_theme_installed_infobar_delegate.h"
 
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 
 GtkThemeInstalledInfoBarDelegate::GtkThemeInstalledInfoBarDelegate(
     TabContents* tab_contents,
@@ -17,7 +17,7 @@ GtkThemeInstalledInfoBarDelegate::GtkThemeInstalledInfoBarDelegate(
 
 bool GtkThemeInstalledInfoBarDelegate::Cancel() {
   if (previous_use_gtk_theme_) {
-    provider()->SetNativeTheme();
+    theme_service()->SetNativeTheme();
     return true;
   } else {
     return ThemeInstalledInfoBarDelegate::Cancel();

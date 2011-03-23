@@ -14,8 +14,8 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#import "chrome/browser/themes/browser_theme_provider.h"
 #import "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
@@ -1131,7 +1131,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   ui::ThemeProvider* themeProvider = [[[self view] window] themeProvider];
   if (themeProvider) {
     NSColor* color =
-        themeProvider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT,
+        themeProvider->GetNSColor(ThemeService::COLOR_BOOKMARK_TEXT,
                                   true);
     [cell setTextColor:color];
   }
@@ -1615,7 +1615,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (!themeProvider)
     return;
   NSColor* color =
-      themeProvider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT,
+      themeProvider->GetNSColor(ThemeService::COLOR_BOOKMARK_TEXT,
                                 true);
   for (BookmarkButton* button in buttons_.get()) {
     BookmarkButtonCell* cell = [button cell];

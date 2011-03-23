@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
 #include "content/common/notification_service.h"
@@ -40,7 +40,7 @@ const int InfoBar::kButtonButtonSpacing = 3;
 InfoBar::InfoBar(InfoBarDelegate* delegate)
     : container_(NULL),
       delegate_(delegate),
-      theme_provider_(NULL),
+      theme_service_(NULL),
       arrow_model_(this) {
   // Create |hbox_| and pad the sides.
   hbox_ = gtk_hbox_new(FALSE, kElementPadding);
@@ -148,13 +148,13 @@ void InfoBar::Closed() {
   Close();
 }
 
-void InfoBar::SetThemeProvider(GtkThemeProvider* theme_provider) {
-  if (theme_provider_) {
+void InfoBar::SetThemeProvider(GtkThemeService* theme_service) {
+  if (theme_service_) {
     NOTREACHED();
     return;
   }
 
-  theme_provider_ = theme_provider;
+  theme_service_ = theme_service;
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
   UpdateBorderColor();
@@ -276,7 +276,7 @@ gboolean InfoBar::OnBackgroundExpose(GtkWidget* sender,
   cairo_pattern_destroy(pattern);
 
   // Draw the bottom border.
-  GdkColor border_color = theme_provider_->GetBorderColor();
+  GdkColor border_color = theme_service_->GetBorderColor();
   cairo_set_source_rgb(cr, border_color.red / 65535.0,
                            border_color.green / 65535.0,
                            border_color.blue / 65535.0);

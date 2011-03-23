@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -27,10 +27,9 @@ void HSLToHSB(const color_utils::HSL& hsl, CGFloat* h, CGFloat* s, CGFloat* b) {
   *b = SkScalarToDouble(hsv[2]);
 }
 
-}
+}  // namespace
 
-NSImage* BrowserThemeProvider::GetNSImageNamed(int id,
-                                               bool allow_default) const {
+NSImage* ThemeService::GetNSImageNamed(int id, bool allow_default) const {
   DCHECK(CalledOnValidThread());
 
   if (!allow_default && !HasCustomImage(id))
@@ -73,8 +72,7 @@ NSImage* BrowserThemeProvider::GetNSImageNamed(int id,
   return empty_image;
 }
 
-NSColor* BrowserThemeProvider::GetNSImageColorNamed(int id,
-                                                    bool allow_default) const {
+NSColor* ThemeService::GetNSImageColorNamed(int id, bool allow_default) const {
   DCHECK(CalledOnValidThread());
 
   // Check to see if we already have the color in the cache.
@@ -99,8 +97,7 @@ NSColor* BrowserThemeProvider::GetNSImageColorNamed(int id,
   return image_color;
 }
 
-NSColor* BrowserThemeProvider::GetNSColor(int id,
-                                          bool allow_default) const {
+NSColor* ThemeService::GetNSColor(int id, bool allow_default) const {
   DCHECK(CalledOnValidThread());
 
   // Check to see if we already have the color in the cache.
@@ -136,8 +133,7 @@ NSColor* BrowserThemeProvider::GetNSColor(int id,
   return color;
 }
 
-NSColor* BrowserThemeProvider::GetNSColorTint(int id,
-                                              bool allow_default) const {
+NSColor* ThemeService::GetNSColorTint(int id, bool allow_default) const {
   DCHECK(CalledOnValidThread());
 
   // Check to see if we already have the color in the cache.
@@ -180,7 +176,7 @@ NSColor* BrowserThemeProvider::GetNSColorTint(int id,
   return tint_color;
 }
 
-NSGradient* BrowserThemeProvider::GetNSGradient(int id) const {
+NSGradient* ThemeService::GetNSGradient(int id) const {
   DCHECK(CalledOnValidThread());
 
   // Check to see if we already have the gradient in the cache.
@@ -285,13 +281,13 @@ NSGradient* BrowserThemeProvider::GetNSGradient(int id) const {
 }
 
 // Let all the browser views know that themes have changed in a platform way.
-void BrowserThemeProvider::NotifyPlatformThemeChanged() {
+void ThemeService::NotifyPlatformThemeChanged() {
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
   [defaultCenter postNotificationName:kBrowserThemeDidChangeNotification
                                object:[NSValue valueWithPointer:this]];
 }
 
-void BrowserThemeProvider::FreePlatformCaches() {
+void ThemeService::FreePlatformCaches() {
   DCHECK(CalledOnValidThread());
 
   // Free images.

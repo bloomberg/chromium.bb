@@ -13,7 +13,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
-#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -178,7 +178,7 @@ void InfoBarContainerGtk::ShowArrowForDelegate(InfoBarDelegate* delegate,
 void InfoBarContainerGtk::AddInfoBar(InfoBarDelegate* delegate, bool animate) {
   InfoBar* infobar = delegate->CreateInfoBar();
   infobar->set_container(this);
-  infobar->SetThemeProvider(GtkThemeProvider::GetFrom(profile_));
+  infobar->SetThemeProvider(GtkThemeService::GetFrom(profile_));
   gtk_box_pack_start(GTK_BOX(widget()), infobar->widget(),
                      FALSE, FALSE, 0);
 

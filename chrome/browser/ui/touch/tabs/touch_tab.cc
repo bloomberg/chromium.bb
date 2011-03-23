@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/touch/tabs/touch_tab.h"
 
 #include "base/logging.h"
-#include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -67,8 +67,8 @@ void TouchTab::OnPaint(gfx::Canvas* canvas) {
 
   SkColor title_color = GetThemeProvider()->
       GetColor(IsSelected() ?
-          BrowserThemeProvider::COLOR_TAB_TEXT :
-          BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT);
+          ThemeService::COLOR_TAB_TEXT :
+          ThemeService::COLOR_BACKGROUND_TAB_TEXT);
 
   PaintTitle(canvas, title_color);
   PaintIcon(canvas);
