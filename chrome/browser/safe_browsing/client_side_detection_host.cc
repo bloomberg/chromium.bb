@@ -12,6 +12,7 @@
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -62,7 +63,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
   void Start() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    // We first start by doing the proxy and local IP check
+    // We first start by doing the proxy, local IP and off-the-record checks
     // synchronously because they are fast and they run on the UI thread.
 
     // Don't run the phishing classifier if the URL came from a private
@@ -80,6 +81,14 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
               << " because of hosting on private IP: "
               << params_.socket_address.host();
       UMA_HISTOGRAM_COUNTS("SBClientPhishing.NoClassifyPrivateIP", 1);
+      return;
+    }
+
+    // Don't run the phishing classifier if the tab is off-the-record.
+    if (tab_contents_->profile()->IsOffTheRecord()) {
+      VLOG(1) << "Skipping phishing classification for URL: " << params_.url
+              << " because we're browsing off-the-record.";
+      UMA_HISTOGRAM_COUNTS("SBClientPhishing.NoClassifyOffTheRecord", 1);
       return;
     }
 
@@ -116,7 +125,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     if (!sb_service_ || sb_service_->MatchCsdWhitelistUrl(url)) {
       // We're done.  There is no point in going back to the UI thread.
-      UMA_HISTOGRAM_COUNTS("SBClientPhishing.MatchCsdWhitelist", 1);
+      UMA_HISTOGRAM_COUNTS("SBClientPhishing.NoClassifyMatchCsdWhitelist", 1);
       return;
     }
 
@@ -154,7 +163,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     } else if (csd_service_->OverReportLimit()) {
       VLOG(1) << "Too many report phishing requests sent recently, "
               << "not running classification for " << params_.url;
-      UMA_HISTOGRAM_COUNTS("SBClientPhishing.TooManyReports", 1);
+      UMA_HISTOGRAM_COUNTS("SBClientPhishing.NoClassifyTooManyReports", 1);
       return;
     }
 

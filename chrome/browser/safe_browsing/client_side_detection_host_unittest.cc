@@ -13,6 +13,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/test/testing_profile.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -30,6 +31,7 @@ using ::testing::DeleteArg;
 using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::Mock;
+using ::testing::NiceMock;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
@@ -84,6 +86,14 @@ class MockSafeBrowsingService : public SafeBrowsingService {
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingService);
 };
 
+class MockTestingProfile : public TestingProfile {
+ public:
+  MockTestingProfile() {}
+  virtual ~MockTestingProfile() {}
+
+  MOCK_METHOD0(IsOffTheRecord, bool());
+};
+
 // Helper function which quits the UI message loop from the IO message loop.
 void QuitUIMessageLoop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -95,6 +105,12 @@ void QuitUIMessageLoop() {
 class ClientSideDetectionHostTest : public RenderViewHostTestHarness {
  public:
   virtual void SetUp() {
+    // Set custom profile object so that we can mock calls to IsOffTheRecord.
+    // This needs to happen before we call the parent SetUp() function.  We use
+    // a nice mock because other parts of the code are calling IsOffTheRecord.
+    mock_profile_ = new NiceMock<MockTestingProfile>();
+    profile_.reset(mock_profile_);
+
     RenderViewHostTestHarness::SetUp();
     ui_thread_.reset(new BrowserThread(BrowserThread::UI, &message_loop_));
     // Note: we're starting a real IO thread to make sure our DCHECKs that
@@ -143,6 +159,7 @@ class ClientSideDetectionHostTest : public RenderViewHostTestHarness {
 
   void ExpectPreClassificationChecks(const GURL& url,
                                      const bool* is_private,
+                                     const bool* is_off_the_record,
                                      const bool* match_csd_whitelist,
                                      const bool* get_valid_cached_result,
                                      const bool* is_in_cache,
@@ -150,6 +167,10 @@ class ClientSideDetectionHostTest : public RenderViewHostTestHarness {
     if (is_private) {
       EXPECT_CALL(*csd_service_, IsPrivateIPAddress(_))
           .WillOnce(Return(*is_private));
+    }
+    if (is_off_the_record) {
+      EXPECT_CALL(*mock_profile_, IsOffTheRecord())
+          .WillRepeatedly(Return(*is_off_the_record));
     }
     if (match_csd_whitelist) {
       EXPECT_CALL(*sb_service_, MatchCsdWhitelistUrl(url))
@@ -176,12 +197,14 @@ class ClientSideDetectionHostTest : public RenderViewHostTestHarness {
     MessageLoop::current()->RunAllPending();
     EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
     EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
+    EXPECT_TRUE(Mock::VerifyAndClear(mock_profile_));
   }
 
  protected:
   ClientSideDetectionHost* csd_host_;
   scoped_ptr<StrictMock<MockClientSideDetectionService> > csd_service_;
   scoped_refptr<StrictMock<MockSafeBrowsingService> > sb_service_;
+  MockTestingProfile* mock_profile_;  // We don't own this object.
 
  private:
   scoped_ptr<BrowserThread> ui_thread_;
@@ -309,7 +332,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
   ASSERT_TRUE(cb);
   GURL other_phishing_url("http://other_phishing_url.com/bla");
   ExpectPreClassificationChecks(other_phishing_url, &kFalse, &kFalse, &kFalse,
-                                &kFalse, &kFalse);
+                                &kFalse, &kFalse, &kFalse);
   // We navigate away.  The callback cb should be revoked.
   NavigateAndCommit(other_phishing_url);
   // Wait for the pre-classification checks to finish for other_phishing_url.
@@ -369,14 +392,15 @@ TEST_F(ClientSideDetectionHostTest, NavigationCancelsShouldClassifyUrl) {
   GURL first_url("http://first.phishy.url.com");
   // The proxy checks is done synchronously so check that it has been done
   // for the first URL.
-  ExpectPreClassificationChecks(first_url, &kFalse, &kFalse, NULL, NULL, NULL);
+  ExpectPreClassificationChecks(first_url, &kFalse, &kFalse, &kFalse, NULL,
+                                NULL, NULL);
   NavigateAndCommit(first_url);
 
   // Don't flush the message loop, as we want to navigate to a different
   // url before the final pre-classification checks are run.
   GURL second_url("http://second.url.com/");
   ExpectPreClassificationChecks(second_url, &kFalse, &kFalse, &kFalse, &kFalse,
-                                &kFalse);
+                                &kFalse, &kFalse);
   NavigateAndCommit(second_url);
   WaitAndCheckPreClassificationChecks();
 }
@@ -385,7 +409,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   // Navigate the tab to a page.  We should see a StartPhishingDetection IPC.
   GURL url("http://host.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
-                                &kFalse);
+                                &kFalse, &kFalse);
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
 
@@ -401,7 +425,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   // Now try an in-page navigation.  This should not trigger an IPC.
   EXPECT_CALL(*csd_service_, IsPrivateIPAddress(_)).Times(0);
   url = GURL("http://host.com/#foo");
-  ExpectPreClassificationChecks(url, NULL, NULL, NULL, NULL, NULL);
+  ExpectPreClassificationChecks(url, NULL, NULL, NULL, NULL, NULL, NULL);
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
 
@@ -412,7 +436,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   // Navigate to a new host, which should cause another IPC.
   url = GURL("http://host2.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
-                                &kFalse);
+                                &kFalse, &kFalse);
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
   msg = process()->sink().GetFirstMessageMatching(
@@ -425,7 +449,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
 
   // If IsPrivateIPAddress returns true, no IPC should be triggered.
   url = GURL("http://host3.com/");
-  ExpectPreClassificationChecks(url, &kTrue, NULL, NULL, NULL, NULL);
+  ExpectPreClassificationChecks(url, &kTrue, NULL, NULL, NULL, NULL, NULL);
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
   msg = process()->sink().GetFirstMessageMatching(
@@ -438,7 +462,17 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   // RenderViewHost that won't have simulate_fetch_via_proxy set.
   url = GURL("http://host3.com/abc");
   rvh()->set_simulate_fetch_via_proxy(true);
-  ExpectPreClassificationChecks(url, NULL, NULL, NULL, NULL, NULL);
+  ExpectPreClassificationChecks(url, NULL, NULL, NULL, NULL, NULL, NULL);
+  NavigateAndCommit(url);
+  WaitAndCheckPreClassificationChecks();
+  msg = process()->sink().GetFirstMessageMatching(
+      ViewMsg_StartPhishingDetection::ID);
+  ASSERT_FALSE(msg);
+
+  // If the tab is off-the-record there should be no IPC.  Also, we shouldn't
+  // even check the csd-whitelist.
+  url = GURL("http://host4.com/");
+  ExpectPreClassificationChecks(url, &kFalse, &kTrue, NULL, NULL, NULL, NULL);
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
   msg = process()->sink().GetFirstMessageMatching(
@@ -446,8 +480,9 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   ASSERT_FALSE(msg);
 
   // If the URL is on the csd whitelist, no IPC should be triggered.
-  url = GURL("http://host4.com/");
-  ExpectPreClassificationChecks(url, &kFalse, &kTrue, NULL, NULL, NULL);
+  url = GURL("http://host5.com/");
+  ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kTrue, NULL, NULL,
+                                NULL);
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
   msg = process()->sink().GetFirstMessageMatching(
@@ -456,8 +491,8 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
 
   // If item is in the cache but it isn't valid, we will classify regardless
   // of whether we are over the reporting limit.
-  url = GURL("http://host5.com/");
-  ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kTrue,
+  url = GURL("http://host6.com/");
+  ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse, &kTrue,
                                 NULL);
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
@@ -471,9 +506,9 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
 
   // If the url isn't in the cache and we are over the reporting limit, we
   // don't do classification.
-  url = GURL("http://host6.com/");
+  url = GURL("http://host7.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
-                                &kTrue);
+                                &kFalse, &kTrue);
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
   msg = process()->sink().GetFirstMessageMatching(
@@ -484,8 +519,8 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   // with no start classification message.
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableClientSidePhishingInterstitial);
-  url = GURL("http://host7.com/");
-  ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kTrue, NULL,
+  url = GURL("http://host8.com/");
+  ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kTrue, NULL,
                                 NULL);
   EXPECT_CALL(*sb_service_,
               DisplayBlockingPage(Eq(url), Eq(url), _, _, _, _, _, _))
