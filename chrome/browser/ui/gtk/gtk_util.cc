@@ -1190,11 +1190,6 @@ bool IsWidgetAncestryVisible(GtkWidget* widget) {
   return !parent;
 }
 
-void SetGtkFont(const std::string& font_name) {
-  g_object_set(gtk_settings_get_default(),
-               "gtk-font-name", font_name.c_str(), NULL);
-}
-
 void SetLabelWidth(GtkWidget* label, int pixel_width) {
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);

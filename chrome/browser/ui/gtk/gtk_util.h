@@ -346,9 +346,6 @@ string16 GetStockPreferencesMenuLabel();
 // ancestors up to its toplevel are visible.
 bool IsWidgetAncestryVisible(GtkWidget* widget);
 
-// Sets the GTK font from the given font name (ex. "Arial Black, 10").
-void SetGtkFont(const std::string& font_name);
-
 // Sets the given label's size request to |pixel_width|. This will cause the
 // label to wrap if it needs to. The reason for this function is that some
 // versions of GTK mis-align labels that have a size request and line wrapping,
