@@ -119,7 +119,7 @@ class ConvolutionFilter1D {
   }
 
  private:
-  struct SK_API FilterInstance {
+  struct FilterInstance {
     // Offset within filter_values for this instance of the filter.
     int data_location;
 
