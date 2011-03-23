@@ -588,8 +588,8 @@ BUILD/stamp-glibc64: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
 INST_GLIBC_PREFIX?=PREFIX
 .PHONY: install-glibc
 install-glibc: BUILD/stamp-glibc32 BUILD/stamp-glibc64
-	rm -rf "$(dir $(THISMAKEFILE))"/glibc
-	mkdir "$(dir $(THISMAKEFILE))"/glibc
+	rm -rf "$(INST_GLIBC_PREFIX)"/glibc
+	mkdir "$(INST_GLIBC_PREFIX)"/glibc
 	mkdir -p "$(INST_GLIBC_PREFIX)/$(PREFIX)"
 	rmdir "$(INST_GLIBC_PREFIX)/$(PREFIX)" || \
 	  rm "$(INST_GLIBC_PREFIX)/$(PREFIX)"

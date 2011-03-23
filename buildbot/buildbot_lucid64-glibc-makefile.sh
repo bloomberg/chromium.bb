@@ -39,9 +39,8 @@ echo @@@BUILD_STEP tar_toolchain@@@
 
 echo @@@BUILD_STEP tar_glibc@@@
 (
-  DST="$PWD"
-  cd tools/glibc/toolchain/linux_x86
-  tar cSvfz "$DST"/glibc.tgz * && chmod a+r "$DST"/glibc.tgz
+  cd tools/glibc
+  tar cSvfz ../glibc.tgz * && chmod a+r ../glibc.tgz
 )
 
 echo @@@BUILD_STEP untar_toolchain@@@
