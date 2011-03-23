@@ -117,8 +117,9 @@ void DeviceTokenFetcher::OnError(DeviceManagementBackend::ErrorCode code) {
   if (code == DeviceManagementBackend::kErrorServiceManagementNotSupported) {
     cache_->SetUnmanaged();
     SetState(STATE_UNMANAGED);
+  } else {
+    SetState(STATE_ERROR);
   }
-  SetState(STATE_ERROR);
 }
 
 void DeviceTokenFetcher::Initialize(DeviceManagementService* service,
