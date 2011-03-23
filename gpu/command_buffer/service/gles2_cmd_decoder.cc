@@ -3622,8 +3622,13 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
   }
 
   CopyRealGLErrorsToWrapper();
-  glRenderbufferStorageMultisampleEXT(
-      target, samples, impl_format, width, height);
+  if (IsAngle()) {
+    glRenderbufferStorageMultisampleANGLE(
+        target, samples, impl_format, width, height);
+  } else {
+    glRenderbufferStorageMultisampleEXT(
+        target, samples, impl_format, width, height);
+  }
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     bound_renderbuffer_->SetInfo(samples, internalformat, width, height);
