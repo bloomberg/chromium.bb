@@ -89,7 +89,15 @@ def RunBuildStages(bot_id, options, build_config):
     raise
 
 
-def RunBuildStagesWithReport(bot_id, options, build_config):
+def RunEverything(bot_id, options, build_config):
+  """Pull out the meat of main() in a unittest friendly manner"""
+
+  completed_stages_file = os.path.join(options.buildroot, '.completed_stages')
+
+  if options.resume and os.path.exists(completed_stages_file):
+    with open(completed_stages_file, 'r') as load_file:
+      stages.BuilderStage.Results.RestoreCompletedStages(load_file)
+
   try:
     RunBuildStages(bot_id, options, build_config)
   except Exception as e:
@@ -99,8 +107,13 @@ def RunBuildStagesWithReport(bot_id, options, build_config):
     # Made sure cbuildbot returns an error exit code if we are failing.
     sys.exit(1)
   finally:
-    print stages.BuilderStage.Results.Report()
-  
+    stages.BuilderStage.Results.Report(sys.stdout)
+
+    # An error here can override sys.exit, but we'll get a stacktrace
+    # and error out anyway
+    with open(completed_stages_file, 'w+') as save_file:
+      stages.BuilderStage.Results.SaveCompletedStages(save_file)
+
 
 def main():
   # Parse options
@@ -140,6 +153,9 @@ def main():
   parser.add_option('--notests', action='store_false', dest='tests',
                     default=True,
                     help='Override values from buildconfig and run no tests.')
+  parser.add_option('--resume', action='store_true',
+                    default=False,
+                    help='Skip stages already successfully completed.')
   parser.add_option('-f', '--revisionfile',
                     help='file where new revisions are stored')
   parser.add_option('-t', '--tracking-branch', dest='tracking_branch',
@@ -159,7 +175,7 @@ def main():
   else:
     parser.error('Invalid usage.  Use -h to see usage.')
 
-  RunBuildStagesWithReport(bot_id, options, build_config)
+  RunEverything(bot_id, options, build_config)
 
 
 if __name__ == '__main__':

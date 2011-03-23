@@ -36,21 +36,38 @@ class BuilderStage():
     # List of results for all stages that's built up as we run. Members are of
     #  the form ('name', None or e)
     _results_log = []
+    _previous = []
+
+    # Stored in the results log for a stage skipped because it was previously
+    # completed successfully.
+    SUCCESS = "Stage was successful"
+    SKIPPED = "Stage skipped because successful on previous run"
 
     @classmethod
     def Clear(cls):
       """Clear existing stage results."""
       cls._results_log = []
+      cls._previous = []
 
     @classmethod
-    def Record(cls, name, exception=None):
+    def PreviouslyCompleted(cls, name):
+      """Check to see if this stage was previously completed.
+
+         Returns:
+           A boolean showing the stage was successful in the previous run.
+      """
+
+      return name in cls._previous
+
+    @classmethod
+    def Record(cls, name, exception):
       """Store off an additional stage result."""
       cls._results_log.append((name, exception))
 
     @classmethod
     def Get(cls):
       """Fetch stage results.
-    
+
          Returns:
            A list with one entry per stage run with members of the form
           ('name', None or Exception)
@@ -58,40 +75,64 @@ class BuilderStage():
       return cls._results_log
 
     @classmethod
-    def Report(cls):
-      """Generate a user friendly text display of the results data."""
-      results = cls.Get()
+    def GetPrevious(cls):
+      """Fetch stage results.
 
-      line = '*' * 60
+         Returns:
+           A list with one entry per stage run with members of the form
+          ('name', None or Exception)
+      """
+      return cls._previous
+
+    @classmethod
+    def SaveCompletedStages(cls, file):
+      """Save out the successfully completed stages to the provided file."""
+      for name, result in cls._results_log:
+        if result != cls.SUCCESS and result != cls.SKIPPED: break
+        file.write(name)
+        file.write('\n')
+
+    @classmethod
+    def RestoreCompletedStages(cls, file):
+      """Load the successfully completed stages from the provided file."""
+      # Read the file, and strip off the newlines
+      cls._previous = [line.strip() for line in file.readlines()]
+
+    @classmethod
+    def Report(cls, file):
+      """Generate a user friendly text display of the results data."""
+      results = cls._results_log
+
+      line = '*' * 60 + '\n'
       edge = '*' * 2
 
-      report = []
-
-      report.append(line)
-      report.append(edge + ' Stage Results')
+      file.write(line)
+      file.write(edge + ' Stage Results\n')
 
       for name, result in results:
-        report.append(line)
+        file.write(line)
 
-        if result:
-          # If there was an error, describe it. If it was
-          # as RunCommand error, give the command that failed,
-          # or else just the exception name. Details are given
-          # when the actual stage failed.
-          if type(result) in (cros_lib.RunCommandException,
+        if result == cls.SUCCESS:
+          # These was no error
+          file.write('%s %s\n' % (edge, name))
+
+        elif result == cls.SKIPPED:
+          # The stage was executed previously, and skipped this time
+          file.write('%s %s previously completed\n' %
+                     (edge, name))
+
+        elif type(result) in (cros_lib.RunCommandException,
                               cros_lib.RunCommandError):
-            report.append('%s %s failed in %s' %
-                          (edge, name, result.cmd[0]))
-          else:
-            report.append('%s %s failed with %s' %
-                          (edge, name, type(result).__name__))
+          # If there was a RunCommand error, give just the command that failed,
+          # not it's full argument list, since those are usually too long.
+          file.write('%s %s failed in %s\n' %
+                     (edge, name, result.cmd[0]))
         else:
-          # If there wasn't an error, don't describe it. ;>
-          report.append('%s %s' % (edge, name))
+          # There was a normal error, give the type of exception
+          file.write('%s %s failed with %s\n' %
+                     (edge, name, type(result).__name__))
 
-      report.append(line)
-      return '\n'.join(report)
-
+      file.write(line)
 
   def __init__(self, bot_id, options, build_config):
     self._bot_id = bot_id
@@ -196,6 +237,12 @@ class BuilderStage():
 
   def Run(self):
     """Have the builder execute the stage."""
+
+    if self.Results.PreviouslyCompleted(self._name):
+      self._PrintLoudly('Skipping Stage, Finished it last time', is_start=False)
+      self.Results.Record(self._name, self.Results.SKIPPED)
+      return
+
     self._Begin()
     try:
       self._PerformStage()
@@ -203,7 +250,7 @@ class BuilderStage():
       self.Results.Record(self._name, e)
       raise
     else:
-      self.Results.Record(self._name)
+      self.Results.Record(self._name, self.Results.SUCCESS)
     finally:
       self._Finish()
 
