@@ -175,3 +175,7 @@ PREFIX: webcore::renderlineboxlist::deletelineboxes___webcore::renderblock::layo
 
 # 76955
 PREFIX: webcore::renderobject::destroy___webcore::renderobjectchildlist::destroyleftoverchildren___webcore::renderblock::destroy
+
+# 77176
+PREFIX: webcore::implicitanimation::~implicitanimation___webcore::implicitanimation::`scalar deleting destructor'___wtf::hashtable<wtf::refptr<webcore::animationbase>,wtf::refptr<webcore::animationbase>,wtf::identityextractor<wtf::refptr<webcore::animationbase> >,wtf::ptrhash<wtf::refptr<webcore::animationbase> >,wtf::hashtraits<wtf::refptr<webcore::animationbase> >,wtf::hashtraits<wtf::refptr<webcore::animationbase> > >::deallocatetable
+
