@@ -11,19 +11,37 @@ Import('env')
 if env.Bit('target_arm'):
   Return()
 
-test_nexe = 'ppapi_basic_object_%s.nexe' % env.get('TARGET_FULLARCH')
+# Build the .nexe used by this test.
+nexe_sources = env.ComponentObject('extension_test.cc'),
 
-# Use pre-built "basic_object" executables for several architectures.  Note:
-# this test uses manifest.json, background.html and test_bridge.js, but these
-# files are loaded from the disk as part of the installed Chrome extension and
-# not loaded through the tester's web server.
+nexe_target = 'chrome_extension_%s.nexe' % env.get('TARGET_FULLARCH')
+nexe = env.ComponentProgram(nexe_target,
+                            [nexe_sources],
+                            EXTRA_LIBS=['ppruntime',
+                                        'ppapi_cpp',
+                                        'platform',
+                                        'gio',
+                                        'pthread',
+                                        'srpc'])
+
+# Note: this test uses the nexe built above, manifest.json, background.html and
+# test_bridge.js, but these files are loaded from the disk as part of the
+# installed Chrome extension and not loaded through the tester's web server.
+# These files need their own install command.
+dest_copy = env.Replicate('$STAGING_DIR/chrome_extension',
+                          [nexe,
+                           'background.html',
+                           'chrome_extension.nmf',
+                           'manifest.json',
+                           'test_bridge.js'])
+
 node = env.PPAPIBrowserTester(
     'chrome_extension_test.out',
     url='chrome_extension_test.html',
-    extensions=[env.Dir('${SCONSTRUCT_DIR}/tests/chrome_extension')],
-    files=[env.File('chrome_extension_test.html'),
-           env.File('$STAGING_DIR/%s' % test_nexe),
-    ])
+    extensions=[env.Dir('$STAGING_DIR/chrome_extension')],
+    files=[env.File('chrome_extension_test.html')],
+    )
+env.Depends(node, dest_copy)
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

@@ -17,7 +17,72 @@
   <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
   <META HTTP-EQUIV="Expires" CONTENT="-1" />
   <script type="text/javascript">
-    var nacl_module = null;
+    var retries = 200;
+    var retryWait = 50;
+
+    /**
+     * Determine if a NaCl module associated with an EMBED element has been
+     * loaded.
+     * @param {!Element} embed The EMBED element to check.
+     * @return {bool} whether the module is loaded.
+     */
+    function isLoaded(embed) {
+      return embed.__moduleReady == 1;
+    }
+
+    /**
+     * See if a NaCl module is loaded, and if not start a timer that polls
+     * the EMBED element associated with the module.  Fail after |retries|
+     * attempts.
+     * @param {!Element} embed The EMBED element to test.
+     * @param {!function} moduleDidLoad This callback is called when the
+     *      NaCl module isloaded, or after the number of retires is exceeded.
+     *      The callback is passed a bool argument indicating load success.
+     */
+    function waitForNaClModule(embed, moduleDidLoad) {
+      if (isLoaded(embed)) {
+        moduleDidLoad(true);
+        return;
+      }
+      retries -= 1;
+      if (retries <= 0) {
+        moduleDidLoad(false);
+        return;
+      }
+      // At this point, there is no discernable load error, and the module
+      // has not yet loaded.  Continue to wait.
+      setTimeout(function() { waitForNaClModule(embed, moduleDidLoad); },
+                 retryWait);
+    }
+
+    /**
+     * Once the NaCl module is loaded, run some tests on it by attempting to
+     * access a property and by calling a method.  Once these results are
+     * obtained, send a message back to the embedding page with the results
+     * via an RPC.  This function is provided as the callback to
+     * waitForNaClModule().
+     * @param {bool} loadSuccess Indicates whether the NaCl module was
+     *     loaded.
+     */
+    function runAllTests(loadSuccess) {
+      var response = { type: 'processTestResults',
+                       testResults: {error: 0} };
+      if (loadSuccess) {
+        try {
+          response.testResults.helloWorld = nacl_module.helloWorld();
+          response.testResults.fortyTwo = nacl_module.fortyTwo;
+        } catch (err) {
+          response.testResults.error = err;
+        }
+      } else {
+        response.testResults.error = 'NaCl module failed to load';
+      }
+      // Send the results via RPC back to the embedding page, which is assumed
+      // to live in the current (only) tab.
+      chrome.tabs.getSelected(null, function(tab) {
+        chrome.tabs.sendRequest(tab.id, response);
+      });
+    }
 
     /**
      * This function is run from the embeding page, via the sendRequest()
@@ -25,16 +90,9 @@
      * @return An object whose keys are the test ids, and values are the test
      *     results.
      */
-    function runAllNaClTests() {
-      nacl_module = document.getElementById('nacl_module');
-      // TODO(dspringer): really run this test on the NaCl module when it
-      // start working.  Note that these test property values are mocks until
-      // the NaCl module is available to provide the real ones.
-      testResults = {};
-      testResults.__nacl = 'chrome_extension.nmf';
-      testResults.__src = 'hello_world_isa_prefix.nexe';
-      testResults.helloWorld = 'hello, world';
-      return testResults;
+    function loadModuleAndRunAllTests() {
+      var nacl_module = document.getElementById('nacl_module');
+      waitForNaClModule(nacl_module, runAllTests);
     }
 
     /**
@@ -44,26 +102,19 @@
      */
     chrome.extension.onRequest.addListener(
         function(request, sender, sendResponse) {
-          var response = {};
           if (request.type == 'runTests')
-            response = runAllNaClTests();
-          sendResponse(response);
+            loadModuleAndRunAllTests();
+          sendResponse({});
         });
   </script>
 </head>
 <body>
-  <!-- TODO(dspringer): Remove this div when we are able to load a NaCl
-       module. -->
-  <div id="nacl_module"></div>
-  <!-- TODO(dspringer): Enable this when the test is able to pass.
   <embed id="nacl_module"
          name="nacl_module"
          type="application/x-nacl"
          hidden="true"
-         onload="moduleDidLoad()"
          nacl="chrome_extension.nmf"
          />
-  -->
   </body>
 </html>
 

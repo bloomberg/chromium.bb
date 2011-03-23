@@ -26,15 +26,24 @@ function dispatchTestResults(testResults) {
 }
 
 /**
+ * Listen for events coming from the background page.  An event is sent from
+ * the background page when the NaCl module is loaded & the tests have been
+ * run (or a load error occured).
+ */
+chrome.extension.onRequest.addListener(
+  function(request, sender, sendResponse) {
+    if (request.type == 'processTestResults')
+      dispatchTestResults(request.testResults);
+    sendResponse({});
+  });
+
+/**
  * Run the unit tests.  This sends an RPC request to the extension.  The
  * extension, in turn, runs the tests and sends the results back to the
  * embedding page via a DOM event.
  */
 function runAllNaClTests() {
-  var msg = {type: 'runTests'};
-  chrome.extension.sendRequest(msg,
-      function(response) { dispatchTestResults(response); }
-  );
+  chrome.extension.sendRequest({type: 'runTests'});
 }
 
 // Run the unit tests once this script has actually been injected.

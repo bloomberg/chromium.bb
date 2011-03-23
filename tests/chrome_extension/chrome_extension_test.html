@@ -20,16 +20,15 @@
    */
   function processTestResults(testResults) {
     var tester = new Tester();
-    // Check that the correct manifest URL string is set on the module.
-    tester.addTest('__nacl_property', function() {
-      assert(testResults.__nacl);
-      assert(testResults.__nacl.search("chrome_extension.nmf") >= 0);
+
+    // Fail if any errors occurred during the test run in the extension.
+    tester.addTest('load_errors', function() {
+      assertEqual(testResults.error, 0);
     });
 
-    // Check that the correct nexe URL is set on the module.
-    tester.addTest('__src_property', function() {
-      assert(testResults.__src);
-      assert(testResults.__src.search("hello_world") >= 0);
+    // Test property access.
+    tester.addTest('forty_two', function() {
+      assertEqual(testResults.fortyTwo, 42);
     });
 
     // Check that the module prints the correct string.

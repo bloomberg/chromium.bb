@@ -5,6 +5,7 @@
 #include "native_client/src/trusted/plugin/ppapi/file_downloader.h"
 
 #include <stdio.h>
+#include <string>
 
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -14,6 +15,20 @@
 #include "ppapi/cpp/dev/file_ref_dev.h"
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/url_response_info.h"
+
+namespace {
+
+const char* const kChromeExtensionScheme = "chrome-extension";
+const int32_t kExtensionRequestStatusOk = 0;
+
+// A helper function that tests to see if |url| is in the chrome-extension
+// scheme.  Note that this routine assumes that the scheme part of |url| is
+// all lower-case UTF8.
+bool IsChromeExtensionUrl(const std::string& url) {
+  // The scheme has to exist and be at the start of |url|.
+  return url.find(kChromeExtensionScheme) == 0;
+}
+}
 
 namespace plugin {
 
@@ -106,10 +121,30 @@ void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
     file_open_notify_callback_.Run(pp_error);
     return;
   }
+  // Note that URLs in the chrome-extension scheme produce different error
+  // codes than other schemes.  This is because chrome-extension URLs are
+  // really a special kind of file scheme, and therefore do not produce HTTP
+  // status codes.
+  pp::Var full_url = url_response.GetURL();
+  if (!full_url.is_string()) {
+    PLUGIN_PRINTF((
+        "FileDownloader::URLLoadStartNotify (url is not a string)\n"));
+    file_open_notify_callback_.Run(pp_error);
+    return;
+  }
+  bool status_ok = false;
   int32_t status_code = url_response.GetStatusCode();
-  PLUGIN_PRINTF(("FileDownloader::URLLoadStartNotify (status_code=%"
-                 NACL_PRId32")\n", status_code));
-  if (status_code != NACL_HTTP_STATUS_OK) {
+  if (IsChromeExtensionUrl(full_url.AsString())) {
+    PLUGIN_PRINTF(("FileDownloader::URLLoadStartNotify (chrome-extension "
+                   "response status_code=%"NACL_PRId32")\n", status_code));
+    status_ok = (status_code == kExtensionRequestStatusOk);
+  } else {
+    PLUGIN_PRINTF(("FileDownloader::URLLoadStartNotify (HTTP response "
+                   "status_code=%"NACL_PRId32")\n", status_code));
+    status_ok = (status_code == NACL_HTTP_STATUS_OK);
+  }
+
+  if (!status_ok) {
     file_open_notify_callback_.Run(pp_error);
     return;
   }
@@ -139,7 +174,8 @@ void FileDownloader::URLLoadFinishNotify(int32_t pp_error) {
 
   pp::URLResponseInfo url_response(url_loader_.GetResponseInfo());
   // Validated on load.
-  CHECK(url_response.GetStatusCode() == NACL_HTTP_STATUS_OK);
+  CHECK(url_response.GetStatusCode() == NACL_HTTP_STATUS_OK ||
+        url_response.GetStatusCode() == kExtensionRequestStatusOk);
 
   // Record the full url from the response.
   pp::Var full_url = url_response.GetURL();
