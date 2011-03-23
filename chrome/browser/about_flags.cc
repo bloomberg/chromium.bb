@@ -295,6 +295,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kNewTabPage4)
   },
+  {
+    "tab-groups-context-menu",
+    IDS_FLAGS_TAB_GROUPS_CONTEXT_MENU_NAME,
+    IDS_FLAGS_TAB_GROUPS_CONTEXT_MENU_DESCRIPTION,
+    kOsWin,
+    SINGLE_VALUE_TYPE(switches::kEnableTabGroupsContextMenu)
+  },
 };
 
 const Experiment* experiments = kExperiments;

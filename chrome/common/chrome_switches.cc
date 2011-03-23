@@ -539,6 +539,9 @@ const char kEnableSyncAutofill[]            = "enable-sync-autofill";
 // Enable syncing browser sessions.
 const char kEnableSyncSessions[]            = "enable-sync-sessions";
 
+// Enables context menu for selecting groups of tabs.
+const char kEnableTabGroupsContextMenu[]     = "enable-tab-groups-context-menu";
+
 // Enable syncing browser typed urls.
 const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";
 

@@ -99,4 +99,12 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
     AddCheckItemWithStringId(TabStripModel::CommandUseVerticalTabs,
                              IDS_TAB_CXMENU_USE_VERTICAL_TABS);
   }
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTabGroupsContextMenu)) {
+    AddSeparator();
+    AddItemWithStringId(TabStripModel::CommandSelectByDomain,
+                        IDS_TAB_CXMENU_SELECT_BY_DOMAIN);
+    AddItemWithStringId(TabStripModel::CommandSelectByOpener,
+                        IDS_TAB_CXMENU_SELECT_BY_OPENER);
+  }
 }

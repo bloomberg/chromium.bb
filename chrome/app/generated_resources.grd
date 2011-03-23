@@ -4185,6 +4185,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NEW_TAB_PAGE_4_DESCRIPTION" desc="Description of the new tab page 4 lab.">
         Enables an in-development redesign of the new tab page.
       </message>
+      <message name="IDS_FLAGS_TAB_GROUPS_CONTEXT_MENU_NAME" desc="Name of the context menu for enabling tab grouping in the context menu">
+        Add grouping to tab context menu
+      </message>
+      <message name="IDS_FLAGS_TAB_GROUPS_CONTEXT_MENU_DESCRIPTION" desc="Description of the context menu for enabling tab grouping in the context menu lab.">
+        Adds items to the tab context menu for grouping tabs.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
@@ -5548,6 +5554,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_TAB_CXMENU_USE_VERTICAL_TABS" desc="Use the vertical tab strip">
           Use side tabs
         </message>
+        <message name="IDS_TAB_CXMENU_SELECT_BY_DOMAIN" desc="The label of the tab context menu item for selecting tabs with the same domain">
+          Select by domain
+        </message>
+        <message name="IDS_TAB_CXMENU_SELECT_BY_OPENER" desc="The label of the tab context menu item for selecting tabs with the same opener">
+          Select by opener
+        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_TAB_CXMENU_NEWTAB" desc="In Title Case: The label of the 'New Tab' Tab context menu item.">
@@ -5588,6 +5600,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_TAB_CXMENU_USE_VERTICAL_TABS" desc="In Title Case: Use the vertical tab strip">
           Use Side Tabs
+        </message>
+        <message name="IDS_TAB_CXMENU_SELECT_BY_DOMAIN" desc="The label of the tab context menu item for selecting tabs with the same domain">
+          Select by Domain
+        </message>
+        <message name="IDS_TAB_CXMENU_SELECT_BY_OPENER" desc="The label of the tab context menu item for selecting tabs with the same opener">
+          Select by Opener
         </message>
       </if>
 

@@ -756,6 +756,10 @@ bool TabStripModel::IsContextMenuCommandEnabled(
     case CommandUseVerticalTabs:
       return true;
 
+    case CommandSelectByDomain:
+    case CommandSelectByOpener:
+      return true;
+
     default:
       NOTREACHED();
   }
@@ -899,6 +903,22 @@ void TabStripModel::ExecuteContextMenuCommand(
       delegate()->ToggleUseVerticalTabs();
       break;
     }
+
+    case CommandSelectByDomain:
+    case CommandSelectByOpener: {
+      std::vector<int> indices;
+      if (command_id == CommandSelectByDomain)
+        GetIndicesWithSameDomain(context_index, &indices);
+      else
+        GetIndicesWithSameOpener(context_index, &indices);
+      TabStripSelectionModel selection_model;
+      selection_model.SetSelectedIndex(context_index);
+      for (size_t i = 0; i < indices.size(); ++i)
+        selection_model.AddIndexToSelection(indices[i]);
+      SetSelectionFromModel(selection_model);
+      break;
+    }
+
     default:
       NOTREACHED();
   }
@@ -1019,6 +1039,39 @@ bool TabStripModel::ContextMenuCommandToBrowserCommand(int cmd_id,
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModel, private:
+
+void TabStripModel::GetIndicesWithSameDomain(int index,
+                                             std::vector<int>* indices) {
+  TabContentsWrapper* tab = GetTabContentsAt(index);
+  std::string domain = tab->tab_contents()->GetURL().host();
+  if (domain.empty())
+    return;
+  for (int i = 0; i < count(); ++i) {
+    if (i == index)
+      continue;
+    if (GetTabContentsAt(i)->tab_contents()->GetURL().host() == domain)
+      indices->push_back(i);
+  }
+}
+
+void TabStripModel::GetIndicesWithSameOpener(int index,
+                                             std::vector<int>* indices) {
+  NavigationController* opener = contents_data_[index]->group;
+  if (!opener) {
+    // If there is no group, find all tabs with the selected tab as the opener.
+    opener = &(GetTabContentsAt(index)->controller());
+    if (!opener)
+      return;
+  }
+  for (int i = 0; i < count(); ++i) {
+    if (i == index)
+      continue;
+    if (contents_data_[i]->group == opener ||
+        &(GetTabContentsAt(i)->controller()) == opener) {
+      indices->push_back(i);
+    }
+  }
+}
 
 std::vector<int> TabStripModel::GetIndicesForCommand(int index) const {
   if (!IsTabSelected(index)) {

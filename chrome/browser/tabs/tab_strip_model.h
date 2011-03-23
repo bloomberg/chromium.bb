@@ -429,6 +429,8 @@ class TabStripModel : public NotificationObserver {
     CommandTogglePinned,
     CommandBookmarkAllTabs,
     CommandUseVerticalTabs,
+    CommandSelectByDomain,
+    CommandSelectByOpener,
     CommandLast
   };
 
@@ -467,8 +469,12 @@ class TabStripModel : public NotificationObserver {
   static bool ContextMenuCommandToBrowserCommand(int cmd_id, int* browser_cmd);
 
  private:
-  // We cannot be constructed without a delegate.
-  TabStripModel();
+  // Gets the set of tab indices whose domain matches the tab at |index|.
+  void GetIndicesWithSameDomain(int index, std::vector<int>* indices);
+
+  // Gets the set of tab indices that have the same opener as the tab at
+  // |index|.
+  void GetIndicesWithSameOpener(int index, std::vector<int>* indices);
 
   // If |index| is selected all the selected indices are returned, otherwise a
   // vector with |index| is returned. This is used when executing commands to
@@ -628,7 +634,7 @@ class TabStripModel : public NotificationObserver {
 
   TabStripSelectionModel selection_model_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabStripModel);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(TabStripModel);
 };
 
 #endif  // CHROME_BROWSER_TABS_TAB_STRIP_MODEL_H_
