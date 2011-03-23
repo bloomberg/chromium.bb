@@ -456,7 +456,6 @@
             '../skia/config/win',
           ],
           'defines': [
-            'EXCLUDE_SKIA_DEPENDENCIES',
             '<@(nacl_win64_defines)',
           ],
           'sources': [

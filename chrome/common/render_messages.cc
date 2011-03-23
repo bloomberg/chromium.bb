@@ -159,38 +159,6 @@ void ParamTraits<webkit::npapi::WebPluginInfo>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<WebDropData>::Write(Message* m, const param_type& p) {
-  WriteParam(m, p.url);
-  WriteParam(m, p.url_title);
-  WriteParam(m, p.download_metadata);
-  WriteParam(m, p.file_extension);
-  WriteParam(m, p.filenames);
-  WriteParam(m, p.plain_text);
-  WriteParam(m, p.text_html);
-  WriteParam(m, p.html_base_url);
-  WriteParam(m, p.file_description_filename);
-  WriteParam(m, p.file_contents);
-}
-
-bool ParamTraits<WebDropData>::Read(const Message* m, void** iter,
-                                    param_type* p) {
-  return
-      ReadParam(m, iter, &p->url) &&
-      ReadParam(m, iter, &p->url_title) &&
-      ReadParam(m, iter, &p->download_metadata) &&
-      ReadParam(m, iter, &p->file_extension) &&
-      ReadParam(m, iter, &p->filenames) &&
-      ReadParam(m, iter, &p->plain_text) &&
-      ReadParam(m, iter, &p->text_html) &&
-      ReadParam(m, iter, &p->html_base_url) &&
-      ReadParam(m, iter, &p->file_description_filename) &&
-      ReadParam(m, iter, &p->file_contents);
-}
-
-void ParamTraits<WebDropData>::Log(const param_type& p, std::string* l) {
-  l->append("<WebDropData>");
-}
-
 void ParamTraits<URLPattern>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.valid_schemes());
   WriteParam(m, p.GetAsString());

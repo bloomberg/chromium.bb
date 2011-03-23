@@ -5,7 +5,6 @@
 #include "chrome/common/webkit_param_traits.h"
 
 #include "base/format_macros.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 
 namespace IPC {
@@ -76,37 +75,6 @@ void ParamTraits<WebKit::WebCache::ResourceTypeStat>::Log(
     const param_type& p, std::string* l) {
   l->append(base::StringPrintf("%" PRIuS " %" PRIuS " %" PRIuS " %" PRIuS,
                                p.count, p.size, p.liveSize, p.decodedSize));
-}
-
-void ParamTraits<WebKit::WebCompositionUnderline>::Write(Message* m,
-                                                         const param_type& p) {
-  WriteParam(m, p.startOffset);
-  WriteParam(m, p.endOffset);
-  WriteParam(m, p.color);
-  WriteParam(m, p.thick);
-}
-
-bool ParamTraits<WebKit::WebCompositionUnderline>::Read(
-    const Message* m, void** iter,
-    param_type* p) {
-  return
-      ReadParam(m, iter, &p->startOffset) &&
-      ReadParam(m, iter, &p->endOffset) &&
-      ReadParam(m, iter, &p->color) &&
-      ReadParam(m, iter, &p->thick);
-}
-
-void ParamTraits<WebKit::WebCompositionUnderline>::Log(const param_type& p,
-                                                       std::string* l) {
-  l->append("(");
-  LogParam(p.startOffset, l);
-  l->append(",");
-  LogParam(p.endOffset, l);
-  l->append(":");
-  LogParam(p.color, l);
-  l->append(":");
-  LogParam(p.thick, l);
-  l->append(")");
 }
 
 void ParamTraits<WebKit::WebTextCheckingResult>::Write(Message* m,

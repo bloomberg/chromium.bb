@@ -36,6 +36,7 @@
 #include "content/common/gpu_messages.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/plugin_messages.h"
+#include "content/common/view_messages.h"
 #include "skia/ext/platform_canvas.h"
 #import "third_party/mozilla/ComplexTextInputPanel.h"
 #include "third_party/skia/include/core/SkColor.h"

@@ -276,45 +276,6 @@ struct ViewHostMsg_UpdateRect_Params {
   int flags;
 };
 
-// Information on closing a tab. This is used both for ViewMsg_ClosePage, and
-// the corresponding ViewHostMsg_ClosePage_ACK.
-struct ViewMsg_ClosePage_Params {
-  ViewMsg_ClosePage_Params();
-  ~ViewMsg_ClosePage_Params();
-
-  // The identifier of the RenderProcessHost for the currently closing view.
-  //
-  // These first two parameters are technically redundant since they are
-  // needed only when processing the ACK message, and the processor
-  // theoretically knows both the process and route ID. However, this is
-  // difficult to figure out with our current implementation, so this
-  // information is duplicate here.
-  int closing_process_id;
-
-  // The route identifier for the currently closing RenderView.
-  int closing_route_id;
-
-  // True when this close is for the first (closing) tab of a cross-site
-  // transition where we switch processes. False indicates the close is for the
-  // entire tab.
-  //
-  // When true, the new_* variables below must be filled in. Otherwise they must
-  // both be -1.
-  bool for_cross_site_transition;
-
-  // The identifier of the RenderProcessHost for the new view attempting to
-  // replace the closing one above. This must be valid when
-  // for_cross_site_transition is set, and must be -1 otherwise.
-  int new_render_process_host_id;
-
-  // The identifier of the *request* the new view made that is causing the
-  // cross-site transition. This is *not* a route_id, but the request that we
-  // will resume once the ACK from the closing view has been received. This
-  // must be valid when for_cross_site_transition is set, and must be -1
-  // otherwise.
-  int new_request_id;
-};
-
 // Parameters for a render request.
 struct ViewMsg_Print_Params {
   ViewMsg_Print_Params();
@@ -471,38 +432,6 @@ struct ViewMsg_ExecuteCode_Params {
 
   // Whether to inject into all frames, or only the root frame.
   bool all_frames;
-};
-
-// Parameters for the message that creates a worker thread.
-struct ViewHostMsg_CreateWorker_Params {
-  ViewHostMsg_CreateWorker_Params();
-  ~ViewHostMsg_CreateWorker_Params();
-
-  // URL for the worker script.
-  GURL url;
-
-  // True if this is a SharedWorker, false if it is a dedicated Worker.
-  bool is_shared;
-
-  // Name for a SharedWorker, otherwise empty string.
-  string16 name;
-
-  // The ID of the parent document (unique within parent renderer).
-  unsigned long long document_id;
-
-  // RenderView routing id used to send messages back to the parent.
-  int render_view_route_id;
-
-  // The route ID to associate with the worker. If MSG_ROUTING_NONE is passed,
-  // a new unique ID is created and assigned to the worker.
-  int route_id;
-
-  // The ID of the parent's appcache host, only valid for dedicated workers.
-  int parent_appcache_host_id;
-
-  // The ID of the appcache the main shared worker script resource was loaded
-  // from, only valid for shared workers.
-  int64 script_resource_appcache_id;
 };
 
 struct ViewHostMsg_CreateWindow_Params {
@@ -718,14 +647,6 @@ struct ParamTraits<ViewHostMsg_UpdateRect_Params> {
 };
 
 template <>
-struct ParamTraits<ViewMsg_ClosePage_Params> {
-  typedef ViewMsg_ClosePage_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
 struct ParamTraits<ViewMsg_Print_Params> {
   typedef ViewMsg_Print_Params param_type;
   static void Write(Message* m, const param_type& p);
@@ -776,14 +697,6 @@ struct ParamTraits<ViewHostMsg_ScriptedPrint_Params> {
 template <>
 struct ParamTraits<ViewMsg_ExecuteCode_Params> {
   typedef ViewMsg_ExecuteCode_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewHostMsg_CreateWorker_Params> {
-  typedef ViewHostMsg_CreateWorker_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

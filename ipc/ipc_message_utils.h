@@ -82,6 +82,7 @@ enum IPCMessageStart {
   GeolocationMsgStart,
   AudioMsgStart,
   ChromeMsgStart,
+  DragMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

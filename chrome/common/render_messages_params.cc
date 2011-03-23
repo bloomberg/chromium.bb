@@ -35,17 +35,6 @@ ViewHostMsg_UpdateRect_Params::ViewHostMsg_UpdateRect_Params()
 ViewHostMsg_UpdateRect_Params::~ViewHostMsg_UpdateRect_Params() {
 }
 
-ViewMsg_ClosePage_Params::ViewMsg_ClosePage_Params()
-    : closing_process_id(0),
-      closing_route_id(0),
-      for_cross_site_transition(false),
-      new_render_process_host_id(0),
-      new_request_id(0) {
-}
-
-ViewMsg_ClosePage_Params::~ViewMsg_ClosePage_Params() {
-}
-
 ViewMsg_Print_Params::ViewMsg_Print_Params()
     : margin_top(0),
       margin_left(0),
@@ -156,18 +145,6 @@ ViewMsg_ExecuteCode_Params::ViewMsg_ExecuteCode_Params(
 }
 
 ViewMsg_ExecuteCode_Params::~ViewMsg_ExecuteCode_Params() {
-}
-
-ViewHostMsg_CreateWorker_Params::ViewHostMsg_CreateWorker_Params()
-    : is_shared(false),
-      document_id(0),
-      render_view_route_id(0),
-      route_id(0),
-      parent_appcache_host_id(0),
-      script_resource_appcache_id(0) {
-}
-
-ViewHostMsg_CreateWorker_Params::~ViewHostMsg_CreateWorker_Params() {
 }
 
 ViewHostMsg_CreateWindow_Params::ViewHostMsg_CreateWindow_Params()
@@ -588,40 +565,6 @@ void ParamTraits<ViewHostMsg_UpdateRect_Params>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<ViewMsg_ClosePage_Params>::Write(Message* m,
-                                                  const param_type& p) {
-  WriteParam(m, p.closing_process_id);
-  WriteParam(m, p.closing_route_id);
-  WriteParam(m, p.for_cross_site_transition);
-  WriteParam(m, p.new_render_process_host_id);
-  WriteParam(m, p.new_request_id);
-}
-
-bool ParamTraits<ViewMsg_ClosePage_Params>::Read(const Message* m,
-                                                 void** iter,
-                                                 param_type* r) {
-  return ReadParam(m, iter, &r->closing_process_id) &&
-      ReadParam(m, iter, &r->closing_route_id) &&
-      ReadParam(m, iter, &r->for_cross_site_transition) &&
-      ReadParam(m, iter, &r->new_render_process_host_id) &&
-      ReadParam(m, iter, &r->new_request_id);
-}
-
-void ParamTraits<ViewMsg_ClosePage_Params>::Log(const param_type& p,
-                                                std::string* l) {
-  l->append("(");
-  LogParam(p.closing_process_id, l);
-  l->append(", ");
-  LogParam(p.closing_route_id, l);
-  l->append(", ");
-  LogParam(p.for_cross_site_transition, l);
-  l->append(", ");
-  LogParam(p.new_render_process_host_id, l);
-  l->append(", ");
-  LogParam(p.new_request_id, l);
-  l->append(")");
-}
-
 void ParamTraits<ViewMsg_Print_Params>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.page_size);
   WriteParam(m, p.printable_size);
@@ -807,53 +750,6 @@ bool ParamTraits<ViewMsg_ExecuteCode_Params>::Read(const Message* m,
 void ParamTraits<ViewMsg_ExecuteCode_Params>::Log(const param_type& p,
                                                   std::string* l) {
   l->append("<ViewMsg_ExecuteCode_Params>");
-}
-
-void ParamTraits<ViewHostMsg_CreateWorker_Params>::Write(Message* m,
-                                                         const param_type& p) {
-  WriteParam(m, p.url);
-  WriteParam(m, p.is_shared);
-  WriteParam(m, p.name);
-  WriteParam(m, p.document_id);
-  WriteParam(m, p.render_view_route_id);
-  WriteParam(m, p.route_id);
-  WriteParam(m, p.parent_appcache_host_id);
-  WriteParam(m, p.script_resource_appcache_id);
-}
-
-bool ParamTraits<ViewHostMsg_CreateWorker_Params>::Read(const Message* m,
-                                                        void** iter,
-                                                        param_type* p) {
-  return
-      ReadParam(m, iter, &p->url) &&
-      ReadParam(m, iter, &p->is_shared) &&
-      ReadParam(m, iter, &p->name) &&
-      ReadParam(m, iter, &p->document_id) &&
-      ReadParam(m, iter, &p->render_view_route_id) &&
-      ReadParam(m, iter, &p->route_id) &&
-      ReadParam(m, iter, &p->parent_appcache_host_id) &&
-      ReadParam(m, iter, &p->script_resource_appcache_id);
-}
-
-void ParamTraits<ViewHostMsg_CreateWorker_Params>::Log(const param_type& p,
-                                                       std::string* l) {
-  l->append("(");
-  LogParam(p.url, l);
-  l->append(", ");
-  LogParam(p.is_shared, l);
-  l->append(", ");
-  LogParam(p.name, l);
-  l->append(", ");
-  LogParam(p.document_id, l);
-  l->append(", ");
-  LogParam(p.render_view_route_id, l);
-  l->append(",");
-  LogParam(p.route_id, l);
-  l->append(", ");
-  LogParam(p.parent_appcache_host_id, l);
-  l->append(",");
-  LogParam(p.script_resource_appcache_id, l);
-  l->append(")");
 }
 
 void ParamTraits<ViewHostMsg_CreateWindow_Params>::Write(Message* m,

@@ -28,14 +28,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
 
 namespace WebKit {
-struct WebCompositionUnderline;
 struct WebRect;
 struct WebScreenInfo;
 }
@@ -139,19 +137,6 @@ struct ParamTraits<WebKit::WebCache::ResourceTypeStats> {
     LogParam(p.fonts, l);
     l->append("</WebCoreStats>");
   }
-};
-
-template <>
-struct SimilarTypeTraits<WebKit::WebDragOperation> {
-  typedef int Type;
-};
-
-template <>
-struct ParamTraits<WebKit::WebCompositionUnderline> {
-  typedef WebKit::WebCompositionUnderline param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
 };
 
 template <>

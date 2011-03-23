@@ -28,7 +28,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 // Forward declarations.
-class SkBitmap;
 class DictionaryValue;
 class ListValue;
 struct ThumbnailScore;
@@ -44,18 +43,6 @@ struct PasswordForm;
 }  // namespace webkit_glue
 
 namespace IPC {
-
-template <>
-struct ParamTraits<SkBitmap> {
-  typedef SkBitmap param_type;
-  static void Write(Message* m, const param_type& p);
-
-  // Note: This function expects parameter |r| to be of type &SkBitmap since
-  // r->SetConfig() and r->SetPixels() are called.
-  static bool Read(const Message* m, void** iter, param_type* r);
-
-  static void Log(const param_type& p, std::string* l);
-};
 
 template <>
 struct ParamTraits<ContentSetting> {

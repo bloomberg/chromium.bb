@@ -39,6 +39,7 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
+#include "content/common/drag_messages.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
@@ -451,24 +452,24 @@ void RenderViewHost::DragTargetDragEnter(
                             net::FilePathToFileURL(path));
     policy->GrantReadFile(process()->id(), path);
   }
-  Send(new ViewMsg_DragTargetDragEnter(routing_id(), drop_data, client_pt,
-                                       screen_pt, operations_allowed));
+  Send(new DragMsg_TargetDragEnter(routing_id(), drop_data, client_pt,
+                                   screen_pt, operations_allowed));
 }
 
 void RenderViewHost::DragTargetDragOver(
     const gfx::Point& client_pt, const gfx::Point& screen_pt,
     WebDragOperationsMask operations_allowed) {
-  Send(new ViewMsg_DragTargetDragOver(routing_id(), client_pt, screen_pt,
-                                      operations_allowed));
+  Send(new DragMsg_TargetDragOver(routing_id(), client_pt, screen_pt,
+                                  operations_allowed));
 }
 
 void RenderViewHost::DragTargetDragLeave() {
-  Send(new ViewMsg_DragTargetDragLeave(routing_id()));
+  Send(new DragMsg_TargetDragLeave(routing_id()));
 }
 
 void RenderViewHost::DragTargetDrop(
     const gfx::Point& client_pt, const gfx::Point& screen_pt) {
-  Send(new ViewMsg_DragTargetDrop(routing_id(), client_pt, screen_pt));
+  Send(new DragMsg_TargetDrop(routing_id(), client_pt, screen_pt));
 }
 
 void RenderViewHost::ReservePageIDRange(int size) {
@@ -590,7 +591,7 @@ void RenderViewHost::CopyImageAt(int x, int y) {
 void RenderViewHost::DragSourceEndedAt(
     int client_x, int client_y, int screen_x, int screen_y,
     WebDragOperation operation) {
-  Send(new ViewMsg_DragSourceEndedOrMoved(
+  Send(new DragMsg_SourceEndedOrMoved(
       routing_id(),
       gfx::Point(client_x, client_y),
       gfx::Point(screen_x, screen_y),
@@ -599,7 +600,7 @@ void RenderViewHost::DragSourceEndedAt(
 
 void RenderViewHost::DragSourceMovedTo(
     int client_x, int client_y, int screen_x, int screen_y) {
-  Send(new ViewMsg_DragSourceEndedOrMoved(
+  Send(new DragMsg_SourceEndedOrMoved(
       routing_id(),
       gfx::Point(client_x, client_y),
       gfx::Point(screen_x, screen_y),
@@ -607,7 +608,7 @@ void RenderViewHost::DragSourceMovedTo(
 }
 
 void RenderViewHost::DragSourceSystemDragEnded() {
-  Send(new ViewMsg_DragSourceSystemDragEnded(routing_id()));
+  Send(new DragMsg_SourceSystemDragEnded(routing_id()));
 }
 
 void RenderViewHost::AllowBindings(int bindings_flags) {
@@ -756,8 +757,8 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                                     OnMsgRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunBeforeUnloadConfirm,
                                     OnMsgRunBeforeUnloadConfirm)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_StartDragging, OnMsgStartDragging)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateDragCursor, OnUpdateDragCursor)
+    IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnMsgStartDragging)
+    IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToDevToolsAgent,

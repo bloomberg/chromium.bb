@@ -30,6 +30,8 @@
 #include "webkit/glue/resource_type.h"
 #include "webkit/glue/webcursor.h"
 
+class SkBitmap;
+
 namespace gfx {
 class Point;
 class Rect;
@@ -383,6 +385,19 @@ template <>
 struct SimilarTypeTraits<WebKit::WebTextDirection> {
   typedef int Type;
 };
+
+template <>
+struct ParamTraits<SkBitmap> {
+  typedef SkBitmap param_type;
+  static void Write(Message* m, const param_type& p);
+
+  // Note: This function expects parameter |r| to be of type &SkBitmap since
+  // r->SetConfig() and r->SetPixels() are called.
+  static bool Read(const Message* m, void** iter, param_type* r);
+
+  static void Log(const param_type& p, std::string* l);
+};
+
 
 }  // namespace IPC
 

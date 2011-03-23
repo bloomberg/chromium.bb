@@ -30,6 +30,7 @@
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_service.h"
 #include "content/common/plugin_messages.h"
+#include "content/common/view_messages.h"
 #include "grit/webkit_resources.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"

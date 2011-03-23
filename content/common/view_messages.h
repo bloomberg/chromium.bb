@@ -12,6 +12,8 @@
 #include "content/common/page_zoom.h"
 #include "content/common/renderer_preferences.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_platform_file.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "ui/gfx/rect.h"
@@ -100,6 +102,13 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ViewMsg_StopFinding_Params)
   IPC_STRUCT_TRAITS_MEMBER(action)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCompositionUnderline)
+  IPC_STRUCT_TRAITS_MEMBER(startOffset)
+  IPC_STRUCT_TRAITS_MEMBER(endOffset)
+  IPC_STRUCT_TRAITS_MEMBER(color)
+  IPC_STRUCT_TRAITS_MEMBER(thick)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(WebKit::WebFindOptions)
@@ -216,6 +225,68 @@ IPC_STRUCT_TRAITS_BEGIN(ContextMenuParams)
   IPC_STRUCT_TRAITS_MEMBER(custom_context)
   IPC_STRUCT_TRAITS_MEMBER(custom_items)
 IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_BEGIN(ViewMsg_ClosePage_Params)
+  // The identifier of the RenderProcessHost for the currently closing view.
+  //
+  // These first two parameters are technically redundant since they are
+  // needed only when processing the ACK message, and the processor
+  // theoretically knows both the process and route ID. However, this is
+  // difficult to figure out with our current implementation, so this
+  // information is duplicate here.
+  IPC_STRUCT_MEMBER(int, closing_process_id)
+
+  // The route identifier for the currently closing RenderView.
+  IPC_STRUCT_MEMBER(int, closing_route_id)
+
+  // True when this close is for the first (closing) tab of a cross-site
+  // transition where we switch processes. False indicates the close is for the
+  // entire tab.
+  //
+  // When true, the new_* variables below must be filled in. Otherwise they must
+  // both be -1.
+  IPC_STRUCT_MEMBER(bool, for_cross_site_transition)
+
+  // The identifier of the RenderProcessHost for the new view attempting to
+  // replace the closing one above. This must be valid when
+  // for_cross_site_transition is set, and must be -1 otherwise.
+  IPC_STRUCT_MEMBER(int, new_render_process_host_id)
+
+  // The identifier of the *request* the new view made that is causing the
+  // cross-site transition. This is *not* a route_id, but the request that we
+  // will resume once the ACK from the closing view has been received. This
+  // must be valid when for_cross_site_transition is set, and must be -1
+  // otherwise.
+  IPC_STRUCT_MEMBER(int, new_request_id)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
+  // URL for the worker script.
+  IPC_STRUCT_MEMBER(GURL, url)
+
+  // True if this is a SharedWorker, false if it is a dedicated Worker.
+  IPC_STRUCT_MEMBER(bool, is_shared)
+
+  // Name for a SharedWorker, otherwise empty string.
+  IPC_STRUCT_MEMBER(string16, name)
+
+  // The ID of the parent document (unique within parent renderer).
+  IPC_STRUCT_MEMBER(unsigned long long, document_id)
+
+  // RenderView routing id used to send messages back to the parent.
+  IPC_STRUCT_MEMBER(int, render_view_route_id)
+
+  // The route ID to associate with the worker. If MSG_ROUTING_NONE is passed,
+  // a new unique ID is created and assigned to the worker.
+  IPC_STRUCT_MEMBER(int, route_id)
+
+  // The ID of the parent's appcache host, only valid for dedicated workers.
+  IPC_STRUCT_MEMBER(int, parent_appcache_host_id)
+
+  // The ID of the appcache the main shared worker script resource was loaded
+  // from, only valid for shared workers.
+  IPC_STRUCT_MEMBER(int64, script_resource_appcache_id)
+IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
   // The page_id for this navigation, or -1 if it is a new navigation.  Back,
@@ -557,6 +628,160 @@ IPC_MESSAGE_CONTROL2(ViewMsg_SetZoomLevelForCurrentURL,
                      GURL /* url */,
                      double /* zoom_level */)
 
+// Change encoding of page in the renderer.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetPageEncoding,
+                    std::string /*new encoding name*/)
+
+// Reset encoding of page in the renderer back to default.
+IPC_MESSAGE_ROUTED0(ViewMsg_ResetPageEncodingToDefault)
+
+// Requests the renderer to reserve a range of page ids.
+IPC_MESSAGE_ROUTED1(ViewMsg_ReservePageIDRange,
+                    int  /* size_of_range */)
+
+// Used to tell a render view whether it should expose various bindings
+// that allow JS content extended privileges.  See BindingsPolicy for valid
+// flag values.
+IPC_MESSAGE_ROUTED1(ViewMsg_AllowBindings,
+                    int /* enabled_bindings_flags */)
+
+// Tell the renderer to add a property to the WebUI binding object.  This
+// only works if we allowed WebUI bindings.
+IPC_MESSAGE_ROUTED2(ViewMsg_SetWebUIProperty,
+                    std::string /* property_name */,
+                    std::string /* property_value_json */)
+
+// This message starts/stop monitoring the input method status of the focused
+// edit control of a renderer process.
+// Parameters
+// * is_active (bool)
+//   Indicates if an input method is active in the browser process.
+//   The possible actions when a renderer process receives this message are
+//   listed below:
+//     Value Action
+//     true  Start sending IPC message ViewHostMsg_ImeUpdateTextInputState
+//           to notify the input method status of the focused edit control.
+//     false Stop sending IPC message ViewHostMsg_ImeUpdateTextInputState.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetInputMethodActive,
+                    bool /* is_active */)
+
+// This message sends a string being composed with an input method.
+IPC_MESSAGE_ROUTED4(
+    ViewMsg_ImeSetComposition,
+    string16, /* text */
+    std::vector<WebKit::WebCompositionUnderline>, /* underlines */
+    int, /* selectiont_start */
+    int /* selection_end */)
+
+// This message confirms an ongoing composition.
+IPC_MESSAGE_ROUTED1(ViewMsg_ImeConfirmComposition,
+                    string16 /* text */)
+
+// Used to notify the render-view that we have received a target URL. Used
+// to prevent target URLs spamming the browser.
+IPC_MESSAGE_ROUTED0(ViewMsg_UpdateTargetURL_ACK)
+
+
+// Sets the alternate error page URL (link doctor) for the renderer process.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetAltErrorPageURL,
+                    GURL)
+
+IPC_MESSAGE_ROUTED1(ViewMsg_RunFileChooserResponse,
+                    std::vector<FilePath> /* selected files */)
+
+// When a renderer sends a ViewHostMsg_Focus to the browser process,
+// the browser has the option of sending a ViewMsg_CantFocus back to
+// the renderer.
+IPC_MESSAGE_ROUTED0(ViewMsg_CantFocus)
+
+// Instructs the renderer to invoke the frame's shouldClose method, which
+// runs the onbeforeunload event handler.  Expects the result to be returned
+// via ViewHostMsg_ShouldClose.
+IPC_MESSAGE_ROUTED0(ViewMsg_ShouldClose)
+
+// Instructs the renderer to close the current page, including running the
+// onunload event handler. See the struct in render_messages.h for more.
+//
+// Expects a ClosePage_ACK message when finished, where the parameters are
+// echoed back.
+IPC_MESSAGE_ROUTED1(ViewMsg_ClosePage,
+                    ViewMsg_ClosePage_Params)
+
+// Notifies the renderer about ui theme changes
+IPC_MESSAGE_ROUTED0(ViewMsg_ThemeChanged)
+
+// Notifies the renderer that a paint is to be generated for the rectangle
+// passed in.
+IPC_MESSAGE_ROUTED1(ViewMsg_Repaint,
+                    gfx::Size /* The view size to be repainted */)
+
+// Notification that a move or resize renderer's containing window has
+// started.
+IPC_MESSAGE_ROUTED0(ViewMsg_MoveOrResizeStarted)
+
+// Reply to ViewHostMsg_RequestMove, ViewHostMsg_ShowView, and
+// ViewHostMsg_ShowWidget to inform the renderer that the browser has
+// processed the move.  The browser may have ignored the move, but it finished
+// processing.  This is used because the renderer keeps a temporary cache of
+// the widget position while these asynchronous operations are in progress.
+IPC_MESSAGE_ROUTED0(ViewMsg_Move_ACK)
+
+// Used to instruct the RenderView to send back updates to the preferred size.
+IPC_MESSAGE_ROUTED1(ViewMsg_EnablePreferredSizeChangedMode,
+                    int /*flags*/)
+
+// Changes the text direction of the currently selected input field (if any).
+IPC_MESSAGE_ROUTED1(ViewMsg_SetTextDirection,
+                    WebKit::WebTextDirection /* direction */)
+
+// Tells the renderer to clear the focused node (if any).
+IPC_MESSAGE_ROUTED0(ViewMsg_ClearFocusedNode)
+
+// Make the RenderView transparent and render it onto a custom background. The
+// background will be tiled in both directions if it is not large enough.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetBackground,
+                    SkBitmap /* background */)
+
+// Used to tell the renderer not to add scrollbars with height and
+// width below a threshold.
+IPC_MESSAGE_ROUTED1(ViewMsg_DisableScrollbarsForSmallWindows,
+                    gfx::Size /* disable_scrollbar_size_limit */)
+
+// Activate/deactivate the RenderView (i.e., set its controls' tint
+// accordingly, etc.).
+IPC_MESSAGE_ROUTED1(ViewMsg_SetActive,
+                    bool /* active */)
+
+#if defined(OS_MACOSX)
+// Let the RenderView know its window has changed visibility.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetWindowVisibility,
+                    bool /* visibile */)
+
+// Let the RenderView know its window's frame has changed.
+IPC_MESSAGE_ROUTED2(ViewMsg_WindowFrameChanged,
+                    gfx::Rect /* window frame */,
+                    gfx::Rect /* content view frame */)
+
+// Tell the renderer that plugin IME has completed.
+IPC_MESSAGE_ROUTED2(ViewMsg_PluginImeCompositionCompleted,
+                    string16 /* text */,
+                    int /* plugin_id */)
+#endif
+
+// Response message to ViewHostMsg_CreateShared/DedicatedWorker.
+// Sent when the worker has started.
+IPC_MESSAGE_ROUTED0(ViewMsg_WorkerCreated)
+
+// The response to ViewHostMsg_AsyncOpenFile.
+IPC_MESSAGE_ROUTED3(ViewMsg_AsyncOpenFile_ACK,
+                    base::PlatformFileError /* error_code */,
+                    IPC::PlatformFileForTransit /* file descriptor */,
+                    int /* message_id */)
+
+// Tells the renderer that the network state has changed and that
+// window.navigator.onLine should be updated for all WebViews.
+IPC_MESSAGE_ROUTED1(ViewMsg_NetworkStateChanged,
+                    bool /* online */)
 
 
 // Messages sent from the renderer to the browser.
@@ -591,3 +816,57 @@ IPC_MESSAGE_ROUTED5(ViewHostMsg_Find_Reply,
                     gfx::Rect /* selection_rect */,
                     int /* active_match_ordinal */,
                     bool /* final_update */)
+
+// Provides the result from running OnMsgShouldClose.  |proceed| matches the
+// return value of the the frame's shouldClose method (which includes the
+// onbeforeunload handler): true if the user decided to proceed with leaving
+// the page.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_ShouldClose_ACK,
+                    bool /* proceed */)
+
+// Indicates that the current page has been closed, after a ClosePage
+// message. The parameters are just echoed from the ClosePage request.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_ClosePage_ACK,
+                    ViewMsg_ClosePage_Params)
+
+
+// A renderer sends this to the browser process when it wants to create a
+// worker.  The browser will create the worker process if necessary, and
+// will return the route id on success.  On error returns MSG_ROUTING_NONE.
+IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_CreateWorker,
+                            ViewHostMsg_CreateWorker_Params,
+                            int /* route_id */)
+
+// This message is sent to the browser to see if an instance of this shared
+// worker already exists. If so, it returns exists == true. If a
+// non-empty name is passed, also validates that the url matches the url of
+// the existing worker. If a matching worker is found, the passed-in
+// document_id is associated with that worker, to ensure that the worker
+// stays alive until the document is detached.
+// The route_id returned can be used to forward messages to the worker via
+// ForwardToWorker if it exists, otherwise it should be passed in to any
+// future call to CreateWorker to avoid creating duplicate workers.
+IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_LookupSharedWorker,
+                            ViewHostMsg_CreateWorker_Params,
+                            bool /* exists */,
+                            int /* route_id */,
+                            bool /* url_mismatch */)
+
+// A renderer sends this to the browser process when a document has been
+// detached. The browser will use this to constrain the lifecycle of worker
+// processes (SharedWorkers are shut down when their last associated document
+// is detached).
+IPC_MESSAGE_CONTROL1(ViewHostMsg_DocumentDetached,
+                     uint64 /* document_id */)
+
+// Wraps an IPC message that's destined to the worker on the renderer->browser
+// hop.
+IPC_MESSAGE_CONTROL1(ViewHostMsg_ForwardToWorker,
+                     IPC::Message /* message */)
+
+// Sent if the worker object has sent a ViewHostMsg_CreateDedicatedWorker
+// message and not received a ViewMsg_WorkerCreated reply, but in the
+// mean time it's destroyed.  This tells the browser to not create the queued
+// worker.
+IPC_MESSAGE_CONTROL1(ViewHostMsg_CancelCreateDedicatedWorker,
+                     int /* route_id */)

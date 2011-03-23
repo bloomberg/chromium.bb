@@ -9,6 +9,7 @@
       'type': '<(library)',
       'dependencies': [
         '../ipc/ipc.gyp:ipc',
+        '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
@@ -67,6 +68,7 @@
         'common/device_orientation_messages.h',
         'common/dom_storage_common.h',
         'common/dom_storage_messages.h',
+        'common/drag_messages.h',
         'common/dx_diag_node.cc',
         'common/dx_diag_node.h',
         'common/edit_command.h',

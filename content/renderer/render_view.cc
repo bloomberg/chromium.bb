@@ -72,6 +72,7 @@
 #include "content/common/clipboard_messages.h"
 #include "content/common/content_constants.h"
 #include "content/common/database_messages.h"
+#include "content/common/drag_messages.h"
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/file_system/webfilesystem_callback_dispatcher.h"
 #include "content/common/notification_service.h"
@@ -1000,16 +1001,15 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ScriptEvalRequest, OnScriptEvalRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_CSSInsertRequest, OnCSSInsertRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_ReservePageIDRange, OnReservePageIDRange)
-    IPC_MESSAGE_HANDLER(ViewMsg_DragTargetDragEnter, OnDragTargetDragEnter)
-    IPC_MESSAGE_HANDLER(ViewMsg_DragTargetDragOver, OnDragTargetDragOver)
-    IPC_MESSAGE_HANDLER(ViewMsg_DragTargetDragLeave, OnDragTargetDragLeave)
-    IPC_MESSAGE_HANDLER(ViewMsg_DragTargetDrop, OnDragTargetDrop)
+    IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
+    IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
+    IPC_MESSAGE_HANDLER(DragMsg_TargetDragLeave, OnDragTargetDragLeave)
+    IPC_MESSAGE_HANDLER(DragMsg_TargetDrop, OnDragTargetDrop)
+    IPC_MESSAGE_HANDLER(DragMsg_SourceEndedOrMoved, OnDragSourceEndedOrMoved)
+    IPC_MESSAGE_HANDLER(DragMsg_SourceSystemDragEnded,
+                        OnDragSourceSystemDragEnded)
     IPC_MESSAGE_HANDLER(ViewMsg_AllowBindings, OnAllowBindings)
     IPC_MESSAGE_HANDLER(ViewMsg_SetWebUIProperty, OnSetWebUIProperty)
-    IPC_MESSAGE_HANDLER(ViewMsg_DragSourceEndedOrMoved,
-                        OnDragSourceEndedOrMoved)
-    IPC_MESSAGE_HANDLER(ViewMsg_DragSourceSystemDragEnded,
-                        OnDragSourceSystemDragEnded)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInitialFocus, OnSetInitialFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_ScrollFocusedEditableNodeIntoView,
                         OnScrollFocusedEditableNodeIntoView)
@@ -2485,7 +2485,7 @@ void RenderView::startDragging(const WebDragData& data,
   SkBitmap bitmap = gfx::CGImageToSkBitmap(image.getCGImageRef());
 #endif
 
-  Send(new ViewHostMsg_StartDragging(routing_id_,
+  Send(new DragHostMsg_StartDragging(routing_id_,
                                      WebDropData(data),
                                      mask,
                                      bitmap,
@@ -4366,6 +4366,40 @@ void RenderView::OnReservePageIDRange(int size_of_range) {
   next_page_id_ += size_of_range + 1;
 }
 
+void RenderView::OnDragTargetDragEnter(const WebDropData& drop_data,
+                                       const gfx::Point& client_point,
+                                       const gfx::Point& screen_point,
+                                       WebDragOperationsMask ops) {
+  WebDragOperation operation = webview()->dragTargetDragEnter(
+      drop_data.ToDragData(),
+      0,  // drag identity, unused
+      client_point,
+      screen_point,
+      ops);
+
+  Send(new DragHostMsg_UpdateDragCursor(routing_id_, operation));
+}
+
+void RenderView::OnDragTargetDragOver(const gfx::Point& client_point,
+                                      const gfx::Point& screen_point,
+                                      WebDragOperationsMask ops) {
+  WebDragOperation operation = webview()->dragTargetDragOver(
+      client_point,
+      screen_point,
+      ops);
+
+  Send(new DragHostMsg_UpdateDragCursor(routing_id_, operation));
+}
+
+void RenderView::OnDragTargetDragLeave() {
+  webview()->dragTargetDragLeave();
+}
+
+void RenderView::OnDragTargetDrop(const gfx::Point& client_point,
+                                  const gfx::Point& screen_point) {
+  webview()->dragTargetDrop(client_point, screen_point);
+}
+
 void RenderView::OnDragSourceEndedOrMoved(const gfx::Point& client_point,
                                           const gfx::Point& screen_point,
                                           bool ended,
@@ -4379,40 +4413,6 @@ void RenderView::OnDragSourceEndedOrMoved(const gfx::Point& client_point,
 
 void RenderView::OnDragSourceSystemDragEnded() {
   webview()->dragSourceSystemDragEnded();
-}
-
-void RenderView::OnDragTargetDragEnter(const WebDropData& drop_data,
-                                       const gfx::Point& client_point,
-                                       const gfx::Point& screen_point,
-                                       WebDragOperationsMask ops) {
-  WebDragOperation operation = webview()->dragTargetDragEnter(
-      drop_data.ToDragData(),
-      0,  // drag identity, unused
-      client_point,
-      screen_point,
-      ops);
-
-  Send(new ViewHostMsg_UpdateDragCursor(routing_id_, operation));
-}
-
-void RenderView::OnDragTargetDragOver(const gfx::Point& client_point,
-                                      const gfx::Point& screen_point,
-                                      WebDragOperationsMask ops) {
-  WebDragOperation operation = webview()->dragTargetDragOver(
-      client_point,
-      screen_point,
-      ops);
-
-  Send(new ViewHostMsg_UpdateDragCursor(routing_id_, operation));
-}
-
-void RenderView::OnDragTargetDragLeave() {
-  webview()->dragTargetDragLeave();
-}
-
-void RenderView::OnDragTargetDrop(const gfx::Point& client_point,
-                                  const gfx::Point& screen_point) {
-  webview()->dragTargetDrop(client_point, screen_point);
 }
 
 void RenderView::OnUpdateWebPreferences(const WebPreferences& prefs) {
