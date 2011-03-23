@@ -10,8 +10,6 @@
 
 #include "base/id_map.h"
 #include "content/renderer/render_view_observer.h"
-// TODO(jam): move this to .cc once WebTextCheckingResult is converted to a struct
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 
 class RenderView;
 class SpellCheck;
@@ -19,7 +17,7 @@ class SpellCheck;
 namespace WebKit {
 class WebString;
 class WebTextCheckingCompletion;
-//struct WebTextCheckingResult;
+struct WebTextCheckingResult;
 }
 
 // This class deals with invoking browser-side spellcheck mechanism
