@@ -30,6 +30,7 @@ template <typename T> struct DefaultSingletonTraits;
 
 class ImageBurnResourceManager;
 class TabContents;
+class ImageBurnTaskProxy;
 
 class ImageBurnHandler : public WebUIMessageHandler,
                          public chromeos::MountLibrary::Observer,
@@ -45,27 +46,32 @@ class ImageBurnHandler : public WebUIMessageHandler,
   virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
-  // chromeos::MountLibrary::Observer interface
+  // chromeos::MountLibrary::Observer interface.
   virtual void DiskChanged(chromeos::MountLibraryEventType event,
                            const chromeos::MountLibrary::Disk* disk);
   virtual void DeviceChanged(chromeos::MountLibraryEventType event,
                              const std::string& device_path);
 
-  // chromeos::BurnLibrary::Observer interface
+  // chromeos::BurnLibrary::Observer interface.
   virtual void ProgressUpdated(chromeos::BurnLibrary* object,
                                chromeos::BurnEventType evt,
                                const ImageBurnStatus& status);
 
-  // DownloadItem::Observer interface
+  // DownloadItem::Observer interface.
   virtual void OnDownloadUpdated(DownloadItem* download);
   virtual void OnDownloadFileCompleted(DownloadItem* download);
   virtual void OnDownloadOpened(DownloadItem* download);
 
-  // DownloadManager::Observer interface
+  // DownloadManager::Observer interface.
   virtual void ModelChanged();
 
+  // Called by ImageBurnResourceManager.
   void CreateImageUrlCallback(GURL* image_url);
 
+  // Called by ImageBurnTaskProxy.
+  void BurnImageOnFileThread();
+  void UnzipImageOnFileThread(ImageBurnTaskProxy* task);
+  void UnzipComplete(bool success);
 
  private:
   // Callback for the "getRoots" message.
@@ -82,30 +88,28 @@ class ImageBurnHandler : public WebUIMessageHandler,
 
   void DownloadCompleted(bool success);
 
-  void BurnImage();
   void FinalizeBurn(bool successful);
 
   void UpdateBurnProgress(int64 total_burnt, int64 image_size,
                           const std::string& path, chromeos::BurnEventType evt);
   string16 GetBurnProgressText(int64 total_burnt, int64 image_size);
 
+  void UnzipImage();
+  bool UnzipImageImpl();
+
   // helper functions
-  void CreateImageUrl();
   void ExtractTargetedDeviceSystemPath(const ListValue* list_value);
-  void CreateLocalImagePath();
 
  private:
-  // file path
-  FilePath local_image_file_path_;
+  FilePath zip_image_file_path_;
+  FilePath image_file_path_;
   FilePath image_target_;
   GURL* image_download_url_;
   TabContents* tab_contents_;
   DownloadManager* download_manager_;
   bool download_item_observer_added_;
   DownloadItem*  active_download_item_;
-  ImageBurnResourceManager* burn_resource_manager_;
-
-  friend class ImageBurnTaskProxy;
+  ImageBurnResourceManager* resource_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageBurnHandler);
 };
@@ -119,28 +123,25 @@ class ImageBurnResourceManager : public DownloadManager::Observer,
   // DownloadItem::Observer interface
   virtual void OnDownloadUpdated(DownloadItem* download);
   virtual void OnDownloadFileCompleted(DownloadItem* download);
-  virtual void OnDownloadOpened(DownloadItem* download);
+  virtual void OnDownloadOpened(DownloadItem* download) {}
 
   // DownloadManager::Observer interface
   virtual void ModelChanged();
 
-  FilePath GetLocalImageDirPath();
-
-  bool CheckImageDownloadStarted();
-
-  void ReportImageDownloadStarted();
-
-  bool CheckDownloadFinished();
-
-  bool CheckBurnInProgress();
-
-  void SetBurnInProgress(bool value);
-
-  void ReportDownloadFinished(bool success);
+  const FilePath& GetImageDir();
 
   void CreateImageUrl(TabContents* tab_content, ImageBurnHandler* downloader);
 
-  void ImageUrlFetched(bool success);
+  void ConfigFileFetched(bool fetched);
+
+  bool download_started() const { return download_started_; }
+  void set_download_started(bool s) { download_started_ = s; }
+
+  bool download_finished() const { return download_finished_; }
+  void SetDownloadFinished(bool finished);
+
+  bool burn_in_progress() const { return burn_in_progress_; }
+  void set_burn_in_progress(bool b) { burn_in_progress_ = b; }
 
   net::FileStream* CreateFileStream(FilePath* file_path);
 
@@ -150,20 +151,22 @@ class ImageBurnResourceManager : public DownloadManager::Observer,
   ImageBurnResourceManager();
   ~ImageBurnResourceManager();
 
-  FilePath local_image_dir_file_path_;
-  FilePath image_fecher_local_path_;
-  bool image_download_started_;
-  bool image_download_finished_;
+  FilePath image_dir_;
+  FilePath config_file_path_;
+
+  bool download_started_;
+  bool download_finished_;
   bool burn_in_progress_;
+
   DownloadManager* download_manager_;
   bool download_item_observer_added_;
   DownloadItem*  active_download_item_;
-  scoped_ptr<GURL> image_url_;
-  GURL image_fetcher_url_;
-  bool image_url_fetching_requested_;
-  bool image_url_fetched_;
-  std::vector<ImageBurnHandler*> downloaders_;
 
+  scoped_ptr<GURL> image_url_;
+  GURL config_file_url_;
+  bool config_file_requested_;
+  bool config_file_fetched_;
+  std::vector<ImageBurnHandler*> downloaders_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageBurnResourceManager);
 };

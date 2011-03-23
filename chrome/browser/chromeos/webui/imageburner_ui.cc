@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/zip.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
@@ -120,47 +121,42 @@ class ImageBurnUIHTMLSource : public ChromeURLDataManager::DataSource {
 ////////////////////////////////////////////////////////////////////////////////
 
 class ImageBurnTaskProxy
-    : public base::RefCountedThreadSafe<ImageBurnTaskProxy> {
+  : public base::RefCountedThreadSafe<ImageBurnTaskProxy> {
  public:
   explicit ImageBurnTaskProxy(const base::WeakPtr<ImageBurnHandler>& handler)
-      : handler_(handler) {
-        resource_manager_ = ImageBurnResourceManager::GetInstance();
-  }
-
-  bool ReportDownloadInitialized() {
-    bool initialized = resource_manager_-> CheckImageDownloadStarted();
-    if (!initialized)
-      resource_manager_-> ReportImageDownloadStarted();
-    return initialized;
-  }
-
-  bool CheckDownloadFinished() {
-    return resource_manager_->CheckDownloadFinished();
-  }
+      : handler_(handler) {}
 
   void BurnImage() {
-    if (!resource_manager_->CheckBurnInProgress() && handler_) {
-      resource_manager_->SetBurnInProgress(true);
-      handler_->BurnImage();
-    }
+    if (handler_)
+      handler_->BurnImageOnFileThread();
+    DeleteOnUIThread();
   }
 
-  void FinalizeBurn(bool success) {
-    if (handler_) {
-      handler_->FinalizeBurn(success);
-      resource_manager_->SetBurnInProgress(false);
-    }
+  void UnzipImage() {
+    if (handler_)
+      handler_->UnzipImageOnFileThread(this);
   }
 
-  void CreateImageUrl(TabContents* tab_contents, ImageBurnHandler* downloader) {
-    resource_manager_->CreateImageUrl(tab_contents, downloader);
+  void UnzipComplete(bool success) {
+    if (handler_)
+      handler_->UnzipComplete(success);
   }
+
+  // ImageBurnTaskProxy is created on the UI thread, so in some cases,
+  // we need to post back to the UI thread for destruction.
+  void DeleteOnUIThread() {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &ImageBurnTaskProxy::DoNothing));
+  }
+
+  void DoNothing() {}
 
  private:
   base::WeakPtr<ImageBurnHandler> handler_;
-  ImageBurnResourceManager* resource_manager_;
 
   friend class base::RefCountedThreadSafe<ImageBurnTaskProxy>;
+  ~ImageBurnTaskProxy() {}
 
   DISALLOW_COPY_AND_ASSIGN(ImageBurnTaskProxy);
 };
@@ -176,27 +172,19 @@ ImageBurnHandler::ImageBurnHandler(TabContents* contents)
      download_manager_(NULL),
      download_item_observer_added_(false),
      active_download_item_(NULL),
-     burn_resource_manager_(NULL) {
-  chromeos::MountLibrary* mount_lib =
-          chromeos::CrosLibrary::Get()->GetMountLibrary();
-  mount_lib->AddObserver(this);
-  chromeos::BurnLibrary* burn_lib =
-          chromeos::CrosLibrary::Get()->GetBurnLibrary();
-  burn_lib->AddObserver(this);
-  local_image_file_path_.clear();
-  burn_resource_manager_ = ImageBurnResourceManager::GetInstance();
+     resource_manager_(NULL) {
+  chromeos::CrosLibrary::Get()->GetMountLibrary()->AddObserver(this);
+  chromeos::CrosLibrary::Get()->GetBurnLibrary()->AddObserver(this);
+  resource_manager_ = ImageBurnResourceManager::GetInstance();
+  zip_image_file_path_ =
+      resource_manager_->GetImageDir().Append(kImageFileName);
 }
 
 ImageBurnHandler::~ImageBurnHandler() {
-  chromeos::MountLibrary* mount_lib =
-          chromeos::CrosLibrary::Get()->GetMountLibrary();
-  mount_lib->RemoveObserver(this);
-  chromeos::BurnLibrary* burn_lib =
-          chromeos::CrosLibrary::Get()->GetBurnLibrary();
-  burn_lib->RemoveObserver(this);
-  if (active_download_item_) {
+  chromeos::CrosLibrary::Get()->GetMountLibrary()->RemoveObserver(this);
+  chromeos::CrosLibrary::Get()->GetBurnLibrary()->RemoveObserver(this);
+  if (active_download_item_)
     active_download_item_->RemoveObserver(this);
-  }
   if (download_manager_)
       download_manager_->RemoveObserver(this);
 }
@@ -235,22 +223,18 @@ void ImageBurnHandler::DeviceChanged(chromeos::MountLibraryEventType event,
 void ImageBurnHandler::ProgressUpdated(chromeos::BurnLibrary* object,
                                        chromeos::BurnEventType evt,
                                        const ImageBurnStatus& status) {
-    UpdateBurnProgress(status.amount_burnt, status.total_size,
-                       status.target_path, evt);
-    if (evt == chromeos::BURN_COMPLETE) {
-      ImageBurnTaskProxy* task = new ImageBurnTaskProxy(AsWeakPtr());
-      task->AddRef();
-      task->FinalizeBurn(true);
-    } else if (evt == chromeos::BURN_CANCELED) {
-      ImageBurnTaskProxy* task = new ImageBurnTaskProxy(AsWeakPtr());
-      task->AddRef();
-      task->FinalizeBurn(false);
-    }
+  UpdateBurnProgress(status.amount_burnt, status.total_size,
+                     status.target_path, evt);
+  if (evt == chromeos::BURN_COMPLETE) {
+    FinalizeBurn(true);
+  } else if (evt == chromeos::BURN_CANCELED) {
+    FinalizeBurn(false);
+  }
 }
 
 void ImageBurnHandler::OnDownloadUpdated(DownloadItem* download) {
-  if (download->state() != DownloadItem::CANCELLED
-      && download->state() != DownloadItem::COMPLETE) {
+  if (download->state() != DownloadItem::CANCELLED &&
+      download->state() != DownloadItem::COMPLETE) {
     scoped_ptr<DictionaryValue> result_value(
         download_util::CreateDownloadItemValue(download, 0));
     web_ui_->CallJavascriptFunction("downloadUpdated", *result_value);
@@ -261,7 +245,7 @@ void ImageBurnHandler::OnDownloadUpdated(DownloadItem* download) {
 
 void ImageBurnHandler::OnDownloadFileCompleted(DownloadItem* download) {
   DCHECK(download->state() == DownloadItem::COMPLETE);
-  local_image_file_path_ = download->full_path();
+  zip_image_file_path_ = download->full_path();
   DownloadCompleted(true);
 }
 
@@ -274,13 +258,13 @@ void ImageBurnHandler::ModelChanged() {
   // Find our item and observe it.
   std::vector<DownloadItem*> downloads;
   download_manager_->GetTemporaryDownloads(
-      burn_resource_manager_->GetLocalImageDirPath(), &downloads);
-  if (download_item_observer_added_)  // Already added.
+      resource_manager_->GetImageDir(), &downloads);
+  if (download_item_observer_added_)
     return;
-  std::vector<DownloadItem*>::const_iterator it = downloads.begin();
-  for (; it != downloads.end(); ++it) {
+  for (std::vector<DownloadItem*>::const_iterator it = downloads.begin();
+      it != downloads.end();
+      ++it) {
     if ((*it)->original_url() == *image_download_url_) {
-      // Found it.
       download_item_observer_added_ = true;
       (*it)->AddObserver(this);
       active_download_item_ = *it;
@@ -295,7 +279,7 @@ void ImageBurnHandler::HandleGetRoots(const ListValue* args) {
   chromeos::MountLibrary* mount_lib =
       chromeos::CrosLibrary::Get()->GetMountLibrary();
   const chromeos::MountLibrary::DiskMap& disks = mount_lib->disks();
-  if (!burn_resource_manager_->CheckBurnInProgress()) {
+  if (!resource_manager_->burn_in_progress()) {
     for (chromeos::MountLibrary::DiskMap::const_iterator iter =  disks.begin();
          iter != disks.end();
          ++iter) {
@@ -312,6 +296,7 @@ void ImageBurnHandler::HandleGetRoots(const ListValue* args) {
       }
     }
   }
+
   info_value.SetString("functionCall", "getRoots");
   info_value.SetString(std::string(kPropertyPath), "");
   web_ui_->CallJavascriptFunction("browseFileResult",
@@ -320,32 +305,31 @@ void ImageBurnHandler::HandleGetRoots(const ListValue* args) {
 
 void ImageBurnHandler::HandleDownloadImage(const ListValue* args) {
   ExtractTargetedDeviceSystemPath(args);
-  CreateLocalImagePath();
-  CreateImageUrl();
+  resource_manager_->CreateImageUrl(tab_contents_, this);
 }
 
-void ImageBurnHandler::HandleBurnImage(const ListValue* args) {
-  ImageBurnTaskProxy* task = new ImageBurnTaskProxy(AsWeakPtr());
-  task->AddRef();
-  BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(task, &ImageBurnTaskProxy::BurnImage));
-}
-
-void ImageBurnHandler::HandleCancelBurnImage(const ListValue* args) {
-  image_target_.clear();
-}
-
-void ImageBurnHandler::DownloadCompleted(bool is_successful) {
-  burn_resource_manager_-> ReportDownloadFinished(is_successful);
+void ImageBurnHandler::DownloadCompleted(bool success) {
+  resource_manager_->SetDownloadFinished(success);
   if (active_download_item_) {
     active_download_item_->RemoveObserver(this);
     active_download_item_ = NULL;
   }
   download_item_observer_added_ = false;
+  if (download_manager_)
+    download_manager_->RemoveObserver(this);
+
+  if (success) {
+    UnzipImage();
+  } else {
+    UnzipComplete(success);
+  }
+}
+
+void ImageBurnHandler::UnzipComplete(bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DictionaryValue signal_value;
-  if (is_successful) {
+  if (success) {
     signal_value.SetString("state", "COMPLETE");
     web_ui_->CallJavascriptFunction("downloadUpdated", signal_value);
     web_ui_->CallJavascriptFunction("promptUserDownloadFinished");
@@ -356,10 +340,26 @@ void ImageBurnHandler::DownloadCompleted(bool is_successful) {
   }
 }
 
-void ImageBurnHandler::BurnImage() {
-  chromeos::BurnLibrary* burn_lib =
-          chromeos::CrosLibrary::Get()->GetBurnLibrary();
-  if (burn_lib->DoBurn(local_image_file_path_, image_target_)) {
+void ImageBurnHandler::HandleBurnImage(const ListValue* args) {
+  scoped_refptr<ImageBurnTaskProxy> task = new ImageBurnTaskProxy(AsWeakPtr());
+  BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(task.get(), &ImageBurnTaskProxy::BurnImage));
+}
+
+void ImageBurnHandler::HandleCancelBurnImage(const ListValue* args) {
+  image_target_.clear();
+}
+
+void ImageBurnHandler::BurnImageOnFileThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  if (resource_manager_->burn_in_progress())
+    return;
+  resource_manager_->set_burn_in_progress(true);
+
+  if (chromeos::CrosLibrary::Get()->GetBurnLibrary()->
+      DoBurn(image_file_path_, image_target_)) {
     DictionaryValue signal_value;
     signal_value.SetString("state", "IN_PROGRESS");
     signal_value.SetString("path", image_target_.value());
@@ -373,6 +373,7 @@ void ImageBurnHandler::FinalizeBurn(bool successful) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   web_ui_->CallJavascriptFunction(successful ? "burnSuccessful"
                                              : "burnUnsuccessful");
+  resource_manager_->set_burn_in_progress(false);
 }
 
 void ImageBurnHandler::UpdateBurnProgress(int64 total_burnt,
@@ -416,12 +417,6 @@ string16 ImageBurnHandler::GetBurnProgressText(int64 total_burnt,
   }
 }
 
-void ImageBurnHandler::CreateImageUrl() {
-  ImageBurnTaskProxy* task = new ImageBurnTaskProxy(AsWeakPtr());
-  task->AddRef();
-  task->CreateImageUrl(tab_contents_, this);
-}
-
 void ImageBurnHandler::CreateImageUrlCallback(GURL* image_url) {
   if (!image_url) {
     DownloadCompleted(false);
@@ -432,26 +427,24 @@ void ImageBurnHandler::CreateImageUrlCallback(GURL* image_url) {
   download_manager_ = tab_contents_->profile()->GetDownloadManager();
   download_manager_->AddObserver(this);
 
-  ImageBurnTaskProxy* task = new ImageBurnTaskProxy(AsWeakPtr());
-  task->AddRef();
-
-  if (!task->ReportDownloadInitialized()) {
-    DownloadSaveInfo save_info;
-    save_info.file_path = local_image_file_path_;
+  if (!resource_manager_->download_started()) {
+    resource_manager_->set_download_started(true);
     net::FileStream* file_stream =
-        burn_resource_manager_->CreateFileStream(&local_image_file_path_);
-    if (!file_stream) {
-      DownloadCompleted(false);
-      return;
-    }
-    save_info.file_stream = linked_ptr<net::FileStream>(file_stream);
+        resource_manager_->CreateFileStream(&zip_image_file_path_);
+    if (file_stream) {
+      DownloadSaveInfo save_info;
+      save_info.file_path = zip_image_file_path_;
+      save_info.file_stream = linked_ptr<net::FileStream>(file_stream);
 
-    download_manager_->DownloadUrlToFile(*image_download_url_,
-                                         tab_contents_->GetURL(),
-                                         tab_contents_->encoding(),
-                                         save_info,
-                                         tab_contents_);
-  } else if (task->CheckDownloadFinished()) {
+      download_manager_->DownloadUrlToFile(*image_download_url_,
+                                           tab_contents_->GetURL(),
+                                           tab_contents_->encoding(),
+                                           save_info,
+                                           tab_contents_);
+    } else {
+      DownloadCompleted(false);
+    }
+  } else if (resource_manager_->download_finished()) {
     DownloadCompleted(true);
   }
 }
@@ -459,22 +452,56 @@ void ImageBurnHandler::CreateImageUrlCallback(GURL* image_url) {
 void ImageBurnHandler::ExtractTargetedDeviceSystemPath(
     const ListValue* list_value) {
   Value* list_member;
-  std::string image_dest;
   if (list_value->Get(0, &list_member) &&
       list_member->GetType() == Value::TYPE_STRING) {
     const StringValue* string_value =
         static_cast<const StringValue*>(list_member);
+    std::string image_dest;
     string_value->GetAsString(&image_dest);
+    image_target_ = FilePath(image_dest);
   } else {
     LOG(ERROR) << "Unable to get path string";
-    return;
   }
-  image_target_ = FilePath(image_dest);
 }
 
-void ImageBurnHandler::CreateLocalImagePath() {
-  local_image_file_path_ =
-      burn_resource_manager_->GetLocalImageDirPath().Append(kImageFileName);
+void ImageBurnHandler::UnzipImage() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_refptr<ImageBurnTaskProxy> task = new ImageBurnTaskProxy(AsWeakPtr());
+  BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(task.get(), &ImageBurnTaskProxy::UnzipImage));
+}
+
+void ImageBurnHandler::UnzipImageOnFileThread(ImageBurnTaskProxy* task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  bool success = UnzipImageImpl();
+  BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(task, &ImageBurnTaskProxy::UnzipComplete, success));
+}
+
+bool ImageBurnHandler::UnzipImageImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  const FilePath& img_dir = resource_manager_->GetImageDir();
+  if (!Unzip(zip_image_file_path_, img_dir))
+    return false;
+
+  image_file_path_.clear();
+  file_util::FileEnumerator file_enumerator(
+      img_dir, false,  // recursive
+      file_util::FileEnumerator::FILES);
+  for (FilePath path = file_enumerator.Next();
+      !path.empty();
+       path = file_enumerator.Next()) {
+    if (path != zip_image_file_path_) {
+      image_file_path_ = path;
+      break;
+    }
+  }
+  return !image_file_path_.empty();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -484,27 +511,26 @@ void ImageBurnHandler::CreateLocalImagePath() {
 ////////////////////////////////////////////////////////////////////////////////
 
 ImageBurnResourceManager::ImageBurnResourceManager()
-    : image_download_started_(false),
-      image_download_finished_(false),
+    : download_started_(false),
+      download_finished_(false),
       burn_in_progress_(false),
       download_manager_(NULL),
       download_item_observer_added_(false),
       active_download_item_(NULL),
       image_url_(new GURL(kImageDownloadURL)),
-      image_fetcher_url_(std::string(kImageBaseURL) + kImageFetcherName),
-      image_url_fetching_requested_(false),
-      image_url_fetched_(true) {
-  local_image_dir_file_path_.clear();
-  image_fecher_local_path_ = GetLocalImageDirPath().Append(kImageFetcherName);
+      config_file_url_(std::string(kImageBaseURL) + kImageFetcherName),
+      config_file_requested_(false),
+      config_file_fetched_(true) {
+  image_dir_.clear();
+  config_file_path_ = GetImageDir().Append(kImageFetcherName);
 }
 
 ImageBurnResourceManager::~ImageBurnResourceManager() {
-  if (!local_image_dir_file_path_.empty()) {
-    file_util::Delete(local_image_dir_file_path_, true);
+  if (!image_dir_.empty()) {
+    file_util::Delete(image_dir_, true);
   }
-  if (active_download_item_) {
+  if (active_download_item_)
     active_download_item_->RemoveObserver(this);
-  }
   if (download_manager_)
     download_manager_->RemoveObserver(this);
 }
@@ -517,111 +543,87 @@ ImageBurnResourceManager* ImageBurnResourceManager::GetInstance() {
 void ImageBurnResourceManager::OnDownloadUpdated(DownloadItem* download) {
   if (download->state() == DownloadItem::CANCELLED) {
     image_url_.reset();
-    ImageUrlFetched(false);
+    ConfigFileFetched(false);
   }
 }
 
 void ImageBurnResourceManager::OnDownloadFileCompleted(DownloadItem* download) {
   DCHECK(download->state() == DownloadItem::COMPLETE);
   std::string image_url;
-  if (file_util::ReadFileToString(image_fecher_local_path_, &image_url)) {
+  if (file_util::ReadFileToString(config_file_path_, &image_url)) {
     image_url_.reset(new GURL(std::string(kImageBaseURL) + image_url));
-    ImageUrlFetched(true);
+    ConfigFileFetched(true);
   } else {
     image_url_.reset();
-    ImageUrlFetched(false);
+    ConfigFileFetched(false);
   }
 }
 
-void ImageBurnResourceManager::OnDownloadOpened(DownloadItem* download) { }
-
 void ImageBurnResourceManager::ModelChanged() {
   std::vector<DownloadItem*> downloads;
-  download_manager_->GetTemporaryDownloads(GetLocalImageDirPath(), &downloads);
-
+  download_manager_->GetTemporaryDownloads(GetImageDir(), &downloads);
   if (download_item_observer_added_)
     return;
-  std::vector<DownloadItem*>::const_iterator it = downloads.begin();
-  for (; it != downloads.end(); ++it) {
-    if ((*it)->url() == image_fetcher_url_) {
+  for (std::vector<DownloadItem*>::const_iterator it = downloads.begin();
+      it != downloads.end();
+      ++it) {
+    if ((*it)->url() == config_file_url_) {
       download_item_observer_added_ = true;
       (*it)->AddObserver(this);
       active_download_item_ = *it;
+      break;
     }
   }
 }
 
-FilePath ImageBurnResourceManager::GetLocalImageDirPath() {
-  if (local_image_dir_file_path_.empty()) {
-    CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
-                           &local_image_dir_file_path_));
-    local_image_dir_file_path_ =
-        local_image_dir_file_path_.Append(kTempImageFolderName);
-    file_util::CreateDirectory(local_image_dir_file_path_);
+const FilePath& ImageBurnResourceManager::GetImageDir() {
+  if (image_dir_.empty()) {
+    CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &image_dir_));
+    image_dir_ = image_dir_.Append(kTempImageFolderName);
+    file_util::CreateDirectory(image_dir_);
   }
-  return local_image_dir_file_path_;
+  return image_dir_;
 }
 
-bool ImageBurnResourceManager::CheckImageDownloadStarted() {
-  return image_download_started_;
-}
-
-void ImageBurnResourceManager::ReportImageDownloadStarted() {
-  image_download_started_ = true;
-}
-
-bool ImageBurnResourceManager::CheckDownloadFinished() {
-  return image_download_finished_;
-}
-
-bool ImageBurnResourceManager::CheckBurnInProgress() {
-  return burn_in_progress_;
-}
-
-void ImageBurnResourceManager::SetBurnInProgress(bool value) {
-  burn_in_progress_ = value;
-}
-
-void ImageBurnResourceManager::ReportDownloadFinished(bool success) {
-  if (!image_download_started_)
+void ImageBurnResourceManager::SetDownloadFinished(bool finished) {
+  if (!download_started_)
     return;
-  if (!success)
-    image_download_started_ = false;
-  image_download_finished_ = success;
+  if (!finished)
+    download_started_ = false;
+  download_finished_ = finished;
 }
 
 void ImageBurnResourceManager::CreateImageUrl(TabContents* tab_contents,
                                               ImageBurnHandler* downloader) {
-  if (image_url_fetched_) {
+  if (config_file_fetched_) {
     downloader->CreateImageUrlCallback(image_url_.get());
     return;
   }
   downloaders_.push_back(downloader);
 
-  if (image_url_fetching_requested_) {
+  if (config_file_requested_)
     return;
-  }
-  image_url_fetching_requested_ = true;
+  config_file_requested_ = true;
 
   download_manager_ = tab_contents->profile()->GetDownloadManager();
   download_manager_->AddObserver(this);
 
-  DownloadSaveInfo save_info;
-  save_info.file_path = image_fecher_local_path_;
-  net::FileStream* file_stream = CreateFileStream(&image_fecher_local_path_);
-  if (!file_stream) {
-    ImageUrlFetched(false);
-    return;
+  net::FileStream* file_stream = CreateFileStream(&config_file_path_);
+  if (file_stream) {
+    DownloadSaveInfo save_info;
+    save_info.file_path = config_file_path_;
+    save_info.file_stream = linked_ptr<net::FileStream>(file_stream);
+    download_manager_->DownloadUrlToFile(config_file_url_,
+                                         tab_contents->GetURL(),
+                                         tab_contents->encoding(),
+                                         save_info,
+                                         tab_contents);
+  } else {
+    ConfigFileFetched(false);
   }
-  save_info.file_stream = linked_ptr<net::FileStream>(file_stream);
-  download_manager_->DownloadUrlToFile(image_fetcher_url_,
-                                       tab_contents->GetURL(),
-                                       tab_contents->encoding(),
-                                       save_info,
-                                       tab_contents);
 }
 
-void ImageBurnResourceManager::ImageUrlFetched(bool success) {
+void ImageBurnResourceManager::ConfigFileFetched(bool fetched) {
   if (active_download_item_) {
     active_download_item_->RemoveObserver(this);
     active_download_item_ = NULL;
@@ -629,9 +631,9 @@ void ImageBurnResourceManager::ImageUrlFetched(bool success) {
   download_item_observer_added_ = false;
   if (download_manager_)
     download_manager_->RemoveObserver(this);
-  if (!success)
-    image_url_fetching_requested_ = false;
-  image_url_fetched_ = success;
+  if (!fetched)
+    config_file_requested_ = false;
+  config_file_fetched_ = fetched;
   for (size_t i = 0; i < downloaders_.size(); ++i)
     downloaders_[i]->CreateImageUrlCallback(image_url_.get());
   downloaders_.clear();
