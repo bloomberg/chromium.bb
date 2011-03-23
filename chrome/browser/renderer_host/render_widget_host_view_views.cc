@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/result_codes.h"
+#include "content/common/view_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"

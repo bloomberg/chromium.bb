@@ -190,6 +190,10 @@
 #include "ui/gfx/gtk_util.h"
 #endif
 
+#if defined(TOUCH_UI)
+#include "views/widget/root_view.h"
+#endif
+
 // BrowserMainParts ------------------------------------------------------------
 
 BrowserMainParts::BrowserMainParts(const MainFunctionParams& parameters)
@@ -1670,7 +1674,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif
 
 #if defined(TOUCH_UI)
-  RootView::SetKeepMouseCursor(
+  views::RootView::SetKeepMouseCursor(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kKeepMouseCursor));
 #endif
 
