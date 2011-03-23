@@ -139,7 +139,7 @@ class Zygote {
   // new process and thus need to unwind back into ChromeMain.
   bool HandleRequestFromBrowser(int fd) {
     std::vector<int> fds;
-    static const unsigned kMaxMessageLength = 1024;
+    static const unsigned kMaxMessageLength = 2048;
     char buf[kMaxMessageLength];
     const ssize_t len = UnixDomainSocket::RecvMsg(fd, buf, sizeof(buf), &fds);
 
