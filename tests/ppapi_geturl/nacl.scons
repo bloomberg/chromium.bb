@@ -69,7 +69,7 @@ for suffix in ['valid', 'invalid']:
   basename = 'ppapi_geturl_' + suffix
   node = env.SelUniversalTest(
       basename + '.out',
-      sel_universal_flags=['--silenence_nexe',
+      sel_universal_flags=['--silence_nexe',
                            '--command_file',
                            env.File('${SCONSTRUCT_DIR}/tests/ppapi_proxy'
                                     '/sel_universal_ppapi_replay_prolog.stdin'),

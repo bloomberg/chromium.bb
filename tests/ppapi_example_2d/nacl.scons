@@ -25,7 +25,7 @@ env.Publish('ppapi_example_2d.nexe', 'run',
 
 node = env.SelUniversalTest(
     'ppapi_example_2d.out',
-    sel_universal_flags=['--silenence_nexe',
+    sel_universal_flags=['--silence_nexe',
                          '--command_file',
                          env.File('${SCONSTRUCT_DIR}/tests/ppapi_proxy'
                                    '/sel_universal_ppapi_replay_prolog.stdin'),

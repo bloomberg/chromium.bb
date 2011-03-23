@@ -56,7 +56,7 @@ static NaClSrpcChannel channel;
 static map<string, string> initial_vars;
 static vector<string> initial_commands;
 static bool abort_on_error = false;
-static bool silenence_nexe = false;
+static bool silence_nexe = false;
 static string command_prefix = "";
 
 // When given argc and argv this function (a) extracts the nacl_file argument,
@@ -84,8 +84,8 @@ static nacl::string ProcessArguments(int argc,
       NaClLogSetVerbosity(1);
     } else if (flag == "--abort_on_error") {
       abort_on_error = true;
-    } else if (flag == "--silenence_nexe") {
-      silenence_nexe = true;
+    } else if (flag == "--silence_nexe") {
+      silence_nexe = true;
     } else if (flag == "--command_prefix") {
       if (argc <= i + 1) {
         NaClLog(LOG_FATAL,
@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
   // Add '-X 5' to sel_ldr arguments to create communication socket
   sel_ldr_argv.push_back("-X");
   sel_ldr_argv.push_back("5");
-  if (silenence_nexe) {
+  if (silence_nexe) {
     // redirect stdout/stderr in the nexe to /dev/null
     std::stringstream ss_stdout;
     std::stringstream ss_stderr;

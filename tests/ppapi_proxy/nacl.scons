@@ -82,7 +82,7 @@ env.Depends(event_target, dest_copy)
 
 node = env.SelUniversalTest(
     'ppapi_event_example.out',
-    sel_universal_flags=['--silenence_nexe',
+    sel_universal_flags=['--silence_nexe',
                          '--command_file',
                          env.File('sel_universal_ppapi_replay_prolog.stdin'),
                          '--command_file',
