@@ -52,9 +52,8 @@ class MessagePumpGlibX : public MessagePumpForUI {
   // necessary to query X for the list of devices for each GdkWindow created.
   std::set<int> masters_;
 
-  // The list of slave (physical) pointer devices.
-  // TODO(sad): This is currently unused, and may be removed eventually.
-  std::set<int> slaves_;
+  // The list of floating pointer devices.
+  std::set<int> floats_;
 #endif
 
   // The event source for GDK events.

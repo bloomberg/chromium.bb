@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,7 +80,7 @@ MessagePumpGlibX::MessagePumpGlibX() : base::MessagePumpForUI(),
 #if defined(HAVE_XINPUT2)
     xiopcode_(-1),
     masters_(),
-    slaves_(),
+    floats_(),
 #endif
     gdksource_(NULL),
     dispatching_event_(false),
@@ -112,22 +112,29 @@ void MessagePumpGlibX::SetupXInput2ForXWindow(Window xwindow) {
   XISetMask(mask, XI_ButtonRelease);
   XISetMask(mask, XI_Motion);
 
-  // It is necessary to select only for the master devices. XInput2 provides
-  // enough information to the event callback to decide which slave device
-  // triggered the event, thus decide whether the 'pointer event' is a 'mouse
-  // event' or a 'touch event'. So it is not necessary to select for the slave
-  // devices here.
-  XIEventMask evmasks[masters_.size()];
+  // It is not necessary to select for slave devices. XInput2 provides enough
+  // information to the event callback to decide which slave device triggered
+  // the event, thus decide whether the 'pointer event' is a 'mouse event' or a
+  // 'touch event'.
+  // If the touch device has 'GrabDevice' set and 'SendCoreEvents' unset (which
+  // is possible), then the device is detected as a floating device, and a
+  // floating device is not connected to a master device. So it is necessary to
+  // also select on the floating devices.
+  std::set<int> devices;
+  std::set_union(masters_.begin(), masters_.end(),
+                 floats_.begin(), floats_.end(),
+                 std::inserter(devices, devices.begin()));
+  XIEventMask evmasks[devices.size()];
   int count = 0;
-  for (std::set<int>::const_iterator iter = masters_.begin();
-       iter != masters_.end();
+  for (std::set<int>::const_iterator iter = devices.begin();
+       iter != devices.end();
        ++iter, ++count) {
     evmasks[count].deviceid = *iter;
     evmasks[count].mask_len = sizeof(mask);
     evmasks[count].mask = mask;
   }
 
-  XISelectEvents(xdisplay, xwindow, evmasks, masters_.size());
+  XISelectEvents(xdisplay, xwindow, evmasks, devices.size());
 
   // TODO(sad): Setup masks for keyboard events.
 
@@ -224,7 +231,8 @@ void MessagePumpGlibX::EventDispatcherX(GdkEvent* event, gpointer data) {
 
   if (!pump_x->gdksource_) {
     pump_x->gdksource_ = g_main_current_source();
-    pump_x->gdkdispatcher_ = pump_x->gdksource_->source_funcs->dispatch;
+    if (pump_x->gdksource_)
+      pump_x->gdkdispatcher_ = pump_x->gdksource_->source_funcs->dispatch;
   } else if (!pump_x->IsDispatchingEvent()) {
     if (event->type != GDK_NOTHING &&
         pump_x->capture_gdk_events_[event->type]) {
@@ -294,17 +302,15 @@ void MessagePumpGlibX::InitializeXInput2(void) {
   XIDeviceInfo* devices = XIQueryDevice(xdisplay, XIAllDevices, &count);
   for (int i = 0; i < count; i++) {
     XIDeviceInfo* devinfo = devices + i;
-    if (devinfo->use == XISlavePointer) {
-      slaves_.insert(devinfo->deviceid);
+    if (devinfo->use == XIFloatingSlave) {
+      floats_.insert(devinfo->deviceid);
     } else if (devinfo->use == XIMasterPointer) {
       masters_.insert(devinfo->deviceid);
     }
-    // We do not need to care about XIFloatingSlave, because the callback for
-    // XI_HierarchyChanged event will take care of it.
   }
   XIFreeDeviceInfo(devices);
 
-  // TODO(sad): Select on root for XI_HierarchyChanged so that slaves_ and
+  // TODO(sad): Select on root for XI_HierarchyChanged so that floats_ and
   // masters_ can be kept up-to-date. This is a relatively rare event, so we can
   // put it off for a later time.
   // Note: It is not necessary to listen for XI_DeviceChanged events.

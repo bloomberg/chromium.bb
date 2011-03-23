@@ -5,7 +5,9 @@
 #include "views/touchui/touch_factory.h"
 
 #include <X11/cursorfont.h>
+#include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
+#include <X11/extensions/XIproto.h>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -36,6 +38,21 @@ TouchFactory::TouchFactory()
   arrow_cursor_ = XCreateFontCursor(display, XC_arrow);
 
   SetCursorVisible(false, false);
+
+  // Detect touch devices.
+  // NOTE: The new API for retrieving the list of devices (XIQueryDevice) does
+  // not provide enough information to detect a touch device. As a result, the
+  // old version of query function (XListInputDevices) is used instead.
+  int count = 0;
+  XDeviceInfo* devlist = XListInputDevices(display, &count);
+  for (int i = 0; i < count; i++) {
+    const char* devtype = XGetAtomName(display, devlist[i].type);
+    if (devtype && !strcmp(devtype, XI_TOUCHSCREEN)) {
+      touch_device_lookup_[devlist[i].id] = true;
+      touch_device_list_.push_back(devlist[i].id);
+    }
+  }
+  XFreeDeviceList(devlist);
 }
 
 TouchFactory::~TouchFactory() {
