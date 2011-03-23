@@ -73,7 +73,8 @@ namespace printing {
 
 PdfPsMetafile::PdfPsMetafile()
     : surface_(NULL),
-      context_(NULL) {
+      context_(NULL),
+      current_data_(NULL) {
 }
 
 PdfPsMetafile::~PdfPsMetafile() {
@@ -82,15 +83,15 @@ PdfPsMetafile::~PdfPsMetafile() {
 }
 
 bool PdfPsMetafile::Init() {
-  // We need to check at least these two members to ensure Init() has not been
+  // We need to check |current_data_| to ensure Init/InitFromData has not been
   // called before.
-  DCHECK(!context_);
-  DCHECK(data_.empty());
+  DCHECK(!current_data_);
 
+  current_data_ = &cairo_data_;
   // Creates an 1 by 1 Cairo surface for the entire PDF file.
   // The size for each page will be overwritten later in StartPage().
   surface_ = cairo_pdf_surface_create_for_stream(WriteCairoStream,
-                                                 &data_, 1, 1);
+                                                 current_data_, 1, 1);
 
   // Cairo always returns a valid pointer.
   // Hence, we have to check if it points to a "nil" object.
@@ -115,33 +116,12 @@ bool PdfPsMetafile::Init() {
 
 bool PdfPsMetafile::InitFromData(const void* src_buffer,
                                  uint32 src_buffer_size) {
-  // We need to check at least these two members to ensure Init() has not been
-  // called before
-  DCHECK(!context_);
-  DCHECK(data_.empty());
-
   if (src_buffer == NULL || src_buffer_size == 0)
     return false;
 
-  data_ = std::string(reinterpret_cast<const char*>(src_buffer),
+  raw_data_ = std::string(reinterpret_cast<const char*>(src_buffer),
                       src_buffer_size);
-  return true;
-}
-
-bool PdfPsMetafile::SetRawData(const void* src_buffer,
-                               uint32 src_buffer_size) {
-  if (!context_) {
-    // If Init has not already been called, just call Init()
-    return InitFromData(src_buffer, src_buffer_size);
-  }
-  // If a context has already been created, remember this data in
-  // raw_override_data_
-  if (src_buffer == NULL || src_buffer_size == 0)
-    return false;
-
-  raw_override_data_ = std::string(reinterpret_cast<const char*>(src_buffer),
-                                   src_buffer_size);
-
+  current_data_ = &raw_data_;
   return true;
 }
 
@@ -194,12 +174,7 @@ bool PdfPsMetafile::FinishDocument() {
 
   cairo_surface_finish(surface_);
 
-  // If we have raw PDF data set use that instead of what was drawn.
-  if (!raw_override_data_.empty()) {
-    data_ = raw_override_data_;
-    raw_override_data_.clear();
-  }
-  DCHECK(!data_.empty());  // Make sure we did get something.
+  DCHECK(!cairo_data_.empty());  // Make sure we did get something.
 
   CleanUpContext(&context_);
   CleanUpSurface(&surface_);
@@ -210,15 +185,15 @@ uint32 PdfPsMetafile::GetDataSize() const {
   // We need to check at least these two members to ensure that either Init()
   // has been called to initialize |data_|, or metafile has been closed.
   DCHECK(!context_);
-  DCHECK(!data_.empty());
+  DCHECK(!current_data_->empty());
 
-  return data_.size();
+  return current_data_->size();
 }
 
 bool PdfPsMetafile::GetData(void* dst_buffer, uint32 dst_buffer_size) const {
   DCHECK(dst_buffer);
   DCHECK_GT(dst_buffer_size, 0u);
-  memcpy(dst_buffer, data_.data(), dst_buffer_size);
+  memcpy(dst_buffer, current_data_->data(), dst_buffer_size);
 
   return true;
 }
@@ -231,10 +206,10 @@ bool PdfPsMetafile::SaveTo(const FilePath& file_path) const {
   // We need to check at least these two members to ensure that either Init()
   // has been called to initialize |data_|, or metafile has been closed.
   DCHECK(!context_);
-  DCHECK(!data_.empty());
+  DCHECK(!current_data_->empty());
 
   bool success = true;
-  if (file_util::WriteFile(file_path, data_.data(), GetDataSize())
+  if (file_util::WriteFile(file_path, current_data_->data(), GetDataSize())
       != static_cast<int>(GetDataSize())) {
     DLOG(ERROR) << "Failed to save file " << file_path.value().c_str();
     success = false;
@@ -257,7 +232,7 @@ bool PdfPsMetafile::SaveToFD(const base::FileDescriptor& fd) const {
   // We need to check at least these two members to ensure that either Init()
   // has been called to initialize |data_|, or metafile has been closed.
   DCHECK(!context_);
-  DCHECK(!data_.empty());
+  DCHECK(!current_data_->empty());
 
   if (fd.fd < 0) {
     DLOG(ERROR) << "Invalid file descriptor!";
@@ -265,7 +240,7 @@ bool PdfPsMetafile::SaveToFD(const base::FileDescriptor& fd) const {
   }
 
   bool success = true;
-  if (file_util::WriteFileDescriptor(fd.fd, data_.data(),
+  if (file_util::WriteFileDescriptor(fd.fd, current_data_->data(),
                                      GetDataSize()) < 0) {
     DLOG(ERROR) << "Failed to save file with fd " << fd.fd;
     success = false;
@@ -290,7 +265,8 @@ PdfPsMetafile* PdfPsMetafile::FromCairoContext(cairo_t* context) {
 void PdfPsMetafile::CleanUpAll() {
   CleanUpContext(&context_);
   CleanUpSurface(&surface_);
-  data_.clear();
+  cairo_data_.clear();
+  raw_data_.clear();
   skia::VectorPlatformDevice::ClearFontCache();
 }
 

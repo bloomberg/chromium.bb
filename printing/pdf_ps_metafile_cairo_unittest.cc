@@ -73,7 +73,7 @@ TEST_F(PdfPsTest, Pdf) {
   EXPECT_TRUE(pdf3.Init());
   EXPECT_TRUE(pdf3.StartPage(gfx::Size(72, 73), gfx::Point(4, 5), 1));
   std::string test_raw_data = "Dummy PDF";
-  EXPECT_TRUE(pdf3.SetRawData(test_raw_data.c_str(), test_raw_data.size()));
+  EXPECT_TRUE(pdf3.InitFromData(test_raw_data.c_str(), test_raw_data.size()));
   EXPECT_TRUE(pdf3.FinishPage());
   pdf3.FinishDocument();
   size = pdf3.GetDataSize();

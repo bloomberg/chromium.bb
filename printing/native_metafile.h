@@ -142,20 +142,12 @@ class NativeMetafile {
                           bool stretch_to_fit,
                           bool center_horizontally,
                           bool center_vertically) const = 0;
-#elif defined(OS_POSIX)
-  // Sets raw PDF data for the document. This is used when a cairo drawing
-  // surface has already been created. This method will cause all subsequent
-  // drawing on the surface to be discarded (in Close()). If Init() has not yet
-  // been called this method simply calls the second version of Init.
-  virtual bool SetRawData(const void* src_buffer, uint32 src_buffer_size) = 0;
-#if defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS)
   // Saves the underlying data to the file associated with fd. This function
   // should ONLY be called after the metafile is closed.
   // Returns true if writing succeeded.
   virtual bool SaveToFD(const base::FileDescriptor& fd) const = 0;
 #endif  // if defined(OS_CHROMEOS)
-
-#endif
 };
 
 }  // namespace printing

@@ -29,6 +29,10 @@ class PdfPsMetafile : public NativeMetafile {
 
   // NativeMetafile methods.
   virtual bool Init();
+
+  //  Calling InitFromData() sets the data for this metafile and masks data
+  //  induced by previous calls to Init() or InitFromData(), even if drawing
+  //  continues on the surface returned by a previous call to Init().
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 
   virtual skia::PlatformDevice* StartPageForVectorCanvas(
@@ -49,8 +53,6 @@ class PdfPsMetafile : public NativeMetafile {
   virtual unsigned int GetPageCount() const;
 
   virtual cairo_t* context() const;
-
-  virtual bool SetRawData(const void* src_buffer, uint32 src_buffer_size);
 
 #if defined(OS_CHROMEOS)
   virtual bool SaveToFD(const base::FileDescriptor& fd) const;
@@ -75,9 +77,16 @@ class PdfPsMetafile : public NativeMetafile {
   cairo_t* context_;
 
   // Buffer stores PDF contents for entire PDF file.
-  std::string data_;
-  // Buffer stores raw PDF contents set by SetRawPageData.
-  std::string raw_override_data_;
+  std::string cairo_data_;
+  // Buffer stores PDF contents. It can only be populated from InitFromData().
+  // Any calls to StartPage(), FinishPage(), FinishDocument() do not affect
+  // this buffer.
+  // Note: Such calls will result in DCHECK errors if Init() has not been called
+  // first.
+  std::string raw_data_;
+  // Points to the appropriate buffer depending on the way the object was
+  // initialized (Init() vs InitFromData()).
+  std::string* current_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PdfPsMetafile);
 };

@@ -1101,7 +1101,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
       printing::PdfPsMetafile::FromCairoContext(context);
   DCHECK(metafile);
   if (metafile)
-    ret = metafile->SetRawData(buffer->mapped_buffer(), buffer->size());
+    ret = metafile->InitFromData(buffer->mapped_buffer(), buffer->size());
   canvas->endPlatformPaint();
 #elif defined(OS_MACOSX)
   scoped_ptr<printing::NativeMetafile> metafile(
