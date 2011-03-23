@@ -11,6 +11,7 @@ URL: http://wiki.services.openoffice.org/wiki/Dictionaries
      http://code.google.com/p/tr-spell/
      http://ispell-uk.sourceforge.net/
      http://wordlist.sourceforge.net/
+     http://www.broffice.org/
 
 This folder contains the following:
 
@@ -26,7 +27,7 @@ The final binary file, .bdic, is generated with words from the .dic and addition
 
 The README_??_??.txt files contain information about the individual dictionaries, including copyright information.
 
-The following 30 dictionaries have been appended with or without additional words using the .dic_delta files (as of May 20th 2010), and are covered under the existing GPL/LGPL/MPL tri-license in ../COPYING:
+The following 32 dictionaries have been appended with or without additional words using the .dic_delta files (as of May 20th 2010), and are covered under the existing GPL/LGPL/MPL tri-license in ../COPYING:
 
 bg_BG:  No changes
 
@@ -90,6 +91,10 @@ sk_SK:  Added words.
 sl_SI:  Added words
         Added NOSUGGEST flag = ! to .aff file
         Added five words to .dic file with the ! flag to mark them forbidden/nosuggest.
+
+sh: Added a word.
+
+sr: Added a word.
 
 sv_SE:  Added words
 
