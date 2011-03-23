@@ -37,10 +37,7 @@ static sigjmp_buf try_state;
 #define SIG_TRY_END     }
 #endif
 
-volatile int g_SigFound;
-struct NaClThread g_NaClThread;
-struct nacl_abi_timespec g_WaitShort;
-struct nacl_abi_timespec g_WaitLong;
+int g_SigFound;
 
 typedef union {
   void (*func)(void);
@@ -143,11 +140,12 @@ void WINAPI DivZero(void *ptr) {
 
 
 void Attempt(const char *str, void (WINAPI *start_fn)(void *), int sig) {
+  struct NaClThread thread;
   printf("Waiting for %d on %s.\n", sig, str);
   g_SigFound = 0;
 
-  NaClThreadCtor(&g_NaClThread, start_fn, NULL, 65536);
-  while(!g_SigFound) NaClNanosleep(&g_WaitShort, NULL);
+  NaClThreadCreateJoinable(&thread, start_fn, NULL, 65536);
+  NaClThreadJoin(&thread);
 
   switch(sig) {
     /*
@@ -202,14 +200,6 @@ int main(int argc, const char *argv[]) {
     printf("Failed to unload 'none2' handler.\n");
     exit(-1);
   }
-
-  /* Loop every ms. */
-  g_WaitShort.tv_sec = 0;
-  g_WaitShort.tv_nsec = NACL_NANOS_PER_MILLI;
-
-  /* Wait 10 seconds (app should terminate by then). */
-  g_WaitLong.tv_sec = 10;
-  g_WaitLong.tv_nsec = 0;
 
   ATTEMPT(Exec_RW, 11);
   ATTEMPT(Write_RX, 11);
