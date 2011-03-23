@@ -48,6 +48,9 @@ class URLRequestInfo : public Resource {
   bool SetFollowRedirects(bool enable) {
     return SetProperty(PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS, enable);
   }
+  bool SetRecordDownloadProgress(bool enable) {
+    return SetProperty(PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS, enable);
+  }
   bool SetRecordUploadProgress(bool enable) {
     return SetProperty(PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS, enable);
   }
