@@ -7,4 +7,8 @@
 : TODO(pasko): convert this dummy script to do something useful once it is
 : invoked on the lucid64-glibc-makefile buildbot.
 echo @@@BUILD_STEP compile_toolchain@@@
-echo Log message
+setlocal
+call "%~dp0cygwin_env.bat"
+echo PATH: %PATH%
+bash --version
+endlocal
