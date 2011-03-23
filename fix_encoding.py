@@ -49,7 +49,7 @@ def fix_default_encoding():
     locale.setlocale(aref, '')
     try:
       lang = locale.getlocale(aref)[0]
-    except TypeError:
+    except (TypeError, ValueError):
       lang = None
     if lang:
       try:
