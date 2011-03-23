@@ -720,14 +720,10 @@ bool FormManager::ClearPreviewedFormWithNode(const WebNode& node,
     // original value.
     input_element->setSuggestedValue(WebString());
     bool is_initiating_node = (node == *input_element);
-    if (is_initiating_node) {
-      // Call |setValue()| to force the renderer to update the field's displayed
-      // value.
-      input_element->setValue(input_element->value(), false);
+    if (is_initiating_node)
       input_element->setAutofilled(was_autofilled);
-    } else {
+    else
       input_element->setAutofilled(false);
-    }
 
     // Clearing the suggested value in the focused node (above) can cause
     // selection to be lost. We force selection range to restore the text
