@@ -46,7 +46,6 @@ WHITELIST_FILES = [
     '/build/linux/pkg-config-wrapper',
     '/build/mac/strip_from_xcode',
     '/build/mac/strip_save_dsym',
-    '/chrome/browser/resources/touch_ntp/tools/check',
     '/chrome/installer/mac/pkg-dmg',
     '/chrome/tools/build/linux/chrome-wrapper',
     '/chrome/tools/build/mac/build_app_dmg',
