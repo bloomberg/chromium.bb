@@ -5,7 +5,6 @@
 #include "webkit/glue/webmediaplayer_impl.h"
 
 #include <limits>
-#include <string>
 
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -19,7 +18,6 @@
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
 #include "media/filters/ffmpeg_video_decoder.h"
-#include "media/filters/rtc_video_decoder.h"
 #include "media/filters/null_audio_renderer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
@@ -369,17 +367,6 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   DCHECK(MessageLoop::current() == main_loop_);
   DCHECK(proxy_);
 
-  if (media::RTCVideoDecoder::IsUrlSupported(url.spec())) {
-    // Remove the default decoder
-    scoped_refptr<media::VideoDecoder> old_videodecoder;
-    filter_collection_->SelectVideoDecoder(&old_videodecoder);
-    media::RTCVideoDecoder* rtc_video_decoder =
-        new media::RTCVideoDecoder(
-             message_loop_factory_->GetMessageLoop("VideoDecoderThread"),
-             url.spec());
-    filter_collection_->AddVideoDecoder(rtc_video_decoder);
-  }
-
   // Handle any volume changes that occured before load().
   setVolume(GetClient()->volume());
 
@@ -700,28 +687,32 @@ WebKit::WebMediaPlayer::MovieLoadType
   return WebKit::WebMediaPlayer::Unknown;
 }
 
-unsigned WebMediaPlayerImpl::decodedFrameCount() const {
+unsigned WebMediaPlayerImpl::decodedFrameCount() const
+{
   DCHECK(MessageLoop::current() == main_loop_);
 
   media::PipelineStatistics stats = pipeline_->GetStatistics();
   return stats.video_frames_decoded;
 }
 
-unsigned WebMediaPlayerImpl::droppedFrameCount() const {
+unsigned WebMediaPlayerImpl::droppedFrameCount() const
+{
   DCHECK(MessageLoop::current() == main_loop_);
 
   media::PipelineStatistics stats = pipeline_->GetStatistics();
   return stats.video_frames_dropped;
 }
 
-unsigned WebMediaPlayerImpl::audioDecodedByteCount() const {
+unsigned WebMediaPlayerImpl::audioDecodedByteCount() const
+{
   DCHECK(MessageLoop::current() == main_loop_);
 
   media::PipelineStatistics stats = pipeline_->GetStatistics();
   return stats.audio_bytes_decoded;
 }
 
-unsigned WebMediaPlayerImpl::videoDecodedByteCount() const {
+unsigned WebMediaPlayerImpl::videoDecodedByteCount() const
+{
   DCHECK(MessageLoop::current() == main_loop_);
 
   media::PipelineStatistics stats = pipeline_->GetStatistics();
