@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -246,6 +246,9 @@ class ProgramManager {
 
   // Returns true if prefix is invalid for gl.
   static bool IsInvalidPrefix(const char* name, size_t length);
+
+  // Check if a ProgramInfo is owned by this ProgramManager.
+  bool IsOwned(ProgramInfo* info);
 
  private:
   // Info for each "successfully linked" program by service side program Id.

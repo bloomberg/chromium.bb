@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,6 +73,26 @@ TEST_F(ShaderManagerTest, Destroy) {
   // Check that resources got freed.
   info1 = manager_.GetShaderInfo(kClient1Id);
   ASSERT_TRUE(info1 == NULL);
+}
+
+TEST_F(ShaderManagerTest, DeleteBug) {
+  const GLuint kClient1Id = 1;
+  const GLuint kClient2Id = 2;
+  const GLuint kService1Id = 11;
+  const GLuint kService2Id = 12;
+  const GLenum kShaderType = GL_VERTEX_SHADER;
+  // Check we can create shader.
+  manager_.CreateShaderInfo(kClient1Id, kService1Id, kShaderType);
+  manager_.CreateShaderInfo(kClient2Id, kService2Id, kShaderType);
+  ShaderManager::ShaderInfo::Ref info1(manager_.GetShaderInfo(kClient1Id));
+  ShaderManager::ShaderInfo::Ref info2(manager_.GetShaderInfo(kClient2Id));
+  ASSERT_TRUE(info1.get() != NULL);
+  ASSERT_TRUE(info2.get() != NULL);
+  manager_.UseShader(info1);
+  manager_.MarkAsDeleted(info1);
+  manager_.MarkAsDeleted(info2);
+  EXPECT_TRUE(manager_.IsOwned(info1));
+  EXPECT_FALSE(manager_.IsOwned(info2));
 }
 
 TEST_F(ShaderManagerTest, ShaderInfo) {

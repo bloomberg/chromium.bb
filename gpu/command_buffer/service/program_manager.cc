@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -454,15 +454,26 @@ bool ProgramManager::GetClientId(GLuint service_id, GLuint* client_id) const {
   return false;
 }
 
+bool ProgramManager::IsOwned(ProgramManager::ProgramInfo* info) {
+  for (ProgramInfoMap::iterator it = program_infos_.begin();
+       it != program_infos_.end(); ++it) {
+    if (it->second.get() == info) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void ProgramManager::RemoveProgramInfoIfUnused(
     ShaderManager* shader_manager, ProgramInfo* info) {
   DCHECK(shader_manager);
   DCHECK(info);
+  DCHECK(IsOwned(info));
   if (info->IsDeleted() && !info->InUse()) {
     info->DetachShaders(shader_manager);
     for (ProgramInfoMap::iterator it = program_infos_.begin();
          it != program_infos_.end(); ++it) {
-      if (it->second->service_id() == info->service_id()) {
+      if (it->second.get() == info) {
         program_infos_.erase(it);
         return;
       }
@@ -476,12 +487,14 @@ void ProgramManager::MarkAsDeleted(
     ProgramManager::ProgramInfo* info) {
   DCHECK(shader_manager);
   DCHECK(info);
+  DCHECK(IsOwned(info));
   info->MarkAsDeleted();
   RemoveProgramInfoIfUnused(shader_manager, info);
 }
 
 void ProgramManager::UseProgram(ProgramManager::ProgramInfo* info) {
   DCHECK(info);
+  DCHECK(IsOwned(info));
   info->IncUseCount();
 }
 
@@ -490,6 +503,7 @@ void ProgramManager::UnuseProgram(
     ProgramManager::ProgramInfo* info) {
   DCHECK(shader_manager);
   DCHECK(info);
+  DCHECK(IsOwned(info));
   info->DecUseCount();
   RemoveProgramInfoIfUnused(shader_manager, info);
 }

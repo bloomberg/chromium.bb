@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,28 +78,12 @@ class ShaderManager {
     friend class base::RefCounted<ShaderInfo>;
     friend class ShaderManager;
 
-    ShaderInfo(GLuint service_id, GLenum shader_type)
-        : use_count_(0),
-          service_id_(service_id),
-          shader_type_(shader_type),
-          valid_(false) {
-    }
+    ShaderInfo(GLuint service_id, GLenum shader_type);
+    ~ShaderInfo();
 
-    ~ShaderInfo() { }
-
-    void IncUseCount() {
-      ++use_count_;
-    }
-
-    void DecUseCount() {
-      --use_count_;
-      DCHECK_GE(use_count_, 0);
-    }
-
-    void MarkAsDeleted() {
-      DCHECK_NE(service_id_, 0u);
-      service_id_ = 0;
-    }
+    void IncUseCount();
+    void DecUseCount();
+    void MarkAsDeleted();
 
     int use_count_;
 
@@ -148,6 +132,9 @@ class ShaderManager {
   // Unmark a shader as used. If it has been deleted and is not used
   // then we free the info.
   void UnuseShader(ShaderInfo* info);
+
+  // Check if a ShaderInfo is owned by this ShaderManager.
+  bool IsOwned(ShaderInfo* info);
 
  private:
   // Info for each shader by service side shader Id.

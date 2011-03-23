@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,6 +84,27 @@ TEST_F(ProgramManagerTest, Destroy) {
   // Check the resources were released.
   info1 = manager_.GetProgramInfo(kClient1Id);
   ASSERT_TRUE(info1 == NULL);
+}
+
+TEST_F(ProgramManagerTest, DeleteBug) {
+  ShaderManager shader_manager;
+  const GLuint kClient1Id = 1;
+  const GLuint kClient2Id = 2;
+  const GLuint kService1Id = 11;
+  const GLuint kService2Id = 12;
+  // Check we can create program.
+  manager_.CreateProgramInfo(kClient1Id, kService1Id);
+  manager_.CreateProgramInfo(kClient2Id, kService2Id);
+  // Check program got created.
+  ProgramManager::ProgramInfo::Ref info1(manager_.GetProgramInfo(kClient1Id));
+  ProgramManager::ProgramInfo::Ref info2(manager_.GetProgramInfo(kClient2Id));
+  ASSERT_TRUE(info1.get() != NULL);
+  ASSERT_TRUE(info2.get() != NULL);
+  manager_.UseProgram(info1);
+  manager_.MarkAsDeleted(&shader_manager, info1);
+  manager_.MarkAsDeleted(&shader_manager, info2);
+  EXPECT_TRUE(manager_.IsOwned(info1));
+  EXPECT_FALSE(manager_.IsOwned(info2));
 }
 
 TEST_F(ProgramManagerTest, ProgramInfo) {

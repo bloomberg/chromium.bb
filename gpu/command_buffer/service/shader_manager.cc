@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,30 @@
 
 namespace gpu {
 namespace gles2 {
+
+ShaderManager::ShaderInfo::ShaderInfo(GLuint service_id, GLenum shader_type)
+      : use_count_(0),
+        service_id_(service_id),
+        shader_type_(shader_type),
+        valid_(false) {
+}
+
+ShaderManager::ShaderInfo::~ShaderInfo() {
+}
+
+void ShaderManager::ShaderInfo::IncUseCount() {
+  ++use_count_;
+}
+
+void ShaderManager::ShaderInfo::DecUseCount() {
+  --use_count_;
+  DCHECK_GE(use_count_, 0);
+}
+
+void ShaderManager::ShaderInfo::MarkAsDeleted() {
+  DCHECK_NE(service_id_, 0u);
+  service_id_ = 0;
+}
 
 void ShaderManager::ShaderInfo::SetStatus(
     bool valid, const char* log, ShaderTranslatorInterface* translator) {
@@ -80,12 +104,23 @@ bool ShaderManager::GetClientId(GLuint service_id, GLuint* client_id) const {
   return false;
 }
 
+bool ShaderManager::IsOwned(ShaderManager::ShaderInfo* info) {
+  for (ShaderInfoMap::iterator it = shader_infos_.begin();
+       it != shader_infos_.end(); ++it) {
+    if (it->second.get() == info) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void ShaderManager::RemoveShaderInfoIfUnused(ShaderManager::ShaderInfo* info) {
   DCHECK(info);
+  DCHECK(IsOwned(info));
   if (info->IsDeleted() && !info->InUse()) {
     for (ShaderInfoMap::iterator it = shader_infos_.begin();
          it != shader_infos_.end(); ++it) {
-      if (it->second->service_id() == info->service_id()) {
+      if (it->second.get() == info) {
         shader_infos_.erase(it);
         return;
       }
@@ -96,17 +131,20 @@ void ShaderManager::RemoveShaderInfoIfUnused(ShaderManager::ShaderInfo* info) {
 
 void ShaderManager::MarkAsDeleted(ShaderManager::ShaderInfo* info) {
   DCHECK(info);
+  DCHECK(IsOwned(info));
   info->MarkAsDeleted();
   RemoveShaderInfoIfUnused(info);
 }
 
 void ShaderManager::UseShader(ShaderManager::ShaderInfo* info) {
   DCHECK(info);
+  DCHECK(IsOwned(info));
   info->IncUseCount();
 }
 
 void ShaderManager::UnuseShader(ShaderManager::ShaderInfo* info) {
   DCHECK(info);
+  DCHECK(IsOwned(info));
   info->DecUseCount();
   RemoveShaderInfoIfUnused(info);
 }
