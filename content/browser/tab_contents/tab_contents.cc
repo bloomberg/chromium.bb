@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/blocked_content_container.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -384,7 +383,6 @@ TabContents::~TabContents() {
 void TabContents::AddObservers() {
   printing_.reset(new printing::PrintViewManager(this));
   favicon_helper_.reset(new FaviconHelper(this));
-  autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));
   desktop_notification_handler_.reset(
       new DesktopNotificationHandlerForTC(this, GetRenderProcessHost()));
   plugin_observer_.reset(new PluginObserver(this));

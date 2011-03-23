@@ -21,10 +21,11 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -454,7 +455,7 @@ class TestAutofillManager : public AutofillManager {
 
 }  // namespace
 
-class AutofillManagerTest : public RenderViewHostTestHarness {
+class AutofillManagerTest : public TabContentsWrapperTestHarness {
  public:
   AutofillManagerTest() {}
   virtual ~AutofillManagerTest() {
@@ -465,7 +466,7 @@ class AutofillManagerTest : public RenderViewHostTestHarness {
   }
 
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
+    TabContentsWrapperTestHarness::SetUp();
     test_personal_data_ = new TestPersonalDataManager();
     autofill_manager_.reset(new TestAutofillManager(contents(),
                                                     test_personal_data_.get()));
@@ -485,7 +486,7 @@ class AutofillManagerTest : public RenderViewHostTestHarness {
   }
 
   void AutocompleteSuggestionsReturned(const std::vector<string16>& result) {
-    autofill_manager_->tab_contents()->autocomplete_history_manager()->
+    contents_wrapper()->autocomplete_history_manager()->
         SendSuggestions(&result);
   }
 
@@ -528,8 +529,7 @@ class AutofillManagerTest : public RenderViewHostTestHarness {
     if (unique_ids)
       *unique_ids = autofill_param.e;
 
-    autofill_manager_->tab_contents()->autocomplete_history_manager()->
-        CancelPendingQuery();
+    contents_wrapper()->autocomplete_history_manager()->CancelPendingQuery();
     process()->sink().ClearMessages();
     return true;
   }

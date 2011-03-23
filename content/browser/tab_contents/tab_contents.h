@@ -64,7 +64,6 @@ namespace safe_browsing {
 class ClientSideDetectionHost;
 }
 
-class AutocompleteHistoryManager;
 class BlockedContentContainer;
 class WebUI;
 class DesktopNotificationHandlerForTC;
@@ -708,10 +707,6 @@ class TabContents : public PageNavigator,
 
   int content_restrictions() const { return content_restrictions_; }
 
-  AutocompleteHistoryManager* autocomplete_history_manager() {
-    return autocomplete_history_manager_.get();
-  }
-
   safe_browsing::ClientSideDetectionHost* safebrowsing_detection_host() {
     return safebrowsing_detection_host_.get();
   }
@@ -1054,9 +1049,6 @@ class TabContents : public PageNavigator,
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;
-
-  // AutocompleteHistoryManager.
-  scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
 
   // Handles plugin messages.
   scoped_ptr<PluginObserver> plugin_observer_;

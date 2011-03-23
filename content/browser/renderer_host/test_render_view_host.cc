@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -281,7 +281,7 @@ RenderViewHostTestHarness::~RenderViewHostTestHarness() {
 }
 
 NavigationController& RenderViewHostTestHarness::controller() {
-  return contents_->controller();
+  return contents()->controller();
 }
 
 TestTabContents* RenderViewHostTestHarness::contents() {
@@ -289,12 +289,12 @@ TestTabContents* RenderViewHostTestHarness::contents() {
 }
 
 TestRenderViewHost* RenderViewHostTestHarness::rvh() {
-  return static_cast<TestRenderViewHost*>(contents_->render_view_host());
+  return static_cast<TestRenderViewHost*>(contents()->render_view_host());
 }
 
 TestRenderViewHost* RenderViewHostTestHarness::pending_rvh() {
   return static_cast<TestRenderViewHost*>(
-      contents_->render_manager()->pending_render_view_host());
+      contents()->render_manager()->pending_render_view_host());
 }
 
 TestRenderViewHost* RenderViewHostTestHarness::active_rvh() {

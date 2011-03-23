@@ -19,6 +19,7 @@ namespace prerender {
 class PrerenderObserver;
 }
 
+class AutocompleteHistoryManager;
 class AutofillManager;
 class Extension;
 class FileSelectObserver;
@@ -90,6 +91,10 @@ class TabContentsWrapper : public NotificationObserver,
 
   // Tab Helpers ---------------------------------------------------------------
 
+  AutocompleteHistoryManager* autocomplete_history_manager() {
+    return autocomplete_history_manager_.get();
+  }
+
   AutofillManager* autofill_manager() { return autofill_manager_.get(); }
 
   FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
@@ -145,6 +150,8 @@ class TabContentsWrapper : public NotificationObserver,
   // Tab Helpers ---------------------------------------------------------------
   // (These provide API for callers and have a getter function listed in the
   // "Tab Helpers" section in the member functions area, above.)
+
+  scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
 
   scoped_ptr<AutofillManager> autofill_manager_;
 

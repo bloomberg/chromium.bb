@@ -21,12 +21,12 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
@@ -277,7 +277,9 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
 
 void AutofillManager::OnFormSubmitted(const FormData& form) {
   // Let AutoComplete know as well.
-  tab_contents()->autocomplete_history_manager()->OnFormSubmitted(form);
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
+  wrapper->autocomplete_history_manager()->OnFormSubmitted(form);
 
   if (!IsAutofillEnabled())
     return;
@@ -383,7 +385,9 @@ void AutofillManager::OnQueryFormFieldAutofill(
   // Add the results from AutoComplete.  They come back asynchronously, so we
   // hand off what we generated and they will send the results back to the
   // renderer.
-  tab_contents()->autocomplete_history_manager()->OnGetAutocompleteSuggestions(
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
+  wrapper->autocomplete_history_manager()->OnGetAutocompleteSuggestions(
       query_id, field.name, field.value, values, labels, icons, unique_ids);
 }
 

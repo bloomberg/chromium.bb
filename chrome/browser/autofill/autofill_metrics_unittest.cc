@@ -13,8 +13,8 @@
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_data.h"
@@ -183,7 +183,7 @@ class TestFormStructure : public FormStructure {
 
 }  // namespace
 
-class AutofillMetricsTest : public RenderViewHostTestHarness {
+class AutofillMetricsTest : public TabContentsWrapperTestHarness {
  public:
   AutofillMetricsTest() {}
   virtual ~AutofillMetricsTest() {
@@ -194,7 +194,7 @@ class AutofillMetricsTest : public RenderViewHostTestHarness {
   }
 
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
+    TabContentsWrapperTestHarness::SetUp();
     test_personal_data_ = new TestPersonalDataManager();
     autofill_manager_.reset(new TestAutofillManager(contents(),
                                                     test_personal_data_.get()));
