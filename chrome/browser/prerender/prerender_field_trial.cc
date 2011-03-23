@@ -57,8 +57,10 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
     case PRERENDER_OPTION_AUTO: {
       const base::FieldTrial::Probability kPrefetchDivisor = 1000;
       const base::FieldTrial::Probability kYesPrefetchProbability = 0;
-      const base::FieldTrial::Probability kPrerenderExperimentProbability = 450;
-      const base::FieldTrial::Probability kPrerenderControlProbability = 450;
+      const base::FieldTrial::Probability kPrerenderExp1Probability = 400;
+      const base::FieldTrial::Probability kPrerenderControl1Probability = 100;
+      const base::FieldTrial::Probability kPrerenderExp2Probability = 400;
+      const base::FieldTrial::Probability kPrerenderControl2Probability = 100;
 
       scoped_refptr<base::FieldTrial> trial(
           new base::FieldTrial("Prefetch", kPrefetchDivisor,
@@ -67,12 +69,18 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
       const int kNoPrefetchGroup = trial->kDefaultGroupNumber;
       const int kYesPrefetchGroup =
           trial->AppendGroup("ContentPrefetchEnabled", kYesPrefetchProbability);
-      const int kPrerenderExperimentGroup =
-          trial->AppendGroup("ContentPrefetchPrerender",
-                             kPrerenderExperimentProbability);
-      const int kPrerenderControlGroup =
-          trial->AppendGroup("ContentPrefetchPrerenderControl",
-                             kPrerenderControlProbability);
+      const int kPrerenderExperiment1Group =
+          trial->AppendGroup("ContentPrefetchPrerender1",
+                             kPrerenderExp1Probability);
+      const int kPrerenderControl1Group =
+          trial->AppendGroup("ContentPrefetchPrerenderControl1",
+                             kPrerenderControl1Probability);
+      const int kPrerenderExperiment2Group =
+          trial->AppendGroup("ContentPrefetchPrerender2",
+                             kPrerenderExp2Probability);
+      const int kPrerenderControl2Group =
+          trial->AppendGroup("ContentPrefetchPrerenderControl2",
+                             kPrerenderControl2Probability);
       const int trial_group = trial->group();
       if (trial_group == kYesPrefetchGroup) {
         ResourceDispatcherHost::set_is_prefetch_enabled(true);
@@ -81,11 +89,13 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
         ResourceDispatcherHost::set_is_prefetch_enabled(false);
         PrerenderManager::SetMode(
             PrerenderManager::PRERENDER_MODE_DISABLED);
-      } else if (trial_group == kPrerenderExperimentGroup) {
+      } else if (trial_group == kPrerenderExperiment1Group ||
+                 trial_group == kPrerenderExperiment2Group) {
         ResourceDispatcherHost::set_is_prefetch_enabled(true);
         PrerenderManager::SetMode(
             PrerenderManager::PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP);
-      } else if (trial_group == kPrerenderControlGroup) {
+      } else if (trial_group == kPrerenderControl1Group ||
+                 trial_group == kPrerenderControl2Group) {
         ResourceDispatcherHost::set_is_prefetch_enabled(false);
         PrerenderManager::SetMode(
             PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
