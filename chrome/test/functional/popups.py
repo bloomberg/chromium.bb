@@ -29,7 +29,7 @@ class PopupsTest(pyauto.PyUITest):
     self.assertFalse(self.GetBlockedPopupsInfo(),
                      msg='Should have no blocked popups on startup')
     file_url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), 'popup_blocker', 'popup-blocked-to-post-blank.html'))
+        self.DataDir(), 'popup_blocker', 'popup-window-open.html'))
     self.NavigateToURL(file_url)
     blocked_popups = self.GetBlockedPopupsInfo()
     self.assertEqual(1, len(blocked_popups), msg='Popup not blocked')
@@ -39,7 +39,7 @@ class PopupsTest(pyauto.PyUITest):
   def testLaunchBlockedPopup(self):
     """Verify that a blocked popup can be unblocked."""
     file_url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), 'popup_blocker', 'popup-blocked-to-post-blank.html'))
+        self.DataDir(), 'popup_blocker', 'popup-window-open.html'))
     self.NavigateToURL(file_url)
     self.assertEqual(1, len(self.GetBlockedPopupsInfo()))
     self.UnblockAndLaunchBlockedPopup(0)
@@ -54,7 +54,7 @@ class PopupsTest(pyauto.PyUITest):
     """Verify popup blocking is enabled in incognito windows."""
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     file_url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), 'popup_blocker', 'popup-blocked-to-post-blank.html'))
+        self.DataDir(), 'popup_blocker', 'popup-window-open.html'))
     self.NavigateToURL(file_url, 1, 0)
     blocked_popups = self.GetBlockedPopupsInfo(tab_index=0, windex=1)
     self.assertEqual(1, len(blocked_popups), msg='Popup not blocked')
@@ -63,7 +63,7 @@ class PopupsTest(pyauto.PyUITest):
     """Verify that a blocked popup can be unblocked in incognito."""
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     file_url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), 'popup_blocker', 'popup-blocked-to-post-blank.html'))
+        self.DataDir(), 'popup_blocker', 'popup-window-open.html'))
     self.NavigateToURL(file_url, 1, 0)
     self.assertEqual(1, len(self.GetBlockedPopupsInfo(tab_index=0, windex=1)))
     self.UnblockAndLaunchBlockedPopup(0, tab_index=0, windex=1)
