@@ -141,6 +141,13 @@ void Textfield::ClearSelection() const {
     native_wrapper_->ClearSelection();
 }
 
+bool Textfield::HasSelection() const {
+  ui::Range range;
+  if (native_wrapper_)
+    native_wrapper_->GetSelectedRange(&range);
+  return !range.is_empty();
+}
+
 void Textfield::SetTextColor(SkColor color) {
   text_color_ = color;
   use_default_text_color_ = false;

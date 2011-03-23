@@ -86,17 +86,21 @@ NativeTextfieldViews::~NativeTextfieldViews() {
 // NativeTextfieldViews, View overrides:
 
 bool NativeTextfieldViews::OnMousePressed(const views::MouseEvent& e) {
+  OnBeforeUserAction();
   if (HandleMousePressed(e))
     SchedulePaint();
+  OnAfterUserAction();
   return true;
 }
 
 bool NativeTextfieldViews::OnMouseDragged(const views::MouseEvent& e) {
+  OnBeforeUserAction();
   size_t pos = FindCursorPosition(e.location());
   if (model_->MoveCursorTo(pos, true)) {
     UpdateCursorBoundsAndTextOffset();
     SchedulePaint();
   }
+  OnAfterUserAction();
   return true;
 }
 
@@ -360,6 +364,7 @@ bool NativeTextfieldViews::GetAcceleratorForCommandId(int command_id,
 void NativeTextfieldViews::ExecuteCommand(int command_id) {
   bool text_changed = false;
   bool editable = !textfield_->read_only();
+  OnBeforeUserAction();
   switch (command_id) {
     case IDS_APP_CUT:
       if (editable)
@@ -386,6 +391,7 @@ void NativeTextfieldViews::ExecuteCommand(int command_id) {
 
   // The cursor must have changed if text changed during cut/paste/delete.
   UpdateAfterChange(text_changed, text_changed);
+  OnAfterUserAction();
 }
 
 // static
@@ -531,6 +537,8 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
     // TODO(oshima): shift-tab does not work. Figure out why and fix.
     if (key_code == ui::VKEY_TAB)
       return false;
+
+    OnBeforeUserAction();
     bool editable = !textfield_->read_only();
     bool selection = key_event.IsShiftDown();
     bool control = key_event.IsControlDown();
@@ -619,136 +627,20 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
       default:
         break;
     }
-    char16 print_char = GetPrintableChar(key_event);
-    if (!control && print_char && editable) {
+    char16 ch = key_event.GetCharacter();
+    if (editable && ShouldInsertChar(ch, key_event.flags())) {
       if (insert_)
-        model_->Insert(print_char);
+        model_->Insert(ch);
       else
-        model_->Replace(print_char);
+        model_->Replace(ch);
       text_changed = true;
     }
 
     UpdateAfterChange(text_changed, cursor_changed);
+    OnAfterUserAction();
     return (text_changed || cursor_changed);
   }
   return false;
-}
-
-char16 NativeTextfieldViews::GetPrintableChar(const KeyEvent& key_event) {
-  // TODO(oshima): IME, i18n support.
-  // This only works for UCS-2 characters.
-  ui::KeyboardCode key_code = key_event.key_code();
-  bool shift = key_event.IsShiftDown();
-  bool upper = shift ^ key_event.IsCapsLockDown();
-  // TODO(oshima): We should have a utility function
-  // under app to convert a KeyboardCode to a printable character,
-  // probably in keyboard_code_conversion{.h, _x
-  switch (key_code) {
-    case ui::VKEY_NUMPAD0:
-      return '0';
-    case ui::VKEY_NUMPAD1:
-      return '1';
-    case ui::VKEY_NUMPAD2:
-      return '2';
-    case ui::VKEY_NUMPAD3:
-      return '3';
-    case ui::VKEY_NUMPAD4:
-      return '4';
-    case ui::VKEY_NUMPAD5:
-      return '5';
-    case ui::VKEY_NUMPAD6:
-      return '6';
-    case ui::VKEY_NUMPAD7:
-      return '7';
-    case ui::VKEY_NUMPAD8:
-      return '8';
-    case ui::VKEY_NUMPAD9:
-      return '9';
-    case ui::VKEY_MULTIPLY:
-      return '*';
-    case ui::VKEY_ADD:
-      return '+';
-    case ui::VKEY_SUBTRACT:
-      return '-';
-    case ui::VKEY_DECIMAL:
-      return '.';
-    case ui::VKEY_DIVIDE:
-      return '/';
-    case ui::VKEY_SPACE:
-      return ' ';
-    case ui::VKEY_0:
-      return shift ? ')' : '0';
-    case ui::VKEY_1:
-      return shift ? '!' : '1';
-    case ui::VKEY_2:
-      return shift ? '@' : '2';
-    case ui::VKEY_3:
-      return shift ? '#' : '3';
-    case ui::VKEY_4:
-      return shift ? '$' : '4';
-    case ui::VKEY_5:
-      return shift ? '%' : '5';
-    case ui::VKEY_6:
-      return shift ? '^' : '6';
-    case ui::VKEY_7:
-      return shift ? '&' : '7';
-    case ui::VKEY_8:
-      return shift ? '*' : '8';
-    case ui::VKEY_9:
-      return shift ? '(' : '9';
-
-    case ui::VKEY_A:
-    case ui::VKEY_B:
-    case ui::VKEY_C:
-    case ui::VKEY_D:
-    case ui::VKEY_E:
-    case ui::VKEY_F:
-    case ui::VKEY_G:
-    case ui::VKEY_H:
-    case ui::VKEY_I:
-    case ui::VKEY_J:
-    case ui::VKEY_K:
-    case ui::VKEY_L:
-    case ui::VKEY_M:
-    case ui::VKEY_N:
-    case ui::VKEY_O:
-    case ui::VKEY_P:
-    case ui::VKEY_Q:
-    case ui::VKEY_R:
-    case ui::VKEY_S:
-    case ui::VKEY_T:
-    case ui::VKEY_U:
-    case ui::VKEY_V:
-    case ui::VKEY_W:
-    case ui::VKEY_X:
-    case ui::VKEY_Y:
-    case ui::VKEY_Z:
-      return (upper ? 'A' : 'a') + (key_code - ui::VKEY_A);
-    case ui::VKEY_OEM_1:
-      return shift ? ':' : ';';
-    case ui::VKEY_OEM_PLUS:
-      return shift ? '+' : '=';
-    case ui::VKEY_OEM_COMMA:
-      return shift ? '<' : ',';
-    case ui::VKEY_OEM_MINUS:
-      return shift ? '_' : '-';
-    case ui::VKEY_OEM_PERIOD:
-      return shift ? '>' : '.';
-    case ui::VKEY_OEM_2:
-      return shift ? '?' : '/';
-    case ui::VKEY_OEM_3:
-      return shift ? '~' : '`';
-    case ui::VKEY_OEM_4:
-      return shift ? '}' : ']';
-    case ui::VKEY_OEM_5:
-      return shift ? '|' : '\\';
-    case ui::VKEY_OEM_6:
-      return shift ? '{' : '[';
-    case ui::VKEY_OEM_7:
-      return shift ? '"' : '\'';
-    default:
-      return 0;
-  }
 }
 
 size_t NativeTextfieldViews::FindCursorPosition(const gfx::Point& point) const {
@@ -857,6 +749,29 @@ void NativeTextfieldViews::InitContextMenuIfRequired() {
   context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
                                               IDS_APP_SELECT_ALL);
   context_menu_menu_.reset(new Menu2(context_menu_contents_.get()));
+}
+
+void NativeTextfieldViews::OnBeforeUserAction() {
+  TextfieldController* controller = textfield_->GetController();
+  if (controller)
+    controller->OnBeforeUserAction(textfield_);
+}
+
+void NativeTextfieldViews::OnAfterUserAction() {
+  TextfieldController* controller = textfield_->GetController();
+  if (controller)
+    controller->OnAfterUserAction(textfield_);
+}
+
+// static
+bool NativeTextfieldViews::ShouldInsertChar(char16 ch, int flags) {
+  // Filter out all control characters, including tab and new line characters,
+  // and all characters with Alt modifier. But we need to allow characters with
+  // AltGr modifier.
+  // On Windows AltGr is represented by Alt+Ctrl, and on Linux it's a different
+  // flag that we don't care about.
+  return ((ch >= 0x20 && ch < 0x7F) || ch > 0x9F) &&
+      (flags & ~(ui::EF_SHIFT_DOWN | ui::EF_CAPS_LOCK_DOWN)) != ui::EF_ALT_DOWN;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

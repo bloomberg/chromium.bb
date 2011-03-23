@@ -89,6 +89,9 @@ class Textfield : public View {
   // Clears the selection within the edit field and sets the caret to the end.
   void ClearSelection() const;
 
+  // Checks if there is any selected text.
+  bool HasSelection() const;
+
   // Accessor for |style_|.
   StyleFlags style() const { return style_; }
 

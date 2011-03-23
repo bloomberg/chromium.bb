@@ -169,10 +169,6 @@ class NativeTextfieldViews : public views::View,
   // Handle the keyevent.
   bool HandleKeyEvent(const KeyEvent& key_event);
 
-  // Utility function. Gets the character corresponding to a keyevent.
-  // Returns 0 if the character is not printable.
-  char16 GetPrintableChar(const KeyEvent& key_event);
-
   // Find a cusor position for given |point| in this views coordinates.
   size_t FindCursorPosition(const gfx::Point& point) const;
 
@@ -193,6 +189,16 @@ class NativeTextfieldViews : public views::View,
 
   // Utility function to create the context menu if one does not already exist.
   void InitContextMenuIfRequired();
+
+  // Convenience method to call TextfieldController::OnBeforeUserAction();
+  void OnBeforeUserAction();
+
+  // Convenience method to call TextfieldController::OnAfterUserAction();
+  void OnAfterUserAction();
+
+  // Checks if a char is ok to be inserted into the textfield. The |ch| is a
+  // modified character, i.e., modifiers took effect when generating this char.
+  static bool ShouldInsertChar(char16 ch, int flags);
 
   // The parent textfield, the owner of this object.
   Textfield* textfield_;

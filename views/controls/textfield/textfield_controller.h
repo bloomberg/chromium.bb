@@ -26,6 +26,17 @@ class TextfieldController {
   // further. If it returns false the processing continues.
   virtual bool HandleKeyEvent(Textfield* sender,
                               const KeyEvent& key_event) = 0;
+
+  // Called before performing a user action that may change the textfield.
+  // It's currently only supported by Views implementation.
+  virtual void OnBeforeUserAction(Textfield* sender) {}
+
+  // Called after performing a user action that may change the textfield.
+  // It's currently only supported by Views implementation.
+  virtual void OnAfterUserAction(Textfield* sender) {}
+
+ protected:
+  virtual ~TextfieldController() {}
 };
 
 }  // namespace views
