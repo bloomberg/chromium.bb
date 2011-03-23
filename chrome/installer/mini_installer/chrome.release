@@ -38,8 +38,6 @@ ppGoogleNaClPluginChrome.dll: %(VersionDir)s\
 icudt.dll: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
 locales\*.dll: %(VersionDir)s\Locales
-Resources\Inspector\*.*: %(VersionDir)s\Resources\Inspector
-Resources\Inspector\Images\*.*: %(VersionDir)s\Resources\Inspector\Images
 servers\*.dll: %(VersionDir)s\
 servers\*.exe: %(VersionDir)s\
 chrome_frame_helper.exe: %(VersionDir)s\
