@@ -172,13 +172,8 @@
           'variables': {
             'conditions': [
               ['branding=="Chrome"', {
-                # TODO(mmoss) The .grd files look for _google_chrome, but for
-                # consistency they should look for GOOGLE_CHROME_BUILD like C++.
-                # Clean this up when Windows moves to gyp.
-                'chrome_build': '_google_chrome',
                 'branded_env': 'CHROMIUM_BUILD=google_chrome',
               }, {  # else: branding!="Chrome"
-                'chrome_build': '_chromium',
                 'branded_env': 'CHROMIUM_BUILD=chromium',
               }],
             ],
@@ -201,7 +196,6 @@
           'action': ['<@(grit_cmd)', '-i',
             '<(RULE_INPUT_PATH)',
             'build', '-o', '<(grit_out_dir)',
-            '-D', '<(chrome_build)',
             '-E', '<(branded_env)',
             '<@(grit_defines)',
           ],
@@ -254,18 +248,6 @@
         {
           'rule_name': 'grit',
           'extension': 'grd',
-          'variables': {
-            'conditions': [
-              ['branding=="Chrome"', {
-                # TODO(mmoss) The .grd files look for _google_chrome, but for
-                # consistency they should look for GOOGLE_CHROME_BUILD like C++.
-                # Clean this up when Windows moves to gyp.
-                'chrome_build': '_google_chrome',
-              }, {  # else: branding!="Chrome"
-                'chrome_build': '_chromium',
-              }],
-            ],
-          },
           'inputs': [
             '<@(chrome_strings_inputs)',
           ],
@@ -280,7 +262,6 @@
           'action': ['<@(grit_cmd)', '-i',
                     '<(RULE_INPUT_PATH)',
                     'build', '-o', '<(grit_out_dir)',
-                    '-D', '<(chrome_build)',
                     '<@(grit_defines)' ],
           'message': 'Generating resources from <(RULE_INPUT_PATH)',
         },
@@ -308,16 +289,6 @@
           'action_name': 'theme_resources',
           'variables': {
             'input_path': 'app/theme/theme_resources.grd',
-            'conditions': [
-              ['branding=="Chrome"', {
-                # TODO(mmoss) The .grd files look for _google_chrome, but for
-                # consistency they should look for GOOGLE_CHROME_BUILD like C++.
-                # Clean this up when Windows moves to gyp.
-                'chrome_build': '_google_chrome',
-              }, {  # else: branding!="Chrome"
-                'chrome_build': '_chromium',
-              }],
-            ],
           },
           'inputs': [
             '<!@(<(grit_info_cmd) --inputs <(input_path))',
@@ -329,7 +300,6 @@
             '<@(grit_cmd)',
             '-i', '<(input_path)', 'build',
             '-o', '<(grit_out_dir)',
-            '-D', '<(chrome_build)',
             '<@(grit_defines)',
           ],
           'message': 'Generating resources from <(input_path)',
@@ -356,16 +326,6 @@
           'action_name': 'platform_locale_settings',
           'variables': {
             'input_path': '<(platform_locale_settings_grd)',
-            'conditions': [
-              ['branding=="Chrome"', {
-                # TODO(mmoss) The .grd files look for _google_chrome, but for
-                # consistency they should look for GOOGLE_CHROME_BUILD like C++.
-                # Clean this up when Windows moves to gyp.
-                'chrome_build': '_google_chrome',
-              }, {  # else: branding!="Chrome"
-                'chrome_build': '_chromium',
-              }],
-            ],
           },
           'inputs': [
             '<!@(<(grit_info_cmd) --inputs <(input_path))',
@@ -377,7 +337,6 @@
             '<@(grit_cmd)',
             '-i', '<(input_path)', 'build',
             '-o', '<(grit_out_dir)',
-            '-D', '<(chrome_build)',
             '<@(grit_defines)',
           ],
           'message': 'Generating resources from <(input_path)',
@@ -409,13 +368,8 @@
           'variables': {
             'conditions': [
               ['branding=="Chrome"', {
-                # TODO(mmoss) The .grd files look for _google_chrome, but for
-                # consistency they should look for GOOGLE_CHROME_BUILD like C++.
-                # Clean this up when Windows moves to gyp.
-                'chrome_build': '_google_chrome',
                 'branded_env': 'CHROMIUM_BUILD=google_chrome',
               }, {  # else: branding!="Chrome"
-                'chrome_build': '_chromium',
                 'branded_env': 'CHROMIUM_BUILD=chromium',
               }],
             ],
@@ -441,7 +395,6 @@
           'action': ['<@(grit_cmd)', '-i',
             '<(RULE_INPUT_PATH)',
             'build', '-o', '<(grit_out_dir)',
-            '-D', '<(chrome_build)',
             '-D', 'SHARED_INTERMEDIATE_DIR=<(SHARED_INTERMEDIATE_DIR)',
             '-E', '<(branded_env)',
             '<@(grit_defines)',

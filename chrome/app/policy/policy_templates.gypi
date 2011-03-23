@@ -43,15 +43,9 @@
                 '<@(grit_cmd)',
                 '-i', '<(grd_path)', 'build',
                 '-o', '<(grit_out_dir)',
-                '-D', '<(chrome_build)'
+                '<@(grit_defines)',
               ],
               'conditions': [
-                ['chromeos==1', {
-                  'action': ['-D', 'chromeos'],
-                }],
-                ['use_titlecase_in_grd_files==1', {
-                  'action': ['-D', 'use_titlecase'],
-                }],
                 ['OS == "mac"', {
                   'action': ['-D', 'mac_bundle_id=<(mac_bundle_id)'],
                 }],
