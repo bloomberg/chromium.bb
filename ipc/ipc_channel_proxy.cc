@@ -5,7 +5,6 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/threading/thread.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_utils.h"
