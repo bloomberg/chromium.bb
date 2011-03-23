@@ -3,29 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
-# The source files (.cc and .h) listed in this file are maintained by the
-# script ./update-scons.py.  Update $SOURCE_ROOT/ppapi and run the script
-# ./update-scons.py to update all of the source files listed here.
-
-# update-scons.py reads the .scons files in this directory.  It replaces all
-# of the lines between the starting marker and the ending marker with the
-# corresponding list of files from the given gyp file.
-#
-# The starting marker format is:
-#   # From GYP_FILE_NAME:TARGET:REGEXP
-# The ending marker format is:
-#   # End GYP_FILE_NAME
-#
-# For example, if this exists in the .scons file:
-#   # From ppapi.gyp:ppapi_c:.*\.h
-#   ...
-#   # End ppapi.gyp
-#
-# then this script will remove all of the lines between the starting marker and
-# the ending marker.  It will then find the 'ppapi_c' target in the ppapi.gyp
-# file.  It will find all 'sources' for that target that match the regular
-# expression '.*\.h' and will insert each of those source files in between the
-# two markers.
+import gyp_extract
 
 Import('env')
 
@@ -36,53 +14,17 @@ Dir('.').addRepository(Dir('#/../ppapi'))
 if env.Bit('windows'):
   env.FilterOut(CCFLAGS=['/WX'])
 
-cpp_sources = [
-    # Updated automatically by update-scons.py.
-    # From ppapi_cpp.gypi:ppapi_cpp_objects:.*\.cc
-    'cpp/audio.cc',
-    'cpp/audio_config.cc',
-    'cpp/core.cc',
-    'cpp/graphics_2d.cc',
-    'cpp/image_data.cc',
-    'cpp/instance.cc',
-    'cpp/module.cc',
-    'cpp/paint_aggregator.cc',
-    'cpp/paint_manager.cc',
-    'cpp/rect.cc',
-    'cpp/resource.cc',
-    'cpp/url_loader.cc',
-    'cpp/url_request_info.cc',
-    'cpp/url_response_info.cc',
-    'cpp/var.cc',
-    'cpp/dev/buffer_dev.cc',
-    'cpp/dev/context_3d_dev.cc',
-    'cpp/dev/directory_entry_dev.cc',
-    'cpp/dev/directory_reader_dev.cc',
-    'cpp/dev/file_chooser_dev.cc',
-    'cpp/dev/file_io_dev.cc',
-    'cpp/dev/file_ref_dev.cc',
-    'cpp/dev/file_system_dev.cc',
-    'cpp/dev/find_dev.cc',
-    'cpp/dev/font_dev.cc',
-    'cpp/dev/fullscreen_dev.cc',
-    'cpp/dev/graphics_3d_client_dev.cc',
-    'cpp/dev/graphics_3d_dev.cc',
-    'cpp/dev/printing_dev.cc',
-    'cpp/dev/scrollbar_dev.cc',
-    'cpp/dev/selection_dev.cc',
-    'cpp/dev/surface_3d_dev.cc',
-    'cpp/dev/transport_dev.cc',
-    'cpp/dev/url_util_dev.cc',
-    'cpp/dev/video_decoder_dev.cc',
-    'cpp/dev/widget_client_dev.cc',
-    'cpp/dev/widget_dev.cc',
-    'cpp/dev/zoom_dev.cc',
-    'cpp/dev/scriptable_object_deprecated.cc',
-    # End ppapi_cpp.gypi
-    # Updated automatically by update-scons.py.
-    # From ppapi_cpp.gypi:ppapi_cpp:.*\.cc
-    'cpp/ppp_entrypoints.cc',
-    # End ppapi_cpp.gypi
-    ]
+# Load ppapi_cpp.gypi
+ppapi_cpp_gypi = gyp_extract.LoadGypFile(
+    env.File('#/../ppapi/ppapi_cpp.gypi').path)
+
+# From ppapi_cpp.gypi:ppapi_cpp_objects:.*\.cc
+# From ppapi_cpp.gypi:ppapi_cpp:.*\.cc
+cpp_sources = (
+    gyp_extract.GypTargetSources(
+        ppapi_cpp_gypi, 'ppapi_cpp_objects', '.*\.cc') +
+    gyp_extract.GypTargetSources(
+        ppapi_cpp_gypi, 'ppapi_cpp', '.*\.cc')
+)
 
 env.DualLibrary('ppapi_cpp', cpp_sources)

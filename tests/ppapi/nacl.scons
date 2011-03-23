@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
+import gyp_extract
+
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
@@ -11,13 +13,47 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 env.FilterOut(CFLAGS=['-pedantic'])
 env.FilterOut(CCFLAGS=['-pedantic'])
 
+
+# Load ppapi_cpp.gypi
+ppapi_cpp_gypi = gyp_extract.LoadGypFile(
+    env.File('#/../ppapi/ppapi_cpp.gypi').path)
+
+# From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/[^/]*\.h
+cpp_headers = gyp_extract.GypTargetSources(
+    ppapi_cpp_gypi, 'ppapi_cpp_objects', 'cpp/[^/]*\.h')
+cpp_headers = ['ppapi/' + header_file for header_file in cpp_headers]
+
+# From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/dev/[^/]*\.h
+cpp_dev_headers = gyp_extract.GypTargetSources(
+    ppapi_cpp_gypi, 'ppapi_cpp_objects', 'cpp/dev/[^/]*\.h')
+cpp_dev_headers = ['ppapi/' + header_file for header_file in cpp_dev_headers]
+
+
+def EmitHeaderTest(target=None, source=None, env=None):
+  fh = open(target[0].path, 'w')
+  for header in env['TEST_HEADERS']:
+    fh.write('#include "%s"\n' % header)
+  fh.close()
+  return 0
+
+
+cpp_header_test_cc = env.Command(
+    '$OBJ_ROOT/gen/native_client/test/ppapi/cpp_header_test.cc',
+    [], Action(EmitHeaderTest, varlist=['TEST_HEADERS']),
+    TEST_HEADERS=cpp_headers)
+
+cpp_dev_header_test_cc = env.Command(
+    '$OBJ_ROOT/gen/native_client/test/ppapi/cpp_dev_header_test.cc',
+    [], Action(EmitHeaderTest, varlist=['TEST_HEADERS']),
+    TEST_HEADERS=cpp_dev_headers)
+
+
 ppapi_header_test_inputs = [
-  'cpp_header_test.cc',
-  'cpp_dev_header_test.cc',
+  cpp_header_test_cc,
+  cpp_dev_header_test_cc,
   'opengl_header_test.c',
   'opengl_cpp_header_test.cc',
 ]
 
 # Build-only test to make sure the header layout for ppapi is correct.
-
 env.ComponentLibrary('header_test', ppapi_header_test_inputs)

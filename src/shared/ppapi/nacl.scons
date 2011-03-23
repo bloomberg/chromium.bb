@@ -3,248 +3,68 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
-# The source files (.cc and .h) listed in this file are maintained by the
-# script ./update-scons.py.  Update $SOURCE_ROOT/ppapi and run the script
-# ./update-scons.py to update all of the source files listed here.
-
-# update-scons.py reads the .scons files in this directory.  It replaces all
-# of the lines between the starting marker and the ending marker with the
-# corresponding list of files from the given gyp file.
-#
-# The starting marker format is:
-#   # From GYP_FILE_NAME:TARGET:REGEXP
-# The ending marker format is:
-#   # End GYP_FILE_NAME
-#
-# For example, if this exists in the .scons file:
-#   # From ppapi.gyp:ppapi_c:.*\.h
-#   ...
-#   # End ppapi.gyp
-#
-# then this script will remove all of the lines between the starting marker and
-# the ending marker.  It will then find the 'ppapi_c' target in the ppapi.gyp
-# file.  It will find all 'sources' for that target that match the regular
-# expression '.*\.h' and will insert each of those source files in between the
-# two markers.
-
 import os
+import gyp_extract
 
 Import('env')
 
 # Underlay $SOURCE_ROOT/ppapi in this directory.
 Dir('.').addRepository(Dir('#/../ppapi'))
 
-cpp_sources = [
-    # Updated automatically by update-scons.py.
-    # From ppapi_cpp.gypi:ppapi_cpp_objects:.*\.cc
-    'cpp/audio.cc',
-    'cpp/audio_config.cc',
-    'cpp/core.cc',
-    'cpp/graphics_2d.cc',
-    'cpp/image_data.cc',
-    'cpp/instance.cc',
-    'cpp/module.cc',
-    'cpp/paint_aggregator.cc',
-    'cpp/paint_manager.cc',
-    'cpp/rect.cc',
-    'cpp/resource.cc',
-    'cpp/url_loader.cc',
-    'cpp/url_request_info.cc',
-    'cpp/url_response_info.cc',
-    'cpp/var.cc',
-    'cpp/dev/buffer_dev.cc',
-    'cpp/dev/context_3d_dev.cc',
-    'cpp/dev/directory_entry_dev.cc',
-    'cpp/dev/directory_reader_dev.cc',
-    'cpp/dev/file_chooser_dev.cc',
-    'cpp/dev/file_io_dev.cc',
-    'cpp/dev/file_ref_dev.cc',
-    'cpp/dev/file_system_dev.cc',
-    'cpp/dev/find_dev.cc',
-    'cpp/dev/font_dev.cc',
-    'cpp/dev/fullscreen_dev.cc',
-    'cpp/dev/graphics_3d_client_dev.cc',
-    'cpp/dev/graphics_3d_dev.cc',
-    'cpp/dev/printing_dev.cc',
-    'cpp/dev/scrollbar_dev.cc',
-    'cpp/dev/selection_dev.cc',
-    'cpp/dev/surface_3d_dev.cc',
-    'cpp/dev/transport_dev.cc',
-    'cpp/dev/url_util_dev.cc',
-    'cpp/dev/video_decoder_dev.cc',
-    'cpp/dev/widget_client_dev.cc',
-    'cpp/dev/widget_dev.cc',
-    'cpp/dev/zoom_dev.cc',
-    'cpp/dev/scriptable_object_deprecated.cc',
-    # End ppapi_cpp.gypi
-    # Updated automatically by update-scons.py.
-    # From ppapi_cpp.gypi:ppapi_cpp:.*\.cc
-    'cpp/ppp_entrypoints.cc',
-    # End ppapi_cpp.gypi
-    ]
 
+# Load ppapi_cpp.gypi
+ppapi_cpp_gypi = gyp_extract.LoadGypFile(
+    env.File('#/../ppapi/ppapi_cpp.gypi').path)
+
+# From ppapi_cpp.gypi:ppapi_cpp_objects:.*\.cc
+# From ppapi_cpp.gypi:ppapi_cpp:.*\.cc
+cpp_sources = (
+    gyp_extract.GypTargetSources(
+        ppapi_cpp_gypi, 'ppapi_cpp_objects', '.*\.cc') +
+    gyp_extract.GypTargetSources(
+        ppapi_cpp_gypi, 'ppapi_cpp', '.*\.cc')
+)
 env.ComponentLibrary('ppapi_cpp', cpp_sources)
+
 
 env.Append(CPPPATH=[
     '$SOURCE_ROOT/ppapi/lib/gl/gles2'])
 
-gles2_sources = [
-    # Updated automatically by update-scons.py.
-    # From ppapi_gl.gypi:ppapi_gles2:.*\.c
-    'lib/gl/gles2/gl2ext_ppapi.c',
-    'lib/gl/gles2/gles2.c',
-    # End ppapi_gl.gypi
-]
+# Load ppapi_gl.gypi
+ppapi_gl_gypi = gyp_extract.LoadGypFile(
+    env.File('#/../ppapi/ppapi_gl.gypi').path)
 
+# From ppapi_gl.gypi:ppapi_gles2:.*\.c
+gles2_sources = gyp_extract.GypTargetSources(
+    ppapi_gl_gypi, 'ppapi_gles2', '.*\.c')
 env.ComponentLibrary('ppapi_gles2', gles2_sources)
 
-c_headers = [
-    # Updated automatically by update-scons.py.
-    # From ppapi_cpp.gypi:ppapi_c:c/[^/]*\.h
-    'c/pp_bool.h',
-    'c/pp_completion_callback.h',
-    'c/pp_errors.h',
-    'c/pp_input_event.h',
-    'c/pp_instance.h',
-    'c/pp_macros.h',
-    'c/pp_module.h',
-    'c/pp_point.h',
-    'c/pp_rect.h',
-    'c/pp_resource.h',
-    'c/pp_size.h',
-    'c/pp_stdint.h',
-    'c/pp_time.h',
-    'c/pp_var.h',
-    'c/ppb.h',
-    'c/ppb_audio.h',
-    'c/ppb_audio_config.h',
-    'c/ppb_core.h',
-    'c/ppb_class.h',
-    'c/ppb_graphics_2d.h',
-    'c/ppb_image_data.h',
-    'c/ppb_instance.h',
-    'c/ppb_url_loader.h',
-    'c/ppb_url_request_info.h',
-    'c/ppb_url_response_info.h',
-    'c/ppb_var.h',
-    'c/ppp.h',
-    'c/ppp_instance.h',
-    # End ppapi_cpp.gypi
-    ]
 
-c_dev_headers = [
-    # Updated automatically by update-scons.py.
-    # From ppapi_cpp.gypi:ppapi_c:c/dev/[^/]*\.h
-    'c/dev/pp_cursor_type_dev.h',
-    'c/dev/pp_file_info_dev.h',
-    'c/dev/pp_graphics_3d_dev.h',
-    'c/dev/pp_video_dev.h',
-    'c/dev/ppb_buffer_dev.h',
-    'c/dev/ppb_char_set_dev.h',
-    'c/dev/ppb_context_3d_dev.h',
-    'c/dev/ppb_context_3d_trusted_dev.h',
-    'c/dev/ppb_cursor_control_dev.h',
-    'c/dev/ppb_directory_reader_dev.h',
-    'c/dev/ppb_file_chooser_dev.h',
-    'c/dev/ppb_file_io_dev.h',
-    'c/dev/ppb_file_io_trusted_dev.h',
-    'c/dev/ppb_file_ref_dev.h',
-    'c/dev/ppb_file_system_dev.h',
-    'c/dev/ppb_find_dev.h',
-    'c/dev/ppb_font_dev.h',
-    'c/dev/ppb_fullscreen_dev.h',
-    'c/dev/ppb_graphics_3d_dev.h',
-    'c/dev/ppb_opengles_dev.h',
-    'c/dev/ppb_scrollbar_dev.h',
-    'c/dev/ppb_surface_3d_dev.h',
-    'c/dev/ppb_testing_dev.h',
-    'c/dev/ppb_transport_dev.h',
-    'c/dev/ppb_url_util_dev.h',
-    'c/dev/ppb_video_decoder_dev.h',
-    'c/dev/ppb_widget_dev.h',
-    'c/dev/ppb_zoom_dev.h',
-    'c/dev/ppp_cursor_control_dev.h',
-    'c/dev/ppp_find_dev.h',
-    'c/dev/ppp_graphics_3d_dev.h',
-    'c/dev/ppp_scrollbar_dev.h',
-    'c/dev/ppp_selection_dev.h',
-    'c/dev/ppp_printing_dev.h',
-    'c/dev/ppp_widget_dev.h',
-    'c/dev/ppp_zoom_dev.h',
-    'c/dev/deprecated_bool.h',
-    'c/dev/ppb_var_deprecated.h',
-    'c/dev/ppp_class_deprecated.h',
-    # End ppapi_cpp.gypi
-    ]
+# From ppapi_cpp.gypi:ppapi_c:c/[^/]*\.h
+c_headers = gyp_extract.GypTargetSources(
+    ppapi_cpp_gypi, 'ppapi_c', 'c/[^/]*\.h')
 
-cpp_headers = [
-    # Updated automatically by update-scons.py.
-    # From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/[^/]*\.h
-    'cpp/audio.h',
-    'cpp/audio_config.h',
-    'cpp/common.h',
-    'cpp/completion_callback.h',
-    'cpp/core.h',
-    'cpp/graphics_2d.h',
-    'cpp/image_data.h',
-    'cpp/instance.h',
-    'cpp/logging.h',
-    'cpp/module.h',
-    'cpp/module_impl.h',
-    'cpp/non_thread_safe_ref_count.h',
-    'cpp/paint_aggregator.h',
-    'cpp/paint_manager.h',
-    'cpp/point.h',
-    'cpp/rect.h',
-    'cpp/resource.h',
-    'cpp/size.h',
-    'cpp/url_loader.h',
-    'cpp/url_request_info.h',
-    'cpp/url_response_info.h',
-    'cpp/var.h',
-    # End ppapi_cpp.gypi
-    # Updated automatically by update-scons.py.
-    # From ppapi_cpp.gypi:ppapi_cpp:cpp/[^/]*\.h
-    'cpp/module_embedder.h',
-    # End ppapi_cpp.gypi
-    ]
+# From ppapi_cpp.gypi:ppapi_c:c/dev/[^/]*\.h
+c_dev_headers = gyp_extract.GypTargetSources(
+    ppapi_cpp_gypi, 'ppapi_c', 'c/dev/[^/]*\.h')
 
-cpp_dev_headers = [
-    # Updated automatically by update-scons.py.
-    # From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/dev/[^/]*\.h
-    'cpp/dev/buffer_dev.h',
-    'cpp/dev/context_3d_dev.h',
-    'cpp/dev/directory_entry_dev.h',
-    'cpp/dev/directory_reader_dev.h',
-    'cpp/dev/file_chooser_dev.h',
-    'cpp/dev/file_io_dev.h',
-    'cpp/dev/file_ref_dev.h',
-    'cpp/dev/file_system_dev.h',
-    'cpp/dev/find_dev.h',
-    'cpp/dev/font_dev.h',
-    'cpp/dev/fullscreen_dev.h',
-    'cpp/dev/graphics_3d_client_dev.h',
-    'cpp/dev/graphics_3d_dev.h',
-    'cpp/dev/printing_dev.h',
-    'cpp/dev/scrollbar_dev.h',
-    'cpp/dev/selection_dev.h',
-    'cpp/dev/surface_3d_dev.h',
-    'cpp/dev/transport_dev.h',
-    'cpp/dev/url_util_dev.h',
-    'cpp/dev/video_decoder_dev.h',
-    'cpp/dev/widget_client_dev.h',
-    'cpp/dev/widget_dev.h',
-    'cpp/dev/zoom_dev.h',
-    'cpp/dev/scriptable_object_deprecated.h',
-    # End ppapi_cpp.gypi
-    ]
+# From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/[^/]*\.h
+# From ppapi_cpp.gypi:ppapi_cpp:cpp/[^/]*\.h
+cpp_headers = (
+    gyp_extract.GypTargetSources(
+        ppapi_cpp_gypi, 'ppapi_cpp_objects', 'cpp/[^/]*\.h') +
+    gyp_extract.GypTargetSources(
+        ppapi_cpp_gypi, 'ppapi_cpp', 'cpp/[^/]*\.h')
+)
 
-gles2_headers = [
-    # Updated automatically by update-scons.py.
-    # From ppapi_gl.gypi:ppapi_gles2:.*\.h
-    'lib/gl/gles2/gl2ext_ppapi.h',
-    # End ppapi_gl.gypi
-]
+# From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/dev/[^/]*\.h
+cpp_dev_headers = gyp_extract.GypTargetSources(
+    ppapi_cpp_gypi, 'ppapi_cpp_objects', 'cpp/dev/[^/]*\.h')
+
+# From ppapi_gl.gypi:ppapi_gles2:.*\.h
+gles2_headers = gyp_extract.GypTargetSources(
+    ppapi_gl_gypi, 'ppapi_gles2', '.*\.h')
+
 
 c_header_install = env.AddHeaderToSdk(
   ['$SOURCE_ROOT/ppapi/' + h for h in c_headers], os.path.join('ppapi', 'c'))
