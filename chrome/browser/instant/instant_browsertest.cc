@@ -780,23 +780,34 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DontCrashOnBlockedJS) {
   // As long as we get the notification we're good (the renderer didn't crash).
 }
 
-IN_PROC_BROWSER_TEST_F(InstantTest, DownloadOnEnter) {
+// Flaky on views on linux: 77168.
+#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
+#define MAYBE_DownloadOnEnter FLAKY_DownloadOnEnter
+#else
+#define MAYBE_DownloadOnEnter DownloadOnEnter
+#endif
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_DownloadOnEnter) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   ASSERT_NO_FATAL_FAILURE(FindLocationBar());
   GURL url(test_server()->GetURL("files/instant/empty.html"));
   location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
+  printf("0\n");
   ASSERT_NO_FATAL_FAILURE(WaitForPreviewToNavigate(true));
   url = test_server()->GetURL("files/instant/download.zip");
   location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
   // Wait for the load to fail (because instant disables downloads).
+  printf("1\n");
   ui_test_utils::WaitForNotification(
       NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR);
 
+  printf("2\n");
   DownloadNotificationObserver download_observer;
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN));
+  printf("3\n");
   download_observer.Run();
+  printf("4\n");
   // Pressing enter should initiate a download.
   EXPECT_TRUE(download_observer.fired());
 
