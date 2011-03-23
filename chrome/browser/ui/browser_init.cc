@@ -929,8 +929,9 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
     UrlsToTabs(urls_to_open, &tabs);
   } else if (pref.type == SessionStartupPref::URLS && !pref.urls.empty()) {
     // Only use the set of urls specified in preferences if nothing was
-    // specified on the command line.
-    UrlsToTabs(pref.urls, &tabs);
+    // specified on the command line. Filter out any urls that are to be
+    // restored by virtue of having been previously pinned.
+    AddUniqueURLs(pref.urls, &tabs);
   } else if (pref.type == SessionStartupPref::DEFAULT && !tabs.empty()) {
     // Make sure the home page is opened even if there are pinned tabs.
     std::vector<GURL> urls;
@@ -944,6 +945,26 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
   Browser* browser = OpenTabsInBrowser(NULL, true, tabs);
   AddInfoBarsIfNecessary(browser);
   return true;
+}
+
+void BrowserInit::LaunchWithProfile::AddUniqueURLs(const std::vector<GURL> urls,
+                                                   std::vector<Tab>* tabs) {
+  size_t num_tabs = tabs->size();
+  for (size_t i = 0; i < urls.size(); ++i) {
+    bool in_tabs = false;
+    for (size_t j = 0; j < num_tabs; ++j) {
+      if (urls[i] == (*tabs)[j].url) {
+        in_tabs = true;
+        break;
+      }
+    }
+    if (!in_tabs) {
+      BrowserInit::LaunchWithProfile::Tab tab;
+      tab.is_pinned = false;
+      tab.url = urls[i];
+      tabs->push_back(tab);
+    }
+  }
 }
 
 Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
