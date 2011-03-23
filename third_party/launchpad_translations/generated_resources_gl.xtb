@@ -1037,7 +1037,7 @@
 <translation id="4164507027399414915">Restaurar todas as miniaturas retiradas</translation>
 <translation id="4176463684765177261">Desactivada</translation>
 <translation id="4178055285485194276">Ao inicio:</translation>
-<translation id="4180788401304023883">Borrar certificado da CA «<ph name="CERTIFICATE_NAME"/>»?</translation>
+<translation id="4180788401304023883">Borrar certificado de EC «<ph name="CERTIFICATE_NAME"/>»?</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4181898366589410653">Non se atopou ningún mecanismo de revogación no certificado do servidor.</translation>
 <translation id="4182252350869425879">Advertencia: Posíbel sitio de suplantación de identidade (phishing).</translation>
@@ -2503,7 +2503,7 @@ Se vostede pensa que este comportamento non é o desexábel, por exemplo, se vos
 <translation id="8590375307970699841">Configurar actualizacións automáticas</translation>
 <translation id="859285277496340001">O certificado non especifica un mecanismo para comprobar se foi revogado.</translation>
 <translation id="8593048479750897716">Xestión do servizo mobil de datos</translation>
-<translation id="8595062045771121608">Neste caso, o certificado do servidor ou o certificado de acreditación dun intermediario presentado ao navegador está asinado cun algoritmo moi feble (como RSA-MD2). Estudos recentes feitos por expertos informáticos demostraron que o algoritmo de sinatura é menos seguro do que se pensaba ata agora e que actualmente apenas é utilizado en sitos web de confianza. É probábel que este certificado teña sido falsificado, polo que no debe continuar cara o punto seguinte.</translation>
+<translation id="8595062045771121608">Neste caso, o certificado do servidor ou un certificado de entidade emisora de certificados intermediaria presentado ao seu navegador está asinado cun algoritmo moi feble (como RSA-MD2). Estudos recentes feitos por expertos informáticos demostraron que o algoritmo de sinatura é menos seguro do que se pensaba ata agora e que actualmente apenas é utilizado en sitos web de confianza. É probábel que este certificado teña sido falsificado, polo que no debe continuar cara o punto seguinte.</translation>
 <translation id="8596540852772265699">Ficheiros personalizados</translation>
 <translation id="8601206103050338563">Autenticación de cliente WWW TLS</translation>
 <translation id="8602184400052594090">Falta o ficheiro de manifesto ou non é lexíbel.</translation>
@@ -3016,4 +3016,44 @@ Se vostede pensa que este comportamento non é o desexábel, por exemplo, se vos
 <translation id="8870318296973696995">Páxina de inicio</translation>
 <translation id="9076523132036239772">Ou o seu correo ou o contrasinal non puideron seren verificados. Tente primeiro conectar a unha rede.</translation>
 <translation id="976526967778596630">Non se pode acceder á páxina web <ph name="HOST_NAME"/> porque non está conectado á rede. A páxina cargarase cando se restabeleza a conexión de rede.&lt;br&gt;</translation>
+<translation id="1180549724812639004">Crear novo perfil</translation>
+<translation id="1291144580684226670">Tipo de letra estándar</translation>
+<translation id="1470719357688513792">A nova configuración de cookies terá efecto despois de recargar a páxina.</translation>
+<translation id="1636842079139032947">Desconectar esta conta...</translation>
+<translation id="1732215134274276513">Soltar lapelas</translation>
+<translation id="1812631533912615985">Soltar lapelas</translation>
+<translation id="2045969484888636535">Seguir bloqueando cookies</translation>
+<translation id="2078019350989722914">Avisar antes de saír (<ph name="KEY_EQUIVALENT"/>)</translation>
+<translation id="2391419135980381625">Tipo de letra estándar</translation>
+<translation id="3264544094376351444">Tipo de letra Sans-serif</translation>
+<translation id="3347210705307733273">Pode utilizar unha conta de Google para sincronizar os marcadores e outros axustes e acceder á tenda Web de Chrome.</translation>
+<translation id="351152300840026870">Tipo de letra de largo fixo</translation>
+<translation id="3757292744334693220">Usar o sistema instalado</translation>
+<translation id="3842552989725514455">Tipo de letra Serif</translation>
+<translation id="4393664266930911253">Activar estas características...</translation>
+<translation id="4419409365248380979">Permitirlle sempre a <ph name="HOST"/> estabelecer cookies</translation>
+<translation id="4480627574828695486">Desconectar esta conta...</translation>
+<translation id="4539401194496451708">Usando o perfil de Chrome <ph name="USER_EMAIL_ADDRESS"/>. Sincronizado por última vez o: <ph name="LAST_SYNC_TIME"/></translation>
+<translation id="4665674675433053715">Páxina Nova lapela experimental</translation>
+<translation id="5105855035535475848">Fixar lapelas</translation>
+<translation id="5279575679365052058">Certificado de EC do servidor:</translation>
+<translation id="5453029940327926427">Pechar lapelas</translation>
+<translation id="5464118321036170195">Non comprobar</translation>
+<translation id="5542132724887566711">Perfil</translation>
+<translation id="5829990587040054282">Bloqueo de pantalla ou apagado</translation>
+<translation id="5910680277043747137">Se desexa permitir que varias persoas poidan usar e personalizar Chrome, pode crear perfís adicionais.</translation>
+<translation id="6025294537656405544">Tamaño mínimo do tipo de letra</translation>
+<translation id="6252594924928912846">Personalizar a configuración da sincronización</translation>
+<translation id="6648524591329069940">Tipo de letra Serif</translation>
+<translation id="7017219178341817193">Engadir unha nova páxina</translation>
+<translation id="7064842770504520784">Personalizar a configuración da sincronización</translation>
+<translation id="7268365133021434339">Pechar lapelas</translation>
+<translation id="7452120598248906474">Tipo de letra de largo fixo</translation>
+<translation id="7747704580171477003">Activa un rediseño  en modo desenvolvemento da páxina de nova lapela</translation>
+<translation id="780617032715125782">Crear novo perfil</translation>
+<translation id="8072988827236813198">Fixar lapelas</translation>
+<translation id="8097376295508217350">Número incorrecto</translation>
+<translation id="8205333955675906842">Tipo de letra Sans-serif</translation>
+<translation id="838870586332499308">Activar a itinerancia de datos</translation>
+<translation id="8828781037212165374">Activar estas características...</translation>
 </translationbundle>

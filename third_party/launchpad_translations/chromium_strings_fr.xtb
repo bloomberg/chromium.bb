@@ -6,14 +6,14 @@
 <translation id="1185134272377778587">À propos de Chromium</translation>
 <translation id="1497070702591980399">Importateur de Profil Chromium</translation>
 <translation id="1708666629004767631">Une nouvelle version, plus sûre, de Chromium est disponible.</translation>
-<translation id="1967743265616885482">Un module homonyme est connu pour créer des conflits avec Chromium.</translation>
+<translation id="1967743265616885482">Un module portant le même nom est connu pour créer des conflits avec Chromium.</translation>
 <translation id="2407806170074302369">A Propos de Chromium Frame...</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
-<translation id="2558235863893655150">Voulez-vous que Chromium enregistre votre mot de passe?</translation>
+<translation id="2558235863893655150">Voulez-vous que Chromium enregistre votre mot de passe ?</translation>
 <translation id="263863604136125912">Démarrer Chromium</translation>
 <translation id="2712549016134575851">Un conflit avec une autre application installée à été détecté.</translation>
 <translation id="3415796061834858532">Copyright © 2006-2010 Les auteurs de Chromium. Tous droits réservés.</translation>
-<translation id="3555616473548901994">Désinstallation terminée</translation>
+<translation id="3555616473548901994">Désinstallation terminée.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="4179848566211676653">Quitter Chromium</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -24,4 +24,29 @@
 <translation id="985602178874221306">Les auteurs de Chromium</translation>
 <translation id="2632329825580776666">Votre fichier de préférences est corrompu ou non valable.\n\nChromium est dans l'impossibilité de récuperer vos paramètres.</translation>
 <translation id="8621669128220841554">L'installation a échoué à cause d'une erreur inconnue. Veuillez télécharger Chromium à nouveau.</translation>
+<translation id="1018817853520605763"><!--We use /n here to separate lines manually because NativeCheckboxGtk currently does not support multi-line. -->
+        Optionnel : Aidez à améliorer Chromium en envoyant anonymement des statistiques d'utilisation et des\nrapports de crash à Google</translation>
+<translation id="1105130903706696483">Chromium ne s'est pas arrêté correctement. Pour ré-ouvrir les pages précédemment ouvertes, cliquez sur Restaurer.</translation>
+<translation id="1221340462641866827">Chromium OS ne supporte pas le lancement d'une application externe pour les liens de type <ph name="SCHEME"/>. Le lien demandé est <ph name="PROTOLINK"/>.</translation>
+<translation id="1293235220023151515">Une installation conflictuelle de Chromium a été trouvée sur le système. Veuillez la désinstaller et réessayer.</translation>
+<translation id="1929939181775079593">Chromium ne répond plus. Le relancer maintenant ?</translation>
+<translation id="205900032229966545">Vous avez tenté d'accéder à &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mais le serveur a présenté un certificat périmé. Aucune information ne permet de déterminer si le certificat a été compromis depuis son expiration. Cela veut dire que Chromium ne peut garantir que vous communiquez bien avec &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; et non un individu mal intentionné. Vous ne devriez pas continuer.</translation>
+<translation id="2572494885440352020">Assistant de Chromium</translation>
+<translation id="2648074677641340862">Une erreur du système d'exploitation s'est produite durant l'installation. Veuillez télécharger Chromium à nouveau.</translation>
+<translation id="275588974610408078">Les rapports de crash ne sont pas disponibles dans Chromium.</translation>
+<translation id="2770231113462710648">Changer le navigateur par défaut pour :</translation>
+<translation id="2843244238218937196">Moteur de Rendu de Chromium</translation>
+<translation id="2966088006374919794">Chromium doit lancer une application externe pour gérer les liens de type <ph name="SCHEME"/>. Le lien demandé est <ph name="PROTOLINK"/>.</translation>
+<translation id="309634601461115233">Veuillez fermer puis ré-ouvrir votre session Chromium OS pour que ce changement prenne effet.</translation>
+<translation id="3096463977885168586">Copyright © 2006-2011 The Chromium Authors. Tous droits réservés.</translation>
+<translation id="3103660991484857065">L'installeur n'a pas pu décompresser l'archive. Veuillez téléchargez Chromium à nouveau.</translation>
+<translation id="3190315855212034486">Oula ! Chromium a planté. Le relancer maintenant ?</translation>
+<translation id="3509308970982693815">Veuillez fermer toutes les fenêtres de Chromium et essayer à nouveau.</translation>
+<translation id="3838208658251026018">Chromium importe les éléments suivants de <ph name="BROWSER_COMPONENT"/> :</translation>
+<translation id="3849925841547750267">Malheureusement, vos préférences de Mozilla Firefox ne sont pas disponibles lorsque ce navigateur est ouvert. Pour importer ces préférences vers Chromium, sauvegardez votre travail et fermez toutes vos fenêtres Firefox. Ensuite, cliquez sur Continuer.</translation>
+<translation id="4222661289444749267">Mise à jour de Chromium Frame.</translation>
+<translation id="4285930937574705105">L'installation a échoué à cause d'une erreur inconnue. Si Chromium est actuellement ouvert, merci de le fermer et de réessayer.</translation>
+<translation id="4330585738697551178">Ce module est connu pour entrer en conflit avec Chromium.</translation>
+<translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796</translation>
+<translation id="7641113255207688324">Chromium n'est pas votre navigateur par défaut.</translation>
 </translationbundle>

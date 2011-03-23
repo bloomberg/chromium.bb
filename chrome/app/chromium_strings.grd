@@ -145,6 +145,7 @@ be available for now. -->
       <file path="../../third_party/launchpad_translations/chromium_strings_da.xtb" lang="da" />
       <file path="../../third_party/launchpad_translations/chromium_strings_de.xtb" lang="de" />
       <file path="../../third_party/launchpad_translations/chromium_strings_es.xtb" lang="es" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_et.xtb" lang="et" />
       <file path="../../third_party/launchpad_translations/chromium_strings_eu.xtb" lang="eu" />
       <file path="../../third_party/launchpad_translations/chromium_strings_fi.xtb" lang="fi" />
       <file path="../../third_party/launchpad_translations/chromium_strings_fr.xtb" lang="fr" />

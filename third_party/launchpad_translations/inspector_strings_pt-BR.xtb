@@ -323,4 +323,24 @@
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9137833494350751475">Nenhuma informação do cache da aplicação disponível.</translation>
 <translation id="981121421437150478">Desconectado</translation>
+<translation id="4447945128078372094">Sistema de arquivos persistente</translation>
+<translation id="4584326581222680212">Saída de contexto</translation>
+<translation id="4622105813163822093">Requisição de cookies</translation>
+<translation id="5002136529483535185">Apagar expressões monitoradas.</translation>
+<translation id="5104694644471459465">Tamanho de conteúdo esperado</translation>
+<translation id="5167716886898615186">Sugestão seguinte/anterior</translation>
+<translation id="5267618901871637334">Tempo esgotado</translation>
+<translation id="5297100000449674173">Permitir depuração dos trabalhos. Habilitar esta opção ira substituir os trabalhos nativos com o iframe baseado implementação JavaScript</translation>
+<translation id="5592514154180021899">Pare nas modificações das sub-árvores</translation>
+<translation id="6314007596429871800">Cache do aplicativo</translation>
+<translation id="6965628487811068511">Pseudo ::<ph name="NAME"/> elemento</translation>
+<translation id="6975049145353825975">A declaração falhou:</translation>
+<translation id="7347213393645559597">Carregar evento</translation>
+<translation id="7798798603569425953">Resposta de cookies</translation>
+<translation id="7926244696402215339">Sem para nas exceções\nClique para parar em todas as exceções</translation>
+<translation id="8420328773017483742">Parar nas modificações dos atributos</translation>
+<translation id="859900712158819228">URL contém \&quot;<ph name="SUBSTRING"/>\&quot;</translation>
+<translation id="8752618944283862203">Mutação de DOM</translation>
+<translation id="8814517835479322133">Contador \xb1</translation>
+<translation id="9094024956608024774">Pontos de interrupção XHR</translation>
 </translationbundle>

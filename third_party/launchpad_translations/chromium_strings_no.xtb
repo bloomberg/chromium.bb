@@ -65,4 +65,14 @@
 <translation id="6055895534982063517">Det finnes en ny versjon av Chromium, raskere enn noen gang.</translation>
 <translation id="6944967875980567883">Moduler lastet i Chromium</translation>
 <translation id="7223968959479464213">Oppgavebehandling - Chromium</translation>
+<translation id="2648074677641340862">En feil knyttet til operativsystemet oppsto under installasjonen. Vennligst last ned Chromium på nytt.</translation>
+<translation id="3103660991484857065">Installasjonsprogrammet mislyktes å pakke ut filen. Vennligst last ned Chromium på nytt.</translation>
+<translation id="3838208658251026018">Chromium importerer nå følgende elementer fra <ph name="BROWSER_COMPONENT"/>:</translation>
+<translation id="4285930937574705105">Installasjon milsyktes av ukjent årsak. Lukk Chromium hvis programmet fremdeles kjører.</translation>
+<translation id="7123348595797445166">Prøv den ut (allerede installert)</translation>
+<translation id="7138853919861947730">Det kan hende Chromium bruker eksterne nettjenester for å forbedre nettopplevelsen.</translation>
+<translation id="7278516633989165382">Chromium Frame har blitt oppdatert. Vennligst start nettleseren på nytt. Chrome versjonsnummer: <ph name="TODO_0001"/>, Chromium Frame versjonsnummer: <ph name="TODO_0002"/></translation>
+<translation id="7747138024166251722">Installasjonsprogrammet kunne ikke oppdrette en midlertidig mappe. Undersøk at det er nok ledig diskplass og at du har rettigheter til å installere programvare.</translation>
+<translation id="8046283042877435986">Dette nettsetdet anbefaler Chromium Frame (allerede installert).</translation>
+<translation id="9013262824292842194">Chromium må kjøre på Windows Vista eller Windows XP med SP2 eller høyere.</translation>
 </translationbundle>

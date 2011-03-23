@@ -107,4 +107,12 @@
 <translation id="985602178874221306">Авторы Chromium</translation>
 <translation id="1293235220023151515">В системе установлена несовместимая версия Chromium. Пожалуйста удалите её и попробуйте снова.</translation>
 <translation id="4330297532943865716">Противоречивые установки Chromium или Chromium Frame была найден в системе. Пожалуйста, удалите его и попробуйте еще раз.</translation>
+<translation id="1929939181775079593">Chromium не отвечает. Перезапустить?</translation>
+<translation id="275588974610408078">Отчеты об ошибка не доступны в Chromium.</translation>
+<translation id="2927042866129133279">Недопустимые аргументы. Chromium Frame не может быть установлен в рабочем виде без установленного Chromium.</translation>
+<translation id="3096463977885168586">Copyright © 2006-2011 The Chromium Authors. All Rights Reserved.</translation>
+<translation id="4077262827416206768">Пожалуйста, закройте все окна Chromium и перезапустите Chromium для того, чтобы изменения вступили в силу.</translation>
+<translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=ru&amp;answer=161796</translation>
+<translation id="7278516633989165382">Chromium Frame был обновлен. Пожалуйста, перезапустите ваш браузер. Версия Chrome: <ph name="TODO_0001"/>, версия Chromium Frame: <ph name="TODO_0002"/></translation>
+<translation id="8046283042877435986">На этом сайте рекомендуется использовать Chromium Frame (Уже установлен).</translation>
 </translationbundle>
