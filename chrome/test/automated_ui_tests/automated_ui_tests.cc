@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,9 @@
 
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/file_version_info.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
@@ -17,11 +19,13 @@
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
+#include "base/i18n/time_formatting.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/libxml_utils.h"
 #include "chrome/common/url_constants.h"
@@ -51,24 +55,24 @@ const char kDebugModeSwitch[] = "debug";
 
 const char kWaitSwitch[] = "wait-after-action";
 
+const char kTestLogFilePathSwitch[] = "testlog";
+
 const FilePath::CharType* const kDefaultInputFilePath =
-#if defined(OS_WIN)
-  L"C:\\automated_ui_tests.txt";
-#else
-  "/tmp/automated_ui_tests.txt";
-#endif
+FILE_PATH_LITERAL("automated_ui_tests.txt");
 
 const FilePath::CharType* const kDefaultOutputFilePath =
-#if defined(OS_WIN)
-  L"C:\\automated_ui_tests_error_report.txt";
-#else
-  "/tmp/automated_ui_tests_error_report.txt";
-#endif
+FILE_PATH_LITERAL("automated_ui_tests_error_report.txt");
+
+const FilePath::CharType* const kDefaultTestLogFilePath =
+FILE_PATH_LITERAL("automated_ui_tests_log.txt");
 
 const int kDebuggingTimeoutMsec = 5000;
 
 // How many commands to run when testing a dialog box.
 const int kTestDialogActionsToRun = 7;
+
+// String name of local chrome dll for looking up file information.
+const wchar_t kChromeDll[] = L"chrome.dll";
 
 void SilentRuntimeReportHandler(const std::string& str) {
 }
@@ -89,6 +93,62 @@ FilePath GetOutputFilePath() {
   } else {
     return FilePath(kDefaultOutputFilePath);
   }
+}
+
+FilePath GetTestLogFilePath() {
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  if (parsed_command_line.HasSwitch(kTestLogFilePathSwitch)) {
+    return parsed_command_line.GetSwitchValuePath(kTestLogFilePathSwitch);
+  } else {
+    return FilePath(kDefaultTestLogFilePath);
+  }
+}
+
+std::string GetChromeRevision() {
+  // Get Chrome version
+  std::string last_change;
+#if defined(OS_WIN)
+  // Check file version info for chrome dll.
+  scoped_ptr<FileVersionInfo> file_info;
+  file_info.reset(
+      FileVersionInfo::CreateFileVersionInfo(FilePath(kChromeDll)));
+  last_change = WideToASCII(file_info->last_change());
+#elif defined(OS_LINUX) || defined(OS_MACOSX)
+  chrome::VersionInfo version_info;
+  last_change = version_info.LastChange();
+#endif // !defined(OS_WIN)
+  return last_change;
+}
+
+void InitTestLog(base::Time start_time) {
+  FilePath path = GetTestLogFilePath();
+  std::ofstream test_log_file;
+  if (!path.empty())
+    test_log_file.open(path.value().c_str(), std::ios::out);
+
+  const std::string time =
+      UTF16ToASCII(base::TimeFormatFriendlyDateAndTime(start_time));
+
+  test_log_file << "Last Change: " << GetChromeRevision() << std::endl;
+  test_log_file << "Test Start: " << time << std::endl;
+  test_log_file.close();
+}
+
+void AppendToTestLog(const std::string& append_string) {
+  FilePath path = GetTestLogFilePath();
+  std::ofstream test_log_file;
+  if (!path.empty()) {
+    test_log_file.open(path.value().c_str(),
+        std::ios::out | std::ios_base::app);
+  }
+
+  test_log_file << append_string << std::endl;
+  test_log_file.close();
+}
+
+double CalculateTestDuration(base::Time start_time) {
+  base::Time time_now = base::Time::Now();
+  return time_now.ToDoubleT() - start_time.ToDoubleT();
 }
 
 }  // namespace
@@ -142,6 +202,8 @@ AutomatedUITest::~AutomatedUITest() {}
 
 void AutomatedUITest::RunReproduction() {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+
+  InitTestLog(test_start_time_);
   xml_writer_.StartWriting();
   xml_writer_.StartElement("Report");
   std::string action_string =
@@ -196,11 +258,15 @@ void AutomatedUITest::RunReproduction() {
     LogSuccessResult();
   }
 
+  AppendToTestLog(StringPrintf("total_duration_seconds=%f",
+                  CalculateTestDuration(test_start_time_)));
   WriteReportToFile();
 }
 
 
 void AutomatedUITest::RunAutomatedUITest() {
+  InitTestLog(test_start_time_);
+
   ASSERT_TRUE(InitXMLReader()) << "Error initializing XMLReader";
   xml_writer_.StartWriting();
   xml_writer_.StartElement("Report");
@@ -292,6 +358,10 @@ void AutomatedUITest::RunAutomatedUITest() {
       xml_writer_.EndElement();  // End "Executed" element.
     }
   }
+
+  AppendToTestLog(StringPrintf("total_duration_seconds=%f",
+                  CalculateTestDuration(test_start_time_)));
+
   // The test is finished so write our report.
   WriteReportToFile();
 }
@@ -654,6 +724,9 @@ void AutomatedUITest::AppendToOutputFile(const std::string& append_string) {
 void AutomatedUITest::LogCrashResult(const FilePath& crash_dump,
                                      bool command_completed) {
   xml_writer_.StartElement("result");
+  xml_writer_.AddAttribute("test_log_path",
+      GetTestLogFilePath().MaybeAsASCII());
+  xml_writer_.AddAttribute("revision", GetChromeRevision());
   xml_writer_.StartElement("crash");
 #if defined(OS_WIN)
   xml_writer_.AddAttribute("crash_dump", WideToASCII(crash_dump.value()));
@@ -670,6 +743,9 @@ void AutomatedUITest::LogCrashResult(const FilePath& crash_dump,
 
 void AutomatedUITest::LogSuccessResult() {
   xml_writer_.StartElement("result");
+  xml_writer_.AddAttribute("test_log_path",
+      GetTestLogFilePath().MaybeAsASCII());
+  xml_writer_.AddAttribute("revision", GetChromeRevision());
   xml_writer_.StartElement("success");
   xml_writer_.EndElement();
   xml_writer_.EndElement();
