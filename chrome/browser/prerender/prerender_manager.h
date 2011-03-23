@@ -80,9 +80,16 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // Returns NULL if the specified URL has not been prerendered.
   PrerenderContents* GetEntry(const GURL& url);
 
-  // The following two methods should only be called from the UI thread.
-  static void RecordPerceivedPageLoadTime(base::TimeDelta pplt,
-                                          TabContents* tc);
+  // Records the perceived page load time for a page - effectively the time from
+  // when the user navigates to a page to when it finishes loading. The actual
+  // load may have started prior to navigation due to prerender hints.
+  // This must be called on the UI thread.
+  static void RecordPerceivedPageLoadTime(
+      base::TimeDelta perceived_page_load_time,
+      TabContents* tab_contents);
+
+  // Records the time from when a page starts prerendering to when the user
+  // navigates to it. This must be called on the UI thread.
   void RecordTimeUntilUsed(base::TimeDelta time_until_used);
 
   base::TimeDelta max_prerender_age() const { return max_prerender_age_; }
@@ -148,7 +155,7 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // ownership of the PrerenderContents.
   PrerenderContents* FindEntry(const GURL& url);
 
-  static bool ShouldRecordWindowedPPLT();
+  static bool WithinWindow();
 
   static void RecordPrefetchTagObservedOnUIThread();
 
@@ -186,7 +193,7 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
 
   // Time window for which we will record windowed PLT's from the last
   // observed link rel=prefetch tag.
-  static const int kWindowedPPLTSeconds = 30;
+  static const int kWindowDurationSeconds = 30;
 
   // Time interval at which periodic cleanups are performed.
   static const int kPeriodicCleanupIntervalMs = 1000;

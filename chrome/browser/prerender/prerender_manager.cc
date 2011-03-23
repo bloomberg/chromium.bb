@@ -5,6 +5,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -327,37 +328,38 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
 }
 
 // static
-void PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta pplt,
-                                                   TabContents* tc) {
-  bool record_windowed_pplt = ShouldRecordWindowedPPLT();
-  PrerenderManager* pm = tc->profile()->GetPrerenderManager();
+void PrerenderManager::RecordPerceivedPageLoadTime(
+    base::TimeDelta perceived_page_load_time,
+    TabContents* tab_contents) {
+  bool within_window = WithinWindow();
+  PrerenderManager* prerender_manager =
+      tab_contents->profile()->GetPrerenderManager();
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      base::FieldTrial::MakeName("Prerender.PerceivedPLT", "Prefetch"),
+      perceived_page_load_time);
+  if (within_window) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        base::FieldTrial::MakeName("Prerender.PerceivedPLTWindowed",
+                                   "Prefetch"),
+        perceived_page_load_time);
+  }
   switch (mode_) {
     case PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP:
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "Prerender.PerceivedPageLoadTime_Control", pplt);
-      if (record_windowed_pplt) {
+      if (prerender_manager &&
+          prerender_manager->WouldTabContentsBePrerendered(tab_contents)) {
         UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Prerender.PerceivedPageLoadTime_WindowControl",
-            pplt);
-      }
-      if (pm && pm->WouldTabContentsBePrerendered(tc)) {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Prerender.PerceivedPageLoadTime_PrerenderMatchControl",
-            pplt);
+            base::FieldTrial::MakeName("Prerender.PerceivedPLTMatched",
+                                       "Prefetch"),
+            perceived_page_load_time);
       }
       break;
     case PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP:
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "Prerender.PerceivedPageLoadTime_Treatment", pplt);
-      if (record_windowed_pplt) {
+      if (prerender_manager &&
+          prerender_manager->IsTabContentsPrerendered(tab_contents)) {
         UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Prerender.PerceivedPageLoadTime_WindowTreatment",
-            pplt);
-      }
-      if (pm && pm->IsTabContentsPrerendered(tc)) {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Prerender.PerceivedPageLoadTime_PrerenderMatchTreatment",
-            pplt);
+            base::FieldTrial::MakeName("Prerender.PerceivedPLTMatched",
+                                       "Prefetch"),
+            perceived_page_load_time);
       }
       break;
     default:
@@ -444,13 +446,13 @@ void PrerenderManager::RemovePendingPreload(PrerenderContents* entry) {
 }
 
 // static
-bool PrerenderManager::ShouldRecordWindowedPPLT() {
+bool PrerenderManager::WithinWindow() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (last_prefetch_seen_time_.is_null())
     return false;
   base::TimeDelta elapsed_time =
       base::TimeTicks::Now() - last_prefetch_seen_time_;
-  return elapsed_time <= base::TimeDelta::FromSeconds(kWindowedPPLTSeconds);
+  return elapsed_time <= base::TimeDelta::FromSeconds(kWindowDurationSeconds);
 }
 
 bool PrerenderManager::DoesRateLimitAllowPrerender() const {
