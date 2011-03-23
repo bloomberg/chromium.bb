@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_TEST_TESTING_INSTANCE_H_
-#define PPAPI_TEST_TESTING_INSTANCE_H_
+#ifndef PPAPI_TESTS_TESTING_INSTANCE_H_
+#define PPAPI_TESTS_TESTING_INSTANCE_H_
 
 #include <string>
 
@@ -14,7 +14,7 @@ class TestCase;
 
 class TestingInstance : public pp::Instance {
  public:
-  TestingInstance(PP_Instance instance);
+  explicit TestingInstance(PP_Instance instance);
 
   // pp::Instance override.
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
@@ -40,6 +40,10 @@ class TestingInstance : public pp::Instance {
 
   // Appends an error message to the log.
   void AppendError(const std::string& message);
+
+  // Passes the message_data through to the HandleMessage method on the
+  // TestClass object that's associated with this instance.
+  virtual void HandleMessage(const pp::Var& message_data);
 
  private:
   void ExecuteTests(int32_t unused);
@@ -75,4 +79,5 @@ class TestingInstance : public pp::Instance {
   bool nacl_mode_;
 };
 
-#endif  // PPAPI_TEST_TESTING_INSTANCE_H_
+#endif  // PPAPI_TESTS_TESTING_INSTANCE_H_
+

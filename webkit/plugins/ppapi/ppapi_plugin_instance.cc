@@ -11,8 +11,10 @@
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
+#include "ppapi/c/dev/ppb_messaging_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
+#include "ppapi/c/dev/ppp_messaging_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_input_event.h"
@@ -42,6 +44,7 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/event_conversion.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
+#include "webkit/plugins/ppapi/message_channel.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
@@ -100,7 +103,8 @@ typedef bool (*RenderPDFPageToDCProc)(
 namespace {
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, np_name) \
-    COMPILE_ASSERT(int(WebCursorInfo::webkit_name) == int(np_name), \
+    COMPILE_ASSERT(static_cast<int>(WebCursorInfo::webkit_name) \
+                       == static_cast<int>(np_name), \
                    mismatching_enums)
 
 COMPILE_ASSERT_MATCHING_ENUM(TypePointer, PP_CURSORTYPE_POINTER);
@@ -262,11 +266,21 @@ PP_Bool GetScreenSize(PP_Instance instance_id, PP_Size* size) {
   return PP_TRUE;
 }
 
-
 const PPB_Fullscreen_Dev ppb_fullscreen = {
   &IsFullscreen,
   &SetFullscreen,
   &GetScreenSize
+};
+
+void PostMessage(PP_Instance instance_id, PP_Var message) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return;
+  instance->PostMessage(message);
+}
+
+const PPB_Messaging_Dev ppb_messaging = {
+  &PostMessage
 };
 
 void ZoomChanged(PP_Instance instance_id, double factor) {
@@ -326,9 +340,11 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       has_content_area_focus_(false),
       find_identifier_(-1),
       plugin_find_interface_(NULL),
+      plugin_messaging_interface_(NULL),
       plugin_pdf_interface_(NULL),
       plugin_selection_interface_(NULL),
       plugin_zoom_interface_(NULL),
+      checked_for_plugin_messaging_interface_(false),
 #if defined(OS_LINUX)
       canvas_(NULL),
 #endif  // defined(OS_LINUX)
@@ -337,6 +353,7 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       always_on_top_(false),
       fullscreen_container_(NULL),
       fullscreen_(false),
+      message_channel_(NULL),
       sad_plugin_(NULL) {
   pp_instance_ = ResourceTracker::Get()->AddInstance(this);
 
@@ -344,6 +361,7 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
   DCHECK(delegate);
   module_->InstanceCreated(this);
   delegate_->InstanceCreated(this);
+  message_channel_.reset(new MessageChannel(this));
 }
 
 PluginInstance::~PluginInstance() {
@@ -380,6 +398,11 @@ const PPB_Find_Dev* PluginInstance::GetFindInterface() {
 // static
 const PPB_Fullscreen_Dev* PluginInstance::GetFullscreenInterface() {
   return &ppb_fullscreen;
+}
+
+// static
+const PPB_Messaging_Dev* PluginInstance::GetMessagingInterface() {
+  return &ppb_messaging;
 }
 
 // static
@@ -643,6 +666,10 @@ PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
   return ret;
 }
 
+void PluginInstance::PostMessage(PP_Var message) {
+  message_channel_->PostMessageToJavaScript(message);
+}
+
 void PluginInstance::Delete() {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
@@ -700,6 +727,14 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
   if (cursor_.get())
     *cursor_info = *cursor_;
   return rv;
+}
+
+void PluginInstance::HandleMessage(PP_Var message) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
+  if (!LoadMessagingInterface())
+    return;
+  plugin_messaging_interface_->HandleMessage(pp_instance(), message);
 }
 
 PP_Var PluginInstance::GetInstanceObject() {
@@ -876,6 +911,17 @@ bool PluginInstance::LoadFindInterface() {
   }
 
   return !!plugin_find_interface_;
+}
+
+bool PluginInstance::LoadMessagingInterface() {
+  if (!checked_for_plugin_messaging_interface_) {
+    checked_for_plugin_messaging_interface_ = true;
+    plugin_messaging_interface_ =
+        reinterpret_cast<const PPP_Messaging_Dev*>(module_->GetPluginInterface(
+            PPP_MESSAGING_DEV_INTERFACE));
+  }
+
+  return !!plugin_messaging_interface_;
 }
 
 bool PluginInstance::LoadPdfInterface() {

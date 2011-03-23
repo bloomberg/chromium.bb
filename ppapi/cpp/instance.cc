@@ -4,6 +4,7 @@
 
 #include "ppapi/cpp/instance.h"
 
+#include "ppapi/c/dev/ppb_messaging_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/cpp/common.h"
@@ -23,6 +24,10 @@ namespace {
 
 template <> const char* interface_name<PPB_Instance>() {
   return PPB_INSTANCE_INTERFACE;
+}
+
+template <> const char* interface_name<PPB_Messaging_Dev>() {
+  return PPB_MESSAGING_DEV_INTERFACE;
 }
 
 }  // namespace
@@ -59,6 +64,10 @@ bool Instance::HandleDocumentLoad(const URLLoader& /*url_loader*/) {
 
 bool Instance::HandleInputEvent(const PP_InputEvent& /*event*/) {
   return false;
+}
+
+void Instance::HandleMessage(const Var& /*message_data*/) {
+  return;
 }
 
 Var Instance::GetInstanceObject() {
@@ -113,6 +122,13 @@ Var Instance::ExecuteScript(const Var& script, Var* exception) {
                  pp_instance(),
                  script.pp_var(),
                  Var::OutException(exception).get()));
+}
+
+void Instance::PostMessage(const Var& message) {
+  if (!has_interface<PPB_Messaging_Dev>())
+    return;
+  get_interface<PPB_Messaging_Dev>()->PostMessage(pp_instance(),
+                                                  message.pp_var());
 }
 
 void Instance::AddPerInstanceObject(const std::string& interface_name,

@@ -34,6 +34,8 @@ pp::Var TestCase::GetTestObject() {
   return test_object_;
 }
 
+void TestCase::HandleMessage(const pp::Var& message_data) {}
+
 pp::deprecated::ScriptableObject* TestCase::CreateTestObject() {
   return NULL;
 }

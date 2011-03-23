@@ -144,6 +144,15 @@
 #      ],
 #    },
 #    {
+#      'target_name': 'ppapi_example_post_message',
+#      'dependencies': [
+#        'ppapi_example_skeleton',
+#      ],
+#      'sources': [
+#        'examples/scripting/post_message.cc',
+#      ],
+#    },
+#    {
 #      'target_name': 'ppapi_example_scroll',
 #      'dependencies': [
 #        'ppapi_example_skeleton',
@@ -196,6 +205,8 @@
         'tests/test_image_data.h',
         'tests/test_paint_aggregator.cc',
         'tests/test_paint_aggregator.h',
+        'tests/test_post_message.cc',
+        'tests/test_post_message.h',
         'tests/test_scrollbar.cc',
         'tests/test_scrollbar.h',
         'tests/test_struct_sizes.c',

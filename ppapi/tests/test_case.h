@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_TEST_TEST_CASE_H_
-#define PPAPI_TEST_TEST_CASE_H_
+#ifndef PPAPI_TESTS_TEST_CASE_H_
+#define PPAPI_TESTS_TEST_CASE_H_
 
+#include <cmath>
+#include <limits>
 #include <string>
 
 #include "ppapi/c/pp_resource.h"
@@ -22,7 +24,7 @@ class ScriptableObject;
 // Individual classes of tests derive from this generic test case.
 class TestCase {
  public:
-  TestCase(TestingInstance* instance) : instance_(instance) {}
+  explicit TestCase(TestingInstance* instance) : instance_(instance) {}
   virtual ~TestCase() {}
 
   // Optionally override to do testcase specific initialization.
@@ -37,6 +39,12 @@ class TestCase {
   // Returns the scriptable test object for the current test, if any.
   // Internally, this uses CreateTestObject which each test overrides.
   pp::Var GetTestObject();
+
+  // A function that is invoked whenever HandleMessage is called on the
+  // associated TestingInstance. Default implementation does nothing.  TestCases
+  // that want to handle incoming postMessage events should override this
+  // method.
+  virtual void HandleMessage(const pp::Var& message_data);
 
  protected:
   // Overridden by each test to supply a ScriptableObject corresponding to the
@@ -115,6 +123,10 @@ class TestCaseFactory {
 #define ASSERT_EQ(a, b) ASSERT_TRUE((a) == (b))
 #define ASSERT_NE(a, b) ASSERT_TRUE((a) != (b))
 
+#define ASSERT_DOUBLE_EQ(a, b) ASSERT_TRUE( \
+    std::fabs((a)-(b)) <= std::numeric_limits<double>::epsilon())
+
 #define PASS() return std::string()
 
-#endif  // PPAPI_TEST_TEST_CASE_H_
+#endif  // PPAPI_TESTS_TEST_CASE_H_
+

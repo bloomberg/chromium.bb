@@ -29,9 +29,11 @@ struct PP_Var;
 struct PPB_Instance;
 struct PPB_Find_Dev;
 struct PPB_Fullscreen_Dev;
+struct PPB_Messaging_Dev;
 struct PPB_Zoom_Dev;
 struct PPP_Find_Dev;
 struct PPP_Instance;
+struct PPP_Messaging_Dev;
 struct PPP_Pdf;
 struct PPP_Selection_Dev;
 struct PPP_Zoom_Dev;
@@ -53,6 +55,7 @@ namespace webkit {
 namespace ppapi {
 
 class FullscreenContainer;
+class MessageChannel;
 class ObjectVar;
 class PluginDelegate;
 class PluginModule;
@@ -80,10 +83,12 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // exposed to the plugin.
   static const PPB_Find_Dev* GetFindInterface();
   static const PPB_Fullscreen_Dev* GetFullscreenInterface();
+  static const PPB_Messaging_Dev* GetMessagingInterface();
   static const PPB_Zoom_Dev* GetZoomInterface();
 
   PluginDelegate* delegate() const { return delegate_; }
   PluginModule* module() const { return module_.get(); }
+  MessageChannel& message_channel() { return *message_channel_; }
 
   WebKit::WebPluginContainer* container() const { return container_; }
 
@@ -214,6 +219,10 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // Implementation of PPB_Flash.
   bool NavigateToURL(const char* url, const char* target);
 
+  // Implementation of PPB_Messaging and PPP_Messaging.
+  void PostMessage(PP_Var message);
+  void HandleMessage(PP_Var message);
+
   PluginDelegate::PlatformContext3D* CreateContext3D();
 
   // Tracks all live ObjectVar. This is so we can map between PluginModule +
@@ -234,6 +243,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
  private:
   bool LoadFindInterface();
+  bool LoadMessagingInterface();
   bool LoadPdfInterface();
   bool LoadSelectionInterface();
   bool LoadZoomInterface();
@@ -319,9 +329,14 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // The plugin-provided interfaces.
   const PPP_Find_Dev* plugin_find_interface_;
+  const PPP_Messaging_Dev* plugin_messaging_interface_;
   const PPP_Pdf* plugin_pdf_interface_;
   const PPP_Selection_Dev* plugin_selection_interface_;
   const PPP_Zoom_Dev* plugin_zoom_interface_;
+
+  // A flag to indicate whether we have asked this plugin instance for its
+  // messaging interface, so that we can ask only once.
+  bool checked_for_plugin_messaging_interface_;
 
   // This is only valid between a successful PrintBegin call and a PrintEnd
   // call.
@@ -366,6 +381,10 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // True if we are in fullscreen mode. Note: it is false during the transition.
   bool fullscreen_;
+
+  // The MessageChannel used to implement bidirectional postMessage for the
+  // instance.
+  scoped_ptr<MessageChannel> message_channel_;
 
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.
   SkBitmap* sad_plugin_;

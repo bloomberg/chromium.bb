@@ -12,6 +12,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "webkit/plugins/ppapi/message_channel.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
@@ -90,9 +91,14 @@ void WebPluginImpl::destroy() {
 NPObject* WebPluginImpl::scriptableObject() {
   scoped_refptr<ObjectVar> object(
       ObjectVar::FromPPVar(instance_->GetInstanceObject()));
-  if (object)
-    return object->np_object();
-  return NULL;
+  // If there's an InstanceObject, tell the Instance's MessageChannel to pass
+  // any non-postMessage calls to it.
+  if (object) {
+    instance_->message_channel().set_passthrough_object(
+        object->np_object());
+  }
+  // And return the instance's MessageChannel.
+  return instance_->message_channel().np_object();
 }
 
 void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& rect) {

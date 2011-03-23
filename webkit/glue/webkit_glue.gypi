@@ -267,6 +267,8 @@
         '../plugins/ppapi/file_path.cc',
         '../plugins/ppapi/file_path.h',
         '../plugins/ppapi/fullscreen_container.h',
+        '../plugins/ppapi/message_channel.cc',
+        '../plugins/ppapi/message_channel.h',
         '../plugins/ppapi/npapi_glue.cc',
         '../plugins/ppapi/npapi_glue.h',
         '../plugins/ppapi/plugin_delegate.h',

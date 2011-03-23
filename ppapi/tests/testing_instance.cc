@@ -5,7 +5,8 @@
 #include "ppapi/tests/testing_instance.h"
 
 #include <algorithm>
-#include <string.h>
+#include <cstring>
+#include <vector>
 
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
@@ -27,15 +28,15 @@ bool TestingInstance::Init(uint32_t argc,
                            const char* argn[],
                            const char* argv[]) {
   for (uint32_t i = 0; i < argc; i++) {
-    if (strcmp(argn[i], "mode") == 0) {
-      if (strcmp(argv[i], "nacl") == 0)
+    if (std::strcmp(argn[i], "mode") == 0) {
+      if (std::strcmp(argv[i], "nacl") == 0)
         nacl_mode_ = true;
       break;
     }
   }
   // Create the proper test case from the argument.
   for (uint32_t i = 0; i < argc; i++) {
-    if (strcmp(argn[i], "testcase") == 0) {
+    if (std::strcmp(argn[i], "testcase") == 0) {
       if (argv[i][0] == '\0')
         break;
       current_case_ = CaseForTestName(argv[i]);
@@ -55,6 +56,10 @@ pp::Var TestingInstance::GetInstanceObject() {
   return current_case_->GetTestObject();
 }
 
+void TestingInstance::HandleMessage(const pp::Var& message_data) {
+  current_case_->HandleMessage(message_data);
+}
+
 void TestingInstance::DidChangeView(const pp::Rect& position,
                                     const pp::Rect& clip) {
   if (!executed_tests_) {
@@ -66,7 +71,7 @@ void TestingInstance::DidChangeView(const pp::Rect& position,
 }
 
 void TestingInstance::LogTest(const std::string& test_name,
-                           const std::string& error_message) {
+                              const std::string& error_message) {
   std::string html;
   html.append("<div class=\"test_line\"><span class=\"test_name\">");
   html.append(test_name);
@@ -120,7 +125,7 @@ void TestingInstance::ExecuteTests(int32_t unused) {
 TestCase* TestingInstance::CaseForTestName(const char* name) {
   TestCaseFactory* iter = TestCaseFactory::head_;
   while (iter != NULL) {
-    if (strcmp(name, iter->name_) == 0)
+    if (std::strcmp(name, iter->name_) == 0)
       return iter->method_(this);
     iter = iter->next_;
   }
