@@ -95,17 +95,8 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
   if (!job_settings.GetString("printerName", &printer_name))
     return OnError();
 
-  NSString* new_printer_name = base::SysUTF8ToNSString(printer_name);
-  if (!new_printer_name)
+  if (!SetPrinter(printer_name))
     return OnError();
-
-  if (![[[print_info_.get() printer] name] isEqualToString:new_printer_name]) {
-    NSPrinter* new_printer = [NSPrinter printerWithName:new_printer_name];
-    if (new_printer == nil)
-      return OnError();
-
-    [print_info_.get() setPrinter:new_printer];
-  }
 
   InitPrintSettingsFromPrintInfo(ranges);
   return OK;
@@ -121,6 +112,21 @@ void PrintingContextMac::InitPrintSettingsFromPrintInfo(
   PMSessionGetCurrentPrinter(print_session, &printer);
   PrintSettingsInitializerMac::InitPrintSettings(
       printer, page_format, ranges, false, &settings_);
+}
+
+bool PrintingContextMac::SetPrinter(const std::string& printer_name) {
+  NSString* new_printer_name = base::SysUTF8ToNSString(printer_name);
+  if (!new_printer_name)
+    return false;
+
+  if (![[[print_info_.get() printer] name] isEqualToString:new_printer_name]) {
+    NSPrinter* new_printer = [NSPrinter printerWithName:new_printer_name];
+    if (new_printer == nil)
+      return false;
+
+    [print_info_.get() setPrinter:new_printer];
+  }
+  return true;
 }
 
 void PrintingContextMac::ParsePrintInfo(NSPrintInfo* print_info) {

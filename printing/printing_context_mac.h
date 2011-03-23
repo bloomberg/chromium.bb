@@ -47,6 +47,10 @@ class PrintingContextMac : public PrintingContext {
   // Initializes PrintSettings from native print info object.
   void InitPrintSettingsFromPrintInfo(const PageRanges& ranges);
 
+  // Updates |print_info_| to use the given printer.
+  // Returns true if the printer was set else returns false.
+  bool SetPrinter(const std::string& printer_name);
+
   // The native print info object.
   scoped_nsobject<NSPrintInfo> print_info_;
 
