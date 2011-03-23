@@ -42,6 +42,7 @@ class GpuRenderThread : public IPC::Channel::Listener,
                         public IPC::Message::Sender {
  public:
   GpuRenderThread(IPC::Message::Sender* browser_channel,
+                  GpuWatchdogThread* gpu_watchdog_thread,
                   MessageLoop* io_message_loop,
                   base::WaitableEvent* shutdown_event);
   ~GpuRenderThread();
@@ -84,6 +85,7 @@ class GpuRenderThread : public IPC::Channel::Listener,
   // process.
   typedef base::hash_map<int, scoped_refptr<GpuChannel> > GpuChannelMap;
   GpuChannelMap gpu_channels_;
+  GpuWatchdogThread* watchdog_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuRenderThread);
 };

@@ -21,6 +21,7 @@
 #include "ui/gfx/size.h"
 
 class GpuChannel;
+class GpuWatchdogThread;
 
 class GpuCommandBufferStub
     : public IPC::Channel::Listener,
@@ -38,7 +39,8 @@ class GpuCommandBufferStub
       uint32 parent_texture_id,
       int32 route_id,
       int32 renderer_id,
-      int32 render_view_id);
+      int32 render_view_id,
+      GpuWatchdogThread* gpu_watchdog_thread);
 
   virtual ~GpuCommandBufferStub();
 
@@ -91,6 +93,7 @@ class GpuCommandBufferStub
   void OnResizeOffscreenFrameBuffer(const gfx::Size& size);
 
   void OnSwapBuffers();
+  void OnCommandProcessed();
 
 #if defined(OS_MACOSX)
   void OnSetWindowSize(const gfx::Size& size);
@@ -128,6 +131,7 @@ class GpuCommandBufferStub
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GPUProcessor> processor_;
+  GpuWatchdogThread* watchdog_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };

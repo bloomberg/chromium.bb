@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,6 +112,8 @@ class GPUProcessor : public CommandBufferEngine {
   // It is not defined on which thread this callback is called.
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
 
+  virtual void SetCommandProcessedCallback(Callback0::Type* callback);
+
   // Get the GLES2Decoder associated with this processor.
   gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
 
@@ -153,6 +155,7 @@ class GPUProcessor : public CommandBufferEngine {
 
   ScopedRunnableMethodFactory<GPUProcessor> method_factory_;
   scoped_ptr<Callback0::Type> wrapped_swap_buffers_callback_;
+  scoped_ptr<Callback0::Type> command_processed_callback_;
 };
 
 }  // namespace gpu

@@ -21,6 +21,7 @@
 #include "ui/gfx/size.h"
 
 class GpuRenderThread;
+class GpuWatchdogThread;
 struct GPUCreateCommandBufferConfig;
 class MessageLoop;
 
@@ -36,6 +37,7 @@ class GpuChannel : public IPC::Channel::Listener,
  public:
   // Takes ownership of the renderer process handle.
   GpuChannel(GpuRenderThread* gpu_render_thread,
+             GpuWatchdogThread* gpu_watchdog_thread,
              int renderer_id);
   virtual ~GpuChannel();
 
@@ -120,6 +122,7 @@ class GpuChannel : public IPC::Channel::Listener,
 
   bool log_messages_;  // True if we should log sent and received messages.
   gpu::gles2::DisallowedExtensions disallowed_extensions_;
+  GpuWatchdogThread* watchdog_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannel);
 };

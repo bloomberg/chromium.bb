@@ -92,21 +92,21 @@ GpuWatchdogThread::GpuWatchdogTaskObserver::~GpuWatchdogTaskObserver() {
 void GpuWatchdogThread::GpuWatchdogTaskObserver::WillProcessTask(
     const Task* task)
 {
-  CheckArmed();
+  watchdog_->CheckArmed();
 }
 
 void GpuWatchdogThread::GpuWatchdogTaskObserver::DidProcessTask(
     const Task* task)
 {
-  CheckArmed();
+  watchdog_->CheckArmed();
 }
 
-void GpuWatchdogThread::GpuWatchdogTaskObserver::CheckArmed()
+void GpuWatchdogThread::CheckArmed()
 {
   // Acknowledge the watchdog if it has armed itself. The watchdog will not
   // change its armed state until it is acknowledged.
-  if (watchdog_->armed()) {
-    watchdog_->PostAcknowledge();
+  if (armed()) {
+    PostAcknowledge();
   }
 }
 

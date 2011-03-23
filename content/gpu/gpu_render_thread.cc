@@ -23,11 +23,13 @@
 #include "ipc/ipc_channel_handle.h"
 
 GpuRenderThread::GpuRenderThread(IPC::Message::Sender* browser_channel,
+                                 GpuWatchdogThread* gpu_watchdog_thread,
                                  MessageLoop* io_message_loop,
                                  base::WaitableEvent* shutdown_event)
     : io_message_loop_(io_message_loop),
       shutdown_event_(shutdown_event),
-      browser_channel_(browser_channel) {
+      browser_channel_(browser_channel),
+      watchdog_thread_(gpu_watchdog_thread) {
   DCHECK(browser_channel);
   DCHECK(io_message_loop);
   DCHECK(shutdown_event);
@@ -72,7 +74,7 @@ void GpuRenderThread::OnEstablishChannel(int renderer_id) {
 
   GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
   if (iter == gpu_channels_.end())
-    channel = new GpuChannel(this, renderer_id);
+    channel = new GpuChannel(this, watchdog_thread_, renderer_id);
   else
     channel = iter->second;
 

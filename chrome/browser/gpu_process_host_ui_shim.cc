@@ -173,6 +173,7 @@ GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id)
     ui_thread_sender_ = new UIThreadSender;
     gpu_render_thread_ = new GpuRenderThread(
         ui_thread_sender_,
+        NULL,
         g_browser_process->io_thread()->message_loop(),
         g_browser_process->shutdown_event());
   } else {

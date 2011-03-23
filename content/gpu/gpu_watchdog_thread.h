@@ -23,6 +23,7 @@ class GpuWatchdogThread : public base::Thread,
   // Accessible on watched thread but only modified by watchdog thread.
   bool armed() const { return armed_; }
   void PostAcknowledge();
+  void CheckArmed();
 
  protected:
   virtual void Init();
@@ -42,7 +43,6 @@ class GpuWatchdogThread : public base::Thread,
     virtual void DidProcessTask(const Task* task);
 
    private:
-    void CheckArmed();
     GpuWatchdogThread* watchdog_;
   };
 

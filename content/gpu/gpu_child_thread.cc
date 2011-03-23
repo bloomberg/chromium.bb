@@ -188,6 +188,7 @@ void GpuChildThread::OnInitialize() {
   // initialization has succeeded.
   render_thread_.reset(new GpuRenderThread(
       this,
+      watchdog_thread_,
       ChildProcess::current()->io_message_loop(),
       ChildProcess::current()->GetShutDownEvent()));
 
