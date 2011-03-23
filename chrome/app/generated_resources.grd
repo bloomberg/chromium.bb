@@ -9803,6 +9803,46 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Modifier keys...
       </message>
 
+      <message name="IDS_SIM_UNLOCK_ENTER_PIN_TITLE" desc="Title of the SIM card unlock dialog in chrome:sim-unlock.">
+        Enter SIM card PIN
+      </message>
+      <message name="IDS_SIM_UNLOCK_INCORRECT_PIN_MESSAGE" desc="Incorrect PIN message shown on SIM card unlock dialog in chrome:sim-unlock.">
+        Incorrect PIN.
+      </message>
+      <message name="IDS_SIM_UNLOCK_PIN_TRIES_LEFT_MESSAGE" desc="Message with the number of PIN tries left shown on SIM card unlock dialog in chrome:sim-unlock.">
+        Tries left to enter the correct SIM card PIN: <ph name="TRIES_LEFT">$1<ex>3</ex></ph>.
+      </message>
+      <message name="IDS_SIM_UNLOCK_INCORRECT_PIN_TITLE" desc="Title of the Incorrect PIN stage (no tries left) shown on SIM card unlock dialog in chrome:sim-unlock.">
+        Incorrect PIN
+      </message>
+      <message name="IDS_SIM_UNLOCK_NO_PIN_TRIES_LEFT_MESSAGE" desc="Message shown when there's no PIN tries left, shown on SIM card unlock dialog in chrome:sim-unlock.">
+        You have entered the incorrect PIN too many times. Please contact <ph name="CARRIER_ID">$1<ex>your carrier</ex></ph> to obtain a new 8-digit PIN unlocking Key (PUK).
+      </message>
+      <message name="IDS_SIM_UNLOCK_DEFAULT_CARRIER" desc="Generic carrier name shown on SIM unlock dialog. Ex.: IDS_SIM_UNLOCK_NO_PIN_TRIES_LEFT_MESSAGE, IDS_SIM_UNLOCK_ENTER_PUK_MESSAGE">
+        your carrier
+      </message>
+      <message name="IDS_SIM_UNLOCK_ENTER_PUK_BUTTON" desc="Text of the button that will take to Enter PUK dialog, part of SIM card unlock dialog in chrome:sim-unlock.">
+        Enter PIN Unlocking Key
+      </message>
+      <message name="IDS_SIM_UNLOCK_ENTER_PUK_TITLE" desc="Title of the Enter PUK dialog, which is part of SIM card unlock dialog in chrome:sim-unlock.">
+        Enter PIN Unlocking Key
+      </message>
+      <message name="IDS_SIM_UNLOCK_PUK_TRIES_LEFT_MESSAGE" desc="Message with the number of PUK tries left shown on SIM card unlock dialog in chrome:sim-unlock.">
+        Tries left to enter the correct PIN Unlocking Key (PUK): <ph name="TRIES_LEFT">$1<ex>3</ex></ph>, or your SIM card will be permanently blocked.
+      </message>
+      <message name="IDS_SIM_UNLOCK_ENTER_PUK_MESSAGE" desc="Message on the Enter PUK dialog, which is part of SIM card unlock dialog in chrome:sim-unlock.">
+        Please enter the 8-digit PIN Unlocking Key provided by <ph name="CARRIER_ID">$1<ex>your carrier</ex></ph>.
+      </message>
+      <message name="IDS_SIM_UNLOCK_NO_PUK_TRIES_LEFT_MESSAGE" desc="Message shown when there're not PUK tries left, right after last try was used and SIM card is now blocked.">
+        You have entered the incorrect PIN Unlocking Key too many times. Your SIM card is permanently blocked.
+      </message>
+      <message name="IDS_SIM_UNLOCK_SIM_BLOCKED_TITLE" desc="Title shown when there're not PUK tries left and SIM card is blocked.">
+        SIM Card Blocked.
+      </message>
+      <message name="IDS_SIM_UNLOCK_SIM_BLOCKED_MESSAGE" desc="Message shown when there're not PUK tries left and SIM card is blocked.">
+        This SIM card is blocked and cannot be used. Please insert a different SIM card.
+      </message>
+
       <message name="IDS_EULA_BACK_BUTTON" desc="Back button shown on EULA screen.">
         « Back
       </message>

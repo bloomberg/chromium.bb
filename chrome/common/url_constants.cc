@@ -109,6 +109,7 @@ const char kChromeUIMobileSetupURL[] = "chrome://mobilesetup/";
 const char kChromeUIProxySettingsURL[] = "chrome://proxy-settings/";
 const char kChromeUIRegisterPageURL[] = "chrome://register/";
 const char kChromeUISlideshowURL[] = "chrome://slideshow/";
+const char kChromeUISimUnlockURL[] = "chrome://sim-unlock/";
 const char kChromeUISystemInfoURL[] = "chrome://system/";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
 #endif
@@ -156,6 +157,7 @@ const char kChromeUIMobileSetupHost[] = "mobilesetup";
 const char kChromeUIProxySettingsHost[] = "proxy-settings";
 const char kChromeUIRegisterPageHost[] = "register";
 const char kChromeUISlideshowHost[] = "slideshow";
+const char kChromeUISimUnlockHost[] = "sim-unlock";
 const char kChromeUISystemInfoHost[] = "system";
 const char kChromeUIMenu[] = "menu";
 const char kChromeUIWrenchMenu[] = "wrench-menu";

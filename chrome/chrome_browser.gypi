@@ -722,6 +722,8 @@
         'browser/chromeos/webui/proxy_settings_ui.h',
         'browser/chromeos/webui/register_page_ui.cc',
         'browser/chromeos/webui/register_page_ui.h',
+        'browser/chromeos/webui/sim_unlock_ui.cc',
+        'browser/chromeos/webui/sim_unlock_ui.h',
         'browser/chromeos/webui/stats_options_handler.cc',
         'browser/chromeos/webui/stats_options_handler.h',
         'browser/chromeos/webui/system_info_ui.cc',

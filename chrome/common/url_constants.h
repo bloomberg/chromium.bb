@@ -101,6 +101,7 @@ extern const char kChromeUIMobileSetupURL[];
 extern const char kChromeUIProxySettingsURL[];
 extern const char kChromeUIRegisterPageURL[];
 extern const char kChromeUISlideshowURL[];
+extern const char kChromeUISimUnlockURL[];
 extern const char kChromeUISystemInfoURL[];
 extern const char kChromeUIUserImageURL[];
 #endif
@@ -148,6 +149,7 @@ extern const char kChromeUIMobileSetupHost[];
 extern const char kChromeUIProxySettingsHost[];
 extern const char kChromeUIRegisterPageHost[];
 extern const char kChromeUISlideshowHost[];
+extern const char kChromeUISimUnlockHost[];
 extern const char kChromeUISystemInfoHost[];
 extern const char kChromeUIMenu[];
 extern const char kChromeUIWrenchMenu[];
