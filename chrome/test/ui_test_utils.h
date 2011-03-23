@@ -393,40 +393,42 @@ class TestNotificationObserver : public NotificationObserver {
 //   signal.Wait()
 class WindowedNotificationObserver : public NotificationObserver {
  public:
-  /* Register to listen for notifications of the given type from either
-   * a specific source, or from all sources if |source| is
-   * NotificationService::AllSources(). */
+  // Register to listen for notifications of the given type from either a
+  // specific source, or from all sources if |source| is
+  // NotificationService::AllSources().
   WindowedNotificationObserver(NotificationType notification_type,
                                const NotificationSource& source);
   virtual ~WindowedNotificationObserver();
 
-  /* Wait until the specified notification occurs. You must have specified a
-   * source in the arguments to the constructor in order to use this function.
-   * Otherwise, you should use WaitFor. */
+  // Wait until the specified notification occurs.  If the notification was
+  // emitted between the construction of this object and this call then it
+  // returns immediately.
   void Wait();
 
-  /* WaitFor waits until the given notification type is received from the
-   * given object. If the notification was emitted between the construction of
-   * this object and this call then it returns immediately.
-   *
-   * Beware that this is inheriently plagued by ABA issues. Consider:
-   *   WindowedNotificationObserver is created, listening for notifications from
-   *     all sources
-   *   Object A is created with address x and fires a notification
-   *   Object A is freed
-   *   Object B is created with the same address
-   *   WaitFor is called with the address of B
-   *
-   * In this case, WaitFor will return immediately because of the
-   * notification from A (because they shared an address), despite being
-   * different objects.
-   */
+  // WaitFor waits until the given notification type is received from the
+  // given object. If the notification was emitted between the construction of
+  // this object and this call then it returns immediately.
+  //
+  // Use this variant when you supply AllSources to the constructor but want
+  // to wait for notification from a specific observer.
+  //
+  // Beware that this is inheriently plagued by ABA issues. Consider:
+  //   WindowedNotificationObserver is created, listening for notifications from
+  //     all sources
+  //   Object A is created with address x and fires a notification
+  //   Object A is freed
+  //   Object B is created with the same address
+  //   WaitFor is called with the address of B
+  //
+  // In this case, WaitFor will return immediately because of the
+  // notification from A (because they shared an address), despite being
+  // different objects.
   void WaitFor(const NotificationSource& source);
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   bool seen_;

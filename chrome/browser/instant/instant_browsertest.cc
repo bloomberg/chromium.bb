@@ -29,45 +29,6 @@
 #define EXPECT_STR_EQ(ascii, utf16) \
   EXPECT_EQ(ASCIIToWide(ascii), UTF16ToWide(utf16))
 
-namespace {
-
-// Wait for DOWNLOAD_INITIATED.
-class DownloadNotificationObserver : public NotificationObserver {
- public:
-  DownloadNotificationObserver() : running_(false), fired_(false) {
-    registrar_.Add(this, NotificationType::DOWNLOAD_INITIATED,
-                   NotificationService::AllSources());
-  }
-
-  void Run() {
-    if (fired_)
-      return;
-
-    running_ = true;
-    ui_test_utils::RunMessageLoop();
-    running_ = false;
-  }
-
-  bool fired() const { return fired_; }
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE {
-    fired_ = true;
-    if (running_)
-      MessageLoopForUI::current()->Quit();
-  }
-
- private:
-  bool running_;
-  bool fired_;
-  NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadNotificationObserver);
-};
-
-}  // namespace
-
 class InstantTest : public InProcessBrowserTest {
  public:
   InstantTest()
@@ -803,13 +764,13 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_DownloadOnEnter) {
       NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR);
 
   printf("2\n");
-  DownloadNotificationObserver download_observer;
+  ui_test_utils::WindowedNotificationObserver download_observer(
+      NotificationType::DOWNLOAD_INITIATED,
+      NotificationService::AllSources());
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN));
   printf("3\n");
-  download_observer.Run();
+  download_observer.Wait();
   printf("4\n");
-  // Pressing enter should initiate a download.
-  EXPECT_TRUE(download_observer.fired());
 
   // And we should end up at about:blank.
   TabContents* contents = browser()->GetSelectedTabContents();

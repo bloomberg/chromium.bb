@@ -927,13 +927,10 @@ WindowedNotificationObserver::WindowedNotificationObserver(
 WindowedNotificationObserver::~WindowedNotificationObserver() {}
 
 void WindowedNotificationObserver::Wait() {
-  if (waiting_for_ == NotificationService::AllSources()) {
-    LOG(FATAL) << "Wait called when monitoring all sources. You must use "
-               << "WaitFor in this case.";
-  }
-
-  if (seen_)
+  if (seen_ || (waiting_for_ == NotificationService::AllSources() &&
+                !sources_seen_.empty())) {
     return;
+  }
 
   running_ = true;
   ui_test_utils::RunMessageLoop();
@@ -956,7 +953,8 @@ void WindowedNotificationObserver::WaitFor(const NotificationSource& source) {
 void WindowedNotificationObserver::Observe(NotificationType type,
                                            const NotificationSource& source,
                                            const NotificationDetails& details) {
-  if (waiting_for_ == source) {
+  if (waiting_for_ == source ||
+      (running_ && waiting_for_ == NotificationService::AllSources())) {
     seen_ = true;
     if (running_)
       MessageLoopForUI::current()->Quit();
