@@ -97,6 +97,9 @@ class GdbRspConnection(object):
     self._socket.send('+')
     return reply_body
 
+  def ReadMemory(self, address, size):
+    return DecodeHex(self.RspRequest('m%x,%x' % (address, size)))
+
 
 class DebugStubTest(unittest.TestCase):
 
@@ -112,6 +115,7 @@ class DebugStubTest(unittest.TestCase):
       # We expect a reply that indicates that the process stopped again.
       assert reply.startswith('S'), reply
 
+      # Test that we can fetch register values.
       registers = UnpackX8664Registers(DecodeHex(connection.RspRequest('g')))
       self.assertEquals(registers['rax'], 0x1100000000000022)
       self.assertEquals(registers['rbx'], 0x2200000000000033)
@@ -126,6 +130,15 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(registers['r12'], 0xbb000000000000cc)
       self.assertEquals(registers['r13'], 0xcc000000000000dd)
       self.assertEquals(registers['r14'], 0xdd000000000000ee)
+
+      # Test that we can read from memory by reading from the stack.
+      stack_addr = registers['rsp']
+      stack_val = struct.unpack('Q', connection.ReadMemory(stack_addr, 8))[0]
+      self.assertEquals(stack_val, 0xbbb0000000000ccc)
+
+      # Test that reading from an unreadable address gives a sensible error.
+      result = connection.RspRequest('m%x,%x' % (registers['r15'], 8))
+      self.assertEquals(result, 'E03')
     finally:
       proc.kill()
       proc.wait()

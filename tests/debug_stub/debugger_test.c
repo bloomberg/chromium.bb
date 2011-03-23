@@ -11,7 +11,9 @@ void set_registers_and_stop() {
 #if defined(__x86_64__)
   /* Note that we cannot assign arbitrary test values to %r15, %rsp
      and %rbp in the x86-64 sandbox. */
-  __asm__("mov $0x1100000000000022, %rax\n"
+  __asm__("mov $0xbbb0000000000ccc, %rax\n"
+          "push %rax\n"
+          "mov $0x1100000000000022, %rax\n"
           "mov $0x2200000000000033, %rbx\n"
           "mov $0x3300000000000044, %rcx\n"
           "mov $0x4400000000000055, %rdx\n"
