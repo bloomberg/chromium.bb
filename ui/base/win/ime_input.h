@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_IME_INPUT_H_
-#define CHROME_BROWSER_IME_INPUT_H_
+#ifndef UI_BASE_WIN_IME_INPUT_H_
+#define UI_BASE_WIN_IME_INPUT_H_
 #pragma once
 
 #include <windows.h>
@@ -12,8 +12,13 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "base/i18n/rtl.h"
+#include "base/string16.h"
 #include "ui/gfx/rect.h"
+
+namespace ui {
+
+struct CompositionText;
 
 // This header file defines a struct and a class used for encapsulating IMM32
 // APIs, controls IMEs attached to a window, and enables the 'on-the-spot'
@@ -53,32 +58,6 @@
 //      Call the functions listed below:
 //      - ImeInput::SetInputLanguage().
 //      An application CAN call ::DefWindowProc().
-
-// This struct represents the status of an ongoing composition.
-struct ImeComposition {
-  // Represents the start position of the selection range in the IME
-  // composition.
-  int selection_start;
-
-  // Represents the end position of the selection range in the IME composition.
-  // If |selection_start| and |selection_end| are equal, then it represents the
-  // cursor position.
-  int selection_end;
-
-  // Represents the type of the string in the 'ime_string' parameter.
-  // Its possible values and description are listed bwlow:
-  //   Value         Description
-  //   0             The parameter is not used.
-  //   GCS_RESULTSTR The parameter represents a result string.
-  //   GCS_COMPSTR   The parameter represents a composition string.
-  int string_type;
-
-  // Represents the string retrieved from IME (Input Method Editor)
-  std::wstring ime_string;
-
-  // Contains the underline information of the composition string.
-  std::vector<WebKit::WebCompositionUnderline> underlines;
-};
 
 // This class controls the IMM (Input Method Manager) through IMM32 APIs and
 // enables it to retrieve the string being controled by the IMM. (I wrote
@@ -134,8 +113,9 @@ class ImeInput {
   //     PLEASE DO NOT CALL ::DefWindowProc() IF THIS VALUE IS TRUE!
   //     All the window styles set in this function are over-written when
   //     calling ::DefWindowProc() after returning this function.
-  void SetImeWindowStyle(HWND window_handle, UINT message,
-                         WPARAM wparam, LPARAM lparam, BOOL* handled);
+  // Returns the value returned by DefWindowProc.
+  LRESULT SetImeWindowStyle(HWND window_handle, UINT message,
+                            WPARAM wparam, LPARAM lparam, BOOL* handled);
 
   // Destroys the IME windows and all the resources attached to them.
   // Parameters
@@ -173,8 +153,8 @@ class ImeInput {
   //     the same parameter of a WM_IME_COMPOSITION message handler.
   //     This parameter is used for checking if the ongoing composition has
   //     its result string,
-  //   * composition [out] (ImeComposition)
-  //     Represents the struct contains the composition result.
+  //   * result [out] (string16)
+  //     Represents the object contains the composition result.
   // Return values
   //   * true
   //     The ongoing composition has a composition result.
@@ -183,8 +163,7 @@ class ImeInput {
   // Remarks
   //   This function is designed for being called from WM_IME_COMPOSITION
   //   message handlers.
-  bool GetResult(HWND window_handle, LPARAM lparam,
-                 ImeComposition* composition);
+  bool GetResult(HWND window_handle, LPARAM lparam, string16* result);
 
   // Retrieves the current composition status of the ongoing composition.
   // Parameters
@@ -195,7 +174,7 @@ class ImeInput {
   //     the same parameter of a WM_IME_COMPOSITION message handler.
   //     This parameter is used for checking if the ongoing composition has
   //     its result string,
-  //   * composition [out] (ImeComposition)
+  //   * composition [out] (Composition)
   //     Represents the struct contains the composition status.
   // Return values
   //   * true
@@ -206,7 +185,7 @@ class ImeInput {
   //   This function is designed for being called from WM_IME_COMPOSITION
   //   message handlers.
   bool GetComposition(HWND window_handle, LPARAM lparam,
-                      ImeComposition* composition);
+                      CompositionText* composition);
 
   // Enables the IME attached to the given window, i.e. allows user-input
   // events to be dispatched to the IME.
@@ -248,10 +227,31 @@ class ImeInput {
   //     This rectangle is used for controlling the positions of IME windows.
   void UpdateCaretRect(HWND window_handle, const gfx::Rect& caret_rect);
 
+  // Returns the current input language id.
+  LANGID input_language_id() const { return input_language_id_; }
+
+  // Returns BCP-47 tag name of the current input language.
+  std::string GetInputLanguageName() const;
+
+  // Returns the text direction of the current input language.
+  base::i18n::TextDirection GetTextDirection() const;
+
+
+  // Helper functions ----------------------------------------------------------
+
+  // Checks if there is any RTL keyboard layout installed in the system.
+  static bool IsRTLKeyboardLayoutInstalled();
+
+  // Checks if the user pressed both Ctrl and right or left Shift keys to
+  // requrest to change the text direction and layout alignment explicitly.
+  // Returns true if only a Ctrl key and a Shift key are down. The desired text
+  // direction will be stored in |*direction|.
+  static bool IsCtrlShiftPressed(base::i18n::TextDirection* direction);
+
  protected:
   // Retrieves the composition information.
   void GetCompositionInfo(HIMC imm_context, LPARAM lparam,
-                          ImeComposition* composition);
+                          CompositionText* composition);
 
   // Updates the position of the IME windows.
   void MoveImeWindow(HWND window_handle, HIMC imm_context);
@@ -260,8 +260,7 @@ class ImeInput {
   void CompleteComposition(HWND window_handle, HIMC imm_context);
 
   // Retrieves a string from the IMM.
-  bool GetString(HIMC imm_context, WPARAM lparam, int type,
-                 ImeComposition* composition);
+  bool GetString(HIMC imm_context, WPARAM lparam, int type, string16* result);
 
  private:
   // Represents whether or not there is an ongoing composition in a browser
@@ -309,4 +308,6 @@ class ImeInput {
   DISALLOW_COPY_AND_ASSIGN(ImeInput);
 };
 
-#endif  // CHROME_BROWSER_IME_INPUT_H_
+}  // namespace ui
+
+#endif  // UI_BASE_WIN_IME_INPUT_H_

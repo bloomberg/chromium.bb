@@ -1424,7 +1424,6 @@
         'browser/process_singleton_mac_unittest.cc',
         'browser/profiles/profile_manager_unittest.cc',
         'browser/remoting/directory_add_request_unittest.cc',
-        'browser/renderer_host/gtk_im_context_wrapper_unittest.cc',
         'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
         'browser/renderer_host/render_widget_host_view_mac_unittest.mm',
         'browser/renderer_host/web_cache_manager_unittest.cc',
@@ -1849,11 +1848,7 @@
         '../webkit/fileapi/file_system_url_request_job_unittest.cc',
       ],
       'conditions': [
-        ['touchui==1', {
-          'sources!': [
-             'browser/renderer_host/gtk_im_context_wrapper_unittest.cc',
-          ],
-        }, { # else: touchui == 0
+        ['touchui==0', {
           'sources/': [
             ['exclude', '^browser/chromeos/webui/login/'],
           ],

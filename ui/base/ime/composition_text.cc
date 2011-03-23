@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/composition.h"
+#include "ui/base/ime/composition_text.h"
 
 namespace ui {
 
-Composition::Composition() {
+CompositionText::CompositionText() {
 }
 
-Composition::~Composition() {
+CompositionText::~CompositionText() {
 }
 
-void Composition::Clear() {
+void CompositionText::Clear() {
   text.clear();
   underlines.clear();
   selection = Range();

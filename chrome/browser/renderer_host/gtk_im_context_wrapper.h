@@ -13,9 +13,9 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
+#include "ui/base/ime/composition_text.h"
 
 namespace gfx {
 class Rect;
@@ -64,10 +64,6 @@ class GtkIMContextWrapper {
   void ConfirmComposition();
 
  private:
-  // For unit tests.
-  class GtkIMContextWrapperTest;
-  FRIEND_TEST_ALL_PREFIXES(GtkIMContextWrapperTest, ExtractCompositionInfo);
-
   // Check if a text needs commit by forwarding a char event instead of
   // by confirming as a composition text.
   bool NeedCommitByForwardingCharEvent() const;
@@ -124,17 +120,6 @@ class GtkIMContextWrapper {
   static void HandleHostViewUnrealizeThunk(GtkWidget* widget,
                                            GtkIMContextWrapper* self);
 
-  // Extracts composition underlines, selection range and utf-16 text from given
-  // utf-8 text, pango attributes and cursor position.
-  static void ExtractCompositionInfo(
-      const gchar* utf8_text,
-      PangoAttrList* attrs,
-      int cursor_position,
-      string16* utf16_text,
-      std::vector<WebKit::WebCompositionUnderline>* underlines,
-      int* selection_start,
-      int* selection_end);
-
   // The parent object.
   RenderWidgetHostViewGtk* host_view_;
 
@@ -186,19 +171,11 @@ class GtkIMContextWrapper {
   // key event handler will send them later.
   bool is_in_key_event_handler_;
 
-  // Stores a copy of the most recent preedit text retrieved from context_.
-  string16 preedit_text_;
+  // The most recent composition text information retrieved from context_;
+  ui::CompositionText composition_;
 
-  // Stores the selection range in the stored preedit text.
-  int preedit_selection_start_;
-  int preedit_selection_end_;
-
-  // Stores composition underlines computed from the pango attributes of the
-  // most recent preedit text.
-  std::vector<WebKit::WebCompositionUnderline> preedit_underlines_;
-
-  // Whether or not the preedit has been changed since last key event.
-  bool is_preedit_changed_;
+  // Whether or not the composition has been changed since last key event.
+  bool is_composition_changed_;
 
   // Stores a copy of the most recent commit text received by commit signal
   // handler.

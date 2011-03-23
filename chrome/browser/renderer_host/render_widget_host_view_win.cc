@@ -33,8 +33,10 @@
 #include "content/common/view_messages.h"
 #include "grit/webkit_resources.h"
 #include "skia/ext/skia_utils_win.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebInputEventFactory.h"
+#include "ui/base/ime/composition_text.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -93,97 +95,6 @@ BOOL CALLBACK DismissOwnedPopups(HWND window, LPARAM arg) {
   }
 
   return TRUE;
-}
-
-// Enumerates the installed keyboard layouts in this system and returns true
-// if an RTL keyboard layout is installed.
-// TODO(hbono): to be moved to "src/chrome/common/l10n_util.cc"?
-static bool IsRTLKeyboardLayoutInstalled() {
-  static enum {
-    RTL_KEYBOARD_LAYOUT_NOT_INITIALIZED,
-    RTL_KEYBOARD_LAYOUT_INSTALLED,
-    RTL_KEYBOARD_LAYOUT_NOT_INSTALLED,
-    RTL_KEYBOARD_LAYOUT_ERROR,
-  } layout = RTL_KEYBOARD_LAYOUT_NOT_INITIALIZED;
-
-  // Cache the result value.
-  if (layout != RTL_KEYBOARD_LAYOUT_NOT_INITIALIZED)
-    return layout == RTL_KEYBOARD_LAYOUT_INSTALLED;
-
-  // Retrieve the number of layouts installed in this system.
-  int size = GetKeyboardLayoutList(0, NULL);
-  if (size <= 0) {
-    layout = RTL_KEYBOARD_LAYOUT_ERROR;
-    return false;
-  }
-
-  // Retrieve the keyboard layouts in an array and check if there is an RTL
-  // layout in it.
-  scoped_array<HKL> layouts(new HKL[size]);
-  GetKeyboardLayoutList(size, layouts.get());
-  for (int i = 0; i < size; ++i) {
-    if (PRIMARYLANGID(layouts[i]) == LANG_ARABIC ||
-        PRIMARYLANGID(layouts[i]) == LANG_HEBREW ||
-        PRIMARYLANGID(layouts[i]) == LANG_PERSIAN) {
-      layout = RTL_KEYBOARD_LAYOUT_INSTALLED;
-      return true;
-    }
-  }
-
-  layout = RTL_KEYBOARD_LAYOUT_NOT_INSTALLED;
-  return false;
-}
-
-// Returns the text direction according to the keyboard status.
-// This function retrieves the status of all keys and returns the following
-// values:
-// * WEB_TEXT_DIRECTION_RTL
-//   If only a control key and a right-shift key are down.
-// * WEB_TEXT_DIRECTION_LTR
-//   If only a control key and a left-shift key are down.
-
-static bool GetNewTextDirection(WebTextDirection* direction) {
-  uint8_t keystate[256];
-  if (!GetKeyboardState(&keystate[0]))
-    return false;
-
-  // To check if a user is pressing only a control key and a right-shift key
-  // (or a left-shift key), we use the steps below:
-  // 1. Check if a user is pressing a control key and a right-shift key (or
-  //    a left-shift key).
-  // 2. If the condition 1 is true, we should check if there are any other
-  //    keys pressed at the same time.
-  //    To ignore the keys checked in 1, we set their status to 0 before
-  //    checking the key status.
-  const int kKeyDownMask = 0x80;
-  if ((keystate[VK_CONTROL] & kKeyDownMask) == 0)
-    return false;
-
-  if (keystate[VK_RSHIFT] & kKeyDownMask) {
-    keystate[VK_RSHIFT] = 0;
-    *direction = WebKit::WebTextDirectionRightToLeft;
-  } else if (keystate[VK_LSHIFT] & kKeyDownMask) {
-    keystate[VK_LSHIFT] = 0;
-    *direction = WebKit::WebTextDirectionLeftToRight;
-  } else {
-    return false;
-  }
-
-  // Scan the key status to find pressed keys. We should adandon changing the
-  // text direction when there are other pressed keys.
-  // This code is executed only when a user is pressing a control key and a
-  // right-shift key (or a left-shift key), i.e. we should ignore the status of
-  // the keys: VK_SHIFT, VK_CONTROL, VK_RCONTROL, and VK_LCONTROL.
-  // So, we reset their status to 0 and ignore them.
-  keystate[VK_SHIFT] = 0;
-  keystate[VK_CONTROL] = 0;
-  keystate[VK_RCONTROL] = 0;
-  keystate[VK_LCONTROL] = 0;
-  for (int i = 0; i <= VK_PACKET; ++i) {
-    if (keystate[i] & kKeyDownMask)
-      return false;
-  }
-  return true;
 }
 
 class NotifyPluginProcessHostTask : public Task {
@@ -1197,8 +1108,8 @@ LRESULT RenderWidgetHostViewWin::OnImeSetContext(
     ime_input_.CreateImeWindow(m_hWnd);
 
   ime_input_.CleanupComposition(m_hWnd);
-  ime_input_.SetImeWindowStyle(m_hWnd, message, wparam, lparam, &handled);
-  return 0;
+  return ime_input_.SetImeWindowStyle(
+      m_hWnd, message, wparam, lparam, &handled);
 }
 
 LRESULT RenderWidgetHostViewWin::OnImeStartComposition(
@@ -1224,11 +1135,17 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
   // At first, update the position of the IME window.
   ime_input_.UpdateImeWindow(m_hWnd);
 
+  // ui::CompositionUnderline should be identical to
+  // WebKit::WebCompositionUnderline, so that we can do reinterpret_cast safely.
+  COMPILE_ASSERT(sizeof(ui::CompositionUnderline) ==
+                 sizeof(WebKit::WebCompositionUnderline),
+                 ui_CompositionUnderline__WebKit_WebCompositionUnderline_diff);
+
   // Retrieve the result string and its attributes of the ongoing composition
   // and send it to a renderer process.
-  ImeComposition composition;
-  if (ime_input_.GetResult(m_hWnd, lparam, &composition)) {
-    render_widget_host_->ImeConfirmComposition(composition.ime_string);
+  ui::CompositionText composition;
+  if (ime_input_.GetResult(m_hWnd, lparam, &composition.text)) {
+    render_widget_host_->ImeConfirmComposition(composition.text);
     ime_input_.ResetComposition(m_hWnd);
     // Fall though and try reading the composition string.
     // Japanese IMEs send a message containing both GCS_RESULTSTR and
@@ -1238,9 +1155,18 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
   // Retrieve the composition string and its attributes of the ongoing
   // composition and send it to a renderer process.
   if (ime_input_.GetComposition(m_hWnd, lparam, &composition)) {
+    // TODO(suzhe): due to a bug of webkit, we can't use selection range with
+    // composition string. See: https://bugs.webkit.org/show_bug.cgi?id=37788
+    composition.selection = ui::Range(composition.selection.end());
+
+    // TODO(suzhe): convert both renderer_host and renderer to use
+    // ui::CompositionText.
+    const std::vector<WebKit::WebCompositionUnderline>& underlines =
+        reinterpret_cast<const std::vector<WebKit::WebCompositionUnderline>&>(
+            composition.underlines);
     render_widget_host_->ImeSetComposition(
-        composition.ime_string, composition.underlines,
-        composition.selection_start, composition.selection_end);
+        composition.text, underlines,
+        composition.selection.start(), composition.selection.end());
   }
   // We have to prevent WTL from calling ::DefWindowProc() because we do not
   // want for the IMM (Input Method Manager) to send WM_IME_CHAR messages.
@@ -1356,12 +1282,16 @@ LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
   // Bug 9718: http://crbug.com/9718 To investigate IE and notepad, this
   // shortcut is enabled only on a PC having RTL keyboard layouts installed.
   // We should emulate them.
-  if (IsRTLKeyboardLayoutInstalled()) {
+  if (ui::ImeInput::IsRTLKeyboardLayoutInstalled()) {
     if (message == WM_KEYDOWN) {
       if (wparam == VK_SHIFT) {
-        WebTextDirection direction;
-        if (GetNewTextDirection(&direction))
-          render_widget_host_->UpdateTextDirection(direction);
+        base::i18n::TextDirection dir;
+        if (ui::ImeInput::IsCtrlShiftPressed(&dir)) {
+          render_widget_host_->UpdateTextDirection(
+              dir == base::i18n::RIGHT_TO_LEFT ?
+              WebKit::WebTextDirectionRightToLeft :
+              WebKit::WebTextDirectionLeftToRight);
+        }
       } else if (wparam != VK_CONTROL) {
         // Bug 9762: http://crbug.com/9762 A user pressed a key except shift
         // and control keys.

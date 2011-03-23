@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_COMPOSITION_H_
-#define UI_BASE_IME_COMPOSITION_H_
+#ifndef UI_BASE_IME_COMPOSITION_TEXT_H_
+#define UI_BASE_IME_COMPOSITION_TEXT_H_
 #pragma once
 
 #include "base/string16.h"
@@ -12,10 +12,10 @@
 
 namespace ui {
 
-// A struct represents the status of an ongoing composition.
-struct Composition {
-  Composition();
-  ~Composition();
+// A struct represents the status of an ongoing composition text.
+struct CompositionText {
+  CompositionText();
+  ~CompositionText();
 
   void Clear();
 
@@ -36,4 +36,4 @@ struct Composition {
 
 }  // namespace ui
 
-#endif  // UI_BASE_IME_COMPOSITION_H_
+#endif  // UI_BASE_IME_COMPOSITION_TEXT_H_

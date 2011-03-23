@@ -1,18 +1,25 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ime_input.h"
+#include "ui/base/win/ime_input.h"
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ime/composition_text.h"
 
 // "imm32.lib" is required by IMM32 APIs used in this file.
 // NOTE(hbono): To comply with a comment from Darin, I have added
 // this #pragma directive instead of adding "imm32.lib" to a project file.
 #pragma comment(lib, "imm32.lib")
+
+// Following code requires wchar_t to be same as char16. It should always be
+// true on Windows.
+COMPILE_ASSERT(sizeof(wchar_t) == sizeof(char16), wchar_t__char16_diff);
 
 ///////////////////////////////////////////////////////////////////////////////
 // ImeInput
@@ -62,11 +69,10 @@ void GetCompositionTargetRange(HIMC imm_context, int* target_start,
 
 // Helper function for ImeInput::GetCompositionInfo() method, to get underlines
 // information of the current composition string.
-void GetCompositionUnderlines(
-    HIMC imm_context,
-    int target_start,
-    int target_end,
-    std::vector<WebKit::WebCompositionUnderline>* underlines) {
+void GetCompositionUnderlines(HIMC imm_context,
+                              int target_start,
+                              int target_end,
+                              ui::CompositionUnderlines* underlines) {
   int clause_size = ::ImmGetCompositionString(imm_context, GCS_COMPCLAUSE,
                                               NULL, 0);
   int clause_length = clause_size / sizeof(uint32);
@@ -76,15 +82,15 @@ void GetCompositionUnderlines(
       ::ImmGetCompositionString(imm_context, GCS_COMPCLAUSE,
                                 clause_data.get(), clause_size);
       for (int i = 0; i < clause_length - 1; ++i) {
-        WebKit::WebCompositionUnderline underline;
-        underline.startOffset = clause_data[i];
-        underline.endOffset = clause_data[i+1];
+        ui::CompositionUnderline underline;
+        underline.start_offset = clause_data[i];
+        underline.end_offset = clause_data[i+1];
         underline.color = SK_ColorBLACK;
         underline.thick = false;
 
         // Use thick underline for the target clause.
-        if (underline.startOffset >= static_cast<unsigned>(target_start) &&
-            underline.endOffset <= static_cast<unsigned>(target_end)) {
+        if (underline.start_offset >= static_cast<unsigned>(target_start) &&
+            underline.end_offset <= static_cast<unsigned>(target_end)) {
           underline.thick = true;
         }
         underlines->push_back(underline);
@@ -93,7 +99,24 @@ void GetCompositionUnderlines(
   }
 }
 
+// Checks if a given primary language ID is a RTL language.
+bool IsRTLPrimaryLangID(LANGID lang) {
+  switch (lang) {
+    case LANG_ARABIC:
+    case LANG_HEBREW:
+    case LANG_PERSIAN:
+    case LANG_SYRIAC:
+    case LANG_UIGHUR:
+    case LANG_URDU:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace
+
+namespace ui {
 
 ImeInput::ImeInput()
     : ime_status_(false),
@@ -116,7 +139,6 @@ bool ImeInput::SetInputLanguage() {
   ime_status_ = (::ImmIsIME(keyboard_layout) == TRUE) ? true : false;
   return ime_status_;
 }
-
 
 void ImeInput::CreateImeWindow(HWND window_handle) {
   // When a user disables TSF (Text Service Framework) and CUAS (Cicero
@@ -141,9 +163,9 @@ void ImeInput::CreateImeWindow(HWND window_handle) {
   UpdateImeWindow(window_handle);
 }
 
-void ImeInput::SetImeWindowStyle(HWND window_handle, UINT message,
-                                 WPARAM wparam, LPARAM lparam,
-                                 BOOL* handled) {
+LRESULT ImeInput::SetImeWindowStyle(HWND window_handle, UINT message,
+                                    WPARAM wparam, LPARAM lparam,
+                                    BOOL* handled) {
   // To prevent the IMM (Input Method Manager) from displaying the IME
   // composition window, Update the styles of the IME windows and EXPLICITLY
   // call ::DefWindowProc() here.
@@ -154,7 +176,7 @@ void ImeInput::SetImeWindowStyle(HWND window_handle, UINT message,
   // the function with its original value and over-writes our window styles.
   *handled = TRUE;
   lparam &= ~ISC_SHOWUICOMPOSITIONWINDOW;
-  ::DefWindowProc(window_handle, message, wparam, lparam);
+  return ::DefWindowProc(window_handle, message, wparam, lparam);
 }
 
 void ImeInput::DestroyImeWindow(HWND window_handle) {
@@ -249,12 +271,18 @@ void ImeInput::CompleteComposition(HWND window_handle, HIMC imm_context) {
 }
 
 void ImeInput::GetCompositionInfo(HIMC imm_context, LPARAM lparam,
-                                  ImeComposition* composition) {
+                                  CompositionText* composition) {
   // We only care about GCS_COMPATTR, GCS_COMPCLAUSE and GCS_CURSORPOS, and
   // convert them into underlines and selection range respectively.
   composition->underlines.clear();
 
-  int length = static_cast<int>(composition->ime_string.length());
+  int length = static_cast<int>(composition->text.length());
+
+  // Find out the range selected by the user.
+  int target_start = length;
+  int target_end = length;
+  if (lparam & GCS_COMPATTR)
+    GetCompositionTargetRange(imm_context, &target_start, &target_end);
 
   // Retrieve the selection range information. If CS_NOMOVECARET is specified,
   // that means the cursor should not be moved, then we just place the caret at
@@ -263,19 +291,22 @@ void ImeInput::GetCompositionInfo(HIMC imm_context, LPARAM lparam,
   // TODO(suzhe): due to a bug of webkit, we currently can't use selection range
   // with composition string. See: https://bugs.webkit.org/show_bug.cgi?id=40805
   if (lparam & CS_NOMOVECARET) {
-    composition->selection_start = composition->selection_end = 0;
+    composition->selection = ui::Range(0);
   } else if (lparam & GCS_CURSORPOS) {
-    composition->selection_start = composition->selection_end =
-        ::ImmGetCompositionString(imm_context, GCS_CURSORPOS, NULL, 0);
+    // If cursor position is same as target_start or target_end, then selects
+    // the target range instead. We always use cursor position as selection end,
+    // so that if the client doesn't support drawing selection with composition,
+    // it can always retrieve the correct cursor position.
+    int cursor = ::ImmGetCompositionString(imm_context, GCS_CURSORPOS, NULL, 0);
+    if (cursor == target_start)
+      composition->selection = ui::Range(target_end, cursor);
+    else if (cursor == target_end)
+      composition->selection = ui::Range(target_start, cursor);
+    else
+      composition->selection = ui::Range(cursor);
   } else {
-    composition->selection_start = composition->selection_end = length;
+    composition->selection = ui::Range(target_start, target_end);
   }
-
-  // Find out the range selected by the user.
-  int target_start = 0;
-  int target_end = 0;
-  if (lparam & GCS_COMPATTR)
-    GetCompositionTargetRange(imm_context, &target_start, &target_end);
 
   // Retrieve the clause segmentations and convert them to underlines.
   if (lparam & GCS_COMPCLAUSE) {
@@ -285,23 +316,23 @@ void ImeInput::GetCompositionInfo(HIMC imm_context, LPARAM lparam,
 
   // Set default underlines in case there is no clause information.
   if (!composition->underlines.size()) {
-    WebKit::WebCompositionUnderline underline;
+    CompositionUnderline underline;
     underline.color = SK_ColorBLACK;
     if (target_start > 0) {
-      underline.startOffset = 0;
-      underline.endOffset = target_start;
+      underline.start_offset = 0;
+      underline.end_offset = target_start;
       underline.thick = false;
       composition->underlines.push_back(underline);
     }
     if (target_end > target_start) {
-      underline.startOffset = target_start;
-      underline.endOffset = target_end;
+      underline.start_offset = target_start;
+      underline.end_offset = target_end;
       underline.thick = true;
       composition->underlines.push_back(underline);
     }
     if (target_end < length) {
-      underline.startOffset = target_end;
-      underline.endOffset = length;
+      underline.start_offset = target_end;
+      underline.end_offset = length;
       underline.thick = false;
       composition->underlines.push_back(underline);
     }
@@ -309,72 +340,66 @@ void ImeInput::GetCompositionInfo(HIMC imm_context, LPARAM lparam,
 }
 
 bool ImeInput::GetString(HIMC imm_context, WPARAM lparam, int type,
-                         ImeComposition* composition) {
-  bool result = false;
+                         string16* result) {
+  bool ret = false;
   if (lparam & type) {
     int string_size = ::ImmGetCompositionString(imm_context, type, NULL, 0);
     if (string_size > 0) {
       int string_length = string_size / sizeof(wchar_t);
-      wchar_t *string_data = WriteInto(&composition->ime_string,
-                                       string_length + 1);
+      wchar_t *string_data = WriteInto(result, string_length + 1);
       if (string_data) {
-        // Fill the given ImeComposition object.
-        ::ImmGetCompositionString(imm_context, type,
-                                  string_data, string_size);
-        composition->string_type = type;
-        result = true;
+        // Fill the given result object.
+        ::ImmGetCompositionString(imm_context, type, string_data, string_size);
+        ret = true;
       }
     }
   }
-  return result;
+  return ret;
 }
 
-bool ImeInput::GetResult(HWND window_handle, LPARAM lparam,
-                         ImeComposition* composition) {
-  bool result = false;
+bool ImeInput::GetResult(HWND window_handle, LPARAM lparam, string16* result) {
+  bool ret = false;
   HIMC imm_context = ::ImmGetContext(window_handle);
   if (imm_context) {
-    // Copy the result string to the ImeComposition object.
-    result = GetString(imm_context, lparam, GCS_RESULTSTR, composition);
-    // Reset all the other parameters because a result string does not
-    // have composition attributes.
-    composition->selection_start = 0;
-    composition->selection_end = 0;
+    ret = GetString(imm_context, lparam, GCS_RESULTSTR, result);
     ::ImmReleaseContext(window_handle, imm_context);
   }
-  return result;
+  return ret;
 }
 
 bool ImeInput::GetComposition(HWND window_handle, LPARAM lparam,
-                              ImeComposition* composition) {
-  bool result = false;
+                              CompositionText* composition) {
+  bool ret = false;
   HIMC imm_context = ::ImmGetContext(window_handle);
   if (imm_context) {
-    // Copy the composition string to the ImeComposition object.
-    result = GetString(imm_context, lparam, GCS_COMPSTR, composition);
+    // Copy the composition string to the CompositionText object.
+    ret = GetString(imm_context, lparam, GCS_COMPSTR, &composition->text);
 
-    // This is a dirty workaround for facebook. Facebook deletes the placeholder
-    // character (U+3000) used by Traditional-Chinese IMEs at the beginning of
-    // composition text. This prevents WebKit from replacing this placeholder
-    // character with a Traditional-Chinese character, i.e. we cannot input any
-    // characters in a comment box of facebook with Traditional-Chinese IMEs.
-    // As a workaround, we replace U+3000 at the beginning of composition text
-    // with U+FF3F, a placeholder character used by Japanese IMEs.
-    if (input_language_id_ == MAKELANGID(LANG_CHINESE,
-                                         SUBLANG_CHINESE_TRADITIONAL) &&
-        composition->ime_string[0] == 0x3000) {
-      composition->ime_string[0] = 0xFF3F;
+    if (ret) {
+      // This is a dirty workaround for facebook. Facebook deletes the
+      // placeholder character (U+3000) used by Traditional-Chinese IMEs at the
+      // beginning of composition text. This prevents WebKit from replacing this
+      // placeholder character with a Traditional-Chinese character, i.e. we
+      // cannot input any characters in a comment box of facebook with
+      // Traditional-Chinese IMEs. As a workaround, we replace U+3000 at the
+      // beginning of composition text with U+FF3F, a placeholder character used
+      // by Japanese IMEs.
+      if (input_language_id_ == MAKELANGID(LANG_CHINESE,
+                                           SUBLANG_CHINESE_TRADITIONAL) &&
+          composition->text[0] == 0x3000) {
+        composition->text[0] = 0xFF3F;
+      }
+
+      // Retrieve the composition underlines and selection range information.
+      GetCompositionInfo(imm_context, lparam, composition);
+
+      // Mark that there is an ongoing composition.
+      is_composing_ = true;
     }
-
-    // Retrieve the composition underlines and selection range information.
-    GetCompositionInfo(imm_context, lparam, composition);
-
-    // Mark that there is an ongoing composition.
-    is_composing_ = true;
 
     ::ImmReleaseContext(window_handle, imm_context);
   }
-  return result;
+  return ret;
 }
 
 void ImeInput::DisableIME(HWND window_handle) {
@@ -421,3 +446,116 @@ void ImeInput::UpdateCaretRect(HWND window_handle,
     }
   }
 }
+
+std::string ImeInput::GetInputLanguageName() const {
+  const LCID locale_id = MAKELCID(input_language_id_, SORT_DEFAULT);
+  // max size for LOCALE_SISO639LANGNAME and LOCALE_SISO3166CTRYNAME is 9.
+  wchar_t buffer[9];
+
+  // Get language id.
+  int length = ::GetLocaleInfo(locale_id, LOCALE_SISO639LANGNAME, &buffer[0],
+                               arraysize(buffer));
+  if (length <= 1)
+    return std::string();
+
+  std::string language;
+  WideToUTF8(buffer, length - 1, &language);
+  if (SUBLANGID(input_language_id_) == SUBLANG_NEUTRAL)
+    return language;
+
+  // Get region id.
+  length = ::GetLocaleInfo(locale_id, LOCALE_SISO3166CTRYNAME, &buffer[0],
+                           arraysize(buffer));
+  if (length <= 1)
+    return language;
+
+  std::string region;
+  WideToUTF8(buffer, length - 1, &region);
+  return language.append(1, '-').append(region);
+}
+
+base::i18n::TextDirection ImeInput::GetTextDirection() const {
+  return IsRTLPrimaryLangID(PRIMARYLANGID(input_language_id_)) ?
+      base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT;
+}
+
+// static
+bool ImeInput::IsRTLKeyboardLayoutInstalled() {
+  static enum {
+    RTL_KEYBOARD_LAYOUT_NOT_INITIALIZED,
+    RTL_KEYBOARD_LAYOUT_INSTALLED,
+    RTL_KEYBOARD_LAYOUT_NOT_INSTALLED,
+    RTL_KEYBOARD_LAYOUT_ERROR,
+  } layout = RTL_KEYBOARD_LAYOUT_NOT_INITIALIZED;
+
+  // Cache the result value.
+  if (layout != RTL_KEYBOARD_LAYOUT_NOT_INITIALIZED)
+    return layout == RTL_KEYBOARD_LAYOUT_INSTALLED;
+
+  // Retrieve the number of layouts installed in this system.
+  int size = GetKeyboardLayoutList(0, NULL);
+  if (size <= 0) {
+    layout = RTL_KEYBOARD_LAYOUT_ERROR;
+    return false;
+  }
+
+  // Retrieve the keyboard layouts in an array and check if there is an RTL
+  // layout in it.
+  scoped_array<HKL> layouts(new HKL[size]);
+  ::GetKeyboardLayoutList(size, layouts.get());
+  for (int i = 0; i < size; ++i) {
+    if (IsRTLPrimaryLangID(PRIMARYLANGID(layouts[i]))) {
+      layout = RTL_KEYBOARD_LAYOUT_INSTALLED;
+      return true;
+    }
+  }
+
+  layout = RTL_KEYBOARD_LAYOUT_NOT_INSTALLED;
+  return false;
+}
+
+bool ImeInput::IsCtrlShiftPressed(base::i18n::TextDirection* direction) {
+  uint8_t keystate[256];
+  if (!::GetKeyboardState(&keystate[0]))
+    return false;
+
+  // To check if a user is pressing only a control key and a right-shift key
+  // (or a left-shift key), we use the steps below:
+  // 1. Check if a user is pressing a control key and a right-shift key (or
+  //    a left-shift key).
+  // 2. If the condition 1 is true, we should check if there are any other
+  //    keys pressed at the same time.
+  //    To ignore the keys checked in 1, we set their status to 0 before
+  //    checking the key status.
+  const int kKeyDownMask = 0x80;
+  if ((keystate[VK_CONTROL] & kKeyDownMask) == 0)
+    return false;
+
+  if (keystate[VK_RSHIFT] & kKeyDownMask) {
+    keystate[VK_RSHIFT] = 0;
+    *direction = base::i18n::RIGHT_TO_LEFT;
+  } else if (keystate[VK_LSHIFT] & kKeyDownMask) {
+    keystate[VK_LSHIFT] = 0;
+    *direction = base::i18n::LEFT_TO_RIGHT;
+  } else {
+    return false;
+  }
+
+  // Scan the key status to find pressed keys. We should adandon changing the
+  // text direction when there are other pressed keys.
+  // This code is executed only when a user is pressing a control key and a
+  // right-shift key (or a left-shift key), i.e. we should ignore the status of
+  // the keys: VK_SHIFT, VK_CONTROL, VK_RCONTROL, and VK_LCONTROL.
+  // So, we reset their status to 0 and ignore them.
+  keystate[VK_SHIFT] = 0;
+  keystate[VK_CONTROL] = 0;
+  keystate[VK_RCONTROL] = 0;
+  keystate[VK_LCONTROL] = 0;
+  for (int i = 0; i <= VK_PACKET; ++i) {
+    if (keystate[i] & kKeyDownMask)
+      return false;
+  }
+  return true;
+}
+
+}  // namespace ui

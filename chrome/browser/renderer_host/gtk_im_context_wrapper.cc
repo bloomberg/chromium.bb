@@ -22,6 +22,8 @@
 #include "content/common/native_web_keyboard_event.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "ui/base/gtk/gtk_im_context_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/rect.h"
@@ -46,6 +48,14 @@ namespace {
 const int kCompositionEventKeyCode = 229;
 }  // namespace
 
+// ui::CompositionUnderline should be identical to
+// WebKit::WebCompositionUnderline, so that we can do reinterpret_cast safely.
+// TODO(suzhe): remove it after migrating all code in chrome to use
+// ui::CompositionUnderline.
+COMPILE_ASSERT(sizeof(ui::CompositionUnderline) ==
+               sizeof(WebKit::WebCompositionUnderline),
+               ui_CompositionUnderline__WebKit_WebCompositionUnderline_diff);
+
 GtkIMContextWrapper::GtkIMContextWrapper(RenderWidgetHostViewGtk* host_view)
     : host_view_(host_view),
       context_(gtk_im_multicontext_new()),
@@ -54,9 +64,7 @@ GtkIMContextWrapper::GtkIMContextWrapper(RenderWidgetHostViewGtk* host_view)
       is_composing_text_(false),
       is_enabled_(false),
       is_in_key_event_handler_(false),
-      preedit_selection_start_(0),
-      preedit_selection_end_(0),
-      is_preedit_changed_(false),
+      is_composition_changed_(false),
       suppress_next_commit_(false),
       last_key_code_(0),
       last_key_was_up_(false),
@@ -114,7 +122,7 @@ void GtkIMContextWrapper::ProcessKeyEvent(GdkEventKey* event) {
   is_in_key_event_handler_ = true;
   // Reset this flag so that we can know if preedit is changed after
   // processing this key event.
-  is_preedit_changed_ = false;
+  is_composition_changed_ = false;
   // Clear it so that we can know if something needs committing after
   // processing this key event.
   commit_text_.clear();
@@ -345,8 +353,7 @@ void GtkIMContextWrapper::CancelComposition() {
   }
 
   is_composing_text_ = false;
-  preedit_text_.clear();
-  preedit_underlines_.clear();
+  composition_.Clear();
   commit_text_.clear();
 
   is_in_key_event_handler_ = false;
@@ -362,7 +369,7 @@ bool GtkIMContextWrapper::NeedCommitByForwardingCharEvent() const {
 }
 
 bool GtkIMContextWrapper::HasInputMethodResult() const {
-  return commit_text_.length() || is_preedit_changed_;
+  return commit_text_.length() || is_composition_changed_;
 }
 
 void GtkIMContextWrapper::ProcessFilteredKeyPressEvent(
@@ -444,12 +451,18 @@ void GtkIMContextWrapper::ProcessInputMethodResult(const GdkEventKey* event,
   // Send preedit text only if it's changed.
   // If a text has been committed, then we don't need to send the empty
   // preedit text again.
-  if (is_preedit_changed_) {
-    if (preedit_text_.length()) {
+  if (is_composition_changed_) {
+    if (composition_.text.length()) {
       // Another composition session has been started.
       is_composing_text_ = true;
-      host->ImeSetComposition(preedit_text_, preedit_underlines_,
-                              preedit_selection_start_, preedit_selection_end_);
+      // TODO(suzhe): convert both renderer_host and renderer to use
+      // ui::CompositionText.
+      const std::vector<WebKit::WebCompositionUnderline>& underlines =
+          reinterpret_cast<const std::vector<WebKit::WebCompositionUnderline>&>(
+              composition_.underlines);
+      host->ImeSetComposition(composition_.text, underlines,
+                              composition_.selection.start(),
+                              composition_.selection.end());
     } else if (!committed) {
       host->ImeCancelComposition();
     }
@@ -508,21 +521,21 @@ void GtkIMContextWrapper::HandlePreeditChanged(const gchar* text,
   if (suppress_next_commit_)
     return;
 
-  // Don't set is_preedit_changed_ to false if there is no change, because
+  // Don't set is_composition_changed_ to false if there is no change, because
   // this handler might be called multiple times with the same data.
-  is_preedit_changed_ = true;
-  preedit_text_.clear();
-  preedit_underlines_.clear();
-  preedit_selection_start_ = 0;
-  preedit_selection_end_ = 0;
+  is_composition_changed_ = true;
+  composition_.Clear();
 
-  ExtractCompositionInfo(text, attrs, cursor_position, &preedit_text_,
-                         &preedit_underlines_, &preedit_selection_start_,
-                         &preedit_selection_end_);
+  ui::ExtractCompositionTextFromGtkPreedit(text, attrs, cursor_position,
+                                           &composition_);
+
+  // TODO(suzhe): due to a bug of webkit, we currently can't use selection range
+  // with composition string. See: https://bugs.webkit.org/show_bug.cgi?id=40805
+  composition_.selection = ui::Range(cursor_position);
 
   // In case we are using a buggy input method which doesn't fire
   // "preedit_start" signal.
-  if (preedit_text_.length())
+  if (composition_.text.length())
     is_composing_text_ = true;
 
   // Nothing needs to do, if it's currently in ProcessKeyEvent()
@@ -532,19 +545,23 @@ void GtkIMContextWrapper::HandlePreeditChanged(const gchar* text,
       host_view_->GetRenderWidgetHost()) {
     // Workaround http://crbug.com/45478 by sending fake key down/up events.
     SendFakeCompositionKeyEvent(WebKit::WebInputEvent::RawKeyDown);
+    // TODO(suzhe): convert both renderer_host and renderer to use
+    // ui::CompositionText.
+    const std::vector<WebKit::WebCompositionUnderline>& underlines =
+        reinterpret_cast<const std::vector<WebKit::WebCompositionUnderline>&>(
+            composition_.underlines);
     host_view_->GetRenderWidgetHost()->ImeSetComposition(
-        preedit_text_, preedit_underlines_, preedit_selection_start_,
-        preedit_selection_end_);
+        composition_.text, underlines, composition_.selection.start(),
+        composition_.selection.end());
     SendFakeCompositionKeyEvent(WebKit::WebInputEvent::KeyUp);
   }
 }
 
 void GtkIMContextWrapper::HandlePreeditEnd() {
-  if (preedit_text_.length()) {
+  if (composition_.text.length()) {
     // The composition session has been finished.
-    preedit_text_.clear();
-    preedit_underlines_.clear();
-    is_preedit_changed_ = true;
+    composition_.Clear();
+    is_composition_changed_ = true;
 
     // If there is still a preedit text when firing "preedit-end" signal,
     // we need inform webkit to clear it.
@@ -615,98 +632,4 @@ void GtkIMContextWrapper::HandleHostViewRealizeThunk(
 void GtkIMContextWrapper::HandleHostViewUnrealizeThunk(
     GtkWidget* widget, GtkIMContextWrapper* self) {
   self->HandleHostViewUnrealize();
-}
-
-void GtkIMContextWrapper::ExtractCompositionInfo(
-      const gchar* utf8_text,
-      PangoAttrList* attrs,
-      int cursor_position,
-      string16* utf16_text,
-      std::vector<WebKit::WebCompositionUnderline>* underlines,
-      int* selection_start,
-      int* selection_end) {
-  *utf16_text = UTF8ToUTF16(utf8_text);
-
-  if (utf16_text->empty())
-    return;
-
-  // Gtk/Pango uses character index for cursor position and byte index for
-  // attribute range, but we use char16 offset for them. So we need to do
-  // conversion here.
-  std::vector<int> char16_offsets;
-  int length = static_cast<int>(utf16_text->length());
-  for (int offset = 0; offset < length; ++offset) {
-    char16_offsets.push_back(offset);
-    if (CBU16_IS_SURROGATE((*utf16_text)[offset]))
-      ++offset;
-  }
-
-  // The text length in Unicode characters.
-  int char_length = static_cast<int>(char16_offsets.size());
-  // Make sure we can convert the value of |char_length| as well.
-  char16_offsets.push_back(length);
-
-  int cursor_offset =
-      char16_offsets[std::max(0, std::min(char_length, cursor_position))];
-
-  // TODO(suzhe): due to a bug of webkit, we currently can't use selection range
-  // with composition string. See: https://bugs.webkit.org/show_bug.cgi?id=40805
-  *selection_start = *selection_end = cursor_offset;
-
-  if (attrs) {
-    int utf8_length = strlen(utf8_text);
-    PangoAttrIterator* iter = pango_attr_list_get_iterator(attrs);
-
-    // We only care about underline and background attributes and convert
-    // background attribute into selection if possible.
-    do {
-      gint start, end;
-      pango_attr_iterator_range(iter, &start, &end);
-
-      start = std::min(start, utf8_length);
-      end = std::min(end, utf8_length);
-      if (start >= end)
-        continue;
-
-      start = g_utf8_pointer_to_offset(utf8_text, utf8_text + start);
-      end = g_utf8_pointer_to_offset(utf8_text, utf8_text + end);
-
-      // Double check, in case |utf8_text| is not a valid utf-8 string.
-      start = std::min(start, char_length);
-      end = std::min(end, char_length);
-      if (start >= end)
-        continue;
-
-      PangoAttribute* background_attr =
-          pango_attr_iterator_get(iter, PANGO_ATTR_BACKGROUND);
-      PangoAttribute* underline_attr =
-          pango_attr_iterator_get(iter, PANGO_ATTR_UNDERLINE);
-
-      if (background_attr || underline_attr) {
-        // Use a black thin underline by default.
-        WebKit::WebCompositionUnderline underline(
-            char16_offsets[start], char16_offsets[end], SK_ColorBLACK, false);
-
-        // Always use thick underline for a range with background color, which
-        // is usually the selection range.
-        if (background_attr)
-          underline.thick = true;
-        if (underline_attr) {
-          int type = reinterpret_cast<PangoAttrInt*>(underline_attr)->value;
-          if (type == PANGO_UNDERLINE_DOUBLE)
-            underline.thick = true;
-          else if (type == PANGO_UNDERLINE_ERROR)
-            underline.color = SK_ColorRED;
-        }
-        underlines->push_back(underline);
-      }
-    } while (pango_attr_iterator_next(iter));
-    pango_attr_iterator_destroy(iter);
-  }
-
-  // Use a black thin underline by default.
-  if (underlines->empty()) {
-    underlines->push_back(
-        WebKit::WebCompositionUnderline(0, length, SK_ColorBLACK, false));
-  }
 }

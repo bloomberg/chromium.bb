@@ -1,16 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "chrome/browser/renderer_host/gtk_im_context_wrapper.h"
 
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/gtk/gtk_im_context_util.h"
+#include "ui/base/ime/composition_text.h"
 
 namespace {
 
@@ -22,8 +21,8 @@ struct AttributeInfo {
 };
 
 struct Underline {
-  unsigned startOffset;
-  unsigned endOffset;
+  unsigned start_offset;
+  unsigned end_offset;
   uint32 color;
   bool thick;
 };
@@ -80,7 +79,8 @@ const TestData kTestData[] = {
   },
 
   // Unicode, including non-BMP characters: "123你好𠀀𠀁一丁 456"
-  { "123\xE4\xBD\xA0\xE5\xA5\xBD\xF0\xA0\x80\x80\xF0\xA0\x80\x81\xE4\xB8\x80\xE4\xB8\x81 456",
+  { "123\xE4\xBD\xA0\xE5\xA5\xBD\xF0\xA0\x80\x80\xF0\xA0\x80\x81\xE4\xB8\x80"
+    "\xE4\xB8\x81 456",
     { { PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 0, 3 },
       { PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 3, 5 },
       { PANGO_ATTR_BACKGROUND, 0, 5, 7 },
@@ -95,9 +95,9 @@ const TestData kTestData[] = {
 };
 
 void CompareUnderline(const Underline& a,
-                      const WebKit::WebCompositionUnderline& b) {
-  EXPECT_EQ(a.startOffset, b.startOffset);
-  EXPECT_EQ(a.endOffset, b.endOffset);
+                      const ui::CompositionUnderline& b) {
+  EXPECT_EQ(a.start_offset, b.start_offset);
+  EXPECT_EQ(a.end_offset, b.end_offset);
   EXPECT_EQ(a.color, b.color);
   EXPECT_EQ(a.thick, b.thick);
 }
@@ -105,9 +105,7 @@ void CompareUnderline(const Underline& a,
 class GtkIMContextWrapperTest : public testing::Test {
 };
 
-}  // namespace
-
-TEST(GtkIMContextWrapperTest, ExtractCompositionInfo) {
+TEST(GtkIMContextUtilTest, ExtractCompositionText) {
   for (size_t i = 0; i < arraysize(kTestData); ++i) {
     const char* text = kTestData[i].text;
     const AttributeInfo* attrs = kTestData[i].attrs;
@@ -135,20 +133,18 @@ TEST(GtkIMContextWrapperTest, ExtractCompositionInfo) {
       pango_attr_list_insert(pango_attrs, pango_attr);
     }
 
-    string16 utf16_text;
-    std::vector<WebKit::WebCompositionUnderline> results;
-    int selection_start;
-    int selection_end;
-
-    GtkIMContextWrapper::ExtractCompositionInfo(text, pango_attrs, 0,
-        &utf16_text, &results, &selection_start, &selection_end);
+    ui::CompositionText result;
+    ui::ExtractCompositionTextFromGtkPreedit(text, pango_attrs, 0, &result);
 
     const Underline* underlines = kTestData[i].underlines;
-    for (size_t u = 0; underlines[u].color && u < results.size(); ++u) {
+    for (size_t u = 0; underlines[u].color &&
+         u < result.underlines.size(); ++u) {
       SCOPED_TRACE(testing::Message() << "Underline:" << u);
-      CompareUnderline(underlines[u], results[u]);
+      CompareUnderline(underlines[u], result.underlines[u]);
     }
 
     pango_attr_list_unref(pango_attrs);
   }
 }
+
+}  // namespace

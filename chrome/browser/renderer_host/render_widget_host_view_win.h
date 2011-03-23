@@ -18,10 +18,10 @@
 #include "base/scoped_vector.h"
 #include "base/task.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
-#include "chrome/browser/ime_input.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "ui/base/win/ime_input.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/webcursor.h"
 
@@ -288,8 +288,8 @@ class RenderWidgetHostViewWin
   bool track_mouse_leave_;
 
   // Wrapper class for IME input.
-  // (See "chrome/browser/ime_input.h" for its details.)
-  ImeInput ime_input_;
+  // (See "ui/base/win/ime_input.h" for its details.)
+  ui::ImeInput ime_input_;
 
   // Represents whether or not this browser process is receiving status
   // messages about the focused edit control from a renderer process.
