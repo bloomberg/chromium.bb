@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include <algorithm>
 
 #include "ppapi/c/dev/ppb_console_dev.h"
+#include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_input_event.h"
@@ -163,7 +164,8 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
         width_(0),
         height_(0),
         animation_counter_(0),
-        print_settings_valid_(false) {}
+        print_settings_valid_(false),
+        showing_custom_cursor_(false) {}
 
   virtual ~MyInstance() {
     if (fetcher_) {
@@ -194,6 +196,7 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
     switch (event.type) {
       case PP_INPUTEVENT_TYPE_MOUSEDOWN:
         SayHello();
+        ToggleCursor();
         return true;
       case PP_INPUTEVENT_TYPE_MOUSEMOVE:
         return true;
@@ -395,6 +398,30 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
     fetcher_ = NULL;
   }
 
+  void ToggleCursor() {
+    const PPB_CursorControl_Dev* cursor_control =
+        reinterpret_cast<const PPB_CursorControl_Dev*>(
+            pp::Module::Get()->GetBrowserInterface(
+                PPB_CURSOR_CONTROL_DEV_INTERFACE));
+    if (!cursor_control)
+      return;
+
+    if (showing_custom_cursor_) {
+      cursor_control->SetCursor(pp_instance(), PP_CURSORTYPE_POINTER, 0, NULL);
+    } else {
+      pp::ImageData image_data(this, pp::ImageData::GetNativeImageDataFormat(),
+                               pp::Size(50, 50), false);
+      FillRect(&image_data, 0, 0, 50, 50,
+               image_data.format() == PP_IMAGEDATAFORMAT_BGRA_PREMUL ?
+                   0x80800000 : 0x80000080);
+      pp::Point hot_spot(0, 0);
+      cursor_control->SetCursor(pp_instance(), PP_CURSORTYPE_CUSTOM,
+                                image_data.pp_resource(), &hot_spot.pp_point());
+    }
+
+    showing_custom_cursor_ = !showing_custom_cursor_;
+  }
+
   pp::Var console_;
   pp::Graphics2D device_context_;
 
@@ -409,6 +436,8 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
   int animation_counter_;
   bool print_settings_valid_;
   PP_PrintSettings_Dev print_settings_;
+
+  bool showing_custom_cursor_;
 };
 
 void FlushCallback(void* data, int32_t result) {

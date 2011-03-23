@@ -130,7 +130,11 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   PP_Var GetOwnerElementObject();
   bool BindGraphics(PP_Resource graphics_id);
   bool full_frame() const { return full_frame_; }
-  bool SetCursor(PP_CursorType_Dev type);
+  // If |type| is not PP_CURSORTYPE_CUSTOM, |custom_image| and |hot_spot| are
+  // ignored.
+  bool SetCursor(PP_CursorType_Dev type,
+                 PP_Resource custom_image,
+                 const PP_Point* hot_spot);
   PP_Var ExecuteScript(PP_Var script, PP_Var* exception);
 
   // PPP_Instance pass-through.

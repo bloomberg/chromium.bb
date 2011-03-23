@@ -28,16 +28,7 @@ PP_Bool SetCursor(PP_Instance instance_id,
   if (!instance)
     return PP_FALSE;
 
-  scoped_refptr<PPB_ImageData_Impl> custom_image(
-      Resource::GetAs<PPB_ImageData_Impl>(custom_image_id));
-  if (custom_image.get()) {
-    // TODO(neb): implement custom cursors.
-    // (Remember that PP_CURSORTYPE_CUSTOM != WebCursorInfo::TypeCustom.)
-    NOTIMPLEMENTED();
-    return PP_FALSE;
-  }
-
-  return BoolToPPBool(instance->SetCursor(type));
+  return BoolToPPBool(instance->SetCursor(type, custom_image_id, hot_spot));
 }
 
 PP_Bool LockCursor(PP_Instance instance_id) {
@@ -92,4 +83,3 @@ const PPB_CursorControl_Dev* GetCursorControlInterface() {
 
 }  // namespace ppapi
 }  // namespace webkit
-

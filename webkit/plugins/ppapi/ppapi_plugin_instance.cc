@@ -555,14 +555,53 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
   return true;
 }
 
-bool PluginInstance::SetCursor(PP_CursorType_Dev type) {
-  if (type == PP_CURSORTYPE_CUSTOM) {
-    // TODO(neb): implement custom cursors.
-    // (Remember that PP_CURSORTYPE_CUSTOM != WebCursorInfo::TypeCustom.)
+bool PluginInstance::SetCursor(PP_CursorType_Dev type,
+                               PP_Resource custom_image,
+                               const PP_Point* hot_spot) {
+  if (type != PP_CURSORTYPE_CUSTOM) {
+    cursor_.reset(new WebCursorInfo(static_cast<WebCursorInfo::Type>(type)));
+    return true;
+  }
+
+  if (!hot_spot)
+    return false;
+
+  scoped_refptr<PPB_ImageData_Impl> image_data(
+      Resource::GetAs<PPB_ImageData_Impl>(custom_image));
+  if (!image_data.get())
+    return false;
+
+  if (image_data->format() != PPB_ImageData_Impl::GetNativeImageDataFormat()) {
+    // TODO(yzshen): Handle the case that the image format is different from the
+    // native format.
     NOTIMPLEMENTED();
     return false;
   }
-  cursor_.reset(new WebCursorInfo(static_cast<WebCursorInfo::Type>(type)));
+
+  ImageDataAutoMapper auto_mapper(image_data);
+  if (!auto_mapper.is_valid())
+    return false;
+
+  scoped_ptr<WebCursorInfo> custom_cursor(
+      new WebCursorInfo(WebCursorInfo::TypeCustom));
+  custom_cursor->hotSpot.x = hot_spot->x;
+  custom_cursor->hotSpot.y = hot_spot->y;
+
+#if WEBKIT_USING_SKIA
+  const SkBitmap* bitmap = image_data->GetMappedBitmap();
+  // Make a deep copy, so that the cursor remains valid even after the original
+  // image data gets freed.
+  if (!bitmap->copyTo(&custom_cursor->customImage.getSkBitmap(),
+                      bitmap->config())) {
+    return false;
+  }
+#elif WEBKIT_USING_CG
+  // TODO(yzshen): Implement it.
+  NOTIMPLEMENTED();
+  return false;
+#endif
+
+  cursor_.reset(custom_cursor.release());
   return true;
 }
 
