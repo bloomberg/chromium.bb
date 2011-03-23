@@ -171,7 +171,6 @@ WebKit::WebThemeEngine* GetThemeEngine();
 #endif
 
 // - DevTools
-WebKit::WebCString GetDevToolsDebuggerScriptSource();
 WebKit::WebURL GetDevToolsPathAsURL();
 
 // - FileSystem

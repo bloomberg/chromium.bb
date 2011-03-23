@@ -552,12 +552,6 @@ WebKit::WebThemeEngine* GetThemeEngine() {
 #endif
 
 // DevTools
-WebCString GetDevToolsDebuggerScriptSource() {
-  base::StringPiece debuggerScriptJS = webkit_glue::GetDataResource(
-      IDR_DEVTOOLS_DEBUGGER_SCRIPT_JS);
-  return WebCString(debuggerScriptJS.as_string().c_str());
-}
-
 WebURL GetDevToolsPathAsURL() {
   FilePath dirExe;
   if (!webkit_glue::GetExeDirectory(&dirExe)) {

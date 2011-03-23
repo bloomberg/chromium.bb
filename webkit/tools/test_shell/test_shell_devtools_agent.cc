@@ -84,12 +84,6 @@ void TestShellDevToolsAgent::runtimePropertyChanged(
   // TODO: Implement.
 }
 
-WebCString TestShellDevToolsAgent::debuggerScriptSource() {
-  base::StringPiece debuggerScriptjs =
-      webkit_glue::GetDataResource(IDR_DEVTOOLS_DEBUGGER_SCRIPT_JS);
-  return WebCString(debuggerScriptjs.data(), debuggerScriptjs.length());
-}
-
 WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
     TestShellDevToolsAgent::createClientMessageLoop() {
   return new WebKitClientMessageLoopImpl();

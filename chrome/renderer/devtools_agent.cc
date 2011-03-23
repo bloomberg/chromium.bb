@@ -13,12 +13,10 @@
 #include "chrome/renderer/devtools_agent_filter.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
-#include "grit/webkit_chromium_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebDevToolsAgent;
 using WebKit::WebDevToolsAgentClient;
@@ -119,12 +117,6 @@ void DevToolsAgent::runtimePropertyChanged(
       routing_id(),
       name.utf8(),
       value.utf8()));
-}
-
-WebCString DevToolsAgent::debuggerScriptSource() {
-  base::StringPiece debuggerScriptjs =
-      webkit_glue::GetDataResource(IDR_DEVTOOLS_DEBUGGER_SCRIPT_JS);
-  return WebCString(debuggerScriptjs.data(), debuggerScriptjs.length());
 }
 
 WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
