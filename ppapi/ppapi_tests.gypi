@@ -181,8 +181,6 @@
         'tests/test_c_includes.c',
         'tests/test_char_set.cc',
         'tests/test_char_set.h',
-        'tests/test_class.cc',
-        'tests/test_class.h',
         'tests/test_cpp_includes.cc',
         'tests/test_directory_reader.cc',
         'tests/test_directory_reader.h',
@@ -209,8 +207,6 @@
         'tests/test_url_util.h',
         'tests/test_utils.cc',
         'tests/test_utils.h',
-        'tests/test_var.cc',
-        'tests/test_var.h',
 
         # Deprecated test cases.
         'tests/test_instance_deprecated.cc',

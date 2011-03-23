@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -162,63 +162,6 @@ class ObjectAccessorWithIdentifierTryCatch : public ObjectAccessorTryCatch {
   DISALLOW_COPY_AND_ASSIGN(ObjectAccessorWithIdentifierTryCatch);
 };
 
-PP_Var RunJSFunction(PP_Var scope_var,
-                     const char* function_script,
-                     PP_Var* argv,
-                     unsigned argc,
-                     PP_Var* exception) {
-  TryCatch try_catch(NULL, exception);
-  if (try_catch.has_exception())
-    return PP_MakeUndefined();
-
-  scoped_refptr<ObjectVar> obj = ObjectVar::FromPPVar(scope_var);
-  if (!obj) {
-    try_catch.SetInvalidObjectException();
-    return PP_MakeUndefined();
-  }
-
-  try_catch.set_module(obj->module());
-
-  scoped_array<NPVariant> args;
-  if (argc) {
-    args.reset(new NPVariant[argc]);
-    for (uint32_t i = 0; i < argc; ++i) {
-      if (!PPVarToNPVariantNoCopy(argv[i], &args[i])) {
-        // This argument was invalid, throw an exception & give up.
-        try_catch.SetException(kInvalidValueException);
-        return PP_MakeUndefined();
-      }
-    }
-  }
-
-  NPVariant function_var;
-  VOID_TO_NPVARIANT(function_var);
-  NPString function_string = { function_script, strlen(function_script) };
-  if (!WebBindings::evaluate(NULL, obj->np_object(), &function_string,
-                             &function_var)) {
-    try_catch.SetException(kInvalidValueException);
-    return PP_MakeUndefined();
-  }
-  DCHECK(NPVARIANT_IS_OBJECT(function_var));
-  DCHECK(!try_catch.has_exception());
-
-  NPVariant result_var;
-  VOID_TO_NPVARIANT(result_var);
-  PP_Var result;
-
-  if (WebBindings::invokeDefault(NULL, NPVARIANT_TO_OBJECT(function_var),
-                                 args.get(), argc, &result_var)) {
-    result = Var::NPVariantToPPVar(obj->instance(), &result_var);
-  } else {
-    DCHECK(try_catch.has_exception());
-    result = PP_MakeUndefined();
-  }
-
-  WebBindings::releaseVariantValue(&function_var);
-  WebBindings::releaseVariantValue(&result_var);
-  return result;
-}
-
 // PPB_Var methods -------------------------------------------------------------
 
 PP_Var VarFromUtf8(PP_Module module_id, const char* data, uint32_t len) {
@@ -240,101 +183,8 @@ const char* VarToUtf8(PP_Var var, uint32_t* len) {
   return str->value().data();
 }
 
-PP_Var ConvertType(PP_Instance instance,
-                   struct PP_Var var,
-                   PP_VarType new_type,
-                   PP_Var* exception) {
-  TryCatch try_catch(NULL, exception);
-  if (try_catch.has_exception())
-    return PP_MakeUndefined();
-
-  if (var.type == new_type)
-    return var;
-
-  PluginInstance* plugin_instance =
-      ResourceTracker::Get()->GetInstance(instance);
-  if (!plugin_instance) {
-    try_catch.SetInvalidObjectException();
-    return PP_MakeUndefined();
-  }
-
-  try_catch.set_module(plugin_instance->module());
-  PP_Var object = plugin_instance->GetWindowObject();
-
-  PP_Var params[] = {
-    var,
-    PP_MakeInt32(new_type),
-    PP_MakeInt32(PP_VARTYPE_NULL),
-    PP_MakeInt32(PP_VARTYPE_BOOL),
-    PP_MakeInt32(PP_VARTYPE_INT32),
-    PP_MakeInt32(PP_VARTYPE_DOUBLE),
-    PP_MakeInt32(PP_VARTYPE_STRING),
-    PP_MakeInt32(PP_VARTYPE_OBJECT)
-  };
-  PP_Var result = RunJSFunction(object,
-      "(function(v, new_type, type_null, type_bool, type_int32, type_double,"
-      "          type_string, type_object) {"
-      "  switch(new_type) {"
-      "    case type_null: return null;"
-      "    case type_bool: return Boolean(v);"
-      "    case type_int32: case type_double: return Number(v);"
-      "    case type_string: return String(v);"
-      "    case type_object: return Object(v);"
-      "    default: return undefined;"
-      "  }})",
-      params, sizeof(params) / sizeof(PP_Var), exception);
-
-  // Massage Number into the correct type.
-  if (new_type == PP_VARTYPE_INT32 && result.type == PP_VARTYPE_DOUBLE) {
-    double value = result.value.as_double;
-    // Exclusive test wouldn't deal with NaNs correctly.
-    if (value >= std::numeric_limits<int32_t>::max()
-        && value <= std::numeric_limits<int32_t>::min())
-      result = PP_MakeInt32(static_cast<int32_t>(value));
-    else
-      result = PP_MakeInt32(0);
-  } else if (new_type == PP_VARTYPE_DOUBLE && result.type == PP_VARTYPE_INT32) {
-    result = PP_MakeDouble(result.value.as_int);
-  }
-
-  Var::PluginReleasePPVar(object);
-  return result;
-}
-
 PP_Var BoolToPPVar(bool value) {
   return PP_MakeBool(BoolToPPBool(value));
-}
-
-void DefineProperty(struct PP_Var object,
-                    struct PP_ObjectProperty property,
-                    PP_Var* exception) {
-  PP_Var params[] = {
-    object, property.name,
-    BoolToPPVar(!!(property.modifiers & PP_OBJECTPROPERTY_MODIFIER_HASVALUE)),
-    property.value,
-    BoolToPPVar(property.getter.type == PP_VARTYPE_OBJECT),
-    property.getter,
-    BoolToPPVar(property.setter.type == PP_VARTYPE_OBJECT),
-    property.setter,
-    BoolToPPVar(!!(property.modifiers & PP_OBJECTPROPERTY_MODIFIER_READONLY)),
-    BoolToPPVar(!!(property.modifiers & PP_OBJECTPROPERTY_MODIFIER_DONTDELETE)),
-    BoolToPPVar(!!(property.modifiers & PP_OBJECTPROPERTY_MODIFIER_DONTENUM))
-  };
-
-  RunJSFunction(object,
-      "(function(o, name,"
-      "          has_value,  value,"
-      "          has_getter, getter,"
-      "          has_setter, setter,"
-      "          modifier_readonly, modifier_dontdelete, modifier_dontenum) {"
-      "  prop = { 'enumerable':   !modifier_dontenum,"
-      "           'configurable': !modifier_dontdelete };"
-      "  if (has_value && !modifier_readonly) prop.writable = true;"
-      "  if (has_value)                       prop.value    = value;"
-      "  if (has_getter)                      prop.get      = getter;"
-      "  if (has_setter)                      prop.set      = setter;"
-      "  return Object.defineProperty(o, name, prop); })",
-      params, sizeof(params) / sizeof(PP_Var), exception);
 }
 
 PP_Bool HasProperty(PP_Var var,
@@ -434,19 +284,6 @@ void SetPropertyDeprecated(PP_Var var,
     accessor.SetException(kUnableToSetPropertyException);
 }
 
-PP_Bool DeleteProperty(PP_Var var,
-                       PP_Var name,
-                       PP_Var* exception) {
-  ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
-  if (accessor.has_exception())
-    return PP_FALSE;
-
-  return BoolToPPBool(
-      WebBindings::removeProperty(NULL,
-                                  accessor.object()->np_object(),
-                                  accessor.identifier()));
-}
-
 void DeletePropertyDeprecated(PP_Var var,
                               PP_Var name,
                               PP_Var* exception) {
@@ -457,48 +294,6 @@ void DeletePropertyDeprecated(PP_Var var,
   if (!WebBindings::removeProperty(NULL, accessor.object()->np_object(),
                                    accessor.identifier()))
     accessor.SetException(kUnableToRemovePropertyException);
-}
-
-PP_Bool IsCallable(struct PP_Var object) {
-  PP_Var result = RunJSFunction(object,
-      "(function() { return typeof(this) == 'function' })", NULL, 0, NULL);
-  if (result.type == PP_VARTYPE_BOOL)
-    return result.value.as_bool;
-  return PP_FALSE;
-}
-
-struct PP_Var Call(struct PP_Var object,
-                   struct PP_Var this_object,
-                   uint32_t argc,
-                   struct PP_Var* argv,
-                   struct PP_Var* exception) {
-  ObjectAccessorTryCatch accessor(object, exception);
-  if (accessor.has_exception())
-    return PP_MakeUndefined();
-
-  scoped_array<NPVariant> args;
-  if (argc) {
-    args.reset(new NPVariant[argc]);
-    for (uint32_t i = 0; i < argc; ++i) {
-      if (!PPVarToNPVariantNoCopy(argv[i], &args[i])) {
-        // This argument was invalid, throw an exception & give up.
-        accessor.SetException(kInvalidValueException);
-        return PP_MakeUndefined();
-      }
-    }
-  }
-
-  NPVariant result;
-  if (!WebBindings::invokeDefault(NULL, accessor.object()->np_object(),
-                                  args.get(), argc, &result)) {
-    // An exception may have been raised.
-    accessor.SetException(kUnableToCallMethodException);
-    return PP_MakeUndefined();
-  }
-
-  PP_Var ret = Var::NPVariantToPPVar(accessor.object()->instance(), &result);
-  WebBindings::releaseVariantValue(&result);
-  return ret;
 }
 
 PP_Var CallDeprecated(PP_Var var,
@@ -646,16 +441,7 @@ const PPB_Var var_interface = {
   &Var::PluginAddRefPPVar,
   &Var::PluginReleasePPVar,
   &VarFromUtf8,
-  &VarToUtf8,
-  &ConvertType,
-  &DefineProperty,
-  &HasProperty,
-  &GetProperty,
-  &DeleteProperty,
-  &EnumerateProperties,
-  &IsCallable,
-  &Call,
-  &Construct,
+  &VarToUtf8
 };
 
 

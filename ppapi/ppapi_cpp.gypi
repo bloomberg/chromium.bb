@@ -31,7 +31,6 @@
         'c/ppb_audio.h',
         'c/ppb_audio_config.h',
         'c/ppb_core.h',
-        'c/ppb_class.h',
         'c/ppb_graphics_2d.h',
         'c/ppb_image_data.h',
         'c/ppb_instance.h',

@@ -23,7 +23,6 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/ppb_var.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ppapi/proxy/serialized_structs.h"
@@ -678,10 +677,6 @@ IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBVar_ConvertType,
                            int /* new_type */,
                            pp::proxy::SerializedVar /* exception */,
                            pp::proxy::SerializedVar /* result */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBVar_DefineProperty,
-                    pp::proxy::SerializedVar /* object */,
-                    PP_ObjectProperty /* property */,
-                    pp::proxy::SerializedVar /* out_exception */)
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBVar_HasProperty,
                            pp::proxy::SerializedVar /* object */,
                            pp::proxy::SerializedVar /* property */,
@@ -711,16 +706,6 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBVar_SetPropertyDeprecated,
                            pp::proxy::SerializedVar /* name */,
                            pp::proxy::SerializedVar /* value */,
                            pp::proxy::SerializedVar /* out_exception */)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBVar_IsCallable,
-                           pp::proxy::SerializedVar /* object */,
-                           PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED4_2(PpapiHostMsg_PPBVar_Call,
-                           pp::proxy::SerializedVar /* object */,
-                           pp::proxy::SerializedVar /* this_object */,
-                           pp::proxy::SerializedVar /* method_name */,
-                           std::vector<pp::proxy::SerializedVar> /* args */,
-                           pp::proxy::SerializedVar /* out_exception */,
-                           pp::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBVar_CallDeprecated,
                            pp::proxy::SerializedVar /* object */,
                            pp::proxy::SerializedVar /* method_name */,

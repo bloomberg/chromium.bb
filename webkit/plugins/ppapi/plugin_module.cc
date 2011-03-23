@@ -39,7 +39,6 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/ppb_class.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
@@ -94,7 +93,6 @@
 #include "webkit/plugins/ppapi/ppb_widget_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/var.h"
-#include "webkit/plugins/ppapi/var_object_class.h"
 
 #ifdef ENABLE_GPU
 #include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
@@ -230,8 +228,6 @@ const void* GetInterface(const char* name) {
     return PPB_Buffer_Impl::GetInterface();
   if (strcmp(name, PPB_CHAR_SET_DEV_INTERFACE) == 0)
     return PPB_CharSet_Impl::GetInterface();
-  if (strcmp(name, PPB_CLASS_INTERFACE) == 0)
-    return VarObjectClass::GetInterface();
   if (strcmp(name, PPB_CONSOLE_DEV_INTERFACE) == 0)
     return PPB_Console_Impl::GetInterface();
   if (strcmp(name, PPB_CORE_INTERFACE) == 0)
