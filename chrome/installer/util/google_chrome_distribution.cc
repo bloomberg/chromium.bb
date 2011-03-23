@@ -17,11 +17,13 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/scoped_ptr.h"
+#include "base/string_split.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
+#include "chrome/common/attrition_experiments.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pref_names.h"
@@ -46,29 +48,15 @@ const wchar_t kChromeGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
 const wchar_t kBrowserAppId[] = L"Chrome";
 
 // The following strings are the possible outcomes of the toast experiment
-// as recorded in the  |client| field. Previously the groups used "TSxx" but
-// the data captured is not valid.
-const wchar_t kToastExpControlGroup[] =      L"T%lc01";
-const wchar_t kToastExpCancelGroup[] =       L"T%lc02";
-const wchar_t kToastExpUninstallGroup[] =    L"T%lc04";
-const wchar_t kToastExpTriesOkGroup[] =      L"T%lc18";
-const wchar_t kToastExpTriesErrorGroup[] =   L"T%lc28";
-const wchar_t kToastActiveGroup[] =          L"T%lc40";
-const wchar_t kToastUDDirFailure[] =         L"T%lc40";
-const wchar_t kToastExpBaseGroup[] =         L"T%lc80";
-
-// Generates the actual group string that gets written in the registry.
-// |group| is one of the above kToast* strings and |flavor| is a number
-// from 0 to 3.
-//
-// The big experiment in Dec 2009 used TGxx and THxx.
-// The big experiment in Feb 2010 used TKxx and TLxx.
-// The big experiment in Apr 2010 used TMxx and TNxx.
-// The big experiment in Oct 2010 (current) uses TVxx TWxx TXxx TYxx.
-std::wstring GetExperimentGroup(const wchar_t* group, int flavor) {
-  wchar_t c = flavor < 4 ? L'V' + flavor : L'Z';
-  return StringPrintf(group, c);
-}
+// as recorded in the |client| field.
+const wchar_t kToastExpControlGroup[] =      L"01";
+const wchar_t kToastExpCancelGroup[] =       L"02";
+const wchar_t kToastExpUninstallGroup[] =    L"04";
+const wchar_t kToastExpTriesOkGroup[] =      L"18";
+const wchar_t kToastExpTriesErrorGroup[] =   L"28";
+const wchar_t kToastActiveGroup[] =          L"40";
+const wchar_t kToastUDDirFailure[] =         L"40";
+const wchar_t kToastExpBaseGroup[] =         L"80";
 
 // Substitute the locale parameter in uninstall URL with whatever
 // Google Update tells us is the locale. In case we fail to find
@@ -130,18 +118,14 @@ int GetDirectoryWriteAgeInHours(const wchar_t* path) {
   return (now_time - dir_time);
 }
 
-// Launches setup.exe (located at |setup_path|) with switch --|flag|=|value|.
+// Launches setup.exe (located at |setup_path|) with |cmd_line|.
 // If system_level_toast is true, appends --system-level-toast.
 // If handle to experiment result key was given at startup, re-add it.
 // Does not wait for the process to terminate.
-bool LaunchSetup(const FilePath& setup_path, const std::string& flag,
-                 int value, bool system_level_toast) {
-  CommandLine new_cmd_line(setup_path);
-  new_cmd_line.AppendSwitchASCII(flag, base::IntToString(value));
-
+bool LaunchSetup(CommandLine cmd_line, bool system_level_toast) {
   // Re-add the system level toast flag.
   if (system_level_toast) {
-    new_cmd_line.AppendSwitch(installer::switches::kSystemLevelToast);
+    cmd_line.AppendSwitch(installer::switches::kSystemLevelToast);
 
     // Re-add the toast result key. We need to do this because Setup running as
     // system passes the key to Setup running as user, but that child process
@@ -151,16 +135,16 @@ bool LaunchSetup(const FilePath& setup_path, const std::string& flag,
     std::string key(installer::switches::kToastResultsKey);
     std::string toast_key = current_cmd_line.GetSwitchValueASCII(key);
     if (!toast_key.empty()) {
-      new_cmd_line.AppendSwitchASCII(key, toast_key);
+      cmd_line.AppendSwitchASCII(key, toast_key);
 
       // Use handle inheritance to make sure the duplicated toast results key
       // gets inherited by the child process.
       return base::LaunchAppWithHandleInheritance(
-          new_cmd_line.command_line_string(), false, false, NULL);
+          cmd_line.command_line_string(), false, false, NULL);
     }
   }
 
-  return base::LaunchApp(new_cmd_line.command_line_string(),
+  return base::LaunchApp(cmd_line.command_line_string(),
                          false, false, NULL);
 }
 
@@ -548,6 +532,92 @@ void SetClient(std::wstring experiment_group, bool last_write) {
   }
 }
 
+bool GoogleChromeDistribution::GetExperimentDetails(
+    UserExperiment* experiment, int flavor) {
+  // Maximum number of experiment flavors we support.
+  const int kMax = 4;
+  // This struct determines which experiment flavors we show for each locale and
+  // brand.
+  //
+  // The big experiment in Dec 2009 used TGxx and THxx.
+  // The big experiment in Feb 2010 used TKxx and TLxx.
+  // The big experiment in Apr 2010 used TMxx and TNxx.
+  // The big experiment in Oct 2010 used TVxx TWxx TXxx TYxx.
+  // The big experiment in Feb 2011 used SJxx SKxx SLxx SMxx.
+  using namespace attrition_experiments;
+  static const struct UserExperimentDetails {
+    const wchar_t* locale;  // Locale to show this experiment for (* for all).
+    const wchar_t* brands;  // Brand codes show this experiment for (* for all).
+    int control_group;      // Size of the control group, in percentages.
+    const wchar_t prefix1;  // The first letter for the experiment code.
+    const wchar_t prefix2;  // The second letter for the experiment code. This
+                            // will be incremented by one for each additional
+                            // experiment flavor beyond the first.
+    int flavors;            // Numbers of flavors for this experiment. Should
+                            // always be positive and never exceed the number
+                            // of headings (below).
+    int headings[kMax];     // A list of IDs per experiment. 0 == no heading.
+  } kExperimentFlavors[] = {
+    // First in this order are the brand specific ones.
+    {L"en-US", kSkype, 1, L'Z', L'A', 1, { kSkype1, 0, 0, 0 } },
+    // And then we have catch-alls, like en-US (all brands).
+    {L"en-US", kAll,   1, L'T', L'V', 4, { kEnUs1, kEnUs2, kEnUs3, kEnUs4} },
+    // Japan has two experiments, same IDs as en-US but translated differently.
+    {L"jp",    kAll,   1, L'T', L'V', 2, { kEnUs1, kEnUs2, 0, 0} },
+  };
+
+  std::wstring locale;
+  std::wstring brand;
+
+  if (!GoogleUpdateSettings::GetLanguage(&locale))
+    locale = L"en-US";
+  if (!GoogleUpdateSettings::GetBrand(&brand))
+    return false;
+
+  for (int i = 0; i < arraysize(kExperimentFlavors); ++i) {
+    // A maximum of four flavors is supported at the moment.
+    DCHECK_LE(kExperimentFlavors[i].flavors, kMax);
+    DCHECK_GT(kExperimentFlavors[i].flavors, 0);
+    // Make sure each experiment has valid headings.
+    for (int f = 0; f < kMax; ++f) {
+      if (f < kExperimentFlavors[i].flavors)
+        DCHECK_GT(kExperimentFlavors[i].headings[f], 0);
+      else
+        DCHECK_EQ(kExperimentFlavors[i].headings[f], 0);
+    }
+    // Make sure we don't overflow on the second letter of the experiment code.
+    DCHECK(kExperimentFlavors[i].prefix2 +
+           kExperimentFlavors[i].flavors - 1 <= 'Z');
+
+    if (kExperimentFlavors[i].locale != locale &&
+        kExperimentFlavors[i].locale != L"*")
+      continue;
+
+    std::vector<std::wstring> brand_codes;
+    base::SplitString(kExperimentFlavors[i].brands, L',', &brand_codes);
+    if (brand_codes.empty())
+      return false;
+    for (std::vector<std::wstring>::iterator it = brand_codes.begin();
+         it != brand_codes.end(); ++it) {
+      if (*it != brand && *it != L"*")
+        continue;
+
+      // We have found our match.
+      if (flavor < 0)
+        flavor = base::RandInt(0, kExperimentFlavors[i].flavors - 1);
+      experiment->flavor = flavor;
+      experiment->heading = kExperimentFlavors[i].headings[flavor];
+      experiment->control_group = kExperimentFlavors[i].control_group;
+      experiment->prefix.resize(2);
+      experiment->prefix[0] = kExperimentFlavors[i].prefix1;
+      experiment->prefix[1] = kExperimentFlavors[i].prefix2 + flavor;
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // Currently we only have one experiment: the inactive user toast. Which only
 // applies for users doing upgrades.
 //
@@ -575,19 +645,15 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     }
   }
 
-  // This ends up being processed by ShowTryChromeDialog to show different
-  // experiments.  Only run the experiment in en-US and ja.
-  int flavor = 0;
-  std::wstring language;
-  if (GoogleUpdateSettings::GetLanguage(&language)) {
-    if (language == L"en-US") {
-      // en-US has four different toasts.
-      flavor = base::RandInt(0, 3);
-    } else if (language == L"ja") {
-      // ja has three different toasts.
-      flavor = base::RandInt(0, 2);
-    }
+  // The |flavor| value ends up being processed by ShowTryChromeDialog to show
+  // different experiments.
+  UserExperiment experiment;
+  if (!GetExperimentDetails(&experiment, -1)) {
+    VLOG(1) << "Failed to get experiment details.";
+    return;
   }
+  int flavor = experiment.flavor;
+  std::wstring base_group = experiment.prefix;
 
   std::wstring brand;
   if (GoogleUpdateSettings::GetBrand(&brand) && (brand == L"CHXX")) {
@@ -610,34 +676,41 @@ void GoogleChromeDistribution::LaunchUserExperiment(
       // This means that we failed to find the user data dir. The most likely
       // cause is that this user has not ever used chrome at all which can
       // happen in a system-level install.
-      SetClient(GetExperimentGroup(kToastUDDirFailure, flavor), true);
+      SetClient(base_group + kToastUDDirFailure, true);
       return;
     } else if (dir_age_hours < kThirtyDays) {
       // An active user, so it does not qualify.
       VLOG(1) << "Chrome used in last " << dir_age_hours << " hours";
-      SetClient(GetExperimentGroup(kToastActiveGroup, flavor), true);
+      SetClient(base_group + kToastActiveGroup, true);
       return;
     }
-    // 1% are in the control group that qualifies but does not get drafted.
-    if (base::RandDouble() > 0.99) {
-      SetClient(GetExperimentGroup(kToastExpControlGroup, flavor), true);
+    // Check to see if this user belongs to the control group.
+    double control_group = 1.0 * (100 - experiment.control_group) / 100;
+    if (base::RandDouble() > control_group) {
+      SetClient(base_group + kToastExpControlGroup, true);
       VLOG(1) << "User is control group";
       return;
     }
   }
 
   VLOG(1) << "User drafted for toast experiment " << flavor;
-  SetClient(GetExperimentGroup(kToastExpBaseGroup, flavor), false);
+  SetClient(base_group + kToastExpBaseGroup, false);
   // User level: The experiment needs to be performed in a different process
   // because google_update expects the upgrade process to be quick and nimble.
   // System level: We have already been relaunched, so we don't need to be
   // quick, but we relaunch to follow the exact same codepath.
-  LaunchSetup(setup_path, installer::switches::kInactiveUserToast, flavor,
-              system_level);
+  CommandLine cmd_line(setup_path);
+  cmd_line.AppendSwitchASCII(installer::switches::kInactiveUserToast,
+                             base::IntToString(flavor));
+  cmd_line.AppendSwitchASCII(installer::switches::kExperimentGroup,
+                             WideToASCII(base_group));
+  LaunchSetup(cmd_line, system_level);
 }
 
-// User qualifies for the experiment. Launch chrome with --try-chrome=flavor.
+// User qualifies for the experiment. To test, use --try-chrome-again=|flavor|
+// as a parameter to chrome.exe.
 void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
+    const std::wstring& experiment_group,
     const installer::Product& installation,
     const FilePath& application_path) {
   bool has_welcome_url = (flavor == 0);
@@ -677,7 +750,7 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
   };
 
   // Write to the |client| key for the last time.
-  SetClient(GetExperimentGroup(outcome, flavor), true);
+  SetClient(experiment_group + outcome, true);
 
   if (outcome != kToastExpUninstallGroup)
     return;

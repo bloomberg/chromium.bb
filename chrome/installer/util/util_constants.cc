@@ -143,6 +143,9 @@ const char kInactiveUserToast[] = "inactive-user-toast";
 // User toast experiment switch from system context to user context.
 const char kSystemLevelToast[] = "system-level-toast";
 
+// The group this experiment belongs to.
+const char kExperimentGroup[] = "experiment-group";
+
 // A handle value of the key to write the results of the toast experiment
 // to. See DuplicateGoogleUpdateSystemClientKey for details.
 const char kToastResultsKey[] = "toast-results-key";

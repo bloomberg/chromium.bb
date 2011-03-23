@@ -27,6 +27,7 @@
           'common/about_handler.h',
           'common/app_mode_common_mac.h',
           'common/app_mode_common_mac.mm',
+          'common/attrition_experiments.h',
           'common/auto_start_linux.cc',
           'common/auto_start_linux.h',
           'common/autofill_messages.h',

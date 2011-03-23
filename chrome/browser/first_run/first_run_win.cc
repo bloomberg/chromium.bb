@@ -660,20 +660,20 @@ class TryChromeDialog : public views::ButtonListener,
     // First row views.
     layout->StartRow(0, 0);
     layout->AddView(icon);
-    // The heading has two flavors of text, the alt one features extensions but
-    // we only use it in the US until some international issues are fixed.
-    const std::string app_locale = g_browser_process->GetApplicationLocale();
-    int heading_id;
-    switch (version_) {
-      case 0: heading_id = IDS_TRY_TOAST_HEADING; break;
-      case 1: heading_id = IDS_TRY_TOAST_HEADING2; break;
-      case 2: heading_id = IDS_TRY_TOAST_HEADING3; break;
-      case 3: heading_id = IDS_TRY_TOAST_HEADING4; break;
-      default:
-        NOTREACHED() << "Cannot determine which headline to show.";
-        return Upgrade::TD_DIALOG_ERROR;
+
+    // Find out what experiment we are conducting.
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    if (!dist) {
+      NOTREACHED() << "Cannot determine browser distribution";
+      return Upgrade::TD_DIALOG_ERROR;
     }
-    string16 heading = l10n_util::GetStringUTF16(heading_id);
+    BrowserDistribution::UserExperiment experiment;
+    if (!dist->GetExperimentDetails(&experiment, version_) ||
+        !experiment.heading) {
+      NOTREACHED() << "Cannot determine which headline to show.";
+      return Upgrade::TD_DIALOG_ERROR;
+    }
+    string16 heading = l10n_util::GetStringUTF16(experiment.heading);
     views::Label* label = new views::Label(heading);
     label->SetFont(rb.GetFont(ResourceBundle::MediumBoldFont));
     label->SetMultiLine(true);

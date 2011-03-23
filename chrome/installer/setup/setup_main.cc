@@ -637,6 +637,7 @@ installer::InstallStatus InstallProductsHelper(
         }
       }
     }
+
     // There might be an experiment (for upgrade usually) that needs to happen.
     // An experiment's outcome can include chrome's uninstallation. If that is
     // the case we would not do that directly at this point but in another
@@ -882,6 +883,8 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     int flavor = -1;
     base::StringToInt(cmd_line.GetSwitchValueNative(
         installer::switches::kInactiveUserToast), &flavor);
+    std::string experiment_group =
+        cmd_line.GetSwitchValueASCII(installer::switches::kExperimentGroup);
     DCHECK_NE(-1, flavor);
     if (flavor == -1) {
       *exit_code = installer::UNKNOWN_STATUS;
@@ -890,8 +893,9 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       for (size_t i = 0; i < products.size(); ++i) {
         const Product* product = products[i];
         BrowserDistribution* browser_dist = product->distribution();
-        browser_dist->InactiveUserToastExperiment(flavor, *product,
-            installer_state->target_path());
+        browser_dist->InactiveUserToastExperiment(flavor,
+            ASCIIToUTF16(experiment_group),
+            *product, installer_state->target_path());
       }
     }
   } else if (cmd_line.HasSwitch(installer::switches::kSystemLevelToast)) {

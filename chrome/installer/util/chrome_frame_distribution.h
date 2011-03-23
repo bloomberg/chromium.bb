@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -21,39 +21,39 @@ class MasterPreferences;
 
 class ChromeFrameDistribution : public BrowserDistribution {
  public:
-  virtual std::wstring GetAppGuid();
+  virtual std::wstring GetAppGuid() OVERRIDE;
 
-  virtual std::wstring GetApplicationName();
+  virtual std::wstring GetApplicationName() OVERRIDE;
 
-  virtual std::wstring GetAlternateApplicationName();
+  virtual std::wstring GetAlternateApplicationName() OVERRIDE;
 
-  virtual std::wstring GetInstallSubDir();
+  virtual std::wstring GetInstallSubDir() OVERRIDE;
 
-  virtual std::wstring GetPublisherName();
+  virtual std::wstring GetPublisherName() OVERRIDE;
 
-  virtual std::wstring GetAppDescription();
+  virtual std::wstring GetAppDescription() OVERRIDE;
 
-  virtual std::wstring GetLongAppDescription();
+  virtual std::wstring GetLongAppDescription() OVERRIDE;
 
-  virtual std::string GetSafeBrowsingName();
+  virtual std::string GetSafeBrowsingName() OVERRIDE;
 
-  virtual std::wstring GetStateKey();
+  virtual std::wstring GetStateKey() OVERRIDE;
 
-  virtual std::wstring GetStateMediumKey();
+  virtual std::wstring GetStateMediumKey() OVERRIDE;
 
-  virtual std::wstring GetStatsServerURL();
+  virtual std::wstring GetStatsServerURL() OVERRIDE;
 
-  virtual std::wstring GetUninstallLinkName();
+  virtual std::wstring GetUninstallLinkName() OVERRIDE;
 
-  virtual std::wstring GetUninstallRegPath();
+  virtual std::wstring GetUninstallRegPath() OVERRIDE;
 
-  virtual std::wstring GetVersionKey();
+  virtual std::wstring GetVersionKey() OVERRIDE;
 
-  virtual bool CanSetAsDefault();
+  virtual bool CanSetAsDefault() OVERRIDE;
 
   virtual void UpdateInstallStatus(bool system_install,
       installer::ArchiveType archive_type,
-      installer::InstallStatus install_status);
+      installer::InstallStatus install_status) OVERRIDE;
 
  protected:
   friend class BrowserDistribution;

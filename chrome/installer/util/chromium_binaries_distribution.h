@@ -14,41 +14,41 @@
 
 class ChromiumBinariesDistribution : public BrowserDistribution {
  public:
-  virtual std::wstring GetAppGuid();
+  virtual std::wstring GetAppGuid() OVERRIDE;
 
-  virtual std::wstring GetApplicationName();
+  virtual std::wstring GetApplicationName() OVERRIDE;
 
-  virtual std::wstring GetAppShortCutName();
+  virtual std::wstring GetAppShortCutName() OVERRIDE;
 
-  virtual std::wstring GetAlternateApplicationName();
+  virtual std::wstring GetAlternateApplicationName() OVERRIDE;
 
-  virtual std::wstring GetBrowserAppId();
+  virtual std::wstring GetBrowserAppId() OVERRIDE;
 
-  virtual std::wstring GetInstallSubDir();
+  virtual std::wstring GetInstallSubDir() OVERRIDE;
 
-  virtual std::wstring GetPublisherName();
+  virtual std::wstring GetPublisherName() OVERRIDE;
 
-  virtual std::wstring GetAppDescription();
+  virtual std::wstring GetAppDescription() OVERRIDE;
 
-  virtual std::wstring GetLongAppDescription();
+  virtual std::wstring GetLongAppDescription() OVERRIDE;
 
-  virtual std::string GetSafeBrowsingName();
+  virtual std::string GetSafeBrowsingName() OVERRIDE;
 
-  virtual std::wstring GetStateKey();
+  virtual std::wstring GetStateKey() OVERRIDE;
 
-  virtual std::wstring GetStateMediumKey();
+  virtual std::wstring GetStateMediumKey() OVERRIDE;
 
-  virtual std::wstring GetUninstallLinkName();
+  virtual std::wstring GetUninstallLinkName() OVERRIDE;
 
-  virtual std::wstring GetUninstallRegPath();
+  virtual std::wstring GetUninstallRegPath() OVERRIDE;
 
-  virtual std::wstring GetVersionKey();
+  virtual std::wstring GetVersionKey() OVERRIDE;
 
-  virtual bool CanSetAsDefault();
+  virtual bool CanSetAsDefault() OVERRIDE;
 
-  virtual int GetIconIndex();
+  virtual int GetIconIndex() OVERRIDE;
 
-  virtual bool GetChromeChannel(std::wstring* channel);
+  virtual bool GetChromeChannel(std::wstring* channel) OVERRIDE;
 
  protected:
   friend class BrowserDistribution;

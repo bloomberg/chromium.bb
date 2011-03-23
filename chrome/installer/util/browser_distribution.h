@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -37,6 +37,19 @@ class BrowserDistribution {
     CHROME_FRAME,
     CHROME_BINARIES,
     NUM_TYPES
+  };
+
+  // A struct for communicating what a UserExperiment contains. In these
+  // experiments we show toasts to the user if they are inactive for a certain
+  // amount of time.
+  struct UserExperiment {
+    std::wstring prefix;  // The experiment code prefix for this experiment,
+                          // also known as the 'TV' part in 'TV80'.
+    int flavor;           // The flavor index for this experiment.
+    int heading;          // The heading resource ID to use for this experiment.
+    int control_group;    // Size of the control group (in percentages). Control
+                          // group is the group that qualifies for the
+                          // experiment but does not participate.
   };
 
   static BrowserDistribution* GetDistribution();
@@ -95,17 +108,25 @@ class BrowserDistribution {
       installer::ArchiveType archive_type,
       installer::InstallStatus install_status);
 
+  // Gets the experiment details for a given language-brand combo. If |flavor|
+  // is -1, then a flavor will be selected at random. |experiment| is the struct
+  // you want to write the experiment information to. Returns false if no
+  // experiment details could be gathered.
+  virtual bool GetExperimentDetails(UserExperiment* experiment, int flavor);
+
   // After an install or upgrade the user might qualify to participate in an
   // experiment. This function determines if the user qualifies and if so it
   // sets the wheels in motion or in simple cases does the experiment itself.
   virtual void LaunchUserExperiment(const FilePath& setup_path,
-      installer::InstallStatus status,
-      const Version& version, const installer::Product& installation,
-      bool system_level);
+                                    installer::InstallStatus status,
+                                    const Version& version,
+                                    const installer::Product& installation,
+                                    bool system_level);
 
   // The user has qualified for the inactive user toast experiment and this
   // function just performs it.
   virtual void InactiveUserToastExperiment(int flavor,
+      const std::wstring& experiment_group,
       const installer::Product& installation,
       const FilePath& application_path);
 

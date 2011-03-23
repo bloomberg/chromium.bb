@@ -44,7 +44,7 @@ enum InstallStatus {
   RENAME_FAILED,          // 24. Rename of new_chrome.exe failed
   EULA_REJECTED,          // 25. EULA dialog was not accepted by user.
   EULA_ACCEPTED,          // 26. EULA dialog was accepted by user.
-  EULA_ACCEPTED_OPT_IN,   // 27. EULA accepted wtih the crash optin selected.
+  EULA_ACCEPTED_OPT_IN,   // 27. EULA accepted with the crash option selected.
   INSTALL_DIR_IN_USE,     // 28. Installation directory is in use by another
                           // process
   UNINSTALL_REQUIRES_REBOOT,  // 29. Uninstallation required a reboot.
@@ -139,6 +139,7 @@ extern const char kShowEula[];
 extern const char kAltDesktopShortcut[];
 extern const char kInactiveUserToast[];
 extern const char kSystemLevelToast[];
+extern const char kExperimentGroup[];
 extern const char kToastResultsKey[];
 }  // namespace switches
 

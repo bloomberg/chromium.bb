@@ -29,59 +29,67 @@ class GoogleChromeDistribution : public BrowserDistribution {
   // distribution_data contains Google Update related data that will be
   //   concatenated to the survey url if the file in local_data_path indicates
   //   the user has opted in to providing anonymous usage data.
-  virtual void DoPostUninstallOperations(const Version& version,
-                                         const FilePath& local_data_path,
-                                         const std::wstring& distribution_data);
+  virtual void DoPostUninstallOperations(
+      const Version& version,
+      const FilePath& local_data_path,
+      const std::wstring& distribution_data) OVERRIDE;
 
-  virtual std::wstring GetAppGuid();
+  virtual std::wstring GetAppGuid() OVERRIDE;
 
-  virtual std::wstring GetApplicationName();
+  virtual std::wstring GetApplicationName() OVERRIDE;
 
-  virtual std::wstring GetAlternateApplicationName();
+  virtual std::wstring GetAlternateApplicationName() OVERRIDE;
 
-  virtual std::wstring GetBrowserAppId();
+  virtual std::wstring GetBrowserAppId() OVERRIDE;
 
-  virtual std::wstring GetInstallSubDir();
+  virtual std::wstring GetInstallSubDir() OVERRIDE;
 
-  virtual std::wstring GetPublisherName();
+  virtual std::wstring GetPublisherName() OVERRIDE;
 
-  virtual std::wstring GetAppDescription();
+  virtual std::wstring GetAppDescription() OVERRIDE;
 
-  virtual std::string GetSafeBrowsingName();
+  virtual std::string GetSafeBrowsingName() OVERRIDE;
 
-  virtual std::wstring GetStateKey();
+  virtual std::wstring GetStateKey() OVERRIDE;
 
-  virtual std::wstring GetStateMediumKey();
+  virtual std::wstring GetStateMediumKey() OVERRIDE;
 
-  virtual std::wstring GetStatsServerURL();
+  virtual std::wstring GetStatsServerURL() OVERRIDE;
 
   // This method reads data from the Google Update ClientState key for
   // potential use in the uninstall survey. It must be called before the
   // key returned by GetVersionKey() is deleted.
-  virtual std::wstring GetDistributionData(HKEY root_key);
+  virtual std::wstring GetDistributionData(HKEY root_key) OVERRIDE;
 
-  virtual std::wstring GetUninstallLinkName();
+  virtual std::wstring GetUninstallLinkName() OVERRIDE;
 
-  virtual std::wstring GetUninstallRegPath();
+  virtual std::wstring GetUninstallRegPath() OVERRIDE;
 
-  virtual std::wstring GetVersionKey();
+  virtual std::wstring GetVersionKey() OVERRIDE;
 
-  virtual void UpdateInstallStatus(bool system_install,
+  virtual void UpdateInstallStatus(
+      bool system_install,
       installer::ArchiveType archive_type,
-      installer::InstallStatus install_status);
+      installer::InstallStatus install_status) OVERRIDE;
 
-  virtual void LaunchUserExperiment(const FilePath& setup_path,
+  virtual bool GetExperimentDetails(UserExperiment* experiment,
+                                    int flavor) OVERRIDE;
+
+  virtual void LaunchUserExperiment(
+      const FilePath& setup_path,
       installer::InstallStatus status,
       const Version& version,
       const installer::Product& installation,
-      bool system_level);
+      bool system_level) OVERRIDE;
 
   // Assuming that the user qualifies, this function performs the inactive user
   // toast experiment. It will use chrome to show the UI and it will record the
   // outcome in the registry.
-  virtual void InactiveUserToastExperiment(int flavor,
+  virtual void InactiveUserToastExperiment(
+      int flavor,
+      const std::wstring& experiment_group,
       const installer::Product& installation,
-      const FilePath& application_path);
+      const FilePath& application_path) OVERRIDE;
 
   const std::wstring& product_guid() { return product_guid_; }
 
