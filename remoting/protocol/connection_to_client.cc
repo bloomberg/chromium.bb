@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,12 +23,11 @@ static const size_t kAverageUpdateStream = 10;
 
 ConnectionToClient::ConnectionToClient(MessageLoop* message_loop,
                                        EventHandler* handler,
-                                       HostStub* host_stub,
                                        InputStub* input_stub)
     : client_authenticated_(false),
       loop_(message_loop),
       handler_(handler),
-      host_stub_(host_stub),
+      host_stub_(NULL),
       input_stub_(input_stub) {
   DCHECK(loop_);
   DCHECK(handler_);
@@ -74,6 +73,14 @@ VideoStub* ConnectionToClient::video_stub() {
 // Return pointer to ClientStub.
 ClientStub* ConnectionToClient::client_stub() {
   return client_stub_.get();
+}
+
+protocol::HostStub* ConnectionToClient::host_stub() {
+  return host_stub_;
+}
+
+void ConnectionToClient::set_host_stub(protocol::HostStub* host_stub) {
+  host_stub_ = host_stub;
 }
 
 void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
@@ -143,6 +150,10 @@ void ConnectionToClient::OnClientAuthenticated() {
     host_stub_->OnAuthenticated();
   if (client_stub_.get())
     client_stub_->OnAuthenticated();
+}
+
+bool ConnectionToClient::client_authenticated() {
+  return client_authenticated_;
 }
 
 }  // namespace protocol

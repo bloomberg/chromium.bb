@@ -57,7 +57,6 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()) {
   DCHECK(desktop_environment_.get());
-  desktop_environment_->set_event_handler(this);
 }
 
 ChromotingHost::~ChromotingHost() {
@@ -140,10 +139,11 @@ void ChromotingHost::Shutdown() {
     recorder_->RemoveAllConnections();
   }
 
-  // Disconnect the client.
-  if (connection_) {
-    connection_->Disconnect();
+  // Disconnect the clients.
+  for (size_t i = 0; i < clients_.size(); i++) {
+    clients_[i]->Disconnect();
   }
+  clients_.clear();
 
   // Stop the heartbeat sender.
   if (heartbeat_sender_) {
@@ -172,24 +172,6 @@ void ChromotingHost::Shutdown() {
 // This method is called when a client connects.
 void ChromotingHost::OnClientConnected(ConnectionToClient* connection) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
-
-  // Create a new RecordSession if there was none.
-  if (!recorder_.get()) {
-    // Then we create a ScreenRecorder passing the message loops that
-    // it should run on.
-    DCHECK(desktop_environment_->capturer());
-
-    Encoder* encoder = CreateEncoder(connection->session()->config());
-
-    recorder_ = new ScreenRecorder(context_->main_message_loop(),
-                                   context_->encode_message_loop(),
-                                   context_->network_message_loop(),
-                                   desktop_environment_->capturer(),
-                                   encoder);
-  }
-
-  // Immediately add the connection and start the session.
-  recorder_->AddConnection(connection);
 }
 
 void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
@@ -199,15 +181,25 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
   // TODO(hclam): Stop only if the last connection disconnected.
   if (recorder_.get()) {
     recorder_->RemoveConnection(connection);
-    recorder_->Stop(NULL);
-    recorder_ = NULL;
+    // The recorder only exists to serve the unique authenticated client.
+    // If that client has disconnected, then we can kill the recorder.
+    if (connection->client_authenticated()) {
+      recorder_->Stop(NULL);
+      recorder_ = NULL;
+    }
   }
 
   // Close the connection to connection just to be safe.
   connection->Disconnect();
 
   // Also remove reference to ConnectionToClient from this object.
-  connection_ = NULL;
+  std::vector<scoped_refptr<ClientSession> >::iterator it;
+  for (it = clients_.begin(); it != clients_.end(); ++it) {
+    if (it->get()->connection() == connection) {
+      clients_.erase(it);
+      break;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -287,8 +279,7 @@ void ChromotingHost::OnNewClientSession(
     protocol::Session* session,
     protocol::SessionManager::IncomingSessionResponse* response) {
   base::AutoLock auto_lock(lock_);
-  // TODO(hclam): Allow multiple clients to connect to the host.
-  if (connection_.get() || state_ != kStarted) {
+  if (state_ != kStarted) {
     *response = protocol::SessionManager::DECLINE;
     return;
   }
@@ -323,12 +314,19 @@ void ChromotingHost::OnNewClientSession(
 
   VLOG(1) << "Client connected: " << session->jid();
 
-  // If we accept the connected then create a connection object.
-  connection_ = new ConnectionToClient(context_->network_message_loop(),
-                                       this,
-                                       desktop_environment_.get(),
-                                       desktop_environment_->input_stub());
-  connection_->Init(session);
+  // We accept the connection, so create a connection object.
+  ConnectionToClient* connection = new ConnectionToClient(
+      context_->network_message_loop(),
+      this,
+      desktop_environment_->input_stub());
+
+  // Create a client object.
+  ClientSession* client = new ClientSession(this, connection);
+  connection->set_host_stub(client);
+
+  connection->Init(session);
+
+  clients_.push_back(client);
 }
 
 void ChromotingHost::set_protocol_config(
@@ -338,8 +336,8 @@ void ChromotingHost::set_protocol_config(
   protocol_config_.reset(config);
 }
 
-protocol::HostStub* ChromotingHost::host_stub() const {
-  return desktop_environment_.get();
+void ChromotingHost::AddClient(ClientSession* client) {
+  clients_.push_back(client);
 }
 
 void ChromotingHost::OnServerClosed() {
@@ -371,34 +369,68 @@ std::string ChromotingHost::GenerateHostAuthToken(
   return encoded_client_token;
 }
 
-void ChromotingHost::LocalLoginSucceeded() {
+void ChromotingHost::LocalLoginSucceeded(
+    scoped_refptr<ConnectionToClient> connection) {
   if (MessageLoop::current() != context_->main_message_loop()) {
     context_->main_message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &ChromotingHost::LocalLoginSucceeded));
+        NewRunnableMethod(this,
+                          &ChromotingHost::LocalLoginSucceeded,
+                          connection));
     return;
   }
 
   protocol::LocalLoginStatus* status = new protocol::LocalLoginStatus();
   status->set_success(true);
-  connection_->client_stub()->BeginSessionResponse(
+  connection->client_stub()->BeginSessionResponse(
       status, new DeleteTask<protocol::LocalLoginStatus>(status));
 
-  connection_->OnClientAuthenticated();
+  connection->OnClientAuthenticated();
+
+  // Disconnect all other clients.
+  // Iterate over a copy of the list of clients, to avoid mutating the list
+  // while iterating over it.
+  std::vector<scoped_refptr<ClientSession> > clients_copy(clients_);
+  std::vector<scoped_refptr<ClientSession> >::const_iterator client;
+  for (client = clients_copy.begin(); client != clients_copy.end(); client++) {
+    ConnectionToClient* connection_other = client->get()->connection();
+    if (connection_other != connection) {
+      OnClientDisconnected(connection_other);
+    }
+  }
+  // Those disconnections should have killed the screen recorder.
+  CHECK(recorder_.get() == NULL);
+
+  // Create a new RecordSession if there was none.
+  if (!recorder_.get()) {
+    // Then we create a ScreenRecorder passing the message loops that
+    // it should run on.
+    Encoder* encoder = CreateEncoder(connection->session()->config());
+
+    recorder_ = new ScreenRecorder(context_->main_message_loop(),
+                                   context_->encode_message_loop(),
+                                   context_->network_message_loop(),
+                                   desktop_environment_->capturer(),
+                                   encoder);
+  }
+
+  // Immediately add the connection and start the session.
+  recorder_->AddConnection(connection);
   recorder_->Start();
 }
 
-void ChromotingHost::LocalLoginFailed() {
+void ChromotingHost::LocalLoginFailed(
+    scoped_refptr<ConnectionToClient> connection) {
   if (MessageLoop::current() != context_->main_message_loop()) {
     context_->main_message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &ChromotingHost::LocalLoginFailed));
+        NewRunnableMethod(this, &ChromotingHost::LocalLoginFailed, connection));
     return;
   }
 
   protocol::LocalLoginStatus* status = new protocol::LocalLoginStatus();
   status->set_success(false);
-  connection_->client_stub()->BeginSessionResponse(
+  connection->client_stub()->BeginSessionResponse(
       status, new DeleteTask<protocol::LocalLoginStatus>(status));
 }
 

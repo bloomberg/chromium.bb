@@ -11,7 +11,8 @@ MockConnectionToClient::MockConnectionToClient(MessageLoop* message_loop,
                                                EventHandler* handler,
                                                HostStub* host_stub,
                                                InputStub* input_stub)
-    : ConnectionToClient(message_loop, handler, host_stub, input_stub) {
+    : ConnectionToClient(message_loop, handler, input_stub) {
+  set_host_stub(host_stub);
 }
 
 MockConnectionToClient::~MockConnectionToClient() {}

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/proto/internal.pb.h"
+#include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/host_message_dispatcher.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
@@ -48,25 +49,22 @@ void HostMessageDispatcher::Initialize(
 
 void HostMessageDispatcher::OnControlMessageReceived(
     ControlMessage* message, Task* done_task) {
+  // BeginSessionRequest is always allowed.
+  if (message->has_begin_session_request()) {
+    host_stub_->BeginSessionRequest(
+        &message->begin_session_request().credentials(), done_task);
+    return;
+  }
   if (!host_stub_->authenticated()) {
-    // When the client has not authenticated with the host, we restrict the
-    // control messages that we support.
-    if (message->has_begin_session_request()) {
-      host_stub_->BeginSessionRequest(
-          &message->begin_session_request().credentials(), done_task);
-      return;
-    } else {
-      LOG(WARNING) << "Invalid control message received "
-                   << "(client not authenticated).";
-    }
+    // When the client has not authenticated with the host, no other messages
+    // are allowed.
+    LOG(WARNING) << "Invalid control message received "
+                 << "(client not authenticated).";
   } else {
     // TODO(sergeyu): Add message validation.
     if (message->has_suggest_resolution()) {
       host_stub_->SuggestResolution(&message->suggest_resolution(), done_task);
       return;
-    } else if (message->has_begin_session_request()) {
-      LOG(WARNING) << "BeginSessionRequest sent after client already "
-                   << "authorized.";
     } else {
       LOG(WARNING) << "Invalid control message received.";
     }

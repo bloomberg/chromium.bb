@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,10 +50,7 @@ class ConnectionToClient :
   // It is guranteed that |handler| is called only on the |message_loop|.
   ConnectionToClient(MessageLoop* message_loop,
                      EventHandler* handler,
-                     HostStub* host_stub,
                      InputStub* input_stub);
-
-  virtual ~ConnectionToClient();
 
   virtual void Init(Session* session);
 
@@ -72,8 +69,18 @@ class ConnectionToClient :
   // Return pointer to ClientStub.
   virtual ClientStub* client_stub();
 
+  virtual HostStub* host_stub();
+  virtual void set_host_stub(HostStub* host_stub);
+
   // Called when the host accepts the client authentication.
   void OnClientAuthenticated();
+
+  // Whether the client has been authenticated.
+  bool client_authenticated();
+
+ protected:
+  friend class base::RefCountedThreadSafe<ConnectionToClient>;
+  virtual ~ConnectionToClient();
 
  private:
   // Callback for protocol Session.
