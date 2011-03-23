@@ -337,8 +337,10 @@ cr.define('options', function() {
         uiLanguageButton.onclick = function(e) {
           chrome.send('uiLanguageChange', [languageCode]);
         }
-        $('language-options-ui-restart-button').onclick = function(e) {
-          chrome.send('uiLanguageRestart');
+        if (cr.isChromeOS) {
+          $('language-options-ui-restart-button').onclick = function(e) {
+            chrome.send('uiLanguageRestart');
+          }
         }
       } else {
         // If the language is not supported as UI language, the button
