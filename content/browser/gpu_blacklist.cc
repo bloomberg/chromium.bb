@@ -741,8 +741,6 @@ bool GpuBlacklist::GetVersion(
 
 GpuBlacklist::OsType GpuBlacklist::GetOsType() {
 #if defined(OS_CHROMEOS)
-  // ChromeOS handles GPU/Driver issues by itself. Returning OS unknown disables
-  // blacklisting.
   return kOsChromeOS;
 #elif defined(OS_WIN)
   return kOsWin;
