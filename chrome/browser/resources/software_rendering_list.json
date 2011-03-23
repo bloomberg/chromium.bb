@@ -44,7 +44,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.8",
+  "version": "1.9",
   "entries": [
     {
       "id": 1,
@@ -55,26 +55,6 @@
       },
       "vendor_id": "0x1002",
       "device_id": ["0x7249"],
-      "blacklist": [
-        "webgl"
-      ]
-    },
-    {
-      "id": 2,
-      "description": "Intel GPUs with Mesa driver earlier than 7.9 do not support WebGL.",
-      "cr_bugs": [66718,67345,67939],
-      "os": {
-        "type": "linux"
-      },
-      "vendor_id": "0x8086",
-      "driver_vendor": {
-        "op": "=",
-        "value": "mesa"
-      },
-      "driver_version": {
-        "op": "<",
-        "number": "7.9"
-      },
       "blacklist": [
         "webgl"
       ]
