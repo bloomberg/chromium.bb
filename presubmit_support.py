@@ -146,7 +146,7 @@ class OutputApi(object):
       for index, item in enumerate(self._items):
         output.write('  ')
         # Write separately in case it's unicode.
-        output.write(item)
+        output.write(str(item))
         if index < len(self._items) - 1:
           output.write(' \\')
         output.write('\n')
