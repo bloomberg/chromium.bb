@@ -118,8 +118,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       module_ref_count_(0),
       did_start_(false),
       checked_for_new_frames_(false),
-      using_new_frames_(false),
-      have_inspector_files_(true) {
+      using_new_frames_(false) {
   g_browser_process = this;
   clipboard_.reset(new ui::Clipboard);
   main_notification_service_.reset(new NotificationService);
@@ -613,12 +612,6 @@ bool BrowserProcessImpl::plugin_finder_disabled() const {
   return *plugin_finder_disabled_pref_;
 }
 
-void BrowserProcessImpl::CheckForInspectorFiles() {
-  file_thread()->message_loop()->PostTask
-      (FROM_HERE,
-       NewRunnableMethod(this, &BrowserProcessImpl::DoInspectorFilesCheck));
-}
-
 void BrowserProcessImpl::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
@@ -658,10 +651,6 @@ void BrowserProcessImpl::StartAutoupdateTimer() {
       &BrowserProcessImpl::OnAutoupdateTimer);
 }
 #endif
-
-bool BrowserProcessImpl::have_inspector_files() const {
-  return have_inspector_files_;
-}
 
 ChromeNetLog* BrowserProcessImpl::net_log() {
   return net_log_.get();
@@ -995,19 +984,6 @@ void BrowserProcessImpl::SetIPCLoggingEnabledForChildProcesses(bool enabled) {
 }
 
 #endif  // IPC_MESSAGE_LOG_ENABLED
-
-void BrowserProcessImpl::DoInspectorFilesCheck() {
-  // Runs on FILE thread.
-  DCHECK(file_thread_->message_loop() == MessageLoop::current());
-  bool result = false;
-
-  FilePath inspector_dir;
-  if (PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir)) {
-    result = file_util::PathExists(inspector_dir);
-  }
-
-  have_inspector_files_ = result;
-}
 
 // Mac is currently not supported.
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)

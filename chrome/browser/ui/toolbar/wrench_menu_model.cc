@@ -181,10 +181,8 @@ void ToolsMenuModel::Build(Browser* browser) {
   AddSubMenuWithStringId(IDC_ENCODING_MENU, IDS_ENCODING_MENU,
                          encoding_menu_model_.get());
   AddItemWithStringId(IDC_VIEW_SOURCE, IDS_VIEW_SOURCE);
-  if (g_browser_process->have_inspector_files()) {
-    AddItemWithStringId(IDC_DEV_TOOLS, IDS_DEV_TOOLS);
-    AddItemWithStringId(IDC_DEV_TOOLS_CONSOLE, IDS_DEV_TOOLS_CONSOLE);
-  }
+  AddItemWithStringId(IDC_DEV_TOOLS, IDS_DEV_TOOLS);
+  AddItemWithStringId(IDC_DEV_TOOLS_CONSOLE, IDS_DEV_TOOLS_CONSOLE);
 
 #if defined(ENABLE_PROFILING) && !defined(NO_TCMALLOC)
   AddSeparator();

@@ -214,8 +214,8 @@ const TestPathInfo kPathsToTest[] = {
       false, false, true, 500 * kOneKilo},
   {"Dictionaries Directory", chrome::DIR_APP_DICTIONARIES,
       true, true, false, 0},
-  {"Inspector Directory", chrome::DIR_INSPECTOR,
-      true, false, false, 0}
+  {"Resources file", chrome::FILE_RESOURCES_PACK,
+      false, false, false, 0}
 };
 
 // Check that the user's data directory exists and the paths are writable.
@@ -386,7 +386,7 @@ DiagnosticTest* MakeDictonaryDirTest() {
   return new PathTest(kPathsToTest[2]);
 }
 
-DiagnosticTest* MakeInspectorDirTest() {
+DiagnosticTest* MakeResourcesFileTest() {
   return new PathTest(kPathsToTest[3]);
 }
 

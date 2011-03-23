@@ -133,8 +133,6 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual void StartAutoupdateTimer() {}
 #endif
 
-  virtual bool have_inspector_files() const;
-
   virtual ChromeNetLog* net_log();
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)

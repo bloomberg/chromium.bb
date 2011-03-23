@@ -15,7 +15,7 @@ DiagnosticTest* MakeVersionTest();
 DiagnosticTest* MakeUserDirTest();
 DiagnosticTest* MakeLocalStateFileTest();
 DiagnosticTest* MakeDictonaryDirTest();
-DiagnosticTest* MakeInspectorDirTest();
+DiagnosticTest* MakeResourcesFileTest();
 DiagnosticTest* MakeDiskSpaceTest();
 DiagnosticTest* MakePreferencesTest();
 DiagnosticTest* MakeBookMarksTest();

@@ -210,10 +210,6 @@ bool TestingBrowserProcess::plugin_finder_disabled() const {
   return false;
 }
 
-bool TestingBrowserProcess::have_inspector_files() const {
-  return true;
-}
-
 ChromeNetLog* TestingBrowserProcess::net_log() {
   return NULL;
 }

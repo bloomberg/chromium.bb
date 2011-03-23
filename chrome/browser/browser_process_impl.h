@@ -95,7 +95,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service();
   virtual bool plugin_finder_disabled() const;
-  virtual void CheckForInspectorFiles();
 
   // NotificationObserver methods
   virtual void Observe(NotificationType type,
@@ -105,8 +104,6 @@ class BrowserProcessImpl : public BrowserProcess,
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   virtual void StartAutoupdateTimer();
 #endif
-
-  virtual bool have_inspector_files() const;
 
   virtual ChromeNetLog* net_log();
 
@@ -255,12 +252,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   // An event that notifies when we are shutting-down.
   scoped_ptr<base::WaitableEvent> shutdown_event_;
-
-  // Runs on the file thread and stats the inspector's directory, filling in
-  // have_inspector_files_ with the result.
-  void DoInspectorFilesCheck();
-  // Our best estimate about the existence of the inspector directory.
-  bool have_inspector_files_;
 
   // Ensures that the observers of plugin/print disable/enable state
   // notifications are properly added and removed.

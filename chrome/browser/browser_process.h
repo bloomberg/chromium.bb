@@ -195,10 +195,6 @@ class BrowserProcess {
   // the IO thread.
   virtual bool plugin_finder_disabled() const = 0;
 
-  // Trigger an asynchronous check to see if we have the inspector's files on
-  // disk.
-  virtual void CheckForInspectorFiles() = 0;
-
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   // This will start a timer that, if Chrome is in persistent mode, will check
   // whether an update is available, and if that's the case, restart the
@@ -209,11 +205,6 @@ class BrowserProcess {
   // |kSwitchesToRemoveOnAutorestart| array in browser_process_impl.cc.
   virtual void StartAutoupdateTimer() = 0;
 #endif
-
-  // Return true iff we found the inspector files on disk. It's possible to
-  // call this function before we have a definite answer from the disk. In that
-  // case, we default to returning true.
-  virtual bool have_inspector_files() const = 0;
 
   virtual ChromeNetLog* net_log() = 0;
 

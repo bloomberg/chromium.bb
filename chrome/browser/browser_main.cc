@@ -1682,10 +1682,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   RecordBreakpadStatusUMA(metrics);
   about_flags::RecordUMAStatistics(local_state);
 
-  // Stat the directory with the inspector's files so that we can know if we
-  // should display the entry in the context menu or not.
-  browser_process->CheckForInspectorFiles();
-
 #if defined(OS_CHROMEOS)
   metrics->StartExternalMetrics();
 #endif
