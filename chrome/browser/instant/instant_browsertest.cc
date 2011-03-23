@@ -29,6 +29,45 @@
 #define EXPECT_STR_EQ(ascii, utf16) \
   EXPECT_EQ(ASCIIToWide(ascii), UTF16ToWide(utf16))
 
+namespace {
+
+// Wait for DOWNLOAD_INITIATED.
+class DownloadNotificationObserver : public NotificationObserver {
+ public:
+  DownloadNotificationObserver() : running_(false), fired_(false) {
+    registrar_.Add(this, NotificationType::DOWNLOAD_INITIATED,
+                   NotificationService::AllSources());
+  }
+
+  void Run() {
+    if (fired_)
+      return;
+
+    running_ = true;
+    ui_test_utils::RunMessageLoop();
+    running_ = false;
+  }
+
+  bool fired() const { return fired_; }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE {
+    fired_ = true;
+    if (running_)
+      MessageLoopForUI::current()->Quit();
+  }
+
+ private:
+  bool running_;
+  bool fired_;
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadNotificationObserver);
+};
+
+}  // namespace
+
 class InstantTest : public InProcessBrowserTest {
  public:
   InstantTest()
@@ -739,4 +778,36 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DontCrashOnBlockedJS) {
   ui_test_utils::WaitForNotification(
       NotificationType::INSTANT_SUPPORT_DETERMINED);
   // As long as we get the notification we're good (the renderer didn't crash).
+}
+
+IN_PROC_BROWSER_TEST_F(InstantTest, DownloadOnEnter) {
+  ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+  ASSERT_NO_FATAL_FAILURE(FindLocationBar());
+  GURL url(test_server()->GetURL("files/instant/empty.html"));
+  location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
+  ASSERT_NO_FATAL_FAILURE(WaitForPreviewToNavigate(true));
+  url = test_server()->GetURL("files/instant/download.zip");
+  location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
+  // Wait for the load to fail (because instant disables downloads).
+  ui_test_utils::WaitForNotification(
+      NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR);
+
+  DownloadNotificationObserver download_observer;
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN));
+  download_observer.Run();
+  // Pressing enter should initiate a download.
+  EXPECT_TRUE(download_observer.fired());
+
+  // And we should end up at about:blank.
+  TabContents* contents = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(contents);
+  EXPECT_EQ("about:blank",
+            contents->controller().GetLastCommittedEntry()->url().spec());
+  if (contents->controller().pending_entry()) {
+    // If there is a pending entry, the url should correspond to the download.
+    EXPECT_EQ(url.spec(),
+              contents->controller().pending_entry()->url().spec());
+  }
 }

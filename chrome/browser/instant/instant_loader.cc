@@ -27,6 +27,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
@@ -262,6 +263,8 @@ InstantLoader::TabContentsDelegateImpl::TabContentsDelegateImpl(
   DCHECK(loader->preview_contents());
   registrar_.Add(this, NotificationType::INTERSTITIAL_ATTACHED,
       Source<TabContents>(loader->preview_contents()->tab_contents()));
+  registrar_.Add(this, NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR,
+      Source<NavigationController>(&loader->preview_contents()->controller()));
 }
 
 void InstantLoader::TabContentsDelegateImpl::PrepareForNewLoad() {
@@ -364,6 +367,14 @@ void InstantLoader::TabContentsDelegateImpl::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   switch (type.value) {
+    case NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR:
+      if (Details<ProvisionalLoadDetails>(details)->url() == loader_->url_) {
+        // This typically happens with downloads (which are disabled with
+        // instant active). To ensure the download happens when the user presses
+        // enter we set needs_reload_ to true, which triggers a reload.
+        loader_->needs_reload_ = true;
+      }
+      break;
     case NotificationType::RENDER_WIDGET_HOST_DID_PAINT:
       UnregisterForPaintNotifications();
       PreviewPainted();
@@ -495,6 +506,7 @@ void InstantLoader::TabContentsDelegateImpl::DragEnded() {
 }
 
 bool InstantLoader::TabContentsDelegateImpl::CanDownload(int request_id) {
+  // Downloads are disabled.
   return false;
 }
 
@@ -580,7 +592,8 @@ InstantLoader::InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id)
       template_url_id_(id),
       ready_(false),
       last_transition_type_(PageTransition::LINK),
-      verbatim_(false) {
+      verbatim_(false),
+      needs_reload_(false) {
 }
 
 InstantLoader::~InstantLoader() {
@@ -632,6 +645,7 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
   user_text_ = new_user_text;
   verbatim_ = verbatim;
   last_suggestion_.clear();
+  needs_reload_ = false;
 
   bool created_preview_contents = preview_contents_.get() == NULL;
   if (created_preview_contents)

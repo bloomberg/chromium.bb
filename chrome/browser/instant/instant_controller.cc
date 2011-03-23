@@ -228,7 +228,9 @@ void InstantController::DestroyPreviewContentsAndLeaveActive() {
 
 bool InstantController::IsCurrent() {
   return loader_manager_.get() && loader_manager_->active_loader() &&
-      loader_manager_->active_loader()->ready() && !update_timer_.IsRunning();
+      loader_manager_->active_loader()->ready() &&
+      !loader_manager_->active_loader()->needs_reload() &&
+      !update_timer_.IsRunning();
 }
 
 void InstantController::CommitCurrentPreview(InstantCommitType type) {

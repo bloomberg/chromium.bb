@@ -81,6 +81,10 @@ class InstantLoader : public NotificationObserver {
   // Returns true if the preview TabContents is ready to be shown.
   bool ready() const { return ready_; }
 
+  // Returns true if the url needs to be reloaded. This is set to true for
+  // downloads.
+  bool needs_reload() const { return needs_reload_; }
+
   const GURL& url() const { return url_; }
 
   bool verbatim() const { return verbatim_; }
@@ -189,6 +193,9 @@ class InstantLoader : public NotificationObserver {
 
   // Last value of verbatim passed to |Update|.
   bool verbatim_;
+
+  // True if the page needs to be reloaded.
+  bool needs_reload_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantLoader);
 };
