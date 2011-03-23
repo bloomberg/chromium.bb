@@ -51,7 +51,7 @@ then
   # work around a git-svn --quiet bug
   OUTPUT=`git svn rebase -q -q`
   if [[ ! "$OUTPUT" == *Current.branch* ]]; then
-    echo $OUTPUT
+    echo $OUTPUT 1>&2
   fi
   cd - > /dev/null
 fi
@@ -65,6 +65,6 @@ then
   svn -q up "$base_dir"
   AFTER_REVISION=$(get_svn_revision)
   if [[ "$BEFORE_REVISION" != "$AFTER_REVISION" ]]; then
-    echo "Depot Tools has been updated to revision $AFTER_REVISION."
+    echo "Depot Tools has been updated to revision $AFTER_REVISION." 1>&2
   fi
 fi
