@@ -8,10 +8,7 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/download/download_history.h"
-#include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -48,37 +45,6 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     return *Details<GURL>(observer.details()).ptr();
   }
 
-  void QueryDownloadHistory(TabContents* current_tab) {
-    DownloadManager* download_manager =
-      current_tab->profile()->GetDownloadManager();
-
-    // Query the history system.
-    download_manager->download_history()->Load(
-      NewCallback(this,
-        &SavePageBrowserTest::OnQueryDownloadEntriesComplete));
-
-    // Run message loop until a quit message is sent from
-    // OnQueryDownloadEntriesComplete().
-    ui_test_utils::RunMessageLoop();
-  }
-
-  void OnQueryDownloadEntriesComplete(
-    std::vector<DownloadCreateInfo>* entries) {
-
-    // Make a copy of the URLs returned by the history system.
-    history_urls_.clear();
-    for (size_t i = 0; i < entries->size(); ++i) {
-      history_urls_.push_back(entries->at(i).url);
-    }
-
-    // Indicate thet we have received the history and
-    // can continue.
-    MessageLoopForUI::current()->Quit();
-  }
-
-  // URLs found in the history.
-  std::vector<GURL> history_urls_;
-
   // Path to directory containing test data.
   FilePath test_dir_;
 
@@ -104,10 +70,6 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
 
   if (browser()->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF))
     EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-
-  QueryDownloadHistory(current_tab);
-  EXPECT_TRUE(std::find(history_urls_.begin(), history_urls_.end(),
-                        url) != history_urls_.end());
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_FALSE(file_util::PathExists(dir));
@@ -138,10 +100,6 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
   if (browser()->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF))
     EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 
-  QueryDownloadHistory(current_tab);
-  EXPECT_TRUE(std::find(history_urls_.begin(), history_urls_.end(),
-                        actual_page_url) != history_urls_.end());
-
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_FALSE(file_util::PathExists(dir));
   EXPECT_TRUE(file_util::ContentsEqual(
@@ -167,10 +125,6 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
 
   if (browser()->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF))
     EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-
-  QueryDownloadHistory(current_tab);
-  EXPECT_TRUE(std::find(history_urls_.begin(), history_urls_.end(),
-                        url) != history_urls_.end());
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_TRUE(file_util::PathExists(dir));
@@ -213,10 +167,6 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
 
   if (browser()->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF))
     EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-
-  QueryDownloadHistory(current_tab);
-  EXPECT_TRUE(std::find(history_urls_.begin(), history_urls_.end(),
-                        url) != history_urls_.end());
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_TRUE(file_util::PathExists(dir));
