@@ -235,7 +235,23 @@ int main(int  argc,
   if (!DynArrayCtor(&env_vars, 0)) {
     NaClLog(LOG_FATAL, "Failed to allocate env var array\n");
   }
-  while ((opt = getopt(argc, argv, "abcE:f:Fgh:i:Il:Qr:RsSvw:X:")) != -1) {
+  /*
+   * On platforms with glibc getopt, require POSIXLY_CORRECT behavior,
+   * viz, no reordering of the arglist -- stop argument processing as
+   * soon as an unrecognized argument is encountered, so that, for
+   * example, in the invocation
+   *
+   *   sel_ldr foo.nexe -vvv
+   *
+   * the -vvv flags are made available to the nexe, rather than being
+   * consumed by getopt.  This makes the behavior of the Linux build
+   * of sel_ldr consistent with the Windows and OSX builds.
+   */
+  while ((opt = getopt(argc, argv,
+#if NACL_LINUX
+                       "+"
+#endif
+                       "abcE:f:Fgh:i:Il:Qr:RsSvw:X:")) != -1) {
     switch (opt) {
       case 'c':
         fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
@@ -753,4 +769,3 @@ int main(int  argc,
 
   _exit(ret_code);
 }
-
