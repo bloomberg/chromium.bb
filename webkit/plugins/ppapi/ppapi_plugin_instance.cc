@@ -1144,6 +1144,7 @@ bool PluginInstance::NavigateToURL(const char* url, const char* target) {
   document.frame()->setReferrerForRequest(request, GURL());
   request.setHTTPMethod(WebString::fromUTF8("GET"));
   request.setFirstPartyForCookies(document.firstPartyForCookies());
+  request.setHasUserGesture(true);
 
   WebString target_str = WebString::fromUTF8(target);
   container_->loadFrameRequest(request, target_str, false, NULL);
