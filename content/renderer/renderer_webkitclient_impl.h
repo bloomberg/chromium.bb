@@ -74,6 +74,7 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
 
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
   virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D();
+  virtual double audioHardwareSampleRate();
   virtual WebKit::WebAudioDevice* createAudioDevice(
       size_t buffer_size, unsigned channels, double sample_rate,
       WebKit::WebAudioDevice::RenderCallback* callback);

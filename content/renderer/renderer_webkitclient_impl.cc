@@ -29,6 +29,7 @@
 #include "content/renderer/websharedworkerrepository_impl.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "media/audio/audio_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGraphicsContext3D.h"
@@ -533,6 +534,10 @@ RendererWebKitClientImpl::createGraphicsContext3D() {
     return NULL;
 #endif
   }
+}
+
+double RendererWebKitClientImpl::audioHardwareSampleRate() {
+    return media::GetAudioHardwareSampleRate();
 }
 
 WebAudioDevice*
