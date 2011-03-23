@@ -795,10 +795,6 @@ class TabContents : public PageNavigator,
                         const std::string& original_lang,
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type);
-  void OnSetSuggestions(int32 page_id,
-                        const std::vector<std::string>& suggestions,
-                        InstantCompleteBehavior behavior);
-  void OnInstantSupportDetermined(int32 page_id, bool result);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished

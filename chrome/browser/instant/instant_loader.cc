@@ -138,7 +138,8 @@ void InstantLoader::FrameLoadObserver::Observe(
 
 class InstantLoader::TabContentsDelegateImpl
     : public TabContentsDelegate,
-      public NotificationObserver {
+      public NotificationObserver,
+      public TabContentsObserver {
  public:
   explicit TabContentsDelegateImpl(InstantLoader* loader);
 
@@ -213,16 +214,24 @@ class InstantLoader::TabContentsDelegateImpl
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       NavigationType::Type navigation_type) OVERRIDE;
-  virtual void OnSetSuggestions(
-      int32 page_id,
-      const std::vector<std::string>& suggestions,
-      InstantCompleteBehavior behavior) OVERRIDE;
-  virtual void OnInstantSupportDetermined(int32 page_id, bool result) OVERRIDE;
   virtual bool ShouldShowHungRendererDialog() OVERRIDE;
+
+  // TabContentsObserver:
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
   typedef std::vector<scoped_refptr<history::HistoryAddPageArgs> >
       AddPageVector;
+
+  // Message from renderer indicating the page has suggestions.
+  void OnSetSuggestions(
+      int32 page_id,
+      const std::vector<std::string>& suggestions,
+      InstantCompleteBehavior behavior);
+
+  // Messages from the renderer when we've determined whether the page supports
+  // instant.
+  void OnInstantSupportDetermined(int32 page_id, bool result);
 
   void CommitFromMouseReleaseIfNecessary();
 
@@ -255,7 +264,8 @@ class InstantLoader::TabContentsDelegateImpl
 
 InstantLoader::TabContentsDelegateImpl::TabContentsDelegateImpl(
     InstantLoader* loader)
-    : loader_(loader),
+    : TabContentsObserver(loader->preview_contents()->tab_contents()),
+      loader_(loader),
       registered_render_widget_host_(NULL),
       waiting_for_new_page_(true),
       is_mouse_down_from_activate_(false),
@@ -535,6 +545,25 @@ bool InstantLoader::TabContentsDelegateImpl::ShouldAddNavigationToHistory(
   return false;
 }
 
+bool InstantLoader::TabContentsDelegateImpl::ShouldShowHungRendererDialog() {
+  // If we allow the hung renderer dialog to be shown it'll gain focus,
+  // stealing focus from the omnibox causing instant to be cancelled. Return
+  // false so that doesn't happen.
+  return false;
+}
+
+bool InstantLoader::TabContentsDelegateImpl::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(TabContentsDelegateImpl, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetSuggestions, OnSetSuggestions)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_InstantSupportDetermined,
+                        OnInstantSupportDetermined)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
 void InstantLoader::TabContentsDelegateImpl::OnSetSuggestions(
     int32 page_id,
     const std::vector<std::string>& suggestions,
@@ -568,13 +597,6 @@ void InstantLoader::TabContentsDelegateImpl::OnInstantSupportDetermined(
     loader_->PageFinishedLoading();
   else
     loader_->PageDoesntSupportInstant(user_typed_before_load_);
-}
-
-bool InstantLoader::TabContentsDelegateImpl::ShouldShowHungRendererDialog() {
-  // If we allow the hung renderer dialog to be shown it'll gain focus,
-  // stealing focus from the omnibox causing instant to be cancelled. Return
-  // false so that doesn't happen.
-  return false;
 }
 
 void InstantLoader::TabContentsDelegateImpl

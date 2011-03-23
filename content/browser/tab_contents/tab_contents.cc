@@ -431,9 +431,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
                         OnInstallApplication)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetSuggestions, OnSetSuggestions)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_InstantSupportDetermined,
-                        OnInstantSupportDetermined)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -1956,19 +1953,6 @@ void TabContents::OnPageTranslated(int32 page_id,
       NotificationType::PAGE_TRANSLATED,
       Source<TabContents>(this),
       Details<PageTranslatedDetails>(&details));
-}
-
-void TabContents::OnSetSuggestions(
-    int32 page_id,
-    const std::vector<std::string>& suggestions,
-    InstantCompleteBehavior behavior) {
-  if (delegate())
-    delegate()->OnSetSuggestions(page_id, suggestions, behavior);
-}
-
-void TabContents::OnInstantSupportDetermined(int32 page_id, bool result) {
-  if (delegate())
-    delegate()->OnInstantSupportDetermined(page_id, result);
 }
 
 void TabContents::OnContentSettingsAccessed(bool content_was_blocked) {
