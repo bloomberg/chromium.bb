@@ -106,10 +106,6 @@ class MetricsService : public NotificationObserver,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // This should be called when the application is shutting down, to record
-  // the fact that this was a clean shutdown in the stability metrics.
-  void RecordCleanShutdown();
-
   // Invoked when we get a WM_SESSIONEND. This places a value in prefs that is
   // reset when RecordCompletedSessionEnd is invoked.
   void RecordStartOfSessionEnd();
@@ -340,6 +336,9 @@ class MetricsService : public NotificationObserver,
 
   // Records a renderer process hang.
   void LogRendererHang();
+
+  // Records that the browser was shut down cleanly.
+  void LogCleanShutdown();
 
   // Set the value in preferences for the number of bookmarks and folders
   // in node. The pref key for the number of bookmarks in num_bookmarks_key and

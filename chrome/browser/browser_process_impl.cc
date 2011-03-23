@@ -329,8 +329,6 @@ void BrowserProcessImpl::EndSession() {
   // Tell the metrics service it was cleanly shutdown.
   MetricsService* metrics = g_browser_process->metrics_service();
   if (metrics && local_state()) {
-    metrics->RecordCleanShutdown();
-
     metrics->RecordStartOfSessionEnd();
 
     // MetricsService lazily writes to prefs, force it to write now.

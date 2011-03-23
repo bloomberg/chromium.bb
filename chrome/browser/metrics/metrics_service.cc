@@ -664,15 +664,13 @@ void MetricsService::HandleIdleSinceLastTransmission(bool in_idle) {
   idle_since_last_transmission_ = in_idle;
 }
 
-void MetricsService::RecordCleanShutdown() {
-  RecordBooleanPrefValue(prefs::kStabilityExitedCleanly, true);
-}
-
 void MetricsService::RecordStartOfSessionEnd() {
+  LogCleanShutdown();
   RecordBooleanPrefValue(prefs::kStabilitySessionEndCompleted, false);
 }
 
 void MetricsService::RecordCompletedSessionEnd() {
+  LogCleanShutdown();
   RecordBooleanPrefValue(prefs::kStabilitySessionEndCompleted, true);
 }
 
@@ -1699,6 +1697,10 @@ void MetricsService::LogExtensionRendererCrash() {
 
 void MetricsService::LogRendererHang() {
   IncrementPrefValue(prefs::kStabilityRendererHangCount);
+}
+
+void MetricsService::LogCleanShutdown() {
+  RecordBooleanPrefValue(prefs::kStabilityExitedCleanly, true);
 }
 
 #if defined(OS_CHROMEOS)
