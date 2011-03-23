@@ -7,8 +7,8 @@
 #include "base/time.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/view_messages.h"
 
 namespace prerender {
 

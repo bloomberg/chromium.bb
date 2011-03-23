@@ -38,7 +38,6 @@
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
-#include "chrome/common/window_container_type.h"
 #include "chrome/renderer/about_handler.h"
 #include "chrome/renderer/autofill/autofill_agent.h"
 #include "chrome/renderer/autofill/form_manager.h"
@@ -76,7 +75,6 @@
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/file_system/webfilesystem_callback_dispatcher.h"
 #include "content/common/notification_service.h"
-#include "content/common/page_zoom.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/renderer_preferences.h"
 #include "content/common/view_messages.h"
@@ -915,11 +913,11 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
                                            const WebPluginParams& params) {
   webkit::npapi::WebPluginInfo info;
   bool found;
-  ContentSetting setting;
+  int content_setting;
   std::string mime_type;
   Send(new ViewHostMsg_GetPluginInfo(
       routing_id_, params.url, frame->top()->url(), params.mimeType.utf8(),
-      &found, &info, &setting, &mime_type));
+      &found, &info, &content_setting, &mime_type));
   if (!found || !webkit::npapi::IsPluginEnabled(info))
     return NULL;
 
@@ -2299,11 +2297,11 @@ bool RenderView::runFileChooser(
     return false;
   ViewHostMsg_RunFileChooser_Params ipc_params;
   if (params.directory)
-    ipc_params.mode = ViewHostMsg_RunFileChooser_Params::OpenFolder;
+    ipc_params.mode = ViewHostMsg_RunFileChooser_Mode::OpenFolder;
   else if (params.multiSelect)
-    ipc_params.mode = ViewHostMsg_RunFileChooser_Params::OpenMultiple;
+    ipc_params.mode = ViewHostMsg_RunFileChooser_Mode::OpenMultiple;
   else
-    ipc_params.mode = ViewHostMsg_RunFileChooser_Params::Open;
+    ipc_params.mode = ViewHostMsg_RunFileChooser_Mode::Open;
   ipc_params.title = params.title;
   ipc_params.default_file_name =
       webkit_glue::WebStringToFilePath(params.initialValue);

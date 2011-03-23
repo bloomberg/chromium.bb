@@ -5,71 +5,8 @@
 #include "chrome/common/webkit_param_traits.h"
 
 #include "base/format_macros.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 
 namespace IPC {
-
-void ParamTraits<WebKit::WebRect>::Write(Message* m, const param_type& p) {
-    WriteParam(m, p.x);
-    WriteParam(m, p.y);
-    WriteParam(m, p.width);
-    WriteParam(m, p.height);
-  }
-
-bool ParamTraits<WebKit::WebRect>::Read(const Message* m, void** iter,
-                                        param_type* p) {
-  return
-      ReadParam(m, iter, &p->x) &&
-      ReadParam(m, iter, &p->y) &&
-      ReadParam(m, iter, &p->width) &&
-      ReadParam(m, iter, &p->height);
-}
-
-void ParamTraits<WebKit::WebRect>::Log(const param_type& p, std::string* l) {
-  l->append("(");
-  LogParam(p.x, l);
-  l->append(", ");
-  LogParam(p.y, l);
-  l->append(", ");
-  LogParam(p.width, l);
-  l->append(", ");
-  LogParam(p.height, l);
-  l->append(")");
-}
-
-void ParamTraits<WebKit::WebScreenInfo>::Write(Message* m,
-                                               const param_type& p) {
-  WriteParam(m, p.depth);
-  WriteParam(m, p.depthPerComponent);
-  WriteParam(m, p.isMonochrome);
-  WriteParam(m, p.rect);
-  WriteParam(m, p.availableRect);
-}
-
-bool ParamTraits<WebKit::WebScreenInfo>::Read(const Message* m, void** iter,
-                                              param_type* p) {
-  return
-      ReadParam(m, iter, &p->depth) &&
-      ReadParam(m, iter, &p->depthPerComponent) &&
-      ReadParam(m, iter, &p->isMonochrome) &&
-      ReadParam(m, iter, &p->rect) &&
-      ReadParam(m, iter, &p->availableRect);
-}
-
-void ParamTraits<WebKit::WebScreenInfo>::Log(const param_type& p,
-                                             std::string* l) {
-  l->append("(");
-  LogParam(p.depth, l);
-  l->append(", ");
-  LogParam(p.depthPerComponent, l);
-  l->append(", ");
-  LogParam(p.isMonochrome, l);
-  l->append(", ");
-  LogParam(p.rect, l);
-  l->append(", ");
-  LogParam(p.availableRect, l);
-  l->append(")");
-}
 
 void ParamTraits<WebKit::WebCache::ResourceTypeStat>::Log(
     const param_type& p, std::string* l) {

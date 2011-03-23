@@ -8,6 +8,7 @@
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/test/render_view_test.h"
+#include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 static void DispatchOnConnect(int source_port_id, const std::string& name,

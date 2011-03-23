@@ -34,7 +34,6 @@
 #include "chrome/common/view_types.h"
 #include "chrome/common/web_apps.h"
 #include "chrome/common/webkit_param_traits.h"
-#include "chrome/common/window_container_type.h"
 #include "content/common/common_param_traits.h"
 #include "content/common/css_colors.h"
 #include "content/common/notification_type.h"
@@ -47,21 +46,13 @@
 #include "ipc/ipc_platform_file.h"                     // ifdefed typedef.
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webaccessibility.h"
-#include "webkit/glue/webcookie.h"
 #include "webkit/glue/webcursor.h"
-#include "webkit/plugins/npapi/webplugin.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "content/common/font_descriptor_mac.h"
 #endif
 
 // TODO(mpcomplete): rename ViewMsg and ViewHostMsg to something that makes
@@ -99,42 +90,6 @@ enum ViewHostMsg_JavaScriptStressTestControl_Commands {
 
 namespace IPC {
 
-#if defined(OS_MACOSX)
-// Traits for FontDescriptor structure to pack/unpack.
-template <>
-struct ParamTraits<FontDescriptor> {
-  typedef FontDescriptor param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-#endif
-
-template <>
-struct ParamTraits<webkit::npapi::WebPluginGeometry> {
-  typedef webkit::npapi::WebPluginGeometry param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-// Traits for ViewMsg_GetPlugins_Reply structure to pack/unpack.
-template <>
-struct ParamTraits<webkit::npapi::WebPluginMimeType> {
-  typedef webkit::npapi::WebPluginMimeType param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<webkit::npapi::WebPluginInfo> {
-  typedef webkit::npapi::WebPluginInfo param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
 #if defined(OS_POSIX)
 
 // TODO(port): this shouldn't exist. However, the plugin stuff is really using
@@ -169,15 +124,6 @@ struct SimilarTypeTraits<ViewType::Type> {
 template <>
 struct ParamTraits<URLPattern> {
   typedef URLPattern param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-// Traits for WebCookie
-template <>
-struct ParamTraits<webkit_glue::WebCookie> {
-  typedef webkit_glue::WebCookie param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
@@ -559,282 +505,8 @@ IPC_MESSAGE_ROUTED1(ViewMsg_StartPhishingDetection, GURL)
 // TabContents messages
 // These are messages sent from the renderer to the browser process.
 
-// Sent by the renderer when it is creating a new window.  The browser creates
-// a tab for it and responds with a ViewMsg_CreatingNew_ACK.  If route_id is
-// MSG_ROUTING_NONE, the view couldn't be created.
-IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_CreateWindow,
-                            ViewHostMsg_CreateWindow_Params,
-                            int /* route_id */,
-                            int64 /* cloned_session_storage_namespace_id */)
-
-// Similar to ViewHostMsg_CreateWindow, except used for sub-widgets, like
-// <select> dropdowns.  This message is sent to the TabContents that
-// contains the widget being created.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CreateWidget,
-                            int /* opener_id */,
-                            WebKit::WebPopupType /* popup type */,
-                            int /* route_id */)
-
-// Similar to ViewHostMsg_CreateWidget except the widget is a full screen
-// window.
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_CreateFullscreenWidget,
-                            int /* opener_id */,
-                            int /* route_id */)
-
-// These three messages are sent to the parent RenderViewHost to display the
-// page/widget that was created by
-// CreateWindow/CreateWidget/CreateFullscreenWidget. routing_id
-// refers to the id that was returned from the Create message above.
-// The initial_position parameter is a rectangle in screen coordinates.
-//
-// FUTURE: there will probably be flags here to control if the result is
-// in a new window.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_ShowView,
-                    int /* route_id */,
-                    WindowOpenDisposition /* disposition */,
-                    gfx::Rect /* initial_pos */,
-                    bool /* opened_by_user_gesture */)
-
-IPC_MESSAGE_ROUTED2(ViewHostMsg_ShowWidget,
-                    int /* route_id */,
-                    gfx::Rect /* initial_pos */)
-
-// Message to show a full screen widget.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowFullscreenWidget,
-                    int /* route_id */)
-
-// This message is sent after ViewHostMsg_ShowView to cause the RenderView
-// to run in a modal fashion until it is closed.
-IPC_SYNC_MESSAGE_ROUTED0_0(ViewHostMsg_RunModal)
-
 IPC_MESSAGE_CONTROL1(ViewHostMsg_UpdatedCacheStats,
                      WebKit::WebCache::UsageStats /* stats */)
-
-// Indicates the renderer is ready in response to a ViewMsg_New or
-// a ViewMsg_CreatingNew_ACK.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_RenderViewReady)
-
-
-// Indicates the renderer process is gone.  This actually is sent by the
-// browser process to itself, but keeps the interface cleaner.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_RenderViewGone,
-                    int, /* this really is base::TerminationStatus */
-                    int /* exit_code */)
-
-// Sent by the renderer process to request that the browser close the view.
-// This corresponds to the window.close() API, and the browser may ignore
-// this message.  Otherwise, the browser will generates a ViewMsg_Close
-// message to close the view.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_Close)
-
-// Sent by the renderer process to request that the browser move the view.
-// This corresponds to the window.resizeTo() and window.moveTo() APIs, and
-// the browser may ignore this message.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_RequestMove,
-                    gfx::Rect /* position */)
-
-// Notifies the browser that a frame in the view has changed. This message
-// has a lot of parameters and is packed/unpacked by functions defined in
-// render_messages.h.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_FrameNavigate,
-                    ViewHostMsg_FrameNavigate_Params)
-
-// Notifies the browser that we have session history information.
-// page_id: unique ID that allows us to distinguish between history entries.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateState,
-                    int32 /* page_id */,
-                    std::string /* state */)
-
-// Notifies the browser that a document has been loaded in a frame.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentLoadedInFrame,
-                    int64 /* frame_id */)
-
-// Notifies the browser that a frame finished loading.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidFinishLoad,
-                    int64 /* frame_id */)
-
-// Changes the title for the page in the UI when the page is navigated or the
-// title changes.
-// TODO(darin): use a UTF-8 string to reduce data size
-IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateTitle, int32, std::wstring)
-
-// Changes the icon url for the page in the UI.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateIconURL, int32, GURL)
-
-// Change the encoding name of the page in UI when the page has detected
-// proper encoding name.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateEncoding,
-                    std::string /* new encoding name */)
-
-// Notifies the browser that we want to show a destination url for a potential
-// action (e.g. when the user is hovering over a link).
-IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateTargetURL, int32, GURL)
-
-// Sent when the renderer starts loading the page. This corresponds to
-// WebKit's notion of the throbber starting. Note that sometimes you may get
-// duplicates of these during a single load.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStartLoading)
-
-// Sent when the renderer is done loading a page. This corresponds to WebKit's
-// notion of the throbber stopping.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStopLoading)
-
-// Sent when the renderer main frame has made progress loading.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeLoadProgress,
-                    double /* load_progress */)
-
-// Sent when the document element is available for the toplevel frame.  This
-// happens after the page starts loading, but before all resources are
-// finished.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DocumentAvailableInMainFrame)
-
-// Sent when after the onload handler has been invoked for the document
-// in the toplevel frame.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
-                    int32 /* page_id */)
-
-// Sent when the renderer loads a resource from its memory cache.
-// The security info is non empty if the resource was originally loaded over
-// a secure connection.
-// Note: May only be sent once per URL per frame per committed load.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_DidLoadResourceFromMemoryCache,
-                    GURL /* url */,
-                    std::string  /* security info */)
-
-// Sent when the renderer displays insecure content in a secure page.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidDisplayInsecureContent)
-
-// Sent when the renderer runs insecure content in a secure origin.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_DidRunInsecureContent,
-                    std::string  /* security_origin */,
-                    GURL         /* target URL */)
-
-// Sent when the renderer starts a provisional load for a frame.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_DidStartProvisionalLoadForFrame,
-                    int64 /* frame_id */,
-                    bool /* true if it is the main frame */,
-                    GURL /* url */)
-
-// Sent when the renderer fails a provisional load with an error.
-IPC_MESSAGE_ROUTED5(ViewHostMsg_DidFailProvisionalLoadWithError,
-                    int64 /* frame_id */,
-                    bool /* true if it is the main frame */,
-                    int /* error_code */,
-                    GURL /* url */,
-                    bool /* true if the failure is the result of
-                            navigating to a POST again and we're going to
-                            show the POST interstitial */)
-
-// Tells the render view that a ViewHostMsg_PaintAtSize message was
-// processed, and the DIB is ready for use. |tag| has the same value that
-// the tag sent along with ViewMsg_PaintAtSize.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_PaintAtSize_ACK,
-                    int /* tag */,
-                    gfx::Size /* size */)
-
-// Sent to update part of the view.  In response to this message, the host
-// generates a ViewMsg_UpdateRect_ACK message.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateRect,
-                    ViewHostMsg_UpdateRect_Params)
-
-// Sent by the renderer when accelerated compositing is enabled or disabled to
-// notify the browser whether or not is should do painting.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidActivateAcceleratedCompositing,
-                    bool /* true if the accelerated compositor is actve */)
-
-// Acknowledges receipt of a ViewMsg_HandleInputEvent message.
-// Payload is a WebInputEvent::Type which is the type of the event, followed
-// by an optional WebInputEvent which is provided only if the event was not
-// processed.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_HandleInputEvent_ACK)
-
-IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
-IPC_MESSAGE_ROUTED0(ViewHostMsg_Blur)
-
-// Message sent from renderer to the browser when focus changes inside the
-// webpage. The parameter says whether the newly focused element needs
-// keyboard input (true for textfields, text areas and content editable divs).
-IPC_MESSAGE_ROUTED1(ViewHostMsg_FocusedNodeChanged,
-    bool /* is_editable_node */)
-
-// Returns the window location of the given window.
-// TODO(shess): Provide a mapping from reply_msg->routing_id() to
-// HWND so that we can eliminate the NativeViewId parameter.
-IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetWindowRect,
-                           gfx::NativeViewId /* window */,
-                           gfx::Rect /* Out: Window location */)
-
-IPC_MESSAGE_ROUTED1(ViewHostMsg_SetCursor, WebCursor)
-
-// Used to set a cookie. The cookie is set asynchronously, but will be
-// available to a subsequent ViewHostMsg_GetCookies request.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_SetCookie,
-                    GURL /* url */,
-                    GURL /* first_party_for_cookies */,
-                    std::string /* cookie */)
-
-// Used to get cookies for the given URL. This may block waiting for a
-// previous SetCookie message to be processed.
-IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetCookies,
-                           GURL /* url */,
-                           GURL /* first_party_for_cookies */,
-                           std::string /* cookies */)
-
-// Used to get raw cookie information for the given URL. This may block
-// waiting for a previous SetCookie message to be processed.
-IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetRawCookies,
-                           GURL /* url */,
-                           GURL /* first_party_for_cookies */,
-                           std::vector<webkit_glue::WebCookie>
-                               /* raw_cookies */)
-
-// Used to delete cookie for the given URL and name
-IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_DeleteCookie,
-                            GURL /* url */,
-                            std::string /* cookie_name */)
-
-// Used to check if cookies are enabled for the given URL. This may block
-// waiting for a previous SetCookie message to be processed.
-IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_CookiesEnabled,
-                           GURL /* url */,
-                           GURL /* first_party_for_cookies */,
-                           bool /* cookies_enabled */)
-
-// Used to get the list of plugins
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetPlugins,
-    bool /* refresh*/,
-    std::vector<webkit::npapi::WebPluginInfo> /* plugins */)
-
-// Return information about a plugin for the given URL and MIME
-// type. If there is no matching plugin, |found| is false.  If
-// |enabled| in the WebPluginInfo struct is false, the plug-in is
-// treated as if it was not installed at all.
-//
-// If |setting| is set to CONTENT_SETTING_BLOCK, the plug-in is
-// blocked by the content settings for |policy_url|. It still
-// appears in navigator.plugins in Javascript though, and can be
-// loaded via click-to-play.
-//
-// If |setting| is set to CONTENT_SETTING_ALLOW, the domain is
-// explicitly white-listed for the plug-in, or the user has chosen
-// not to block nonsandboxed plugins.
-//
-// If |setting| is set to CONTENT_SETTING_DEFAULT, the plug-in is
-// neither blocked nor white-listed, which means that it's allowed
-// by default and can still be blocked if it's non-sandboxed.
-//
-// |actual_mime_type| is the actual mime type supported by the
-// plugin found that match the URL given (one for each item in
-// |info|).
-IPC_SYNC_MESSAGE_CONTROL4_4(ViewHostMsg_GetPluginInfo,
-                            int /* routing_id */,
-                            GURL /* url */,
-                            GURL /* policy_url */,
-                            std::string /* mime_type */,
-                            bool /* found */,
-                            webkit::npapi::WebPluginInfo /* plugin info */,
-                            ContentSetting /* setting */,
-                            std::string /* actual_mime_type */)
 
 // Requests spellcheck for a word.
 IPC_SYNC_MESSAGE_ROUTED2_2(ViewHostMsg_SpellCheck,
@@ -846,7 +518,6 @@ IPC_SYNC_MESSAGE_ROUTED2_2(ViewHostMsg_SpellCheck,
 // Asks the browser for a unique document tag.
 IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_GetDocumentTag,
                            int /* the tag */)
-
 
 // This message tells the spellchecker that a document, identified by an int
 // tag, has been closed and all of the ignored words for that document can be
@@ -867,47 +538,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
 IPC_MESSAGE_ROUTED2(ViewHostMsg_ContentBlocked,
                     ContentSettingsType, /* type of blocked content */
                     std::string /* resource identifier */)
-
-// Tells the browser that  a specific Appcache manifest in the current page
-// was accessed.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_AppCacheAccessed,
-                    GURL /* manifest url */,
-                    bool /* blocked by policy */)
-
-// Tells the browser that a specific Web database in the current page was
-// accessed.
-IPC_MESSAGE_ROUTED5(ViewHostMsg_WebDatabaseAccessed,
-                    GURL /* origin url */,
-                    string16 /* database name */,
-                    string16 /* database display name */,
-                    unsigned long /* estimated size */,
-                    bool /* blocked by policy */)
-
-// Initiates a download based on user actions like 'ALT+click'.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_DownloadUrl,
-                    GURL /* url */,
-                    GURL /* referrer */)
-
-// Used to go to the session history entry at the given offset (ie, -1 will
-// return the "back" item).
-IPC_MESSAGE_ROUTED1(ViewHostMsg_GoToEntryAtOffset,
-                    int /* offset (from current) of history item to get */)
-
-IPC_SYNC_MESSAGE_ROUTED4_2(ViewHostMsg_RunJavaScriptMessage,
-                           std::wstring /* in - alert message */,
-                           std::wstring /* in - default prompt */,
-                           GURL         /* in - originating page URL */,
-                           int          /* in - dialog flags */,
-                           bool         /* out - success */,
-                           std::wstring /* out - prompt field */)
-
-// Provides the contents for the given page that was loaded recently.
-IPC_MESSAGE_ROUTED5(ViewHostMsg_PageContents,
-                    GURL         /* URL of the page */,
-                    int32        /* page id */,
-                    string16     /* page contents */,
-                    std::string  /* page ISO639_1 language code */,
-                    bool         /* whether the page can be translated */)
 
 // Used to get the extension message bundle.
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetExtensionMessageBundle,
@@ -930,16 +560,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateFaviconURL,
                     int32 /* page_id */,
                     GURL /* url of the favicon */)
 
-// Requests that the given URL be opened in the specified manner.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_OpenURL,
-                    GURL /* url */,
-                    GURL /* referrer */,
-                    WindowOpenDisposition /* disposition */)
-
-// Notifies that the preferred size of the content changed.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
-                    gfx::Size /* pref_size */)
-
 // Following message is used to communicate the values received by the
 // callback binding the JS to Cpp.
 // An instance of browser that has an automation host listening to it can
@@ -949,38 +569,11 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DomOperationResponse,
                     std::string  /* json_string */,
                     int  /* automation_id */)
 
-// A message from HTML-based UI.  When (trusted) Javascript calls
-// send(message, args), this message is sent to the browser.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_WebUISend,
-                    GURL /* source_url */,
-                    std::string  /* message */,
-                    std::string  /* args (as a JSON string) */)
-
 // A message for an external host.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_ForwardMessageToExternalHost,
                     std::string  /* message */,
                     std::string  /* origin */,
                     std::string  /* target */)
-
-// A renderer sends this to the browser process when it wants to
-// create a plugin.  The browser will create the plugin process if
-// necessary, and will return a handle to the channel on success.
-// On error an empty string is returned.
-IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_OpenChannelToPlugin,
-                            int /* routing_id */,
-                            GURL /* url */,
-                            std::string /* mime_type */,
-                            IPC::ChannelHandle /* channel_handle */,
-                            webkit::npapi::WebPluginInfo /* info */)
-
-// A renderer sends this to the browser process when it wants to
-// create a pepper plugin.  The browser will create the plugin process if
-// necessary, and will return a handle to the channel on success.
-// On error an empty string is returned.
-IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_OpenChannelToPepperPlugin,
-                            FilePath /* path */,
-                            base::ProcessHandle /* plugin_process_handle */,
-                            IPC::ChannelHandle /* handle to channel */)
 
 // A renderer sends this to the browser process when it wants to start
 // a new instance of the Native Client process. The browser will launch
@@ -992,60 +585,6 @@ IPC_SYNC_MESSAGE_CONTROL2_3(ViewHostMsg_LaunchNaCl,
                                 /* imc channel handles */,
                             base::ProcessHandle /* NaCl process handle */,
                             base::ProcessId /* NaCl process id */)
-
-#if defined(USE_X11)
-// A renderer sends this when it needs a browser-side widget for
-// hosting a windowed plugin. id is the XID of the plugin window, for which
-// the container is created.
-IPC_SYNC_MESSAGE_ROUTED1_0(ViewHostMsg_CreatePluginContainer,
-                           gfx::PluginWindowHandle /* id */)
-
-// Destroy a plugin container previously created using CreatePluginContainer.
-// id is the XID of the plugin window corresponding to the container that is
-// to be destroyed.
-IPC_SYNC_MESSAGE_ROUTED1_0(ViewHostMsg_DestroyPluginContainer,
-                           gfx::PluginWindowHandle /* id */)
-#endif
-
-#if defined(OS_MACOSX)
-// Request that the browser load a font into shared memory for us.
-IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_LoadFont,
-                           FontDescriptor /* font to load */,
-                           uint32 /* buffer size */,
-                           base::SharedMemoryHandle /* font data */)
-#endif
-
-#if defined(OS_WIN)
-// Request that the given font be loaded by the browser so it's cached by the
-// OS. Please see ChildProcessHost::PreCacheFont for details.
-IPC_SYNC_MESSAGE_CONTROL1_0(ViewHostMsg_PreCacheFont,
-                            LOGFONT /* font data */)
-#endif  // defined(OS_WIN)
-
-// Returns WebScreenInfo corresponding to the view.
-// TODO(shess): Provide a mapping from reply_msg->routing_id() to
-// HWND so that we can eliminate the NativeViewId parameter.
-IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetScreenInfo,
-                           gfx::NativeViewId /* view */,
-                           WebKit::WebScreenInfo /* results */)
-
-// Send the tooltip text for the current mouse position to the browser.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,
-                    std::wstring /* tooltip text string */,
-                    WebKit::WebTextDirection /* text direction hint */)
-
-// Notification that the text selection has changed.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_SelectionChanged,
-                    std::string /* currently selected text */)
-
-// Asks the browser to display the file chooser.  The result is returned in a
-// ViewHost_RunFileChooserResponse message.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_RunFileChooser,
-                    ViewHostMsg_RunFileChooser_Params)
-
-// Tells the browser to move the focus to the next (previous if reverse is
-// true) focusable element.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_TakeFocus, bool /* reverse */)
 
 // Notification that the page has an OpenSearch description document
 // associated with it.
@@ -1280,13 +819,6 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_ResourceTypeStats,
 // terminated.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_SuddenTerminationChanged,
                      bool /* enabled */)
-
-// Returns the window location of the window this widget is embeded.
-// TODO(shess): Provide a mapping from reply_msg->routing_id() to
-// HWND so that we can eliminate the NativeViewId parameter.
-IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetRootWindowRect,
-                           gfx::NativeViewId /* window */,
-                           gfx::Rect /* Out: Window location */)
 
 // A renderer sends this message when an extension process starts an API
 // request. The browser will always respond with a ViewMsg_ExtensionResponse.

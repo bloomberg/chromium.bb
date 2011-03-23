@@ -24,6 +24,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "content/common/plugin_messages.h"
+#include "content/common/view_messages.h"
 #include "content/plugin/npobject_proxy.h"
 #include "content/plugin/npobject_stub.h"
 #include "content/plugin/npobject_util.h"

@@ -19,6 +19,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNamedNodeMap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 

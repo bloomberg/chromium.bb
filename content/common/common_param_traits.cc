@@ -11,6 +11,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
+#include "webkit/glue/password_form.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
 namespace {
@@ -834,6 +835,45 @@ bool ParamTraits<SkBitmap>::Read(const Message* m, void** iter, SkBitmap* r) {
 
 void ParamTraits<SkBitmap>::Log(const SkBitmap& p, std::string* l) {
   l->append("<SkBitmap>");
+}
+
+void ParamTraits<webkit_glue::PasswordForm>::Write(Message* m,
+                                                   const param_type& p) {
+  WriteParam(m, p.signon_realm);
+  WriteParam(m, p.origin);
+  WriteParam(m, p.action);
+  WriteParam(m, p.submit_element);
+  WriteParam(m, p.username_element);
+  WriteParam(m, p.username_value);
+  WriteParam(m, p.password_element);
+  WriteParam(m, p.password_value);
+  WriteParam(m, p.old_password_element);
+  WriteParam(m, p.old_password_value);
+  WriteParam(m, p.ssl_valid);
+  WriteParam(m, p.preferred);
+  WriteParam(m, p.blacklisted_by_user);
+}
+
+bool ParamTraits<webkit_glue::PasswordForm>::Read(const Message* m, void** iter,
+                                                  param_type* p) {
+  return
+      ReadParam(m, iter, &p->signon_realm) &&
+      ReadParam(m, iter, &p->origin) &&
+      ReadParam(m, iter, &p->action) &&
+      ReadParam(m, iter, &p->submit_element) &&
+      ReadParam(m, iter, &p->username_element) &&
+      ReadParam(m, iter, &p->username_value) &&
+      ReadParam(m, iter, &p->password_element) &&
+      ReadParam(m, iter, &p->password_value) &&
+      ReadParam(m, iter, &p->old_password_element) &&
+      ReadParam(m, iter, &p->old_password_value) &&
+      ReadParam(m, iter, &p->ssl_valid) &&
+      ReadParam(m, iter, &p->preferred) &&
+      ReadParam(m, iter, &p->blacklisted_by_user);
+}
+void ParamTraits<webkit_glue::PasswordForm>::Log(const param_type& p,
+                                                 std::string* l) {
+  l->append("<PasswordForm>");
 }
 
 }  // namespace IPC

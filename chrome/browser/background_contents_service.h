@@ -11,9 +11,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/tab_contents/background_contents.h"
-#include "chrome/common/window_container_type.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/common/window_container_type.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/window_open_disposition.h"
 

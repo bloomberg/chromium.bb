@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_WINDOW_CONTAINER_TYPE_H_
-#define CHROME_COMMON_WINDOW_CONTAINER_TYPE_H_
+#ifndef CONTENT_COMMON_WINDOW_CONTAINER_TYPE_H_
+#define CONTENT_COMMON_WINDOW_CONTAINER_TYPE_H_
 #pragma once
 
 namespace WebKit {
@@ -33,4 +33,4 @@ enum WindowContainerType {
 WindowContainerType WindowFeaturesToContainerType(
     const WebKit::WebWindowFeatures& window_features);
 
-#endif  // CHROME_COMMON_WINDOW_CONTAINER_TYPE_H_
+#endif  // CONTENT_COMMON_WINDOW_CONTAINER_TYPE_H_

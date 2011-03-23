@@ -509,14 +509,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_imagePosition(
     HWND parent_hwnd = manager_->GetParentView();
     POINT top_left = {0, 0};
     ::ClientToScreen(parent_hwnd, &top_left);
-    *x = location_.x + top_left.x;
-    *y = location_.y + top_left.y;
+    *x = location_.x() + top_left.x;
+    *y = location_.y() + top_left.y;
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
-    *x = location_.x;
-    *y = location_.y;
+    *x = location_.x();
+    *y = location_.y();
     if (parent_) {
-      *x -= parent_->location().x;
-      *y -= parent_->location().y;
+      *x -= parent_->location().x();
+      *y -= parent_->location().y();
     }
   } else {
     return E_INVALIDARG;
@@ -532,8 +532,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_imageSize(LONG* height, LONG* width) {
   if (!height || !width)
     return E_INVALIDARG;
 
-  *height = location_.height;
-  *width = location_.width;
+  *height = location_.height();
+  *width = location_.width();
   return S_OK;
 }
 

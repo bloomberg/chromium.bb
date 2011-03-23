@@ -5,7 +5,7 @@
 #include "content/renderer/load_progress_tracker.h"
 
 #include "base/message_loop.h"
-#include "chrome/common/render_messages.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 
 namespace {

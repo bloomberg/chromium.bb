@@ -14,6 +14,7 @@
 #include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/render_thread.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -53,7 +54,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       WebFrame* frame,
       const WebPluginParams& params) {
   bool found = false;
-  ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
+  int plugin_setting = CONTENT_SETTING_DEFAULT;
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   webkit::npapi::WebPluginInfo info;
   GURL url(params.url);

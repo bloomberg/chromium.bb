@@ -14,12 +14,12 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_webnavigation_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
+#include "content/common/view_messages.h"
 #include "net/base/net_errors.h"
 
 namespace keys = extension_webnavigation_api_constants;

@@ -692,7 +692,7 @@ void RenderMessageFilter::OnGotPluginInfo(
     const std::string& actual_mime_type,
     const GURL& policy_url,
     IPC::Message* reply_msg) {
-  ContentSetting setting = CONTENT_SETTING_DEFAULT;
+  int content_setting = CONTENT_SETTING_DEFAULT;
   webkit::npapi::WebPluginInfo info_copy = info;
   if (found) {
     // TODO(mpcomplete): The plugin service should do this check. We should
@@ -703,14 +703,14 @@ void RenderMessageFilter::OnGotPluginInfo(
     std::string resource =
         webkit::npapi::PluginList::Singleton()->GetPluginGroupIdentifier(
             info_copy);
-    setting = content_settings_->GetContentSetting(
+    content_setting = content_settings_->GetContentSetting(
         policy_url,
         CONTENT_SETTINGS_TYPE_PLUGINS,
         resource);
   }
 
   ViewHostMsg_GetPluginInfo::WriteReplyParams(
-      reply_msg, found, info_copy, setting, actual_mime_type);
+      reply_msg, found, info_copy, content_setting, actual_mime_type);
   Send(reply_msg);
 }
 

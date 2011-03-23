@@ -10,7 +10,7 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/search_engines/template_url_fetcher_ui_callbacks.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/view_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
 namespace {

@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages_params.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
@@ -19,6 +18,7 @@
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
 #include "content/common/page_transition_types.h"
+#include "content/common/view_messages.h"
 
 class TabFinder::TabContentsObserverImpl : public TabContentsObserver {
  public:

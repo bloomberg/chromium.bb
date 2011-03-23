@@ -243,8 +243,6 @@
         'common/web_resource/web_resource_unpacker.h',
         'common/webkit_param_traits.cc',
         'common/webkit_param_traits.h',
-        'common/window_container_type.cc',
-        'common/window_container_type.h',
         'common/worker_thread_ticker.cc',
         'common/worker_thread_ticker.h',
         'common/zip.cc',  # Requires zlib directly.

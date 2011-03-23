@@ -27,6 +27,7 @@
 #include "content/common/notification_observer_mock.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_type.h"
+#include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -8,7 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/values.h"
-#include "chrome/common/render_messages.h"
+#include "content/common/view_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 

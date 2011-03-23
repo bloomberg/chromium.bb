@@ -4,7 +4,6 @@
 
 #include "content/browser/tab_contents/tab_contents_view.h"
 
-#include "chrome/common/render_messages_params.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -13,6 +12,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/common/notification_service.h"
+#include "content/common/view_messages.h"
 
 TabContentsView::TabContentsView(TabContents* tab_contents)
     : tab_contents_(tab_contents) {

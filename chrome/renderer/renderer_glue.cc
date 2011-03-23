@@ -25,6 +25,7 @@
 #include "chrome/renderer/render_thread.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/socket_stream_dispatcher.h"
+#include "content/common/view_messages.h"
 #include "content/plugin/npobject_util.h"
 #include "googleurl/src/url_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"

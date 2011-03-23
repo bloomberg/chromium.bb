@@ -17,7 +17,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/common/safebrowsing_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -27,6 +26,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
+#include "content/common/view_messages.h"
 #include "googleurl/src/gurl.h"
 
 namespace safe_browsing {

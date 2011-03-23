@@ -18,19 +18,16 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
-#include "chrome/common/window_container_type.h"
-#include "content/common/navigation_gesture.h"
 #include "content/common/navigation_types.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/serialized_script_value.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_param_traits.h"
-#include "net/base/host_port_pair.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/webaccessibility.h"
-#include "webkit/plugins/npapi/webplugin.h"
 
 // TODO(erg): Split this file into $1_db_params.h, $1_audio_params.h,
 // $1_print_params.h and $1_render_params.h.
@@ -122,158 +119,6 @@ struct ViewHostMsg_GetSearchProviderInstallState_Params {
     return ViewHostMsg_GetSearchProviderInstallState_Params(
         INSTALLED_AS_DEFAULT);
   }
-};
-
-// Parameters structure for ViewHostMsg_FrameNavigate, which has too many data
-// parameters to be reasonably put in a predefined IPC message.
-struct ViewHostMsg_FrameNavigate_Params {
-  ViewHostMsg_FrameNavigate_Params();
-  ~ViewHostMsg_FrameNavigate_Params();
-
-  // Page ID of this navigation. The renderer creates a new unique page ID
-  // anytime a new session history entry is created. This means you'll get new
-  // page IDs for user actions, and the old page IDs will be reloaded when
-  // iframes are loaded automatically.
-  int32 page_id;
-
-  // The frame ID for this navigation. The frame ID uniquely identifies the
-  // frame the navigation happened in for a given renderer.
-  int64 frame_id;
-
-  // URL of the page being loaded.
-  GURL url;
-
-  // URL of the referrer of this load. WebKit generates this based on the
-  // source of the event that caused the load.
-  GURL referrer;
-
-  // The type of transition.
-  PageTransition::Type transition;
-
-  // Lists the redirects that occurred on the way to the current page. This
-  // vector has the same format as reported by the WebDataSource in the glue,
-  // with the current page being the last one in the list (so even when
-  // there's no redirect, there will be one entry in the list.
-  std::vector<GURL> redirects;
-
-  // Set to false if we want to update the session history but not update
-  // the browser history.  E.g., on unreachable urls.
-  bool should_update_history;
-
-  // See SearchableFormData for a description of these.
-  GURL searchable_form_url;
-  std::string searchable_form_encoding;
-
-  // See password_form.h.
-  webkit_glue::PasswordForm password_form;
-
-  // Information regarding the security of the connection (empty if the
-  // connection was not secure).
-  std::string security_info;
-
-  // The gesture that initiated this navigation.
-  NavigationGesture gesture;
-
-  // Contents MIME type of main frame.
-  std::string contents_mime_type;
-
-  // True if this was a post request.
-  bool is_post;
-
-  // Whether the frame navigation resulted in no change to the documents within
-  // the page. For example, the navigation may have just resulted in scrolling
-  // to a named anchor.
-  bool was_within_same_page;
-
-  // The status code of the HTTP request.
-  int http_status_code;
-
-  // Remote address of the socket which fetched this resource.
-  net::HostPortPair socket_address;
-
-  // True if the connection was proxied.  In this case, socket_address
-  // will represent the address of the proxy, rather than the remote host.
-  bool was_fetched_via_proxy;
-
-  // Serialized history item state to store in the navigation entry.
-  std::string content_state;
-};
-
-// Values that may be OR'd together to form the 'flags' parameter of a
-// ViewHostMsg_UpdateRect_Params structure.
-struct ViewHostMsg_UpdateRect_Flags {
-  enum {
-    IS_RESIZE_ACK = 1 << 0,
-    IS_RESTORE_ACK = 1 << 1,
-    IS_REPAINT_ACK = 1 << 2,
-  };
-  static bool is_resize_ack(int flags) {
-    return (flags & IS_RESIZE_ACK) != 0;
-  }
-  static bool is_restore_ack(int flags) {
-    return (flags & IS_RESTORE_ACK) != 0;
-  }
-  static bool is_repaint_ack(int flags) {
-    return (flags & IS_REPAINT_ACK) != 0;
-  }
-};
-
-struct ViewHostMsg_UpdateRect_Params {
-  ViewHostMsg_UpdateRect_Params();
-  ~ViewHostMsg_UpdateRect_Params();
-
-  // The bitmap to be painted into the view at the locations specified by
-  // update_rects.
-  TransportDIB::Id bitmap;
-
-  // The position and size of the bitmap.
-  gfx::Rect bitmap_rect;
-
-  // The scroll offset.  Only one of these can be non-zero, and if they are
-  // both zero, then it means there is no scrolling and the scroll_rect is
-  // ignored.
-  int dx;
-  int dy;
-
-  // The rectangular region to scroll.
-  gfx::Rect scroll_rect;
-
-  // The scroll offset of the render view.
-  gfx::Point scroll_offset;
-
-  // The regions of the bitmap (in view coords) that contain updated pixels.
-  // In the case of scrolling, this includes the scroll damage rect.
-  std::vector<gfx::Rect> copy_rects;
-
-  // The size of the RenderView when this message was generated.  This is
-  // included so the host knows how large the view is from the perspective of
-  // the renderer process.  This is necessary in case a resize operation is in
-  // progress.
-  gfx::Size view_size;
-
-  // The area of the RenderView reserved for resize corner when this message
-  // was generated.  Reported for the same reason as view_size is.
-  gfx::Rect resizer_rect;
-
-  // New window locations for plugin child windows.
-  std::vector<webkit::npapi::WebPluginGeometry> plugin_window_moves;
-
-  // The following describes the various bits that may be set in flags:
-  //
-  //   ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK
-  //     Indicates that this is a response to a ViewMsg_Resize message.
-  //
-  //   ViewHostMsg_UpdateRect_Flags::IS_RESTORE_ACK
-  //     Indicates that this is a response to a ViewMsg_WasRestored message.
-  //
-  //   ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK
-  //     Indicates that this is a response to a ViewMsg_Repaint message.
-  //
-  // If flags is zero, then this message corresponds to an unsoliticed paint
-  // request by the render view.  Any of the above bits may be set in flags,
-  // which would indicate that this paint message is an ACK for multiple
-  // request messages.
-  int flags;
 };
 
 // Parameters for a render request.
@@ -434,73 +279,6 @@ struct ViewMsg_ExecuteCode_Params {
   bool all_frames;
 };
 
-struct ViewHostMsg_CreateWindow_Params {
-  ViewHostMsg_CreateWindow_Params();
-  ~ViewHostMsg_CreateWindow_Params();
-
-  // Routing ID of the view initiating the open.
-  int opener_id;
-
-  // True if this open request came in the context of a user gesture.
-  bool user_gesture;
-
-  // Type of window requested.
-  WindowContainerType window_container_type;
-
-  // The session storage namespace ID this view should use.
-  int64 session_storage_namespace_id;
-
-  // The name of the resulting frame that should be created (empty if none
-  // has been specified).
-  string16 frame_name;
-
-  // The frame identifier of the frame initiating the open.
-  int64 opener_frame_id;
-
-  // The URL of the frame initiating the open.
-  GURL opener_url;
-
-  // The security origin of the frame initiating the open.
-  std::string opener_security_origin;
-
-  // The URL that will be loaded in the new window (empty if none has been
-  // sepcified).
-  GURL target_url;
-};
-
-struct ViewHostMsg_RunFileChooser_Params {
-  enum Mode {
-    // Requires that the file exists before allowing the user to pick it.
-    Open,
-
-    // Like Open, but allows picking multiple files to open.
-    OpenMultiple,
-
-    // Like Open, but selects a folder.
-    OpenFolder,
-
-    // Allows picking a nonexistent file, and prompts to overwrite if the file
-    // already exists.
-    Save,
-  };
-
-  ViewHostMsg_RunFileChooser_Params();
-  ~ViewHostMsg_RunFileChooser_Params();
-
-  Mode mode;
-
-  // Title to be used for the dialog. This may be empty for the default title,
-  // which will be either "Open" or "Save" depending on the mode.
-  string16 title;
-
-  // Default file name to select in the dialog.
-  FilePath default_file_name;
-
-  // A comma-separated MIME types such as "audio/*,text/plain", that is used
-  // to restrict selectable files to such types.
-  string16 accept_types;
-};
-
 struct ViewMsg_ExtensionLoaded_Params {
   ViewMsg_ExtensionLoaded_Params();
   ~ViewMsg_ExtensionLoaded_Params();
@@ -631,22 +409,6 @@ struct ParamTraits<ViewHostMsg_GetSearchProviderInstallState_Params> {
 };
 
 template <>
-struct ParamTraits<ViewHostMsg_FrameNavigate_Params> {
-  typedef ViewHostMsg_FrameNavigate_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewHostMsg_UpdateRect_Params> {
-  typedef ViewHostMsg_UpdateRect_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
 struct ParamTraits<ViewMsg_Print_Params> {
   typedef ViewMsg_Print_Params param_type;
   static void Write(Message* m, const param_type& p);
@@ -697,22 +459,6 @@ struct ParamTraits<ViewHostMsg_ScriptedPrint_Params> {
 template <>
 struct ParamTraits<ViewMsg_ExecuteCode_Params> {
   typedef ViewMsg_ExecuteCode_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<>
-struct ParamTraits<ViewHostMsg_CreateWindow_Params> {
-  typedef ViewHostMsg_CreateWindow_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<>
-struct ParamTraits<ViewHostMsg_RunFileChooser_Params> {
-  typedef ViewHostMsg_RunFileChooser_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

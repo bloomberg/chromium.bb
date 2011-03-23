@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
 
 using webkit_glue::PasswordForm;

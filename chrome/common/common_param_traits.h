@@ -17,15 +17,6 @@
 #include "chrome/common/content_settings.h"
 #include "ipc/ipc_message_utils.h"
 #include "printing/native_metafile.h"
-// !!! WARNING: DO NOT ADD NEW WEBKIT DEPENDENCIES !!!
-//
-// That means don't add #includes to any file in 'webkit/' or
-// 'third_party/WebKit/'. Chrome Frame and NACL build parts of base/ and
-// chrome/common/ for a mini-library that doesn't depend on webkit.
-//
-// TODO(erg): The following headers are historical and only work because
-// their definitions are inlined, which also needs to be fixed.
-#include "webkit/glue/window_open_disposition.h"
 
 // Forward declarations.
 class DictionaryValue;
@@ -37,10 +28,6 @@ namespace printing {
 struct PageRange;
 struct PrinterCapsAndDefaults;
 }  // namespace printing
-
-namespace webkit_glue {
-struct PasswordForm;
-}  // namespace webkit_glue
 
 namespace IPC {
 
@@ -81,24 +68,6 @@ struct ParamTraits<ContentSettings> {
 };
 
 template <>
-struct ParamTraits<WindowOpenDisposition> {
-  typedef WindowOpenDisposition param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p));
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int value;
-    if (!ReadParam(m, iter, &value))
-      return false;
-    *r = static_cast<param_type>(value);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    LogParam(static_cast<int>(p), l);
-  }
-};
-
-template <>
 struct ParamTraits<WebApplicationInfo> {
   typedef WebApplicationInfo param_type;
   static void Write(Message* m, const param_type& p);
@@ -111,14 +80,6 @@ struct ParamTraits<ThumbnailScore> {
   typedef ThumbnailScore param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<webkit_glue::PasswordForm> {
-  typedef webkit_glue::PasswordForm param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 

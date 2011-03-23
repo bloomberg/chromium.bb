@@ -143,7 +143,7 @@ class BrowserAccessibility {
     return html_attributes_;
   }
   int32 index_in_parent() const { return index_in_parent_; }
-  WebKit::WebRect location() const { return location_; }
+  gfx::Rect location() const { return location_; }
   BrowserAccessibilityManager* manager() const { return manager_; }
   const string16& name() const { return name_; }
   int32 renderer_id() const { return renderer_id_; }
@@ -208,7 +208,7 @@ class BrowserAccessibility {
   int32 role_;
   int32 state_;
   string16 role_name_;
-  WebKit::WebRect location_;
+  gfx::Rect location_;
   std::vector<int32> indirect_child_ids_;
 
   // BrowserAccessibility objects are reference-counted on some platforms.

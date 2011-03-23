@@ -12,13 +12,12 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
+#include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
 #include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -206,16 +205,16 @@ void FileSelectHelper::RunFileChooser(
     select_file_dialog_ = SelectFileDialog::Create(this);
 
   switch (params.mode) {
-    case ViewHostMsg_RunFileChooser_Params::Open:
+    case ViewHostMsg_RunFileChooser_Mode::Open:
       dialog_type_ = SelectFileDialog::SELECT_OPEN_FILE;
       break;
-    case ViewHostMsg_RunFileChooser_Params::OpenMultiple:
+    case ViewHostMsg_RunFileChooser_Mode::OpenMultiple:
       dialog_type_ = SelectFileDialog::SELECT_OPEN_MULTI_FILE;
       break;
-    case ViewHostMsg_RunFileChooser_Params::OpenFolder:
+    case ViewHostMsg_RunFileChooser_Mode::OpenFolder:
       dialog_type_ = SelectFileDialog::SELECT_FOLDER;
       break;
-    case ViewHostMsg_RunFileChooser_Params::Save:
+    case ViewHostMsg_RunFileChooser_Mode::Save:
       dialog_type_ = SelectFileDialog::SELECT_SAVEAS_FILE;
       break;
     default:

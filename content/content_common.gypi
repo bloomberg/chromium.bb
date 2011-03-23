@@ -187,6 +187,8 @@
         'common/webblob_messages.h',
         'common/webmessageportchannel_impl.cc',
         'common/webmessageportchannel_impl.h',
+        'common/window_container_type.cc',
+        'common/window_container_type.h',
         'common/worker_messages.h',
       ],
       'conditions': [

@@ -9,12 +9,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_specific_content_settings.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/common/view_messages.h"
 #include "net/base/host_port_pair.h"
 #include "net/test/test_server.h"
 

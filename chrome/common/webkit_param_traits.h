@@ -29,40 +29,17 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
 
 namespace WebKit {
 struct WebRect;
-struct WebScreenInfo;
 }
 
 namespace IPC {
 
 template <>
-struct ParamTraits<WebKit::WebRect> {
-  typedef WebKit::WebRect param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<WebKit::WebScreenInfo> {
-  typedef WebKit::WebScreenInfo param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
 struct SimilarTypeTraits<WebKit::WebConsoleMessage::Level> {
-  typedef int Type;
-};
-
-template <>
-struct SimilarTypeTraits<WebKit::WebPopupType> {
   typedef int Type;
 };
 

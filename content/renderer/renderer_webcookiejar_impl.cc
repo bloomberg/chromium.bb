@@ -5,7 +5,7 @@
 #include "content/renderer/renderer_webcookiejar_impl.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/common/render_messages.h"
+#include "content/common/view_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCookie.h"
 #include "webkit/glue/webcookie.h"

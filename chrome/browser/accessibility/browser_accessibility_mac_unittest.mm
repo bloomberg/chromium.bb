@@ -47,26 +47,21 @@ class BrowserAccessibilityTest : public CocoaTest {
   virtual void SetUp() {
     CocoaTest::SetUp();
     WebAccessibility root;
-    root.location.x = 0;
-    root.location.y = 0;
-    root.location.width = 500;
-    root.location.height = 100;
+    root.location.set_width(500);
+    root.location.set_height(100);
     root.role = WebAccessibility::ROLE_WEB_AREA;
     root.attributes[WebAccessibility::ATTR_HELP] = ASCIIToUTF16("HelpText");
 
     WebAccessibility child1;
     child1.name = ASCIIToUTF16("Child1");
-    child1.location.x = 0;
-    child1.location.y = 0;
-    child1.location.width = 250;
-    child1.location.height = 100;
+    child1.location.set_width(250);
+    child1.location.set_height(100);
     child1.role = WebAccessibility::ROLE_BUTTON;
 
     WebAccessibility child2;
-    child2.location.x = 250;
-    child2.location.y = 0;
-    child2.location.width = 250;
-    child2.location.height = 100;
+    child2.location.set_x(250);
+    child2.location.set_width(250);
+    child2.location.set_height(100);
     child2.role = WebAccessibility::ROLE_HEADING;
 
     root.children.push_back(child1);

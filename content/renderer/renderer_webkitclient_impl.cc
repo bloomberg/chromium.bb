@@ -18,6 +18,7 @@
 #include "content/common/file_system/webfilesystem_impl.h"
 #include "content/common/file_utilities_messages.h"
 #include "content/common/mime_registry_messages.h"
+#include "content/common/view_messages.h"
 #include "content/common/webblobregistry_impl.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/plugin/npobject_util.h"

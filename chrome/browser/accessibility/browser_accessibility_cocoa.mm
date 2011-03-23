@@ -127,8 +127,8 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 // This is relative to webkit's top-left origin, not Cocoa's
 // bottom-left origin.
 - (NSPoint)origin {
-  return NSMakePoint(browserAccessibility_->location().x,
-                     browserAccessibility_->location().y);
+  return NSMakePoint(browserAccessibility_->location().x(),
+                     browserAccessibility_->location().y());
 }
 
 // Returns a string indicating the role of this object.
@@ -171,8 +171,8 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 
 // Returns the size of this object.
 - (NSSize)size {
-  return NSMakeSize(browserAccessibility_->location().width,
-                    browserAccessibility_->location().height);
+  return NSMakeSize(browserAccessibility_->location().width(),
+                    browserAccessibility_->location().height());
 }
 
 // Returns the accessibility value for the given attribute.  If the value isn't

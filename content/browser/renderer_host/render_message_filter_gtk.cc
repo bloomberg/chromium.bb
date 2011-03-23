@@ -6,6 +6,7 @@
 
 #include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/view_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
 #include "ui/base/clipboard/clipboard.h"

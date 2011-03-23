@@ -8,12 +8,11 @@
 #include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/common/view_messages.h"
 
 static const char* kGoogleURL = "http://www.google.com/";
 static const char* kGoodURL = "http://www.goodguys.com/";

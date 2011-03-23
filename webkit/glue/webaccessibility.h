@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
+#include "ui/gfx/rect.h"
 
 namespace WebKit {
 class WebAccessibilityCache;
@@ -213,7 +213,7 @@ struct WebAccessibility {
   string16 value;
   Role role;
   uint32 state;
-  WebKit::WebRect location;
+  gfx::Rect location;
   std::map<int32, string16> attributes;
   std::vector<WebAccessibility> children;
   std::vector<int32> indirect_child_ids;

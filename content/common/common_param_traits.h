@@ -29,6 +29,7 @@
 #include "webkit/glue/npruntime_util.h"
 #include "webkit/glue/resource_type.h"
 #include "webkit/glue/webcursor.h"
+#include "webkit/glue/window_open_disposition.h"
 
 class SkBitmap;
 
@@ -45,6 +46,7 @@ class UploadData;
 }
 
 namespace webkit_glue {
+struct PasswordForm;
 struct ResourceDevToolsInfo;
 struct ResourceLoadTimingInfo;
 }
@@ -398,6 +400,18 @@ struct ParamTraits<SkBitmap> {
   static void Log(const param_type& p, std::string* l);
 };
 
+template <>
+struct SimilarTypeTraits<WindowOpenDisposition> {
+  typedef int Type;
+};
+
+template <>
+struct ParamTraits<webkit_glue::PasswordForm> {
+  typedef webkit_glue::PasswordForm param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
 
 }  // namespace IPC
 
