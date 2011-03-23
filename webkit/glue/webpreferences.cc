@@ -155,9 +155,7 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Enable experimental WebGL support if requested on command line
   // and support is compiled in.
-  bool enable_webgl =
-      WebRuntimeFeatures::isWebGLEnabled() && experimental_webgl_enabled;
-  settings->setExperimentalWebGLEnabled(enable_webgl);
+  settings->setExperimentalWebGLEnabled(experimental_webgl_enabled);
 
   // Disable GL multisampling if requested on command line.
   settings->setOpenGLMultisamplingEnabled(gl_multisampling_enabled);
@@ -200,7 +198,7 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // WebGL and accelerated 2D canvas are always gpu composited.
   settings->setAcceleratedCompositingForCanvasEnabled(
-      enable_webgl || accelerated_2d_canvas_enabled);
+      experimental_webgl_enabled || accelerated_2d_canvas_enabled);
 
   // Enable memory info reporting to page if requested on the command line.
   settings->setMemoryInfoEnabled(memory_info_enabled);

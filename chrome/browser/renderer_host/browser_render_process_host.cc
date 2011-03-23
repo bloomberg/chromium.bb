@@ -680,11 +680,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableDatabases,
     switches::kDisableDesktopNotifications,
     switches::kDisableDeviceOrientation,
-    // We need to propagate this flag to determine whether to make the
-    // WebGLArray constructors on the DOMWindow visible. This
-    // information is needed very early during bringup. We prefer to
-    // use the WebPreferences to set this flag on a page-by-page basis.
-    switches::kDisableExperimentalWebGL,
     switches::kDisableFileSystem,
     switches::kDisableGeolocation,
     switches::kDisableGLMultisampling,

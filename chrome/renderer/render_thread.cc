@@ -989,10 +989,6 @@ void RenderThread::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableWebAudio(
       command_line.HasSwitch(switches::kEnableWebAudio));
 
-  WebRuntimeFeatures::enableWebGL(
-      !command_line.HasSwitch(switches::kDisable3DAPIs) &&
-      !command_line.HasSwitch(switches::kDisableExperimentalWebGL));
-
   WebRuntimeFeatures::enablePushState(true);
 
 #ifdef TOUCH_UI
