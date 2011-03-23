@@ -87,8 +87,15 @@ class BrowserWithTestWindowTest : public TestingBrowserProcessTest {
   // Navigates the current tab. This is a wrapper around NavigateAndCommit.
   void NavigateAndCommitActiveTab(const GURL& url);
 
- private:
+ protected:
+  // Destroys the browser and window created by this class. This is invoked from
+  // the destructor.
+  void DestroyBrowser();
 
+  // Creates the profile used by this test. The caller owners the return value.
+  virtual TestingProfile* CreateProfile();
+
+ private:
   // We need to create a MessageLoop, otherwise a bunch of things fails.
   MessageLoopForUI ui_loop_;
   BrowserThread ui_thread_;

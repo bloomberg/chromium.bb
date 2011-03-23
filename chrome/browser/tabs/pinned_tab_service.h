@@ -33,6 +33,9 @@ class PinnedTabService : public NotificationObserver {
   // triggers an exit) and can ignore all other events.
   bool got_exiting_;
 
+  // True if there is at least one normal browser for our profile.
+  bool has_normal_browser_;
+
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PinnedTabService);

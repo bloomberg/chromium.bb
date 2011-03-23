@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,34 +6,14 @@
 #include <vector>
 
 #include "chrome/browser/tabs/pinned_tab_codec.h"
+#include "chrome/browser/tabs/pinned_tab_test_utils.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef BrowserInit::LaunchWithProfile::Tab Tab;
-
 typedef BrowserWithTestWindowTest PinnedTabCodecTest;
-
-namespace {
-
-std::string TabToString(const Tab& tab) {
-  return tab.url.spec() + ":" + (tab.is_app ? "app" : "") + ":" +
-      (tab.is_pinned ? "pinned" : "") + ":" + tab.app_id;
-}
-
-std::string TabsToString(const std::vector<Tab>& values) {
-  std::string result;
-  for (size_t i = 0; i < values.size(); ++i) {
-    if (i != 0)
-      result += " ";
-    result += TabToString(values[i]);
-  }
-  return result;
-}
-
-}  // namespace
 
 // Make sure nothing is restored when the browser has no pinned tabs.
 TEST_F(PinnedTabCodecTest, NoPinnedTabs) {
@@ -42,7 +22,8 @@ TEST_F(PinnedTabCodecTest, NoPinnedTabs) {
 
   PinnedTabCodec::WritePinnedTabs(profile());
 
-  std::string result = TabsToString(PinnedTabCodec::ReadPinnedTabs(profile()));
+  std::string result = PinnedTabTestUtils::TabsToString(
+      PinnedTabCodec::ReadPinnedTabs(profile()));
   EXPECT_EQ("", result);
 }
 
@@ -60,6 +41,7 @@ TEST_F(PinnedTabCodecTest, PinnedAndNonPinned) {
 
   PinnedTabCodec::WritePinnedTabs(profile());
 
-  std::string result = TabsToString(PinnedTabCodec::ReadPinnedTabs(profile()));
+  std::string result = PinnedTabTestUtils::TabsToString(
+      PinnedTabCodec::ReadPinnedTabs(profile()));
   EXPECT_EQ("http://www.google.com/::pinned:", result);
 }

@@ -32,9 +32,7 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest()
 void BrowserWithTestWindowTest::SetUp() {
   TestingBrowserProcessTest::SetUp();
 
-  // NOTE: I have a feeling we're going to want virtual methods for creating
-  // these, as such they're in SetUp instead of the constructor.
-  profile_.reset(new TestingProfile());
+  profile_.reset(CreateProfile());
   content::GetContentClient()->set_browser(&browser_client_);
   browser_.reset(new Browser(Browser::TYPE_NORMAL, profile()));
   window_.reset(new TestBrowserWindow(browser()));
@@ -42,14 +40,9 @@ void BrowserWithTestWindowTest::SetUp() {
 }
 
 BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
-  // Make sure we close all tabs, otherwise Browser isn't happy in its
-  // destructor.
-  browser()->CloseAllTabs();
-
   // A Task is leaked if we don't destroy everything, then run the message
   // loop.
-  browser_.reset(NULL);
-  window_.reset(NULL);
+  DestroyBrowser();
   profile_.reset(NULL);
 
   MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
@@ -106,4 +99,18 @@ void BrowserWithTestWindowTest::NavigateAndCommit(
 
 void BrowserWithTestWindowTest::NavigateAndCommitActiveTab(const GURL& url) {
   NavigateAndCommit(&browser()->GetSelectedTabContents()->controller(), url);
+}
+
+void BrowserWithTestWindowTest::DestroyBrowser() {
+  if (!browser_.get())
+    return;
+  // Make sure we close all tabs, otherwise Browser isn't happy in its
+  // destructor.
+  browser()->CloseAllTabs();
+  browser_.reset(NULL);
+  window_.reset(NULL);
+}
+
+TestingProfile* BrowserWithTestWindowTest::CreateProfile() {
+  return new TestingProfile();
 }
