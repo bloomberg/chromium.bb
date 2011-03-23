@@ -219,6 +219,8 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
   BubbleBorder* bubble_border = new BubbleBorder(BubbleBorder::NONE);
   bubble_border_ = bubble_border;
   set_border(bubble_border);
+  // The contents is owned by the LocationBarView.
+  set_parent_owned(false);
 }
 
 AutocompletePopupContentsView::~AutocompletePopupContentsView() {
@@ -326,7 +328,16 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
 
   if (popup_ == NULL) {
     // If the popup is currently closed, we need to create it.
-    popup_ = (new AutocompletePopupClass(edit_view_, this))->AsWeakPtr();
+    popup_ = (new AutocompletePopupClass)->AsWeakPtr();
+    views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+    params.can_activate = false;
+    params.transparent = true;
+    popup_->SetCreateParams(params);
+    popup_->Init(location_bar_->GetWidget()->GetNativeView(), GetPopupBounds());
+    popup_->SetContentsView(this);
+    popup_->MoveAbove(popup_->GetRelativeWindowForPopup(
+        edit_view_->GetNativeView()));
+    popup_->Show();
   } else {
     // Animate the popup shrinking, but don't animate growing larger since that
     // would make the popup feel less responsive.

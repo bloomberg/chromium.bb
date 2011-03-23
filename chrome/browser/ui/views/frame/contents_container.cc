@@ -165,7 +165,7 @@ void ContentsContainer::CreateOverlay(int initial_opacity) {
       views::Background::CreateSolidBackground(SK_ColorWHITE));
   active_overlay_->SetContentsView(overlay_view_);
   active_overlay_->Show();
-  active_overlay_->MoveAbove(active_->GetWidget());
+  active_overlay_->MoveAboveWidget(active_->GetWidget());
 }
 
 void ContentsContainer::OverlayViewDestroyed() {

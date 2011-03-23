@@ -103,9 +103,10 @@ DownloadStartedAnimationWin::DownloadStartedAnimationWin(
 
   gfx::Rect rc(0, 0, 0, 0);
   popup_ = new views::WidgetWin;
-  popup_->set_window_style(WS_POPUP);
-  popup_->set_window_ex_style(WS_EX_LAYERED | WS_EX_TOOLWINDOW |
-                              WS_EX_TRANSPARENT);
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  params.transparent = true;
+  params.accept_events = false;
+  popup_->SetCreateParams(params);
   popup_->SetOpacity(0x00);
   popup_->Init(tab_contents_->GetNativeView(), rc);
   popup_->SetContentsView(this);

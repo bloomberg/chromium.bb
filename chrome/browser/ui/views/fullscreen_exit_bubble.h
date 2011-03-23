@@ -36,7 +36,6 @@ class FullscreenExitBubble : public views::LinkController,
 
  private:
   class FullscreenExitView;
-  class FullscreenExitPopup;
 
   static const double kOpacity;          // Opacity of the bubble, 0.0 - 1.0
   static const int kInitialDelayMs;      // Initial time bubble remains onscreen
@@ -74,13 +73,7 @@ class FullscreenExitBubble : public views::LinkController,
   // it.
   CommandUpdater::CommandUpdaterDelegate* delegate_;
 
-#if defined(OS_WIN)
-  // The popup itself, which is a slightly modified WidgetWin.  We need to use
-  // a WidgetWin (and thus an HWND) to make the popup float over other HWNDs.
-  FullscreenExitPopup* popup_;
-#elif defined(OS_LINUX)
-  views::WidgetGtk* popup_;
-#endif
+  views::Widget* popup_;
 
   // The contents of the popup.
   FullscreenExitView* view_;

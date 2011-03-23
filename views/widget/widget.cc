@@ -21,6 +21,7 @@ Widget::CreateParams::CreateParams()
     : type(TYPE_TOPLEVEL),
       transparent(false),
       accept_events(true),
+      can_activate(true),
       delete_on_destroy(true),
       mirror_origin_in_rtl(true),
       has_dropshadow(false),
@@ -31,6 +32,7 @@ Widget::CreateParams::CreateParams(Type type)
     : type(type),
       transparent(false),
       accept_events(true),
+      can_activate(type != TYPE_POPUP && type != TYPE_MENU),
       delete_on_destroy(true),
       mirror_origin_in_rtl(true),
       has_dropshadow(false),
@@ -131,8 +133,12 @@ void Widget::SetBounds(const gfx::Rect& bounds) {
   native_widget_->SetBounds(bounds);
 }
 
-void Widget::MoveAbove(Widget* widget) {
-  native_widget_->MoveAbove(widget);
+void Widget::MoveAboveWidget(Widget* widget) {
+  native_widget_->MoveAbove(widget->GetNativeView());
+}
+
+void Widget::MoveAbove(gfx::NativeView native_view) {
+  native_widget_->MoveAbove(native_view);
 }
 
 void Widget::SetShape(gfx::NativeRegion shape) {
