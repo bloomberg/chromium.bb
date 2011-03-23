@@ -75,9 +75,6 @@
         'gfx/codec/png_codec.h',
         'gfx/color_utils.cc',
         'gfx/color_utils.h',
-        'gfx/compositor.cc',
-        'gfx/compositor_gl.cc',
-        'gfx/compositor.h',
         'gfx/favicon_size.h',
         'gfx/font.h',
         'gfx/font.cc',
@@ -149,14 +146,6 @@
             '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:gtk',
           ],
-          'link_settings': {
-            'libraries': [
-              '-lGL',
-            ],
-          },
-          'sources!': [
-            'gfx/compositor.cc',
-          ],
           'sources': [
             'gfx/gtk_native_view_id_manager.cc',
             'gfx/gtk_native_view_id_manager.h',
@@ -168,10 +157,6 @@
             'gfx/native_theme_linux.h',
             'gfx/native_widget_types_gtk.cc',
           ],
-        }, {
-          'sources!': [
-            'gfx/compositor_gl.cc',
-          ]
         }],
       ],
     },

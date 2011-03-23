@@ -14,7 +14,7 @@
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/compositor.h"
+#include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
 #include "views/background.h"

@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/compositor.h"
-
-#include <GL/gl.h>
+#include "ui/gfx/compositor/compositor.h"
 
 #include "app/gfx/gl/gl_context.h"
+#include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/scoped_ptr.h"
 #include "base/basictypes.h"
@@ -18,7 +17,7 @@ namespace ui {
 
 class CompositorGL : public Compositor {
  public:
-  CompositorGL(gfx::AcceleratedWidget widget);
+  explicit CompositorGL(gfx::AcceleratedWidget widget);
 
  private:
   // Overridden from Compositor.
@@ -63,11 +62,13 @@ void CompositorGL::DrawTextureWithTransform(TextureID txt,
 }
 
 void CompositorGL::SaveTransform() {
-  glPushMatrix();
+  // TODO(sadrul):
+  NOTIMPLEMENTED();
 }
 
 void CompositorGL::RestoreTransform() {
-  glPopMatrix();
+  // TODO(sadrul):
+  NOTIMPLEMENTED();
 }
 
 // static

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "ui/gfx/compositor.h"
+#include "ui/gfx/compositor/compositor.h"
 #include "views/focus/view_storage.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/root_view.h"
