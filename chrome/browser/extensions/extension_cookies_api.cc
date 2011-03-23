@@ -62,6 +62,31 @@ void ExtensionCookiesEventRouter::CookieChanged(
       keys::kCookieKey,
       extension_cookies_helpers::CreateCookieValue(*details->cookie,
           extension_cookies_helpers::GetStoreIdFromProfile(profile)));
+
+  // Map the interal cause to an external string.
+  std::string cause;
+  switch (details->cause) {
+    case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT:
+      cause = keys::kExplicitChangeCause;
+      break;
+
+    case net::CookieMonster::Delegate::CHANGE_COOKIE_OVERWRITE:
+      cause = keys::kOverwriteChangeCause;
+      break;
+
+    case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED:
+      cause = keys::kExpiredChangeCause;
+      break;
+
+    case net::CookieMonster::Delegate::CHANGE_COOKIE_EVICTED:
+      cause = keys::kEvictedChangeCause;
+      break;
+
+    default:
+      NOTREACHED();
+  }
+  dict->SetString(keys::kCauseKey, cause);
+
   args.Append(dict);
 
   std::string json_args;

@@ -266,8 +266,15 @@ class CookieMonster : public CookieStore {
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, GetKey);
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestGetKey);
 
+  // Internal reasons for deletion, used to populate informative histograms
+  // and to provide a public cause for onCookieChange notifications.
+  //
+  // If you add or remove causes from this list, please be sure to also update
+  // the Delegate::ChangeCause mapping inside InternalDeleteCookie. Moreover,
+  // these are used as array indexes, so please avoid reordering without good
+  // reason.
   enum DeletionCause {
-    DELETE_COOKIE_EXPLICIT,
+    DELETE_COOKIE_EXPLICIT = 0,
     DELETE_COOKIE_OVERWRITE,
     DELETE_COOKIE_EXPIRED,
     DELETE_COOKIE_EVICTED,
@@ -281,7 +288,7 @@ class CookieMonster : public CookieStore {
     DELETE_COOKIE_EVICTED_DOMAIN_PRE_SAFE,
 
     // Cookies evicted during domain level garbage collection that
-    // were accessed more rencelyt than kSafeFromGlobalPurgeDays
+    // were accessed more recently than kSafeFromGlobalPurgeDays
     // (and thus would have been preserved by global garbage collection).
     DELETE_COOKIE_EVICTED_DOMAIN_POST_SAFE,
 
@@ -411,7 +418,8 @@ class CookieMonster : public CookieStore {
   void InternalUpdateCookieAccessTime(CanonicalCookie* cc,
                                       const base::Time& current_time);
 
-  // |deletion_cause| argument is for collecting statistics.
+  // |deletion_cause| argument is used for collecting statistics and choosing
+  // the correct Delegate::ChangeCause for OnCookieChanged notifications.
   void InternalDeleteCookie(CookieMap::iterator it, bool sync_to_store,
                             DeletionCause deletion_cause);
 
@@ -634,11 +642,33 @@ class CookieMonster::CanonicalCookie {
 class CookieMonster::Delegate
     : public base::RefCountedThreadSafe<CookieMonster::Delegate> {
  public:
+  // The publicly relevant reasons a cookie might be changed.
+  enum ChangeCause {
+    // The cookie was changed directly by a consumer's action.
+    CHANGE_COOKIE_EXPLICIT,
+    // The cookie was automatically removed due to an insert operation that
+    // overwrote it.
+    CHANGE_COOKIE_OVERWRITE,
+    // The cookie was automatically removed as it expired.
+    CHANGE_COOKIE_EXPIRED,
+    // The cookie was automatically evicted during garbage collection.
+    CHANGE_COOKIE_EVICTED,
+  };
+
   // Will be called when a cookie is added or removed. The function is passed
   // the respective |cookie| which was added to or removed from the cookies.
-  // If |removed| is true, the cookie was deleted.
+  // If |removed| is true, the cookie was deleted, and |cause| will be set
+  // to the reason for it's removal. If |removed| is false, the cookie was
+  // added, and |cause| will be set to CHANGE_COOKIE_EXPLICIT.
+  //
+  // As a special case, note that updating a cookie's properties is implemented
+  // as a two step process: the cookie to be updated is first removed entirely,
+  // generating a notification with cause CHANGE_COOKIE_OVERWRITE.  Afterwards,
+  // a new cookie is written with the updated values, generating a notification
+  // with cause CHANGE_COOKIE_EXPLICIT.
   virtual void OnCookieChanged(const CookieMonster::CanonicalCookie& cookie,
-                               bool removed) = 0;
+                               bool removed,
+                               ChangeCause cause) = 0;
  protected:
   friend class base::RefCountedThreadSafe<CookieMonster::Delegate>;
   virtual ~Delegate() {}

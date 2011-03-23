@@ -348,6 +348,38 @@ bool FindLeastRecentlyAccessed(
   return false;
 }
 
+// Mapping between DeletionCause and Delegate::ChangeCause; the mapping also
+// provides a boolean that specifies whether or not an OnCookieChanged
+// notification ought to be generated.
+typedef struct ChangeCausePair_struct {
+  CookieMonster::Delegate::ChangeCause cause;
+  bool notify;
+} ChangeCausePair;
+ChangeCausePair ChangeCauseMapping[] = {
+  // DELETE_COOKIE_EXPLICIT
+  { CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT, true },
+  // DELETE_COOKIE_OVERWRITE
+  { CookieMonster::Delegate::CHANGE_COOKIE_OVERWRITE, true },
+  // DELETE_COOKIE_EXPIRED
+  { CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED, true },
+  // DELETE_COOKIE_EVICTED
+  { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true },
+  // DELETE_COOKIE_DUPLICATE_IN_BACKING_STORE
+  { CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT, false },
+  // DELETE_COOKIE_DONT_RECORD
+  { CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT, false },
+  // DELETE_COOKIE_EVICTED_DOMAIN
+  { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true },
+  // DELETE_COOKIE_EVICTED_GLOBAL
+  { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true },
+  // DELETE_COOKIE_EVICTED_DOMAIN_PRE_SAFE
+  { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true },
+  // DELETE_COOKIE_EVICTED_DOMAIN_POST_SAFE
+  { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true },
+  // DELETE_COOKIE_LAST_ENTRY
+  { CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT, false }
+};
+
 }  // namespace
 
 // static
@@ -1244,8 +1276,10 @@ void CookieMonster::InternalInsertCookie(const std::string& key,
   if (cc->IsPersistent() && store_ && sync_to_store)
     store_->AddCookie(*cc);
   cookies_.insert(CookieMap::value_type(key, cc));
-  if (delegate_.get())
-    delegate_->OnCookieChanged(*cc, false);
+  if (delegate_.get()) {
+    delegate_->OnCookieChanged(
+        *cc, false, CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT);
+  }
 }
 
 bool CookieMonster::SetCookieWithCreationTimeAndOptions(
@@ -1360,6 +1394,12 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
                                          DeletionCause deletion_cause) {
   lock_.AssertAcquired();
 
+  // Ideally, this would be asserted up where we define ChangeCauseMapping,
+  // but DeletionCause's visibility (or lack thereof) forces us to make
+  // this check here.
+  COMPILE_ASSERT(arraysize(ChangeCauseMapping) == DELETE_COOKIE_LAST_ENTRY + 1,
+                 ChangeCauseMapping_size_not_eq_DeletionCause_enum_size);
+
   // See InitializeHistograms() for details.
   if (deletion_cause != DELETE_COOKIE_DONT_RECORD)
     histogram_cookie_deletion_cause_->Add(deletion_cause);
@@ -1369,8 +1409,12 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
 
   if (cc->IsPersistent() && store_ && sync_to_store)
     store_->DeleteCookie(*cc);
-  if (delegate_.get())
-    delegate_->OnCookieChanged(*cc, true);
+  if (delegate_.get()) {
+    ChangeCausePair mapping = ChangeCauseMapping[deletion_cause];
+
+    if (mapping.notify)
+      delegate_->OnCookieChanged(*cc, true, mapping.cause);
+  }
   cookies_.erase(it);
   delete cc;
 

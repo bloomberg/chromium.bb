@@ -2137,9 +2137,9 @@ see <a href="samples.html">Samples</a>.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          <dd style="display: none; ">
+          <dd>
             This parameter was added in version
-            <b><span></span></b>.
+            <b><span>11.0.674.0</span></b>.
             You must omit this parameter in earlier versions,
             and you may omit it in any version.  If you require this
             parameter, the manifest key
@@ -3212,9 +3212,9 @@ see <a href="samples.html">Samples</a>.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          <dd style="display: none; ">
+          <dd>
             This parameter was added in version
-            <b><span></span></b>.
+            <b><span>11.0.674.0</span></b>.
             You must omit this parameter in earlier versions,
             and you may omit it in any version.  If you require this
             parameter, the manifest key
@@ -3378,7 +3378,7 @@ see <a href="samples.html">Samples</a>.
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when a cookie is set or removed.</p>
+                <p>Fired when a cookie is set or removed. As a special case, note that updating a cookie's properties is implemented as a two step process: the cookie to be updated is first removed entirely, generating a notification with "cause" of "overwrite" .  Afterwards, a new cookie is written with the updated values, generating a second notification with "cause" "explicit".</p>
 
                 <!-- PARAMETERS -->
                 <div>
@@ -3534,6 +3534,74 @@ see <a href="samples.html">Samples</a>.
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>cause</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span>["evicted", "expired", "explicit", "overwrite"]</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The underlying reason behind the cookie's change. If a cookie was inserted, or removed via an explicit call to "chrome.cookies.remove", "cause" will be "explicit". If a cookie was automatically removed due to expiry, "cause" will be "expired". If a cookie was automatically removed due to garbage collection, "cause" will be "evicted".  If a cookie was automatically removed due to a "set" call that overwrote it, "cause" will be "overwrite". Plan your response accordingly.</dd>
+          <dd>
+            This parameter was added in version
+            <b><span>12.0.707.0</span></b>.
             You must omit this parameter in earlier versions,
             and you may omit it in any version.  If you require this
             parameter, the manifest key

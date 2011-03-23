@@ -11,6 +11,7 @@
 namespace extension_cookies_api_constants {
 
 // Keys.
+extern const char kCauseKey[];
 extern const char kCookieKey[];
 extern const char kDomainKey[];
 extern const char kExpirationDateKey[];
@@ -26,6 +27,12 @@ extern const char kStoreIdKey[];
 extern const char kTabIdsKey[];
 extern const char kUrlKey[];
 extern const char kValueKey[];
+
+// Cause Constants
+extern const char kExplicitChangeCause[];
+extern const char kOverwriteChangeCause[];
+extern const char kExpiredChangeCause[];
+extern const char kEvictedChangeCause[];
 
 // Events.
 extern const char kOnChanged[];

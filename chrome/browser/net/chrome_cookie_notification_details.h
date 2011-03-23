@@ -11,13 +11,16 @@
 struct ChromeCookieDetails {
  public:
   ChromeCookieDetails(const net::CookieMonster::CanonicalCookie* cookie_copy,
-                      bool is_removed)
+                      bool is_removed,
+                      net::CookieMonster::Delegate::ChangeCause cause)
       : cookie(cookie_copy),
-        removed(is_removed) {
+        removed(is_removed),
+        cause(cause) {
   }
 
   const net::CookieMonster::CanonicalCookie* cookie;
   bool removed;
+  net::CookieMonster::Delegate::ChangeCause cause;
 };
 
 #endif  // CHROME_BROWSER_NET_CHROME_COOKIE_NOTIFICATION_DETAILS_H_

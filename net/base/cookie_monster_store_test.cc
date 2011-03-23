@@ -64,11 +64,12 @@ MockPersistentCookieStore::SetClearLocalStateOnExit(bool clear_local_state) {
 MockCookieMonsterDelegate::MockCookieMonsterDelegate() {}
 
 void MockCookieMonsterDelegate::OnCookieChanged(
-      const net::CookieMonster::CanonicalCookie& cookie,
-      bool removed) {
-    CookieNotification notification(cookie, removed);
-    changes_.push_back(notification);
-  }
+    const net::CookieMonster::CanonicalCookie& cookie,
+    bool removed,
+    net::CookieMonster::Delegate::ChangeCause cause) {
+  CookieNotification notification(cookie, removed);
+  changes_.push_back(notification);
+}
 
 MockCookieMonsterDelegate::~MockCookieMonsterDelegate() {}
 

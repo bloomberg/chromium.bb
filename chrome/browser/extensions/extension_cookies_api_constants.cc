@@ -6,6 +6,8 @@
 
 namespace extension_cookies_api_constants {
 
+// Keys
+const char kCauseKey[] = "cause";
 const char kCookieKey[] = "cookie";
 const char kDomainKey[] = "domain";
 const char kExpirationDateKey[] = "expirationDate";
@@ -22,8 +24,16 @@ const char kTabIdsKey[] = "tabIds";
 const char kUrlKey[] = "url";
 const char kValueKey[] = "value";
 
+// Cause Constants
+extern const char kExplicitChangeCause[] = "explicit";
+extern const char kOverwriteChangeCause[] = "overwrite";
+extern const char kExpiredChangeCause[] = "expired";
+extern const char kEvictedChangeCause[] = "evicted";
+
+// Events
 const char kOnChanged[] = "cookies.onChanged";
 
+// Errors
 const char kCookieSetFailedError[] =
     "Failed to parse or set cookie named \"*\".";
 const char kInvalidStoreIdError[] = "Invalid cookie store id: \"*\".";
