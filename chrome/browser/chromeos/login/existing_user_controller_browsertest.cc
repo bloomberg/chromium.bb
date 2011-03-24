@@ -120,9 +120,8 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     mock_login_library_ = new MockLoginLibrary();
     EXPECT_CALL(*mock_login_library_, EmitLoginPromptReady())
         .Times(1);
-    EXPECT_CALL(*mock_login_library_, RetrieveProperty(_, _, _))
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_login_library_, RequestRetrieveProperty(_, _, _))
+        .Times(AnyNumber());
     cros_mock_->test_api()->SetLoginLibrary(mock_login_library_, true);
 
     cros_mock_->InitMockCryptohomeLibrary();

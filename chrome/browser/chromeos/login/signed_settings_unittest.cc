@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AnyNumber;
-using ::testing::Invoke;
+using ::testing::InvokeArgument;
 using ::testing::Return;
 using ::testing::_;
 
@@ -325,8 +325,11 @@ TEST_F(SignedSettingsTest, RetrievePropertyNotFound) {
       SignedSettings::CreateRetrievePropertyOp(fake_prop_, &d));
   d.expect_failure(SignedSettings::NOT_FOUND);
   MockLoginLibrary* lib = MockLoginLib();
-  EXPECT_CALL(*lib, RetrieveProperty(fake_prop_, _, _))
-      .WillOnce(Return(false))
+  EXPECT_CALL(*lib, RequestRetrieveProperty(fake_prop_, _, _))
+      .WillOnce(
+          InvokeArgument<1>(reinterpret_cast<void*>(s.get()),
+                            false,
+                            static_cast<chromeos::Property*>(NULL)))
       .RetiresOnSaturation();
   s->Execute();
   UnMockLoginLib();

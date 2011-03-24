@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,6 +100,11 @@ class RetrievePropertyOp : public SignedSettings {
                        const std::vector<uint8>& payload);
 
  private:
+  // RetrievePropertyCallback
+  static void OnRetrievePropertyNotify(void* user_data,
+                                       bool success,
+                                       const Property* property);
+
   std::string name_;
   std::string value_;
   SignedSettings::Delegate<std::string>* d_;
@@ -123,7 +128,7 @@ class StorePolicyOp : public SignedSettings, public LoginLibrary::Delegate {
 
 class RetrievePolicyOp : public SignedSettings {
  public:
-  RetrievePolicyOp(SignedSettings::Delegate<std::string>* d);
+  explicit RetrievePolicyOp(SignedSettings::Delegate<std::string>* d);
   virtual ~RetrievePolicyOp();
   void Execute();
   // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
@@ -364,18 +369,31 @@ void RetrievePropertyOp::Execute() {
       return;
     }
   }
-  std::vector<uint8> sig;
-  if (!CrosLibrary::Get()->GetLoginLibrary()->RetrieveProperty(name_,
-                                                               &value_,
-                                                               &sig)) {
-    d_->OnSettingsOpCompleted(NOT_FOUND, std::string());
+
+  CrosLibrary::Get()->GetLoginLibrary()->RequestRetrieveProperty(name_,
+      &RetrievePropertyOp::OnRetrievePropertyNotify, this);
+}
+
+// static
+void RetrievePropertyOp::OnRetrievePropertyNotify(void* user_data,
+    bool success, const Property* property) {
+  RetrievePropertyOp* self = static_cast<RetrievePropertyOp*>(user_data);
+  if (!success) {
+    self->d_->OnSettingsOpCompleted(NOT_FOUND, std::string());
     return;
   }
+
+  self->value_ = property->value;
+
+  std::vector<uint8> sig;
+  sig.assign(property->signature->data,
+             property->signature->data + property->signature->length);
+
   std::string to_verify = base::StringPrintf("%s=%s",
-                                             name_.c_str(),
-                                             value_.c_str());
+                                             self->name_.c_str(),
+                                             self->value_.c_str());
   // Posts a task to the FILE thread to verify |sig|.
-  service_->StartVerifyAttempt(to_verify, sig, this);
+  self->service_->StartVerifyAttempt(to_verify, sig, self);
 }
 
 void RetrievePropertyOp::OnKeyOpComplete(

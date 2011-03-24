@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,9 @@ class MockLoginLibrary : public LoginLibrary {
   MOCK_METHOD2(CheckWhitelist, bool(const std::string&, std::vector<uint8>*));
   MOCK_METHOD0(EmitLoginPromptReady, bool(void));
   MOCK_METHOD1(EnumerateWhitelisted, bool(std::vector<std::string>*));
-  MOCK_METHOD3(RetrieveProperty, bool(const std::string&,
-                                      std::string*,
-                                      std::vector<uint8>*));
+  MOCK_METHOD3(RequestRetrieveProperty, void(const std::string&,
+                                             RetrievePropertyCallback,
+                                             void*));
   MOCK_METHOD4(StorePropertyAsync, bool(const std::string&,
                                         const std::string&,
                                         const std::vector<uint8>&,

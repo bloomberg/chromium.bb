@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,13 +32,14 @@ class LoginLibrary {
   virtual bool CheckWhitelist(const std::string& email,
                               std::vector<uint8>* OUT_signature) = 0;
 
-  // Fetch the value associated with |name|, if its present.
-  // If so, we return true, store the info in |OUT_value|, and store the
-  // signature passed when the property was initially stored in |OUT_signature|.
-  // If not, we return false and don't touch the output parameters.
-  virtual bool RetrieveProperty(const std::string& name,
-                                std::string* OUT_value,
-                                std::vector<uint8>* OUT_signature) = 0;
+  // Start fetch the value associated with |name|, if its present.
+  // When fetching is done/failed, |callback| is called to pass back the fetch
+  // results. If fetching is successful, |callback| will be called with
+  // true for |success| and property's name, value and signature filled in
+  // Property struct. Otherwise, |success| would be false.
+  virtual void RequestRetrieveProperty(const std::string& name,
+                                       RetrievePropertyCallback callback,
+                                       void* user_data) = 0;
 
   // Attempts to issue a signed async request to store |name|=|value|.
   // |signature| must by a SHA1 with RSA encryption signature over the string

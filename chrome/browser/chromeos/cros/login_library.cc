@@ -45,18 +45,11 @@ class LoginLibraryImpl : public LoginLibrary {
     return false;
   }
 
-  bool RetrieveProperty(const std::string& name,
-                        std::string* OUT_value,
-                        std::vector<uint8>* OUT_signature) {
-    Property* prop = NULL;
-    if (chromeos::RetrievePropertySafe(name.c_str(), &prop)) {
-      OUT_value->assign(prop->value);
-      CryptoBlob* sig = prop->signature;
-      OUT_signature->assign(sig->data, sig->data + sig->length);
-      chromeos::FreeProperty(prop);
-      return true;
-    }
-    return false;
+  void RequestRetrieveProperty(const std::string& name,
+                               RetrievePropertyCallback callback,
+                               void* user_data) {
+    DCHECK(callback) << "must provide a callback to RequestRetrieveProperty()";
+    chromeos::RequestRetrieveProperty(name.c_str(), callback, user_data);
   }
 
   bool StorePropertyAsync(const std::string& name,
@@ -227,12 +220,18 @@ class LoginLibraryStubImpl : public LoginLibrary {
     OUT_signature->assign(2, 0);
     return true;
   }
-  bool RetrieveProperty(const std::string& name,
-                        std::string* OUT_value,
-                        std::vector<uint8>* OUT_signature) {
-    OUT_value->assign("stub");
-    OUT_signature->assign(2, 0);
-    return true;
+  void RequestRetrieveProperty(const std::string& name,
+                               RetrievePropertyCallback callback,
+                               void* user_data) {
+    uint8 sig_bytes[] = { 0, 0 };
+    CryptoBlob sig = { sig_bytes, arraysize(sig_bytes) };
+    Property prop = {
+      "prop_name",
+      "stub",
+      &sig,
+    };
+
+    callback(user_data, true, &prop);
   }
   bool StorePropertyAsync(const std::string& name,
                           const std::string& value,
