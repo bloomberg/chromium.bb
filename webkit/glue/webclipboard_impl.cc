@@ -67,7 +67,15 @@ bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
   ui::Clipboard::FormatType format_type;
   ui::Clipboard::Buffer buffer_type;
 
+  if (!ConvertBufferType(buffer, &buffer_type))
+    return false;
+
   switch (format) {
+    case FormatPlainText:
+      return ClipboardIsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
+                                        buffer_type) ||
+          ClipboardIsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
+                                     buffer_type);
     case FormatHTML:
       format_type = ui::Clipboard::GetHtmlFormatType();
       break;
@@ -83,9 +91,6 @@ bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
       NOTREACHED();
       return false;
   }
-
-  if (!ConvertBufferType(buffer, &buffer_type))
-    return false;
 
   return ClipboardIsFormatAvailable(format_type, buffer_type);
 }

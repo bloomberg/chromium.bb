@@ -21,6 +21,32 @@ bool IsValidClipboardType(PP_Flash_Clipboard_Type clipboard_type) {
          clipboard_type == PP_FLASH_CLIPBOARD_TYPE_DRAG;
 }
 
+bool IsValidClipboardFormat(PP_Flash_Clipboard_Format format) {
+  // Purposely excludes |PP_FLASH_CLIPBOARD_FORMAT_INVALID|.
+  return format == PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT ||
+         format == PP_FLASH_CLIPBOARD_FORMAT_HTML;
+}
+
+PP_Bool IsFormatAvailable(PP_Instance instance_id,
+                          PP_Flash_Clipboard_Type clipboard_type,
+                          PP_Flash_Clipboard_Format format) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
+  if (!dispatcher)
+    return PP_FALSE;
+
+  if (!IsValidClipboardType(clipboard_type) || !IsValidClipboardFormat(format))
+    return PP_FALSE;
+
+  bool result = false;
+  dispatcher->Send(new PpapiHostMsg_PPBFlashClipboard_IsFormatAvailable(
+      INTERFACE_ID_PPB_FLASH_CLIPBOARD,
+      instance_id,
+      static_cast<int>(clipboard_type),
+      static_cast<int>(format),
+      &result));
+  return BoolToPPBool(result);
+}
+
 PP_Var ReadPlainText(PP_Instance instance_id,
                      PP_Flash_Clipboard_Type clipboard_type) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
@@ -57,6 +83,7 @@ int32_t WritePlainText(PP_Instance instance_id,
 }
 
 const PPB_Flash_Clipboard flash_clipboard_interface = {
+  &IsFormatAvailable,
   &ReadPlainText,
   &WritePlainText
 };
@@ -91,6 +118,8 @@ const InterfaceProxy::Info* PPB_Flash_Clipboard_Proxy::GetInfo() {
 bool PPB_Flash_Clipboard_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Flash_Clipboard_Proxy, msg)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlashClipboard_IsFormatAvailable,
+                        OnMsgIsFormatAvailable)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlashClipboard_ReadPlainText,
                         OnMsgReadPlainText)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlashClipboard_WritePlainText,
@@ -98,6 +127,17 @@ bool PPB_Flash_Clipboard_Proxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void PPB_Flash_Clipboard_Proxy::OnMsgIsFormatAvailable(
+    PP_Instance instance_id,
+    int clipboard_type,
+    int format,
+    bool* result) {
+  *result = PPBoolToBool(ppb_flash_clipboard_target()->IsFormatAvailable(
+      instance_id,
+      static_cast<PP_Flash_Clipboard_Type>(clipboard_type),
+      static_cast<PP_Flash_Clipboard_Format>(format)));
 }
 
 void PPB_Flash_Clipboard_Proxy::OnMsgReadPlainText(

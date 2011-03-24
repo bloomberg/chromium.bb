@@ -33,6 +33,10 @@ class PPB_Flash_Clipboard_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
+  void OnMsgIsFormatAvailable(PP_Instance instance_id,
+                              int clipboard_type,
+                              int format,
+                              bool* result);
   void OnMsgReadPlainText(PP_Instance instance_id,
                           int clipboard_type,
                           SerializedVarReturnValue result);

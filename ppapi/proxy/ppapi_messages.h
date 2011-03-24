@@ -391,6 +391,11 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_QuitMessageLoop,
                            PP_Instance /* instance */)
 
 // PPB_Flash_Clipboard.
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlashClipboard_IsFormatAvailable,
+                           PP_Instance /* instance */,
+                           int /* clipboard_type */,
+                           int /* format */,
+                           bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashClipboard_ReadPlainText,
                            PP_Instance /* instance */,
                            int /* clipboard_type */,

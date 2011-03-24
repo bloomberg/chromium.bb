@@ -18,6 +18,9 @@ using WebKit::WebVector;
 
 bool MockWebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
   switch (format) {
+    case FormatPlainText:
+      return !m_plainText.isEmpty();
+
     case FormatHTML:
       return !m_htmlText.isEmpty();
 

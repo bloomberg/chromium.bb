@@ -16,6 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/var.h"
@@ -40,6 +41,39 @@ WebKit::WebClipboard::Buffer ConvertClipboardType(
       NOTREACHED();
       return WebKit::WebClipboard::BufferStandard;
   }
+}
+
+WebKit::WebClipboard::Format ConvertClipboardFormat(
+    PP_Flash_Clipboard_Format format) {
+  switch (format) {
+    case PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT:
+      return WebKit::WebClipboard::FormatPlainText;
+    case PP_FLASH_CLIPBOARD_FORMAT_HTML:
+      return WebKit::WebClipboard::FormatHTML;
+    case PP_FLASH_CLIPBOARD_FORMAT_INVALID:
+    default:
+      NOTREACHED();
+      return WebKit::WebClipboard::FormatPlainText;  // Gotta return something.
+  }
+}
+
+PP_Bool IsFormatAvailable(PP_Instance instance_id,
+                          PP_Flash_Clipboard_Type clipboard_type,
+                          PP_Flash_Clipboard_Format format) {
+  // If you don't give us an instance, we don't give you anything.
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return PP_FALSE;
+
+  WebKit::WebClipboard* web_clipboard = WebKit::webKitClient()->clipboard();
+  if (!web_clipboard) {
+    NOTREACHED();
+    return PP_FALSE;
+  }
+
+  return BoolToPPBool(
+      web_clipboard->isFormatAvailable(ConvertClipboardFormat(format),
+                                       ConvertClipboardType(clipboard_type)));
 }
 
 PP_Var ReadPlainText(PP_Instance instance_id,
@@ -86,6 +120,7 @@ int32_t WritePlainText(PP_Instance instance_id,
 }
 
 const PPB_Flash_Clipboard ppb_flash_clipboard = {
+  &IsFormatAvailable,
   &ReadPlainText,
   &WritePlainText,
 };
