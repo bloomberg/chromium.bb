@@ -124,10 +124,15 @@
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
       # crbug.com/75724
       '-downloads.DownloadsTest.testSaveDangerousFile',
+      # crbug.com/68656
+      '-downloads.DownloadsTest.testOpenWhenDone',
+      '-downloads.DownloadsTest.testAlwaysOpenFileType',
       # crbug.com/70437
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/71158
       '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
+      # crbug.com/69619
+      '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
     ],
 
     'linux': [  # linux != chromeos
