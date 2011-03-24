@@ -4,6 +4,9 @@
 
 """Generic presubmit checks that can be reused by other presubmit checks."""
 
+import time
+
+
 ### Description checks
 
 def CheckChangeHasTestField(input_api, output_api):
@@ -679,3 +682,119 @@ def _Approvers(input_api, email_regexp):
       approvers.append(m['sender'])
   return set(approvers)
 
+
+def _CheckConstNSObject(input_api, output_api, source_file_filter):
+  """Checks to make sure no objective-c files have |const NSSomeClass*|."""
+  pattern = input_api.re.compile(r'const\s+NS\w*\s*\*')
+
+  def objective_c_filter(f):
+    return (source_file_filter(f) and
+            input_api.os_path.splitext(f.LocalPath())[1] in ('.h', '.mm'))
+
+  files = []
+  for f in input_api.AffectedSourceFiles(objective_c_filter):
+    contents = input_api.ReadFile(f)
+    if pattern.search(contents):
+      files.append(f)
+
+  if files:
+    if input_api.is_committing:
+      res_type = output_api.PresubmitPromptWarning
+    else:
+      res_type = output_api.PresubmitNotifyResult
+    return [ res_type('|const NSClass*| is wrong, see ' +
+                      'http://dev.chromium.org/developers/clang-mac',
+                      files) ]
+  return []
+
+
+def _CheckSingletonInHeaders(input_api, output_api, source_file_filter):
+  """Checks to make sure no header files have |Singleton<|."""
+  pattern = input_api.re.compile(r'Singleton<')
+  files = []
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    if (f.LocalPath().endswith('.h') or f.LocalPath().endswith('.hxx') or
+        f.LocalPath().endswith('.hpp') or f.LocalPath().endswith('.inl')):
+      contents = input_api.ReadFile(f)
+      if pattern.search(contents):
+        files.append(f)
+
+  if files:
+    return [ output_api.PresubmitError(
+        'Found Singleton<T> in the following header files.\n' +
+        'Please move them to an appropriate source file so that the ' +
+        'template gets instantiated in a single compilation unit.',
+        files) ]
+  return []
+
+
+def PanProjectChecks(input_api, output_api,
+                     excluded_paths=None, text_files=None,
+                     license_header=None, project_name=None):
+  """Checks that ALL chromium orbit projects should use.
+
+  These are checks to be run on all Chromium orbit project, including:
+    Chromium
+    Native Client
+    V8
+  When you update this function, please take this broad scope into account.
+  Args:
+    input_api: Bag of input related interfaces.
+    output_api: Bag of output related interfaces.
+    excluded_paths: Don't include these paths in common checks.
+    text_files: Which file are to be treated as documentation text files.
+    license_header: What license header should be on files.
+    project_name: What is the name of the project as it appears in the license.
+  Returns:
+    A list of warning or error objects.
+  """
+  excluded_paths = excluded_paths or  tuple()
+  text_files = text_files or (
+      r'.*\.txt',
+      r'.*\.json',
+  )
+  project_name = project_name or 'Chromium'
+  license_header = license_header or (
+      r'.*? Copyright \(c\) %(year)s The %(project)s Authors\. '
+        r'All rights reserved\.\n'
+      r'.*? Use of this source code is governed by a BSD-style license that '
+        r'can be\n'
+      r'.*? found in the LICENSE file\.\n'
+  ) % {
+      'year': time.strftime('%Y'),
+      'project': project_name,
+  }
+
+  results = []
+  # This code loads the default black list (e.g. third_party, experimental, etc)
+  # and add our black list (breakpad, skia and v8 are still not following
+  # google style and are not really living this repository).
+  # See presubmit_support.py InputApi.FilterSourceFile for the (simple) usage.
+  black_list = input_api.DEFAULT_BLACK_LIST + excluded_paths
+  white_list = input_api.DEFAULT_WHITE_LIST + text_files
+  sources = lambda x: input_api.FilterSourceFile(x, black_list=black_list)
+  text_files = lambda x: input_api.FilterSourceFile(x, black_list=black_list,
+                                                    white_list=white_list)
+
+  # TODO(dpranke): enable upload as well
+  if input_api.is_committing:
+    results.extend(input_api.canned_checks.CheckOwners(
+        input_api, output_api, source_file_filter=sources))
+
+  results.extend(input_api.canned_checks.CheckLongLines(
+      input_api, output_api, source_file_filter=sources))
+  results.extend(input_api.canned_checks.CheckChangeHasNoTabs(
+      input_api, output_api, source_file_filter=sources))
+  results.extend(input_api.canned_checks.CheckChangeHasNoStrayWhitespace(
+      input_api, output_api, source_file_filter=sources))
+  results.extend(input_api.canned_checks.CheckChangeSvnEolStyle(
+      input_api, output_api, source_file_filter=text_files))
+  results.extend(input_api.canned_checks.CheckSvnForCommonMimeTypes(
+      input_api, output_api))
+  results.extend(input_api.canned_checks.CheckLicense(
+      input_api, output_api, license_header, source_file_filter=sources))
+  results.extend(_CheckConstNSObject(
+      input_api, output_api, source_file_filter=sources))
+  results.extend(_CheckSingletonInHeaders(
+      input_api, output_api, source_file_filter=sources))
+  return results
