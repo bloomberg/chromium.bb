@@ -10,7 +10,7 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/print_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -110,7 +110,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   TabContents* initiator_tab = GetInitiatorTab(web_ui_->tab_contents());
   if (initiator_tab) {
     RenderViewHost* rvh = initiator_tab->render_view_host();
-    rvh->Send(new ViewMsg_ResetScriptedPrintCount(rvh->routing_id()));
+    rvh->Send(new PrintMsg_ResetScriptedPrintCount(rvh->routing_id()));
   }
 
   std::string json_str;

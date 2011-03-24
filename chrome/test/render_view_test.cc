@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/autofill/autofill_agent.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
@@ -267,11 +268,11 @@ void RenderViewTest::VerifyPageCount(int count) {
 #else
   const IPC::Message* page_cnt_msg =
       render_thread_.sink().GetUniqueMessageMatching(
-          ViewHostMsg_DidGetPrintedPagesCount::ID);
+          PrintHostMsg_DidGetPrintedPagesCount::ID);
   ASSERT_TRUE(page_cnt_msg);
-  ViewHostMsg_DidGetPrintedPagesCount::Param post_page_count_param;
-  ViewHostMsg_DidGetPrintedPagesCount::Read(page_cnt_msg,
-                                            &post_page_count_param);
+  PrintHostMsg_DidGetPrintedPagesCount::Param post_page_count_param;
+  PrintHostMsg_DidGetPrintedPagesCount::Read(page_cnt_msg,
+                                             &post_page_count_param);
   EXPECT_EQ(count, post_page_count_param.b);
 #endif  // defined(OS_CHROMEOS)
 }
@@ -279,17 +280,17 @@ void RenderViewTest::VerifyPageCount(int count) {
 void RenderViewTest::VerifyPagesPrinted(bool printed) {
 #if defined(OS_CHROMEOS)
   bool did_print_msg = (NULL != render_thread_.sink().GetUniqueMessageMatching(
-      ViewHostMsg_TempFileForPrintingWritten::ID));
+      PrintHostMsg_TempFileForPrintingWritten::ID));
   ASSERT_EQ(printed, did_print_msg);
 #else
   const IPC::Message* print_msg =
       render_thread_.sink().GetUniqueMessageMatching(
-          ViewHostMsg_DidPrintPage::ID);
+          PrintHostMsg_DidPrintPage::ID);
   bool did_print_msg = (NULL != print_msg);
   ASSERT_EQ(printed, did_print_msg);
   if (printed) {
-    ViewHostMsg_DidPrintPage::Param post_did_print_page_param;
-    ViewHostMsg_DidPrintPage::Read(print_msg, &post_did_print_page_param);
+    PrintHostMsg_DidPrintPage::Param post_did_print_page_param;
+    PrintHostMsg_DidPrintPage::Read(print_msg, &post_did_print_page_param);
     EXPECT_EQ(0, post_did_print_page_param.a.page_number);
   }
 #endif  // defined(OS_CHROMEOS)

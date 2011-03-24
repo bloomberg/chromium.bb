@@ -6,8 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/shared_memory.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/print_messages.h"
 #include "ipc/ipc_message_utils.h"
 #include "printing/native_metafile_factory.h"
 #include "printing/native_metafile.h"
@@ -53,14 +52,14 @@ void MockPrinter::ResetPrinter() {
   document_cookie_ = -1;
 }
 
-void MockPrinter::GetDefaultPrintSettings(ViewMsg_Print_Params* params) {
+void MockPrinter::GetDefaultPrintSettings(PrintMsg_Print_Params* params) {
   // Verify this printer is not processing a job.
   // Sorry, this mock printer is very fragile.
   EXPECT_EQ(-1, document_cookie_);
 
   // Assign a unit document cookie and set the print settings.
   document_cookie_ = CreateDocumentCookie();
-  memset(params, 0, sizeof(ViewMsg_Print_Params));
+  memset(params, 0, sizeof(PrintMsg_Print_Params));
   params->dpi = dpi_;
   params->max_shrink = max_shrink_;
   params->min_shrink = min_shrink_;
@@ -73,7 +72,7 @@ void MockPrinter::GetDefaultPrintSettings(ViewMsg_Print_Params* params) {
   params->margin_top = margin_top_;
 }
 
-void MockPrinter::SetDefaultPrintSettings(const ViewMsg_Print_Params& params) {
+void MockPrinter::SetDefaultPrintSettings(const PrintMsg_Print_Params& params) {
   dpi_ = params.dpi;
   max_shrink_ = params.max_shrink;
   min_shrink_ = params.min_shrink;
@@ -88,11 +87,11 @@ void MockPrinter::SetDefaultPrintSettings(const ViewMsg_Print_Params& params) {
 void MockPrinter::ScriptedPrint(int cookie,
                                 int expected_pages_count,
                                 bool has_selection,
-                                ViewMsg_PrintPages_Params* settings) {
+                                PrintMsg_PrintPages_Params* settings) {
   // Verify the input parameters.
   EXPECT_EQ(document_cookie_, cookie);
 
-  memset(settings, 0, sizeof(ViewMsg_PrintPages_Params));
+  memset(settings, 0, sizeof(PrintMsg_PrintPages_Params));
   settings->params.dpi = dpi_;
   settings->params.max_shrink = max_shrink_;
   settings->params.min_shrink = min_shrink_;
@@ -118,7 +117,7 @@ void MockPrinter::SetPrintedPagesCount(int cookie, int number_pages) {
   pages_.clear();
 }
 
-void MockPrinter::PrintPage(const ViewHostMsg_DidPrintPage_Params& params) {
+void MockPrinter::PrintPage(const PrintHostMsg_DidPrintPage_Params& params) {
   // Verify the input parameter and update the printer status so that the
   // RenderViewTest class can verify the this function finishes without errors.
   EXPECT_EQ(PRINTER_PRINTING, printer_status_);

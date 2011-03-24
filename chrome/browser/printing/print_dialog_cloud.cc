@@ -17,7 +17,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/print_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -112,7 +112,7 @@ bool GetDoubleOrInt(const DictionaryValue& dictionary,
 // From the JSON parsed value, get the entries for the page setup
 // parameters.
 bool GetPageSetupParameters(const std::string& json,
-                            ViewMsg_Print_Params& parameters) {
+                            PrintMsg_Print_Params& parameters) {
   scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
   DLOG_IF(ERROR, (!parsed_value.get() ||
                   !parsed_value->IsType(Value::TYPE_DICTIONARY)))
@@ -369,7 +369,7 @@ void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
   const double kMinPageShrink = 1.25;
   const double kMaxPageShrink = 2.0;
 
-  ViewMsg_Print_Params default_settings;
+  PrintMsg_Print_Params default_settings;
   default_settings.printable_size = gfx::Size(kWidth, kHeight);
   default_settings.dpi = kDPI;
   default_settings.min_shrink = kMinPageShrink;

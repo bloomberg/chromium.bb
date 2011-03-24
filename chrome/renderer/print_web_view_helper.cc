@@ -11,7 +11,7 @@
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/print_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
@@ -47,7 +47,7 @@ using WebKit::WebView;
 
 namespace {
 
-int GetDPI(const ViewMsg_Print_Params* print_params) {
+int GetDPI(const PrintMsg_Print_Params* print_params) {
 #if defined(OS_MACOSX)
   // On the Mac, the printable area is in points, don't do any scaling based
   // on dpi.
@@ -57,10 +57,18 @@ int GetDPI(const ViewMsg_Print_Params* print_params) {
 #endif  // defined(OS_MACOSX)
 }
 
+bool PrintMsg_Print_Params_IsEmpty(const PrintMsg_Print_Params& params) {
+  return !params.document_cookie && !params.desired_dpi && !params.max_shrink &&
+         !params.min_shrink && !params.dpi && params.printable_size.IsEmpty() && 
+         !params.selection_only && params.page_size.IsEmpty() &&
+         !params.margin_top && !params.margin_left &&
+         !params.supports_alpha_blend;
+}
+
 }  // namespace
 
 PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
-    const ViewMsg_Print_Params& print_params,
+    const PrintMsg_Print_Params& print_params,
     WebFrame* frame,
     WebNode* node,
     WebView* web_view)
@@ -127,7 +135,7 @@ void PrintWebViewHelper::ScriptInitiatedPrint(WebKit::WebFrame* frame) {
 
   if (is_preview_) {
     script_initiated_preview_frame_ = frame;
-    if (!render_view()->Send(new ViewHostMsg_ScriptInitiatedPrintPreview(
+    if (!render_view()->Send(new PrintHostMsg_ScriptInitiatedPrintPreview(
         render_view()->routing_id()))) {
       NOTREACHED();
       return;
@@ -140,14 +148,14 @@ void PrintWebViewHelper::ScriptInitiatedPrint(WebKit::WebFrame* frame) {
 bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintWebViewHelper, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_PrintForPrintPreview,
+    IPC_MESSAGE_HANDLER(PrintMsg_PrintForPrintPreview,
                         OnPrintForPrintPreview)
-    IPC_MESSAGE_HANDLER(ViewMsg_PrintPages, OnPrintPages)
-    IPC_MESSAGE_HANDLER(ViewMsg_PrintingDone, OnPrintingDone)
-    IPC_MESSAGE_HANDLER(ViewMsg_PrintPreview, OnPrintPreview)
-    IPC_MESSAGE_HANDLER(ViewMsg_PrintNodeUnderContextMenu,
+    IPC_MESSAGE_HANDLER(PrintMsg_PrintPages, OnPrintPages)
+    IPC_MESSAGE_HANDLER(PrintMsg_PrintingDone, OnPrintingDone)
+    IPC_MESSAGE_HANDLER(PrintMsg_PrintPreview, OnPrintPreview)
+    IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
                         OnPrintNodeUnderContextMenu)
-    IPC_MESSAGE_HANDLER(ViewMsg_ResetScriptedPrintCount,
+    IPC_MESSAGE_HANDLER(PrintMsg_ResetScriptedPrintCount,
                         ResetScriptedPrintCount)
     IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
@@ -254,7 +262,7 @@ void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
   // its |context_menu_node_|.
   if (is_preview_) {
     context_menu_preview_node_.reset(new WebNode(context_menu_node));
-    if (!render_view()->Send(new ViewHostMsg_PrintPreviewNodeUnderContextMenu(
+    if (!render_view()->Send(new PrintHostMsg_PrintPreviewNodeUnderContextMenu(
         render_view()->routing_id()))) {
       NOTREACHED();
       return;
@@ -371,10 +379,10 @@ bool PrintWebViewHelper::CopyAndPrint(WebKit::WebFrame* web_frame) {
 }
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
-void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
+void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                     WebFrame* frame,
                                     WebNode* node) {
-  ViewMsg_Print_Params printParams = params.params;
+  PrintMsg_Print_Params printParams = params.params;
   UpdatePrintableSizeInPrintParameters(frame, node, &printParams);
 
   PrepareFrameAndViewForPrint prep_frame_view(printParams,
@@ -383,13 +391,13 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
                                               frame->view());
   int page_count = prep_frame_view.GetExpectedPageCount();
 
-  render_view()->Send(new ViewHostMsg_DidGetPrintedPagesCount(
+  render_view()->Send(new PrintHostMsg_DidGetPrintedPagesCount(
       render_view()->routing_id(), printParams.document_cookie, page_count));
   if (!page_count)
     return;
 
   const gfx::Size& canvas_size = prep_frame_view.GetPrintCanvasSize();
-  ViewMsg_PrintPage_Params page_params;
+  PrintMsg_PrintPage_Params page_params;
   page_params.params = printParams;
   if (params.pages.empty()) {
     for (int i = 0; i < page_count; ++i) {
@@ -408,7 +416,7 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
 #endif  // OS_MACOSX || OS_WIN
 
 void PrintWebViewHelper::didStopLoading() {
-  ViewMsg_PrintPages_Params* params = print_pages_params_.get();
+  PrintMsg_PrintPages_Params* params = print_pages_params_.get();
   DCHECK(params != NULL);
   PrintPages(*params, print_web_view_->mainFrame(), NULL);
 }
@@ -416,7 +424,7 @@ void PrintWebViewHelper::didStopLoading() {
 void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
     WebFrame* frame,
     int page_index,
-    const ViewMsg_Print_Params& default_params,
+    const PrintMsg_Print_Params& default_params,
     double* content_width_in_points,
     double* content_height_in_points,
     double* margin_top_in_points,
@@ -492,7 +500,7 @@ void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
 void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
     WebFrame* frame,
     WebNode* node,
-    ViewMsg_Print_Params* params) {
+    PrintMsg_Print_Params* params) {
   double content_width_in_points;
   double content_height_in_points;
   double margin_top_in_points;
@@ -530,9 +538,9 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
 
 bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
                                            WebKit::WebNode* node) {
-  ViewMsg_PrintPages_Params settings;
+  PrintMsg_PrintPages_Params settings;
 
-  if (!render_view()->Send(new ViewHostMsg_GetDefaultPrintSettings(
+  if (!render_view()->Send(new PrintHostMsg_GetDefaultPrintSettings(
           render_view()->routing_id(), &settings.params))) {
     NOTREACHED();
     return false;
@@ -540,7 +548,7 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
   // Check if the printer returned any settings, if the settings is empty, we
   // can safely assume there are no printer drivers configured. So we safely
   // terminate.
-  if (settings.params.IsEmpty()) {
+  if (PrintMsg_Print_Params_IsEmpty(settings.params)) {
     render_view()->runModalAlertDialog(
         frame,
         l10n_util::GetStringUTF16(IDS_DEFAULT_PRINTER_NOT_FOUND_WARNING));
@@ -553,29 +561,29 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
   }
   UpdatePrintableSizeInPrintParameters(frame, node, &settings.params);
   settings.pages.clear();
-  print_pages_params_.reset(new ViewMsg_PrintPages_Params(settings));
+  print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
   return true;
 }
 
 bool PrintWebViewHelper::UpdatePrintSettings(
     const DictionaryValue& job_settings) {
-  ViewMsg_PrintPages_Params settings;
-  if (!render_view()->Send(new ViewHostMsg_UpdatePrintSettings(
+  PrintMsg_PrintPages_Params settings;
+  if (!render_view()->Send(new PrintHostMsg_UpdatePrintSettings(
           render_view()->routing_id(),
           print_pages_params_->params.document_cookie,
           job_settings, &settings))) {
     NOTREACHED();
     return false;
   }
-  print_pages_params_.reset(new ViewMsg_PrintPages_Params(settings));
+  print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
   return true;
 }
 
 bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
                                                   int expected_pages_count,
                                                   bool use_browser_overlays) {
-  ViewHostMsg_ScriptedPrint_Params params;
-  ViewMsg_PrintPages_Params print_settings;
+  PrintHostMsg_ScriptedPrint_Params params;
+  PrintMsg_PrintPages_Params print_settings;
 
   // The routing id is sent across as it is needed to look up the
   // corresponding RenderViewHost instance to signal and reset the
@@ -591,11 +599,11 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
   params.use_overlays = use_browser_overlays;
 
   print_pages_params_.reset();
-  IPC::SyncMessage* msg = new ViewHostMsg_ScriptedPrint(
+  IPC::SyncMessage* msg = new PrintHostMsg_ScriptedPrint(
       render_view()->routing_id(), params, &print_settings);
   msg->EnableMessagePumping();
   if (render_view()->Send(msg)) {
-    print_pages_params_.reset(new ViewMsg_PrintPages_Params(print_settings));
+    print_pages_params_.reset(new PrintMsg_PrintPages_Params(print_settings));
   } else {
     // Send() failed.
     NOTREACHED();
@@ -606,7 +614,7 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
 
 void PrintWebViewHelper::RenderPagesForPrint(WebKit::WebFrame* frame,
                                              WebKit::WebNode* node) {
-  ViewMsg_PrintPages_Params print_settings = *print_pages_params_;
+  PrintMsg_PrintPages_Params print_settings = *print_pages_params_;
   if (print_settings.params.selection_only) {
     CopyAndPrint(frame);
   } else {
@@ -617,7 +625,7 @@ void PrintWebViewHelper::RenderPagesForPrint(WebKit::WebFrame* frame,
 
 void PrintWebViewHelper::RenderPagesForPreview(WebKit::WebFrame* frame,
                                                WebKit::WebNode* node) {
-  ViewMsg_PrintPages_Params print_settings = *print_pages_params_;
+  PrintMsg_PrintPages_Params print_settings = *print_pages_params_;
   // TODO(kmadhusu): Handle print selection.
   CreatePreviewDocument(print_settings, frame, node);
 }

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/process_util.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/print_messages.h"
 #include "content/common/view_messages.h"
 #include "printing/native_metafile_factory.h"
 #include "printing/native_metafile.h"
@@ -67,7 +67,7 @@ int CALLBACK EnhMetaFileProc(HDC dc,
 
 }  // namespace
 
-void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
+void PrintWebViewHelper::PrintPage(const PrintMsg_PrintPage_Params& params,
                                    const gfx::Size& canvas_size,
                                    WebFrame* frame) {
   // Generate a memory-based metafile. It will use the current screen's DPI.
@@ -95,7 +95,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   uint32 buf_size = metafile->GetDataSize();
   DCHECK_GT(buf_size, 128u);
 
-  ViewHostMsg_DidPrintPage_Params page_params;
+  PrintHostMsg_DidPrintPage_Params page_params;
   page_params.data_size = buf_size;
   page_params.metafile_data_handle = NULL;
   page_params.page_number = page_number;
@@ -117,14 +117,14 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
           &page_params.metafile_data_handle))) {
     NOTREACHED() << "Send message failed.";
   }
-  Send(new ViewHostMsg_DidPrintPage(routing_id(), page_params));
+  Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
 }
 
 void PrintWebViewHelper::CreatePreviewDocument(
-    const ViewMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
+    const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
     WebKit::WebNode* node) {
   int page_count = 0;
-  ViewMsg_Print_Params print_params = params.params;
+  PrintMsg_Print_Params print_params = params.params;
   UpdatePrintableSizeInPrintParameters(frame, node, &print_params);
   PrepareFrameAndViewForPrint prep_frame_view(print_params, frame, node,
                                               frame->view());
@@ -172,7 +172,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
   uint32 buf_size = metafile->GetDataSize();
   DCHECK_GT(buf_size, 128u);
 
-  ViewHostMsg_DidPreviewDocument_Params preview_params;
+  PrintHostMsg_DidPreviewDocument_Params preview_params;
   preview_params.document_cookie = params.params.document_cookie;
   preview_params.data_size = buf_size;
   preview_params.metafile_data_handle = NULL;
@@ -189,11 +189,11 @@ void PrintWebViewHelper::CreatePreviewDocument(
           &preview_params.metafile_data_handle))) {
     NOTREACHED() << "Send message failed.";
   }
-  Send(new ViewHostMsg_PagesReadyForPreview(routing_id(), preview_params));
+  Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
 }
 
 void PrintWebViewHelper::RenderPage(
-    const ViewMsg_Print_Params& params, float* scale_factor, int page_number,
+    const PrintMsg_Print_Params& params, float* scale_factor, int page_number,
     WebFrame* frame, scoped_ptr<printing::NativeMetafile>* metafile) {
   DCHECK(metafile->get()->context());
 

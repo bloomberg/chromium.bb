@@ -8,15 +8,14 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/print_messages.h"
 #include "printing/native_metafile_factory.h"
 #include "printing/native_metafile.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
 using WebKit::WebFrame;
 
-void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
+void PrintWebViewHelper::PrintPage(const PrintMsg_PrintPage_Params& params,
                                    const gfx::Size& canvas_size,
                                    WebFrame* frame) {
   scoped_ptr<printing::NativeMetafile> metafile(
@@ -33,7 +32,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
       frame, metafile.get());
   metafile->FinishDocument();
 
-  ViewHostMsg_DidPrintPage_Params page_params;
+  PrintHostMsg_DidPrintPage_Params page_params;
   page_params.data_size = metafile->GetDataSize();
   page_params.page_number = page_number;
   page_params.document_cookie = params.params.document_cookie;
@@ -50,13 +49,13 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
     page_params.data_size = 0;
   }
 
-  Send(new ViewHostMsg_DidPrintPage(routing_id(), page_params));
+  Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
 }
 
 void PrintWebViewHelper::CreatePreviewDocument(
-    const ViewMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
+    const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
     WebKit::WebNode* node) {
-  ViewMsg_Print_Params printParams = params.params;
+  PrintMsg_Print_Params printParams = params.params;
   UpdatePrintableSizeInPrintParameters(frame, node, &printParams);
 
   PrepareFrameAndViewForPrint prep_frame_view(printParams,
@@ -88,7 +87,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
   }
   metafile->FinishDocument();
 
-  ViewHostMsg_DidPreviewDocument_Params preview_params;
+  PrintHostMsg_DidPreviewDocument_Params preview_params;
   preview_params.data_size = metafile->GetDataSize();
   preview_params.document_cookie = params.params.document_cookie;
   preview_params.expected_pages_count = page_count;
@@ -99,7 +98,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
     preview_params.data_size = 0;
     preview_params.expected_pages_count = 0;
   }
-  Send(new ViewHostMsg_PagesReadyForPreview(routing_id(), preview_params));
+  Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
 }
 
 void PrintWebViewHelper::RenderPage(

@@ -7,30 +7,13 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
-#include "app/surface/transport_dib.h"
-#include "base/file_path.h"
-#include "base/ref_counted.h"
-#include "base/shared_memory.h"
-#include "base/time.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
-#include "content/common/navigation_types.h"
-#include "content/common/page_transition_types.h"
-#include "content/common/serialized_script_value.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_param_traits.h"
-#include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
-#include "webkit/glue/password_form.h"
-#include "webkit/glue/webaccessibility.h"
-
-// TODO(erg): Split this file into $1_db_params.h, $1_audio_params.h,
-// $1_print_params.h and $1_render_params.h.
 
 namespace net {
 class UploadData;
@@ -119,139 +102,6 @@ struct ViewHostMsg_GetSearchProviderInstallState_Params {
     return ViewHostMsg_GetSearchProviderInstallState_Params(
         INSTALLED_AS_DEFAULT);
   }
-};
-
-// Parameters for a render request.
-struct ViewMsg_Print_Params {
-  ViewMsg_Print_Params();
-  ~ViewMsg_Print_Params();
-
-  // Physical size of the page, including non-printable margins,
-  // in pixels according to dpi.
-  gfx::Size page_size;
-
-  // In pixels according to dpi_x and dpi_y.
-  gfx::Size printable_size;
-
-  // The y-offset of the printable area, in pixels according to dpi.
-  int margin_top;
-
-  // The x-offset of the printable area, in pixels according to dpi.
-  int margin_left;
-
-  // Specifies dots per inch.
-  double dpi;
-
-  // Minimum shrink factor. See PrintSettings::min_shrink for more information.
-  double min_shrink;
-
-  // Maximum shrink factor. See PrintSettings::max_shrink for more information.
-  double max_shrink;
-
-  // Desired apparent dpi on paper.
-  int desired_dpi;
-
-  // Cookie for the document to ensure correctness.
-  int document_cookie;
-
-  // Should only print currently selected text.
-  bool selection_only;
-
-  // Does the printer support alpha blending?
-  bool supports_alpha_blend;
-
-  // Warning: do not compare document_cookie.
-  bool Equals(const ViewMsg_Print_Params& rhs) const;
-
-  // Checking if the current params is empty. Just initialized after a memset.
-  bool IsEmpty() const;
-};
-
-struct ViewMsg_PrintPage_Params {
-  ViewMsg_PrintPage_Params();
-  ~ViewMsg_PrintPage_Params();
-
-  // Parameters to render the page as a printed page. It must always be the same
-  // value for all the document.
-  ViewMsg_Print_Params params;
-
-  // The page number is the indicator of the square that should be rendered
-  // according to the layout specified in ViewMsg_Print_Params.
-  int page_number;
-};
-
-struct ViewMsg_PrintPages_Params {
-  ViewMsg_PrintPages_Params();
-  ~ViewMsg_PrintPages_Params();
-
-  // Parameters to render the page as a printed page. It must always be the same
-  // value for all the document.
-  ViewMsg_Print_Params params;
-
-  // If empty, this means a request to render all the printed pages.
-  std::vector<int> pages;
-};
-
-// Parameters to describe a rendered document.
-struct ViewHostMsg_DidPreviewDocument_Params {
-  ViewHostMsg_DidPreviewDocument_Params();
-  ~ViewHostMsg_DidPreviewDocument_Params();
-
-  // A shared memory handle to metafile data.
-  base::SharedMemoryHandle metafile_data_handle;
-
-  // Size of metafile data.
-  uint32 data_size;
-
-  // Cookie for the document to ensure correctness.
-  int document_cookie;
-
-  // Store the expected pages count.
-  int expected_pages_count;
-};
-
-// Parameters to describe a rendered page.
-struct ViewHostMsg_DidPrintPage_Params {
-  ViewHostMsg_DidPrintPage_Params();
-  ~ViewHostMsg_DidPrintPage_Params();
-
-  // A shared memory handle to the EMF data. This data can be quite large so a
-  // memory map needs to be used.
-  base::SharedMemoryHandle metafile_data_handle;
-
-  // Size of the metafile data.
-  uint32 data_size;
-
-  // Cookie for the document to ensure correctness.
-  int document_cookie;
-
-  // Page number.
-  int page_number;
-
-  // Shrink factor used to render this page.
-  double actual_shrink;
-
-  // The size of the page the page author specified.
-  gfx::Size page_size;
-
-  // The printable area the page author specified.
-  gfx::Rect content_area;
-
-  // True if the page has visible overlays.
-  bool has_visible_overlays;
-};
-
-// Parameters for the IPC message ViewHostMsg_ScriptedPrint
-struct ViewHostMsg_ScriptedPrint_Params {
-  ViewHostMsg_ScriptedPrint_Params();
-  ~ViewHostMsg_ScriptedPrint_Params();
-
-  int routing_id;
-  gfx::NativeViewId host_window_id;
-  int cookie;
-  int expected_pages_count;
-  bool has_selection;
-  bool use_overlays;
 };
 
 // Allows an extension to execute code in a tab.
@@ -345,54 +195,6 @@ struct ParamTraits<ViewHostMsg_PageHasOSDD_Type> {
 template <>
 struct ParamTraits<ViewHostMsg_GetSearchProviderInstallState_Params> {
   typedef ViewHostMsg_GetSearchProviderInstallState_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewMsg_Print_Params> {
-  typedef ViewMsg_Print_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewMsg_PrintPage_Params> {
-  typedef ViewMsg_PrintPage_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewMsg_PrintPages_Params> {
-  typedef ViewMsg_PrintPages_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewHostMsg_DidPreviewDocument_Params> {
-  typedef ViewHostMsg_DidPreviewDocument_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewHostMsg_DidPrintPage_Params> {
-  typedef ViewHostMsg_DidPrintPage_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewHostMsg_ScriptedPrint_Params> {
-  typedef ViewHostMsg_ScriptedPrint_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

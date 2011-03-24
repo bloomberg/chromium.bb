@@ -229,36 +229,6 @@ IPC_MESSAGE_CONTROL0(ViewMsg_PurgeMemory)
 // render view responds with a ViewHostMsg_Snapshot.
 IPC_MESSAGE_ROUTED0(ViewMsg_CaptureSnapshot)
 
-IPC_MESSAGE_ROUTED0(ViewMsg_PrintNodeUnderContextMenu)
-
-// Tells the renderer to print the print preview tab's PDF plugin without
-// showing the print dialog.
-IPC_MESSAGE_ROUTED1(ViewMsg_PrintForPrintPreview,
-                    DictionaryValue /* settings*/)
-
-// Tells the render view to switch the CSS to print media type, renders every
-// requested pages and switch back the CSS to display media type.
-IPC_MESSAGE_ROUTED0(ViewMsg_PrintPages)
-
-// Tells the render view that printing is done so it can clean up.
-IPC_MESSAGE_ROUTED2(ViewMsg_PrintingDone,
-                    int /* document_cookie */,
-                    bool /* success */)
-
-// Tells the render view to switch the CSS to print media type, renders every
-// requested pages for print preview using the given |settngs|.
-IPC_MESSAGE_ROUTED1(ViewMsg_PrintPreview,
-                    DictionaryValue /* settings */)
-
-// Tells a renderer to stop blocking script initiated printing.
-IPC_MESSAGE_ROUTED0(ViewMsg_ResetScriptedPrintCount)
-
-// Sends back to the browser the rendered "printed document" for preview that
-// was requested by a ViewMsg_PrintPreview message. The memory handle in this
-// message is already valid in the browser process.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_PagesReadyForPreview,
-                    ViewHostMsg_DidPreviewDocument_Params /* params */)
-
 // History system notification that the visited link database has been
 // replaced. It has one SharedMemoryHandle argument consisting of the table
 // handle. This handle is valid in the context of the renderer
@@ -637,54 +607,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(
     GURL /* page url */,
     GURL /* inquiry url */,
     ViewHostMsg_GetSearchProviderInstallState_Params /* install */)
-
-// Tells the browser that the renderer is done calculating the number of
-// rendered pages according to the specified settings.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_DidGetPrintedPagesCount,
-                    int /* rendered document cookie */,
-                    int /* number of rendered pages */)
-
-// Sends back to the browser the rendered "printed page" that was requested by
-// a ViewMsg_PrintPage message or from scripted printing. The memory handle in
-// this message is already valid in the browser process.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidPrintPage,
-                    ViewHostMsg_DidPrintPage_Params /* page content */)
-
-// The renderer wants to know the default print settings.
-IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_GetDefaultPrintSettings,
-                           ViewMsg_Print_Params /* default_settings */)
-
-// The renderer wants to update the current print settings with new
-// |job_settings|.
-IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_UpdatePrintSettings,
-                           int /* document_cookie */,
-                           DictionaryValue /* job_settings */,
-                           ViewMsg_PrintPages_Params /* current_settings */)
-
-// It's the renderer that controls the printing process when it is generated
-// by javascript. This step is about showing UI to the user to select the
-// final print settings. The output parameter is the same as
-// ViewMsg_PrintPages which is executed implicitly.
-IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_ScriptedPrint,
-                           ViewHostMsg_ScriptedPrint_Params,
-                           ViewMsg_PrintPages_Params
-                               /* settings chosen by the user*/)
-
-#if defined(USE_X11)
-// Asks the browser to create a temporary file for the renderer to fill
-// in resulting NativeMetafile in printing.
-IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_AllocateTempFileForPrinting,
-                            base::FileDescriptor /* temp file fd */,
-                            int /* fd in browser*/)
-IPC_MESSAGE_CONTROL1(ViewHostMsg_TempFileForPrintingWritten,
-                     int /* fd in browser */)
-#endif
-
-// Asks the browser to do print preview for the node under the context menu.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_PrintPreviewNodeUnderContextMenu)
-
-// Asks the browser to do print preview for window.print().
-IPC_MESSAGE_ROUTED0(ViewHostMsg_ScriptInitiatedPrintPreview)
 
 // Stores new inspector setting in the profile.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateInspectorSetting,

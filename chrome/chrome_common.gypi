@@ -204,6 +204,7 @@
         'common/persistent_pref_store.h',
         'common/pref_store.cc',
         'common/pref_store.h',
+        'common/print_messages.h',
         'common/remoting/chromoting_host_info.cc',
         'common/remoting/chromoting_host_info.h',
         'common/render_messages.cc',

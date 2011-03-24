@@ -16,9 +16,9 @@
 #include "ui/gfx/size.h"
 
 class DictionaryValue;
-struct ViewMsg_Print_Params;
-struct ViewMsg_PrintPage_Params;
-struct ViewMsg_PrintPages_Params;
+struct PrintMsg_Print_Params;
+struct PrintMsg_PrintPage_Params;
+struct PrintMsg_PrintPages_Params;
 
 #if defined(USE_X11)
 namespace skia {
@@ -34,7 +34,7 @@ class PrepareFrameAndViewForPrint {
  public:
   // Prints |frame|.  If |node| is not NULL, then only that node will be
   // printed.
-  PrepareFrameAndViewForPrint(const ViewMsg_Print_Params& print_params,
+  PrepareFrameAndViewForPrint(const PrintMsg_Print_Params& print_params,
                               WebKit::WebFrame* frame,
                               WebKit::WebNode* node,
                               WebKit::WebView* web_view);
@@ -143,19 +143,19 @@ class PrintWebViewHelper : public RenderViewObserver ,
 
   // Prints all the pages listed in |params|.
   // It will implicitly revert the document to display CSS media type.
-  void PrintPages(const ViewMsg_PrintPages_Params& params,
+  void PrintPages(const PrintMsg_PrintPages_Params& params,
                   WebKit::WebFrame* frame,
                   WebKit::WebNode* node);
 
   // Prints the page listed in |params|.
 #if defined(USE_X11)
-  void PrintPage(const ViewMsg_PrintPage_Params& params,
+  void PrintPage(const PrintMsg_PrintPage_Params& params,
                  const gfx::Size& canvas_size,
                  WebKit::WebFrame* frame,
                  printing::NativeMetafile* metafile,
                  scoped_ptr<skia::VectorCanvas>* canvas);
 #else
-  void PrintPage(const ViewMsg_PrintPage_Params& params,
+  void PrintPage(const PrintMsg_PrintPage_Params& params,
                  const gfx::Size& canvas_size,
                  WebKit::WebFrame* frame);
 #endif
@@ -167,15 +167,15 @@ class PrintWebViewHelper : public RenderViewObserver ,
   void RenderPagesForPreview(WebKit::WebFrame* frame, WebKit::WebNode* node);
 
   // Renders all the pages listed in |params| for preview.
-  // On success, Send ViewHostMsg_PagesReadyForPreview message with a
+  // On success, Send PrintHostMsg_PagesReadyForPreview message with a
   // valid metafile data handle.
-  void CreatePreviewDocument(const ViewMsg_PrintPages_Params& params,
+  void CreatePreviewDocument(const PrintMsg_PrintPages_Params& params,
                              WebKit::WebFrame* frame,
                              WebKit::WebNode* node);
 
   // Platform specific helper function for rendering page(s) to |metafile|.
 #if defined(OS_WIN)
-  void RenderPage(const ViewMsg_Print_Params& params, float* scale_factor,
+  void RenderPage(const PrintMsg_Print_Params& params, float* scale_factor,
                   int page_number, WebKit::WebFrame* frame,
                   scoped_ptr<printing::NativeMetafile>* metafile);
 #elif defined(OS_MACOSX)
@@ -183,7 +183,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
                   const float& scale_factor, int page_number,
                   WebKit::WebFrame* frame, printing::NativeMetafile* metafile);
 #elif defined(OS_POSIX)
-  bool RenderPages(const ViewMsg_PrintPages_Params& params,
+  bool RenderPages(const PrintMsg_PrintPages_Params& params,
                    WebKit::WebFrame* frame,
                    WebKit::WebNode* node,
                    bool send_expected_page_count,
@@ -201,7 +201,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
   static void GetPageSizeAndMarginsInPoints(
       WebKit::WebFrame* frame,
       int page_index,
-      const ViewMsg_Print_Params& default_params,
+      const PrintMsg_Print_Params& default_params,
       double* content_width_in_points,
       double* content_height_in_points,
       double* margin_top_in_points,
@@ -211,7 +211,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
 
   void UpdatePrintableSizeInPrintParameters(WebKit::WebFrame* frame,
                                             WebKit::WebNode* node,
-                                            ViewMsg_Print_Params* params);
+                                            PrintMsg_Print_Params* params);
 
   bool GetPrintFrame(WebKit::WebFrame** frame);
 
@@ -236,7 +236,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
   // The node under the context menu to print preview.
   scoped_ptr<WebKit::WebNode> context_menu_preview_node_;
 
-  scoped_ptr<ViewMsg_PrintPages_Params> print_pages_params_;
+  scoped_ptr<PrintMsg_PrintPages_Params> print_pages_params_;
   base::Time last_cancelled_script_print_;
   int user_cancelled_scripted_print_count_;
   bool is_preview_;

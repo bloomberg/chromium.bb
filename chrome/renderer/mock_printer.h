@@ -15,9 +15,9 @@
 #include "printing/image.h"
 #include "ui/gfx/size.h"
 
-struct ViewMsg_Print_Params;
-struct ViewMsg_PrintPages_Params;
-struct ViewHostMsg_DidPrintPage_Params;
+struct PrintMsg_Print_Params;
+struct PrintMsg_PrintPages_Params;
+struct PrintHostMsg_DidPrintPage_Params;
 
 // A class which represents an output page used in the MockPrinter class.
 // The MockPrinter class stores output pages in a vector, so, this class
@@ -67,16 +67,16 @@ class MockPrinter {
 
   // Functions that changes settings of a pseudo printer.
   void ResetPrinter();
-  void SetDefaultPrintSettings(const ViewMsg_Print_Params& params);
+  void SetDefaultPrintSettings(const PrintMsg_Print_Params& params);
 
   // Functions that handles IPC events.
-  void GetDefaultPrintSettings(ViewMsg_Print_Params* params);
+  void GetDefaultPrintSettings(PrintMsg_Print_Params* params);
   void ScriptedPrint(int cookie,
                      int expected_pages_count,
                      bool has_selection,
-                     ViewMsg_PrintPages_Params* settings);
+                     PrintMsg_PrintPages_Params* settings);
   void SetPrintedPagesCount(int cookie, int number_pages);
-  void PrintPage(const ViewHostMsg_DidPrintPage_Params& params);
+  void PrintPage(const PrintHostMsg_DidPrintPage_Params& params);
 
   // Functions that retrieve the output pages.
   Status GetPrinterStatus() const { return printer_status_; }

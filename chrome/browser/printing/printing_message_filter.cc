@@ -8,7 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/printing/print_job_manager.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/print_messages.h"
 #include "content/common/view_messages.h"
 
 #if defined(OS_CHROMEOS)
@@ -38,7 +38,7 @@ static base::LazyInstance<PrintingSequencePathMap>
 #endif
 
 void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
-                                   ViewMsg_Print_Params* params) {
+                                   PrintMsg_Print_Params* params) {
   params->page_size = settings.page_setup_device_units().physical_size();
   params->printable_size.SetSize(
       settings.page_setup_device_units().content_area().width(),
@@ -76,8 +76,8 @@ PrintingMessageFilter::~PrintingMessageFilter() {
 void PrintingMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
 #if defined(OS_CHROMEOS)
-  if (message.type() == ViewHostMsg_AllocateTempFileForPrinting::ID ||
-      message.type() == ViewHostMsg_TempFileForPrintingWritten::ID) {
+  if (message.type() == PrintHostMsg_AllocateTempFileForPrinting::ID ||
+      message.type() == PrintHostMsg_TempFileForPrintingWritten::ID) {
     *thread = BrowserThread::FILE;
   }
 #endif
@@ -91,15 +91,15 @@ bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
 #if defined(OS_CHROMEOS)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateTempFileForPrinting,
+    IPC_MESSAGE_HANDLER(PrintHostMsg_AllocateTempFileForPrinting,
                         OnAllocateTempFileForPrinting)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_TempFileForPrintingWritten,
+    IPC_MESSAGE_HANDLER(PrintHostMsg_TempFileForPrintingWritten,
                         OnTempFileForPrintingWritten)
 #endif
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDefaultPrintSettings,
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_GetDefaultPrintSettings,
                                     OnGetDefaultPrintSettings)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ScriptedPrint, OnScriptedPrint)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_UpdatePrintSettings,
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_ScriptedPrint, OnScriptedPrint)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_UpdatePrintSettings,
                                     OnUpdatePrintSettings)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -199,7 +199,7 @@ void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
 void PrintingMessageFilter::OnGetDefaultPrintSettingsReply(
     scoped_refptr<printing::PrinterQuery> printer_query,
     IPC::Message* reply_msg) {
-  ViewMsg_Print_Params params;
+  PrintMsg_Print_Params params;
   if (!printer_query.get() ||
       printer_query->last_status() != printing::PrintingContext::OK) {
     memset(&params, 0, sizeof(params));
@@ -207,7 +207,7 @@ void PrintingMessageFilter::OnGetDefaultPrintSettingsReply(
     RenderParamsFromPrintSettings(printer_query->settings(), &params);
     params.document_cookie = printer_query->cookie();
   }
-  ViewHostMsg_GetDefaultPrintSettings::WriteReplyParams(reply_msg, params);
+  PrintHostMsg_GetDefaultPrintSettings::WriteReplyParams(reply_msg, params);
   Send(reply_msg);
   // If printing was enabled.
   if (printer_query.get()) {
@@ -221,7 +221,7 @@ void PrintingMessageFilter::OnGetDefaultPrintSettingsReply(
 }
 
 void PrintingMessageFilter::OnScriptedPrint(
-    const ViewHostMsg_ScriptedPrint_Params& params,
+    const PrintHostMsg_ScriptedPrint_Params& params,
     IPC::Message* reply_msg) {
   gfx::NativeView host_view =
       gfx::NativeViewFromIdInBrowser(params.host_window_id);
@@ -251,7 +251,7 @@ void PrintingMessageFilter::OnScriptedPrintReply(
     scoped_refptr<printing::PrinterQuery> printer_query,
     int routing_id,
     IPC::Message* reply_msg) {
-  ViewMsg_PrintPages_Params params;
+  PrintMsg_PrintPages_Params params;
   if (printer_query->last_status() != printing::PrintingContext::OK ||
       !printer_query->settings().dpi()) {
     memset(&params, 0, sizeof(params));
@@ -261,7 +261,7 @@ void PrintingMessageFilter::OnScriptedPrintReply(
     params.pages =
         printing::PageRange::GetPages(printer_query->settings().ranges);
   }
-  ViewHostMsg_ScriptedPrint::WriteReplyParams(reply_msg, params);
+  PrintHostMsg_ScriptedPrint::WriteReplyParams(reply_msg, params);
   Send(reply_msg);
   if (params.params.dpi && params.params.document_cookie) {
     print_job_manager_->QueuePrinterQuery(printer_query.get());
@@ -288,7 +288,7 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
 void PrintingMessageFilter::OnUpdatePrintSettingsReply(
     scoped_refptr<printing::PrinterQuery> printer_query,
     IPC::Message* reply_msg) {
-  ViewMsg_PrintPages_Params params;
+  PrintMsg_PrintPages_Params params;
   if (printer_query->last_status() != printing::PrintingContext::OK) {
     memset(&params, 0, sizeof(params));
   } else {
@@ -297,7 +297,7 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
     params.pages =
         printing::PageRange::GetPages(printer_query->settings().ranges);
   }
-  ViewHostMsg_UpdatePrintSettings::WriteReplyParams(reply_msg, params);
+  PrintHostMsg_UpdatePrintSettings::WriteReplyParams(reply_msg, params);
   Send(reply_msg);
   // If user hasn't cancelled.
   if (printer_query->cookie() && printer_query->settings().dpi())

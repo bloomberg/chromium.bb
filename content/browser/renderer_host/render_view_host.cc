@@ -26,7 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/print_messages.h"
 #include "chrome/common/safebrowsing_messages.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/translate_errors.h"
@@ -365,17 +365,17 @@ void RenderViewHost::ReloadFrame() {
 }
 
 bool RenderViewHost::PrintPages() {
-  return Send(new ViewMsg_PrintPages(routing_id()));
+  return Send(new PrintMsg_PrintPages(routing_id()));
 }
 
 bool RenderViewHost::PrintPreview() {
   // TODO(thestig) Get settings from the print preview UI.
   DictionaryValue dummy_dict;
-  return Send(new ViewMsg_PrintPreview(routing_id(), dummy_dict));
+  return Send(new PrintMsg_PrintPreview(routing_id(), dummy_dict));
 }
 
 void RenderViewHost::PrintingDone(int document_cookie, bool success) {
-  Send(new ViewMsg_PrintingDone(routing_id(), document_cookie, success));
+  Send(new PrintMsg_PrintingDone(routing_id(), document_cookie, success));
 }
 
 void RenderViewHost::StartFinding(int request_id,
@@ -1233,7 +1233,7 @@ void RenderViewHost::ContextMenuClosed(
 }
 
 void RenderViewHost::PrintForPrintPreview(const DictionaryValue& job_settings) {
-  Send(new ViewMsg_PrintForPrintPreview(routing_id(), job_settings));
+  Send(new PrintMsg_PrintForPrintPreview(routing_id(), job_settings));
 }
 
 void RenderViewHost::OnMsgStartDragging(

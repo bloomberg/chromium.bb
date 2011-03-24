@@ -42,7 +42,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/print_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -1302,7 +1302,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
         }
       } else {
         RenderViewHost* rvh = source_tab_contents_->render_view_host();
-        rvh->Send(new ViewMsg_PrintNodeUnderContextMenu(rvh->routing_id()));
+        rvh->Send(new PrintMsg_PrintNodeUnderContextMenu(rvh->routing_id()));
       }
       break;
 

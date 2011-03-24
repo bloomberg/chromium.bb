@@ -18,9 +18,9 @@ namespace IPC {
 class MessageReplyDeserializer;
 }
 
-struct ViewMsg_Print_Params;
-struct ViewMsg_PrintPages_Params;
-struct ViewHostMsg_ScriptedPrint_Params;
+struct PrintMsg_Print_Params;
+struct PrintMsg_PrintPages_Params;
+struct PrintHostMsg_ScriptedPrint_Params;
 
 // This class is very simple mock of RenderThread. It simulates an IPC channel
 // which supports only two messages:
@@ -117,14 +117,14 @@ class MockRenderThread : public RenderThreadBase {
 #endif
 
   // The RenderView expects default print settings.
-  void OnGetDefaultPrintSettings(ViewMsg_Print_Params* setting);
+  void OnGetDefaultPrintSettings(PrintMsg_Print_Params* setting);
 
   // The RenderView expects final print settings from the user.
-  void OnScriptedPrint(const ViewHostMsg_ScriptedPrint_Params& params,
-                       ViewMsg_PrintPages_Params* settings);
+  void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& params,
+                       PrintMsg_PrintPages_Params* settings);
 
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
-  void OnDidPrintPage(const ViewHostMsg_DidPrintPage_Params& params);
+  void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
 
   IPC::TestSink sink_;
 

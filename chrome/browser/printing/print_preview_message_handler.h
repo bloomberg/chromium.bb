@@ -8,7 +8,7 @@
 
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
-struct ViewHostMsg_DidPreviewDocument_Params;
+struct PrintHostMsg_DidPreviewDocument_Params;
 
 namespace printing {
 
@@ -28,7 +28,7 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
   TabContents* GetPrintPreviewTab();
 
   void OnPagesReadyForPreview(
-      const ViewHostMsg_DidPreviewDocument_Params& params);
+      const PrintHostMsg_DidPreviewDocument_Params& params);
   void OnPrintPreviewNodeUnderContextMenu();
   void OnScriptInitiatedPrintPreview();
 

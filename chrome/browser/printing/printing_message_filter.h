@@ -13,7 +13,7 @@
 #endif
 
 class DictionaryValue;
-struct ViewHostMsg_ScriptedPrint_Params;
+struct PrintHostMsg_ScriptedPrint_Params;
 
 namespace printing {
 class PrinterQuery;
@@ -60,7 +60,7 @@ class PrintingMessageFilter : public BrowserMessageFilter {
   // A javascript code requested to print the current page. The renderer host
   // have to show to the user the print dialog and returns the selected print
   // settings.
-  void OnScriptedPrint(const ViewHostMsg_ScriptedPrint_Params& params,
+  void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& params,
                        IPC::Message* reply_msg);
   void OnScriptedPrintReply(
       scoped_refptr<printing::PrinterQuery> printer_query,

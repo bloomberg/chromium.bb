@@ -11,8 +11,7 @@
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/print_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -38,8 +37,8 @@ TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
 }
 
 void PrintPreviewMessageHandler::OnPagesReadyForPreview(
-    const ViewHostMsg_DidPreviewDocument_Params& params) {
-  // Always need to stop the worker and send ViewMsg_PrintingDone.
+    const PrintHostMsg_DidPreviewDocument_Params& params) {
+  // Always need to stop the worker and send PrintMsg_PrintingDone.
   PrintJobManager* print_job_manager = g_browser_process->print_job_manager();
   scoped_refptr<printing::PrinterQuery> printer_query;
   print_job_manager->PopPrinterQuery(params.document_cookie, &printer_query);
@@ -51,7 +50,7 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
   }
 
   RenderViewHost* rvh = tab_contents()->render_view_host();
-  rvh->Send(new ViewMsg_PrintingDone(rvh->routing_id(),
+  rvh->Send(new PrintMsg_PrintingDone(rvh->routing_id(),
                                      params.document_cookie,
                                      true));
 
@@ -91,11 +90,11 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintPreviewMessageHandler, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PagesReadyForPreview,
+    IPC_MESSAGE_HANDLER(PrintHostMsg_PagesReadyForPreview,
                         OnPagesReadyForPreview)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PrintPreviewNodeUnderContextMenu,
+    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewNodeUnderContextMenu,
                         OnPrintPreviewNodeUnderContextMenu)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptInitiatedPrintPreview,
+    IPC_MESSAGE_HANDLER(PrintHostMsg_ScriptInitiatedPrintPreview,
                         OnScriptInitiatedPrintPreview)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

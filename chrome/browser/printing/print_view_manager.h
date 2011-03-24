@@ -15,7 +15,7 @@
 
 class RenderViewHost;
 class TabContents;
-struct ViewHostMsg_DidPrintPage_Params;
+struct PrintHostMsg_DidPrintPage_Params;
 
 namespace printing {
 
@@ -53,7 +53,7 @@ class PrintViewManager : public NotificationObserver,
 
  private:
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
-  void OnDidPrintPage(const ViewHostMsg_DidPrintPage_Params& params);
+  void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
 
   // Processes a NOTIFY_PRINT_JOB_EVENT notification.
   void OnNotifyPrintJobEvent(const JobEventDetails& event_details);
