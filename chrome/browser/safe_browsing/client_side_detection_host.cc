@@ -139,7 +139,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
   // The destructor can be called either from the UI or the IO thread.
   virtual ~ShouldClassifyUrlRequest() { }
 
-  void CheckCsdWhitelist(GURL url) {
+  void CheckCsdWhitelist(const GURL& url) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     if (!sb_service_ || sb_service_->MatchCsdWhitelistUrl(url)) {
       // We're done.  There is no point in going back to the UI thread.

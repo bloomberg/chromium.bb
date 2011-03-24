@@ -300,7 +300,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
           sync_api::HttpPostProviderFactory* http_bridge_factory,
           const sync_api::SyncCredentials& credentials,
           bool delete_sync_data_folder,
-          std::string restored_key_for_bootstrapping,
+          const std::string& restored_key_for_bootstrapping,
           bool setup_for_test_mode);
       ~DoInitializeOptions();
 

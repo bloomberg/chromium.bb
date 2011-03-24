@@ -96,7 +96,8 @@ string16 LanguageOptionsHandler::GetProductName() {
   return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 
-void LanguageOptionsHandler::SetApplicationLocale(std::string language_code) {
+void LanguageOptionsHandler::SetApplicationLocale(
+    const std::string& language_code) {
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetString(prefs::kApplicationLocale, language_code);
 }

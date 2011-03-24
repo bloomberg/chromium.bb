@@ -487,7 +487,7 @@ void TestingAutomationProvider::GetCookies(const GURL& url, int handle,
 }
 
 void TestingAutomationProvider::SetCookie(const GURL& url,
-                                          const std::string value,
+                                          const std::string& value,
                                           int handle,
                                           int* response_value) {
   TabContents *contents = tab_tracker_->ContainsHandle(handle) ?

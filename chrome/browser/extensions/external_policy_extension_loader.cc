@@ -18,7 +18,7 @@
 namespace {
 
 // Check an extension ID and an URL to be syntactically correct.
-bool CheckExtension(std::string id, std::string update_url) {
+bool CheckExtension(const std::string& id, const std::string& update_url) {
   GURL url(update_url);
   if (!url.is_valid()) {
     LOG(WARNING) << "Policy specifies invalid update URL for external "

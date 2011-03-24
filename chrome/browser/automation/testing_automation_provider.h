@@ -68,7 +68,7 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetCookies(const GURL& url, int handle, int* value_size,
                   std::string* value);
   void SetCookie(const GURL& url,
-                 const std::string value,
+                 const std::string& value,
                  int handle,
                  int* response_value);
   void DeleteCookie(const GURL& url, const std::string& cookie_name,

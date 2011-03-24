@@ -32,7 +32,7 @@ class LanguageOptionsHandler : public LanguageOptionsHandlerCommon {
  private:
   // LanguageOptionsHandlerCommon implementation.
   virtual string16 GetProductName();
-  virtual void SetApplicationLocale(std::string language_code);
+  virtual void SetApplicationLocale(const std::string& language_code);
 
   // Called when the restart button is clicked.
   void RestartCallback(const ListValue* args);

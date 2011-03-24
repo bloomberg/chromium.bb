@@ -331,7 +331,7 @@ class SessionModelAssociator
   // Used to populate a session window from the session specifics window
   // provided. Tracks any foreign session data created through |tracker|.
   static void PopulateSessionWindowFromSpecifics(
-      std::string foreign_session_tag,
+      const std::string& foreign_session_tag,
       const sync_pb::SessionWindow& window,
       const int64 mtime,
       SessionWindow* session_window,

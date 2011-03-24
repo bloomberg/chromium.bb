@@ -186,7 +186,7 @@ string16 CrosLanguageOptionsHandler::GetProductName() {
 }
 
 void CrosLanguageOptionsHandler::SetApplicationLocale(
-    std::string language_code) {
+    const std::string& language_code) {
   web_ui_->GetProfile()->ChangeAppLocale(
       language_code, Profile::APP_LOCALE_CHANGED_VIA_SETTINGS);
 }

@@ -77,7 +77,7 @@ void GetCookies(const GURL& url,
 }
 
 void SetCookie(const GURL& url,
-               const std::string value,
+               const std::string& value,
                TabContents* contents,
                int* response_value) {
   *response_value = -1;

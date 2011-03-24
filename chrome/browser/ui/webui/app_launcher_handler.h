@@ -95,7 +95,7 @@ class AppLauncherHandler
                                    extension_misc::AppLaunchBucket bucket);
 
   // Prompts the user to re-enable the app for |extension_id|.
-  void PromptToEnableApp(std::string extension_id);
+  void PromptToEnableApp(const std::string& extension_id);
 
   // ExtensionInstallUI::Delegate implementation, used for receiving
   // notification about uninstall confirmation dialog selections.

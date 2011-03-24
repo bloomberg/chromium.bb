@@ -120,7 +120,7 @@ std::string GeolocationExceptionToString(const GURL& origin,
 // in a HostContentSettingsMap-controlled exceptions table (e.g., cookies).
 // Ownership of the pointer is passed to the caller.
 DictionaryValue* GetExceptionForPage(
-    const ContentSettingsPattern pattern,
+    const ContentSettingsPattern& pattern,
     ContentSetting setting) {
   DictionaryValue* exception = new DictionaryValue();
   exception->Set(

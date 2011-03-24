@@ -25,7 +25,7 @@ void GetCookies(const GURL& url,
 
 // Sets a cookie for |url| in the given tab.  Can be called from any thread.
 void SetCookie(const GURL& url,
-               const std::string value,
+               const std::string& value,
                TabContents* contents,
                int* response_value);
 

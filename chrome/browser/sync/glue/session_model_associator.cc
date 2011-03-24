@@ -563,7 +563,7 @@ void SessionModelAssociator::DisassociateForeignSession(
 
 // Static
 void SessionModelAssociator::PopulateSessionWindowFromSpecifics(
-    std::string foreign_session_tag,
+    const std::string& foreign_session_tag,
     const sync_pb::SessionWindow& specifics,
     int64 mtime,
     SessionWindow* session_window,

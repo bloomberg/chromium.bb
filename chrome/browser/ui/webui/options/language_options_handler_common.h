@@ -47,7 +47,7 @@ class LanguageOptionsHandlerCommon : public OptionsPageUIHandler {
   virtual string16 GetProductName() = 0;
 
   // Sets the application locale.
-  virtual void SetApplicationLocale(std::string language_code) = 0;
+  virtual void SetApplicationLocale(const std::string& language_code) = 0;
 
   // Called when the language options is opened.
   void LanguageOptionsOpenCallback(const ListValue* args);

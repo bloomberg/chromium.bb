@@ -359,7 +359,7 @@ bool Extension::IsElevatedHostList(
 }
 
 // Helper for GetDistinctHosts(): com > net > org > everything else.
-static bool RcdBetterThan(std::string a, std::string b) {
+static bool RcdBetterThan(const std::string& a, const std::string& b) {
   if (a == b)
     return false;
   if (a == "com")

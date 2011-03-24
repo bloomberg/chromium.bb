@@ -50,7 +50,8 @@ const char* kPingLaunchAppByURL = "record-app-launch-by-url";
 const UnescapeRule::Type kUnescapeRules =
     UnescapeRule::NORMAL | UnescapeRule::URL_SPECIAL_CHARS;
 
-extension_misc::AppLaunchBucket ParseLaunchSource(std::string launch_source) {
+extension_misc::AppLaunchBucket ParseLaunchSource(
+    const std::string& launch_source) {
   int bucket_num = extension_misc::APP_LAUNCH_BUCKET_INVALID;
   base::StringToInt(launch_source, &bucket_num);
   extension_misc::AppLaunchBucket bucket =
@@ -518,7 +519,7 @@ void AppLauncherHandler::RecordAppLaunchByURL(
                             extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
 }
 
-void AppLauncherHandler::PromptToEnableApp(std::string extension_id) {
+void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {
   const Extension* extension =
       extensions_service_->GetExtensionById(extension_id, true);
   CHECK(extension);
