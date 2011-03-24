@@ -59,6 +59,7 @@ ServiceProcessState::StateData::StateData() : set_action_(false) {
 }
 
 void ServiceProcessState::StateData::SignalReady() {
+  CHECK_EQ(g_signal_socket, -1);
   CHECK(MessageLoopForIO::current()->WatchFileDescriptor(
       sockets_[0], true, MessageLoopForIO::WATCH_READ,
       &watcher_, shut_down_monitor_.get()));
@@ -104,6 +105,7 @@ ServiceProcessState::StateData::~StateData() {
       PLOG(ERROR) << "sigaction";
     }
   }
+  g_signal_socket = -1;
 }
 
 void ServiceProcessState::CreateState() {
@@ -120,7 +122,6 @@ void ServiceProcessState::CreateState() {
 bool ServiceProcessState::SignalReady(
     base::MessageLoopProxy* message_loop_proxy, Task* shutdown_task) {
   CHECK(state_);
-  CHECK_EQ(g_signal_socket, -1);
 
   scoped_ptr<Task> scoped_shutdown_task(shutdown_task);
 #if defined(OS_LINUX)
@@ -141,7 +142,6 @@ bool ServiceProcessState::SignalReady(
 }
 
 void ServiceProcessState::TearDownState() {
-  g_signal_socket = -1;
   if (state_) {
     state_->Release();
     state_ = NULL;

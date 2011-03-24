@@ -105,14 +105,6 @@
 }
 
 {
-  bug_71695
-  ThreadSanitizer:Race
-  ...
-  fun:ServiceProcessState::TearDownState*
-  fun:ServiceProcessState::SignalStopped*
-}
-
-{
   bug_72169a
   ThreadSanitizer:Race
   fun:base::Thread::ThreadMain*
