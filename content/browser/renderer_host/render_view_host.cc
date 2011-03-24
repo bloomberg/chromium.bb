@@ -367,10 +367,8 @@ bool RenderViewHost::PrintPages() {
   return Send(new PrintMsg_PrintPages(routing_id()));
 }
 
-bool RenderViewHost::PrintPreview() {
-  // TODO(thestig) Get settings from the print preview UI.
-  DictionaryValue dummy_dict;
-  return Send(new PrintMsg_PrintPreview(routing_id(), dummy_dict));
+bool RenderViewHost::PrintPreview(const DictionaryValue& settings) {
+  return Send(new PrintMsg_PrintPreview(routing_id(), settings));
 }
 
 void RenderViewHost::PrintingDone(int document_cookie, bool success) {

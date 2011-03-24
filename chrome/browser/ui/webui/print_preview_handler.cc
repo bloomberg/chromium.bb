@@ -26,6 +26,31 @@ TabContents* GetInitiatorTab(TabContents* preview_tab) {
   return tab_controller->GetInitiatorTab(preview_tab);
 }
 
+DictionaryValue* GetSettingsDictionary(const ListValue* args) {
+  std::string json_str;
+  if (!args->GetString(0, &json_str)) {
+    NOTREACHED() << "Could not read JSON argument";
+    return NULL;
+  }
+  if (json_str.empty()) {
+    NOTREACHED() << "Empty print job settings";
+    return NULL;
+  }
+  scoped_ptr<DictionaryValue> settings(static_cast<DictionaryValue*>(
+      base::JSONReader::Read(json_str, false)));
+  if (!settings.get() || !settings->IsType(Value::TYPE_DICTIONARY)) {
+    NOTREACHED() << "Print job settings must be a dictionary.";
+    return NULL;
+  }
+
+  if (settings->empty()) {
+    NOTREACHED() << "Print job settings dictionary is empty";
+    return NULL;
+  }
+
+  return settings.release();
+}
+
 }  // namespace
 
 class EnumeratePrintersTaskProxy
@@ -99,11 +124,14 @@ void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
                         &EnumeratePrintersTaskProxy::EnumeratePrinters));
 }
 
-void PrintPreviewHandler::HandleGetPreview(const ListValue*) {
+void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   TabContents* initiator_tab = GetInitiatorTab(web_ui_->tab_contents());
   if (!initiator_tab)
     return;
-  initiator_tab->render_view_host()->PrintPreview();
+  scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
+  if (!settings.get())
+    return;
+  initiator_tab->render_view_host()->PrintPreview(*settings);
 }
 
 void PrintPreviewHandler::HandlePrint(const ListValue* args) {
@@ -113,27 +141,9 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     rvh->Send(new PrintMsg_ResetScriptedPrintCount(rvh->routing_id()));
   }
 
-  std::string json_str;
-  if (!args->GetString(0, &json_str)) {
-    NOTREACHED() << "Could not read JSON argument";
+  scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
+  if (!settings.get())
     return;
-  }
-
-  if (json_str.empty()) {
-    NOTREACHED() << "Empty print job settings";
-    return;
-  }
-  scoped_ptr<DictionaryValue> settings(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json_str, false)));
-  if (!settings.get() || !settings->IsType(Value::TYPE_DICTIONARY)) {
-    NOTREACHED() << "Print job settings must be a dictionary.";
-    return;
-  }
-
-  if (settings->empty()) {
-    NOTREACHED() << "Print job settings dictionary is empty";
-    return;
-  }
   web_ui_->GetRenderViewHost()->PrintForPrintPreview(*settings);
 }
 

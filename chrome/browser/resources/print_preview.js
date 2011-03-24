@@ -28,7 +28,6 @@ function load() {
   $('copies').addEventListener('blur', handleCopiesFieldBlur);
 
   chrome.send('getPrinters');
-  chrome.send('getPreview');
 };
 
 /**
@@ -139,25 +138,45 @@ function parsePageRanges() {
   return true;
 }
 
-function printFile() {
+/**
+ * Creates a JSON string based on the values in the printer settings.
+ *
+ * @return {string} JSON string with print job settings.
+ */
+function getSettingsJSON() {
   var selectedPrinter = $('printer-list').selectedIndex;
-  var printerName = $('printer-list').options[selectedPrinter].textContent;
+  var printerName = '';
+  if (selectedPrinter >= 0)
+    printerName = $('printer-list').options[selectedPrinter].textContent;
   var printAll = $('all-pages').checked;
   var twoSided = $('two-sided').checked;
   var copies = $('copies').value;
   var collate = $('collate').checked;
-  var landscape = ($('layout').options[$('layout').selectedIndex].value == "1");
-  var color = ($('color').options[$('color').selectedIndex].value == "1");
+  var landscape = ($('layout').options[$('layout').selectedIndex].value == '1');
+  var color = ($('color').options[$('color').selectedIndex].value == '1');
 
-  var jobSettings = JSON.stringify({'printerName': printerName,
-                                    'pageRange': pageRangesInfo,
-                                    'printAll': printAll,
-                                    'twoSided': twoSided,
-                                    'copies': copies,
-                                    'collate': collate,
-                                    'landscape': landscape,
-                                    'color': color});
-  chrome.send('print', [jobSettings]);
+  return JSON.stringify({'printerName': printerName,
+                         'pageRange': pageRangesInfo,
+                         'printAll': printAll,
+                         'twoSided': twoSided,
+                         'copies': copies,
+                         'collate': collate,
+                         'landscape': landscape,
+                         'color': color});
+}
+
+/**
+ * Asks the browser to print the preview PDF based on current print settings.
+ */
+function printFile() {
+  chrome.send('print', [getSettingsJSON()]);
+}
+
+/**
+ * Asks the browser to generate a preview PDF based on current print settings.
+ */
+function getPreview() {
+  chrome.send('getPreview', [getSettingsJSON()]);
 }
 
 /**
@@ -177,6 +196,9 @@ function setPrinters(printers) {
     option.textContent = localStrings.getString('noPrinter');
     $('printer-list').add(option);
   }
+
+  // Once the printer list is populated, generate the initial preview.
+  getPreview();
 }
 
 function onPDFLoad() {

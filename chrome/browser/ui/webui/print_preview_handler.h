@@ -32,11 +32,12 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Get the list of printers. |args| is unused.
   void HandleGetPrinters(const ListValue* args);
 
-  // Ask the initiator renderer to generate a preview. |args| is unused.
+  // Ask the initiator renderer to generate a preview.
+  // First element of |args| is a job settings JSON string.
   void HandleGetPreview(const ListValue* args);
 
   // Get the job settings from Web UI and initiate printing.
-  // First element of |args| is a job settings json string.
+  // First element of |args| is a job settings JSON string.
   void HandlePrint(const ListValue* args);
 
   // Send the list of printers to the Web UI.

@@ -211,8 +211,8 @@ class RenderViewHost : public RenderWidgetHost {
   // behalf.
   bool PrintPages();
 
-  // Asks the renderer to render pages for print preview.
-  bool PrintPreview();
+  // Asks the renderer to render pages for print preview with |settings|.
+  bool PrintPreview(const DictionaryValue& settings);
 
   // Notify renderer of success/failure of print job.
   void PrintingDone(int document_cookie, bool success);
