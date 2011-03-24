@@ -627,35 +627,37 @@ def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
   return []
 
 
-def CheckOwners(input_api, output_api, email_regexp=None,
-    source_file_filter=None):
+def CheckOwners(input_api, output_api, source_file_filter=None):
+  if not input_api.is_committing:
+    return []
+  if input_api.tbr:
+    return [output_api.PresubmitNotifyResult('--tbr was specified, '
+                                             'skipping OWNERS check')]
+  if not input_api.change.issue:
+    return [output_api.PresubmitError('Change not uploaded for review')]
+
   affected_files = set([f.LocalPath() for f in
       input_api.change.AffectedFiles(source_file_filter)])
+
   owners_db = input_api.owners_db
-  if email_regexp:
-    owners_db.email_regexp = input_api.re.compile(email_regexp)
+  owner_email, approvers = _RietveldOwnerAndApprovers(input_api,
+                                                      owners_db.email_regexp)
+  approvers_plus_owner = approvers.union(set([owner_email]))
 
-  if input_api.is_committing and input_api.tbr:
-    return [output_api.PresubmitNotifyResult(
-        '--tbr was specified, skipping OWNERS check')]
-  elif input_api.is_committing:
-    approvers = _Approvers(input_api, owners_db.email_regexp)
-    missing_files = owners_db.files_not_covered_by(affected_files, approvers)
-    if missing_files:
-      return [output_api.PresubmitError('Missing LGTM from an OWNER for: %s' %
-              ','.join(missing_files))]
-    return []
-  elif input_api.change.tags.get('R'):
-    return []
+  missing_files = owners_db.files_not_covered_by(affected_files,
+                                                 approvers_plus_owner)
+  if missing_files:
+    return [output_api.PresubmitError('Missing LGTM from an OWNER for: %s' %
+                                      ','.join(missing_files))]
 
-  suggested_reviewers = owners_db.reviewers_for(affected_files)
-  return [output_api.PresubmitAddReviewers(suggested_reviewers)]
+  if not approvers:
+    return [output_api.PresubmitError('Missing LGTM from someone other than %s'
+                                      % owner_email)]
+  return []
 
 
-def _Approvers(input_api, email_regexp):
-  if not input_api.change.issue:
-    return []
-
+def _RietveldOwnerAndApprovers(input_api, email_regexp):
+  """Return the owner and approvers of a change, if any."""
   # TODO(dpranke): Should figure out if input_api.host_url is supposed to
   # be a host or a scheme+host and normalize it there.
   host = input_api.host_url
@@ -665,19 +667,56 @@ def _Approvers(input_api, email_regexp):
 
   f = input_api.urllib2.urlopen(url)
   issue_props = input_api.json.load(f)
-  owner = input_api.re.escape(issue_props['owner'])
+  messages = issue_props.get('messages', [])
+  owner_email = issue_props['owner_email']
+  owner_regexp = input_api.re.compile(input_api.re.escape(owner_email))
+  approvers = _GetApprovers(messages, email_regexp, owner_regexp)
+
+  return (owner_email, set(approvers))
+
+
+def _IsApprovingComment(text):
+  """Implements the logic for parsing a change comment for approval."""
+
+  # Any comment that contains a non-quoted line containing an 'lgtm' is an
+  # approval.
+  #
+  # TODO(dpranke): this differs from the logic used inside Google in a few
+  # ways. Inside Google,
+  #
+  # 1) the approving phrase must appear at the beginning of the first non
+  #    quoted-line in the comment.'
+  # 2) "LG", "Looks Good", and "Looks Good to Me" are also acceptable.
+  # 3) Subsequent comments from the reviewer can rescind approval, unless
+  #    the phrase "LGTM++" was used.
+  # We should consider implementing some or all of this here.
+  for l in text.splitlines():
+    l = l.strip().lower()
+    if l.startswith('>'):
+      continue
+
+    if 'lgtm' in l:
+      return True
+  return False
+
+
+def _GetApprovers(messages, email_regexp, owner_regexp):
+  """Returns the set of approvers for a change given the owner and messages.
+
+  Messages should be a list of dicts containing 'sender' and 'text' keys."""
 
   # TODO(dpranke): This mimics the logic in
   # /tools/commit-queue/verifiers/reviewer_lgtm.py
   # We should share the code and/or remove the check there where it is
   # redundant (since the commit queue also enforces the presubmit checks).
   def match_reviewer(r):
-    return email_regexp.match(r) and not input_api.re.match(owner, r)
+    return email_regexp.match(r) and not owner_regexp.match(r)
 
   approvers = []
-  for m in issue_props.get('messages', []):
-    if 'lgtm' in m['text'].lower() and match_reviewer(m['sender']):
-      approvers.append(m['sender'])
+  for m in messages:
+    sender = m['sender']
+    if _IsApprovingComment(m['text']) and match_reviewer(sender):
+      approvers.append(sender)
   return set(approvers)
 
 
@@ -774,10 +813,8 @@ def PanProjectChecks(input_api, output_api,
   text_files = lambda x: input_api.FilterSourceFile(x, black_list=black_list,
                                                     white_list=white_list)
 
-  # TODO(dpranke): enable upload as well
-  if input_api.is_committing:
-    results.extend(input_api.canned_checks.CheckOwners(
-        input_api, output_api, source_file_filter=sources))
+  results.extend(input_api.canned_checks.CheckOwners(
+      input_api, output_api, source_file_filter=sources))
 
   results.extend(input_api.canned_checks.CheckLongLines(
       input_api, output_api, source_file_filter=sources))

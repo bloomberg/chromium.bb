@@ -1884,43 +1884,46 @@ mac|success|blew
     self.assertEquals(results[0].__class__,
         presubmit.OutputApi.PresubmitNotifyResult)
 
-  def OwnersTest(self, is_committing, tbr=False, change_tags=None,
-      suggested_reviewers=None, approvers=None,
-      uncovered_files=None, expected_reviewers=None, expected_output='',
-      host_url=None):
-    affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
-    affected_file.LocalPath().AndReturn('foo.cc')
-    change = self.mox.CreateMock(presubmit.Change)
-    change.AffectedFiles(None).AndReturn([affected_file])
+  def AssertOwnersWorks(self, tbr=False, issue='1', approvers=None,
+      rietveld_response=None, host_url=None,
+      uncovered_files=None, expected_output=''):
+    if approvers is None:
+      approvers = set()
+    if uncovered_files is None:
+      uncovered_files = set()
 
+    change = self.mox.CreateMock(presubmit.Change)
+    change.issue = issue
+    affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
     input_api = self.MockInputApi(change, False)
-    expected_host = 'http://localhost'
-    if host_url:
-      input_api.host_url = host_url
-      if host_url.startswith('https'):
-        expected_host = host_url
     fake_db = self.mox.CreateMock(owners.Database)
     fake_db.email_regexp = input_api.re.compile(owners.BASIC_EMAIL_REGEXP)
     input_api.owners_db = fake_db
-    input_api.is_committing = is_committing
+    input_api.is_committing = True
     input_api.tbr = tbr
 
-    if is_committing and not tbr:
-      change.issue = '1'
+    if not tbr and issue:
+      affected_file.LocalPath().AndReturn('foo.cc')
+      change.AffectedFiles(None).AndReturn([affected_file])
+
+      expected_host = 'http://localhost'
+      if host_url:
+        input_api.host_url = host_url
+        if host_url.startswith('https'):
+          expected_host = host_url
+
+      owner_email = 'john@example.com'
       messages = list('{"sender": "' + a + '","text": "lgtm"}' for
                       a in approvers)
-      rietveld_response = ('{"owner": "john@example.com",'
-                           '"messages": [' + ','.join(messages) + ']}')
+      if not rietveld_response:
+        rietveld_response = ('{"owner_email": "' + owner_email + '",'
+                            '"messages": [' + ','.join(messages) + ']}')
       input_api.urllib2.urlopen(
           expected_host + '/api/1?messages=true').AndReturn(
           StringIO.StringIO(rietveld_response))
       input_api.json = presubmit.json
-      fake_db.files_not_covered_by(set(['foo.cc']), approvers).AndReturn(
-          uncovered_files)
-    elif not is_committing:
-      change.tags = change_tags
-      if not change_tags.get('R'):
-        fake_db.reviewers_for(set(['foo.cc'])).AndReturn(suggested_reviewers)
+      fake_db.files_not_covered_by(set(['foo.cc']),
+         approvers.union(set([owner_email]))).AndReturn(uncovered_files)
 
     self.mox.ReplayAll()
     output = presubmit.PresubmitOutput()
@@ -1928,49 +1931,77 @@ mac|success|blew
         presubmit.OutputApi)
     if results:
       results[0].handle(output)
-    if expected_reviewers is not None:
-      self.assertEquals(output.reviewers, expected_reviewers)
     self.assertEquals(output.getvalue(), expected_output)
 
-  def testCannedCheckOwners_WithReviewer(self):
-    self.OwnersTest(is_committing=False, change_tags={'R': 'ben@example.com'})
-    self.OwnersTest(is_committing=False, tbr=True,
-        change_tags={'R': 'ben@example.com'})
+  def testCannedCheckOwners_LGTMPhrases(self):
+    def phrase_test(phrase, approvers=None, expected_output=''):
+      if approvers is None:
+        approvers = set(['ben@example.com'])
+      self.AssertOwnersWorks(approvers=approvers,
+          rietveld_response='{"owner_email": "john@example.com",' +
+                            '"messages": [{"sender": "ben@example.com",' +
+                                          '"text": "' + phrase + '"}]}',
+          expected_output=expected_output)
 
-  def testCannedCheckOwners_NoReviewer(self):
-    self.OwnersTest(is_committing=False, change_tags={},
-        suggested_reviewers=['ben@example.com'],
-        expected_reviewers=['ben@example.com'])
-    self.OwnersTest(is_committing=False, tbr=True, change_tags={},
-        suggested_reviewers=['ben@example.com'],
-        expected_reviewers=['ben@example.com'])
+    phrase_test('LGTM')
+    phrase_test('\\nlgtm')
+    phrase_test('> foo\\n> bar\\nlgtm\\n')
+    phrase_test('> LGTM', approvers=set(),
+                expected_output='Missing LGTM from someone other than '
+                                'john@example.com\n')
 
-  def testCannedCheckOwners_CommittingWithoutOwnerLGTM(self):
-    self.OwnersTest(is_committing=True,
-        approvers=set(),
-        uncovered_files=set(['foo.cc']),
-        expected_output='Missing LGTM from an OWNER for: foo.cc\n')
+    # TODO(dpranke): these probably should pass.
+    phrase_test('Looks Good To Me', approvers=set(),
+                expected_output='Missing LGTM from someone other than '
+                                'john@example.com\n')
+    phrase_test('looks good to me', approvers=set(),
+                expected_output='Missing LGTM from someone other than '
+                                'john@example.com\n')
 
-  def testCannedCheckOwners_CommittingWithLGTMs(self):
-    self.OwnersTest(is_committing=True,
-        approvers=set(['ben@example.com']),
-        uncovered_files=set())
-
-  def testCannedCheckOwners_TBR(self):
-    self.OwnersTest(is_committing=True, tbr=True,
-        approvers=set(),
-        uncovered_files=set(),
-        expected_output='--tbr was specified, skipping OWNERS check\n')
-
-  def testCannedCheckOwners_MissingSchemeInHostURL(self):
-    self.OwnersTest(is_committing=True,
-        approvers=set(['ben@example.com']),
-        uncovered_files=set(), host_url='localhost')
+    # TODO(dpranke): this probably shouldn't pass.
+    phrase_test('no lgtm for you')
 
   def testCannedCheckOwners_HTTPS_HostURL(self):
-    self.OwnersTest(is_committing=True,
-        approvers=set(['ben@example.com']),
-        uncovered_files=set(), host_url='https://localhost')
+    self.AssertOwnersWorks(approvers=set(['ben@example.com']),
+                           host_url='https://localhost')
+
+  def testCannedCheckOwners_MissingSchemeInHostURL(self):
+    self.AssertOwnersWorks(approvers=set(['ben@example.com']),
+                           host_url='localhost')
+
+  def testCannedCheckOwners_NoIssue(self):
+    self.AssertOwnersWorks(issue=None,
+                           expected_output='Change not uploaded for review\n')
+
+  def testCannedCheckOwners_NoLGTM(self):
+    self.AssertOwnersWorks(expected_output='Missing LGTM from someone '
+                                           'other than john@example.com\n')
+
+  def testCannedCheckOwners_OnlyOwnerLGTM(self):
+    self.AssertOwnersWorks(approvers=set(['john@example.com']),
+                           expected_output='Missing LGTM from someone '
+                                           'other than john@example.com\n')
+
+  def testCannedCheckOwners_TBR(self):
+    self.AssertOwnersWorks(tbr=True,
+        expected_output='--tbr was specified, skipping OWNERS check\n')
+
+  def testCannedCheckOwners_Upload(self):
+    class FakeInputAPI(object):
+      is_committing = False
+
+    results = presubmit_canned_checks.CheckOwners(FakeInputAPI(),
+                                                  presubmit.OutputApi)
+    self.assertEqual(results, [])
+
+  def testCannedCheckOwners_WithoutOwnerLGTM(self):
+    self.AssertOwnersWorks(uncovered_files=set(['foo.cc']),
+        expected_output='Missing LGTM from an OWNER for: foo.cc\n')
+
+  def testCannedCheckOwners_WithLGTMs(self):
+    self.AssertOwnersWorks(approvers=set(['ben@example.com']),
+                           uncovered_files=set())
+
 
 
 if __name__ == '__main__':
