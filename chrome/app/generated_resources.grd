@@ -8081,7 +8081,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Web Content
       </message>
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY">
-        Security
+        HTTPS/SSL
       </message>
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK">
         Network
