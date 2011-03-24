@@ -62,29 +62,10 @@ echo @@@BUILD_STEP large_tests@@@
     --mode=${MODE}-mac,nacl,doc large_tests platform=x86-32 || \
     (RETCODE=$? && echo @@@BUILD_FAILED@@@)
 
-echo @@@BUILD_STEP begin_browser_testing@@@
-./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
-    --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-32 \
-    firefox_remove
-
 echo @@@BUILD_STEP chrome_browser_tests@@@
 ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
     --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-32 \
     chrome_browser_tests || \
     (RETCODE=$? && echo @@@BUILD_FAILED@@@)
-
-echo @@@BUILD_STEP install_plugin@@@
-./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
-    --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-32 firefox_install
-
-echo @@@BUILD_STEP selenium@@@
-./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
-    --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-32 browser_tests || \
-    (RETCODE=$? && echo @@@BUILD_FAILED@@@)
-
-echo @@@BUILD_STEP end_browser_testing@@@
-./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
-    --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-32 \
-    firefox_remove
 
 exit ${RETCODE}

@@ -1685,7 +1685,6 @@ base_env.Append(
     'src/trusted/platform_qualify/build.scons',
     'src/trusted/plugin/build.scons',
     'src/trusted/python_bindings/build.scons',
-    'src/trusted/sandbox/build.scons',
     'src/trusted/sel_universal/build.scons',
     'src/trusted/service_runtime/build.scons',
     # TODO: This file has an early out in case we are building for ARM
