@@ -380,6 +380,7 @@
         '../../fileapi/file_system_usage_cache_unittest.cc',
         '../../fileapi/file_system_usage_tracker_unittest.cc',
         '../../fileapi/file_system_util_unittest.cc',
+        '../../fileapi/sandbox_mount_point_provider_unittest.cc',
         '../../fileapi/webfilewriter_base_unittest.cc',
         '../../glue/bookmarklet_unittest.cc',
         '../../glue/context_menu_unittest.cc',

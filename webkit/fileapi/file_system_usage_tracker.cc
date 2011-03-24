@@ -15,6 +15,7 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 namespace fileapi {
 
@@ -98,7 +99,7 @@ FileSystemUsageTracker::FileSystemUsageTracker(
     bool is_incognito)
     : file_message_loop_(file_message_loop),
       base_path_(profile_path.Append(
-          FileSystemPathManager::kFileSystemDirectory)),
+          SandboxMountPointProvider::kFileSystemDirectory)),
       is_incognito_(is_incognito) {
   DCHECK(file_message_loop);
 }
@@ -123,7 +124,7 @@ void FileSystemUsageTracker::GetOriginUsage(
   }
 
   std::string origin_identifier =
-      FileSystemPathManager::GetOriginIdentifierFromURL(origin_url);
+      SandboxMountPointProvider::GetOriginIdentifierFromURL(origin_url);
   std::string type_string =
       FileSystemPathManager::GetFileSystemTypeString(type);
   std::string fs_identifier = origin_identifier + ":" + type_string;
@@ -139,7 +140,7 @@ void FileSystemUsageTracker::GetOriginUsage(
   // Get the filesystem base path (i.e. "FileSystem/<origin>/<type>",
   // without unique part).
   FilePath origin_base_path =
-      FileSystemPathManager::GetFileSystemBaseDirectoryForOriginAndType(
+      SandboxMountPointProvider::GetFileSystemBaseDirectoryForOriginAndType(
           base_path_, origin_identifier, type);
   if (origin_base_path.empty()) {
     // The directory does not exist.

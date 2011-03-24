@@ -234,7 +234,8 @@ FileSystemOperation* FileSystemDispatcherHost::GetNewOperation(
   FileSystemOperation* operation = new FileSystemOperation(
       dispatcher,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-      context_);
+      context_,
+      NULL);
   operations_.AddWithID(operation, request_id);
   return operation;
 }

@@ -71,5 +71,19 @@ TEST_F(FileSystemUtilTest, RejectMalformedURL) {
   EXPECT_FALSE(CrackFileSystemURL("filesystem:foobar/file"));
 }
 
+TEST_F(FileSystemUtilTest, GetTempFileSystemRootURI) {
+  GURL origin_url("http://chromium.org");
+  fileapi::FileSystemType type = fileapi::kFileSystemTypeTemporary;
+  GURL uri = GURL("filesystem:http://chromium.org/temporary/");
+  EXPECT_EQ(uri, GetFileSystemRootURI(origin_url, type));
+}
+
+TEST_F(FileSystemUtilTest, GetPersistentFileSystemRootURI) {
+  GURL origin_url("http://chromium.org");
+  fileapi::FileSystemType type = fileapi::kFileSystemTypePersistent;
+  GURL uri = GURL("filesystem:http://chromium.org/persistent/");
+  EXPECT_EQ(uri, GetFileSystemRootURI(origin_url, type));
+}
+
 }  // namespace (anonymous)
 }  // namespace fileapi

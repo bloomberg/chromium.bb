@@ -8,12 +8,16 @@
 #include "base/message_loop_proxy.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
-using fileapi::FileSystemOperation;
 using fileapi::FileSystemCallbackDispatcher;
+using fileapi::FileSystemContext;
+using fileapi::FileSystemFileUtil;
+using fileapi::FileSystemOperation;
 using fileapi::WebFileWriterBase;
 using WebKit::WebFileWriterClient;
 using WebKit::WebString;
@@ -27,9 +31,11 @@ net::URLRequestContext* SimpleFileWriter::request_context_ = NULL;
 class SimpleFileWriter::IOThreadProxy
     : public base::RefCountedThreadSafe<SimpleFileWriter::IOThreadProxy> {
  public:
-  explicit IOThreadProxy(const base::WeakPtr<SimpleFileWriter>& simple_writer)
+  explicit IOThreadProxy(const base::WeakPtr<SimpleFileWriter>& simple_writer,
+                         FileSystemContext* file_system_context)
       : simple_writer_(simple_writer),
-        operation_(NULL) {
+        operation_(NULL),
+        file_system_context_(file_system_context) {
     // The IO thread needs to be running for this class to work.
     SimpleResourceLoaderBridge::EnsureIOThread();
     io_thread_ = SimpleResourceLoaderBridge::GetIoThread();
@@ -119,7 +125,8 @@ class SimpleFileWriter::IOThreadProxy
   FileSystemOperation* GetNewOperation() {
     // The FileSystemOperation takes ownership of the CallbackDispatcher.
     return new FileSystemOperation(new CallbackDispatcher(this),
-                                   io_thread_, NULL);
+                                   io_thread_, file_system_context_.get(),
+                                   NULL);
   }
 
   void DidSucceed() {
@@ -165,13 +172,17 @@ class SimpleFileWriter::IOThreadProxy
 
   // Only used on the io thread.
   FileSystemOperation* operation_;
+
+  scoped_refptr<FileSystemContext> file_system_context_;
 };
 
 
 SimpleFileWriter::SimpleFileWriter(
-     const WebString& path, WebFileWriterClient* client)
+    const WebString& path,
+    WebFileWriterClient* client,
+    FileSystemContext* file_system_context)
   : WebFileWriterBase(path, client),
-    io_thread_proxy_(new IOThreadProxy(AsWeakPtr())) {
+    io_thread_proxy_(new IOThreadProxy(AsWeakPtr(), file_system_context)) {
 }
 
 SimpleFileWriter::~SimpleFileWriter() {

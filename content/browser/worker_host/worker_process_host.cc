@@ -38,8 +38,9 @@
 #include "net/base/mime_util.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/registry_controlled_domain.h"
-#include "webkit/glue/resource_type.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/glue/resource_type.h"
 
 namespace {
 
@@ -182,7 +183,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
       ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
           id(),
           GetChromeURLRequestContext()->file_system_context()->
-              path_manager()->base_path(),
+              path_manager()->sandbox_provider()->base_path(),
           base::PLATFORM_FILE_OPEN |
           base::PLATFORM_FILE_CREATE |
           base::PLATFORM_FILE_OPEN_ALWAYS |

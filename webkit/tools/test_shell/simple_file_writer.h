@@ -13,12 +13,18 @@ namespace net {
 class URLRequestContext;
 }  // namespace net
 
+namespace fileapi {
+class FileSystemContext;
+}
+
 // An implementation of WebFileWriter for use in test_shell and DRT.
 class SimpleFileWriter : public fileapi::WebFileWriterBase,
                          public base::SupportsWeakPtr<SimpleFileWriter> {
  public:
   SimpleFileWriter(
-      const WebKit::WebString& path, WebKit::WebFileWriterClient* client);
+      const WebKit::WebString& path,
+      WebKit::WebFileWriterClient* client,
+      fileapi::FileSystemContext* file_system_context);
   virtual ~SimpleFileWriter();
 
   // Called by SimpleResourceLoaderBridge when the context is

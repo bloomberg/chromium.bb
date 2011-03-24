@@ -104,6 +104,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/gl/gl_switches.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/glue/resource_type.h"
 #include "webkit/plugins/plugin_switches.h"
 
@@ -308,7 +309,7 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
   // requests them.
   ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
       id(), profile->GetPath().Append(
-          fileapi::FileSystemPathManager::kFileSystemDirectory),
+          fileapi::SandboxMountPointProvider::kFileSystemDirectory),
       base::PLATFORM_FILE_OPEN |
       base::PLATFORM_FILE_CREATE |
       base::PLATFORM_FILE_OPEN_ALWAYS |

@@ -9,6 +9,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
+#include "base/gtest_prod_util.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
@@ -34,6 +35,7 @@ namespace fileapi {
 class FileSystemCallbackDispatcher;
 class FileSystemContext;
 class FileWriterDelegate;
+class FileSystemOperationTest;
 
 // This class is designed to serve one-time file system operation per instance.
 // Only one method(CreateFile, CreateDirectory, Copy, Move, DirectoryExists,
@@ -44,9 +46,12 @@ class FileWriterDelegate;
 class FileSystemOperation {
  public:
   // |dispatcher| will be owned by this class.
+  // |file_system_file_util| is optional; if supplied, it will not be deleted by
+  // the class.  It's expecting a pointer to a singleton.
   FileSystemOperation(FileSystemCallbackDispatcher* dispatcher,
                       scoped_refptr<base::MessageLoopProxy> proxy,
-                      FileSystemContext* file_system_context);
+                      FileSystemContext* file_system_context,
+                      FileSystemFileUtil* file_system_file_util);
   virtual ~FileSystemOperation();
 
   void OpenFileSystem(const GURL& origin_url,
@@ -81,6 +86,15 @@ class FileSystemOperation {
   void Cancel(FileSystemOperation* cancel_operation);
 
  private:
+  FileSystemContext* file_system_context() const {
+    return file_system_operation_context_.file_system_context();
+  }
+
+  FileSystemOperationContext* file_system_operation_context() {
+    return &file_system_operation_context_;
+  }
+  friend class FileSystemOperationTest;
+
   // A callback used for OpenFileSystem.
   void DidGetRootPath(bool success,
                       const FilePath& path,
@@ -118,15 +132,20 @@ class FileSystemOperation {
       base::PassPlatformFile file,
       bool created);
 
-  // Checks the validity of a given |path| for reading.
+  // Checks the validity of a given |path| for reading, and cracks the path into
+  // root URL and virtual path components.
   // Returns true if the given |path| is a valid FileSystem path.
   // Otherwise it calls dispatcher's DidFail method with
   // PLATFORM_FILE_ERROR_SECURITY and returns false.
   // (Note: this doesn't delete this when it calls DidFail and returns false;
   // it's the caller's responsibility.)
-  bool VerifyFileSystemPathForRead(const FilePath& path);
+  bool VerifyFileSystemPathForRead(const FilePath& path,
+                                   GURL* root_url,
+                                   FileSystemType* type,
+                                   FilePath* virtual_path);
 
-  // Checks the validity of a given |path| for writing.
+  // Checks the validity of a given |path| for writing, and cracks the path into
+  // root URL and virtual path components.
   // Returns true if the given |path| is a valid FileSystem path, and
   // its origin embedded in the path has the right to write.
   // Otherwise it fires dispatcher's DidFail method with
@@ -140,7 +159,10 @@ class FileSystemOperation {
   // (Note: this doesn't delete this when it calls DidFail and returns false;
   // it's the caller's responsibility.)
   bool VerifyFileSystemPathForWrite(const FilePath& path,
-                                    bool create);
+                                    bool create,
+                                    GURL* root_url,
+                                    FileSystemType* type,
+                                    FilePath* virtual_path);
 
 #ifndef NDEBUG
   enum OperationType {
@@ -170,7 +192,6 @@ class FileSystemOperation {
 
   scoped_ptr<FileSystemCallbackDispatcher> dispatcher_;
 
-  scoped_refptr<FileSystemContext> file_system_context_;
   FileSystemOperationContext file_system_operation_context_;
 
   base::ScopedCallbackFactory<FileSystemOperation> callback_factory_;

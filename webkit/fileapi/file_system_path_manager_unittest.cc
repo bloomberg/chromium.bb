@@ -17,6 +17,8 @@
 #include "base/scoped_temp_dir.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 using namespace fileapi;
 
@@ -212,7 +214,7 @@ class FileSystemPathManagerTest : public testing::Test {
   FilePath data_path() { return data_dir_.path(); }
   FilePath file_system_path() {
     return data_dir_.path().Append(
-        FileSystemPathManager::kFileSystemDirectory);
+        SandboxMountPointProvider::kFileSystemDirectory);
   }
 
  private:
@@ -345,16 +347,24 @@ TEST_F(FileSystemPathManagerTest, GetRootPathFileURIWithAllowFlag) {
 
 TEST_F(FileSystemPathManagerTest, VirtualPathFromFileSystemPathTest) {
   scoped_ptr<FileSystemPathManager> manager(NewPathManager(false, false));
-  FilePath root_path;
-  EXPECT_TRUE(GetRootPath(manager.get(), GURL("http://foo.com/"),
-                          fileapi::kFileSystemTypeTemporary,
-                          true /* create */, &root_path));
+  GURL root_url = GetFileSystemRootURI(
+      GURL("http://foo.com/"), fileapi::kFileSystemTypeTemporary);
+  FilePath root_path = FilePath().AppendASCII(root_url.spec());
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kPathToVirtualPathTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "PathToVirtualPath #"
                  << i << " " << kPathToVirtualPathTestCases[i]);
-    FilePath absolute_path = root_path.AppendASCII(
-        kPathToVirtualPathTestCases[i]);
+    FilePath absolute_path;
+    // TODO(ericu): Clean this up when we've got more sane path-handling.
+    // This hack is necessary because root_path is actually a URL [ending with a
+    // forward slash], and AppendASCII("") on Windows will delete the trailing
+    // slash, making the path invalid as far as CrackFileSystemPath is
+    // concerned.
+    if (strlen(kPathToVirtualPathTestCases[i]))
+      absolute_path = root_path.AppendASCII(
+          kPathToVirtualPathTestCases[i]);
+    else
+      absolute_path = root_path;
     FilePath virtual_path;
     EXPECT_TRUE(manager->CrackFileSystemPath(absolute_path, NULL, NULL,
                                              &virtual_path));
@@ -369,19 +379,18 @@ TEST_F(FileSystemPathManagerTest, VirtualPathFromFileSystemPathTest) {
 TEST_F(FileSystemPathManagerTest, TypeFromFileSystemPathTest) {
   scoped_ptr<FileSystemPathManager> manager(NewPathManager(false, false));
 
-  FilePath root_path;
   fileapi::FileSystemType type;
 
-  EXPECT_TRUE(GetRootPath(manager.get(), GURL("http://foo.com/"),
-                          fileapi::kFileSystemTypeTemporary,
-                          true /* create */, &root_path));
+  GURL root_url = GetFileSystemRootURI(
+      GURL("http://foo.com/"), fileapi::kFileSystemTypeTemporary);
+  FilePath root_path = FilePath().AppendASCII(root_url.spec());
   FilePath path = root_path.AppendASCII("test");
   EXPECT_TRUE(manager->CrackFileSystemPath(path, NULL, &type, NULL));
   EXPECT_EQ(fileapi::kFileSystemTypeTemporary, type);
 
-  EXPECT_TRUE(GetRootPath(manager.get(), GURL("http://foo.com/"),
-                          fileapi::kFileSystemTypePersistent,
-                          true /* create */, &root_path));
+  root_url = GetFileSystemRootURI(
+      GURL("http://foo.com/"), fileapi::kFileSystemTypePersistent);
+  root_path = FilePath().AppendASCII(root_url.spec());
   path = root_path.AppendASCII("test");
   EXPECT_TRUE(manager->CrackFileSystemPath(path, NULL, &type, NULL));
   EXPECT_EQ(fileapi::kFileSystemTypePersistent, type);
@@ -389,9 +398,9 @@ TEST_F(FileSystemPathManagerTest, TypeFromFileSystemPathTest) {
 
 TEST_F(FileSystemPathManagerTest, CheckValidPath) {
   scoped_ptr<FileSystemPathManager> manager(NewPathManager(false, false));
-  FilePath root_path;
-  EXPECT_TRUE(GetRootPath(manager.get(), GURL("http://foo.com/"),
-                          kFileSystemTypePersistent, true, &root_path));
+  GURL root_url = GetFileSystemRootURI(
+      GURL("http://foo.com/"), fileapi::kFileSystemTypePersistent);
+  FilePath root_path = FilePath().AppendASCII(root_url.spec());
 
   // The root path must be valid, but upper directories or directories
   // that are not in our temporary or persistent directory must be
@@ -409,6 +418,9 @@ TEST_F(FileSystemPathManagerTest, CheckValidPath) {
     SCOPED_TRACE(testing::Message() << "CheckValidPath #" << i << " "
                  << kCheckValidPathTestCases[i].path);
     FilePath path(kCheckValidPathTestCases[i].path);
+#ifdef FILE_PATH_USES_WIN_SEPARATORS
+    path = path.NormalizeWindowsPathSeparators();
+#endif
     if (!path.IsAbsolute())
       path = root_path.Append(path);
     EXPECT_EQ(kCheckValidPathTestCases[i].expected_valid,
@@ -417,88 +429,12 @@ TEST_F(FileSystemPathManagerTest, CheckValidPath) {
 }
 
 TEST_F(FileSystemPathManagerTest, IsRestrictedName) {
+  scoped_ptr<FileSystemPathManager> manager(NewPathManager(false, false));
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kIsRestrictedNameTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "IsRestrictedName #" << i << " "
                  << kIsRestrictedNameTestCases[i].name);
     FilePath name(kIsRestrictedNameTestCases[i].name);
     EXPECT_EQ(kIsRestrictedNameTestCases[i].expected_dangerous,
-              FileSystemPathManager::IsRestrictedFileName(name));
+              manager->IsRestrictedFileName(kFileSystemTypeTemporary, name));
   }
-}
-
-class FileSystemPathManagerOriginEnumeratorTest : public testing::Test {
- public:
-  void SetUp() {
-    ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    enumerator_.reset(new FileSystemPathManager::OriginEnumerator(
-        data_dir_.path()));
-  }
-
-  FileSystemPathManager::OriginEnumerator* enumerator() const {
-    return enumerator_.get();
-  }
-
- protected:
-  void CreateOriginTypeDirectory(const std::string& origin_identifier,
-                                 fileapi::FileSystemType type) {
-    std::string type_string =
-        FileSystemPathManager::GetFileSystemTypeString(type);
-    ASSERT_TRUE(!type_string.empty());
-    FilePath target = data_dir_.path().AppendASCII(origin_identifier)
-                                      .AppendASCII(type_string);
-    file_util::CreateDirectory(target);
-    ASSERT_TRUE(file_util::DirectoryExists(target));
-  }
-
-  ScopedTempDir data_dir_;
-  scoped_ptr<FileSystemPathManager::OriginEnumerator> enumerator_;
-};
-
-TEST_F(FileSystemPathManagerOriginEnumeratorTest, Empty) {
-  ASSERT_TRUE(enumerator()->Next().empty());
-}
-
-TEST_F(FileSystemPathManagerOriginEnumeratorTest, EnumerateOrigins) {
-  const char* temporary_origins[] = {
-    "http_www.bar.com_0",
-    "http_www.foo.com_0",
-    "http_www.foo.com_80",
-    "http_www.example.com_8080",
-    "http_www.google.com_80",
-  };
-  const char* persistent_origins[] = {
-    "http_www.bar.com_0",
-    "http_www.foo.com_8080",
-    "http_www.foo.com_80",
-  };
-  size_t temporary_size = ARRAYSIZE_UNSAFE(temporary_origins);
-  size_t persistent_size = ARRAYSIZE_UNSAFE(persistent_origins);
-  std::set<std::string> temporary_set, persistent_set;
-  for (size_t i = 0; i < temporary_size; ++i) {
-    CreateOriginTypeDirectory(temporary_origins[i],
-        fileapi::kFileSystemTypeTemporary);
-    temporary_set.insert(temporary_origins[i]);
-  }
-  for (size_t i = 0; i < persistent_size; ++i) {
-    CreateOriginTypeDirectory(persistent_origins[i], kFileSystemTypePersistent);
-    persistent_set.insert(persistent_origins[i]);
-  }
-
-  size_t temporary_actual_size = 0;
-  size_t persistent_actual_size = 0;
-  std::string current;
-  while (!(current = enumerator()->Next()).empty()) {
-    SCOPED_TRACE(testing::Message() << "EnumerateOrigin " << current);
-    if (enumerator()->HasTemporary()) {
-      ASSERT_TRUE(temporary_set.find(current) != temporary_set.end());
-      ++temporary_actual_size;
-    }
-    if (enumerator()->HasPersistent()) {
-      ASSERT_TRUE(persistent_set.find(current) != persistent_set.end());
-      ++persistent_actual_size;
-    }
-  }
-
-  ASSERT_EQ(temporary_size, temporary_actual_size);
-  ASSERT_EQ(persistent_size, persistent_actual_size);
 }

@@ -11,18 +11,22 @@
 #include "webkit/fileapi/file_system_file_util_proxy.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/file_writer_delegate.h"
+#include "webkit/fileapi/local_file_system_file_util.h"
 
 namespace fileapi {
 
 FileSystemOperation::FileSystemOperation(
     FileSystemCallbackDispatcher* dispatcher,
     scoped_refptr<base::MessageLoopProxy> proxy,
-    FileSystemContext* file_system_context)
+    FileSystemContext* file_system_context,
+    FileSystemFileUtil* file_system_file_util)
     : proxy_(proxy),
       dispatcher_(dispatcher),
-      file_system_context_(file_system_context),
-      file_system_operation_context_(FileSystemFileUtil::GetInstance()),
+      file_system_operation_context_(file_system_context,
+          file_system_file_util ? file_system_file_util :
+              LocalFileSystemFileUtil::GetInstance()),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(dispatcher);
 #ifndef NDEBUG
@@ -45,8 +49,16 @@ void FileSystemOperation::OpenFileSystem(
       kOperationOpenFileSystem);
 #endif
 
-  DCHECK(file_system_context_.get());
-  file_system_context_->path_manager()->GetFileSystemRootPath(
+  DCHECK(file_system_context());
+  file_system_operation_context_.set_src_origin_url(origin_url);
+  file_system_operation_context_.set_src_type(type);
+  // TODO(ericu): We don't really need to make this call if !create.
+  // Also, in the future we won't need it either way, as long as we do all
+  // permission+quota checks beforehand.  We only need it now because we have to
+  // create an unpredictable directory name.  Without that, we could lazily
+  // create the root later on the first filesystem write operation, and just
+  // return GetFileSystemRootURI() here.
+  file_system_context()->path_manager()->GetFileSystemRootPath(
       origin_url, type, create,
       callback_factory_.NewCallback(&FileSystemOperation::DidGetRootPath));
 }
@@ -57,14 +69,19 @@ void FileSystemOperation::CreateFile(const FilePath& path,
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationCreateFile;
 #endif
-
-  if (!VerifyFileSystemPathForWrite(path, true /* create */)) {
+  FilePath virtual_path;
+  GURL origin_url;
+  FileSystemType type;
+  if (!VerifyFileSystemPathForWrite(
+      path, true /* create */, &origin_url, &type, &virtual_path)) {
     delete this;
     return;
   }
+  file_system_operation_context_.set_src_origin_url(origin_url);
+  file_system_operation_context_.set_src_type(type);
   FileSystemFileUtilProxy::EnsureFileExists(
       file_system_operation_context_,
-      proxy_, path, callback_factory_.NewCallback(
+      proxy_, virtual_path, callback_factory_.NewCallback(
           exclusive ? &FileSystemOperation::DidEnsureFileExistsExclusive
                     : &FileSystemOperation::DidEnsureFileExistsNonExclusive));
 }
@@ -76,14 +93,20 @@ void FileSystemOperation::CreateDirectory(const FilePath& path,
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationCreateDirectory;
 #endif
+  FilePath virtual_path;
+  GURL origin_url;
+  FileSystemType type;
 
-  if (!VerifyFileSystemPathForWrite(path, true /* create */)) {
+  if (!VerifyFileSystemPathForWrite(
+      path, true /* create */, &origin_url, &type, &virtual_path)) {
     delete this;
     return;
   }
+  file_system_operation_context_.set_src_origin_url(origin_url);
+  file_system_operation_context_.set_src_type(type);
   FileSystemFileUtilProxy::CreateDirectory(
       file_system_operation_context_,
-      proxy_, path, exclusive, recursive, callback_factory_.NewCallback(
+      proxy_, virtual_path, exclusive, recursive, callback_factory_.NewCallback(
           &FileSystemOperation::DidFinishFileOperation));
 }
 
@@ -93,16 +116,37 @@ void FileSystemOperation::Copy(const FilePath& src_path,
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationCopy;
 #endif
+  FilePath virtual_path_0;
+  FilePath virtual_path_1;
+  GURL src_origin_url;
+  GURL dest_origin_url;
+  FileSystemType src_type;
+  FileSystemType dest_type;
 
-  if (!VerifyFileSystemPathForRead(src_path) ||
-      !VerifyFileSystemPathForWrite(dest_path, true /* create */)) {
+  if (!VerifyFileSystemPathForRead(src_path, &src_origin_url, &src_type,
+        &virtual_path_0) ||
+      !VerifyFileSystemPathForWrite(dest_path, true /* create */,
+          &dest_origin_url, &dest_type, &virtual_path_1)) {
     delete this;
     return;
   }
+  if (src_origin_url.GetOrigin() != dest_origin_url.GetOrigin()) {
+    // TODO(ericu): We don't yet support copying across filesystem types, from
+    // extension to sandbox, etc.  From temporary to persistent works, though.
+    // Since the sandbox code isn't in yet, I'm not sure exactly what check
+    // belongs here, but there's also no danger yet.
+    delete this;
+    return;
+  }
+  file_system_operation_context_.set_src_origin_url(src_origin_url);
+  file_system_operation_context_.set_dest_origin_url(dest_origin_url);
+  file_system_operation_context_.set_src_type(src_type);
+  file_system_operation_context_.set_dest_type(dest_type);
   FileSystemFileUtilProxy::Copy(
       file_system_operation_context_,
-      proxy_, src_path, dest_path, callback_factory_.NewCallback(
-          &FileSystemOperation::DidFinishFileOperation));
+      proxy_, virtual_path_0, virtual_path_1,
+      callback_factory_.NewCallback(
+        &FileSystemOperation::DidFinishFileOperation));
 }
 
 void FileSystemOperation::Move(const FilePath& src_path,
@@ -111,16 +155,35 @@ void FileSystemOperation::Move(const FilePath& src_path,
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationMove;
 #endif
+  FilePath virtual_path_0;
+  FilePath virtual_path_1;
+  GURL src_origin_url;
+  GURL dest_origin_url;
+  FileSystemType src_type;
+  FileSystemType dest_type;
 
-  if (!VerifyFileSystemPathForRead(src_path) ||
-      !VerifyFileSystemPathForWrite(dest_path, true /* create */)) {
+  if (!VerifyFileSystemPathForRead(src_path, &src_origin_url, &src_type,
+        &virtual_path_0) ||
+      !VerifyFileSystemPathForWrite(dest_path, true /* create */,
+          &dest_origin_url, &dest_type, &virtual_path_1)) {
     delete this;
     return;
   }
+  if (src_origin_url.GetOrigin() != dest_origin_url.GetOrigin()) {
+    // TODO(ericu): We don't yet support moving across filesystem types, from
+    // extension to sandbox, etc.  From temporary to persistent works, though.
+    delete this;
+    return;
+  }
+  file_system_operation_context_.set_src_origin_url(src_origin_url);
+  file_system_operation_context_.set_dest_origin_url(dest_origin_url);
+  file_system_operation_context_.set_src_type(src_type);
+  file_system_operation_context_.set_dest_type(dest_type);
   FileSystemFileUtilProxy::Move(
       file_system_operation_context_,
-      proxy_, src_path, dest_path, callback_factory_.NewCallback(
-          &FileSystemOperation::DidFinishFileOperation));
+      proxy_, virtual_path_0, virtual_path_1,
+      callback_factory_.NewCallback(
+        &FileSystemOperation::DidFinishFileOperation));
 }
 
 void FileSystemOperation::DirectoryExists(const FilePath& path) {
@@ -129,13 +192,18 @@ void FileSystemOperation::DirectoryExists(const FilePath& path) {
   pending_operation_ = kOperationDirectoryExists;
 #endif
 
-  if (!VerifyFileSystemPathForRead(path)) {
+  FilePath virtual_path;
+  GURL origin_url;
+  FileSystemType type;
+  if (!VerifyFileSystemPathForRead(path, &origin_url, &type, &virtual_path)) {
     delete this;
     return;
   }
+  file_system_operation_context_.set_src_origin_url(origin_url);
+  file_system_operation_context_.set_src_type(type);
   FileSystemFileUtilProxy::GetFileInfo(
       file_system_operation_context_,
-      proxy_, path, callback_factory_.NewCallback(
+      proxy_, virtual_path, callback_factory_.NewCallback(
           &FileSystemOperation::DidDirectoryExists));
 }
 
@@ -145,13 +213,18 @@ void FileSystemOperation::FileExists(const FilePath& path) {
   pending_operation_ = kOperationFileExists;
 #endif
 
-  if (!VerifyFileSystemPathForRead(path)) {
+  FilePath virtual_path;
+  GURL origin_url;
+  FileSystemType type;
+  if (!VerifyFileSystemPathForRead(path, &origin_url, &type, &virtual_path)) {
     delete this;
     return;
   }
+  file_system_operation_context_.set_src_origin_url(origin_url);
+  file_system_operation_context_.set_src_type(type);
   FileSystemFileUtilProxy::GetFileInfo(
       file_system_operation_context_,
-      proxy_, path, callback_factory_.NewCallback(
+      proxy_, virtual_path, callback_factory_.NewCallback(
           &FileSystemOperation::DidFileExists));
 }
 
@@ -161,13 +234,18 @@ void FileSystemOperation::GetMetadata(const FilePath& path) {
   pending_operation_ = kOperationGetMetadata;
 #endif
 
-  if (!VerifyFileSystemPathForRead(path)) {
+  FilePath virtual_path;
+  GURL origin_url;
+  FileSystemType type;
+  if (!VerifyFileSystemPathForRead(path, &origin_url, &type, &virtual_path)) {
     delete this;
     return;
   }
+  file_system_operation_context_.set_src_origin_url(origin_url);
+  file_system_operation_context_.set_src_type(type);
   FileSystemFileUtilProxy::GetFileInfo(
       file_system_operation_context_,
-      proxy_, path, callback_factory_.NewCallback(
+      proxy_, virtual_path, callback_factory_.NewCallback(
           &FileSystemOperation::DidGetMetadata));
 }
 
@@ -177,13 +255,18 @@ void FileSystemOperation::ReadDirectory(const FilePath& path) {
   pending_operation_ = kOperationReadDirectory;
 #endif
 
-  if (!VerifyFileSystemPathForRead(path)) {
+  FilePath virtual_path;
+  GURL origin_url;
+  FileSystemType type;
+  if (!VerifyFileSystemPathForRead(path, &origin_url, &type, &virtual_path)) {
     delete this;
     return;
   }
+  file_system_operation_context_.set_src_origin_url(origin_url);
+  file_system_operation_context_.set_src_type(type);
   FileSystemFileUtilProxy::ReadDirectory(
       file_system_operation_context_,
-      proxy_, path, callback_factory_.NewCallback(
+      proxy_, virtual_path, callback_factory_.NewCallback(
           &FileSystemOperation::DidReadDirectory));
 }
 
@@ -193,13 +276,19 @@ void FileSystemOperation::Remove(const FilePath& path, bool recursive) {
   pending_operation_ = kOperationRemove;
 #endif
 
-  if (!VerifyFileSystemPathForWrite(path, false /* create */)) {
+  FilePath virtual_path;
+  GURL origin_url;
+  FileSystemType type;
+  if (!VerifyFileSystemPathForWrite(path, false /* create */, &origin_url,
+      &type, &virtual_path)) {
     delete this;
     return;
   }
+  file_system_operation_context_.set_src_origin_url(origin_url);
+  file_system_operation_context_.set_src_type(type);
   FileSystemFileUtilProxy::Delete(
       file_system_operation_context_,
-      proxy_, path, recursive, callback_factory_.NewCallback(
+      proxy_, virtual_path, recursive, callback_factory_.NewCallback(
           &FileSystemOperation::DidFinishFileOperation));
 }
 
@@ -212,10 +301,16 @@ void FileSystemOperation::Write(
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationWrite;
 #endif
-  if (!VerifyFileSystemPathForWrite(path, true /* create */)) {
+  FilePath virtual_path;
+  GURL origin_url;
+  FileSystemType type;
+  if (!VerifyFileSystemPathForWrite(path, true /* create */, &origin_url,
+      &type, &virtual_path)) {
     delete this;
     return;
   }
+  file_system_operation_context_.set_src_origin_url(origin_url);
+  file_system_operation_context_.set_src_type(type);
   DCHECK(blob_url.is_valid());
   file_writer_delegate_.reset(new FileWriterDelegate(this, offset));
   blob_request_.reset(
@@ -224,7 +319,7 @@ void FileSystemOperation::Write(
   FileSystemFileUtilProxy::CreateOrOpen(
       file_system_operation_context_,
       proxy_,
-      path,
+      virtual_path,
       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |
           base::PLATFORM_FILE_ASYNC,
       callback_factory_.NewCallback(
@@ -236,13 +331,19 @@ void FileSystemOperation::Truncate(const FilePath& path, int64 length) {
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationTruncate;
 #endif
-  if (!VerifyFileSystemPathForWrite(path, false /* create */)) {
+  FilePath virtual_path;
+  GURL origin_url;
+  FileSystemType type;
+  if (!VerifyFileSystemPathForWrite(path, false /* create */, &origin_url,
+      &type, &virtual_path)) {
     delete this;
     return;
   }
+  file_system_operation_context_.set_src_origin_url(origin_url);
+  file_system_operation_context_.set_src_type(type);
   FileSystemFileUtilProxy::Truncate(
       file_system_operation_context_,
-      proxy_, path, length, callback_factory_.NewCallback(
+      proxy_, virtual_path, length, callback_factory_.NewCallback(
           &FileSystemOperation::DidFinishFileOperation));
 }
 
@@ -254,13 +355,19 @@ void FileSystemOperation::TouchFile(const FilePath& path,
   pending_operation_ = kOperationTouchFile;
 #endif
 
-  if (!VerifyFileSystemPathForWrite(path, true /* create */)) {
+  FilePath virtual_path;
+  GURL origin_url;
+  FileSystemType type;
+  if (!VerifyFileSystemPathForWrite(path, true /* create */, &origin_url,
+      &type, &virtual_path)) {
     delete this;
     return;
   }
+  file_system_operation_context_.set_src_origin_url(origin_url);
+  file_system_operation_context_.set_src_type(type);
   FileSystemFileUtilProxy::Touch(
       file_system_operation_context_,
-      proxy_, path, last_access_time, last_modified_time,
+      proxy_, virtual_path, last_access_time, last_modified_time,
       callback_factory_.NewCallback(&FileSystemOperation::DidTouchFile));
 }
 
@@ -300,7 +407,16 @@ void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation_ptr) {
 void FileSystemOperation::DidGetRootPath(
     bool success, const FilePath& path, const std::string& name) {
   DCHECK(success || path.empty());
-  dispatcher_->DidOpenFileSystem(name, path);
+  FilePath result;
+  // We ignore the path, and return a URL instead.  The point was just to verify
+  // that we could create/find the path.
+  if (success) {
+    GURL root_url = GetFileSystemRootURI(
+        file_system_operation_context_.src_origin_url(),
+        file_system_operation_context_.src_type());
+    result = FilePath().AppendASCII(root_url.spec());
+  }
+  dispatcher_->DidOpenFileSystem(name, result);
   delete this;
 }
 
@@ -416,15 +532,21 @@ void FileSystemOperation::OnFileOpenedForWrite(
 }
 
 bool FileSystemOperation::VerifyFileSystemPathForRead(
-    const FilePath& path) {
-  // If we have no context, we just allow any operations.
-  if (!file_system_context_.get())
+    const FilePath& path, GURL* origin_url, FileSystemType* type,
+    FilePath* virtual_path) {
+
+  // If we have no context, we just allow any operations, for testing.
+  // TODO(ericu): Revisit this hack for security.
+  if (!file_system_context()) {
+    *virtual_path = path;
+    *type = file_system_operation_context_.src_type();
     return true;
+  }
 
   // We may want do more checks, but for now it just checks if the given
   // |path| is under the valid FileSystem root path for this host context.
-  if (!file_system_context_->path_manager()->CrackFileSystemPath(
-          path, NULL, NULL, NULL)) {
+  if (!file_system_context()->path_manager()->CrackFileSystemPath(
+          path, origin_url, type, virtual_path)) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
@@ -432,32 +554,35 @@ bool FileSystemOperation::VerifyFileSystemPathForRead(
 }
 
 bool FileSystemOperation::VerifyFileSystemPathForWrite(
-    const FilePath& path, bool create) {
-  GURL origin_url;
-  FilePath virtual_path;
+    const FilePath& path, bool create, GURL* origin_url, FileSystemType* type,
+    FilePath* virtual_path) {
 
-  // If we have no context, we just allow any operations.
-  if (!file_system_context_.get())
+  // If we have no context, we just allow any operations, for testing.
+  // TODO(ericu): Revisit this hack for security.
+  if (!file_system_context()) {
+    *virtual_path = path;
+    *type = file_system_operation_context_.dest_type();
     return true;
+  }
 
-  if (!file_system_context_->path_manager()->CrackFileSystemPath(
-          path, &origin_url, NULL, &virtual_path)) {
+  if (!file_system_context()->path_manager()->CrackFileSystemPath(
+          path, origin_url, type, virtual_path)) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
   // Any write access is disallowed on the root path.
-  if (virtual_path.value().length() == 0 ||
-      virtual_path.DirName().value() == virtual_path.value()) {
+  if (virtual_path->value().length() == 0 ||
+      virtual_path->DirName().value() == virtual_path->value()) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
-  if (create && FileSystemPathManager::IsRestrictedFileName(
-          path.BaseName())) {
+  if (create && file_system_context()->path_manager()->IsRestrictedFileName(
+          *type, virtual_path->BaseName())) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
   // TODO(kinuko): the check must be moved to QuotaFileSystemFileUtil.
-  if (!file_system_context_->IsStorageUnlimited(origin_url)) {
+  if (!file_system_context()->IsStorageUnlimited(*origin_url)) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_NO_SPACE);
     return false;
   }

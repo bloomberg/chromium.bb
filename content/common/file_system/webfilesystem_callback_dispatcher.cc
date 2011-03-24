@@ -41,6 +41,8 @@ void WebFileSystemCallbackDispatcher::DidReadMetadata(
     web_file_info.type = WebFileInfo::TypeDirectory;
   else
     web_file_info.type = WebFileInfo::TypeFile;
+  web_file_info.platformPath =
+    webkit_glue::FilePathToWebString(file_info.path);
   callbacks_->didReadMetadata(web_file_info);
 }
 

@@ -66,6 +66,7 @@ PlatformFileError FileSystemFileUtil::GetFileInfo(
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   if (!file_util::GetFileInfo(file_path, file_info))
     return base::PLATFORM_FILE_ERROR_FAILED;
+  file_info->path = file_path;
   return base::PLATFORM_FILE_OK;
 }
 

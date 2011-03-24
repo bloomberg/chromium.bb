@@ -24,11 +24,10 @@ class MessageLoopProxy;
 
 namespace fileapi {
 
-// Owned by the SandboxedFileSystemContext, which is a per-profile
-// instance, and has the same lifetime as the SandboxedFileSystemContext.
-// It's going to be created and destroyed on the IO thread in chrome.
-// (The destruction on the same thread where it is created was guaranteed
-// by its owner, SandboxedFileSystemContext.)
+// Owned by the FileSystemContext, which is a per-profile instance, and has the
+// same lifetime as the FileSystemContext.  It's going to be created and
+// destroyed on the IO thread in chrome.  (The destruction on the same thread
+// where it is created was guaranteed by its owner, FileSystemContext.)
 class FileSystemUsageTracker {
  public:
   FileSystemUsageTracker(

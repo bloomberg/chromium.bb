@@ -19,6 +19,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -40,6 +41,7 @@ using WebKit::WebVector;
 
 using fileapi::FileSystemCallbackDispatcher;
 using fileapi::FileSystemContext;
+using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemOperation;
 
 namespace {
@@ -69,6 +71,8 @@ class SimpleFileSystemCallbackDispatcher
     web_file_info.modificationTime = info.last_modified.ToDoubleT();
     web_file_info.type = info.is_directory ?
         WebFileInfo::TypeDirectory : WebFileInfo::TypeFile;
+    web_file_info.platformPath =
+        webkit_glue::FilePathToWebString(info.path);
     callbacks_->didReadMetadata(web_file_info);
   }
 
@@ -236,7 +240,7 @@ void SimpleFileSystem::readDirectory(
 
 WebFileWriter* SimpleFileSystem::createFileWriter(
     const WebString& path, WebFileWriterClient* client) {
-  return new SimpleFileWriter(path, client);
+  return new SimpleFileWriter(path, client, file_system_context_.get());
 }
 
 FileSystemOperation* SimpleFileSystem::GetNewOperation(
@@ -245,6 +249,6 @@ FileSystemOperation* SimpleFileSystem::GetNewOperation(
       new SimpleFileSystemCallbackDispatcher(AsWeakPtr(), callbacks);
   FileSystemOperation* operation = new FileSystemOperation(
       dispatcher, base::MessageLoopProxy::CreateForCurrentThread(),
-      file_system_context_.get());
+      file_system_context_.get(), NULL);
   return operation;
 }

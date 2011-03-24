@@ -10,6 +10,7 @@
 #include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
+#include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
 
 namespace fileapi {
@@ -97,10 +98,16 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
 };
 
 FileSystemOperation* FileSystemOperationTest::operation() {
-  return new FileSystemOperation(
+  FileSystemOperation* operation = new FileSystemOperation(
       new MockDispatcher(this),
       base::MessageLoopProxy::CreateForCurrentThread(),
-      NULL);
+      NULL,
+      FileSystemFileUtil::GetInstance());
+  operation->file_system_operation_context()->set_src_type(
+      kFileSystemTypeTemporary);
+  operation->file_system_operation_context()->set_dest_type(
+      kFileSystemTypeTemporary);
+  return operation;
 }
 
 TEST_F(FileSystemOperationTest, TestMoveFailureSrcDoesntExist) {

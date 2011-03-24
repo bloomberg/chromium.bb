@@ -13,9 +13,9 @@
 #include "googleurl/src/gurl.h"
 #include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 using namespace fileapi;
 
@@ -71,10 +71,10 @@ class FileSystemUsageTrackerTest : public testing::Test {
   FilePath GetOriginBasePath(const GURL& origin_url,
                              fileapi::FileSystemType type) {
     return
-        FileSystemPathManager::GetFileSystemBaseDirectoryForOriginAndType(
+        SandboxMountPointProvider::GetFileSystemBaseDirectoryForOriginAndType(
             data_dir_.path().Append(
-                FileSystemPathManager::kFileSystemDirectory),
-            FileSystemPathManager::GetOriginIdentifierFromURL(origin_url),
+                SandboxMountPointProvider::kFileSystemDirectory),
+            SandboxMountPointProvider::GetOriginIdentifierFromURL(origin_url),
             type);
   }
 

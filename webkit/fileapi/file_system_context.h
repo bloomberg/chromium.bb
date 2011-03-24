@@ -25,6 +25,7 @@ namespace fileapi {
 class FileSystemContext;
 class FileSystemPathManager;
 class FileSystemUsageTracker;
+class SandboxMountPointProvider;
 
 struct DefaultContextDeleter;
 
@@ -54,6 +55,7 @@ class FileSystemContext
  private:
   friend struct DefaultContextDeleter;
   void DeleteOnCorrectThread() const;
+  SandboxMountPointProvider* sandbox_provider() const;
 
   scoped_refptr<base::MessageLoopProxy> file_message_loop_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
