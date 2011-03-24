@@ -12,7 +12,7 @@
 #include "chrome/common/nacl_types.h"
 #include "content/browser/browser_child_process_host.h"
 
-class RenderMessageFilter;
+class ChromeRenderMessageFilter;
 
 // Represents the browser side of the browser <--> NaCl communication
 // channel. There will be one NaClProcessHost per NaCl process
@@ -27,7 +27,7 @@ class NaClProcessHost : public BrowserChildProcessHost {
   ~NaClProcessHost();
 
   // Initialize the new NaCl process, returning true on success.
-  bool Launch(RenderMessageFilter* render_message_filter,
+  bool Launch(ChromeRenderMessageFilter* chrome_render_message_filter,
               int socket_count,
               IPC::Message* reply_msg);
 
@@ -57,9 +57,9 @@ class NaClProcessHost : public BrowserChildProcessHost {
  private:
   ResourceDispatcherHost* resource_dispatcher_host_;
 
-  // The RenderMessageFilter that requested this NaCl process.  We use this
-  // for sending the reply once the process has started.
-  scoped_refptr<RenderMessageFilter> render_message_filter_;
+  // The ChromeRenderMessageFilter that requested this NaCl process.  We use
+  // this for sending the reply once the process has started.
+  scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter_;
 
   // The reply message to send.
   IPC::Message* reply_msg_;

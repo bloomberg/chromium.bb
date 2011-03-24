@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -350,7 +349,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                     OnOpenChannelToPlugin)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPepperPlugin,
                                     OnOpenChannelToPepperPlugin)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_LaunchNaCl, OnLaunchNaCl)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_PlatformCheckSpelling,
                         OnPlatformCheckSpelling)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_PlatformFillSuggestionList,
@@ -728,12 +726,6 @@ void RenderMessageFilter::OnOpenChannelToPepperPlugin(
     IPC::Message* reply_msg) {
   plugin_service_->OpenChannelToPpapiPlugin(
       path, new OpenChannelToPpapiPluginCallback(this, reply_msg));
-}
-
-void RenderMessageFilter::OnLaunchNaCl(
-    const std::wstring& url, int channel_descriptor, IPC::Message* reply_msg) {
-  NaClProcessHost* host = new NaClProcessHost(resource_dispatcher_host_, url);
-  host->Launch(this, channel_descriptor, reply_msg);
 }
 
 void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {

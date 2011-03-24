@@ -40,6 +40,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
@@ -450,6 +451,8 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
                                   installed_app_),
                               widget_helper_));
   channel_->AddFilter(render_message_filter);
+
+  channel_->AddFilter(new ChromeRenderMessageFilter());
 
   scoped_refptr<RendererURLRequestContextOverride> url_request_context_override(
       new RendererURLRequestContextOverride(profile(), installed_app_));

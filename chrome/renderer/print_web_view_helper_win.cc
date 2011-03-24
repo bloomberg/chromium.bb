@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "chrome/common/print_messages.h"
-#include "content/common/view_messages.h"
 #include "printing/native_metafile_factory.h"
 #include "printing/native_metafile.h"
 #include "printing/units.h"
@@ -111,7 +110,7 @@ void PrintWebViewHelper::PrintPage(const PrintMsg_PrintPage_Params& params,
                                    &(page_params.metafile_data_handle))) {
     page_params.data_size = 0;
   }
-  if (!Send(new ViewHostMsg_DuplicateSection(
+  if (!Send(new PrintHostMsg_DuplicateSection(
           routing_id(),
           page_params.metafile_data_handle,
           &page_params.metafile_data_handle))) {
@@ -183,7 +182,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
     preview_params.data_size = 0;
     preview_params.expected_pages_count = 0;
   }
-  if (!Send(new ViewHostMsg_DuplicateSection(
+  if (!Send(new PrintHostMsg_DuplicateSection(
           routing_id(),
           preview_params.metafile_data_handle,
           &preview_params.metafile_data_handle))) {

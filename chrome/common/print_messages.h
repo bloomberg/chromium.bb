@@ -152,6 +152,14 @@ IPC_MESSAGE_ROUTED0(PrintMsg_ResetScriptedPrintCount)
 
 // Messages sent from the renderer to the browser.
 
+#if defined(OS_WIN)
+// Duplicates a shared memory handle from the renderer to the browser. Then
+// the renderer can flush the handle.
+IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_DuplicateSection,
+                           base::SharedMemoryHandle /* renderer handle */,
+                           base::SharedMemoryHandle /* browser handle */)
+#endif
+
 // Tells the browser that the renderer is done calculating the number of
 // rendered pages according to the specified settings.
 IPC_MESSAGE_ROUTED2(PrintHostMsg_DidGetPrintedPagesCount,

@@ -1709,14 +1709,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateZoomLimits,
                     int /* maximum_percent */,
                     bool /* remember */)
 
-#if defined(OS_WIN)
-// Duplicates a shared memory handle from the renderer to the browser. Then
-// the renderer can flush the handle.
-IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_DuplicateSection,
-                           base::SharedMemoryHandle /* renderer handle */,
-                           base::SharedMemoryHandle /* browser handle */)
-#endif
-
 // Asks the browser to create a block of shared memory for the renderer to
 // fill in and pass back to the browser.
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_AllocateSharedMemoryBuffer,

@@ -88,7 +88,7 @@ bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message,
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(PrintingMessageFilter, message, *message_was_ok)
 #if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DuplicateSection, OnDuplicateSection)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
 #if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER(PrintHostMsg_AllocateTempFileForPrinting,
