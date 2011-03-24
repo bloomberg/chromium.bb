@@ -217,7 +217,13 @@ bool MockWebFrame::isViewSourceModeEnabled() const {
   return false;
 }
 
+// TODO(bbudge) remove once WebKit change lands.
 WebURLLoader* MockWebFrame::createAssociatedURLLoader() {
+  return NULL;
+}
+
+WebURLLoader* MockWebFrame::createAssociatedURLLoader(
+    const WebURLLoaderOptions& options) {
   return NULL;
 }
 

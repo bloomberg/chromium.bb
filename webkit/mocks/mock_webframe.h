@@ -18,6 +18,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "v8/include/v8.h"
 
+// TODO(bbudge) remove once this is declared in WebFrame.h
+namespace WebKit {
+
+  struct WebURLLoaderOptions;
+
+};
+
 using WebKit::WebAnimationController;
 using WebKit::WebCanvas;
 using WebKit::WebConsoleMessage;
@@ -41,6 +48,7 @@ using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebURLLoader;
+using WebKit::WebURLLoaderOptions;
 using WebKit::WebVector;
 using WebKit::WebView;
 
@@ -136,7 +144,10 @@ class MockWebFrame : public WebKit::WebFrame {
   // The next two methods were mocked above.
   // virtual void setReferrerForRequest(WebURLRequest&, const WebURL&) {}
   // virtual void dispatchWillSendRequest(WebURLRequest&) {}
+  // TODO(bbudge) remove once WebKit change lands.
   virtual WebURLLoader* createAssociatedURLLoader();
+  virtual WebURLLoader* createAssociatedURLLoader(
+      const WebURLLoaderOptions& options);
   virtual void commitDocumentData(const char* data, size_t length);
   virtual unsigned unloadListenerCount() const;
   virtual bool isProcessingUserGesture() const;
