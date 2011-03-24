@@ -28,7 +28,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/print_messages.h"
 #include "chrome/common/safebrowsing_messages.h"
-#include "chrome/common/thumbnail_score.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
@@ -728,7 +727,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTitle, OnMsgUpdateTitle)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateEncoding, OnMsgUpdateEncoding)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnMsgUpdateTargetURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Thumbnail, OnMsgThumbnail)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Snapshot, OnMsgScreenshot)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateInspectorSetting,
                         OnUpdateInspectorSetting)
@@ -1000,12 +998,6 @@ void RenderViewHost::OnMsgUpdateTargetURL(int32 page_id,
   // Send a notification back to the renderer that we are ready to
   // receive more target urls.
   Send(new ViewMsg_UpdateTargetURL_ACK(routing_id()));
-}
-
-void RenderViewHost::OnMsgThumbnail(const GURL& url,
-                                    const ThumbnailScore& score,
-                                    const SkBitmap& bitmap) {
-  delegate_->UpdateThumbnail(url, bitmap, score);
 }
 
 void RenderViewHost::OnMsgScreenshot(const SkBitmap& bitmap) {

@@ -113,10 +113,6 @@ class TestingProfile : public Profile {
   // Sets the TemplateURLModel. Takes ownership of it.
   void SetTemplateURLModel(TemplateURLModel* model);
 
-  // Uses a specific theme provider for this profile. TestingProfile takes
-  // ownership of |theme_provider|.
-  void UseThemeProvider(ThemeService* theme_provider);
-
   // Creates an ExtensionService initialized with the testing profile and
   // returns it. The profile keeps its own copy of a scoped_refptr to the
   // ExtensionService to make sure that is still alive to be notified when the

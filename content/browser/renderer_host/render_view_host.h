@@ -40,7 +40,6 @@ class ViewMsg_Navigate;
 struct ContentSettings;
 struct ContextMenuParams;
 struct MediaPlayerAction;
-struct ThumbnailScore;
 struct ViewHostMsg_AccessibilityNotification_Params;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_DomMessage_Params;
@@ -549,9 +548,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgUpdateTitle(int32 page_id, const std::wstring& title);
   void OnMsgUpdateEncoding(const std::string& encoding);
   void OnMsgUpdateTargetURL(int32 page_id, const GURL& url);
-  void OnMsgThumbnail(const GURL& url,
-                      const ThumbnailScore& score,
-                      const SkBitmap& bitmap);
   void OnMsgScreenshot(const SkBitmap& bitmap);
   void OnMsgClose();
   void OnMsgRequestMove(const gfx::Rect& pos);

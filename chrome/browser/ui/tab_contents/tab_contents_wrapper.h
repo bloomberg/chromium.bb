@@ -130,6 +130,9 @@ class TabContentsWrapper : public NotificationObserver,
   void OnRegisterProtocolHandler(const std::string& protocol,
                                  const GURL& url,
                                  const string16& title);
+  void OnMsgThumbnail(const GURL& url,
+                      const ThumbnailScore& score,
+                      const SkBitmap& bitmap);
 
   // Updates the starred state from the bookmark bar model. If the state has
   // changed, the delegate is notified.

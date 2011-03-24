@@ -11,6 +11,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/file_select_helper.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager_delegate_impl.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -206,6 +207,7 @@ bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Thumbnail, OnMsgThumbnail)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -260,6 +262,18 @@ void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
       new RegisterProtocolHandlerInfoBarDelegate(tab_contents(), registry,
                                                  handler));
   }
+}
+
+void TabContentsWrapper::OnMsgThumbnail(const GURL& url,
+                                        const ThumbnailScore& score,
+                                        const SkBitmap& bitmap) {
+  if (profile()->IsOffTheRecord())
+    return;
+
+  // Tell History about this thumbnail
+  history::TopSites* ts = profile()->GetTopSites();
+  if (ts)
+    ts->SetPageThumbnail(url, bitmap, score);
 }
 
 void TabContentsWrapper::UpdateStarredStateForCurrentURL() {

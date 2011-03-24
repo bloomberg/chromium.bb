@@ -32,7 +32,6 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
@@ -2211,18 +2210,6 @@ void TabContents::UpdateEncoding(RenderViewHost* render_view_host,
 void TabContents::UpdateTargetURL(int32 page_id, const GURL& url) {
   if (delegate())
     delegate()->UpdateTargetURL(this, url);
-}
-
-void TabContents::UpdateThumbnail(const GURL& url,
-                                  const SkBitmap& bitmap,
-                                  const ThumbnailScore& score) {
-  if (profile()->IsOffTheRecord())
-    return;
-
-  // Tell History about this thumbnail
-  history::TopSites* ts = profile()->GetTopSites();
-  if (ts)
-    ts->SetPageThumbnail(url, bitmap, score);
 }
 
 void TabContents::UpdateInspectorSetting(const std::string& key,

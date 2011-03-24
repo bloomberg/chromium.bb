@@ -45,7 +45,6 @@ class SkBitmap;
 class SSLClientAuthHandler;
 class SSLAddCertHandler;
 class TabContents;
-struct ThumbnailScore;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
@@ -445,11 +444,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // The destination URL has changed should be updated
   virtual void UpdateTargetURL(int32 page_id, const GURL& url) {}
-
-  // The thumbnail representation of the page changed and should be updated.
-  virtual void UpdateThumbnail(const GURL& url,
-                               const SkBitmap& bitmap,
-                               const ThumbnailScore& score) {}
 
   // Inspector setting was changed and should be persisted.
   virtual void UpdateInspectorSetting(const std::string& key,

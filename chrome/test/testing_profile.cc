@@ -323,10 +323,6 @@ void TestingProfile::SetTemplateURLModel(TemplateURLModel* model) {
   template_url_model_.reset(model);
 }
 
-void TestingProfile::UseThemeProvider(ThemeService* theme_provider) {
-  NOTREACHED() << "This needs to go away for a different testing interface.";
-}
-
 ExtensionService* TestingProfile::CreateExtensionService(
     const CommandLine* command_line,
     const FilePath& install_directory) {
