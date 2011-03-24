@@ -4,7 +4,6 @@
 
 #include "chrome/common/render_messages_params.h"
 
-#include "chrome/common/common_param_traits.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/render_messages.h"
 #include "net/base/upload_data.h"
@@ -130,18 +129,6 @@ ViewHostMsg_DomMessage_Params::ViewHostMsg_DomMessage_Params()
 ViewHostMsg_DomMessage_Params::~ViewHostMsg_DomMessage_Params() {
 }
 
-ViewHostMsg_MalwareDOMDetails_Node::ViewHostMsg_MalwareDOMDetails_Node() {
-}
-
-ViewHostMsg_MalwareDOMDetails_Node::~ViewHostMsg_MalwareDOMDetails_Node() {
-}
-
-ViewHostMsg_MalwareDOMDetails_Params::ViewHostMsg_MalwareDOMDetails_Params() {
-}
-
-ViewHostMsg_MalwareDOMDetails_Params::~ViewHostMsg_MalwareDOMDetails_Params() {
-}
-
 ViewMsg_ExtensionLoaded_Params::ViewMsg_ExtensionLoaded_Params()
     : location(Extension::INVALID) {
 }
@@ -216,30 +203,6 @@ struct ParamTraits<Extension::Location> {
         val < Extension::INVALID ||
         val >= Extension::NUM_LOCATIONS)
       return false;
-    *p = static_cast<param_type>(val);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    ParamTraits<int>::Log(static_cast<int>(p), l);
-  }
-};
-
-template <>
-struct ParamTraits
-    <ViewHostMsg_AccessibilityNotification_Params::NotificationType> {
-  typedef ViewHostMsg_AccessibilityNotification_Params params;
-  typedef params::NotificationType param_type;
-  static void Write(Message* m, const param_type& p) {
-    int val = static_cast<int>(p);
-    WriteParam(m, val);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int val = 0;
-    if (!ReadParam(m, iter, &val) ||
-        val < params::NOTIFICATION_TYPE_CHECK_STATE_CHANGED ||
-        val > params::NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED) {
-      return false;
-    }
     *p = static_cast<param_type>(val);
     return true;
   }
@@ -569,87 +532,6 @@ void ParamTraits<ViewHostMsg_DomMessage_Params>::Log(const param_type& p,
   LogParam(p.has_callback, l);
   l->append(", ");
   LogParam(p.user_gesture, l);
-  l->append(")");
-}
-
-void ParamTraits<ViewHostMsg_AccessibilityNotification_Params>::Write(
-    Message* m,
-    const param_type& p) {
-  WriteParam(m, p.notification_type);
-  WriteParam(m, p.acc_obj);
-}
-
-bool ParamTraits<ViewHostMsg_AccessibilityNotification_Params>::Read(
-    const Message* m,
-    void** iter,
-    param_type* p) {
-  return
-      ReadParam(m, iter, &p->notification_type) &&
-      ReadParam(m, iter, &p->acc_obj);
-}
-
-void ParamTraits<ViewHostMsg_AccessibilityNotification_Params>::Log(
-    const param_type& p,
-    std::string* l) {
-  l->append("(");
-  LogParam(p.notification_type, l);
-  l->append(", ");
-  LogParam(p.acc_obj, l);
-  l->append(")");
-}
-
-void ParamTraits<ViewHostMsg_MalwareDOMDetails_Params>::Write(
-    Message* m,
-    const param_type& p) {
-  WriteParam(m, p.nodes);
-}
-
-bool ParamTraits<ViewHostMsg_MalwareDOMDetails_Params>::Read(
-    const Message* m,
-    void** iter,
-    param_type* p) {
-  return ReadParam(m, iter, &p->nodes);
-}
-
-void ParamTraits<ViewHostMsg_MalwareDOMDetails_Params>::Log(
-    const param_type& p,
-    std::string* l) {
-  l->append("(");
-  LogParam(p.nodes, l);
-  l->append(")");
-}
-
-void ParamTraits<ViewHostMsg_MalwareDOMDetails_Node>::Write(
-    Message* m,
-    const param_type& p) {
-  WriteParam(m, p.url);
-  WriteParam(m, p.tag_name);
-  WriteParam(m, p.parent);
-  WriteParam(m, p.children);
-}
-
-bool ParamTraits<ViewHostMsg_MalwareDOMDetails_Node>::Read(
-    const Message* m,
-    void** iter,
-    param_type* p) {
-  return
-      ReadParam(m, iter, &p->url) &&
-      ReadParam(m, iter, &p->tag_name) &&
-      ReadParam(m, iter, &p->parent) &&
-      ReadParam(m, iter, &p->children);
-}
-
-void ParamTraits<ViewHostMsg_MalwareDOMDetails_Node>::Log(
-    const param_type& p,
-    std::string* l) {
-  l->append("(");
-  LogParam(p.url, l);
-  l->append(", ");
-  LogParam(p.tag_name, l);
-  l->append(", ");
-  LogParam(p.parent, l);
-  l->append(", ");
-  LogParam(p.children, l);
   l->append(")");
 }
 

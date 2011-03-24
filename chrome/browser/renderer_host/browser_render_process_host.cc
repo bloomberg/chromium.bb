@@ -56,6 +56,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
+#include "chrome/common/safebrowsing_messages.h"
 #include "chrome/renderer/render_process_impl.h"
 #include "chrome/renderer/render_thread.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
@@ -1306,6 +1307,6 @@ void BrowserRenderProcessHost::OpenPhishingModelDone(
     ::DuplicateHandle(::GetCurrentProcess(), model_file, GetHandle(), &file, 0,
                       false, DUPLICATE_SAME_ACCESS);
 #endif
-    Send(new ViewMsg_SetPhishingModel(file));
+    Send(new SafeBrowsingMsg_SetPhishingModel(file));
   }
 }

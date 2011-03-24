@@ -6,7 +6,7 @@
 
 #import "base/logging.h"
 #import "chrome/browser/accessibility/browser_accessibility_cocoa.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/view_messages.h"
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
@@ -32,27 +32,27 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
   // Refer to AXObjectCache.mm (webkit).
   NSString* event_id = @"";
   switch (type) {
-    case ViewHostMsg_AccessibilityNotification_Params::
+    case ViewHostMsg_AccessibilityNotification_Type::
         NOTIFICATION_TYPE_CHECK_STATE_CHANGED:
       // Does not exist on Mac.
       return;
-    case ViewHostMsg_AccessibilityNotification_Params::
+    case ViewHostMsg_AccessibilityNotification_Type::
         NOTIFICATION_TYPE_CHILDREN_CHANGED:
       // TODO(dtseng): no clear equivalent on Mac.
       return;
-    case ViewHostMsg_AccessibilityNotification_Params::
+    case ViewHostMsg_AccessibilityNotification_Type::
         NOTIFICATION_TYPE_FOCUS_CHANGED:
       event_id = NSAccessibilityFocusedUIElementChangedNotification;
       break;
-    case ViewHostMsg_AccessibilityNotification_Params::
+    case ViewHostMsg_AccessibilityNotification_Type::
         NOTIFICATION_TYPE_LOAD_COMPLETE:
       event_id = @"AXLoadComplete";
       break;
-    case ViewHostMsg_AccessibilityNotification_Params::
+    case ViewHostMsg_AccessibilityNotification_Type::
         NOTIFICATION_TYPE_VALUE_CHANGED:
       event_id = NSAccessibilityValueChangedNotification;
       break;
-    case ViewHostMsg_AccessibilityNotification_Params::
+    case ViewHostMsg_AccessibilityNotification_Type::
         NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED:
       event_id = NSAccessibilitySelectedTextChangedNotification;
       break;

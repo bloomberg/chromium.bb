@@ -6,7 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/accessibility/browser_accessibility.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webaccessibility.h"
 
@@ -230,7 +230,7 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   std::vector<ViewHostMsg_AccessibilityNotification_Params> params;
   params.push_back(ViewHostMsg_AccessibilityNotification_Params());
   ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
-  msg->notification_type = ViewHostMsg_AccessibilityNotification_Params::
+  msg->notification_type = ViewHostMsg_AccessibilityNotification_Type::
       NOTIFICATION_TYPE_CHILDREN_CHANGED;
   msg->acc_obj = tree2_root;
   manager->OnAccessibilityNotifications(params);
@@ -435,7 +435,7 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   std::vector<ViewHostMsg_AccessibilityNotification_Params> params;
   params.push_back(ViewHostMsg_AccessibilityNotification_Params());
   ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
-  msg->notification_type = ViewHostMsg_AccessibilityNotification_Params::
+  msg->notification_type = ViewHostMsg_AccessibilityNotification_Type::
       NOTIFICATION_TYPE_CHILDREN_CHANGED;
   msg->acc_obj = tree2_container;
   manager->OnAccessibilityNotifications(params);
@@ -535,7 +535,7 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   std::vector<ViewHostMsg_AccessibilityNotification_Params> params;
   params.push_back(ViewHostMsg_AccessibilityNotification_Params());
   ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
-  msg->notification_type = ViewHostMsg_AccessibilityNotification_Params::
+  msg->notification_type = ViewHostMsg_AccessibilityNotification_Type::
       NOTIFICATION_TYPE_CHILDREN_CHANGED;
   msg->acc_obj = tree2_1;
   manager->OnAccessibilityNotifications(params);

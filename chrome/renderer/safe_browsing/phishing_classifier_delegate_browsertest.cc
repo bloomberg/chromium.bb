@@ -61,7 +61,7 @@ class PhishingClassifierDelegateTest : public RenderViewFakeResourcesTest {
   bool OnMessageReceived(const IPC::Message& message) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PhishingClassifierDelegateTest, message)
-        IPC_MESSAGE_HANDLER(SafeBrowsingDetectionHostMsg_DetectedPhishingSite,
+        IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_DetectedPhishingSite,
                             OnDetectedPhishingSite)
       IPC_MESSAGE_UNHANDLED(
           handled = RenderViewFakeResourcesTest::OnMessageReceived(message))

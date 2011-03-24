@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/view_messages.h"
 #include "printing/native_metafile_factory.h"
 #include "printing/native_metafile.h"
 #include "printing/units.h"

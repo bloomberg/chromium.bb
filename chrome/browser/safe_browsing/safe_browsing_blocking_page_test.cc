@@ -103,7 +103,7 @@ class FakeMalwareDetails : public MalwareDetails {
   virtual ~FakeMalwareDetails() {}
 
   virtual void AddDOMDetails(
-      const ViewHostMsg_MalwareDOMDetails_Params& params) {
+      const std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node>& params) {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     MalwareDetails::AddDOMDetails(params);
 

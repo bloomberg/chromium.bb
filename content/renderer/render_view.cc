@@ -431,30 +431,30 @@ static bool IsEditableNode(const WebNode& node) {
 
 static bool WebAccessibilityNotificationToViewHostMsg(
     WebAccessibilityNotification notification,
-    ViewHostMsg_AccessibilityNotification_Params::NotificationType* type) {
+    ViewHostMsg_AccessibilityNotification_Type::Value* type) {
   switch (notification) {
     case WebKit::WebAccessibilityNotificationCheckedStateChanged:
-      *type = ViewHostMsg_AccessibilityNotification_Params::
+      *type = ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_CHECK_STATE_CHANGED;
       break;
     case WebKit::WebAccessibilityNotificationChildrenChanged:
-      *type = ViewHostMsg_AccessibilityNotification_Params::
+      *type = ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_CHILDREN_CHANGED;
       break;
     case WebKit::WebAccessibilityNotificationFocusedUIElementChanged:
-      *type = ViewHostMsg_AccessibilityNotification_Params::
+      *type = ViewHostMsg_AccessibilityNotification_Type::
            NOTIFICATION_TYPE_FOCUS_CHANGED;
       break;
     case WebKit::WebAccessibilityNotificationLoadComplete:
-      *type = ViewHostMsg_AccessibilityNotification_Params::
+      *type = ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_LOAD_COMPLETE;
       break;
     case WebKit::WebAccessibilityNotificationValueChanged:
-      *type = ViewHostMsg_AccessibilityNotification_Params::
+      *type = ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_VALUE_CHANGED;
       break;
     case WebKit::WebAccessibilityNotificationSelectedTextChanged:
-      *type = ViewHostMsg_AccessibilityNotification_Params::
+      *type = ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED;
       break;
     default:
@@ -4949,7 +4949,7 @@ void RenderView::postAccessibilityNotification(
   if (acc_notification.id < 0)
     return;
 
-  ViewHostMsg_AccessibilityNotification_Params::NotificationType temp;
+  ViewHostMsg_AccessibilityNotification_Type::Value temp;
   if (!WebAccessibilityNotificationToViewHostMsg(notification, &temp))
     return;
 

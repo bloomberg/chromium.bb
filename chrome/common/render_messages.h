@@ -21,7 +21,6 @@
 #include "base/sync_socket.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/common/common_param_traits.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_extent.h"
@@ -33,22 +32,24 @@
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
 #include "chrome/common/web_apps.h"
-#include "chrome/common/webkit_param_traits.h"
 #include "content/common/common_param_traits.h"
 #include "content/common/css_colors.h"
 #include "content/common/notification_type.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/page_zoom.h"
 #include "content/common/resource_response.h"
+#include "chrome/common/web_apps.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
-#include "ipc/ipc_platform_file.h"                     // ifdefed typedef.
+#include "ipc/ipc_platform_file.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor.h"
 
 #if defined(OS_POSIX)
@@ -116,27 +117,19 @@ struct ParamTraits<gfx::NativeView> {
 #endif  // defined(OS_POSIX)
 
 template <>
-struct SimilarTypeTraits<ViewType::Type> {
-  typedef int Type;
+struct ParamTraits<ContentSettings> {
+  typedef ContentSettings param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
-// Traits for URLPattern.
 template <>
 struct ParamTraits<URLPattern> {
   typedef URLPattern param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct SimilarTypeTraits<TranslateErrors::Type> {
-  typedef int Type;
-};
-
-template <>
-struct SimilarTypeTraits<InstantCompleteBehavior> {
-  typedef int Type;
 };
 
 template <>
@@ -147,19 +140,71 @@ struct ParamTraits<ExtensionExtent> {
   static void Log(const param_type& p, std::string* l);
 };
 
-template <>
-struct ParamTraits<webkit_glue::WebAccessibility> {
-  typedef webkit_glue::WebAccessibility param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
 }  // namespace IPC
 
 #endif  // CHROME_COMMON_RENDER_MESSAGES_H_
 
 #define IPC_MESSAGE_START ChromeMsgStart
+
+IPC_ENUM_TRAITS(ContentSetting)
+IPC_ENUM_TRAITS(ContentSettingsType)
+IPC_ENUM_TRAITS(InstantCompleteBehavior)
+IPC_ENUM_TRAITS(TranslateErrors::Type)
+IPC_ENUM_TRAITS(ViewType::Type)
+IPC_ENUM_TRAITS(WebKit::WebConsoleMessage::Level)
+IPC_ENUM_TRAITS(WebKit::WebTextCheckingResult::Error)
+
+IPC_STRUCT_TRAITS_BEGIN(ThumbnailScore)
+  IPC_STRUCT_TRAITS_MEMBER(boring_score)
+  IPC_STRUCT_TRAITS_MEMBER(good_clipping)
+  IPC_STRUCT_TRAITS_MEMBER(at_top)
+  IPC_STRUCT_TRAITS_MEMBER(time_at_snapshot)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo::IconInfo)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(width)
+  IPC_STRUCT_TRAITS_MEMBER(height)
+  IPC_STRUCT_TRAITS_MEMBER(data)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo)
+  IPC_STRUCT_TRAITS_MEMBER(title)
+  IPC_STRUCT_TRAITS_MEMBER(description)
+  IPC_STRUCT_TRAITS_MEMBER(app_url)
+  IPC_STRUCT_TRAITS_MEMBER(icons)
+  IPC_STRUCT_TRAITS_MEMBER(permissions)
+  IPC_STRUCT_TRAITS_MEMBER(launch_container)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCache::ResourceTypeStat)
+  IPC_STRUCT_TRAITS_MEMBER(count)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+  IPC_STRUCT_TRAITS_MEMBER(liveSize)
+  IPC_STRUCT_TRAITS_MEMBER(decodedSize)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCache::ResourceTypeStats)
+  IPC_STRUCT_TRAITS_MEMBER(images)
+  IPC_STRUCT_TRAITS_MEMBER(cssStyleSheets)
+  IPC_STRUCT_TRAITS_MEMBER(scripts)
+  IPC_STRUCT_TRAITS_MEMBER(xslStyleSheets)
+  IPC_STRUCT_TRAITS_MEMBER(fonts)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCache::UsageStats)
+  IPC_STRUCT_TRAITS_MEMBER(minDeadCapacity)
+  IPC_STRUCT_TRAITS_MEMBER(maxDeadCapacity)
+  IPC_STRUCT_TRAITS_MEMBER(capacity)
+  IPC_STRUCT_TRAITS_MEMBER(liveSize)
+  IPC_STRUCT_TRAITS_MEMBER(deadSize)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(WebKit::WebTextCheckingResult)
+  IPC_STRUCT_TRAITS_MEMBER(error)
+  IPC_STRUCT_TRAITS_MEMBER(position)
+  IPC_STRUCT_TRAITS_MEMBER(length)
+IPC_STRUCT_TRAITS_END()
 
 //-----------------------------------------------------------------------------
 // RenderView messages
@@ -472,35 +517,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_RevertTranslation,
 IPC_MESSAGE_CONTROL1(ViewMsg_SetIsIncognitoProcess,
                      bool /* is_incognito_processs */)
 
-// Enable accessibility in the renderer process.
-IPC_MESSAGE_ROUTED0(ViewMsg_EnableAccessibility)
-
-// Relay a request from assistive technology to set focus to a given node.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetAccessibilityFocus,
-                    int /* object id */)
-
-// Relay a request from assistive technology to perform the default action
-// on a given node.
-IPC_MESSAGE_ROUTED1(ViewMsg_AccessibilityDoDefaultAction,
-                    int /* object id */)
-
-// Tells the render view that a ViewHostMsg_AccessibilityNotifications
-// message was processed and it can send addition notifications.
-IPC_MESSAGE_ROUTED0(ViewMsg_AccessibilityNotifications_ACK)
-
-// A classification model for client-side phishing detection.
-// The given file contains an encoded safe_browsing::ClientSideModel
-// protocol buffer.
-IPC_MESSAGE_CONTROL1(ViewMsg_SetPhishingModel,
-                     IPC::PlatformFileForTransit /* model_file */)
-
-// Request a DOM tree when a malware interstitial is shown.
-IPC_MESSAGE_ROUTED0(ViewMsg_GetMalwareDOMDetails)
-
-// Tells the renderer to begin phishing detection for the given toplevel URL
-// which it has started loading.
-IPC_MESSAGE_ROUTED1(ViewMsg_StartPhishingDetection, GURL)
-
 //-----------------------------------------------------------------------------
 // TabContents messages
 // These are messages sent from the renderer to the browser process.
@@ -532,6 +548,27 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowSpellingPanel,
 // Tells the browser to update the spelling panel with the given word.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
                     string16 /* the word to update the panel with */)
+
+// The renderer has tried to spell check a word, but couldn't because no
+// dictionary was available to load. Request that the browser find an
+// appropriate dictionary and return it.
+IPC_MESSAGE_CONTROL0(ViewHostMsg_SpellChecker_RequestDictionary)
+
+IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_SpellChecker_PlatformCheckSpelling,
+                            string16 /* word */,
+                            int /* document tag */,
+                            bool /* correct */)
+
+IPC_SYNC_MESSAGE_CONTROL1_1(
+    ViewHostMsg_SpellChecker_PlatformFillSuggestionList,
+    string16 /* word */,
+    std::vector<string16> /* suggestions */)
+
+IPC_MESSAGE_CONTROL4(ViewHostMsg_SpellChecker_PlatformRequestTextCheck,
+                     int /* route_id for response */,
+                     int /* request identifier given by WebKit */,
+                     int /* document tag */,
+                     string16 /* sentence */)
 
 // Tells the browser that content in the current page was blocked due to the
 // user's content settings.
@@ -601,14 +638,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(
     GURL /* inquiry url */,
     ViewHostMsg_GetSearchProviderInstallState_Params /* install */)
 
-// Required for updating text input state.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeUpdateTextInputState,
-                    WebKit::WebTextInputType, /* text_input_type */
-                    gfx::Rect /* caret_rect */)
-
-// Required for cancelling an ongoing input method composition.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_ImeCancelComposition)
-
 // Tells the browser that the renderer is done calculating the number of
 // rendered pages according to the specified settings.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_DidGetPrintedPagesCount,
@@ -641,12 +670,21 @@ IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_ScriptedPrint,
                            ViewMsg_PrintPages_Params
                                /* settings chosen by the user*/)
 
-// WebKit and JavaScript error messages to log to the console
-// or debugger UI.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_AddMessageToConsole,
-                    std::wstring, /* msg */
-                    int32, /* line number */
-                    std::wstring /* source id */)
+#if defined(USE_X11)
+// Asks the browser to create a temporary file for the renderer to fill
+// in resulting NativeMetafile in printing.
+IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_AllocateTempFileForPrinting,
+                            base::FileDescriptor /* temp file fd */,
+                            int /* fd in browser*/)
+IPC_MESSAGE_CONTROL1(ViewHostMsg_TempFileForPrintingWritten,
+                     int /* fd in browser */)
+#endif
+
+// Asks the browser to do print preview for the node under the context menu.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_PrintPreviewNodeUnderContextMenu)
+
+// Asks the browser to do print preview for window.print().
+IPC_MESSAGE_ROUTED0(ViewHostMsg_ScriptInitiatedPrintPreview)
 
 // Stores new inspector setting in the profile.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateInspectorSetting,
@@ -711,11 +749,6 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_DnsPrefetch,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_MissingPluginStatus,
                     int /* status */)
 
-// Sent by the renderer process to indicate that a plugin instance has
-// crashed.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_CrashedPlugin,
-                    FilePath /* plugin_path */)
-
 // Notifies when a plugin couldn't be loaded because it's outdated.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_BlockedOutdatedPlugin,
                     string16, /* name */
@@ -723,15 +756,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_BlockedOutdatedPlugin,
 
 // Displays a JavaScript out-of-memory message in the infobar.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_JSOutOfMemory)
-
-// Displays a box to confirm that the user wants to navigate away from the
-// page. Replies true if yes, false otherwise, the reply string is ignored,
-// but is included so that we can use OnJavaScriptMessageBoxClosed.
-IPC_SYNC_MESSAGE_ROUTED2_2(ViewHostMsg_RunBeforeUnloadConfirm,
-                           GURL,        /* in - originating frame URL */
-                           std::wstring /* in - alert message */,
-                           bool         /* out - success */,
-                           std::wstring /* out - This is ignored.*/)
 
 IPC_MESSAGE_ROUTED3(ViewHostMsg_SendCurrentPageAllSavableResourceLinks,
                     std::vector<GURL> /* all savable resource links */,
@@ -757,68 +781,10 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_DidDownloadFavicon,
                     bool /* true if there was a network error */,
                     SkBitmap /* image_data */)
 
-// Sent when the renderer process is done processing a DataReceived
-// message.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DataReceived_ACK,
-                    int /* request_id */)
-
-IPC_MESSAGE_CONTROL1(ViewHostMsg_RevealFolderInOS,
-                     FilePath /* path */)
-
-// Sent when a provisional load on the main frame redirects.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_DidRedirectProvisionalLoad,
-                    int /* page_id */,
-                    GURL /* last url */,
-                    GURL /* url redirected to */)
-
-// Sent when the renderer changes the zoom level for a particular url, so the
-// browser can update its records.  If remember is true, then url is used to
-// update the zoom level for all pages in that site.  Otherwise, the render
-// view's id is used so that only the menu is updated.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_DidZoomURL,
-                    double /* zoom_level */,
-                    bool /* remember */,
-                    GURL /* url */)
-
-#if defined(OS_WIN)
-// Duplicates a shared memory handle from the renderer to the browser. Then
-// the renderer can flush the handle.
-IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_DuplicateSection,
-                           base::SharedMemoryHandle /* renderer handle */,
-                           base::SharedMemoryHandle /* browser handle */)
-#endif
-
-#if defined(USE_X11)
-// Asks the browser to create a temporary file for the renderer to fill
-// in resulting NativeMetafile in printing.
-IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_AllocateTempFileForPrinting,
-                            base::FileDescriptor /* temp file fd */,
-                            int /* fd in browser*/)
-IPC_MESSAGE_CONTROL1(ViewHostMsg_TempFileForPrintingWritten,
-                     int /* fd in browser */)
-#endif
-
-// Asks the browser to do print preview for the node under the context menu.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_PrintPreviewNodeUnderContextMenu)
-
-// Asks the browser to do print preview for window.print().
-IPC_MESSAGE_ROUTED0(ViewHostMsg_ScriptInitiatedPrintPreview)
-
-// Asks the browser to create a block of shared memory for the renderer to
-// fill in and pass back to the browser.
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_AllocateSharedMemoryBuffer,
-                           uint32 /* buffer size */,
-                           base::SharedMemoryHandle /* browser handle */)
-
 // Provide the browser process with information about the WebCore resource
 // cache.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_ResourceTypeStats,
                      WebKit::WebCache::ResourceTypeStats)
-
-// Notify the browser that this render process can or can't be suddenly
-// terminated.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_SuddenTerminationChanged,
-                     bool /* enabled */)
 
 // A renderer sends this message when an extension process starts an API
 // request. The browser will always respond with a ViewMsg_ExtensionResponse.
@@ -843,88 +809,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_CommandStateChanged,
                     int /* command */,
                     bool /* is_enabled */,
                     int /* checked_state */)
-
-#if defined(OS_MACOSX)
-// On OSX, we cannot allocated shared memory from within the sandbox, so
-// this call exists for the renderer to ask the browser to allocate memory
-// on its behalf. We return a file descriptor to the POSIX shared memory.
-// If the |cache_in_browser| flag is |true|, then a copy of the shmem is kept
-// by the browser, and it is the caller's repsonsibility to send a
-// ViewHostMsg_FreeTransportDIB message in order to release the cached shmem.
-// In all cases, the caller is responsible for deleting the resulting
-// TransportDIB.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_AllocTransportDIB,
-                            size_t, /* bytes requested */
-                            bool, /* cache in the browser */
-                            TransportDIB::Handle /* DIB */)
-
-// Since the browser keeps handles to the allocated transport DIBs, this
-// message is sent to tell the browser that it may release them when the
-// renderer is finished with them.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_FreeTransportDIB,
-                     TransportDIB::Id /* DIB id */)
-
-// Informs the browser that a plugin has gained or lost focus.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_PluginFocusChanged,
-                    bool, /* focused */
-                    int /* plugin_id */)
-
-// Instructs the browser to start plugin IME.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_StartPluginIme)
-
-//---------------------------------------------------------------------------
-// Messages related to accelerated plugins
-
-// This is sent from the renderer to the browser to allocate a fake
-// PluginWindowHandle on the browser side which is used to identify
-// the plugin to the browser later when backing store is allocated
-// or reallocated. |opaque| indicates whether the plugin's output is
-// considered to be opaque, as opposed to translucent. This message
-// is reused for rendering the accelerated compositor's output.
-// |root| indicates whether the output is supposed to cover the
-// entire window.
-IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_AllocateFakePluginWindowHandle,
-                           bool /* opaque */,
-                           bool /* root */,
-                           gfx::PluginWindowHandle /* id */)
-
-// Destroys a fake window handle previously allocated using
-// AllocateFakePluginWindowHandle.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DestroyFakePluginWindowHandle,
-                    gfx::PluginWindowHandle /* id */)
-
-// This message, used on Mac OS X 10.5 and earlier (no IOSurface support),
-// is sent from the renderer to the browser on behalf of the plug-in
-// to indicate that a new backing store was allocated for that plug-in
-// instance.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_AcceleratedSurfaceSetTransportDIB,
-                    gfx::PluginWindowHandle /* window */,
-                    int32 /* width */,
-                    int32 /* height */,
-                    TransportDIB::Handle /* handle for the DIB */)
-
-// This message, used on Mac OS X 10.6 and later (where IOSurface is
-// supported), is sent from the renderer to the browser on behalf of the
-// plug-in to indicate that a new backing store was allocated for that
-// plug-in instance.
-//
-// NOTE: the original intent was to pass a mach port as the IOSurface
-// identifier but it looks like that will be a lot of work. For now we pass an
-// ID from IOSurfaceGetID.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_AcceleratedSurfaceSetIOSurface,
-                    gfx::PluginWindowHandle /* window */,
-                    int32 /* width */,
-                    int32 /* height */,
-                    uint64 /* surface_id */)
-
-// This message notifies the browser process that the plug-in
-// swapped the buffers associated with the given "window", which
-// should cause the browser to redraw the various plug-ins'
-// contents.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
-                    gfx::PluginWindowHandle /* window */,
-                    uint64 /* surface_id */)
-#endif
 
 // Open a channel to all listening contexts owned by the extension with
 // the given ID.  This always returns a valid port ID which can be used for
@@ -957,16 +841,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ExtensionPostMessage,
 IPC_MESSAGE_CONTROL1(ViewHostMsg_ExtensionCloseChannel,
                      int /* port_id */)
 
-// Sent to notify the browser about renderer accessibility notifications.
-// The browser responds with a ViewMsg_AccessibilityNotifications_ACK.
-IPC_MESSAGE_ROUTED1(
-    ViewHostMsg_AccessibilityNotifications,
-    std::vector<ViewHostMsg_AccessibilityNotification_Params>)
-
-// Send part of the DOM to the browser, to be used in a malware report.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_MalwareDOMDetails,
-                    ViewHostMsg_MalwareDOMDetails_Params)
-
 // Message sent from the renderer to the browser to request that the browser
 // close all sockets.  Used for debugging/testing.
 IPC_MESSAGE_CONTROL0(ViewHostMsg_CloseCurrentConnections)
@@ -997,13 +871,6 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_DidGenerateCacheableMetadata,
                      double /* expected_response_time */,
                      std::vector<char> /* data */)
 
-// Opens a file asynchronously. The response returns a file descriptor
-// and an error code from base/platform_file.h.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_AsyncOpenFile,
-                    FilePath /* file path */,
-                    int /* flags */,
-                    int /* message_id */)
-
 // Sent by the renderer process to acknowledge receipt of a
 // ViewMsg_CSSInsertRequest message and css has been inserted into the frame.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_OnCSSInserted)
@@ -1019,50 +886,6 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_PageTranslated,
                     std::string           /* the original language */,
                     std::string           /* the translated language */,
                     TranslateErrors::Type /* the error type if available */)
-
-//---------------------------------------------------------------------------
-// Request for cryptographic operation messages:
-// These are messages from the renderer to the browser to perform a
-// cryptographic operation.
-
-// Asks the browser process to generate a keypair for grabbing a client
-// certificate from a CA (<keygen> tag), and returns the signed public
-// key and challenge string.
-IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_Keygen,
-                            uint32 /* key size index */,
-                            std::string /* challenge string */,
-                            GURL /* URL of requestor */,
-                            std::string /* signed public key and challenge */)
-
-// The renderer has tried to spell check a word, but couldn't because no
-// dictionary was available to load. Request that the browser find an
-// appropriate dictionary and return it.
-IPC_MESSAGE_CONTROL0(ViewHostMsg_SpellChecker_RequestDictionary)
-
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_SpellChecker_PlatformCheckSpelling,
-                            string16 /* word */,
-                            int /* document tag */,
-                            bool /* correct */)
-
-IPC_SYNC_MESSAGE_CONTROL1_1(
-    ViewHostMsg_SpellChecker_PlatformFillSuggestionList,
-    string16 /* word */,
-    std::vector<string16> /* suggestions */)
-
-IPC_MESSAGE_CONTROL4(ViewHostMsg_SpellChecker_PlatformRequestTextCheck,
-                     int /* route_id for response */,
-                     int /* request identifier given by WebKit */,
-                     int /* document tag */,
-                     string16 /* sentence */)
-
-// Updates the minimum/maximum allowed zoom percent for this tab from the
-// default values.  If |remember| is true, then the zoom setting is applied to
-// other pages in the site and is saved, otherwise it only applies to this
-// tab.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateZoomLimits,
-                    int /* minimum_percent */,
-                    int /* maximum_percent */,
-                    bool /* remember */)
 
 // Suggest results -----------------------------------------------------------
 

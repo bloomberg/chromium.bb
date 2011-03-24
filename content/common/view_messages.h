@@ -6,6 +6,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "base/process.h"
+#include "base/shared_memory.h"
 #include "content/common/common_param_traits.h"
 #include "content/common/css_colors.h"
 #include "content/common/edit_command.h"
@@ -22,12 +23,14 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webmenuitem.h"
 #include "webkit/glue/webpreferences.h"
+#include "webkit/glue/webaccessibility.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 
@@ -38,6 +41,28 @@
 // Define enums used in this file inside an include-guard.
 #ifndef CONTENT_COMMON_VIEW_MESSAGES_H_
 #define CONTENT_COMMON_VIEW_MESSAGES_H_
+
+struct ViewHostMsg_AccessibilityNotification_Type {
+  enum Value {
+    // The node checked state has changed.
+    NOTIFICATION_TYPE_CHECK_STATE_CHANGED,
+
+    // The node tree structure has changed.
+    NOTIFICATION_TYPE_CHILDREN_CHANGED,
+
+    // The node in focus has changed.
+    NOTIFICATION_TYPE_FOCUS_CHANGED,
+
+    // The document node has loaded.
+    NOTIFICATION_TYPE_LOAD_COMPLETE,
+
+    // The node value has changed.
+    NOTIFICATION_TYPE_VALUE_CHANGED,
+
+    // The text cursor or selection changed.
+    NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED,
+  };
+};
 
 struct ViewHostMsg_RunFileChooser_Mode {
  public:
@@ -124,14 +149,18 @@ IPC_ENUM_TRAITS(NavigationGesture)
 IPC_ENUM_TRAITS(PageZoom::Function)
 IPC_ENUM_TRAITS(RendererPreferencesHintingEnum)
 IPC_ENUM_TRAITS(RendererPreferencesSubpixelRenderingEnum)
+IPC_ENUM_TRAITS(ViewHostMsg_AccessibilityNotification_Type::Value)
 IPC_ENUM_TRAITS(ViewHostMsg_RunFileChooser_Mode::Value)
 IPC_ENUM_TRAITS(ViewMsg_Navigate_Type::Value)
 IPC_ENUM_TRAITS(ViewMsg_StopFinding_Params::Action)
 IPC_ENUM_TRAITS(WebKit::WebContextMenuData::MediaType)
 IPC_ENUM_TRAITS(WebKit::WebMediaPlayerAction::Type)
 IPC_ENUM_TRAITS(WebKit::WebPopupType)
+IPC_ENUM_TRAITS(WebKit::WebTextInputType)
 IPC_ENUM_TRAITS(WebMenuItem::Type)
 IPC_ENUM_TRAITS(WindowContainerType)
+IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::Role)
+IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::State)
 
 IPC_STRUCT_TRAITS_BEGIN(ContextMenuParams)
   IPC_STRUCT_TRAITS_MEMBER(media_type)
@@ -303,6 +332,19 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::CustomContextMenuContext)
   IPC_STRUCT_TRAITS_MEMBER(request_id)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebAccessibility)
+  IPC_STRUCT_TRAITS_MEMBER(id)
+  IPC_STRUCT_TRAITS_MEMBER(name)
+  IPC_STRUCT_TRAITS_MEMBER(value)
+  IPC_STRUCT_TRAITS_MEMBER(role)
+  IPC_STRUCT_TRAITS_MEMBER(state)
+  IPC_STRUCT_TRAITS_MEMBER(location)
+  IPC_STRUCT_TRAITS_MEMBER(attributes)
+  IPC_STRUCT_TRAITS_MEMBER(children)
+  IPC_STRUCT_TRAITS_MEMBER(indirect_child_ids)
+  IPC_STRUCT_TRAITS_MEMBER(html_attributes)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebCookie)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(value)
@@ -470,46 +512,15 @@ IPC_STRUCT_BEGIN(ViewHostMsg_FrameNavigate_Params)
   IPC_STRUCT_MEMBER(std::string, content_state)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
-  // The page_id for this navigation, or -1 if it is a new navigation.  Back,
-  // Forward, and Reload navigations should have a valid page_id.  If the load
-  // succeeds, then this page_id will be reflected in the resultant
-  // ViewHostMsg_FrameNavigate message.
-  IPC_STRUCT_MEMBER(int32, page_id)
+IPC_STRUCT_BEGIN(ViewHostMsg_AccessibilityNotification_Params)
+  // Type of notification.
+  IPC_STRUCT_MEMBER(ViewHostMsg_AccessibilityNotification_Type::Value,
+                    notification_type)
 
-  // If page_id is -1, then pending_history_list_offset will also be -1.
-  // Otherwise, it contains the offset into the history list corresponding to
-  // the current navigation.
-  IPC_STRUCT_MEMBER(int, pending_history_list_offset)
-
-  // Informs the RenderView of where its current page contents reside in
-  // session history and the total size of the session history list.
-  IPC_STRUCT_MEMBER(int, current_history_list_offset)
-  IPC_STRUCT_MEMBER(int, current_history_list_length)
-
-  // The URL to load.
-  IPC_STRUCT_MEMBER(GURL, url)
-
-  // The URL to send in the "Referer" header field. Can be empty if there is
-  // no referrer.
-  // TODO: consider folding this into extra_headers.
-  IPC_STRUCT_MEMBER(GURL, referrer)
-
-  // The type of transition.
-  IPC_STRUCT_MEMBER(PageTransition::Type, transition)
-
-  // Opaque history state (received by ViewHostMsg_UpdateState).
-  IPC_STRUCT_MEMBER(std::string, state)
-
-  // Type of navigation.
-  IPC_STRUCT_MEMBER(ViewMsg_Navigate_Type::Value, navigation_type)
-
-  // The time the request was created
-  IPC_STRUCT_MEMBER(base::Time, request_time)
-
-  // Extra headers (separated by \n) to send during the request.
-  IPC_STRUCT_MEMBER(std::string, extra_headers)
+  // The accessibility node tree.
+  IPC_STRUCT_MEMBER(webkit_glue::WebAccessibility, acc_obj)
 IPC_STRUCT_END()
+
 
 IPC_STRUCT_BEGIN(ViewHostMsg_RunFileChooser_Params)
   IPC_STRUCT_MEMBER(ViewHostMsg_RunFileChooser_Mode::Value, mode)
@@ -637,6 +648,47 @@ IPC_STRUCT_BEGIN(ViewMsg_ClosePage_Params)
   // must be valid when for_cross_site_transition is set, and must be -1
   // otherwise.
   IPC_STRUCT_MEMBER(int, new_request_id)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
+  // The page_id for this navigation, or -1 if it is a new navigation.  Back,
+  // Forward, and Reload navigations should have a valid page_id.  If the load
+  // succeeds, then this page_id will be reflected in the resultant
+  // ViewHostMsg_FrameNavigate message.
+  IPC_STRUCT_MEMBER(int32, page_id)
+
+  // If page_id is -1, then pending_history_list_offset will also be -1.
+  // Otherwise, it contains the offset into the history list corresponding to
+  // the current navigation.
+  IPC_STRUCT_MEMBER(int, pending_history_list_offset)
+
+  // Informs the RenderView of where its current page contents reside in
+  // session history and the total size of the session history list.
+  IPC_STRUCT_MEMBER(int, current_history_list_offset)
+  IPC_STRUCT_MEMBER(int, current_history_list_length)
+
+  // The URL to load.
+  IPC_STRUCT_MEMBER(GURL, url)
+
+  // The URL to send in the "Referer" header field. Can be empty if there is
+  // no referrer.
+  // TODO: consider folding this into extra_headers.
+  IPC_STRUCT_MEMBER(GURL, referrer)
+
+  // The type of transition.
+  IPC_STRUCT_MEMBER(PageTransition::Type, transition)
+
+  // Opaque history state (received by ViewHostMsg_UpdateState).
+  IPC_STRUCT_MEMBER(std::string, state)
+
+  // Type of navigation.
+  IPC_STRUCT_MEMBER(ViewMsg_Navigate_Type::Value, navigation_type)
+
+  // The time the request was created
+  IPC_STRUCT_MEMBER(base::Time, request_time)
+
+  // Extra headers (separated by \n) to send during the request.
+  IPC_STRUCT_MEMBER(std::string, extra_headers)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_New_Params)
@@ -1069,6 +1121,22 @@ IPC_MESSAGE_ROUTED3(ViewMsg_AsyncOpenFile_ACK,
 // window.navigator.onLine should be updated for all WebViews.
 IPC_MESSAGE_ROUTED1(ViewMsg_NetworkStateChanged,
                     bool /* online */)
+
+// Enable accessibility in the renderer process.
+IPC_MESSAGE_ROUTED0(ViewMsg_EnableAccessibility)
+
+// Relay a request from assistive technology to set focus to a given node.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetAccessibilityFocus,
+                    int /* object id */)
+
+// Relay a request from assistive technology to perform the default action
+// on a given node.
+IPC_MESSAGE_ROUTED1(ViewMsg_AccessibilityDoDefaultAction,
+                    int /* object id */)
+
+// Tells the render view that a ViewHostMsg_AccessibilityNotifications
+// message was processed and it can send addition notifications.
+IPC_MESSAGE_ROUTED0(ViewMsg_AccessibilityNotifications_ACK)
 
 
 // Messages sent from the renderer to the browser.
@@ -1579,3 +1647,192 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_TakeFocus,
 IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetRootWindowRect,
                            gfx::NativeViewId /* window */,
                            gfx::Rect /* Out: Window location */)
+
+// Required for updating text input state.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeUpdateTextInputState,
+                    WebKit::WebTextInputType, /* text_input_type */
+                    gfx::Rect /* caret_rect */)
+
+// Required for cancelling an ongoing input method composition.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_ImeCancelComposition)
+
+// WebKit and JavaScript error messages to log to the console
+// or debugger UI.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_AddMessageToConsole,
+                    std::wstring, /* msg */
+                    int32, /* line number */
+                    std::wstring /* source id */)
+
+// Sent by the renderer process to indicate that a plugin instance has
+// crashed.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_CrashedPlugin,
+                    FilePath /* plugin_path */)
+
+// Displays a box to confirm that the user wants to navigate away from the
+// page. Replies true if yes, false otherwise, the reply string is ignored,
+// but is included so that we can use OnJavaScriptMessageBoxClosed.
+IPC_SYNC_MESSAGE_ROUTED2_2(ViewHostMsg_RunBeforeUnloadConfirm,
+                           GURL,        /* in - originating frame URL */
+                           std::wstring /* in - alert message */,
+                           bool         /* out - success */,
+                           std::wstring /* out - This is ignored.*/)
+
+// Sent when the renderer process is done processing a DataReceived
+// message.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_DataReceived_ACK,
+                    int /* request_id */)
+
+IPC_MESSAGE_CONTROL1(ViewHostMsg_RevealFolderInOS,
+                     FilePath /* path */)
+
+// Sent when a provisional load on the main frame redirects.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_DidRedirectProvisionalLoad,
+                    int /* page_id */,
+                    GURL /* last url */,
+                    GURL /* url redirected to */)
+
+// Sent when the renderer changes the zoom level for a particular url, so the
+// browser can update its records.  If remember is true, then url is used to
+// update the zoom level for all pages in that site.  Otherwise, the render
+// view's id is used so that only the menu is updated.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_DidZoomURL,
+                    double /* zoom_level */,
+                    bool /* remember */,
+                    GURL /* url */)
+
+// Updates the minimum/maximum allowed zoom percent for this tab from the
+// default values.  If |remember| is true, then the zoom setting is applied to
+// other pages in the site and is saved, otherwise it only applies to this
+// tab.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateZoomLimits,
+                    int /* minimum_percent */,
+                    int /* maximum_percent */,
+                    bool /* remember */)
+
+#if defined(OS_WIN)
+// Duplicates a shared memory handle from the renderer to the browser. Then
+// the renderer can flush the handle.
+IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_DuplicateSection,
+                           base::SharedMemoryHandle /* renderer handle */,
+                           base::SharedMemoryHandle /* browser handle */)
+#endif
+
+// Asks the browser to create a block of shared memory for the renderer to
+// fill in and pass back to the browser.
+IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_AllocateSharedMemoryBuffer,
+                           uint32 /* buffer size */,
+                           base::SharedMemoryHandle /* browser handle */)
+
+// Notify the browser that this render process can or can't be suddenly
+// terminated.
+IPC_MESSAGE_CONTROL1(ViewHostMsg_SuddenTerminationChanged,
+                     bool /* enabled */)
+
+#if defined(OS_MACOSX)
+// On OSX, we cannot allocated shared memory from within the sandbox, so
+// this call exists for the renderer to ask the browser to allocate memory
+// on its behalf. We return a file descriptor to the POSIX shared memory.
+// If the |cache_in_browser| flag is |true|, then a copy of the shmem is kept
+// by the browser, and it is the caller's repsonsibility to send a
+// ViewHostMsg_FreeTransportDIB message in order to release the cached shmem.
+// In all cases, the caller is responsible for deleting the resulting
+// TransportDIB.
+IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_AllocTransportDIB,
+                            size_t, /* bytes requested */
+                            bool, /* cache in the browser */
+                            TransportDIB::Handle /* DIB */)
+
+// Since the browser keeps handles to the allocated transport DIBs, this
+// message is sent to tell the browser that it may release them when the
+// renderer is finished with them.
+IPC_MESSAGE_CONTROL1(ViewHostMsg_FreeTransportDIB,
+                     TransportDIB::Id /* DIB id */)
+
+// Informs the browser that a plugin has gained or lost focus.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_PluginFocusChanged,
+                    bool, /* focused */
+                    int /* plugin_id */)
+
+// Instructs the browser to start plugin IME.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_StartPluginIme)
+
+//---------------------------------------------------------------------------
+// Messages related to accelerated plugins
+
+// This is sent from the renderer to the browser to allocate a fake
+// PluginWindowHandle on the browser side which is used to identify
+// the plugin to the browser later when backing store is allocated
+// or reallocated. |opaque| indicates whether the plugin's output is
+// considered to be opaque, as opposed to translucent. This message
+// is reused for rendering the accelerated compositor's output.
+// |root| indicates whether the output is supposed to cover the
+// entire window.
+IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_AllocateFakePluginWindowHandle,
+                           bool /* opaque */,
+                           bool /* root */,
+                           gfx::PluginWindowHandle /* id */)
+
+// Destroys a fake window handle previously allocated using
+// AllocateFakePluginWindowHandle.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_DestroyFakePluginWindowHandle,
+                    gfx::PluginWindowHandle /* id */)
+
+// This message, used on Mac OS X 10.5 and earlier (no IOSurface support),
+// is sent from the renderer to the browser on behalf of the plug-in
+// to indicate that a new backing store was allocated for that plug-in
+// instance.
+IPC_MESSAGE_ROUTED4(ViewHostMsg_AcceleratedSurfaceSetTransportDIB,
+                    gfx::PluginWindowHandle /* window */,
+                    int32 /* width */,
+                    int32 /* height */,
+                    TransportDIB::Handle /* handle for the DIB */)
+
+// This message, used on Mac OS X 10.6 and later (where IOSurface is
+// supported), is sent from the renderer to the browser on behalf of the
+// plug-in to indicate that a new backing store was allocated for that
+// plug-in instance.
+//
+// NOTE: the original intent was to pass a mach port as the IOSurface
+// identifier but it looks like that will be a lot of work. For now we pass an
+// ID from IOSurfaceGetID.
+IPC_MESSAGE_ROUTED4(ViewHostMsg_AcceleratedSurfaceSetIOSurface,
+                    gfx::PluginWindowHandle /* window */,
+                    int32 /* width */,
+                    int32 /* height */,
+                    uint64 /* surface_id */)
+
+// This message notifies the browser process that the plug-in
+// swapped the buffers associated with the given "window", which
+// should cause the browser to redraw the various plug-ins'
+// contents.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
+                    gfx::PluginWindowHandle /* window */,
+                    uint64 /* surface_id */)
+#endif
+
+// Sent to notify the browser about renderer accessibility notifications.
+// The browser responds with a ViewMsg_AccessibilityNotifications_ACK.
+IPC_MESSAGE_ROUTED1(
+    ViewHostMsg_AccessibilityNotifications,
+    std::vector<ViewHostMsg_AccessibilityNotification_Params>)
+
+// Opens a file asynchronously. The response returns a file descriptor
+// and an error code from base/platform_file.h.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_AsyncOpenFile,
+                    FilePath /* file path */,
+                    int /* flags */,
+                    int /* message_id */)
+
+//---------------------------------------------------------------------------
+// Request for cryptographic operation messages:
+// These are messages from the renderer to the browser to perform a
+// cryptographic operation.
+
+// Asks the browser process to generate a keypair for grabbing a client
+// certificate from a CA (<keygen> tag), and returns the signed public
+// key and challenge string.
+IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_Keygen,
+                            uint32 /* key size index */,
+                            std::string /* challenge string */,
+                            GURL /* URL of requestor */,
+                            std::string /* signed public key and challenge */)

@@ -10,7 +10,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/scoped_callback_factory.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/safebrowsing_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
@@ -151,7 +150,7 @@ bool PhishingClassifierDelegate::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PhishingClassifierDelegate, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_StartPhishingDetection,
+    IPC_MESSAGE_HANDLER(SafeBrowsingMsg_StartPhishingDetection,
                         OnStartPhishingDetection)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -167,7 +166,7 @@ void PhishingClassifierDelegate::ClassificationDone(bool is_phishy,
     return;
   }
 
-  Send(new SafeBrowsingDetectionHostMsg_DetectedPhishingSite(
+  Send(new SafeBrowsingHostMsg_DetectedPhishingSite(
       routing_id(),
       last_url_sent_to_classifier_,
       phishy_score));

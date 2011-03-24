@@ -5,6 +5,8 @@
 // Multiply-included file, hence no include guard.
 
 #include "chrome/common/autofill_messages.h"
+#include "chrome/common/devtools_messages.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/safebrowsing_messages.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/common/utility_messages.h"

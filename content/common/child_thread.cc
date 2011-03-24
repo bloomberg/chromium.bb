@@ -59,9 +59,8 @@ void ChildThread::Init() {
   channel_->AddFilter(sync_message_filter_.get());
 
 #if !defined(NACL_WIN64)
-  // Currently, the NaCl 64 DLL build requires a lot of extra dependencies to
-  // support IPC messages with parameters, so until there's a need for trace in
-  // NaCl, this is reserved for non-NaCl builds.
+  // This brings in a depenency on gpu, which isn't linked in with NaCl's win64
+  // build.
   channel_->AddFilter(new ChildTraceMessageFilter());
 #endif
 

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/accessibility/browser_accessibility.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/view_messages.h"
 
 using webkit_glue::WebAccessibility;
 
@@ -97,27 +97,27 @@ void BrowserAccessibilityManager::OnAccessibilityNotifications(
     const ViewHostMsg_AccessibilityNotification_Params& param = params[index];
 
     switch (param.notification_type) {
-      case ViewHostMsg_AccessibilityNotification_Params::
+      case ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_CHECK_STATE_CHANGED:
         OnAccessibilityObjectStateChange(param.acc_obj);
         break;
-      case ViewHostMsg_AccessibilityNotification_Params::
+      case ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_CHILDREN_CHANGED:
         OnAccessibilityObjectChildrenChange(param.acc_obj);
         break;
-      case ViewHostMsg_AccessibilityNotification_Params::
+      case ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_FOCUS_CHANGED:
         OnAccessibilityObjectFocusChange(param.acc_obj);
         break;
-      case ViewHostMsg_AccessibilityNotification_Params::
+      case ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_LOAD_COMPLETE:
         OnAccessibilityObjectLoadComplete(param.acc_obj);
         break;
-      case ViewHostMsg_AccessibilityNotification_Params::
+      case ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_VALUE_CHANGED:
         OnAccessibilityObjectValueChange(param.acc_obj);
         break;
-      case ViewHostMsg_AccessibilityNotification_Params::
+      case ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED:
         OnAccessibilityObjectTextChange(param.acc_obj);
         break;
@@ -135,7 +135,7 @@ void BrowserAccessibilityManager::OnAccessibilityObjectStateChange(
     return;
 
   NotifyAccessibilityEvent(
-      ViewHostMsg_AccessibilityNotification_Params::
+      ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_CHECK_STATE_CHANGED,
       new_browser_acc);
 }
@@ -147,7 +147,7 @@ void BrowserAccessibilityManager::OnAccessibilityObjectChildrenChange(
     return;
 
   NotifyAccessibilityEvent(
-      ViewHostMsg_AccessibilityNotification_Params::
+      ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_CHILDREN_CHANGED,
       new_browser_acc);
 }
@@ -164,7 +164,7 @@ void BrowserAccessibilityManager::OnAccessibilityObjectFocusChange(
   } else if (!delegate_) {
     // Mac currently does not have a BrowserAccessibilityDelegate.
     NotifyAccessibilityEvent(
-        ViewHostMsg_AccessibilityNotification_Params::
+        ViewHostMsg_AccessibilityNotification_Type::
         NOTIFICATION_TYPE_FOCUS_CHANGED,
         focus_);
   }
@@ -180,7 +180,7 @@ void BrowserAccessibilityManager::OnAccessibilityObjectLoadComplete(
     SetFocus(root_, false);
 
   NotifyAccessibilityEvent(
-      ViewHostMsg_AccessibilityNotification_Params::
+      ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_LOAD_COMPLETE,
       root_);
   if (delegate_ && delegate_->HasFocus())
@@ -194,7 +194,7 @@ void BrowserAccessibilityManager::OnAccessibilityObjectValueChange(
     return;
 
   NotifyAccessibilityEvent(
-      ViewHostMsg_AccessibilityNotification_Params::
+      ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_VALUE_CHANGED,
       new_browser_acc);
 }
@@ -206,7 +206,7 @@ void BrowserAccessibilityManager::OnAccessibilityObjectTextChange(
     return;
 
   NotifyAccessibilityEvent(
-      ViewHostMsg_AccessibilityNotification_Params::
+      ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED,
       new_browser_acc);
 }
@@ -217,7 +217,7 @@ void BrowserAccessibilityManager::GotFocus() {
     return;
 
   NotifyAccessibilityEvent(
-      ViewHostMsg_AccessibilityNotification_Params::
+      ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_FOCUS_CHANGED,
       focus_);
 }

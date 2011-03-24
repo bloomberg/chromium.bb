@@ -12,7 +12,7 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/safebrowsing_messages.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
@@ -414,10 +414,10 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   WaitAndCheckPreClassificationChecks();
 
   const IPC::Message* msg = process()->sink().GetFirstMessageMatching(
-      ViewMsg_StartPhishingDetection::ID);
+      SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_TRUE(msg);
   Tuple1<GURL> actual_url;
-  ViewMsg_StartPhishingDetection::Read(msg, &actual_url);
+  SafeBrowsingMsg_StartPhishingDetection::Read(msg, &actual_url);
   EXPECT_EQ(url, actual_url.a);
   EXPECT_EQ(rvh()->routing_id(), msg->routing_id());
   process()->sink().ClearMessages();
@@ -430,7 +430,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   WaitAndCheckPreClassificationChecks();
 
   msg = process()->sink().GetFirstMessageMatching(
-      ViewMsg_StartPhishingDetection::ID);
+      SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_FALSE(msg);
 
   // Navigate to a new host, which should cause another IPC.
@@ -440,9 +440,9 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
   msg = process()->sink().GetFirstMessageMatching(
-      ViewMsg_StartPhishingDetection::ID);
+      SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_TRUE(msg);
-  ViewMsg_StartPhishingDetection::Read(msg, &actual_url);
+  SafeBrowsingMsg_StartPhishingDetection::Read(msg, &actual_url);
   EXPECT_EQ(url, actual_url.a);
   EXPECT_EQ(rvh()->routing_id(), msg->routing_id());
   process()->sink().ClearMessages();
@@ -453,7 +453,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
   msg = process()->sink().GetFirstMessageMatching(
-      ViewMsg_StartPhishingDetection::ID);
+      SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_FALSE(msg);
 
   // If the connection is proxied, no IPC should be triggered.
@@ -466,7 +466,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
   msg = process()->sink().GetFirstMessageMatching(
-      ViewMsg_StartPhishingDetection::ID);
+      SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_FALSE(msg);
 
   // If the tab is off-the-record there should be no IPC.  Also, we shouldn't
@@ -476,7 +476,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
   msg = process()->sink().GetFirstMessageMatching(
-      ViewMsg_StartPhishingDetection::ID);
+      SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_FALSE(msg);
 
   // If the URL is on the csd whitelist, no IPC should be triggered.
@@ -486,7 +486,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
   msg = process()->sink().GetFirstMessageMatching(
-      ViewMsg_StartPhishingDetection::ID);
+      SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_FALSE(msg);
 
   // If item is in the cache but it isn't valid, we will classify regardless
@@ -497,9 +497,9 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
   msg = process()->sink().GetFirstMessageMatching(
-      ViewMsg_StartPhishingDetection::ID);
+      SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_TRUE(msg);
-  ViewMsg_StartPhishingDetection::Read(msg, &actual_url);
+  SafeBrowsingMsg_StartPhishingDetection::Read(msg, &actual_url);
   EXPECT_EQ(url, actual_url.a);
   EXPECT_EQ(rvh()->routing_id(), msg->routing_id());
   process()->sink().ClearMessages();
@@ -512,7 +512,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
   msg = process()->sink().GetFirstMessageMatching(
-      ViewMsg_StartPhishingDetection::ID);
+      SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_FALSE(msg);
 
   // If result is cached, we will try and display the blocking page directly
@@ -537,7 +537,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
   msg = process()->sink().GetFirstMessageMatching(
-      ViewMsg_StartPhishingDetection::ID);
+      SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_FALSE(msg);
 }
 

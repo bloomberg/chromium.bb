@@ -11,7 +11,6 @@
 #include "base/file_path.h"
 #include "base/platform_file.h"
 #include "base/values.h"
-#include "chrome/common/common_param_traits.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "content/common/common_param_traits.h"
 #include "content/common/indexed_db_key.h"
@@ -26,18 +25,18 @@
 
 #define IPC_MESSAGE_START UtilityMsgStart
 
-// Singly-included secton, not yet converted
-#ifndef CHROME_COMMON_UTILITY_MESSAGES_H_
-#define CHROME_COMMON_UTILITY_MESSAGES_H_
+IPC_STRUCT_TRAITS_BEGIN(printing::PageRange)
+  IPC_STRUCT_TRAITS_MEMBER(from)
+  IPC_STRUCT_TRAITS_MEMBER(to)
+IPC_STRUCT_TRAITS_END()
 
-class FilePath;
-class IndexedDBKey;
-class SerializedScriptValue;
-class SkBitmap;
+IPC_STRUCT_TRAITS_BEGIN(printing::PrinterCapsAndDefaults)
+  IPC_STRUCT_TRAITS_MEMBER(printer_capabilities)
+  IPC_STRUCT_TRAITS_MEMBER(caps_mime_type)
+  IPC_STRUCT_TRAITS_MEMBER(printer_defaults)
+  IPC_STRUCT_TRAITS_MEMBER(defaults_mime_type)
+IPC_STRUCT_TRAITS_END()
 
-#endif  // CHROME_COMMON_UTILITY_MESSAGES_H_
-
-// Traits for UpdateManifest::Result.
 IPC_STRUCT_TRAITS_BEGIN(UpdateManifest::Result)
   IPC_STRUCT_TRAITS_MEMBER(extension_id)
   IPC_STRUCT_TRAITS_MEMBER(version)
@@ -46,7 +45,6 @@ IPC_STRUCT_TRAITS_BEGIN(UpdateManifest::Result)
   IPC_STRUCT_TRAITS_MEMBER(crx_url)
 IPC_STRUCT_TRAITS_END()
 
-// Traits for UpdateManifest::Results
 IPC_STRUCT_TRAITS_BEGIN(UpdateManifest::Results)
   IPC_STRUCT_TRAITS_MEMBER(list)
   IPC_STRUCT_TRAITS_MEMBER(daystart_elapsed_seconds)

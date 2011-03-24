@@ -29,6 +29,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
+#include "chrome/common/safebrowsing_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/automation/dom_automation_v8_extension.h"
 #include "chrome/renderer/devtools_agent_filter.h"
@@ -697,7 +698,7 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_EnableAutoSpellCorrect,
                         OnSpellCheckEnableAutoSpellCorrect)
     IPC_MESSAGE_HANDLER(GpuMsg_GpuChannelEstablished, OnGpuChannelEstablished)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetPhishingModel, OnSetPhishingModel)
+    IPC_MESSAGE_HANDLER(SafeBrowsingMsg_SetPhishingModel, OnSetPhishingModel)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

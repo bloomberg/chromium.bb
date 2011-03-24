@@ -330,64 +330,6 @@ struct ViewHostMsg_DomMessage_Params {
   bool user_gesture;
 };
 
-struct ViewHostMsg_AccessibilityNotification_Params {
-  enum NotificationType {
-    // The node checked state has changed.
-    NOTIFICATION_TYPE_CHECK_STATE_CHANGED,
-
-    // The node tree structure has changed.
-    NOTIFICATION_TYPE_CHILDREN_CHANGED,
-
-    // The node in focus has changed.
-    NOTIFICATION_TYPE_FOCUS_CHANGED,
-
-    // The document node has loaded.
-    NOTIFICATION_TYPE_LOAD_COMPLETE,
-
-    // The node value has changed.
-    NOTIFICATION_TYPE_VALUE_CHANGED,
-
-    // The text cursor or selection changed.
-    NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED,
-  };
-
-  // Type of notification.
-  NotificationType notification_type;
-
-  // The accessibility node tree.
-  webkit_glue::WebAccessibility acc_obj;
-};
-
-// A node is essentially a frame.
-struct ViewHostMsg_MalwareDOMDetails_Node {
-  ViewHostMsg_MalwareDOMDetails_Node();
-  ~ViewHostMsg_MalwareDOMDetails_Node();
-
-  // URL of this resource. Can be empty.
-  GURL url;
-
-  // If this resource was in the "src" attribute of a tag, this is the tagname
-  // (eg "IFRAME"). Can be empty.
-  std::string tag_name;
-
-  // URL of the parent node. Can be empty.
-  GURL parent;
-
-  // children of this node. Can be emtpy.
-  std::vector<GURL> children;
-};
-
-// Parameters to describe interesting details from a rendered page that lead
-// to a malware warning.
-struct ViewHostMsg_MalwareDOMDetails_Params {
-  ViewHostMsg_MalwareDOMDetails_Params();
-  ~ViewHostMsg_MalwareDOMDetails_Params();
-
-  // All the nodes we extracted.
-  std::vector<ViewHostMsg_MalwareDOMDetails_Node> nodes;
-};
-
-
 namespace IPC {
 
 class Message;
@@ -475,30 +417,6 @@ struct ParamTraits<ViewMsg_ExtensionLoaded_Params> {
 template <>
 struct ParamTraits<ViewHostMsg_DomMessage_Params> {
   typedef ViewHostMsg_DomMessage_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewHostMsg_AccessibilityNotification_Params> {
-  typedef ViewHostMsg_AccessibilityNotification_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewHostMsg_MalwareDOMDetails_Params> {
-  typedef ViewHostMsg_MalwareDOMDetails_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewHostMsg_MalwareDOMDetails_Node> {
-  typedef ViewHostMsg_MalwareDOMDetails_Node param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

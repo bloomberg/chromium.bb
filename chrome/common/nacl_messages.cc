@@ -5,7 +5,6 @@
 // Get basic type definitions.
 #define IPC_MESSAGE_IMPL
 #include "chrome/common/nacl_messages.h"
-#include "chrome/common/common_param_traits.h"
 
 // Generate constructors.
 #include "ipc/struct_constructor_macros.h"

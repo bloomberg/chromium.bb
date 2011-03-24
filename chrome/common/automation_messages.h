@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/common/automation_constants.h"
-#include "chrome/common/common_param_traits.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/security_style.h"
 #include "content/common/common_param_traits.h"
 #include "content/common/page_type.h"

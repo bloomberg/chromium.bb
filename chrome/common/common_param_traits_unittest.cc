@@ -7,7 +7,6 @@
 
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/common/common_param_traits.h"
 #include "content/common/common_param_traits.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
@@ -175,84 +174,6 @@ TEST(IPCMessageTest, DictionaryValue) {
   bad_msg.WriteInt(99);
   iter = NULL;
   EXPECT_FALSE(IPC::ReadParam(&bad_msg, &iter, &output));
-}
-
-// Tests printing::PageRange serialization
-TEST(IPCMessageTest, PageRange) {
-  printing::PageRange input;
-  input.from = 2;
-  input.to = 45;
-  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
-  IPC::ParamTraits<printing::PageRange>::Write(&msg, input);
-
-  printing::PageRange output;
-  void* iter = NULL;
-  EXPECT_TRUE(IPC::ParamTraits<printing::PageRange>::Read(
-      &msg, &iter, &output));
-  EXPECT_TRUE(input == output);
-}
-
-// Tests printing::Emf serialization.
-// TODO(sanjeevr): Make this test meaningful for non-Windows platforms. We
-// need to initialize the metafile using alternate means on the other OSes.
-#if defined(OS_WIN)
-TEST(IPCMessageTest, Metafile) {
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::Create());
-  RECT test_rect = {0, 0, 100, 100};
-  // Create a metafile using the screen DC as a reference.
-  metafile->Init();
-  metafile->FinishDocument();
-
-  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
-  IPC::ParamTraits<printing::NativeMetafile>::Write(&msg, *metafile);
-
-  scoped_ptr<printing::NativeMetafile> output(
-      printing::NativeMetafileFactory::Create());
-  void* iter = NULL;
-  EXPECT_TRUE(IPC::ParamTraits<printing::NativeMetafile>::Read(
-      &msg, &iter, output.get()));
-
-  EXPECT_EQ(metafile->GetDataSize(), output->GetDataSize());
-  EXPECT_EQ(metafile->GetPageBounds(1), output->GetPageBounds(1));
-  EXPECT_EQ(::GetDeviceCaps(metafile->context(), LOGPIXELSX),
-      ::GetDeviceCaps(output->context(), LOGPIXELSX));
-
-  // Also test the corrupt case.
-  IPC::Message bad_msg(1, 2, IPC::Message::PRIORITY_NORMAL);
-  // Write some bogus metafile data.
-  const size_t bogus_data_size = metafile->GetDataSize() * 2;
-  scoped_array<char> bogus_data(new char[bogus_data_size]);
-  memset(bogus_data.get(), 'B', bogus_data_size);
-  bad_msg.WriteData(bogus_data.get(), bogus_data_size);
-  // Make sure we don't read out the metafile!
-  scoped_ptr<printing::NativeMetafile> bad_output(
-      printing::NativeMetafileFactory::Create());
-  iter = NULL;
-  EXPECT_FALSE(IPC::ParamTraits<printing::NativeMetafile>::Read(
-      &bad_msg, &iter, bad_output.get()));
-}
-#endif  // defined(OS_WIN)
-
-// Tests printing::PrinterCapsAndDefaults serialization
-TEST(IPCMessageTest, PrinterCapsAndDefaults) {
-  printing::PrinterCapsAndDefaults input;
-  input.printer_capabilities = "Test Capabilities";
-  input.caps_mime_type = "text/plain";
-  input.printer_defaults = "Test Defaults";
-  input.defaults_mime_type = "text/plain";
-
-  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
-  IPC::ParamTraits<printing::PrinterCapsAndDefaults>::Write(&msg, input);
-
-  printing::PrinterCapsAndDefaults output;
-  void* iter = NULL;
-  EXPECT_TRUE(IPC::ParamTraits<printing::PrinterCapsAndDefaults>::Read(
-      &msg, &iter, &output));
-  EXPECT_TRUE(input.printer_capabilities == output.printer_capabilities);
-  EXPECT_TRUE(input.caps_mime_type == output.caps_mime_type);
-  EXPECT_TRUE(input.printer_defaults == output.printer_defaults);
-  EXPECT_TRUE(input.defaults_mime_type == output.defaults_mime_type);
 }
 
 // Tests net::HostPortPair serialization

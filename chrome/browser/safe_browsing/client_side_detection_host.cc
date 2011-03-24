@@ -16,7 +16,6 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/safebrowsing_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -194,7 +193,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // |tab_contents_| is safe to call as we will be destructed
     // before it is.
     RenderViewHost* rvh = tab_contents_->render_view_host();
-    rvh->Send(new ViewMsg_StartPhishingDetection(
+    rvh->Send(new SafeBrowsingMsg_StartPhishingDetection(
         rvh->routing_id(), params_.url));
   }
 
@@ -261,7 +260,7 @@ ClientSideDetectionHost::~ClientSideDetectionHost() {
 bool ClientSideDetectionHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ClientSideDetectionHost, message)
-    IPC_MESSAGE_HANDLER(SafeBrowsingDetectionHostMsg_DetectedPhishingSite,
+    IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_DetectedPhishingSite,
                         OnDetectedPhishingSite)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

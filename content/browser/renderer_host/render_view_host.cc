@@ -27,6 +27,7 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
+#include "chrome/common/safebrowsing_messages.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/url_constants.h"
@@ -1318,7 +1319,7 @@ void RenderViewHost::OnUserGesture() {
 }
 
 void RenderViewHost::GetMalwareDOMDetails() {
-  Send(new ViewMsg_GetMalwareDOMDetails(routing_id()));
+  Send(new SafeBrowsingMsg_GetMalwareDOMDetails(routing_id()));
 }
 
 void RenderViewHost::GetAllSavableResourceLinksForCurrentPage(
@@ -1576,7 +1577,7 @@ void RenderViewHost::OnAccessibilityNotifications(
       const ViewHostMsg_AccessibilityNotification_Params& param = params[i];
 
       if (param.notification_type ==
-              ViewHostMsg_AccessibilityNotification_Params::
+              ViewHostMsg_AccessibilityNotification_Type::
                   NOTIFICATION_TYPE_LOAD_COMPLETE) {
         // TODO(ctguil): Remove when mac processes OnAccessibilityNotifications.
         if (view())

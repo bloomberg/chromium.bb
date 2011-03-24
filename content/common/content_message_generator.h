@@ -4,9 +4,13 @@
 
 // Multiply-included file, hence no include guard.
 
+#include "content/common/child_process_messages.h"
+
+// NaCl's 64 bit Windows build only links with a bare-minimum number of
+// libraries.
+#if !defined(NACL_WIN64)
 #include "content/common/appcache_messages.h"
 #include "content/common/audio_messages.h"
-#include "content/common/child_process_messages.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/database_messages.h"
 #include "content/common/desktop_notification_messages.h"
@@ -28,3 +32,4 @@
 #include "content/common/view_messages.h"
 #include "content/common/webblob_messages.h"
 #include "content/common/worker_messages.h"
+#endif

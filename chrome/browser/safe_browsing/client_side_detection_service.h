@@ -94,7 +94,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
   // (unroutable) network block.  Pages which are hosted on these IP addresses
   // are exempt from client-side phishing detection.  This is called by the
   // ClientSideDetectionHost prior to sending the renderer a
-  // ViewMsg_StartPhishingDetection IPC.
+  // SafeBrowsingMsg_StartPhishingDetection IPC.
   //
   // ip_address should be a dotted IPv4 address, or an unbracketed IPv6
   // address.

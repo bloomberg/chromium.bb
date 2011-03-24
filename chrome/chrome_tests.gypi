@@ -1741,7 +1741,6 @@
         'common/net/gaia/gaia_oauth_client_unittest.cc',
         'common/net/gaia/google_service_auth_error_unittest.cc',
         'common/net/url_fetcher_unittest.cc',
-        'common/render_messages_unittest.cc',
         'common/service_process_util_unittest.cc',
         'common/switch_utils_unittest.cc',
         'common/thumbnail_score_unittest.cc',

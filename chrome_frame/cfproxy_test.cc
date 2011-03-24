@@ -4,6 +4,7 @@
 
 #include <string>
 #include "base/file_path.h"
+#include "base/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome_frame/cfproxy_private.h"

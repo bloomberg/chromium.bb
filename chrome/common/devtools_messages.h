@@ -44,7 +44,7 @@
 
 #include "ipc/ipc_message_macros.h"
 
-// Singly-included section not yet converted.
+// Singly-included section.
 #ifndef CHROME_COMMON_DEVTOOLS_MESSAGES_H_
 #define CHROME_COMMON_DEVTOOLS_MESSAGES_H_
 
@@ -100,4 +100,3 @@ IPC_MESSAGE_CONTROL2(DevToolsAgentMsg_InspectElement,
 
 // Enables/disables the apu agent.
 IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_SetApuAgentEnabled, bool /* enabled */)
-

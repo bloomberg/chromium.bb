@@ -9,7 +9,7 @@
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/view_messages.h"
 
 #if defined(OS_CHROMEOS)
 #include <fcntl.h>

@@ -6,7 +6,7 @@
 #include "base/scoped_comptr_win.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "chrome/browser/accessibility/browser_accessibility_win.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using webkit_glue::WebAccessibility;
@@ -193,7 +193,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   text.name = L"new text";
   ViewHostMsg_AccessibilityNotification_Params param;
   param.notification_type =
-      ViewHostMsg_AccessibilityNotification_Params::
+      ViewHostMsg_AccessibilityNotification_Type::
         NOTIFICATION_TYPE_CHILDREN_CHANGED;
   param.acc_obj = text;
   std::vector<ViewHostMsg_AccessibilityNotification_Params> notifications;
@@ -265,7 +265,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   root.children.clear();
   ViewHostMsg_AccessibilityNotification_Params param;
   param.notification_type =
-      ViewHostMsg_AccessibilityNotification_Params::
+      ViewHostMsg_AccessibilityNotification_Type::
         NOTIFICATION_TYPE_CHILDREN_CHANGED;
   param.acc_obj = root;
   std::vector<ViewHostMsg_AccessibilityNotification_Params> notifications;
