@@ -102,10 +102,16 @@ class LocalRietveld(object):
             self.out = open(os.devnull, 'w')
             self.err = open(os.devnull, 'w')
         output = []
+        cmd = [
+            self.dev_app,
+            '--skip_sdk_update_check',
+            '.',
+            '--port=%d' % self.port,
+            '--datastore_path=' + os.path.join(self.rietveld, 'tmp.db'),
+            '-c']
         self.test_server = subprocess.Popen(
-            [self.dev_app, self.rietveld, '--port=%d' % self.port,
-            '--datastore_path=' + os.path.join(self.rietveld, 'tmp.db'), '-c'],
-            stdout=self.out, stderr=self.err, env=self.env)
+            cmd, stdout=self.out, stderr=self.err, env=self.env,
+            cwd=self.rietveld)
         # Loop until port 127.0.0.1:port opens or the process dies.
         while not test_port(self.port):
             self.test_server.poll()
