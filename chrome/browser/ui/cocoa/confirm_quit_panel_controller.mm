@@ -97,6 +97,45 @@ const NSTimeInterval kWindowFadeAnimationDuration = 0.2;
 
 @end
 
+// Animation ///////////////////////////////////////////////////////////////////
+
+// This animation will run through all the windows of the passed-in
+// NSApplication and will fade their alpha value to 0.0. When the animation is
+// complete, this will release itself.
+@interface FadeAllWindowsAnimation : NSAnimation<NSAnimationDelegate> {
+ @private
+  NSApplication* application_;
+}
+- (id)initWithApplication:(NSApplication*)app
+        animationDuration:(NSTimeInterval)duration;
+@end
+
+
+@implementation FadeAllWindowsAnimation
+
+- (id)initWithApplication:(NSApplication*)app
+        animationDuration:(NSTimeInterval)duration {
+  if ((self = [super initWithDuration:duration
+                       animationCurve:NSAnimationLinear])) {
+    application_ = app;
+    [self setDelegate:self];
+  }
+  return self;
+}
+
+- (void)setCurrentProgress:(NSAnimationProgress)progress {
+  for (NSWindow* window in [application_ windows]) {
+    [window setAlphaValue:1.0 - progress];
+  }
+}
+
+- (void)animationDidStop:(NSAnimation*)anim {
+  DCHECK_EQ(self, anim);
+  [self autorelease];
+}
+
+@end
+
 // Private Interface ///////////////////////////////////////////////////////////
 
 @interface ConfirmQuitPanelController (Private)
@@ -314,20 +353,11 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 // Iterates through the list of open windows and hides them all.
 - (void)hideAllWindowsForApplication:(NSApplication*)app
                         withDuration:(NSTimeInterval)duration {
-  [NSAnimationContext beginGrouping];
-  [[NSAnimationContext currentContext] setDuration:duration];
-  for (NSWindow* window in [app windows]) {
-    // Windows that are set to animate and have a delegate do no expect to be
-    // animated by other things and could result in an invalid state. If a
-    // window is set up like so, just force the alpha value to 0. Otherwise,
-    // animate all pretty and stuff.
-    if (duration > 0 && ![[window animationForKey:@"alphaValue"] delegate]) {
-      [[window animator] setAlphaValue:0.0];
-    } else {
-      [window setAlphaValue:0.0];
-    }
-  }
-  [NSAnimationContext endGrouping];
+  FadeAllWindowsAnimation* animation =
+      [[FadeAllWindowsAnimation alloc] initWithApplication:app
+                                         animationDuration:duration];
+  // Releases itself when the animation stops.
+  [animation startAnimation];
 }
 
 + (NSString*)keyCombinationForAccelerator:(const ui::AcceleratorCocoa&)item {
