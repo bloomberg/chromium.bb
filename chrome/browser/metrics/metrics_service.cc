@@ -1515,7 +1515,7 @@ void MetricsService::GetSettingsFromUploadNode(xmlNodePtr upload_node) {
 void MetricsService::GetSettingsFromUploadNodeRecursive(
     xmlNodePtr node,
     InheritedProperties props,
-    std::string path_prefix,
+    const std::string& path_prefix,
     bool uploadOn) {
   props.OverwriteWhereNeeded(node);
 

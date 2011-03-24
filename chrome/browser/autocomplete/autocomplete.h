@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -701,7 +701,7 @@ class AutocompleteController : public ACProviderListener {
 // The data to log (via the metrics service) when the user selects an item
 // from the omnibox popup.
 struct AutocompleteLog {
-  AutocompleteLog(string16 text,
+  AutocompleteLog(const string16& text,
                   AutocompleteInput::Type input_type,
                   size_t selected_index,
                   size_t inline_autocompleted_length,

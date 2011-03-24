@@ -63,7 +63,7 @@ class ExtensionBookmarkEventRouter : public BookmarkModelObserver {
   // Helper to actually dispatch an event to extension listeners.
   void DispatchEvent(Profile* profile,
                      const char* event_name,
-                     const std::string json_args);
+                     const std::string& json_args);
 
   // These are stored so that Observe can be called multiple times safely.
   // This way the caller doesn't have to know whether it's already observing

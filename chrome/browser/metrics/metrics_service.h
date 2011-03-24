@@ -305,7 +305,7 @@ class MetricsService : public NotificationObserver,
   void GetSettingsFromUploadNode(xmlNodePtr upload_node);
   void GetSettingsFromUploadNodeRecursive(xmlNodePtr node,
       InheritedProperties props,
-      std::string path_prefix,
+      const std::string& path_prefix,
       bool uploadOn);
 
   // NodeProbabilityTest gets called at every node in the tree traversal

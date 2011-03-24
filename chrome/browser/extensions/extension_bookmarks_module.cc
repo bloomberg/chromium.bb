@@ -130,7 +130,7 @@ void ExtensionBookmarkEventRouter::Observe(BookmarkModel* model) {
 
 void ExtensionBookmarkEventRouter::DispatchEvent(Profile *profile,
                                                  const char* event_name,
-                                                 const std::string json_args) {
+                                                 const std::string& json_args) {
   if (profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToRenderers(
         event_name, json_args, NULL, GURL());

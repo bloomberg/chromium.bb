@@ -77,7 +77,7 @@ class MorkReader {
 
   // A MorkColumn describes a column of the table.
   struct MorkColumn {
-    MorkColumn(IDString i, const std::string& n) : id(i), name(n) { }
+    MorkColumn(const IDString& i, const std::string& n) : id(i), name(n) { }
 
     IDString id;
     std::string name;
