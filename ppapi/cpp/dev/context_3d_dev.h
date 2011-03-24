@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CPP_DEV_GRAPHICS_3D_DEV_H_
-#define PPAPI_CPP_DEV_GRAPHICS_3D_DEV_H_
+#ifndef PPAPI_CPP_DEV_CONTEXT_3D_DEV_H_
+#define PPAPI_CPP_DEV_CONTEXT_3D_DEV_H_
 
 #include "ppapi/c/dev/ppb_context_3d_dev.h"
 
@@ -34,5 +34,5 @@ class Context3D_Dev : public Resource {
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_GRAPHICS_3D_DEV_H_
+#endif  // PPAPI_CPP_DEV_CONTEXT_3D_DEV_H_
 
