@@ -119,6 +119,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="G:\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;NACL_WINDOWS;NACL_BUILD_SUBARCH 32"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -328,10 +329,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\debug_breakin_point.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\debug_core.cpp"
 				>
 			</File>
@@ -353,6 +350,10 @@
 			</File>
 			<File
 				RelativePath=".\debug_server_main.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\debug_simple_inside_observer.cpp"
 				>
 			</File>
 			<File
@@ -418,10 +419,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\debug_breakin_point.h"
-				>
-			</File>
-			<File
 				RelativePath=".\debug_core.h"
 				>
 			</File>
@@ -439,6 +436,10 @@
 			</File>
 			<File
 				RelativePath=".\debug_server.h"
+				>
+			</File>
+			<File
+				RelativePath=".\debug_simple_inside_observer.h"
 				>
 			</File>
 			<File

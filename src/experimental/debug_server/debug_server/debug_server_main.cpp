@@ -7,6 +7,7 @@
 #include "debug_debug_event.h"
 #include "rsp_parser.h"
 #include "debug_server.h"
+#include "debug_simple_inside_observer.h"
 
 #pragma warning(disable : 4996)
 
@@ -25,7 +26,6 @@ void LogEvent(const json::Value& event_obj) {
     fprintf(file, "%s\n", text.c_str());
     fflush(file);
   }
-
 }
 
 bool print_events = true;
@@ -121,6 +121,11 @@ void PrintLog( const std::string& log_file_name) {
 }  // namespace
 
 int main(int argc, char* argv[]) {
+
+//  long long ptr = 0x1122334455667788;
+//  char tmp[sizeof(ptr)];
+//  memcpy(tmp, &ptr, sizeof(ptr));
+  
   file = fopen("log.txt", "wt");
 
   std::string error;
@@ -143,6 +148,10 @@ int main(int argc, char* argv[]) {
   debug::Core dbg_core;
   MyCoreEventObserver ev_observer(&dbg_core);
   dbg_core.SetEventObserver(&ev_observer);
+  debug::StandardContinuePolicy continue_policy(dbg_core);
+  dbg_core.SetContinuePolicy(&continue_policy);
+  debug::SimpleInsideObserver ins_observer;
+  dbg_core.SetInsideObserver(&ins_observer);
 
 #ifdef _WIN64
   const char* cmd = "D:\\chromuim_648_12\\src\\build\\Debug\\chrome.exe"; // --no-sandbox";
@@ -193,6 +202,11 @@ int main(int argc, char* argv[]) {
           int sn = sscanf(cmd + strlen("br "), "%p", &addr);
           if ((NULL != process) && (sn != 0))
             process->SetBreakpoint(addr);
+        } else if (0 == strncmp(cmd, "rmbr ", strlen("rmbr "))) {
+          void* addr = 0;
+          int sn = sscanf(cmd + strlen("rmbr "), "%p", &addr);
+          if ((NULL != process) && (sn != 0))
+            process->RemoveBreakpoint(addr);
         } else if (0 == strcmp(cmd, "e-")) {
           print_events = false;
         } else if (0 == strcmp(cmd, "e+")) {
@@ -227,7 +241,7 @@ int main(int argc, char* argv[]) {
                 int id = threads[i];
                 debug::DebuggeeThread* thr = proc->GetThread(id);
                 bool current = (thr == thread);
-                const char* status = thr->GetStateName();
+                const char* status = thr->GetStateName(thr->GetState());
                 const char* is_nexe = thr->is_nexe_ ? "[I'm nexe thread]" : "";
                 printf("   %s%d "/*"start=0x%p "*/"ip=%p %s %s\n",
                     current ? "*" : " ",
@@ -280,11 +294,21 @@ int main(int argc, char* argv[]) {
         } else if (0 == strcmp(cmd, "s")) {
           if (NULL != process)
             process->SingleStep();
+        } else if (0 == strcmp(cmd, "ip")) {
+          if (NULL != thread) {
+            long long ip = thread->GetIP();
+            printf("%p\n", (void*)ip);
+          }
+        } else if (0 == strcmp(cmd, "ip++")) {
+          if (NULL != thread) {
+            long long ip = thread->GetIP();
+            ip++;
+            thread->SetIP(ip);
+            printf("%p\n", (void*)ip);
+          }
         } else if (0 == strcmp(cmd, "quit")) {
           dbg_core.Stop();
           break;
-        } else if (0 == strcmp(cmd, "pm")) {
-          loc_PrintProcMemory(process);
         }
       }
     } while(true);
