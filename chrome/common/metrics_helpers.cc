@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -401,7 +401,8 @@ void MetricsLogBase::RecordHistogramDelta(
   WriteAttribute("name", CreateBase64Hash(histogram.histogram_name()));
 
   WriteInt64Attribute("sum", snapshot.sum());
-  WriteInt64Attribute("sumsquares", snapshot.square_sum());
+  // TODO(jar): Remove sumsquares when protobuffer accepts this as optional.
+  WriteInt64Attribute("sumsquares", 0);
 
   for (size_t i = 0; i < histogram.bucket_count(); i++) {
     if (snapshot.counts(i)) {
