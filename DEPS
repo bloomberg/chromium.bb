@@ -71,7 +71,7 @@ deps = {
     "http://snappy.googlecode.com/svn/trunk@2",
 
   "src/tools/gyp":
-    (Var("googlecode_url") % "gyp") + "/trunk@903",
+    (Var("googlecode_url") % "gyp") + "/trunk@904",
 
   "src/v8":
     (Var("googlecode_url") % "v8") + "/trunk@" + Var("v8_revision"),
