@@ -733,7 +733,13 @@ class SVN(object):
     else:
       if info.get("Node Kind") != "directory":
         # Normal simple case.
-        data = SVN.Capture(command)
+        try:
+          data = SVN.Capture(command)
+        except gclient_utils.CheckCallError:
+          if revision:
+            data = GenFakeDiff(filename)
+          else:
+            raise
       # Otherwise silently ignore directories.
     return data
 
