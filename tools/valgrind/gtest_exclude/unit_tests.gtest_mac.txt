@@ -19,18 +19,6 @@ PrefsControllerTest.GetToolbarItemForPage
 PrefsControllerTest.ShowAndClose
 PrefsControllerTest.SwitchToPage
 
-# MultiProcessNotificationTests crash on the valgrind bot.
-# See http://crbug.com/69641.
-MultiProcessNotificationTest.BasicCreationTest
-MultiProcessNotificationTest.PostInProcessNotification
-MultiProcessNotificationTest.MultiListener
-MultiProcessNotificationTest.PostProfileNotification
-MultiProcessNotificationTest.PostUserNotification
-MultiProcessNotificationTest.PostSystemNotification
-MultiProcessNotificationTest.ProfileCrossDomainPosting
-MultiProcessNotificationTest.UserCrossDomainPosting
-MultiProcessNotificationTest.SystemCrossDomainPosting
-
 # Hangs
 # See http://crbug.com/75733
 BookmarkBarControllerTest.DeleteFromOffTheSideWhileItIsOpen
@@ -39,6 +27,3 @@ BookmarkBarControllerTest.DeleteFromOffTheSideWhileItIsOpen
 # See http://crbug.com/76932
 ProfileSyncServicePasswordTest.EmptyNativeEmptySync
 
-# Fails under Valgrind.
-# See http://crbug.com/77064
-ServiceProcessStateFileManipulationTest.DeleteBundle

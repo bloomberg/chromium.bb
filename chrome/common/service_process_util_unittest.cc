@@ -493,8 +493,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, DeleteFile) {
   ASSERT_TRUE(mock_launchd()->delete_called());
 }
 
-// Flaky on mac.  http://crbug.com/77217
-TEST_F(ServiceProcessStateFileManipulationTest, FLAKY_DeleteBundle) {
+TEST_F(ServiceProcessStateFileManipulationTest, DeleteBundle) {
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,
       NewRunnableFunction(&DeleteFunc, bundle_path()));

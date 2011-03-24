@@ -29,6 +29,10 @@ CFDictionaryRef CreateServiceProcessLaunchdPlist(CommandLine* cmd_line,
                                                  bool for_auto_launch);
 #endif  // OS_MACOSX
 
+namespace base {
+class WaitableEvent;
+}
+
 // Watches for |kShutDownMessage| to be written to the file descriptor it is
 // watching. When it reads |kShutDownMessage|, it performs |shutdown_task_|.
 // Used here to monitor the socket listening to g_signal_socket.
@@ -57,7 +61,7 @@ struct ServiceProcessState::StateData
 
   // WatchFileDescriptor needs to be set up by the thread that is going
   // to be monitoring it.
-  void SignalReady();
+  void SignalReady(base::WaitableEvent* signal, bool* success);
 
 
   // TODO(jhawkins): Either make this a class or rename these public member
