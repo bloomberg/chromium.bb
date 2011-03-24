@@ -28,6 +28,9 @@ class ExtensionBrowserTest
   // Same as above, but enables the extension in incognito mode first.
   bool LoadExtensionIncognito(const FilePath& path);
 
+  // Loads extension and imitates that it is a component extension.
+  bool LoadExtensionAsComponent(const FilePath& path);
+
   // By default, unpacked extensions have file access: this loads them with
   // that permission removed.
   bool LoadExtensionNoFileAccess(const FilePath& path);

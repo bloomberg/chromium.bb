@@ -205,6 +205,7 @@ const char Extension::kBookmarkPermission[] = "bookmarks";
 const char Extension::kContextMenusPermission[] = "contextMenus";
 const char Extension::kContentSettingsPermission[] = "contentSettings";
 const char Extension::kCookiePermission[] = "cookies";
+const char Extension::kChromeosInfoPrivatePermissions[] = "chromeosInfoPrivate";
 const char Extension::kDebuggerPermission[] = "debugger";
 const char Extension::kExperimentalPermission[] = "experimental";
 const char Extension::kGeolocationPermission[] = "geolocation";
@@ -237,6 +238,7 @@ const Extension::Permission Extension::kPermissions[] = {
   { kTabPermission, IDS_EXTENSION_PROMPT_WARNING_TABS },
   { kUnlimitedStoragePermission, 0 },
   { kWebstorePrivatePermission, 0 },
+  { kChromeosInfoPrivatePermissions, 0}
 };
 const size_t Extension::kNumPermissions =
     arraysize(Extension::kPermissions);
@@ -1902,6 +1904,11 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       // TODO(asargent) - We want a more general purpose mechanism for this,
       // and better error messages. (http://crbug.com/54013)
       if (permission_str == kWebstorePrivatePermission &&
+          location_ != Extension::COMPONENT) {
+        continue;
+      }
+
+      if (permission_str == kChromeosInfoPrivatePermissions &&
           location_ != Extension::COMPONENT) {
         continue;
       }

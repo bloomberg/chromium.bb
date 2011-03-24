@@ -835,27 +835,32 @@ void ExtensionService::LoadComponentExtensions() {
   for (RegisteredComponentExtensions::iterator it =
            component_extension_manifests_.begin();
        it != component_extension_manifests_.end(); ++it) {
-    JSONStringValueSerializer serializer(it->manifest);
-    scoped_ptr<Value> manifest(serializer.Deserialize(NULL, NULL));
-    if (!manifest.get()) {
-      DLOG(ERROR) << "Failed to parse manifest for extension";
-      continue;
-    }
-
-    std::string error;
-    scoped_refptr<const Extension> extension(Extension::Create(
-        it->root_directory,
-        Extension::COMPONENT,
-        *static_cast<DictionaryValue*>(manifest.get()),
-        true,  // Require key
-        Extension::ShouldDoStrictErrorChecking(Extension::COMPONENT),
-        &error));
-    if (!extension.get()) {
-      NOTREACHED() << error;
-      return;
-    }
-    AddExtension(extension);
+    LoadComponentExtension(*it);
   }
+}
+
+void ExtensionService::LoadComponentExtension(
+    const ComponentExtensionInfo &info) {
+  JSONStringValueSerializer serializer(info.manifest);
+  scoped_ptr<Value> manifest(serializer.Deserialize(NULL, NULL));
+  if (!manifest.get()) {
+    DLOG(ERROR) << "Failed to parse manifest for extension";
+    return;
+  }
+
+  std::string error;
+  scoped_refptr<const Extension> extension(Extension::Create(
+      info.root_directory,
+      Extension::COMPONENT,
+      *static_cast<DictionaryValue*>(manifest.get()),
+      true,  // Require key
+      Extension::ShouldDoStrictErrorChecking(Extension::COMPONENT),
+      &error));
+  if (!extension.get()) {
+    NOTREACHED() << error;
+    return;
+  }
+  AddExtension(extension);
 }
 
 void ExtensionService::LoadAllExtensions() {

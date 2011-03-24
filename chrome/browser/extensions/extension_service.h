@@ -250,13 +250,16 @@ class ExtensionService
   // extension.
   void GrantPermissionsAndEnableExtension(const Extension* extension);
 
-  // Load the extension from the directory |extension_path|.
+  // Loads the extension from the directory |extension_path|.
   void LoadExtension(const FilePath& extension_path);
 
-  // Load any component extensions.
+  // Loads any component extensions.
   void LoadComponentExtensions();
 
-  // Load all known extensions (used by startup and testing code).
+  // Loads particular component extension.
+  void LoadComponentExtension(const ComponentExtensionInfo& info);
+
+  // Loads all known extensions (used by startup and testing code).
   void LoadAllExtensions();
 
   // Continues loading all know extensions. It can be called from

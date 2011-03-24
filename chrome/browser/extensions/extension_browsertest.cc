@@ -111,6 +111,20 @@ bool ExtensionBrowserTest::LoadExtensionIncognitoNoFileAccess(
   return LoadExtensionImpl(path, true, false);
 }
 
+bool ExtensionBrowserTest::LoadExtensionAsComponent(const FilePath& path) {
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+
+  std::string manifest;
+  if (!file_util::ReadFileToString(path.Append(Extension::kManifestFilename),
+                                   &manifest))
+    return false;
+
+  service->LoadComponentExtension(
+      ExtensionService::ComponentExtensionInfo(manifest, path));
+
+  return true;
+}
+
 FilePath ExtensionBrowserTest::PackExtension(const FilePath& dir_path) {
   FilePath crx_path;
   if (!PathService::Get(base::DIR_TEMP, &crx_path)) {

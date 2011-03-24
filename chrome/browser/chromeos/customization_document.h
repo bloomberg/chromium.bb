@@ -52,11 +52,11 @@ class StartupCustomizationDocument : public CustomizationDocument {
   std::string GetHelpPage(const std::string& locale) const;
   std::string GetEULAPage(const std::string& locale) const;
 
- private:
-  typedef std::map<std::string, std::string> VPDMap;
-
   // Returns HWID for the machine. Declared as virtual to override in tests.
   virtual std::string GetHWID() const;
+
+ private:
+  typedef std::map<std::string, std::string> VPDMap;
 
   // Returns VPD as string. Declared as virtual to override in tests.
   virtual std::string GetVPD() const;

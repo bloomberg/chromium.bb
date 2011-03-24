@@ -937,8 +937,9 @@ TEST(ExtensionTest, PermissionMessages) {
   // to warn you further.
   skip.insert(Extension::kExperimentalPermission);
 
-  // This is only usable by component extensions.
+  // These are only usable by component extensions.
   skip.insert(Extension::kWebstorePrivatePermission);
+  skip.insert(Extension::kChromeosInfoPrivatePermissions);
 
   for (size_t i = 0; i < Extension::kNumPermissions; ++i) {
     int message_id = Extension::kPermissions[i].message_id;

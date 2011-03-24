@@ -65,6 +65,10 @@
 #include "chrome/browser/extensions/extension_input_api.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/extension_info_private_api_chromeos.h"
+#endif
+
 // FactoryRegistry -------------------------------------------------------------
 
 namespace {
@@ -303,6 +307,11 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<GetPreferenceFunction>();
   RegisterFunction<SetPreferenceFunction>();
   RegisterFunction<ClearPreferenceFunction>();
+
+#if defined(OS_CHROMEOS)
+  // Device Customization.
+  RegisterFunction<GetChromeosInfoFunction>();
+#endif
 
   // Debugger
   RegisterFunction<AttachDebuggerFunction>();

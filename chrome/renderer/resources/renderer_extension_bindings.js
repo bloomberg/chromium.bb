@@ -295,6 +295,7 @@ var chrome = chrome || {};
       // Entire namespaces.
       "bookmarks",
       "browserAction",
+      "chromeosInfoPrivate",
       "contextMenus",
       "cookies",
       "devtools",
