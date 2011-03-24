@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/webui/proxy_settings_ui.h"
+#include "chrome/browser/ui/webui/chromeos/proxy_settings_ui.h"
 
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"

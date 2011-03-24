@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/webui/system_info_ui.h"
+#include "chrome/browser/ui/webui/chromeos/system_info_ui.h"
 
 #include "base/callback.h"
 #include "base/message_loop.h"

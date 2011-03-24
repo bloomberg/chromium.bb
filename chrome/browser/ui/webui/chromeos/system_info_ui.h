@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_WEBUI_SYSTEM_INFO_UI_H_
-#define CHROME_BROWSER_CHROMEOS_WEBUI_SYSTEM_INFO_UI_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_SYSTEM_INFO_UI_H_
+#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_SYSTEM_INFO_UI_H_
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
@@ -16,4 +16,4 @@ class SystemInfoUI : public WebUI {
   DISALLOW_COPY_AND_ASSIGN(SystemInfoUI);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_WEBUI_SYSTEM_INFO_UI_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_SYSTEM_INFO_UI_H_

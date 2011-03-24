@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_WEBUI_PROXY_SETTINGS_UI_H_
-#define CHROME_BROWSER_CHROMEOS_WEBUI_PROXY_SETTINGS_UI_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_PROXY_SETTINGS_UI_H_
+#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_PROXY_SETTINGS_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 namespace chromeos {
 
@@ -28,4 +28,4 @@ class ProxySettingsUI : public WebUI,
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_WEBUI_PROXY_SETTINGS_UI_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_PROXY_SETTINGS_UI_H_

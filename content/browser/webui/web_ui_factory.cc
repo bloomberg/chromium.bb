@@ -37,13 +37,13 @@
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/webui/imageburner_ui.h"
-#include "chrome/browser/chromeos/webui/keyboard_overlay_ui.h"
-#include "chrome/browser/chromeos/webui/mobile_setup_ui.h"
-#include "chrome/browser/chromeos/webui/proxy_settings_ui.h"
-#include "chrome/browser/chromeos/webui/register_page_ui.h"
-#include "chrome/browser/chromeos/webui/sim_unlock_ui.h"
-#include "chrome/browser/chromeos/webui/system_info_ui.h"
+#include "chrome/browser/ui/webui/chromeos/imageburner_ui.h"
+#include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
+#include "chrome/browser/ui/webui/chromeos/mobile_setup_ui.h"
+#include "chrome/browser/ui/webui/chromeos/proxy_settings_ui.h"
+#include "chrome/browser/ui/webui/chromeos/register_page_ui.h"
+#include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
+#include "chrome/browser/ui/webui/chromeos/system_info_ui.h"
 #include "chrome/browser/ui/webui/filebrowse_ui.h"
 #include "chrome/browser/ui/webui/mediaplayer_ui.h"
 #endif
