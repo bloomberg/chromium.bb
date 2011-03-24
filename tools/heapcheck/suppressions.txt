@@ -1242,3 +1242,24 @@
    ...
    fun:UserStyleSheetWatcher::Init
 }
+{
+   bug_77258_a
+   Heapcheck:Leak
+   fun:webkit::ppapi::::MessageChannelAllocate
+   fun:_NPN_CreateObject
+   fun:WebKit::WebBindings::createObject
+   fun:MessageChannel
+   fun:PluginInstance
+   fun:webkit::ppapi::PpapiUnittest::SetUp
+}
+{
+   bug_77258_b
+   Heapcheck:Leak
+   fun:webkit::ppapi::::MessageChannelAllocate
+   fun:_NPN_CreateObject
+   fun:WebKit::WebBindings::createObject
+   fun:MessageChannel
+   fun:PluginInstance
+   fun:webkit::ppapi::ResourceTrackerTest_*_Test::TestBody
+}
+
