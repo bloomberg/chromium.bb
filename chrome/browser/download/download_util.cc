@@ -757,7 +757,9 @@ void CancelDownloadRequest(ResourceDispatcherHost* rdh,
                            int render_process_id,
                            int request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  rdh->CancelRequest(render_process_id, request_id, false);
+  // |rdh| may be NULL in unit tests.
+  if (rdh)
+    rdh->CancelRequest(render_process_id, request_id, false);
 }
 
 void NotifyDownloadInitiated(int render_process_id, int render_view_id) {

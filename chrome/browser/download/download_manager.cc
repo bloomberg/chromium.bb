@@ -439,7 +439,8 @@ void DownloadManager::OnPathExistenceAvailable(DownloadCreateInfo* info) {
                                     info->suggested_path,
                                     &file_type_info, 0, FILE_PATH_LITERAL(""),
                                     owning_window, info);
-    FOR_EACH_OBSERVER(Observer, observers_, SelectFileDialogDisplayed());
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      SelectFileDialogDisplayed(info->download_id));
   } else {
     // No prompting for download, just continue with the suggested name.
     info->path = info->suggested_path;
@@ -485,29 +486,28 @@ void DownloadManager::AttachDownloadItem(DownloadCreateInfo* info) {
   UpdateAppIcon();  // Reflect entry into in_progress_.
 
   // Rename to intermediate name.
+  FilePath download_path;
   if (info->IsDangerous()) {
     // The download is not safe.  We can now rename the file to its
-    // tentative name using OnFinalDownloadName (the actual final
-    // name after user confirmation will be set in
-    // ProceedWithFinishedDangerousDownload).
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(
-            file_manager_, &DownloadFileManager::OnFinalDownloadName,
-            download->id(), info->path, make_scoped_refptr(this)));
+    // tentative name using RenameInProgressDownloadFile.
+    // NOTE: The |Rename| below will be a no-op for dangerous files, as we're
+    // renaming it to the same name.
+    download_path = info->path;
   } else {
     // The download is a safe download.  We need to
     // rename it to its intermediate '.crdownload' path.  The final
     // name after user confirmation will be set from
-    // DownloadItem::OnSafeDownloadFinished.
-    FilePath download_path = download_util::GetCrDownloadPath(info->path);
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(
-            file_manager_, &DownloadFileManager::OnIntermediateDownloadName,
-            download->id(), download_path, make_scoped_refptr(this)));
-    download->Rename(download_path);
+    // DownloadItem::OnDownloadFinished.
+    download_path = download_util::GetCrDownloadPath(info->path);
   }
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          file_manager_, &DownloadFileManager::RenameInProgressDownloadFile,
+          download->id(), download_path));
+
+  download->Rename(download_path);
 
   download_history_->AddEntry(*info, download,
       NewCallback(this, &DownloadManager::OnCreateDownloadEntryComplete));
@@ -627,30 +627,8 @@ void DownloadManager::MaybeCompleteDownload(DownloadItem* download) {
   download->MarkAsComplete();
   download_history_->UpdateEntry(download);
 
-  switch (download->safety_state()) {
-    case DownloadItem::DANGEROUS:
-      // If this a dangerous download not yet validated by the user, don't do
-      // anything. When the user notifies us, it will trigger a call to
-      // ProceedWithFinishedDangerousDownload.
-      NOTREACHED();
-      return;
-    case DownloadItem::DANGEROUS_BUT_VALIDATED:
-      // The dangerous download has been validated by the user.  We first
-      // need to rename the downloaded file from its temporary name to
-      // its final name.  We will continue the download processing in the
-      // callback.
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(
-              this, &DownloadManager::ProceedWithFinishedDangerousDownload,
-              download->db_handle(),
-              download->full_path(), download->target_name()));
-      return;
-    case DownloadItem::SAFE:
-      // The download is safe; just finish it.
-      download->OnSafeDownloadFinished(file_manager_);
-      return;
-  }
+  // Finish the download.
+  download->OnDownloadFinished(file_manager_);
 }
 
 void DownloadManager::RemoveFromActiveList(int32 download_id) {
@@ -658,72 +636,39 @@ void DownloadManager::RemoveFromActiveList(int32 download_id) {
   active_downloads_.erase(download_id);
 }
 
-void DownloadManager::DownloadRenamedToFinalName(int download_id,
-                                                 const FilePath& full_path) {
+void DownloadManager::OnDownloadRenamedToFinalName(int download_id,
+                                                   const FilePath& full_path,
+                                                   int uniquifier) {
   VLOG(20) << __FUNCTION__ << "()" << " download_id = " << download_id
-           << " full_path = \"" << full_path.value() << "\"";
+           << " full_path = \"" << full_path.value() << "\""
+           << " uniquifier = " << uniquifier;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DownloadItem* item = GetDownloadItem(download_id);
   if (!item)
     return;
-  item->OnDownloadRenamedToFinalName(full_path);
-}
-
-// Called on the file thread.  Renames the downloaded file to its original name.
-void DownloadManager::ProceedWithFinishedDangerousDownload(
-    int64 download_handle,
-    const FilePath& path,
-    const FilePath& original_name) {
-  bool success = false;
-  FilePath new_path;
-  int uniquifier = 0;
-  if (file_util::PathExists(path)) {
-    new_path = path.DirName().Append(original_name);
-    // Make our name unique at this point, as if a dangerous file is downloading
-    // and a 2nd download is started for a file with the same name, they would
-    // have the same path.  This is because we uniquify the name on download
-    // start, and at that time the first file does not exists yet, so the second
-    // file gets the same name.
-    uniquifier = download_util::GetUniquePathNumber(new_path);
-    if (uniquifier > 0)
-      download_util::AppendNumberToPath(&new_path, uniquifier);
-    success = file_util::Move(path, new_path);
-  } else {
-    NOTREACHED();
-  }
 
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &DownloadManager::DangerousDownloadRenamed,
-                        download_handle, success, new_path, uniquifier));
-}
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          file_manager_, &DownloadFileManager::CompleteDownload, download_id));
 
-// Call from the file thread when the finished dangerous download was renamed.
-void DownloadManager::DangerousDownloadRenamed(int64 download_handle,
-                                               bool success,
-                                               const FilePath& new_path,
-                                               int new_path_uniquifier) {
-  VLOG(20) << __FUNCTION__ << "()" << " download_handle = " << download_handle
-           << " success = " << success
-           << " new_path = \"" << new_path.value() << "\""
-           << " new_path_uniquifier = " << new_path_uniquifier;
-  DownloadMap::iterator it = history_downloads_.find(download_handle);
-  if (it == history_downloads_.end()) {
-    NOTREACHED();
+  if ((item->safety_state() == DownloadItem::SAFE) && (uniquifier != 0)) {
+    // File name conflict: the file name we expected to use at the start
+    // of the safe download was taken.
+    // TODO(ahendrickson): Warn the user that we're cancelling the download.
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(
+            file_manager_, &DownloadFileManager::CancelDownload, download_id));
     return;
   }
 
-  DownloadItem* download = it->second;
-  // If we failed to rename the file, we'll just keep the name as is.
-  if (success) {
-    // We need to update the path uniquifier so that the UI shows the right
-    // name when calling GetFileNameToReportUser().
-    download->set_path_uniquifier(new_path_uniquifier);
-    RenameDownload(download, new_path);
-  }
+  if (uniquifier)
+    item->set_path_uniquifier(uniquifier);
 
-  // Continue the download finished sequence.
-  download->Finished();
+  item->OnDownloadRenamedToFinalName(full_path);
+  download_history_->UpdateDownloadPath(item, full_path);
 }
 
 void DownloadManager::DownloadCancelled(int32 download_id) {
@@ -753,6 +698,7 @@ void DownloadManager::DownloadCancelled(int32 download_id) {
 void DownloadManager::DownloadCancelledInternal(int download_id,
                                                 int render_process_id,
                                                 int request_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Cancel the network request.  RDH is guaranteed to outlive the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -789,12 +735,6 @@ void DownloadManager::PauseDownload(int32 download_id, bool pause) {
 void DownloadManager::UpdateAppIcon() {
   if (status_updater_)
     status_updater_->Update();
-}
-
-void DownloadManager::RenameDownload(DownloadItem* download,
-                                     const FilePath& new_path) {
-  download->Rename(new_path);
-  download_history_->UpdateDownloadPath(download, new_path);
 }
 
 void DownloadManager::PauseDownloadRequest(ResourceDispatcherHost* rdh,

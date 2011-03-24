@@ -202,10 +202,10 @@ class DownloadItem {
   // Called when the name of the download is finalized.
   void OnNameFinalized();
 
-  // Called when the download is finished for safe downloads.
+  // Called when the download is finished.
   // This may perform final rename if necessary and will eventually call
   // DownloadManager::DownloadFinished().
-  void OnSafeDownloadFinished(DownloadFileManager* file_manager);
+  void OnDownloadFinished(DownloadFileManager* file_manager);
 
   // Called when the file name for the download is renamed to its final name.
   void OnDownloadRenamedToFinalName(const FilePath& full_path);

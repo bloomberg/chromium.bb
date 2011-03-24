@@ -42,6 +42,9 @@ class BaseFile {
   // Rename the download file. Returns true on success.
   virtual bool Rename(const FilePath& full_path);
 
+  // Detach the file so it is not deleted on destruction.
+  virtual void Detach();
+
   // Abort the download and automatically close the file.
   void Cancel();
 
@@ -94,6 +97,10 @@ class BaseFile {
   scoped_ptr<base::SecureHash> secure_hash_;
 
   unsigned char sha256_hash_[kSha256HashLen];
+
+  // Indicates that this class no longer owns the associated file, and so
+  // won't delete it on destruction.
+  bool detached_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseFile);
 };

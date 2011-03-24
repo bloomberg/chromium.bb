@@ -163,8 +163,7 @@ FilePath* SelectFileDialogImpl::last_opened_path_ = NULL;
 
 // static
 SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return new SelectFileDialogImpl(listener);
 }
 

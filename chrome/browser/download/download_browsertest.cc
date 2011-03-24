@@ -147,7 +147,7 @@ class DownloadsObserver : public DownloadManager::Observer,
     }
   }
 
-  virtual void SelectFileDialogDisplayed() {
+  virtual void SelectFileDialogDisplayed(int32 /* id */) {
     select_file_dialog_seen_ = true;
     SignalIfFinished();
   }

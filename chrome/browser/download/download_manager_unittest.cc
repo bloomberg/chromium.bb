@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <set>
 
+#include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_file.h"
@@ -28,7 +30,8 @@ class DownloadManagerTest : public testing::Test {
   DownloadManagerTest()
       : profile_(new TestingProfile()),
         download_manager_(new MockDownloadManager(&download_status_updater_)),
-        ui_thread_(BrowserThread::UI, &message_loop_) {
+        ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_) {
     download_manager_->Init(profile_.get());
   }
 
@@ -52,6 +55,7 @@ class DownloadManagerTest : public testing::Test {
   scoped_refptr<DownloadFileManager> file_manager_;
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
+  BrowserThread file_thread_;
 
   DownloadFileManager* file_manager() {
     if (!file_manager_) {
@@ -126,34 +130,6 @@ const struct {
     true, },
 };
 
-}  // namespace
-
-TEST_F(DownloadManagerTest, StartDownload) {
-  BrowserThread io_thread(BrowserThread::IO, &message_loop_);
-  PrefService* prefs = profile_->GetPrefs();
-  prefs->SetFilePath(prefs::kDownloadDefaultDirectory, FilePath());
-  download_manager_->download_prefs()->EnableAutoOpenBasedOnExtension(
-      FilePath(FILE_PATH_LITERAL("example.pdf")));
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kStartDownloadCases); ++i) {
-    prefs->SetBoolean(prefs::kPromptForDownload,
-                      kStartDownloadCases[i].prompt_for_download);
-
-    DownloadCreateInfo info;
-    info.prompt_user_for_save_location = kStartDownloadCases[i].save_as;
-    info.url = GURL(kStartDownloadCases[i].url);
-    info.mime_type = kStartDownloadCases[i].mime_type;
-
-    download_manager_->StartDownload(&info);
-    message_loop_.RunAllPending();
-
-    EXPECT_EQ(kStartDownloadCases[i].expected_save_as,
-        info.prompt_user_for_save_location);
-  }
-}
-
-namespace {
-
 const struct {
   FilePath::StringType suggested_path;
   bool is_dangerous_file;
@@ -191,8 +167,8 @@ const struct {
 
 class MockDownloadFile : public DownloadFile {
  public:
-  explicit MockDownloadFile(DownloadCreateInfo* info)
-      : DownloadFile(info, NULL), renamed_count_(0) { }
+  MockDownloadFile(DownloadCreateInfo* info, DownloadManager* manager)
+      : DownloadFile(info, manager), renamed_count_(0) { }
   virtual ~MockDownloadFile() { Destructed(); }
   MOCK_METHOD1(Rename, bool(const FilePath&));
   MOCK_METHOD0(Destructed, void());
@@ -210,15 +186,86 @@ class MockDownloadFile : public DownloadFile {
   int renamed_count_;
 };
 
+// This is an observer that records what download IDs have opened a select
+// file dialog.
+class SelectFileObserver : public DownloadManager::Observer {
+ public:
+  explicit SelectFileObserver(DownloadManager* download_manager)
+      : download_manager_(download_manager) {
+    DCHECK(download_manager_);
+    download_manager_->AddObserver(this);
+  }
+
+  ~SelectFileObserver() {
+    download_manager_->RemoveObserver(this);
+  }
+
+  // Downloadmanager::Observer functions.
+  virtual void ModelChanged() {}
+  virtual void ManagerGoingDown() {}
+  virtual void SelectFileDialogDisplayed(int32 id) {
+    file_dialog_ids_.insert(id);
+  }
+
+  bool ShowedFileDialogForId(int32 id) {
+    return file_dialog_ids_.find(id) != file_dialog_ids_.end();
+  }
+
+ private:
+  std::set<int32> file_dialog_ids_;
+  DownloadManager* download_manager_;
+};
+
 }  // namespace
+
+TEST_F(DownloadManagerTest, StartDownload) {
+  BrowserThread io_thread(BrowserThread::IO, &message_loop_);
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->SetFilePath(prefs::kDownloadDefaultDirectory, FilePath());
+  download_manager_->download_prefs()->EnableAutoOpenBasedOnExtension(
+      FilePath(FILE_PATH_LITERAL("example.pdf")));
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kStartDownloadCases); ++i) {
+    prefs->SetBoolean(prefs::kPromptForDownload,
+                      kStartDownloadCases[i].prompt_for_download);
+
+    SelectFileObserver observer(download_manager_);
+    DownloadCreateInfo* info = new DownloadCreateInfo;
+    info->download_id = static_cast<int>(i);
+    info->prompt_user_for_save_location = kStartDownloadCases[i].save_as;
+    info->url = GURL(kStartDownloadCases[i].url);
+    info->mime_type = kStartDownloadCases[i].mime_type;
+    download_manager_->CreateDownloadItem(info);
+
+    DownloadFile* download(new DownloadFile(info, download_manager_));
+    AddDownloadToFileManager(info->download_id, download);
+    download->Initialize(false);
+    download_manager_->StartDownload(info);
+    message_loop_.RunAllPending();
+
+    // NOTE: At this point, |AttachDownloadItem| will have been run if we don't
+    // need to prompt the user, so |info| could have been destructed.
+    // This means that we can't check any of its values.
+    // However, SelectFileObserver will have recorded any attempt to open the
+    // select file dialog.
+    EXPECT_EQ(kStartDownloadCases[i].expected_save_as,
+              observer.ShowedFileDialogForId(i));
+
+    // If the Save As dialog pops up, it never reached
+    // DownloadManager::AttachDownloadItem(), and never deleted info or
+    // completed.  This cleans up info.
+    // Note that DownloadManager::FileSelectionCanceled() is never called.
+    if (observer.ShowedFileDialogForId(i)) {
+      delete info;
+    }
+  }
+}
 
 TEST_F(DownloadManagerTest, DownloadRenameTest) {
   using ::testing::_;
   using ::testing::CreateFunctor;
   using ::testing::Invoke;
   using ::testing::Return;
-
-  BrowserThread file_thread(BrowserThread::FILE, &message_loop_);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kDownloadRenameCases); ++i) {
     // |info| will be destroyed in download_manager_.
@@ -229,7 +276,7 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     info->is_dangerous_url = kDownloadRenameCases[i].is_dangerous_url;
     FilePath new_path(kDownloadRenameCases[i].suggested_path);
 
-    MockDownloadFile* download(new MockDownloadFile(info));
+    MockDownloadFile* download(new MockDownloadFile(info, download_manager_));
     AddDownloadToFileManager(info->download_id, download);
 
     // |download| is owned by DownloadFileManager.
@@ -253,9 +300,11 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
 
     if (kDownloadRenameCases[i].finish_before_rename) {
       download_manager_->OnAllDataSaved(i, 1024, std::string("fake_hash"));
+      message_loop_.RunAllPending();
       download_manager_->FileSelected(new_path, i, info);
     } else {
       download_manager_->FileSelected(new_path, i, info);
+      message_loop_.RunAllPending();
       download_manager_->OnAllDataSaved(i, 1024, std::string("fake_hash"));
     }
 

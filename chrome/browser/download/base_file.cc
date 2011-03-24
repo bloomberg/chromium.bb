@@ -6,6 +6,7 @@
 
 #include "base/crypto/secure_hash.h"
 #include "base/file_util.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "net/base/file_stream.h"
@@ -30,20 +31,23 @@ BaseFile::BaseFile(const FilePath& full_path,
       file_stream_(file_stream),
       bytes_so_far_(received_bytes),
       power_save_blocker_(true),
-      calculate_hash_(false) {
+      calculate_hash_(false),
+      detached_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   memset(sha256_hash_, 0, sizeof(sha256_hash_));
 }
 
 BaseFile::~BaseFile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (in_progress())
-    Cancel();
-  Close();
+  if (detached_)
+    Close();
+  else
+    Cancel();  // Will delete the file.
 }
 
 bool BaseFile::Initialize(bool calculate_hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(!detached_);
 
   calculate_hash_ = calculate_hash;
 
@@ -58,6 +62,7 @@ bool BaseFile::Initialize(bool calculate_hash) {
 
 bool BaseFile::AppendDataToFile(const char* data, size_t data_len) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(!detached_);
 
   if (!file_stream_.get())
     return false;
@@ -140,9 +145,16 @@ bool BaseFile::Rename(const FilePath& new_path) {
   return true;
 }
 
+void BaseFile::Detach() {
+  detached_ = true;
+}
+
 void BaseFile::Cancel() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(!detached_);
+
   Close();
+
   if (!full_path_.empty())
     file_util::Delete(full_path_, false);
 }
@@ -157,6 +169,7 @@ void BaseFile::Finish() {
 }
 
 bool BaseFile::GetSha256Hash(std::string* hash) {
+  DCHECK(!detached_);
   if (!calculate_hash_ || in_progress())
     return false;
   hash->assign(reinterpret_cast<const char*>(sha256_hash_),
@@ -166,6 +179,8 @@ bool BaseFile::GetSha256Hash(std::string* hash) {
 
 void BaseFile::AnnotateWithSourceInformation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(!detached_);
+
 #if defined(OS_WIN)
   // Sets the Zone to tell Windows that this file comes from the internet.
   // We ignore the return value because a failure is not fatal.
@@ -180,9 +195,10 @@ void BaseFile::AnnotateWithSourceInformation() {
 
 bool BaseFile::Open() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(!detached_);
   DCHECK(!full_path_.empty());
 
-  // Create a new file steram if it is not provided.
+  // Create a new file stream if it is not provided.
   if (!file_stream_.get()) {
     file_stream_.reset(new net::FileStream);
     if (file_stream_->Open(full_path_,
@@ -220,7 +236,11 @@ void BaseFile::Close() {
 }
 
 std::string BaseFile::DebugString() const {
-  return base::StringPrintf("{ source_url_ = \"%s\" full_path_ = \"%s\" }",
+  return base::StringPrintf("{ source_url_ = \"%s\""
+                            " full_path_ = \"%" PRFilePath "\""
+                            " bytes_so_far_ = %" PRId64 " detached_ = %c }",
                             source_url_.spec().c_str(),
-                            full_path_.value().c_str());
+                            full_path_.value().c_str(),
+                            bytes_so_far_,
+                            detached_ ? 'T' : 'F');
 }

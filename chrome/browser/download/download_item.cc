@@ -359,6 +359,8 @@ void DownloadItem::OnAllDataSaved(int64 size) {
 }
 
 void DownloadItem::Finished() {
+  VLOG(20) << " " << __FUNCTION__ << "() "
+           << DebugString(false);
   // Handle chrome extensions explicitly and skip the shell execute.
   if (is_extension_install()) {
     download_util::OpenChromeExtension(download_manager_->profile(),
@@ -433,7 +435,7 @@ int DownloadItem::PercentComplete() const {
 
 void DownloadItem::Rename(const FilePath& full_path) {
   VLOG(20) << " " << __FUNCTION__ << "()"
-           << " full_path = " << full_path.value()
+           << " full_path = \"" << full_path.value() << "\""
            << DebugString(true);
   DCHECK(!full_path.empty());
   full_path_ = full_path;
@@ -447,6 +449,8 @@ void DownloadItem::TogglePause() {
 }
 
 void DownloadItem::OnNameFinalized() {
+  VLOG(20) << " " << __FUNCTION__ << "() "
+           << DebugString(true);
   name_finalized_ = true;
 
   // The download file is meant to be completed if both the filename is
@@ -459,34 +463,43 @@ void DownloadItem::OnNameFinalized() {
   }
 }
 
-void DownloadItem::OnSafeDownloadFinished(DownloadFileManager* file_manager) {
-  DCHECK_EQ(SAFE, safety_state());
+void DownloadItem::OnDownloadFinished(DownloadFileManager* file_manager) {
+  VLOG(20) << " " << __FUNCTION__ << "() "
+           << " needs rename = " << NeedsRename()
+           << " " << DebugString(true);
+  DCHECK_NE(DANGEROUS, safety_state());
   DCHECK(file_manager);
+
   if (NeedsRename()) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(
-            file_manager, &DownloadFileManager::OnFinalDownloadName,
-            id(), GetTargetFilePath(), make_scoped_refptr(download_manager_)));
+            file_manager, &DownloadFileManager::RenameFinishedDownloadFile,
+            id(), GetTargetFilePath()));
     return;
   }
 
   Finished();
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          file_manager, &DownloadFileManager::CompleteDownload, id()));
 }
 
 void DownloadItem::OnDownloadRenamedToFinalName(const FilePath& full_path) {
   VLOG(20) << " " << __FUNCTION__ << "()"
-           << " full_path = " << full_path.value();
-  bool needed_rename = NeedsRename();
+           << " full_path = " << full_path.value()
+           << " needed rename = " << NeedsRename()
+           << " " << DebugString(false);
+  DCHECK(NeedsRename());
 
   Rename(full_path);
   OnNameFinalized();
 
-  if (needed_rename && safety_state() == SAFE) {
-    // This was called from OnSafeDownloadFinished; continue to call
-    // DownloadFinished.
-    Finished();
-  }
+  // This was called from OnDownloadFinished; continue to call
+  // DownloadFinished.
+  Finished();
 }
 
 bool DownloadItem::MatchesQuery(const string16& query) const {

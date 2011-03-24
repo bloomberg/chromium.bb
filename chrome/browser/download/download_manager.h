@@ -83,7 +83,8 @@ class DownloadManager
 
     // Called immediately after the DownloadManager puts up a select file
     // dialog.
-    virtual void SelectFileDialogDisplayed() {}
+    // |id| indicates which download opened the dialog.
+    virtual void SelectFileDialogDisplayed(int32 id) {}
 
    protected:
     virtual ~Observer() {}
@@ -135,7 +136,11 @@ class DownloadManager
   void MaybeCompleteDownload(DownloadItem* download);
 
   // Called when the download is renamed to its final name.
-  void DownloadRenamedToFinalName(int download_id, const FilePath& full_path);
+  // |uniquifier| is a number used to make unique names for the file.  It is
+  // only valid for the DANGEROUS_BUT_VALIDATED state of the download item.
+  void OnDownloadRenamedToFinalName(int download_id,
+                                    const FilePath& full_path,
+                                    int uniquifier);
 
   // Remove downloads after remove_begin (inclusive) and before remove_end
   // (exclusive). You may pass in null Time values to do an unbounded delete
@@ -282,25 +287,8 @@ class DownloadManager
                                  int render_process_id,
                                  int request_id);
 
-  // Renames a finished dangerous download from its temporary file name to its
-  // real file name.
-  // Invoked on the file thread.
-  void ProceedWithFinishedDangerousDownload(int64 download_handle,
-                                            const FilePath& path,
-                                            const FilePath& original_name);
-
-  // Invoked on the UI thread when a dangerous downloaded file has been renamed.
-  void DangerousDownloadRenamed(int64 download_handle,
-                                bool success,
-                                const FilePath& new_path,
-                                int new_path_uniquifier);
-
   // Updates the app icon about the overall download progress.
   void UpdateAppIcon();
-
-  // Changes the paths and file name of the specified |download|, propagating
-  // the change to the history system.
-  void RenameDownload(DownloadItem* download, const FilePath& new_path);
 
   // Makes the ResourceDispatcherHost pause/un-pause a download request.
   // Called on the IO thread.

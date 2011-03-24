@@ -262,10 +262,16 @@ void SaveFileManager::SaveFinished(int save_id,
                                    const GURL& save_url,
                                    int render_process_id,
                                    bool is_success) {
+  VLOG(20) << " " << __FUNCTION__ << "()"
+           << " save_id = " << save_id
+           << " save_url = \"" << save_url.spec() << "\""
+           << " is_success = " << is_success;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SaveFileMap::iterator it = save_file_map_.find(save_id);
   if (it != save_file_map_.end()) {
     SaveFile* save_file = it->second;
+  VLOG(20) << " " << __FUNCTION__ << "()"
+           << " save_file = " << save_file->DebugString();
     BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(
@@ -273,6 +279,7 @@ void SaveFileManager::SaveFinished(int save_id,
             save_file->bytes_so_far(), is_success));
 
     save_file->Finish();
+    save_file->Detach();
   } else if (save_id == -1) {
     // Before saving started, we got error. We still call finish process.
     DCHECK(!save_url.is_empty());
@@ -438,6 +445,7 @@ void SaveFileManager::SaveLocalFile(const GURL& original_file_url,
 
   // Close the save file before the copy operation.
   save_file->Finish();
+  save_file->Detach();
 
   DCHECK(original_file_url.SchemeIsFile());
   FilePath file_path;
