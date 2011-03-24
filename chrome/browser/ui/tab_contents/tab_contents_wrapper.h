@@ -62,6 +62,10 @@ class TabContentsWrapper : public NotificationObserver,
 
   // Helper to retrieve the existing instance that wraps a given TabContents.
   // Returns NULL if there is no such existing instance.
+  // NOTE: This is not intended for general use. It is intended for situations
+  // like callbacks from content/ where only a TabContents is available. In the
+  // general case, please do NOT use this; plumb TabContentsWrapper through the
+  // chrome/ code instead of TabContents.
   static TabContentsWrapper* GetCurrentWrapperForContents(
       TabContents* contents);
 
