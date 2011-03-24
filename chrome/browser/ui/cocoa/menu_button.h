@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_button.h"
 
 // This a button which displays a user-provided menu "attached" below it upon
 // being clicked or dragged (or clicked and held). It expects a
@@ -22,7 +23,7 @@
 // held. This is used for the toolbar back/forward buttons, which have a
 // primary action and the menu as a secondary click-hold action. The default
 // value is NO so that custom actions can be hooked up in Interface Builder.
-@interface MenuButton : NSButton {
+@interface MenuButton : ToolbarButton {
  @private
   scoped_nsobject<NSMenu> attachedMenu_;
   BOOL attachedMenuEnabled_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,12 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_button.h"
 
-// NSButton subclass which defers certain state changes when the mouse
+// ToolbarButton subclass which defers certain state changes when the mouse
 // is hovering over it.
 
-@interface ReloadButton : NSButton {
+@interface ReloadButton : ToolbarButton {
  @private
   // Tracks whether the mouse is hovering for purposes of not making
   // unexpected state changes.

@@ -26,6 +26,7 @@ class CommandUpdater;
 class LocationBar;
 class LocationBarViewMac;
 @class MenuButton;
+@class ToolbarButton;
 namespace ToolbarControllerInternal {
 class NotificationBridge;
 class WrenchAcceleratorDelegate;
@@ -51,7 +52,7 @@ class WrenchMenuModel;
   IBOutlet MenuButton* backButton_;
   IBOutlet MenuButton* forwardButton_;
   IBOutlet ReloadButton* reloadButton_;
-  IBOutlet NSButton* homeButton_;
+  IBOutlet ToolbarButton* homeButton_;
   IBOutlet MenuButton* wrenchButton_;
   IBOutlet AutocompleteTextField* locationBar_;
   IBOutlet BrowserActionsContainerView* browserActionsContainerView_;

@@ -2,7 +2,7 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10F2108</string>
+		<string key="IBDocument.SystemVersion">10F569</string>
 		<string key="IBDocument.InterfaceBuilderVersion">823</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
@@ -12,9 +12,9 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="208"/>
 			<integer value="1"/>
 			<integer value="211"/>
-			<integer value="208"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1209,6 +1209,7 @@
 					<string>7.CustomClassName</string>
 					<string>7.IBAttributePlaceholdersKey</string>
 					<string>7.IBPluginDependency</string>
+					<string>8.CustomClassName</string>
 					<string>8.IBAttributePlaceholdersKey</string>
 					<string>8.IBPluginDependency</string>
 					<string>9.CustomClassName</string>
@@ -1314,6 +1315,7 @@
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>ToolbarButton</string>
 					<object class="NSMutableDictionary">
 						<string key="NS.key.0">ToolTip</string>
 						<object class="IBToolTipAttribute" key="NS.object.0">
@@ -1550,6 +1552,14 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">ToolbarButton</string>
+					<string key="superclassName">NSButton</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/ui/cocoa/toolbar/toolbar_button.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">MenuButton</string>
 					<string key="superclassName">NSButton</string>
 					<object class="NSMutableDictionary" key="outlets">
@@ -1711,7 +1721,7 @@
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">homeButton_</string>
-								<string key="candidateClassName">NSButton</string>
+								<string key="candidateClassName">ToolbarButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">locationBar_</string>

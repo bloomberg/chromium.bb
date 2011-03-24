@@ -35,6 +35,7 @@
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #import "chrome/browser/ui/cocoa/toolbar/back_forward_menu_controller.h"
 #import "chrome/browser/ui/cocoa/toolbar/reload_button.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_view.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
@@ -248,6 +249,11 @@ class NotificationBridge : public NotificationObserver {
   [reloadButton_ setShowsBorderOnlyWhileMouseInside:YES];
   [homeButton_ setShowsBorderOnlyWhileMouseInside:YES];
   [wrenchButton_ setShowsBorderOnlyWhileMouseInside:YES];
+
+  [backButton_ setHandleMiddleClick:YES];
+  [forwardButton_ setHandleMiddleClick:YES];
+  [reloadButton_ setHandleMiddleClick:YES];
+  [homeButton_ setHandleMiddleClick:YES];
 
   [self initCommandStatus:commands_];
   locationBarView_.reset(new LocationBarViewMac(locationBar_,

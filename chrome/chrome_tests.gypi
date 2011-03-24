@@ -1658,6 +1658,7 @@
         'browser/ui/cocoa/test_event_utils.h',
         'browser/ui/cocoa/test_event_utils.mm',
         'browser/ui/cocoa/toolbar/reload_button_unittest.mm',
+        'browser/ui/cocoa/toolbar/toolbar_button_unittest.mm',
         'browser/ui/cocoa/toolbar/toolbar_controller_unittest.mm',
         'browser/ui/cocoa/toolbar/toolbar_view_unittest.mm',
         'browser/ui/cocoa/tracking_area_unittest.mm',
