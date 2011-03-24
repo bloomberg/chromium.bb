@@ -152,6 +152,68 @@ def commit_git(repo):
   return rev
 
 
+def test_port(host, port):
+  s = socket.socket()
+  try:
+    return s.connect_ex((host, port)) == 0
+  finally:
+    s.close()
+
+
+def find_free_port(host, base_port):
+  """Finds a listening port free to listen to."""
+  while base_port < (2<<16):
+    if not test_port(host, base_port):
+      return base_port
+    base_port += 1
+  assert False, 'Having issues finding an available port'
+
+
+def wait_for_port_to_bind(host, port, process):
+  sock = socket.socket()
+
+  if sys.platform == 'darwin':
+    # On Mac SnowLeopard, if we attempt to connect to the socket
+    # immediately, it fails with EINVAL and never gets a chance to
+    # connect (putting us into a hard spin and then failing).
+    # Linux doesn't need this.
+    time.sleep(0.1)
+
+  try:
+    start = datetime.datetime.utcnow()
+    maxdelay = datetime.timedelta(seconds=30)
+    while (datetime.datetime.utcnow() - start) < maxdelay:
+      try:
+        sock.connect((host, port))
+        logging.debug('%d is now bound' % port)
+        return
+      except EnvironmentError:
+        pass
+      logging.debug('%d is still not bound' % port)
+  finally:
+    sock.close()
+  # The process failed to bind. Kill it and dump its ouput.
+  process.kill()
+  logging.error('%s' % process.communicate()[0])
+  assert False, '%d is still not bound' % port
+
+
+def wait_for_port_to_free(host, port):
+  start = datetime.datetime.utcnow()
+  maxdelay = datetime.timedelta(seconds=30)
+  while (datetime.datetime.utcnow() - start) < maxdelay:
+    try:
+      sock = socket.socket()
+      sock.connect((host, port))
+      logging.debug('%d was bound, waiting to free' % port)
+    except EnvironmentError:
+      logging.debug('%d now free' % port)
+      return
+    finally:
+      sock.close()
+  assert False, '%d is still bound' % port
+
+
 _FAKE_LOADED = False
 
 class FakeReposBase(object):
@@ -195,10 +257,10 @@ class FakeReposBase(object):
     self.svn_repo = None
     self.git_dirty = False
     self.svn_dirty = False
-    self.svn_base = 'svn://%s/svn/' % self.host
-    self.git_base = 'git://%s/git/' % self.host
-    self.svn_port = 3690
-    self.git_port = 9418
+    self.svn_port = None
+    self.git_port = None
+    self.svn_base = None
+    self.git_base = None
 
   @property
   def root_dir(self):
@@ -244,8 +306,10 @@ class FakeReposBase(object):
       except OSError, e:
         if e.errno != errno.ESRCH:   # no such process
           raise
-      self.wait_for_port_to_free(self.svn_port)
+      wait_for_port_to_free(self.host, self.svn_port)
       self.svnserve = None
+      self.svn_port = None
+      self.svn_base = None
       if not self.trial.SHOULD_LEAK:
         logging.debug('Removing %s' % self.svn_repo)
         gclient_utils.rmtree(self.svn_repo)
@@ -266,7 +330,9 @@ class FakeReposBase(object):
         logging.debug('Killing git daemon pid %s' % pid)
         kill_pid(pid)
         self.git_pid_file = None
-      self.wait_for_port_to_free(self.git_port)
+      wait_for_port_to_free(self.host, self.git_port)
+      self.git_port = None
+      self.git_base = None
       if not self.trial.SHOULD_LEAK:
         logging.debug('Removing %s' % self.git_root)
         gclient_utils.rmtree(self.git_root)
@@ -316,12 +382,15 @@ class FakeReposBase(object):
         'enable-rep-sharing = false\n')
 
     # Start the daemon.
-    cmd = ['svnserve', '-d', '--foreground', '-r', self.root_dir]
+    self.svn_port = find_free_port(self.host, 10000)
+    cmd = ['svnserve', '-d', '--foreground', '-r', self.root_dir,
+        '--listen-port=%d' % self.svn_port]
     if self.host == '127.0.0.1':
       cmd.append('--listen-host=' + self.host)
     self.check_port_is_free(self.svn_port)
     self.svnserve = Popen(cmd, cwd=self.svn_repo)
-    self.wait_for_port_to_bind(self.svn_port, self.svnserve)
+    wait_for_port_to_bind(self.host, self.svn_port, self.svnserve)
+    self.svn_base = 'svn://%s:%d/svn/' % (self.host, self.svn_port)
     self.populateSvn()
     self.svn_dirty = False
     return True
@@ -337,20 +406,22 @@ class FakeReposBase(object):
     for repo in ['repo_%d' % r for r in range(1, self.NB_GIT_REPOS + 1)]:
       check_call(['git', 'init', '-q', join(self.git_root, repo)])
       self.git_hashes[repo] = [None]
-    # Unlike svn, populate git before starting the server.
-    self.populateGit()
+    self.git_port = find_free_port(self.host, 20000)
+    self.git_base = 'git://%s:%d/git/' % (self.host, self.git_port)
     # Start the daemon.
     self.git_pid_file = tempfile.NamedTemporaryFile()
     cmd = ['git', 'daemon',
         '--export-all',
         '--reuseaddr',
         '--base-path=' + self.root_dir,
-        '--pid-file=' + self.git_pid_file.name]
+        '--pid-file=' + self.git_pid_file.name,
+        '--port=%d' % self.git_port]
     if self.host == '127.0.0.1':
       cmd.append('--listen=' + self.host)
     self.check_port_is_free(self.git_port)
     self.gitdaemon = Popen(cmd, cwd=self.root_dir)
-    self.wait_for_port_to_bind(self.git_port, self.gitdaemon)
+    wait_for_port_to_bind(self.host, self.git_port, self.gitdaemon)
+    self.populateGit()
     self.git_dirty = False
     return True
 
@@ -385,49 +456,6 @@ class FakeReposBase(object):
       pass
     finally:
       sock.close()
-
-  def wait_for_port_to_bind(self, port, process):
-    sock = socket.socket()
-
-    if sys.platform == 'darwin':
-      # On Mac SnowLeopard, if we attempt to connect to the socket
-      # immediately, it fails with EINVAL and never gets a chance to
-      # connect (putting us into a hard spin and then failing).
-      # Linux doesn't need this.
-      time.sleep(0.1)
-
-    try:
-      start = datetime.datetime.utcnow()
-      maxdelay = datetime.timedelta(seconds=30)
-      while (datetime.datetime.utcnow() - start) < maxdelay:
-        try:
-          sock.connect((self.host, port))
-          logging.debug('%d is now bound' % port)
-          return
-        except EnvironmentError:
-          pass
-        logging.debug('%d is still not bound' % port)
-    finally:
-      sock.close()
-    # The process failed to bind. Kill it and dump its ouput.
-    process.kill()
-    logging.error('%s' % process.communicate()[0])
-    assert False, '%d is still not bound' % port
-
-  def wait_for_port_to_free(self, port):
-    start = datetime.datetime.utcnow()
-    maxdelay = datetime.timedelta(seconds=30)
-    while (datetime.datetime.utcnow() - start) < maxdelay:
-      try:
-        sock = socket.socket()
-        sock.connect((self.host, port))
-        logging.debug('%d was bound, waiting to free' % port)
-      except EnvironmentError:
-        logging.debug('%d now free' % port)
-        return
-      finally:
-        sock.close()
-    assert False, '%d is still bound' % port
 
   def populateSvn(self):
     raise NotImplementedError()

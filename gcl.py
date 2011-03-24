@@ -42,7 +42,6 @@ from scm import SVN
 
 import fix_encoding
 import gclient_utils
-import owners
 import presubmit_support
 
 __version__ = '1.2'

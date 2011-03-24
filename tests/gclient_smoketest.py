@@ -142,7 +142,15 @@ class GClientSmokeBase(FakeReposTestBase):
 
 
 class GClientSmoke(GClientSmokeBase):
-  """Doesn't require neither svnserve nor git-daemon."""
+  """Doesn't require either svnserve nor git-daemon."""
+  @property
+  def svn_base(self):
+    return 'svn://random.server/svn/'
+
+  @property
+  def git_base(self):
+    return 'git://random.server/git/'
+
   def testHelp(self):
     """testHelp: make sure no new command was added."""
     result = self.gclient(['help'])
@@ -181,24 +189,24 @@ class GClientSmoke(GClientSmokeBase):
       self.checkString(expected, open(p, 'rU').read())
 
     test(['config', self.svn_base + 'trunk/src/'],
-         'solutions = [\n'
-         '  { "name"        : "src",\n'
-         '    "url"         : "svn://127.0.0.1/svn/trunk/src",\n'
-         '    "custom_deps" : {\n'
-         '    },\n'
-         '    "safesync_url": "",\n'
-         '  },\n'
-         ']\n')
+         ('solutions = [\n'
+          '  { "name"        : "src",\n'
+          '    "url"         : "%strunk/src",\n'
+          '    "custom_deps" : {\n'
+          '    },\n'
+          '    "safesync_url": "",\n'
+          '  },\n'
+          ']\n') % self.svn_base)
 
     test(['config', self.git_base + 'repo_1', '--name', 'src'],
-         'solutions = [\n'
-         '  { "name"        : "src",\n'
-         '    "url"         : "git://127.0.0.1/git/repo_1",\n'
-         '    "custom_deps" : {\n'
-         '    },\n'
-         '    "safesync_url": "",\n'
-         '  },\n'
-         ']\n')
+         ('solutions = [\n'
+          '  { "name"        : "src",\n'
+          '    "url"         : "%srepo_1",\n'
+          '    "custom_deps" : {\n'
+          '    },\n'
+          '    "safesync_url": "",\n'
+          '  },\n'
+          ']\n') % self.git_base)
 
     test(['config', 'foo', 'faa'],
          'solutions = [\n'
@@ -1075,7 +1083,7 @@ class GClientSmokeFromCheckout(GClientSmokeBase):
     if self.enabled:
       usr, pwd = self.FAKE_REPOS.USERS[0]
       check_call(
-          ['svn', 'checkout', 'svn://127.0.0.1/svn/trunk/webkit',
+          ['svn', 'checkout', self.svn_base + '/trunk/webkit',
            self.root_dir, '-q',
            '--non-interactive', '--no-auth-cache',
            '--username', usr, '--password', pwd])
@@ -1137,13 +1145,13 @@ class GClientSmokeFromCheckout(GClientSmokeBase):
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac'])
     expected = (
-        './: None\nfoo/bar: svn://127.0.0.1/svn/trunk/third_party/foo@1\n',
+        './: None\nfoo/bar: %strunk/third_party/foo@1\n' % self.svn_base,
         '', 0)
     self.check(expected, results)
     # TODO(maruel): To be added after the refactor.
     #results = self.gclient(['revinfo', '--snapshot'])
     #expected = (
-    #    './: None\nfoo/bar: svn://127.0.0.1/svn/trunk/third_party/foo@1\n',
+    #    './: None\nfoo/bar: %strunk/third_party/foo@1\n' % self.svn_base,
     #    '', 0)
     #self.check(expected, results)
 

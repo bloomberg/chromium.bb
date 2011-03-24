@@ -93,7 +93,7 @@ class GclUnittest(GclTestsBase):
         'attrs', 'breakpad', 'defer_attributes', 'fix_encoding',
         'gclient_utils', 'getpass',
         'json', 'main', 'need_change', 'need_change_and_args', 'no_args',
-        'optparse', 'os', 'owners', 'presubmit_support', 'random', 're',
+        'optparse', 'os', 'presubmit_support', 'random', 're',
         'string', 'subprocess', 'sys', 'tempfile', 'time', 'upload',
         'urllib2',
     ]
