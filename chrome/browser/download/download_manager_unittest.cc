@@ -218,6 +218,8 @@ class SelectFileObserver : public DownloadManager::Observer {
 
 }  // namespace
 
+#if !defined(OS_CHROMEOS)
+
 TEST_F(DownloadManagerTest, StartDownload) {
   BrowserThread io_thread(BrowserThread::IO, &message_loop_);
   PrefService* prefs = profile_->GetPrefs();
@@ -260,6 +262,8 @@ TEST_F(DownloadManagerTest, StartDownload) {
     }
   }
 }
+
+#endif // !defined(OS_CHROMEOS)
 
 TEST_F(DownloadManagerTest, DownloadRenameTest) {
   using ::testing::_;
