@@ -20,6 +20,9 @@ class FileSystemOperationContext {
       FileSystemContext* context,
       FileSystemFileUtil* file_system_file_util);
 
+  ~FileSystemOperationContext() {
+  }
+
   FileSystemContext* file_system_context() const {
     return file_system_context_.get();
   }
