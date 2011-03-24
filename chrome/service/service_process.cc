@@ -36,6 +36,7 @@
 
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"
+#include <gtk/gtk.h>
 #endif
 
 #if defined(ENABLE_REMOTING)
@@ -128,7 +129,19 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
                                 const CommandLine& command_line,
                                 ServiceProcessState* state) {
 #if defined(TOOLKIT_USES_GTK)
-  gfx::GtkInitFromCommandLine(command_line);
+  // TODO(jamiewalch): Calling GtkInitFromCommandLine here causes the process
+  // to abort if run headless. The correct fix for this is to refactor the
+  // service process to be more modular, a task that is currently underway.
+  // However, since this problem is blocking cloud print, the following quick
+  // hack will have to do. Note that the situation with this hack in place is
+  // no worse than it was when we weren't initializing GTK at all.
+  int argc = 1;
+  scoped_array<char*> argv(new char*[2]);
+  argv[0] = strdup(command_line.argv()[0].c_str());
+  argv[1] = NULL;
+  char **argv_pointer = argv.get();
+  gtk_init_check(&argc, &argv_pointer);
+  free(argv[0]);
 #endif
   main_message_loop_ = message_loop;
   service_process_state_.reset(state);
