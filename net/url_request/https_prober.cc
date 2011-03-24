@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,24 +34,24 @@ bool HTTPSProber::ProbeHost(const std::string& host, URLRequestContext* ctx,
   GURL url("https://" + host);
   DCHECK_EQ(url.host(), host);
 
-  net::URLRequest* req = new net::URLRequest(url, this);
+  URLRequest* req = new URLRequest(url, this);
   req->set_context(ctx);
   req->Start();
   return true;
 }
 
-void HTTPSProber::OnAuthRequired(net::URLRequest* request,
-                                 net::AuthChallengeInfo* auth_info) {
+void HTTPSProber::OnAuthRequired(URLRequest* request,
+                                 AuthChallengeInfo* auth_info) {
   Success(request);
 }
 
-void HTTPSProber::OnSSLCertificateError(net::URLRequest* request,
+void HTTPSProber::OnSSLCertificateError(URLRequest* request,
                                         int cert_error,
-                                        net::X509Certificate* cert) {
+                                        X509Certificate* cert) {
   request->ContinueDespiteLastError();
 }
 
-void HTTPSProber::OnResponseStarted(net::URLRequest* request) {
+void HTTPSProber::OnResponseStarted(URLRequest* request) {
   if (request->status().status() == URLRequestStatus::SUCCESS) {
     Success(request);
   } else {
@@ -59,7 +59,7 @@ void HTTPSProber::OnResponseStarted(net::URLRequest* request) {
   }
 }
 
-void HTTPSProber::OnReadCompleted(net::URLRequest* request, int bytes_read) {
+void HTTPSProber::OnReadCompleted(URLRequest* request, int bytes_read) {
   NOTREACHED();
 }
 
@@ -69,15 +69,15 @@ HTTPSProber::HTTPSProber() {
 HTTPSProber::~HTTPSProber() {
 }
 
-void HTTPSProber::Success(net::URLRequest* request) {
+void HTTPSProber::Success(URLRequest* request) {
   DoCallback(request, true);
 }
 
-void HTTPSProber::Failure(net::URLRequest* request) {
+void HTTPSProber::Failure(URLRequest* request) {
   DoCallback(request, false);
 }
 
-void HTTPSProber::DoCallback(net::URLRequest* request, bool result) {
+void HTTPSProber::DoCallback(URLRequest* request, bool result) {
   std::map<std::string, HTTPSProberDelegate*>::iterator i =
     inflight_probes_.find(request->original_url().host());
   DCHECK(i != inflight_probes_.end());

@@ -21,7 +21,7 @@ class URLRequestContext;
 
 // This should be scoped inside HTTPSProber, but VC cannot compile
 // HTTPProber::Delegate when HTTPSProber also inherits from
-// net::URLRequest::Delegate.
+// URLRequest::Delegate.
 class HTTPSProberDelegate {
  public:
   virtual void ProbeComplete(bool result) = 0;
@@ -32,7 +32,7 @@ class HTTPSProberDelegate {
 // HTTPSProber is a singleton object that manages HTTPS probes. A HTTPS probe
 // determines if we can connect to a given host over HTTPS. It's used when
 // transparently upgrading from HTTP to HTTPS (for example, for SPDY).
-class HTTPSProber : public net::URLRequest::Delegate {
+class HTTPSProber : public URLRequest::Delegate {
  public:
   // Returns the singleton instance.
   static HTTPSProber* GetInstance();
@@ -53,14 +53,14 @@ class HTTPSProber : public net::URLRequest::Delegate {
   bool ProbeHost(const std::string& host, URLRequestContext* ctx,
                  HTTPSProberDelegate* delegate);
 
-  // Implementation of net::URLRequest::Delegate
-  virtual void OnAuthRequired(net::URLRequest* request,
-                              net::AuthChallengeInfo* auth_info);
-  virtual void OnSSLCertificateError(net::URLRequest* request,
+  // Implementation of URLRequest::Delegate
+  virtual void OnAuthRequired(URLRequest* request,
+                              AuthChallengeInfo* auth_info);
+  virtual void OnSSLCertificateError(URLRequest* request,
                                      int cert_error,
-                                     net::X509Certificate* cert);
-  virtual void OnResponseStarted(net::URLRequest* request);
-  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
+                                     X509Certificate* cert);
+  virtual void OnResponseStarted(URLRequest* request);
+  virtual void OnReadCompleted(URLRequest* request, int bytes_read);
 
  private:
   friend struct DefaultSingletonTraits<HTTPSProber>;
@@ -68,9 +68,9 @@ class HTTPSProber : public net::URLRequest::Delegate {
   HTTPSProber();
   ~HTTPSProber();
 
-  void Success(net::URLRequest* request);
-  void Failure(net::URLRequest* request);
-  void DoCallback(net::URLRequest* request, bool result);
+  void Success(URLRequest* request);
+  void Failure(URLRequest* request);
+  void DoCallback(URLRequest* request, bool result);
 
   std::map<std::string, HTTPSProberDelegate*> inflight_probes_;
   std::set<std::string> probed_;

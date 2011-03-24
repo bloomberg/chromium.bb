@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ class URLRequestJobTracker {
 
     // Called when the given job has completed, before notifying the request
     virtual void OnJobDone(URLRequestJob* job,
-                           const net::URLRequestStatus& status) = 0;
+                           const URLRequestStatus& status) = 0;
 
     // Called when the given job is about to follow a redirect to the given
     // new URL. The redirect type is given in status_code
@@ -77,7 +77,7 @@ class URLRequestJobTracker {
   void RemoveJob(URLRequestJob* job);
 
   // Job status change notifications
-  void OnJobDone(URLRequestJob* job, const net::URLRequestStatus& status);
+  void OnJobDone(URLRequestJob* job, const URLRequestStatus& status);
   void OnJobRedirect(URLRequestJob* job, const GURL& location,
                      int status_code);
 
