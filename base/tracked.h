@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 
 #include <string>
 
+#include "base/base_api.h"
 #include "base/time.h"
 
 #ifndef NDEBUG
@@ -35,7 +36,7 @@ namespace tracked_objects {
 // Location provides basic info where of an object was constructed, or was
 // significantly brought to life.
 
-class Location {
+class BASE_API Location {
  public:
   // Constructor should be called with a long-lived char*, such as __FILE__.
   // It assumes the provided value will persist as a global constant, and it
@@ -87,7 +88,7 @@ class Location {
 
 class Births;
 
-class Tracked {
+class BASE_API Tracked {
  public:
   Tracked();
   virtual ~Tracked();

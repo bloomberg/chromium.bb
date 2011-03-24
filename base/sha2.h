@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,8 @@
 #pragma once
 
 #include <string>
+
+#include "base/base_api.h"
 
 namespace base {
 
@@ -21,11 +23,12 @@ enum {
 // Computes the SHA-256 hash of the input string 'str' and stores the first
 // 'len' bytes of the hash in the output buffer 'output'.  If 'len' > 32,
 // only 32 bytes (the full hash) are stored in the 'output' buffer.
-void SHA256HashString(const std::string& str, void* output, size_t len);
+BASE_API void SHA256HashString(const std::string& str,
+                               void* output, size_t len);
 
 // Convenience version of the above that returns the result in a 32-byte
 // string.
-std::string SHA256HashString(const std::string& str);
+BASE_API std::string SHA256HashString(const std::string& str);
 
 }  // namespace base
 

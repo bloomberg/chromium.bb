@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define BASE_TASK_H_
 #pragma once
 
+#include "base/base_api.h"
 #include "base/raw_scoped_refptr_mismatch_checker.h"
 #include "base/tracked.h"
 #include "base/tuple.h"
@@ -16,7 +17,7 @@
 // A task is a generic runnable thingy, usually used for running code on a
 // different thread or for scheduling future tasks off of the message loop.
 
-class Task : public tracked_objects::Tracked {
+class BASE_API Task : public tracked_objects::Tracked {
  public:
   Task();
   virtual ~Task();
@@ -25,7 +26,7 @@ class Task : public tracked_objects::Tracked {
   virtual void Run() = 0;
 };
 
-class CancelableTask : public Task {
+class BASE_API CancelableTask : public Task {
  public:
   CancelableTask();
   virtual ~CancelableTask();

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "base/base_api.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 
@@ -19,7 +20,7 @@ namespace base {
 // Simplify the interface and reduce includes by abstracting out the internals.
 struct HMACPlatformData;
 
-class HMAC {
+class BASE_API HMAC {
  public:
   // The set of supported hash functions. Extend as required.
   enum HashAlgorithm {

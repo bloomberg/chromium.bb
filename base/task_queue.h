@@ -8,12 +8,13 @@
 
 #include <deque>
 
+#include "base/base_api.h"
 #include "base/task.h"
 
 // A TaskQueue is a queue of tasks waiting to be run.  To run the tasks, call
 // the Run method.  A task queue is itself a Task so that it can be placed in a
 // message loop or another task queue.
-class TaskQueue : public Task {
+class BASE_API TaskQueue : public Task {
  public:
   TaskQueue();
   ~TaskQueue();
