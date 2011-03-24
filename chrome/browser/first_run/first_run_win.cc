@@ -301,11 +301,10 @@ class ImportProcessRunner : public base::win::ObjectWatcher::Delegate {
   virtual ~ImportProcessRunner() {
     ::CloseHandle(import_process_);
   }
-  // Returns the child process exit code. There are 3 expected values:
-  // NORMAL_EXIT, IMPORTER_CANCEL or IMPORTER_HUNG.
-  int exit_code() const {
-    return exit_code_;
-  }
+  // Returns the child process exit code. There are 2 expected values:
+  // NORMAL_EXIT, or IMPORTER_HUNG.
+  int exit_code() const { return exit_code_; }
+
   // The child process has terminated. Find the exit code and quit the loop.
   virtual void OnObjectSignaled(HANDLE object) {
     DCHECK(object == import_process_);

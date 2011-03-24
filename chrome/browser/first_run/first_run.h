@@ -315,7 +315,6 @@ class FirstRunImportObserver : public ImporterObserver {
 
   // ImporterObserver:
   virtual void ImportCompleted() OVERRIDE;
-  virtual void ImportCanceled() OVERRIDE;
 
   bool loop_running_;
   int import_result_;

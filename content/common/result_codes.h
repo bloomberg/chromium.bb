@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,6 @@ class ResultCodes {
     UNINSTALL_DELETE_PROFILE,   // Delete profile as well during uninstall.
     UNSUPPORTED_PARAM,          // Command line parameter is not supported.
     KILLED_BAD_MESSAGE,         // A bad message caused the process termination.
-    IMPORTER_CANCEL,            // The user canceled the browser import.
     IMPORTER_HUNG,              // Browser import hung and was killed.
     RESPAWN_FAILED,             // Trying to restart the browser we crashed.
 

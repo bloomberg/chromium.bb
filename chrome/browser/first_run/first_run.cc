@@ -632,11 +632,6 @@ void FirstRunImportObserver::ImportCompleted() {
   Finish();
 }
 
-void FirstRunImportObserver::ImportCanceled() {
-  import_result_ = ResultCodes::IMPORTER_CANCEL;
-  Finish();
-}
-
 #if defined(OS_POSIX)
 namespace {
 
