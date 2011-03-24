@@ -64,6 +64,10 @@ class DataTypeManagerImpl2 : public DataTypeManager {
   std::vector<DataTypeController*> needs_start_;
   std::vector<DataTypeController*> needs_stop_;
 
+  // Whether an attempt to reconfigure was made while we were busy configuring.
+  // The |last_requested_types_| will reflect the newest set of requested types.
+  bool needs_reconfigure_;
+
   ScopedRunnableMethodFactory<DataTypeManagerImpl2> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl2);

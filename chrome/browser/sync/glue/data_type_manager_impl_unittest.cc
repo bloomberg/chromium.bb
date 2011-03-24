@@ -336,7 +336,11 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhileOneInFlight) {
   SetStartStopExpectations(preference_dtc);
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  SetBackendExpectations(2);
+  // Request/Resume only called once due to the configures being inlined.
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(2);
+  EXPECT_CALL(backend_, StartSyncingWithServer()).Times(2);
+  EXPECT_CALL(backend_, RequestPause()).Times(1);
+  EXPECT_CALL(backend_, RequestResume()).Times(1);
   DataTypeManagerImpl dtm(&backend_, controllers_);
   types_.insert(syncable::BOOKMARKS);
 
@@ -369,9 +373,8 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhilePausePending) {
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(2);
   EXPECT_CALL(backend_, StartSyncingWithServer()).Times(2);
   EXPECT_CALL(backend_, RequestPause()).
-      WillOnce(Return(true)).
-      WillOnce(DoDefault());
-  EXPECT_CALL(backend_, RequestResume()).Times(2);
+      WillOnce(Return(true));
+  EXPECT_CALL(backend_, RequestResume()).Times(1);
   DataTypeManagerImpl dtm(&backend_, controllers_);
   types_.insert(syncable::BOOKMARKS);
 
@@ -383,9 +386,6 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhilePausePending) {
   // Configure while pause pending.
   types_.insert(syncable::PREFERENCES);
   dtm.Configure(types_);
-
-  // Should now be RESTARTING.
-  EXPECT_EQ(DataTypeManager::RESTARTING, dtm.state());
 
   // Send the SYNC_PAUSED notification.  This will allow the DTM to
   // wake up and restart itself with the new configuration.
@@ -451,9 +451,6 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhileResumePending) {
   // Configure while resume pending.
   types_.insert(syncable::PREFERENCES);
   dtm.Configure(types_);
-
-  // Should now be RESTARTING.
-  EXPECT_EQ(DataTypeManager::RESTARTING, dtm.state());
 
   // Send the SYNC_PAUSED notification.  This will allow the DTM to
   // wake up and restart itself with the new configuration.
@@ -647,14 +644,10 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhileDownloadPending) {
   types_.insert(syncable::PREFERENCES);
   dtm.Configure(types_);
 
-  // Should now be RESTARTING.
-  EXPECT_EQ(DataTypeManager::RESTARTING, dtm.state());
-
   // Running the task will queue a restart task to the message loop, and
   // eventually get us configured.
   task->Run();
   delete task;
-  EXPECT_EQ(DataTypeManager::RESTARTING, dtm.state());
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
 

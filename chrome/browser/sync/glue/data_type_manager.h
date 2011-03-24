@@ -20,7 +20,6 @@ class DataTypeManager {
  public:
   enum State {
     STOPPED,           // No data types are currently running.
-    RESTARTING,        // Configuration has been changed...
     DOWNLOAD_PENDING,  // Not implemented yet: Waiting for the syncer to
                        // complete the initial download of new data
                        // types.

@@ -56,8 +56,8 @@ DataTypeManagerImpl::DataTypeManagerImpl(
     : backend_(backend),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
-      pause_pending_(false),
       syncer_paused_(false),
+      needs_reconfigure_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(backend_);
@@ -104,6 +104,14 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
   }
 
   last_requested_types_ = desired_types;
+  // Only proceed if we're in a steady state or blocked.
+  if (state_ != STOPPED && state_ != CONFIGURED && state_ != BLOCKED) {
+    VLOG(1) << "Received configure request while configuration in flight. "
+            << "Postponing until current configuration complete.";
+    needs_reconfigure_ = true;
+    return;
+  }
+
   needs_start_.clear();
   GetControllersNeedingStart(&needs_start_);
   // Sort these according to kStartOrder.
@@ -132,9 +140,14 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
 
   // If nothing changed, we're done.
   if (needs_start_.empty() && needs_stop_.empty()) {
-    state_ = CONFIGURED;
     NotifyStart();
-    NotifyDone(OK);
+    if (syncer_paused_) {
+      state_ = RESUME_PENDING;
+      ResumeSyncer();
+    } else {
+      state_ = CONFIGURED;
+      NotifyDone(OK);
+    }
     return;
   }
 
@@ -145,21 +158,7 @@ void DataTypeManagerImpl::Restart() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Restarting...";
 
-  // If we are currently waiting for an asynchronous process to
-  // complete, change our state to RESTARTING so those processes know
-  // that we want to start over when they finish.
-  if (state_ == DOWNLOAD_PENDING || state_ == PAUSE_PENDING ||
-      state_ == CONFIGURING || state_ == RESUME_PENDING) {
-    state_ = RESTARTING;
-    return;
-  }
-  if (pause_pending_) {  // Catch for http://crbug.com/73218.
-    NOTREACHED() << "Attempted to restart DataTypeManager while already "
-                 << " configuring.";
-    return;
-  }
-  DCHECK(state_ == STOPPED || state_ == RESTARTING || state_ == CONFIGURED ||
-         state_ == BLOCKED);
+  DCHECK(state_ == STOPPED || state_ == CONFIGURED || state_ == BLOCKED);
 
   // Starting from a "steady state" (stopped or configured) state
   // should send a start notification.
@@ -213,16 +212,7 @@ void DataTypeManagerImpl::Restart() {
 
 void DataTypeManagerImpl::DownloadReady() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(state_ == DOWNLOAD_PENDING || state_ == RESTARTING);
-
-  // If we had a restart while waiting for downloads, just restart.
-  // Note: Restart() can cause DownloadReady to be directly invoked, so we post
-  // a task to avoid re-entrancy issues.
-  if (state_ == RESTARTING) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(&DataTypeManagerImpl::Restart));
-    return;
-  }
+  DCHECK(state_ == DOWNLOAD_PENDING);
 
   if (syncer_paused_) {
     state_ = CONFIGURING;
@@ -247,6 +237,21 @@ void DataTypeManagerImpl::StartNextType() {
 
   DCHECK_EQ(state_, CONFIGURING);
 
+  if (needs_reconfigure_) {
+    // An attempt was made to reconfigure while we were already configuring.
+    // This can be because a passphrase was accepted or the user changed the
+    // set of desired types. Either way, |last_requested_types_| will contain
+    // the most recent set of desired types, so we just call configure.
+    // Note: we do this whether or not GetControllersNeedingStart is true,
+    // because we may need to stop datatypes.
+    state_ = BLOCKED;
+    needs_reconfigure_ = false;
+    VLOG(1) << "Reconfiguring due to previous configure attempt occuring while"
+            << " busy.";
+    Configure(last_requested_types_);
+    return;
+  }
+
   // Do a fresh calculation to see if controllers need starting to account for
   // things like encryption, which may still need to be sorted out before we
   // can announce we're "Done" configuration entirely.
@@ -266,13 +271,6 @@ void DataTypeManagerImpl::TypeStartCallback(
   // When the data type controller invokes this callback, it must be
   // on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // If configuration changed while this data type was starting, we
-  // need to reset.  Resume the syncer.
-  if (state_ == RESTARTING) {
-    ResumeSyncer();
-    return;
-  }
 
   // We're done with the data type at the head of the list -- remove it.
   DataTypeController* started_dtc = needs_start_[0];
@@ -360,7 +358,6 @@ void DataTypeManagerImpl::Stop() {
   // longer care about this.
   bool aborted = false;
   if (state_ == PAUSE_PENDING) {
-    pause_pending_ = false;
     RemoveObserver(NotificationType::SYNC_PAUSED);
     aborted = true;
   }
@@ -425,30 +422,32 @@ void DataTypeManagerImpl::Observe(NotificationType type,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   switch (type.value) {
     case NotificationType::SYNC_PAUSED:
-      DCHECK(state_ == PAUSE_PENDING || state_ == RESTARTING);
+      DCHECK(state_ == PAUSE_PENDING);
       DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      pause_pending_ = false;
       syncer_paused_ = true;
       RemoveObserver(NotificationType::SYNC_PAUSED);
-
-      // If the state changed to RESTARTING while waiting to be
-      // paused, resume the syncer so we can restart.
-      if (state_ == RESTARTING) {
-        ResumeSyncer();
-        return;
-      }
 
       state_ = CONFIGURING;
       StartNextType();
       break;
     case NotificationType::SYNC_RESUMED:
-      DCHECK(state_ == RESUME_PENDING || state_ == RESTARTING);
+      DCHECK(state_ == RESUME_PENDING);
       RemoveObserver(NotificationType::SYNC_RESUMED);
       syncer_paused_ = false;
 
-      // If we are resuming because of a restart, continue the restart.
-      if (state_ == RESTARTING) {
-        Restart();
+      if (needs_reconfigure_) {
+        // An attempt was made to reconfigure while we were already configuring.
+        // This can be because a passphrase was accepted or the user changed the
+        // set of desired types. Either way, |last_requested_types_| will
+        // contain the most recent set of desired types, so we just call
+        // configure.
+        // Note: we do this whether or not GetControllersNeedingStart is true,
+        // because we may need to stop datatypes.
+        state_ = BLOCKED;
+        needs_reconfigure_ = false;
+        VLOG(1) << "Reconfiguring due to previous configure attempt occuring "
+                << " while busy.";
+        Configure(last_requested_types_);
         return;
       }
 
@@ -502,9 +501,7 @@ void DataTypeManagerImpl::ResumeSyncer() {
 void DataTypeManagerImpl::PauseSyncer() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   AddObserver(NotificationType::SYNC_PAUSED);
-  pause_pending_ = true;
   if (!backend_->RequestPause()) {
-    pause_pending_ = false;
     RemoveObserver(NotificationType::SYNC_PAUSED);
     FinishStopAndNotify(UNRECOVERABLE_ERROR);
   }

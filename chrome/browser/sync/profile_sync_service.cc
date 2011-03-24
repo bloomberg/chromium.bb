@@ -1113,7 +1113,6 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase,
     cached_passphrase_.is_explicit = is_explicit;
     cached_passphrase_.is_creation = is_creation;
   }
-
 }
 
 void ProfileSyncService::EncryptDataTypes(
@@ -1157,8 +1156,10 @@ void ProfileSyncService::Observe(NotificationType type,
       }
 
       // TODO(sync): Less wizard, more toast.
-      if (!observed_passphrase_required_)
-        wizard_.Step(SyncSetupWizard::DONE);
+      // It's possible to have observed_passphrase_required_ be true here and
+      // still want to go to done. This is the case when the datatype requiring
+      // the passphrase was disabled after we attempted to start it.
+      wizard_.Step(SyncSetupWizard::DONE);
       NotifyObservers();
 
       // In the old world, this would be a no-op.  With new syncer thread,

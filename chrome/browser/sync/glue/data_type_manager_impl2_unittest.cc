@@ -449,14 +449,10 @@ TEST_F(DataTypeManagerImpl2Test, ConfigureWhileDownloadPending) {
   types_.insert(syncable::PREFERENCES);
   dtm.Configure(types_);
 
-  // Should now be RESTARTING.
-  EXPECT_EQ(DataTypeManager::RESTARTING, dtm.state());
-
   // Running the task will queue a restart task to the message loop, and
   // eventually get us configured.
   task->Run();
   delete task;
-  EXPECT_EQ(DataTypeManager::RESTARTING, dtm.state());
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
 

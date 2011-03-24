@@ -4,6 +4,9 @@
 
 #include "chrome/browser/sync/glue/data_type_manager_impl2.h"
 
+#include <algorithm>
+#include <functional>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
@@ -59,6 +62,7 @@ DataTypeManagerImpl2::DataTypeManagerImpl2(SyncBackendHost* backend,
     : backend_(backend),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
+      needs_reconfigure_(false),
       method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(backend_);
   // Ensure all data type controllers are stopped.
@@ -102,6 +106,14 @@ void DataTypeManagerImpl2::Configure(const TypeSet& desired_types) {
   }
 
   last_requested_types_ = desired_types;
+  // Only proceed if we're in a steady state or blocked.
+  if (state_ != STOPPED && state_ != CONFIGURED && state_ != BLOCKED) {
+    VLOG(1) << "Received configure request while configuration in flight. "
+            << "Postponing until current configuration complete.";
+    needs_reconfigure_ = true;
+    return;
+  }
+
   needs_start_.clear();
   GetControllersNeedingStart(&needs_start_);
   // Sort these according to kStartOrder.
@@ -142,16 +154,7 @@ void DataTypeManagerImpl2::Configure(const TypeSet& desired_types) {
 void DataTypeManagerImpl2::Restart() {
   VLOG(1) << "Restarting...";
 
-  // If we are currently waiting for an asynchronous process to
-  // complete, change our state to RESTARTING so those processes know
-  // that we want to start over when they finish.
-  if (state_ == DOWNLOAD_PENDING || state_ == CONFIGURING) {
-    state_ = RESTARTING;
-    return;
-  }
-
-  DCHECK(state_ == STOPPED || state_ == RESTARTING || state_ == CONFIGURED ||
-         state_ == BLOCKED);
+  DCHECK(state_ == STOPPED || state_ == CONFIGURED || state_ == BLOCKED);
 
   // Starting from a "steady state" (stopped or configured) state
   // should send a start notification.
@@ -175,16 +178,7 @@ void DataTypeManagerImpl2::Restart() {
 }
 
 void DataTypeManagerImpl2::DownloadReady() {
-  DCHECK(state_ == DOWNLOAD_PENDING || state_ == RESTARTING);
-
-  // If we had a restart while waiting for downloads, just restart.
-  // Note: Restart() can cause DownloadReady to be directly invoked, so we post
-  // a task to avoid re-entrancy issues.
-  if (state_ == RESTARTING) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(&DataTypeManagerImpl2::Restart));
-    return;
-  }
+  DCHECK(state_ == DOWNLOAD_PENDING);
 
   state_ = CONFIGURING;
   StartNextType();
@@ -201,6 +195,21 @@ void DataTypeManagerImpl2::StartNextType() {
   }
 
   DCHECK_EQ(state_, CONFIGURING);
+
+  if (needs_reconfigure_) {
+    // An attempt was made to reconfigure while we were already configuring.
+    // This can be because a passphrase was accepted or the user changed the
+    // set of desired types. Either way, |last_requested_types_| will contain
+    // the most recent set of desired types, so we just call configure.
+    // Note: we do this whether or not GetControllersNeedingStart is true,
+    // because we may need to stop datatypes.
+    state_ = BLOCKED;
+    needs_reconfigure_ = false;
+    VLOG(1) << "Reconfiguring due to previous configure attempt occuring while"
+            << " busy.";
+    Configure(last_requested_types_);
+    return;
+  }
 
   // Do a fresh calculation to see if controllers need starting to account for
   // things like encryption, which may still need to be sorted out before we
@@ -221,12 +230,7 @@ void DataTypeManagerImpl2::TypeStartCallback(
   // on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (state_ == RESTARTING) {
-    // If configuration changed while this data type was starting, we
-    // need to reset.
-    Restart();
-    return;
-  } else if (state_ == STOPPING) {
+  if (state_ == STOPPING) {
     // If we reach this callback while stopping, this means that
     // DataTypeManager::Stop() was called while the current data type
     // was starting.  Now that it has finished starting, we can finish

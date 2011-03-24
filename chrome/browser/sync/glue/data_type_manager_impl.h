@@ -83,13 +83,12 @@ class DataTypeManagerImpl : public DataTypeManager,
   std::vector<DataTypeController*> needs_start_;
   std::vector<DataTypeController*> needs_stop_;
 
-  // Safety check to ensure we never request more than one pause. This can be
-  // true while state_ != PAUSE_PENDING if we attempt to restart while in
-  // PAUSE_PENDING state. See http://crbug.com/73218.
-  bool pause_pending_;
-
   // Whether we've observed a SYNC_PAUSED but not SYNC_RESUMED.
   bool syncer_paused_;
+
+  // Whether an attempt to reconfigure was made while we were busy configuring.
+  // The |last_requested_types_| will reflect the newest set of requested types.
+  bool needs_reconfigure_;
 
   NotificationRegistrar notification_registrar_;
   ScopedRunnableMethodFactory<DataTypeManagerImpl> method_factory_;
