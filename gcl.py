@@ -764,12 +764,6 @@ def OptionallyDoPresubmitChecks(change_info, committing, args):
   return DoPresubmitChecks(change_info, committing, True)
 
 
-def suggest_reviewers(change_info, affected_files):
-  owners_db = owners.Database(change_info.GetLocalRoot(), fopen=file,
-                              os_path=os.path)
-  return owners_db.reviewers_for([f[1] for f in affected_files])
-
-
 def defer_attributes(a, b):
   """Copy attributes from an object (like a function) to another."""
   for x in dir(a):
@@ -1098,15 +1092,6 @@ def CMDchange(args):
   file_re = re.compile(r"^[a-z].+\Z", re.IGNORECASE)
   affected_files = [x for x in other_files if file_re.match(x[0])]
   unaffected_files = [x for x in other_files if not file_re.match(x[0])]
-
-  if not change_info.reviewers:
-    files_for_review = affected_files[:]
-    files_for_review.extend(change_info.GetFiles())
-    suggested_reviewers = suggest_reviewers(change_info, files_for_review)
-    if suggested_reviewers:
-      reviewers_re = re.compile(REVIEWERS_REGEX)
-      if not any(reviewers_re.match(l) for l in description.splitlines()):
-        description += '\n\nR=' + ','.join(suggested_reviewers)
 
   description = description.rstrip() + '\n'
 
