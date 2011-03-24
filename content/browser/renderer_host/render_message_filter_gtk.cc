@@ -16,10 +16,13 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_native_view_id_manager.h"
 
+#if !defined(OS_CHROMEOS)
 // We want to obey the alphabetical order for including header files, but
 // #define macros in X11 header files affect chrome header files
-// (e.g. Success), so include Xinerama.h here.
+// (e.g. Success), so include Xinerama.h here. We don't include Xinerama.h on
+// Chrome OS since the X server for Chrome OS does not support the extension.
 #include <X11/extensions/Xinerama.h>
+#endif  // OS_CHROMEOS
 
 using WebKit::WebScreenInfo;
 using WebKit::WebScreenInfoFactory;
@@ -72,6 +75,7 @@ void RenderMessageFilter::DoOnGetScreenInfo(gfx::NativeViewId view,
   WebScreenInfo results = WebScreenInfoFactory::screenInfo(display,
       ui::GetDefaultScreen(display));
 
+#if !defined(OS_CHROMEOS)
   // First check if we can use Xinerama.
   XineramaScreenInfo* screen_info = NULL;
   int screen_num = 0;
@@ -117,6 +121,7 @@ void RenderMessageFilter::DoOnGetScreenInfo(gfx::NativeViewId view,
       XFree(screen_info);
     }
   }
+#endif  // OS_CHROMEOS
 
   ViewHostMsg_GetScreenInfo::WriteReplyParams(reply_msg, results);
   Send(reply_msg);
