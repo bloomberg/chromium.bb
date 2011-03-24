@@ -950,6 +950,26 @@ typedef void (GL_APIENTRYP PFNGLREQUESTEXTENSIONCHROMIUM) (const GLchar *extensi
 #endif
 #endif
 
+/* GL_CHROMIUM_latch */
+/*
+ * This extension is similar in spirit to GL_NV_fence except
+ * that GL_CHROMIUM_latch does not require resources to be shared
+ * and it does not require glFlush semantics to work.
+ */
+#ifndef GL_CHROMIUM_latch
+#define GL_CHROMIUM_latch 1
+#ifdef GL_GLEXT_PROTOTYPES
+#define glSetLatchCHROMIUM  GLES2_GET_FUN(SetLatchCHROMIUM)
+#define glWaitLatchCHROMIUM GLES2_GET_FUN(WaitLatchCHROMIUM)
+#if !defined(GLES2_USE_CPP_BINDINGS)
+GL_APICALL void GL_APIENTRY glSetLatchCHROMIUM (GLint shm_id, GLuint latch_id);
+GL_APICALL void GL_APIENTRY glWaitLatchCHROMIUM (GLint shm_id, GLuint latch_id);
+#endif
+#else
+typedef void (GL_APIENTRYP PFNGLSETLATCHCHROMIUM) (GLint shm_id, GLuint latch_id);
+typedef void (GL_APIENTRYP PFNGLWaitLATCHCHROMIUM) (GLint shm_id, GLuint latch_id);
+#endif
+#endif
 
 #ifdef __cplusplus
 }

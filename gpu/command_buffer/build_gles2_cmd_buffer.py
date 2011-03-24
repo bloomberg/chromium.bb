@@ -211,6 +211,8 @@ GL_APICALL void         GL_APIENTRY glCopyTextureToParentTextureCHROMIUM (GLidBi
 GL_APICALL void         GL_APIENTRY glResizeCHROMIUM (GLuint width, GLuint height);
 GL_APICALL const GLchar* GL_APIENTRY glGetRequestableExtensionsCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glRequestExtensionCHROMIUM (const char* extension);
+GL_APICALL void         GL_APIENTRY glSetLatchCHROMIUM (GLint shm_id, GLuint latch_id);
+GL_APICALL void         GL_APIENTRY glWaitLatchCHROMIUM (GLint shm_id, GLuint latch_id);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -414,6 +416,8 @@ _CMD_ID_TABLE = {
   'ResizeCHROMIUM':                                            448,
   'GetRequestableExtensionsCHROMIUM':                          449,
   'RequestExtensionCHROMIUM':                                  450,
+  'SetLatchCHROMIUM':                                          451,
+  'WaitLatchCHROMIUM':                                         452,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -1610,6 +1614,12 @@ _FUNCTION_INFO = {
     'cmd_args': 'uint32 bucket_id',
     'extension': True,
     'chromium': True,
+  },
+  'SetLatchCHROMIUM': {
+    'type': 'Custom',
+  },
+  'WaitLatchCHROMIUM': {
+    'type': 'Custom',
   },
 }
 

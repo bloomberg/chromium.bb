@@ -1,9 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
+#include "base/atomicops.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/gl_mock.h"
@@ -2857,6 +2858,64 @@ TEST_F(GLES2DecoderWithShaderTest, VertexAttribPointer) {
       }
     }
   }
+}
+
+TEST_F(GLES2DecoderTest, SetLatch) {
+  const uint32 kLatchId = 1;
+  base::subtle::Atomic32* latches = static_cast<base::subtle::Atomic32*>(
+      shared_memory_base_);
+  const uint32 kInvalidLatchId = kSharedBufferSize / sizeof(*latches);
+  const uint32 kLastValidLatchId = kInvalidLatchId - 1;
+  latches[kLatchId] = 0;
+  latches[kLastValidLatchId] = 0;
+  SetLatchCHROMIUM cmd;
+  // Check bad shared memory id.
+  cmd.Init(kInvalidSharedMemoryId, kLatchId);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  // Check out of range latch id.
+  cmd.Init(shared_memory_id_, kInvalidLatchId);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  cmd.Init(shared_memory_id_, kLatchId);
+  // Check valid latch.
+  EXPECT_EQ(0, latches[kLatchId]);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(1, latches[kLatchId]);
+  // Check last valid latch.
+  EXPECT_EQ(0, latches[kLastValidLatchId]);
+  cmd.Init(shared_memory_id_, kLastValidLatchId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(1, latches[kLastValidLatchId]);
+}
+
+TEST_F(GLES2DecoderTest, WaitLatch) {
+  const uint32 kLatchId = 1;
+  base::subtle::Atomic32* latches = static_cast<base::subtle::Atomic32*>(
+      shared_memory_base_);
+  const uint32 kInvalidLatchId =  kSharedBufferSize / sizeof(*latches);
+  const uint32 kLastValidLatchId = kInvalidLatchId - 1;
+  latches[kLatchId] = 0;
+  latches[kLastValidLatchId] = 0;
+  WaitLatchCHROMIUM cmd;
+  // Check bad shared memory id.
+  cmd.Init(kInvalidSharedMemoryId, kLatchId);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  // Check out of range latch id.
+  cmd.Init(shared_memory_id_, kInvalidLatchId);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  // Check valid latch.
+  cmd.Init(shared_memory_id_, kLatchId);
+  EXPECT_EQ(0, latches[kLatchId]);
+  EXPECT_EQ(error::kWaiting, ExecuteCmd(cmd));
+  latches[kLatchId] = 1;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0, latches[kLatchId]);
+  // Check last valid latch.
+  cmd.Init(shared_memory_id_, kLastValidLatchId);
+  EXPECT_EQ(0, latches[kLastValidLatchId]);
+  EXPECT_EQ(error::kWaiting, ExecuteCmd(cmd));
+  latches[kLastValidLatchId] = 1;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0, latches[kLastValidLatchId]);
 }
 
 // TODO(gman): BufferData

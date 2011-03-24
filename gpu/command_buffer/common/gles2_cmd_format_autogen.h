@@ -8901,6 +8901,82 @@ COMPILE_ASSERT(offsetof(RequestExtensionCHROMIUM, header) == 0,
 COMPILE_ASSERT(offsetof(RequestExtensionCHROMIUM, bucket_id) == 4,
                OffsetOf_RequestExtensionCHROMIUM_bucket_id_not_4);
 
+struct SetLatchCHROMIUM {
+  typedef SetLatchCHROMIUM ValueType;
+  static const CommandId kCmdId = kSetLatchCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLint _shm_id, GLuint _latch_id) {
+    SetHeader();
+    shm_id = _shm_id;
+    latch_id = _latch_id;
+  }
+
+  void* Set(void* cmd, GLint _shm_id, GLuint _latch_id) {
+    static_cast<ValueType*>(cmd)->Init(_shm_id, _latch_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32 shm_id;
+  uint32 latch_id;
+};
+
+COMPILE_ASSERT(sizeof(SetLatchCHROMIUM) == 12,
+               Sizeof_SetLatchCHROMIUM_is_not_12);
+COMPILE_ASSERT(offsetof(SetLatchCHROMIUM, header) == 0,
+               OffsetOf_SetLatchCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(SetLatchCHROMIUM, shm_id) == 4,
+               OffsetOf_SetLatchCHROMIUM_shm_id_not_4);
+COMPILE_ASSERT(offsetof(SetLatchCHROMIUM, latch_id) == 8,
+               OffsetOf_SetLatchCHROMIUM_latch_id_not_8);
+
+struct WaitLatchCHROMIUM {
+  typedef WaitLatchCHROMIUM ValueType;
+  static const CommandId kCmdId = kWaitLatchCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLint _shm_id, GLuint _latch_id) {
+    SetHeader();
+    shm_id = _shm_id;
+    latch_id = _latch_id;
+  }
+
+  void* Set(void* cmd, GLint _shm_id, GLuint _latch_id) {
+    static_cast<ValueType*>(cmd)->Init(_shm_id, _latch_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32 shm_id;
+  uint32 latch_id;
+};
+
+COMPILE_ASSERT(sizeof(WaitLatchCHROMIUM) == 12,
+               Sizeof_WaitLatchCHROMIUM_is_not_12);
+COMPILE_ASSERT(offsetof(WaitLatchCHROMIUM, header) == 0,
+               OffsetOf_WaitLatchCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(WaitLatchCHROMIUM, shm_id) == 4,
+               OffsetOf_WaitLatchCHROMIUM_shm_id_not_4);
+COMPILE_ASSERT(offsetof(WaitLatchCHROMIUM, latch_id) == 8,
+               OffsetOf_WaitLatchCHROMIUM_latch_id_not_8);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

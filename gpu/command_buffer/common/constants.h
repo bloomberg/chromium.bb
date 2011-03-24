@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,11 @@ namespace error {
     kInvalidArguments,
     kLostContext,
     kGenericError,
+
+    // This is not an error. It is returned by commands that want to
+    // be called again until they return a different error. For
+    // example: WaitLatch.
+    kWaiting,
 
     // This is not an error. It is returned by commands to mark a position
     // in the command buffer that should not be issued to the the GL backend

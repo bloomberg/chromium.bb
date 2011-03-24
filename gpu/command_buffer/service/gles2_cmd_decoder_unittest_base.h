@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -269,6 +269,7 @@ class GLES2DecoderTestBase : public testing::Test {
   uint32 shared_memory_id_;
   uint32 shared_memory_offset_;
   void* shared_memory_address_;
+  void* shared_memory_base_;
 
   int8 immediate_buffer_[256];
 

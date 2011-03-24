@@ -169,6 +169,9 @@ void GPUProcessor::ProcessCommands() {
   int commands_processed = 0;
   while (commands_processed < commands_per_update_ && !parser_->IsEmpty()) {
     error::Error error = parser_->ProcessCommand();
+    if (error == error::kWaiting) {
+      break;
+    }
 
     // If the command indicated it should be throttled, insert a new fence into
     // the fence queue.

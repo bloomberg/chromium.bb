@@ -14,6 +14,7 @@
 
 #include "app/gfx/gl/gl_context.h"
 #include "app/gfx/gl/gl_implementation.h"
+#include "base/atomicops.h"
 #include "base/at_exit.h"
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
@@ -6171,6 +6172,44 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
   // This does not hold for ANGLE, possibly because all the GL contexts in a
   // share group are actually one D3D device. Found by trial and error.
   return IsAngle() ? error::kThrottle : error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleSetLatchCHROMIUM(
+    uint32 immediate_data_size, const gles2::SetLatchCHROMIUM& c) {
+  int32 shm_id = c.shm_id;
+  uint32 latch_id = c.latch_id;
+  uint32 shm_offset = 0;
+  base::subtle::Atomic32* latch;
+  if (!SafeMultiplyUint32(latch_id, sizeof(*latch), &shm_offset)) {
+    return error::kOutOfBounds;
+  }
+  latch = GetSharedMemoryAs<base::subtle::Atomic32*>(
+      shm_id, shm_offset, sizeof(*latch));
+  if (!latch) {
+    return error::kOutOfBounds;
+  }
+  *latch = 1;
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleWaitLatchCHROMIUM(
+    uint32 immediate_data_size, const gles2::WaitLatchCHROMIUM& c) {
+  int32 shm_id = c.shm_id;
+  uint32 latch_id = c.latch_id;
+  uint32 shm_offset = 0;
+  base::subtle::Atomic32* latch;
+  if (!SafeMultiplyUint32(latch_id, sizeof(*latch), &shm_offset)) {
+    return error::kOutOfBounds;
+  }
+  latch = GetSharedMemoryAs<base::subtle::Atomic32*>(
+      shm_id, shm_offset, sizeof(*latch));
+  if (!latch) {
+    return error::kOutOfBounds;
+  }
+
+  base::subtle::Atomic32 old =
+      base::subtle::NoBarrier_CompareAndSwap(latch, 1, 0);
+  return (old == 0) ? error::kWaiting : error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleCommandBufferEnableCHROMIUM(

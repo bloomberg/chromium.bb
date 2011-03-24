@@ -203,6 +203,8 @@
   OP(ResizeCHROMIUM)                                           /* 448 */ \
   OP(GetRequestableExtensionsCHROMIUM)                         /* 449 */ \
   OP(RequestExtensionCHROMIUM)                                 /* 450 */ \
+  OP(SetLatchCHROMIUM)                                         /* 451 */ \
+  OP(WaitLatchCHROMIUM)                                        /* 452 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.
