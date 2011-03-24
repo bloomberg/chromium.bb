@@ -537,12 +537,6 @@ void SafeBrowsingService::OnIOInitialize(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   enabled_ = true;
 
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  enable_download_protection_ =
-      !cmdline->HasSwitch(switches::kSbDisableDownloadProtection);
-  enable_csd_whitelist_ =
-      cmdline->HasSwitch(switches::kEnableClientSidePhishingDetection);
-
   MakeDatabaseAvailable();
 
   // On Windows, get the safe browsing client name from the browser
@@ -558,6 +552,7 @@ void SafeBrowsingService::OnIOInitialize(
   std::string client_name("chromium");
 #endif
 #endif
+  CommandLine* cmdline = CommandLine::ForCurrentProcess();
   bool disable_auto_update =
       cmdline->HasSwitch(switches::kSbDisableAutoUpdate) ||
       cmdline->HasSwitch(switches::kDisableBackgroundNetworking);
@@ -857,6 +852,7 @@ void SafeBrowsingService::DatabaseUpdateFinished(bool update_succeeded) {
 }
 
 void SafeBrowsingService::Start() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!safe_browsing_thread_.get());
   safe_browsing_thread_.reset(new base::Thread("Chrome_SafeBrowsingThread"));
   if (!safe_browsing_thread_->Start())
@@ -864,6 +860,7 @@ void SafeBrowsingService::Start() {
 
   // Retrieve client MAC keys.
   PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
   std::string client_key, wrapped_key;
   if (local_state) {
     client_key =
@@ -875,6 +872,18 @@ void SafeBrowsingService::Start() {
   // We will issue network fetches using the default profile's request context.
   scoped_refptr<URLRequestContextGetter> request_context_getter(
       GetDefaultProfile()->GetRequestContext());
+
+  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  enable_download_protection_ =
+      !cmdline->HasSwitch(switches::kSbDisableDownloadProtection);
+
+  // We only download the csd-whitelist if client-side phishing detection is
+  // enabled and if the user has opted in with stats collection.  Note: we
+  // cannot check whether the metrics_service() object is created because it
+  // may be initialized after this method is called.
+  enable_csd_whitelist_ =
+      (cmdline->HasSwitch(switches::kEnableClientSidePhishingDetection) &&
+       local_state && local_state->GetBoolean(prefs::kMetricsReportingEnabled));
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
