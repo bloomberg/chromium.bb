@@ -257,6 +257,7 @@ class InputApi(object):
     self.re = re
     self.subprocess = subprocess
     self.tempfile = tempfile
+    self.time = time
     self.traceback = traceback
     self.unittest = unittest
     self.urllib2 = urllib2

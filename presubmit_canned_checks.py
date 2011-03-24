@@ -4,8 +4,6 @@
 
 """Generic presubmit checks that can be reused by other presubmit checks."""
 
-import time
-
 
 ### Description checks
 
@@ -761,7 +759,7 @@ def PanProjectChecks(input_api, output_api,
         r'can be\n'
       r'.*? found in the LICENSE file\.\n'
   ) % {
-      'year': time.strftime('%Y'),
+      'year': input_api.time.strftime('%Y'),
       'project': project_name,
   }
 

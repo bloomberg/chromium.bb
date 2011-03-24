@@ -721,8 +721,8 @@ class InputApiUnittest(PresubmitTestsBase):
       'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change', 'environ',
       'host_url', 'is_committing', 'json', 'marshal', 'os_path',
       'owners_db', 'pickle', 'platform', 'python_executable', 're',
-      'subprocess', 'tbr', 'tempfile', 'traceback', 'unittest', 'urllib2',
-      'version',
+      'subprocess', 'tbr', 'tempfile', 'time', 'traceback', 'unittest',
+      'urllib2', 'version',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit.InputApi(self.fake_change, './.', False,
@@ -1247,6 +1247,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
+      'CheckBuildbotPendingBuilds',
       'CheckChangeHasBugField', 'CheckChangeHasDescription',
       'CheckChangeHasNoStrayWhitespace',
       'CheckChangeHasOnlyOneEol', 'CheckChangeHasNoCR',
@@ -1256,15 +1257,15 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckChangeHasTestField',
       'CheckChangeLintsClean',
       'CheckChangeSvnEolStyle',
-      'CheckLicense',
-      'CheckSvnModifiedDirectories',
-      'CheckSvnForCommonMimeTypes', 'CheckSvnProperty',
       'CheckDoNotSubmit',
       'CheckDoNotSubmitInDescription', 'CheckDoNotSubmitInFiles',
-      'CheckLongLines', 'CheckTreeIsOpen', 'RunPythonUnitTests',
-      'RunPylint',
-      'CheckBuildbotPendingBuilds', 'CheckRietveldTryJobExecution',
+      'CheckLongLines', 'CheckTreeIsOpen', 'PanProjectChecks',
+      'CheckLicense',
       'CheckOwners',
+      'CheckRietveldTryJobExecution',
+      'CheckSvnModifiedDirectories',
+      'CheckSvnForCommonMimeTypes', 'CheckSvnProperty',
+      'RunPythonUnitTests', 'RunPylint',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)
