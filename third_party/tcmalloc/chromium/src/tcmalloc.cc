@@ -1611,11 +1611,15 @@ void *(*__memalign_hook)(size_t, size_t, const void *) = MemalignOverride;
 // to be hashed encoding of the location, so that they can't be copied over a
 // different region (by accident) without being detected (most of the time).
 
-#define TCMALLOC_VALIDATION
+// Uncomment the following define to turn on all the TCMalloc checking.
+// It will cost abotu 2% in performance, but it will catch double frees (most of
+// the time), and will often catch allocated-buffer overrun errors.  This
+// validation is only active when TCMalloc is used as the allocator.
+// #define TCMALLOC_VALIDATION
 
 #if !defined(TCMALLOC_VALIDATION)
 
-static size_t ExcludeSpaceForMark(size_t size) { return size; (}
+static size_t ExcludeSpaceForMark(size_t size) { return size; }
 static void AddRoomForMark(size_t* size) {}
 static void ExcludeMarkFromSize(size_t* new_size) {}
 static void MarkAllocatedRegion(void* ptr) {}
