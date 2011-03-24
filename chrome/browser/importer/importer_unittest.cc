@@ -38,6 +38,7 @@
 
 #if defined(OS_WIN)
 #include "base/scoped_comptr_win.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #endif
@@ -196,13 +197,6 @@ static const wchar_t* kIEIdentifyUrl =
 static const wchar_t* kIEIdentifyTitle =
     L"Unittest GUID";
 
-bool IsWindowsVista() {
-  OSVERSIONINFO info = {0};
-  info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-  GetVersionEx(&info);
-  return (info.dwMajorVersion >=6);
-}
-
 class TestObserver : public ProfileWriter,
                      public importer::ImporterProgressObserver {
  public:
@@ -221,7 +215,7 @@ class TestObserver : public ProfileWriter,
     EXPECT_EQ(arraysize(kIEBookmarks), bookmark_count_);
     EXPECT_EQ(1, history_count_);
 #if 0  // This part of the test is disabled. See bug #2466
-    if (IsWindowsVista())
+    if (base::win::GetVersion() < base::win::VERSION_VISTA)
       EXPECT_EQ(0, password_count_);
     else
       EXPECT_EQ(1, password_count_);
@@ -380,7 +374,7 @@ TEST_F(ImporterTest, IEImporter) {
   GUID type = IEImporter::kUnittestGUID;
   GUID subtype = IEImporter::kUnittestGUID;
   // PStore is read-only in Windows Vista.
-  if (!IsWindowsVista()) {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     typedef HRESULT (WINAPI *PStoreCreateFunc)(IPStore**, DWORD, DWORD, DWORD);
     pstorec_dll = LoadLibrary(L"pstorec.dll");
     PStoreCreateFunc PStoreCreateInstance =
@@ -428,7 +422,7 @@ TEST_F(ImporterTest, IEImporter) {
   url_history_stg2->DeleteUrl(kIEIdentifyUrl, 0);
   url_history_stg2.Release();
 #if 0  // This part of the test is disabled. See bug #2466
-  if (!IsWindowsVista()) {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     ClearPStoreType(pstore, &type, &subtype);
     // Releases it befor unload the dll.
     pstore.Release();
