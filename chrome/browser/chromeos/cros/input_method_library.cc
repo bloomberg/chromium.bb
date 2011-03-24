@@ -62,7 +62,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         ime_connected_(false),
         defer_ime_startup_(false),
         enable_auto_ime_shutdown_(true),
-        should_change_input_method_(false),
         ibus_daemon_process_handle_(base::kNullProcessHandle),
         initialized_successfully_(false),
         candidate_window_controller_(NULL) {
@@ -410,11 +409,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       // 2) We might have already changed the current input method to one
       // of XKB layouts without going through the IBus daemon (we can do
       // it without the IBus daemon started).
-      if (should_change_input_method_ &&
-          !tentative_current_input_method_id_.empty()) {
+      if (ime_connected_ && !tentative_current_input_method_id_.empty()) {
         ChangeInputMethodViaIBus(tentative_current_input_method_id_);
-        tentative_current_input_method_id_ = "";
-        should_change_input_method_ = false;
+        tentative_current_input_method_id_.clear();
         active_input_methods_are_changed = true;
       }
     }
@@ -518,7 +515,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       input_method_library->pending_config_requests_.insert(
           input_method_library->current_config_values_.begin(),
           input_method_library->current_config_values_.end());
-      input_method_library->should_change_input_method_ = true;
       input_method_library->FlushImeConfig();
     }
   }
@@ -759,10 +755,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // can be different from the actual current input method, if
   // ChangeInputMethod() fails.
   std::string tentative_current_input_method_id_;
-  // True if we should change the current input method to
-  // |tentative_current_input_method_id_| once the queue of the pending config
-  // requests becomes empty.
-  bool should_change_input_method_;
 
   // The process handle of the IBus daemon. kNullProcessHandle if it's not
   // running.
