@@ -449,7 +449,7 @@ class WebGraphicsContext3DCommandBufferImpl
   std::vector<WGC3Denum> synthetic_errors_;
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
-  scoped_ptr<uint8> scanline_;
+  scoped_array<uint8> scanline_;
   void FlipVertically(uint8* framebuffer,
                       unsigned int width,
                       unsigned int height);
