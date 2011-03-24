@@ -29,9 +29,6 @@
       }],
     ],
   },
-  'includes': [
-    '../build/common.gypi',
-  ],
   'target_defaults': {
     'include_dirs': [
       # all our own includes are relative to src/

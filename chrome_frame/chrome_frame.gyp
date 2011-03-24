@@ -40,9 +40,6 @@
       }],
     ],
   },
-  'includes': [
-    '../build/common.gypi',
-  ],
   'target_defaults': {
     'dependencies': [
       # locales need to be built for the chrome frame binaries to be loadable.
