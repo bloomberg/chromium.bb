@@ -426,7 +426,7 @@ BUILD/stamp-$(CROSSARCH)-pregcc-standalone: \
   BUILD/stamp-$(CROSSARCH)-binutils | SRC/gcc BUILD
 	rm -rf $(PREGCC_PREFIX)
 	mkdir -p $(PREGCC_PREFIX)/$(CROSSARCH)/bin
-	for f in '$(PREFIX)/$(CROSSARCH)/bin/*'; do \
+	for f in '$(DESTDIR)$(PREFIX)/$(CROSSARCH)/bin/*'; do \
 	    ln -s $$f $(PREGCC_PREFIX)/$(CROSSARCH)/bin; \
 	    done
 	rm -rf $(PREGCC_BUILD_DIR)
@@ -607,7 +607,7 @@ export-headers:
 # Ad hoc linker scripts and a selection of NaCl headers for GCC.
 ##################################################################
 .PHONY: glibc-adhoc-files
-glibc-adhoc-files:
+glibc-adhoc-files: | SRC/glibc SRC/linux-headers-for-nacl
 	install -m 755 -d  $(ARCH_DEST)/lib/ldscripts
 	cp -f SRC/glibc/nacl/dyn-link/ldscripts/* \
 	    $(ARCH_DEST)/lib/ldscripts/
@@ -901,14 +901,21 @@ endif
 # Build the entire toolchain.
 ##################################################################
 
+# On platforms where glibc build is slow or unavailable you can specify
+# glibc_download.sh (or any other program) to download glibc
+INST_GLIBC_PROGRAM?=none
 .PHONY: dev-build-with-glibc
 dev-build-with-glibc:
 	$(MAKE) -f $(THISMAKEFILE) glibc-sdkdirs
 	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
+ifeq ($(INST_GLIBC_PROGRAM), none)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-pregcc-standalone
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc32
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc64
+else
+	$(INST_GLIBC_PROGRAM) "$(DESTDIR)$(SDKROOT)"
+endif
 	$(MAKE) -f $(THISMAKEFILE) export-headers
 	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files LIB_BITS=32
 	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files LIB_BITS=64
