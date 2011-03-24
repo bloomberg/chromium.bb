@@ -434,20 +434,6 @@
               ],
               'copies': [
                 {
-                  'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
-                  'files': [
-                    '<(PRODUCT_DIR)/resources/inspector/',
-                  ],
-                  'conditions': [
-                    ['mac_breakpad==1', {
-                      'files': [
-                        '<(PRODUCT_DIR)/crash_inspector',
-                        '<(PRODUCT_DIR)/crash_report_sender.app'
-                      ],
-                    }],
-                  ],
-                },
-                {
                   'destination':
                       '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
                   'files': [
@@ -496,6 +482,13 @@
                     '../breakpad/breakpad.gyp:breakpad',
                     'app/policy/cloud_policy_codegen.gyp:policy',
                   ],
+                  'copies': {
+                    'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
+                    'files': [
+                      '<(PRODUCT_DIR)/crash_inspector',
+                      '<(PRODUCT_DIR)/crash_report_sender.app'
+                    ],
+                  },
                 }, {  # else: mac_breakpad!=1
                   # No Breakpad, put in the stubs.
                   'sources': [
