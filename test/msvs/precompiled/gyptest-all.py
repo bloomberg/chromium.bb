@@ -10,7 +10,7 @@ Verifies that precompiled headers can be specified.
 
 import TestGyp
 
-test = TestGyp.TestGyp(formats=['msvs'])
+test = TestGyp.TestGyp(formats=['msvs'], workdir='workarea_all')
 
 test.run_gyp('hello.gyp')
 

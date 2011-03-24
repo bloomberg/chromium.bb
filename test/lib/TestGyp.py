@@ -397,7 +397,7 @@ class TestGypMSVS(TestGypBase):
   """
   format = 'msvs'
 
-  u = r'=== Build: (\d+) succeeded, 0 failed, (\d+) up-to-date, 0 skipped ==='
+  u = r'=== Build: 0 succeeded, 0 failed, (\d+) up-to-date, 0 skipped ==='
   up_to_date_re = re.compile(u, re.M)
 
   # Initial None element will indicate to our .initialize_build_tool()
@@ -478,26 +478,24 @@ class TestGypMSVS(TestGypBase):
   def up_to_date(self, gyp_file, target=None, **kw):
     """
     Verifies that a build of the specified Visual Studio target is up to date.
+
+    Beware that VS2010 will behave strangely if you build under
+    C:\USERS\yourname\AppData\Local. It will cause needless work.  The ouptut
+    will be "1 succeeded and 0 up to date".  MSBuild tracing reveals that:
+    "Project 'C:\Users\...\AppData\Local\...vcxproj' not up to date because
+    'C:\PROGRAM FILES (X86)\MICROSOFT VISUAL STUDIO 10.0\VC\BIN\1033\CLUI.DLL'
+    was modified at 02/21/2011 17:03:30, which is newer than '' which was
+    modified at 01/01/0001 00:00:00.
+    
+    The workaround is to specify a workdir when instantiating the test, e.g.
+    test = TestGyp.TestGyp(workdir='workarea')
     """
     result = self.build(gyp_file, target, **kw)
     if not result:
       stdout = self.stdout()
+
       m = self.up_to_date_re.search(stdout)
-      up_to_date = False
-      if m:
-        succeeded = m.group(1)
-        up_to_date = m.group(2)
-        up_to_date = succeeded == '0' and up_to_date == '1'
-        # Figuring out if the build is up to date changed with VS2010.
-        # For builds that should be up to date, I sometimes get
-        # "1 succeeded and 0 up to date".  As an ad-hoc measure, we check
-        # this and also verify that th number of output lines is small.
-        # I don't know if this is caused by VS itself or is due to
-        # interaction with virus checkers.
-        if self.uses_msbuild and (succeeded == '1' and
-             up_to_date == '0' and
-             stdout.count('\n') <= 6):
-          up_to_date = True
+      up_to_date = m and m.group(1) == '1'
       if not up_to_date:
         self.report_not_up_to_date()
         self.fail_test()

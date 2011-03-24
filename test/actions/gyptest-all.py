@@ -12,7 +12,7 @@ import glob
 import os
 import TestGyp
 
-test = TestGyp.TestGyp()
+test = TestGyp.TestGyp(workdir='workarea_all')
 
 test.run_gyp('actions.gyp', chdir='src')
 
