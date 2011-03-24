@@ -71,8 +71,8 @@
             {
               'action_name': 'extract_d3dx9',
               'variables': {
-                'input': 'Aug2009_d3dx9_42_x86.cab',
-                'output': 'd3dx9_42.dll',
+                'input': 'Jun2010_d3dx9_43_x86.cab',
+                'output': 'd3dx9_43.dll',
               },
               'inputs': [
                 '../third_party/directxsdk/files/Redist/<(input)',
@@ -91,8 +91,8 @@
             {
               'action_name': 'extract_d3dcompiler',
               'variables': {
-                'input': 'Aug2009_D3DCompiler_42_x86.cab',
-                'output': 'D3DCompiler_42.dll',
+                'input': 'Jun2010_D3DCompiler_43_x86.cab',
+                'output': 'D3DCompiler_43.dll',
               },
               'inputs': [
                 '../third_party/directxsdk/files/Redist/<(input)',
