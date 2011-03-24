@@ -186,23 +186,6 @@ class GitWrapper(SCMWrapper):
       verbose = ['--verbose']
       printed_path = True
 
-    # See if the url has changed
-    current_url = self._Capture(['config', 'remote.origin.url'])
-    if current_url != url:
-      print('_____ switching %s to a new upstream' % self.relpath)
-      # Make sure it's clean
-      self._CheckClean(rev_str)
-      # Switch over to the new upstream
-      self._Run(['remote', 'set-url', 'origin', url], options)
-      quiet = []
-      if not options.verbose:
-        quiet = ['--quiet']
-      self._Run(['fetch', 'origin', '--prune'] + quiet, options)
-      self._Run(['reset', '--hard', 'origin/master'] + quiet, options)
-      files = self._Capture(['ls-files']).splitlines()
-      file_list.extend([os.path.join(self.checkout_path, f) for f in files])
-      return
-
     if revision.startswith('refs/heads/'):
       rev_type = "branch"
     elif revision.startswith('origin/'):
@@ -230,6 +213,23 @@ class GitWrapper(SCMWrapper):
                                 '\t\trm -rf %s\n'
                                 '\tAnd run gclient sync again\n'
                                 % (self.relpath, rev_str, self.relpath))
+
+    # See if the url has changed
+    current_url = self._Capture(['config', 'remote.origin.url'])
+    if current_url != url:
+      print('_____ switching %s to a new upstream' % self.relpath)
+      # Make sure it's clean
+      self._CheckClean(rev_str)
+      # Switch over to the new upstream
+      self._Run(['remote', 'set-url', 'origin', url], options)
+      quiet = []
+      if not options.verbose:
+        quiet = ['--quiet']
+      self._Run(['fetch', 'origin', '--prune'] + quiet, options)
+      self._Run(['reset', '--hard', 'origin/master'] + quiet, options)
+      files = self._Capture(['ls-files']).splitlines()
+      file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+      return
 
     cur_branch = self._GetCurrentBranch()
 
