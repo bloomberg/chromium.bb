@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -245,6 +245,11 @@ class ChildProcessLauncher::Context
     process_.set_handle(base::kNullProcessHandle);
   }
 
+  void SetProcessBackgrounded(bool background) {
+    DCHECK(!starting_);
+    process_.SetProcessBackgrounded(background);
+  }
+
   static void TerminateInternal(
 #if defined(OS_LINUX)
       bool zygote,
@@ -343,6 +348,10 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
 }
 
 void ChildProcessLauncher::SetProcessBackgrounded(bool background) {
-  DCHECK(!context_->starting_);
-  context_->process_.SetProcessBackgrounded(background);
+  BrowserThread::PostTask(
+      BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+      NewRunnableMethod(
+          context_.get(),
+          &ChildProcessLauncher::Context::SetProcessBackgrounded,
+          background));
 }
