@@ -4634,12 +4634,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE" desc="Title for 'Passwords and exceptions dialog'">
         Passwords
       </message>
-      <message name="IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE" desc="Title for 'Saved passwords' tab">
-        Saved Passwords
-      </message>
-      <message name="IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE" desc="Title for 'Exceptions' tab">
-        Exceptions
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE" desc="Title for 'Saved passwords' tab">
+          Saved passwords
+        </message>
+        <message name="IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE" desc="Title for 'Never saved' tab">
+          Never saved
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE" desc="Title for 'Saved passwords' tab">
+          Saved Passwords
+        </message>
+        <message name="IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE" desc="Title for 'Never saved' tab">
+          Never Saved
+        </message>
+      </if>
       <message name="IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN" desc="Password table view Site column title">
         Site
       </message>
