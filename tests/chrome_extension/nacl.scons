@@ -22,7 +22,8 @@ nexe = env.ComponentProgram(nexe_target,
                                         'platform',
                                         'gio',
                                         'pthread',
-                                        'srpc'])
+                                        'srpc',
+                                        'm'])
 
 # Note: this test uses the nexe built above, manifest.json, background.html and
 # test_bridge.js, but these files are loaded from the disk as part of the
