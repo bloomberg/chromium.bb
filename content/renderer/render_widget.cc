@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -301,6 +301,7 @@ void RenderWidget::OnRequestMoveAck() {
 }
 
 void RenderWidget::OnUpdateRectAck() {
+  GPU_TRACE_EVENT0("renderer", "RenderWidget::OnUpdateRectAck");
   DCHECK(update_reply_pending());
   update_reply_pending_ = false;
 
@@ -548,7 +549,7 @@ void RenderWidget::CallDoDeferredUpdate() {
 }
 
 void RenderWidget::DoDeferredUpdate() {
-  GPU_TRACE_EVENT0("render_widget", "DoDeferredUpdate");
+  GPU_TRACE_EVENT0("renderer", "RenderWidget::DoDeferredUpdate");
 
   if (!webwidget_ || update_reply_pending())
     return;
