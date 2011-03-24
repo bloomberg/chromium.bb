@@ -484,7 +484,8 @@ void TrashFunc(const FilePath& src) {
   EXPECT_EQ(status, noErr)  << "FSMoveObjectToTrashSync " << status;
 }
 
-TEST_F(ServiceProcessStateFileManipulationTest, DeleteFile) {
+// Disabled because of race in FilePathWatcher.  http://crbug.com/77326
+TEST_F(ServiceProcessStateFileManipulationTest, DISABLED_DeleteFile) {
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,
       NewRunnableFunction(&DeleteFunc, executable_path()));
@@ -493,8 +494,8 @@ TEST_F(ServiceProcessStateFileManipulationTest, DeleteFile) {
   ASSERT_TRUE(mock_launchd()->delete_called());
 }
 
-// Flaky on mac.  http://crbug.com/77217
-TEST_F(ServiceProcessStateFileManipulationTest, FLAKY_DeleteBundle) {
+// Disabled because of race in FilePathWatcher.  http://crbug.com/77326
+TEST_F(ServiceProcessStateFileManipulationTest, DISABLED_DeleteBundle) {
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,
       NewRunnableFunction(&DeleteFunc, bundle_path()));
