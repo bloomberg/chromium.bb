@@ -55,7 +55,7 @@ IAccessible* BrowserAccessibilityManagerWin::GetParentWindowIAccessible() {
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     int type,
     BrowserAccessibility* node) {
-  LONG event_id;
+  LONG event_id = EVENT_MIN;
   switch (type) {
     case ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_CHECK_STATE_CHANGED:
@@ -80,6 +80,10 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     case ViewHostMsg_AccessibilityNotification_Type::
           NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED:
       event_id = IA2_EVENT_TEXT_CARET_MOVED;
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 
   NotifyWinEvent(event_id, GetParentView(), OBJID_CLIENT, node->child_id());
