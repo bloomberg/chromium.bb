@@ -1422,3 +1422,75 @@
    fun:_ZN16RunnableFunctionIPFvRK8FilePathE6Tuple1IS0_EE3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
+{
+   bug_77265_a
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:-[BubbleView drawRect:]
+   fun:-[NSView _drawRect:clip:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSNextStepFrame _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _displayRectIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:]
+   fun:-[NSView displayIfNeeded]
+   fun:-[NSWindow _setFrameCommon:display:stashSize:]
+   fun:-[NSWindow setFrame:display:]
+   fun:-[NSWindow setValue:forKey:]
+   fun:-[NSObject(NSKeyValueCoding) setValue:forKeyPath:]
+   fun:-[NSInFlightAnimation advanceToTime:]
+   fun:-[NSAnimationManager animationTimerFired:]
+   fun:__NSFireTimer
+}
+{
+   bug_77265_b
+   Memcheck:Leak
+   fun:calloc
+   fun:CGClipStackCreateMutableCopy
+   fun:maybeCopyClipState
+   fun:CGGStateClipToRect
+   fun:CGContextClipToRect
+   fun:CGContextClipToRects
+   fun:NSRectClipList
+   fun:-[NSView _drawRect:clip:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSNextStepFrame _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _displayRectIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:]
+   fun:-[NSView displayIfNeeded]
+   fun:-[NSWindow _setFrameCommon:display:stashSize:]
+   fun:-[NSWindow setFrame:display:]
+   fun:-[NSWindow setValue:forKey:]
+   fun:-[NSObject(NSKeyValueCoding) setValue:forKeyPath:]
+   fun:-[NSInFlightAnimation advanceToTime:]
+   fun:-[NSAnimationManager animationTimerFired:]
+   fun:__NSFireTimer
+}
+{
+   bug_77265_c
+   Memcheck:Leak
+   fun:calloc
+   fun:CGClipStackCreateMutableCopy
+   fun:maybeCopyClipState
+   fun:CGGStateClipToRect
+   fun:CGContextClipToRect
+   fun:NSRectClip
+   fun:-[NSFocusState flush]
+   fun:-[NSView lockFocusIfCanDraw]
+   fun:-[NSView lockFocus]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSNextStepFrame _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _displayRectIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:]
+   fun:-[NSView displayIfNeeded]
+   fun:-[NSWindow _setFrameCommon:display:stashSize:]
+   fun:-[NSWindow setFrame:display:]
+   fun:-[NSWindow setValue:forKey:]
+   fun:-[NSObject(NSKeyValueCoding) setValue:forKeyPath:]
+   fun:-[NSInFlightAnimation advanceToTime:]
+   fun:-[NSAnimationManager animationTimerFired:]
+   fun:__NSFireTimer
+}
