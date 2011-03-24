@@ -262,9 +262,6 @@ GdkColor AverageColors(GdkColor color_one, GdkColor color_two);
 // crucial to its functionality.
 void SetAlwaysShowImage(GtkWidget* image_menu_item);
 
-// Stacks a |popup| window directly on top of a |toplevel| window.
-void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel);
-
 // Get a rectangle corresponding to a widget's allocation relative to its
 // toplevel window's origin.
 gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget);

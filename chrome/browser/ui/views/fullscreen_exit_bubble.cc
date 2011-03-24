@@ -104,29 +104,6 @@ void FullscreenExitBubble::FullscreenExitView::OnPaint(gfx::Canvas* canvas) {
   canvas->AsCanvasSkia()->drawPath(path, paint);
 }
 
-
-// FullscreenExitPopup ---------------------------------------------------------
-
-#if defined(OS_WIN)
-class FullscreenExitBubble::FullscreenExitPopup : public views::WidgetWin {
- public:
-  FullscreenExitPopup() : views::WidgetWin() {}
-  virtual ~FullscreenExitPopup() {}
-
-  // views::WidgetWin:
-  virtual LRESULT OnMouseActivate(UINT message,
-                                  WPARAM w_param,
-                                  LPARAM l_param) OVERRIDE {
-    // Prevent the popup from being activated, so it won't steal focus from the
-    // rest of the browser, and doesn't cause problems with the FocusManager's
-    // "RestoreFocusedView()" functionality.
-    return MA_NOACTIVATE;
-  }
-};
-#elif defined(OS_LINUX)
-// TODO: figure out the equivalent of MA_NOACTIVATE for gtk.
-#endif
-
 // FullscreenExitBubble --------------------------------------------------------
 
 const double FullscreenExitBubble::kOpacity = 0.7;
@@ -154,18 +131,13 @@ FullscreenExitBubble::FullscreenExitBubble(
       this, UTF16ToWideHack(accelerator.GetShortcutText()));
 
   // Initialize the popup.
-#if defined(OS_WIN)
-  popup_ = new FullscreenExitPopup();
-  popup_->set_window_style(WS_POPUP);
-  popup_->set_window_ex_style(WS_EX_LAYERED | WS_EX_TOOLWINDOW |
-                              l10n_util::GetExtendedTooltipStyles());
-#elif defined(OS_LINUX)
-  popup_ = new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP);
-  popup_->MakeTransparent();
-#endif
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  params.transparent = true;
+  params.can_activate = false;
+  params.delete_on_destroy = false;
+  popup_ = views::Widget::CreatePopupWidget(params);
   popup_->SetOpacity(static_cast<unsigned char>(0xff * kOpacity));
   popup_->Init(frame->GetNativeView(), GetPopupRect(false));
-  popup_->set_delete_on_destroy(false);
   popup_->SetContentsView(view_);
   popup_->Show();  // This does not activate the popup.
 
@@ -204,12 +176,7 @@ void FullscreenExitBubble::AnimationProgressed(
   if (popup_rect.IsEmpty()) {
     popup_->Hide();
   } else {
-#if defined(OS_WIN)
-    popup_->MoveWindow(popup_rect.x(), popup_rect.y(), popup_rect.width(),
-                       popup_rect.height());
-#elif defined(OS_LINUX)
     popup_->SetBounds(popup_rect);
-#endif
     popup_->Show();
   }
 }

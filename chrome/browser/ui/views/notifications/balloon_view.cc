@@ -174,7 +174,7 @@ void BalloonViewImpl::SizeContentsWindow() {
 
   gfx::Rect contents_rect = GetContentsRectangle();
   html_container_->SetBounds(contents_rect);
-  html_container_->MoveAbove(frame_container_);
+  html_container_->MoveAboveWidget(frame_container_);
 
   gfx::Path path;
   GetContentsMask(contents_rect, &path);
@@ -329,7 +329,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   frame_container_->SetAlwaysOnTop(true);
   frame_container_->Init(NULL, balloon_rect);
   frame_container_->SetContentsView(this);
-  frame_container_->MoveAbove(html_container_);
+  frame_container_->MoveAboveWidget(html_container_);
 
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
                           rb.GetBitmapNamed(IDR_TAB_CLOSE));

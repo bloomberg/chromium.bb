@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/info_bubble_accelerators_gtk.h"
 #include "content/common/notification_service.h"
+#include "ui/base/gtk/gtk_windowing.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
@@ -339,7 +340,7 @@ void InfoBubbleGtk::MoveWindow() {
 void InfoBubbleGtk::StackWindow() {
   // Stack our window directly above the toplevel window.
   if (toplevel_window_)
-    gtk_util::StackPopupWindow(window_, GTK_WIDGET(toplevel_window_));
+    ui::StackPopupWindow(window_, GTK_WIDGET(toplevel_window_));
 }
 
 void InfoBubbleGtk::Observe(NotificationType type,

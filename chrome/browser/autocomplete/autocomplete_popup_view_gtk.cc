@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/common/notification_service.h"
 #include "grit/theme_resources.h"
+#include "ui/base/gtk/gtk_windowing.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gtk_util.h"
@@ -461,7 +462,7 @@ void AutocompletePopupViewGtk::StackWindow() {
   DCHECK(GTK_IS_WIDGET(edit_view));
   GtkWidget* toplevel = gtk_widget_get_toplevel(edit_view);
   DCHECK(GTK_WIDGET_TOPLEVEL(toplevel));
-  gtk_util::StackPopupWindow(window_, toplevel);
+  ui::StackPopupWindow(window_, toplevel);
 }
 
 size_t AutocompletePopupViewGtk::LineFromY(int y) {
