@@ -559,7 +559,6 @@
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../jingle/jingle.gyp:notifier',
         '../third_party/icu/icu.gyp:icuuc',
-        '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/sqlite/sqlite.gyp:sqlite',
         'app/policy/cloud_policy_codegen.gyp:policy',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
@@ -745,7 +744,6 @@
       'dependencies': [
         'common',
         '../skia/skia.gyp:skia',
-        '../third_party/libjingle/libjingle.gyp:libjingle',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite#target',
       ],
@@ -833,6 +831,7 @@
         'common',
         'common_net',
         '../base/base.gyp:base',
+        '../jingle/jingle.gyp:notifier',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../third_party/libjingle/libjingle.gyp:libjingle',

@@ -37,7 +37,6 @@
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "chrome/test/values_test_util.h"
 #include "content/browser/browser_thread.h"
-#include "jingle/notifier/base/notifier_options.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
