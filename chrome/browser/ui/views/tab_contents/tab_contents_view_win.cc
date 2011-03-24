@@ -263,19 +263,6 @@ void TabContentsViewWin::StoreFocus() {
     views::View* focused_view = focus_manager->GetFocusedView();
     if (focused_view)
       view_storage->StoreView(last_focused_view_storage_id_, focused_view);
-
-    // If the focus was on the page, explicitly clear the focus so that we
-    // don't end up with the focused HWND not part of the window hierarchy.
-    // TODO(brettw) this should move to the view somehow.
-    HWND container_hwnd = GetNativeView();
-    if (container_hwnd) {
-      views::View* focused_view = focus_manager->GetFocusedView();
-      if (focused_view) {
-        HWND hwnd = focused_view->GetRootView()->GetWidget()->GetNativeView();
-        if (container_hwnd == hwnd || ::IsChild(container_hwnd, hwnd))
-          focus_manager->ClearFocus();
-      }
-    }
   }
 }
 
