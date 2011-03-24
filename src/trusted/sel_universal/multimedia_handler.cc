@@ -58,7 +58,7 @@ const int kFirstImageDataHandle = 100;
 const int kFirstGraphicsHandle = 200;
 const int kFirstAudioHandle = 300;
 const int kFirstAudioConfigHandle = 400;
-const int kBytesPerSample = 4; // 16bit stereo
+const int kBytesPerSample = 4;  // 16-bit stereo
 
 const int kRecommendSampleFrameCount = 2048;
 const int kMaxAudioBufferSize = 0x10000;
@@ -66,7 +66,8 @@ const int kBytesPerPixel = 4;
 
 const int MY_EVENT_FLUSH_CALL_BACK = 88;
 const int MY_EVENT_INIT_AUDIO = 89;
-const int MY_EVENT_AUDIO_CALLBACK = 90;
+const int MY_EVENT_TIMER_CALL_BACK = 90;
+
 // ======================================================================
 
 // Note: Just a bunch of fairly unrelated global variables,
@@ -158,6 +159,29 @@ static void PPB_Core_ReleaseResource(SRPC_PARAMS) {
   done->Run(done);
 }
 
+// From the Core API
+// void CallOnMainThread(int32_t delay_in_milliseconds,
+//                       struct PP_CompletionCallback callback,
+//                       int32_t result);
+// PPB_Core_CallOnMainThread:iii:
+static void PPB_Core_CallOnMainThread(SRPC_PARAMS) {
+  UNREFERENCED_PARAMETER(outs);
+  const int delay = ins[0]->u.ival;
+  const int callback = ins[1]->u.ival;
+  const int result = ins[2]->u.ival;
+
+  NaClLog(LOG_INFO, "PPB_Core_CallOnMainThread(%d, %d, %d)\n",
+          delay, callback, result);
+
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
+
+  Global.sdl_engine->PushUserEvent(delay,
+                                   MY_EVENT_TIMER_CALL_BACK,
+                                   callback,
+                                   result);
+}
+
 // This appears to have no equivalent in the ppapi world
 // ReleaseResourceMultipleTimes:ii:
 static void ReleaseResourceMultipleTimes(SRPC_PARAMS) {
@@ -195,7 +219,6 @@ static void PPB_ImageData_Create(SRPC_PARAMS) {
   CHECK(Global.screen_width == img_size->width);
   CHECK(Global.screen_height == img_size->height);
   Global.image_data_size = kBytesPerPixel * img_size->width * img_size->height;
-
 
   nacl::DescWrapperFactory factory;
   Global.desc_video_shmem = factory.MakeShm(Global.image_data_size);
@@ -336,7 +359,7 @@ static void PPB_Graphics2D_Flush(SRPC_PARAMS) {
 
   Global.sdl_engine->VideoUpdate(Global.addr_video);
   NaClLog(LOG_INFO, "pushing user event for callback (%d)\n", callback_id);
-  Global.sdl_engine->PushUserEvent(MY_EVENT_FLUSH_CALL_BACK, callback_id);
+  Global.sdl_engine->PushUserEvent(0, MY_EVENT_FLUSH_CALL_BACK, callback_id, 0);
 }
 
 // From the PPB_Audio API
@@ -380,7 +403,7 @@ static void PPB_Audio_Create(SRPC_PARAMS) {
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 
-  Global.sdl_engine->PushUserEvent(MY_EVENT_INIT_AUDIO, 0);
+  Global.sdl_engine->PushUserEvent(0, MY_EVENT_INIT_AUDIO, 0, 0);
 }
 
 // From the PPB_Audio API
@@ -518,16 +541,6 @@ bool HandlerSDLInitialize(NaClCommandLoop* ncl, const vector<string>& args) {
   }
 
   UNREFERENCED_PARAMETER(ncl);
-  ncl->AddUpcallRpc(TUPLE(PPB_ImageData_Describe, :i:Chii));
-  ncl->AddUpcallRpc(TUPLE(PPB_ImageData_Create, :iiCi:i));
-  ncl->AddUpcallRpc(TUPLE(PPB_Instance_BindGraphics, :ii:i));
-  ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_Create, :iCi:i));
-  ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_ReplaceContents, :ii:));
-  ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_PaintImageData, :iiCC:));
-  ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_Flush, :ii:i));
-  ncl->AddUpcallRpc(TUPLE(PPB_GetInterface, :s:i));
-  ncl->AddUpcallRpc(TUPLE(PPB_Core_ReleaseResource, :i:));
-  ncl->AddUpcallRpc(TUPLE(ReleaseResourceMultipleTimes, :ii:));
   ncl->AddUpcallRpc(TUPLE(PPB_Audio_Create, :ii:i));
   ncl->AddUpcallRpc(TUPLE(PPB_Audio_IsAudio, :i:i));
   ncl->AddUpcallRpc(TUPLE(PPB_Audio_GetCurrentConfig, :i:i));
@@ -539,6 +552,23 @@ bool HandlerSDLInitialize(NaClCommandLoop* ncl, const vector<string>& args) {
   ncl->AddUpcallRpc(TUPLE(PPB_AudioConfig_RecommendSampleFrameCount, :ii:i));
   ncl->AddUpcallRpc(TUPLE(PPB_AudioConfig_GetSampleRate, :i:i));
   ncl->AddUpcallRpc(TUPLE(PPB_AudioConfig_GetSampleFrameCount, :i:i));
+
+  ncl->AddUpcallRpc(TUPLE(PPB_Core_ReleaseResource, :i:));
+  ncl->AddUpcallRpc(TUPLE(PPB_Core_CallOnMainThread, :iii:));
+
+  ncl->AddUpcallRpc(TUPLE(PPB_GetInterface, :s:i));
+
+  ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_Create, :iCi:i));
+  ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_ReplaceContents, :ii:));
+  ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_PaintImageData, :iiCC:));
+  ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_Flush, :ii:i));
+
+  ncl->AddUpcallRpc(TUPLE(PPB_ImageData_Describe, :i:Chii));
+  ncl->AddUpcallRpc(TUPLE(PPB_ImageData_Create, :iiCi:i));
+
+  ncl->AddUpcallRpc(TUPLE(PPB_Instance_BindGraphics, :ii:i));
+
+  ncl->AddUpcallRpc(TUPLE(ReleaseResourceMultipleTimes, :ii:));
 
   Global.instance = ExtractInt32(args[1]);
   Global.screen_width = ExtractInt32(args[2]);
@@ -562,7 +592,7 @@ bool HandlerSDLEventLoop(NaClCommandLoop* ncl, const vector<string>& args) {
   UNREFERENCED_PARAMETER(ncl);
   PP_InputEvent event;
   while (true) {
-    NaClLog(LOG_INFO, "event wait\n");
+    NaClLog(1, "event wait\n");
 #if defined(USE_POLLING)
     Global.sdl_engine->EventPoll(&event);
     if (IsInvalidEvent(&event)) continue;
@@ -570,33 +600,39 @@ bool HandlerSDLEventLoop(NaClCommandLoop* ncl, const vector<string>& args) {
     Global.sdl_engine->EventGet(&event);
 #endif
 
-    NaClLog(LOG_INFO, "Got event of type %d\n", event.type);
-
     NaClSrpcArg  in[NACL_SRPC_MAX_ARGS];
     NaClSrpcArg* ins[NACL_SRPC_MAX_ARGS + 1];
     NaClSrpcArg  out[NACL_SRPC_MAX_ARGS];
     NaClSrpcArg* outs[NACL_SRPC_MAX_ARGS + 1];
+    int dummy_exception[2] = {0, 0};
 
     if (IsTerminationEvent(&event)) {
+      NaClLog(LOG_INFO, "Got termination event");
       break;
     } else if (IsUserEvent(&event)) {
       // A user event is a non-standard event
-      // TODO(robertm): fix this hack
-      switch (GetData1FromUserEvent(&event)) {
+      NaClLog(LOG_INFO, "Got user event with code %d\n",
+              GetCodeFromUserEvent(&event));
+
+      switch (GetCodeFromUserEvent(&event)) {
+        // This event gets created as a result of PPB_Core_CallOnMainThread(
+       case MY_EVENT_TIMER_CALL_BACK:
+        // FALL THROUGH
         // This event gets created so that we can invoke
         // RunCompletionCallback after PPB_Graphics2D_Flush
-        case MY_EVENT_FLUSH_CALL_BACK: {
-          int callback = GetData2FromUserEvent(&event);
-          NaClLog(LOG_INFO, "Completion callback(%d)\n", callback);
-          int dummy_exception[2] = {0, 0};
+       case MY_EVENT_FLUSH_CALL_BACK: {
+          int callback = GetData1FromUserEvent(&event);
+          int result = GetData2FromUserEvent(&event);
+          NaClLog(LOG_INFO, "Completion callback(%d, %d)\n", callback, result);
           BuildArgVec(ins, in, 3);
+
           ins[0]->tag = NACL_SRPC_ARG_TYPE_INT;
           ins[0]->u.ival = callback;
           ins[1]->tag = NACL_SRPC_ARG_TYPE_INT;
-          ins[1]->u.ival = 0;
+          ins[1]->u.ival = result;
           ins[2]->tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
           ins[2]->u.count = sizeof(dummy_exception);
-          ins[2]->arrays.carr = reinterpret_cast<char*>(&dummy_exception);
+          ins[2]->arrays.carr = reinterpret_cast<char*>(dummy_exception);
           BuildArgVec(outs, out, 0);
           ncl->InvokeNexeRpc("RunCompletionCallback:iiC:", ins, outs);
           break;
@@ -619,12 +655,14 @@ bool HandlerSDLEventLoop(NaClCommandLoop* ncl, const vector<string>& args) {
           sleep(1);
           ncl->InvokeNexeRpc("PPP_Audio_StreamCreated:ihih:", ins, outs);
           break;
-        default:
+
+       default:
           NaClLog(LOG_FATAL, "unknown event type %d\n",
                   GetData1FromUserEvent(&event));
           break;
       }
     } else {
+      NaClLog(LOG_INFO, "Got input event with type %d", event.type);
       BuildArgVec(ins, in, 2);
       ins[0]->tag = NACL_SRPC_ARG_TYPE_INT;
       ins[0]->u.ival = Global.instance;

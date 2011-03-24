@@ -15,10 +15,13 @@ class PP_InputEvent;
 bool IsUserEvent(PP_InputEvent* event);
 bool IsInvalidEvent(PP_InputEvent* event);
 bool IsTerminationEvent(PP_InputEvent* event);
+
+void MakeUserEvent(PP_InputEvent* event, int code, int data1, int data2);
+int GetCodeFromUserEvent(PP_InputEvent* event);
 int GetData1FromUserEvent(PP_InputEvent* event);
 int GetData2FromUserEvent(PP_InputEvent* event);
 
-void InvalidateEvent(PP_InputEvent* event);
+void MakeInvalidEvent(PP_InputEvent* event);
 
 typedef void (*AUDIO_CALLBACK)(void* data, unsigned char* buffer, int length);
 
@@ -31,7 +34,7 @@ class IMultimedia {
   virtual void VideoUpdate(const void* data) = 0;
   // Inject a userevent with the two arbitrary pieces of
   // data into the event buffer
-  virtual void PushUserEvent(int data1, int data2) = 0;
+  virtual void PushUserEvent(int delay, int code, int data1, int data2) = 0;
   // Get next event (non-blocking). If no event was available
   // IsInvalidEvent(event) will be true afterwards.
   virtual void EventPoll(PP_InputEvent* event) = 0;

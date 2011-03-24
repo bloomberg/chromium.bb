@@ -9,6 +9,8 @@
  */
 
 #include <SDL/SDL.h>
+#include <SDL/SDL_timer.h>
+
 #include <string.h>
 
 #include <functional>
@@ -25,12 +27,13 @@
 
 // from sdl_ppapi_event_translator.cc
 // TODO(robertm): add header when this becomes more complex
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[2] */
 extern bool ConvertSDLEventToPPAPI(
   const SDL_Event& sdl_event, PP_InputEvent* pp_event);
 
 // This file implements a IMultimedia interface using SDL
 
-typedef struct InfoVideo {
+struct InfoVideo {
   int32_t width;
   int32_t height;
   int32_t format;
@@ -40,21 +43,36 @@ typedef struct InfoVideo {
   int32_t gmask;
   int32_t bmask;
   SDL_Surface* screen;
-} InfoVideo;
+};
 
 
-typedef struct InfoAudio {
+struct InfoAudio {
   int32_t frequency;
   int32_t channels;
   int32_t frame_size;
-} InfoAudio;
+};
 
 
-typedef struct SDLInfo {
+struct SDLInfo {
   int32_t initialized_sdl;
   InfoVideo video;
   InfoAudio audio;
-} InfoMultimedia;
+};
+
+
+class MultimediaSDL;
+
+
+struct TimerEventState {
+  MultimediaSDL* mm;
+
+  int code;
+  int data1;
+  int data2;
+};
+
+
+static Uint32 TimerCallBack(Uint32 interval, void* data);
 
 
 // Wrap each call to SDL into Job so we can submit them to a workqueue
@@ -77,7 +95,7 @@ class JobSdlInit: public Job {
 
   virtual void Action() {
     NaClLog(3, "JobSdlInit::Action\n");
-    const int flags =  SDL_INIT_VIDEO | SDL_INIT_AUDIO;
+    const int flags =  SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
     const uint32_t sdl_video_flags = SDL_DOUBLEBUF | SDL_HWSURFACE;
 
     memset(info_, 0, sizeof(*info_));
@@ -273,7 +291,7 @@ class JobSdlEventPoll: public Job {
 
       if (result == 0) {
         if (poll_) {
-          InvalidateEvent(pp_event_);
+          MakeInvalidEvent(pp_event_);
           return;
         } else {
           NaClLog(LOG_WARNING, "SDL_WaitEvent failed\n");
@@ -326,18 +344,29 @@ class MultimediaSDL : public IMultimedia {
     job.Wait();
   }
 
-  virtual void PushUserEvent(int data1, int data2) {
+  virtual void PushUserEvent(int delay, int code, int data1, int data2) {
     // NOTE: this is intentionally not using the queue
     // so we can unblock a queue that is waiting for an event
     NaClLog(3, "JobSdlPushUserEvent::Action\n");
     if (!sdl_info_.initialized_sdl) {
       NaClLog(LOG_FATAL, "sdl not initialized\n");
     }
-    SDL_Event event;
-    event.type = SDL_USEREVENT;
-    event.user.data1 = (void*) data1;
-    event.user.data2 = (void*) data2;
-    SDL_PushEvent(&event);
+    if (delay == 0) {
+      SDL_Event event;
+      event.type = SDL_USEREVENT;
+      event.user.code = code;
+      event.user.data1 = reinterpret_cast<void*>(data1);
+      event.user.data2 = reinterpret_cast<void*>(data2);
+      SDL_PushEvent(&event);
+    } else {
+      // schedule a timer to inject the event into the event stream
+      TimerEventState* state = new TimerEventState();
+      state->mm = this;
+      state->code = code;
+      state->data1 = data1;
+      state->data2 = data2;
+      SDL_AddTimer(delay, TimerCallBack, state);
+    }
   }
 
   virtual void EventPoll(PP_InputEvent* event) {
@@ -377,6 +406,16 @@ class MultimediaSDL : public IMultimedia {
   ThreadedWorkQueue sdl_workqueue_;
   SDLInfo sdl_info_;
 };
+
+
+static Uint32 TimerCallBack(Uint32 interval, void* data) {
+  UNREFERENCED_PARAMETER(interval);
+  TimerEventState* state = reinterpret_cast<TimerEventState*>(data);
+  state->mm->PushUserEvent(0, state->code, state->data1, state->data2);
+  delete state;
+  // stop timer
+  return 0;
+}
 
 // Factor, so we can hide class MultimediaSDL from the outside world
 IMultimedia* MakeMultimediaSDL(int width, int heigth, const char* title) {

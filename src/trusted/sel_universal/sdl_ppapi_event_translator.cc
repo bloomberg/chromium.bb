@@ -19,7 +19,19 @@
 const int PP_INPUTEVENT_USER = 88;
 const int PP_INPUTEVENT_TERMINATION = 90;
 
-void InvalidateEvent(PP_InputEvent* event) {
+// ppapi does not have a user defined event notion.
+// c.f. ppapi/c/pp_input_event.h
+typedef struct {
+  int code;
+  int data1;
+  int data2;
+}  PP_InputEvent_User;
+
+static PP_InputEvent_User* GetUserEvent(PP_InputEvent* event) {
+  return reinterpret_cast<PP_InputEvent_User*>(&event->u);
+}
+
+void MakeInvalidEvent(PP_InputEvent* event) {
   event->type = PP_INPUTEVENT_TYPE_UNDEFINED;
 }
 
@@ -34,28 +46,30 @@ bool IsTerminationEvent(PP_InputEvent* event) {
 }
 
 
-// we need retrofit a user defined event type similar to SDL's
-// on PP_InputEvent
-// Below we encapsulate this hack.
 bool IsUserEvent(PP_InputEvent* event) {
   return event->type == PP_INPUTEVENT_USER;
 }
 
 
+int GetCodeFromUserEvent(PP_InputEvent* event) {
+  return GetUserEvent(event)->code;
+}
+
 int GetData1FromUserEvent(PP_InputEvent* event) {
-  return event->u.key.key_code;
+  return  GetUserEvent(event)->data1;
 }
 
 
 int GetData2FromUserEvent(PP_InputEvent* event) {
-  return event->u.key.modifier;
+  return  GetUserEvent(event)->data2;
 }
 
-
-static void InitializeUserEvent(PP_InputEvent* event, int data1, int data2) {
+void MakeUserEvent(PP_InputEvent* event, int code, int data1, int data2) {
   event->type = (PP_InputEvent_Type) PP_INPUTEVENT_USER;
-  event->u.key.key_code = data1;
-  event->u.key.modifier = data2;
+  PP_InputEvent_User* user = GetUserEvent(event);
+  user->code = code;
+  user->data1 = data1;
+  user->data2 = data2;
 }
 
 
@@ -171,6 +185,11 @@ static uint32_t SDLKeyToPPKey(uint32_t key) {
   }
 }
 
+
+static int ptr2int(void* p) {
+  return static_cast<int>(reinterpret_cast<uintptr_t>(p));
+}
+
 // Convert the SDL event, sdl_event, into the PPAPI event, pp_event.
 // Returns false if the event is not supported or cannot be processed.
 bool ConvertSDLEventToPPAPI(
@@ -203,9 +222,10 @@ bool ConvertSDLEventToPPAPI(
       return true;
 
     case SDL_USEREVENT:
-      InitializeUserEvent(pp_event,
-                         (uint32_t)(uintptr_t) sdl_event.user.data1,
-                         (uint32_t)(uintptr_t) sdl_event.user.data2);
+      MakeUserEvent(pp_event,
+                    sdl_event.user.code,
+                    ptr2int(sdl_event.user.data1),
+                    ptr2int(sdl_event.user.data2));
       return true;
     case SDL_QUIT:
       pp_event->type = (PP_InputEvent_Type) PP_INPUTEVENT_TERMINATION;
