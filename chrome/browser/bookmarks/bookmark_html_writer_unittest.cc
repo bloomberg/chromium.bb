@@ -69,11 +69,11 @@ class BookmarkHTMLWriterTest : public TestingBrowserProcessTest {
     for (size_t i = 0; i < entry.path.size(); ++i) {
       if (i != 0)
         result.append(ASCIIToUTF16("/"));
-      result.append(WideToUTF16Hack(entry.path[i]));
+      result.append(entry.path[i]);
     }
 
     result.append(ASCIIToUTF16(" title="));
-    result.append(WideToUTF16Hack(entry.title));
+    result.append(entry.title);
 
     result.append(ASCIIToUTF16(" time="));
     result.append(base::TimeFormatFriendlyDateAndTime(entry.creation_time));
@@ -93,16 +93,16 @@ class BookmarkHTMLWriterTest : public TestingBrowserProcessTest {
     entry.url = url;
     // The first path element should always be 'x', as that is what we passed
     // to the importer.
-    entry.path.push_back(L"x");
+    entry.path.push_back(ASCIIToUTF16("x"));
     if (!f1.empty()) {
-      entry.path.push_back(UTF16ToWideHack(f1));
+      entry.path.push_back(f1);
       if (!f2.empty()) {
-        entry.path.push_back(UTF16ToWideHack(f2));
+        entry.path.push_back(f2);
         if (!f3.empty())
-          entry.path.push_back(UTF16ToWideHack(f3));
+          entry.path.push_back(f3);
       }
     }
-    entry.title = UTF16ToWideHack(title);
+    entry.title = title;
     entry.creation_time = creation_time;
     return BookmarkEntryToString(entry);
   }

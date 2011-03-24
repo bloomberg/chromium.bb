@@ -74,7 +74,7 @@ class SafariImporter : public Importer {
   // |out_bookmarks| BookMark element array to write into.
   void RecursiveReadBookmarksFolder(
       NSDictionary* bookmark_folder,
-      const std::vector<std::wstring>& parent_path_elements,
+      const std::vector<string16>& parent_path_elements,
       bool is_in_toolbar,
       std::vector<ProfileWriter::BookmarkEntry>* out_bookmarks);
 

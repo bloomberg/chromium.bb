@@ -485,7 +485,7 @@ bool Toolbar5Importer::ExtractTitleFromXmlReader(
   if (!ExtractNamedValueFromXmlReader(reader, kTitleXmlTag, &buffer)) {
     return false;
   }
-  entry->title = UTF8ToWide(buffer);
+  entry->title = UTF8ToUTF16(buffer);
   return true;
 }
 
@@ -541,20 +541,20 @@ bool Toolbar5Importer::ExtractFoldersFromXmlReader(
   if (!reader->Read() || !LocateNextOpenTag(reader))
     return false;
 
-  std::vector<std::wstring> label_vector;
+  std::vector<string16> label_vector;
   while (kLabelXmlTag == reader->NodeName()) {
     std::string label_buffer;
     if (!reader->ReadElementContent(&label_buffer)) {
       label_buffer = "";
     }
-    label_vector.push_back(UTF8ToWide(label_buffer));
+    label_vector.push_back(UTF8ToUTF16(label_buffer));
     LocateNextOpenTag(reader);
   }
 
   if (0 == label_vector.size()) {
     if (!FirstRun::IsChromeFirstRun()) {
       bookmark_folders->resize(1);
-      (*bookmark_folders)[0].push_back(UTF16ToWide(bookmark_group_string));
+      (*bookmark_folders)[0].push_back(bookmark_group_string);
     }
     return true;
   }
@@ -566,14 +566,14 @@ bool Toolbar5Importer::ExtractFoldersFromXmlReader(
     // If this is the first run then we place favorites with no labels
     // in the title bar.  Else they are placed in the "Google Toolbar" folder.
     if (!FirstRun::IsChromeFirstRun() || !label_vector[index].empty()) {
-      (*bookmark_folders)[index].push_back(UTF16ToWide(bookmark_group_string));
+      (*bookmark_folders)[index].push_back(bookmark_group_string);
     }
 
     // If the label and is in the form "xxx:yyy:zzz" this was created from an
     // IE or Firefox folder.  We undo the label creation and recreate the
     // correct folder.
-    std::vector<std::wstring> folder_names;
-    base::SplitString(label_vector[index], L':', &folder_names);
+    std::vector<string16> folder_names;
+    base::SplitString(label_vector[index], ':', &folder_names);
     (*bookmark_folders)[index].insert((*bookmark_folders)[index].end(),
         folder_names.begin(), folder_names.end());
   }

@@ -190,7 +190,7 @@ void SafariImporter::LoadFaviconData(sqlite3* db,
 
 void SafariImporter::RecursiveReadBookmarksFolder(
     NSDictionary* bookmark_folder,
-    const std::vector<std::wstring>& parent_path_elements,
+    const std::vector<string16>& parent_path_elements,
     bool is_in_toolbar,
     std::vector<ProfileWriter::BookmarkEntry>* out_bookmarks) {
   DCHECK(bookmark_folder);
@@ -215,7 +215,7 @@ void SafariImporter::RecursiveReadBookmarksFolder(
     }
   }
 
-  std::vector<std::wstring> path_elements(parent_path_elements);
+  std::vector<string16> path_elements(parent_path_elements);
   // Is this the toolbar folder?
   if ([title isEqualToString:@"BookmarksBar"]) {
     // Be defensive, the toolbar items shouldn't have a prepended path.
@@ -226,7 +226,7 @@ void SafariImporter::RecursiveReadBookmarksFolder(
     path_elements.clear();
   } else if (!is_top_level_bookmarks_container) {
     if (title)
-      path_elements.push_back(base::SysNSStringToWide(title));
+      path_elements.push_back(base::SysNSStringToUTF16(title));
   }
 
   NSArray* elements = [bookmark_folder objectForKey:@"Children"];
@@ -264,7 +264,7 @@ void SafariImporter::RecursiveReadBookmarksFolder(
     ProfileWriter::BookmarkEntry entry;
     // Safari doesn't specify a creation time for the bookmark.
     entry.creation_time = base::Time::Now();
-    entry.title = base::SysNSStringToWide(title);
+    entry.title = base::SysNSStringToUTF16(title);
     entry.url = GURL(base::SysNSStringToUTF8(url));
     entry.path = path_elements;
     entry.in_toolbar = is_in_toolbar;
@@ -292,7 +292,7 @@ void SafariImporter::ParseBookmarks(
     return;
 
   // Recursively read in bookmarks.
-  std::vector<std::wstring> parent_path_elements;
+  std::vector<string16> parent_path_elements;
   RecursiveReadBookmarksFolder(bookmarks_dict, parent_path_elements, false,
                                bookmarks);
 }

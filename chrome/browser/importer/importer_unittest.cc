@@ -151,10 +151,10 @@ bool FindBookmarkEntry(const ProfileWriter::BookmarkEntry& entry,
     if (list[i].in_toolbar == entry.in_toolbar &&
         list[i].path_size == entry.path.size() &&
         list[i].url == entry.url.spec() &&
-        list[i].title == entry.title) {
+        WideToUTF16Hack(list[i].title) == entry.title) {
       bool equal = true;
       for (size_t k = 0; k < list[i].path_size; ++k)
-        if (list[i].path[k] != entry.path[k]) {
+        if (WideToUTF16Hack(list[i].path[k]) != entry.path[k]) {
           equal = false;
           break;
         }

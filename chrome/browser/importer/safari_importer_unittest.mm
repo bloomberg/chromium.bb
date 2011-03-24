@@ -106,8 +106,8 @@ TEST_F(SafariImporterTest, BookmarkImport) {
       EXPECT_EQ(entry.path.size(), 0U);
     } else {
       EXPECT_EQ(entry.path.size(), 1U);
-      EXPECT_EQ(entry.path[0], kImportedBookmarksData[i].path);
-      EXPECT_EQ(entry.title, kImportedBookmarksData[i].title);
+      EXPECT_EQ(UTF16ToWideHack(entry.path[0]), kImportedBookmarksData[i].path);
+      EXPECT_EQ(UTF16ToWideHack(entry.title), kImportedBookmarksData[i].title);
     }
   }
 }

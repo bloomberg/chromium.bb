@@ -49,9 +49,6 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
     BOOKMARK_BAR_DISABLED = 1 << 2
   };
 
-  // A bookmark entry.
-  // TODO(mirandac): remove instances of wstring from ProfileWriter
-  // (http://crbug.com/43460).
   struct BookmarkEntry {
     BookmarkEntry();
     ~BookmarkEntry();
@@ -59,8 +56,8 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
     bool in_toolbar;
     bool is_folder;
     GURL url;
-    std::vector<std::wstring> path;
-    std::wstring title;
+    std::vector<string16> path;
+    string16 title;
     base::Time creation_time;
   };
 

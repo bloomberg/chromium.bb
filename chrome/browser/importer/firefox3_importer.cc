@@ -38,7 +38,7 @@ struct Firefox3Importer::BookmarkItem {
   int parent;
   int id;
   GURL url;
-  std::wstring title;
+  string16 title;
   BookmarkItemType type;
   std::string keyword;
   base::Time date_added;
@@ -198,8 +198,8 @@ void Firefox3Importer::ImportBookmarks() {
     return;
   }
 
-  std::wstring firefox_folder = UTF16ToWideHack(
-      bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_FIREFOX));
+  string16 firefox_folder =
+      bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_FIREFOX);
   for (size_t i = 0; i < list.size(); ++i) {
     BookmarkItem* item = list[i];
 
@@ -222,7 +222,7 @@ void Firefox3Importer::ImportBookmarks() {
       continue;
 
     // Find the bookmark path by tracing their links to parent folders.
-    std::vector<std::wstring> path;
+    std::vector<string16> path;
     BookmarkItem* child = item;
     bool found_path = false;
     bool is_in_toolbar = false;
@@ -275,7 +275,7 @@ void Firefox3Importer::ImportBookmarks() {
 
       // This bookmark has a keyword, we import it to our TemplateURL model.
       TemplateURL* t_url = Firefox2Importer::CreateTemplateURL(
-          item->title, UTF8ToWide(item->keyword), item->url);
+          item->title, UTF8ToUTF16(item->keyword), item->url);
       if (t_url)
         template_urls.push_back(t_url);
     }
@@ -490,7 +490,7 @@ void Firefox3Importer::GetTopBookmarkFolder(sqlite3* db, int folder_id,
     BookmarkItem* item = new BookmarkItem;
     item->parent = -1;  // The top level folder has no parent.
     item->id = folder_id;
-    item->title = s.column_wstring(0);
+    item->title = s.column_string16(0);
     item->type = TYPE_FOLDER;
     item->favicon = 0;
     item->empty_folder = true;
@@ -524,7 +524,7 @@ void Firefox3Importer::GetWholeBookmarkFolder(sqlite3* db, BookmarkList* list,
     item->parent = static_cast<int>(position);
     item->id = s.column_int(0);
     item->url = GURL(s.column_string(1));
-    item->title = s.column_wstring(2);
+    item->title = s.column_string16(2);
     item->type = static_cast<BookmarkItemType>(s.column_int(3));
     item->keyword = s.column_string(4);
     item->date_added = base::Time::FromTimeT(s.column_int64(5)/1000000);

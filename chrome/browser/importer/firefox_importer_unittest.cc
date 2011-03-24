@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,7 +83,7 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
   EXPECT_EQ("UTF-8", charset);
 
   // Escaped characters in name.
-  std::wstring folder_name;
+  string16 folder_name;
   bool is_toolbar_folder;
   Time folder_add_date;
   result = Firefox2Importer::ParseFolderNameFromLine(
@@ -91,7 +91,7 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
       " &amp; &quot; &#39; \\ /</H3>",
       charset, &folder_name, &is_toolbar_folder, &folder_add_date);
   EXPECT_TRUE(result);
-  EXPECT_EQ(L"< > & \" ' \\ /", folder_name);
+  EXPECT_EQ(ASCIIToUTF16("< > & \" ' \\ /"), folder_name);
   EXPECT_FALSE(is_toolbar_folder);
   EXPECT_TRUE(Time::FromTimeT(1207558707) == folder_add_date);
 
@@ -100,24 +100,24 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
       "<DT><H3 PERSONAL_TOOLBAR_FOLDER=\"true\"></H3>",
       charset, &folder_name, &is_toolbar_folder, &folder_add_date);
   EXPECT_TRUE(result);
-  EXPECT_EQ(L"", folder_name);
+  EXPECT_EQ(ASCIIToUTF16(""), folder_name);
   EXPECT_TRUE(is_toolbar_folder);
 
   // Unicode characters in title and shortcut.
-  std::wstring title;
+  string16 title;
   GURL url, favicon;
-  std::wstring shortcut;
-  std::wstring post_data;
+  string16 shortcut;
+  string16 post_data;
   Time add_date;
   result = Firefox2Importer::ParseBookmarkFromLine(
       "<DT><A HREF=\"http://chinese.site.cn/path?query=1#ref\" "
       "SHORTCUTURL=\"\xE4\xB8\xAD\">\xE4\xB8\xAD\xE6\x96\x87</A>",
       charset, &title, &url, &favicon, &shortcut, &add_date, &post_data);
   EXPECT_TRUE(result);
-  EXPECT_EQ(L"\x4E2D\x6587", title);
+  EXPECT_EQ(L"\x4E2D\x6587", UTF16ToWide(title));
   EXPECT_EQ("http://chinese.site.cn/path?query=1#ref", url.spec());
-  EXPECT_EQ(L"\x4E2D", shortcut);
-  EXPECT_EQ(L"", post_data);
+  EXPECT_EQ(L"\x4E2D", UTF16ToWide(shortcut));
+  EXPECT_EQ(ASCIIToUTF16(""), post_data);
   EXPECT_TRUE(Time() == add_date);
 
   // No shortcut, and url contains %22 ('"' character).
@@ -125,20 +125,20 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
       "<DT><A HREF=\"http://domain.com/?q=%22<>%22\">name</A>",
       charset, &title, &url, &favicon, &shortcut, &add_date, &post_data);
   EXPECT_TRUE(result);
-  EXPECT_EQ(L"name", title);
+  EXPECT_EQ(ASCIIToUTF16("name"), title);
   EXPECT_EQ("http://domain.com/?q=%22%3C%3E%22", url.spec());
-  EXPECT_EQ(L"", shortcut);
-  EXPECT_EQ(L"", post_data);
+  EXPECT_EQ(ASCIIToUTF16(""), shortcut);
+  EXPECT_EQ(ASCIIToUTF16(""), post_data);
   EXPECT_TRUE(Time() == add_date);
 
   result = Firefox2Importer::ParseBookmarkFromLine(
       "<DT><A HREF=\"http://domain.com/?g=&quot;\"\">name</A>",
       charset, &title, &url, &favicon, &shortcut, &add_date, &post_data);
   EXPECT_TRUE(result);
-  EXPECT_EQ(L"name", title);
+  EXPECT_EQ(ASCIIToUTF16("name"), title);
   EXPECT_EQ("http://domain.com/?g=%22", url.spec());
-  EXPECT_EQ(L"", shortcut);
-  EXPECT_EQ(L"", post_data);
+  EXPECT_EQ(ASCIIToUTF16(""), shortcut);
+  EXPECT_EQ(ASCIIToUTF16(""), post_data);
   EXPECT_TRUE(Time() == add_date);
 
   // Creation date.
@@ -146,10 +146,10 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
       "<DT><A HREF=\"http://site/\" ADD_DATE=\"1121301154\">name</A>",
       charset, &title, &url, &favicon, &shortcut, &add_date, &post_data);
   EXPECT_TRUE(result);
-  EXPECT_EQ(L"name", title);
+  EXPECT_EQ(ASCIIToUTF16("name"), title);
   EXPECT_EQ(GURL("http://site/"), url);
-  EXPECT_EQ(L"", shortcut);
-  EXPECT_EQ(L"", post_data);
+  EXPECT_EQ(ASCIIToUTF16(""), shortcut);
+  EXPECT_EQ(ASCIIToUTF16(""), post_data);
   EXPECT_TRUE(Time::FromTimeT(1121301154) == add_date);
 
   // Post-data
@@ -160,10 +160,10 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
       "LAST_CHARSET=\"UTF-8\" ID=\"rdf:#$weKaR3\">Test Post keyword</A>",
       charset, &title, &url, &favicon, &shortcut, &add_date, &post_data);
   EXPECT_TRUE(result);
-  EXPECT_EQ(L"Test Post keyword", title);
+  EXPECT_EQ(ASCIIToUTF16("Test Post keyword"), title);
   EXPECT_EQ("http://localhost:8080/test/hello.html", url.spec());
-  EXPECT_EQ(L"post", shortcut);
-  EXPECT_EQ(L"lname%3D%25s", post_data);
+  EXPECT_EQ(ASCIIToUTF16("post"), shortcut);
+  EXPECT_EQ(ASCIIToUTF16("lname%3D%25s"), post_data);
   EXPECT_TRUE(Time::FromTimeT(1212447159) == add_date);
 
   // Invalid case.
@@ -171,10 +171,10 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
       "<DT><A HREF=\"http://domain.com/?q=%22",
       charset, &title, &url, &favicon, &shortcut, &add_date, &post_data);
   EXPECT_FALSE(result);
-  EXPECT_EQ(L"", title);
+  EXPECT_EQ(ASCIIToUTF16(""), title);
   EXPECT_EQ("", url.spec());
-  EXPECT_EQ(L"", shortcut);
-  EXPECT_EQ(L"", post_data);
+  EXPECT_EQ(ASCIIToUTF16(""), shortcut);
+  EXPECT_EQ(ASCIIToUTF16(""), post_data);
   EXPECT_TRUE(Time() == add_date);
 
   // Epiphany format.
@@ -182,7 +182,7 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
       "<dt><a href=\"http://www.google.com/\">Google</a></dt>",
       charset, &title, &url);
   EXPECT_TRUE(result);
-  EXPECT_EQ(L"Google", title);
+  EXPECT_EQ(ASCIIToUTF16("Google"), title);
   EXPECT_EQ("http://www.google.com/", url.spec());
 }
 
@@ -204,41 +204,41 @@ TEST(FirefoxImporterTest, Firefox2BookmarkFileImport) {
   EXPECT_EQ(3, static_cast<int>(bookmarks.size()));
   std::vector<ProfileWriter::BookmarkEntry>::iterator it;
   ProfileWriter::BookmarkEntry entry;
-  std::vector<std::wstring>::iterator path_it;
+  std::vector<string16>::iterator path_it;
   if (bookmarks.size() == 3) {
     it = bookmarks.begin();
     entry = *it++;
-    EXPECT_EQ(L"Empty", entry.title);
+    EXPECT_EQ(ASCIIToUTF16("Empty"), entry.title);
     EXPECT_TRUE(entry.is_folder);
     EXPECT_EQ(Time::FromTimeT(1295938143), entry.creation_time);
     EXPECT_EQ(2, static_cast<int>(entry.path.size()));
     if (entry.path.size() == 2) {
       path_it = entry.path.begin();
-      EXPECT_EQ(L"", *path_it++);
-      EXPECT_EQ(L"Empty's Parent", *path_it);
+      EXPECT_EQ(ASCIIToUTF16(""), *path_it++);
+      EXPECT_EQ(ASCIIToUTF16("Empty's Parent"), *path_it);
     }
 
     entry = *it++;
-    EXPECT_EQ(L"[Tamura Yukari.com]", entry.title);
+    EXPECT_EQ(ASCIIToUTF16("[Tamura Yukari.com]"), entry.title);
     EXPECT_FALSE(entry.is_folder);
     EXPECT_EQ(Time::FromTimeT(1234567890), entry.creation_time);
     EXPECT_EQ(2, static_cast<int>(entry.path.size()));
     if (entry.path.size() == 2) {
       path_it = entry.path.begin();
-      EXPECT_EQ(L"", *path_it++);
-      EXPECT_EQ(L"Not Empty", *path_it);
+      EXPECT_EQ(ASCIIToUTF16(""), *path_it++);
+      EXPECT_EQ(ASCIIToUTF16("Not Empty"), *path_it);
     }
     EXPECT_EQ("http://www.tamurayukari.com/", entry.url.spec());
 
     entry = *it++;
-    EXPECT_EQ(L"Google", entry.title);
+    EXPECT_EQ(ASCIIToUTF16("Google"), entry.title);
     EXPECT_FALSE(entry.is_folder);
     EXPECT_EQ(Time::FromTimeT(0000000000), entry.creation_time);
     EXPECT_EQ(2, static_cast<int>(entry.path.size()));
     if (entry.path.size() == 2) {
       path_it = entry.path.begin();
-      EXPECT_EQ(L"", *path_it++);
-      EXPECT_EQ(L"Not Empty But Default", *path_it);
+      EXPECT_EQ(ASCIIToUTF16(""), *path_it++);
+      EXPECT_EQ(ASCIIToUTF16("Not Empty But Default"), *path_it);
     }
     EXPECT_EQ("http://www.google.com/", entry.url.spec());
   }
@@ -253,25 +253,25 @@ TEST(FirefoxImporterTest, Firefox2BookmarkFileImport) {
   if (bookmarks.size() == 2) {
     it = bookmarks.begin();
     entry = *it++;
-    EXPECT_EQ(L"Empty", entry.title);
+    EXPECT_EQ(ASCIIToUTF16("Empty"), entry.title);
     EXPECT_TRUE(entry.is_folder);
     EXPECT_EQ(Time::FromTimeT(1295938143), entry.creation_time);
     EXPECT_EQ(2, static_cast<int>(entry.path.size()));
     if (entry.path.size() == 2) {
       path_it = entry.path.begin();
-      EXPECT_EQ(L"", *path_it++);
-      EXPECT_EQ(L"Empty's Parent", *path_it);
+      EXPECT_EQ(ASCIIToUTF16(""), *path_it++);
+      EXPECT_EQ(ASCIIToUTF16("Empty's Parent"), *path_it);
     }
 
     entry = *it++;
-    EXPECT_EQ(L"[Tamura Yukari.com]", entry.title);
+    EXPECT_EQ(ASCIIToUTF16("[Tamura Yukari.com]"), entry.title);
     EXPECT_FALSE(entry.is_folder);
     EXPECT_EQ(Time::FromTimeT(1234567890), entry.creation_time);
     EXPECT_EQ(2, static_cast<int>(entry.path.size()));
     if (entry.path.size() == 2) {
       path_it = entry.path.begin();
-      EXPECT_EQ(L"", *path_it++);
-      EXPECT_EQ(L"Not Empty", *path_it);
+      EXPECT_EQ(ASCIIToUTF16(""), *path_it++);
+      EXPECT_EQ(ASCIIToUTF16("Not Empty"), *path_it);
     }
     EXPECT_EQ("http://www.tamurayukari.com/", entry.url.spec());
   }
@@ -287,11 +287,11 @@ TEST(FirefoxImporterTest, Firefox2BookmarkFileImport) {
   if (bookmarks.size() == 2) {
     it = bookmarks.begin();
     entry = *it++;
-    EXPECT_EQ(L"[Tamura Yukari.com]", entry.title);
+    EXPECT_EQ(ASCIIToUTF16("[Tamura Yukari.com]"), entry.title);
     EXPECT_EQ("http://www.tamurayukari.com/", entry.url.spec());
     EXPECT_EQ(0, static_cast<int>(entry.path.size()));
     entry = *it++;
-    EXPECT_EQ(L"Google", entry.title);
+    EXPECT_EQ(ASCIIToUTF16("Google"), entry.title);
     EXPECT_EQ("http://www.google.com/", entry.url.spec());
     EXPECT_EQ(0, static_cast<int>(entry.path.size()));
   }

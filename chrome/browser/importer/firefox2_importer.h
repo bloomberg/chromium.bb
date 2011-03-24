@@ -36,8 +36,8 @@ class Firefox2Importer : public Importer {
 
   // Creates a TemplateURL with the |keyword| and |url|. |title| may be empty.
   // This function transfers ownership of the created TemplateURL to the caller.
-  static TemplateURL* CreateTemplateURL(const std::wstring& title,
-                                        const std::wstring& keyword,
+  static TemplateURL* CreateTemplateURL(const string16& title,
+                                        const string16& keyword,
                                         const GURL& url);
 
   // Imports the bookmarks from the specified file. |template_urls| and
@@ -88,7 +88,7 @@ class Firefox2Importer : public Importer {
                                    std::string* charset);
   static bool ParseFolderNameFromLine(const std::string& line,
                                       const std::string& charset,
-                                      std::wstring* folder_name,
+                                      string16* folder_name,
                                       bool* is_toolbar_folder,
                                       base::Time* add_date);
   // See above, this will also put the data: URL of the favicon into *favicon
@@ -96,12 +96,12 @@ class Firefox2Importer : public Importer {
   // the contents of the actual POST (with %s for the search term).
   static bool ParseBookmarkFromLine(const std::string& line,
                                     const std::string& charset,
-                                    std::wstring* title,
+                                    string16* title,
                                     GURL* url,
                                     GURL* favicon,
-                                    std::wstring* shortcut,
+                                    string16* shortcut,
                                     base::Time* add_date,
-                                    std::wstring* post_data);
+                                    string16* post_data);
   // Save bookmarks imported from browsers with Firefox2 compatible bookmark
   // systems such as Epiphany. This bookmark format is the same as that of the
   // basic Firefox bookmark, but it misses additional properties and uses
@@ -112,7 +112,7 @@ class Firefox2Importer : public Importer {
   //   </dl>
   static bool ParseMinimumBookmarkFromLine(const std::string& line,
                                            const std::string& charset,
-                                           std::wstring* title,
+                                           string16* title,
                                            GURL* url);
 
   // Fetches the given attribute value from the |tag|. Returns true if
@@ -124,7 +124,7 @@ class Firefox2Importer : public Importer {
   // There are some characters in html file will be escaped:
   //   '<', '>', '"', '\', '&'
   // Un-escapes them if the bookmark name has those characters.
-  static void HTMLUnescape(std::wstring* text);
+  static void HTMLUnescape(string16* text);
 
   // Fills |xml_files| with the file with an xml extension found under |dir|.
   static void FindXMLFilesInDir(const FilePath& dir,

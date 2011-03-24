@@ -97,33 +97,32 @@ void ProfileWriter::AddBookmarkEntry(
     //   path[0] \ path[1] \ ... \ path[size() - 1]
     const BookmarkNode* parent =
         (it->in_toolbar ? model->GetBookmarkBarNode() : model->other_node());
-    for (std::vector<std::wstring>::const_iterator i = it->path.begin();
+    for (std::vector<string16>::const_iterator i = it->path.begin();
          i != it->path.end(); ++i) {
       const BookmarkNode* child = NULL;
-      const std::wstring& folder_name = (!import_to_bookmark_bar &&
-          !it->in_toolbar && (i == it->path.begin())) ? real_first_folder : *i;
+      const string16& folder_name = (!import_to_bookmark_bar &&
+          !it->in_toolbar && (i == it->path.begin())) ?
+              WideToUTF16Hack(real_first_folder) : *i;
 
       for (int index = 0; index < parent->child_count(); ++index) {
         const BookmarkNode* node = parent->GetChild(index);
         if ((node->type() == BookmarkNode::BOOKMARK_BAR ||
              node->type() == BookmarkNode::FOLDER) &&
-            node->GetTitle() == WideToUTF16Hack(folder_name)) {
+            node->GetTitle() == folder_name) {
           child = node;
           break;
         }
       }
       if (child == NULL)
-        child = model->AddFolder(parent, parent->child_count(),
-                                 WideToUTF16Hack(folder_name));
+        child = model->AddFolder(parent, parent->child_count(), folder_name);
       parent = child;
     }
     folders_added_to.insert(parent);
     if (it->is_folder) {
-      model->AddFolder(parent, parent->child_count(),
-                       WideToUTF16Hack(it->title));
+      model->AddFolder(parent, parent->child_count(), it->title);
     } else {
       model->AddURLWithCreationTime(parent, parent->child_count(),
-          WideToUTF16Hack(it->title), it->url, it->creation_time);
+          it->title, it->url, it->creation_time);
     }
 
     // If some items are put into toolbar, it looks like the user was using
@@ -327,18 +326,18 @@ bool ProfileWriter::DoesBookmarkExist(
 
   for (size_t i = 0; i < nodes_with_same_url.size(); ++i) {
     const BookmarkNode* node = nodes_with_same_url[i];
-    if (WideToUTF16Hack(entry.title) != node->GetTitle())
+    if (entry.title != node->GetTitle())
       continue;
 
     // Does the path match?
     bool found_match = true;
     const BookmarkNode* parent = node->parent();
-    for (std::vector<std::wstring>::const_reverse_iterator path_it =
+    for (std::vector<string16>::const_reverse_iterator path_it =
              entry.path.rbegin();
          (path_it != entry.path.rend()) && found_match; ++path_it) {
-      const std::wstring& folder_name =
+      const string16& folder_name =
           (!import_to_bookmark_bar && path_it + 1 == entry.path.rend()) ?
-          first_folder_name : *path_it;
+          WideToUTF16Hack(first_folder_name) : *path_it;
       if (NULL == parent || *path_it != folder_name)
         found_match = false;
       else

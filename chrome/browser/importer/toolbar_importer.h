@@ -77,7 +77,7 @@ class Toolbar5Importer : public URLFetcher::Delegate, public Importer {
     DONE
   };
 
-  typedef std::vector<std::wstring> BookmarkFolderType;
+  typedef std::vector<string16> BookmarkFolderType;
 
   // URLs for connecting to the toolbar front end are defined below.
   static const char kT5AuthorizationTokenUrl[];

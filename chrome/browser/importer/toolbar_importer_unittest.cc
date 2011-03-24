@@ -17,15 +17,18 @@
 
 // See http://crbug.com/11838
 TEST(Toolbar5ImporterTest, BookmarkParse) {
-static const wchar_t* kTitle = L"MyTitle";
-static const char* kUrl = "http://www.google.com/";
-static const wchar_t* kFolder = L"Google";
-static const wchar_t* kFolder2 = L"Homepage";
-static const wchar_t* kFolderArray[3] = {L"Google", L"Search", L"Page"};
-
-static const wchar_t* kOtherTitle = L"MyOtherTitle";
+static const string16 kTitle = ASCIIToUTF16("MyTitle");
+static const char kUrl[] = "http://www.google.com/";
+static const string16 kFolder = ASCIIToUTF16("Google");
+static const string16 kFolder2 = ASCIIToUTF16("Homepage");
+static const string16 kFolderArray[3] = {
+  ASCIIToUTF16("Google"),
+  ASCIIToUTF16("Search"),
+  ASCIIToUTF16("Page")
+};
+static const string16 kOtherTitle = ASCIIToUTF16("MyOtherTitle");
 static const char* kOtherUrl = "http://www.google.com/mail";
-static const wchar_t* kOtherFolder = L"Mail";
+static const string16 kOtherFolder = ASCIIToUTF16("Mail");
 
 static const string16 kBookmarkGroupTitle = ASCIIToUTF16("BookmarkGroupTitle");
 
@@ -384,11 +387,11 @@ static const char* kBadBookmarkNoLabels =
   EXPECT_EQ(kTitle, bookmarks[0].title);
   EXPECT_EQ(url, bookmarks[0].url);
   ASSERT_EQ(4U, bookmarks[0].path.size());
-  EXPECT_EQ(std::wstring(kFolderArray[0]),
+  EXPECT_EQ(string16(kFolderArray[0]),
             bookmarks[0].path[1]);
-  EXPECT_EQ(std::wstring(kFolderArray[1]),
+  EXPECT_EQ(string16(kFolderArray[1]),
             bookmarks[0].path[2]);
-  EXPECT_EQ(std::wstring(kFolderArray[2]),
+  EXPECT_EQ(string16(kFolderArray[2]),
             bookmarks[0].path[3]);
 
   // Test case 5 is parsing a single bookmark without a favicon URL.
