@@ -115,9 +115,6 @@ class NativeMetafile {
   // details.
   virtual bool SafePlayback(gfx::NativeDrawingContext hdc) const = 0;
 
-  // Retrieves the underlying data stream. It is a helper function.
-  virtual bool GetData(std::vector<uint8>* buffer) const = 0;
-
   virtual HENHMETAFILE emf() const = 0;
 #elif defined(OS_MACOSX)
   // Renders the given page into |rect| in the given context.

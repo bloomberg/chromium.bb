@@ -56,7 +56,7 @@ TEST(EmfTest, DC) {
     EXPECT_TRUE(emf.FinishDocument());
     size = emf.GetDataSize();
     EXPECT_GT(size, EMF_HEADER_SIZE);
-    EXPECT_TRUE(emf.GetData(&data));
+    EXPECT_TRUE(emf.GetDataAsVector(&data));
     EXPECT_EQ(data.size(), size);
   }
 
@@ -143,7 +143,7 @@ TEST_F(EmfPrintingTest, PageBreak) {
     }
     EXPECT_TRUE(emf.FinishDocument());
     size = emf.GetDataSize();
-    EXPECT_TRUE(emf.GetData(&data));
+    EXPECT_TRUE(emf.GetDataAsVector(&data));
     EXPECT_EQ(data.size(), size);
   }
 
@@ -183,7 +183,7 @@ TEST(EmfTest, FileBackedEmf) {
     EXPECT_TRUE(emf.FinishDocument());
     size = emf.GetDataSize();
     EXPECT_GT(size, EMF_HEADER_SIZE);
-    EXPECT_TRUE(emf.GetData(&data));
+    EXPECT_TRUE(emf.GetDataAsVector(&data));
     EXPECT_EQ(data.size(), size);
   }
   int64 file_size = 0;

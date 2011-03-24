@@ -81,13 +81,18 @@ class Emf : public NativeMetafile {
   virtual bool Playback(HDC hdc, const RECT* rect) const;
   virtual bool SafePlayback(HDC hdc) const;
 
-  virtual bool GetData(std::vector<uint8>* buffer) const;
-
   virtual HENHMETAFILE emf() const {
     return emf_;
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(EmfTest, DC);
+  FRIEND_TEST_ALL_PREFIXES(EmfPrintingTest, PageBreak);
+  FRIEND_TEST_ALL_PREFIXES(EmfTest, FileBackedEmf);
+
+  // Retrieves the underlying data stream. It is a helper function.
+  bool GetDataAsVector(std::vector<uint8>* buffer) const;
+
   // Playbacks safely one EMF record.
   static int CALLBACK SafePlaybackProc(HDC hdc,
                                        HANDLETABLE* handle_table,

@@ -156,7 +156,7 @@ bool Emf::GetData(void* buffer, uint32 size) const {
   return size2 == size && size2 != 0;
 }
 
-bool Emf::GetData(std::vector<uint8>* buffer) const {
+bool Emf::GetDataAsVector(std::vector<uint8>* buffer) const {
   uint32 size = GetDataSize();
   if (!size)
     return false;
@@ -176,7 +176,7 @@ bool Emf::SaveTo(const FilePath& file_path) const {
 
   bool success = false;
   std::vector<uint8> buffer;
-  if (GetData(&buffer)) {
+  if (GetDataAsVector(&buffer)) {
     DWORD written = 0;
     if (WriteFile(file, &*buffer.begin(), static_cast<DWORD>(buffer.size()),
                   &written, NULL) &&
