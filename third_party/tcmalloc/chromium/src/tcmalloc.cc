@@ -1615,7 +1615,7 @@ void *(*__memalign_hook)(size_t, size_t, const void *) = MemalignOverride;
 // It will cost abotu 2% in performance, but it will catch double frees (most of
 // the time), and will often catch allocated-buffer overrun errors.  This
 // validation is only active when TCMalloc is used as the allocator.
-// #define TCMALLOC_VALIDATION
+#define TCMALLOC_VALIDATION
 
 #if !defined(TCMALLOC_VALIDATION)
 
@@ -1738,6 +1738,10 @@ static void ValidateAllocatedRegion(void* ptr, size_t cl) {
   if (current_mark != allocated_mark)
     DieFromMemoryCorruption();
   *mark = ~allocated_mark;  //  Distinctively not allocated.
+  // Copy the mark into all the free'd region.
+  size_t class_size = static_cast<size_t>(reinterpret_cast<char*>(mark) -
+                                          reinterpret_cast<char*>(ptr));
+  memset(ptr, static_cast<char>(0x36), class_size);
 }
 
 static void MarkAllocatedRegion(void* ptr) {
