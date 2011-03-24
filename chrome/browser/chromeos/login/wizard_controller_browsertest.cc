@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
+#include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/eula_view.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
@@ -117,6 +118,9 @@ class WizardControllerFlowTest : public WizardControllerTest {
     MOCK(mock_network_screen_, network_screen_, chromeos::NetworkScreen);
     MOCK(mock_update_screen_, update_screen_, MockUpdateScreen);
     MOCK(mock_eula_screen_, eula_screen_, chromeos::EulaScreen);
+    MOCK(mock_enterprise_enrollment_screen_,
+         enterprise_enrollment_screen_,
+         chromeos::EnterpriseEnrollmentScreen);
 
     // Switch to the initial screen.
     EXPECT_EQ(NULL, controller()->current_screen());
@@ -126,10 +130,16 @@ class WizardControllerFlowTest : public WizardControllerTest {
     return ret;
   }
 
+  void OnExit(chromeos::ScreenObserver::ExitCodes exit_code) {
+    controller()->OnExit(exit_code);
+  }
+
   MockOutShowHide<chromeos::AccountScreen>* mock_account_screen_;
   MockOutShowHide<chromeos::NetworkScreen>* mock_network_screen_;
   MockOutShowHide<MockUpdateScreen>* mock_update_screen_;
   MockOutShowHide<chromeos::EulaScreen>* mock_eula_screen_;
+  MockOutShowHide<chromeos::EnterpriseEnrollmentScreen>*
+      mock_enterprise_enrollment_screen_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerFlowTest);
@@ -140,20 +150,20 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
   EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
-  controller()->OnExit(chromeos::ScreenObserver::NETWORK_CONNECTED);
+  OnExit(chromeos::ScreenObserver::NETWORK_CONNECTED);
 
   EXPECT_EQ(controller()->GetEulaScreen(), controller()->current_screen());
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  controller()->OnExit(chromeos::ScreenObserver::EULA_ACCEPTED);
+  OnExit(chromeos::ScreenObserver::EULA_ACCEPTED);
   // Let update screen smooth time process (time = 0ms).
   ui_test_utils::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(controller()->GetUpdateScreen(), controller()->current_screen());
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(0);
   EXPECT_CALL(*mock_eula_screen_, Show()).Times(0);
-  controller()->OnExit(chromeos::ScreenObserver::UPDATE_INSTALLED);
+  OnExit(chromeos::ScreenObserver::UPDATE_INSTALLED);
 
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
   set_controller(NULL);
@@ -165,13 +175,13 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
   EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(0);
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
-  controller()->OnExit(chromeos::ScreenObserver::NETWORK_CONNECTED);
+  OnExit(chromeos::ScreenObserver::NETWORK_CONNECTED);
 
   EXPECT_EQ(controller()->GetEulaScreen(), controller()->current_screen());
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  controller()->OnExit(chromeos::ScreenObserver::EULA_ACCEPTED);
+  OnExit(chromeos::ScreenObserver::EULA_ACCEPTED);
   // Let update screen smooth time process (time = 0ms).
   ui_test_utils::RunAllPendingInMessageLoop();
 
@@ -179,8 +189,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(0);
   EXPECT_CALL(*mock_eula_screen_, Show()).Times(0);
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(0);  // last transition
-  controller()->OnExit(
-      chromeos::ScreenObserver::UPDATE_ERROR_UPDATING);
+  OnExit(chromeos::ScreenObserver::UPDATE_ERROR_UPDATING);
 
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
   set_controller(NULL);
@@ -191,24 +200,63 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowEulaDeclined) {
   EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(0);
   EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
-  controller()->OnExit(chromeos::ScreenObserver::NETWORK_CONNECTED);
+  OnExit(chromeos::ScreenObserver::NETWORK_CONNECTED);
 
   EXPECT_EQ(controller()->GetEulaScreen(), controller()->current_screen());
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(0);  // last transition
-  controller()->OnExit(chromeos::ScreenObserver::EULA_BACK);
+  OnExit(chromeos::ScreenObserver::EULA_BACK);
 
   EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorNetwork) {
   EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
-  controller()->OnExit(chromeos::ScreenObserver::NETWORK_OFFLINE);
+  OnExit(chromeos::ScreenObserver::NETWORK_OFFLINE);
 
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
   set_controller(NULL);
 }
+
+#if !defined(OFFICIAL_BUILD)
+// TODO(mnissler): These tests are not yet enabled for official builds. Remove
+// the guards once we enable the enrollment feature for official builds.
+
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
+                       ControlFlowEnterpriseEnrollmentCompleted) {
+  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
+  EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(0);
+  EXPECT_CALL(*mock_enterprise_enrollment_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_TRUE(controller()->contents()->GetFocusManager()->ProcessAccelerator(
+      views::Accelerator(ui::VKEY_P, false, true, true)));
+
+  EXPECT_EQ(controller()->GetEnterpriseEnrollmentScreen(),
+            controller()->current_screen());
+  OnExit(chromeos::ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED);
+
+  EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
+  set_controller(NULL);
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
+                       ControlFlowEnterpriseEnrollmentCancelled) {
+  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
+  EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(0);
+  EXPECT_CALL(*mock_enterprise_enrollment_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_TRUE(controller()->contents()->GetFocusManager()->ProcessAccelerator(
+      views::Accelerator(ui::VKEY_P, false, true, true)));
+
+  EXPECT_EQ(controller()->GetEnterpriseEnrollmentScreen(),
+            controller()->current_screen());
+  OnExit(chromeos::ScreenObserver::ENTERPRISE_ENROLLMENT_CANCELLED);
+
+  EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
+  set_controller(NULL);
+}
+#endif
 
 #if defined(OFFICIAL_BUILD)
 // This test is supposed to fail on official build.
@@ -220,15 +268,25 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorNetwork) {
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, MAYBE_Accelerators) {
   EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
 
-  views::FocusManager* focus_manager =
-      controller()->contents()->GetFocusManager();
+  views::FocusManager* focus_manager = NULL;
   views::Accelerator accel_account_screen(ui::VKEY_A, false, true, true);
   views::Accelerator accel_network_screen(ui::VKEY_N, false, true, true);
   views::Accelerator accel_update_screen(ui::VKEY_U, false, true, true);
   views::Accelerator accel_image_screen(ui::VKEY_I, false, true, true);
   views::Accelerator accel_eula_screen(ui::VKEY_E, false, true, true);
+  views::Accelerator accel_enterprise_enrollment_screen(
+      ui::VKEY_P, false, true, true);
 
+  focus_manager = controller()->contents()->GetFocusManager();
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_enterprise_enrollment_screen_, Show()).Times(1);
+  EXPECT_TRUE(
+      focus_manager->ProcessAccelerator(accel_enterprise_enrollment_screen));
+  EXPECT_EQ(controller()->GetEnterpriseEnrollmentScreen(),
+            controller()->current_screen());
+
+  focus_manager = controller()->contents()->GetFocusManager();
+  EXPECT_CALL(*mock_enterprise_enrollment_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_account_screen_, Show()).Times(1);
   EXPECT_TRUE(focus_manager->ProcessAccelerator(accel_account_screen));
   EXPECT_EQ(controller()->GetAccountScreen(), controller()->current_screen());
@@ -256,5 +314,5 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, MAYBE_Accelerators) {
   EXPECT_EQ(controller()->GetEulaScreen(), controller()->current_screen());
 }
 
-COMPILE_ASSERT(chromeos::ScreenObserver::EXIT_CODES_COUNT == 15,
+COMPILE_ASSERT(chromeos::ScreenObserver::EXIT_CODES_COUNT == 17,
                add_tests_for_new_control_flow_you_just_introduced);

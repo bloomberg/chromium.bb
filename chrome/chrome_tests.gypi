@@ -2142,6 +2142,7 @@
         'browser/chromeos/cros/mock_speech_synthesis_library.h',
         'browser/chromeos/cros/mock_system_library.h',
         'browser/chromeos/cros/mock_touchpad_library.h',
+        'browser/chromeos/login/enterprise_enrollment_screen_browsertest.cc',
         'browser/chromeos/login/existing_user_controller_browsertest.cc',
         'browser/chromeos/login/login_browsertest.cc',
         'browser/chromeos/login/mock_authenticator.h',

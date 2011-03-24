@@ -24,6 +24,7 @@ class WizardScreen;
 
 namespace chromeos {
 class AccountScreen;
+class EnterpriseEnrollmentScreen;
 class EulaScreen;
 class ExistingUserController;
 class HTMLPageScreen;
@@ -100,6 +101,7 @@ class WizardController : public chromeos::ScreenObserver,
   chromeos::EulaScreen* GetEulaScreen();
   chromeos::RegistrationScreen* GetRegistrationScreen();
   chromeos::HTMLPageScreen* GetHTMLPageScreen();
+  chromeos::EnterpriseEnrollmentScreen* GetEnterpriseEnrollmentScreen();
 
   // Show specific screen.
   void ShowNetworkScreen();
@@ -109,6 +111,7 @@ class WizardController : public chromeos::ScreenObserver,
   void ShowEulaScreen();
   void ShowRegistrationScreen();
   void ShowHTMLPageScreen();
+  void ShowEnterpriseEnrollmentScreen();
 
   // Shows images login screen.
   void ShowLoginScreen();
@@ -147,6 +150,7 @@ class WizardController : public chromeos::ScreenObserver,
   static const char kTestNoScreenName[];
   static const char kEulaScreenName[];
   static const char kHTMLPageScreenName[];
+  static const char kEnterpriseEnrollmentScreenName[];
 
  private:
   // Exit handlers:
@@ -163,6 +167,7 @@ class WizardController : public chromeos::ScreenObserver,
   void OnUserImageSkipped();
   void OnRegistrationSuccess();
   void OnRegistrationSkipped();
+  void OnEnterpriseEnrollmentDone();
   void OnOOBECompleted();
 
   // Shows update screen and starts update process.
@@ -225,6 +230,8 @@ class WizardController : public chromeos::ScreenObserver,
   scoped_ptr<chromeos::EulaScreen> eula_screen_;
   scoped_ptr<chromeos::RegistrationScreen> registration_screen_;
   scoped_ptr<chromeos::HTMLPageScreen> html_page_screen_;
+  scoped_ptr<chromeos::EnterpriseEnrollmentScreen>
+      enterprise_enrollment_screen_;
 
   // Screen that's currently active.
   WizardScreen* current_screen_;
@@ -264,14 +271,6 @@ class WizardController : public chromeos::ScreenObserver,
 
   base::OneShotTimer<WizardController> smooth_show_timer_;
 
-  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowErrorNetwork);
-  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowErrorUpdate);
-  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowEulaDeclined);
-  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest,
-                           ControlFlowLanguageOnLogin);
-  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest,
-                           ControlFlowLanguageOnNetwork);
-  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowMain);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerTest, SwitchLanguage);
   friend class WizardControllerFlowTest;
   friend class chromeos::WizardInProcessBrowserTest;

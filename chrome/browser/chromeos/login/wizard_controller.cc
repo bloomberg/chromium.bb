@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/apply_services_customization.h"
+#include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/eula_view.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -91,6 +92,8 @@ class ContentView : public views::View {
                                             false, true, true);
     accel_register_screen_ = views::Accelerator(ui::VKEY_R,
                                                 false, true, true);
+    accel_enterprise_enrollment_screen_ =
+        views::Accelerator(ui::VKEY_P, false, true, true);
     AddAccelerator(accel_account_screen_);
     AddAccelerator(accel_login_screen_);
     AddAccelerator(accel_network_screen_);
@@ -98,6 +101,7 @@ class ContentView : public views::View {
     AddAccelerator(accel_image_screen_);
     AddAccelerator(accel_eula_screen_);
     AddAccelerator(accel_register_screen_);
+    AddAccelerator(accel_enterprise_enrollment_screen_);
 #endif
     AddAccelerator(accel_toggle_accessibility_);
     AddAccelerator(accel_cancel_update_);
@@ -134,6 +138,8 @@ class ContentView : public views::View {
       controller->ShowEulaScreen();
     } else if (accel == accel_register_screen_) {
       controller->ShowRegistrationScreen();
+    } else if (accel == accel_enterprise_enrollment_screen_) {
+      controller->ShowEnterpriseEnrollmentScreen();
 #endif
     } else {
       return false;
@@ -159,6 +165,7 @@ class ContentView : public views::View {
   views::Accelerator accel_image_screen_;
   views::Accelerator accel_eula_screen_;
   views::Accelerator accel_register_screen_;
+  views::Accelerator accel_enterprise_enrollment_screen_;
 #endif
   views::Accelerator accel_toggle_accessibility_;
   views::Accelerator accel_cancel_update_;
@@ -197,6 +204,7 @@ const char WizardController::kUserImageScreenName[] = "image";
 const char WizardController::kEulaScreenName[] = "eula";
 const char WizardController::kRegistrationScreenName[] = "register";
 const char WizardController::kHTMLPageScreenName[] = "html";
+const char WizardController::kEnterpriseEnrollmentScreenName[] = "enroll";
 
 // Passing this parameter as a "first screen" initiates full OOBE flow.
 const char WizardController::kOutOfBoxScreenName[] = "oobe";
@@ -325,6 +333,15 @@ chromeos::HTMLPageScreen* WizardController::GetHTMLPageScreen() {
   return html_page_screen_.get();
 }
 
+chromeos::EnterpriseEnrollmentScreen*
+    WizardController::GetEnterpriseEnrollmentScreen() {
+  if (!enterprise_enrollment_screen_.get()) {
+    enterprise_enrollment_screen_.reset(
+        new chromeos::EnterpriseEnrollmentScreen(this));
+  }
+  return enterprise_enrollment_screen_.get();
+}
+
 void WizardController::ShowNetworkScreen() {
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetNetworkScreen());
@@ -396,6 +413,11 @@ void WizardController::ShowHTMLPageScreen() {
   SetStatusAreaVisible(true);
   host_->SetOobeProgressBarVisible(false);
   SetCurrentScreen(GetHTMLPageScreen());
+}
+
+void WizardController::ShowEnterpriseEnrollmentScreen() {
+  SetStatusAreaVisible(true);
+  SetCurrentScreen(GetEnterpriseEnrollmentScreen());
 }
 
 void WizardController::SetCustomization(
@@ -529,6 +551,10 @@ void WizardController::OnRegistrationSuccess() {
 void WizardController::OnRegistrationSkipped() {
   // TODO(nkostylev): Track in a histogram?
   OnRegistrationSuccess();
+}
+
+void WizardController::OnEnterpriseEnrollmentDone() {
+  ShowLoginScreen();
 }
 
 void WizardController::OnOOBECompleted() {
@@ -668,6 +694,8 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
     }
   } else if (first_screen_name == kHTMLPageScreenName) {
     ShowHTMLPageScreen();
+  } else if (first_screen_name == kEnterpriseEnrollmentScreenName) {
+    ShowEnterpriseEnrollmentScreen();
   } else if (first_screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       ShowNetworkScreen();
@@ -800,6 +828,10 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case REGISTRATION_SKIPPED:
       OnRegistrationSkipped();
+      break;
+    case ENTERPRISE_ENROLLMENT_CANCELLED:
+    case ENTERPRISE_ENROLLMENT_COMPLETED:
+      OnEnterpriseEnrollmentDone();
       break;
     default:
       NOTREACHED();
