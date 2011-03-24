@@ -35,10 +35,13 @@ class PrintPreviewTabController
 
   static PrintPreviewTabController* GetInstance();
 
+  // Initiate print preview for |initiator_tab|.
+  // Call this instead of GetOrCreatePreviewTab().
+  static void PrintPreview(TabContents* initiator_tab);
+
   // Get/Create the print preview tab for |initiator_tab|.
-  // |browser_window_id| is the browser window containing |initiator_tab|.
-  TabContents* GetOrCreatePreviewTab(
-      TabContents* initiator_tab, SessionID::id_type browser_window_id);
+  // Exposed for unit tests.
+  TabContents* GetOrCreatePreviewTab(TabContents* initiator_tab);
 
   // Returns preview tab for |tab|.
   // Returns |tab| if |tab| is a preview tab.
@@ -66,8 +69,7 @@ class PrintPreviewTabController
   typedef std::map<TabContents*, TabContents*> PrintPreviewTabMap;
 
   // Creates a new print preview tab.
-  TabContents* CreatePrintPreviewTab(
-      TabContents* initiator_tab, int browser_window_id);
+  TabContents* CreatePrintPreviewTab(TabContents* initiator_tab);
 
   // Adds/Removes observers for notifications from |tab|.
   void AddObservers(TabContents* tab);

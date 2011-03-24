@@ -31,8 +31,8 @@ TEST_F(PrintPreviewTabControllerTest, GetOrCreatePreviewTab) {
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
-  TabContents* preview_tab = tab_controller->GetOrCreatePreviewTab(
-      initiator_tab, initiator_tab->controller().window_id().id());
+  TabContents* preview_tab =
+      tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New print preview tab is created. Current focus is on preview tab.
   EXPECT_EQ(2, browser()->tab_count());
@@ -42,8 +42,8 @@ TEST_F(PrintPreviewTabControllerTest, GetOrCreatePreviewTab) {
   initiator_tab->Activate();
 
   // Get the print preview tab for initiator tab.
-  TabContents* new_preview_tab = tab_controller->GetOrCreatePreviewTab(
-      initiator_tab, initiator_tab->controller().window_id().id());
+  TabContents* new_preview_tab =
+      tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // Preview tab already exists. Tab count remains the same.
   EXPECT_EQ(2, browser()->tab_count());
@@ -78,15 +78,15 @@ TEST_F(PrintPreviewTabControllerTest, MultiplePreviewTabs) {
   ASSERT_TRUE(tab_controller);
 
   // Create preview tab for |tab_contents_1|
-  TabContents* preview_tab_1 = tab_controller->GetOrCreatePreviewTab(
-      tab_contents_1, tab_contents_1->controller().window_id().id());
+  TabContents* preview_tab_1 =
+      tab_controller->GetOrCreatePreviewTab(tab_contents_1);
 
   EXPECT_NE(tab_contents_1, preview_tab_1);
   EXPECT_EQ(3, browser()->tab_count());
 
   // Create preview tab for |tab_contents_2|
-  TabContents* preview_tab_2 = tab_controller->GetOrCreatePreviewTab(
-      tab_contents_2, tab_contents_2->controller().window_id().id());
+  TabContents* preview_tab_2 =
+      tab_controller->GetOrCreatePreviewTab(tab_contents_2);
 
   EXPECT_NE(tab_contents_2, preview_tab_2);
   // 2 initiator tab and 2 preview tabs exist in the same browser.
@@ -108,7 +108,6 @@ TEST_F(PrintPreviewTabControllerTest, MultiplePreviewTabs) {
 
   // When we get the preview tab for |tab_contents_1|,
   // |preview_tab_1| is activated and focused.
-  tab_controller->GetOrCreatePreviewTab(
-      tab_contents_1, tab_contents_1->controller().window_id().id());
+  tab_controller->GetOrCreatePreviewTab(tab_contents_1);
   EXPECT_EQ(preview_tab_1_index, browser()->selected_index());
 }

@@ -31,8 +31,7 @@ TEST_F(PrintPreviewUIHTMLSourceTest, PrintPreviewData) {
       controller(new printing::PrintPreviewTabController());
   ASSERT_TRUE(controller);
 
-  TabContents* preview_tab = controller->GetOrCreatePreviewTab(
-      initiator_tab, initiator_tab->controller().window_id().id());
+  TabContents* preview_tab = controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);
   EXPECT_EQ(2, browser()->tab_count());

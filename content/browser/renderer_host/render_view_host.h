@@ -314,9 +314,6 @@ class RenderViewHost : public RenderWidgetHost {
   void ContextMenuClosed(
       const webkit_glue::CustomContextMenuContext& custom_context);
 
-  // Prints the node that's under the context menu.
-  void PrintNodeUnderContextMenu();
-
   // Triggers printing of the preview PDF. |job_settings| dictionary contains
   // new print job settings information.
   void PrintForPrintPreview(const DictionaryValue& job_settings);

@@ -59,6 +59,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -1632,7 +1633,13 @@ void Browser::EmailPageLocation() {
 
 void Browser::Print() {
   UserMetrics::RecordAction(UserMetricsAction("PrintPreview"), profile_);
-  GetSelectedTabContents()->PrintPreview();
+  TabContents* current_tab = GetSelectedTabContents();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePrintPreview)) {
+    printing::PrintPreviewTabController::PrintPreview(current_tab);
+  } else {
+    current_tab->PrintNow();
+  }
 }
 
 void Browser::ToggleEncodingAutoDetect() {

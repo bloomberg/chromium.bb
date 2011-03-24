@@ -80,11 +80,11 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
 }
 
 void PrintPreviewMessageHandler::OnPrintPreviewNodeUnderContextMenu() {
-  tab_contents()->PrintPreview();
+  PrintPreviewTabController::PrintPreview(tab_contents());
 }
 
 void PrintPreviewMessageHandler::OnScriptInitiatedPrintPreview() {
-  tab_contents()->PrintPreview();
+  PrintPreviewTabController::PrintPreview(tab_contents());
 }
 
 bool PrintPreviewMessageHandler::OnMessageReceived(

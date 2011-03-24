@@ -30,6 +30,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -41,6 +42,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -1291,9 +1293,16 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
 
     case IDC_PRINT:
       if (params_.media_type == WebContextMenuData::MediaTypeNone) {
-        source_tab_contents_->PrintPreview();
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnablePrintPreview)) {
+          printing::PrintPreviewTabController::PrintPreview(
+              source_tab_contents_);
+        } else {
+          source_tab_contents_->PrintNow();
+        }
       } else {
-        source_tab_contents_->render_view_host()->PrintNodeUnderContextMenu();
+        RenderViewHost* rvh = source_tab_contents_->render_view_host();
+        rvh->Send(new ViewMsg_PrintNodeUnderContextMenu(rvh->routing_id()));
       }
       break;
 

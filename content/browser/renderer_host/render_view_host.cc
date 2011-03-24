@@ -1232,10 +1232,6 @@ void RenderViewHost::ContextMenuClosed(
   Send(new ViewMsg_ContextMenuClosed(routing_id(), custom_context));
 }
 
-void RenderViewHost::PrintNodeUnderContextMenu() {
-  Send(new ViewMsg_PrintNodeUnderContextMenu(routing_id()));
-}
-
 void RenderViewHost::PrintForPrintPreview(const DictionaryValue& job_settings) {
   Send(new ViewMsg_PrintForPrintPreview(routing_id(), job_settings));
 }

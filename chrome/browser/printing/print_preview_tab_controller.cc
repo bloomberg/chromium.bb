@@ -30,8 +30,20 @@ PrintPreviewTabController* PrintPreviewTabController::GetInstance() {
   return g_browser_process->print_preview_tab_controller();
 }
 
+// static
+void PrintPreviewTabController::PrintPreview(TabContents* tab) {
+  if (tab->showing_interstitial_page())
+    return;
+
+  printing::PrintPreviewTabController* tab_controller =
+      printing::PrintPreviewTabController::GetInstance();
+  if (!tab_controller)
+    return;
+  tab_controller->GetOrCreatePreviewTab(tab);
+}
+
 TabContents* PrintPreviewTabController::GetOrCreatePreviewTab(
-    TabContents* initiator_tab, SessionID::id_type browser_window_id ) {
+    TabContents* initiator_tab) {
   DCHECK(initiator_tab);
 
   // Get the print preview tab for |initiator_tab|.
@@ -41,7 +53,7 @@ TabContents* PrintPreviewTabController::GetOrCreatePreviewTab(
     preview_tab->Activate();
     return preview_tab;
   }
-  return CreatePrintPreviewTab(initiator_tab, browser_window_id);
+  return CreatePrintPreviewTab(initiator_tab);
 }
 
 TabContents* PrintPreviewTabController::GetPrintPreviewForTab(
@@ -149,8 +161,9 @@ TabContents* PrintPreviewTabController::GetInitiatorTab(
 }
 
 TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
-    TabContents* initiator_tab, int browser_window_id) {
-  Browser* current_browser = BrowserList::FindBrowserWithID(browser_window_id);
+    TabContents* initiator_tab) {
+  Browser* current_browser = BrowserList::FindBrowserWithID(
+      initiator_tab->controller().window_id().id());
   // Add a new tab next to initiator tab.
   browser::NavigateParams params(current_browser,
                                  GURL(chrome::kChromeUIPrintURL),

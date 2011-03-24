@@ -1160,22 +1160,6 @@ void TabContents::EmailPageLocation() {
   platform_util::OpenExternal(GURL(mailto));
 }
 
-void TabContents::PrintPreview() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePrintPreview)) {
-    if (showing_interstitial_page())
-      return;
-
-    printing::PrintPreviewTabController* tab_controller =
-        printing::PrintPreviewTabController::GetInstance();
-    if (!tab_controller)
-      return;
-    tab_controller->GetOrCreatePreviewTab(this, controller().window_id().id());
-  } else {
-    PrintNow();
-  }
-}
-
 bool TabContents::PrintNow() {
   // We can't print interstitial page for now.
   if (showing_interstitial_page())
