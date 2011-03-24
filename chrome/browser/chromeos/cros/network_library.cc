@@ -869,6 +869,22 @@ void Network::SetIntegerProperty(const char* prop, int i) {
   SetValueProperty(prop, value.get());
 }
 
+void Network::ClearProperty(const char* prop) {
+  // TODO(chocobo): Need to expose async method to clear service property.
+  DCHECK(prop);
+  if (!EnsureCrosLoaded())
+    return;
+//  ClearNetworkServiceProperty(service_path_.c_str(), prop);
+}
+
+void Network::SetOrClearStringProperty(const char* prop,
+                                       const std::string& str) {
+  if (str.empty())
+    ClearProperty(prop);
+  else
+    SetStringProperty(prop, str);
+}
+
 void Network::SetValueProperty(const char* prop, Value* val) {
   DCHECK(prop);
   DCHECK(val);
@@ -1406,7 +1422,7 @@ void WifiNetwork::SetEAPMethod(EAPMethod method) {
       SetStringProperty(kEapMethodProperty, kEapMethodLEAP);
       break;
     default:
-      SetStringProperty(kEapMethodProperty, std::string());
+      ClearProperty(kEapMethodProperty);
       break;
   }
 }
@@ -1416,7 +1432,7 @@ void WifiNetwork::SetEAPPhase2Auth(EAPPhase2Auth auth) {
   bool is_peap = (eap_method_ == EAP_METHOD_PEAP);
   switch (auth) {
     case EAP_PHASE_2_AUTH_AUTO:
-      SetStringProperty(kEapPhase2AuthProperty, std::string());
+      ClearProperty(kEapPhase2AuthProperty);
       break;
     case EAP_PHASE_2_AUTH_MD5:
       SetStringProperty(kEapPhase2AuthProperty,
@@ -1442,12 +1458,12 @@ void WifiNetwork::SetEAPPhase2Auth(EAPPhase2Auth auth) {
 
 void WifiNetwork::SetEAPServerCACert(const std::string& cert_path) {
   eap_server_ca_cert_path_ = cert_path;
-  SetStringProperty(kEapCACertProperty, cert_path);
+  SetOrClearStringProperty(kEapCACertProperty, cert_path);
 }
 
 void WifiNetwork::SetEAPClientCert(const std::string& cert_path) {
   eap_client_cert_path_ = cert_path;
-  SetStringProperty(kEapClientCertProperty, cert_path);
+  SetOrClearStringProperty(kEapClientCertProperty, cert_path);
 }
 
 void WifiNetwork::SetEAPUseSystemCAs(bool use_system_cas) {
@@ -1457,17 +1473,17 @@ void WifiNetwork::SetEAPUseSystemCAs(bool use_system_cas) {
 
 void WifiNetwork::SetEAPIdentity(const std::string& identity) {
   eap_identity_ = identity;
-  SetStringProperty(kEapIdentityProperty, identity);
+  SetOrClearStringProperty(kEapIdentityProperty, identity);
 }
 
 void WifiNetwork::SetEAPAnonymousIdentity(const std::string& identity) {
   eap_anonymous_identity_ = identity;
-  SetStringProperty(kEapAnonymousIdentityProperty, identity);
+  SetOrClearStringProperty(kEapAnonymousIdentityProperty, identity);
 }
 
 void WifiNetwork::SetEAPPassphrase(const std::string& passphrase) {
   eap_passphrase_ = passphrase;
-  SetStringProperty(kEapPasswordProperty, passphrase);
+  SetOrClearStringProperty(kEapPasswordProperty, passphrase);
 }
 
 std::string WifiNetwork::GetEncryptionString() {

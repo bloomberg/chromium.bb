@@ -257,10 +257,14 @@ class Network {
   virtual bool ParseValue(int index, const Value* value);
   void ParseInfo(const DictionaryValue* info);
 
+  // Methods to asynchronously set network service properties
   virtual void SetStringProperty(const char* prop, const std::string& str);
   virtual void SetBooleanProperty(const char* prop, bool b);
   virtual void SetIntegerProperty(const char* prop, int i);
-  virtual void SetValueProperty(const char* prop, Value* val);
+  virtual void ClearProperty(const char* prop);
+  // This will clear the property if string is empty. Otherwise, it will set it.
+  virtual void SetOrClearStringProperty(const char* prop,
+                                        const std::string& str);
 
   std::string device_path_;
   std::string name_;
@@ -289,6 +293,8 @@ class Network {
   void set_connectivity_state(ConnectivityState connectivity_state) {
     connectivity_state_ = connectivity_state;
   }
+
+  virtual void SetValueProperty(const char* prop, Value* val);
 
   // Initialize the IP address field
   void InitIPAddress();
