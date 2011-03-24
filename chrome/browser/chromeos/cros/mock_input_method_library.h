@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ class MockInputMethodLibrary : public InputMethodLibrary {
   MOCK_CONST_METHOD0(current_input_method, const InputMethodDescriptor&(void));
   MOCK_CONST_METHOD0(current_ime_properties, const ImePropertyList&(void));
   MOCK_METHOD1(GetKeyboardOverlayId, std::string(const std::string&));
-  MOCK_METHOD0(StartInputMethodDaemon, void(void));
+  MOCK_METHOD0(StartInputMethodDaemon, bool(void));
   MOCK_METHOD0(StopInputMethodDaemon, void(void));
   MOCK_METHOD1(SetDeferImeStartup, void(bool));
   MOCK_METHOD1(SetEnableAutoImeShutdown, void(bool));

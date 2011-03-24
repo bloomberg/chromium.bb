@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,7 +101,9 @@ class InputMethodLibrary {
       const std::string& input_method_id) = 0;
 
   // Sets the IME state to enabled, and launches input method daemon if needed.
-  virtual void StartInputMethodDaemon() = 0;
+  // Returns true if the daemon is started. Otherwise, e.g. the daemon is
+  // already started, returns false.
+  virtual bool StartInputMethodDaemon() = 0;
 
   // Disables the IME, and kills the daemon process if they are running.
   virtual void StopInputMethodDaemon() = 0;
