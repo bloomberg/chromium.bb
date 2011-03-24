@@ -167,7 +167,7 @@ class BrowserInit {
 
     // Adds a Tab to |tabs| for each url in |urls| that doesn't already exist
     // in |tabs|.
-    void AddUniqueURLs(const std::vector<GURL> urls,
+    void AddUniqueURLs(const std::vector<GURL>& urls,
                        std::vector<Tab>* tabs);
 
     // Adds any startup infobars to the selected tab of the given browser.
