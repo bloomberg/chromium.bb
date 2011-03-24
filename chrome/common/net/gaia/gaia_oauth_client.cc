@@ -29,7 +29,8 @@ class GaiaOAuthClient::Core
        URLRequestContextGetter* request_context_getter)
            : gaia_url_(gaia_url),
              num_retries_(0),
-             request_context_getter_(request_context_getter) { }
+             request_context_getter_(request_context_getter),
+             delegate_(NULL) {}
 
   virtual ~Core() { }
 
