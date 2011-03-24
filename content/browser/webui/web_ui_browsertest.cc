@@ -36,6 +36,8 @@ void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
   FilePath resources_pack_path;
   PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
   ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
+
+  AddLibrary(kWebUILibraryJS);
 }
 
 WebUIMessageHandler* WebUIBrowserTest::GetMockMessageHandler() {
@@ -46,13 +48,21 @@ void WebUIBrowserTest::BuildJavaScriptTest(const FilePath& src_path,
                                            std::string* content) {
   ASSERT_TRUE(content != NULL);
   std::string library_content, src_content;
-  ASSERT_TRUE(file_util::ReadFileToString(
-      test_data_directory_.Append(FilePath(kWebUILibraryJS)),
-          &library_content));
+
+  std::vector<FilePath>::iterator user_libraries_iterator;
+  for (user_libraries_iterator = user_libraries.begin();
+       user_libraries_iterator != user_libraries.end();
+       ++user_libraries_iterator) {
+    ASSERT_TRUE(file_util::ReadFileToString(
+        test_data_directory_.Append(*user_libraries_iterator),
+            &library_content));
+    content->append(library_content);
+    content->append(";\n");
+  }
+
   ASSERT_TRUE(file_util::ReadFileToString(
       test_data_directory_.Append(src_path), &src_content));
 
-  content->append(library_content);
   content->append(";\n");
   content->append(src_content);
 }
@@ -66,6 +76,10 @@ void WebUIBrowserTest::SetupHandlers() {
 
   if (GetMockMessageHandler())
     GetMockMessageHandler()->Attach(web_ui_instance);
+}
+
+void WebUIBrowserTest::AddLibrary(const FilePath::CharType* library_path) {
+  user_libraries.push_back(FilePath(library_path));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBrowserTest, TestSamplePass) {

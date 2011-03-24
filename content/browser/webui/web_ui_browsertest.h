@@ -24,6 +24,9 @@ class WebUIBrowserTest : public InProcessBrowserTest {
  public:
   virtual ~WebUIBrowserTest();
 
+  // Add a custom helper JS library for your test.
+  void AddLibrary(const FilePath::CharType* library_path);
+
   bool RunWebUITest(const FilePath::CharType* src_path);
 
  protected:
@@ -53,6 +56,9 @@ class WebUIBrowserTest : public InProcessBrowserTest {
 
   // Location of test data (currently test/data/webui).
   FilePath test_data_directory_;
+
+  // User added libraries
+  std::vector<FilePath> user_libraries;
 };
 
 #endif  // CONTENT_BROWSER_WEBUI_WEB_UI_BROWSERTEST_H_
