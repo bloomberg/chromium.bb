@@ -296,12 +296,15 @@ typedef struct _drmTextureRegion {
 typedef enum {
     DRM_VBLANK_ABSOLUTE = 0x0,	/**< Wait for specific vblank sequence number */
     DRM_VBLANK_RELATIVE = 0x1,	/**< Wait for given number of vblanks */
+    /* bits 1-6 are reserved for high crtcs */
+    DRM_VBLANK_HIGH_CRTC_MASK = 0x0000003e,
     DRM_VBLANK_EVENT = 0x4000000,	/**< Send event instead of blocking */
     DRM_VBLANK_FLIP = 0x8000000,	/**< Scheduled buffer swap should flip */
     DRM_VBLANK_NEXTONMISS = 0x10000000,	/**< If missed, wait for next vblank */
     DRM_VBLANK_SECONDARY = 0x20000000,	/**< Secondary display controller */
     DRM_VBLANK_SIGNAL   = 0x40000000	/* Send signal instead of blocking */
 } drmVBlankSeqType;
+#define DRM_VBLANK_HIGH_CRTC_SHIFT 1
 
 typedef struct _drmVBlankReq {
 	drmVBlankSeqType type;

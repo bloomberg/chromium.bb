@@ -755,6 +755,7 @@ struct drm_event_vblank {
 };
 
 #define DRM_CAP_DUMB_BUFFER 0x1
+#define DRM_CAP_VBLANK_HIGH_CRTC   0x2
 
 /* typedef area */
 typedef struct drm_clip_rect drm_clip_rect_t;
