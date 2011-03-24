@@ -31,6 +31,15 @@
 #include "net/base/data_url.h"
 #include "webkit/glue/password_form.h"
 
+static const char kItemOpen[] = "<DT><A";
+static const char kItemClose[] = "</A>";
+static const char kFeedURLAttribute[] = "FEEDURL";
+static const char kHrefAttribute[] = "HREF";
+static const char kIconAttribute[] = "ICON";
+static const char kShortcutURLAttribute[] = "SHORTCUTURL";
+static const char kAddDateAttribute[] = "ADD_DATE";
+static const char kPostDataAttribute[] = "POST_DATA";
+
 Firefox2Importer::Firefox2Importer() : parsing_bookmarks_html_file_(false) {}
 
 Firefox2Importer::~Firefox2Importer() {}
@@ -456,15 +465,6 @@ bool Firefox2Importer::ParseBookmarkFromLine(const std::string& line,
                                              std::wstring* shortcut,
                                              base::Time* add_date,
                                              std::wstring* post_data) {
-  const char kItemOpen[] = "<DT><A";
-  const char kItemClose[] = "</A>";
-  const char kFeedURLAttribute[] = "FEEDURL";
-  const char kHrefAttribute[] = "HREF";
-  const char kIconAttribute[] = "ICON";
-  const char kShortcutURLAttribute[] = "SHORTCUTURL";
-  const char kAddDateAttribute[] = "ADD_DATE";
-  const char kPostDataAttribute[] = "POST_DATA";
-
   title->clear();
   *url = GURL();
   *favicon = GURL();
