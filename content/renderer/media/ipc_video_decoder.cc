@@ -14,7 +14,6 @@
 #include "media/base/media_format.h"
 #include "media/base/video_frame.h"
 #include "media/ffmpeg/ffmpeg_common.h"
-#include "media/filters/ffmpeg_interfaces.h"
 #include "media/video/video_decode_engine.h"
 
 IpcVideoDecoder::IpcVideoDecoder(MessageLoop* message_loop,
@@ -41,15 +40,12 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
   // We require bit stream converter for hardware decoder.
   demuxer_stream->EnableBitstreamConverter();
 
-  // Get the AVStream by querying for the provider interface.
-  media::AVStreamProvider* av_stream_provider;
-  if (!demuxer_stream->QueryInterface(&av_stream_provider)) {
+  AVStream* av_stream = demuxer_stream->GetAVStream();
+  if (!av_stream) {
     media::VideoCodecInfo info = {0};
     OnInitializeComplete(info);
     return;
   }
-
-  AVStream* av_stream = av_stream_provider->GetAVStream();
 
   int width = av_stream->codec->coded_width;
   int height = av_stream->codec->coded_height;

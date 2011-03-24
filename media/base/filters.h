@@ -33,6 +33,8 @@
 #include "media/base/media_format.h"
 #include "media/base/video_frame.h"
 
+struct AVStream;
+
 namespace media {
 
 class Buffer;
@@ -144,16 +146,8 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
   // TODO(scherkus): switch Read() callback to scoped_refptr<>.
   virtual void Read(Callback1<Buffer*>::Type* read_callback) = 0;
 
-  // Given a class that supports the |Interface| and a related static method
-  // interface_id(), which returns a const char*, this method returns true if
-  // the class returns an interface pointer and assigns the pointer to
-  // |interface_out|.  Otherwise this method returns false.
-  template <class Interface>
-  bool QueryInterface(Interface** interface_out) {
-    void* i = QueryInterface(Interface::interface_id());
-    *interface_out = reinterpret_cast<Interface*>(i);
-    return (NULL != i);
-  };
+  // Returns an |AVStream*| if supported, or NULL.
+  virtual AVStream* GetAVStream();
 
   // Returns the type of stream.
   virtual Type type() = 0;
@@ -164,14 +158,6 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
   virtual void EnableBitstreamConverter() = 0;
 
  protected:
-  // Optional method that is implemented by filters that support extended
-  // interfaces.  The filter should return a pointer to the interface
-  // associated with the |interface_id| string if they support it, otherwise
-  // return NULL to indicate the interface is unknown.  The derived filter
-  // should NOT AddRef() the interface.  The DemuxerStream::QueryInterface()
-  // public template function will assign the interface to a scoped_refptr<>.
-  virtual void* QueryInterface(const char* interface_id);
-
   friend class base::RefCountedThreadSafe<DemuxerStream>;
   virtual ~DemuxerStream();
 };

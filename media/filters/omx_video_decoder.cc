@@ -10,7 +10,6 @@
 #include "media/base/filter_host.h"
 #include "media/base/limits.h"
 #include "media/ffmpeg/ffmpeg_common.h"
-#include "media/filters/ffmpeg_interfaces.h"
 #include "media/video/omx_video_decode_engine.h"
 
 namespace media {
@@ -53,14 +52,12 @@ void OmxVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   // We require bit stream converter for openmax hardware decoder.
   demuxer_stream->EnableBitstreamConverter();
 
-  // Get the AVStream by querying for the provider interface.
-  AVStreamProvider* av_stream_provider;
-  if (!demuxer_stream->QueryInterface(&av_stream_provider)) {
+  AVStream* av_stream = demuxer_stream->GetAVStream();
+  if (!av_stream) {
     VideoCodecInfo info = {0};
     OnInitializeComplete(info);
     return;
   }
-  AVStream* av_stream = av_stream_provider->GetAVStream();
 
   int width = av_stream->codec->coded_width;
   int height = av_stream->codec->coded_height;

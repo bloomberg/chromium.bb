@@ -66,7 +66,7 @@ void Filter::Seek(base::TimeDelta time, FilterCallback* callback) {
 void Filter::OnAudioRendererDisabled() {
 }
 
-void* DemuxerStream::QueryInterface(const char* interface_id) {
+AVStream* DemuxerStream::GetAVStream() {
   return NULL;
 }
 
