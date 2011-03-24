@@ -342,6 +342,7 @@ void MessageChannel::PostMessageToNative(PP_Var message_data) {
 }
 
 MessageChannel::~MessageChannel() {
+  WebBindings::releaseObject(np_object_);
   WebBindings::releaseVariantValue(&onmessage_invoker_);
 }
 
