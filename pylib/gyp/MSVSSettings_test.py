@@ -554,17 +554,17 @@ class TestSequenceFunctions(unittest.TestCase):
         'Warning: unrecognized value "MachineX86i" for Lib/TargetMachine',
         'Warning: unrecognized value "fal" for Mt/EnableDPIAwareness'])
 
-  def test_ConvertToMsBuildSettings_empty(self):
+  def test_ConvertToMSBuildSettings_empty(self):
     """ Tests an empty conversion. """
     msvs_settings = {}
     expected_msbuild_settings = {}
-    actual_msbuild_settings = MSVSSettings.ConvertToMsBuildSettings(
+    actual_msbuild_settings = MSVSSettings.ConvertToMSBuildSettings(
         msvs_settings,
         self.stderr)
     self.assertEqual(expected_msbuild_settings, actual_msbuild_settings)
     self._ExpectedWarnings([])
 
-  def test_ConvertToMsBuildSettings_minimal(self):
+  def test_ConvertToMSBuildSettings_minimal(self):
     """ Tests a minimal conversion. """
     msvs_settings = {
         'VCCLCompilerTool': {
@@ -590,13 +590,13 @@ class TestSequenceFunctions(unittest.TestCase):
             'DataExecutionPrevention': 'true',
             },
         }
-    actual_msbuild_settings = MSVSSettings.ConvertToMsBuildSettings(
+    actual_msbuild_settings = MSVSSettings.ConvertToMSBuildSettings(
         msvs_settings,
         self.stderr)
     self.assertEqual(expected_msbuild_settings, actual_msbuild_settings)
     self._ExpectedWarnings([])
 
-  def test_ConvertToMsBuildSettings_warnings(self):
+  def test_ConvertToMSBuildSettings_warnings(self):
     """ Tests conversion that generates warnings. """
     msvs_settings = {
         'VCCLCompilerTool': {
@@ -624,7 +624,7 @@ class TestSequenceFunctions(unittest.TestCase):
         'ResourceCompile': {
             # Custom
             'Culture': '0x03eb'}}
-    actual_msbuild_settings = MSVSSettings.ConvertToMsBuildSettings(
+    actual_msbuild_settings = MSVSSettings.ConvertToMSBuildSettings(
         msvs_settings,
         self.stderr)
     self.assertEqual(expected_msbuild_settings, actual_msbuild_settings)
@@ -648,7 +648,7 @@ class TestSequenceFunctions(unittest.TestCase):
             'FixedBaseAddress while converting to MSBuild.',
         ])
 
-  def test_ConvertToMsBuildSettings_full_synthetic(self):
+  def test_ConvertToMSBuildSettings_full_synthetic(self):
     """ Tests conversion of all the MsBuild settings. """
     msvs_settings = {
         'VCCLCompilerTool': {
@@ -1077,13 +1077,13 @@ class TestSequenceFunctions(unittest.TestCase):
             'GenerateManifest': 'true',
             'IgnoreImportLibrary': 'true',
             'LinkIncremental': 'false'}}
-    actual_msbuild_settings = MSVSSettings.ConvertToMsBuildSettings(
+    actual_msbuild_settings = MSVSSettings.ConvertToMSBuildSettings(
         msvs_settings,
         self.stderr)
     self.assertEqual(expected_msbuild_settings, actual_msbuild_settings)
     self._ExpectedWarnings([])
 
-  def test_ConvertToMsBuildSettings_actual(self):
+  def test_ConvertToMSBuildSettings_actual(self):
     """ Tests the conversion of an actual project.
 
     A VS2008 project with most of the options defined was created through the
@@ -1468,7 +1468,7 @@ class TestSequenceFunctions(unittest.TestCase):
             'ResourceOutputFileName':
                 '$(IntDir)$(TargetFileName).embed.manifest.resfdsf'}
         }
-    actual_msbuild_settings = MSVSSettings.ConvertToMsBuildSettings(
+    actual_msbuild_settings = MSVSSettings.ConvertToMSBuildSettings(
         msvs_settings,
         self.stderr)
     self.assertEqual(expected_msbuild_settings, actual_msbuild_settings)

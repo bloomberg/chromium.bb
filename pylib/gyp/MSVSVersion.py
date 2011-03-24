@@ -159,8 +159,7 @@ def _DetectVisualStudioVersions():
     if _RegistryKeyExists(key32) or _RegistryKeyExists(key64):
       # Add this one.
       # TODO(jeanluc) This does not check for an express version.
-      # TODO(jeanluc) Uncomment this line when ready to support VS2010:
-      # versions.append(_CreateVersion(version_to_year[version]))
+      versions.append(_CreateVersion(version_to_year[version]))
       continue
     # Get the install dir for this version.
     key = r'HKLM\Software\Microsoft\VisualStudio\%s' % version

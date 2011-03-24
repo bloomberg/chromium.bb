@@ -7,7 +7,7 @@
 """ Code to validate and convert settings of the Microsoft build tools.
 
 This file contains code to validate and convert settings of the Microsoft
-build tools.  The function ConvertToMsBuildSettings(), ValidateMSVSSettings(),
+build tools.  The function ConvertToMSBuildSettings(), ValidateMSVSSettings(),
 and ValidateMSBuildSettings() are the entry points.
 
 This file was created by comparing the projects created by Visual Studio 2008
@@ -50,7 +50,7 @@ def _AddTool(names):
   _msbuild_name_of_tool[msvs_name] = msbuild_name
 
 
-def _GetMsBuildToolSettings(msbuild_settings, tool):
+def _GetMSBuildToolSettings(msbuild_settings, tool):
   """ Returns an MSBuild tool dictionary.  Creates it if needed. """
   tool_name = tool['msbuild']
   return _GetOrCreateSubDictionary(msbuild_settings, tool_name)
@@ -89,7 +89,7 @@ class _String(_Type):
       raise ValueError
   def ConvertToMSBuild(self, value):
     # Convert the macros
-    return _ConvertVCMacrosToMsBuild(value)
+    return ConvertVCMacrosToMSBuild(value)
 
 
 class _StringList(_Type):
@@ -103,9 +103,9 @@ class _StringList(_Type):
   def ConvertToMSBuild(self, value):
     # Convert the macros
     if isinstance(value, list):
-      return [_ConvertVCMacrosToMsBuild(i) for i in value]
+      return [ConvertVCMacrosToMSBuild(i) for i in value]
     else:
-      return _ConvertVCMacrosToMsBuild(value)
+      return ConvertVCMacrosToMSBuild(value)
 
 
 class _Boolean(_Type):
@@ -209,7 +209,7 @@ def _Renamed(tool, msvs_name, msbuild_name, type):
     type: the type of this setting.
   """
   def _Translate(value, msbuild_settings):
-    msbuild_tool_settings = _GetMsBuildToolSettings(msbuild_settings, tool)
+    msbuild_tool_settings = _GetMSBuildToolSettings(msbuild_settings, tool)
     msbuild_tool_settings[msbuild_name] = type.ConvertToMSBuild(value)
   msvs_tool_name = tool['msvs']
   msbuild_tool_name = tool['msbuild']
@@ -282,7 +282,7 @@ def _ConvertedToAdditionalOption(tool, msvs_name, flag):
   """
   def _Translate(value, msbuild_settings):
     if value == 'true':
-      tool_settings = _GetMsBuildToolSettings(msbuild_settings, tool)
+      tool_settings = _GetMSBuildToolSettings(msbuild_settings, tool)
       if 'AdditionalOptions' in tool_settings:
         new_flags = "%s %s" % (tool_settings['AdditionalOptions'], flag)
       else:
@@ -295,7 +295,7 @@ def _ConvertedToAdditionalOption(tool, msvs_name, flag):
 
 def _CustomGeneratePreprocessedFile(tool, msvs_name):
   def _Translate(value, msbuild_settings):
-      tool_settings = _GetMsBuildToolSettings(msbuild_settings, tool)
+      tool_settings = _GetMSBuildToolSettings(msbuild_settings, tool)
       if value == '0':
         tool_settings['PreprocessToFile'] = 'false'
         tool_settings['PreprocessSuppressLineNumbers'] = 'false'
@@ -318,7 +318,11 @@ def _CustomGeneratePreprocessedFile(tool, msvs_name):
   _msvs_to_msbuild_converters[msvs_tool_name][msvs_name] = _Translate
 
 
-def _ConvertVCMacrosToMsBuild(s):
+def ConvertVCMacrosToMSBuild(s):
+  """Convert the the MSVS macros found in the string to the MSBuild equivalent.
+
+  This list is probably not exhaustive.  Add as needed.
+  """
   if (s.find('$') >= 0):
     s = s.replace('$(ConfigurationName)', '$(Configuration)')
     s = s.replace('$(InputDir)', '%(RootDir)%(Directory)')
@@ -337,7 +341,7 @@ def _ConvertVCMacrosToMsBuild(s):
   return s
 
 
-def ConvertToMsBuildSettings(msvs_settings, stderr=sys.stderr):
+def ConvertToMSBuildSettings(msvs_settings, stderr=sys.stderr):
   """ Converts MSVS settings (VS2008 and earlier) to MSBuild settings (VS2010+).
 
   Args:
