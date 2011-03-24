@@ -35,14 +35,7 @@ class OptionsUITest : public UITest {
   }
 };
 
-// http://crbug.com/77252
-#if !defined(NDEBUG)
-#define MAYBE_LoadOptionsByURL DISABLED_LoadOptionsByURL
-#else
-#define MAYBE_LoadOptionsByURL
-#endif
-
-TEST_F(OptionsUITest, MAYBE_LoadOptionsByURL) {
+TEST_F(OptionsUITest, LoadOptionsByURL) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
