@@ -162,40 +162,50 @@ static nc_thread_memory_block_t* nc_allocate_memory_block_mu(
      * as they are added to the queue, therefore there is no need to check the
      * next queue entries if the first one is still in use.
      */
-    if (0 == node->is_used) {
+    if (0 == node->is_used && node->size >= required_size) {
+      /* This will only re-use the first node possibly, and could be
+       * improved to provide the stack with a best-fit algorithm if needed.
+       * TODO: we should scan all nodes to see if there is one that fits
+       *   before allocating another.
+       *   http://code.google.com/p/nativeclient/issues/detail?id=1569
+       */
+      int size = node->size;
       STAILQ_REMOVE_HEAD(head, entries);
       --__nc_memory_block_counter[type];
-      while (__nc_memory_block_counter[type] > __nc_kMaxCachedMemoryBlocks) {
-        /*
-         * We have too many blocks in the queue - try to release some.
-         * The maximum number of memory blocks to keep in the queue
-         * is almost arbitrary and can be tuned.
-         * The main limitation is that if we keep too many
-         * blocks in the queue, the NaCl app will run out of memory,
-         * since the default thread stack size is 512K.
-         * TODO(gregoryd): we might give up reusing stack entries once we
-         * support variable stack size.
-         */
-        nc_thread_memory_block_t *tmp = STAILQ_FIRST(head);
-        if (0 == tmp->is_used) {
-          STAILQ_REMOVE_HEAD(head, entries);
-          --__nc_memory_block_counter[type];
-          free(tmp);
-        } else {
-          /*
-           * Stop once we find a block that is still in use,
-           * since probably there is no point to continue
-           */
-          break;
-        }
-      }
+
       memset(node, 0,sizeof(*node));
-      node->size = required_size;
+      node->size = size;
       node->is_used = 1;
       return node;
     }
+
+    while (__nc_memory_block_counter[type] > __nc_kMaxCachedMemoryBlocks) {
+      /*
+       * We have too many blocks in the queue - try to release some.
+       * The maximum number of memory blocks to keep in the queue
+       * is almost arbitrary and can be tuned.
+       * The main limitation is that if we keep too many
+       * blocks in the queue, the NaCl app will run out of memory,
+       * since the default thread stack size is 512K.
+       * TODO(gregoryd): we might give up reusing stack entries once we
+       * support variable stack size.
+       */
+      nc_thread_memory_block_t *tmp = STAILQ_FIRST(head);
+      if (0 == tmp->is_used) {
+        STAILQ_REMOVE_HEAD(head, entries);
+        --__nc_memory_block_counter[type];
+        free(tmp);
+      } else {
+        /*
+         * Stop once we find a block that is still in use,
+         * since probably there is no point to continue
+         */
+        break;
+      }
+    }
+
   }
-  /* no available blocks of the required type - allocate one */
+  /* no available blocks of the required type/size - allocate one */
   node = malloc(MEMORY_BLOCK_ALLOCATION_SIZE(required_size));
   if (NULL != node) {
     memset(node, 0, sizeof(*node));

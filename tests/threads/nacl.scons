@@ -86,3 +86,15 @@ node = env.CommandSelLdrTestNacl(
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'cond_wait_test',
                        is_broken=is_broken)
+
+env.ComponentProgram('thread_stack_test.nexe',
+                     'thread_stack_test.c',
+                     EXTRA_LIBS=['pthread'],
+                     )
+node = env.CommandSelLdrTestNacl(
+    'thread_stack_test.out',
+    command=[env.File('thread_stack_test.nexe')],
+    size='small',
+    )
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_stack_test',
+                       is_broken=is_broken)
