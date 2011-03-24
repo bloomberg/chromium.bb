@@ -386,6 +386,7 @@ void InputMethodMenu::PreferenceUpdateNeeded(
       // Sometimes (e.g. initial boot) |previous_input_method.id| is empty.
       previous_input_method_pref_.SetValue(previous_input_method.id);
       current_input_method_pref_.SetValue(current_input_method.id);
+      pref_service_->ScheduleSavePersistentPrefs();
     }
   } else if (screen_mode_ == StatusAreaHost::kLoginMode) {
     if (g_browser_process && g_browser_process->local_state()) {
