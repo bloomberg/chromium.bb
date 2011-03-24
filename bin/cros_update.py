@@ -43,7 +43,7 @@ class Updater(object):
   def _PrintDependencies(self):
     argv = ['--quiet', '--emptytree']
     argv.append('--board=%s' % self._options.board)
-    if not self._options.deps:
+    if self._options.rdeps:
       argv.append('--root-deps=rdeps')
     argv.extend(self._args)
 
@@ -70,12 +70,12 @@ def main():
   parser = optparse.OptionParser(usage=usage)
   parser.add_option('--board', dest='board', type='string', action='store',
                     default=None, help="Target board [default: '%default']")
-  parser.add_option('--deps', dest='deps', action='store_true',
-                    default=False,
-                    help="Use build time dependencies rather than runtime")
   parser.add_option('--no-full-path', dest='full_path', action='store_false',
                     default=True,
                     help="Don't print the full path to the package")
+  parser.add_option('--rdeps', dest='rdeps', action='store_true',
+                    default=False,
+                    help="Use runtime dependencies only")
 
   (options, args) = parser.parse_args()
 
