@@ -443,34 +443,41 @@ bool ShellUtil::AdminNeededForRegistryCleanup(BrowserDistribution* dist,
 bool ShellUtil::CreateChromeDesktopShortcut(BrowserDistribution* dist,
                                             const std::wstring& chrome_exe,
                                             const std::wstring& description,
-                                            int shell_change, bool alternate,
+                                            ShellChange shell_change,
+                                            bool alternate,
                                             bool create_new) {
   std::wstring shortcut_name;
   if (!ShellUtil::GetChromeShortcutName(dist, &shortcut_name, alternate))
     return false;
 
-  bool ret = true;
-  if (shell_change & ShellUtil::CURRENT_USER) {
-    std::wstring shortcut_path;
-    if (ShellUtil::GetDesktopPath(false, &shortcut_path)) {
-      file_util::AppendToPath(&shortcut_path, shortcut_name);
-      ret = ShellUtil::UpdateChromeShortcut(dist, chrome_exe, shortcut_path,
-                                            description, create_new);
-    } else {
-      ret = false;
+  bool ret = false;
+  if (shell_change == ShellUtil::CURRENT_USER) {
+    FilePath shortcut_path;
+    // We do not want to create a desktop shortcut to Chrome in the current
+    // user's desktop folder if there is already one in the "All Users"
+    // desktop folder.
+    bool got_system_desktop = ShellUtil::GetDesktopPath(true, &shortcut_path);
+    FilePath shortcut = shortcut_path.Append(shortcut_name);
+    if (!got_system_desktop || !file_util::PathExists(shortcut_path)) {
+      // Either we couldn't query the "All Users" Desktop folder or there's
+      // nothing in it, so let's continue.
+      if (ShellUtil::GetDesktopPath(false, &shortcut_path)) {
+        shortcut = shortcut_path.Append(shortcut_name);
+        ret = ShellUtil::UpdateChromeShortcut(dist, chrome_exe,
+                                              shortcut.value(),
+                                              description, create_new);
+      }
     }
-  }
-  if (shell_change & ShellUtil::SYSTEM_LEVEL) {
-    std::wstring shortcut_path;
+  } else if (shell_change == ShellUtil::SYSTEM_LEVEL) {
+    FilePath shortcut_path;
     if (ShellUtil::GetDesktopPath(true, &shortcut_path)) {
-      file_util::AppendToPath(&shortcut_path, shortcut_name);
-      // Note we need to call the create operation and then AND the result
-      // with the create operation of user level shortcut.
-      ret = ShellUtil::UpdateChromeShortcut(dist, chrome_exe, shortcut_path,
-                                            description, create_new) && ret;
-    } else {
-      ret = false;
+      FilePath shortcut = shortcut_path.Append(shortcut_name);
+      ret = ShellUtil::UpdateChromeShortcut(dist, chrome_exe,
+                                            shortcut.value(),
+                                            description, create_new);
     }
+  } else {
+    NOTREACHED();
   }
   return ret;
 }
@@ -532,13 +539,13 @@ bool ShellUtil::GetChromeShortcutName(BrowserDistribution* dist,
   return true;
 }
 
-bool ShellUtil::GetDesktopPath(bool system_level, std::wstring* path) {
+bool ShellUtil::GetDesktopPath(bool system_level, FilePath* path) {
   wchar_t desktop[MAX_PATH];
   int dir = system_level ? CSIDL_COMMON_DESKTOPDIRECTORY :
                            CSIDL_DESKTOPDIRECTORY;
   if (FAILED(SHGetFolderPath(NULL, dir, NULL, SHGFP_TYPE_CURRENT, desktop)))
     return false;
-  *path = desktop;
+  *path = FilePath(desktop);
   return true;
 }
 
@@ -728,20 +735,20 @@ bool ShellUtil::RemoveChromeDesktopShortcut(BrowserDistribution* dist,
 
   bool ret = true;
   if (shell_change & ShellUtil::CURRENT_USER) {
-    std::wstring shortcut_path;
+    FilePath shortcut_path;
     if (ShellUtil::GetDesktopPath(false, &shortcut_path)) {
-      file_util::AppendToPath(&shortcut_path, shortcut_name);
-      ret = file_util::Delete(shortcut_path, false);
+      FilePath shortcut = shortcut_path.Append(shortcut_name);
+      ret = file_util::Delete(shortcut, false);
     } else {
       ret = false;
     }
   }
 
   if (shell_change & ShellUtil::SYSTEM_LEVEL) {
-    std::wstring shortcut_path;
+    FilePath shortcut_path;
     if (ShellUtil::GetDesktopPath(true, &shortcut_path)) {
-      file_util::AppendToPath(&shortcut_path, shortcut_name);
-      ret = file_util::Delete(shortcut_path, false) && ret;
+      FilePath shortcut = shortcut_path.Append(shortcut_name);
+      ret = file_util::Delete(shortcut, false) && ret;
     } else {
       ret = false;
     }

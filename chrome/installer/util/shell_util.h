@@ -18,6 +18,7 @@
 #include "chrome/installer/util/work_item_list.h"
 
 class BrowserDistribution;
+class FilePath;
 
 // This is a utility class that provides common shell integration methods
 // that can be used by installer as well as Chrome.
@@ -87,10 +88,12 @@ class ShellUtil {
   // If alternate is true, an alternate text for the shortcut is used.
   // create_new: If false, will only update the shortcut. If true, the function
   //             will create a new shortcut if it doesn't exist already.
+  // Returns true iff the method causes a shortcut to be created / updated.
   static bool CreateChromeDesktopShortcut(BrowserDistribution* dist,
                                           const std::wstring& chrome_exe,
                                           const std::wstring& description,
-                                          int shell_change, bool alternate,
+                                          ShellChange shell_change,
+                                          bool alternate,
                                           bool create_new);
 
   // Create Chrome shortcut on Quick Launch Bar.
@@ -128,7 +131,7 @@ class ShellUtil {
   // Gets the desktop path for the current user or all users (if system_level
   // is true) and returns it in 'path' argument. Return true if successful,
   // otherwise returns false.
-  static bool GetDesktopPath(bool system_level, std::wstring* path);
+  static bool GetDesktopPath(bool system_level, FilePath* path);
 
   // Gets the Quick Launch shortcuts path for the current user and
   // returns it in 'path' argument. Return true if successful, otherwise
