@@ -642,7 +642,7 @@ ProxyFormController.prototype = {
       this.config_.regular = this.generateProxyConfig_();
       div.classList.add('incognito');
       this.recalcFormValues_(this.config_.incognito);
-      button.innerText = 'Configure cognito window settings.';
+      button.innerText = 'Configure regular window settings.';
     }
 
     // Cancel the button click.
