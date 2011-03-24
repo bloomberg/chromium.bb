@@ -15,6 +15,10 @@
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "gpu/common/gpu_trace_event.h"
 
+#if defined(OS_WIN)
+#include "base/win/wrapped_window_proc.h"
+#endif
+
 using gpu::Buffer;
 
 #if defined(OS_WIN)
@@ -95,7 +99,7 @@ bool GpuCommandBufferStub::CreateCompositorWindow() {
     WNDCLASSEX wcex;
     wcex.cbSize         = sizeof(wcex);
     wcex.style          = 0;
-    wcex.lpfnWndProc    = CompositorWindowProc;
+    wcex.lpfnWndProc    = base::win::WrappedWindowProc<CompositorWindowProc>;
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = GetModuleHandle(NULL);
