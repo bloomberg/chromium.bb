@@ -3792,12 +3792,6 @@
    fun:_ZN20GpuProcessHostUIShim14GetForRendererEi
 }
 {
-   bug_73830
-   Memcheck:Leak
-   ...
-   fun:_ZN20GpuProcessHostUIShim12OnLogMessageEiRKSsS1_
-}
-{
    bug_73844
    Memcheck:Leak
    ...
