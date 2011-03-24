@@ -1023,7 +1023,7 @@ void BrowserWindowGtk::HandleKeyboardEvent(
 }
 
 void BrowserWindowGtk::ShowCreateWebAppShortcutsDialog(
-    TabContents* tab_contents) {
+    TabContentsWrapper* tab_contents) {
   CreateWebApplicationShortcutsDialogGtk::Show(window_, tab_contents);
 }
 

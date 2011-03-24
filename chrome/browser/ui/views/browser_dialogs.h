@@ -25,6 +25,7 @@ class GURL;
 class InfoBubbleDelegate;
 class Profile;
 class TabContents;
+class TabContentsWrapper;
 class TemplateURL;
 
 namespace gfx {
@@ -87,7 +88,7 @@ void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
 
 // Shows the create web app shortcut dialog box.
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
-                                     TabContents* tab_contents);
+                                     TabContentsWrapper* tab_contents);
 
 // Shows the create chrome app shortcut dialog box.
 void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,

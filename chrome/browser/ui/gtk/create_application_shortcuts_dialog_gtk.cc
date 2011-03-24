@@ -10,7 +10,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/browser/browser_thread.h"
@@ -33,8 +34,8 @@ const int kDescriptionLabelHeightLines = 3;
 }  // namespace
 
 // static
-void CreateWebApplicationShortcutsDialogGtk::Show(GtkWindow* parent,
-                                                  TabContents* tab_contents) {
+void CreateWebApplicationShortcutsDialogGtk::Show(
+    GtkWindow* parent, TabContentsWrapper* tab_contents) {
   new CreateWebApplicationShortcutsDialogGtk(parent, tab_contents);
 }
 
@@ -271,7 +272,7 @@ void CreateApplicationShortcutsDialogGtk::OnToggleCheckbox(GtkWidget* sender) {
 
 CreateWebApplicationShortcutsDialogGtk::CreateWebApplicationShortcutsDialogGtk(
     GtkWindow* parent,
-    TabContents* tab_contents)
+    TabContentsWrapper* tab_contents)
   : CreateApplicationShortcutsDialogGtk(parent),
     tab_contents_(tab_contents) {
 
@@ -283,8 +284,9 @@ CreateWebApplicationShortcutsDialogGtk::CreateWebApplicationShortcutsDialogGtk(
 }
 
 void CreateWebApplicationShortcutsDialogGtk::OnCreatedShortcut() {
-  if (tab_contents_->delegate())
-    tab_contents_->delegate()->ConvertContentsToApplication(tab_contents_);
+  if (tab_contents_->tab_contents()->delegate())
+    tab_contents_->tab_contents()->delegate()->ConvertContentsToApplication(
+        tab_contents_->tab_contents());
 }
 
 CreateChromeApplicationShortcutsDialogGtk::

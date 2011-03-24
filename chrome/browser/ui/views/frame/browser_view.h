@@ -294,7 +294,7 @@ class BrowserView : public BrowserBubbleHost,
                                       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)
       OVERRIDE;
-  virtual void ShowCreateWebAppShortcutsDialog(TabContents* tab_contents)
+  virtual void ShowCreateWebAppShortcutsDialog(TabContentsWrapper* tab_contents)
       OVERRIDE;
   virtual void ShowCreateChromeAppShortcutsDialog(
       Profile*, const Extension* app) OVERRIDE;

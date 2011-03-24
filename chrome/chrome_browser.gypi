@@ -3087,6 +3087,8 @@
         'browser/ui/views/window.h',
         'browser/ui/views/wrench_menu.cc',
         'browser/ui/views/wrench_menu.h',
+        'browser/ui/web_applications/web_app_ui.cc',
+        'browser/ui/web_applications/web_app_ui.h',
         'browser/ui/webui/app_launcher_handler.cc',
         'browser/ui/webui/app_launcher_handler.h',
         'browser/ui/webui/bookmarks_ui.cc',

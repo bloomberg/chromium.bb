@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ class Extension;
 class MessageLoop;
 class Profile;
 class TabContents;
+class TabContentsWrapper;
 
 // CreateShortcutViewCommon implements a dialog that asks user where to create
 // the shortcut for given web app.  There are two variants of this dialog:
@@ -84,7 +85,7 @@ class CreateApplicationShortcutView : public views::View,
 // Create an application shortcut pointing to a URL.
 class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView {
  public:
-  explicit CreateUrlApplicationShortcutView(TabContents* tab_contents);
+  explicit CreateUrlApplicationShortcutView(TabContentsWrapper* tab_contents);
   virtual ~CreateUrlApplicationShortcutView();
 
   virtual bool Accept();
@@ -98,7 +99,7 @@ class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView {
   void OnIconDownloaded(bool errored, const SkBitmap& image);
 
   // The tab whose URL is being turned into an app.
-  TabContents* tab_contents_;
+  TabContentsWrapper* tab_contents_;
 
   // Pending app icon download tracked by us.
   class IconDownloadCallbackFunctor;

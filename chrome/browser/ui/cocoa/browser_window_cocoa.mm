@@ -516,7 +516,7 @@ bool BrowserWindowCocoa::HandleKeyboardEventInternal(NSEvent* event) {
 }
 
 void BrowserWindowCocoa::ShowCreateWebAppShortcutsDialog(
-    TabContents* tab_contents) {
+    TabContentsWrapper* tab_contents) {
   NOTIMPLEMENTED();
 }
 

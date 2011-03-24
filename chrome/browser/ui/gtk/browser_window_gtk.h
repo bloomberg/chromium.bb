@@ -117,7 +117,8 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
-  virtual void ShowCreateWebAppShortcutsDialog(TabContents*  tab_contents);
+  virtual void ShowCreateWebAppShortcutsDialog(
+      TabContentsWrapper* tab_contents);
   virtual void ShowCreateChromeAppShortcutsDialog(Profile* profile,
                                                   const Extension* app);
   virtual void Cut();

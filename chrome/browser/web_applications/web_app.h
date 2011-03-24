@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,12 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/file_path.h"
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/web_apps.h"
 
-class FilePath;
 class Profile;
-class TabContents;
 
 namespace web_app {
 
@@ -55,17 +54,18 @@ void GetIconsInfo(const WebApplicationInfo& app_info,
                   IconInfoList* icons);
 #endif
 
-// Extracts shortcut info of given TabContents.
-void GetShortcutInfoForTab(TabContents* tab_contents,
-                           ShellIntegration::ShortcutInfo* info);
+namespace internals {
 
-// Updates web app shortcut of the TabContents. This function checks and
-// updates web app icon and shortcuts if needed. For icon, the check is based
-// on MD5 hash of icon image. For shortcuts, it checks the desktop, start menu
-// and quick launch (as well as pinned shortcut) for shortcut and only
-// updates (recreates) them if they exits.
-void UpdateShortcutForTabContents(TabContents* tab_contents);
+#if defined(OS_WIN)
+FilePath GetSanitizedFileName(const string16& name);
 
-};  // namespace web_app
+bool CheckAndSaveIcon(const FilePath& icon_file, const SkBitmap& image);
+#endif
+
+FilePath GetWebAppDataDirectory(const FilePath& root_dir,
+                                const ShellIntegration::ShortcutInfo& info);
+}  // namespace internals
+
+}  // namespace web_app
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_H_

@@ -1131,7 +1131,8 @@ void BrowserView::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
   browser::ShowHtmlDialog(parent, browser_.get()->profile(), delegate);
 }
 
-void BrowserView::ShowCreateWebAppShortcutsDialog(TabContents* tab_contents) {
+void BrowserView::ShowCreateWebAppShortcutsDialog(
+    TabContentsWrapper* tab_contents) {
   browser::ShowCreateWebAppShortcutsDialog(GetNativeHandle(), tab_contents);
 }
 

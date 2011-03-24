@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,17 +7,17 @@
 #include "base/file_path.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class WebApplicationTest : public RenderViewHostTestHarness {
+class WebApplicationTest : public TabContentsWrapperTestHarness {
  public:
   WebApplicationTest()
-      : RenderViewHostTestHarness(),
+      : TabContentsWrapperTestHarness(),
         ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
@@ -27,11 +27,11 @@ class WebApplicationTest : public RenderViewHostTestHarness {
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
 
-    RenderViewHostTestHarness::SetUp();
+    TabContentsWrapperTestHarness::SetUp();
   }
 
   virtual void TearDown() {
-    RenderViewHostTestHarness::TearDown();
+    TabContentsWrapperTestHarness::TearDown();
 
     profile_.reset(NULL);
   }
@@ -51,7 +51,7 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
   rvh()->TestOnMessageReceived(
       ViewHostMsg_DidGetApplicationInfo(0, 0, web_app_info));
   ShellIntegration::ShortcutInfo info;
-  web_app::GetShortcutInfoForTab(contents(), &info);
+  web_app::GetShortcutInfoForTab(contents_wrapper(), &info);
 
   EXPECT_EQ(title, info.title);
   EXPECT_EQ(description, info.description);

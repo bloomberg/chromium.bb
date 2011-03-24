@@ -80,6 +80,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
+#include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
 #include "chrome/browser/ui/webui/filebrowse_ui.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
@@ -3223,8 +3224,8 @@ bool Browser::ShouldAddNavigationToHistory(
 
 void Browser::OnDidGetApplicationInfo(TabContents* tab_contents,
                                       int32 page_id) {
-  TabContents* current_tab = GetSelectedTabContents();
-  if (current_tab != tab_contents)
+  TabContentsWrapper* current_tab = GetSelectedTabContentsWrapper();
+  if (current_tab->tab_contents() != tab_contents)
     return;
 
   NavigationEntry* entry = current_tab->controller().GetLastCommittedEntry();
