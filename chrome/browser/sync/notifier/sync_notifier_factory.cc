@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "chrome/browser/sync/notifier/invalidation_notifier.h"
+#include "chrome/browser/sync/notifier/non_blocking_invalidation_notifier.h"
 #include "chrome/browser/sync/notifier/p2p_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/common/chrome_switches.h"
@@ -88,7 +88,7 @@ SyncNotifier* CreateDefaultSyncNotifier(const CommandLine& command_line,
     return new P2PNotifier(notifier_options);
   }
 
-  return new InvalidationNotifier(notifier_options, client_info);
+  return new NonBlockingInvalidationNotifier(notifier_options, client_info);
 }
 }  // namespace
 

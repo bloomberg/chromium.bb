@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -48,10 +48,6 @@ class HostResolver;
 
 namespace notifier {
 
-// Workaround for MSVS 2005 bug that fails to handle inheritance from a nested
-// class properly if it comes directly on a base class list.
-typedef Login::Delegate LoginDelegate;
-
 class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
                            public PushNotificationsListenTaskDelegate,
                            public PushNotificationsSubscribeTaskDelegate {
@@ -88,13 +84,6 @@ class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
  protected:
   // Should only be called after Start().
   MessageLoop* worker_message_loop();
-
-  // These handle messages indicating an event happened in the outside
-  // world.  These are all called from the worker thread. They are protected
-  // so they can be used by subclasses.
-  void OnIncomingNotification(
-      const Notification& notification);
-  void OnSubscriptionStateChange(bool success);
 
   scoped_refptr<ObserverListThreadSafe<Observer> > observers_;
   MessageLoop* parent_message_loop_;

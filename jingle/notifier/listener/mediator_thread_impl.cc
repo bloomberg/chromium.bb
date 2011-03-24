@@ -131,10 +131,6 @@ void MediatorThreadImpl::DoLogin(
 
   base_task_.reset();
 
-  // TODO(akalin): Use an existing HostResolver from somewhere (maybe
-  // the IOThread one).
-  // TODO(wtc): Sharing HostResolver and CertVerifier with the IO Thread won't
-  // work because HostResolver and CertVerifier are single-threaded.
   host_resolver_.reset(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                     NULL, NULL));
@@ -191,7 +187,8 @@ void MediatorThreadImpl::OnSubscriptionError() {
 
 void MediatorThreadImpl::OnNotificationReceived(
     const Notification& notification) {
-  OnIncomingNotification(notification);
+  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  observers_->Notify(&Observer::OnIncomingNotification, notification);
 }
 
 void MediatorThreadImpl::DoSendNotification(
@@ -219,12 +216,6 @@ void MediatorThreadImpl::DoUpdateXmppSettings(
         "P2P: Thread UpdateXmppSettings called when login_ was NULL";
 }
 
-
-void MediatorThreadImpl::OnIncomingNotification(
-    const Notification& notification) {
-  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  observers_->Notify(&Observer::OnIncomingNotification, notification);
-}
 
 void MediatorThreadImpl::OnConnect(base::WeakPtr<talk_base::Task> base_task) {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());

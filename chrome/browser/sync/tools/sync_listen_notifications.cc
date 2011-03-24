@@ -74,8 +74,8 @@ int main(int argc, char* argv[]) {
     std::printf("Usage: %s --email=foo@bar.com --token=token\n\n"
                 "See sync_notifier_factory.cc for more switches.\n\n"
                 "Run chrome and set a breakpoint on "
-                "SyncNotifierImpl::UpdateCredentials() after\n"
-                "logging into sync to get the token to pass into this "
+                "sync_api::SyncManager::SyncInternal::UpdateCredentials() "
+                "after logging into sync to get the token to pass into this "
                 "utility.\n",
                 argv[0]);
     return -1;

@@ -263,6 +263,21 @@
       ],
     },
     {
+      'target_name': 'test_support_sync_notifier',
+      'type': '<(library)',
+      'dependencies': [
+        '../testing/gmock.gyp:gmock',
+        'sync_notifier',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'browser/sync/notifier/mock_sync_notifier_observer.cc',
+        'browser/sync/notifier/mock_sync_notifier_observer.h',
+      ],
+    },
+    {
       'target_name': 'test_support_unit',
       'type': '<(library)',
       'dependencies': [
@@ -2855,8 +2870,9 @@
         'browser/sync/notifier/cache_invalidation_packet_handler_unittest.cc',
         'browser/sync/notifier/chrome_invalidation_client_unittest.cc',
         'browser/sync/notifier/chrome_system_resources_unittest.cc',
+        'browser/sync/notifier/invalidation_notifier_unittest.cc',
+        'browser/sync/notifier/non_blocking_invalidation_notifier_unittest.cc',
         'browser/sync/notifier/registration_manager_unittest.cc',
-        'browser/sync/notifier/server_notifier_thread_unittest.cc',
         'browser/sync/profile_sync_factory_mock.h',
         'browser/sync/protocol/proto_enum_conversions_unittest.cc',
         'browser/sync/protocol/proto_value_conversions_unittest.cc',
@@ -2916,6 +2932,7 @@
         'sync_notifier',
         'test_support_common',
         'test_support_sync',
+        'test_support_sync_notifier',
         'test_support_unit',
       ],
       'conditions': [

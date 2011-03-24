@@ -112,6 +112,10 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
   DISALLOW_COPY_AND_ASSIGN(Login);
 };
 
+// Workaround for MSVS 2005 bug that fails to handle inheritance from a nested
+// class properly if it comes directly on a base class list.
+typedef Login::Delegate LoginDelegate;
+
 }  // namespace notifier
 
 #endif  // JINGLE_NOTIFIER_COMMUNICATOR_LOGIN_H_
