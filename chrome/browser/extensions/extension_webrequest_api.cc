@@ -308,8 +308,6 @@ bool ExtensionWebRequestEventRouter::OnBeforeRequest(
   dict->SetString(keys::kMethodKey, request->method());
   dict->SetInteger(keys::kTabIdKey, tab_id);
   dict->SetString(keys::kTypeKey, ResourceTypeToString(resource_type));
-  dict->SetDouble(keys::kTimeStampKey,
-                  request->request_time().ToDoubleT() * 1000);
   args.Append(dict);
 
   std::string json_args;
