@@ -18,4 +18,7 @@ FileSystemOperationContext::FileSystemOperationContext(
       dest_type_(kFileSystemTypeUnknown) {
 }
 
+FileSystemOperationContext::~FileSystemOperationContext() {
+}
+
 }  // namespace fileapi

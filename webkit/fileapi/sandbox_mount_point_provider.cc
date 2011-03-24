@@ -123,6 +123,9 @@ SandboxMountPointProvider::SandboxMountPointProvider(
       base_path_(profile_path.Append(kFileSystemDirectory)) {
 }
 
+SandboxMountPointProvider::~SandboxMountPointProvider() {
+}
+
 bool SandboxMountPointProvider::IsAccessAllowed(const GURL& origin_url) {
   // We essentially depend on quota to do our access controls.
   return path_manager_->IsAllowedScheme(origin_url);

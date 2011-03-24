@@ -26,6 +26,7 @@ class SandboxMountPointProvider : public FileSystemMountPointProvider {
       FileSystemPathManager* path_manager,
       scoped_refptr<base::MessageLoopProxy> file_message_loop,
       const FilePath& profile_path);
+  virtual ~SandboxMountPointProvider();
 
   // Checks if mount point access is allowed from |origin_url|.
   virtual bool IsAccessAllowed(const GURL& origin_url);
@@ -33,7 +34,7 @@ class SandboxMountPointProvider : public FileSystemMountPointProvider {
   // Retrieves the root path for the given |origin_url| and |type|, and
   // calls the given |callback| with the root path and name.
   // If |create| is true this also creates the directory if it doesn't exist.
-  void GetFileSystemRootPath(
+  virtual void GetFileSystemRootPath(
       const GURL& origin_url,
       FileSystemType type,
       bool create,
@@ -41,7 +42,7 @@ class SandboxMountPointProvider : public FileSystemMountPointProvider {
 
   // Like GetFileSystemRootPath, but synchronous, and can be called only while
   // running on the file thread.
-  FilePath GetFileSystemRootPathOnFileThread(
+  virtual FilePath GetFileSystemRootPathOnFileThread(
       const GURL& origin_url,
       FileSystemType type,
       bool create);
