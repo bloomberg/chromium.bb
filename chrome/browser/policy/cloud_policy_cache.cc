@@ -10,11 +10,11 @@
 #include "base/logging.h"
 #include "base/task.h"
 #include "base/values.h"
-#include "content/browser/browser_thread.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
+#include "content/browser/browser_thread.h"
 
 using google::protobuf::RepeatedField;
 using google::protobuf::RepeatedPtrField;
@@ -215,6 +215,7 @@ void CloudPolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
   DCHECK(CalledOnValidThread());
   bool initialization_was_not_complete = !initialization_complete_;
   is_unmanaged_ = false;
+  last_policy_refresh_time_ = base::Time::NowFromSystemTime();
   base::Time timestamp;
   PolicyMap mandatory_policy;
   PolicyMap recommended_policy;
@@ -229,7 +230,6 @@ void CloudPolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
   mandatory_policy_.Swap(&mandatory_policy);
   recommended_policy_.Swap(&recommended_policy);
   initialization_complete_ = true;
-  last_policy_refresh_time_ = timestamp;
   has_device_policy_ = false;
 
   if (new_policy_differs || initialization_was_not_complete) {
