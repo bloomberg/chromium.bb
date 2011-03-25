@@ -168,13 +168,6 @@ void WebWorkerClientProxy::openFileSystem(
       size, create, new WebFileSystemCallbackDispatcher(callbacks));
 }
 
-void WebWorkerClientProxy::openFileSystem(
-    WebKit::WebFileSystem::Type type,
-    long long size,
-    WebKit::WebFileSystemCallbacks* callbacks) {
-  openFileSystem(type, size, true, callbacks);
-}
-
 bool WebWorkerClientProxy::Send(IPC::Message* message) {
   return WorkerThread::current()->Send(message);
 }

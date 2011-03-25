@@ -79,11 +79,6 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
                               bool create,
                               WebKit::WebFileSystemCallbacks* callbacks);
 
-  // TODO(adamk): Remove this method once it's gone from WebKit.
-  virtual void openFileSystem(WebKit::WebFileSystem::Type type,
-                              long long size,
-                              WebKit::WebFileSystemCallbacks* callbacks);
-
   void EnsureWorkerContextTerminates();
 
  private:
