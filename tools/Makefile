@@ -53,7 +53,7 @@ TOOLCHAINLOC?=out
 SDKLOC?=$(abspath $(TOOLCHAINLOC))
 TOOLCHAINNAME?=nacl-sdk
 SDKNAME?=$(TOOLCHAINNAME)
-SDKROOT=$(SDKLOC)/$(SDKNAME)
+SDKROOT?=$(SDKLOC)/$(SDKNAME)
 DESTDIR?=
 BUILDNCCDIR=$(SDKROOT)/$(CROSSARCH)
 include REVISIONS
@@ -594,8 +594,12 @@ install-glibc: BUILD/stamp-glibc32 BUILD/stamp-glibc64
 	rmdir "$(INST_GLIBC_PREFIX)/$(PREFIX)" || \
 	  rm "$(INST_GLIBC_PREFIX)/$(PREFIX)"
 	ln -sfn "$(INST_GLIBC_PREFIX)/glibc" "$(INST_GLIBC_PREFIX)/$(PREFIX)"
-	$(MAKE) -C BUILD/build-glibc32 install_root=$(INST_GLIBC_PREFIX) install
-	$(MAKE) -C BUILD/build-glibc64 install_root=$(INST_GLIBC_PREFIX) install
+	$(MAKE) -f $(THISMAKEFILE) glibc-sdkdirs \
+	  DESTDIR="" SDKROOT="$(INST_GLIBC_PREFIX)/glibc"
+	$(MAKE) -f $(THISMAKEFILE) -C BUILD/build-glibc32 \
+	  install_root=$(INST_GLIBC_PREFIX) install
+	$(MAKE) -f $(THISMAKEFILE) -C BUILD/build-glibc64
+	  install_root=$(INST_GLIBC_PREFIX) install
 
 .PHONY: export-headers
 export-headers:
