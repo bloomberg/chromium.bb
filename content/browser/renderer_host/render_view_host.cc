@@ -31,6 +31,7 @@
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
+#include "content/browser/browser_message_filter.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
@@ -699,26 +700,8 @@ bool RenderViewHost::SuddenTerminationAllowed() const {
 // RenderViewHost, IPC message handlers:
 
 bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
-#if defined(OS_WIN)
-  // On Windows there's a potential deadlock with sync messsages going in
-  // a circle from browser -> plugin -> renderer -> browser.
-  // On Linux we can avoid this by avoiding sync messages from browser->plugin.
-  // On Mac we avoid this by not supporting windowed plugins.
-  if (msg.is_sync() && !msg.is_caller_pumping_messages()) {
-    // NOTE: IF YOU HIT THIS ASSERT, THE SOLUTION IS ALMOST NEVER TO RUN A
-    // NESTED MESSAGE LOOP IN THE RENDERER!!!
-    // That introduces reentrancy which causes hard to track bugs.  You should
-    // find a way to either turn this into an asynchronous message, or one
-    // that can be answered on the IO thread.
-    NOTREACHED() << "Can't send sync messages to UI thread without pumping "
-        "messages in the renderer or else deadlocks can occur if the page "
-        "has windowed plugins! (message type " << msg.type() << ")";
-    IPC::Message* reply = IPC::SyncMessage::GenerateReply(&msg);
-    reply->set_reply_error();
-    Send(reply);
+  if (!BrowserMessageFilter::CheckCanDispatchOnUI(msg, this))
     return true;
-  }
-#endif
 
   if (delegate_->OnMessageReceived(msg))
     return true;
