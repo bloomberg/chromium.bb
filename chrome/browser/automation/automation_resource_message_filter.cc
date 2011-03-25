@@ -525,6 +525,7 @@ bool AutomationResourceMessageFilter::SetCookiesForUrl(
     return false;
   }
 
+  delete callback;
   DCHECK(automation_details_iter->second.filter != NULL);
 
   if (automation_details_iter->second.filter) {
