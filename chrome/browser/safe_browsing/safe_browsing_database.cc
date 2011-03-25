@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 
 #include <algorithm>
+#include <iterator>
 
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
