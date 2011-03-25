@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 */
@@ -162,7 +162,8 @@ body {
 #spdyTabContent,
 #serviceProvidersTabContent,
 #testTabContent,
-#hstsTabContent {
+#hstsTabContent,
+#httpThrottlingTabContent {
   overflow: auto;
   padding: 10px;
 }
@@ -183,8 +184,8 @@ table.styledTable,
 .styledTable th,
 .styledTable td {
   border: 1px solid #777;
-  padding-right: 4px; 
-  padding-left: 4px; 
+  padding-right: 4px;
+  padding-left: 4px;
 }
 
 .styledTable th {
@@ -195,7 +196,7 @@ table.styledTable,
   background: rgb(255,217,217);
 }
 
-/* 
+/*
  * This is the box in the top right of the Data tab which shows how many
  * events have been captured so far.
  */

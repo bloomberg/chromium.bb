@@ -626,8 +626,8 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
     net::SpdySessionPool::set_max_sessions_per_domain(value);
   }
 
-  net::URLRequestThrottlerManager::GetInstance()->InitializeOptions(
-      parsed_command_line.HasSwitch(switches::kDisableEnforcedThrottling));
+  net::URLRequestThrottlerManager::GetInstance()->set_enable_thread_checks(
+      true);
 
   SetDnsCertProvenanceCheckerFactory(CreateChromeDnsCertProvenanceChecker);
 }

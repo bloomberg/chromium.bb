@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_NET_NET_PREF_OBSERVER_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/common/notification_observer.h"
@@ -26,10 +28,12 @@ class NetPrefObserver : public NotificationObserver {
   static void RegisterPrefs(PrefService* prefs);
 
  private:
-  void ApplySettings();
+  // If |pref_name| is NULL, all monitored preferences will be applied.
+  void ApplySettings(const std::string* pref_name);
 
   BooleanPrefMember dns_prefetching_enabled_;
   BooleanPrefMember spdy_disabled_;
+  BooleanPrefMember http_throttling_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(NetPrefObserver);
 };

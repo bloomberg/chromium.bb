@@ -674,6 +674,9 @@ const char kEnableTranslate[] = "translate.enabled";
 
 const char kPinnedTabs[] = "pinned_tabs";
 
+// Boolean that is true when HTTP throttling is enabled.
+const char kHttpThrottlingEnabled[] = "http_throttling.enabled";
+
 // Integer that specifies the policy refresh rate for user policy in
 // milliseconds. Not all values are meaningful, so it is clamped to a sane
 // range by the cloud policy subsystem.

@@ -6276,9 +6276,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_ERRORPAGES_SUMMARY_TEMPORARILY_THROTTLED" desc="Summary in the error page when we temporarily stop sending requests to a server in order to avoid DDoS.">
-        It is likely that the server hosting the webpage has been overloaded or encountered an error. In order to avoid causing too much traffic and making the situation worse, <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph> has temporarily stopped allowing requests to the server.
+        It is likely that the server hosting the webpage has been overloaded or encountered an error. In order to avoid causing
+        too much traffic and making the situation worse,
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph> has temporarily
+        stopped allowing requests to the server.
         <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
-        If you think this behavior is undesirable, for example, you are debugging your own website, you could disable it by relaunching <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph> with the command line flag <ph name="COMMAND_LINE_FLAG">&lt;strong&gt;--disable-enforced-throttling&lt;/strong&gt;</ph>.
+        If you think this behavior is undesirable, for example, you are debugging your own website, please
+        visit the <ph name="NET_INTERNALS_PAGE">&lt;strong&gt;chrome://net-internals/#httpThrottling&lt;/strong&gt;</ph> page,
+        where you can find more information or disable the feature.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_TEMPORARILY_THROTTLED" desc="The error message displayed when we temporarily stop sending requests to a server in order to avoid DDoS.">
         Requests to the server have been temporarily throttled.

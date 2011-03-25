@@ -209,12 +209,6 @@ const char kDisableDevTools[]               = "disable-dev-tools";
 // Disables device orientation events.
 const char kDisableDeviceOrientation[]      = "disable-device-orientation";
 
-// By default, if the URL request throttler finds that a server is overloaded or
-// encounters an error, it rejects requests to the server for a period of time,
-// which is determined by an exponential back-off algorithm. This switch
-// disables such behavior.
-const char kDisableEnforcedThrottling[]     = "disable-enforced-throttling";
-
 // Disable extensions.
 const char kDisableExtensions[]             = "disable-extensions";
 

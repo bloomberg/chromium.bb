@@ -71,7 +71,6 @@ extern const char kDisableConnectBackupJobs[];
 extern const char kDisableCustomJumpList[];
 extern const char kDisableDevTools[];
 extern const char kDisableDeviceOrientation[];
-extern const char kDisableEnforcedThrottling[];
 extern const char kDisableExtensionsFileAccessCheck[];
 extern const char kDisableExtensions[];
 extern const char kDisableFlashSandbox[];

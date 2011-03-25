@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,6 +120,9 @@ function onLoaded() {
                                            'namespaceProvidersTbody');
   }
 
+  var httpThrottlingView = new HttpThrottlingView(
+      'httpThrottlingTabContent', 'enableHttpThrottlingCheckbox');
+
   // Create a view which lets you tab between the different sub-views.
   var categoryTabSwitcher = new TabSwitcherView('categoryTabHandles');
   g_browser.setTabSwitcher(categoryTabSwitcher);
@@ -136,6 +139,7 @@ function onLoaded() {
     categoryTabSwitcher.addTab('serviceProvidersTab', serviceView, false);
   categoryTabSwitcher.addTab('testTab', testView, false);
   categoryTabSwitcher.addTab('hstsTab', hstsView, false);
+  categoryTabSwitcher.addTab('httpThrottlingTab', httpThrottlingView, false);
 
   // Build a map from the anchor name of each tab handle to its "tab ID".
   // We will consider navigations to the #hash as a switch tab request.
@@ -178,6 +182,7 @@ function BrowserBridge() {
   this.logObservers_ = [];
   this.connectionTestsObservers_ = [];
   this.hstsObservers_ = [];
+  this.httpThrottlingObservers_ = [];
 
   this.pollableDataHelpers_ = {};
   this.pollableDataHelpers_.proxySettings =
@@ -352,7 +357,11 @@ BrowserBridge.prototype.enableIPv6 = function() {
 
 BrowserBridge.prototype.setLogLevel = function(logLevel) {
   chrome.send('setLogLevel', ['' + logLevel]);
-}
+};
+
+BrowserBridge.prototype.enableHttpThrottling = function(enable) {
+  chrome.send('enableHttpThrottling', [enable]);
+};
 
 BrowserBridge.prototype.loadLogFile = function() {
   chrome.send('loadLogFile');
@@ -500,6 +509,14 @@ BrowserBridge.prototype.receivedHSTSResult = function(info) {
 
 BrowserBridge.prototype.receivedHttpCacheInfo = function(info) {
   this.pollableDataHelpers_.httpCacheInfo.update(info);
+};
+
+BrowserBridge.prototype.receivedHttpThrottlingEnabledPrefChanged = function(
+    enabled) {
+  for (var i = 0; i < this.httpThrottlingObservers_.length; ++i) {
+    this.httpThrottlingObservers_[i].onHttpThrottlingEnabledPrefChanged(
+        enabled);
+  }
 };
 
 BrowserBridge.prototype.loadedLogFile = function(logFileContents) {
@@ -727,6 +744,16 @@ BrowserBridge.prototype.addHttpCacheInfoObserver = function(observer) {
  */
 BrowserBridge.prototype.addHSTSObserver = function(observer) {
   this.hstsObservers_.push(observer);
+};
+
+/**
+ * Adds a listener for HTTP throttling-related events. |observer| will be called
+ * back when HTTP throttling is enabled/disabled, through:
+ *
+ *   observer.onHttpThrottlingEnabledPrefChanged(enabled);
+ */
+BrowserBridge.prototype.addHttpThrottlingObserver = function(observer) {
+  this.httpThrottlingObservers_.push(observer);
 };
 
 /**

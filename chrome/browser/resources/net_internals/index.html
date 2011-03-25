@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <head i18n-values="dir:textdirection;">
 <!--
-Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
@@ -30,6 +30,7 @@ found in the LICENSE file.
     <script src="socketsview.js"></script>
     <script src="spdyview.js"></script>
     <script src="serviceprovidersview.js"></script>
+    <script src="httpthrottlingview.js"></script>
   </head>
   <body onload="onLoaded()">
     <!-- Tab switcher for main categories. -->
@@ -42,6 +43,7 @@ found in the LICENSE file.
         <li><a href="#sockets" id=socketsTab>Sockets</a></li>
         <li><a href="#spdy" id=spdyTab>SPDY</a></li>
         <li><a href="#httpCache" id=httpCacheTab>HTTP Cache</a></li>
+        <li><a href="#httpThrottling" id=httpThrottlingTab>HTTP Throttling</a></li>
         <!-- Tab is only shown on Windows -->
         <li><a href="#serviceProviders" id=serviceProvidersTab style="display: none;">SPIs</a></li>
         <li><a href="#tests" id=testTab>Tests</a></li>
@@ -180,6 +182,24 @@ found in the LICENSE file.
 
       <h4>Statistics</h4>
       <div id=httpCacheStats>Nothing loaded yet.</div>
+    </div>
+    <div id=httpThrottlingTabContent>
+      <p>
+      In order to prevent Distributed Denial of Service (DDoS) attacks from
+      being perpetrated by web pages and extensions that run within Chrome, the
+      HTTP throttling mechanism keeps track of errors requesting a given URL
+      (minus the query parameters), and after a few 5xx errors in a row, starts
+      exponentially increasing an interval during which requests to the
+      given URL are disallowed.
+      </p><p>
+      You may enable or disable the feature below.  Please let us know if the
+      feature is causing problems for your web site.  More details and contact
+      information at 
+      <a href="http://dev.chromium.org/throttling">http://dev.chromium.org/throttling</a>.
+      </p>
+      <p><input id=enableHttpThrottlingCheckbox type=checkbox />
+        Throttle HTTP requests if the server has been overloaded or encountered an error.
+      </p>
     </div>
     <!-- Only shown on Windows -->
     <div id=serviceProvidersTabContent style="display: none;">
