@@ -268,6 +268,7 @@ void GoogleURLTracker::AcceptGoogleURL(const GURL& new_google_url) {
 void GoogleURLTracker::CancelGoogleURL(const GURL& new_google_url) {
   g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
                                               new_google_url.spec());
+  need_to_prompt_ = false;
 }
 
 void GoogleURLTracker::InfoBarClosed() {
