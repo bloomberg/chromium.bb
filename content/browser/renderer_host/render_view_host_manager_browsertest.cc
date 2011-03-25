@@ -45,16 +45,16 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        SwapProcessWithRelNoreferrerAndTargetBlank) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server_(
+  net::TestServer https_server(
       net::TestServer::TYPE_HTTPS,
       FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(https_server_.Start());
+  ASSERT_TRUE(https_server.Start());
 
   // Load a page with links that open in a new window.
   std::string replacement_path;
   ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
       "files/click-noreferrer-links.html",
-      https_server_.host_port_pair(),
+      https_server.host_port_pair(),
       &replacement_path));
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(replacement_path));
@@ -71,15 +71,21 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       L"window.domAutomationController.send(clickNoRefTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
-  // Wait for the cross-site transition to finish.
-  ui_test_utils::WaitForLoadStop(
-      &(browser()->GetSelectedTabContents()->controller()));
+
+  // Wait for the tab to open.
+  if (browser()->tab_count() < 2)
+    ui_test_utils::WaitForNewTab(browser());
 
   // Opens in new tab.
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(1, browser()->selected_index());
-  EXPECT_EQ(L"Title Of Awesomeness",
-      browser()->GetSelectedTabContents()->GetTitle());
+  EXPECT_EQ("/files/title2.html",
+            browser()->GetSelectedTabContents()->GetURL().path());
+
+  // Wait for the cross-site transition in the new tab to finish.
+  ui_test_utils::WaitForLoadStop(browser()->GetSelectedTabContents());
+  EXPECT_FALSE(browser()->GetSelectedTabContents()->render_manager()->
+                   pending_render_view_host());
 
   // Should have a new SiteInstance.
   scoped_refptr<SiteInstance> noref_blank_site_instance(
@@ -89,21 +95,20 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
 // Test for crbug.com/24447.  Following a cross-site link with just
 // target=_blank should not create a new SiteInstance.
-// Disabled, http://crbug.com/67532.
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
-                       DISABLED_DontSwapProcessWithOnlyTargetBlank) {
+                       DontSwapProcessWithOnlyTargetBlank) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server_(
+  net::TestServer https_server(
       net::TestServer::TYPE_HTTPS,
       FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(https_server_.Start());
+  ASSERT_TRUE(https_server.Start());
 
   // Load a page with links that open in a new window.
   std::string replacement_path;
   ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
       "files/click-noreferrer-links.html",
-      https_server_.host_port_pair(),
+      https_server.host_port_pair(),
       &replacement_path));
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(replacement_path));
@@ -120,15 +125,19 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       L"window.domAutomationController.send(clickTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
-  // Wait for the cross-site transition to finish.
-  ui_test_utils::WaitForLoadStop(
-      &(browser()->GetSelectedTabContents()->controller()));
+
+  // Wait for the tab to open.
+  if (browser()->tab_count() < 2)
+    ui_test_utils::WaitForNewTab(browser());
 
   // Opens in new tab.
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(1, browser()->selected_index());
-  EXPECT_EQ(L"Title Of Awesomeness",
-      browser()->GetSelectedTabContents()->GetTitle());
+
+  // Wait for the cross-site transition in the new tab to finish.
+  ui_test_utils::WaitForLoadStop(browser()->GetSelectedTabContents());
+  EXPECT_EQ("/files/title2.html",
+            browser()->GetSelectedTabContents()->GetURL().path());
 
   // Should have the same SiteInstance.
   scoped_refptr<SiteInstance> blank_site_instance(
@@ -142,16 +151,16 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        DontSwapProcessWithOnlyRelNoreferrer) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server_(
+  net::TestServer https_server(
       net::TestServer::TYPE_HTTPS,
       FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(https_server_.Start());
+  ASSERT_TRUE(https_server.Start());
 
   // Load a page with links that open in a new window.
   std::string replacement_path;
   ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
       "files/click-noreferrer-links.html",
-      https_server_.host_port_pair(),
+      https_server.host_port_pair(),
       &replacement_path));
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(replacement_path));
@@ -168,15 +177,15 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       L"window.domAutomationController.send(clickNoRefLink());",
       &success));
   EXPECT_TRUE(success);
-  // Wait for the cross-site transition to finish.
-  ui_test_utils::WaitForLoadStop(
-      &(browser()->GetSelectedTabContents()->controller()));
+
+  // Wait for the cross-site transition in the current tab to finish.
+  ui_test_utils::WaitForLoadStop(browser()->GetSelectedTabContents());
 
   // Opens in same tab.
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(0, browser()->selected_index());
-  EXPECT_EQ(L"Title Of Awesomeness",
-      browser()->GetSelectedTabContents()->GetTitle());
+  EXPECT_EQ("/files/title2.html",
+            browser()->GetSelectedTabContents()->GetURL().path());
 
   // Should have the same SiteInstance.
   scoped_refptr<SiteInstance> noref_site_instance(
@@ -234,6 +243,9 @@ class BrowserClosedObserver : public NotificationObserver {
     switch (type.value) {
       case NotificationType::BROWSER_CLOSED:
         MessageLoopForUI::current()->Quit();
+        break;
+      default:
+        NOTREACHED();
         break;
     }
   }

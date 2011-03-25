@@ -328,10 +328,10 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterReload) {
       GURL(std::string(kDataURIPrefix) + kTestFormString)));
 
   // Reload the page.
-  NavigationController* controller =
-      &browser()->GetSelectedTabContentsWrapper()->tab_contents()->controller();
-  controller->Reload(false);
-  ui_test_utils::WaitForLoadStop(controller);
+  TabContents* tab =
+      browser()->GetSelectedTabContentsWrapper()->tab_contents();
+  tab->controller().Reload(false);
+  ui_test_utils::WaitForLoadStop(tab);
 
   // Invoke Autofill.
   TryBasicFormFill();

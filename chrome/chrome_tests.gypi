@@ -2418,7 +2418,6 @@
             # http://crbug.com/15101 These tests fail on Linux and Mac.
             'browser/renderer_host/web_cache_manager_browsertest.cc',
             '../content/browser/child_process_security_policy_browsertest.cc',
-            '../content/browser/renderer_host/render_view_host_manager_browsertest.cc',
           ],
         }],
         ['OS=="linux"', {

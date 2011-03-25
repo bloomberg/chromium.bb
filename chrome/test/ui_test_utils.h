@@ -109,8 +109,9 @@ void WaitForNewTab(Browser* browser);
 // Waits for a |browser_action| to be updated.
 void WaitForBrowserActionUpdated(ExtensionAction* browser_action);
 
-// Waits for a load stop for the specified |controller|.
-void WaitForLoadStop(NavigationController* controller);
+// Waits for a load stop for the specified |tab|'s controller, if the tab is
+// currently loading.  Otherwise returns immediately.
+void WaitForLoadStop(TabContents* tab);
 
 // Waits for a new browser to be created, returning the browser.
 Browser* WaitForNewBrowser();

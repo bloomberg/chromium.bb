@@ -795,26 +795,26 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_TabInitialFocus) {
   // Open the history tab, focus should be on the tab contents.
   browser()->ShowHistoryTab();
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
-      &browser()->GetSelectedTabContents()->controller()));
+      browser()->GetSelectedTabContents()));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open the new tab, focus should be on the location bar.
   browser()->NewTab();
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
-      &browser()->GetSelectedTabContents()->controller()));
+      browser()->GetSelectedTabContents()));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
   // Open the download tab, focus should be on the tab contents.
   browser()->ShowDownloadsTab();
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
-      &browser()->GetSelectedTabContents()->controller()));
+      browser()->GetSelectedTabContents()));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open about:blank, focus should be on the location bar.
   browser()->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
                                    PageTransition::LINK);
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
-      &browser()->GetSelectedTabContents()->controller()));
+      browser()->GetSelectedTabContents()));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 }
 

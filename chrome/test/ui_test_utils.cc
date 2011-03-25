@@ -444,10 +444,14 @@ void WaitForBrowserActionUpdated(ExtensionAction* browser_action) {
                   Source<ExtensionAction>(browser_action));
 }
 
-void WaitForLoadStop(NavigationController* controller) {
+void WaitForLoadStop(TabContents* tab) {
+  // In many cases, the load may have finished before we get here.  Only wait if
+  // the tab still has a pending navigation.
+  if (!tab->is_loading() && !tab->render_manager()->pending_render_view_host())
+    return;
   TestNotificationObserver observer;
   RegisterAndWait(&observer, NotificationType::LOAD_STOP,
-                  Source<NavigationController>(controller));
+                  Source<NavigationController>(&tab->controller()));
 }
 
 Browser* WaitForNewBrowser() {

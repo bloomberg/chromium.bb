@@ -302,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
       // nested message loop for the JS call.
       if (last_count != load_stop_notification_count())
         continue;
-      ui_test_utils::WaitForLoadStop(controller);
+      ui_test_utils::WaitForLoadStop(browser()->GetSelectedTabContents());
     }
   }
 }
