@@ -43,6 +43,7 @@ class OverlayPersistentPrefStore : public PersistentPrefStore,
   virtual PrefReadError ReadPrefs();
   virtual bool WritePrefs();
   virtual void ScheduleWritePrefs();
+  virtual void CommitPendingWrite();
   // TODO(battre) remove this function
   virtual void ReportValueChanged(const std::string& key);
 

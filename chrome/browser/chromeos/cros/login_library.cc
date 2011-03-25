@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/cros/login_library.h"
 
 #include "base/message_loop.h"
+#include "base/task.h"
+#include "base/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
@@ -18,12 +20,14 @@ namespace chromeos {
 class LoginLibraryImpl : public LoginLibrary {
  public:
   LoginLibraryImpl()
-      : set_owner_key_callback_(NULL),
+      : job_restart_request_(NULL),
+        set_owner_key_callback_(NULL),
         whitelist_op_callback_(NULL),
         property_op_callback_(NULL) {
     if (CrosLibrary::Get()->EnsureLoaded())
       Init();
   }
+
   virtual ~LoginLibraryImpl() {
     if (session_connection_) {
       chromeos::DisconnectSession(session_connection_);
@@ -124,16 +128,59 @@ class LoginLibraryImpl : public LoginLibrary {
   }
 
   bool RestartJob(int pid, const std::string& command_line) {
-    if (g_browser_process && g_browser_process->local_state()) {
-      // XXX: normally this call must not be needed, however it turned out that
-      // without this explicit call to SavePersistentPrefs it is possible for
-      // preferences to be lost. See http://crosbug.com/13102
-      g_browser_process->local_state()->SavePersistentPrefs();
+    if (job_restart_request_) {
+      NOTREACHED();
+      return false;
     }
-    return chromeos::RestartJob(pid, command_line.c_str());
+    job_restart_request_ = new JobRestartRequest(pid, command_line);
+    return true;
   }
 
  private:
+  class JobRestartRequest
+      : public base::RefCountedThreadSafe<JobRestartRequest> {
+   public:
+    JobRestartRequest(int pid, const std::string& command_line)
+        : pid_(pid),
+          command_line_(command_line),
+          local_state_(g_browser_process->local_state()) {
+      AddRef();
+      if (local_state_) {
+        // XXX: normally this call must not be needed, however RestartJob
+        // just kills us so settings may be lost. See http://crosbug.com/13102
+        local_state_->CommitPendingWrite();
+        timer_.Start(
+            base::TimeDelta::FromSeconds(3), this,
+            &JobRestartRequest::RestartJob);
+        // Post task on file thread thus it occurs last on task queue, so it
+        // would be executed after committing pending write on file thread.
+        BrowserThread::PostTask(
+            BrowserThread::FILE, FROM_HERE,
+            NewRunnableMethod(this, &JobRestartRequest::RestartJob));
+      } else {
+        RestartJob();
+      }
+    }
+
+   private:
+    void RestartJob() {
+      if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+        if (!chromeos::RestartJob(pid_, command_line_.c_str()))
+          NOTREACHED();
+      } else {
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            NewRunnableMethod(this, &JobRestartRequest::RestartJob));
+        MessageLoop::current()->AssertIdle();
+      }
+    }
+
+    int pid_;
+    std::string command_line_;
+    PrefService* local_state_;
+    base::OneShotTimer<JobRestartRequest> timer_;
+  };
+
   static void Handler(void* object, const OwnershipEvent& event) {
     LoginLibraryImpl* self = static_cast<LoginLibraryImpl*>(object);
     switch (event) {
@@ -201,6 +248,7 @@ class LoginLibraryImpl : public LoginLibrary {
   }
 
   chromeos::SessionConnection session_connection_;
+  JobRestartRequest* job_restart_request_;
 
   Delegate* set_owner_key_callback_;
   Delegate* whitelist_op_callback_;

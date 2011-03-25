@@ -70,6 +70,10 @@ void OverlayPersistentPrefStore::ScheduleWritePrefs() {
   // We do not write intentionally.
 }
 
+void OverlayPersistentPrefStore::CommitPendingWrite() {
+  // We do not write intentionally.
+}
+
 void OverlayPersistentPrefStore::ReportValueChanged(const std::string& key) {
   FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
 }

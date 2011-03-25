@@ -148,6 +148,9 @@ class PrefService : public base::NonThreadSafe {
   // Serializes the data and schedules save using ImportantFileWriter.
   void ScheduleSavePersistentPrefs();
 
+  // Lands pending writes to disk.
+  void CommitPendingWrite();
+
   // Make the PrefService aware of a pref.
   void RegisterBooleanPref(const char* path, bool default_value);
   void RegisterIntegerPref(const char* path, int default_value);

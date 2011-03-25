@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,7 @@ class JsonPrefStore : public PersistentPrefStore,
   virtual PrefReadError ReadPrefs();
   virtual bool WritePrefs();
   virtual void ScheduleWritePrefs();
+  virtual void CommitPendingWrite();
   // TODO(battre) remove this function
   virtual void ReportValueChanged(const std::string& key);
 

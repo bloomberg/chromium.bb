@@ -67,6 +67,9 @@ class PersistentPrefStore : public PrefStore {
 
   // Schedules an asynchronous write operation.
   virtual void ScheduleWritePrefs() = 0;
+
+  // Lands any pending writes to disk.
+  virtual void CommitPendingWrite() = 0;
 };
 
 #endif  // CHROME_COMMON_PERSISTENT_PREF_STORE_H_

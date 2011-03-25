@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,8 +26,7 @@ JsonPrefStore::JsonPrefStore(const FilePath& filename,
 }
 
 JsonPrefStore::~JsonPrefStore() {
-  if (writer_.HasPendingWrite() && !read_only_)
-    writer_.DoScheduledWrite();
+  CommitPendingWrite();
 }
 
 PrefStore::ReadResult JsonPrefStore::GetValue(const std::string& key,
@@ -157,6 +156,11 @@ void JsonPrefStore::ScheduleWritePrefs() {
     return;
 
   writer_.ScheduleWrite(this);
+}
+
+void JsonPrefStore::CommitPendingWrite() {
+  if (writer_.HasPendingWrite() && !read_only_)
+    writer_.DoScheduledWrite();
 }
 
 void JsonPrefStore::ReportValueChanged(const std::string& key) {

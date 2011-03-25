@@ -130,10 +130,10 @@ void OwnerManager::Verify(const BrowserThread::ID thread_id,
 
 void OwnerManager::SendNotification(NotificationType type,
                                     const NotificationDetails& details) {
-    NotificationService::current()->Notify(
-        type,
-        NotificationService::AllSources(),
-        details);
+  NotificationService::current()->Notify(
+      type,
+      NotificationService::AllSources(),
+      details);
 }
 
 }  // namespace chromeos
