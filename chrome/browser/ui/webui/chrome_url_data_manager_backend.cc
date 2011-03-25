@@ -133,7 +133,6 @@ class URLRequestChromeFileJob : public net::URLRequestFileJob {
 
 class DevToolsJobFactory {
  public:
-  static bool ShouldLoadFromDisk();
   static bool IsSupportedURL(const GURL& url, FilePath* path);
   static net::URLRequestJob* CreateJobForRequest(net::URLRequest* request,
                                           const FilePath& path);
@@ -260,7 +259,8 @@ void ChromeURLDataManagerBackend::DataAvailable(RequestID request_id,
 net::URLRequestJob* ChromeURLDataManagerBackend::Factory(
     net::URLRequest* request,
     const std::string& scheme) {
-  if (DevToolsJobFactory::ShouldLoadFromDisk()) {
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugDevTools)) {
     // Try loading chrome-devtools:// files from disk.
     FilePath path;
     if (DevToolsJobFactory::IsSupportedURL(request->url(), &path))
@@ -386,14 +386,6 @@ URLRequestChromeFileJob::URLRequestChromeFileJob(net::URLRequest* request,
 }
 
 URLRequestChromeFileJob::~URLRequestChromeFileJob() {}
-
-bool DevToolsJobFactory::ShouldLoadFromDisk() {
-#if defined(DEBUG_DEVTOOLS)
-  return true;
-#else
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugDevTools);
-#endif
-}
 
 bool DevToolsJobFactory::IsSupportedURL(const GURL& url, FilePath* path) {
   if (!url.SchemeIs(chrome::kChromeDevToolsScheme))
