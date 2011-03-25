@@ -15,7 +15,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -772,20 +771,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToDevToolsAgent,
-                        OnForwardToDevToolsAgent)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToDevToolsClient,
-                        OnForwardToDevToolsClient)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ActivateDevToolsWindow,
-                        OnActivateDevToolsWindow)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CloseDevToolsWindow,
-                        OnCloseDevToolsWindow)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestDockDevToolsWindow,
-                        OnRequestDockDevToolsWindow)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestUndockDevToolsWindow,
-                        OnRequestUndockDevToolsWindow)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DevToolsRuntimePropertyChanged,
-                        OnDevToolsRuntimePropertyChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionRequest, OnExtensionRequest)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnMsgSelectionChanged)
@@ -825,10 +810,6 @@ void RenderViewHost::Shutdown() {
     Send(run_modal_reply_msg_);
     run_modal_reply_msg_ = NULL;
   }
-
-  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
-  if (devtools_manager)  // NULL in tests
-    devtools_manager->UnregisterDevToolsClientHostFor(this);
 
   RenderWidgetHost::Shutdown();
 }
@@ -1267,37 +1248,6 @@ void RenderViewHost::OnAddMessageToConsole(const std::wstring& message,
                                            const std::wstring& source_id) {
   logging::LogMessage("CONSOLE", 0).stream() << "\"" << message
       << ",\" source: " << source_id << " (" << line_no << ")";
-}
-
-void RenderViewHost::OnForwardToDevToolsAgent(const IPC::Message& message) {
-  DevToolsManager::GetInstance()->ForwardToDevToolsAgent(this, message);
-}
-
-void RenderViewHost::OnForwardToDevToolsClient(const IPC::Message& message) {
-  DevToolsManager::GetInstance()->ForwardToDevToolsClient(this, message);
-}
-
-void RenderViewHost::OnActivateDevToolsWindow() {
-  DevToolsManager::GetInstance()->ActivateWindow(this);
-}
-
-void RenderViewHost::OnCloseDevToolsWindow() {
-  DevToolsManager::GetInstance()->CloseWindow(this);
-}
-
-void RenderViewHost::OnRequestDockDevToolsWindow() {
-  DevToolsManager::GetInstance()->RequestDockWindow(this);
-}
-
-void RenderViewHost::OnRequestUndockDevToolsWindow() {
-  DevToolsManager::GetInstance()->RequestUndockWindow(this);
-}
-
-void RenderViewHost::OnDevToolsRuntimePropertyChanged(
-    const std::string& name,
-    const std::string& value) {
-  DevToolsManager::GetInstance()->
-      RuntimePropertyChanged(this, name, value);
 }
 
 bool RenderViewHost::PreHandleKeyboardEvent(

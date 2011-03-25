@@ -600,14 +600,6 @@ class RenderViewHost : public RenderWidgetHost {
                              const std::wstring& source_id);
   void OnUpdateInspectorSetting(const std::string& key,
                                 const std::string& value);
-  void OnForwardToDevToolsAgent(const IPC::Message& message);
-  void OnForwardToDevToolsClient(const IPC::Message& message);
-  void OnActivateDevToolsWindow();
-  void OnCloseDevToolsWindow();
-  void OnRequestDockDevToolsWindow();
-  void OnRequestUndockDevToolsWindow();
-  void OnDevToolsRuntimePropertyChanged(const std::string& name,
-                                        const std::string& value);
   void OnMsgShouldCloseACK(bool proceed);
 
   void OnExtensionRequest(const ViewHostMsg_DomMessage_Params& params);

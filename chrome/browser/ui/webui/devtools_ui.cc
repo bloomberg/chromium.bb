@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/devtools_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -88,6 +88,6 @@ DevToolsUI::DevToolsUI(TabContents* contents) : WebUI(contents) {
 }
 
 void DevToolsUI::RenderViewCreated(RenderViewHost* render_view_host) {
-  render_view_host->Send(new ViewMsg_SetupDevToolsClient(
+  render_view_host->Send(new DevToolsMsg_SetupDevToolsClient(
       render_view_host->routing_id()));
 }

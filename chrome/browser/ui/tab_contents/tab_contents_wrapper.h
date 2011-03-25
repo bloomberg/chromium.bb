@@ -26,6 +26,7 @@ class PrintViewManager;
 
 class AutocompleteHistoryManager;
 class AutofillManager;
+class DevToolsTabHelper;
 class Extension;
 class FileSelectObserver;
 class FindTabHelper;
@@ -169,6 +170,8 @@ class TabContentsWrapper : public NotificationObserver,
   scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
 
   scoped_ptr<AutofillManager> autofill_manager_;
+
+  scoped_ptr<DevToolsTabHelper> dev_tools_tab_helper_;
 
   scoped_ptr<FindTabHelper> find_tab_helper_;
 

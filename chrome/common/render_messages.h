@@ -12,13 +12,9 @@
 // on which headers to pull out.
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/nullable_string16.h"
-#include "base/platform_file.h"
 #include "base/process.h"
-#include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
-#include "base/sync_socket.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/content_settings.h"
@@ -33,26 +29,12 @@
 #include "chrome/common/view_types.h"
 #include "chrome/common/web_apps.h"
 #include "content/common/common_param_traits.h"
-#include "content/common/css_colors.h"
-#include "content/common/notification_type.h"
-#include "content/common/page_transition_types.h"
-#include "content/common/page_zoom.h"
-#include "content/common/resource_response.h"
 #include "chrome/common/web_apps.h"
-#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_message_utils.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/webcursor.h"
-
-#if defined(OS_POSIX)
-#include "base/file_descriptor_posix.h"
-#endif
 
 // TODO(mpcomplete): rename ViewMsg and ViewHostMsg to something that makes
 // more sense with our current design.
@@ -244,12 +226,6 @@ IPC_MESSAGE_CONTROL1(ViewMsg_UserScripts_UpdatedScripts,
 // message can complete.  This message indicates that the renderer should
 // pump messages while waiting for cookies.
 IPC_MESSAGE_CONTROL0(ViewMsg_SignalCookiePromptEvent)
-
-// RenderViewHostDelegate::RenderViewCreated method sends this message to a
-// new renderer to notify it that it will host developer tools UI and should
-// set up all neccessary bindings and create DevToolsClient instance that
-// will handle communication with inspected page DevToolsAgent.
-IPC_MESSAGE_ROUTED0(ViewMsg_SetupDevToolsClient)
 
 // Set the content settings for a particular url that the renderer is in the
 // process of loading.  This will be stored, to be used if the load commits
@@ -524,34 +500,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(
 // Stores new inspector setting in the profile.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateInspectorSetting,
                     std::string,  /* key */
-                    std::string /* value */)
-
-// Wraps an IPC message that's destined to the DevToolsClient on
-// DevToolsAgent->browser hop.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ForwardToDevToolsClient,
-                    IPC::Message /* one of DevToolsClientMsg_XXX types */)
-
-// Wraps an IPC message that's destined to the DevToolsAgent on
-// DevToolsClient->browser hop.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ForwardToDevToolsAgent,
-                    IPC::Message /* one of DevToolsAgentMsg_XXX types */)
-
-// Activates (brings to the front) corresponding dev tools window.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_ActivateDevToolsWindow)
-
-// Closes dev tools window that is inspecting current render_view_host.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_CloseDevToolsWindow)
-
-// Attaches dev tools window that is inspecting current render_view_host.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_RequestDockDevToolsWindow)
-
-// Detaches dev tools window that is inspecting current render_view_host.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_RequestUndockDevToolsWindow)
-
-// Updates runtime features store in devtools manager in order to support
-// cross-navigation instrumentation.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_DevToolsRuntimePropertyChanged,
-                    std::string /* name */,
                     std::string /* value */)
 
 // Send back a string to be recorded by UserMetrics.

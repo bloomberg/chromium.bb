@@ -215,13 +215,7 @@ void ExternalTabContainer::Uninitialize() {
 
   registrar_.RemoveAll();
   if (tab_contents_.get()) {
-    RenderViewHost* rvh = tab_contents_->render_view_host();
-    if (rvh) {
-      if (DevToolsManager::GetInstance())
-        DevToolsManager::GetInstance()->UnregisterDevToolsClientHostFor(rvh);
-
-      UnregisterRenderViewHost(rvh);
-    }
+    UnregisterRenderViewHost(tab_contents_->render_view_host());
 
     if (GetRootView()) {
       GetRootView()->RemoveAllChildViews(true);

@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/devtools_messages.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/renderer/devtools_agent_filter.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
@@ -86,13 +85,13 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
 
 void DevToolsAgent::sendMessageToInspectorFrontend(
     const WebKit::WebString& message) {
-  Send(new ViewHostMsg_ForwardToDevToolsClient(
+  Send(new DevToolsHostMsg_ForwardToClient(
       routing_id(),
       DevToolsClientMsg_DispatchOnInspectorFrontend(message.utf8())));
 }
 
 void DevToolsAgent::sendDebuggerOutput(const WebKit::WebString& data) {
-  Send(new ViewHostMsg_ForwardToDevToolsClient(
+  Send(new DevToolsHostMsg_ForwardToClient(
       routing_id(),
       DevToolsClientMsg_DebuggerOutput(data.utf8())));
 }
@@ -104,7 +103,7 @@ int DevToolsAgent::hostIdentifier() {
 void DevToolsAgent::runtimeFeatureStateChanged(
     const WebKit::WebString& feature,
     bool enabled) {
-  Send(new ViewHostMsg_DevToolsRuntimePropertyChanged(
+  Send(new DevToolsHostMsg_RuntimePropertyChanged(
       routing_id(),
       feature.utf8(),
       enabled ? "true" : "false"));
@@ -113,7 +112,7 @@ void DevToolsAgent::runtimeFeatureStateChanged(
 void DevToolsAgent::runtimePropertyChanged(
     const WebKit::WebString& name,
     const WebKit::WebString& value) {
-  Send(new ViewHostMsg_DevToolsRuntimePropertyChanged(
+  Send(new DevToolsHostMsg_RuntimePropertyChanged(
       routing_id(),
       name.utf8(),
       value.utf8()));

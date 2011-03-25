@@ -100,3 +100,45 @@ IPC_MESSAGE_CONTROL2(DevToolsAgentMsg_InspectElement,
 
 // Enables/disables the apu agent.
 IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_SetApuAgentEnabled, bool /* enabled */)
+
+
+//-----------------------------------------------------------------------------
+// These are messages sent from the renderer to the browser.
+
+// RenderViewHostDelegate::RenderViewCreated method sends this message to a
+// new renderer to notify it that it will host developer tools UI and should
+// set up all neccessary bindings and create DevToolsClient instance that
+// will handle communication with inspected page DevToolsAgent.
+IPC_MESSAGE_ROUTED0(DevToolsMsg_SetupDevToolsClient)
+
+
+//-----------------------------------------------------------------------------
+// These are messages sent from the browser to the renderer.
+
+// Wraps an IPC message that's destined to the DevToolsClient on
+// DevToolsAgent->browser hop.
+IPC_MESSAGE_ROUTED1(DevToolsHostMsg_ForwardToClient,
+                    IPC::Message /* one of DevToolsClientMsg_XXX types */)
+
+// Wraps an IPC message that's destined to the DevToolsAgent on
+// DevToolsClient->browser hop.
+IPC_MESSAGE_ROUTED1(DevToolsHostMsg_ForwardToAgent,
+                    IPC::Message /* one of DevToolsAgentMsg_XXX types */)
+
+// Activates (brings to the front) corresponding dev tools window.
+IPC_MESSAGE_ROUTED0(DevToolsHostMsg_ActivateWindow)
+
+// Closes dev tools window that is inspecting current render_view_host.
+IPC_MESSAGE_ROUTED0(DevToolsHostMsg_CloseWindow)
+
+// Attaches dev tools window that is inspecting current render_view_host.
+IPC_MESSAGE_ROUTED0(DevToolsHostMsg_RequestDockWindow)
+
+// Detaches dev tools window that is inspecting current render_view_host.
+IPC_MESSAGE_ROUTED0(DevToolsHostMsg_RequestUndockWindow)
+
+// Updates runtime features store in devtools manager in order to support
+// cross-navigation instrumentation.
+IPC_MESSAGE_ROUTED2(DevToolsHostMsg_RuntimePropertyChanged,
+                    std::string /* name */,
+                    std::string /* value */)

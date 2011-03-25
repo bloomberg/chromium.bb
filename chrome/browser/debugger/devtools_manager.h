@@ -12,6 +12,8 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
 namespace IPC {
@@ -32,6 +34,7 @@ typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
 // This class is a singleton that manages DevToolsClientHost instances and
 // routes messages between developer tools clients and agents.
 class DevToolsManager : public DevToolsClientHost::CloseListener,
+                        public NotificationObserver,
                         public base::RefCounted<DevToolsManager> {
  public:
   static DevToolsManager* GetInstance();
@@ -106,6 +109,11 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   // DevToolsClientHost.
   virtual void ClientHostClosing(DevToolsClientHost* host);
 
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   // Returns RenderViewHost for the tab that is inspected by devtools
   // client hosted by DevToolsClientHost.
   RenderViewHost* GetInspectedRenderViewHost(DevToolsClientHost* client_host);
@@ -156,6 +164,8 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
       OrphanClientHosts;
   OrphanClientHosts orphan_client_hosts_;
   int last_orphan_cookie_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsManager);
 };

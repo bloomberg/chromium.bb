@@ -43,6 +43,8 @@ DevToolsManager::DevToolsManager()
     : inspected_rvh_for_reopen_(NULL),
       in_initial_show_(false),
       last_orphan_cookie_(0) {
+  registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_DELETED,
+                 NotificationService::AllSources());
 }
 
 DevToolsManager::~DevToolsManager() {
@@ -191,6 +193,13 @@ void DevToolsManager::ClientHostClosing(DevToolsClientHost* host) {
       Details<RenderViewHost>(inspected_rvh));
 
   UnbindClientHost(inspected_rvh, host);
+}
+
+void DevToolsManager::Observe(NotificationType type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  DCHECK(type == NotificationType::RENDER_VIEW_HOST_DELETED);
+  UnregisterDevToolsClientHostFor(Details<RenderViewHost>(details).ptr());
 }
 
 RenderViewHost* DevToolsManager::GetInspectedRenderViewHost(
