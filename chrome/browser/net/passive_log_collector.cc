@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,7 @@ void PassiveLogCollector::OnAddEntry(
   ChromeNetLog::Entry entry(num_events_seen_++, type, time, source, phase,
                             params);
 
-  SourceTrackerInterface* tracker = GetTrackerForSourceType_(entry.source.type);
+  SourceTrackerInterface* tracker = GetTrackerForSourceType(entry.source.type);
   if (tracker)
     tracker->OnAddEntry(entry);
 }
@@ -104,10 +104,10 @@ void PassiveLogCollector::Clear() {
 }
 
 PassiveLogCollector::SourceTrackerInterface*
-PassiveLogCollector::GetTrackerForSourceType_(
+PassiveLogCollector::GetTrackerForSourceType(
     net::NetLog::SourceType source_type) {
-  DCHECK_LE(source_type, static_cast<int>(arraysize(trackers_)));
-  DCHECK_GE(source_type, 0);
+  CHECK_LT(source_type, static_cast<int>(arraysize(trackers_)));
+  CHECK_GE(source_type, 0);
   return trackers_[source_type];
 }
 
@@ -234,8 +234,8 @@ void PassiveLogCollector::SourceTracker::DeleteSourceInfo(
     return;
   }
   // The source should not be in the deletion queue.
-  DCHECK(std::find(deletion_queue_.begin(), deletion_queue_.end(),
-                   source_id) == deletion_queue_.end());
+  CHECK(std::find(deletion_queue_.begin(), deletion_queue_.end(),
+                  source_id) == deletion_queue_.end());
   ReleaseAllReferencesToDependencies(&(it->second));
   sources_.erase(it);
 }
@@ -288,7 +288,7 @@ void PassiveLogCollector::SourceTracker::EraseFromDeletionQueue(
   DeletionQueue::iterator it =
       std::remove(deletion_queue_.begin(), deletion_queue_.end(),
                   source_id);
-  DCHECK(it != deletion_queue_.end());
+  CHECK(it != deletion_queue_.end());
   deletion_queue_.erase(it);
 }
 
@@ -338,7 +338,7 @@ void PassiveLogCollector::SourceTracker::AddReferenceToSourceDependency(
   DCHECK(parent_);
   DCHECK_NE(source.type, net::NetLog::SOURCE_NONE);
   SourceTracker* tracker = static_cast<SourceTracker*>(
-      parent_->GetTrackerForSourceType_(source.type));
+      parent_->GetTrackerForSourceType(source.type));
   DCHECK(tracker);
 
   // Tell the owning tracker to increment the reference count of |source|.
@@ -359,7 +359,7 @@ void PassiveLogCollector::SourceTracker::ReleaseAllReferencesToDependencies(
     DCHECK(parent_);
     DCHECK_NE(source.type, net::NetLog::SOURCE_NONE);
     SourceTracker* tracker = static_cast<SourceTracker*>(
-        parent_->GetTrackerForSourceType_(source.type));
+        parent_->GetTrackerForSourceType(source.type));
     DCHECK(tracker);
 
     // Tell the owning tracker to decrement the reference count of |source|.

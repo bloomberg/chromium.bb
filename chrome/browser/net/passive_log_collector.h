@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -361,7 +361,7 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserver {
 
  private:
   // Returns the tracker to use for sources of type |source_type|, or NULL.
-  SourceTrackerInterface* GetTrackerForSourceType_(
+  SourceTrackerInterface* GetTrackerForSourceType(
       net::NetLog::SourceType source_type);
 
   FRIEND_TEST_ALL_PREFIXES(PassiveLogCollectorTest,
