@@ -21,6 +21,13 @@ export INST_GLIBC_PROGRAM="$PWD/glibc_download.sh"
 # More info here: http://cygwin.com/ml/cygwin/2011-03/msg00596.html
 export ac_cv_func_mmap_fixed_mapped=yes
 
+echo @@@BUILD_STEP clobber@@@
+rm -rf scons-out tools/SRC tools/BUILD tools/out tools/toolchain \
+  tools/glibc tools/glibc.tar tools/toolchain.tgz toolchain .tmp ||
+  echo already_clean
+mkdir -p tools/toolchain/win_x86
+ln -sfn "$PWD"/cygwin/tmp tools/toolchain/win_x86
+
 # glibc_download.sh can return three return codes:
 #  0 - glibc is successfully downloaded and installed
 #  1 - glibc is not downloaded but another run may help
@@ -38,17 +45,11 @@ elif (($?>1)); then
 fi
 cd ..
 
-echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out tools/SRC tools/BUILD tools/out tools/toolchain \
-  tools/glibc tools/glibc.tar tools/toolchain.tgz toolchain .tmp ||
-  echo already_clean
-mkdir -p tools/toolchain/win_x86
-ln -sfn "$PWD"/cygwin/tmp tools/toolchain/win_x86
-
 echo @@@BUILD_STEP compile_toolchain@@@
 (
   cd tools
-  make -j8 buildbot-build-with-glibc
+  # TODO(khim): use -j8 after switch to CygWin 1.7.8+
+  make -j1 buildbot-build-with-glibc
   rm toolchain/win_x86/tmp
 )
 
