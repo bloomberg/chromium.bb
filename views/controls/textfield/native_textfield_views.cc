@@ -452,8 +452,11 @@ void NativeTextfieldViews::UpdateCursorBoundsAndTextOffset() {
   // TODO(oshima): bidi
   const gfx::Font& font = GetFont();
   int full_width = font.GetStringWidth(model_->GetVisibleText());
+  int cursor_height = std::min(height() - insets.height(), font.GetHeight());
+
   cursor_bounds_ = model_->GetCursorBounds(font);
-  cursor_bounds_.set_y(cursor_bounds_.y() + insets.top());
+  cursor_bounds_.set_y((height() - cursor_height) / 2);
+  cursor_bounds_.set_height(cursor_height);
 
   int x_right = text_offset_ + cursor_bounds_.right();
   int x_left = text_offset_ + cursor_bounds_.x();
