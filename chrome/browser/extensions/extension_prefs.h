@@ -77,7 +77,7 @@ class ExtensionPrefs {
 
   // Returns true if the specified extension has an entry in prefs
   // and its killbit is on.
-  bool IsExtensionKilled(const std::string& id);
+  bool IsExtensionKilled(const std::string& id) const;
 
   // Get the order that toolstrip URLs appear in the shelf.
   typedef std::vector<GURL> URLList;

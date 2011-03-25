@@ -27,7 +27,7 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
-#include "chrome/browser/extensions/pending_extension_info.h"
+#include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/extensions/extension.h"
@@ -42,6 +42,7 @@ class ExtensionServiceBackend;
 class ExtensionToolbarModel;
 class ExtensionUpdater;
 class GURL;
+class PendingExtensionManager;
 class Profile;
 class Version;
 
@@ -51,17 +52,22 @@ class ExtensionUpdateService {
  public:
   virtual ~ExtensionUpdateService() {}
   virtual const ExtensionList* extensions() const = 0;
-  virtual const PendingExtensionMap& pending_extensions() const = 0;
-  virtual void UpdateExtension(const std::string& id, const FilePath& path,
+  virtual PendingExtensionManager* pending_extension_manager() = 0;
+  virtual void UpdateExtension(const std::string& id,
+                               const FilePath& path,
                                const GURL& download_url) = 0;
   virtual const Extension* GetExtensionById(const std::string& id,
-                                            bool include_disabled) = 0;
+                                            bool include_disabled) const = 0;
   virtual void UpdateExtensionBlacklist(
     const std::vector<std::string>& blacklist) = 0;
   virtual void CheckAdminBlacklist() = 0;
   virtual bool HasInstalledExtensions() = 0;
 
+  // TODO(skerner): Change to const ExtensionPrefs& extension_prefs() const,
+  // ExtensionPrefs* mutable_extension_prefs().
   virtual ExtensionPrefs* extension_prefs() = 0;
+  virtual const ExtensionPrefs& const_extension_prefs() const = 0;
+
   virtual Profile* profile() = 0;
 };
 
@@ -133,8 +139,8 @@ class ExtensionService
   virtual const ExtensionList* disabled_extensions() const;
   virtual const ExtensionList* terminated_extensions() const;
 
-  // Gets the set of pending extensions.
-  virtual const PendingExtensionMap& pending_extensions() const;
+  // Gets the object managing the set of pending extensions.
+  virtual PendingExtensionManager* pending_extension_manager();
 
   // Registers an extension to be loaded as a component extension.
   void register_component_extension(const ComponentExtensionInfo& info) {
@@ -186,7 +192,7 @@ class ExtensionService
 
   // Look up an extension by ID.
   virtual const Extension* GetExtensionById(const std::string& id,
-                                            bool include_disabled);
+                                            bool include_disabled) const;
 
   // Looks up a terminated (crashed) extension by ID. GetExtensionById does
   // not include terminated extensions.
@@ -199,30 +205,6 @@ class ExtensionService
   virtual void UpdateExtension(const std::string& id,
                                const FilePath& extension_path,
                                const GURL& download_url);
-
-  // Adds an extension in a pending state; the extension with the
-  // given info will be installed on the next auto-update cycle.
-  //
-  // It is an error to call this with an already-installed extension
-  // (even a disabled one).
-  //
-  // TODO(akalin): Replace |install_silently| with a list of
-  // pre-enabled permissions.
-  void AddPendingExtensionFromSync(
-      const std::string& id, const GURL& update_url,
-      PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
-      bool install_silently, bool enable_on_install,
-      bool enable_incognito_on_install);
-
-  // Given an extension id and an update URL, schedule the extension
-  // to be fetched, installed, and activated.
-  void AddPendingExtensionFromExternalUpdateUrl(const std::string& id,
-                                                const GURL& update_url,
-                                                Extension::Location location);
-
-  // Like the above. Always installed silently, and defaults update url
-  // from extension id.
-  void AddPendingExtensionFromDefaultAppList(const std::string& id);
 
   // Reloads the specified extension.
   void ReloadExtension(const std::string& extension_id);
@@ -356,6 +338,7 @@ class ExtensionService
   void DestroyingProfile();
 
   virtual ExtensionPrefs* extension_prefs();
+  virtual const ExtensionPrefs& const_extension_prefs() const;
 
   // Whether the extension service is ready.
   // TODO(skerner): Get rid of this method.  crbug.com/63756
@@ -449,21 +432,12 @@ class ExtensionService
   // and disabled extensions.
   const Extension* GetExtensionByIdInternal(const std::string& id,
                                             bool include_enabled,
-                                            bool include_disabled);
+                                            bool include_disabled) const;
 
 
   // Keep track of terminated extensions.
   void TrackTerminatedExtension(const Extension* extension);
   void UntrackTerminatedExtension(const std::string& id);
-
-  // Like AddPendingExtension*() functions above, but assumes an
-  // extension with the same id is not already installed.
-  void AddPendingExtensionInternal(
-      const std::string& id, const GURL& update_url,
-      PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
-      bool is_from_sync, bool install_silently,
-      bool enable_on_install, bool enable_incognito_on_install,
-      Extension::Location install_source);
 
   // Handles sending notification that |extension| was loaded.
   void NotifyExtensionLoaded(const Extension* extension);
@@ -497,8 +471,8 @@ class ExtensionService
   // Used to quickly check if an extension was terminated.
   std::set<std::string> terminated_extension_ids_;
 
-  // The set of pending extensions.
-  PendingExtensionMap pending_extensions_;
+  // Hold the set of pending extensions.
+  PendingExtensionManager pending_extension_manager_;
 
   // The map of extension IDs to their runtime data.
   ExtensionRuntimeDataMap extension_runtime_data_;
@@ -580,8 +554,6 @@ class ExtensionService
   // if an update check is needed to install pending extensions.
   bool external_extension_url_added_;
 
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
-                           UpdatePendingExtensionAlreadyInstalled);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,

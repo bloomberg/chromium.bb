@@ -717,7 +717,7 @@ void ExtensionPrefs::SetLaunchType(const std::string& extension_id,
   SavePrefsAndNotify();
 }
 
-bool ExtensionPrefs::IsExtensionKilled(const std::string& id) {
+bool ExtensionPrefs::IsExtensionKilled(const std::string& id) const {
   DictionaryValue* extension = GetExtensionPref(id);
   if (!extension)
     return false;

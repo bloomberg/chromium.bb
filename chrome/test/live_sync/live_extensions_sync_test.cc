@@ -54,10 +54,11 @@ ExtensionStateMap GetExtensionStates(ExtensionService* extensions_service) {
     extension_states[(*it)->id()] = DISABLED;
   }
 
-  const PendingExtensionMap& pending_extensions =
-      extensions_service->pending_extensions();
-  for (PendingExtensionMap::const_iterator it = pending_extensions.begin();
-       it != pending_extensions.end(); ++it) {
+  const PendingExtensionManager* pending_extension_manager =
+      extensions_service->pending_extension_manager();
+  PendingExtensionManager::const_iterator it;
+  for (it = pending_extension_manager->begin();
+       it != pending_extension_manager->end(); ++it) {
     extension_states[it->first] = PENDING;
   }
 

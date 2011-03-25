@@ -25,6 +25,7 @@ class TestExtensionPrefs {
   virtual ~TestExtensionPrefs();
 
   ExtensionPrefs* prefs() { return prefs_.get(); }
+  const ExtensionPrefs& const_prefs() const { return *prefs_.get(); }
   PrefService* pref_service() { return pref_service_.get(); }
   const FilePath& temp_dir() const { return temp_dir_.path(); }
 

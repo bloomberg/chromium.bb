@@ -50,7 +50,8 @@ const ManifestFetchData::PingData kNeverPingedData(
 // Base class for further specialized test classes.
 class MockService : public ExtensionUpdateService {
  public:
-  MockService() {}
+  MockService()
+      : pending_extension_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(*this)) {}
   virtual ~MockService() {}
 
   virtual const ExtensionList* extensions() const {
@@ -58,18 +59,20 @@ class MockService : public ExtensionUpdateService {
     return NULL;
   }
 
-  virtual const PendingExtensionMap& pending_extensions() const {
-    ADD_FAILURE();
-    return pending_extensions_;
+  virtual PendingExtensionManager* pending_extension_manager() {
+    ADD_FAILURE() << "Subclass should override this if it will "
+                  << "be accessed by a test.";
+    return &pending_extension_manager_;
   }
 
   virtual void UpdateExtension(const std::string& id,
-                               const FilePath& extension_path,
+                               const FilePath& path,
                                const GURL& download_url) {
     FAIL();
   }
 
-  virtual const Extension* GetExtensionById(const std::string& id, bool) {
+  virtual const Extension* GetExtensionById(const std::string& id,
+                                            bool include_disabled) const {
     ADD_FAILURE();
     return NULL;
   }
@@ -89,6 +92,9 @@ class MockService : public ExtensionUpdateService {
   }
 
   virtual ExtensionPrefs* extension_prefs() { return prefs_.prefs(); }
+  virtual const ExtensionPrefs& const_extension_prefs() const {
+    return prefs_.const_prefs();
+  }
 
   virtual Profile* profile() { return &profile_; }
 
@@ -118,7 +124,7 @@ class MockService : public ExtensionUpdateService {
   }
 
  protected:
-  PendingExtensionMap pending_extensions_;
+  PendingExtensionManager pending_extension_manager_;
   TestExtensionPrefs prefs_;
   TestingProfile profile_;
 
@@ -145,10 +151,11 @@ bool ShouldAlwaysInstall(const Extension& extension) {
   return true;
 }
 
-// Creates test pending extensions and inserts them into list. The
-// name and version are all based on their index.
-void CreateTestPendingExtensions(int count, const GURL& update_url,
-                                 PendingExtensionMap* pending_extensions) {
+// Loads some pending extension records into a pending extension manager.
+void SetupPendingExtensionManagerForTest(
+    int count,
+    const GURL& update_url,
+    PendingExtensionManager* pending_extension_manager) {
   for (int i = 1; i <= count; i++) {
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install =
         (i % 2 == 0) ? &ShouldInstallThemesOnly : &ShouldInstallExtensionsOnly;
@@ -157,10 +164,16 @@ void CreateTestPendingExtensions(int count, const GURL& update_url,
     const Extension::State kInitialState = Extension::ENABLED;
     const bool kInitialIncognitoEnabled = false;
     std::string id = GenerateId(base::StringPrintf("extension%i", i));
-    (*pending_extensions)[id] =
-        PendingExtensionInfo(update_url, should_allow_install,
-                             kIsFromSync, kInstallSilently, kInitialState,
-                             kInitialIncognitoEnabled, Extension::INTERNAL);
+
+    pending_extension_manager->AddForTesting(
+        id,
+        PendingExtensionInfo(update_url,
+                             should_allow_install,
+                             kIsFromSync,
+                             kInstallSilently,
+                             kInitialState,
+                             kInitialIncognitoEnabled,
+                             Extension::INTERNAL));
   }
 }
 
@@ -170,29 +183,25 @@ class ServiceForManifestTests : public MockService {
 
   virtual ~ServiceForManifestTests() {}
 
-  virtual const Extension* GetExtensionById(const std::string& id, bool) {
-    for (ExtensionList::iterator iter = extensions_.begin();
+  virtual const Extension* GetExtensionById(const std::string& id,
+                                            bool include_disabled) const {
+    for (ExtensionList::const_iterator iter = extensions_.begin();
         iter != extensions_.end(); ++iter) {
-     if ((*iter)->id() == id) {
-       return *iter;
-     }
+      if ((*iter)->id() == id) {
+        return *iter;
+      }
     }
     return NULL;
   }
 
   virtual const ExtensionList* extensions() const { return &extensions_; }
 
-  virtual const PendingExtensionMap& pending_extensions() const {
-    return pending_extensions_;
+  virtual PendingExtensionManager* pending_extension_manager() {
+    return &pending_extension_manager_;
   }
 
   void set_extensions(ExtensionList extensions) {
     extensions_ = extensions;
-  }
-
-  void set_pending_extensions(
-      const PendingExtensionMap& pending_extensions) {
-    pending_extensions_ = pending_extensions;
   }
 
   virtual bool HasInstalledExtensions() {
@@ -218,24 +227,19 @@ class ServiceForDownloadTests : public MockService {
     download_url_ = download_url;
   }
 
-  virtual const PendingExtensionMap& pending_extensions() const {
-    return pending_extensions_;
+  virtual PendingExtensionManager* pending_extension_manager() {
+    return &pending_extension_manager_;
   }
 
-  virtual const Extension* GetExtensionById(const std::string& id, bool) {
+  virtual const Extension* GetExtensionById(const std::string& id, bool) const {
     last_inquired_extension_id_ = id;
     return NULL;
   }
 
-  void set_pending_extensions(
-      const PendingExtensionMap& pending_extensions) {
-    pending_extensions_ = pending_extensions;
-  }
-
-  const std::string& extension_id() { return extension_id_; }
-  const FilePath& install_path() { return install_path_; }
-  const GURL& download_url() { return download_url_; }
-  const std::string& last_inquired_extension_id() {
+  const std::string& extension_id() const { return extension_id_; }
+  const FilePath& install_path() const { return install_path_; }
+  const GURL& download_url() const { return download_url_; }
+  const std::string& last_inquired_extension_id() const {
     return last_inquired_extension_id_;
   }
 
@@ -244,8 +248,11 @@ class ServiceForDownloadTests : public MockService {
   FilePath install_path_;
   GURL download_url_;
 
-  // The last extension_id that GetExtensionById was called with.
-  std::string last_inquired_extension_id_;
+  // The last extension ID that GetExtensionById was called with.
+  // Mutable because the method that sets it (GetExtensionById) is const
+  // in the actual extension service, but must record the last extension
+  // ID in this test class.
+  mutable std::string last_inquired_extension_id_;
 };
 
 class ServiceForBlacklistTests : public MockService {
@@ -324,10 +331,11 @@ class ExtensionUpdaterTest : public testing::Test {
     ServiceForManifestTests service;
     std::string update_url("http://foo.com/bar");
     ExtensionList extensions;
-    PendingExtensionMap pending_extensions;
+    PendingExtensionManager* pending_extension_manager =
+        service.pending_extension_manager();
     if (pending) {
-      CreateTestPendingExtensions(1, GURL(update_url), &pending_extensions);
-      service.set_pending_extensions(pending_extensions);
+      SetupPendingExtensionManagerForTest(1, GURL(update_url),
+                                          pending_extension_manager);
     } else {
       service.CreateTestExtensions(1, 1, &extensions, &update_url,
                                    Extension::INTERNAL);
@@ -366,7 +374,7 @@ class ExtensionUpdaterTest : public testing::Test {
     std::map<std::string, std::string> params;
     ExtractParameters(decoded, &params);
     if (pending) {
-      EXPECT_EQ(pending_extensions.begin()->first, params["id"]);
+      EXPECT_EQ(pending_extension_manager->begin()->first, params["id"]);
       EXPECT_EQ("0.0.0.0", params["v"]);
     } else {
       EXPECT_EQ(extensions[0]->id(), params["id"]);
@@ -538,9 +546,9 @@ class ExtensionUpdaterTest : public testing::Test {
   static void TestDetermineUpdatesPending() {
     // Create a set of test extensions
     ServiceForManifestTests service;
-    PendingExtensionMap pending_extensions;
-    CreateTestPendingExtensions(3, GURL(), &pending_extensions);
-    service.set_pending_extensions(pending_extensions);
+    PendingExtensionManager* pending_extension_manager =
+        service.pending_extension_manager();
+    SetupPendingExtensionManagerForTest(3, GURL(), pending_extension_manager);
 
     MessageLoop message_loop;
     scoped_refptr<ExtensionUpdater> updater(
@@ -550,8 +558,9 @@ class ExtensionUpdaterTest : public testing::Test {
 
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
     UpdateManifest::Results updates;
-    for (PendingExtensionMap::const_iterator it = pending_extensions.begin();
-         it != pending_extensions.end(); ++it) {
+    PendingExtensionManager::const_iterator it;
+    for (it = pending_extension_manager->begin();
+         it != pending_extension_manager->end(); ++it) {
       fetch_data.AddExtension(it->first, "1.0.0.0",
                               kNeverPingedData,
                               kEmptyUpdateUrlData);
@@ -669,12 +678,13 @@ class ExtensionUpdaterTest : public testing::Test {
       const bool kInstallSilently = true;
       const Extension::State kInitialState = Extension::ENABLED;
       const bool kInitialIncognitoEnabled = false;
-      PendingExtensionMap pending_extensions;
-      pending_extensions[id] =
+      PendingExtensionManager* pending_extension_manager =
+          service->pending_extension_manager();
+      pending_extension_manager->AddForTesting(
+          id,
           PendingExtensionInfo(test_url, &ShouldAlwaysInstall, kIsFromSync,
                                kInstallSilently, kInitialState,
-                               kInitialIncognitoEnabled, Extension::INTERNAL);
-      service->set_pending_extensions(pending_extensions);
+                               kInitialIncognitoEnabled, Extension::INTERNAL));
     }
 
     // Call back the ExtensionUpdater with a 200 response and some test data
