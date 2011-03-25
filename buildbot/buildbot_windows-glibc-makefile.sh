@@ -15,18 +15,27 @@ set -u
 
 export TOOLCHAINLOC=toolchain
 export TOOLCHAINNAME=win_x86
+export INST_GLIBC_PROGRAM="$PWD/glibc_download.sh"
+# Workaround for broken autoconf mmap test (WOW64 limitation)
+# More info here: http://cygwin.com/ml/cygwin/2011-03/msg00596.html
+export ac_cv_func_mmap_fixed_mapped=yes
 
+# glibc_download.sh can return three return codes:
+#  0 - glibc is successfully downloaded and installed
+#  1 - glibc is not downloaded but another run may help
+#  2+ - glibc is not downloaded and can not be downloaded later
+#
+# If the error result is 2 or more we are stopping the build
 echo @@@BUILD_STEP check_glibc_revision_sanity@@@
-GLIBC_REVISION="$(tools/glibc_revision.sh)"
-if ! curl --fail --location --url http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$GLIBC_REVISION"/glibc_x86.tar.gz > /dev/null; then
-  for ((i=1;i<100;i++)); do
-    echo "Check if revision "$((REVISION+i))" is available..."
-    if curl --fail --location --url http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$((GLIBC_REVISION+i))"/glibc_x86.tar.gz > /dev/null; then
-      echo @@@BUILD_FAILED@@@
-      exit -100
-    fi
-  done
+cd tools
+make glibc-sdkdirs
+if glibc_download.sh toolchain/win_x86 1; then
+  INST_GLIBC_PROGRAM=true
+elif (($?>1)); then
+  echo @@@BUILD_FAILED@@@
+  exit 100
 fi
+cd ..
 
 echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out tools/SRC tools/BUILD tools/out tools/toolchain \
@@ -38,7 +47,7 @@ ln -sfn "$PWD"/cygwin/tmp tools/toolchain/win_x86
 echo @@@BUILD_STEP compile_toolchain@@@
 (
   cd tools
-  make -j8 buildbot-build-with-glibc INST_GLIBC_PROGRAM="$PWD/glibc_download.sh"
+  make -j8 buildbot-build-with-glibc
   rm toolchain/win_x86/tmp
 )
 
@@ -69,24 +78,6 @@ echo @@@BUILD_STEP gyp_compile@@@
 )
 
 RETCODE=0
-
-#echo @@@BUILD_STEP gyp_tests@@@
-#python trusted_test.py --config Release || \
-#  (RETCODE=$? && echo @@@BUILD_FAILED@@@)
-
-#echo @@@BUILD_STEP small_tests32@@@
-#./scons -k -j 8 \
-#  naclsdk_mode=custom:"${PWD}"/toolchain/win_x86 \
-#  --mode=dbg-host,nacl platform=x86-32 \
-#  --nacl_glibc --verbose small_tests || \
-#  (RETCODE=$? && echo @@@BUILD_FAILED@@@)
-
-#echo @@@BUILD_STEP small_tests64@@@
-#./scons -k -j 8 \
-#  naclsdk_mode=custom:"${PWD}"/toolchain/win_x86 \
-#  --mode=dbg-host,nacl platform=x86-64 \
-#  --nacl_glibc --verbose small_tests || \
-#  (RETCODE=$? && echo @@@BUILD_FAILED@@@)
 
 # TODO(khim): add small_tests, medium_tests, large_tests, {chrome_}browser_tests.
 

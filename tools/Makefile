@@ -679,6 +679,13 @@ stubout:
 BUILD/stamp-$(CROSSARCH)-full-gcc: glibc-adhoc-files
 	rm -rf BUILD/build-full-gcc-$(CROSSARCH)
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)
+ifeq ($(CYGWIN17), 1)
+	mkdir BUILD/build-full-gcc-$(CROSSARCH)/gcc
+	cp -af $(DESTDIR)$(SDKROOT)/libexec/cyg*.dll \
+	    BUILD/build-full-gcc-$(CROSSARCH)/gcc
+	cp -af $(DESTDIR)$(SDKROOT)/$(CROSSARCH) \
+	    BUILD/build-full-gcc-$(CROSSARCH)/$(CROSSARCH)
+endif
 	# See http://code.google.com/p/nativeclient/issues/detail?id=854
 	rm -rf $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
 	mkdir $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
