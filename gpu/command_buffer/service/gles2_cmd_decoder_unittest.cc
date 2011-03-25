@@ -1138,7 +1138,6 @@ TEST_F(GLES2DecoderTest, GenerateMipmapWrongFormatsFails) {
 
 TEST_F(GLES2DecoderWithShaderTest, Uniform1iValidArgs) {
   EXPECT_CALL(*gl_, Uniform1i(kUniform1Location, 2));
-  SpecializedSetup<Uniform1i, 0>(true);
   Uniform1i cmd;
   cmd.Init(kUniform1Location, 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -1147,27 +1146,24 @@ TEST_F(GLES2DecoderWithShaderTest, Uniform1iValidArgs) {
 TEST_F(GLES2DecoderWithShaderTest, Uniform1ivValidArgs) {
   EXPECT_CALL(
       *gl_, Uniform1iv(
-          kUniform1Location, 2,
+          kUniform1Location, 1,
           reinterpret_cast<const GLint*>(shared_memory_address_)));
-  SpecializedSetup<Uniform1iv, 0>(true);
   Uniform1iv cmd;
-  cmd.Init(kUniform1Location, 2, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(kUniform1Location, 1, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderWithShaderTest, Uniform1ivInvalidArgs2_0) {
   EXPECT_CALL(*gl_, Uniform1iv(_, _, _)).Times(0);
-  SpecializedSetup<Uniform1iv, 0>(false);
   Uniform1iv cmd;
-  cmd.Init(kUniform1Location, 2, kInvalidSharedMemoryId, 0);
+  cmd.Init(kUniform1Location, 1, kInvalidSharedMemoryId, 0);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderWithShaderTest, Uniform1ivInvalidArgs2_1) {
   EXPECT_CALL(*gl_, Uniform1iv(_, _, _)).Times(0);
-  SpecializedSetup<Uniform1iv, 0>(false);
   Uniform1iv cmd;
-  cmd.Init(kUniform1Location, 2, shared_memory_id_, kInvalidSharedMemoryOffset);
+  cmd.Init(kUniform1Location, 1, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
@@ -1175,14 +1171,30 @@ TEST_F(GLES2DecoderWithShaderTest, Uniform1ivImmediateValidArgs) {
   Uniform1ivImmediate& cmd = *GetImmediateAs<Uniform1ivImmediate>();
   EXPECT_CALL(
       *gl_,
-      Uniform1iv(kUniform1Location, 2,
+      Uniform1iv(kUniform1Location, 1,
           reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
-  SpecializedSetup<Uniform1ivImmediate, 0>(true);
   GLint temp[1 * 2] = { 0, };
-  cmd.Init(kUniform1Location, 2, &temp[0]);
+  cmd.Init(kUniform1Location, 1, &temp[0]);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
+
+TEST_F(GLES2DecoderWithShaderTest, Uniform1ivInvalidValidArgs) {
+  EXPECT_CALL(*gl_, Uniform1iv(_, _, _)).Times(0);
+  Uniform1iv cmd;
+  cmd.Init(kUniform1Location, 2, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderWithShaderTest, Uniform1ivZeroCount) {
+  EXPECT_CALL(*gl_, Uniform1iv(_, _, _)).Times(0);
+  Uniform1iv cmd;
+  cmd.Init(kUniform1Location, 0, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 
 TEST_F(GLES2DecoderWithShaderTest, BindBufferToDifferentTargetFails) {
   // Bind the buffer to GL_ARRAY_BUFFER

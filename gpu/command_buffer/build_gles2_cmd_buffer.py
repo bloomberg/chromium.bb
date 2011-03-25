@@ -1519,7 +1519,12 @@ _FUNCTION_INFO = {
     'count': 2,
     'decoder_func': 'DoUniform2fv',
   },
-  'Uniform2iv': {'type': 'PUTn', 'data_type': 'GLint', 'count': 2},
+  'Uniform2iv': {
+    'type': 'PUTn',
+    'data_type': 'GLint',
+    'count': 2,
+    'decoder_func': 'DoUniform2iv',
+  },
   'Uniform3f': {'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 3},
   'Uniform3fv': {
     'type': 'PUTn',
@@ -1527,7 +1532,12 @@ _FUNCTION_INFO = {
     'count': 3,
     'decoder_func': 'DoUniform3fv',
   },
-  'Uniform3iv': {'type': 'PUTn', 'data_type': 'GLint', 'count': 3},
+  'Uniform3iv': {
+    'type': 'PUTn',
+    'data_type': 'GLint',
+    'count': 3,
+    'decoder_func': 'DoUniform3iv',
+  },
   'Uniform4f': {
     'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 4
   },
@@ -1537,10 +1547,30 @@ _FUNCTION_INFO = {
     'count': 4,
     'decoder_func': 'DoUniform4fv',
   },
-  'Uniform4iv': {'type': 'PUTn', 'data_type': 'GLint', 'count': 4},
-  'UniformMatrix2fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 4},
-  'UniformMatrix3fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 9},
-  'UniformMatrix4fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 16},
+  'Uniform4iv': {
+    'type': 'PUTn',
+    'data_type': 'GLint',
+    'count': 4,
+    'decoder_func': 'DoUniform4iv',
+  },
+  'UniformMatrix2fv': {
+    'type': 'PUTn',
+    'data_type': 'GLfloat',
+    'count': 4,
+    'decoder_func': 'DoUniformMatrix2fv',
+  },
+  'UniformMatrix3fv': {
+    'type': 'PUTn',
+    'data_type': 'GLfloat',
+    'count': 9,
+    'decoder_func': 'DoUniformMatrix3fv',
+  },
+  'UniformMatrix4fv': {
+    'type': 'PUTn',
+    'data_type': 'GLfloat',
+    'count': 16,
+    'decoder_func': 'DoUniformMatrix4fv',
+  },
   'UnmapBufferSubDataCHROMIUM': {
     'gen_cmd': False,
     'extension': True,
@@ -3446,8 +3476,46 @@ class PUTnHandler(TypeHandler):
   def __init__(self):
     TypeHandler.__init__(self)
 
+  def WriteServiceUnitTest(self, func, file):
+    """Overridden from TypeHandler."""
+    TypeHandler.WriteServiceUnitTest(self, func, file)
+
+    valid_test = """
+TEST_F(%(test_name)s, %(name)sValidArgsCountTooLarge) {
+  EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
+  SpecializedSetup<%(name)s, 0>(true);
+  %(name)s cmd;
+  cmd.Init(%(args)s);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+"""
+    gl_arg_strings = []
+    arg_strings = []
+    count = 0
+    for arg in func.GetOriginalArgs():
+      # hardcoded to match unit tests.
+      if count == 0:
+        # the location of the second element of the first uniform.
+        gl_arg_strings.append("3")
+        arg_strings.append("3")
+      elif count == 1:
+        # the number of elements that gl will be called with.
+        gl_arg_strings.append("2")
+        # the number of elements requested in the command.
+        arg_strings.append("5")
+      else:
+        gl_arg_strings.append(arg.GetValidGLArg(count, 0))
+        arg_strings.append(arg.GetValidArg(count, 0))
+      count += 1
+    extra = {
+      'gl_args': ", ".join(gl_arg_strings),
+      'args': ", ".join(arg_strings),
+    }
+    self.WriteValidUnitTest(func, file, valid_test, extra)
+
   def WriteImmediateServiceUnitTest(self, func, file):
-    """Writes the service unit test for a command."""
+    """Overridden from TypeHandler."""
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   %(name)s& cmd = *GetImmediateAs<%(name)s>();

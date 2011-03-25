@@ -511,18 +511,27 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformLocation) {
             program_info->GetUniformLocation("uniform3[2]"));
 }
 
-TEST_F(ProgramManagerWithShaderTest, GetUniformTypeByLocation) {
+TEST_F(ProgramManagerWithShaderTest, GetUniformInfoByLocation) {
   const GLint kInvalidLocation = 1234;
-  GLenum type = 0u;
+  const ProgramManager::ProgramInfo::UniformInfo* info;
   const ProgramManager::ProgramInfo* program_info =
       manager_.GetProgramInfo(kClientProgramId);
+  GLint array_index = -1;
   ASSERT_TRUE(program_info != NULL);
-  EXPECT_TRUE(program_info->GetUniformTypeByLocation(kUniform2Location, &type));
-  EXPECT_EQ(kUniform2Type, type);
-  type = 0u;
-  EXPECT_FALSE(program_info->GetUniformTypeByLocation(
-      kInvalidLocation, &type));
-  EXPECT_EQ(0u, type);
+  info = program_info->GetUniformInfoByLocation(
+      kUniform2Location, &array_index);
+  EXPECT_EQ(0, array_index);
+  ASSERT_TRUE(info != NULL);
+  EXPECT_EQ(kUniform2Type, info->type);
+  array_index = -1;
+  info = program_info->GetUniformInfoByLocation(
+      kInvalidLocation, &array_index);
+  EXPECT_TRUE(info == NULL);
+  EXPECT_EQ(-1, array_index);
+  GLint loc = program_info->GetUniformLocation("uniform2[2]");
+  info = program_info->GetUniformInfoByLocation(loc, &array_index);
+  ASSERT_TRUE(info != NULL);
+  EXPECT_EQ(2, array_index);
 }
 
 // Some GL drivers incorrectly return gl_DepthRange and possibly other uniforms

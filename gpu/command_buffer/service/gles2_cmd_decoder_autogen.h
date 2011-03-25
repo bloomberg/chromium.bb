@@ -2012,7 +2012,7 @@ error::Error GLES2DecoderImpl::HandleUniform2iv(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform2iv(location, count, v);
+  DoUniform2iv(location, count, v);
   return error::kNoError;
 }
 
@@ -2032,7 +2032,7 @@ error::Error GLES2DecoderImpl::HandleUniform2ivImmediate(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform2iv(location, count, v);
+  DoUniform2iv(location, count, v);
   return error::kNoError;
 }
 
@@ -2107,7 +2107,7 @@ error::Error GLES2DecoderImpl::HandleUniform3iv(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform3iv(location, count, v);
+  DoUniform3iv(location, count, v);
   return error::kNoError;
 }
 
@@ -2127,7 +2127,7 @@ error::Error GLES2DecoderImpl::HandleUniform3ivImmediate(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform3iv(location, count, v);
+  DoUniform3iv(location, count, v);
   return error::kNoError;
 }
 
@@ -2204,7 +2204,7 @@ error::Error GLES2DecoderImpl::HandleUniform4iv(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform4iv(location, count, v);
+  DoUniform4iv(location, count, v);
   return error::kNoError;
 }
 
@@ -2224,7 +2224,7 @@ error::Error GLES2DecoderImpl::HandleUniform4ivImmediate(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform4iv(location, count, v);
+  DoUniform4iv(location, count, v);
   return error::kNoError;
 }
 
@@ -2247,7 +2247,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fv(
   if (value == NULL) {
     return error::kOutOfBounds;
   }
-  glUniformMatrix2fv(location, count, transpose, value);
+  DoUniformMatrix2fv(location, count, transpose, value);
   return error::kNoError;
 }
 
@@ -2273,7 +2273,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fvImmediate(
   if (value == NULL) {
     return error::kOutOfBounds;
   }
-  glUniformMatrix2fv(location, count, transpose, value);
+  DoUniformMatrix2fv(location, count, transpose, value);
   return error::kNoError;
 }
 
@@ -2296,7 +2296,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fv(
   if (value == NULL) {
     return error::kOutOfBounds;
   }
-  glUniformMatrix3fv(location, count, transpose, value);
+  DoUniformMatrix3fv(location, count, transpose, value);
   return error::kNoError;
 }
 
@@ -2322,7 +2322,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fvImmediate(
   if (value == NULL) {
     return error::kOutOfBounds;
   }
-  glUniformMatrix3fv(location, count, transpose, value);
+  DoUniformMatrix3fv(location, count, transpose, value);
   return error::kNoError;
 }
 
@@ -2345,7 +2345,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fv(
   if (value == NULL) {
     return error::kOutOfBounds;
   }
-  glUniformMatrix4fv(location, count, transpose, value);
+  DoUniformMatrix4fv(location, count, transpose, value);
   return error::kNoError;
 }
 
@@ -2371,7 +2371,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fvImmediate(
   if (value == NULL) {
     return error::kOutOfBounds;
   }
-  glUniformMatrix4fv(location, count, transpose, value);
+  DoUniformMatrix4fv(location, count, transpose, value);
   return error::kNoError;
 }
 
