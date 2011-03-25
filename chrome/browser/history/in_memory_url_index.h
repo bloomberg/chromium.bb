@@ -126,10 +126,16 @@ class InMemoryURLIndex {
 
   // Given a vector containing one or more words as string16s, scans the
   // history index and return a vector with all scored, matching history items.
-  // Each term must occur somewhere in the history item for the item to
-  // qualify; however, the terms do not necessarily have to be adjacent.
-  // Results are sorted with higher scoring items first. Each term from |terms|
-  // may contain punctuation but should not contain spaces.
+  // Each term must occur somewhere in the history item's URL or page title for
+  // the item to qualify; however, the terms do not necessarily have to be
+  // adjacent. Results are sorted with higher scoring items first. Each term
+  // from |terms| may contain punctuation but should not contain spaces.
+  // A search request which results in more than |kItemsToScoreLimit| total
+  // candidate items returns no matches (though the results set will be
+  // retained and used for subsequent calls to this function) as the scoring
+  // of such a large number of candidates may cause perceptible typing response
+  // delays in the omnibox. This is likely to occur for short omnibox terms
+  // such as 'h' and 'w' which will be found in nearly all history candidates.
   ScoredHistoryMatches HistoryItemsForTerms(const String16Vector& terms);
 
   // Updates or adds an history item to the index if it meets the minimum

@@ -48,6 +48,7 @@ typedef imui::InMemoryURLIndexCacheItem_HistoryInfoMapItem_HistoryInfoMapEntry
 
 const size_t InMemoryURLIndex::kNoCachedResultForTerm = -1;
 
+// Scoring constants.
 const float kOrderMaxValue = 50.0;
 const float kStartMaxValue = 50.0;
 const size_t kMaxSignificantStart = 20;
@@ -326,11 +327,15 @@ ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
     String16Vector::value_type all_terms(JoinString(lower_terms, ' '));
     HistoryIDSet history_id_set = HistoryIDSetFromWords(all_terms);
 
-    // Pass over all of the candidates filtering out any without a proper
-    // substring match, inserting those which pass in order by score.
-    scored_items = std::for_each(history_id_set.begin(), history_id_set.end(),
-                                 AddHistoryMatch(*this,
-                                                 lower_terms)).ScoredMatches();
+    // Don't perform any scoring (and don't return any matches) if the
+    // candidate pool is large. (See comments in header.)
+    const size_t kItemsToScoreLimit = 500;
+    if (history_id_set.size() <= kItemsToScoreLimit) {
+      // Pass over all of the candidates filtering out any without a proper
+      // substring match, inserting those which pass in order by score.
+      scored_items = std::for_each(history_id_set.begin(), history_id_set.end(),
+          AddHistoryMatch(*this, lower_terms)).ScoredMatches();
+    }
   }
 
   // Remove any stale TermCharWordSet's.

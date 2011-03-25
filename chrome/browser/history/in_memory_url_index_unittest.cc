@@ -15,6 +15,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/in_memory_url_index.h"
@@ -140,6 +141,24 @@ class LimitedInMemoryURLIndexTest : public InMemoryURLIndexTest {
   }
 };
 
+class ExpandedInMemoryURLIndexTest : public InMemoryURLIndexTest {
+ protected:
+  virtual void SetUp() {
+    InMemoryURLIndexTest::SetUp();
+    // Add 600 more history items.
+    // NOTE: Keep the string length constant at least the length of the format
+    // string plus 5 to account for a 3 digit number and terminator.
+    char url_format[] = "http://www.google.com/%d";
+    const size_t kMaxLen = arraysize(url_format) + 5;
+    char url_string[kMaxLen + 1];
+    for (int i = 0; i < 600; ++i) {
+      base::snprintf(url_string, kMaxLen, url_format, i);
+      URLRow row(MakeURLRow(url_string, "Google Search", 20, 0, 20));
+      AddURL(row);
+    }
+  }
+};
+
 TEST_F(InMemoryURLIndexTest, Construction) {
   url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy"))));
   EXPECT_TRUE(url_index_.get());
@@ -183,7 +202,7 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   terms.clear();
   terms.push_back(ASCIIToUTF16("drudge"));
   matches = url_index_->HistoryItemsForTerms(terms);
-  ASSERT_EQ(2U, url_index_->HistoryItemsForTerms(terms).size());
+  ASSERT_EQ(2U, matches.size());
   // The results should be in descending score order.
   EXPECT_GT(matches[0].raw_score, matches[1].raw_score);
 
@@ -215,6 +234,23 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
             matches[0].url_info.url().spec());  // Note: URL gets lowercased.
   EXPECT_EQ(ASCIIToUTF16("Practically Useless Search Result"),
             matches[0].url_info.title());
+}
+
+TEST_F(ExpandedInMemoryURLIndexTest, ShortCircuit) {
+  url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy"))));
+  url_index_->Init(this, "en,ja,hi,zh");
+  InMemoryURLIndex::String16Vector terms;
+
+  // A search for 'w' should short-circuit and not return any matches.
+  terms.push_back(ASCIIToUTF16("w"));
+  ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(terms);
+  EXPECT_TRUE(matches.empty());
+
+  // A search for 'working' should not short-circuit.
+  terms.clear();
+  terms.push_back(ASCIIToUTF16("working"));
+  matches = url_index_->HistoryItemsForTerms(terms);
+  EXPECT_EQ(1U, matches.size());
 }
 
 TEST_F(InMemoryURLIndexTest, TitleSearch) {
