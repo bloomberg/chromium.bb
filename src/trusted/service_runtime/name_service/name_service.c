@@ -245,13 +245,13 @@ int NaClNameServiceDeleteName(struct NaClNameService *nnsp,
 
   /* do the free operations w/o holding the lock */
   if (NULL != to_free) {
-    free((void *) to_free->name);
     NaClDescSafeUnref(to_free->entry);
     if (NULL != to_free->factory) {
       (void) (*to_free->factory)(to_free->state,
                                  to_free->name,
                                  (struct NaClDesc **) NULL);
     }
+    free((void *) to_free->name);
     free(to_free);
   }
   return status;
