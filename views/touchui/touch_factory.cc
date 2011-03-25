@@ -43,6 +43,8 @@ TouchFactory::TouchFactory()
   // NOTE: The new API for retrieving the list of devices (XIQueryDevice) does
   // not provide enough information to detect a touch device. As a result, the
   // old version of query function (XListInputDevices) is used instead.
+  // If XInput2 is not supported, this will return null (with count of -1) so
+  // we assume there cannot be any touch devices.
   int count = 0;
   XDeviceInfo* devlist = XListInputDevices(display, &count);
   for (int i = 0; i < count; i++) {
@@ -52,7 +54,8 @@ TouchFactory::TouchFactory()
       touch_device_list_.push_back(devlist[i].id);
     }
   }
-  XFreeDeviceList(devlist);
+  if (devlist)
+      XFreeDeviceList(devlist);
 }
 
 TouchFactory::~TouchFactory() {

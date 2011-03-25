@@ -79,8 +79,7 @@ namespace base {
 MessagePumpGlibX::MessagePumpGlibX() : base::MessagePumpForUI(),
 #if defined(HAVE_XINPUT2)
     xiopcode_(-1),
-    masters_(),
-    floats_(),
+    pointer_devices_(),
 #endif
     gdksource_(NULL),
     dispatching_event_(false),
@@ -112,29 +111,17 @@ void MessagePumpGlibX::SetupXInput2ForXWindow(Window xwindow) {
   XISetMask(mask, XI_ButtonRelease);
   XISetMask(mask, XI_Motion);
 
-  // It is not necessary to select for slave devices. XInput2 provides enough
-  // information to the event callback to decide which slave device triggered
-  // the event, thus decide whether the 'pointer event' is a 'mouse event' or a
-  // 'touch event'.
-  // If the touch device has 'GrabDevice' set and 'SendCoreEvents' unset (which
-  // is possible), then the device is detected as a floating device, and a
-  // floating device is not connected to a master device. So it is necessary to
-  // also select on the floating devices.
-  std::set<int> devices;
-  std::set_union(masters_.begin(), masters_.end(),
-                 floats_.begin(), floats_.end(),
-                 std::inserter(devices, devices.begin()));
-  XIEventMask evmasks[devices.size()];
+  XIEventMask evmasks[pointer_devices_.size()];
   int count = 0;
-  for (std::set<int>::const_iterator iter = devices.begin();
-       iter != devices.end();
+  for (std::set<int>::const_iterator iter = pointer_devices_.begin();
+       iter != pointer_devices_.end();
        ++iter, ++count) {
     evmasks[count].deviceid = *iter;
     evmasks[count].mask_len = sizeof(mask);
     evmasks[count].mask = mask;
   }
 
-  XISelectEvents(xdisplay, xwindow, evmasks, devices.size());
+  XISelectEvents(xdisplay, xwindow, evmasks, pointer_devices_.size());
 
   // TODO(sad): Setup masks for keyboard events.
 
@@ -297,16 +284,21 @@ void MessagePumpGlibX::InitializeXInput2(void) {
   SetupGtkWidgetRealizeNotifier(this);
 
   // Instead of asking X for the list of devices all the time, let's maintain a
-  // list of slave (physical) and master (virtual) pointer devices.
+  // list of pointer devices we care about.
+  // It is not necessary to select for slave devices. XInput2 provides enough
+  // information to the event callback to decide which slave device triggered
+  // the event, thus decide whether the 'pointer event' is a 'mouse event' or a
+  // 'touch event'.
+  // If the touch device has 'GrabDevice' set and 'SendCoreEvents' unset (which
+  // is possible), then the device is detected as a floating device, and a
+  // floating device is not connected to a master device. So it is necessary to
+  // also select on the floating devices.
   int count = 0;
   XIDeviceInfo* devices = XIQueryDevice(xdisplay, XIAllDevices, &count);
   for (int i = 0; i < count; i++) {
     XIDeviceInfo* devinfo = devices + i;
-    if (devinfo->use == XIFloatingSlave) {
-      floats_.insert(devinfo->deviceid);
-    } else if (devinfo->use == XIMasterPointer) {
-      masters_.insert(devinfo->deviceid);
-    }
+    if (devinfo->use == XIFloatingSlave || devinfo->use == XIMasterPointer)
+      pointer_devices_.insert(devinfo->deviceid);
   }
   XIFreeDeviceInfo(devices);
 

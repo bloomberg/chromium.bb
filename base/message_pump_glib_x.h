@@ -48,12 +48,10 @@ class MessagePumpGlibX : public MessagePumpForUI {
   // The opcode used for checking events.
   int xiopcode_;
 
-  // The list of master pointer devices. We maintain this list so that it is not
-  // necessary to query X for the list of devices for each GdkWindow created.
-  std::set<int> masters_;
-
-  // The list of floating pointer devices.
-  std::set<int> floats_;
+  // The list of pointer devices we care about.  We maintain this list so that
+  // it is not necessary to query X for the list of devices for each
+  // GdkWindow created.
+  std::set<int> pointer_devices_;
 #endif
 
   // The event source for GDK events.
