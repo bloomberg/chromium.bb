@@ -932,6 +932,44 @@ TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, status.os_error());
 }
 
+// Test for http://crbug.com/76202 .  We don't want to destroy a
+// download request prematurely when processing a cancellation from
+// the renderer.
+TEST_F(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
+  EXPECT_EQ(0, host_.pending_requests());
+
+  int render_view_id = 0;
+  int request_id = 1;
+
+  std::string response("HTTP\n"
+                       "Content-disposition: attachment; filename=foo\n\n");
+  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
+                                                            response.size()));
+  std::string response_data("01234567890123456789\x01foobar");
+
+  SetResponse(raw_headers, response_data);
+  SetResourceType(ResourceType::MAIN_FRAME);
+  HandleScheme("http");
+
+  MakeTestRequest(render_view_id, request_id, GURL("http://example.com/blah"));
+  // Return some data so that the request is identified as a download
+  // and the proper resource handlers are created.
+  EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
+
+  // And now simulate a cancellation coming from the renderer.
+  ResourceHostMsg_CancelRequest msg(filter_->child_id(), request_id);
+  bool msg_was_ok;
+  host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
+
+  // Since the request had already started processing as a download,
+  // the cancellation above should have been ignored and the request
+  // should still be alive.
+  EXPECT_EQ(1, host_.pending_requests());
+
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+}
+
 class DummyResourceHandler : public ResourceHandler {
  public:
   DummyResourceHandler() {}
