@@ -774,7 +774,8 @@ TEST_F(WorkerFileSystemTest, FileEntryToURISync) {
   RunWorkerFileSystemLayoutTest("file-entry-to-uri-sync.html");
 }
 
-TEST_F(WorkerFileSystemTest, ResolveURLHttpTests) {
+// http://crbug.com/77442
+TEST_F(WorkerFileSystemTest, FLAKY_ResolveURLHttpTests) {
   static const char* kLayoutTests[] = {
     "resolve-url.html",
     "resolve-url-sync.html"
