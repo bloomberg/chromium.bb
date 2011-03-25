@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,8 @@ extern "C" {
 struct sqlite3;
 struct sqlite3_stmt;
 }
+
+class StringValue;
 
 namespace syncable {
 struct EntryKernel;
@@ -95,6 +97,10 @@ class Id {
   // useful for computing upper bounds on std::sets that are ordered
   // by operator<.
   Id GetLexicographicSuccessor() const;
+
+  // Dumps the ID as a value and returns it.  Transfers ownership of
+  // the StringValue to the caller.
+  StringValue* ToValue() const;
 
   // Three functions are used to work with our proto buffers.
   std::string GetServerId() const;

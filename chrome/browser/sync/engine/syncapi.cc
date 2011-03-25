@@ -313,21 +313,9 @@ DictionaryValue* BaseNode::ToValue() const {
   node_info->SetBoolean("isFolder", GetIsFolder());
   // TODO(akalin): Add a std::string accessor for the title.
   node_info->SetString("title", WideToUTF8(GetTitle()));
-  {
-    syncable::ModelType model_type = GetModelType();
-    if (model_type >= syncable::FIRST_REAL_MODEL_TYPE) {
-      node_info->SetString("type", ModelTypeToString(model_type));
-    } else if (model_type == syncable::TOP_LEVEL_FOLDER) {
-      node_info->SetString("type", "Top-level folder");
-    } else if (model_type == syncable::UNSPECIFIED) {
-      node_info->SetString("type", "Unspecified");
-    } else {
-      node_info->SetString("type", base::IntToString(model_type));
-    }
-  }
-  node_info->Set(
-      "specifics",
-      browser_sync::EntitySpecificsToValue(GetEntry()->Get(SPECIFICS)));
+  node_info->Set("type", ModelTypeToValue(GetModelType()));
+  // Specifics are already in the Entry value, so no need to duplicate
+  // it here.
   node_info->SetString("externalId",
                        base::Int64ToString(GetExternalId()));
   node_info->SetString("predecessorId",
@@ -336,6 +324,7 @@ DictionaryValue* BaseNode::ToValue() const {
                        base::Int64ToString(GetSuccessorId()));
   node_info->SetString("firstChildId",
                        base::Int64ToString(GetFirstChildId()));
+  node_info->Set("entry", GetEntry()->ToValue());
   return node_info;
 }
 

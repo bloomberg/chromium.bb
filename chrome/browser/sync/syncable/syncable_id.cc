@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <iosfwd>
 
 #include "base/string_util.h"
+#include "base/values.h"
 
 using std::ostream;
 using std::string;
@@ -17,6 +18,10 @@ const Id kNullId;  // Currently == root.
 ostream& operator<<(ostream& out, const Id& id) {
   out << id.s_;
   return out;
+}
+
+StringValue* Id::ToValue() const {
+  return Value::CreateStringValue(s_);
 }
 
 string Id::GetServerId() const {

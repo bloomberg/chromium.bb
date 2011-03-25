@@ -81,8 +81,8 @@ cr.define('chrome.sync', function() {
   function updateNodeDetailView(nodeInfo) {
     var nodeBrowser = document.getElementById('node-browser');
     // TODO(akalin): Get rid of this hack.
-    if (typeof nodeInfo.specifics != 'string')
-      nodeInfo.specifics = JSON.stringify(nodeInfo.specifics, null, 2);
+    if (typeof nodeInfo.entry != 'string')
+      nodeInfo.entry = JSON.stringify(nodeInfo.entry, null, 2);
     jstProcess(new JsEvalContext(nodeInfo), nodeBrowser);
   }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "base/time.h"
 
 class ListValue;
+class StringValue;
 
 namespace sync_pb {
 class EntitySpecifics;
@@ -105,6 +106,11 @@ int GetExtensionFieldNumberFromModelType(ModelType model_type);
 
 // Returns a string that represents the name of |model_type|.
 std::string ModelTypeToString(ModelType model_type);
+
+// Handles all model types, and not just real ones.
+//
+// Caller takes ownership of returned value.
+StringValue* ModelTypeToValue(ModelType model_type);
 
 std::string ModelTypeSetToString(const ModelTypeSet& model_types);
 

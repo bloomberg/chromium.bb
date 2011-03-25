@@ -422,18 +422,16 @@ void CheckNodeValue(const BaseNode& node, const DictionaryValue& value) {
       ADD_FAILURE();
     }
   }
-  {
-    scoped_ptr<DictionaryValue> expected_specifics(
-        browser_sync::EntitySpecificsToValue(
-            node.GetEntry()->Get(syncable::SPECIFICS)));
-    Value* specifics = NULL;
-    EXPECT_TRUE(value.Get("specifics", &specifics));
-    EXPECT_TRUE(Value::Equals(specifics, expected_specifics.get()));
-  }
   ExpectInt64Value(node.GetExternalId(), value, "externalId");
   ExpectInt64Value(node.GetPredecessorId(), value, "predecessorId");
   ExpectInt64Value(node.GetSuccessorId(), value, "successorId");
   ExpectInt64Value(node.GetFirstChildId(), value, "firstChildId");
+  {
+    scoped_ptr<DictionaryValue> expected_entry(node.GetEntry()->ToValue());
+    Value* entry = NULL;
+    EXPECT_TRUE(value.Get("entry", &entry));
+    EXPECT_TRUE(Value::Equals(entry, expected_entry.get()));
+  }
   EXPECT_EQ(11u, value.size());
 }
 

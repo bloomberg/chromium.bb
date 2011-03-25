@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "base/scoped_ptr.h"
+#include "base/values.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -79,6 +81,29 @@ TEST(SyncableIdTest, GetLeastIdForLexicographicComparison) {
       }
     }
   }
+}
+
+namespace {
+
+// TODO(akalin): Move this to values_test_util.h.
+
+// Takes ownership of |actual|.
+void ExpectStringValue(const std::string& expected_str,
+                       StringValue* actual) {
+  scoped_ptr<StringValue> scoped_actual(actual);
+  std::string actual_str;
+  EXPECT_TRUE(scoped_actual->GetAsString(&actual_str));
+  EXPECT_EQ(expected_str, actual_str);
+}
+
+}  // namespace
+
+TEST(SyncableIdTest, ToValue) {
+  ExpectStringValue("r", Id::CreateFromServerId("0").ToValue());
+  ExpectStringValue("svalue", Id::CreateFromServerId("value").ToValue());
+
+  ExpectStringValue("r", Id::CreateFromClientString("0").ToValue());
+  ExpectStringValue("cvalue", Id::CreateFromClientString("value").ToValue());
 }
 
 }  // namespace syncable

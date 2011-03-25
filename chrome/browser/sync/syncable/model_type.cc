@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -213,6 +213,18 @@ std::string ModelTypeToString(ModelType model_type) {
   }
   NOTREACHED() << "No known extension for model type.";
   return "INVALID";
+}
+
+StringValue* ModelTypeToValue(ModelType model_type) {
+  if (model_type >= syncable::FIRST_REAL_MODEL_TYPE) {
+    return Value::CreateStringValue(ModelTypeToString(model_type));
+  } else if (model_type == syncable::TOP_LEVEL_FOLDER) {
+    return Value::CreateStringValue("Top-level folder");
+  } else if (model_type == syncable::UNSPECIFIED) {
+    return Value::CreateStringValue("Unspecified");
+  }
+  NOTREACHED();
+  return Value::CreateStringValue("");
 }
 
 std::string ModelTypeSetToString(const ModelTypeSet& model_types) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
+#include "base/values.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
@@ -34,12 +35,31 @@
 #include "chrome/common/deprecated/event_sys-inl.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "chrome/test/sync/engine/test_syncable_utils.h"
+#include "chrome/test/values_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
 using browser_sync::TestIdFactory;
+using test::ExpectBooleanValue;
+using test::ExpectStringValue;
 
 namespace syncable {
+
+class SyncableKernelTest : public testing::Test {};
+
+TEST_F(SyncableKernelTest, ToValue) {
+  EntryKernel kernel;
+  scoped_ptr<DictionaryValue> value(kernel.ToValue());
+  if (value.get()) {
+    // Not much to check without repeating the ToValue() code.
+    EXPECT_TRUE(value->HasKey("isDirty"));
+    // The extra +1 is for "isDirty".
+    EXPECT_EQ(BIT_TEMPS_END - BEGIN_FIELDS + 1,
+              static_cast<int>(value->size()));
+  } else {
+    ADD_FAILURE();
+  }
+}
 
 namespace {
 void PutDataAsBookmarkFavicon(WriteTransaction* wtrans,
@@ -235,6 +255,42 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
     EXPECT_TRUE(me.Get(IS_DEL));
     EXPECT_TRUE(me.Get(IS_UNSYNCED));
   }
+}
+
+TEST_F(SyncableGeneralTest, ToValue) {
+  Directory dir;
+  dir.Open(db_path_, "SimpleTest");
+
+  const Id id = TestIdFactory::FromNumber(99);
+  {
+    ReadTransaction rtrans(&dir, __FILE__, __LINE__);
+    Entry e(&rtrans, GET_BY_ID, id);
+    EXPECT_FALSE(e.good());  // Hasn't been written yet.
+
+    scoped_ptr<DictionaryValue> value(e.ToValue());
+    ExpectBooleanValue(false, *value, "good");
+    EXPECT_EQ(1u, value->size());
+  }
+
+  // Test creating a new meta entry.
+  {
+    WriteTransaction wtrans(&dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry me(&wtrans, CREATE, wtrans.root_id(), "new");
+    ASSERT_TRUE(me.good());
+    me.Put(ID, id);
+    me.Put(BASE_VERSION, 1);
+
+    scoped_ptr<DictionaryValue> value(me.ToValue());
+    ExpectBooleanValue(true, *value, "good");
+    EXPECT_TRUE(value->HasKey("kernel"));
+    ExpectStringValue("Unspecified", *value, "serverModelType");
+    ExpectStringValue("Unspecified", *value, "modelType");
+    ExpectBooleanValue(false, *value, "shouldMaintainPosition");
+    ExpectBooleanValue(true, *value, "existsOnClientBecauseNameIsNonEmpty");
+    ExpectBooleanValue(false, *value, "isRoot");
+  }
+
+  dir.SaveChanges();
 }
 
 // A Directory whose backing store always fails SaveChanges by returning false.

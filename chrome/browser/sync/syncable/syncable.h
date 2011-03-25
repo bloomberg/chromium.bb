@@ -31,6 +31,7 @@
 #include "chrome/browser/sync/util/dbgq.h"
 #include "chrome/common/deprecated/event_sys.h"
 
+class DictionaryValue;
 struct PurgeInfo;
 
 namespace sync_api {
@@ -333,6 +334,10 @@ struct EntryKernel {
     return id_fields[field - ID_FIELDS_BEGIN];
   }
 
+  // Dumps all kernel info into a DictionaryValue and returns it.
+  // Transfers ownership of the DictionaryValue to the caller.
+  DictionaryValue* ToValue() const;
+
  private:
   // Tracks whether this entry needs to be saved to the database.
   bool dirty_;
@@ -425,6 +430,10 @@ class Entry {
   // SERVER_POSITION_IN_PARENT ordering.
   Id ComputePrevIdFromServerPosition(const Id& parent_id) const;
 
+  // Dumps all entry info into a DictionaryValue and returns it.
+  // Transfers ownership of the DictionaryValue to the caller.
+  DictionaryValue* ToValue() const;
+
  protected:  // Don't allow creation on heap, except by sync API wrappers.
   friend class sync_api::ReadNode;
   void* operator new(size_t size) { return (::operator new)(size); }
@@ -438,6 +447,10 @@ class Entry {
   BaseTransaction* const basetrans_;
 
   EntryKernel* kernel_;
+
+ private:
+  // Like GetServerModelType() but without the DCHECKs.
+  ModelType GetServerModelTypeHelper() const;
 
   DISALLOW_COPY_AND_ASSIGN(Entry);
 };
