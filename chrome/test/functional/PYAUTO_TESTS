@@ -73,7 +73,6 @@
       'plugins',
       'plugins_check',
       'popups',
-      '-popups',  # Flaky. crbug.com/70659
       'prefs',
       'search_engines',
       # crbug.com/67628
