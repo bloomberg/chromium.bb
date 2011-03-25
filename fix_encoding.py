@@ -46,17 +46,23 @@ def fix_default_encoding():
     if attr[0:3] != 'LC_':
       continue
     aref = getattr(locale, attr)
-    locale.setlocale(aref, '')
+    try:
+      locale.setlocale(aref, '')
+    except locale.Error:
+      continue
     try:
       lang = locale.getlocale(aref)[0]
     except (TypeError, ValueError):
-      lang = None
+      continue
     if lang:
       try:
         locale.setlocale(aref, (lang, 'UTF-8'))
       except locale.Error:
         os.environ[attr] = lang + '.UTF-8'
-  locale.setlocale(locale.LC_ALL, '')
+  try:
+    locale.setlocale(locale.LC_ALL, '')
+  except locale.Error:
+    pass
   return True
 
 
