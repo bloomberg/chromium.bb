@@ -186,7 +186,7 @@ def BuildVMImageForTesting(buildroot):
 def RunUnitTests(buildroot, full):
   cwd = os.path.join(buildroot, 'src', 'scripts')
 
-  cmd = ['./cros_run_unit_tests']
+  cmd = ['cros_run_unit_tests']
 
   # If we aren't running ALL tests, then restrict to just the packages
   #   uprev noticed were changed.
