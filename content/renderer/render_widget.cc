@@ -595,7 +595,7 @@ void RenderWidget::DoDeferredUpdate() {
   // This optimization only works when the entire invalid region is contained
   // within the plugin. There is a related optimization in PaintRect for the
   // case where there may be multiple invalid regions.
-  TransportDIB::Id dib_id;
+  TransportDIB::Id dib_id = TransportDIB::Id();
   TransportDIB* dib = NULL;
   std::vector<gfx::Rect> copy_rects;
   gfx::Rect optimized_copy_rect, optimized_copy_location;
