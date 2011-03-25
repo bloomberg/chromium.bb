@@ -23,6 +23,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "views/border.h"
 #include "views/controls/textfield/textfield.h"
@@ -147,6 +148,11 @@ void AutocompleteEditViewViews::Init() {
   // TODO(oshima): make sure the above happens with views.
   textfield_ = new AutocompleteTextfield(this);
   textfield_->SetController(this);
+
+#if defined(TOUCH_UI)
+  textfield_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
+                      ResourceBundle::LargeFont));
+#endif
 
   if (popup_window_mode_)
     textfield_->SetReadOnly(true);

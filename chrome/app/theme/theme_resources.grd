@@ -27,10 +27,18 @@
       <include name="IDR_ACCESSED_COOKIES" file="accessed_cookies.png" type="BINDATA" />
       <include name="IDR_APP_DEFAULT_ICON" file="app_default_icon.png" type="BINDATA" />
       <include name="IDR_APP_DROPARROW" file="app_droparrow.png" type="BINDATA" />
-      <include name="IDR_BACK" file="back.png" type="BINDATA" />
-      <include name="IDR_BACK_D" file="back_d.png" type="BINDATA" />
-      <include name="IDR_BACK_H" file="back_h.png" type="BINDATA" />
-      <include name="IDR_BACK_P" file="back_p.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_BACK" file="back.png" type="BINDATA" />
+        <include name="IDR_BACK_D" file="back_d.png" type="BINDATA" />
+        <include name="IDR_BACK_H" file="back_h.png" type="BINDATA" />
+        <include name="IDR_BACK_P" file="back_p.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_BACK" file="large_back.png" type="BINDATA" />
+        <include name="IDR_BACK_D" file="large_back_d.png" type="BINDATA" />
+        <include name="IDR_BACK_H" file="large_back_h.png" type="BINDATA" />
+        <include name="IDR_BACK_P" file="large_back_p.png" type="BINDATA" />
+      </if>
       <include name="IDR_BALLOON_CLOSE" file="balloon_close.png" type="BINDATA" />
       <include name="IDR_BALLOON_CLOSE_HOVER" file="balloon_close_hover.png" type="BINDATA" />
       <include name="IDR_BALLOON_WRENCH" file="notification_wrench.png" type="BINDATA" />
@@ -92,11 +100,20 @@
       <include name="IDR_CONSTRAINED_TOP_CENTER_V" file="constrained_top_center_v.png" type="BINDATA" />
       <include name="IDR_CONSTRAINED_TOP_LEFT_CORNER_V" file="constrained_top_left_corner_v.png" type="BINDATA" />
       <include name="IDR_CONSTRAINED_TOP_RIGHT_CORNER_V" file="constrained_top_right_corner_v.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_CENTER" file="content_top_center.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_LEFT_CORNER" file="content_top_left_corner.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_LEFT_CORNER_MASK" file="content_top_left_corner_mask.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_RIGHT_CORNER" file="content_top_right_corner.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="content_top_right_corner_mask.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_CONTENT_TOP_CENTER" file="content_top_center.png" type="BINDATA" />
+        <include name="IDR_CONTENT_TOP_LEFT_CORNER" file="content_top_left_corner.png" type="BINDATA" />
+        <include name="IDR_CONTENT_TOP_LEFT_CORNER_MASK" file="content_top_left_corner_mask.png" type="BINDATA" />
+        <include name="IDR_CONTENT_TOP_RIGHT_CORNER" file="content_top_right_corner.png" type="BINDATA" />
+        <include name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="content_top_right_corner_mask.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_CONTENT_TOP_CENTER" file="large_content_top_center.png" type="BINDATA" />
+        <include name="IDR_CONTENT_TOP_LEFT_CORNER" file="large_content_top_left_corner.png" type="BINDATA" />
+        <include name="IDR_CONTENT_TOP_LEFT_CORNER_MASK" file="large_content_top_left_corner_mask.png" type="BINDATA" />
+        <include name="IDR_CONTENT_TOP_RIGHT_CORNER" file="large_content_top_right_corner.png" type="BINDATA" />
+        <include name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="large_content_top_right_corner_mask.png" type="BINDATA" />
+      </if>
       <include name="IDR_COOKIE_ICON" file="cookie.png" type="BINDATA" />
       <include name="IDR_COOKIE_STORAGE_ICON" file="cookie_storage.png" type="BINDATA" />
       <if expr="pp_ifdef('_google_chrome')">
@@ -156,9 +173,16 @@
       <include name="IDR_DOWNLOAD_PROGRESS_FOREGROUND_32" file="download_progress_foreground32.png" type="BINDATA" />
       <include name="IDR_EXTENSION_DEFAULT_ICON" file="extension_default_icon.png" type="BINDATA" />
       <include name="IDR_EXTENSIONS_SECTION" file="extensions_section.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK" file="feedback.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK_H" file="feedback_h.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK_P" file="feedback_p.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_FEEDBACK" file="feedback.png" type="BINDATA" />
+        <include name="IDR_FEEDBACK_H" file="feedback_h.png" type="BINDATA" />
+        <include name="IDR_FEEDBACK_P" file="feedback_p.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_FEEDBACK" file="large_feedback.png" type="BINDATA" />
+        <include name="IDR_FEEDBACK_H" file="large_feedback_h.png" type="BINDATA" />
+        <include name="IDR_FEEDBACK_P" file="large_feedback_p.png" type="BINDATA" />
+      </if>
       <include name="IDR_FINDINPAGE_NEXT" file="find_next.png" type="BINDATA" />
       <include name="IDR_FINDINPAGE_NEXT_H" file="find_next_h.png" type="BINDATA" />
       <include name="IDR_FINDINPAGE_NEXT_P" file="find_next_d.png" type="BINDATA" />
@@ -174,19 +198,34 @@
       <include name="IDR_FIND_DLG_MIDDLE_BACKGROUND" file="find_dlg_middle_bg.png" type="BINDATA" />
       <include name="IDR_FIND_DLG_RIGHT_BACKGROUND" file="find_dlg_right_bg.png" type="BINDATA" />
       <include name="IDR_FLAGS" file="flags.png" type="BINDATA" />
-      <include name="IDR_FORWARD" file="forward.png" type="BINDATA" />
-      <include name="IDR_FORWARD_D" file="forward_d.png" type="BINDATA" />
-      <include name="IDR_FORWARD_H" file="forward_h.png" type="BINDATA" />
-      <include name="IDR_FORWARD_P" file="forward_p.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_FORWARD" file="forward.png" type="BINDATA" />
+        <include name="IDR_FORWARD_D" file="forward_d.png" type="BINDATA" />
+        <include name="IDR_FORWARD_H" file="forward_h.png" type="BINDATA" />
+        <include name="IDR_FORWARD_P" file="forward_p.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_FORWARD" file="large_forward.png" type="BINDATA" />
+        <include name="IDR_FORWARD_D" file="large_forward_d.png" type="BINDATA" />
+        <include name="IDR_FORWARD_H" file="large_forward_h.png" type="BINDATA" />
+        <include name="IDR_FORWARD_P" file="large_forward_p.png" type="BINDATA" />
+      </if>
       <include name="IDR_FROZEN_TAB_ICON" file="frozen_tab.png" type="BINDATA" />
       <include name="IDR_FULLSCREEN_MENU_BUTTON" file="fullscreen_menu_button.png" type="BINDATA" />
       <include name="IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON" file="geolocation_allowed_locationbar_icon.png" type="BINDATA" />
       <include name="IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON" file="geolocation_denied_locationbar_icon.png" type="BINDATA" />
       <include name="IDR_GEOLOCATION_INFOBAR_ICON" file="geolocation_infobar_icon.png" type="BINDATA" />
       <include name="IDR_HISTORY_FAVICON" file="history_favicon.png" type="BINDATA" />
-      <include name="IDR_HOME" file="home.png" type="BINDATA" />
-      <include name="IDR_HOME_H" file="home_h.png" type="BINDATA" />
-      <include name="IDR_HOME_P" file="home_p.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_HOME" file="home.png" type="BINDATA" />
+        <include name="IDR_HOME_H" file="home_h.png" type="BINDATA" />
+        <include name="IDR_HOME_P" file="home_p.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_HOME" file="large_home.png" type="BINDATA" />
+        <include name="IDR_HOME_H" file="large_home_h.png" type="BINDATA" />
+        <include name="IDR_HOME_P" file="large_home_p.png" type="BINDATA" />
+      </if>
       <if expr="os.find('win') != -1">
         <include name="IDR_INCOMPATIBILITY_DOT_ACTIVE" file="incompatibility_dot_active.png" type="BINDATA" />
         <include name="IDR_INCOMPATIBILITY_DOT_INACTIVE" file="incompatibility_dot_inactive.png" type="BINDATA" />
@@ -293,9 +332,16 @@
       <include name="IDR_PROFILE_TAG_INACTIVE_CENTER" file="profile_tag_inactive_center.png" type="BINDATA" />
       <include name="IDR_PROFILE_TAG_INACTIVE_LEFT" file="profile_tag_inactive_left.png" type="BINDATA" />
       <include name="IDR_PROFILE_TAG_INACTIVE_RIGHT" file="profile_tag_inactive_right.png" type="BINDATA" />
-      <include name="IDR_RELOAD" file="reload.png" type="BINDATA" />
-      <include name="IDR_RELOAD_H" file="reload_h.png" type="BINDATA" />
-      <include name="IDR_RELOAD_P" file="reload_p.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_RELOAD" file="reload.png" type="BINDATA" />
+        <include name="IDR_RELOAD_H" file="reload_h.png" type="BINDATA" />
+        <include name="IDR_RELOAD_P" file="reload_p.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_RELOAD" file="large_reload.png" type="BINDATA" />
+        <include name="IDR_RELOAD_H" file="large_reload_h.png" type="BINDATA" />
+        <include name="IDR_RELOAD_P" file="large_reload_p.png" type="BINDATA" />
+      </if>
       <include name="IDR_RESTORE_BUTTON_MASK" file="restore_button_mask.png" type="BINDATA" />
       <include name="IDR_SAD_FAVICON" file="sadfavicon.png" type="BINDATA" />
       <include name="IDR_SAD_TAB" file="sadtab.png" type="BINDATA" />
@@ -377,8 +423,14 @@
       <include name="IDR_SPEECH_INPUT_MIC_FULL" file="speech_input_mic_full.png" type="BINDATA" />
       <include name="IDR_SPEECH_INPUT_MIC_MASK" file="speech_input_mic_mask.png" type="BINDATA" />
       <include name="IDR_SPEECH_INPUT_SPINNER" file="speech_input_spinner.png" type="BINDATA" />
-      <include name="IDR_STAR" file="star.png" type="BINDATA" />
-      <include name="IDR_STAR_LIT" file="star_lit.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_STAR" file="star.png" type="BINDATA" />
+        <include name="IDR_STAR_LIT" file="star_lit.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_STAR" file="large_star.png" type="BINDATA" />
+        <include name="IDR_STAR_LIT" file="large_star_lit.png" type="BINDATA" />
+      </if>
       <if expr="pp_ifdef('_google_chrome') and (os == 'darwin')">
         <include name="IDR_STATUS_TRAY_ICON" file="google_chrome/product_logo_22_mono.png" type="BINDATA" />
         <include name="IDR_STATUS_TRAY_ICON_PRESSED" file="google_chrome/product_logo_22_mono_invert.png" type="BINDATA" />
@@ -395,10 +447,18 @@
         <include name="IDR_STATUS_TRAY_ICON" file="chromium/product_logo_22.png" type="BINDATA" />
         <include name="IDR_STATUS_TRAY_ICON_PRESSED" file="chromium/product_logo_22.png" type="BINDATA" />
       </if>
-      <include name="IDR_STOP" file="stop.png" type="BINDATA" />
-      <include name="IDR_STOP_D" file="stop_d.png" type="BINDATA" />
-      <include name="IDR_STOP_H" file="stop_h.png" type="BINDATA" />
-      <include name="IDR_STOP_P" file="stop_p.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_STOP" file="stop.png" type="BINDATA" />
+        <include name="IDR_STOP_D" file="stop_d.png" type="BINDATA" />
+        <include name="IDR_STOP_H" file="stop_h.png" type="BINDATA" />
+        <include name="IDR_STOP_P" file="stop_p.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_STOP" file="large_stop.png" type="BINDATA" />
+        <include name="IDR_STOP_D" file="large_stop_d.png" type="BINDATA" />
+        <include name="IDR_STOP_H" file="large_stop_h.png" type="BINDATA" />
+        <include name="IDR_STOP_P" file="large_stop_p.png" type="BINDATA" />
+      </if>
       <if expr="os == 'darwin'">
         <include name="IDR_TABPOSE_CLOSE" file="tabpose_close.png" type="BINDATA" />
       </if>
@@ -456,9 +516,16 @@
           <include name="IDR_THROBBER_WAITING" file="large_throbber_waiting.png" type="BINDATA" />
       </if>
       <include name="IDR_THROBBER_WAITING_LIGHT" file="throbber_waiting_light.png" type="BINDATA" />
-      <include name="IDR_TOOLS" file="tools.png" type="BINDATA" />
-      <include name="IDR_TOOLS_H" file="tools_h.png" type="BINDATA" />
-      <include name="IDR_TOOLS_P" file="tools_p.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_TOOLS" file="tools.png" type="BINDATA" />
+        <include name="IDR_TOOLS_H" file="tools_h.png" type="BINDATA" />
+        <include name="IDR_TOOLS_P" file="tools_p.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_TOOLS" file="large_tools.png" type="BINDATA" />
+        <include name="IDR_TOOLS_H" file="large_tools_h.png" type="BINDATA" />
+        <include name="IDR_TOOLS_P" file="large_tools_p.png" type="BINDATA" />
+      </if>
       <include name="IDR_UPDATE_AVAILABLE" file="update_available.png" type="BINDATA" />
       <include name="IDR_UPDATE_BADGE" file="update_badge.png" type="BINDATA" />
       <include name="IDR_UPDATE_FAIL" file="update_fail.png" type="BINDATA" />
