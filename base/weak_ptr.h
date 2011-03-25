@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,7 @@
 #define BASE_WEAK_PTR_H_
 #pragma once
 
+#include "base/base_api.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
@@ -62,7 +63,7 @@ namespace internal {
 // These classes are part of the WeakPtr implementation.
 // DO NOT USE THESE CLASSES DIRECTLY YOURSELF.
 
-class WeakReference {
+class BASE_API WeakReference {
  public:
   class Flag : public RefCounted<Flag>, public base::NonThreadSafe {
    public:
@@ -90,7 +91,7 @@ class WeakReference {
   scoped_refptr<Flag> flag_;
 };
 
-class WeakReferenceOwner {
+class BASE_API WeakReferenceOwner {
  public:
   WeakReferenceOwner();
   ~WeakReferenceOwner();
@@ -116,7 +117,7 @@ class WeakReferenceOwner {
 // constructor by avoiding the need for a public accessor for ref_.  A
 // WeakPtr<T> cannot access the private members of WeakPtr<U>, so this
 // base class gives us a way to access ref_ in a protected fashion.
-class WeakPtrBase {
+class BASE_API WeakPtrBase {
  public:
   WeakPtrBase();
   ~WeakPtrBase();
