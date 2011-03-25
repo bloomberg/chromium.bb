@@ -6,9 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_INFO_H_
 #pragma once
 
-#include <map>
-#include <string>
-
 #include "chrome/common/extensions/extension.h"
 
 class GURL;
@@ -17,6 +14,8 @@ class GURL;
 // and is intended to be installed in the next auto-update cycle.  The
 // update URL of a pending extension may be blank, in which case a
 // default one is assumed.
+// TODO(skerner): Make this class an implementation detail of
+// PendingExtensionManager, and remove all other users.
 class PendingExtensionInfo {
  public:
   typedef bool (*ShouldAllowInstallPredicate)(const Extension&);
@@ -30,7 +29,7 @@ class PendingExtensionInfo {
       bool enable_incognito_on_install,
       Extension::Location install_source);
 
-  // Required for STL container membership.  Should not be used.
+  // Required for STL container membership.  Should not be used directly.
   PendingExtensionInfo();
 
   const GURL& update_url() const { return update_url_; }
@@ -68,9 +67,5 @@ class PendingExtensionInfo {
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, AddPendingExtensionFromSync);
 };
-
-// A PendingExtensionMap is a map from IDs of pending extensions to
-// their info.
-typedef std::map<std::string, PendingExtensionInfo> PendingExtensionMap;
 
 #endif  // CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_INFO_H_

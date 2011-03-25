@@ -847,10 +847,14 @@ void ExtensionUpdater::CheckNow() {
     fetches_builder.AddExtension(**iter);
   }
 
-  const PendingExtensionMap& pending_extensions =
-      service_->pending_extensions();
-  for (PendingExtensionMap::const_iterator iter = pending_extensions.begin();
-       iter != pending_extensions.end(); ++iter) {
+  const PendingExtensionManager* pending_extension_manager =
+      service_->pending_extension_manager();
+
+  PendingExtensionManager::const_iterator iter;
+  for (iter = pending_extension_manager->begin();
+       iter != pending_extension_manager->end(); iter++) {
+    // TODO(skerner): Move the determination of what gets fetched into
+    // class PendingExtensionManager.
     Extension::Location location = iter->second.install_source();
     if (location != Extension::EXTERNAL_PREF &&
         location != Extension::EXTERNAL_REGISTRY)
@@ -915,6 +919,8 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
   // This will only get set if one of possible_updates specifies
   // browser_min_version.
   scoped_ptr<Version> browser_version;
+  PendingExtensionManager* pending_extension_manager =
+      service_->pending_extension_manager();
 
   for (size_t i = 0; i < possible_updates.list.size(); i++) {
     const UpdateManifest::Result* update = &possible_updates.list[i];
@@ -922,8 +928,7 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
     if (!fetch_data.Includes(update->extension_id))
       continue;
 
-    if (service_->pending_extensions().find(update->extension_id) ==
-        service_->pending_extensions().end()) {
+    if (!pending_extension_manager->IsIdPending(update->extension_id)) {
       // If we're not installing pending extension, and the update
       // version is the same or older than what's already installed,
       // we don't want it.
@@ -959,9 +964,8 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
         // TODO(asargent) - We may want this to show up in the extensions UI
         // eventually. (http://crbug.com/12547).
         LOG(WARNING) << "Updated version of extension " << update->extension_id
-          << " available, but requires chrome version "
-          << update->browser_min_version;
-
+                     << " available, but requires chrome version "
+                     << update->browser_min_version;
         continue;
       }
     }
