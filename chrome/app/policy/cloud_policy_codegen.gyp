@@ -99,6 +99,7 @@
       'target_name': 'cloud_policy_backend_header_compile',
       'type': 'none',
       'sources': [
+        '<(proto_rel_path)/chrome_device_policy.proto',
         '<(proto_rel_path)/device_management_backend.proto',
         '<(proto_rel_path)/device_management_local.proto',
       ],

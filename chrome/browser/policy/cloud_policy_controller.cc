@@ -212,7 +212,7 @@ void CloudPolicyController::SendPolicyRequest() {
   DCHECK(!identity_strategy_->GetDeviceToken().empty());
   em::DevicePolicyRequest policy_request;
   em::PolicyFetchRequest* fetch_request = policy_request.add_request();
-  fetch_request->set_signature_type(em::PolicyFetchRequest::X509);
+  fetch_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
   fetch_request->set_policy_type(identity_strategy_->GetPolicyType());
   if (!cache_->is_unmanaged() &&
       !cache_->last_policy_refresh_time().is_null()) {

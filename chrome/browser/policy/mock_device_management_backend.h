@@ -92,10 +92,10 @@ ACTION(MockDeviceManagementBackendSucceedSpdyCloudPolicy) {
   em::DevicePolicyResponse response;
   em::PolicyFetchResponse* fetch_response = response.add_response();
   fetch_response->set_policy_data(serialized_signed_response);
-  // TODO(jkummerow): Set proper certificate_chain and signature (when
+  // TODO(jkummerow): Set proper new_public_key and signature (when
   // implementing support for signature verification).
   fetch_response->set_policy_data_signature("TODO");
-  fetch_response->add_certificate_chain("TODO");
+  fetch_response->set_new_public_key("TODO");
   arg3->HandlePolicyResponse(response);
 }
 

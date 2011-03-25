@@ -311,12 +311,6 @@ bool CloudPolicyCache::DecodePolicyResponse(
     base::Time* timestamp) {
   std::string data = policy_response.policy_data();
 
-  if (!VerifySignature(policy_response.policy_data_signature(), data,
-                       policy_response.certificate_chain())) {
-    LOG(WARNING) << "Failed to verify signature.";
-    return false;
-  }
-
   em::PolicyData policy_data;
   if (!policy_data.ParseFromString(data)) {
     LOG(WARNING) << "Failed to parse PolicyData protobuf.";

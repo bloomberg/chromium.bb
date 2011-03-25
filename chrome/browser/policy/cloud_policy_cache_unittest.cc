@@ -83,10 +83,10 @@ class CloudPolicyCacheTest : public testing::Test {
 
     em::PolicyFetchResponse* response = new em::PolicyFetchResponse;
     response->set_policy_data(serialized_signed_response);
-    // TODO(jkummerow): Set proper certificate_chain and signature (when
+    // TODO(jkummerow): Set proper new_public_key and signature (when
     // implementing support for signature verification).
     response->set_policy_data_signature("TODO");
-    response->add_certificate_chain("TODO");
+    response->set_new_public_key("TODO");
     return response;
   }
 

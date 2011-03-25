@@ -1546,6 +1546,8 @@
         'browser/policy/user_policy_identity_strategy.cc',
         'browser/policy/user_policy_identity_strategy.h',
         # TODO(danno): Find a better way to include these files
+        '<(protoc_out_dir)/chrome/browser/policy/proto/chrome_device_policy.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/policy/proto/chrome_device_policy.pb.h',
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_backend.pb.cc',
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_backend.pb.h',
         'browser/policy/proto/device_management_constants.cc',
@@ -3303,6 +3305,7 @@
             ['exclude', 'browser/oom_priority_manager.h'],
             ['exclude', 'browser/policy/device_policy_identity_strategy.cc'],
             ['exclude', 'browser/policy/device_policy_identity_strategy.h'],
+            ['exclude', 'browser/policy/proto/chrome_device_policy\\.pb\\.(h|cc)'],
             ['exclude', 'browser/renderer_host/offline_resource_handler.cc'],
             ['exclude', 'browser/renderer_host/offline_resource_handler.h'],
             ['exclude', 'browser/ui/webui/chrome_about_ui.cc'],

@@ -1,0 +1,38 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package enterprise_management;
+
+message DevicePolicyRefreshRateProto {
+  // In milliseconds.
+  optional int64 policy_refresh_rate = 1;
+}
+
+message UserWhitelistProto {
+  repeated string user_whitelist = 1;
+}
+
+message GuestModeEnabledProto {
+  // Determines if guests are allowed to log in to the device.
+  optional bool guest_mode_enabled = 1;
+}
+
+message DeviceProxySettingsProto {
+  // One of "direct", "auto_detect", "pac_script", "fixed_servers", "system"
+  optional string proxy_mode = 1;
+  optional string proxy_server = 2;
+  optional string proxy_pac_url = 3;
+  optional string proxy_bypass_list = 4;
+}
+
+message ChromeDeviceSettingsProto {
+  optional DevicePolicyRefreshRateProto policy_refresh_rate = 1;
+  optional UserWhitelistProto user_whitelist = 2;
+  optional GuestModeEnabledProto guest_mode_enabled = 3;
+  optional DeviceProxySettingsProto device_proxy_settings = 4;
+}
