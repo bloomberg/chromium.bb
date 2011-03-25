@@ -7,7 +7,6 @@
 #include <cmath>
 #include <queue>
 
-#include "app/surface/transport_dib.h"
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/logging.h"
@@ -47,6 +46,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/surface/transport_dib.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/plugins/npapi/webplugin.h"

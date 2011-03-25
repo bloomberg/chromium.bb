@@ -43,6 +43,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/gfx/surface/surface.gyp:surface',
         '../webkit/support/webkit_support.gyp:appcache',
         '../webkit/support/webkit_support.gyp:blob',
         '../webkit/support/webkit_support.gyp:database',

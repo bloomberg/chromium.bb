@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,9 @@
 
 #include "content/plugin/webplugin_accelerated_surface_proxy_mac.h"
 
-#include "app/surface/accelerated_surface_mac.h"
-#include "app/surface/transport_dib.h"
 #include "content/plugin/webplugin_proxy.h"
+#include "ui/gfx/surface/accelerated_surface_mac.h"
+#include "ui/gfx/surface/transport_dib.h"
 
 WebPluginAcceleratedSurfaceProxy::WebPluginAcceleratedSurfaceProxy(
     WebPluginProxy* plugin_proxy)

@@ -4,7 +4,6 @@
 
 #include "content/renderer/render_widget.h"
 
-#include "app/surface/transport_dib.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -30,6 +29,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/surface/transport_dib.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"

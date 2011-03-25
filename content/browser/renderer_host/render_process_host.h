@@ -8,7 +8,6 @@
 
 #include <set>
 
-#include "app/surface/transport_dib.h"
 #include "base/id_map.h"
 #include "base/process.h"
 #include "base/process_util.h"
@@ -16,6 +15,7 @@
 #include "base/time.h"
 #include "chrome/common/visitedlink_common.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ui/gfx/surface/transport_dib.h"
 
 class Profile;
 class URLRequestContextGetter;

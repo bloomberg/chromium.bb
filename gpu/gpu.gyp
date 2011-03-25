@@ -181,6 +181,7 @@
         '../app/app.gyp:app_base',
         '../base/base.gyp:base',
         '../ui/ui.gyp:ui_gfx',
+        '../ui/gfx/surface/surface.gyp:surface',
         '../third_party/angle/src/build_angle.gyp:translator_glsl',
       ],
       'sources': [

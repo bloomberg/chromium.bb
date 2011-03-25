@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/history/top_sites.h"
@@ -17,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/surface/transport_dib.h"
 
 static const int kBitmapWidth = 100;
 static const int kBitmapHeight = 100;

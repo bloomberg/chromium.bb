@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MAC_H_
-#define CONTENT_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MAC_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_SURFACE_CONTAINER_MAC_H_
+#define CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_SURFACE_CONTAINER_MAC_H_
 #pragma once
 
 // The "GPU plugin" is currently implemented as a special kind of
@@ -29,12 +29,12 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <OpenGL/OpenGL.h>
 
-#include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/surface/transport_dib.h"
 
 namespace webkit {
 namespace npapi {
@@ -149,4 +149,4 @@ class AcceleratedSurfaceContainerMac {
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerMac);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MAC_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_SURFACE_CONTAINER_MAC_H_

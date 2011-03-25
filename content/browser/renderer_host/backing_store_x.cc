@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include <utility>
 #include <limits>
 
-#include "app/surface/transport_dib.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -29,6 +28,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/surface/transport_dib.h"
 
 // Assume that somewhere along the line, someone will do width * height * 4
 // with signed numbers. If the maximum value is 2**31, then 2**31 / 4 =

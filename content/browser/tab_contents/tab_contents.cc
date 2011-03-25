@@ -93,7 +93,7 @@
 #include "webkit/glue/webpreferences.h"
 
 #if defined(OS_MACOSX)
-#include "app/surface/io_surface_support_mac.h"
+#include "ui/gfx/surface/io_surface_support_mac.h"
 #endif  // defined(OS_MACOSX)
 
 // Cross-Site Navigations

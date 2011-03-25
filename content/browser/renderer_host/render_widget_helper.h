@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 
 #include <map>
 
-#include "app/surface/transport_dib.h"
 #include "base/atomic_sequence_num.h"
 #include "base/hash_tables.h"
 #include "base/process.h"
@@ -17,6 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
+#include "ui/gfx/surface/transport_dib.h"
 
 namespace IPC {
 class Message;

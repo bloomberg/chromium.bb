@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/accelerated_surface_container_mac.h"
 
-#include "app/surface/io_surface_support_mac.h"
 #include "base/logging.h"
 #include "content/browser/renderer_host/accelerated_surface_container_manager_mac.h"
+#include "ui/gfx/surface/io_surface_support_mac.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac(

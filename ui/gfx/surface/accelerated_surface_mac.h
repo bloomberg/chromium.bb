@@ -1,20 +1,20 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_SURFACE_ACCELERATED_SURFACE_MAC_H_
-#define APP_SURFACE_ACCELERATED_SURFACE_MAC_H_
+#ifndef UI_GFX_SURFACE_ACCELERATED_SURFACE_MAC_H_
+#define UI_GFX_SURFACE_ACCELERATED_SURFACE_MAC_H_
 #pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "app/gfx/gl/gl_context.h"
-#include "app/surface/transport_dib.h"
 #include "base/callback.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_ptr.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/surface/transport_dib.h"
 
 // Should not include GL headers in a header file. Forward declare these types
 // instead.
@@ -164,4 +164,4 @@ class AcceleratedSurface {
   scoped_ptr<Callback1<TransportDIB::Id>::Type> dib_free_callback_;
 };
 
-#endif  // APP_SURFACE_ACCELERATED_SURFACE_MAC_H_
+#endif  // UI_GFX_SURFACE_ACCELERATED_SURFACE_MAC_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,6 @@
 
 #include <string>
 
-#if defined(USE_X11)
-#include "ui/base/x/x11_util.h"
-#endif
-#include "app/surface/transport_dib.h"
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
 #if defined(OS_MACOSX)
@@ -23,6 +19,10 @@
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
+#if defined(USE_X11)
+#include "ui/base/x/x11_util.h"
+#endif
+#include "ui/gfx/surface/transport_dib.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 class PluginChannel;

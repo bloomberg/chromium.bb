@@ -17,6 +17,7 @@
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../ui/gfx/surface/surface.gyp:surface',
       ],
       'include_dirs': [
         '..',

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_SURFACE_TRANSPORT_DIB_H_
-#define APP_SURFACE_TRANSPORT_DIB_H_
+#ifndef UI_GFX_SURFACE_TRANSPORT_DIB_H_
+#define UI_GFX_SURFACE_TRANSPORT_DIB_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -199,4 +199,4 @@ class TransportDIB {
   DISALLOW_COPY_AND_ASSIGN(TransportDIB);
 };
 
-#endif  // APP_SURFACE_TRANSPORT_DIB_H_
+#endif  // UI_GFX_SURFACE_TRANSPORT_DIB_H_

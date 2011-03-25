@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "app/surface/transport_dib.h"
 #include "base/file_path.h"
 #include "base/linked_ptr.h"
 #include "base/shared_memory.h"
@@ -27,6 +26,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/surface/transport_dib.h"
 
 class ChromeURLRequestContext;
 struct FontDescriptor;

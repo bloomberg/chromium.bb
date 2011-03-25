@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
@@ -42,6 +41,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationType.h"
+#include "ui/gfx/surface/transport_dib.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
-#define APP_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
+#ifndef UI_GFX_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
+#define UI_GFX_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
 #pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
@@ -66,5 +66,5 @@ class IOSurfaceSupport {
   DISALLOW_COPY_AND_ASSIGN(IOSurfaceSupport);
 };
 
-#endif  // APP_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
+#endif  // UI_GFX_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
 

@@ -8,7 +8,6 @@
 #include <queue>
 #include <vector>
 
-#include "app/surface/transport_dib.h"
 #include "base/callback.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -20,9 +19,10 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/surface/transport_dib.h"
 
 #if defined(OS_MACOSX)
-#include "app/surface/accelerated_surface_mac.h"
+#include "ui/gfx/surface/accelerated_surface_mac.h"
 #endif
 
 namespace gfx {

@@ -6,7 +6,6 @@
 
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
-#include "app/surface/io_surface_support_mac.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -43,6 +42,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/gl/gl_switches.h"
+#include "ui/gfx/surface/io_surface_support_mac.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/plugins/npapi/webplugin.h"
 

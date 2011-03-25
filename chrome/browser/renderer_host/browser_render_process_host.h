@@ -10,7 +10,6 @@
 #include <queue>
 #include <string>
 
-#include "app/surface/transport_dib.h"
 #include "base/platform_file.h"
 #include "base/process.h"
 #include "base/scoped_callback_factory.h"
@@ -22,6 +21,7 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
+#include "ui/gfx/surface/transport_dib.h"
 
 class CommandLine;
 class RendererMainThread;

@@ -1,16 +1,16 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/backing_store_win.h"
 
-#include "app/surface/transport_dib.h"
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/gdi_util.h"
+#include "ui/gfx/surface/transport_dib.h"
 
 namespace {
 
@@ -69,7 +69,8 @@ void CallStretchDIBits(HDC hdc, int dest_x, int dest_y, int dest_w, int dest_h,
 
 }  // namespace
 
-BackingStoreWin::BackingStoreWin(RenderWidgetHost* widget, const gfx::Size& size)
+BackingStoreWin::BackingStoreWin(RenderWidgetHost* widget,
+                                 const gfx::Size& size)
     : BackingStore(widget, size),
       backing_store_dib_(NULL),
       original_bitmap_(NULL) {

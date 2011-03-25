@@ -14,7 +14,6 @@
 #define CONTENT_COMMON_COMMON_PARAM_TRAITS_H_
 #pragma once
 
-#include "app/surface/transport_dib.h"
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
 #include "base/string_number_conversions.h"
@@ -25,6 +24,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/surface/transport_dib.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/glue/npruntime_util.h"
 #include "webkit/glue/resource_type.h"
