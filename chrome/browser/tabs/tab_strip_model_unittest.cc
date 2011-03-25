@@ -2173,3 +2173,31 @@ TEST_F(TabStripModelTest, CloseSelectedTabs) {
   EXPECT_EQ(0, strip.selected_index());
   strip.CloseAllTabs();
 }
+
+// Verifies that if we change the selection from a multi selection to a single
+// selection, but not in a way that changes the selected_index that
+// TabSelectedAt is still invoked.
+TEST_F(TabStripModelTest, MultipleToSingle) {
+  TabStripDummyDelegate delegate(NULL);
+  TabStripModel strip(&delegate, profile());
+  TabContentsWrapper* contents1 = CreateTabContents();
+  TabContentsWrapper* contents2 = CreateTabContents();
+  strip.AppendTabContents(contents1, false);
+  strip.AppendTabContents(contents2, false);
+  strip.ToggleSelectionAt(0);
+  strip.ToggleSelectionAt(1);
+
+  MockTabStripModelObserver observer;
+  strip.AddObserver(&observer);
+  // This changes the selection (0 is no longer selected) but the selected_index
+  // still remains at 1.
+  strip.SelectTabContentsAt(1, true);
+  ASSERT_EQ(1, observer.GetStateCount());
+  MockTabStripModelObserver::State s(
+      contents2, 1, MockTabStripModelObserver::SELECT);
+  s.src_contents = contents2;
+  s.user_gesture = true;
+  EXPECT_TRUE(observer.StateEquals(0, s));
+  strip.RemoveObserver(&observer);
+  strip.CloseAllTabs();
+}

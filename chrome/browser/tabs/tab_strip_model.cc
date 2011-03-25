@@ -242,11 +242,21 @@ TabContentsWrapper* TabStripModel::DetachTabContentsAt(int index) {
 
 void TabStripModel::SelectTabContentsAt(int index, bool user_gesture) {
   DCHECK(ContainsIndex(index));
-  TabContentsWrapper* old =
+  bool had_multi = selection_model_.selected_indices().size() > 1;
+  TabContentsWrapper* old_contents =
       (selected_index() == TabStripSelectionModel::kUnselectedIndex) ?
       NULL : GetSelectedTabContents();
   selection_model_.SetSelectedIndex(index);
-  NotifyTabSelectedIfChanged(old, index, user_gesture);
+  TabContentsWrapper* new_contents = GetContentsAt(index);
+  if (old_contents != new_contents && old_contents) {
+    FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+                      TabDeselected(old_contents));
+  }
+  if (old_contents != new_contents || had_multi) {
+    FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+                      TabSelectedAt(old_contents, new_contents,
+                                    selected_index(), user_gesture));
+  }
 }
 
 void TabStripModel::MoveTabContentsAt(int index,
