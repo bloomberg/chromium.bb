@@ -598,7 +598,7 @@ install-glibc: BUILD/stamp-glibc32 BUILD/stamp-glibc64
 	  DESTDIR="" SDKROOT="$(INST_GLIBC_PREFIX)/glibc"
 	$(MAKE) -f $(THISMAKEFILE) -C BUILD/build-glibc32 \
 	  install_root=$(INST_GLIBC_PREFIX) install
-	$(MAKE) -f $(THISMAKEFILE) -C BUILD/build-glibc64
+	$(MAKE) -f $(THISMAKEFILE) -C BUILD/build-glibc64 \
 	  install_root=$(INST_GLIBC_PREFIX) install
 
 .PHONY: export-headers
