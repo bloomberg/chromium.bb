@@ -1242,4 +1242,18 @@
    ...
    fun:UserStyleSheetWatcher::Init
 }
-
+{
+   bug_77376_a
+   Heapcheck:Leak
+   ...
+   fun:SelectFileDialogImpl::SelectFile
+   fun:DownloadManager::OnPathExistenceAvailable
+   ...
+   fun:DownloadManagerTest_StartDownload_Test::TestBody
+}
+{
+   bug_77376_b
+   Heapcheck:Leak
+   fun:g_realloc
+   fun:~SelectFileDialogImpl
+}
