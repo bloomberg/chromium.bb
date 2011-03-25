@@ -154,9 +154,10 @@ PrintingContext::Result PrintingContextCairo::UpdatePrintSettings(
 
   settings_.ranges = ranges;
 
-  NOTIMPLEMENTED();
+  // TODO(kmadhusu): Update other print settings such as number of copies,
+  // collate, duplex printing, etc.,
 
-  return FAILED;
+  return OK;
 }
 
 PrintingContext::Result PrintingContextCairo::InitWithSettings(
