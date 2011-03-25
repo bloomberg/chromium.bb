@@ -31,7 +31,7 @@ class DevToolsWindow
       public TabContentsDelegate {
  public:
   static const char kDevToolsApp[];
-  static TabContents* GetDevToolsContents(TabContents* inspected_tab);
+  static TabContentsWrapper* GetDevToolsContents(TabContents* inspected_tab);
 
   DevToolsWindow(Profile* profile, RenderViewHost* inspected_rvh, bool docked);
   virtual ~DevToolsWindow();

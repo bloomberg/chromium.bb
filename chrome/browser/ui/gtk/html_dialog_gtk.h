@@ -22,6 +22,7 @@ class Browser;
 class Profile;
 class TabContents;
 class TabContentsContainerGtk;
+class TabContentsWrapper;
 
 class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
                       public HtmlDialogUIDelegate {
@@ -63,7 +64,7 @@ class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
 
   GtkWidget* dialog_;
 
-  scoped_ptr<TabContents> tab_contents_;
+  scoped_ptr<TabContentsWrapper> tab_;
   scoped_ptr<TabContentsContainerGtk> tab_contents_container_;
 
   DISALLOW_COPY_AND_ASSIGN(HtmlDialogGtk);

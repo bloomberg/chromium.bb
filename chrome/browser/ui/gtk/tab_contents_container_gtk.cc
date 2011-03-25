@@ -11,13 +11,14 @@
 #include "chrome/browser/ui/gtk/gtk_expanded_container.h"
 #include "chrome/browser/ui/gtk/gtk_floating_container.h"
 #include "chrome/browser/ui/gtk/status_bubble_gtk.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
 #include "ui/gfx/native_widget_types.h"
 
 TabContentsContainerGtk::TabContentsContainerGtk(StatusBubbleGtk* status_bubble)
-    : tab_contents_(NULL),
-      preview_contents_(NULL),
+    : tab_(NULL),
+      preview_(NULL),
       status_bubble_(status_bubble) {
   Init();
 }
@@ -60,73 +61,75 @@ void TabContentsContainerGtk::Init() {
   ViewIDUtil::SetDelegateForWidget(widget(), this);
 }
 
-void TabContentsContainerGtk::SetTabContents(TabContents* tab_contents) {
-  HideTabContents(tab_contents_);
-  if (tab_contents_) {
+void TabContentsContainerGtk::SetTab(TabContentsWrapper* tab) {
+  HideTab(tab_);
+  if (tab_) {
     registrar_.Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
-                      Source<TabContents>(tab_contents_));
+                      Source<TabContents>(tab_->tab_contents()));
   }
 
-  tab_contents_ = tab_contents;
+  tab_ = tab;
 
-  if (tab_contents_ == preview_contents_) {
+  if (tab_ == preview_) {
     // If the preview contents is becoming the new permanent tab contents, we
     // just reassign some pointers.
-    preview_contents_ = NULL;
-  } else if (tab_contents_) {
+    preview_ = NULL;
+  } else if (tab_) {
     // Otherwise we actually have to add it to the widget hierarchy.
-    PackTabContents(tab_contents);
+    PackTab(tab);
     registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
-                   Source<TabContents>(tab_contents_));
+                   Source<TabContents>(tab_->tab_contents()));
   }
 }
 
 TabContents* TabContentsContainerGtk::GetVisibleTabContents() {
-  return preview_contents_ ? preview_contents_ : tab_contents_;
+  if (preview_)
+    return preview_->tab_contents();
+  return tab_ ? tab_->tab_contents() : NULL;
 }
 
-void TabContentsContainerGtk::SetPreviewContents(TabContents* preview) {
-  if (preview_contents_)
-    RemovePreviewContents();
+void TabContentsContainerGtk::SetPreview(TabContentsWrapper* preview) {
+  if (preview_)
+    RemovePreview();
   else
-    HideTabContents(tab_contents_);
+    HideTab(tab_);
 
-  preview_contents_ = preview;
+  preview_ = preview;
 
-  PackTabContents(preview);
+  PackTab(preview);
   registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
-                 Source<TabContents>(preview_contents_));
+                 Source<TabContents>(preview_->tab_contents()));
 }
 
-void TabContentsContainerGtk::RemovePreviewContents() {
-  if (!preview_contents_)
+void TabContentsContainerGtk::RemovePreview() {
+  if (!preview_)
     return;
 
-  HideTabContents(preview_contents_);
+  HideTab(preview_);
 
-  GtkWidget* preview_widget = preview_contents_->GetNativeView();
+  GtkWidget* preview_widget = preview_->tab_contents()->GetNativeView();
   if (preview_widget)
     gtk_container_remove(GTK_CONTAINER(expanded_), preview_widget);
 
   registrar_.Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
-                    Source<TabContents>(preview_contents_));
-  preview_contents_ = NULL;
+                    Source<TabContents>(preview_->tab_contents()));
+  preview_ = NULL;
 }
 
-void TabContentsContainerGtk::PopPreviewContents() {
-  if (!preview_contents_)
+void TabContentsContainerGtk::PopPreview() {
+  if (!preview_)
     return;
 
-  RemovePreviewContents();
+  RemovePreview();
 
-  PackTabContents(tab_contents_);
+  PackTab(tab_);
 }
 
-void TabContentsContainerGtk::PackTabContents(TabContents* contents) {
-  if (!contents)
+void TabContentsContainerGtk::PackTab(TabContentsWrapper* tab) {
+  if (!tab)
     return;
 
-  gfx::NativeView widget = contents->GetNativeView();
+  gfx::NativeView widget = tab->tab_contents()->GetNativeView();
   if (widget) {
     if (widget->parent != expanded_)
       gtk_container_add(GTK_CONTAINER(expanded_), widget);
@@ -135,29 +138,29 @@ void TabContentsContainerGtk::PackTabContents(TabContents* contents) {
 
   // We need to make sure that we are below the findbar.
   // Sometimes the content native view will be null.
-  if (contents->GetContentNativeView()) {
+  if (tab->tab_contents()->GetContentNativeView()) {
     GdkWindow* content_gdk_window =
-        contents->GetContentNativeView()->window;
+        tab->tab_contents()->GetContentNativeView()->window;
     if (content_gdk_window)
       gdk_window_lower(content_gdk_window);
   }
 
-  contents->ShowContents();
+  tab->tab_contents()->ShowContents();
 }
 
-void TabContentsContainerGtk::HideTabContents(TabContents* contents) {
-  if (!contents)
+void TabContentsContainerGtk::HideTab(TabContentsWrapper* tab) {
+  if (!tab)
     return;
 
-  gfx::NativeView widget = contents->GetNativeView();
+  gfx::NativeView widget = tab->tab_contents()->GetNativeView();
   if (widget)
     gtk_widget_hide(widget);
 
-  contents->WasHidden();
+  tab->tab_contents()->WasHidden();
 }
 
-void TabContentsContainerGtk::DetachTabContents(TabContents* tab_contents) {
-  gfx::NativeView widget = tab_contents->GetNativeView();
+void TabContentsContainerGtk::DetachTab(TabContentsWrapper* tab) {
+  gfx::NativeView widget = tab->tab_contents()->GetNativeView();
 
   // It is possible to detach an unrealized, unparented TabContents if you
   // slow things down enough in valgrind. Might happen in the real world, too.
@@ -178,21 +181,21 @@ void TabContentsContainerGtk::Observe(NotificationType type,
 void TabContentsContainerGtk::TabContentsDestroyed(TabContents* contents) {
   // Sometimes, a TabContents is destroyed before we know about it. This allows
   // us to clean up our state in case this happens.
-  if (contents == preview_contents_)
-    PopPreviewContents();
-  else if (contents == tab_contents_)
-    SetTabContents(NULL);
+  if (preview_ && contents == preview_->tab_contents())
+    PopPreview();
+  else if (tab_ && contents == tab_->tab_contents())
+    SetTab(NULL);
   else
     NOTREACHED();
 }
 
-// Prevent |preview_contents_| from getting focus via the tab key. If
-// |tab_contents_| exists, try to focus that. Otherwise, do nothing, but stop
-// event propagation. See bug http://crbug.com/63365
+// Prevent |preview_| from getting focus via the tab key. If |tab_| exists, try
+// to focus that. Otherwise, do nothing, but stop event propagation. See bug
+// http://crbug.com/63365
 gboolean TabContentsContainerGtk::OnFocus(GtkWidget* widget,
                                           GtkDirectionType focus) {
-  if (preview_contents_) {
-    gtk_widget_child_focus(tab_contents_->GetContentNativeView(), focus);
+  if (preview_) {
+    gtk_widget_child_focus(tab_->tab_contents()->GetContentNativeView(), focus);
     return TRUE;
   }
 

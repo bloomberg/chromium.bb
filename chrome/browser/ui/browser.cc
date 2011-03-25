@@ -3515,7 +3515,7 @@ void Browser::PrepareForInstant() {
 
 void Browser::ShowInstant(TabContentsWrapper* preview_contents) {
   DCHECK(instant_->tab_contents() == GetSelectedTabContentsWrapper());
-  window_->ShowInstant(preview_contents->tab_contents());
+  window_->ShowInstant(preview_contents);
 }
 
 void Browser::HideInstant() {

@@ -635,19 +635,6 @@ void TabContents::DidBecomeSelected() {
   last_selected_time_ = base::TimeTicks::Now();
 }
 
-void TabContents::FadeForInstant(bool animate) {
-  RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
-  SkColor whitish = SkColorSetARGB(192, 255, 255, 255);
-  if (rwhv)
-    rwhv->SetVisuallyDeemphasized(&whitish, animate);
-}
-
-void TabContents::CancelInstantFade() {
-  RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->SetVisuallyDeemphasized(NULL, false);
-}
-
 void TabContents::WasHidden() {
   if (!capturing_contents()) {
     // |render_view_host()| can be NULL if the user middle clicks a link to open

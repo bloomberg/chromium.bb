@@ -313,7 +313,7 @@ class BrowserWindow {
   virtual void PrepareForInstant() = 0;
 
   // Invoked when instant's tab contents should be shown.
-  virtual void ShowInstant(TabContents* preview_contents) = 0;
+  virtual void ShowInstant(TabContentsWrapper* preview) = 0;
 
   // Invoked when the instant's tab contents should be hidden.
   // |instant_is_active| indicates if instant is still active.

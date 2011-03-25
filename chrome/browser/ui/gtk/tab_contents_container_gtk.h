@@ -18,6 +18,7 @@
 class RenderViewHost;
 class StatusBubbleGtk;
 class TabContents;
+class TabContentsWrapper;
 
 typedef struct _GtkFloatingContainer GtkFloatingContainer;
 
@@ -30,18 +31,18 @@ class TabContentsContainerGtk : public NotificationObserver,
   void Init();
 
   // Make the specified tab visible.
-  void SetTabContents(TabContents* tab_contents);
-  TabContents* GetTabContents() const { return tab_contents_; }
+  void SetTab(TabContentsWrapper* tab);
+  TabContentsWrapper* tab() const { return tab_; }
 
   // Gets the tab contents currently being displayed (either |tab_contents_| or
   // |preview_contents_|).
   TabContents* GetVisibleTabContents();
 
-  void SetPreviewContents(TabContents* preview);
-  void PopPreviewContents();
+  void SetPreview(TabContentsWrapper* preview);
+  void PopPreview();
 
   // Remove the tab from the hierarchy.
-  void DetachTabContents(TabContents* tab_contents);
+  void DetachTab(TabContentsWrapper* tab);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -65,14 +66,14 @@ class TabContentsContainerGtk : public NotificationObserver,
       GtkFloatingContainer* container, GtkAllocation* allocation,
       TabContentsContainerGtk* tab_contents_container);
 
-  // Add |contents| to the container and start showing it.
-  void PackTabContents(TabContents* contents);
+  // Adds |tab| to the container and starts showing it.
+  void PackTab(TabContentsWrapper* );
 
-  // Stop showing |contents|.
-  void HideTabContents(TabContents* contents);
+  // Stops showing |tab|.
+  void HideTab(TabContentsWrapper* tab);
 
-  // Removes |preview_contents_|.
-  void RemovePreviewContents();
+  // Removes |preview_|.
+  void RemovePreview();
 
   // Handle focus traversal on the tab contents container. Focus should not
   // traverse to the preview contents.
@@ -81,13 +82,13 @@ class TabContentsContainerGtk : public NotificationObserver,
 
   NotificationRegistrar registrar_;
 
-  // The TabContents for the currently selected tab. This will be showing unless
-  // there is a preview contents.
-  TabContents* tab_contents_;
+  // The TabContentsWrapper for the currently selected tab. This will be showing
+  // unless there is a preview contents.
+  TabContentsWrapper* tab_;
 
   // The current preview contents (for instant). If non-NULL, it will be
   // visible.
-  TabContents* preview_contents_;
+  TabContentsWrapper* preview_;
 
   // The status bubble manager.  Always non-NULL.
   StatusBubbleGtk* status_bubble_;

@@ -549,8 +549,8 @@ void BrowserWindowCocoa::PrepareForInstant() {
   // TODO: implement fade as done on windows.
 }
 
-void BrowserWindowCocoa::ShowInstant(TabContents* preview_contents) {
-  [controller_ showInstant:preview_contents];
+void BrowserWindowCocoa::ShowInstant(TabContentsWrapper* preview) {
+  [controller_ showInstant:preview->tab_contents()];
 }
 
 void BrowserWindowCocoa::HideInstant(bool instant_is_active) {

@@ -72,6 +72,7 @@
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/native_web_keyboard_event.h"
@@ -1045,30 +1046,30 @@ void BrowserWindowGtk::Paste() {
 }
 
 void BrowserWindowGtk::PrepareForInstant() {
-  TabContents* contents = contents_container_->GetTabContents();
+  TabContentsWrapper* contents = contents_container_->tab();
   if (contents)
-    contents->FadeForInstant(true);
+    FadeForInstant(true);
 }
 
-void BrowserWindowGtk::ShowInstant(TabContents* preview_contents) {
-  contents_container_->SetPreviewContents(preview_contents);
+void BrowserWindowGtk::ShowInstant(TabContentsWrapper* preview) {
+  contents_container_->SetPreview(preview);
   MaybeShowBookmarkBar(false);
 
-  TabContents* contents = contents_container_->GetTabContents();
+  TabContentsWrapper* contents = contents_container_->tab();
   if (contents)
-    contents->CancelInstantFade();
+    CancelInstantFade();
 }
 
 void BrowserWindowGtk::HideInstant(bool instant_is_active) {
-  contents_container_->PopPreviewContents();
+  contents_container_->PopPreview();
   MaybeShowBookmarkBar(false);
 
-  TabContents* contents = contents_container_->GetTabContents();
+  TabContentsWrapper* contents = contents_container_->tab();
   if (contents) {
     if (instant_is_active)
-      contents->FadeForInstant(false);
+      FadeForInstant(false);
     else
-      contents->CancelInstantFade();
+      CancelInstantFade();
   }
 }
 
@@ -1109,7 +1110,7 @@ void BrowserWindowGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
   // browser_->GetSelectedTabContents() will return NULL or something else.
   if (index == browser_->tabstrip_model()->selected_index())
     infobar_container_->ChangeTabContents(NULL);
-  contents_container_->DetachTabContents(contents->tab_contents());
+  contents_container_->DetachTab(contents);
   UpdateDevToolsForContents(NULL);
 }
 
@@ -1126,7 +1127,7 @@ void BrowserWindowGtk::TabSelectedAt(TabContentsWrapper* old_contents,
   // Update various elements that are interested in knowing the current
   // TabContents.
   infobar_container_->ChangeTabContents(new_contents->tab_contents());
-  contents_container_->SetTabContents(new_contents->tab_contents());
+  contents_container_->SetTab(new_contents);
   UpdateDevToolsForContents(new_contents->tab_contents());
 
   new_contents->tab_contents()->DidBecomeSelected();
@@ -1172,6 +1173,24 @@ void BrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
   }
 }
 
+void BrowserWindowGtk::FadeForInstant(bool animate) {
+  DCHECK(contents_container_->tab());
+  RenderWidgetHostView* rwhv =
+      contents_container_->tab()->tab_contents()->GetRenderWidgetHostView();
+  if (rwhv) {
+    SkColor whitish = SkColorSetARGB(192, 255, 255, 255);
+    rwhv->SetVisuallyDeemphasized(&whitish, animate);
+  }
+}
+
+void BrowserWindowGtk::CancelInstantFade() {
+  DCHECK(contents_container_->tab());
+  RenderWidgetHostView* rwhv =
+      contents_container_->tab()->tab_contents()->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetVisuallyDeemphasized(NULL, false);
+}
+
 void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
   if (!IsBookmarkBarSupported())
     return;
@@ -1200,22 +1219,22 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
 }
 
 void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
-  TabContents* old_devtools = devtools_container_->GetTabContents();
-  TabContents* devtools_contents = contents ?
+  TabContentsWrapper* old_devtools = devtools_container_->tab();
+  TabContentsWrapper* devtools_contents = contents ?
       DevToolsWindow::GetDevToolsContents(contents) : NULL;
   if (old_devtools == devtools_contents)
     return;
 
   if (old_devtools)
-    devtools_container_->DetachTabContents(old_devtools);
+    devtools_container_->DetachTab(old_devtools);
 
-  devtools_container_->SetTabContents(devtools_contents);
+  devtools_container_->SetTab(devtools_contents);
   if (devtools_contents) {
     // TabContentsViewGtk::WasShown is not called when tab contents is shown by
     // anything other than user selecting a Tab.
     // See TabContentsViewWin::OnWindowPosChanged for reference on how it should
     // be implemented.
-    devtools_contents->ShowContents();
+    devtools_contents->tab_contents()->ShowContents();
   }
 
   bool should_show = old_devtools == NULL && devtools_contents != NULL;

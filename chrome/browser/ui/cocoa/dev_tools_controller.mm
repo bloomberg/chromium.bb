@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -68,8 +69,10 @@ const int kMinWebHeight = 50;
 - (void)updateDevToolsForTabContents:(TabContents*)contents
                          withProfile:(Profile*)profile {
   // Get current devtools content.
-  TabContents* devToolsContents = contents ?
+  TabContentsWrapper* devToolsTab = contents ?
       DevToolsWindow::GetDevToolsContents(contents) : NULL;
+  TabContents* devToolsContents = devToolsTab ?
+      devToolsTab->tab_contents() : NULL;
 
   [self showDevToolsContents:devToolsContents withProfile:profile];
 }

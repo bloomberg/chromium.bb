@@ -303,7 +303,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual void Paste() OVERRIDE;
   virtual void ToggleTabStripMode() OVERRIDE;
   virtual void PrepareForInstant() OVERRIDE;
-  virtual void ShowInstant(TabContents* preview_contents) OVERRIDE;
+  virtual void ShowInstant(TabContentsWrapper* preview) OVERRIDE;
   virtual void HideInstant(bool instant_is_active) OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
 #if defined(OS_CHROMEOS)

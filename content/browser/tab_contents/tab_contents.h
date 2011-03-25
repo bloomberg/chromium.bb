@@ -676,13 +676,6 @@ class TabContents : public PageNavigator,
   // Gets the zoom percent for this tab.
   int GetZoomPercent(bool* enable_increment, bool* enable_decrement);
 
-  // Shows a fade effect over this tab contents. Repeated calls will be ignored
-  // until the fade is canceled. If |animate| is true the fade should animate.
-  void FadeForInstant(bool animate);
-
-  // Immediately removes the fade.
-  void CancelInstantFade();
-
   // Opens view-source tab for this contents.
   void ViewSource();
 

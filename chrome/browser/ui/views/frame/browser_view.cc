@@ -1291,17 +1291,17 @@ void BrowserView::PrepareForInstant() {
   contents_->FadeActiveContents();
 }
 
-void BrowserView::ShowInstant(TabContents* preview_contents) {
+void BrowserView::ShowInstant(TabContentsWrapper* preview) {
   if (!preview_container_)
     preview_container_ = new TabContentsContainer();
-  contents_->SetPreview(preview_container_, preview_contents);
-  preview_container_->ChangeTabContents(preview_contents);
+  contents_->SetPreview(preview_container_, preview->tab_contents());
+  preview_container_->ChangeTabContents(preview->tab_contents());
 
 #if defined(OS_WIN)
   // Removing the fade is instant (on windows). We need to force the preview to
   // draw, otherwise the current page flickers before the new page appears.
-  RedrawWindow(preview_contents->view()->GetContentNativeView(), NULL, NULL,
-               RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
+  RedrawWindow(preview->tab_contents()->view()->GetContentNativeView(), NULL,
+               NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
 #endif
 
   contents_->RemoveFade();
@@ -2081,9 +2081,13 @@ void BrowserView::UpdateSidebarForContents(TabContentsWrapper* tab_contents) {
 }
 
 void BrowserView::UpdateDevToolsForContents(TabContentsWrapper* wrapper) {
-  TabContents* tab_contents = wrapper ? wrapper->tab_contents() : NULL;
-  TabContents* devtools_contents =
-      DevToolsWindow::GetDevToolsContents(tab_contents);
+  TabContents* devtools_contents = NULL;
+  if (wrapper) {
+    TabContentsWrapper* devtools_contents_wrapper =
+        DevToolsWindow::GetDevToolsContents(wrapper->tab_contents());
+    if (devtools_contents_wrapper)
+      devtools_contents = devtools_contents_wrapper->tab_contents();
+  }
 
   bool should_show = devtools_contents && !devtools_container_->IsVisible();
   bool should_hide = !devtools_contents && devtools_container_->IsVisible();

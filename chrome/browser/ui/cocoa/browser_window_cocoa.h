@@ -106,7 +106,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void ToggleTabStripMode();
   virtual void OpenTabpose();
   virtual void PrepareForInstant();
-  virtual void ShowInstant(TabContents* preview_contents);
+  virtual void ShowInstant(TabContentsWrapper* preview);
   virtual void HideInstant(bool instant_is_active);
   virtual gfx::Rect GetInstantBounds();
 

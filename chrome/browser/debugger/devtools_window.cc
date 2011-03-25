@@ -37,7 +37,8 @@
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
 
 // static
-TabContents* DevToolsWindow::GetDevToolsContents(TabContents* inspected_tab) {
+TabContentsWrapper* DevToolsWindow::GetDevToolsContents(
+    TabContents* inspected_tab) {
   if (!inspected_tab) {
     return NULL;
   }
@@ -55,7 +56,7 @@ TabContents* DevToolsWindow::GetDevToolsContents(TabContents* inspected_tab) {
   if (!window || !window->is_docked()) {
     return NULL;
   }
-  return window->tab_contents()->tab_contents();
+  return window->tab_contents();
 }
 
 DevToolsWindow::DevToolsWindow(Profile* profile,
