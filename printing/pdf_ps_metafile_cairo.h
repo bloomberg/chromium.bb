@@ -58,10 +58,6 @@ class PdfPsMetafile : public NativeMetafile {
   virtual bool SaveToFD(const base::FileDescriptor& fd) const;
 #endif  // if defined(OS_CHROMEOS)
 
-  // Returns the PdfPsMetafile object that owns the given context. Returns NULL
-  // if the context was not created by a PdfPsMetafile object.
-  static PdfPsMetafile* FromCairoContext(cairo_t* context);
-
  protected:
   PdfPsMetafile();
 

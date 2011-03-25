@@ -20,8 +20,6 @@
 
 namespace {
 
-const cairo_user_data_key_t kPdfMetafileKey = {0};
-
 // Tests if |surface| is valid.
 bool IsSurfaceValid(cairo_surface_t* surface) {
   return cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS;
@@ -61,10 +59,6 @@ cairo_status_t WriteCairoStream(void* dst_buffer,
   buffer->append(reinterpret_cast<const char*>(src_data), src_data_length);
 
   return CAIRO_STATUS_SUCCESS;
-}
-
-void DestroyContextData(void* data) {
-  // Nothing to be done here.
 }
 
 }  // namespace
@@ -110,7 +104,6 @@ bool PdfPsMetafile::Init() {
     return false;
   }
 
-  cairo_set_user_data(context_, &kPdfMetafileKey, this, DestroyContextData);
   return true;
 }
 
@@ -256,11 +249,6 @@ bool PdfPsMetafile::SaveToFD(const base::FileDescriptor& fd) const {
   return success;
 }
 #endif  // if defined(OS_CHROMEOS)
-
-PdfPsMetafile* PdfPsMetafile::FromCairoContext(cairo_t* context) {
-  return reinterpret_cast<PdfPsMetafile*>(
-      cairo_get_user_data(context, &kPdfMetafileKey));
-}
 
 void PdfPsMetafile::CleanUpAll() {
   CleanUpContext(&context_);

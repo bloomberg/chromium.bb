@@ -94,6 +94,10 @@
             'sources/': [['exclude', '_posix\\.cc$']]
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+          'sources': [
+            'native_metafile_skia_wrapper.cc',
+            'native_metafile_skia_wrapper.h',
+          ],
           'dependencies': [
             # For FT_Init_FreeType and friends.
             '../build/linux/system.gyp:freetype2',

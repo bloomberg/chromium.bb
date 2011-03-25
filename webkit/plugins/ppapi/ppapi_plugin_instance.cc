@@ -69,7 +69,7 @@
 #endif
 
 #if defined(OS_LINUX)
-#include "printing/pdf_ps_metafile_cairo.h"
+#include "printing/native_metafile_skia_wrapper.h"
 #endif
 
 #if defined(OS_WIN)
@@ -1180,15 +1180,12 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
 
   bool ret = false;
 #if defined(OS_LINUX)
-  // On Linux we need to get the backing PdfPsMetafile and write the bits
-  // directly.
-  cairo_t* context = canvas->beginPlatformPaint();
+  // On Linux we just set the final bits in the native metafile.
   printing::NativeMetafile* metafile =
-      printing::PdfPsMetafile::FromCairoContext(context);
-  DCHECK(metafile);
+    printing::NativeMetafileSkiaWrapper::GetMetafileFromCanvas(canvas);
+  DCHECK(metafile != NULL);
   if (metafile)
     ret = metafile->InitFromData(buffer->mapped_buffer(), buffer->size());
-  canvas->endPlatformPaint();
 #elif defined(OS_MACOSX)
   scoped_ptr<printing::NativeMetafile> metafile(
       printing::NativeMetafileFactory::Create());

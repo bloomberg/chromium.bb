@@ -10,6 +10,7 @@
 #include "chrome/common/print_messages.h"
 #include "content/common/view_messages.h"
 #include "printing/native_metafile_factory.h"
+#include "printing/native_metafile_skia_wrapper.h"
 #include "printing/native_metafile.h"
 #include "skia/ext/vector_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -228,6 +229,8 @@ void PrintWebViewHelper::PrintPage(const PrintMsg_PrintPage_Params& params,
     return;
 
   canvas->reset(new skia::VectorCanvas(device));
+  printing::NativeMetafileSkiaWrapper::SetMetafileOnCanvas(canvas->get(),
+                                                           metafile);
   frame->printPage(params.page_number, canvas->get());
 
   // TODO(myhuang): We should handle transformation for paper margins.

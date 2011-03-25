@@ -33,7 +33,6 @@ TEST_F(PdfPsTest, Pdf) {
 
   // Renders page 1.
   EXPECT_TRUE(pdf.StartPage(gfx::Size(72, 73), gfx::Point(4, 5), 1));
-  EXPECT_EQ(printing::PdfPsMetafile::FromCairoContext(pdf.context()), &pdf);
   // In theory, we should use Cairo to draw something on |context|.
   EXPECT_TRUE(pdf.FinishPage());
 
