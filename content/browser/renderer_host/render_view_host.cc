@@ -1252,9 +1252,8 @@ void RenderViewHost::OnTakeFocus(bool reverse) {
 void RenderViewHost::OnAddMessageToConsole(const std::wstring& message,
                                            int32 line_no,
                                            const std::wstring& source_id) {
-  std::wstring msg = StringPrintf(L"\"%ls,\" source: %ls (%d)", message.c_str(),
-                                  source_id.c_str(), line_no);
-  logging::LogMessage("CONSOLE", 0).stream() << msg;
+  logging::LogMessage("CONSOLE", 0).stream() << "\"" << message
+      << ",\" source: " << source_id << " (" << line_no << ")";
 }
 
 void RenderViewHost::OnForwardToDevToolsAgent(const IPC::Message& message) {
