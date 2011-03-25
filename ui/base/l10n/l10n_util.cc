@@ -77,6 +77,7 @@ static const char* const kAcceptLanguageList[] = {
   // TODO(jungshik) : Do we want to list all es-Foo for Latin-American
   // Spanish speaking countries?
   "es",     // Spanish
+  "es-419", // Spanish (Latin America)
   "et",     // Estonian
   "eu",     // Basque
   "fa",     // Persian
