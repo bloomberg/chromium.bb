@@ -397,16 +397,6 @@ void BaseTabStrip::Layout() {
   DoLayout();
 }
 
-bool BaseTabStrip::GetDropFormats(
-      int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
-  if (IsVisible() && !IsAnimating()) {
-    *formats = ui::OSExchangeData::URL | ui::OSExchangeData::STRING;
-    return true;
-  }
-  return false;
-}
-
 bool BaseTabStrip::CanDrop(const ui::OSExchangeData& data) {
   return IsVisible() && !IsAnimating();
 }

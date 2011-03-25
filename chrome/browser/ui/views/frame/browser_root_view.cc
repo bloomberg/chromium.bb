@@ -28,9 +28,10 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
 bool BrowserRootView::GetDropFormats(
       int* formats,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
-  // Make the drop targets of the tabstrip qualify for the entire view.
-  if (tabstrip())
-    return tabstrip()->GetDropFormats(formats, custom_formats);
+  if (tabstrip() && tabstrip()->IsVisible()) {
+    *formats = ui::OSExchangeData::URL | ui::OSExchangeData::STRING;
+    return true;
+  }
   return false;
 }
 

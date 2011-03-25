@@ -140,9 +140,10 @@ class BaseTabStrip : public AbstractTabStripView,
 
   // View overrides:
   virtual void Layout() OVERRIDE;
-  virtual bool GetDropFormats(
-      int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
+  // NOTE: we don't override GetDropFormats. Instead BrowserRootView does. By
+  // having BrowserRootView return the drop formats all dnd messages target it.
+  // That way BrowserRootView can intercept the messages as necessary and alter
+  // the drop object. This also allows BrowserRootView to expand the drop area.
   virtual bool CanDrop(const OSExchangeData& data) OVERRIDE;
 
  protected:
