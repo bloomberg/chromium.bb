@@ -35,7 +35,8 @@ class OptionsUITest : public UITest {
   }
 };
 
-TEST_F(OptionsUITest, LoadOptionsByURL) {
+// Flaky: http://crbug.com/77375
+TEST_F(OptionsUITest, FLAKY_LoadOptionsByURL) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
