@@ -5,6 +5,7 @@
 
 # Script assumed to be run in native_client/
 if [[ ${PWD} != */native_client ]]; then
+  echo ${PWD}
   echo "ERROR: must be run in native_client!"
   exit 1
 fi
