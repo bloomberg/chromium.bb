@@ -538,7 +538,8 @@ TEST_F(ServiceProcessStateFileManipulationTest, TrashBundle) {
   ASSERT_TRUE(file_util::Delete(file_path, true));
 }
 
-TEST_F(ServiceProcessStateFileManipulationTest, ChangeAttr) {
+// http://crbug.com/77391
+TEST_F(ServiceProcessStateFileManipulationTest, FLAKY_ChangeAttr) {
   ScopedAttributesRestorer restorer(bundle_path(), 0777);
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,
