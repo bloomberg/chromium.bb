@@ -12,6 +12,7 @@
 0x79571e31c2dc4d3c	AboutFlags_experimental-location-features
 0x307b8a127f85947e	AboutFlags_expose-for-tabs
 0x2c97f94b6aca4a22	AboutFlags_extension-apis
+0x3a73624e6d06ac2e	AboutFlags_focus-existing-tab-on-open
 0x66a2e456dfe783d3	AboutFlags_gpu-canvas-2d
 0x6cb0582a680ffec6	AboutFlags_instant-autocomplete-immediately
 0x67b7031bb00a6917	AboutFlags_instant-type
@@ -302,6 +303,9 @@
 0xca7db0b9cda2eecd	History_DragThumbnail
 0xdf8379d1cab60cbf	History_Search
 0x8cf04a9734132302	Home
+0x3f8725913f9606e0	ImportLockDialogCocoa_Shown
+0x10209a50a49ea88f	ImportLockDialogGtk_Shown
+0x03154e02d9a7d1b0	ImportLockDialogView_Shown
 0x2679e82f33d66fc0	Import_ShowDlg
 0x497470e76a40fc53	Indent
 0xddbd530e88f0baad	InputMethodOptions_Open_chewing

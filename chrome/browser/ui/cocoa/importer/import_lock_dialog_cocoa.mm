@@ -8,6 +8,7 @@
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -33,6 +34,7 @@ void ShowImportLockDialog(gfx::NativeWindow parent,
     MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
         importer_host, &ImporterHost::OnImportLockDialogEnd, false));
   }
+  UserMetrics::RecordAction(UserMetricsAction("ImportLockDialogCocoa_Shown"));
 }
 
 }  // namespace importer

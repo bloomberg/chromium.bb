@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -19,6 +20,7 @@ namespace importer {
 void ShowImportLockDialog(gfx::NativeWindow parent,
                           ImporterHost* importer_host) {
   ImportLockDialogGtk::Show(parent, importer_host);
+  UserMetrics::RecordAction(UserMetricsAction("ImportLockDialogGtk_Shown"));
 }
 
 }  // namespace importer

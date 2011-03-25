@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -25,6 +26,7 @@ namespace importer {
 void ShowImportLockDialog(gfx::NativeWindow parent,
                           ImporterHost* importer_host) {
   ImportLockDialogView::Show(parent, importer_host);
+  UserMetrics::RecordAction(UserMetricsAction("ImportLockDialogView_Shown"));
 }
 
 }  // namespace importer
