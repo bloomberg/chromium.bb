@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/ref_counted.h"
 #include "content/renderer/audio_device.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioDevice.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
@@ -28,10 +28,11 @@ class RendererWebAudioDeviceImpl : public WebKit::WebAudioDevice,
 
   // AudioDevice::RenderCallback implementation.
   virtual void Render(const std::vector<float*>& audio_data,
-                      size_t number_of_frames);
+                      size_t number_of_frames,
+                      size_t audio_delay_milliseconds);
 
  private:
-  scoped_ptr<AudioDevice> audio_device_;
+  scoped_refptr<AudioDevice> audio_device_;
 
   // Weak reference to the callback into WebKit code.
   WebKit::WebAudioDevice::RenderCallback* client_callback_;
