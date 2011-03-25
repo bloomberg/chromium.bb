@@ -25,7 +25,8 @@ namespace chromeos {
 
 NetworkConfigView::NetworkConfigView(WifiNetwork* wifi)
     : browser_mode_(true),
-      title_(ASCIIToWide(wifi->name())),
+      title_(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_JOIN_WIFI_NETWORKS))),
       wificonfig_view_(new WifiConfigView(this, wifi)),
       delegate_(NULL) {
 }
@@ -33,7 +34,7 @@ NetworkConfigView::NetworkConfigView(WifiNetwork* wifi)
 NetworkConfigView::NetworkConfigView()
     : browser_mode_(true),
       title_(UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS))),
+          l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_JOIN_WIFI_NETWORKS))),
       wificonfig_view_(new WifiConfigView(this)),
       delegate_(NULL) {
 }

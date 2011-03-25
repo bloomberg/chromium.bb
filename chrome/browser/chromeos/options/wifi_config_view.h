@@ -31,8 +31,7 @@ class NetworkConfigView;
 class WifiConfigView : public views::View,
                        public views::TextfieldController,
                        public views::ButtonListener,
-                       public views::Combobox::Listener,
-                       public SelectFileDialog::Listener {
+                       public views::Combobox::Listener {
  public:
   // Wifi login dialog for wifi network |wifi|. |wifi| must be a non NULL
   // pointer to a WifiNetwork in NetworkLibrary.
@@ -53,9 +52,6 @@ class WifiConfigView : public views::View,
   // views::Combobox::Listener:
   virtual void ItemChanged(views::Combobox* combo_box,
                            int prev_index, int new_index);
-
-  // SelectFileDialog::Listener:
-  virtual void FileSelected(const FilePath& path, int index, void* params);
 
   // Login to network. Returns false if the dialog should remain open.
   virtual bool Login();
@@ -93,15 +89,18 @@ class WifiConfigView : public views::View,
 
   views::Textfield* ssid_textfield_;
   views::Combobox* eap_method_combobox_;
+  views::Label* phase_2_auth_label_;
   views::Combobox* phase_2_auth_combobox_;
+  views::Label* client_cert_label_;
   views::Combobox* client_cert_combobox_;
+  views::Label* server_ca_cert_label_;
   views::Combobox* server_ca_cert_combobox_;
+  views::Label* identity_label_;
   views::Textfield* identity_textfield_;
+  views::Label* identity_anonymous_label_;
   views::Textfield* identity_anonymous_textfield_;
-  views::NativeButton* certificate_browse_button_;
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
-  std::string certificate_path_;
   views::Combobox* security_combobox_;
+  views::Label* passphrase_label_;
   views::Textfield* passphrase_textfield_;
   views::ImageButton* passphrase_visible_button_;
   views::Label* error_label_;
