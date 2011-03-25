@@ -48,6 +48,9 @@ class DirectoryBackingStore;
 
 static const int64 kInvalidMetaHandle = 0;
 
+// Update syncable_enum_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
 enum {
   BEGIN_FIELDS = 0,
   INT64_FIELDS_BEGIN = BEGIN_FIELDS

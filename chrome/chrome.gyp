@@ -717,6 +717,8 @@
         'browser/sync/syncable/syncable_columns.h',
         'browser/sync/syncable/syncable_id.cc',
         'browser/sync/syncable/syncable_id.h',
+        'browser/sync/syncable/syncable_enum_conversions.cc',
+        'browser/sync/syncable/syncable_enum_conversions.h',
         'browser/sync/util/channel.h',
         'browser/sync/util/crypto_helpers.cc',
         'browser/sync/util/crypto_helpers.h',
