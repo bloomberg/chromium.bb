@@ -69,7 +69,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     // TODO(adamk): Run this on the FILE thread we've created as well.
     path_manager_.reset(new FileSystemPathManager(
         base::MessageLoopProxy::CreateForCurrentThread(),
-        temp_dir_.path(), false, false));
+        temp_dir_.path(), NULL, false, false));
 
     path_manager_->GetFileSystemRootPath(
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create

@@ -27,7 +27,8 @@ FileSystemContext::FileSystemContext(
       allow_file_access_from_files_(allow_file_access),
       unlimited_quota_(unlimited_quota),
       path_manager_(new FileSystemPathManager(
-          file_message_loop, profile_path, is_incognito, allow_file_access)),
+          file_message_loop, profile_path, special_storage_policy, is_incognito,
+          allow_file_access)),
       usage_tracker_(new FileSystemUsageTracker(
           file_message_loop, profile_path, is_incognito)) {
 }

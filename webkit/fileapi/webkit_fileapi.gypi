@@ -54,6 +54,11 @@
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
           ],
         }],
+        ['chromeos==1', {
+          'sources': [
+            '../chromeos/fileapi/cros_mount_point_provider.cc',
+          ],
+        }],
       ],
     },
   ],

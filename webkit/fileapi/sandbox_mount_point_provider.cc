@@ -231,7 +231,8 @@ void SandboxMountPointProvider::GetFileSystemRootPath(
 };
 
 FilePath SandboxMountPointProvider::GetFileSystemRootPathOnFileThread(
-    const GURL& origin_url, FileSystemType type, bool create) {
+    const GURL& origin_url, FileSystemType type, const FilePath& unused,
+    bool create) {
   FilePath origin_base_path;
   if (!GetOriginBasePathAndName(origin_url, &origin_base_path, type, NULL)) {
     return FilePath();

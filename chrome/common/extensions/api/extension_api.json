@@ -4480,6 +4480,30 @@
   },
 
   {
+    "namespace":"fileBrowserPrivate",
+    "nodoc": "true",
+    "functions": [
+      {
+        "name": "requestLocalFileSystem",
+        "description": "Requests access to local file system",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "type": "object",
+                "isInstanceOf": "DOMFileSystem"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  {
     "namespace":"webstorePrivate",
     "nodoc": "true",
     "functions": [

@@ -405,7 +405,8 @@ void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation_ptr) {
 }
 
 void FileSystemOperation::DidGetRootPath(
-    bool success, const FilePath& path, const std::string& name) {
+    bool success,
+    const FilePath& path, const std::string& name) {
   DCHECK(success || path.empty());
   FilePath result;
   // We ignore the path, and return a URL instead.  The point was just to verify
@@ -492,6 +493,7 @@ void FileSystemOperation::DidGetMetadata(
 void FileSystemOperation::DidReadDirectory(
     base::PlatformFileError rv,
     const std::vector<base::FileUtilProxy::Entry>& entries) {
+
   if (rv == base::PLATFORM_FILE_OK)
     dispatcher_->DidReadDirectory(entries, false /* has_more */);
   else
@@ -550,6 +552,7 @@ bool FileSystemOperation::VerifyFileSystemPathForRead(
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
+
   return true;
 }
 

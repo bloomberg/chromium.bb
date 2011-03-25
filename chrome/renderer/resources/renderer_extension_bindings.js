@@ -318,6 +318,8 @@ var chrome = chrome || {};
       "experimental.webRequest",
       "history",
       "idle",
+      "fileBrowserPrivate",
+      "fileSystem",
       "management",
       "omnibox",
       "pageAction",

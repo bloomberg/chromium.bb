@@ -19,6 +19,10 @@
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/glue/webkit_glue.h"
 
+#if defined(OS_CHROMEOS)
+#include "webkit/chromeos/fileapi/cros_mount_point_provider.h"
+#endif
+
 // We use some of WebKit types for conversions between origin identifiers
 // and origin URLs.
 using WebKit::WebFileSystem;
@@ -32,6 +36,7 @@ namespace fileapi {
 FileSystemPathManager::FileSystemPathManager(
     scoped_refptr<base::MessageLoopProxy> file_message_loop,
     const FilePath& profile_path,
+    scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
     bool is_incognito,
     bool allow_file_access_from_files)
     : is_incognito_(is_incognito),
@@ -41,6 +46,10 @@ FileSystemPathManager::FileSystemPathManager(
               ALLOW_THIS_IN_INITIALIZER_LIST(this),
               file_message_loop,
               profile_path)) {
+#if defined(OS_CHROMEOS)
+  local_provider_.reset(
+      new chromeos::CrosMountPointProvider(special_storage_policy));
+#endif
 }
 
 FileSystemPathManager::~FileSystemPathManager() {}
@@ -55,6 +64,14 @@ void FileSystemPathManager::GetFileSystemRootPath(
     sandbox_provider_->GetFileSystemRootPath(
         origin_url, type, create, callback_ptr);
     break;
+  case kFileSystemTypeLocal:
+    if (local_provider_.get()) {
+      local_provider_->GetFileSystemRootPath(
+          origin_url, type, create, callback_ptr);
+    } else {
+      callback_ptr->Run(false, FilePath(), std::string());
+    }
+    break;
   case kFileSystemTypeUnknown:
   default:
     NOTREACHED();
@@ -63,13 +80,19 @@ void FileSystemPathManager::GetFileSystemRootPath(
 }
 
 FilePath FileSystemPathManager::GetFileSystemRootPathOnFileThread(
-    const GURL& origin_url, FileSystemType type, bool create) {
+    const GURL& origin_url, FileSystemType type, const FilePath& virtual_path,
+    bool create) {
   switch (type) {
   case kFileSystemTypeTemporary:
   case kFileSystemTypePersistent:
     return sandbox_provider_->GetFileSystemRootPathOnFileThread(
-        origin_url, type, create);
+        origin_url, type, virtual_path, create);
     break;
+  case kFileSystemTypeLocal:
+    return local_provider_.get() ?
+        local_provider_->GetFileSystemRootPathOnFileThread(
+           origin_url, type, virtual_path, create) :
+        FilePath();
   case kFileSystemTypeUnknown:
   default:
     NOTREACHED();
@@ -114,6 +137,25 @@ bool FileSystemPathManager::CrackFileSystemPath(
   local_path = local_path.NormalizeWindowsPathSeparators();
 #endif
 
+  // Check if file access to this type of file system is allowed
+  // for this origin.
+  switch (local_type) {
+    case kFileSystemTypeTemporary:
+    case kFileSystemTypePersistent:
+      if (!sandbox_provider_->IsAccessAllowed(local_url))
+        return false;
+      break;
+    case kFileSystemTypeLocal:
+      if (!local_provider_.get() ||
+          !local_provider_->IsAccessAllowed(local_url)) {
+        return false;
+      }
+      break;
+    case kFileSystemTypeUnknown:
+    default:
+      NOTREACHED();
+      return false;
+  }
   // Any paths that include parent references are considered invalid.
   // These should have been taken care of in CrackFileSystemURL.
   DCHECK(!local_path.ReferencesParent());
@@ -160,6 +202,9 @@ bool FileSystemPathManager::IsRestrictedFileName(
   case kFileSystemTypeTemporary:
   case kFileSystemTypePersistent:
     return sandbox_provider_->IsRestrictedFileName(filename);
+  case kFileSystemTypeLocal:
+    return local_provider_.get() ?
+               local_provider_->IsRestrictedFileName(filename) : true;
   case kFileSystemTypeUnknown:
   default:
     NOTREACHED();

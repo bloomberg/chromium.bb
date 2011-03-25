@@ -48,7 +48,8 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     file_thread_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
 
     path_manager_.reset(new FileSystemPathManager(
-        file_thread_proxy_, temp_dir_.path(), false, false));
+        file_thread_proxy_, temp_dir_.path(),
+        NULL, false, false));
 
     path_manager_->GetFileSystemRootPath(
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create

@@ -19,6 +19,7 @@ var chrome = chrome || {};
   native function IsExtensionProcess();
   native function IsIncognitoProcess();
   native function GetUniqueSubEventName(eventName);
+  native function GetLocalFileSystem(name, path);
 
   var chromeHidden = GetChromeHidden();
 
@@ -657,6 +658,17 @@ var chrome = chrome || {};
         }
       });
     };
+
+    apiFunctions["fileBrowserPrivate.requestLocalFileSystem"].customCallback =
+      function(name, request, response) {
+        var resp = response ? [chromeHidden.JSON.parse(response)] : [];
+        var fs = null;
+        if (!resp[0].error)
+          fs = GetLocalFileSystem(resp[0].name, resp[0].path);
+        if (request.callback)
+          request.callback(fs);
+        request.callback = null;
+      };
 
     apiFunctions["extension.getViews"].handleRequest = function(properties) {
       var windowId = -1;

@@ -179,6 +179,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static const char kChromeosInfoPrivatePermissions[];
   static const char kDebuggerPermission[];
   static const char kExperimentalPermission[];
+  static const char kFileSystemPermission[];
+  static const char kFileBrowserPrivatePermission[];
   static const char kGeolocationPermission[];
   static const char kHistoryPermission[];
   static const char kIdlePermission[];

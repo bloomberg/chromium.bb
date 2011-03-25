@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_context_menu_api.h"
 #include "chrome/browser/extensions/extension_cookies_api.h"
 #include "chrome/browser/extensions/extension_debugger_api.h"
+#include "chrome/browser/extensions/extension_file_browser_private_api.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
@@ -200,6 +201,9 @@ void FactoryRegistry::ResetFunctions() {
 
   // Processes.
   RegisterFunction<GetProcessIdForTabFunction>();
+
+  // Local filesystem.
+  RegisterFunction<RequestLocalFileSystemFunction>();
 
   // Metrics.
   RegisterFunction<MetricsGetEnabledFunction>();

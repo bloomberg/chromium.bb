@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/quota/special_storage_policy.h"
 
 class GURL;
 
@@ -19,6 +20,7 @@ class MessageLoopProxy;
 
 namespace fileapi {
 
+class FileSystemMountPointProvider;
 class SandboxMountPointProvider;
 
 // TODO(kinuko): Probably this module must be called FileSystemPathUtil
@@ -32,10 +34,12 @@ class SandboxMountPointProvider;
 // <type> is either one of "Temporary" or "Persistent".
 class FileSystemPathManager {
  public:
-  FileSystemPathManager(scoped_refptr<base::MessageLoopProxy> file_message_loop,
-                        const FilePath& profile_path,
-                        bool is_incognito,
-                        bool allow_file_access_from_files);
+  FileSystemPathManager(
+      scoped_refptr<base::MessageLoopProxy> file_message_loop,
+      const FilePath& profile_path,
+      scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
+      bool is_incognito,
+      bool allow_file_access_from_files);
   ~FileSystemPathManager();
 
   // Callback for GetFileSystemRootPath.
@@ -59,9 +63,11 @@ class FileSystemPathManager {
 
   // Like GetFileSystemRootPath, but synchronous, and can be called only while
   // running on the file thread.
-  virtual FilePath GetFileSystemRootPathOnFileThread(const GURL& origin_url,
-                                                     FileSystemType type,
-                                                     bool create);
+  virtual FilePath GetFileSystemRootPathOnFileThread(
+      const GURL& origin_url,
+      FileSystemType type,
+      const FilePath& virtual_path,
+      bool create);
   // Cracks the given |path|, retrieves the information embedded in the path
   // and populates |origin_url|, |type| and |virtual_path|.  The |virtual_path|
   // is a sandboxed path in the file system, i.e. the relative path to the
@@ -95,6 +101,7 @@ class FileSystemPathManager {
   const bool is_incognito_;
   const bool allow_file_access_from_files_;
   scoped_ptr<SandboxMountPointProvider> sandbox_provider_;
+  scoped_ptr<FileSystemMountPointProvider> local_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemPathManager);
 };

@@ -234,6 +234,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(IsIncognitoProcess);
     } else if (name->Equals(v8::String::New("GetUniqueSubEventName"))) {
       return v8::FunctionTemplate::New(GetUniqueSubEventName);
+    } else if (name->Equals(v8::String::New("GetLocalFileSystem"))) {
+      return v8::FunctionTemplate::New(GetLocalFileSystem);
     }
 
     return ExtensionBase::GetNativeFunction(name);
@@ -299,6 +301,21 @@ class ExtensionImpl : public ExtensionBase {
     std::string unique_event_name =
         event_name + "/" + base::IntToString(++next_event_id);
     return v8::String::New(unique_event_name.c_str());
+  }
+
+  // Attach an event name to an object.
+  static v8::Handle<v8::Value> GetLocalFileSystem(
+      const v8::Arguments& args) {
+    DCHECK(args.Length() == 2);
+    DCHECK(args[0]->IsString());
+    DCHECK(args[1]->IsString());
+    std::string name(*v8::String::Utf8Value(args[0]));
+    std::string path(*v8::String::Utf8Value(args[1]));
+
+    WebFrame* webframe = WebFrame::frameForCurrentContext();
+    return webframe->createFileSystem(fileapi::kFileSystemTypeLocal,
+            WebKit::WebString::fromUTF8(name.c_str()),
+            WebKit::WebString::fromUTF8(path.c_str()));
   }
 
   // Creates a new messaging channel to the tab with the given ID.

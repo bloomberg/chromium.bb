@@ -26,6 +26,7 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   // data remover. These methods are safe to call on any thread.
   virtual bool IsStorageProtected(const GURL& origin);
   virtual bool IsStorageUnlimited(const GURL& origin);
+  virtual bool IsLocalFileSystemAccessAllowed(const GURL& origin);
 
   // Methods used by the ExtensionService to populate this class.
   void GrantRightsForExtension(const Extension* extension);
@@ -55,6 +56,7 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   base::Lock lock_;  // Synchronize all access to the collections.
   SpecialCollection protected_apps_;
   SpecialCollection unlimited_extensions_;
+  SpecialCollection local_filesystem_extensions_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SPECIAL_STORAGE_POLICY_H_

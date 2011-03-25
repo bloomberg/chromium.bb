@@ -29,6 +29,10 @@ class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   virtual bool IsStorageUnlimited(const GURL& origin) {
     return false;
   }
+
+  virtual bool IsLocalFileSystemAccessAllowed(const GURL& origin) {
+    return false;
+  }
 };
 
 class TestObserver : public webkit_database::DatabaseTracker::Observer {

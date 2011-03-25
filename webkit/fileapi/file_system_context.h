@@ -16,10 +16,6 @@ namespace base {
 class MessageLoopProxy;
 }
 
-namespace quota {
-class SpecialStoragePolicy;
-}
-
 namespace fileapi {
 
 class FileSystemContext;

@@ -2231,6 +2231,7 @@
         'browser/extensions/extension_input_apitest.cc',
         'browser/extensions/extension_install_ui_browsertest.cc',
         'browser/extensions/extension_javascript_url_apitest.cc',
+        'browser/extensions/extension_local_filesystem_apitest.cc',
         'browser/extensions/extension_management_api_browsertest.cc',
         'browser/extensions/extension_management_apitest.cc',
         'browser/extensions/extension_management_browsertest.cc',

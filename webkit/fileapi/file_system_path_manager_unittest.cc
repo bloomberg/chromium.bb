@@ -19,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/quota/special_storage_policy.h"
 
 using namespace fileapi;
 
@@ -69,6 +70,8 @@ const struct RootPathFileURITest {
     "file__0" PS "Temporary" },
   { fileapi::kFileSystemTypePersistent, "file:///",
     "file__0" PS "Persistent" },
+    // TODO(zelidrag): Add fileapi::kFileSystemTypeLocal test cases here once
+    // we fix ChromeOS build of this test.
 };
 
 const struct CheckValidPathTest {
@@ -160,6 +163,21 @@ const struct IsRestrictedNameTest {
   { FILE_PATH_LITERAL("|ab"), true, },
 };
 
+class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
+ public:
+  virtual bool IsStorageProtected(const GURL& origin) {
+    return false;
+  }
+
+  virtual bool IsStorageUnlimited(const GURL& origin) {
+    return true;
+  }
+
+  virtual bool IsLocalFileSystemAccessAllowed(const GURL& origin) {
+    return true;
+  }
+};
+
 }  // namespace
 
 class FileSystemPathManagerTest : public testing::Test {
@@ -181,7 +199,11 @@ class FileSystemPathManagerTest : public testing::Test {
       bool allow_file_access) {
     return new FileSystemPathManager(
         base::MessageLoopProxy::CreateForCurrentThread(),
-        data_dir_.path(), incognito, allow_file_access);
+        data_dir_.path(),
+        scoped_refptr<quota::SpecialStoragePolicy>(
+            new TestSpecialStoragePolicy()),
+        incognito,
+        allow_file_access);
   }
 
   void OnGetRootPath(bool success,

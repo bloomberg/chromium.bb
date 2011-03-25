@@ -12,7 +12,6 @@
 #include "base/string_number_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/quota/special_storage_policy.h"
 
 using namespace fileapi;
 
@@ -33,6 +32,10 @@ class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
 
   virtual bool IsStorageUnlimited(const GURL& origin) {
     return origin == GURL(kTestOrigins[1]);
+  }
+
+  virtual bool IsLocalFileSystemAccessAllowed(const GURL& origin) {
+    return false;
   }
 };
 

@@ -933,12 +933,17 @@ TEST(ExtensionTest, PermissionMessages) {
   // The proxy permission is warned as part of host permission checks.
   skip.insert(Extension::kProxyPermission);
 
+  // This permission requires explicit user action (context menu handler)
+  // so we won't prompt for it for now.
+  skip.insert(Extension::kFileSystemPermission);
+
   // If you've turned on the experimental command-line flag, we don't need
   // to warn you further.
   skip.insert(Extension::kExperimentalPermission);
 
   // These are only usable by component extensions.
   skip.insert(Extension::kWebstorePrivatePermission);
+  skip.insert(Extension::kFileBrowserPrivatePermission);
   skip.insert(Extension::kChromeosInfoPrivatePermissions);
 
   for (size_t i = 0; i < Extension::kNumPermissions; ++i) {

@@ -35,6 +35,7 @@ class FileSystemMountPointProvider {
   virtual FilePath GetFileSystemRootPathOnFileThread(
       const GURL& origin_url,
       FileSystemType type,
+      const FilePath& virtual_path,
       bool create) = 0;
 
   // Checks if a given |name| contains any restricted names/chars in it.

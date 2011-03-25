@@ -24,11 +24,18 @@ bool ExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
   return unlimited_extensions_.Contains(origin);
 }
 
+bool ExtensionSpecialStoragePolicy::IsLocalFileSystemAccessAllowed(
+    const GURL& origin) {
+  base::AutoLock locker(lock_);
+  return local_filesystem_extensions_.Contains(origin);
+}
+
 void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
     const Extension* extension) {
   DCHECK(extension);
   if (!extension->is_hosted_app() &&
-      !extension->HasApiPermission(Extension::kUnlimitedStoragePermission)) {
+      !extension->HasApiPermission(Extension::kUnlimitedStoragePermission) &&
+      !extension->HasApiPermission(Extension::kFileSystemPermission)) {
     return;
   }
   base::AutoLock locker(lock_);
@@ -36,13 +43,16 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
     protected_apps_.Add(extension);
   if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission))
     unlimited_extensions_.Add(extension);
+  if (extension->HasApiPermission(Extension::kFileSystemPermission))
+    local_filesystem_extensions_.Add(extension);
 }
 
 void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
     const Extension* extension) {
   DCHECK(extension);
   if (!extension->is_hosted_app() &&
-      !extension->HasApiPermission(Extension::kUnlimitedStoragePermission)) {
+      !extension->HasApiPermission(Extension::kUnlimitedStoragePermission) &&
+      !extension->HasApiPermission(Extension::kFileSystemPermission)) {
     return;
   }
   base::AutoLock locker(lock_);
@@ -50,12 +60,15 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
     protected_apps_.Remove(extension);
   if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission))
     unlimited_extensions_.Remove(extension);
+  if (extension->HasApiPermission(Extension::kFileSystemPermission))
+    local_filesystem_extensions_.Remove(extension);
 }
 
 void ExtensionSpecialStoragePolicy::RevokeRightsForAllExtensions() {
   base::AutoLock locker(lock_);
   protected_apps_.Clear();
   unlimited_extensions_.Clear();
+  local_filesystem_extensions_.Clear();
 }
 
 //-----------------------------------------------------------------------------

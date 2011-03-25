@@ -45,6 +45,7 @@ class SandboxMountPointProvider : public FileSystemMountPointProvider {
   virtual FilePath GetFileSystemRootPathOnFileThread(
       const GURL& origin_url,
       FileSystemType type,
+      const FilePath& unused,
       bool create);
 
   // The FileSystem directory name.

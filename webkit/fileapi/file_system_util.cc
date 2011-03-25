@@ -17,6 +17,7 @@ namespace fileapi {
 
 static const char kPersistentDir[] = "/persistent/";
 static const char kTemporaryDir[] = "/temporary/";
+static const char kLocalDir[] = "/local/";
 
 bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
                         FilePath* file_path) {
@@ -76,6 +77,9 @@ bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
   } else if (path.compare(0, strlen(kTemporaryDir), kTemporaryDir) == 0) {
     file_system_type = kFileSystemTypeTemporary;
     path = path.substr(strlen(kTemporaryDir));
+  } else if (path.compare(0, strlen(kLocalDir), kLocalDir) == 0) {
+    file_system_type = kFileSystemTypeLocal;
+    path = path.substr(strlen(kLocalDir));
   } else {
     return false;
   }
@@ -109,6 +113,9 @@ GURL GetFileSystemRootURI(
     break;
   case kFileSystemTypePersistent:
     path += (kPersistentDir + 1);  // We don't want the leading slash.
+    break;
+  case kFileSystemTypeLocal:
+    path += (kLocalDir + 1);  // We don't want the leading slash.
     break;
   default:
     NOTREACHED();

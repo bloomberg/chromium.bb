@@ -27,6 +27,9 @@ class SpecialStoragePolicy
   // Unlimited storage is not subject to 'quotas'.
   virtual bool IsStorageUnlimited(const GURL& origin) = 0;
 
+  // Local file system access allowed via File API.
+  virtual bool IsLocalFileSystemAccessAllowed(const GURL& origin) = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<SpecialStoragePolicy>;
   virtual ~SpecialStoragePolicy();
