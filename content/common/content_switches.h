@@ -52,7 +52,6 @@ extern const char kLoggingLevel[];
 extern const char kLogPluginMessages[];
 // TODO(jam): this doesn't belong in content.
 extern const char kNaClLoaderProcess[];
-extern const char kNoGpuSandbox[];
 extern const char kNoReferrers[];
 extern const char kNoSandbox[];
 extern const char kPluginLauncher[];

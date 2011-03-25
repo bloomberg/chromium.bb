@@ -133,7 +133,7 @@ void GpuChildThread::OnInitialize() {
 #if defined (OS_MACOSX)
   // Note that kNoSandbox will also disable the GPU sandbox.
   bool no_gpu_sandbox = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNoGpuSandbox);
+      switches::kDisableGpuSandbox);
   if (!no_gpu_sandbox) {
     if (!InitializeGpuSandbox()) {
       LOG(ERROR) << "Failed to initialize the GPU sandbox";

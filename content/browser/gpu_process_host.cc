@@ -226,7 +226,6 @@ bool GpuProcessHost::LaunchGpuProcess() {
 #endif
     switches::kGpuStartupDialog,
     switches::kLoggingLevel,
-    switches::kNoGpuSandbox,
     switches::kNoSandbox,
     switches::kDisableGLMultisampling,
   };

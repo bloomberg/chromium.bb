@@ -142,9 +142,6 @@ const char kLogPluginMessages[]             = "log-plugin-messages";
 // Causes the process to run as a NativeClient loader.
 const char kNaClLoaderProcess[]             = "nacl-loader";
 
-// Don't Sandbox the GPU process, does not affect other sandboxed processes.
-const char kNoGpuSandbox[]                  = "no-gpu-sandbox";
-
 // Don't send HTTP-Referer headers.
 const char kNoReferrers[]                   = "no-referrers";
 
