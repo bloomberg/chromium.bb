@@ -12,7 +12,7 @@ call gclient runhooks --force
 setlocal
 call "%~dp0cygwin_env.bat"
 echo PATH: %PATH%
-bash buildbot_windows-glibc-makefile.sh
+bash buildbot/buildbot_windows-glibc-makefile.sh
 if errorlevel 1 goto :skip_publishing
 endlocal
 
