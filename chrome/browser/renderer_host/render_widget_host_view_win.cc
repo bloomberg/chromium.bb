@@ -217,6 +217,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
     : render_widget_host_(widget),
       compositor_host_window_(NULL),
+      hide_compositor_window_at_next_paint_(false),
       track_mouse_leave_(false),
       ime_notification_(false),
       capture_enter_key_(false),
@@ -850,6 +851,11 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
   // damage region.
   base::win::ScopedGDIObject<HRGN> damage_region(CreateRectRgn(0, 0, 0, 0));
   GetUpdateRgn(damage_region, FALSE);
+
+  if (hide_compositor_window_at_next_paint_) {
+    ::ShowWindow(compositor_host_window_, SW_HIDE);
+    hide_compositor_window_at_next_paint_ = false;
+  }
 
   CPaintDC paint_dc(m_hWnd);
 
@@ -1596,7 +1602,7 @@ void RenderWidgetHostViewWin::ShowCompositorHostWindow(bool show) {
           SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
     }
   } else {
-    ::ShowWindow(compositor_host_window_, SW_HIDE);
+    hide_compositor_window_at_next_paint_ = true;
   }
 }
 

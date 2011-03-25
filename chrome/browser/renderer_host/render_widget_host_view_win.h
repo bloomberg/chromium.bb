@@ -278,6 +278,10 @@ class RenderWidgetHostViewWin
   // When we are doing accelerated compositing
   HWND compositor_host_window_;
 
+  // true if the compositor host window must be hidden after the
+  // software renderered view is updated.
+  bool hide_compositor_window_at_next_paint_;
+
   // The cursor for the page. This is passed up from the renderer.
   WebCursor current_cursor_;
 
