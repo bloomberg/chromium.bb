@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // proxy api test
-// browser_tests.exe --gtest_filter=ExtensionApiTest.ProxyEvents
+// browser_tests.exe --gtest_filter=ProxySettingsApiTest.ProxyEvents
 
 chrome.experimental.proxy.onProxyError.addListener(function (error) {
   chrome.test.assertTrue(error.fatal);

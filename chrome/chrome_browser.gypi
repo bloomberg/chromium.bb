@@ -987,6 +987,8 @@
         'browser/extensions/extension_protocols.h',
         'browser/extensions/extension_proxy_api.cc',
         'browser/extensions/extension_proxy_api.h',
+        'browser/extensions/extension_proxy_api_constants.cc',
+        'browser/extensions/extension_proxy_api_constants.h',
         'browser/extensions/extension_rlz_module.cc',
         'browser/extensions/extension_rlz_module.h',
         'browser/extensions/extension_service.cc',
