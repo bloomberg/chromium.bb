@@ -19,7 +19,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCookieJar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -52,7 +51,6 @@ using WebKit::WebCString;
 using WebKit::WebCursorInfo;
 using WebKit::WebData;
 using WebKit::WebDataSource;
-using WebKit::WebDevToolsAgent;
 using WebKit::WebFrame;
 using WebKit::WebHTTPBody;
 using WebKit::WebHTTPHeaderVisitor;
@@ -932,12 +930,6 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
       response_info.last_modified,
       request_is_seekable);
 
-  if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent()) {
-    ClientInfo* client_info = GetClientInfoFromLoader(loader);
-    if (client_info)
-      devtools_agent->didReceiveResponse(client_info->id, response);
-  }
-
   // Bug http://b/issue?id=925559. The flash plugin would not handle the HTTP
   // error codes in the stream header and as a result, was unaware of the
   // fate of the HTTP requests issued via NPN_GetURLNotify. Webkit and FF
@@ -964,12 +956,6 @@ void WebPluginImpl::didReceiveData(WebURLLoader* loader,
   if (!client)
     return;
 
-  // ClientInfo can be removed from clients_ vector by next statements.
-  if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent()) {
-    ClientInfo* client_info = GetClientInfoFromLoader(loader);
-    if (client_info)
-      devtools_agent->didReceiveData(client_info->id, length);
-  }
   MultiPartResponseHandlerMap::iterator index =
       multi_part_response_map_.find(client);
   if (index != multi_part_response_map_.end()) {
@@ -999,9 +985,6 @@ void WebPluginImpl::didFinishLoading(WebURLLoader* loader, double finishTime) {
     // It is not safe to access this structure after that.
     client_info->client = NULL;
     resource_client->DidFinishLoading();
-
-    if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent())
-      devtools_agent->didFinishLoading(client_info->id);
   }
 }
 
@@ -1015,9 +998,6 @@ void WebPluginImpl::didFail(WebURLLoader* loader,
     // It is not safe to access this structure after that.
     client_info->client = NULL;
     resource_client->DidFail();
-
-    if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent())
-      devtools_agent->didFailLoading(client_info->id, error);
   }
 }
 
@@ -1173,9 +1153,6 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
 
   SetReferrer(&info.request, referrer_flag);
 
-  if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent())
-    devtools_agent->willSendRequest(resource_id, webframe_, info.request);
-
   info.loader.reset(webframe_->createAssociatedURLLoader());
   if (!info.loader.get())
     return false;
@@ -1232,10 +1209,6 @@ void WebPluginImpl::SetDeferResourceLoading(unsigned long resource_id,
         client_info.loader->cancel();
         clients_.erase(client_index++);
         resource_client->DidFail();
-
-        // Report that resource loading finished.
-        if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent())
-          devtools_agent->didFinishLoading(resource_id);
       }
       break;
     }
@@ -1364,15 +1337,6 @@ void WebPluginImpl::SetReferrer(WebKit::WebURLRequest* request,
     default:
       break;
   }
-}
-
-WebDevToolsAgent* WebPluginImpl::GetDevToolsAgent() {
-  if (!webframe_)
-    return NULL;
-  WebView* view = webframe_->view();
-  if (!view)
-    return NULL;
-  return view->devToolsAgent();
 }
 
 }  // namespace npapi
