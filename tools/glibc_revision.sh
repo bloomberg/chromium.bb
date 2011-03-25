@@ -10,7 +10,8 @@ FIXED_PATH="$(
   IFS=":"
   FIRST_ELEMENT=1
   for ELEMENT in $PATH ; do
-    if [[ $ELEMENT = */depot_tools ]]; then
+    if [[ $ELEMENT = *[/\\]depot_tools[/\\]* ]] ||
+       [[ $ELEMENT = *[/\\]depot_tools ]]; then
       if ((FIRST_ELEMENT)); then
         FIRST_ELEMENT=0
       else
@@ -20,7 +21,8 @@ FIXED_PATH="$(
     fi
   done
   for ELEMENT in $PATH ; do
-    if [[ $ELEMENT != */depot_tools ]]; then
+    if [[ $ELEMENT != *[/\\]depot_tools[/\\]* ]] &&
+       [[ $ELEMENT != *[/\\]depot_tools ]]; then
       if ((FIRST_ELEMENT)); then
         FIRST_ELEMENT=0
       else
