@@ -840,18 +840,10 @@ def CMDpresubmit(parser, args):
     # Default to diffing against the "upstream" branch.
     base_branch = cl.GetUpstreamBranch()
 
-  if options.upload:
-    print '*** Presubmit checks for UPLOAD would report: ***'
-    RunHook(committing=False, upstream_branch=base_branch,
-            rietveld_server=cl.GetRietveldServer(), tbr=False,
-            may_prompt=False)
-    return 0
-  else:
-    print '*** Presubmit checks for DCOMMIT would report: ***'
-    RunHook(committing=True, upstream_branch=base_branch,
-            rietveld_server=cl.GetRietveldServer, tbr=False,
-            may_prompt=False)
-    return 0
+  RunHook(committing=not options.upload, upstream_branch=base_branch,
+          rietveld_server=cl.GetRietveldServer(), tbr=False,
+          may_prompt=False)
+  return 0
 
 
 @usage('[args to "git diff"]')

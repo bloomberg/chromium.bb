@@ -631,10 +631,12 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
   if not input_api.is_committing:
     return []
   if input_api.tbr:
-    return [output_api.PresubmitNotifyResult('--tbr was specified, '
-                                             'skipping OWNERS check')]
+    return [output_api.PresubmitNotifyResult(
+        '--tbr was specified, skipping OWNERS check')]
   if not input_api.change.issue:
-    return [output_api.PresubmitError('Change not uploaded for review')]
+    return [output_api.PresubmitError(
+        "OWNERS check failed: this change has no Rietveld issue number, so "
+        "we can't check it for approvals.")]
 
   affected_files = set([f.LocalPath() for f in
       input_api.change.AffectedFiles(source_file_filter)])

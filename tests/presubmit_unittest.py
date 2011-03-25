@@ -420,7 +420,8 @@ class PresubmitUnittest(PresubmitTestsBase):
         change, False, True, None, input_buf, None, False)
     self.failIf(output.should_continue())
     self.assertEqual(output.getvalue().count('!!'), 2)
-    self.assertEqual(output.getvalue().count('Running presubmit hooks...\n'), 1)
+    self.assertEqual(output.getvalue().count(
+        'Running presubmit upload checks ...\n'), 1)
 
   def testDoPresubmitChecksPromptsAfterWarnings(self):
     join = presubmit.os.path.join
@@ -459,7 +460,8 @@ class PresubmitUnittest(PresubmitTestsBase):
         change, False, True, None, input_buf, None, True)
     self.failUnless(output.should_continue())
     self.assertEquals(output.getvalue().count('??'), 2)
-    self.assertEqual(output.getvalue().count('Running presubmit hooks...\n'), 1)
+    self.assertEqual(output.getvalue().count(
+        'Running presubmit upload checks ...\n'), 1)
 
   def testDoPresubmitChecksNoWarningPromptIfErrors(self):
     join = presubmit.os.path.join
@@ -492,7 +494,8 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.assertEqual(output.getvalue().count('??'), 2)
     self.assertEqual(output.getvalue().count('XX!!XX'), 2)
     self.assertEqual(output.getvalue().count('(y/N)'), 0)
-    self.assertEqual(output.getvalue().count('Running presubmit hooks...\n'), 1)
+    self.assertEqual(output.getvalue().count(
+        'Running presubmit upload checks ...\n'), 1)
 
   def testDoDefaultPresubmitChecksAndFeedback(self):
     join = presubmit.os.path.join
@@ -526,9 +529,10 @@ def CheckChangeOnCommit(input_api, output_api):
     output = presubmit.DoPresubmitChecks(
         change, False, True, None, input_buf, DEFAULT_SCRIPT, False)
     self.failIf(output.should_continue())
-    text = ('Running presubmit hooks...\n'
+    text = ('Running presubmit upload checks ...\n'
             'Warning, no presubmit.py found.\n'
             'Running default presubmit script.\n'
+            '\n'
             '** Presubmit ERRORS **\n!!\n\n'
             'Was the presubmit check useful? Please send feedback & hate mail '
             'to maruel@chromium.org!\n')
@@ -600,11 +604,14 @@ def CheckChangeOnCommit(input_api, output_api):
     self.failUnless(presubmit.DoPresubmitChecks(
         change, False, True, output, input_buf, DEFAULT_SCRIPT, False))
     self.assertEquals(output.getvalue(),
-                      ('Running presubmit hooks...\n'
+                      ('Running presubmit upload checks ...\n'
                        'Warning, no presubmit.py found.\n'
                        'Running default presubmit script.\n'
+                       '\n'
                        '** Presubmit Messages **\n'
-                       'http://tracker.com/42\n\n'))
+                       'http://tracker.com/42\n'
+                       '\n'
+                       'Presubmit checks passed.\n'))
 
   def testGetTrySlavesExecuter(self):
     self.mox.ReplayAll()
@@ -1971,7 +1978,8 @@ mac|success|blew
 
   def testCannedCheckOwners_NoIssue(self):
     self.AssertOwnersWorks(issue=None,
-                           expected_output='Change not uploaded for review\n')
+        expected_output="OWNERS check failed: this change has no Rietveld "
+                        "issue number, so we can't check it for approvals.\n")
 
   def testCannedCheckOwners_NoLGTM(self):
     self.AssertOwnersWorks(expected_output='Missing LGTM from someone '

@@ -1040,7 +1040,10 @@ def DoPresubmitChecks(change,
     if there were errors or warnings and the caller should abort.
   """
   output = PresubmitOutput(input_stream, output_stream)
-  output.write("Running presubmit hooks...\n")
+  if committing:
+    output.write("Running presubmit commit checks ...\n")
+  else:
+    output.write("Running presubmit upload checks ...\n")
   start_time = time.time()
   presubmit_files = ListRelevantPresubmitFiles(change.AbsoluteLocalPaths(True),
                                                change.RepositoryRoot())
@@ -1072,6 +1075,7 @@ def DoPresubmitChecks(change,
     else:
       notifications.append(result)
 
+  output.write('\n')
   for name, items in (('Messages', notifications),
                       ('Warnings', warnings),
                       ('ERRORS', errors)):
@@ -1083,10 +1087,12 @@ def DoPresubmitChecks(change,
 
   total_time = time.time() - start_time
   if total_time > 1.0:
-    output.write("Presubmit checks took %.1fs to calculate.\n" % total_time)
+    output.write("Presubmit checks took %.1fs to calculate.\n\n" % total_time)
 
-  if not errors and warnings:
-    if may_prompt:
+  if not errors:
+    if not warnings:
+      output.write('Presubmit checks passed.\n')
+    elif may_prompt:
       output.prompt_yes_no('There were presubmit warnings. '
                           'Are you sure you wish to continue? (y/N): ')
     else:
