@@ -62,13 +62,11 @@ deps = {
   "src/third_party/cacheinvalidation/files":
     (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@70",
 
-  # TODO(nsylvain): Mirror for bots.
   "src/third_party/leveldb":
-    "http://leveldb.googlecode.com/svn/trunk@13",
+    (Var("googlecode_url") % "leveldb") + "/trunk@13",
 
-  # TODO(nsylvain): Mirror for bots.
   "src/third_party/snappy/src":
-    "http://snappy.googlecode.com/svn/trunk@2",
+    (Var("googlecode_url") % "snappy") + "/trunk@2",
 
   "src/tools/gyp":
     (Var("googlecode_url") % "gyp") + "/trunk@904",
