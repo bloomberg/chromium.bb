@@ -194,7 +194,7 @@ const Experiment kExperiments[] = {
     "print-preview",  // FLAGS:RECORD_UMA
     IDS_FLAGS_PRINT_PREVIEW_NAME,
     IDS_FLAGS_PRINT_PREVIEW_DESCRIPTION,
-    kOsAll,
+    kOsMac | kOsWin | kOsLinux, // This switch is not available in CrOS.
     SINGLE_VALUE_TYPE(switches::kEnablePrintPreview)
   },
   {
