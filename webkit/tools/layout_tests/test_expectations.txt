@@ -7,3 +7,7 @@
 
 // Skip these tests until the test_expectations can be updated after this Chromium patch lands.
 BUGWK44797 SKIP : fullscreen = PASS FAIL TIMEOUT
+
+// WebKit r81923?
+BUG_YUTAK MAC LEOPARD : fast/blockflow/vertical-baseline-alignment.html = IMAGE
+BUG_YUTAK MAC LEOPARD : fast/dynamic/text-combine.html = IMAGE
