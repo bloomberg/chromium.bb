@@ -1,0 +1,202 @@
+# coding=utf8
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+"""Collection of subprocess wrapper functions.
+
+In theory you shouldn't need anything else in subprocess, or this module failed.
+"""
+
+import logging
+import os
+import subprocess
+import sys
+import tempfile
+import time
+import threading
+
+# Constants forwarded from subprocess.
+PIPE = subprocess.PIPE
+STDOUT = subprocess.STDOUT
+
+# Globals.
+# Set to True if you somehow need to disable this hack.
+SUBPROCESS_CLEANUP_HACKED = False
+
+
+class CalledProcessError(subprocess.CalledProcessError):
+  """Augment the standard exception with more data."""
+  def __init__(self, returncode, cmd, cwd, stdout, stderr):
+    super(CalledProcessError, self).__init__(returncode, cmd)
+    self.stdout = stdout
+    self.stderr = stderr
+    self.cwd = cwd
+
+  def __str__(self):
+    out = 'Command %s returned non-zero exit status %s' % (
+        ' '.join(self.cmd), self.returncode)
+    if self.cwd:
+      out += ' in ' + self.cwd
+    return '\n'.join(filter(None, (out, self.stdout, self.stderr)))
+
+
+def hack_subprocess():
+  """subprocess functions may throw exceptions when used in multiple threads.
+
+  See http://bugs.python.org/issue1731717 for more information.
+  """
+  global SUBPROCESS_CLEANUP_HACKED
+  if not SUBPROCESS_CLEANUP_HACKED and threading.activeCount() != 1:
+    # Only hack if there is ever multiple threads.
+    # There is no point to leak with only one thread.
+    subprocess._cleanup = lambda: None
+    SUBPROCESS_CLEANUP_HACKED = True
+
+
+def get_english_env(env):
+  """Forces LANG and/or LANGUAGE to be English.
+
+  Forces encoding to utf-8 for subprocesses.
+
+  Returns None if it is unnecessary.
+  """
+  env = env or os.environ
+
+  # Test if it is necessary at all.
+  is_english = lambda name: env.get(name, 'en').startswith('en')
+
+  if is_english('LANG') and is_english('LANGUAGE'):
+    return None
+
+  # Requires modifications.
+  env = env.copy()
+  def fix_lang(name):
+    if not is_english(name):
+      env[name] = 'en_US.UTF-8'
+  fix_lang('LANG')
+  fix_lang('LANGUAGE')
+  return env
+
+
+def Popen(args, **kwargs):
+  """Wraps subprocess.Popen().
+
+  Forces English output since it's easier to parse the stdout if it is always in
+  English.
+
+  Sets shell=True on windows by default. You can override this by forcing shell
+  parameter to a value.
+
+  Popen() can throw OSError when cwd or args[0] doesn't exist.
+  """
+  # Make sure we hack subprocess if necessary.
+  hack_subprocess()
+
+  env = get_english_env(kwargs.get('env'))
+  if env:
+    kwargs['env'] = env
+
+  if not kwargs.get('shell') is None:
+    # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for the
+    # executable, but shell=True makes subprocess on Linux fail when it's called
+    # with a list because it only tries to execute the first item in the list.
+    kwargs['shell'] = (sys.platform=='win32')
+
+  tmp_str = ' '.join(args)
+  if kwargs.get('cwd', None):
+    tmp_str += ';  cwd=%s' % kwargs['cwd']
+  logging.debug(tmp_str)
+  return subprocess.Popen(args, **kwargs)
+
+
+def call(args, timeout=None, **kwargs):
+  """Wraps subprocess.Popen().communicate().
+
+  The process will be kill with error code -9 after |timeout| seconds if set.
+
+  Automatically passes stdin content as input so do not specify stdin=PIPE.
+
+  Returns both communicate() tuple and return code wrapped in a tuple.
+  """
+  stdin = kwargs.pop('stdin', None)
+  if stdin is not None:
+    assert stdin != PIPE
+    # When stdin is passed as an argument, use it as the actual input data and
+    # set the Popen() parameter accordingly.
+    kwargs['stdin'] = PIPE
+
+  if not timeout:
+    # Normal workflow.
+    proc = Popen(args, **kwargs)
+    if stdin is not None:
+      out = proc.communicate(stdin)
+    else:
+      out = proc.communicate()
+  else:
+    # Create a temporary file to workaround python's deadlock.
+    # http://docs.python.org/library/subprocess.html#subprocess.Popen.wait
+    # When the pipe fills up, it will deadlock this process. Using a real file
+    # works around that issue.
+    with tempfile.TemporaryFile() as buff:
+      start = time.time()
+      kwargs['stdout'] = buff
+      proc = Popen(args, **kwargs)
+      if stdin is not None:
+        proc.stdin.write(stdin)
+      while proc.returncode is None:
+        proc.poll()
+        if timeout and (time.time() - start) > timeout:
+          proc.kill()
+          proc.wait()
+          # It's -9 on linux and 1 on Windows. Standardize to -9.
+          # Do not throw an exception here, the user must use
+          # check_call(timeout=60) and check for e.returncode == -9 instead.
+          # or look at call()[1] == -9.
+          proc.returncode = -9
+        time.sleep(0.001)
+      # Now that the process died, reset the cursor and read the file.
+      buff.seek(0)
+      out = [buff.read(), None]
+  return out, proc.returncode
+
+
+def check_call(args, **kwargs):
+  """Similar to subprocess.check_call() but use call() instead.
+
+  This permits to include more details in CalledProcessError().
+
+  Runs a command and throws an exception if the command failed.
+
+  Returns communicate() tuple.
+  """
+  out, returncode = call(args, **kwargs)
+  if returncode:
+    raise CalledProcessError(
+        returncode, args, kwargs.get('cwd'), out[0], out[1])
+  return out
+
+
+def capture(args, **kwargs):
+  """Captures stdout of a process call and returns it.
+
+  Similar to check_output() excepts that it discards return code.
+
+  Discards communicate()[1]. By default sets stderr=STDOUT.
+  """
+  if kwargs.get('stderr') is None:
+    kwargs['stderr'] = STDOUT
+  return call(args, stdout=PIPE, **kwargs)[0][0]
+
+
+def check_output(args, **kwargs):
+  """Captures stdout of a process call and returns it.
+
+  Discards communicate()[1]. By default sets stderr=STDOUT.
+
+  Throws if return code is not 0.
+
+  Works even prior to python 2.7.
+  """
+  if kwargs.get('stderr') is None:
+    kwargs['stderr'] = STDOUT
+  return check_call(args, stdout=PIPE, **kwargs)[0]
