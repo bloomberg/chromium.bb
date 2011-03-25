@@ -19,6 +19,11 @@ namespace prerender {
 class PrerenderObserver;
 }
 
+namespace printing {
+class PrintPreviewMessageHandler;
+class PrintViewManager;
+}
+
 class AutocompleteHistoryManager;
 class AutofillManager;
 class Extension;
@@ -150,6 +155,9 @@ class TabContentsWrapper : public NotificationObserver,
 
   // Whether the current URL is starred.
   bool is_starred_;
+
+  // Handles print job for this contents.
+  scoped_ptr<printing::PrintViewManager> printing_;
 
   // Handles Print Preview messages.
   scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;

@@ -29,6 +29,12 @@ void TabContentsObserver::DidStartLoading() {
 void TabContentsObserver::DidStopLoading() {
 }
 
+void TabContentsObserver::RenderViewGone() {
+}
+
+void TabContentsObserver::StopNavigation() {
+}
+
 TabContentsObserver::TabContentsObserver(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       routing_id_(tab_contents->render_view_host()->routing_id()) {

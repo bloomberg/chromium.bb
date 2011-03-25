@@ -41,17 +41,14 @@ PrintViewManager::~PrintViewManager() {
   DisconnectFromCurrentPrintJob();
 }
 
-void PrintViewManager::Stop() {
+void PrintViewManager::StopNavigation() {
   // Cancel the current job, wait for the worker to finish.
   TerminatePrintJob(true);
 }
 
-bool PrintViewManager::OnRenderViewGone(RenderViewHost* render_view_host) {
+void PrintViewManager::RenderViewGone() {
   if (!print_job_.get())
-    return true;
-
-  if (render_view_host != tab_contents()->render_view_host())
-    return false;
+    return;
 
   scoped_refptr<PrintedDocument> document(print_job_->document());
   if (document) {
@@ -60,7 +57,6 @@ bool PrintViewManager::OnRenderViewGone(RenderViewHost* render_view_host) {
     // the print job may finish without problem.
     TerminatePrintJob(!document->IsComplete());
   }
-  return true;
 }
 
 string16 PrintViewManager::RenderSourceName() {

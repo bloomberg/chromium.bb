@@ -26,6 +26,8 @@ class TabContentsObserver : public IPC::Channel::Listener {
 
   virtual void DidStartLoading();
   virtual void DidStopLoading();
+  virtual void RenderViewGone();
+  virtual void StopNavigation();
 
 #if 0
   // For unifying with delegate...
@@ -43,7 +45,7 @@ class TabContentsObserver : public IPC::Channel::Listener {
 #endif
 
  protected:
-  TabContentsObserver(TabContents* tab_contents);
+  explicit TabContentsObserver(TabContents* tab_contents);
   virtual ~TabContentsObserver();
 
   // Invoked when the TabContents is being destroyed. Gives subclasses a chance

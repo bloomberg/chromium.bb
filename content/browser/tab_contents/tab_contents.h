@@ -55,11 +55,6 @@ namespace prerender {
 class PrerenderManager;
 }
 
-namespace printing {
-class PrintPreviewMessageHandler;
-class PrintViewManager;
-}
-
 namespace safe_browsing {
 class ClientSideDetectionHost;
 }
@@ -1034,9 +1029,6 @@ class TabContents : public PageNavigator,
 
   // Registers and unregisters for pref notifications.
   PrefChangeRegistrar pref_change_registrar_;
-
-  // Handles print job for this contents.
-  scoped_ptr<printing::PrintViewManager> printing_;
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;

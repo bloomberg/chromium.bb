@@ -32,13 +32,6 @@ class PrintViewManager : public NotificationObserver,
   explicit PrintViewManager(TabContents* tab_contents);
   virtual ~PrintViewManager();
 
-  // Cancels the print job.
-  void Stop();
-
-  // Terminates or cancels the print job if one was pending, depending on the
-  // current state. Returns false if the renderer was not valuable.
-  bool OnRenderViewGone(RenderViewHost* render_view_host);
-
   // PrintedPagesSource implementation.
   virtual string16 RenderSourceName();
   virtual GURL RenderSourceUrl();
@@ -50,6 +43,12 @@ class PrintViewManager : public NotificationObserver,
 
   // TabContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
+
+  // Terminates or cancels the print job if one was pending.
+  void RenderViewGone();
+
+  // Cancels the print job.
+  virtual void StopNavigation();
 
  private:
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);

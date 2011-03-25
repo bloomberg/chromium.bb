@@ -40,7 +40,6 @@
 #include "chrome/browser/pdf_unsupported_feature.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_observer.h"
-#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -379,7 +378,6 @@ TabContents::~TabContents() {
 }
 
 void TabContents::AddObservers() {
-  printing_.reset(new printing::PrintViewManager(this));
   favicon_helper_.reset(new FaviconHelper(this));
   desktop_notification_handler_.reset(
       new DesktopNotificationHandlerForTC(this, GetRenderProcessHost()));
@@ -779,7 +777,7 @@ bool TabContents::NavigateToEntry(
 
 void TabContents::Stop() {
   render_manager_.Stop();
-  printing_->Stop();
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_, StopNavigation());
 }
 
 void TabContents::DisassociateFromPopupCount() {
@@ -2040,13 +2038,13 @@ void TabContents::RenderViewReady(RenderViewHost* rvh) {
 void TabContents::RenderViewGone(RenderViewHost* rvh,
                                  base::TerminationStatus status,
                                  int error_code) {
-  // Ask the print preview if this renderer was valuable.
-  if (!printing_->OnRenderViewGone(rvh))
-    return;
   if (rvh != render_view_host()) {
     // The pending page's RenderViewHost is gone.
     return;
   }
+
+  // Let observers know first and give them a chance to act.
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_, RenderViewGone());
 
   SetIsLoading(false, NULL);
   NotifyDisconnected();
