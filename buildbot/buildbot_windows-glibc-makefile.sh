@@ -30,7 +30,7 @@ export ac_cv_func_mmap_fixed_mapped=yes
 echo @@@BUILD_STEP check_glibc_revision_sanity@@@
 cd tools
 make glibc-sdkdirs
-if glibc_download.sh toolchain/win_x86 1; then
+if ./glibc_download.sh toolchain/win_x86 1; then
   INST_GLIBC_PROGRAM=true
 elif (($?>1)); then
   echo @@@BUILD_FAILED@@@
