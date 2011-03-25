@@ -851,7 +851,7 @@ void UrlmonUrlRequest::NotifyDelegateAndDie() {
   delegate_ = NULL;
   ReleaseBindings();
   TerminateTransaction();
-  if (delegate && !pending()) {
+  if (delegate) {
     net::URLRequestStatus result = status_.get_result();
     delegate->OnResponseEnd(id(), result);
   } else {
@@ -995,22 +995,22 @@ void UrlmonUrlRequestManager::StartRequest(int request_id,
   bool is_started = false;
   if (pending_request_) {
     if (pending_request_->url() != request_info.url) {
-      DLOG(INFO) << __FUNCTION__
-                 << "Received url request for url:"
-                 << request_info.url
-                 << ". Stopping pending url request for url:"
-                 << pending_request_->url();
-      pending_request_->Stop();
-      pending_request_ = NULL;
-    } else {
-      new_request.swap(pending_request_);
-      is_started = true;
-      DVLOG(1) << __FUNCTION__ << new_request->me()
-               << " assigned id " << request_id;
+      DLOG(WARNING) << __FUNCTION__
+                    << "Received unexpected url request for url:"
+                    << request_info.url
+                    << ".Pending url request for url:"
+                    << pending_request_->url()
+                    << " was expected.";
+      net::URLRequestStatus result;
+      result.set_status(net::URLRequestStatus::FAILED);
+      OnResponseEnd(request_id, result);
+      return;
     }
-  }
-
-  if (!is_started) {
+    new_request.swap(pending_request_);
+    is_started = true;
+    DVLOG(1) << __FUNCTION__ << new_request->me()
+             << " assigned id " << request_id;
+  } else {
     CComObject<UrlmonUrlRequest>* created_request = NULL;
     CComObject<UrlmonUrlRequest>::CreateInstance(&created_request);
     new_request = created_request;
