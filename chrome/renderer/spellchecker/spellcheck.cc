@@ -8,8 +8,8 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_common.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "third_party/hunspell/src/hunspell/hunspell.hxx"
 
@@ -198,8 +198,7 @@ bool SpellCheck::InitializeIfNeeded() {
     return false;
 
   if (!initialized_) {
-    RenderThread::current()->Send(
-        new ViewHostMsg_SpellChecker_RequestDictionary);
+    RenderThread::current()->Send(new SpellCheckHostMsg_RequestDictionary);
     initialized_ = true;
     return true;
   }
@@ -218,8 +217,8 @@ bool SpellCheck::CheckSpelling(const string16& word_to_check, int tag) {
 
   if (is_using_platform_spelling_engine_) {
     RenderThread::current()->Send(
-        new ViewHostMsg_SpellChecker_PlatformCheckSpelling(word_to_check, tag,
-                                                           &word_correct));
+        new SpellCheckHostMsg_PlatformCheckSpelling(word_to_check, tag,
+                                                    &word_correct));
   } else {
     std::string word_to_check_utf8(UTF16ToUTF8(word_to_check));
     // Hunspell shouldn't let us exceed its max, but check just in case
@@ -244,7 +243,7 @@ void SpellCheck::FillSuggestionList(
     std::vector<string16>* optional_suggestions) {
   if (is_using_platform_spelling_engine_) {
     RenderThread::current()->Send(
-        new ViewHostMsg_SpellChecker_PlatformFillSuggestionList(
+        new SpellCheckHostMsg_PlatformFillSuggestionList(
             wrong_word, optional_suggestions));
     return;
   }

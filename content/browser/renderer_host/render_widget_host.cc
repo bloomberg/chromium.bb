@@ -12,7 +12,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -1201,7 +1201,7 @@ void RenderWidgetHost::ScrollBackingStoreRect(int dx, int dy,
 }
 
 void RenderWidgetHost::ToggleSpellPanel(bool is_currently_visible) {
-  Send(new ViewMsg_ToggleSpellPanel(routing_id(), is_currently_visible));
+  Send(new SpellCheckMsg_ToggleSpellPanel(routing_id(), is_currently_visible));
 }
 
 void RenderWidgetHost::Replace(const string16& word) {
@@ -1209,7 +1209,7 @@ void RenderWidgetHost::Replace(const string16& word) {
 }
 
 void RenderWidgetHost::AdvanceToNextMisspelling() {
-  Send(new ViewMsg_AdvanceToNextMisspelling(routing_id_));
+  Send(new SpellCheckMsg_AdvanceToNextMisspelling(routing_id_));
 }
 
 void RenderWidgetHost::EnableRendererAccessibility() {

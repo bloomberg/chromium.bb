@@ -6,7 +6,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/spellcheck_message_filter.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterBrowserTest,
   scoped_refptr<TestingSpellCheckMessageFilter> target
       (new TestingSpellCheckMessageFilter(MessageLoopForUI::current()));
 
-  ViewHostMsg_SpellChecker_PlatformRequestTextCheck to_be_received
+  SpellCheckHostMsg_PlatformRequestTextCheck to_be_received
       (123, 456, 789, UTF8ToUTF16("zz."));
   bool handled = false;
   target->OnMessageReceived(to_be_received, &handled);
@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterBrowserTest,
   int sent_identifier;
   int sent_tag;
   std::vector<WebKit::WebTextCheckingResult> sent_results;
-  bool ok = ViewMsg_SpellChecker_RespondTextCheck::Read(
+  bool ok = SpellCheckMsg_RespondTextCheck::Read(
       target->sent_messages_[0], &sent_identifier, &sent_tag, &sent_results);
   EXPECT_TRUE(ok);
   EXPECT_EQ(1U, sent_results.size());

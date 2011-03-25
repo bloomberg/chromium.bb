@@ -29,7 +29,7 @@ class SpellCheckProvider : public RenderViewObserver {
   SpellCheckProvider(RenderView* render_view, SpellCheck* spellcheck);
   virtual ~SpellCheckProvider();
 
-  // Reqeusts async spell and grammar checker to the platform text
+  // Requests async spell and grammar checker to the platform text
   // checker, which is available on the browser process.
   void RequestTextChecking(
       const WebKit::WebString& text,
@@ -50,7 +50,7 @@ class SpellCheckProvider : public RenderViewObserver {
 
  private:
   // A message handler that receives async results for RequestTextChecking().
-  void OnSpellCheckerRespondTextCheck(
+  void OnRespondTextCheck(
       int identifier,
       int tag,
       const std::vector<WebKit::WebTextCheckingResult>& results);

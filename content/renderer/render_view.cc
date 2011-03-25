@@ -35,6 +35,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/render_view_commands.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
@@ -662,8 +663,10 @@ RenderView::~RenderView() {
 
 #if defined(OS_MACOSX)
   // Tell the spellchecker that the document is closed.
-  if (has_document_tag_)
-    Send(new ViewHostMsg_DocumentWithTagClosed(routing_id_, document_tag_));
+  if (has_document_tag_) {
+    Send(new SpellCheckHostMsg_DocumentWithTagClosed(
+        routing_id_, document_tag_));
+  }
 
   // Destroy all fake plugin window handles on the browser side.
   while (!fake_plugin_window_handles_.empty()) {
@@ -974,10 +977,10 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_Paste, OnPaste)
     IPC_MESSAGE_HANDLER(ViewMsg_Replace, OnReplace)
-    IPC_MESSAGE_HANDLER(ViewMsg_ToggleSpellPanel, OnToggleSpellPanel)
-    IPC_MESSAGE_HANDLER(ViewMsg_AdvanceToNextMisspelling,
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_ToggleSpellPanel, OnToggleSpellPanel)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_AdvanceToNextMisspelling,
                         OnAdvanceToNextMisspelling)
-    IPC_MESSAGE_HANDLER(ViewMsg_ToggleSpellCheck, OnToggleSpellCheck)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_ToggleSpellCheck, OnToggleSpellCheck)
     IPC_MESSAGE_HANDLER(ViewMsg_Delete, OnDelete)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectAll, OnSelectAll)
     IPC_MESSAGE_HANDLER(ViewMsg_CopyImageAt, OnCopyImageAt)
@@ -2273,7 +2276,7 @@ WebString RenderView::autoCorrectWord(const WebKit::WebString& word) {
 }
 
 void RenderView::showSpellingUI(bool show) {
-  Send(new ViewHostMsg_ShowSpellingPanel(routing_id_, show));
+  Send(new SpellCheckHostMsg_ShowSpellingPanel(routing_id_, show));
 }
 
 bool RenderView::isShowingSpellingUI() {
@@ -2281,8 +2284,8 @@ bool RenderView::isShowingSpellingUI() {
 }
 
 void RenderView::updateSpellingUIWithMisspelledWord(const WebString& word) {
-  Send(new ViewHostMsg_UpdateSpellingPanelWithMisspelledWord(routing_id_,
-                                                             word));
+  Send(new SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord(routing_id_,
+                                                                   word));
 }
 
 void RenderView::continuousSpellCheckingEnabledStateChanged() {
@@ -5115,7 +5118,7 @@ void RenderView::EnsureDocumentTag() {
 #if defined(OS_MACOSX)
   if (!has_document_tag_) {
     // Make the call to get the tag.
-    Send(new ViewHostMsg_GetDocumentTag(routing_id_, &document_tag_));
+    Send(new SpellCheckHostMsg_GetDocumentTag(routing_id_, &document_tag_));
     has_document_tag_ = true;
   }
 #endif

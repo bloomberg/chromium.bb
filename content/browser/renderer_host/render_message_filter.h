@@ -157,16 +157,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnDownloadUrl(const IPC::Message& message,
                      const GURL& url,
                      const GURL& referrer);
-  void OnPlatformCheckSpelling(const string16& word, int tag, bool* correct);
-  void OnPlatformFillSuggestionList(const string16& word,
-                                    std::vector<string16>* suggestions);
-  void OnGetDocumentTag(IPC::Message* reply_msg);
-  void OnDocumentWithTagClosed(int tag);
-  void OnShowSpellingPanel(bool show);
-  void OnUpdateSpellingPanelWithMisspelledWord(const string16& word);
-  void OnDnsPrefetch(const std::vector<std::string>& hostnames);
-  void OnRendererHistograms(int sequence_number,
-                            const std::vector<std::string>& histogram_info);
 #if defined(USE_TCMALLOC)
   void OnRendererTcmalloc(base::ProcessId pid, const std::string& output);
 #endif

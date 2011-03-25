@@ -18,16 +18,13 @@
 #include "chrome/browser/clipboard_dispatcher.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/extensions/extension_message_service.h"
-#include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -349,19 +346,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                     OnOpenChannelToPlugin)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPepperPlugin,
                                     OnOpenChannelToPepperPlugin)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_PlatformCheckSpelling,
-                        OnPlatformCheckSpelling)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_PlatformFillSuggestionList,
-                        OnPlatformFillSuggestionList)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDocumentTag,
-                                    OnGetDocumentTag)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentWithTagClosed,
-                        OnDocumentWithTagClosed)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowSpellingPanel, OnShowSpellingPanel)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
-                        OnUpdateSpellingPanelWithMisspelledWord)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DnsPrefetch, OnDnsPrefetch)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RendererHistograms, OnRendererHistograms)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
         render_widget_helper_->DidReceiveUpdateMsg(message))
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_CheckPermission,
@@ -868,49 +852,6 @@ ChromeURLRequestContext* RenderMessageFilter::GetRequestContextForURL(
           extensions_request_context_ : request_context_;
   return static_cast<ChromeURLRequestContext*>(
       context_getter->GetURLRequestContext());
-}
-
-void RenderMessageFilter::OnPlatformCheckSpelling(const string16& word,
-                                                  int tag,
-                                                  bool* correct) {
-  *correct = SpellCheckerPlatform::CheckSpelling(word, tag);
-}
-
-void RenderMessageFilter::OnPlatformFillSuggestionList(
-    const string16& word,
-    std::vector<string16>* suggestions) {
-  SpellCheckerPlatform::FillSuggestionList(word, suggestions);
-}
-
-void RenderMessageFilter::OnGetDocumentTag(IPC::Message* reply_msg) {
-  int tag = SpellCheckerPlatform::GetDocumentTag();
-  ViewHostMsg_GetDocumentTag::WriteReplyParams(reply_msg, tag);
-  Send(reply_msg);
-  return;
-}
-
-void RenderMessageFilter::OnDocumentWithTagClosed(int tag) {
-  SpellCheckerPlatform::CloseDocumentWithTag(tag);
-}
-
-void RenderMessageFilter::OnShowSpellingPanel(bool show) {
-  SpellCheckerPlatform::ShowSpellingPanel(show);
-}
-
-void RenderMessageFilter::OnUpdateSpellingPanelWithMisspelledWord(
-    const string16& word) {
-  SpellCheckerPlatform::UpdateSpellingPanelWithMisspelledWord(word);
-}
-
-void RenderMessageFilter::OnDnsPrefetch(
-    const std::vector<std::string>& hostnames) {
-  chrome_browser_net::DnsPrefetchList(hostnames);
-}
-
-void RenderMessageFilter::OnRendererHistograms(
-    int sequence_number,
-    const std::vector<std::string>& histograms) {
-  HistogramSynchronizer::DeserializeHistogramList(sequence_number, histograms);
 }
 
 #if defined(OS_MACOSX)

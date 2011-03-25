@@ -28,6 +28,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/print_messages.h"
 #include "chrome/common/safebrowsing_messages.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
@@ -525,7 +526,7 @@ void RenderViewHost::Paste() {
 }
 
 void RenderViewHost::ToggleSpellCheck() {
-  Send(new ViewMsg_ToggleSpellCheck(routing_id()));
+  Send(new SpellCheckMsg_ToggleSpellCheck(routing_id()));
 }
 
 void RenderViewHost::Delete() {
@@ -537,7 +538,7 @@ void RenderViewHost::SelectAll() {
 }
 
 void RenderViewHost::ToggleSpellPanel(bool is_currently_visible) {
-  Send(new ViewMsg_ToggleSpellPanel(routing_id(), is_currently_visible));
+  Send(new SpellCheckMsg_ToggleSpellPanel(routing_id(), is_currently_visible));
 }
 
 int RenderViewHost::DownloadFavicon(const GURL& url, int image_size) {

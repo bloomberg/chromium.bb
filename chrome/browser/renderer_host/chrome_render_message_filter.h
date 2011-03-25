@@ -30,6 +30,9 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   void OnLaunchNaCl(const std::wstring& url,
                     int channel_descriptor,
                     IPC::Message* reply_msg);
+  void OnDnsPrefetch(const std::vector<std::string>& hostnames);
+  void OnRendererHistograms(int sequence_number,
+                            const std::vector<std::string>& histogram_info);
 
   ResourceDispatcherHost* resource_dispatcher_host_;
 

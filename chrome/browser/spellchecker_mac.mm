@@ -14,8 +14,8 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_common.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/browser_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
@@ -31,7 +31,7 @@ const unsigned int kShortLanguageCodeSize = 2;
 // the FILE thread.
 //
 // The result of the check is returned back as a
-// ViewMsg_SpellChecker_RespondTextCheck message.
+// SpellCheckMsg_RespondTextCheck message.
 class TextCheckingTask : public Task {
  public:
   TextCheckingTask(BrowserMessageFilter* destination,
@@ -75,10 +75,10 @@ class TextCheckingTask : public Task {
         NewRunnableMethod(
             destination_.get(),
             &BrowserMessageFilter::Send,
-            new ViewMsg_SpellChecker_RespondTextCheck(route_id_,
-                                                      identifier_,
-                                                      document_tag_,
-                                                      check_results)));
+            new SpellCheckMsg_RespondTextCheck(route_id_,
+                                               identifier_,
+                                               document_tag_,
+                                               check_results)));
   }
 
  private:

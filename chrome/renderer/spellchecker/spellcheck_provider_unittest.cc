@@ -5,9 +5,10 @@
 #include <vector>
 
 #include "base/utf_string_conversions.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
@@ -84,7 +85,7 @@ struct MessageParameters {
 
 MessageParameters ReadPlatformRequestTextCheck(IPC::Message* message) {
   MessageParameters parameters;
-  bool ok = ViewHostMsg_SpellChecker_PlatformRequestTextCheck::Read(
+  bool ok = SpellCheckHostMsg_PlatformRequestTextCheck::Read(
       message,
       &parameters.router_id,
       &parameters.request_id,
@@ -98,11 +99,11 @@ void FakeMessageArrival(SpellCheckProvider* provider,
                         const MessageParameters& parameters) {
   std::vector<WebKit::WebTextCheckingResult> fake_result;
   bool handled = provider->OnMessageReceived(
-      ViewMsg_SpellChecker_RespondTextCheck
-      (0,
-       parameters.request_id,
-       parameters.document_tag,
-       fake_result));
+      SpellCheckMsg_RespondTextCheck(
+          0,
+          parameters.request_id,
+          parameters.document_tag,
+          fake_result));
   EXPECT_TRUE(handled);
 }
 

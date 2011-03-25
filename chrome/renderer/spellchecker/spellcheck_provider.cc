@@ -4,9 +4,10 @@
 
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 
-#include "chrome/common/render_messages.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
@@ -38,14 +39,14 @@ void SpellCheckProvider::RequestTextChecking(
     return;
   }
 
-  Send(new ViewHostMsg_SpellChecker_PlatformRequestTextCheck(
+  Send(new SpellCheckHostMsg_PlatformRequestTextCheck(
       routing_id(),
       text_check_completions_.Add(completion),
       document_tag,
       text));
 }
 
-void SpellCheckProvider::OnSpellCheckerRespondTextCheck(
+void SpellCheckProvider::OnRespondTextCheck(
     int identifier,
     int tag,
     const std::vector<WebTextCheckingResult>& results) {
@@ -60,8 +61,7 @@ void SpellCheckProvider::OnSpellCheckerRespondTextCheck(
 bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SpellCheckProvider, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_RespondTextCheck,
-                        OnSpellCheckerRespondTextCheck)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_RespondTextCheck, OnRespondTextCheck)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

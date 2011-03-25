@@ -84,6 +84,7 @@ enum IPCMessageStart {
   ChromeMsgStart,
   DragMsgStart,
   PrintMsgStart,
+  SpellCheckMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

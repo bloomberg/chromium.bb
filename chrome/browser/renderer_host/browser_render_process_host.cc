@@ -56,8 +56,8 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/common/safebrowsing_messages.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "chrome/renderer/render_process_impl.h"
 #include "chrome/renderer/render_thread.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
@@ -1007,7 +1007,7 @@ bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
                           OnExtensionCloseChannel)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                           OnUserMetricsRecordAction)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_RequestDictionary,
+      IPC_MESSAGE_HANDLER(SpellCheckHostMsg_RequestDictionary,
                           OnSpellCheckerRequestDictionary)
       IPC_MESSAGE_UNHANDLED_ERROR()
     IPC_END_MESSAGE_MAP_EX()
@@ -1249,7 +1249,7 @@ void BrowserRenderProcessHost::OnSpellCheckerRequestDictionary() {
 }
 
 void BrowserRenderProcessHost::AddSpellCheckWord(const std::string& word) {
-  Send(new ViewMsg_SpellChecker_WordAdded(word));
+  Send(new SpellCheckMsg_WordAdded(word));
 }
 
 void BrowserRenderProcessHost::InitSpellChecker() {
@@ -1273,13 +1273,13 @@ void BrowserRenderProcessHost::InitSpellChecker() {
 #endif
     }
 
-    Send(new ViewMsg_SpellChecker_Init(
+    Send(new SpellCheckMsg_Init(
         file,
         spellcheck_host->GetCustomWords(),
         spellcheck_host->GetLanguage(),
         prefs->GetBoolean(prefs::kEnableAutoSpellCorrect)));
   } else {
-    Send(new ViewMsg_SpellChecker_Init(
+    Send(new SpellCheckMsg_Init(
         IPC::InvalidPlatformFileForTransit(),
         std::vector<std::string>(),
         std::string(),
@@ -1288,7 +1288,7 @@ void BrowserRenderProcessHost::InitSpellChecker() {
 }
 
 void BrowserRenderProcessHost::EnableAutoSpellCorrect(bool enable) {
-  Send(new ViewMsg_SpellChecker_EnableAutoSpellCorrect(enable));
+  Send(new SpellCheckMsg_EnableAutoSpellCorrect(enable));
 }
 
 void BrowserRenderProcessHost::InitClientSidePhishingDetection() {

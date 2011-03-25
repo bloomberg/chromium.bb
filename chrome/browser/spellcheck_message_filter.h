@@ -19,6 +19,13 @@ class SpellCheckMessageFilter : public BrowserMessageFilter {
                                  bool* message_was_ok);
 
  private:
+  void OnPlatformCheckSpelling(const string16& word, int tag, bool* correct);
+  void OnPlatformFillSuggestionList(const string16& word,
+                                    std::vector<string16>* suggestions);
+  void OnGetDocumentTag(int* tag);
+  void OnDocumentWithTagClosed(int tag);
+  void OnShowSpellingPanel(bool show);
+  void OnUpdateSpellingPanelWithMisspelledWord(const string16& word);
   void OnPlatformRequestTextCheck(int route_id,
                                   int identifier,
                                   int document_tag,

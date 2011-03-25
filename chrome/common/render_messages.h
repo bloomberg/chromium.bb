@@ -42,12 +42,10 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
-#include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webcursor.h"
@@ -152,7 +150,6 @@ IPC_ENUM_TRAITS(InstantCompleteBehavior)
 IPC_ENUM_TRAITS(TranslateErrors::Type)
 IPC_ENUM_TRAITS(ViewType::Type)
 IPC_ENUM_TRAITS(WebKit::WebConsoleMessage::Level)
-IPC_ENUM_TRAITS(WebKit::WebTextCheckingResult::Error)
 
 IPC_STRUCT_TRAITS_BEGIN(ThumbnailScore)
   IPC_STRUCT_TRAITS_MEMBER(boring_score)
@@ -198,12 +195,6 @@ IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCache::UsageStats)
   IPC_STRUCT_TRAITS_MEMBER(capacity)
   IPC_STRUCT_TRAITS_MEMBER(liveSize)
   IPC_STRUCT_TRAITS_MEMBER(deadSize)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(WebKit::WebTextCheckingResult)
-  IPC_STRUCT_TRAITS_MEMBER(error)
-  IPC_STRUCT_TRAITS_MEMBER(position)
-  IPC_STRUCT_TRAITS_MEMBER(length)
 IPC_STRUCT_TRAITS_END()
 
 //-----------------------------------------------------------------------------
@@ -435,38 +426,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_NotifyRenderViewType,
 IPC_MESSAGE_ROUTED1(ViewMsg_ExecuteCode,
                     ViewMsg_ExecuteCode_Params)
 
-// SpellChecker messages.
-
-IPC_MESSAGE_ROUTED0(ViewMsg_ToggleSpellCheck)
-IPC_MESSAGE_ROUTED1(ViewMsg_ToggleSpellPanel,
-                    bool)
-IPC_MESSAGE_ROUTED3(ViewMsg_SpellChecker_RespondTextCheck,
-                    int        /* request identifier given by WebKit */,
-                    int        /* document tag */,
-                    std::vector<WebKit::WebTextCheckingResult>)
-
-// This message tells the renderer to advance to the next misspelling. It is
-// sent when the user clicks the "Find Next" button on the spelling panel.
-IPC_MESSAGE_ROUTED0(ViewMsg_AdvanceToNextMisspelling)
-
-// Passes some initialization params to the renderer's spellchecker. This can
-// be called directly after startup or in (async) response to a
-// RequestDictionary ViewHost message.
-IPC_MESSAGE_CONTROL4(ViewMsg_SpellChecker_Init,
-                     IPC::PlatformFileForTransit /* bdict_file */,
-                     std::vector<std::string> /* custom_dict_words */,
-                     std::string /* language */,
-                     bool /* auto spell correct */)
-
-// A word has been added to the custom dictionary; update the local custom
-// word list.
-IPC_MESSAGE_CONTROL1(ViewMsg_SpellChecker_WordAdded,
-                     std::string /* word */)
-
-// Toggle the auto spell correct functionality.
-IPC_MESSAGE_CONTROL1(ViewMsg_SpellChecker_EnableAutoSpellCorrect,
-                     bool /* enable */)
-
 // Tells the renderer to translate the page contents from one language to
 // another.
 IPC_MESSAGE_ROUTED4(ViewMsg_TranslatePage,
@@ -493,52 +452,6 @@ IPC_MESSAGE_CONTROL1(ViewMsg_SetIsIncognitoProcess,
 
 IPC_MESSAGE_CONTROL1(ViewHostMsg_UpdatedCacheStats,
                      WebKit::WebCache::UsageStats /* stats */)
-
-// Requests spellcheck for a word.
-IPC_SYNC_MESSAGE_ROUTED2_2(ViewHostMsg_SpellCheck,
-                           string16 /* word to check */,
-                           int /* document tag*/,
-                           int /* misspell location */,
-                           int /* misspell length */)
-
-// Asks the browser for a unique document tag.
-IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_GetDocumentTag,
-                           int /* the tag */)
-
-// This message tells the spellchecker that a document, identified by an int
-// tag, has been closed and all of the ignored words for that document can be
-// forgotten.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentWithTagClosed,
-                    int /* the tag */)
-
-// Tells the browser to display or not display the SpellingPanel
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowSpellingPanel,
-                    bool /* if true, then show it, otherwise hide it*/)
-
-// Tells the browser to update the spelling panel with the given word.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
-                    string16 /* the word to update the panel with */)
-
-// The renderer has tried to spell check a word, but couldn't because no
-// dictionary was available to load. Request that the browser find an
-// appropriate dictionary and return it.
-IPC_MESSAGE_CONTROL0(ViewHostMsg_SpellChecker_RequestDictionary)
-
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_SpellChecker_PlatformCheckSpelling,
-                            string16 /* word */,
-                            int /* document tag */,
-                            bool /* correct */)
-
-IPC_SYNC_MESSAGE_CONTROL1_1(
-    ViewHostMsg_SpellChecker_PlatformFillSuggestionList,
-    string16 /* word */,
-    std::vector<string16> /* suggestions */)
-
-IPC_MESSAGE_CONTROL4(ViewHostMsg_SpellChecker_PlatformRequestTextCheck,
-                     int /* route_id for response */,
-                     int /* request identifier given by WebKit */,
-                     int /* document tag */,
-                     string16 /* sentence */)
 
 // Tells the browser that content in the current page was blocked due to the
 // user's content settings.

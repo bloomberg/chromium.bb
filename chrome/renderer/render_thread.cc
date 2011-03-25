@@ -28,7 +28,7 @@
 #include "chrome/common/extensions/extension_localization_peer.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/safebrowsing_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/automation/dom_automation_v8_extension.h"
@@ -657,45 +657,35 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
     IPC_MESSAGE_HANDLER(ViewMsg_SetCacheCapacities, OnSetCacheCapacities)
     IPC_MESSAGE_HANDLER(ViewMsg_ClearCache, OnClearCache)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetRendererHistograms,
-                        OnGetRendererHistograms)
+    IPC_MESSAGE_HANDLER(ViewMsg_GetRendererHistograms, OnGetRendererHistograms)
 #if defined(USE_TCMALLOC)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetRendererTcmalloc,
-                        OnGetRendererTcmalloc)
+    IPC_MESSAGE_HANDLER(ViewMsg_GetRendererTcmalloc, OnGetRendererTcmalloc)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_GetV8HeapStats, OnGetV8HeapStats)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetCacheResourceStats,
-                        OnGetCacheResourceStats)
-    IPC_MESSAGE_HANDLER(ViewMsg_UserScripts_UpdatedScripts,
-                        OnUpdateUserScripts)
+    IPC_MESSAGE_HANDLER(ViewMsg_GetCacheResourceStats, OnGetCacheResourceStats)
+    IPC_MESSAGE_HANDLER(ViewMsg_UserScripts_UpdatedScripts, OnUpdateUserScripts)
     // TODO(rafaelw): create an ExtensionDispatcher that handles extension
     // messages seperates their handling from the RenderThread.
     IPC_MESSAGE_HANDLER(ViewMsg_ExtensionMessageInvoke,
                         OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetFunctionNames,
                         OnSetExtensionFunctionNames)
-    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionLoaded,
-                        OnExtensionLoaded)
-    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionUnloaded,
-                        OnExtensionUnloaded)
+    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionLoaded, OnExtensionLoaded)
+    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionUnloaded, OnExtensionUnloaded)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetScriptingWhitelist,
                         OnSetExtensionScriptingWhitelist)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgeMemory, OnPurgeMemory)
-    IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache,
-                        OnPurgePluginListCache)
+    IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_UpdatePageActions,
                         OnPageActionsUpdated)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetAPIPermissions,
                         OnExtensionSetAPIPermissions)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetHostPermissions,
                         OnExtensionSetHostPermissions)
-    IPC_MESSAGE_HANDLER(DOMStorageMsg_Event,
-                        OnDOMStorageEvent)
-    IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_Init,
-                        OnInitSpellChecker)
-    IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_WordAdded,
-                        OnSpellCheckWordAdded)
-    IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_EnableAutoSpellCorrect,
+    IPC_MESSAGE_HANDLER(DOMStorageMsg_Event, OnDOMStorageEvent)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_Init, OnInitSpellChecker)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_WordAdded, OnSpellCheckWordAdded)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_EnableAutoSpellCorrect,
                         OnSpellCheckEnableAutoSpellCorrect)
     IPC_MESSAGE_HANDLER(GpuMsg_GpuChannelEstablished, OnGpuChannelEstablished)
     IPC_MESSAGE_HANDLER(SafeBrowsingMsg_SetPhishingModel, OnSetPhishingModel)

@@ -222,6 +222,7 @@
         'common/service_process_util_win.cc',
         'common/spellcheck_common.cc',
         'common/spellcheck_common.h',
+        'common/spellcheck_messages.h',
         'common/sqlite_compiled_statement.cc',
         'common/sqlite_compiled_statement.h',
         'common/sqlite_utils.cc',
