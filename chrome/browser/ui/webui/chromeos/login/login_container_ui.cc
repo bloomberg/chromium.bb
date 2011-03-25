@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/webui/login/login_container_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/login_container_ui.h"
 
 #include "base/ref_counted_memory.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/frame/dom_browser.h"
-#include "chrome/browser/chromeos/webui/login/login_ui_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/chromeos/login/login_ui_helpers.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"

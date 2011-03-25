@@ -7,8 +7,8 @@
 #include "base/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/webui/login/login_ui.h"
-#include "chrome/browser/chromeos/webui/login/login_ui_unittest.h"
+#include "chrome/browser/ui/webui/chromeos/login/login_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/login_ui_unittest.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

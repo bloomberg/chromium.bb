@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_WEBUI_LOGIN_LOGIN_UI_UNITTEST_H_
-#define CHROME_BROWSER_CHROMEOS_WEBUI_LOGIN_LOGIN_UI_UNITTEST_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_LOGIN_UI_UNITTEST_H_
+#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_LOGIN_UI_UNITTEST_H_
 #pragma once
 
 #include <string>
 
-#include "chrome/browser/chromeos/webui/login/mock_authenticator_facade_cros.h"
-#include "chrome/browser/chromeos/webui/login/mock_login_ui_helpers.h"
+#include "chrome/browser/ui/webui/chromeos/login/mock_authenticator_facade_cros.h"
+#include "chrome/browser/ui/webui/chromeos/login/mock_login_ui_helpers.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -58,4 +58,4 @@ class LoginUIHandlerHarness : public LoginUIHandler {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_WEBUI_LOGIN_LOGIN_UI_UNITTEST_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_LOGIN_UI_UNITTEST_H_

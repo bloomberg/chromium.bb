@@ -53,8 +53,8 @@
 #endif
 
 #if defined(TOUCH_UI) && defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/webui/login/login_container_ui.h"
-#include "chrome/browser/chromeos/webui/login/login_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/login_container_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/login_ui.h"
 #endif
 
 #if defined(OS_WIN)

@@ -6,9 +6,9 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
-#include "chrome/browser/chromeos/webui/login/authenticator_facade_cros.h"
-#include "chrome/browser/chromeos/webui/login/mock_authenticator_facade_cros_helpers.h"
-#include "chrome/browser/chromeos/webui/login/mock_login_ui_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/authenticator_facade_cros.h"
+#include "chrome/browser/ui/webui/chromeos/login/mock_authenticator_facade_cros_helpers.h"
+#include "chrome/browser/ui/webui/chromeos/login/mock_login_ui_handler.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -1246,11 +1246,6 @@
         'browser/chromeos/proxy_config_service_impl_unittest.cc',
         'browser/chromeos/status/input_method_menu_unittest.cc',
         'browser/chromeos/version_loader_unittest.cc',
-        'browser/chromeos/webui/login/authenticator_facade_cros_unittest.cc',
-        'browser/chromeos/webui/login/login_ui_unittest.cc',
-        'browser/chromeos/webui/login/mock_authenticator_facade_cros.h',
-        'browser/chromeos/webui/login/mock_authenticator_facade_cros_helpers.h',
-        'browser/chromeos/webui/login/mock_login_ui_helpers.h',
         'browser/content_setting_bubble_model_unittest.cc',
         'browser/content_setting_image_model_unittest.cc',
         'browser/debugger/devtools_remote_listen_socket_unittest.cc',
@@ -1707,6 +1702,11 @@
         'browser/ui/views/reload_button_unittest.cc',
         'browser/ui/views/shell_dialogs_win_unittest.cc',
         'browser/ui/views/status_icons/status_tray_win_unittest.cc',
+        'browser/ui/webui/chromeos/login/authenticator_facade_cros_unittest.cc',
+        'browser/ui/webui/chromeos/login/login_ui_unittest.cc',
+        'browser/ui/webui/chromeos/login/mock_authenticator_facade_cros.h',
+        'browser/ui/webui/chromeos/login/mock_authenticator_facade_cros_helpers.h',
+        'browser/ui/webui/chromeos/login/mock_login_ui_helpers.h',
         'browser/ui/webui/html_dialog_tab_contents_delegate_unittest.cc',
         'browser/ui/webui/options/language_options_handler_unittest.cc',
         'browser/ui/webui/print_preview_ui_html_source_unittest.cc',
@@ -1865,18 +1865,18 @@
       'conditions': [
         ['touchui==0', {
           'sources/': [
-            ['exclude', '^browser/chromeos/webui/login/'],
+            ['exclude', '^browser/ui/webui/chromeos/login/'],
           ],
         }],
         ['chromeos==1', {
           'conditions': [
             ['touchui==1', {
               'sources/': [
-                ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_cros_unittest.cc'],
-                ['include', 'browser/chromeos/dom_ui/login/login_ui_unittest.cc'],
-                ['include', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros.h'],
-                ['include', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros_helpers.h'],
-                ['include', 'browser/chromeos/dom_ui/login/mock_login_ui_helpers.h'],
+                ['include', 'browser/ui/webui/chromeos/login/authenticator_facade_cros_unittest.cc'],
+                ['include', 'browser/ui/webui/chromeos/login/login_ui_unittest.cc'],
+                ['include', 'browser/ui/webui/chromeos/login/mock_authenticator_facade_cros.h'],
+                ['include', 'browser/ui/webui/chromeos/login/mock_authenticator_facade_cros_helpers.h'],
+                ['include', 'browser/ui/webui/chromeos/login/mock_login_ui_helpers.h'],
               ],
              }],
            ],
@@ -1889,6 +1889,7 @@
         }, { # else: chromeos == 0
           'sources/': [
             ['exclude', '^browser/chromeos/'],
+            ['exclude', '^browser/ui/webui/chromeos/login'],
           ],
         }],
         ['OS=="linux"', {

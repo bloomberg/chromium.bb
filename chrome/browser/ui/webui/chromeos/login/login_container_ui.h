@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_WEBUI_LOGIN_LOGIN_CONTAINER_UI_H_
-#define CHROME_BROWSER_CHROMEOS_WEBUI_LOGIN_LOGIN_CONTAINER_UI_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_LOGIN_CONTAINER_UI_H_
+#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_LOGIN_CONTAINER_UI_H_
 #pragma once
 #include <string>
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/chromeos/webui/login/login_ui_helpers.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/login_ui_helpers.h"
 #include "content/browser/webui/web_ui.h"
 
 class Profile;
@@ -75,4 +75,4 @@ class LoginContainerUI : public WebUI {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_WEBUI_LOGIN_LOGIN_CONTAINER_UI_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_LOGIN_CONTAINER_UI_H_

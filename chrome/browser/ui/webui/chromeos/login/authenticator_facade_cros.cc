@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/webui/login/authenticator_facade_cros.h"
-#include "chrome/browser/chromeos/webui/login/authenticator_facade_cros_helpers.h"
+#include "chrome/browser/ui/webui/chromeos/login/authenticator_facade_cros.h"
 
 #include <string>
+
+#include "chrome/browser/ui/webui/chromeos/login/authenticator_facade_cros_helpers.h"
 
 namespace chromeos {
 
