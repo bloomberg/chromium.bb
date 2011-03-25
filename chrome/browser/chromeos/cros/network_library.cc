@@ -870,11 +870,10 @@ void Network::SetIntegerProperty(const char* prop, int i) {
 }
 
 void Network::ClearProperty(const char* prop) {
-  // TODO(chocobo): Need to expose async method to clear service property.
   DCHECK(prop);
   if (!EnsureCrosLoaded())
     return;
-//  ClearNetworkServiceProperty(service_path_.c_str(), prop);
+  ClearNetworkServiceProperty(service_path_.c_str(), prop);
 }
 
 void Network::SetOrClearStringProperty(const char* prop,
