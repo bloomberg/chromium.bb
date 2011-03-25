@@ -45,7 +45,7 @@ class PrintViewManager : public NotificationObserver,
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Terminates or cancels the print job if one was pending.
-  void RenderViewGone();
+  virtual void RenderViewGone();
 
   // Cancels the print job.
   virtual void StopNavigation();
