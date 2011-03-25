@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,6 +125,9 @@ class RWHVMEditCommandHelper;
 
   // Whether or not plugin IME is currently enabled active.
   BOOL pluginImeActive_;
+
+  // Whether the previous mouse event was ignored due to hitTest check.
+  BOOL mouseEventWasIgnored_;
 }
 
 @property(assign, nonatomic) NSRect caretRect;

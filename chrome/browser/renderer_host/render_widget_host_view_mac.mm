@@ -1417,8 +1417,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
     renderWidgetHostView_.reset(r);
     canBeKeyView_ = YES;
-    takesFocusOnlyOnMouseDown_ = NO;
-    closeOnDeactivate_ = NO;
     focusedPluginIdentifier_ = -1;
   }
   return self;
@@ -1437,6 +1435,47 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (void)mouseEvent:(NSEvent*)theEvent {
+  // Use hitTest to check whether the mouse is over a nonWebContentView - in
+  // which case the mouse event should not be handled by the render host.
+  const SEL nonWebContentViewSelector = @selector(nonWebContentView);
+  NSView* contentView = [[self window] contentView];
+  NSView* view = [contentView hitTest:[theEvent locationInWindow]];
+  // Traverse the superview hierarchy as the hitTest will return the frontmost
+  // view, such as an NSTextView, while nonWebContentView may be specified by
+  // its parent view.
+  while (view) {
+    if ([view respondsToSelector:nonWebContentViewSelector] &&
+        [view performSelector:nonWebContentViewSelector]) {
+      // The cursor is over a nonWebContentView - ignore this mouse event.
+      // If this is the first such event, send a mouse exit to the host view.
+      if (!mouseEventWasIgnored_ &&
+          renderWidgetHostView_->render_widget_host_) {
+        WebMouseEvent exitEvent =
+            WebInputEventFactory::mouseEvent(theEvent, self);
+        exitEvent.type = WebInputEvent::MouseLeave;
+        exitEvent.button = WebMouseEvent::ButtonNone;
+        renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(
+            exitEvent);
+      }
+      mouseEventWasIgnored_ = YES;
+      return;
+    }
+    view = [view superview];
+  }
+
+  if (mouseEventWasIgnored_) {
+    // If this is the first mouse event after a previous event that was ignored
+    // due to the hitTest, send a mouse enter event to the host view.
+    if (renderWidgetHostView_->render_widget_host_) {
+      WebMouseEvent enterEvent =
+          WebInputEventFactory::mouseEvent(theEvent, self);
+      enterEvent.type = WebInputEvent::MouseMove;
+      enterEvent.button = WebMouseEvent::ButtonNone;
+      renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(enterEvent);
+    }
+  }
+  mouseEventWasIgnored_ = NO;
+
   // TODO(rohitrao): Probably need to handle other mouse down events here.
   if ([theEvent type] == NSLeftMouseDown && takesFocusOnlyOnMouseDown_) {
     if (renderWidgetHostView_->render_widget_host_)
