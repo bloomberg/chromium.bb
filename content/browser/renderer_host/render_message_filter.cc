@@ -161,7 +161,7 @@ class OpenChannelToNpapiPluginCallback : public RenderMessageCompletionCallback,
   }
 
   virtual bool OffTheRecord() {
-    return filter()->off_the_record();
+    return filter()->incognito();
   }
 
   virtual void SetPluginInfo(const webkit::npapi::WebPluginInfo& info) {
@@ -275,7 +275,7 @@ RenderMessageFilter::RenderMessageFilter(
       notification_prefs_(
           profile->GetDesktopNotificationService()->prefs_cache()),
       host_zoom_map_(profile->GetHostZoomMap()),
-      off_the_record_(profile->IsOffTheRecord()),
+      incognito_(profile->IsOffTheRecord()),
       webkit_context_(profile->GetWebKitContext()),
       render_process_id_(render_process_id) {
   DCHECK(request_context_);

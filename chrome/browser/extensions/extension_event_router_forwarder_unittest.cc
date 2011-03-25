@@ -58,7 +58,7 @@ class ExtensionEventRouterForwarderTest : public TestingBrowserProcessTest {
 
   TestingProfile* CreateIncognitoProfile(TestingProfile* base) {
     TestingProfile* incognito = new TestingProfile();
-    incognito->set_off_the_record(true);
+    incognito->set_incognito(true);
     base->SetOffTheRecordProfile(incognito);
     return incognito;
   }

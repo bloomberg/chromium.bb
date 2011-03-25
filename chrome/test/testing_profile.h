@@ -127,8 +127,8 @@ class TestingProfile : public Profile {
   virtual FilePath GetPath();
 
   // Sets whether we're incognito. Default is false.
-  void set_off_the_record(bool off_the_record) {
-    off_the_record_ = off_the_record;
+  void set_incognito(bool incognito) {
+    incognito_ = incognito;
   }
   virtual bool IsOffTheRecord();
   // Assumes ownership.
@@ -346,8 +346,8 @@ class TestingProfile : public Profile {
 
   std::wstring id_;
 
-  bool off_the_record_;
-  scoped_ptr<Profile> off_the_record_profile_;
+  bool incognito_;
+  scoped_ptr<Profile> incognito_profile_;
 
   // Did the last session exit cleanly? Default is true.
   bool last_session_exited_cleanly_;

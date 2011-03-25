@@ -72,7 +72,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   ResourceDispatcherHost* resource_dispatcher_host() {
     return resource_dispatcher_host_;
   }
-  bool off_the_record() { return off_the_record_; }
+  bool incognito() { return incognito_; }
 
   // Returns either the extension net::URLRequestContext or regular
   // net::URLRequestContext depending on whether |url| is an extension URL.
@@ -253,7 +253,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   scoped_refptr<HostZoomMap> host_zoom_map_;
 
   // Whether this process is used for incognito tabs.
-  bool off_the_record_;
+  bool incognito_;
 
   base::TimeTicks last_plugin_refresh_time_;  // Initialized to 0.
 

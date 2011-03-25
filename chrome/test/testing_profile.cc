@@ -145,7 +145,7 @@ TestingProfile::TestingProfile()
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
       has_history_service_(false),
-      off_the_record_(false),
+      incognito_(false),
       last_session_exited_cleanly_(true) {
   if (!temp_dir_.CreateUniqueTempDir()) {
     LOG(ERROR) << "Failed to create unique temporary directory.";
@@ -362,19 +362,19 @@ ProfileId TestingProfile::GetRuntimeId() {
   }
 
 bool TestingProfile::IsOffTheRecord() {
-  return off_the_record_;
+  return incognito_;
 }
 
 void TestingProfile::SetOffTheRecordProfile(Profile* profile) {
-  off_the_record_profile_.reset(profile);
+  incognito_profile_.reset(profile);
 }
 
 Profile* TestingProfile::GetOffTheRecordProfile() {
-  return off_the_record_profile_.get();
+  return incognito_profile_.get();
 }
 
 bool TestingProfile::HasOffTheRecordProfile() {
-  return off_the_record_profile_.get() != NULL;
+  return incognito_profile_.get() != NULL;
 }
 
 Profile* TestingProfile::GetOriginalProfile() {

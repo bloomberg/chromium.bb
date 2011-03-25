@@ -251,7 +251,7 @@ TEST_F(BookmarkContextMenuControllerTest, DisableIncognito) {
   nodes.push_back(model_->GetBookmarkBarNode()->GetChild(0));
   BookmarkContextMenuController controller(
       NULL, NULL, profile_.get(), NULL, nodes[0]->parent(), nodes);
-  profile_->set_off_the_record(true);
+  profile_->set_incognito(true);
   EXPECT_FALSE(controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_OPEN_INCOGNITO));
   EXPECT_FALSE(
       controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO));

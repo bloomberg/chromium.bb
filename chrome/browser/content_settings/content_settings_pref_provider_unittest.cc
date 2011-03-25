@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,9 +120,9 @@ TEST_F(PrefDefaultProviderTest, OffTheRecord) {
   TestingProfile profile;
   PrefDefaultProvider provider(&profile);
 
-  profile.set_off_the_record(true);
+  profile.set_incognito(true);
   PrefDefaultProvider otr_provider(&profile);
-  profile.set_off_the_record(false);
+  profile.set_incognito(false);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
@@ -226,7 +226,7 @@ TEST_F(PrefProviderTest, Incognito) {
   TestingProfile* otr_profile = new TestingProfile;
   profile.SetOffTheRecordProfile(otr_profile);
   profile.SetPrefService(regular_prefs);
-  otr_profile->set_off_the_record(true);
+  otr_profile->set_incognito(true);
   otr_profile->SetPrefService(otr_prefs);
 
   PrefProvider pref_content_settings_provider(&profile);

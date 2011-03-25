@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ class ContentExceptionsTableModelTest : public TestingBrowserProcessTest {
 TEST_F(ContentExceptionsTableModelTest, Incognito) {
   TestingProfile profile;
   TestingProfile* otr_profile = new TestingProfile();
-  otr_profile->set_off_the_record(true);
+  otr_profile->set_incognito(true);
   ContentExceptionsTableModel model(profile.GetHostContentSettingsMap(),
                                     otr_profile->GetHostContentSettingsMap(),
                                     CONTENT_SETTINGS_TYPE_COOKIES);
