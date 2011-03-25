@@ -291,7 +291,7 @@ void TryUpdateClient(
     GURL update_url(specifics.update_url());
     // TODO(akalin): Replace silent update with a list of enabled
     // permissions.
-    extensions_service->pending_extension_manager()->AddFromSync(
+    extensions_service->AddPendingExtensionFromSync(
         id, update_url,
         is_valid_and_syncable,
         true,  // install_silently

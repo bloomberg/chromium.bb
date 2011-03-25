@@ -347,15 +347,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(service->disabled_extensions()->empty());
 
-  PendingExtensionManager* pending_extension_manager =
-      service->pending_extension_manager();
-
   // The code that reads external_extensions.json uses this method to inform
   // the ExtensionService of an extension to download.  Using the real code
   // is race-prone, because instantating the ExtensionService starts a read
   // of external_extensions.json before this test function starts.
-
-  pending_extension_manager->AddFromExternalUpdateUrl(
+  service->AddPendingExtensionFromExternalUpdateUrl(
       kExtensionId, GURL("http://localhost/autoupdate/manifest"),
       Extension::EXTERNAL_PREF_DOWNLOAD);
 
@@ -378,10 +374,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
 
   // Try to install the extension again from an external source. It should fail
   // because of the killbit.
-  pending_extension_manager->AddFromExternalUpdateUrl(
+  service->AddPendingExtensionFromExternalUpdateUrl(
       kExtensionId, GURL("http://localhost/autoupdate/manifest"),
       Extension::EXTERNAL_PREF_DOWNLOAD);
-  EXPECT_FALSE(pending_extension_manager->IsIdPending(kExtensionId))
+  const PendingExtensionMap& pending_extensions =
+      service->pending_extensions();
+  EXPECT_TRUE(
+      pending_extensions.find(kExtensionId) == pending_extensions.end())
       << "External reinstall of a killed extension shouldn't work.";
   EXPECT_TRUE(extension_prefs->IsExtensionKilled(kExtensionId))
       << "External reinstall of a killed extension should leave it killed.";

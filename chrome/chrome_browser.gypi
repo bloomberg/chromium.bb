@@ -1058,8 +1058,6 @@
         'browser/extensions/pack_extension_job.h',
         'browser/extensions/pending_extension_info.h',
         'browser/extensions/pending_extension_info.cc',
-        'browser/extensions/pending_extension_manager.h',
-        'browser/extensions/pending_extension_manager.cc',
         'browser/extensions/sandboxed_extension_unpacker.cc',
         'browser/extensions/sandboxed_extension_unpacker.h',
         'browser/extensions/theme_installed_infobar_delegate.cc',

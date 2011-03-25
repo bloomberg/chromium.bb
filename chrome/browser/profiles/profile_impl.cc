@@ -484,11 +484,9 @@ void ProfileImpl::InstallDefaultApps() {
     return;
 
   const ExtensionIdSet& app_ids = default_apps->default_apps();
-  PendingExtensionManager* pending_extension_manager =
-      extension_service->pending_extension_manager();
   for (ExtensionIdSet::const_iterator iter = app_ids.begin();
        iter != app_ids.end(); ++iter) {
-    pending_extension_manager->AddFromDefaultAppList(*iter);
+    extension_service->AddPendingExtensionFromDefaultAppList(*iter);
   }
 }
 

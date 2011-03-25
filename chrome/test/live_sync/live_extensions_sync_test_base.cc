@@ -114,11 +114,10 @@ void LiveExtensionsSyncTestBase::InstallAllPendingExtensions(
 
   // We make a copy here since InstallExtension() removes the
   // extension from the extensions service's copy.
-  const PendingExtensionManager* pending_extension_manager =
-      profile->GetExtensionService()->pending_extension_manager();
-  PendingExtensionManager::const_iterator it;
-  for (it = pending_extension_manager->begin();
-       it != pending_extension_manager->end(); ++it) {
+  PendingExtensionMap pending_extensions =
+      profile->GetExtensionService()->pending_extensions();
+  for (PendingExtensionMap::const_iterator it = pending_extensions.begin();
+       it != pending_extensions.end(); ++it) {
     ExtensionIdMap::const_iterator it2 = extensions_by_id_.find(it->first);
     CHECK(it2 != extensions_by_id_.end());
     InstallExtension(profile, it2->second);

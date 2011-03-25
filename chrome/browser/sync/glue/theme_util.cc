@@ -140,7 +140,7 @@ void SetCurrentThemeFromThemeSpecifics(
       const bool kInstallSilently = false;
       const bool kEnableOnInstall = true;
       const bool kEnableIncognitoOnInstall = false;
-      extensions_service->pending_extension_manager()->AddFromSync(
+      extensions_service->AddPendingExtensionFromSync(
           id, update_url, &IsTheme,
           kInstallSilently, kEnableOnInstall, kEnableIncognitoOnInstall);
       ExtensionUpdater* extension_updater = extensions_service->updater();

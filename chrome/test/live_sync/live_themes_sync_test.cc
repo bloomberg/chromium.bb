@@ -59,9 +59,9 @@ bool LiveThemesSyncTest::UsingNativeTheme(Profile* profile) {
 
 bool LiveThemesSyncTest::ExtensionIsPendingInstall(
     Profile* profile, const Extension* extension) {
-  const PendingExtensionManager* pending_extension_manager =
-      profile->GetExtensionService()->pending_extension_manager();
-  return pending_extension_manager->IsIdPending(extension->id());
+  const PendingExtensionMap& pending_extensions =
+      profile->GetExtensionService()->pending_extensions();
+  return pending_extensions.find(extension->id()) != pending_extensions.end();
 }
 
 bool LiveThemesSyncTest::HasOrWillHaveCustomTheme(
