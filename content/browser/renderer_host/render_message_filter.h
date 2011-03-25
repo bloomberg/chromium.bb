@@ -23,7 +23,6 @@
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
@@ -157,9 +156,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnDownloadUrl(const IPC::Message& message,
                      const GURL& url,
                      const GURL& referrer);
-#if defined(USE_TCMALLOC)
-  void OnRendererTcmalloc(base::ProcessId pid, const std::string& output);
-#endif
   void OnReceiveContextMenuMsg(const IPC::Message& msg);
 
   void OnCheckNotificationPermission(const GURL& source_url,
@@ -178,17 +174,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // in the renderer on POSIX due to the sandbox.
   void OnAllocateSharedMemoryBuffer(uint32 buffer_size,
                                     base::SharedMemoryHandle* handle);
-
-  void OnResourceTypeStats(const WebKit::WebCache::ResourceTypeStats& stats);
-  static void OnResourceTypeStatsOnUIThread(
-      const WebKit::WebCache::ResourceTypeStats&,
-      base::ProcessId renderer_id);
-
-  void OnV8HeapStats(int v8_memory_allocated, int v8_memory_used);
-  static void OnV8HeapStatsOnUIThread(int v8_memory_allocated,
-                                      int v8_memory_used,
-                                      base::ProcessId renderer_id);
-
   void OnDidZoomURL(const IPC::Message& message,
                     double zoom_level,
                     bool remember,
@@ -206,25 +191,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
                            bool cache_in_browser,
                            TransportDIB::Handle* result);
   void OnFreeTransportDIB(TransportDIB::Id dib_id);
-
-  void OnOpenChannelToExtension(int routing_id,
-                                const std::string& source_extension_id,
-                                const std::string& target_extension_id,
-                                const std::string& channel_name, int* port_id);
-  void OpenChannelToExtensionOnUIThread(int source_process_id,
-                                        int source_routing_id,
-                                        int receiver_port_id,
-                                        const std::string& source_extension_id,
-                                        const std::string& target_extension_id,
-                                        const std::string& channel_name);
-  void OnOpenChannelToTab(int routing_id, int tab_id,
-                          const std::string& extension_id,
-                          const std::string& channel_name, int* port_id);
-  void OpenChannelToTabOnUIThread(int source_process_id, int source_routing_id,
-                                  int receiver_port_id,
-                                  int tab_id, const std::string& extension_id,
-                                  const std::string& channel_name);
-
   void OnCloseCurrentConnections();
   void OnSetCacheMode(bool enabled);
   void OnClearCache(bool preserve_ssl_host_info, IPC::Message* reply_msg);
@@ -238,13 +204,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
       int key_size_in_bits,
       const std::string& challenge_string,
       const GURL& url,
-      IPC::Message* reply_msg);
-  void OnGetExtensionMessageBundle(const std::string& extension_id,
-                                   IPC::Message* reply_msg);
-  void OnGetExtensionMessageBundleOnFileThread(
-      const FilePath& extension_path,
-      const std::string& extension_id,
-      const std::string& default_locale,
       IPC::Message* reply_msg);
   void OnAsyncOpenFile(const IPC::Message& msg,
                        const FilePath& path,

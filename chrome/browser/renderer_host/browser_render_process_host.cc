@@ -452,7 +452,10 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
                               widget_helper_));
   channel_->AddFilter(render_message_filter);
 
-  channel_->AddFilter(new ChromeRenderMessageFilter());
+  channel_->AddFilter(new ChromeRenderMessageFilter(
+      id(),
+      profile(),
+      profile()->GetRequestContextForPossibleApp(installed_app_)));
 
   scoped_refptr<RendererURLRequestContextOverride> url_request_context_override(
       new RendererURLRequestContextOverride(profile(), installed_app_));
