@@ -1173,11 +1173,8 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
 
   SetReferrer(&info.request, referrer_flag);
 
-  if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent()) {
-    devtools_agent->identifierForInitialRequest(resource_id, webframe_,
-                                                info.request);
-    devtools_agent->willSendRequest(resource_id, info.request);
-  }
+  if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent())
+    devtools_agent->willSendRequest(resource_id, webframe_, info.request);
 
   info.loader.reset(webframe_->createAssociatedURLLoader());
   if (!info.loader.get())
