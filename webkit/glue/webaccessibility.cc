@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -329,9 +329,12 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
     attributes[ATTR_URL] = src.url().spec().utf16();
 
   WebKit::WebNode node = src.node();
+  bool is_iframe = false;
 
   if (!node.isNull() && node.isElementNode()) {
     WebKit::WebElement element = node.to<WebKit::WebElement>();
+    is_iframe = (element.tagName() == ASCIIToUTF16("IFRAME"));
+
     // TODO(ctguil): The tagName in WebKit is lower cased but
     // HTMLElement::nodeName calls localNameUpper. Consider adding
     // a WebElement method that returns the original lower cased tagName.
@@ -399,7 +402,10 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
       // Only recursively add child nodes that have this node as its
       // unignored parent. For child nodes that are actually parented to
       // somethinng else, store only the ID.
-      if (IsParentUnignoredOf(src, child)) {
+      //
+      // As an exception, also add children of an iframe element.
+      // https://bugs.webkit.org/show_bug.cgi?id=57066
+      if (is_iframe || IsParentUnignoredOf(src, child)) {
         children.push_back(WebAccessibility(child, cache, include_children));
       } else {
         indirect_child_ids.push_back(cache->addOrGetId(child));

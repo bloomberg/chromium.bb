@@ -268,4 +268,53 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   RecursiveAssertUniqueIds(tree, &ids);
 }
 
+IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
+                       CrossPlatformIframeAccessibility) {
+  // Create a data url and load it.
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html><html><body>"
+      "<button>Button 1</button>"
+      "<iframe src='data:text/html,"
+      "<!doctype html><html><body><button>Button 2</button></body></html>"
+      "'></iframe>"
+      "<button>Button 3</button>"
+      "</body></html>";
+  GURL url(url_str);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+
+  const WebAccessibility& tree = GetWebAccessibilityTree();
+  ASSERT_EQ(1U, tree.children.size());
+  const WebAccessibility& body = tree.children[0];
+  ASSERT_EQ(3U, body.children.size());
+
+  const WebAccessibility& button1 = body.children[0];
+  EXPECT_EQ(WebAccessibility::ROLE_BUTTON, button1.role);
+  EXPECT_STREQ("Button 1", UTF16ToUTF8(button1.name).c_str());
+
+  const WebAccessibility& iframe = body.children[1];
+  EXPECT_STREQ("iframe",
+               GetAttr(iframe, WebAccessibility::ATTR_HTML_TAG).c_str());
+  ASSERT_EQ(1U, iframe.children.size());
+
+  const WebAccessibility& scroll_area = iframe.children[0];
+  EXPECT_EQ(WebAccessibility::ROLE_SCROLLAREA, scroll_area.role);
+  ASSERT_EQ(1U, scroll_area.children.size());
+
+  const WebAccessibility& sub_document = scroll_area.children[0];
+  EXPECT_EQ(WebAccessibility::ROLE_WEB_AREA, sub_document.role);
+  ASSERT_EQ(1U, sub_document.children.size());
+
+  const WebAccessibility& sub_body = sub_document.children[0];
+  ASSERT_EQ(1U, sub_body.children.size());
+
+  const WebAccessibility& button2 = sub_body.children[0];
+  EXPECT_EQ(WebAccessibility::ROLE_BUTTON, button2.role);
+  EXPECT_STREQ("Button 2", UTF16ToUTF8(button2.name).c_str());
+
+  const WebAccessibility& button3 = body.children[2];
+  EXPECT_EQ(WebAccessibility::ROLE_BUTTON, button3.role);
+  EXPECT_STREQ("Button 3", UTF16ToUTF8(button3.name).c_str());
+}
+
 }  // namespace
