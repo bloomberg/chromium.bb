@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
+#include "chrome/common/content_restriction.h"
 #include "chrome/common/print_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -99,6 +100,13 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void PrintPreviewMessageHandler::DidStartLoading() {
+  if (tab_contents()->delegate() &&
+      printing::PrintPreviewTabController::IsPrintPreviewTab(tab_contents())) {
+    tab_contents()->SetContentRestrictions(CONTENT_RESTRICTION_PRINT);
+  }
 }
 
 }  // namespace printing

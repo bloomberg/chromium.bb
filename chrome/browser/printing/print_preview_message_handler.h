@@ -22,6 +22,7 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
 
   // TabContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void DidStartLoading();
 
  private:
   // Gets the print preview tab associated with |owner_|.
@@ -31,7 +32,6 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
       const PrintHostMsg_DidPreviewDocument_Params& params);
   void OnPrintPreviewNodeUnderContextMenu();
   void OnScriptInitiatedPrintPreview();
-
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewMessageHandler);
 };

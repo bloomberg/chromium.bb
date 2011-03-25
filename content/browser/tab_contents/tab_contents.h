@@ -699,6 +699,7 @@ class TabContents : public PageNavigator,
   int maximum_zoom_percent() const { return maximum_zoom_percent_; }
 
   int content_restrictions() const { return content_restrictions_; }
+  void SetContentRestrictions(int restrictions);
 
   safe_browsing::ClientSideDetectionHost* safebrowsing_detection_host() {
     return safebrowsing_detection_host_.get();

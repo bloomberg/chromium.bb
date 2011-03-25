@@ -40,7 +40,6 @@
 #include "chrome/browser/pdf_unsupported_feature.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_observer.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
@@ -1320,6 +1319,11 @@ void TabContents::ViewFrameSource(const GURL& url,
   delegate_->ViewSourceForFrame(this, url, content_state);
 }
 
+void TabContents::SetContentRestrictions(int restrictions) {
+  content_restrictions_ = restrictions;
+  delegate()->ContentRestrictionsChanged(this);
+}
+
 void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                     bool is_main_frame,
                                                     const GURL& url) {
@@ -1481,8 +1485,7 @@ void TabContents::OnDidFinishLoad(int64 frame_id) {
 }
 
 void TabContents::OnUpdateContentRestrictions(int restrictions) {
-  content_restrictions_ = restrictions;
-  delegate()->ContentRestrictionsChanged(this);
+  SetContentRestrictions(restrictions);
 }
 
 void TabContents::OnPDFHasUnsupportedFeature() {
@@ -2257,14 +2260,9 @@ void TabContents::RequestMove(const gfx::Rect& new_bounds) {
 void TabContents::DidStartLoading() {
   SetIsLoading(true, NULL);
 
-  if (delegate()) {
-    bool is_print_preview_tab =
-        printing::PrintPreviewTabController::IsPrintPreviewTab(this);
-    if (content_restrictions_ || is_print_preview_tab) {
-      content_restrictions_= is_print_preview_tab ?
-          CONTENT_RESTRICTION_PRINT : 0;
+  if (delegate() && content_restrictions_) {
+      content_restrictions_ = 0;
       delegate()->ContentRestrictionsChanged(this);
-    }
   }
 
   // Notify observers about navigation.
