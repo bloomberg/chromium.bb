@@ -31,18 +31,23 @@ static PP_InputEvent_User* GetUserEvent(PP_InputEvent* event) {
   return reinterpret_cast<PP_InputEvent_User*>(&event->u);
 }
 
+bool IsInvalidEvent(PP_InputEvent* event) {
+  return event->type == PP_INPUTEVENT_TYPE_UNDEFINED;
+}
+
+
 void MakeInvalidEvent(PP_InputEvent* event) {
   event->type = PP_INPUTEVENT_TYPE_UNDEFINED;
 }
 
 
-bool IsInvalidEvent(PP_InputEvent* event) {
-  return event->type == PP_INPUTEVENT_USER;
+bool IsTerminationEvent(PP_InputEvent* event) {
+  return event->type == PP_INPUTEVENT_TERMINATION;
 }
 
 
-bool IsTerminationEvent(PP_InputEvent* event) {
-  return event->type == PP_INPUTEVENT_TERMINATION;
+void MakeTerminationEvent(PP_InputEvent* event) {
+  event->type = (PP_InputEvent_Type) PP_INPUTEVENT_TERMINATION;
 }
 
 
@@ -55,6 +60,7 @@ int GetCodeFromUserEvent(PP_InputEvent* event) {
   return GetUserEvent(event)->code;
 }
 
+
 int GetData1FromUserEvent(PP_InputEvent* event) {
   return  GetUserEvent(event)->data1;
 }
@@ -63,6 +69,7 @@ int GetData1FromUserEvent(PP_InputEvent* event) {
 int GetData2FromUserEvent(PP_InputEvent* event) {
   return  GetUserEvent(event)->data2;
 }
+
 
 void MakeUserEvent(PP_InputEvent* event, int code, int data1, int data2) {
   event->type = (PP_InputEvent_Type) PP_INPUTEVENT_USER;

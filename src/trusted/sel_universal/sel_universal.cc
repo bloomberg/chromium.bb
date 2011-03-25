@@ -80,6 +80,18 @@ static nacl::string ProcessArguments(int argc,
     if (flag == "--help") {
       printf("%s", kUsage);
       exit(0);
+#if  NACL_SEL_UNIVERSAL_INCLUDE_SDL
+    } else if (flag == "--event_record") {
+      if (argc <= i + 1) {
+        NaClLog(LOG_FATAL, "not enough args for --event_record option\n");
+      }
+      RecordPPAPIEvents(argv[i + 1]);
+    } else if (flag == "--event_replay") {
+      if (argc <= i + 1) {
+        NaClLog(LOG_FATAL, "not enough args for --event_replay option\n");
+      }
+      ReplayPPAPIEvents(argv[i + 1]);
+#endif
     } else if (flag == "--debug") {
       NaClLogSetVerbosity(1);
     } else if (flag == "--abort_on_error") {
@@ -95,8 +107,7 @@ static nacl::string ProcessArguments(int argc,
       command_prefix = argv[i];
     } else if (flag == "--command_file") {
       if (argc <= i + 1) {
-        NaClLog(LOG_FATAL,
-                "not enough args for --command_file option\n");
+        NaClLog(LOG_FATAL, "not enough args for --command_file option\n");
       }
       NaClLog(LOG_INFO, "reading commands from %s\n", argv[i + 1]);
       ifstream f;

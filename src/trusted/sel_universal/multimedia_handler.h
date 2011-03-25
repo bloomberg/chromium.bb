@@ -12,6 +12,18 @@
 
 class NaClCommandLoop;
 
+// Log all PPAPI events to given file for later playback.
+// This will take effect after HandlerSDLEventLoop is called.
+// Note: the emitted file will contain non-standard PPAPI events
+//       for synchronization purposes.
+void RecordPPAPIEvents(std::string filename);
+
+// Ignore user events and instead play back PPAPI events from the given file,
+// which must have been generared via RecordPPAPIEvents()
+// This will take effect after HandlerSDLEventLoop is called
+void ReplayPPAPIEvents(std::string filename);
+
+
 // initialize multimedia (SDL) subsystem
 bool HandlerSDLInitialize(NaClCommandLoop* ncl,
                           const std::vector<std::string>& args);

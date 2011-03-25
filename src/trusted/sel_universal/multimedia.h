@@ -13,10 +13,15 @@
 class PP_InputEvent;
 
 bool IsUserEvent(PP_InputEvent* event);
-bool IsInvalidEvent(PP_InputEvent* event);
-bool IsTerminationEvent(PP_InputEvent* event);
-
 void MakeUserEvent(PP_InputEvent* event, int code, int data1, int data2);
+
+bool IsInvalidEvent(PP_InputEvent* event);
+void MakeInvalidEvent(PP_InputEvent* event);
+
+bool IsTerminationEvent(PP_InputEvent* event);
+void MakeTerminationEvent(PP_InputEvent* event);
+
+
 int GetCodeFromUserEvent(PP_InputEvent* event);
 int GetData1FromUserEvent(PP_InputEvent* event);
 int GetData2FromUserEvent(PP_InputEvent* event);
