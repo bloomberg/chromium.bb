@@ -196,6 +196,8 @@ class PrerenderContents : public RenderViewHostDelegate,
   // from RenderViewHostDelegate.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
+  const GURL& prerender_url() const { return prerender_url_; }
+
  private:
   // Needs to be able to call the constructor.
   friend class PrerenderContentsFactoryImpl;

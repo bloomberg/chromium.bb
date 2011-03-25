@@ -54,7 +54,8 @@ class TestPrerenderContents : public PrerenderContents {
   }
 
   virtual ~TestPrerenderContents() {
-    EXPECT_EQ(expected_final_status_, final_status());
+    EXPECT_EQ(expected_final_status_, final_status()) <<
+        " when testing URL " << prerender_url().path();
     // In the event we are destroyed, say if the prerender was canceled, quit
     // the UI message loop.
     if (!did_finish_loading_)
