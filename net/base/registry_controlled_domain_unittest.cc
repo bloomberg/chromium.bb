@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,14 +14,15 @@
 #undef MAX_HASH_VALUE
 #include "effective_tld_names_unittest2.cc"
 
+namespace net {
 namespace {
 
 class TestRegistryControlledDomainService :
-    public net::RegistryControlledDomainService {
+    public RegistryControlledDomainService {
  public:
   // Sets the given data.
   static void UseDomainData(FindDomainPtr function) {
-    net::RegistryControlledDomainService::UseFindDomainFunction(function);
+    RegistryControlledDomainService::UseFindDomainFunction(function);
   }
 
   // Creates a new dedicated instance to be used for testing, deleting any
@@ -252,4 +253,5 @@ TEST_F(RegistryControlledDomainTest, TestDefaultData) {
   EXPECT_EQ(3U, GetRegistryLengthFromURL("http://nowhere.foo", true));
 }
 
-} // namespace
+}  // namespace
+}  // namespace net

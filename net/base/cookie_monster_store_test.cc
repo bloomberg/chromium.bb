@@ -20,13 +20,13 @@ MockPersistentCookieStore::~MockPersistentCookieStore() {}
 
 void MockPersistentCookieStore::SetLoadExpectation(
     bool return_value,
-    const std::vector<net::CookieMonster::CanonicalCookie*>& result) {
+    const std::vector<CookieMonster::CanonicalCookie*>& result) {
   load_return_value_ = return_value;
   load_result_ = result;
 }
 
 bool MockPersistentCookieStore::Load(
-    std::vector<net::CookieMonster::CanonicalCookie*>* out_cookies) {
+    std::vector<CookieMonster::CanonicalCookie*>* out_cookies) {
   bool ok = load_return_value_;
   if (ok)
     *out_cookies = load_result_;
@@ -34,19 +34,19 @@ bool MockPersistentCookieStore::Load(
 }
 
 void MockPersistentCookieStore::AddCookie(
-    const net::CookieMonster::CanonicalCookie& cookie) {
+    const CookieMonster::CanonicalCookie& cookie) {
   commands_.push_back(
       CookieStoreCommand(CookieStoreCommand::ADD, cookie));
 }
 
 void MockPersistentCookieStore::UpdateCookieAccessTime(
-    const net::CookieMonster::CanonicalCookie& cookie) {
+    const CookieMonster::CanonicalCookie& cookie) {
   commands_.push_back(CookieStoreCommand(
       CookieStoreCommand::UPDATE_ACCESS_TIME, cookie));
 }
 
 void MockPersistentCookieStore::DeleteCookie(
-    const net::CookieMonster::CanonicalCookie& cookie) {
+    const CookieMonster::CanonicalCookie& cookie) {
   commands_.push_back(
       CookieStoreCommand(CookieStoreCommand::REMOVE, cookie));
 }
@@ -64,9 +64,9 @@ MockPersistentCookieStore::SetClearLocalStateOnExit(bool clear_local_state) {
 MockCookieMonsterDelegate::MockCookieMonsterDelegate() {}
 
 void MockCookieMonsterDelegate::OnCookieChanged(
-    const net::CookieMonster::CanonicalCookie& cookie,
+    const CookieMonster::CanonicalCookie& cookie,
     bool removed,
-    net::CookieMonster::Delegate::ChangeCause cause) {
+    CookieMonster::Delegate::ChangeCause cause) {
   CookieNotification notification(cookie, removed);
   changes_.push_back(notification);
 }
@@ -77,10 +77,10 @@ void AddCookieToList(
     const std::string& key,
     const std::string& cookie_line,
     const base::Time& creation_time,
-    std::vector<net::CookieMonster::CanonicalCookie*>* out_list) {
+    std::vector<CookieMonster::CanonicalCookie*>* out_list) {
 
   // Parse the cookie line.
-  net::CookieMonster::ParsedCookie pc(cookie_line);
+  CookieMonster::ParsedCookie pc(cookie_line);
   EXPECT_TRUE(pc.IsValid());
 
   // This helper is simplistic in interpreting a parsed cookie, in order to
@@ -89,11 +89,11 @@ void AddCookieToList(
   EXPECT_FALSE(pc.HasMaxAge());
   EXPECT_TRUE(pc.HasPath());
   base::Time cookie_expires = pc.HasExpires() ?
-      net::CookieMonster::ParseCookieTime(pc.Expires()) : base::Time();
+      CookieMonster::ParseCookieTime(pc.Expires()) : base::Time();
   std::string cookie_path = pc.Path();
 
-  scoped_ptr<net::CookieMonster::CanonicalCookie> cookie(
-      new net::CookieMonster::CanonicalCookie(
+  scoped_ptr<CookieMonster::CanonicalCookie> cookie(
+      new CookieMonster::CanonicalCookie(
           GURL(), pc.Name(), pc.Value(), key, cookie_path,
           pc.IsSecure(), pc.IsHttpOnly(),
           creation_time, creation_time,
@@ -108,30 +108,30 @@ MockSimplePersistentCookieStore::MockSimplePersistentCookieStore() {}
 MockSimplePersistentCookieStore::~MockSimplePersistentCookieStore() {}
 
 bool MockSimplePersistentCookieStore::Load(
-    std::vector<net::CookieMonster::CanonicalCookie*>* out_cookies) {
+    std::vector<CookieMonster::CanonicalCookie*>* out_cookies) {
   for (CanonicalCookieMap::const_iterator it = cookies_.begin();
        it != cookies_.end(); it++)
     out_cookies->push_back(
-        new net::CookieMonster::CanonicalCookie(it->second));
+        new CookieMonster::CanonicalCookie(it->second));
   return true;
 }
 
 void MockSimplePersistentCookieStore::AddCookie(
-    const net::CookieMonster::CanonicalCookie& cookie) {
+    const CookieMonster::CanonicalCookie& cookie) {
   int64 creation_time = cookie.CreationDate().ToInternalValue();
   EXPECT_TRUE(cookies_.find(creation_time) == cookies_.end());
   cookies_[creation_time] = cookie;
 }
 
 void MockSimplePersistentCookieStore::UpdateCookieAccessTime(
-    const net::CookieMonster::CanonicalCookie& cookie) {
+    const CookieMonster::CanonicalCookie& cookie) {
   int64 creation_time = cookie.CreationDate().ToInternalValue();
   ASSERT_TRUE(cookies_.find(creation_time) != cookies_.end());
   cookies_[creation_time].SetLastAccessDate(base::Time::Now());
 }
 
 void MockSimplePersistentCookieStore::DeleteCookie(
-    const net::CookieMonster::CanonicalCookie& cookie) {
+    const CookieMonster::CanonicalCookie& cookie) {
   int64 creation_time = cookie.CreationDate().ToInternalValue();
   CanonicalCookieMap::iterator it = cookies_.find(creation_time);
   ASSERT_TRUE(it != cookies_.end());
@@ -147,7 +147,7 @@ void MockSimplePersistentCookieStore::SetClearLocalStateOnExit(
     bool clear_local_state) {
 }
 
-net::CookieMonster* CreateMonsterFromStoreForGC(
+CookieMonster* CreateMonsterFromStoreForGC(
     int num_cookies,
     int num_old_cookies,
     int days_old) {
@@ -157,7 +157,7 @@ net::CookieMonster* CreateMonsterFromStoreForGC(
       new MockSimplePersistentCookieStore);
   // Must expire to be persistent
   for (int i = 0; i < num_old_cookies; i++) {
-    net::CookieMonster::CanonicalCookie cc(
+    CookieMonster::CanonicalCookie cc(
         GURL(), "a", "1", base::StringPrintf("h%05d.izzle", i), "/path", false,
         false, past_creation + base::TimeDelta::FromMicroseconds(i),
         current - base::TimeDelta::FromDays(days_old),
@@ -165,14 +165,14 @@ net::CookieMonster* CreateMonsterFromStoreForGC(
     store->AddCookie(cc);
   }
   for (int i = num_old_cookies; i < num_cookies; i++) {
-    net::CookieMonster::CanonicalCookie cc(
+    CookieMonster::CanonicalCookie cc(
         GURL(), "a", "1", base::StringPrintf("h%05d.izzle", i), "/path", false,
         false, past_creation + base::TimeDelta::FromMicroseconds(i), current,
         true, current + base::TimeDelta::FromDays(30));
     store->AddCookie(cc);
   }
 
-  return new net::CookieMonster(store, NULL);
+  return new CookieMonster(store, NULL);
 }
 
 }  // namespace net

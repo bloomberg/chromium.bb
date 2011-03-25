@@ -24,19 +24,19 @@ struct CookieStoreCommand {
   };
 
   CookieStoreCommand(Type type,
-                     const net::CookieMonster::CanonicalCookie& cookie)
+                     const CookieMonster::CanonicalCookie& cookie)
       : type(type),
         cookie(cookie) {}
 
   Type type;
-  net::CookieMonster::CanonicalCookie cookie;
+  CookieMonster::CanonicalCookie cookie;
 };
 
 // Implementation of PersistentCookieStore that captures the
 // received commands and saves them to a list.
 // The result of calls to Load() can be configured using SetLoadExpectation().
 class MockPersistentCookieStore
-    : public net::CookieMonster::PersistentCookieStore {
+    : public CookieMonster::PersistentCookieStore {
  public:
   typedef std::vector<CookieStoreCommand> CommandList;
 
@@ -45,22 +45,22 @@ class MockPersistentCookieStore
 
   void SetLoadExpectation(
       bool return_value,
-      const std::vector<net::CookieMonster::CanonicalCookie*>& result);
+      const std::vector<CookieMonster::CanonicalCookie*>& result);
 
   const CommandList& commands() const {
     return commands_;
   }
 
   virtual bool Load(
-      std::vector<net::CookieMonster::CanonicalCookie*>* out_cookies);
+      std::vector<CookieMonster::CanonicalCookie*>* out_cookies);
 
-  virtual void AddCookie(const net::CookieMonster::CanonicalCookie& cookie);
+  virtual void AddCookie(const CookieMonster::CanonicalCookie& cookie);
 
   virtual void UpdateCookieAccessTime(
-      const net::CookieMonster::CanonicalCookie& cookie);
+      const CookieMonster::CanonicalCookie& cookie);
 
   virtual void DeleteCookie(
-      const net::CookieMonster::CanonicalCookie& cookie);
+      const CookieMonster::CanonicalCookie& cookie);
 
   virtual void Flush(Task* completion_task);
 
@@ -72,15 +72,15 @@ class MockPersistentCookieStore
 
   // Deferred result to use when Load() is called.
   bool load_return_value_;
-  std::vector<net::CookieMonster::CanonicalCookie*> load_result_;
+  std::vector<CookieMonster::CanonicalCookie*> load_result_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPersistentCookieStore);
 };
 
 // Mock for CookieMonster::Delegate
-class MockCookieMonsterDelegate : public net::CookieMonster::Delegate {
+class MockCookieMonsterDelegate : public CookieMonster::Delegate {
  public:
-  typedef std::pair<net::CookieMonster::CanonicalCookie, bool>
+  typedef std::pair<CookieMonster::CanonicalCookie, bool>
       CookieNotification;
 
   MockCookieMonsterDelegate();
@@ -90,9 +90,9 @@ class MockCookieMonsterDelegate : public net::CookieMonster::Delegate {
   void reset() { changes_.clear(); }
 
   virtual void OnCookieChanged(
-      const net::CookieMonster::CanonicalCookie& cookie,
+      const CookieMonster::CanonicalCookie& cookie,
       bool removed,
-      net::CookieMonster::Delegate::ChangeCause cause);
+      CookieMonster::Delegate::ChangeCause cause);
 
  private:
   virtual ~MockCookieMonsterDelegate();
@@ -107,34 +107,34 @@ void AddCookieToList(
     const std::string& key,
     const std::string& cookie_line,
     const base::Time& creation_time,
-    std::vector<net::CookieMonster::CanonicalCookie*>* out_list);
+    std::vector<CookieMonster::CanonicalCookie*>* out_list);
 
 // Just act like a backing database.  Keep cookie information from
 // Add/Update/Delete and regurgitate it when Load is called.
 class MockSimplePersistentCookieStore
-    : public net::CookieMonster::PersistentCookieStore {
+    : public CookieMonster::PersistentCookieStore {
  public:
   MockSimplePersistentCookieStore();
   virtual ~MockSimplePersistentCookieStore();
 
   virtual bool Load(
-      std::vector<net::CookieMonster::CanonicalCookie*>* out_cookies);
+      std::vector<CookieMonster::CanonicalCookie*>* out_cookies);
 
   virtual void AddCookie(
-      const net::CookieMonster::CanonicalCookie& cookie);
+      const CookieMonster::CanonicalCookie& cookie);
 
   virtual void UpdateCookieAccessTime(
-      const net::CookieMonster::CanonicalCookie& cookie);
+      const CookieMonster::CanonicalCookie& cookie);
 
   virtual void DeleteCookie(
-      const net::CookieMonster::CanonicalCookie& cookie);
+      const CookieMonster::CanonicalCookie& cookie);
 
   virtual void Flush(Task* completion_task);
 
   virtual void SetClearLocalStateOnExit(bool clear_local_state);
 
  private:
-  typedef std::map<int64, net::CookieMonster::CanonicalCookie>
+  typedef std::map<int64, CookieMonster::CanonicalCookie>
       CanonicalCookieMap;
 
   CanonicalCookieMap cookies_;
@@ -148,7 +148,7 @@ class MockSimplePersistentCookieStore
 // Do two SetCookies().  Return whether each of the two SetCookies() took
 // longer than |gc_perf_micros| to complete, and how many cookie were
 // left in the store afterwards.
-net::CookieMonster* CreateMonsterFromStoreForGC(
+CookieMonster* CreateMonsterFromStoreForGC(
     int num_cookies,
     int num_old_cookies,
     int days_old);

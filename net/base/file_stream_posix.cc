@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,15 +27,16 @@
 #include "base/synchronization/waitable_event.h"
 #include "net/base/net_errors.h"
 
+namespace net {
+
 // We cast back and forth, so make sure it's the size we're expecting.
 COMPILE_ASSERT(sizeof(int64) == sizeof(off_t), off_t_64_bit);
 
 // Make sure our Whence mappings match the system headers.
-COMPILE_ASSERT(net::FROM_BEGIN   == SEEK_SET &&
-               net::FROM_CURRENT == SEEK_CUR &&
-               net::FROM_END     == SEEK_END, whence_matches_system);
+COMPILE_ASSERT(FROM_BEGIN   == SEEK_SET &&
+               FROM_CURRENT == SEEK_CUR &&
+               FROM_END     == SEEK_END, whence_matches_system);
 
-namespace net {
 namespace {
 
 // Map from errno to net error codes.

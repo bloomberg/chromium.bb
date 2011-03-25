@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -201,7 +201,7 @@ bool GetCookieDomainWithString(const GURL& url,
   // also treats domain=.....my.domain.com like domain=.my.domain.com, but
   // neither IE nor Safari do this, and we don't either.
   url_canon::CanonHostInfo ignored;
-  std::string cookie_domain(net::CanonicalizeHost(domain_string, &ignored));
+  std::string cookie_domain(CanonicalizeHost(domain_string, &ignored));
   if (cookie_domain.empty())
     return false;
   if (cookie_domain[0] != '.')

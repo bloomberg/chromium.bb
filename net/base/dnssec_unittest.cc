@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,15 +9,7 @@
 #include "net/base/dnssec_keyset.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-class SignatureVerifierDNSSECTest : public testing::Test {
-};
-
-class DNSSECChainVerifierTest : public testing::Test {
-};
-
-}  // anonymous namespace
+namespace net {
 
 // This is a DNSKEY record. You can get one with `dig dnskey .` (where '.' can
 // be any signed zone).
@@ -46,14 +38,14 @@ static const unsigned char kExampleKey[] = {
 };
 
 TEST(SignatureVerifierDNSSECTest, KeyID) {
-  uint16 keyid = net::DNSSECKeySet::DNSKEYToKeyID(
+  uint16 keyid = DNSSECKeySet::DNSKEYToKeyID(
       base::StringPiece(reinterpret_cast<const char*>(kExampleKey),
                         sizeof(kExampleKey)));
   ASSERT_EQ(19036u, keyid);
 }
 
 TEST(SignatureVerifierDNSSECTest, ImportKey) {
-  net::DNSSECKeySet keyset;
+  DNSSECKeySet keyset;
 
   ASSERT_TRUE(keyset.AddKey(
      base::StringPiece(reinterpret_cast<const char*>(kExampleKey),
@@ -118,7 +110,7 @@ static const unsigned char kRRDATA2[] = {
 };
 
 TEST(SignatureVerifierDNSSECTest, VerifySignature) {
-  net::DNSSECKeySet keyset;
+  DNSSECKeySet keyset;
 
   ASSERT_TRUE(keyset.AddKey(
      base::StringPiece(reinterpret_cast<const char*>(kExampleKey),
@@ -140,7 +132,7 @@ TEST(SignatureVerifierDNSSECTest, VerifySignature) {
 
 static std::string FromDNSName(const char* name) {
   std::string result;
-  bool ok = net::DNSDomainFromDot(name, &result);
+  bool ok = DNSDomainFromDot(name, &result);
   EXPECT_TRUE(ok);
   if (!ok)
     result = "";
@@ -148,19 +140,19 @@ static std::string FromDNSName(const char* name) {
 }
 
 TEST(DNSSECChainVerifierTest, MatchingLabels) {
-  ASSERT_EQ(1u, net::DNSSECChainVerifier::MatchingLabels(
+  ASSERT_EQ(1u, DNSSECChainVerifier::MatchingLabels(
         FromDNSName(""), FromDNSName("")));
-  ASSERT_EQ(2u, net::DNSSECChainVerifier::MatchingLabels(
+  ASSERT_EQ(2u, DNSSECChainVerifier::MatchingLabels(
         FromDNSName("org"), FromDNSName("org")));
-  ASSERT_EQ(3u, net::DNSSECChainVerifier::MatchingLabels(
+  ASSERT_EQ(3u, DNSSECChainVerifier::MatchingLabels(
         FromDNSName("foo.org"), FromDNSName("foo.org")));
-  ASSERT_EQ(3u, net::DNSSECChainVerifier::MatchingLabels(
+  ASSERT_EQ(3u, DNSSECChainVerifier::MatchingLabels(
         FromDNSName("bar.foo.org"), FromDNSName("foo.org")));
-  ASSERT_EQ(3u, net::DNSSECChainVerifier::MatchingLabels(
+  ASSERT_EQ(3u, DNSSECChainVerifier::MatchingLabels(
         FromDNSName("foo.org"), FromDNSName("bar.foo.org")));
-  ASSERT_EQ(1u, net::DNSSECChainVerifier::MatchingLabels(
+  ASSERT_EQ(1u, DNSSECChainVerifier::MatchingLabels(
         FromDNSName("foo.org"), FromDNSName("foo.com")));
-  ASSERT_EQ(2u, net::DNSSECChainVerifier::MatchingLabels(
+  ASSERT_EQ(2u, DNSSECChainVerifier::MatchingLabels(
         FromDNSName("foo.org"), FromDNSName("bar.org")));
 }
 
@@ -558,35 +550,35 @@ static const unsigned char kCNAMEChain[] = {
 TEST(DNSSECChainVerifierTest, TestChain) {
   base::StringPiece chain(reinterpret_cast<const char*>(kChain),
                           sizeof(kChain));
-  net::DNSSECChainVerifier verifier(FromDNSName("dnssec-exp.org"), chain);
+  DNSSECChainVerifier verifier(FromDNSName("dnssec-exp.org"), chain);
   verifier.IgnoreTimestamps();
-  ASSERT_EQ(net::DNSSECChainVerifier::OK, verifier.Verify());
-  ASSERT_EQ(net::kDNS_CERT, verifier.rrtype());
+  ASSERT_EQ(DNSSECChainVerifier::OK, verifier.Verify());
+  ASSERT_EQ(kDNS_CERT, verifier.rrtype());
 }
 
 TEST(DNSSECChainVerifierTest, OffCourse) {
   base::StringPiece chain(reinterpret_cast<const char*>(kChain),
                           sizeof(kChain));
-  net::DNSSECChainVerifier verifier(FromDNSName("foo.org"), chain);
+  DNSSECChainVerifier verifier(FromDNSName("foo.org"), chain);
   verifier.IgnoreTimestamps();
-  ASSERT_EQ(net::DNSSECChainVerifier::OFF_COURSE, verifier.Verify());
+  ASSERT_EQ(DNSSECChainVerifier::OFF_COURSE, verifier.Verify());
 }
 
 TEST(DNSSECChainVerifierTest, BadTarget) {
   base::StringPiece chain(reinterpret_cast<const char*>(kChain),
                           sizeof(kChain));
-  net::DNSSECChainVerifier verifier(FromDNSName("www.dnssec-exp.org"), chain);
+  DNSSECChainVerifier verifier(FromDNSName("www.dnssec-exp.org"), chain);
   verifier.IgnoreTimestamps();
-  ASSERT_EQ(net::DNSSECChainVerifier::BAD_TARGET, verifier.Verify());
+  ASSERT_EQ(DNSSECChainVerifier::BAD_TARGET, verifier.Verify());
 }
 
 TEST(DNSSECChainVerifierTest, TestCNAMEChain) {
   base::StringPiece chain(reinterpret_cast<const char*>(kCNAMEChain),
                           sizeof(kCNAMEChain));
-  net::DNSSECChainVerifier verifier(FromDNSName("www.dnssec-exp.org"), chain);
+  DNSSECChainVerifier verifier(FromDNSName("www.dnssec-exp.org"), chain);
   verifier.IgnoreTimestamps();
-  ASSERT_EQ(net::DNSSECChainVerifier::OK, verifier.Verify());
-  ASSERT_EQ(net::kDNS_TXT, verifier.rrtype());
+  ASSERT_EQ(DNSSECChainVerifier::OK, verifier.Verify());
+  ASSERT_EQ(kDNS_TXT, verifier.rrtype());
 }
 
 // This is too slow to run all the time.
@@ -602,9 +594,9 @@ TEST(DNSSECChainVerifierTest, DISABLED_Fuzz) {
     unsigned bit = bit_to_flip & 7;
     copy[byte] ^= (1 << bit);
 
-    net::DNSSECChainVerifier verifier(FromDNSName("dnssec-exp.org"), chain);
+    DNSSECChainVerifier verifier(FromDNSName("dnssec-exp.org"), chain);
     verifier.IgnoreTimestamps();
-    ASSERT_NE(net::DNSSECChainVerifier::OK, verifier.Verify());
+    ASSERT_NE(DNSSECChainVerifier::OK, verifier.Verify());
   }
 }
 
@@ -631,10 +623,10 @@ TEST(DNSSECChainVerifierTest, BadTXT) {
 
   for (unsigned i = 0; i < arraysize(kBadTXTRecords); i++) {
     std::string wrapped(StringToTXTRecord(kBadTXTRecords[i]));
-    EXPECT_TRUE(net::DNSSECChainVerifier::ParseTLSTXTRecord(wrapped).empty());
+    EXPECT_TRUE(DNSSECChainVerifier::ParseTLSTXTRecord(wrapped).empty());
   }
 
-  EXPECT_TRUE(net::DNSSECChainVerifier::ParseTLSTXTRecord(
+  EXPECT_TRUE(DNSSECChainVerifier::ParseTLSTXTRecord(
         std::string("a=b\0", 4)).empty());
 }
 
@@ -685,10 +677,12 @@ TEST(DNSSECChainVerifierTest, GoodTXT) {
   for (unsigned i = 0; kTXTRecords[i]; i++) {
     std::string wrapped(StringToTXTRecord(kTXTRecords[i]));
     std::map<std::string, std::string> m(
-        net::DNSSECChainVerifier::ParseTLSTXTRecord(wrapped));
+        DNSSECChainVerifier::ParseTLSTXTRecord(wrapped));
     ASSERT_FALSE(m.empty());
     ASSERT_TRUE(MatchMap(m, &kTXTRecords[i+1]));
     while (kTXTRecords[i])
       i++;
   }
 }
+
+}  // namespace net
