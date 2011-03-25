@@ -262,7 +262,7 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
 
   // Send to WebKit for display.
   if (!v.empty() && !autofill_query_node_.isNull() &&
-      autofill_query_node_.hasNonEmptyBoundingBox()) {
+      autofill_query_node_.isFocusable()) {
     web_view->applyAutoFillSuggestions(
         autofill_query_node_, v, l, i, ids, separator_index);
   }

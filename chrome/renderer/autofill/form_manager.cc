@@ -855,7 +855,8 @@ void FormManager::ForEachMatchingFormField(FormElement* form,
         continue;
     }
 
-    if (!element->isEnabled() || element->isReadOnly())
+    if (!element->isEnabled() || element->isReadOnly() ||
+        !element->isFocusable())
       continue;
 
     callback->Run(element, &data.fields[k], is_initiating_node);

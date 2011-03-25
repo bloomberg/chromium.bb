@@ -729,6 +729,9 @@ TEST_F(FormManagerTest, FillForm) {
            "  <INPUT type=\"text\" autocomplete=\"off\" id=\"noautocomplete\"/>"
            "  <INPUT type=\"text\" disabled=\"disabled\" id=\"notenabled\"/>"
            "  <INPUT type=\"text\" readonly id=\"readonly\"/>"
+           "  <INPUT type=\"text\" style=\"visibility: hidden\""
+           "         id=\"invisible\"/>"
+           "  <INPUT type=\"text\" style=\"display: none\" id=\"displaynone\"/>"
            "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
            "</FORM>");
 
@@ -756,7 +759,7 @@ TEST_F(FormManagerTest, FillForm) {
   EXPECT_EQ(GURL("http://buh.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
-  ASSERT_EQ(6U, fields.size());
+  ASSERT_EQ(8U, fields.size());
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("firstname"),
                       string16(),
@@ -798,7 +801,21 @@ TEST_F(FormManagerTest, FillForm) {
                       ASCIIToUTF16("text"),
                       WebInputElement::defaultMaxLength(),
                       false),
-           fields[5]);
+            fields[5]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("invisible"),
+                      string16(),
+                      ASCIIToUTF16("text"),
+                      WebInputElement::defaultMaxLength(),
+                      false),
+            fields[6]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("displaynone"),
+                      string16(),
+                      ASCIIToUTF16("text"),
+                      WebInputElement::defaultMaxLength(),
+                      false),
+            fields[7]);
 
   // Fill the form.
   form.fields[0].value = ASCIIToUTF16("Wyatt");
@@ -807,6 +824,8 @@ TEST_F(FormManagerTest, FillForm) {
   form.fields[3].value = ASCIIToUTF16("Beta");
   form.fields[4].value = ASCIIToUTF16("Gamma");
   form.fields[5].value = ASCIIToUTF16("Delta");
+  form.fields[6].value = ASCIIToUTF16("Epsilon");
+  form.fields[7].value = ASCIIToUTF16("Zeta");
   EXPECT_TRUE(form_manager.FillForm(form, input_element));
 
   // Verify the filled elements.
@@ -843,9 +862,21 @@ TEST_F(FormManagerTest, FillForm) {
 
   // Read-only fields are not filled.
   WebInputElement readonly =
-  document.getElementById("readonly").to<WebInputElement>();
+      document.getElementById("readonly").to<WebInputElement>();
   EXPECT_FALSE(readonly.isAutofilled());
   EXPECT_TRUE(readonly.value().isEmpty());
+
+  // |visibility:hidden| fields are not filled.
+  WebInputElement invisible =
+      document.getElementById("invisible").to<WebInputElement>();
+  EXPECT_FALSE(invisible.isAutofilled());
+  EXPECT_TRUE(invisible.value().isEmpty());
+
+  // |display:none| fields are not filled.
+  WebInputElement display_none =
+      document.getElementById("displaynone").to<WebInputElement>();
+  EXPECT_FALSE(display_none.isAutofilled());
+  EXPECT_TRUE(display_none.value().isEmpty());
 }
 
 TEST_F(FormManagerTest, PreviewForm) {
