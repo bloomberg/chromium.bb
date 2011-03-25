@@ -50,8 +50,20 @@
 #include "net/ocsp/nss_ocsp.h"
 #endif  // defined(USE_NSS)
 #include "net/proxy/proxy_script_fetcher_impl.h"
+#include "webkit/glue/webkit_glue.h"
 
 namespace {
+
+// Custom URLRequestContext used by requests which aren't associated with a
+// particular profile. We need to use a subclass of URLRequestContext in order
+// to provide the correct User-Agent.
+class URLRequestContextWithUserAgent : public net::URLRequestContext {
+ public:
+  virtual const std::string& GetUserAgent(
+      const GURL& url) const OVERRIDE {
+    return webkit_glue::GetUserAgent(url);
+  }
+};
 
 net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -186,7 +198,8 @@ class LoggingNetworkChangeObserver
 scoped_refptr<net::URLRequestContext>
 ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
                                    net::NetLog* net_log) {
-  scoped_refptr<net::URLRequestContext> context(new net::URLRequestContext);
+  scoped_refptr<net::URLRequestContext> context(
+      new URLRequestContextWithUserAgent);
   context->set_net_log(net_log);
   context->set_host_resolver(globals->host_resolver.get());
   context->set_cert_verifier(globals->cert_verifier.get());
@@ -205,7 +218,8 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
 scoped_refptr<net::URLRequestContext>
 ConstructSystemRequestContext(IOThread::Globals* globals,
                               net::NetLog* net_log) {
-  scoped_refptr<net::URLRequestContext> context(new net::URLRequestContext);
+  scoped_refptr<net::URLRequestContext> context(
+      new URLRequestContextWithUserAgent);
   context->set_net_log(net_log);
   context->set_host_resolver(globals->host_resolver.get());
   context->set_cert_verifier(globals->cert_verifier.get());
