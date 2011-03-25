@@ -669,7 +669,13 @@ void CleanupAllWindows(PluginObject *obj) {
 void ReplaceContentWindow(HWND content_hwnd,
                           HWND containing_hwnd,
                           int width, int height) {
-  ::ShowWindow(content_hwnd, SW_HIDE);
+  // In Chrome browser, IPC might block this call.  This doesn't happen with
+  // firefox or internet explorer.  For Chome, do not hide the window.  Haven't
+  // any artifacts with this change when exiting from full screen.
+  PluginObject *obj = PluginObject::GetPluginProperty(content_hwnd);
+  if (obj && !obj->IsChrome()) {
+    ::ShowWindow(content_hwnd, SW_HIDE);
+  }
   LONG_PTR style = ::GetWindowLongPtr(content_hwnd, GWL_STYLE);
   style |= WS_CHILD;
   ::SetWindowLongPtr(content_hwnd, GWL_STYLE, style);
