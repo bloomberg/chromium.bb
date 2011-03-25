@@ -4,8 +4,8 @@
 # be found in the LICENSE file.
 
 # Script assumed to be run in native_client/
+cd "$(cygpath "${PWD}")"
 if [[ ${PWD} != */native_client ]]; then
-  echo ${PWD}
   echo "ERROR: must be run in native_client!"
   exit 1
 fi
