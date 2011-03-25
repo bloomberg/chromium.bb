@@ -262,6 +262,11 @@ const char kDisableInternalFlash[]          = "disable-internal-flash";
 // This flag can be overidden by the "enable-ipv6" flag.
 const char kDisableIPv6[]                   = "disable-ipv6";
 
+// Disables IP Pooling within the networks stack (SPDY only).  When a connection
+// is needed for a domain which shares an IP with an existing connection,
+// attempt to use the existing connection.
+const char kDisableIPPooling[]              = "disable-ip-pooling";
+
 // Disable speculative TCP/IP preconnection.
 const char kDisablePreconnect[]             = "disable-preconnect";
 
@@ -492,6 +497,11 @@ const char kEnableInBrowserThumbnailing[]   = "enable-in-browser-thumbnailing";
 // allow support independent of application testing.
 // This flag overrides "disable-ipv6" which appears elswhere in this file.
 const char kEnableIPv6[]                    = "enable-ipv6";
+
+// Enables IP Pooling within the networks stack (SPDY only).  When a connection
+// is needed for a domain which shares an IP with an existing connection,
+// attempt to use the existing connection.
+const char kEnableIPPooling[]               = "enable-ip-pooling";
 
 // Allows reporting memory info (JS heap size) to page.
 const char kEnableMemoryInfo[]              = "enable-memory-info";

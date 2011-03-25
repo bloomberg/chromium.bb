@@ -884,7 +884,7 @@ int CombineFrames(const spdy::SpdyFrame** frames, int num_frames,
 }
 
 SpdySessionDependencies::SpdySessionDependencies()
-    : host_resolver(new MockHostResolver),
+    : host_resolver(new MockCachingHostResolver),
       cert_verifier(new CertVerifier),
       proxy_service(ProxyService::CreateDirect()),
       ssl_config_service(new SSLConfigServiceDefaults),
