@@ -285,9 +285,8 @@ CloudPrintURLFetcherRetryBackoffTest::HandleRawData(const URLFetcher* source,
 }
 
 void CloudPrintURLFetcherRetryBackoffTest::OnRequestGiveUp() {
-  const TimeDelta one_second = TimeDelta::FromMilliseconds(1000);
-  // It takes more than 1 second to finish all 11 requests.
-  EXPECT_TRUE(Time::Now() - start_time_ >= one_second);
+  // It takes more than 200 ms to finish all 11 requests.
+  EXPECT_TRUE(Time::Now() - start_time_ >= TimeDelta::FromMilliseconds(200));
   io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
 
@@ -319,10 +318,11 @@ TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
 
   // Registers an entry for test url. It only allows 3 requests to be sent
   // in 200 milliseconds.
+  net::URLRequestThrottlerManager* manager =
+      net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(200, 3, 1, 2.0, 0.0, 256));
-  net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
-      url, entry);
+      new net::URLRequestThrottlerEntry(manager, 200, 3, 1, 2.0, 0.0, 256));
+  manager->OverrideEntryForTests(url, entry);
 
   CreateFetcher(url, 11);
 
@@ -342,10 +342,11 @@ TEST_F(CloudPrintURLFetcherRetryBackoffTest, FLAKY_GiveUp) {
   //     new_backoff = 2.0 * old_backoff + 0
   // and maximum backoff time is 256 milliseconds.
   // Maximum retries allowed is set to 11.
+  net::URLRequestThrottlerManager* manager =
+      net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(200, 3, 1, 2.0, 0.0, 256));
-  net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
-      url, entry);
+      new net::URLRequestThrottlerEntry(manager, 200, 3, 1, 2.0, 0.0, 256));
+  manager->OverrideEntryForTests(url, entry);
 
   CreateFetcher(url, 11);
 

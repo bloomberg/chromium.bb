@@ -576,10 +576,11 @@ TEST_F(URLFetcherProtectTest, Overload) {
 
   // Registers an entry for test url. It only allows 3 requests to be sent
   // in 200 milliseconds.
+  net::URLRequestThrottlerManager* manager =
+      net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(200, 3, 1, 2.0, 0.0, 256));
-  net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
-      url, entry);
+      new net::URLRequestThrottlerEntry(manager, 200, 3, 1, 2.0, 0.0, 256));
+  manager->OverrideEntryForTests(url, entry);
 
   CreateFetcher(url);
 
@@ -598,10 +599,11 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
   //     new_backoff = 2.0 * old_backoff + 0
   // and maximum backoff time is 256 milliseconds.
   // Maximum retries allowed is set to 11.
+  net::URLRequestThrottlerManager* manager =
+      net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(200, 3, 1, 2.0, 0.0, 256));
-  net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
-      url, entry);
+      new net::URLRequestThrottlerEntry(manager, 200, 3, 1, 2.0, 0.0, 256));
+  manager->OverrideEntryForTests(url, entry);
 
   CreateFetcher(url);
 
@@ -620,12 +622,14 @@ TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
   //     new_backoff = 2.0 * old_backoff + 0
   // and maximum backoff time is 150000 milliseconds.
   // Maximum retries allowed is set to 11.
+  net::URLRequestThrottlerManager* manager =
+      net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(200, 3, 100, 2.0, 0.0, 150000));
+      new net::URLRequestThrottlerEntry(
+          manager, 200, 3, 100, 2.0, 0.0, 150000));
   // Total time if *not* for not doing automatic backoff would be 150s.
   // In reality it should be "as soon as server responds".
-  net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
-      url, entry);
+  manager->OverrideEntryForTests(url, entry);
 
   CreateFetcher(url);
 
@@ -664,10 +668,12 @@ TEST_F(URLFetcherCancelTest, ReleasesContext) {
   //     new_backoff = 2.0 * old_backoff + 0
   // The initial backoff is 2 seconds and maximum backoff is 4 seconds.
   // Maximum retries allowed is set to 2.
+  net::URLRequestThrottlerManager* manager =
+      net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(200, 3, 2000, 2.0, 0.0, 4000));
-  net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
-      url, entry);
+      new net::URLRequestThrottlerEntry(
+          manager, 200, 3, 2000, 2.0, 0.0, 4000));
+  manager->OverrideEntryForTests(url, entry);
 
   // Create a separate thread that will create the URLFetcher.  The current
   // (main) thread will do the IO, and when the fetch is complete it will
@@ -692,10 +698,12 @@ TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
   // Register an entry for test url.
   // Using a sliding window of 4 seconds, and max of 1 request, under a fast
   // run we expect to have a 4 second delay when posting the Start task.
+  net::URLRequestThrottlerManager* manager =
+      net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(4000, 1, 2000, 2.0, 0.0, 4000));
-  net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
-      url, entry);
+      new net::URLRequestThrottlerEntry(
+          manager, 4000, 1, 2000, 2.0, 0.0, 4000));
+  manager->OverrideEntryForTests(url, entry);
   // Fake that a request has just started.
   entry->ReserveSendingTimeForNextRequest(base::TimeTicks());
 
