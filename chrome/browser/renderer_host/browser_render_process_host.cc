@@ -922,12 +922,15 @@ TransportDIB* BrowserRenderProcessHost::MapTransportDIB(
   // for each.
   return widget_helper_->MapTransportDIB(dib_id);
 #elif defined(OS_POSIX)
-  return TransportDIB::Map(dib_id);
+  return TransportDIB::Map(dib_id.shmkey);
 #endif  // defined(OS_POSIX)
 }
 
 TransportDIB* BrowserRenderProcessHost::GetTransportDIB(
     TransportDIB::Id dib_id) {
+  if (!TransportDIB::is_valid_id(dib_id))
+    return NULL;
+
   const std::map<TransportDIB::Id, TransportDIB*>::iterator
       i = cached_dibs_.find(dib_id);
   if (i != cached_dibs_.end()) {

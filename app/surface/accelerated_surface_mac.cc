@@ -307,7 +307,7 @@ TransportDIB::Handle AcceleratedSurface::SetTransportDIBSize(
   if (dib_alloc_callback_.get()) {
     dib_alloc_callback_->Run(dib_size, &dib_handle);
   }
-  if (!TransportDIB::is_valid(dib_handle)) {
+  if (!TransportDIB::is_valid_handle(dib_handle)) {
     // If the allocator fails, it means the DIB was not created in the browser,
     // so there is no need to run the deallocator here.
     return TransportDIB::DefaultHandleValue();

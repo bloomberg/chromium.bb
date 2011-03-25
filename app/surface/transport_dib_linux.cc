@@ -18,8 +18,7 @@
 static void *const kInvalidAddress = (void*) -1;
 
 TransportDIB::TransportDIB()
-    : key_(-1),
-      address_(kInvalidAddress),
+    : address_(kInvalidAddress),
       x_shm_(0),
       display_(NULL),
       size_(0) {
@@ -59,7 +58,7 @@ TransportDIB* TransportDIB::Create(size_t size, uint32 sequence_num) {
 
   TransportDIB* dib = new TransportDIB;
 
-  dib->key_ = shmkey;
+  dib->key_.shmkey = shmkey;
   dib->address_ = address;
   dib->size_ = size;
   return dib;
@@ -76,13 +75,18 @@ TransportDIB* TransportDIB::Map(Handle handle) {
 // static
 TransportDIB* TransportDIB::CreateWithHandle(Handle shmkey) {
   TransportDIB* dib = new TransportDIB;
-  dib->key_ = shmkey;
+  dib->key_.shmkey = shmkey;
   return dib;
 }
 
 // static
-bool TransportDIB::is_valid(Handle dib) {
+bool TransportDIB::is_valid_handle(Handle dib) {
   return dib >= 0;
+}
+
+// static
+bool TransportDIB::is_valid_id(Id id) {
+  return id.shmkey != -1;
 }
 
 skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
@@ -95,16 +99,16 @@ skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
 }
 
 bool TransportDIB::Map() {
-  if (!is_valid(key_))
+  if (!is_valid_id(key_))
     return false;
   if (address_ != kInvalidAddress)
     return true;
 
   struct shmid_ds shmst;
-  if (shmctl(key_, IPC_STAT, &shmst) == -1)
+  if (shmctl(key_.shmkey, IPC_STAT, &shmst) == -1)
     return false;
 
-  void* address = shmat(key_, NULL /* desired address */, 0 /* flags */);
+  void* address = shmat(key_.shmkey, NULL /* desired address */, 0 /* flags */);
   if (address == kInvalidAddress)
     return false;
 
@@ -123,12 +127,12 @@ TransportDIB::Id TransportDIB::id() const {
 }
 
 TransportDIB::Handle TransportDIB::handle() const {
-  return key_;
+  return key_.shmkey;
 }
 
 XID TransportDIB::MapToX(Display* display) {
   if (!x_shm_) {
-    x_shm_ = ui::AttachSharedMemory(display, key_);
+    x_shm_ = ui::AttachSharedMemory(display, key_.shmkey);
     display_ = display;
   }
 

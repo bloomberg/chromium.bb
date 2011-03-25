@@ -42,7 +42,7 @@ void AcceleratedSurfaceContainerMac::SetSizeAndTransportDIB(
     int32 width,
     int32 height,
     TransportDIB::Handle transport_dib) {
-  if (TransportDIB::is_valid(transport_dib)) {
+  if (TransportDIB::is_valid_handle(transport_dib)) {
     transport_dib_.reset(TransportDIB::Map(transport_dib));
     EnqueueTextureForDeletion();
     width_ = width;

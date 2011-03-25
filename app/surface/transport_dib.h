@@ -56,7 +56,7 @@ class TransportDIB {
           sequence_num(seq_num) {
     }
 
-    bool operator< (const HandleAndSequenceNum& other) const {
+    bool operator<(const HandleAndSequenceNum& other) const {
       // Use the lexicographic order on the tuple <handle, sequence_num>.
       if (other.handle != handle)
         return other.handle < handle;
@@ -95,7 +95,17 @@ class TransportDIB {
   }
 #elif defined(USE_X11)
   typedef int Handle;  // These two ints are SysV IPC shared memory keys
-  typedef int Id;
+  struct Id {
+    // Ensure that default initialized Ids are invalid.
+    Id() : shmkey(-1) {
+    }
+
+    bool operator<(const Id& other) const {
+      return shmkey < other.shmkey;
+    }
+
+    int shmkey;
+  };
 
   // Returns a default, invalid handle, that is meant to indicate a missing
   // Transport DIB.
@@ -129,7 +139,10 @@ class TransportDIB {
   static TransportDIB* CreateWithHandle(Handle handle);
 
   // Returns true if the handle is valid.
-  static bool is_valid(Handle dib);
+  static bool is_valid_handle(Handle dib);
+
+  // Returns true if the ID refers to a valid dib.
+  static bool is_valid_id(Id id);
 
   // Returns a canvas using the memory of this TransportDIB. The returned
   // pointer will be owned by the caller. The bitmap will be of the given size,
@@ -176,7 +189,7 @@ class TransportDIB {
   base::SharedMemory shared_memory_;
   uint32 sequence_num_;
 #elif defined(USE_X11)
-  int key_;  // SysV shared memory id
+  Id key_;  // SysV shared memory id
   void* address_;  // mapped address
   XSharedMemoryId x_shm_;  // X id for the shared segment
   Display* display_;  // connection to the X server

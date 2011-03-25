@@ -51,7 +51,7 @@ void WebPluginAcceleratedSurfaceProxy::SetSize(const gfx::Size& size) {
     plugin_proxy_->SetAcceleratedSurface(window_handle_, size, io_surface_id);
   } else {
     TransportDIB::Handle transport_dib = surface_->SetTransportDIBSize(size);
-    if (TransportDIB::is_valid(transport_dib)) {
+    if (TransportDIB::is_valid_handle(transport_dib)) {
       plugin_proxy_->SetAcceleratedDIB(window_handle_, size, transport_dib);
     }
   }

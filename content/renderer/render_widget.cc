@@ -581,6 +581,9 @@ void RenderWidget::DoDeferredUpdate() {
   gfx::Rect scroll_damage = update.GetScrollDamage();
   gfx::Rect bounds = update.GetPaintBounds().Union(scroll_damage);
 
+  // Compositing the page may disable accelerated compositing.
+  bool accelerated_compositing_was_active = is_accelerated_compositing_active_;
+
   // A plugin may be able to do an optimized paint. First check this, in which
   // case we can skip all of the bitmap generation and regular paint code.
   // This optimization allows PPAPI plugins that declare themselves on top of
@@ -592,7 +595,7 @@ void RenderWidget::DoDeferredUpdate() {
   // This optimization only works when the entire invalid region is contained
   // within the plugin. There is a related optimization in PaintRect for the
   // case where there may be multiple invalid regions.
-  TransportDIB::Id dib_id = TransportDIB::Id();
+  TransportDIB::Id dib_id;
   TransportDIB* dib = NULL;
   std::vector<gfx::Rect> copy_rects;
   gfx::Rect optimized_copy_rect, optimized_copy_location;
@@ -644,7 +647,7 @@ void RenderWidget::DoDeferredUpdate() {
   params.bitmap_rect = bounds;
   params.dx = update.scroll_delta.x();
   params.dy = update.scroll_delta.y();
-  if (is_accelerated_compositing_active_) {
+  if (accelerated_compositing_was_active) {
     // If painting is done via the gpu process then we clear out all damage
     // rects to save the browser process from doing unecessary work.
     params.scroll_rect = gfx::Rect();
@@ -902,8 +905,8 @@ void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
                                     int tag,
                                     const gfx::Size& page_size,
                                     const gfx::Size& desired_size) {
-  if (!webwidget_ || !TransportDIB::is_valid(dib_handle)) {
-    if (TransportDIB::is_valid(dib_handle)) {
+  if (!webwidget_ || !TransportDIB::is_valid_handle(dib_handle)) {
+    if (TransportDIB::is_valid_handle(dib_handle)) {
       // Close our unused handle.
 #if defined(OS_WIN)
       ::CloseHandle(dib_handle);

@@ -412,7 +412,7 @@ void WebPluginProxy::UpdateGeometry(
   // Update the buffers before doing anything that could call into plugin code,
   // so that we don't process buffer changes out of order if plugins make
   // synchronous calls that lead to nested UpdateGeometry calls.
-  if (TransportDIB::is_valid(windowless_buffer)) {
+  if (TransportDIB::is_valid_handle(windowless_buffer)) {
     // The plugin's rect changed, so now we have a new buffer to draw into.
     SetWindowlessBuffer(windowless_buffer, background_buffer, window_rect);
   }

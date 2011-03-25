@@ -111,7 +111,7 @@ TransportDIB* MockRenderProcessHost::GetTransportDIB(TransportDIB::Id dib_id) {
   // one from a dib_id.
   transport_dib_ = TransportDIB::Create(100 * 100 * 4, 0);
 #elif defined(OS_POSIX)
-  transport_dib_ = TransportDIB::Map(dib_id);
+  transport_dib_ = TransportDIB::Map(dib_id.shmkey);
 #endif
 
   return transport_dib_;

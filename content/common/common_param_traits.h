@@ -383,6 +383,24 @@ struct ParamTraits<TransportDIB::Id> {
 };
 #endif
 
+#if defined(USE_X11)
+template<>
+struct ParamTraits<TransportDIB::Id> {
+  typedef TransportDIB::Id param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.shmkey);
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    return ReadParam(m, iter, &r->shmkey);
+  }
+  static void Log(const param_type& p, std::string* l) {
+    l->append("TransportDIB(");
+    LogParam(p.shmkey, l);
+    l->append(")");
+  }
+};
+#endif
+
 template <>
 struct SimilarTypeTraits<WebKit::WebTextDirection> {
   typedef int Type;

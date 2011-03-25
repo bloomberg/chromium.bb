@@ -564,7 +564,7 @@ PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
                                                         &dib_handle);
   if (!RenderThread::current()->Send(msg))
     return NULL;
-  if (!TransportDIB::is_valid(dib_handle))
+  if (!TransportDIB::is_valid_handle(dib_handle))
     return NULL;
 
   TransportDIB* dib = TransportDIB::Map(dib_handle);

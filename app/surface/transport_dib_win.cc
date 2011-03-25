@@ -56,8 +56,13 @@ TransportDIB* TransportDIB::CreateWithHandle(Handle handle) {
 }
 
 // static
-bool TransportDIB::is_valid(Handle dib) {
+bool TransportDIB::is_valid_handle(Handle dib) {
   return dib != NULL;
+}
+
+// static
+bool TransportDIB::is_valid_id(TransportDIB::Id id) {
+  return is_valid_handle(id.handle);
 }
 
 skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
@@ -72,7 +77,7 @@ skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
 }
 
 bool TransportDIB::Map() {
-  if (!is_valid(handle()))
+  if (!is_valid_handle(handle()))
     return false;
   if (memory())
     return true;
