@@ -126,24 +126,13 @@ class ImporterTest : public testing::Test {
 
 const int kMaxPathSize = 5;
 
-typedef struct {
+struct BookmarkList {
   const bool in_toolbar;
   const size_t path_size;
   const wchar_t* path[kMaxPathSize];
   const wchar_t* title;
   const char* url;
-} BookmarkList;
-
-typedef struct {
-  const char* origin;
-  const char* action;
-  const char* realm;
-  const wchar_t* username_element;
-  const wchar_t* username;
-  const wchar_t* password_element;
-  const wchar_t* password;
-  bool blacklisted;
-} PasswordList;
+};
 
 // Returns true if the |entry| is in the |list|.
 bool FindBookmarkEntry(const ProfileWriter::BookmarkEntry& entry,
@@ -504,6 +493,17 @@ static const BookmarkList kFirefox2Bookmarks[] = {
    "mailto:username@host"},
 };
 
+struct PasswordList {
+  const char* origin;
+  const char* action;
+  const char* realm;
+  const wchar_t* username_element;
+  const wchar_t* username;
+  const wchar_t* password_element;
+  const wchar_t* password;
+  bool blacklisted;
+};
+
 static const PasswordList kFirefox2Passwords[] = {
   {"https://www.google.com/", "", "https://www.google.com/",
     L"", L"", L"", L"", true},
@@ -517,10 +517,10 @@ static const PasswordList kFirefox2Passwords[] = {
     L"loginuser", L"hello", L"", L"world", false},
 };
 
-typedef struct {
+struct KeywordList {
   const wchar_t* keyword;
   const char* url;
-} KeywordList;
+};
 
 static const KeywordList kFirefox2Keywords[] = {
   // Searh plugins
