@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/default_plugin/plugin_database_handler.h"
-
-// The placing of the ATL headers is intentional to avoid errors
+// For WinDDK ATL compatibility, these ATL headers must come first.
 #include <atlbase.h>
 #include <atlwin.h>
+
+#include "chrome/default_plugin/plugin_database_handler.h"
 
 #include "libxml/parser.h"
 #include "libxml/xpath.h"

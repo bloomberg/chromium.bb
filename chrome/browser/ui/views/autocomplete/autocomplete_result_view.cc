@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/autocomplete/autocomplete_result_view.h"
-
-// Intentional header placing, including ATL, to avoid errors
-#include "build/build_config.h"  // NOLINT
-
+// For WinDDK ATL compatibility, these ATL headers must come first.
+#include "build/build_config.h"
 #if defined(OS_WIN)
 #include <atlbase.h>  // NOLINT
 #include <atlwin.h>  // NOLINT
 #endif
+
+#include "chrome/browser/ui/views/autocomplete/autocomplete_result_view.h"
+
+#include <algorithm>  // NOLINT
 
 #include "base/i18n/bidi_line_iterator.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_result_view_model.h"
