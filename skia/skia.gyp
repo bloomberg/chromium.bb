@@ -15,6 +15,7 @@
         '../third_party/skia/gpu/src/GrBufferAllocPool.h',
         '../third_party/skia/gpu/src/GrClip.cpp',
         '../third_party/skia/gpu/src/GrContext.cpp',
+        '../third_party/skia/gpu/src/GrCreatePathRenderer_none.cpp',
         '../third_party/skia/gpu/src/GrDrawTarget.cpp',
         '../third_party/skia/gpu/src/GrGLIndexBuffer.cpp',
         '../third_party/skia/gpu/src/GrGLInterface.cpp',
