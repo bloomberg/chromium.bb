@@ -293,8 +293,9 @@ void RenderViewHost::FirePageBeforeUnload(bool for_cross_site_transition) {
 void RenderViewHost::ClosePage(bool for_cross_site_transition,
                                int new_render_process_host_id,
                                int new_request_id) {
-  // In most cases, this will not be set to false afterward.  Either the tab
-  // will be closed, or a pending RenderViewHost will replace this one.
+  // This will be set back to false in OnClosePageACK, just before we close the
+  // tab or replace it with a pending RVH.  There are some cases (such as 204
+  // errors) where we'll continue to show this RVH.
   is_waiting_for_unload_ack_ = true;
   // Start the hang monitor in case the renderer hangs in the unload handler.
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
@@ -317,6 +318,18 @@ void RenderViewHost::ClosePage(bool for_cross_site_transition,
     // the page.  We must notify the ResourceDispatcherHost on the IO thread,
     // which we will do through the RenderProcessHost's widget helper.
     process()->CrossSiteClosePageACK(params);
+  }
+}
+
+void RenderViewHost::OnClosePageACK(bool for_cross_site_transition) {
+  StopHangMonitorTimeout();
+  is_waiting_for_unload_ack_ = false;
+
+  // If this ClosePageACK is not for a cross-site transition, then it is for an
+  // attempt to close the tab.  We have now finished the unload handler and can
+  // proceed with closing the tab.
+  if (!for_cross_site_transition) {
+    ClosePageIgnoringUnloadEvents();
   }
 }
 

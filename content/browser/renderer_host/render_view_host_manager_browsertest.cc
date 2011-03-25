@@ -287,3 +287,61 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   browser()->CloseWindow();
   BrowserClosedObserver wait_for_close(browser());
 }
+
+// Test for crbug.com/76666.  A cross-site navigation that fails with a 204
+// error should not make us ignore future renderer-initiated navigations.
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
+  // Start two servers with different sites.
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS,
+      FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  // Load a page with links that open in a new window.
+  // The links will point to the HTTPS server.
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/click-noreferrer-links.html",
+      https_server.host_port_pair(),
+      &replacement_path));
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server()->GetURL(replacement_path));
+
+  // Get the original SiteInstance for later comparison.
+  scoped_refptr<SiteInstance> orig_site_instance(
+      browser()->GetSelectedTabContents()->GetSiteInstance());
+  EXPECT_TRUE(orig_site_instance != NULL);
+
+  // Load a cross-site page that fails with a 204 error.
+  ui_test_utils::NavigateToURL(browser(), https_server.GetURL("nocontent"));
+
+  // We should still be looking at the normal page.
+  scoped_refptr<SiteInstance> post_nav_site_instance(
+      browser()->GetSelectedTabContents()->GetSiteInstance());
+  EXPECT_EQ(orig_site_instance, post_nav_site_instance);
+  EXPECT_EQ("/files/click-noreferrer-links.html",
+            browser()->GetSelectedTabContents()->GetURL().path());
+
+  // Renderer-initiated navigations should work.
+  bool success = false;
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"window.domAutomationController.send(clickNoRefLink());",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Wait for the cross-site transition in the current tab to finish.
+  ui_test_utils::WaitForLoadStop(browser()->GetSelectedTabContents());
+
+  // Opens in same tab.
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(0, browser()->selected_index());
+  EXPECT_EQ("/files/title2.html",
+            browser()->GetSelectedTabContents()->GetURL().path());
+
+  // Should have the same SiteInstance.
+  scoped_refptr<SiteInstance> noref_site_instance(
+      browser()->GetSelectedTabContents()->GetSiteInstance());
+  EXPECT_EQ(orig_site_instance, noref_site_instance);
+}

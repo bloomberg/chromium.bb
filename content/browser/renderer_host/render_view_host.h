@@ -179,6 +179,9 @@ class RenderViewHost : public RenderWidgetHost {
                  int new_render_process_host_id,
                  int new_request_id);
 
+  // Called by ResourceDispatcherHost after the ClosePageACK is received.
+  void OnClosePageACK(bool for_cross_site_transition);
+
   // Close the page ignoring whether it has unload events registers.
   // This is called after the beforeunload and unload events have fired
   // and the user has agreed to continue with closing the page.

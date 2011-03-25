@@ -659,13 +659,15 @@ void ResourceDispatcherHost::OnClosePageACK(
         info->cross_site_handler()->ResumeResponse();
     }
   } else {
-    // This is a tab close, so just forward the message to close it.
+    // This is a tab close, so we will close the tab in OnClosePageACK.
     DCHECK(params.new_render_process_host_id == -1);
     DCHECK(params.new_request_id == -1);
-    CallRenderViewHost(params.closing_process_id,
-                       params.closing_route_id,
-                       &RenderViewHost::ClosePageIgnoringUnloadEvents);
   }
+  // Update the RenderViewHost's internal state after the ACK.
+  CallRenderViewHost(params.closing_process_id,
+                     params.closing_route_id,
+                     &RenderViewHost::OnClosePageACK,
+                     params.for_cross_site_transition);
 }
 
 // We are explicitly forcing the download of 'url'.
