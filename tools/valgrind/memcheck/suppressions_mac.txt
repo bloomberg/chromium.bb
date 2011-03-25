@@ -1494,3 +1494,69 @@
    fun:-[NSAnimationManager animationTimerFired:]
    fun:__NSFireTimer
 }
+{
+   bug_77388_a
+   Memcheck:Cond
+   ...
+   fun:PrivateMPEntryPoint
+   fun:_pthread_start
+   fun:thread_start
+}
+{
+   bug_77388_b
+   Memcheck:Value4
+   ...
+   fun:PrivateMPEntryPoint
+   fun:_pthread_start
+   fun:thread_start
+}
+{
+   bug_77388_c
+   Memcheck:Param
+   access_extended(entries)
+   fun:accessx_np
+   ...
+   fun:PrivateMPEntryPoint
+   fun:_pthread_start
+   fun:thread_start
+}
+
+{
+   bug_77388_d
+   Memcheck:Cond
+   fun:TestAndSetClear
+   fun:TestAndClear
+   fun:_ZN5TNode28UnregisterChangeNotificationERK11TCountedPtrI21TClientChangeNotifierEmb
+   fun:NodeUnregisterChangeNotification
+   fun:NodeUnRegisterChildChangedNotification
+   fun:-[NSNavFBENode _unregisterForChildChangedNotifications]
+   fun:_commonTearDown_NSNavFBENode
+   fun:-[NSNavFBENode dealloc]
+   fun:CFRelease
+   fun:__CFSetDeallocate
+   fun:_CFRelease
+   fun:-[NSOutlineView dealloc]
+   fun:-[NSTrackableOutlineView dealloc]
+}
+{
+   bug_77388_e
+   Memcheck:Cond
+   fun:TestAndSetClear
+   fun:TestAndSet
+   fun:_ZN5TNode17HandleSyncStartedEv
+   fun:_ZN5TNode24GetNetworkSidebarBrowserEv
+   fun:_ZN5TNode14GetNetworkNodeEm
+   fun:_ZN5TNode24GetSpecialNodeWithStatusEmRKP17OpaqueNodeRequestmR8TNodePtr
+   fun:NodeCopySpecialFolder
+   fun:+[NSNavFBENode _virtualNodeOfType:]
+   fun:+[NSNavFBENode copyStandardSidebarNodes]
+   fun:-[NSNavSidebarController load]
+   fun:-[NSNavView loadSidebar]
+   fun:-[NSSavePanel _initSidebarAndPopups]
+   fun:-[NSSavePanel _initPanelCommon]
+   fun:-[NSSavePanel initWithContentRect:styleMask:backing:defer:]
+   fun:+[NSSavePanel _crunchyRawUnbonedPanel]
+   fun:_ZN20SelectFileDialogImpl10SelectFileEN16SelectFileDialog4TypeERKSbItN4base20string16_char_traitsESaItEERK8FilePathPKNS0_12FileTypeInfoEiRKSsP8NSWindowPv
+   fun:_ZN15DownloadManager24OnPathExistenceAvailableEP18DownloadCreateInfo
+}
+
