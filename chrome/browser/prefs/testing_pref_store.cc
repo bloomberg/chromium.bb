@@ -14,7 +14,12 @@ TestingPrefStore::TestingPrefStore()
 TestingPrefStore::~TestingPrefStore() {}
 
 PrefStore::ReadResult TestingPrefStore::GetValue(const std::string& key,
-                                                 Value** value) const {
+                                                 const Value** value) const {
+  return prefs_.GetValue(key, value) ? READ_OK : READ_NO_VALUE;
+}
+
+PrefStore::ReadResult TestingPrefStore::GetMutableValue(const std::string& key,
+                                                        Value** value) {
   return prefs_.GetValue(key, value) ? READ_OK : READ_NO_VALUE;
 }
 
@@ -90,7 +95,7 @@ void TestingPrefStore::SetBoolean(const std::string& key, bool value) {
 
 bool TestingPrefStore::GetString(const std::string& key,
                                  std::string* value) const {
-  Value* stored_value;
+  const Value* stored_value;
   if (!prefs_.GetValue(key, &stored_value) || !stored_value)
     return false;
 
@@ -98,7 +103,7 @@ bool TestingPrefStore::GetString(const std::string& key,
 }
 
 bool TestingPrefStore::GetInteger(const std::string& key, int* value) const {
-  Value* stored_value;
+  const Value* stored_value;
   if (!prefs_.GetValue(key, &stored_value) || !stored_value)
     return false;
 
@@ -106,7 +111,7 @@ bool TestingPrefStore::GetInteger(const std::string& key, int* value) const {
 }
 
 bool TestingPrefStore::GetBoolean(const std::string& key, bool* value) const {
-  Value* stored_value;
+  const Value* stored_value;
   if (!prefs_.GetValue(key, &stored_value) || !stored_value)
     return false;
 

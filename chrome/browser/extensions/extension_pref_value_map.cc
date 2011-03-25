@@ -151,7 +151,7 @@ const Value* ExtensionPrefValueMap::GetEffectivePrefValue(
   if (winner == entries_.end())
     return NULL;
 
-  Value* value = NULL;
+  const Value* value = NULL;
   const std::string& ext_id = winner->first;
   if (incognito)
     GetExtensionPrefValueMap(ext_id, true)->GetValue(key, &value);
@@ -179,7 +179,7 @@ ExtensionPrefValueMap::GetEffectivePrefValueController(
     if (install_time < winners_install_time)
       continue;
 
-    Value* value = NULL;
+    const Value* value = NULL;
     const PrefValueMap* prefs = GetExtensionPrefValueMap(ext_id, false);
     if (prefs->GetValue(key, &value)) {
       winner = i;

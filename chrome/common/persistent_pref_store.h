@@ -34,6 +34,16 @@ class PersistentPrefStore : public PrefStore {
     PREF_READ_ERROR_FILE_NOT_SPECIFIED
   };
 
+  // Equivalent to PrefStore::GetValue but returns a mutable value.
+  virtual ReadResult GetMutableValue(const std::string& key,
+                                     Value** result) = 0;
+
+  // Triggers a value changed notification. This function needs to be called
+  // if one retrieves a list or dictionary with GetMutableValue and change its
+  // value. SetValue takes care of notifications itself. Note that
+  // ReportValueChanged will trigger notifications even if nothing has changed.
+  virtual void ReportValueChanged(const std::string& key) = 0;
+
   // Sets a |value| for |key| in the store. Assumes ownership of |value|, which
   // must be non-NULL.
   virtual void SetValue(const std::string& key, Value* value) = 0;
@@ -50,9 +60,6 @@ class PersistentPrefStore : public PrefStore {
 
   // Removes the value for |key|.
   virtual void RemoveValue(const std::string& key) = 0;
-
-  // TODO(battre) Remove this function.
-  virtual void ReportValueChanged(const std::string& key) = 0;
 
   // Whether the store is in a pseudo-read-only mode where changes are not
   // actually persisted to disk.  This happens in some cases when there are

@@ -55,7 +55,8 @@ class PrefStore : public base::RefCounted<PrefStore> {
   // Get the value for a given preference |key| and stores it in |result|.
   // |result| is only modified if the return value is READ_OK. Ownership of the
   // |result| value remains with the PrefStore.
-  virtual ReadResult GetValue(const std::string& key, Value** result) const = 0;
+  virtual ReadResult GetValue(const std::string& key,
+                              const Value** result) const = 0;
 
  protected:
   friend class base::RefCounted<PrefStore>;

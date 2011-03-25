@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ ValueMapPrefStore::ValueMapPrefStore() {}
 ValueMapPrefStore::~ValueMapPrefStore() {}
 
 PrefStore::ReadResult ValueMapPrefStore::GetValue(const std::string& key,
-                                                  Value** value) const {
+                                                  const Value** value) const {
   return prefs_.GetValue(key, value) ? READ_OK : READ_NO_VALUE;
 }
 

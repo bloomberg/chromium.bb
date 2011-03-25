@@ -42,7 +42,8 @@ class ConfigurationPolicyPrefKeeper
   virtual ~ConfigurationPolicyPrefKeeper();
 
   // Get a preference value.
-  PrefStore::ReadResult GetValue(const std::string& key, Value** result) const;
+  PrefStore::ReadResult GetValue(const std::string& key,
+                                 const Value** result) const;
 
   // Compute the set of preference names that are different in |keeper|. This
   // includes preferences that are missing in either one.
@@ -311,8 +312,8 @@ ConfigurationPolicyPrefKeeper::~ConfigurationPolicyPrefKeeper() {
 
 PrefStore::ReadResult
 ConfigurationPolicyPrefKeeper::GetValue(const std::string& key,
-                                        Value** result) const {
-  Value* stored_value = NULL;
+                                        const Value** result) const {
+  const Value* stored_value = NULL;
   if (!prefs_.GetValue(key, &stored_value))
     return PrefStore::READ_NO_VALUE;
 
@@ -777,7 +778,7 @@ bool ConfigurationPolicyPrefStore::IsInitializationComplete() const {
 
 PrefStore::ReadResult
 ConfigurationPolicyPrefStore::GetValue(const std::string& key,
-                                       Value** value) const {
+                                       const Value** value) const {
   if (policy_keeper_.get())
     return policy_keeper_->GetValue(key, value);
 

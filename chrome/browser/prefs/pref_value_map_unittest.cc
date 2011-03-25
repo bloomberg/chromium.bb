@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@ class PrefValueMapTest : public testing::Test {
 
 TEST_F(PrefValueMapTest, SetValue) {
   PrefValueMap map;
-  Value* result = NULL;
+  const Value* result = NULL;
   EXPECT_FALSE(map.GetValue("key", &result));
   EXPECT_FALSE(result);
 

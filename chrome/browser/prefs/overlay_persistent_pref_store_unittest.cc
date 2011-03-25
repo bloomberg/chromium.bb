@@ -74,7 +74,7 @@ TEST_F(OverlayPersistentPrefStoreTest, Observer) {
 }
 
 TEST_F(OverlayPersistentPrefStoreTest, GetAndSet) {
-  Value* value = NULL;
+  const Value* value = NULL;
   int i = -1;
   EXPECT_EQ(PrefStore::READ_NO_VALUE, overlay_->GetValue(key, &value));
   EXPECT_EQ(PrefStore::READ_NO_VALUE, underlay_->GetValue(key, &value));
@@ -116,4 +116,28 @@ TEST_F(OverlayPersistentPrefStoreTest, GetAndSet) {
   ASSERT_TRUE(value);
   EXPECT_TRUE(value->GetAsInteger(&i));
   EXPECT_EQ(42, i);
+}
+
+// Check that GetMutableValue does not return the dictionary of the underlay.
+TEST_F(OverlayPersistentPrefStoreTest, ModifyDictionaries) {
+  underlay_->SetValue(key, new DictionaryValue);
+
+  Value* modify = NULL;
+  EXPECT_EQ(PrefStore::READ_OK, overlay_->GetMutableValue(key, &modify));
+  ASSERT_TRUE(modify);
+  ASSERT_TRUE(modify->GetType() == Value::TYPE_DICTIONARY);
+  static_cast<DictionaryValue*>(modify)->SetInteger(key, 42);
+
+  Value* original_in_underlay = NULL;
+  EXPECT_EQ(PrefStore::READ_OK,
+            underlay_->GetMutableValue(key, &original_in_underlay));
+  ASSERT_TRUE(original_in_underlay);
+  ASSERT_TRUE(original_in_underlay->GetType() == Value::TYPE_DICTIONARY);
+  EXPECT_TRUE(static_cast<DictionaryValue*>(original_in_underlay)->empty());
+
+  Value* modified = NULL;
+  EXPECT_EQ(PrefStore::READ_OK, overlay_->GetMutableValue(key, &modified));
+  ASSERT_TRUE(modified);
+  ASSERT_TRUE(modified->GetType() == Value::TYPE_DICTIONARY);
+  EXPECT_TRUE(Value::Equals(modify, static_cast<DictionaryValue*>(modified)));
 }

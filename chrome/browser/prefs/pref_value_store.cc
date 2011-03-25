@@ -102,7 +102,7 @@ PrefValueStore* PrefValueStore::CloneAndSpecialize(
 
 bool PrefValueStore::GetValue(const std::string& name,
                               Value::ValueType type,
-                              Value** out_value) const {
+                              const Value** out_value) const {
   *out_value = NULL;
   // Check the |PrefStore|s in order of their priority from highest to lowest
   // to find the value of the preference described by the given preference name.
@@ -175,7 +175,7 @@ bool PrefValueStore::PrefValueInStore(
     PrefValueStore::PrefStoreType store) const {
   // Declare a temp Value* and call GetValueFromStore,
   // ignoring the output value.
-  Value* tmp_value = NULL;
+  const Value* tmp_value = NULL;
   return GetValueFromStore(name, store, &tmp_value);
 }
 
@@ -207,7 +207,7 @@ PrefValueStore::PrefStoreType PrefValueStore::ControllingPrefStoreForPref(
 
 bool PrefValueStore::GetValueFromStore(const char* name,
                                        PrefValueStore::PrefStoreType store_type,
-                                       Value** out_value) const {
+                                       const Value** out_value) const {
   // Only return true if we find a value and it is the correct type, so stale
   // values with the incorrect type will be ignored.
   const PrefStore* store = GetPrefStore(static_cast<PrefStoreType>(store_type));

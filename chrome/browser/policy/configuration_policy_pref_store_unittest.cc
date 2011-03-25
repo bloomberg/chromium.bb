@@ -61,7 +61,7 @@ TEST_P(ConfigurationPolicyPrefStoreListTest, SetValue) {
   in_value->Append(Value::CreateStringValue("test2,"));
   provider_.AddPolicy(GetParam().type(), in_value);
   store_->OnUpdatePolicy();
-  Value* value;
+  const Value* value;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
   EXPECT_TRUE(in_value->Equals(value));
@@ -99,7 +99,7 @@ TEST_P(ConfigurationPolicyPrefStoreStringTest, SetValue) {
   provider_.AddPolicy(GetParam().type(),
                       Value::CreateStringValue("http://chromium.org"));
   store_->OnUpdatePolicy();
-  Value* value;
+  const Value* value;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
   EXPECT_TRUE(StringValue("http://chromium.org").Equals(value));
@@ -140,7 +140,7 @@ TEST_P(ConfigurationPolicyPrefStoreBooleanTest, GetDefault) {
 TEST_P(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   provider_.AddPolicy(GetParam().type(), Value::CreateBooleanValue(false));
   store_->OnUpdatePolicy();
-  Value* value;
+  const Value* value;
   bool result = true;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
@@ -230,7 +230,7 @@ TEST_P(ConfigurationPolicyPrefStoreIntegerTest, GetDefault) {
 TEST_P(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
   provider_.AddPolicy(GetParam().type(), Value::CreateIntegerValue(2));
   store_->OnUpdatePolicy();
-  Value* value = NULL;
+  const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
   EXPECT_TRUE(FundamentalValue(2).Equals(value));
@@ -255,11 +255,11 @@ class ConfigurationPolicyPrefStoreProxyTest : public testing::Test {
       const std::string& expected_proxy_pac_url,
       const std::string& expected_proxy_bypass_list,
       const ProxyPrefs::ProxyMode& expected_proxy_mode) {
-    Value* value = NULL;
+    const Value* value = NULL;
     ASSERT_EQ(PrefStore::READ_OK,
               store.GetValue(prefs::kProxy, &value));
     ASSERT_EQ(Value::TYPE_DICTIONARY, value->GetType());
-    ProxyConfigDictionary dict(static_cast<DictionaryValue*>(value));
+    ProxyConfigDictionary dict(static_cast<const DictionaryValue*>(value));
     std::string s;
     if (expected_proxy_server.empty()) {
       EXPECT_FALSE(dict.GetProxyServer(&s));
@@ -426,7 +426,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, ProxyInvalid) {
 
     scoped_refptr<ConfigurationPolicyPrefStore> store(
         new ConfigurationPolicyPrefStore(&provider));
-    Value* value = NULL;
+    const Value* value = NULL;
     EXPECT_EQ(PrefStore::READ_NO_VALUE,
               store->GetValue(prefs::kProxy, &value));
   }
@@ -448,7 +448,7 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MinimallyDefined) {
   scoped_refptr<ConfigurationPolicyPrefStore> store(
       new ConfigurationPolicyPrefStore(&provider));
 
-  Value* value = NULL;
+  const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store->GetValue(prefs::kDefaultSearchProviderSearchURL, &value));
   EXPECT_TRUE(StringValue(search_url).Equals(value));
@@ -506,7 +506,7 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, FullyDefined) {
   scoped_refptr<ConfigurationPolicyPrefStore> store(
       new ConfigurationPolicyPrefStore(&provider));
 
-  Value* value = NULL;
+  const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store->GetValue(prefs::kDefaultSearchProviderSearchURL, &value));
   EXPECT_TRUE(StringValue(search_url).Equals(value));
@@ -635,7 +635,7 @@ TEST_F(ConfigurationPolicyPrefStoreSyncTest, Disabled) {
   provider_.AddPolicy(kPolicySyncDisabled, Value::CreateBooleanValue(true));
   store_->OnUpdatePolicy();
   // Sync should be flagged as managed.
-  Value* value = NULL;
+  const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK, store_->GetValue(prefs::kSyncManaged, &value));
   ASSERT_TRUE(value != NULL);
   EXPECT_TRUE(FundamentalValue(true).Equals(value));
@@ -663,7 +663,7 @@ TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Disabled) {
   provider_.AddPolicy(kPolicyAutoFillEnabled, Value::CreateBooleanValue(false));
   store_->OnUpdatePolicy();
   // Disabling Autofill should switch the pref to managed.
-  Value* value = NULL;
+  const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(prefs::kAutofillEnabled, &value));
   EXPECT_TRUE(FundamentalValue(false).Equals(value));
@@ -685,7 +685,7 @@ class ConfigurationPolicyPrefStoreRefreshTest
 };
 
 TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
-  Value* value = NULL;
+  const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_->GetValue(prefs::kHomePage, NULL));
 

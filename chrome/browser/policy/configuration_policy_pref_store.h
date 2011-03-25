@@ -38,7 +38,8 @@ class ConfigurationPolicyPrefStore
   virtual void AddObserver(PrefStore::Observer* observer);
   virtual void RemoveObserver(PrefStore::Observer* observer);
   virtual bool IsInitializationComplete() const;
-  virtual ReadResult GetValue(const std::string& key, Value** result) const;
+  virtual ReadResult GetValue(const std::string& key,
+                              const Value** result) const;
 
   // ConfigurationPolicyProvider::Observer methods:
   virtual void OnUpdatePolicy();

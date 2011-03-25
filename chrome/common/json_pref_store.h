@@ -34,11 +34,13 @@ class JsonPrefStore : public PersistentPrefStore,
   virtual ~JsonPrefStore();
 
   // PrefStore overrides:
-  virtual ReadResult GetValue(const std::string& key, Value** result) const;
+  virtual ReadResult GetValue(const std::string& key,
+                              const Value** result) const;
   virtual void AddObserver(PrefStore::Observer* observer);
   virtual void RemoveObserver(PrefStore::Observer* observer);
 
   // PersistentPrefStore overrides:
+  virtual ReadResult GetMutableValue(const std::string& key, Value** result);
   virtual void SetValue(const std::string& key, Value* value);
   virtual void SetValueSilently(const std::string& key, Value* value);
   virtual void RemoveValue(const std::string& key);
@@ -47,7 +49,6 @@ class JsonPrefStore : public PersistentPrefStore,
   virtual bool WritePrefs();
   virtual void ScheduleWritePrefs();
   virtual void CommitPendingWrite();
-  // TODO(battre) remove this function
   virtual void ReportValueChanged(const std::string& key);
 
  private:

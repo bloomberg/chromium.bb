@@ -26,7 +26,8 @@ class PrefValueMap {
   // Gets the value for |key| and stores it in |value|. Ownership remains with
   // the map. Returns true if a value is present. If not, |value| is not
   // touched.
-  bool GetValue(const std::string& key, Value** value) const;
+  bool GetValue(const std::string& key, const Value** value) const;
+  bool GetValue(const std::string& key, Value** value);
 
   // Sets a new |value| for |key|. Takes ownership of |value|, which must be
   // non-NULL. Returns true if the value changed.

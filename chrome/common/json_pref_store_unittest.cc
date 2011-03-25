@@ -108,7 +108,7 @@ TEST_F(JsonPrefStoreTest, Basic) {
 
   std::string cnn("http://www.cnn.com");
 
-  Value* actual;
+  const Value* actual;
   EXPECT_EQ(PrefStore::READ_OK,
             pref_store->GetValue(prefs::kHomePage, &actual));
   std::string string_value;

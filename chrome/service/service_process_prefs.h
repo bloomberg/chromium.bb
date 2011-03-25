@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ class ServiceProcessPrefs {
   void SetBoolean(const std::string& key, bool value);
 
   // Get a dictionary preference for |key| and store it in |result|.
-  void GetDictionary(const std::string& key, DictionaryValue** result);
+  void GetDictionary(const std::string& key, const DictionaryValue** result);
 
  private:
   scoped_refptr<JsonPrefStore> prefs_;

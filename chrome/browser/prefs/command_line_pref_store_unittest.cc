@@ -26,10 +26,10 @@ class TestCommandLinePrefStore : public CommandLinePrefStore {
   }
 
   void VerifyProxyMode(ProxyPrefs::ProxyMode expected_mode) {
-    Value* value = NULL;
+    const Value* value = NULL;
     ASSERT_EQ(PrefStore::READ_OK, GetValue(prefs::kProxy, &value));
     ASSERT_EQ(Value::TYPE_DICTIONARY, value->GetType());
-    ProxyConfigDictionary dict(static_cast<DictionaryValue*>(value));
+    ProxyConfigDictionary dict(static_cast<const DictionaryValue*>(value));
     ProxyPrefs::ProxyMode actual_mode;
     ASSERT_TRUE(dict.GetMode(&actual_mode));
     EXPECT_EQ(expected_mode, actual_mode);
@@ -47,7 +47,7 @@ TEST(CommandLinePrefStoreTest, SimpleStringPref) {
   cl.AppendSwitchASCII(switches::kLang, "hi-MOM");
   scoped_refptr<CommandLinePrefStore> store = new CommandLinePrefStore(&cl);
 
-  Value* actual = NULL;
+  const Value* actual = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store->GetValue(prefs::kApplicationLocale, &actual));
   std::string result;
@@ -72,7 +72,7 @@ TEST(CommandLinePrefStoreTest, NoPrefs) {
   cl.AppendSwitchASCII(unknown_bool, "a value");
   scoped_refptr<CommandLinePrefStore> store = new CommandLinePrefStore(&cl);
 
-  Value* actual = NULL;
+  const Value* actual = NULL;
   EXPECT_EQ(PrefStore::READ_NO_VALUE, store->GetValue(unknown_bool, &actual));
   EXPECT_EQ(PrefStore::READ_NO_VALUE, store->GetValue(unknown_string, &actual));
 }
@@ -87,16 +87,16 @@ TEST(CommandLinePrefStoreTest, MultipleSwitches) {
   scoped_refptr<TestCommandLinePrefStore> store =
       new TestCommandLinePrefStore(&cl);
 
-  Value* actual = NULL;
+  const Value* actual = NULL;
   EXPECT_EQ(PrefStore::READ_NO_VALUE, store->GetValue(unknown_bool, &actual));
   EXPECT_EQ(PrefStore::READ_NO_VALUE, store->GetValue(unknown_string, &actual));
 
   store->VerifyProxyMode(ProxyPrefs::MODE_FIXED_SERVERS);
 
-  Value* value = NULL;
+  const Value* value = NULL;
   ASSERT_EQ(PrefStore::READ_OK, store->GetValue(prefs::kProxy, &value));
   ASSERT_EQ(Value::TYPE_DICTIONARY, value->GetType());
-  ProxyConfigDictionary dict(static_cast<DictionaryValue*>(value));
+  ProxyConfigDictionary dict(static_cast<const DictionaryValue*>(value));
 
   std::string string_result = "";
 

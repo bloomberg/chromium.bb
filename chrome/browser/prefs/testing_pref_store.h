@@ -23,12 +23,14 @@ class TestingPrefStore : public PersistentPrefStore {
   virtual ~TestingPrefStore();
 
   // Overriden from PrefStore.
-  virtual ReadResult GetValue(const std::string& key, Value** result) const;
+  virtual ReadResult GetValue(const std::string& key,
+                              const Value** result) const;
   virtual void AddObserver(PrefStore::Observer* observer);
   virtual void RemoveObserver(PrefStore::Observer* observer);
   virtual bool IsInitializationComplete() const;
 
   // PersistentPrefStore overrides:
+  virtual ReadResult GetMutableValue(const std::string& key, Value** result);
   virtual void SetValue(const std::string& key, Value* value);
   virtual void SetValueSilently(const std::string& key, Value* value);
   virtual void RemoveValue(const std::string& key);

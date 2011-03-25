@@ -220,8 +220,6 @@ class PrefService : public base::NonThreadSafe {
   // a mutable from the user preferences store.
   DictionaryValue* GetMutableDictionary(const char* path);
   ListValue* GetMutableList(const char* path);
-  // TODO(battre) remove this function (hack).
-  void ReportValueChanged(const std::string& key);
 
   // Returns true if a value has been set for the specified path.
   // NOTE: this is NOT the same as FindPreference. In particular
@@ -277,7 +275,7 @@ class PrefService : public base::NonThreadSafe {
   friend class PrefChangeRegistrar;
   friend class subtle::PrefMemberBase;
 
-  // Give access to pref_notifier();
+  // Give access to ReportUserPrefChanged();
   friend class ScopedUserPrefUpdate;
 
   // Construct an incognito version of the pref service. Use
@@ -285,9 +283,10 @@ class PrefService : public base::NonThreadSafe {
   PrefService(const PrefService& original,
               PrefStore* incognito_extension_prefs);
 
-  // Returns a PrefNotifier. If you desire access to this, you will probably
-  // want to use a ScopedUserPrefUpdate.
-  PrefNotifier* pref_notifier() const;
+  // Sends notification of a changed preference. This needs to be called by
+  // a ScopedUserPrefUpdate if a DictionaryValue or ListValue retrieved by the
+  // GetMutable... methods is changed.
+  void ReportUserPrefChanged(const std::string& key);
 
   // If the pref at the given path changes, we call the observer's Observe
   // method with PREF_CHANGED. Note that observers should not call these methods

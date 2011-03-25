@@ -4,6 +4,8 @@
 
 #include "chrome/browser/prefs/overlay_persistent_pref_store.h"
 
+#include "base/values.h"
+
 OverlayPersistentPrefStore::OverlayPersistentPrefStore(
     PersistentPrefStore* underlay)
     : underlay_(underlay) {
@@ -30,10 +32,30 @@ bool OverlayPersistentPrefStore::IsInitializationComplete() const {
 }
 
 PrefStore::ReadResult OverlayPersistentPrefStore::GetValue(
-    const std::string& key, Value** result) const {
+    const std::string& key,
+    const Value** result) const {
   if (overlay_.GetValue(key, result))
     return READ_OK;
   return underlay_->GetValue(key, result);
+}
+
+PrefStore::ReadResult OverlayPersistentPrefStore::GetMutableValue(
+    const std::string& key,
+    Value** result) {
+  if (overlay_.GetValue(key, result))
+    return READ_OK;
+
+  // Try to create copy of underlay if the overlay does not contain a value.
+  Value* underlay_value = NULL;
+  PrefStore::ReadResult read_result =
+      underlay_->GetMutableValue(key, &underlay_value);
+  if (read_result == READ_OK) {
+    *result = underlay_value->DeepCopy();
+    overlay_.SetValue(key, *result);
+    return READ_OK;
+  }
+  // Return read failure if underlay stores no value for |key|.
+  return read_result;
 }
 
 void OverlayPersistentPrefStore::SetValue(const std::string& key,

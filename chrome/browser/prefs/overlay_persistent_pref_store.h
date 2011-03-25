@@ -33,9 +33,11 @@ class OverlayPersistentPrefStore : public PersistentPrefStore,
   virtual void AddObserver(PrefStore::Observer* observer);
   virtual void RemoveObserver(PrefStore::Observer* observer);
   virtual bool IsInitializationComplete() const;
-  virtual ReadResult GetValue(const std::string& key, Value** result) const;
+  virtual ReadResult GetValue(const std::string& key,
+                              const Value** result) const;
 
   // Methods of PersistentPrefStore.
+  virtual ReadResult GetMutableValue(const std::string& key, Value** result);
   virtual void SetValue(const std::string& key, Value* value);
   virtual void SetValueSilently(const std::string& key, Value* value);
   virtual void RemoveValue(const std::string& key);
@@ -44,7 +46,6 @@ class OverlayPersistentPrefStore : public PersistentPrefStore,
   virtual bool WritePrefs();
   virtual void ScheduleWritePrefs();
   virtual void CommitPendingWrite();
-  // TODO(battre) remove this function
   virtual void ReportValueChanged(const std::string& key);
 
  private:

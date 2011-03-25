@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ void ServiceProcessPrefs::WritePrefs() {
 
 void ServiceProcessPrefs::GetString(const std::string& key,
                                     std::string* result) {
-  Value* value;
+  const Value* value;
   if (prefs_->GetValue(key, &value) == PersistentPrefStore::READ_OK)
     value->GetAsString(result);
 }
@@ -35,7 +35,7 @@ void ServiceProcessPrefs::SetString(const std::string& key,
 }
 
 void ServiceProcessPrefs::GetBoolean(const std::string& key, bool* result) {
-  Value* value;
+  const Value* value;
   if (prefs_->GetValue(key, &value) == PersistentPrefStore::READ_OK)
     value->GetAsBoolean(result);
 }
@@ -45,12 +45,12 @@ void ServiceProcessPrefs::SetBoolean(const std::string& key, bool value) {
 }
 
 void ServiceProcessPrefs::GetDictionary(const std::string& key,
-                                        DictionaryValue** result) {
-  Value* value;
+                                        const DictionaryValue** result) {
+  const Value* value;
   if (prefs_->GetValue(key, &value) != PersistentPrefStore::READ_OK ||
       !value->IsType(Value::TYPE_DICTIONARY)) {
     return;
   }
 
-  *result = static_cast<DictionaryValue*>(value);
+  *result = static_cast<const DictionaryValue*>(value);
 }

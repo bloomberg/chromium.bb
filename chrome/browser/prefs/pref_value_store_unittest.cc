@@ -289,7 +289,7 @@ class PrefValueStoreTest : public testing::Test {
 };
 
 TEST_F(PrefValueStoreTest, GetValue) {
-  Value* value;
+  const Value* value;
 
   // The following tests read a value from the PrefService. The preferences are
   // set in a way such that all lower-priority stores have a value and we can

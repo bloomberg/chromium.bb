@@ -30,8 +30,13 @@ JsonPrefStore::~JsonPrefStore() {
 }
 
 PrefStore::ReadResult JsonPrefStore::GetValue(const std::string& key,
-                                              Value** result) const {
-  return prefs_->Get(key, result) ? READ_OK : READ_NO_VALUE;
+                                              const Value** result) const {
+  Value* tmp = NULL;
+  if (prefs_->Get(key, &tmp)) {
+    *result = tmp;
+    return READ_OK;
+  }
+  return READ_NO_VALUE;
 }
 
 void JsonPrefStore::AddObserver(PrefStore::Observer* observer) {
@@ -40,6 +45,11 @@ void JsonPrefStore::AddObserver(PrefStore::Observer* observer) {
 
 void JsonPrefStore::RemoveObserver(PrefStore::Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+PrefStore::ReadResult JsonPrefStore::GetMutableValue(const std::string& key,
+                                                     Value** result) {
+  return prefs_->Get(key, result) ? READ_OK : READ_NO_VALUE;
 }
 
 void JsonPrefStore::SetValue(const std::string& key, Value* value) {

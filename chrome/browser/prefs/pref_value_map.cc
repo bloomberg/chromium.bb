@@ -15,7 +15,18 @@ PrefValueMap::~PrefValueMap() {
   Clear();
 }
 
-bool PrefValueMap::GetValue(const std::string& key, Value** value) const {
+bool PrefValueMap::GetValue(const std::string& key, const Value** value) const {
+  const Map::const_iterator entry = prefs_.find(key);
+  if (entry != prefs_.end()) {
+    if (value)
+      *value = entry->second;
+    return true;
+  }
+
+  return false;
+}
+
+bool PrefValueMap::GetValue(const std::string& key, Value** value) {
   const Map::const_iterator entry = prefs_.find(key);
   if (entry != prefs_.end()) {
     if (value)
@@ -76,13 +87,13 @@ PrefValueMap::const_iterator PrefValueMap::end() const {
 
 bool PrefValueMap::GetBoolean(const std::string& key,
                               bool* value) const {
-  Value* stored_value = NULL;
+  const Value* stored_value = NULL;
   return GetValue(key, &stored_value) && stored_value->GetAsBoolean(value);
 }
 
 bool PrefValueMap::GetString(const std::string& key,
                              std::string* value) const {
-  Value* stored_value = NULL;
+  const Value* stored_value = NULL;
   return GetValue(key, &stored_value) && stored_value->GetAsString(value);
 }
 

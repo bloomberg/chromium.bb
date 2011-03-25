@@ -22,7 +22,8 @@ class ValueMapPrefStore : public PrefStore {
   virtual ~ValueMapPrefStore();
 
   // PrefStore overrides:
-  virtual ReadResult GetValue(const std::string& key, Value** value) const;
+  virtual ReadResult GetValue(const std::string& key,
+                              const Value** value) const;
   virtual void AddObserver(PrefStore::Observer* observer);
   virtual void RemoveObserver(PrefStore::Observer* observer);
 

@@ -407,10 +407,6 @@ bool PrefService::ReadOnly() const {
   return user_pref_store_->ReadOnly();
 }
 
-PrefNotifier* PrefService::pref_notifier() const {
-  return pref_notifier_.get();
-}
-
 bool PrefService::IsManagedPreference(const char* pref_name) const {
   const Preference* pref = FindPreference(pref_name);
   return pref && pref->IsManaged();
@@ -571,7 +567,7 @@ DictionaryValue* PrefService::GetMutableDictionary(const char* path) {
   Value* tmp_value = NULL;
   // Look for an existing preference in the user store. If it doesn't
   // exist or isn't the correct type, create a new user preference.
-  if (user_pref_store_->GetValue(path, &tmp_value)
+  if (user_pref_store_->GetMutableValue(path, &tmp_value)
           != PersistentPrefStore::READ_OK ||
       !tmp_value->IsType(Value::TYPE_DICTIONARY)) {
     dict = new DictionaryValue;
@@ -601,7 +597,7 @@ ListValue* PrefService::GetMutableList(const char* path) {
   Value* tmp_value = NULL;
   // Look for an existing preference in the user store. If it doesn't
   // exist or isn't the correct type, create a new user preference.
-  if (user_pref_store_->GetValue(path, &tmp_value)
+  if (user_pref_store_->GetMutableValue(path, &tmp_value)
           != PersistentPrefStore::READ_OK ||
       !tmp_value->IsType(Value::TYPE_LIST)) {
     list = new ListValue;
@@ -612,7 +608,7 @@ ListValue* PrefService::GetMutableList(const char* path) {
   return list;
 }
 
-void PrefService::ReportValueChanged(const std::string& key) {
+void PrefService::ReportUserPrefChanged(const std::string& key) {
   user_pref_store_->ReportValueChanged(key);
 }
 
@@ -657,7 +653,7 @@ const Value* PrefService::Preference::GetValue() const {
   DCHECK(pref_service_->FindPreference(name_.c_str())) <<
       "Must register pref before getting its value";
 
-  Value* found_value = NULL;
+  const Value* found_value = NULL;
   if (pref_value_store()->GetValue(name_, type_, &found_value)) {
     DCHECK(found_value->IsType(type_));
     return found_value;
