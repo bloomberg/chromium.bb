@@ -651,6 +651,8 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 		return NULL;
 
 	c->conn = XGetXCBConnection(c->dpy);
+	XSetEventQueueOwner(c->dpy, XCBOwnsEventQueue);
+
 	if (xcb_connection_has_error(c->conn))
 		return NULL;
 
