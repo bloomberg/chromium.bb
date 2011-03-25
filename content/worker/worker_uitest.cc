@@ -713,6 +713,37 @@ class WorkerFileSystemTest : public WorkerTest {
     GURL about_url(chrome::kAboutBlankURL);
     EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
   }
+
+  void RunWorkerFileSystemLayoutHttpTests(const char* tests[], int num_tests) {
+    FilePath worker_test_dir = FilePath().AppendASCII("http")
+                                         .AppendASCII("tests");
+
+    FilePath filesystem_test_dir = FilePath().AppendASCII("filesystem")
+                                             .AppendASCII("workers");
+    InitializeForLayoutTest(worker_test_dir, filesystem_test_dir, kHttpPort);
+
+    AddResourceForLayoutTest(worker_test_dir.AppendASCII("filesystem"),
+                             FilePath().AppendASCII("resources"));
+
+    AddResourceForLayoutTest(worker_test_dir.AppendASCII("filesystem"),
+                             FilePath().AppendASCII("script-tests"));
+
+    AddResourceForLayoutTest(worker_test_dir.AppendASCII("filesystem"),
+                             FilePath().AppendASCII("workers")
+                                       .AppendASCII("script-tests"));
+
+    StartHttpServer(new_http_root_dir_);
+    for (int i = 0; i < num_tests; ++i)
+      RunLayoutTest(tests[i], 8000);
+    StopHttpServer();
+
+    // Navigate to a blank page so that any workers are cleaned up.
+    // This helps leaks trackers do a better job of reporting.
+    scoped_refptr<TabProxy> tab(GetActiveTab());
+    ASSERT_TRUE(tab.get());
+    GURL about_url(chrome::kAboutBlankURL);
+    EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
+  }
 };
 
 TEST_F(WorkerFileSystemTest, Temporary) {
@@ -741,6 +772,14 @@ TEST_F(WorkerFileSystemTest, SyncOperations) {
 
 TEST_F(WorkerFileSystemTest, FileEntryToURISync) {
   RunWorkerFileSystemLayoutTest("file-entry-to-uri-sync.html");
+}
+
+TEST_F(WorkerFileSystemTest, ResolveURLHttpTests) {
+  static const char* kLayoutTests[] = {
+    "resolve-url.html",
+    "resolve-url-sync.html"
+  };
+  RunWorkerFileSystemLayoutHttpTests(kLayoutTests, arraysize(kLayoutTests));
 }
 
 #if defined(OS_LINUX)

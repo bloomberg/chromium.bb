@@ -560,6 +560,15 @@ void UITest::StartHttpServerWithPort(const FilePath& root_directory,
   cmd_line->AppendSwitch("register_cygwin");
   cmd_line->AppendSwitchPath("root", root_directory);
 
+  FilePath layout_tests_dir;
+  PathService::Get(base::DIR_SOURCE_ROOT, &layout_tests_dir);
+  layout_tests_dir = layout_tests_dir.AppendASCII("chrome")
+                                     .AppendASCII("test")
+                                     .AppendASCII("data")
+                                     .AppendASCII("layout_tests")
+                                     .AppendASCII("LayoutTests");
+  cmd_line->AppendSwitchPath("layout_tests_dir", layout_tests_dir);
+
   // For Windows 7, if we start the lighttpd server on the foreground mode,
   // it will mess up with the command window and cause conhost.exe to crash. To
   // work around this, we start the http server on the background mode.

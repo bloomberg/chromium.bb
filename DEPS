@@ -172,6 +172,9 @@ deps = {
   "src/chrome/test/data/layout_tests/LayoutTests/fast/filesystem/resources":
     Var("webkit_trunk") + "/LayoutTests/fast/filesystem/resources@" +
     Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/http/tests/filesystem":
+    Var("webkit_trunk") + "/LayoutTests/http/tests/filesystem@" +
+    Var("webkit_revision"),
 
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),

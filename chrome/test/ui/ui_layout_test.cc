@@ -212,7 +212,7 @@ void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
   scoped_ptr<GURL> new_test_url;
   if (port != kNoHttpPort)
     new_test_url.reset(new GURL(
-        StringPrintf("http://localhost:%d/", port) +
+        StringPrintf("http://127.0.0.1:%d/", port) +
         url_path + "/" + test_case_file_name));
   else
     new_test_url.reset(new GURL(net::FilePathToFileURL(new_test_file_path)));

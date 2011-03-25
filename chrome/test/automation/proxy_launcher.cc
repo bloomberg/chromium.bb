@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -419,6 +419,9 @@ void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
 
   // Allow file:// access on ChromeOS.
   command_line->AppendSwitch(switches::kAllowFileAccess);
+
+  // Allow testing File API over http.
+  command_line->AppendSwitch(switches::kUnlimitedQuotaForFiles);
 }
 
 bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state, bool wait,
