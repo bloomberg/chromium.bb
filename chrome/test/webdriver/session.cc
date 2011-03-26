@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/webdriver/session_manager.h"
+#include "chrome/test/webdriver/session.h"
 
 #include <sstream>
 #include <vector>
@@ -473,6 +473,29 @@ ErrorCode Session::SwitchToFrameWithIndex(int index) {
       "    '/html/body//iframe' : '/html/frameset/frame') + index);";
   ListValue args;
   args.Append(Value::CreateIntegerValue(index));
+  return SwitchToFrameWithJavaScriptLocatedFrame(script, &args);
+}
+
+ErrorCode Session::SwitchToFrameWithElement(const WebElementId& element) {
+  // TODO(jleyba): Extract this, and the other frame switch methods to an atom.
+  std::string script =
+      "var element = arguments[0];"
+      "console.info('Attempting to switch to ' + element);"
+      "if (element.nodeType != 1 || !/^i?frame$/i.test(element.tagName)) {"
+      "  console.info('Element is not a frame: ' + element + "
+      "' {nodeType:' + element.nodeType + ',tagName:' + element.tagName + '}');"
+      "  return null;"
+      "}"
+      "for (var i = 0; i < window.frames.length; i++) {"
+      "  if (element.contentWindow == window.frames[i]) {"
+      "    return '(//iframe|//frame)[' + (i + 1) + ']';"
+      "  }"
+      "}"
+      "console.info('Frame is not connected to this DOM tree');"
+      "return null;";
+
+  ListValue args;
+  args.Append(element.ToValue());
   return SwitchToFrameWithJavaScriptLocatedFrame(script, &args);
 }
 

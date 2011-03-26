@@ -215,7 +215,9 @@ void ElementEqualsCommand::ExecuteGet(Response* const response) {
 
   scoped_ptr<ListValue> args(new ListValue);
   args->Append(element.ToValue());
-  args->Append(Value::CreateStringValue(path_segments_.at(6)));
+
+  WebElementId other_element(path_segments_.at(6));
+  args->Append(other_element.ToValue());
 
   Value* result = NULL;
   ErrorCode status = session_->ExecuteScript(script, args.get(), &result);

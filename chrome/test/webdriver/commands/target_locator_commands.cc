@@ -9,6 +9,7 @@
 #include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/web_element_id.h"
 
 namespace webdriver {
 
@@ -108,6 +109,7 @@ bool SwitchFrameCommand::DoesPost() {
 void SwitchFrameCommand::ExecutePost(Response* const response) {
   std::string id;
   int index = 0;
+  WebElementId element;
   if (GetStringParameter("id", &id)) {
     ErrorCode code = session_->SwitchToFrameWithNameOrId(id);
     if (code != kSuccess) {
@@ -120,6 +122,12 @@ void SwitchFrameCommand::ExecutePost(Response* const response) {
       SET_WEBDRIVER_ERROR(response, "Could not switch to frame", code);
       return;
     }
+  } else if (GetWebElementParameter("id", &element)) {
+    ErrorCode code = session_->SwitchToFrameWithElement(element);
+    if (code != kSuccess) {
+      SET_WEBDRIVER_ERROR(response, "Could not switch to frame", code);
+      return;
+    }
   } else if (IsNullParameter("id")) {
     session_->SwitchToTopFrame();
   } else {
@@ -128,6 +136,20 @@ void SwitchFrameCommand::ExecutePost(Response* const response) {
     return;
   }
   response->SetStatus(kSuccess);
+}
+
+bool SwitchFrameCommand::GetWebElementParameter(const std::string& key,
+                                                WebElementId* out) const {
+  DictionaryValue* value;
+  if (!GetDictionaryParameter(key, &value))
+    return false;
+
+  WebElementId id(value);
+  if (!id.is_valid())
+    return false;
+
+  *out = id;
+  return true;
 }
 
 ActiveElementCommand::ActiveElementCommand(

@@ -26,6 +26,7 @@ sys.path += [chromedriver_paths.PYTHON_BINDINGS]
 
 import simplejson as json
 
+from selenium.webdriver.remote.command import Command
 from selenium.webdriver.remote.webdriver import WebDriver
 
 
@@ -107,6 +108,14 @@ class BasicTest(unittest.TestCase):
       self.fail('Should have raised a urllib.HTTPError for returned 404')
     except urllib2.HTTPError, expected:
       self.assertEquals(404, expected.code)
+
+  def testShouldReturn204ForFaviconRequests(self):
+    request_url = self._launcher.GetURL() + '/favicon.ico'
+    response = SendRequest(request_url, method='GET')
+    try:
+      self.assertEquals(204, response.code)
+    finally:
+      response.close()
 
   def testCanStartChromeDriverOnSpecificPort(self):
     launcher = ChromeDriverLauncher(port=9520)
@@ -288,6 +297,31 @@ class UrlBaseTest(unittest.TestCase):
     self.assertEquals('hub', url_parts[2])
     self.assertEquals('session', url_parts[3])
     self.assertEquals(data['sessionId'], url_parts[4])
+
+
+# TODO(jleyba): Port this to WebDriver's own python test suite.
+class ElementEqualityTest(unittest.TestCase):
+  """Tests that the server properly checks element equality."""
+
+  def setUp(self):
+    self._launcher = ChromeDriverLauncher(root_path=os.path.dirname(__file__))
+    self._driver = WebDriver(self._launcher.GetURL(), {})
+
+  def tearDown(self):
+    self._driver.quit()
+    self._launcher.Kill()
+
+  def testElementEquality(self):
+    self._driver.get(self._launcher.GetURL() + '/test_page.html')
+    body1 = self._driver.find_element_by_tag_name('body')
+    body2 = self._driver.execute_script('return document.body')
+
+    # TODO(jleyba): WebDriver's python bindings should expose a proper API
+    # for this.
+    result = body1.execute(Command.ELEMENT_EQUALS, {
+      'other': body2.id
+    })
+    self.assertTrue(result['value'])
 
 
 if __name__ == '__main__':

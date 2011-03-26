@@ -37,6 +37,8 @@ void FindElementCommand::ExecutePost(Response* const response) {
   // TODO(jmikhail): The findElement(s) atom should handle this conversion.
   if (locator == "class name") {
     locator = LocatorType::kClassName;
+  } else if (locator == "css selector") {
+    locator = LocatorType::kCss;
   } else if (locator == "link text") {
     locator = LocatorType::kLinkText;
   } else if (locator == "partial link text") {

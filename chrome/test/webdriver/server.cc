@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,24 +77,7 @@ void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
                    base::WaitableEvent* shutdown_event) {
   dispatcher->AddShutdown("/shutdown", shutdown_event);
 
-  dispatcher->Add<CreateSession>(       "/session");
-  dispatcher->Add<BackCommand>(         "/session/*/back");
-  dispatcher->Add<ExecuteCommand>(      "/session/*/execute");
-  dispatcher->Add<ForwardCommand>(      "/session/*/forward");
-  dispatcher->Add<SwitchFrameCommand>(  "/session/*/frame");
-  dispatcher->Add<RefreshCommand>(      "/session/*/refresh");
-  dispatcher->Add<SourceCommand>(       "/session/*/source");
-  dispatcher->Add<SpeedCommand>(        "/session/*/speed");
-  dispatcher->Add<TitleCommand>(        "/session/*/title");
-  dispatcher->Add<URLCommand>(          "/session/*/url");
-  dispatcher->Add<WindowCommand>(       "/session/*/window");
-  dispatcher->Add<WindowHandleCommand>( "/session/*/window_handle");
-  dispatcher->Add<WindowHandlesCommand>("/session/*/window_handles");
-  dispatcher->Add<ImplicitWaitCommand>( "/session/*/timeouts/implicit_wait");
-
-  // Cookie functions.
-  dispatcher->Add<CookieCommand>(     "/session/*/cookie");
-  dispatcher->Add<NamedCookieCommand>("/session/*/cookie/*");
+  dispatcher->Add<CreateSession>("/session");
 
   // WebElement commands
   dispatcher->Add<FindOneElementCommand>(  "/session/*/element");
@@ -123,6 +106,30 @@ void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
   dispatcher->Add<ClickCommand>("/session/*/element/*/click");
   dispatcher->Add<DragCommand>( "/session/*/element/*/drag");
   dispatcher->Add<HoverCommand>("/session/*/element/*/hover");
+
+  // All session based commands should be listed after the element based
+  // commands to avoid potential mapping conflicts from an overzealous
+  // wildcard match. For example, /session/*/title maps to the handler to
+  // fetch the page title. If mapped first, this would overwrite the handler
+  // for /session/*/element/*/attribute/title, which should fetch the title
+  // attribute of the element.
+  dispatcher->Add<BackCommand>(         "/session/*/back");
+  dispatcher->Add<ExecuteCommand>(      "/session/*/execute");
+  dispatcher->Add<ForwardCommand>(      "/session/*/forward");
+  dispatcher->Add<SwitchFrameCommand>(  "/session/*/frame");
+  dispatcher->Add<RefreshCommand>(      "/session/*/refresh");
+  dispatcher->Add<SourceCommand>(       "/session/*/source");
+  dispatcher->Add<SpeedCommand>(        "/session/*/speed");
+  dispatcher->Add<TitleCommand>(        "/session/*/title");
+  dispatcher->Add<URLCommand>(          "/session/*/url");
+  dispatcher->Add<WindowCommand>(       "/session/*/window");
+  dispatcher->Add<WindowHandleCommand>( "/session/*/window_handle");
+  dispatcher->Add<WindowHandlesCommand>("/session/*/window_handles");
+  dispatcher->Add<ImplicitWaitCommand>( "/session/*/timeouts/implicit_wait");
+
+  // Cookie functions.
+  dispatcher->Add<CookieCommand>(     "/session/*/cookie");
+  dispatcher->Add<NamedCookieCommand>("/session/*/cookie/*");
 
   // Commands that have not been implemented yet. We list these out explicitly
   // so that tests that attempt to use them fail with a meaningful error.

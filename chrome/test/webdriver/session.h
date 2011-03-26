@@ -118,6 +118,10 @@ class Session {
   // Switches the frame used by default. |index| is the zero-based frame index.
   ErrorCode SwitchToFrameWithIndex(int index);
 
+  // Switches to the frame identified by the given |element|. The element must
+  // be either an IFRAME or FRAME element.
+  ErrorCode SwitchToFrameWithElement(const WebElementId& element);
+
   // Switches the frame used by default to the topmost frame.
   void SwitchToTopFrame();
 

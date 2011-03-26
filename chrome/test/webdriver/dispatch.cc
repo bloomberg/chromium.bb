@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,6 +57,15 @@ void Shutdown(struct mg_connection* connection,
       reinterpret_cast<base::WaitableEvent*>(user_data);
   mg_printf(connection, "HTTP/1.1 200 OK\r\n\r\n");
   shutdown_event->Signal();
+}
+
+void SendNoContentResponse(struct mg_connection* connection,
+                           const struct mg_request_info* request_info,
+                           void* user_data) {
+  std::string response = "HTTP/1.1 204 No Content\r\n"
+                         "Content-Length:0\r\n"
+                         "\r\n";
+  mg_write(connection, response.data(), response.length());
 }
 
 void SendNotImplementedError(struct mg_connection* connection,
@@ -245,7 +254,11 @@ void DispatchHelper(Command* command_ptr,
 }  // namespace internal
 
 Dispatcher::Dispatcher(struct mg_context* context, const std::string& root)
-    : context_(context), root_(root) {}
+    : context_(context), root_(root) {
+  // Overwrite mongoose's default handler for /favicon.ico to always return a
+  // 204 response so we don't spam the logs with 404s.
+  mg_set_uri_callback(context_, "/favicon.ico", &SendNoContentResponse, NULL);
+}
 
 Dispatcher::~Dispatcher() {}
 
