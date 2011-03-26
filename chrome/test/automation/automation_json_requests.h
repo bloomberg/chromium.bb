@@ -15,6 +15,8 @@
 
 class AutomationMessageSender;
 class GURL;
+class DictionaryValue;
+class ListValue;
 class Value;
 
 struct WebKeyEvent {
@@ -112,8 +114,18 @@ bool SendGetTabTitleJSONRequest(
     int tab_index,
     std::string* tab_title) WARN_UNUSED_RESULT;
 
-// Requests all the cookies for the given URL. Returns true on success.
+// Requests all the cookies for the given URL. On success returns true and
+// caller takes ownership of |cookies|, which is a list of all the cookies in
+// dictionary format.
 bool SendGetCookiesJSONRequest(
+    AutomationMessageSender* sender,
+    const std::string& url,
+    ListValue** cookies) WARN_UNUSED_RESULT;
+
+// Requests all the cookies for the given URL. Returns true on success.
+// Use |SendGetCookiesJSONRequest| for chrome versions greater than 11.
+// TODO(kkania): Remove this function when version 12 is stable.
+bool SendGetCookiesJSONRequestDeprecated(
     AutomationMessageSender* sender,
     int browser_index,
     const std::string& url,
@@ -123,13 +135,31 @@ bool SendGetCookiesJSONRequest(
 // on success.
 bool SendDeleteCookieJSONRequest(
     AutomationMessageSender* sender,
+    const std::string& url,
+    const std::string& cookie_name) WARN_UNUSED_RESULT;
+
+// Requests deletion of the cookie with the given name and URL. Returns true
+// on success. Use |SendDeleteCookieJSONRequest| for chrome versions greater
+// than 11.
+// TODO(kkania): Remove this function when version 12 is stable.
+bool SendDeleteCookieJSONRequestDeprecated(
+    AutomationMessageSender* sender,
     int browser_index,
     const std::string& url,
     const std::string& cookie_name) WARN_UNUSED_RESULT;
 
 // Requests setting the given cookie for the given URL. Returns true on
-// success.
+// success. The caller retains ownership of |cookie_dict|.
 bool SendSetCookieJSONRequest(
+    AutomationMessageSender* sender,
+    const std::string& url,
+    DictionaryValue* cookie_dict) WARN_UNUSED_RESULT;
+
+// Requests setting the given cookie for the given URL. Returns true on
+// success. Use |SendSetCookieJSONRequest| instead for chrome versions greater
+// than 11.
+// TODO(kkania): Remove this when version 12 is stable.
+bool SendSetCookieJSONRequestDeprecated(
     AutomationMessageSender* sender,
     int browser_index,
     const std::string& url,

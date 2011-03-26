@@ -227,6 +227,26 @@ bool SendGetTabTitleJSONRequest(
 
 bool SendGetCookiesJSONRequest(
     AutomationMessageSender* sender,
+    const std::string& url,
+    ListValue** cookies) {
+  DictionaryValue dict;
+  dict.SetString("command", "GetCookies");
+  dict.SetString("url", url);
+  DictionaryValue reply_dict;
+  if (!SendAutomationJSONRequest(sender, dict, &reply_dict))
+    return false;
+  Value* cookies_unscoped_value;
+  if (!reply_dict.Remove("cookies", &cookies_unscoped_value))
+    return false;
+  scoped_ptr<Value> cookies_value(cookies_unscoped_value);
+  if (!cookies_value->IsType(Value::TYPE_LIST))
+    return false;
+  *cookies = static_cast<ListValue*>(cookies_value.release());
+  return true;
+}
+
+bool SendGetCookiesJSONRequestDeprecated(
+    AutomationMessageSender* sender,
     int browser_index,
     const std::string& url,
     std::string* cookies) {
@@ -242,6 +262,18 @@ bool SendGetCookiesJSONRequest(
 
 bool SendDeleteCookieJSONRequest(
     AutomationMessageSender* sender,
+    const std::string& url,
+    const std::string& cookie_name) {
+  DictionaryValue dict;
+  dict.SetString("command", "DeleteCookie");
+  dict.SetString("url", url);
+  dict.SetString("name", cookie_name);
+  DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, dict, &reply_dict);
+}
+
+bool SendDeleteCookieJSONRequestDeprecated(
+    AutomationMessageSender* sender,
     int browser_index,
     const std::string& url,
     const std::string& cookie_name) {
@@ -255,6 +287,18 @@ bool SendDeleteCookieJSONRequest(
 }
 
 bool SendSetCookieJSONRequest(
+    AutomationMessageSender* sender,
+    const std::string& url,
+    DictionaryValue* cookie_dict) {
+  DictionaryValue dict;
+  dict.SetString("command", "SetCookie");
+  dict.SetString("url", url);
+  dict.Set("cookie", cookie_dict->DeepCopy());
+  DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, dict, &reply_dict);
+}
+
+bool SendSetCookieJSONRequestDeprecated(
     AutomationMessageSender* sender,
     int browser_index,
     const std::string& url,

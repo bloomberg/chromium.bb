@@ -19,8 +19,11 @@ const char* const kValueKey = "value";
 const char* const kMessageKey = "message";
 const char* const kScreenKey = "screen";
 const char* const kClassKey = "class";
-const char* const kStackTraceFileNameKey = "stackTrace.fileName";
-const char* const kStackTraceLineNumberKey = "stackTrace.lineNumber";
+const char* const kStackTraceKey = "stackTrace";
+const char* const kStackTraceFileNameKey = "fileName";
+const char* const kStackTraceClassNameKey = "className";
+const char* const kStackTraceMethodNameKey = "methodName";
+const char* const kStackTraceLineNumberKey = "lineNumber";
 
 }  // namespace
 
@@ -57,8 +60,15 @@ void Response::SetError(ErrorCode error_code, const std::string& message,
                         const std::string& file, int line) {
   DictionaryValue* error = new DictionaryValue;
   error->SetString(kMessageKey, message);
-  error->SetString(kStackTraceFileNameKey, file);
-  error->SetInteger(kStackTraceLineNumberKey, line);
+
+  DictionaryValue* stack = new DictionaryValue;
+  stack->SetString(kStackTraceFileNameKey, file);
+  stack->SetString(kStackTraceClassNameKey, "");
+  stack->SetString(kStackTraceMethodNameKey, "");
+  stack->SetInteger(kStackTraceLineNumberKey, line);
+  ListValue* stack_list = new ListValue;
+  stack_list->Append(stack);
+  error->Set(kStackTraceKey, stack_list);
 
   SetStatus(error_code);
   SetValue(error);
@@ -75,4 +85,3 @@ std::string Response::ToJSON() const {
 }
 
 }  // namespace webdriver
-

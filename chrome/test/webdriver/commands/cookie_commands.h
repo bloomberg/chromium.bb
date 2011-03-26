@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,7 @@ class CookieCommand : public WebDriverCommand {
 
  private:
   GURL current_url_;
+  bool uses_new_interface_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieCommand);
 };
@@ -57,14 +58,13 @@ class NamedCookieCommand : public WebDriverCommand {
 
  protected:
   virtual bool DoesDelete();
-  virtual bool DoesGet();
 
   virtual void ExecuteDelete(Response* const response);
-  virtual void ExecuteGet(Response* const response);
 
  private:
   GURL current_url_;
   std::string cookie_name_;
+  bool uses_new_interface_;
 
   DISALLOW_COPY_AND_ASSIGN(NamedCookieCommand);
 };
@@ -72,4 +72,3 @@ class NamedCookieCommand : public WebDriverCommand {
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_COOKIE_COMMANDS_H_
-

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ void SessionWithID::ExecuteGet(Response* const response) {
   DictionaryValue *temp_value = new DictionaryValue();
 
   temp_value->SetString("browserName", "chrome");
-  temp_value->SetString("version", session_->GetVersion());
+  temp_value->SetString("version", session_->GetBrowserVersion());
 
 #if defined(OS_WIN)
   temp_value->SetString("platform", "windows");

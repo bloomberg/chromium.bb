@@ -24,9 +24,9 @@
 {
   'all': [
     'children_finding_tests',
-    'cookie_tests',
-    # Automation proxy only returns cookie name=value pairs.
-    '-cookie_tests.CookieTest.testAddCookie',
+    # Cookie tests try to set the domain explicitly to 'localhost', which
+    # is not allowed.
+#   'cookie_tests',
     'correct_event_firing_tests',
     'driver_element_finding_test',
     'element_attribute_tests',
@@ -41,6 +41,8 @@
     'page_loading_tests',
     # Flaky. crbug.com/77495.
     '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateBackInTheBrowserHistory',
+    # Flaky. crbug.com/77495.
+    '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateForwardsInTheBrowserHistory',
     # This test causes the test after to fail occassionally. See
     # crbug.com/72027. This is because we are not waiting for navigation
     # error pages.

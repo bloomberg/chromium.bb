@@ -36,33 +36,19 @@ void DeleteCookie(const GURL& url,
                   bool* success);
 
 // Gets the cookies for the given URL. Uses the JSON interface.
-// Example:
-//   input: { "windex": 1, "tab_index": 1, "url": "http://www.google.com" }
-//   output: { "cookies": "PREF=12012" }
+// See |TestingAutomationProvider| for example input.
 void GetCookiesJSON(AutomationProvider* provider,
                     DictionaryValue* args,
                     IPC::Message* reply_message);
 
 // Deletes the cookie with the given name for the URL. Uses the JSON interface.
-// Example:
-//   input: { "windex": 1,
-//            "tab_index": 1,
-//            "url": "http://www.google.com",
-//            "name": "my_cookie"
-//          }
-//   output: none
+// See |TestingAutomationProvider| for example input.
 void DeleteCookieJSON(AutomationProvider* provider,
                       DictionaryValue* args,
                       IPC::Message* reply_message);
 
 // Sets a cookie for the given URL. Uses the JSON interface.
-// Example:
-//   input: { "windex": 1,
-//            "tab_index": 1,
-//            "url": "http://www.google.com",
-//            "cookie": "PREF=21321"
-//          }
-//   output: none
+// See |TestingAutomationProvider| for example input.
 void SetCookieJSON(AutomationProvider* provider,
                    DictionaryValue* args,
                    IPC::Message* reply_message);

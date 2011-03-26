@@ -98,11 +98,16 @@ class Session {
   bool GetURL(GURL* url);
   bool GetURL(std::string* url);
   bool GetTabTitle(std::string* tab_title);
-  bool GetCookies(const GURL& url, std::string* cookies);
-  bool GetCookieByName(const GURL& url, const std::string& cookie_name,
-             std::string* cookie);
-  bool DeleteCookie(const GURL& url, const std::string& cookie_name);
-  bool SetCookie(const GURL& url, const std::string& cookie);
+
+  bool GetCookies(const std::string& url, ListValue** cookies);
+  bool GetCookiesDeprecated(const GURL& url, std::string* cookies);
+  bool GetCookieByNameDeprecated(const GURL& url,
+                                 const std::string& cookie_name,
+                                 std::string* cookie);
+  bool DeleteCookie(const std::string& url, const std::string& cookie_name);
+  bool DeleteCookieDeprecated(const GURL& url, const std::string& cookie_name);
+  bool SetCookie(const std::string& url, DictionaryValue* cookie_dict);
+  bool SetCookieDeprecated(const GURL& url, const std::string& cookie);
 
   // Gets all the currently existing window IDs. Returns true on success.
   bool GetWindowIds(std::vector<int>* window_ids);
@@ -131,7 +136,14 @@ class Session {
   bool CloseWindow();
 
   // Gets the version of the running browser.
-  std::string GetVersion();
+  std::string GetBrowserVersion();
+
+  // Gets whether the running browser's version is newer or equal to the given
+  // version. Returns true on successful comparison. For example, in the version
+  // 11.0.632.4, 632 is the build number and 4 is the patch number.
+  bool CompareBrowserVersion(int build_no,
+                             int patch_no,
+                             bool* is_newer_or_equal);
 
   // Finds a single element in the given frame, starting at the given
   // |root_element|, using the given locator strategy. |locator| should be a

@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "net/base/cookie_monster.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 
@@ -28,6 +31,16 @@ void GetCookiesOnIOThread(
   event->Signal();
 }
 
+void GetCanonicalCookiesOnIOThread(
+    const GURL& url,
+    const scoped_refptr<URLRequestContextGetter>& context_getter,
+    base::WaitableEvent* event,
+    net::CookieList* cookie_list) {
+  *cookie_list = context_getter->GetCookieStore()->GetCookieMonster()->
+      GetAllCookiesForURL(url);
+  event->Signal();
+}
+
 void SetCookieOnIOThread(
     const GURL& url,
     const std::string& value,
@@ -35,6 +48,22 @@ void SetCookieOnIOThread(
     base::WaitableEvent* event,
     bool* success) {
   *success = context_getter->GetCookieStore()->SetCookie(url, value);
+  event->Signal();
+}
+
+void SetCookieWithDetailsOnIOThread(
+    const GURL& url,
+    const net::CookieMonster::CanonicalCookie& cookie,
+    const std::string& original_domain,
+    const scoped_refptr<URLRequestContextGetter>& context_getter,
+    base::WaitableEvent* event,
+    bool* success) {
+  net::CookieMonster* cookie_monster = context_getter->GetCookieStore()->
+      GetCookieMonster();
+  *success = cookie_monster->SetCookieWithDetails(
+      url, cookie.Name(), cookie.Value(), original_domain,
+      cookie.Path(), cookie.ExpiryDate(), cookie.IsSecure(),
+      cookie.IsHttpOnly());
   event->Signal();
 }
 
@@ -132,12 +161,6 @@ void GetCookiesJSON(AutomationProvider* provider,
                     DictionaryValue* args,
                     IPC::Message* reply_message) {
   AutomationJSONReply reply(provider, reply_message);
-  Browser* browser;
-  std::string error;
-  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
-    reply.SendError(error);
-    return;
-  }
   std::string url;
   if (!args->GetString("url", &url)) {
     reply.SendError("'url' missing or invalid");
@@ -146,22 +169,36 @@ void GetCookiesJSON(AutomationProvider* provider,
 
   // Since we may be on the UI thread don't call GetURLRequestContext().
   scoped_refptr<URLRequestContextGetter> context_getter =
-      browser->profile()->GetRequestContext();
+      provider->profile()->GetRequestContext();
 
-  std::string cookies;
+  net::CookieList cookie_list;
   base::WaitableEvent event(true /* manual reset */,
                             false /* not initially signaled */);
   Task* task = NewRunnableFunction(
-      &GetCookiesOnIOThread,
-      GURL(url), context_getter, &event, &cookies);
+      &GetCanonicalCookiesOnIOThread,
+      GURL(url), context_getter, &event, &cookie_list);
   if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task)) {
     reply.SendError("Couldn't post task to get the cookies");
     return;
   }
   event.Wait();
 
+  ListValue* list = new ListValue();
+  for (size_t i = 0; i < cookie_list.size(); ++i) {
+    const net::CookieMonster::CanonicalCookie& cookie = cookie_list[i];
+    DictionaryValue* cookie_dict = new DictionaryValue();
+    cookie_dict->SetString("name", cookie.Name());
+    cookie_dict->SetString("value", cookie.Value());
+    cookie_dict->SetString("path", cookie.Path());
+    cookie_dict->SetString("domain", cookie.Domain());
+    cookie_dict->SetBoolean("secure", cookie.IsSecure());
+    cookie_dict->SetBoolean("http_only", cookie.IsHttpOnly());
+    if (cookie.DoesExpire())
+      cookie_dict->SetDouble("expiry", cookie.ExpiryDate().ToDoubleT());
+    list->Append(cookie_dict);
+  }
   DictionaryValue dict;
-  dict.SetString("cookies", cookies);
+  dict.Set("cookies", list);
   reply.SendSuccess(&dict);
 }
 
@@ -169,12 +206,6 @@ void DeleteCookieJSON(AutomationProvider* provider,
                       DictionaryValue* args,
                       IPC::Message* reply_message) {
   AutomationJSONReply reply(provider, reply_message);
-  Browser* browser;
-  std::string error;
-  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
-    reply.SendError(error);
-    return;
-  }
   std::string url, name;
   if (!args->GetString("url", &url)) {
     reply.SendError("'url' missing or invalid");
@@ -187,7 +218,7 @@ void DeleteCookieJSON(AutomationProvider* provider,
 
   // Since we may be on the UI thread don't call GetURLRequestContext().
   scoped_refptr<URLRequestContextGetter> context_getter =
-      browser->profile()->GetRequestContext();
+      provider->profile()->GetRequestContext();
 
   base::WaitableEvent event(true /* manual reset */,
                             false /* not initially signaled */);
@@ -206,32 +237,79 @@ void SetCookieJSON(AutomationProvider* provider,
                    DictionaryValue* args,
                    IPC::Message* reply_message) {
   AutomationJSONReply reply(provider, reply_message);
-  Browser* browser;
-  std::string error;
-  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
-    reply.SendError(error);
-    return;
-  }
-  std::string url, cookie;
+  std::string url;
   if (!args->GetString("url", &url)) {
     reply.SendError("'url' missing or invalid");
     return;
   }
-  if (!args->GetString("cookie", &cookie)) {
+  DictionaryValue* cookie_dict;
+  if (!args->GetDictionary("cookie", &cookie_dict)) {
     reply.SendError("'cookie' missing or invalid");
+    return;
+  }
+  std::string name, value;
+  std::string domain;
+  std::string path = "/";
+  bool secure = false;
+  double expiry = 0;
+  bool http_only = false;
+  if (!cookie_dict->GetString("name", &name)) {
+    reply.SendError("'name' missing or invalid");
+    return;
+  }
+  if (!cookie_dict->GetString("value", &value)) {
+    reply.SendError("'value' missing or invalid");
+    return;
+  }
+  if (cookie_dict->HasKey("domain") &&
+      !cookie_dict->GetString("domain", &domain)) {
+    reply.SendError("optional 'domain' invalid");
+    return;
+  }
+  if (cookie_dict->HasKey("path") &&
+      !cookie_dict->GetString("path", &path)) {
+    reply.SendError("optional 'path' invalid");
+    return;
+  }
+  if (cookie_dict->HasKey("secure") &&
+      !cookie_dict->GetBoolean("secure", &secure)) {
+    reply.SendError("optional 'secure' invalid");
+    return;
+  }
+  if (cookie_dict->HasKey("expiry")) {
+    int expiry_int;
+    if (cookie_dict->GetInteger("expiry", &expiry_int)) {
+      expiry = expiry_int;
+    } else if (!cookie_dict->GetDouble("expiry", &expiry)) {
+      reply.SendError("optional 'expiry' invalid");
+      return;
+    }
+  }
+  if (cookie_dict->HasKey("http_only") &&
+      !cookie_dict->GetBoolean("http_only", &http_only)) {
+    reply.SendError("optional 'http_only' invalid");
+    return;
+  }
+
+  scoped_ptr<net::CookieMonster::CanonicalCookie> cookie(
+      net::CookieMonster::CanonicalCookie::Create(
+          GURL(url), name, value, domain, path, base::Time(),
+          base::Time::FromDoubleT(expiry), secure, http_only));
+  if (!cookie.get()) {
+    reply.SendError("given 'cookie' parameters are invalid");
     return;
   }
 
   // Since we may be on the UI thread don't call GetURLRequestContext().
   scoped_refptr<URLRequestContextGetter> context_getter =
-      browser->profile()->GetRequestContext();
+      provider->profile()->GetRequestContext();
 
   base::WaitableEvent event(true /* manual reset */,
                             false /* not initially signaled */);
   bool success = false;
   Task* task = NewRunnableFunction(
-      &SetCookieOnIOThread,
-      GURL(url), cookie, context_getter, &event, &success);
+      &SetCookieWithDetailsOnIOThread,
+      GURL(url), *cookie.get(), domain, context_getter, &event, &success);
   if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task)) {
     reply.SendError("Couldn't post task to set the cookie");
     return;

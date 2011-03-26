@@ -863,16 +863,27 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetTabTitleJSON(DictionaryValue* args, IPC::Message* reply_message);
 
   // Gets the cookies for the given URL. Uses the JSON interface.
+  // "expiry" refers to the amount of seconds since the Unix epoch. If omitted,
+  // the cookie is valid for the duration of the browser session.
   // Example:
-  //   input: { "windex": 1, "tab_index": 1, "url": "http://www.google.com" }
-  //   output: { "cookies": "PREF=12012" }
+  //   input: { "url": "http://www.google.com" }
+  //   output: { "cookies": [
+  //               {
+  //                 "name": "PREF",
+  //                 "value": "123101",
+  //                 "path": "/",
+  //                 "domain": "www.google.com",
+  //                 "secure": false,
+  //                 "expiry": 1401982012
+  //               }
+  //             ]
+  //           }
   void GetCookiesJSON(DictionaryValue* args, IPC::Message* reply_message);
 
   // Deletes the cookie with the given name for the URL. Uses the JSON
   // interface.
   // Example:
-  //   input: { "windex": 1,
-  //            "tab_index": 1,
+  //   input: {
   //            "url": "http://www.google.com",
   //            "name": "my_cookie"
   //          }
@@ -880,11 +891,25 @@ class TestingAutomationProvider : public AutomationProvider,
   void DeleteCookieJSON(DictionaryValue* args, IPC::Message* reply_message);
 
   // Sets a cookie for the given URL. Uses the JSON interface.
+  // "expiry" refers to the amount of seconds since the Unix epoch. If omitted,
+  // the cookie will be valid for the duration of the browser session.
+  // "domain" refers to the applicable domain for the cookie. Valid domain
+  // choices for the site "http://www.google.com" and resulting cookie
+  // applicability:
+  //   [.]www.google.com - applicable on www.google.com and its subdomains
+  //   [.]google.com - applicable on google.com and its subdomains
+  //   <none> - applicable only on www.google.com
+  //
   // Example:
-  //   input: { "windex": 1,
-  //            "tab_index": 1,
-  //            "url": "http://www.google.com",
-  //            "cookie": "PREF=21321"
+  //   input: { "url": "http://www.google.com",
+  //            "cookie": {
+  //              "name": "PREF",
+  //              "value": "123101",
+  //              "path": "/",                  // optional
+  //              "domain": ".www.google.com",  // optional
+  //              "secure": false,              // optional
+  //              "expiry": 1401982012          // optional
+  //            }
   //          }
   //   output: none
   void SetCookieJSON(DictionaryValue* args, IPC::Message* reply_message);

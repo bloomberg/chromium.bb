@@ -19,6 +19,7 @@ class AutomationProxy;
 class DictionaryValue;
 class FilePath;
 class GURL;
+class ListValue;
 class ProxyLauncher;
 struct WebKeyEvent;
 
@@ -66,14 +67,22 @@ class Automation {
   void GetURL(int tab_id, std::string* url, bool* success);
   void GetGURL(int tab_id, GURL* gurl, bool* success);
   void GetTabTitle(int tab_id, std::string* tab_title, bool* success);
-  void GetCookies(
+
+  void GetCookies(const std::string& url, ListValue** cookies, bool* success);
+  void GetCookiesDeprecated(
       int tab_id, const GURL& gurl, std::string* cookies, bool* success);
-  void DeleteCookie(int tab_id,
-                    const GURL& gurl,
+  void DeleteCookie(const std::string& url,
                     const std::string& cookie_name,
                     bool* success);
+  void DeleteCookieDeprecated(int tab_id,
+                              const GURL& gurl,
+                              const std::string& cookie_name,
+                              bool* success);
   void SetCookie(
+      const std::string& url, DictionaryValue* cookie_dict, bool* success);
+  void SetCookieDeprecated(
       int tab_id, const GURL& gurl, const std::string& cookie, bool* success);
+
   void MouseMove(int tab_id, const gfx::Point& p, bool* success);
   void MouseClick(int tab_id,
                   const gfx::Point& p,
@@ -94,7 +103,7 @@ class Automation {
   void CloseTab(int tab_id, bool* success);
 
   // Gets the version of the runing browser.
-  void GetVersion(std::string* version);
+  void GetBrowserVersion(std::string* version);
 
   // Waits for all tabs to stop loading.
   void WaitForAllTabsToStopLoading(bool* success);

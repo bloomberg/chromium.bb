@@ -314,48 +314,66 @@ void Automation::GetTabTitle(int tab_id,
       automation(), windex, tab_index, tab_title);
 }
 
-void Automation::GetCookies(int tab_id,
-                            const GURL& gurl,
-                            std::string* cookies,
+void Automation::GetCookies(const std::string& url,
+                            ListValue** cookies,
                             bool* success) {
+  *success = SendGetCookiesJSONRequest(automation(), url, cookies);
+}
+
+void Automation::GetCookiesDeprecated(int tab_id,
+                                      const GURL& gurl,
+                                      std::string* cookies,
+                                      bool* success) {
   int windex = 0, tab_index = 0;
   if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
     *success = false;
     return;
   }
 
-  *success = SendGetCookiesJSONRequest(
+  *success = SendGetCookiesJSONRequestDeprecated(
       automation(), windex, gurl.possibly_invalid_spec(), cookies);
 }
 
-void Automation::DeleteCookie(int tab_id,
-                              const GURL& gurl,
+void Automation::DeleteCookie(const std::string& url,
                               const std::string& cookie_name,
                               bool* success) {
+  *success = SendDeleteCookieJSONRequest(automation(), url, cookie_name);
+}
+
+void Automation::DeleteCookieDeprecated(int tab_id,
+                                        const GURL& gurl,
+                                        const std::string& cookie_name,
+                                        bool* success) {
   int windex = 0, tab_index = 0;
   if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
     *success = false;
     return;
   }
 
-  *success = SendDeleteCookieJSONRequest(
+  *success = SendDeleteCookieJSONRequestDeprecated(
       automation(),
       windex,
       gurl.possibly_invalid_spec(),
       cookie_name);
 }
 
-void Automation::SetCookie(int tab_id,
-                           const GURL& gurl,
-                           const std::string& cookie,
+void Automation::SetCookie(const std::string& url,
+                           DictionaryValue* cookie_dict,
                            bool* success) {
+  *success = SendSetCookieJSONRequest(automation(), url, cookie_dict);
+}
+
+void Automation::SetCookieDeprecated(int tab_id,
+                                     const GURL& gurl,
+                                     const std::string& cookie,
+                                     bool* success) {
   int windex = 0, tab_index = 0;
   if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
     *success = false;
     return;
   }
 
-  *success = SendSetCookieJSONRequest(
+  *success = SendSetCookieJSONRequestDeprecated(
       automation(),
       windex,
       gurl.possibly_invalid_spec(),
@@ -381,7 +399,7 @@ void Automation::CloseTab(int tab_id, bool* success) {
   *success = SendCloseTabJSONRequest(automation(), windex, tab_index);
 }
 
-void Automation::GetVersion(std::string* version) {
+void Automation::GetBrowserVersion(std::string* version) {
   *version = automation()->server_version();
 }
 

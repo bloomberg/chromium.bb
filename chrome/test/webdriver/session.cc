@@ -322,11 +322,22 @@ bool Session::MouseDrag(const gfx::Point& start,
   return success;
 }
 
-bool Session::GetCookies(const GURL& url, std::string* cookies) {
+bool Session::GetCookies(const std::string& url, ListValue** cookies) {
   bool success = false;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::GetCookies,
+      url,
+      cookies,
+      &success));
+  return success;
+}
+
+bool Session::GetCookiesDeprecated(const GURL& url, std::string* cookies) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::GetCookiesDeprecated,
       current_target_.window_id,
       url,
       cookies,
@@ -334,11 +345,11 @@ bool Session::GetCookies(const GURL& url, std::string* cookies) {
   return success;
 }
 
-bool Session::GetCookieByName(const GURL& url,
-                              const std::string& cookie_name,
-                              std::string* cookie) {
+bool Session::GetCookieByNameDeprecated(const GURL& url,
+                                        const std::string& cookie_name,
+                                        std::string* cookie) {
   std::string cookies;
-  if (!GetCookies(url, &cookies))
+  if (!GetCookiesDeprecated(url, &cookies))
     return false;
 
   std::string namestr = cookie_name + "=";
@@ -353,11 +364,24 @@ bool Session::GetCookieByName(const GURL& url,
   return true;
 }
 
-bool Session::DeleteCookie(const GURL& url, const std::string& cookie_name) {
+bool Session::DeleteCookie(const std::string& url,
+                           const std::string& cookie_name) {
   bool success = false;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::DeleteCookie,
+      url,
+      cookie_name,
+      &success));
+  return success;
+}
+
+bool Session::DeleteCookieDeprecated(const GURL& url,
+                                     const std::string& cookie_name) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::DeleteCookieDeprecated,
       current_target_.window_id,
       url,
       cookie_name,
@@ -365,11 +389,22 @@ bool Session::DeleteCookie(const GURL& url, const std::string& cookie_name) {
   return success;
 }
 
-bool Session::SetCookie(const GURL& url, const std::string& cookie) {
+bool Session::SetCookie(const std::string& url, DictionaryValue* cookie_dict) {
   bool success = false;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::SetCookie,
+      url,
+      cookie_dict,
+      &success));
+  return success;
+}
+
+bool Session::SetCookieDeprecated(const GURL& url, const std::string& cookie) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::SetCookieDeprecated,
       current_target_.window_id,
       url,
       cookie,
@@ -526,13 +561,35 @@ bool Session::CloseWindow() {
   return success;
 }
 
-std::string Session::GetVersion() {
+std::string Session::GetBrowserVersion() {
   std::string version;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
-      &Automation::GetVersion,
+      &Automation::GetBrowserVersion,
       &version));
   return version;
+}
+
+bool Session::CompareBrowserVersion(int client_build_no,
+                                    int client_patch_no,
+                                    bool* is_newer_or_equal) {
+  std::string version = GetBrowserVersion();
+  std::vector<std::string> split_version;
+  base::SplitString(version, '.', &split_version);
+  if (split_version.size() != 4)
+    return false;
+  int build_no, patch_no;
+  if (!base::StringToInt(split_version[2], &build_no) ||
+      !base::StringToInt(split_version[3], &patch_no)) {
+    return false;
+  }
+  if (build_no < client_build_no)
+    *is_newer_or_equal = false;
+  else if (build_no > client_build_no)
+    *is_newer_or_equal = true;
+  else
+    *is_newer_or_equal = patch_no >= client_patch_no;
+  return true;
 }
 
 ErrorCode Session::FindElement(const FrameId& frame_id,
