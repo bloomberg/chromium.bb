@@ -121,6 +121,8 @@ def main():
   parser = optparse.OptionParser(usage=usage)
   parser.add_option('-a', '--acl', default='private',
                     help='ACL to set on GSD archives')
+  parser.add_option('--buildbot', action='store_true', default=False,
+                    help='This is running on a buildbot')
   parser.add_option('-r', '--buildroot',
                     help='root directory where build occurs', default=".")
   parser.add_option('-n', '--buildnumber',
