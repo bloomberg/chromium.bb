@@ -217,6 +217,7 @@
         'browser/automation/automation_provider_mac.mm',
         'browser/automation/automation_provider_observers.cc',
         'browser/automation/automation_provider_observers.h',
+        'browser/automation/automation_provider_observers_chromeos.cc',
         'browser/automation/automation_provider_win.cc',
         'browser/automation/automation_resource_message_filter.cc',
         'browser/automation/automation_resource_message_filter.h',

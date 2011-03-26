@@ -178,7 +178,9 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
   // Wait for the network manager to initialize.
   // The observer will delete itself when done.
   network_library_initialized_ = false;
-  new NetworkManagerInitObserver(this);
+  NetworkManagerInitObserver* observer = new NetworkManagerInitObserver(this);
+  if (!observer->Init())
+    delete observer;
 #endif
 
   TRACE_EVENT_END("AutomationProvider::InitializeChannel", 0, "");

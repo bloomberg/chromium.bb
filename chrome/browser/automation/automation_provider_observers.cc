@@ -24,10 +24,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/login/authentication_notification_details.h"
-#endif  // defined(OS_CHROMEOS)
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/save_package.h"
@@ -152,31 +148,6 @@ void InitialLoadObserver::ConditionMet() {
   if (automation_)
     automation_->OnInitialTabLoadsComplete();
 }
-
-#if defined(OS_CHROMEOS)
-NetworkManagerInitObserver::NetworkManagerInitObserver(
-    AutomationProvider* automation)
-    : automation_(automation->AsWeakPtr()) {
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-        AddNetworkManagerObserver(this);
-  } else {
-    automation_->OnNetworkLibraryInit();
-    delete this;
-  }
-}
-
-NetworkManagerInitObserver::~NetworkManagerInitObserver() {}
-
-void NetworkManagerInitObserver::OnNetworkManagerChanged(
-    chromeos::NetworkLibrary* obj) {
-  if (!obj->wifi_scanning()) {
-    obj->RemoveNetworkManagerObserver(this);
-    automation_->OnNetworkLibraryInit();
-    delete this;
-  }
-}
-#endif  // defined(OS_CHROMEOS)
 
 NewTabUILoadObserver::NewTabUILoadObserver(AutomationProvider* automation)
     : automation_(automation->AsWeakPtr()) {
@@ -1258,66 +1229,6 @@ void InfoBarCountObserver::CheckCount() {
   }
   delete this;
 }
-
-#if defined(OS_CHROMEOS)
-LoginManagerObserver::LoginManagerObserver(
-    AutomationProvider* automation,
-    IPC::Message* reply_message)
-    : automation_(automation->AsWeakPtr()),
-      reply_message_(reply_message) {
-
-  registrar_.Add(this, NotificationType::LOGIN_USER_CHANGED,
-                 NotificationService::AllSources());
-}
-
-LoginManagerObserver::~LoginManagerObserver() {}
-
-void LoginManagerObserver::Observe(NotificationType type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
-  DCHECK(type == NotificationType::LOGIN_USER_CHANGED);
-
-  if (!automation_) {
-    delete this;
-    return;
-  }
-
-  AutomationJSONReply reply(automation_, reply_message_.release());
-  Details<AuthenticationNotificationDetails> auth_details(details);
-  if (auth_details->success())
-    reply.SendSuccess(NULL);
-  else
-    reply.SendError("Login failure.");
-  delete this;
-}
-
-ScreenLockUnlockObserver::ScreenLockUnlockObserver(
-    AutomationProvider* automation,
-    IPC::Message* reply_message,
-    bool lock_screen)
-    : automation_(automation),
-      reply_message_(reply_message),
-      lock_screen_(lock_screen) {
-
-  registrar_.Add(this, NotificationType::SCREEN_LOCK_STATE_CHANGED,
-                 NotificationService::AllSources());
-}
-
-ScreenLockUnlockObserver::~ScreenLockUnlockObserver() {}
-
-void ScreenLockUnlockObserver::Observe(NotificationType type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
-  DCHECK(type == NotificationType::SCREEN_LOCK_STATE_CHANGED);
-  AutomationJSONReply reply(automation_, reply_message_);
-  bool is_screen_locked = *Details<bool>(details).ptr();
-  if (lock_screen_ == is_screen_locked)
-    reply.SendSuccess(NULL);
-  else
-    reply.SendError("Screen lock failure.");
-  delete this;
-}
-#endif  // defined(OS_CHROMEOS)
 
 AutomationProviderBookmarkModelObserver::
 AutomationProviderBookmarkModelObserver(

@@ -101,6 +101,7 @@ class NetworkManagerInitObserver
  public:
   explicit NetworkManagerInitObserver(AutomationProvider* automation);
   virtual ~NetworkManagerInitObserver();
+  virtual bool Init();
   virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
 
  private:
@@ -701,6 +702,46 @@ class ScreenLockUnlockObserver : public NotificationObserver {
   bool lock_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockUnlockObserver);
+};
+
+class NetworkScanObserver
+    : public chromeos::NetworkLibrary::NetworkManagerObserver {
+ public:
+  NetworkScanObserver(AutomationProvider* automation,
+                      IPC::Message* reply_message);
+
+  virtual ~NetworkScanObserver();
+
+  // NetworkLibrary::NetworkManagerObserver implementation.
+  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
+
+ private:
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkScanObserver);
+};
+
+// Waits for a connection success or failure for the specified
+// network and returns the status to the automation provider.
+class NetworkConnectObserver
+    : public chromeos::NetworkLibrary::NetworkManagerObserver {
+ public:
+  NetworkConnectObserver(AutomationProvider* automation,
+                         IPC::Message* reply_message,
+                         const std::string& service_path);
+
+  virtual ~NetworkConnectObserver();
+
+  // NetworkLibrary::NetworkManagerObserver implementation.
+  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
+
+ private:
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+  std::string service_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkConnectObserver);
 };
 #endif  // defined(OS_CHROMEOS)
 

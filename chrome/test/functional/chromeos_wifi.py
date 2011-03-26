@@ -18,6 +18,10 @@ class ChromeosWifi(chromeos_network.PyNetworkUITest):
     self.assertTrue(result)
     logging.debug(result)
 
+  def testNetworkScan(self):
+    """Basic check to ensure that a network scan doesn't throw errors."""
+    self.NetworkScan()
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()

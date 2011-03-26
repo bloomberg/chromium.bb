@@ -983,7 +983,12 @@ class TestingAutomationProvider : public AutomationProvider,
 
   void GetNetworkInfo(DictionaryValue* args, IPC::Message* reply_message);
 
+  void NetworkScan(DictionaryValue* args, IPC::Message* reply_message);
+
   void ConnectToWifiNetwork(DictionaryValue* args, IPC::Message* reply_message);
+
+  void DisconnectFromWifiNetwork(DictionaryValue* args,
+                                 IPC::Message* reply_message);
 #endif  // defined(OS_CHROMEOS)
 
   void WaitForTabCountToBecome(int browser_handle,

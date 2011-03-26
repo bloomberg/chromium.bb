@@ -471,7 +471,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
-    ret_dict = json.loads(self._SendJSONRequest(windex, json.dumps(cmd_dict)))
+    result = self._SendJSONRequest(windex, json.dumps(cmd_dict))
+    if len(result) == 0:
+      raise JSONInterfaceError('Automation call received no response.')
+    ret_dict = json.loads(result)
     if ret_dict.has_key('error'):
       raise JSONInterfaceError(ret_dict['error'])
     return ret_dict
@@ -2288,7 +2291,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = { 'command': 'GetLoginInfo' }
-    return self._GetResultFromJSONRequest(cmd_dict)
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   def LoginAsGuest(self):
     """Login to chromeos as a guest user.
@@ -2377,9 +2380,27 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = { 'command': 'GetNetworkInfo' }
     return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
+  def NetworkScan(self):
+    """Causes ChromeOS to scan for available wifi networks.
+
+    Blocks until scanning is complete.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'NetworkScan' }
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
   def ConnectToWifiNetwork(self, service_path,
                            password='', identity='', certpath=''):
     """Connect to a wifi network by its service path.
+
+    Blocks until connection succeeds or fails.
+
+    Returns:
+      A tuple.
+      The first element is True on success and False on failure.
+      The second element is None on success or an error string on failure.
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
@@ -2391,7 +2412,26 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'identity': identity,
         'certpath': certpath,
     }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    result = self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    if result.has_key('error_code'):
+      return (False, result['error_code'])
+    else:
+      return (True, None)
+
+  def DisconnectFromWifiNetwork(self, service_path,
+                                password='', identity='', certpath=''):
+    """Disconnect from a wifi network by its service path.
+
+    Blocks until disconnect is complete.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'DisconnectFromWifiNetwork',
+        'service_path': service_path,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   ## ChromeOS section -- end
 

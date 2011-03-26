@@ -66,7 +66,7 @@ void TestingAutomationProvider::Login(DictionaryValue* args,
   if (!args->GetString("username", &username) ||
       !args->GetString("password", &password)) {
     AutomationJSONReply(this, reply_message).SendError(
-        "Invalid or missing args");
+        "Invalid or missing args.");
     return;
   }
 
@@ -196,6 +196,22 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
   reply.SendSuccess(return_value.get());
 }
 
+void TestingAutomationProvider::NetworkScan(DictionaryValue* args,
+                                            IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+
+  if (!CrosLibrary::Get()->EnsureLoaded()) {
+    reply.SendError("Could not load cros library.");
+    return;
+  }
+
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  network_library->RequestNetworkScan();
+
+  // Set up an observer (it will delete itself).
+  new NetworkScanObserver(this, reply_message);
+}
+
 void TestingAutomationProvider::ConnectToWifiNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
@@ -204,7 +220,7 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
       !args->GetString("password", &password) ||
       !args->GetString("identity", &identity) ||
       !args->GetString("certpath", &certpath)) {
-    reply.SendError("Invalid or missing args");
+    reply.SendError("Invalid or missing args.");
     return;
   }
 
@@ -217,7 +233,7 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
   chromeos::WifiNetwork* wifi =
       network_library->FindWifiNetworkByPath(service_path);
   if (!wifi) {
-    reply.SendError("Failed to connect");
+    reply.SendError("No network found with specified service path.");
     return;
   }
   if (!password.empty())
@@ -226,10 +242,36 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
     wifi->SetIdentity(identity);
   if (!certpath.empty())
     wifi->SetCertPath(certpath);
-  network_library->ConnectToWifiNetwork(service_path);
 
-  // TODO(stevenjb): Observe the network library and check for a successful
-  // connection.
+  // Set up an observer (it will delete itself).
+  new NetworkConnectObserver(this, reply_message, service_path);
 
+  network_library->ConnectToWifiNetwork(wifi);
+  network_library->RequestNetworkScan();
+}
+
+void TestingAutomationProvider::DisconnectFromWifiNetwork(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  std::string service_path;
+  if (!args->GetString("service_path", &service_path)) {
+    reply.SendError("Invalid or missing args.");
+    return;
+  }
+
+  if (!CrosLibrary::Get()->EnsureLoaded()) {
+    reply.SendError("Could not load cros library.");
+    return;
+  }
+
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  chromeos::WifiNetwork* wifi =
+      network_library->FindWifiNetworkByPath(service_path);
+  if (!wifi) {
+    reply.SendError("No network found with specified service path.");
+    return;
+  }
+
+  network_library->DisconnectFromWirelessNetwork(wifi);
   reply.SendSuccess(NULL);
 }
