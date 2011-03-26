@@ -1021,7 +1021,8 @@ TEST_F(ProfileSyncServiceTest,
   EXPECT_EQ(NULL, test_backend->GetJsBackend()->GetParentJsEventRouter());
 }
 
-TEST_F(ProfileSyncServiceTest, JsFrontendProcessMessageBasic) {
+// http://crbug.com/77485
+TEST_F(ProfileSyncServiceTest, FLAKY_JsFrontendProcessMessageBasic) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSyncService();
 
