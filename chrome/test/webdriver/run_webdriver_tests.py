@@ -243,8 +243,26 @@ class Main(object):
       logging.debug('Excluded %d test(s): %s' % (len(excluded), excluded))
     return args
 
+  def _FakePytestHack(self):
+    """Adds a fake 'pytest' module to the system modules.
+
+    A single test in text_handling_tests.py depends on the pytest module for
+    its test skipping capabilities. Without pytest, we can not run any tests
+    in the text_handling_tests.py module.
+
+    We are not sure we want to add pytest to chrome's third party dependencies,
+    so for now create a fake pytest module so that we can at least import and
+    run all the tests that do not depend on it. Those depending on it are
+    disabled.
+    """
+    import imp
+    sys.modules['pytest'] = imp.new_module('pytest')
+
   def _Run(self):
     """Run the tests."""
+    # TODO(kkania): Remove this hack.
+    self._FakePytestHack()
+
     test_names = self._GetTestNames(self._args)
 
     # The tests expect to run with preset 'driver' and 'webserver' class

@@ -4,6 +4,8 @@
 
 #include "chrome/test/webdriver/webdriver_key_converter.h"
 
+#include "base/format_macros.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/automation/automation_json_requests.h"
@@ -109,6 +111,39 @@ bool KeyCodeFromSpecialWebDriverKey(char16 key, ui::KeyboardCode* key_code) {
   return is_special_key;
 }
 
+// Gets the key code associated with |key|, if it is a special shorthand key.
+// Shorthand keys are common text equivalents for keys, such as the newline
+// character, which is shorthand for the return key. Returns whether |key| is
+// a shorthand key. If true, |key_code| will be set and |client_should_skip|
+// will be set to whether the key should be skipped.
+bool KeyCodeFromShorthandKey(char16 key_utf16,
+                             ui::KeyboardCode* key_code,
+                             bool* client_should_skip) {
+  string16 key_str_utf16;
+  key_str_utf16.push_back(key_utf16);
+  std::string key_str_utf8 = UTF16ToUTF8(key_str_utf16);
+  if (key_str_utf8.length() != 1)
+    return false;
+  bool should_skip = false;
+  char key = key_str_utf8[0];
+  if (key == '\n') {
+    *key_code = ui::VKEY_RETURN;
+  } else if (key == '\t') {
+    *key_code = ui::VKEY_TAB;
+  } else if (key == '\b') {
+    *key_code = ui::VKEY_BACK;
+  } else if (key == ' ') {
+    *key_code = ui::VKEY_SPACE;
+  } else if (key == '\r') {
+    *key_code = ui::VKEY_UNKNOWN;
+    should_skip = true;
+  } else {
+    return false;
+  }
+  *client_should_skip = should_skip;
+  return true;
+}
+
 }  // namespace
 
 namespace webdriver {
@@ -131,8 +166,11 @@ WebKeyEvent CreateCharEvent(const std::string& unmodified_text,
                      modifiers);
 }
 
-void ConvertKeysToWebKeyEvents(const string16& client_keys,
-                               std::vector<WebKeyEvent>* key_events) {
+bool ConvertKeysToWebKeyEvents(const string16& client_keys,
+                               std::vector<WebKeyEvent>* client_key_events,
+                               std::string* error_msg) {
+  std::vector<WebKeyEvent> key_events;
+
   // Add an implicit NULL character to the end of the input to depress all
   // modifiers.
   string16 keys = client_keys;
@@ -145,13 +183,13 @@ void ConvertKeysToWebKeyEvents(const string16& client_keys,
     if (key == kWebDriverNullKey) {
       // Release all modifier keys and clear |stick_modifiers|.
       if (sticky_modifiers & automation::kShiftKeyMask)
-        key_events->push_back(CreateKeyUpEvent(ui::VKEY_SHIFT, 0));
+        key_events.push_back(CreateKeyUpEvent(ui::VKEY_SHIFT, 0));
       if (sticky_modifiers & automation::kControlKeyMask)
-        key_events->push_back(CreateKeyUpEvent(ui::VKEY_CONTROL, 0));
+        key_events.push_back(CreateKeyUpEvent(ui::VKEY_CONTROL, 0));
       if (sticky_modifiers & automation::kAltKeyMask)
-        key_events->push_back(CreateKeyUpEvent(ui::VKEY_MENU, 0));
+        key_events.push_back(CreateKeyUpEvent(ui::VKEY_MENU, 0));
       if (sticky_modifiers & automation::kMetaKeyMask)
-        key_events->push_back(CreateKeyUpEvent(ui::VKEY_COMMAND, 0));
+        key_events.push_back(CreateKeyUpEvent(ui::VKEY_COMMAND, 0));
       sticky_modifiers = 0;
       continue;
     }
@@ -179,9 +217,9 @@ void ConvertKeysToWebKeyEvents(const string16& client_keys,
         NOTREACHED();
       }
       if (modifier_down)
-        key_events->push_back(CreateKeyDownEvent(key_code, sticky_modifiers));
+        key_events.push_back(CreateKeyDownEvent(key_code, sticky_modifiers));
       else
-        key_events->push_back(CreateKeyUpEvent(key_code, sticky_modifiers));
+        key_events.push_back(CreateKeyUpEvent(key_code, sticky_modifiers));
       continue;
     }
 
@@ -189,28 +227,43 @@ void ConvertKeysToWebKeyEvents(const string16& client_keys,
     std::string unmodified_text, modified_text;
     int all_modifiers = sticky_modifiers;
 
-    bool is_special_key = KeyCodeFromSpecialWebDriverKey(key, &key_code);
-    if (is_special_key && key_code == ui::VKEY_UNKNOWN) {
-      LOG(ERROR) << "Unknown WebDriver key: " << static_cast<int>(key);
-      continue;
-    }
-    if (!is_special_key) {
+    // Get the key code, text, and modifiers for the given key.
+    bool should_skip = false;
+    if (KeyCodeFromSpecialWebDriverKey(key, &key_code) ||
+        KeyCodeFromShorthandKey(key, &key_code, &should_skip)) {
+      if (should_skip)
+        continue;
+      if (key_code == ui::VKEY_UNKNOWN) {
+        *error_msg = StringPrintf(
+            "Unknown WebDriver key(%d) at string index (%" PRIuS ")",
+            static_cast<int>(key),
+            i);
+        return false;
+      }
+      if (key_code == ui::VKEY_RETURN) {
+        // For some reason Chrome expects a carriage return for the return key.
+        modified_text = unmodified_text = "\r";
+      } else {
+        unmodified_text = ConvertKeyCodeToText(key_code, 0);
+        modified_text = ConvertKeyCodeToText(key_code, all_modifiers);
+      }
+    } else {
       int necessary_modifiers = 0;
       ConvertCharToKeyCode(key, &key_code, &necessary_modifiers);
       all_modifiers |= necessary_modifiers;
-    }
-    if (key_code != ui::VKEY_UNKNOWN) {
-      unmodified_text = ConvertKeyCodeToText(key_code, 0);
-      modified_text = ConvertKeyCodeToText(key_code, all_modifiers);
-    }
-    if (!is_special_key && (unmodified_text.empty() || modified_text.empty())) {
-      // Do a best effort and use the raw key we were given.
-      LOG(WARNING) << "No translation for key code. Code point: "
-                   << static_cast<int>(key);
-      if (unmodified_text.empty())
-        unmodified_text = UTF16ToUTF8(keys.substr(i, 1));
-      if (modified_text.empty())
-        modified_text = UTF16ToUTF8(keys.substr(i, 1));
+      if (key_code != ui::VKEY_UNKNOWN) {
+        unmodified_text = ConvertKeyCodeToText(key_code, 0);
+        modified_text = ConvertKeyCodeToText(key_code, all_modifiers);
+      }
+      if (unmodified_text.empty() || modified_text.empty()) {
+        // Do a best effort and use the raw key we were given.
+        LOG(WARNING) << "No translation for key code. Code point: "
+                     << static_cast<int>(key);
+        if (unmodified_text.empty())
+          unmodified_text = UTF16ToUTF8(keys.substr(i, 1));
+        if (modified_text.empty())
+          modified_text = UTF16ToUTF8(keys.substr(i, 1));
+      }
     }
 
     // Create the key events.
@@ -218,22 +271,24 @@ void ConvertKeysToWebKeyEvents(const string16& client_keys,
         all_modifiers & automation::kShiftKeyMask &&
         !(sticky_modifiers & automation::kShiftKeyMask);
     if (need_shift_key) {
-      key_events->push_back(
+      key_events.push_back(
           CreateKeyDownEvent(ui::VKEY_SHIFT, sticky_modifiers));
     }
 
-    key_events->push_back(CreateKeyDownEvent(key_code, all_modifiers));
+    key_events.push_back(CreateKeyDownEvent(key_code, all_modifiers));
     if (unmodified_text.length() || modified_text.length()) {
-      key_events->push_back(
+      key_events.push_back(
           CreateCharEvent(unmodified_text, modified_text, all_modifiers));
     }
-    key_events->push_back(CreateKeyUpEvent(key_code, all_modifiers));
+    key_events.push_back(CreateKeyUpEvent(key_code, all_modifiers));
 
     if (need_shift_key) {
-      key_events->push_back(
+      key_events.push_back(
           CreateKeyUpEvent(ui::VKEY_SHIFT, sticky_modifiers));
     }
   }
+  client_key_events->swap(key_events);
+  return true;
 }
 
 }  // namespace webdriver

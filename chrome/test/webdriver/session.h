@@ -87,7 +87,7 @@ class Session {
   ErrorCode SendKeys(const WebElementId& element, const string16& keys);
 
   // Clicks the mouse at the given location using the given button.
-  void MouseClick(const gfx::Point& click, automation::MouseButton button);
+  bool MouseClick(const gfx::Point& click, automation::MouseButton button);
   bool MouseMove(const gfx::Point& location);
   bool MouseDrag(const gfx::Point& start, const gfx::Point& end);
 
@@ -169,6 +169,11 @@ class Session {
                              const WebElementId& element,
                              int* border_left,
                              int* border_top);
+
+  // Gets whether the element is currently displayed.
+  ErrorCode IsElementDisplayed(const FrameId& frame_id,
+                               const WebElementId& element,
+                               bool* is_visible);
 
   // Waits for all tabs to stop loading. Returns true on success.
   bool WaitForAllTabsToStopLoading();

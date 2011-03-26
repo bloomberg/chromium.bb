@@ -173,12 +173,19 @@ ErrorCode Session::ExecuteScript(const std::string& script,
 }
 
 ErrorCode Session::SendKeys(const WebElementId& element, const string16& keys) {
+  bool is_displayed = false;
+  ErrorCode code = IsElementDisplayed(current_target_, element, &is_displayed);
+  if (code != kSuccess)
+    return code;
+  if (!is_displayed)
+    return kElementNotVisible;
+
   ListValue args;
   args.Append(element.ToValue());
   // TODO(jleyba): Update this to use the correct atom.
   std::string script = "document.activeElement.blur();arguments[0].focus();";
   Value* unscoped_result = NULL;
-  ErrorCode code = ExecuteScript(script, &args, &unscoped_result);
+  code = ExecuteScript(script, &args, &unscoped_result);
   scoped_ptr<Value> result(unscoped_result);
   if (code != kSuccess) {
     LOG(ERROR) << "Failed to focus element before sending keys";
@@ -278,7 +285,7 @@ bool Session::GetTabTitle(std::string* tab_title) {
   return success;
 }
 
-void Session::MouseClick(const gfx::Point& click,
+bool Session::MouseClick(const gfx::Point& click,
                          automation::MouseButton button) {
   bool success = false;
   RunSessionTask(NewRunnableMethod(
@@ -288,6 +295,7 @@ void Session::MouseClick(const gfx::Point& click,
       click,
       button,
       &success));
+  return success;
 }
 
 bool Session::MouseMove(const gfx::Point& location) {
@@ -649,6 +657,26 @@ ErrorCode Session::GetElementBorder(const FrameId& frame_id,
   return kSuccess;
 }
 
+ErrorCode Session::IsElementDisplayed(const FrameId& frame_id,
+                                      const WebElementId& element,
+                                      bool* is_displayed) {
+  std::string script = base::StringPrintf(
+      "return (%s).apply(null, arguments);", atoms::IS_DISPLAYED);
+  ListValue args;
+  args.Append(element.ToValue());
+
+  Value* unscoped_result = NULL;
+  ErrorCode code = ExecuteScript(frame_id, script, &args, &unscoped_result);
+  scoped_ptr<Value> result(unscoped_result);
+  if (code != kSuccess)
+    return code;
+  if (!result->GetAsBoolean(is_displayed)) {
+    LOG(ERROR) << "IsDisplayed atom returned non boolean";
+    return kUnknownError;
+  }
+  return kSuccess;
+}
+
 bool Session::WaitForAllTabsToStopLoading() {
   if (!automation_.get())
     return true;
@@ -707,11 +735,16 @@ void Session::TerminateOnSessionThread() {
   automation_.reset();
 }
 
-void Session::SendKeysOnSessionThread(const string16& keys,
-                                      bool* success) {
+void Session::SendKeysOnSessionThread(const string16& keys, bool* success) {
   *success = true;
   std::vector<WebKeyEvent> key_events;
-  ConvertKeysToWebKeyEvents(keys, &key_events);
+  std::string error_msg;
+  if (!ConvertKeysToWebKeyEvents(keys, &key_events, &error_msg)) {
+    // TODO(kkania): Return this message to the user.
+    LOG(ERROR) << error_msg;
+    *success = false;
+    return;
+  }
   for (size_t i = 0; i < key_events.size(); ++i) {
     bool key_success = false;
     automation_->SendWebKeyEvent(

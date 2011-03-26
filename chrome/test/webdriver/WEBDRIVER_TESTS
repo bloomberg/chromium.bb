@@ -28,10 +28,11 @@
     # Automation proxy only returns cookie name=value pairs.
     '-cookie_tests.CookieTest.testAddCookie',
     '-cookie_tests.CookieTest.testGetGoogleCookie',
-#   'correct_event_firing_tests',
+    'correct_event_firing_tests',
     'driver_element_finding_test',
     'element_attribute_tests',
-#   'executing_async_javascript_test',
+    # Async execution has not been implemented.
+    # 'executing_async_javascript_test',
     'executing_javascript_test',
     'form_handling_tests',
     # This test is flaky, probably because of form submission race.
@@ -39,30 +40,26 @@
     'frame_switching_tests',
     'implicit_waits_tests',
     'page_loading_tests',
-    # testShouldReturnWhenGettingAUrlThatDoesNotResolve causes the test after
-    # to fail when run in xvfb: crbug.com/72027.
+    # This test causes the test after to fail occassionally. See
+    # crbug.com/72027. This is because we are not waiting for navigation
+    # error pages.
     '-page_loading_tests.PageLoadingTests.testShouldReturnWhenGettingAUrlThatDoesNotResolve',
-    '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateBackInTheBrowserHistory',
-    '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateBackInTheBrowserHistoryInPresenceOfIframes',
-    '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateForwardsInTheBrowserHistory',
-    # This test is flaky.
-    '-page_loading_tests.PageLoadingTests.testShouldWaitForDocumentToBeLoaded',
     'rendered_webelement_tests',
-    # Test is flaky. Sometimes can't find an element.
-    '-rendered_webelement_tests.RenderedWebElementTests.testShouldCorrectlyIdentifyThatAnElementHasWidth',
     # Test expects a color keyword, but a rgba tuple is returned.
     '-rendered_webelement_tests.RenderedWebElementTests.testShouldAllowInheritedStylesToBeUsed',
     # Test expects hex color, but a rgb tuple is returned.
     '-rendered_webelement_tests.RenderedWebElementTests.testShouldPickUpStyleOfAnElement',
     'select_element_handling_tests',
     'stale_reference_tests',
-#   'text_handling_tests',
+    'text_handling_tests',
+    # Getting the page source is broken.
+    '-text_handling_tests.TextHandlingTests.testReadALargeAmountOfData',
+    # Chrome bug/oddity. See crbug.com/76111.
+    '-text_handling_tests.TextHandlingTests.testShouldBeAbleToSetMoreThanOneLineOfTextInATextArea',
+    # See issue 1225 on the webdriver OSS tracker.
+    '-text_handling_tests.TextHandlingTests.testShouldReturnEmptyStringWhenTagIsSelfClosing',
     'typing_tests',
     'visibility_tests',
-    # Bug in clicking: element is not verified before clicking.
-    '-visibility_tests.VisibilityTests.testShouldNotBeAbleToClickOnAnElementThatIsNotDisplayed',
-    # Bug in typing: element is not verified before typing.
-    '-visibility_tests.VisibilityTests.testShouldNotBeAbleToTypeAnElementThatIsNotDisplayed',
   ],
 
   'win': [

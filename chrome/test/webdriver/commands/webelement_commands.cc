@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -155,16 +155,12 @@ bool ElementDisplayedCommand::DoesGet() {
 }
 
 void ElementDisplayedCommand::ExecuteGet(Response* const response) {
-  scoped_ptr<ListValue> args(new ListValue);
-  args->Append(element.ToValue());
-
-  std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::IS_DISPLAYED);
-
-  Value* result = NULL;
-  ErrorCode status = session_->ExecuteScript(script, args.get(), &result);
+  bool is_displayed;
+  ErrorCode status = session_->IsElementDisplayed(
+      session_->current_target(), element, &is_displayed);
+  if (status == kSuccess)
+    response->SetValue(Value::CreateBooleanValue(is_displayed));
   response->SetStatus(status);
-  response->SetValue(result);
 }
 
 ///////////////////// ElementEnabledCommand ////////////////////

@@ -17,7 +17,8 @@ void CheckEvents(const string16& keys,
                  WebKeyEvent expected_events[],
                  size_t expected_size) {
   std::vector<WebKeyEvent> events;
-  ConvertKeysToWebKeyEvents(keys, &events);
+  std::string error_msg;
+  EXPECT_TRUE(ConvertKeysToWebKeyEvents(keys, &events, &error_msg));
   EXPECT_EQ(expected_size, events.size());
   for (size_t i = 0; i < events.size() && i < expected_size; ++i) {
     EXPECT_EQ(expected_events[i].type, events[i].type);
@@ -38,7 +39,9 @@ void CheckNonShiftChar(ui::KeyboardCode key_code, char character) {
   std::string char_string;
   char_string.push_back(character);
   std::vector<WebKeyEvent> events;
-  ConvertKeysToWebKeyEvents(ASCIIToUTF16(char_string), &events);
+  std::string error_msg;
+  EXPECT_TRUE(ConvertKeysToWebKeyEvents(ASCIIToUTF16(char_string), &events,
+                                        &error_msg));
   ASSERT_EQ(3u, events.size()) << "Char: " << character;
   EXPECT_EQ(key_code, events[0].key_code) << "Char: " << character;
   ASSERT_EQ(1u, events[1].modified_text.length()) << "Char: " << character;
@@ -52,7 +55,9 @@ void CheckShiftChar(ui::KeyboardCode key_code, char character, char lower) {
   std::string char_string;
   char_string.push_back(character);
   std::vector<WebKeyEvent> events;
-  ConvertKeysToWebKeyEvents(ASCIIToUTF16(char_string), &events);
+  std::string error_msg;
+  EXPECT_TRUE(ConvertKeysToWebKeyEvents(ASCIIToUTF16(char_string), &events,
+                                        &error_msg));
   ASSERT_EQ(5u, events.size()) << "Char: " << character;
   EXPECT_EQ(ui::VKEY_SHIFT, events[0].key_code) << "Char: " << character;
   EXPECT_EQ(key_code, events[1].key_code) << "Char: " << character;
@@ -196,6 +201,24 @@ TEST(WebDriverKeyConverter, ToggleModifiers) {
   CheckEvents(keys, event_array, arraysize(event_array));
 }
 
+TEST(WebDriverKeyConverter, AllShorthandKeys) {
+  WebKeyEvent event_array[] = {
+      CreateKeyDownEvent(ui::VKEY_RETURN, 0),
+      CreateCharEvent("\r", "\r", 0),
+      CreateKeyUpEvent(ui::VKEY_RETURN, 0),
+      CreateKeyDownEvent(ui::VKEY_RETURN, 0),
+      CreateCharEvent("\r", "\r", 0),
+      CreateKeyUpEvent(ui::VKEY_RETURN, 0),
+      CreateKeyDownEvent(ui::VKEY_TAB, 0),
+      CreateKeyUpEvent(ui::VKEY_TAB, 0),
+      CreateKeyDownEvent(ui::VKEY_BACK, 0),
+      CreateKeyUpEvent(ui::VKEY_BACK, 0),
+      CreateKeyDownEvent(ui::VKEY_SPACE, 0),
+      CreateCharEvent(" ", " ", 0),
+      CreateKeyUpEvent(ui::VKEY_SPACE, 0)};
+  CheckEvents("\n\r\n\t\b ", event_array, arraysize(event_array));
+}
+
 TEST(WebDriverKeyConverter, AllEnglishKeyboardSymbols) {
   string16 keys;
   const ui::KeyboardCode kSymbolKeyCodes[] = {
@@ -243,24 +266,33 @@ TEST(WebDriverKeyConverter, AllEnglishKeyboardTextChars) {
 
 TEST(WebDriverKeyConverter, AllSpecialWebDriverKeysOnEnglishKeyboard) {
   const char kTextKeys[] = {
-      ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ';', '=', '0', '1', '2', '3', '4', '5',
-      '6', '7', '8', '9', '*', '+', ',', '-', '.', '/'};
+      0, 0, 0, 0, 0, 0, '\r', '\r', 0, 0, 0, 0, 0, ' ', 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, ';', '=', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      '*', '+', ',', '-', '.', '/'};
   for (size_t i = 0; i <= 0x3D; ++i) {
     if (i > 0x29 && i < 0x31)
       continue;
     string16 keys;
     keys.push_back(0xE000U + i);
     std::vector<WebKeyEvent> events;
-    ConvertKeysToWebKeyEvents(keys, &events);
-    if (i == 0xD || (i >= 0x18 && i <= 0x29)) {
-      ASSERT_EQ(3u, events.size()) << "Index: " << i;
-      ASSERT_EQ(1u, events[1].unmodified_text.length()) << "Index: " << i;
-      EXPECT_EQ(kTextKeys[i - 0xD], events[1].unmodified_text[0])
+    std::string error_msg;
+    if (i == 1) {
+      EXPECT_FALSE(ConvertKeysToWebKeyEvents(keys, &events, &error_msg))
           << "Index: " << i;
-    } else if (i < 2) {
       EXPECT_EQ(0u, events.size()) << "Index: " << i;
     } else {
-      EXPECT_EQ(2u, events.size()) << "Index: " << i;
+      EXPECT_TRUE(ConvertKeysToWebKeyEvents(keys, &events, &error_msg))
+          << "Index: " << i;
+      if (i == 0) {
+        EXPECT_EQ(0u, events.size()) << "Index: " << i;
+      } else if (i == 6 || i == 7 || i == 0xD || (i >= 0x18 && i <= 0x29)) {
+        ASSERT_EQ(3u, events.size()) << "Index: " << i;
+        ASSERT_EQ(1u, events[1].unmodified_text.length()) << "Index: " << i;
+        EXPECT_EQ(kTextKeys[i], events[1].unmodified_text[0])
+            << "Index: " << i;
+      } else {
+        EXPECT_EQ(2u, events.size()) << "Index: " << i;
+      }
     }
   }
 }

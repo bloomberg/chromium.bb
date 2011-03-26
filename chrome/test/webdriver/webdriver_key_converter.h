@@ -22,9 +22,12 @@ WebKeyEvent CreateCharEvent(const std::string& unmodified_text,
                             const std::string& modified_text,
                             int modifiers);
 
-// Converts keys into appropriate |WebKeyEvent|s.
-void ConvertKeysToWebKeyEvents(const string16& keys,
-                               std::vector<WebKeyEvent>* key_events);
+// Converts keys into appropriate |WebKeyEvent|s. This will do a best effort
+// conversion. However, if the input is invalid it will return false and set
+// an error message.
+bool ConvertKeysToWebKeyEvents(const string16& keys,
+                               std::vector<WebKeyEvent>* key_events,
+                               std::string* error_msg);
 
 }  // namespace webdriver
 

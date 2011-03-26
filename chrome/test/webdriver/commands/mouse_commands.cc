@@ -22,9 +22,22 @@ bool MouseCommand::DoesPost() {
 }
 
 void MouseCommand::ExecutePost(Response* response) {
-  // TODO(jmikhail): verify that the element is visible
+  bool is_displayed;
+  ErrorCode code = session_->IsElementDisplayed(
+      session_->current_target(), element, &is_displayed);
+  if (code != kSuccess) {
+    SET_WEBDRIVER_ERROR(response, "Failed to determine element visibility",
+                        code);
+    return;
+  }
+  if (!is_displayed) {
+    SET_WEBDRIVER_ERROR(response, "Element must be displayed",
+                        kElementNotVisible);
+    return;
+  }
+
   gfx::Point location;
-  ErrorCode code = session_->GetElementLocationInView(element, &location);
+  code = session_->GetElementLocationInView(element, &location);
   if (code != kSuccess) {
     SET_WEBDRIVER_ERROR(response, "Failed to compute element location.",
                         code);
@@ -39,17 +52,18 @@ void MouseCommand::ExecutePost(Response* response) {
   }
 
   location.Offset(size.width() / 2, size.height() / 2);
+  bool success = false;
   switch (cmd_) {
     case kClick:
       VLOG(1) << "Mouse click at: (" << location.x() << ", "
               << location.y() << ")" << std::endl;
-      session_->MouseClick(location, automation::kLeftButton);
+      success = session_->MouseClick(location, automation::kLeftButton);
       break;
 
     case kHover:
       VLOG(1) << "Mouse hover at: (" << location.x() << ", "
               << location.y() << ")" << std::endl;
-      session_->MouseMove(location);
+      success = session_->MouseMove(location);
       break;
 
     case kDrag: {
@@ -65,7 +79,7 @@ void MouseCommand::ExecutePost(Response* response) {
               << "(" << location.x() << ", " << location.y() << ") "
               << "to: (" << drag_to.x() << ", " << drag_to.y() << ")"
               << std::endl;
-      session_->MouseDrag(location, drag_to);
+      success = session_->MouseDrag(location, drag_to);
       break;
     }
 
@@ -74,6 +88,11 @@ void MouseCommand::ExecutePost(Response* response) {
       return;
   }
 
+  if (!success) {
+    SET_WEBDRIVER_ERROR(response, "Performing mouse operation failed",
+                        kUnknownError);
+    return;
+  }
   response->SetStatus(kSuccess);
 }
 
