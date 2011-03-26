@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,13 @@
 
 #include "chrome/test/webdriver/commands/webdriver_command.h"
 
+class DictionaryValue;
+
 namespace webdriver {
 
 class Response;
 
-// Controls navigate to new web pages for the current tab.  A call with
-// an HTTP GET will return the source of the tab. See:
+// Gets the page source. See:
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol#/session/:sessionId/source
 class SourceCommand : public WebDriverCommand {
  public:
@@ -27,12 +28,9 @@ class SourceCommand : public WebDriverCommand {
   virtual void ExecuteGet(Response* const response);
 
  private:
-  virtual bool RequiresValidTab();
-
   DISALLOW_COPY_AND_ASSIGN(SourceCommand);
 };
 
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_SOURCE_COMMAND_H_
-

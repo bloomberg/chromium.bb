@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,14 +6,16 @@
 
 #include <string>
 
+#include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
+#include "chrome/test/webdriver/error_codes.h"
+#include "chrome/test/webdriver/session.h"
 
 namespace webdriver {
 
 // Private atom to find source code of the page.
 const char* const kSource =
-    "window.domAutomationController.send("
-    "new XMLSerializer().serializeToString(document));";
+    "return new XMLSerializer().serializeToString(document);";
 
 SourceCommand::SourceCommand(const std::vector<std::string>& path_segments,
                              const DictionaryValue* const parameters)
@@ -26,24 +28,17 @@ bool SourceCommand::DoesGet() {
 }
 
 void SourceCommand::ExecuteGet(Response* const response) {
+  ListValue args;
   Value* result = NULL;
+  ErrorCode code = session_->ExecuteScript(kSource, &args, &result);
 
-  scoped_ptr<ListValue> list(new ListValue());
-  if (!session_->ExecuteScript(kSource, list.get(), &result)) {
-    LOG(ERROR) << "Could not execute JavaScript to find source. JavaScript"
-               << " used was:\n" << kSource;
-    LOG(ERROR) << "ExecuteAndExtractString's results was: "
-               << result;
+  if (code != kSuccess) {
     SET_WEBDRIVER_ERROR(response, "ExecuteAndExtractString failed",
                         kInternalServerError);
     return;
   }
   response->SetValue(result);
   response->SetStatus(kSuccess);
-}
-
-bool SourceCommand::RequiresValidTab() {
-  return true;
 }
 
 }  // namespace webdriver

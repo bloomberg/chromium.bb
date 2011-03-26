@@ -40,6 +40,8 @@
     'frame_switching_tests',
     'implicit_waits_tests',
     'page_loading_tests',
+    # Flaky. crbug.com/77495.
+    '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateBackInTheBrowserHistory',
     # This test causes the test after to fail occassionally. See
     # crbug.com/72027. This is because we are not waiting for navigation
     # error pages.
@@ -52,8 +54,6 @@
     'select_element_handling_tests',
     'stale_reference_tests',
     'text_handling_tests',
-    # Getting the page source is broken.
-    '-text_handling_tests.TextHandlingTests.testReadALargeAmountOfData',
     # Chrome bug/oddity. See crbug.com/76111.
     '-text_handling_tests.TextHandlingTests.testShouldBeAbleToSetMoreThanOneLineOfTextInATextArea',
     # See issue 1225 on the webdriver OSS tracker.
