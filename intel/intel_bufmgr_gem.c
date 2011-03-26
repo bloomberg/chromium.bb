@@ -762,13 +762,12 @@ drm_intel_gem_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
 		aligned_y = y;
 		height_alignment = 2;
 
-		if (tiling == I915_TILING_X)
+		if (IS_GEN2(bufmgr_gem) && tiling != I915_TILING_NONE)
+			height_alignment = 16;
+		else if (tiling == I915_TILING_X)
 			height_alignment = 8;
 		else if (tiling == I915_TILING_Y)
 			height_alignment = 32;
-		/* i8xx has a interleaved 2-row tile layout */
-		if (IS_GEN2(bufmgr_gem) && tiling != I915_TILING_NONE)
-			height_alignment *= 2;
 		aligned_y = ALIGN(y, height_alignment);
 
 		stride = x * cpp;
