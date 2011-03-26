@@ -6,15 +6,31 @@
 #define CHROME_BROWSER_AUTOMATION_AUTOMATION_UTIL_H_
 #pragma once
 
-#include "base/basictypes.h"
-#include "chrome/browser/automation/automation_provider.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include <string>
 
+#include "base/basictypes.h"
+
+class AutomationProvider;
+class Browser;
 class DictionaryValue;
+class GURL;
+class TabContents;
+
+namespace IPC {
+class Message;
+}
 
 // This file contains automation utility functions.
 
 namespace automation_util {
+
+// Returns the browser at the given index of the |BrowserList| or NULL if the
+// index is out of range.
+Browser* GetBrowserAt(int index);
+
+// Returns the tab at |tab_index| within the browser at |browser_index| in the
+// |BrowserList|. If any of these indices are invalid, NULL will be returned.
+TabContents* GetTabContentsAt(int browser_index, int tab_index);
 
 // Gets the size and value of the cookie string for |url| in the given tab.
 // Can be called from any thread.

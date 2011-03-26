@@ -689,8 +689,9 @@ void TestingAutomationProvider::GetNormalBrowserWindowCount(int* window_count) {
 
 void TestingAutomationProvider::GetBrowserWindow(int index, int* handle) {
   *handle = 0;
-  if (index >= 0 && index < static_cast<int>(BrowserList::size()))
-    *handle = browser_tracker_->Add(*(BrowserList::begin() + index));
+  Browser* browser = automation_util::GetBrowserAt(index);
+  if (browser)
+    *handle = browser_tracker_->Add(browser);
 }
 
 void TestingAutomationProvider::FindNormalBrowserWindow(int* handle) {

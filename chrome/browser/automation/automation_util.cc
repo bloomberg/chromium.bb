@@ -9,13 +9,17 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -79,6 +83,21 @@ void DeleteCookieOnIOThread(
 }  // namespace
 
 namespace automation_util {
+
+Browser* GetBrowserAt(int index) {
+  if (index < 0 || index >= static_cast<int>(BrowserList::size()))
+    return NULL;
+  return *(BrowserList::begin() + index);
+}
+
+TabContents* GetTabContentsAt(int browser_index, int tab_index) {
+  if (tab_index < 0)
+    return NULL;
+  Browser* browser = GetBrowserAt(browser_index);
+  if (!browser || tab_index >= browser->tab_count())
+    return NULL;
+  return browser->GetTabContentsAt(tab_index);
+}
 
 void GetCookies(const GURL& url,
                 TabContents* contents,

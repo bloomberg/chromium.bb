@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/automation/automation_provider.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/automation/automation_util.h"
 #include "chrome/common/automation_messages.h"
 
 namespace {
@@ -24,21 +23,6 @@ std::string JSONErrorString(const std::string& err) {
 
   base::JsonDoubleQuote(err, false, &no_quote_err);
   return prefix + no_quote_err + suffix;
-}
-
-Browser* GetBrowserAt(int index) {
-  if (index < 0 || index >= static_cast<int>(BrowserList::size()))
-    return NULL;
-  return *(BrowserList::begin() + index);
-}
-
-TabContents* GetTabContentsAt(int browser_index, int tab_index) {
-  if (tab_index < 0)
-    return NULL;
-  Browser* browser = GetBrowserAt(browser_index);
-  if (!browser || tab_index >= browser->tab_count())
-    return NULL;
-  return browser->GetTabContentsAt(tab_index);
 }
 
 }  // namespace
@@ -82,7 +66,7 @@ bool GetBrowserFromJSONArgs(
     *error = "'windex' missing or invalid";
     return false;
   }
-  *browser = GetBrowserAt(browser_index);
+  *browser = automation_util::GetBrowserAt(browser_index);
   if (!*browser) {
     *error = "Cannot locate browser from given index";
     return false;
@@ -103,7 +87,7 @@ bool GetTabFromJSONArgs(
     *error = "'tab_index' missing or invalid";
     return false;
   }
-  *tab = GetTabContentsAt(browser_index, tab_index);
+  *tab = automation_util::GetTabContentsAt(browser_index, tab_index);
   if (!*tab) {
     *error = "Cannot locate tab from given indices";
     return false;
