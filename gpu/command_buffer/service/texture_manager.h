@@ -44,6 +44,22 @@ class TextureManager {
           owned_(true) {
     }
 
+    GLenum min_filter() const {
+      return min_filter_;
+    }
+
+    GLenum mag_filter() const {
+      return mag_filter_;
+    }
+
+    GLenum wrap_s() const {
+      return wrap_s_;
+    }
+
+    GLenum wrap_t() const {
+      return wrap_t_;
+    }
+
     // True if this texture meets all the GLES2 criteria for rendering.
     // See section 3.8.2 of the GLES2 spec.
     bool CanRender(const FeatureInfo* feature_info) const;

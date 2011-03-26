@@ -280,6 +280,13 @@ void TextureManager::TextureInfo::SetParameter(
 void TextureManager::TextureInfo::Update(const FeatureInfo* feature_info) {
   // Update npot status.
   npot_ = false;
+
+  if (level_infos_.empty()) {
+    texture_complete_ = false;
+    cube_complete_ = false;
+    return;
+  }
+
   for (size_t ii = 0; ii < level_infos_.size(); ++ii) {
     const TextureInfo::LevelInfo& info = level_infos_[ii][0];
     if (GLES2Util::IsNPOT(info.width) ||

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,11 +34,21 @@ class GLES2DecoderTest1 : public GLES2DecoderTestBase {
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<GenerateMipmap, 0>(
-    bool /* valid */) {
+    bool valid) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
       0, 0);
+  if (valid) {
+    EXPECT_CALL(*gl_, TexParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, TexParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
 };
 
 template <>
