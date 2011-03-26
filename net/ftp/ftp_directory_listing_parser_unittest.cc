@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/ftp/ftp_directory_listing_buffer.h"
+#include "net/ftp/ftp_directory_listing_parser.h"
 
 #include "base/file_util.h"
 #include "base/format_macros.h"
@@ -14,6 +14,8 @@
 #include "net/base/net_errors.h"
 #include "net/ftp/ftp_directory_listing_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace net {
 
 namespace {
 
@@ -73,15 +75,14 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
   for (size_t i = 0; i < arraysize(test_files); i++) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i, test_files[i]));
 
-    net::FtpDirectoryListingBuffer buffer(mock_current_time);
-
     std::string test_listing;
     EXPECT_TRUE(file_util::ReadFileToString(test_dir.AppendASCII(test_files[i]),
                                             &test_listing));
 
-    EXPECT_EQ(net::OK, buffer.ConsumeData(test_listing.data(),
-                                          test_listing.length()));
-    EXPECT_EQ(net::OK, buffer.ProcessRemainingData());
+    std::vector<FtpDirectoryListingEntry> entries;
+    EXPECT_EQ(OK, ParseFtpDirectoryListing(test_listing,
+                                           mock_current_time,
+                                           &entries));
 
     std::string expected_listing;
     ASSERT_TRUE(file_util::ReadFileToString(
@@ -92,7 +93,8 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
     StringTokenizer tokenizer(expected_listing, "\r\n");
     while (tokenizer.GetNext())
       lines.push_back(tokenizer.token());
-    ASSERT_EQ(0U, lines.size() % 8);
+
+    ASSERT_EQ(8 * entries.size(), lines.size());
 
     for (size_t i = 0; i < lines.size() / 8; i++) {
       std::string type(lines[8 * i]);
@@ -109,15 +111,14 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
       base::StringToInt(lines[8 * i + 6], &hour);
       base::StringToInt(lines[8 * i + 7], &minute);
 
-      ASSERT_TRUE(buffer.EntryAvailable());
-      net::FtpDirectoryListingEntry entry = buffer.PopEntry();
+      const FtpDirectoryListingEntry& entry = entries[i];
 
       if (type == "d") {
-        EXPECT_EQ(net::FtpDirectoryListingEntry::DIRECTORY, entry.type);
+        EXPECT_EQ(FtpDirectoryListingEntry::DIRECTORY, entry.type);
       } else if (type == "-") {
-        EXPECT_EQ(net::FtpDirectoryListingEntry::FILE, entry.type);
+        EXPECT_EQ(FtpDirectoryListingEntry::FILE, entry.type);
       } else if (type == "l") {
-        EXPECT_EQ(net::FtpDirectoryListingEntry::SYMLINK, entry.type);
+        EXPECT_EQ(FtpDirectoryListingEntry::SYMLINK, entry.type);
       } else {
         ADD_FAILURE() << "invalid gold test data: " << type;
       }
@@ -133,8 +134,9 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
       EXPECT_EQ(hour, time_exploded.hour);
       EXPECT_EQ(minute, time_exploded.minute);
     }
-    EXPECT_FALSE(buffer.EntryAvailable());
   }
 }
 
 }  // namespace
+
+}  // namespace net

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/ftp/ftp_directory_listing_parser.h"
-#include "net/ftp/ftp_server_type_histograms.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
 
@@ -60,37 +59,40 @@ FtpDirectoryListingResponseDelegate::FtpDirectoryListingResponseDelegate(
     WebURLLoader* loader,
     const WebURLResponse& response)
     : client_(client),
-      loader_(loader),
-      original_response_(response),
-      buffer_(base::Time::Now()),
-      updated_histograms_(false),
-      had_parsing_error_(false) {
-  Init();
+      loader_(loader) {
+  Init(response.url());
 }
 
 void FtpDirectoryListingResponseDelegate::OnReceivedData(const char* data,
                                                          int data_len) {
-  if (had_parsing_error_)
-    return;
-
-  if (buffer_.ConsumeData(data, data_len) == net::OK)
-    ProcessReceivedEntries();
-  else
-    had_parsing_error_ = true;
+  buffer_.append(data, data_len);
 }
 
 void FtpDirectoryListingResponseDelegate::OnCompletedRequest() {
-  if (!had_parsing_error_ && buffer_.ProcessRemainingData() == net::OK)
-    ProcessReceivedEntries();
-  else
-    had_parsing_error_ = true;
-
-  if (had_parsing_error_)
+  std::vector<FtpDirectoryListingEntry> entries;
+  int rv = net::ParseFtpDirectoryListing(buffer_, base::Time::Now(), &entries);
+  if (rv != net::OK) {
     SendDataToClient("<script>onListingParsingError();</script>\n");
+    return;
+  }
+  for (size_t i = 0; i < entries.size(); i++) {
+    FtpDirectoryListingEntry entry = entries[i];
+
+    // Skip the current and parent directory entries in the listing. Our header
+    // always includes them.
+    if (EqualsASCII(entry.name, ".") || EqualsASCII(entry.name, ".."))
+      continue;
+
+    bool is_directory = (entry.type == FtpDirectoryListingEntry::DIRECTORY);
+    int64 size = entry.size;
+    if (entry.type != FtpDirectoryListingEntry::FILE)
+      size = 0;
+    SendDataToClient(net::GetDirectoryListingEntry(
+        entry.name, entry.raw_name, is_directory, size, entry.last_modified));
+  }
 }
 
-void FtpDirectoryListingResponseDelegate::Init() {
-  GURL response_url(original_response_.url());
+void FtpDirectoryListingResponseDelegate::Init(const GURL& response_url) {
   UnescapeRule::Type unescape_rules = UnescapeRule::SPACES |
                                       UnescapeRule::URL_SPECIAL_CHARS;
   std::string unescaped_path = UnescapeURLComponent(response_url.path(),
@@ -103,51 +105,6 @@ void FtpDirectoryListingResponseDelegate::Init() {
   if (response_url.path().length() > 1) {
     SendDataToClient(net::GetDirectoryListingEntry(
         ASCIIToUTF16(".."), std::string(), false, 0, base::Time()));
-  }
-}
-
-bool FtpDirectoryListingResponseDelegate::ConvertToServerEncoding(
-    const string16& filename, std::string* raw_bytes) const {
-  if (buffer_.encoding().empty()) {
-    *raw_bytes = std::string();
-    return true;
-  }
-
-  return base::UTF16ToCodepage(filename, buffer_.encoding().c_str(),
-                               base::OnStringConversionError::FAIL,
-                               raw_bytes);
-}
-
-void FtpDirectoryListingResponseDelegate::ProcessReceivedEntries() {
-  if (!updated_histograms_ && buffer_.EntryAvailable()) {
-    // Only log the server type if we got enough data to reliably detect it.
-    net::UpdateFtpServerTypeHistograms(buffer_.GetServerType());
-    updated_histograms_ = true;
-  }
-
-  while (buffer_.EntryAvailable()) {
-    FtpDirectoryListingEntry entry = buffer_.PopEntry();
-
-    // Skip the current and parent directory entries in the listing. Our header
-    // always includes them.
-    if (EqualsASCII(entry.name, ".") || EqualsASCII(entry.name, ".."))
-      continue;
-
-    bool is_directory = (entry.type == FtpDirectoryListingEntry::DIRECTORY);
-    int64 size = entry.size;
-    if (entry.type != FtpDirectoryListingEntry::FILE)
-      size = 0;
-    std::string raw_bytes;
-    if (ConvertToServerEncoding(entry.name, &raw_bytes)) {
-      SendDataToClient(net::GetDirectoryListingEntry(
-          entry.name, raw_bytes, is_directory, size, entry.last_modified));
-    } else {
-      // Consider an encoding problem a non-fatal error. The server's support
-      // for non-ASCII characters might be buggy. Display an error message,
-      // but keep trying to display the rest of the listing (most file names
-      // are ASCII anyway, we could be just unlucky with this one).
-      had_parsing_error_ = true;
-    }
   }
 }
 

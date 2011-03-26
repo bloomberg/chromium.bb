@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -10,13 +10,15 @@
 
 #include <string>
 
-#include "net/ftp/ftp_directory_listing_buffer.h"
+#include "base/basictypes.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 
 namespace WebKit {
 class WebURLLoader;
 class WebURLLoaderClient;
 }
+
+class GURL;
 
 namespace webkit_glue {
 
@@ -31,16 +33,7 @@ class FtpDirectoryListingResponseDelegate {
   void OnCompletedRequest();
 
  private:
-  void Init();
-
-  // Converts |filename| to detected server encoding and puts the result
-  // in |raw_bytes| (if no conversion is necessary, an empty string is used).
-  // Returns true on success.
-  bool ConvertToServerEncoding(const string16& filename,
-                               std::string* raw_bytes) const;
-
-  // Fetches the listing entries from the buffer and sends them to the client.
-  void ProcessReceivedEntries();
+  void Init(const GURL& response_url);
 
   void SendDataToClient(const std::string& data);
 
@@ -49,18 +42,8 @@ class FtpDirectoryListingResponseDelegate {
   WebKit::WebURLLoaderClient* client_;
   WebKit::WebURLLoader* loader_;
 
-  // The original resource response for this request.  We use this as a
-  // starting point for each parts response.
-  WebKit::WebURLResponse original_response_;
-
-  // Data buffer also responsible for parsing the listing data.
-  net::FtpDirectoryListingBuffer buffer_;
-
-  // True if we updated histogram data (we only want to do it once).
-  bool updated_histograms_;
-
-  // True if we got an error when parsing the response.
-  bool had_parsing_error_;
+  // Buffer for data received from the network.
+  std::string buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(FtpDirectoryListingResponseDelegate);
 };
