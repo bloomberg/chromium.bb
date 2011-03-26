@@ -73,7 +73,6 @@ void PrintWebViewHelper::PrintPage(const PrintMsg_PrintPage_Params& params,
   // Each metafile contains a single page.
   scoped_ptr<printing::NativeMetafile> metafile(
       printing::NativeMetafileFactory::Create());
-  metafile->Init();
   DCHECK(metafile->context());
   skia::PlatformDevice::InitializeDC(metafile->context());
 
@@ -140,7 +139,6 @@ void PrintWebViewHelper::CreatePreviewDocument(
   // http://code.google.com/p/chromium/issues/detail?id=62889
   scoped_ptr<printing::NativeMetafile> metafile(
       printing::NativeMetafileFactory::Create());
-  metafile->Init();
   DCHECK(metafile->context());
   skia::PlatformDevice::InitializeDC(metafile->context());
 
@@ -260,7 +258,6 @@ void PrintWebViewHelper::RenderPage(
     HBRUSH whiteBrush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
     FillRect(bitmap_dc, &rect, whiteBrush);
 
-    metafile2->Init();
     HDC hdc = metafile2->context();
     DCHECK(hdc);
     skia::PlatformDevice::InitializeDC(hdc);

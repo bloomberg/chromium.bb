@@ -20,7 +20,7 @@ void PrintWebViewHelper::PrintPage(const PrintMsg_PrintPage_Params& params,
                                    WebFrame* frame) {
   scoped_ptr<printing::NativeMetafile> metafile(
       printing::NativeMetafileFactory::Create());
-  if (!metafile->Init())
+  if(!metafile.get())
     return;
 
   float scale_factor = frame->getPrintPageShrink(params.page_number);
@@ -67,7 +67,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
 
   scoped_ptr<printing::NativeMetafile> metafile(
       printing::NativeMetafileFactory::Create());
-  if (!metafile->Init())
+  if(!metafile.get())
     return;
 
   float scale_factor = frame->getPrintPageShrink(0);

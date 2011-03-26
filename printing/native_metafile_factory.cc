@@ -4,6 +4,8 @@
 
 #include "printing/native_metafile_factory.h"
 
+#include "base/scoped_ptr.h"
+
 #if defined(OS_WIN)
 #include "printing/emf_win.h"
 #elif defined(OS_MACOSX)
@@ -15,7 +17,24 @@
 namespace printing {
 
 // static
-printing::NativeMetafile* NativeMetafileFactory::Create() {
+NativeMetafile* NativeMetafileFactory::Create() {
+  scoped_ptr<NativeMetafile> metafile(CreateNewMetafile());
+  if (!metafile->Init())
+    return NULL;
+  return metafile.release();
+}
+
+// static
+NativeMetafile* NativeMetafileFactory::CreateFromData(
+    const void* src_buffer, uint32 src_buffer_size) {
+  scoped_ptr<NativeMetafile> metafile(CreateNewMetafile());
+  if (!metafile->InitFromData(src_buffer, src_buffer_size))
+    return NULL;
+  return metafile.release();
+}
+
+// static
+NativeMetafile* NativeMetafileFactory::CreateNewMetafile(){
 #if defined(OS_WIN)
   return new printing::Emf;
 #elif defined(OS_MACOSX)

@@ -17,11 +17,23 @@ namespace printing {
 class NativeMetafileFactory {
  public:
   // This method returns a pointer to the appropriate NativeMetafile object
-  // according to the platform.
+  // according to the platform. The metafile is already initialized by invoking
+  // Init() on it. NULL is returned if Init() fails.
   static printing::NativeMetafile* Create();
+
+  // This method returns a pointer to the appropriate NativeMetafile object
+  // according to the platform. The metafile is already initialized by invoking
+  // InitFromData(src_buffer,_buffer_size) on it. NULL is returned if
+  // InitiFromData() fails.
+  static printing::NativeMetafile* CreateFromData(const void* src_buffer,
+                                                  uint32 src_buffer_size);
 
  private:
   NativeMetafileFactory();
+
+  // Retrieves a new uninitialized metafile.
+  static NativeMetafile* CreateNewMetafile();
+
   DISALLOW_COPY_AND_ASSIGN(NativeMetafileFactory);
 };
 

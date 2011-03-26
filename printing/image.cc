@@ -147,8 +147,10 @@ bool Image::LoadPng(const std::string& compressed) {
 bool Image::LoadMetafile(const std::string& data) {
   DCHECK(!data.empty());
   scoped_ptr<NativeMetafile> metafile(
-      printing::NativeMetafileFactory::Create());
-  metafile->InitFromData(data.data(), data.size());
+      printing::NativeMetafileFactory::CreateFromData(data.data(),
+                                                      data.size()));
+  if(!metafile.get())
+    return false;
   return LoadMetafile(*metafile);
 }
 

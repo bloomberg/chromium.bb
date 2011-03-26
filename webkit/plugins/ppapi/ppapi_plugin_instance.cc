@@ -1187,10 +1187,11 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
   if (metafile)
     ret = metafile->InitFromData(buffer->mapped_buffer(), buffer->size());
 #elif defined(OS_MACOSX)
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::Create());
   // Create a PDF metafile and render from there into the passed in context.
-  if (metafile->InitFromData(buffer->mapped_buffer(), buffer->size())) {
+  scoped_ptr<printing::NativeMetafile> metafile(
+      printing::NativeMetafileFactory::CreateFromData(buffer->mapped_buffer(),
+                                                      buffer->size()));
+  if (metafile.get() != NULL) {
     // Flip the transform.
     CGContextSaveGState(canvas);
     CGContextTranslateCTM(canvas, 0,

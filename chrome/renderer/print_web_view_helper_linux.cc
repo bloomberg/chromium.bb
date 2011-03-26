@@ -172,8 +172,6 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
     if (!*page_count)
       return false;
 
-    metafile->Init();
-
     PrintMsg_PrintPage_Params page_params;
     page_params.params = printParams;
     const gfx::Size& canvas_size = prep_frame_view.GetPrintCanvasSize();
