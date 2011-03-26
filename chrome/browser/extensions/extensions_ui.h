@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -60,14 +60,12 @@ class ExtensionsUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 // The handler for JavaScript messages related to the "extensions" view.
-class ExtensionsDOMHandler
-    : public WebUIMessageHandler,
-      public NotificationObserver,
-      public PackExtensionJob::Client,
-      public SelectFileDialog::Listener,
-      public ExtensionInstallUI::Delegate {
+class ExtensionsDOMHandler : public WebUIMessageHandler,
+                             public NotificationObserver,
+                             public PackExtensionJob::Client,
+                             public SelectFileDialog::Listener,
+                             public ExtensionUninstallDialog::Delegate {
  public:
-
   explicit ExtensionsDOMHandler(ExtensionService* extension_service);
   virtual ~ExtensionsDOMHandler();
 
@@ -94,10 +92,9 @@ class ExtensionsDOMHandler
 
   virtual void OnPackFailure(const std::string& error);
 
-  // ExtensionInstallUI::Delegate implementation, used for receiving
-  // notification about uninstall confirmation dialog selections.
-  virtual void InstallUIProceed();
-  virtual void InstallUIAbort();
+  // ExtensionUninstallDialog::Delegate:
+  virtual void ExtensionDialogAccepted();
+  virtual void ExtensionDialogCanceled();
 
  private:
   // Callback for "requestExtensionsData" message.
@@ -174,9 +171,9 @@ class ExtensionsDOMHandler
       const Extension* extension,
       std::vector<ExtensionPage> *result);
 
-  // Returns the ExtensionInstallUI object for this class, creating it if
+  // Returns the ExtensionUninstallDialog object for this class, creating it if
   // needed.
-  ExtensionInstallUI* GetExtensionInstallUI();
+  ExtensionUninstallDialog* GetExtensionUninstallDialog();
 
   // Our model.
   scoped_refptr<ExtensionService> extensions_service_;
@@ -187,9 +184,8 @@ class ExtensionsDOMHandler
   // Used to package the extension.
   scoped_refptr<PackExtensionJob> pack_job_;
 
-  // Used to show confirmation UI for uninstalling/enabling extensions in
-  // incognito mode.
-  scoped_ptr<ExtensionInstallUI> install_ui_;
+  // Used to show confirmation UI for uninstalling extensions in incognito mode.
+  scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   // The id of the extension we are prompting the user about.
   std::string extension_id_prompting_;

@@ -318,10 +318,12 @@ void ExtensionsDOMHandler::RegisterForNotifications() {
       NotificationService::AllSources());
 }
 
-ExtensionInstallUI* ExtensionsDOMHandler::GetExtensionInstallUI() {
-  if (!install_ui_.get())
-    install_ui_.reset(new ExtensionInstallUI(web_ui_->GetProfile()));
-  return install_ui_.get();
+ExtensionUninstallDialog* ExtensionsDOMHandler::GetExtensionUninstallDialog() {
+  if (!extension_uninstall_dialog_.get()) {
+    extension_uninstall_dialog_.reset(
+        new ExtensionUninstallDialog(web_ui_->GetProfile()));
+  }
+  return extension_uninstall_dialog_.get();
 }
 
 void ExtensionsDOMHandler::HandleToggleDeveloperMode(const ListValue* args) {
@@ -429,10 +431,10 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const ListValue* args) {
 
   extension_id_prompting_ = extension_id;
 
-  GetExtensionInstallUI()->ConfirmUninstall(this, extension);
+  GetExtensionUninstallDialog()->ConfirmUninstall(this, extension);
 }
 
-void ExtensionsDOMHandler::InstallUIProceed() {
+void ExtensionsDOMHandler::ExtensionDialogAccepted() {
   DCHECK(!extension_id_prompting_.empty());
 
   bool was_terminated = false;
@@ -459,7 +461,7 @@ void ExtensionsDOMHandler::InstallUIProceed() {
     HandleRequestExtensionsData(NULL);
 }
 
-void ExtensionsDOMHandler::InstallUIAbort() {
+void ExtensionsDOMHandler::ExtensionDialogCanceled() {
   extension_id_prompting_ = "";
 }
 

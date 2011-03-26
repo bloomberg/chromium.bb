@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,9 +10,9 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
@@ -127,9 +127,9 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
       break;
     }
     case UNINSTALL: {
-      AddRef();  // Balanced in InstallUIProceed and InstallUIAbort.
-      install_ui_.reset(new ExtensionInstallUI(profile_));
-      install_ui_->ConfirmUninstall(this, extension);
+      AddRef();  // Balanced in Accepted() and Canceled()
+      extension_uninstall_dialog_.reset(new ExtensionUninstallDialog(profile_));
+      extension_uninstall_dialog_->ConfirmUninstall(this, extension);
       break;
     }
     case MANAGE: {
@@ -147,14 +147,14 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
   }
 }
 
-void ExtensionContextMenuModel::InstallUIProceed() {
+void ExtensionContextMenuModel::ExtensionDialogAccepted() {
   if (GetExtension())
     profile_->GetExtensionService()->UninstallExtension(extension_id_, false);
 
   Release();
 }
 
-void ExtensionContextMenuModel::InstallUIAbort() {
+void ExtensionContextMenuModel::ExtensionDialogCanceled() {
   Release();
 }
 

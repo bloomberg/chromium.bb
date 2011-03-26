@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
@@ -22,7 +22,7 @@ class ExtensionContextMenuModel
     : public base::RefCounted<ExtensionContextMenuModel>,
       public ui::SimpleMenuModel,
       public ui::SimpleMenuModel::Delegate,
-      public ExtensionInstallUI::Delegate {
+      public ExtensionUninstallDialog::Delegate {
  public:
   // Delegate to handle showing an ExtensionAction popup.
   class PopupDelegate {
@@ -51,9 +51,9 @@ class ExtensionContextMenuModel
                                           ui::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
-  // ExtensionInstallUI::Delegate overrides.
-  virtual void InstallUIProceed();
-  virtual void InstallUIAbort();
+  // ExtensionUninstallDialog::Delegate:
+  virtual void ExtensionDialogAccepted();
+  virtual void ExtensionDialogCanceled();
 
  private:
   void InitCommonCommands();
@@ -75,8 +75,8 @@ class ExtensionContextMenuModel
   // The delegate which handles the 'inspect popup' menu command (or NULL).
   PopupDelegate* delegate_;
 
-  // Keeps track of the extension install UI.
-  scoped_ptr<ExtensionInstallUI> install_ui_;
+  // Keeps track of the extension uninstall dialog.
+  scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionContextMenuModel);
 };

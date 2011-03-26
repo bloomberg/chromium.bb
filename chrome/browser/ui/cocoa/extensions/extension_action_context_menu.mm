@@ -7,9 +7,9 @@
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,24 +35,23 @@
 // A class that loads the extension icon on the I/O thread before showing the
 // confirmation dialog to uninstall the given extension.
 // Also acts as the extension's UI delegate in order to display the dialog.
-class AsyncUninstaller : public ExtensionInstallUI::Delegate {
+class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
  public:
   AsyncUninstaller(const Extension* extension, Profile* profile)
       : extension_(extension),
         profile_(profile) {
-    install_ui_.reset(new ExtensionInstallUI(profile));
-    install_ui_->ConfirmUninstall(this, extension_);
+    extension_uninstall_dialog_.reset(new ExtensionUninstallDialog(profile));
+    extension_uninstall_dialog_->ConfirmUninstall(this, extension_);
   }
 
   ~AsyncUninstaller() {}
 
-  // Overridden by ExtensionInstallUI::Delegate.
-  virtual void InstallUIProceed() {
+  // ExtensionUninstallDialog::Delegate:
+  virtual void ExtensionDialogAccepted() {
     profile_->GetExtensionService()->
         UninstallExtension(extension_->id(), false);
   }
-
-  virtual void InstallUIAbort() {}
+  virtual void ExtensionDialogCanceled() {}
 
  private:
   // The extension that we're loading the icon for. Weak.
@@ -61,7 +60,7 @@ class AsyncUninstaller : public ExtensionInstallUI::Delegate {
   // The current profile. Weak.
   Profile* profile_;
 
-  scoped_ptr<ExtensionInstallUI> install_ui_;
+  scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncUninstaller);
 };

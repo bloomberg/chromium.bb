@@ -14,7 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/extension_install_dialog2.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/platform_util.h"
@@ -44,25 +43,21 @@
 // static
 const int ExtensionInstallUI::kTitleIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_TITLE,
-  IDS_EXTENSION_UNINSTALL_PROMPT_TITLE,
   IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE
 };
 // static
 const int ExtensionInstallUI::kHeadingIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_HEADING,
-  IDS_EXTENSION_UNINSTALL_PROMPT_HEADING,
   IDS_EXTENSION_RE_ENABLE_PROMPT_HEADING
 };
 // static
 const int ExtensionInstallUI::kButtonIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
-  IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON,
   IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON
 };
 // static
 const int ExtensionInstallUI::kWarningIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
-  0,  // No warning label when uninstalling.
   IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO
 };
 
@@ -138,15 +133,6 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
   }
 
   ShowConfirmation(INSTALL_PROMPT);
-}
-
-void ExtensionInstallUI::ConfirmUninstall(Delegate* delegate,
-                                          const Extension* extension) {
-  DCHECK(ui_loop_ == MessageLoop::current());
-  extension_ = extension;
-  delegate_ = delegate;
-
-  ShowConfirmation(UNINSTALL_PROMPT);
 }
 
 void ExtensionInstallUI::ConfirmReEnable(Delegate* delegate,
@@ -228,11 +214,6 @@ void ExtensionInstallUI::OnImageLoaded(
       std::vector<string16> warnings = extension_->GetPermissionMessages();
       ShowExtensionInstallDialog2(
           profile_, delegate_, extension_, &icon_, warnings, prompt_type_);
-      break;
-    }
-    case UNINSTALL_PROMPT: {
-      ShowExtensionInstallDialog(
-          profile_, delegate_, extension_, &icon_, UNINSTALL_PROMPT);
       break;
     }
     default:

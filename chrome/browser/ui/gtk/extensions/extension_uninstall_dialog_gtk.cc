@@ -11,7 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/extensions/extension_install_dialog.h"
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/extensions/extension.h"
@@ -27,31 +27,27 @@ namespace {
 const int kPanelHorizMargin = 13;
 
 void OnResponse(GtkWidget* dialog, int response_id,
-                ExtensionInstallUI::Delegate* delegate) {
-  if (response_id == GTK_RESPONSE_ACCEPT) {
-    delegate->InstallUIProceed();
-  } else {
-    delegate->InstallUIAbort();
-  }
+                ExtensionUninstallDialog::Delegate* delegate) {
+  if (response_id == GTK_RESPONSE_ACCEPT)
+    delegate->ExtensionDialogAccepted();
+  else
+    delegate->ExtensionDialogCanceled();
 
   gtk_widget_destroy(dialog);
 }
 
-void ShowInstallPromptDialog(GtkWindow* parent,
-                             SkBitmap* skia_icon,
-                             const Extension* extension,
-                             ExtensionInstallUI::Delegate *delegate,
-                             ExtensionInstallUI::PromptType type) {
+void ShowUninstallDialogGtk(GtkWindow* parent,
+                            SkBitmap* skia_icon,
+                            const Extension* extension,
+                            ExtensionUninstallDialog::Delegate *delegate) {
   // Build the dialog.
-  int title_id = ExtensionInstallUI::kTitleIds[type];
-  int button_id = ExtensionInstallUI::kButtonIds[type];
   GtkWidget* dialog = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(title_id).c_str(),
+      l10n_util::GetStringUTF8(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE).c_str(),
       parent,
       GTK_DIALOG_MODAL,
       GTK_STOCK_CANCEL,
       GTK_RESPONSE_CLOSE,
-      l10n_util::GetStringUTF8(button_id).c_str(),
+      l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON).c_str(),
       GTK_RESPONSE_ACCEPT,
       NULL);
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog), FALSE);
@@ -73,9 +69,8 @@ void ShowInstallPromptDialog(GtkWindow* parent,
   GtkWidget* right_column_area = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(icon_hbox), right_column_area, TRUE, TRUE, 0);
 
-  int heading_id = ExtensionInstallUI::kHeadingIds[type];
   std::string heading_text = l10n_util::GetStringFUTF8(
-      heading_id, UTF8ToUTF16(extension->name()));
+      IDS_EXTENSION_UNINSTALL_PROMPT_HEADING, UTF8ToUTF16(extension->name()));
   GtkWidget* heading_label = gtk_label_new(heading_text.c_str());
   gtk_misc_set_alignment(GTK_MISC(heading_label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(right_column_area), heading_label, TRUE, TRUE, 0);
@@ -87,24 +82,24 @@ void ShowInstallPromptDialog(GtkWindow* parent,
 
 }  // namespace
 
-void ShowExtensionInstallDialog(Profile* profile,
-                                ExtensionInstallUI::Delegate* delegate,
-                                const Extension* extension,
-                                SkBitmap* icon,
-                                ExtensionInstallUI::PromptType type) {
+// static
+void ExtensionUninstallDialog::Show(
+    Profile* profile,
+    ExtensionUninstallDialog::Delegate* delegate,
+    const Extension* extension,
+    SkBitmap* icon) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
-    delegate->InstallUIAbort();
+    delegate->ExtensionDialogCanceled();
     return;
   }
 
   BrowserWindowGtk* browser_window = static_cast<BrowserWindowGtk*>(
       browser->window());
   if (!browser_window) {
-    delegate->InstallUIAbort();
+    delegate->ExtensionDialogCanceled();
     return;
   }
 
-  ShowInstallPromptDialog(browser_window->window(), icon, extension, delegate,
-                          type);
+  ShowUninstallDialogGtk(browser_window->window(), icon, extension, delegate);
 }

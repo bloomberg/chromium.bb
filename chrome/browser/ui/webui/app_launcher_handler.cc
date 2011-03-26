@@ -64,7 +64,6 @@ extension_misc::AppLaunchBucket ParseLaunchSource(
 
 AppLauncherHandler::AppLauncherHandler(ExtensionService* extension_service)
     : extensions_service_(extension_service),
-      extension_prompt_type_(ExtensionInstallUI::UNSET_PROMPT_TYPE),
       promo_active_(false),
       ignore_changes_(false) {
 }
@@ -407,8 +406,7 @@ void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
     return;  // Only one prompt at a time.
 
   extension_id_prompting_ = extension_id;
-  extension_prompt_type_ = ExtensionInstallUI::UNINSTALL_PROMPT;
-  GetExtensionInstallUI()->ConfirmUninstall(this, extension);
+  GetExtensionUninstallDialog()->ConfirmUninstall(this, extension);
 }
 
 void AppLauncherHandler::HandleHideAppsPromo(const ListValue* args) {
@@ -539,11 +537,11 @@ void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {
     return;  // Only one prompt at a time.
 
   extension_id_prompting_ = extension_id;
-  extension_prompt_type_ = ExtensionInstallUI::RE_ENABLE_PROMPT;
   GetExtensionInstallUI()->ConfirmReEnable(this, extension);
 }
 
-void AppLauncherHandler::InstallUIProceed() {
+void AppLauncherHandler::ExtensionDialogAccepted() {
+  // Do the uninstall work here.
   DCHECK(!extension_id_prompting_.empty());
 
   // The extension can be uninstalled in another window while the UI was
@@ -553,38 +551,57 @@ void AppLauncherHandler::InstallUIProceed() {
   if (!extension)
     return;
 
-  switch (extension_prompt_type_) {
-    case ExtensionInstallUI::UNINSTALL_PROMPT:
-      extensions_service_->UninstallExtension(extension_id_prompting_,
-                                              false /* external_uninstall */);
-      break;
-    case ExtensionInstallUI::RE_ENABLE_PROMPT: {
-      extensions_service_->GrantPermissionsAndEnableExtension(extension);
+  extensions_service_->UninstallExtension(extension_id_prompting_,
+                                          false /* external_uninstall */);
 
-      // We bounce this off the NTP so the browser can update the apps icon.
-      // If we don't launch the app asynchronously, then the app's disabled
-      // icon disappears but isn't replaced by the enabled icon, making a poor
-      // visual experience.
-      StringValue* app_id = Value::CreateStringValue(extension->id());
-      web_ui_->CallJavascriptFunction("launchAppAfterEnable", *app_id);
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
+  extension_id_prompting_ = "";
+}
+
+void AppLauncherHandler::ExtensionDialogCanceled() {
+  extension_id_prompting_ = "";
+}
+
+void AppLauncherHandler::InstallUIProceed() {
+  // Do the re-enable work here.
+  DCHECK(!extension_id_prompting_.empty());
+
+  // The extension can be uninstalled in another window while the UI was
+  // showing. Do nothing in that case.
+  const Extension* extension =
+      extensions_service_->GetExtensionById(extension_id_prompting_, true);
+  if (!extension)
+    return;
+
+  extensions_service_->GrantPermissionsAndEnableExtension(extension);
+
+  // We bounce this off the NTP so the browser can update the apps icon.
+  // If we don't launch the app asynchronously, then the app's disabled
+  // icon disappears but isn't replaced by the enabled icon, making a poor
+  // visual experience.
+  StringValue* app_id = Value::CreateStringValue(extension->id());
+  web_ui_->CallJavascriptFunction("launchAppAfterEnable", *app_id);
 
   extension_id_prompting_ = "";
 }
 
 void AppLauncherHandler::InstallUIAbort() {
-  extension_id_prompting_ = "";
+  ExtensionDialogCanceled();
+}
+
+ExtensionUninstallDialog* AppLauncherHandler::GetExtensionUninstallDialog() {
+  if (!extension_uninstall_dialog_.get()) {
+    extension_uninstall_dialog_.reset(
+        new ExtensionUninstallDialog(web_ui_->GetProfile()));
+  }
+  return extension_uninstall_dialog_.get();
 }
 
 ExtensionInstallUI* AppLauncherHandler::GetExtensionInstallUI() {
-  if (!install_ui_.get())
-    install_ui_.reset(new ExtensionInstallUI(web_ui_->GetProfile()));
-  return install_ui_.get();
+  if (!extension_install_ui_.get()) {
+    extension_install_ui_.reset(
+        new ExtensionInstallUI(web_ui_->GetProfile()));
+  }
+  return extension_install_ui_.get();
 }
 
 void AppLauncherHandler::UninstallDefaultApps() {

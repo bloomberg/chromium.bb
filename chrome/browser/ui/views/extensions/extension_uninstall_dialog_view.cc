@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_util.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/extensions/extension_install_dialog.h"
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/extensions/extension.h"
@@ -27,14 +28,14 @@ namespace {
 const int kRightColumnWidth = 210;
 const int kIconSize = 69;
 
-// Implements the extension installation prompt for Windows.
-class InstallDialogContent : public views::View, public views::DialogDelegate {
+class ExtensionUninstallDialogView : public views::View,
+                                     public views::DialogDelegate {
  public:
-  InstallDialogContent(ExtensionInstallUI::Delegate* delegate,
-                       const Extension* extension,
-                       SkBitmap* icon,
-                       ExtensionInstallUI::PromptType type)
-        : delegate_(delegate), icon_(NULL), type_(type) {
+  ExtensionUninstallDialogView(ExtensionUninstallDialog::Delegate* delegate,
+                               const Extension* extension,
+                               SkBitmap* icon)
+        : delegate_(delegate),
+          icon_(NULL) {
     // Scale down to icon size, but allow smaller icons (don't scale up).
     gfx::Size size(icon->width(), icon->height());
     if (size.width() > kIconSize || size.height() > kIconSize)
@@ -45,7 +46,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
     AddChildView(icon_);
 
     heading_ = new views::Label(UTF16ToWide(
-        l10n_util::GetStringFUTF16(ExtensionInstallUI::kHeadingIds[type_],
+        l10n_util::GetStringFUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_HEADING,
                                    UTF8ToUTF16(extension->name()))));
     heading_->SetMultiLine(true);
     heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -53,13 +54,14 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   }
 
  private:
-  // DialogDelegate
+  // views::DialogDelegate:
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const {
+      MessageBoxFlags::DialogButton button) const OVERRIDE {
     switch (button) {
       case MessageBoxFlags::DIALOGBUTTON_OK:
         return UTF16ToWide(
-            l10n_util::GetStringUTF16(ExtensionInstallUI::kButtonIds[type_]));
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
       case MessageBoxFlags::DIALOGBUTTON_CANCEL:
         return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL));
       default:
@@ -68,30 +70,30 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
     }
   }
 
-  virtual int GetDefaultDialogButton() const {
+  virtual int GetDefaultDialogButton() const OVERRIDE {
     return MessageBoxFlags::DIALOGBUTTON_CANCEL;
   }
 
-  virtual bool Accept() {
-    delegate_->InstallUIProceed();
+  virtual bool Accept() OVERRIDE {
+    delegate_->ExtensionDialogAccepted();
     return true;
   }
 
-  virtual bool Cancel() {
-    delegate_->InstallUIAbort();
+  virtual bool Cancel() OVERRIDE {
+    delegate_->ExtensionDialogCanceled();
     return true;
   }
 
-  // WindowDelegate
-  virtual bool IsModal() const { return true; }
-  virtual std::wstring GetWindowTitle() const {
+  // views::WindowDelegate:
+  virtual bool IsModal() const OVERRIDE { return true; }
+  virtual std::wstring GetWindowTitle() const OVERRIDE {
     return UTF16ToWide(
-        l10n_util::GetStringUTF16(ExtensionInstallUI::kTitleIds[type_]));
+        l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE));
   }
   virtual views::View* GetContentsView() { return this; }
 
-  // View
-  virtual gfx::Size GetPreferredSize() {
+  // views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     int width = kRightColumnWidth;
     width += kIconSize;
     width += views::kPanelHorizMargin * 3;
@@ -103,7 +105,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
                      std::max(height, kIconSize + views::kPanelVertMargin * 2));
   }
 
-  virtual void Layout() {
+  virtual void Layout() OVERRIDE {
     int x = views::kPanelHorizMargin;
     int y = views::kPanelVertMargin;
 
@@ -129,33 +131,33 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
     }
   }
 
-  ExtensionInstallUI::Delegate* delegate_;
+  ExtensionUninstallDialog::Delegate* delegate_;
   views::ImageView* icon_;
   views::Label* heading_;
-  ExtensionInstallUI::PromptType type_;
 
-  DISALLOW_COPY_AND_ASSIGN(InstallDialogContent);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallDialogView);
 };
 
 }  // namespace
 
-void ShowExtensionInstallDialog(Profile* profile,
-                                ExtensionInstallUI::Delegate* delegate,
-                                const Extension* extension,
-                                SkBitmap* icon,
-                                ExtensionInstallUI::PromptType type) {
+// static
+void ExtensionUninstallDialog::Show(
+    Profile* profile,
+    ExtensionUninstallDialog::Delegate* delegate,
+    const Extension* extension,
+    SkBitmap* icon) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
-    delegate->InstallUIAbort();
+    delegate->ExtensionDialogCanceled();
     return;
   }
 
   BrowserWindow* window = browser->window();
   if (!window) {
-    delegate->InstallUIAbort();
+    delegate->ExtensionDialogCanceled();
     return;
   }
 
   browser::CreateViewsWindow(window->GetNativeHandle(), gfx::Rect(),
-      new InstallDialogContent(delegate, extension, icon, type))->Show();
+      new ExtensionUninstallDialogView(delegate, extension, icon))->Show();
 }

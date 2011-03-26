@@ -175,9 +175,6 @@ class MockAbortExtensionInstallUI : public ExtensionInstallUI {
     MessageLoopForUI::current()->Quit();
   }
 
-  virtual void ConfirmUninstall(Delegate* delegate,
-                                const Extension* extension) {}
-
   virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
 
   virtual void OnInstallFailure(const std::string& error) {}

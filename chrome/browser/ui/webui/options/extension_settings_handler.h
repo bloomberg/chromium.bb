@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -34,8 +34,10 @@ class UserScript;
 struct ExtensionPage {
   ExtensionPage(const GURL& url, int render_process_id, int render_view_id,
                 bool incognito)
-    : url(url), render_process_id(render_process_id),
-      render_view_id(render_view_id), incognito(incognito) {}
+    : url(url),
+      render_process_id(render_process_id),
+      render_view_id(render_view_id),
+      incognito(incognito) {}
   GURL url;
   int render_process_id;
   int render_view_id;
@@ -60,12 +62,11 @@ class ExtensionsUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 // The handler for JavaScript messages related to the "extensions" view.
-class ExtensionsDOMHandler
-    : public WebUIMessageHandler,
-      public NotificationObserver,
-      public PackExtensionJob::Client,
-      public SelectFileDialog::Listener,
-      public ExtensionInstallUI::Delegate {
+class ExtensionsDOMHandler : public WebUIMessageHandler,
+                             public NotificationObserver,
+                             public PackExtensionJob::Client,
+                             public SelectFileDialog::Listener,
+                             public ExtensionUninstallDialog::Delegate {
  public:
 
   // Helper class that loads the icons for the extensions in the management UI.
@@ -128,10 +129,9 @@ class ExtensionsDOMHandler
 
   virtual void OnPackFailure(const std::string& error);
 
-  // ExtensionInstallUI::Delegate implementation, used for receiving
-  // notification about uninstall confirmation dialog selections.
-  virtual void InstallUIProceed();
-  virtual void InstallUIAbort();
+  // ExtensionUninstallDialog::Delegate:
+  virtual void ExtensionDialogAccepted();
+  virtual void ExtensionDialogCanceled();
 
  private:
   // Callback for "requestExtensionsData" message.
@@ -219,9 +219,9 @@ class ExtensionsDOMHandler
   // Called on the UI thread.
   void OnIconsLoaded(DictionaryValue* json_data);
 
-  // Returns the ExtensionInstallUI object for this class, creating it if
+  // Returns the ExtensionUninstallDialog object for this class, creating it if
   // needed.
-  ExtensionInstallUI* GetExtensionInstallUI();
+  ExtensionUninstallDialog* GetExtensionUninstallDialog();
 
   // Our model.
   scoped_refptr<ExtensionService> extensions_service_;
@@ -235,9 +235,8 @@ class ExtensionsDOMHandler
   // Used to load icons asynchronously on the file thread.
   scoped_refptr<IconLoader> icon_loader_;
 
-  // Used to show confirmation UI for uninstalling/enabling extensions in
-  // incognito mode.
-  scoped_ptr<ExtensionInstallUI> install_ui_;
+  // Used to show confirmation UI for uninstalling extensions in incognito mode.
+  scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   // The id of the extension we are prompting the user about.
   std::string extension_id_prompting_;
