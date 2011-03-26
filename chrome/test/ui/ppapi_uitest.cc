@@ -154,6 +154,10 @@ TEST_F(PPAPITest, Var) {
   RunTest("Var");
 }
 
+TEST_F(PPAPITest, PostMessage) {
+  RunTest("PostMessage");
+}
+
 TEST_F(PPAPITest, FileIO) {
   RunTestViaHTTP("FileIO");
 }

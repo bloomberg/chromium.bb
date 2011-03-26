@@ -5,6 +5,7 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_MESSAGE_CHANNEL_H_
 #define WEBKIT_PLUGINS_PPAPI_MESSAGE_CHANNEL_H_
 
+#include "base/task.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "webkit/plugins/ppapi/resource.h"
 
@@ -44,7 +45,11 @@ class MessageChannel {
   explicit MessageChannel(PluginInstance* instance);
   ~MessageChannel();
 
+  // Post a message to the onmessage handler for this channel's instance
+  // asynchronously.
   void PostMessageToJavaScript(PP_Var message_data);
+  // Post a message to the PPP_Instance HandleMessage function for this
+  // channel's instance.
   void PostMessageToNative(PP_Var message_data);
 
   // Return the NPObject* to which we should forward any calls which aren't
@@ -81,7 +86,20 @@ class MessageChannel {
   // to a JavaScript target.
   NPVariant onmessage_invoker_;
 
+  // Evaluates the JavaScript code for onmessage_invoker_ and makes
+  // it a callable NPVariant for that function.  Returns true on success, false
+  // otherwise.
   bool EvaluateOnMessageInvoker();
+
+  // Post a message to the onmessage handler for this channel's instance
+  // synchronously.  This is used by PostMessageToJavaScript.
+  void PostMessageToJavaScriptImpl(PP_Var message_data);
+  // Post a message to the PPP_Instance HandleMessage function for this
+  // channel's instance.  This is used by PostMessageToNative.
+  void PostMessageToNativeImpl(PP_Var message_data);
+
+  // Ensure pending tasks will not fire after this object is destroyed.
+  ScopedRunnableMethodFactory<MessageChannel> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageChannel);
 };

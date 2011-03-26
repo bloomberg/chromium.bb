@@ -51,6 +51,7 @@ void TestPostMessage::RunTest() {
 
 void TestPostMessage::HandleMessage(const pp::Var& message_data) {
   message_data_.push_back(message_data);
+  testing_interface_->QuitMessageLoop(instance_->pp_instance());
 }
 
 bool TestPostMessage::MakeOnMessageEcho(const std::string& expression) {
@@ -74,20 +75,26 @@ std::string TestPostMessage::TestSendingData() {
   // the data back to us, and we check that they match.
   message_data_.clear();
   instance_->PostMessage(pp::Var(kTestString));
-  // Note that the trusted in-process version is completely synchronous, so we
-  // do not need to use 'RunMessageLoop' to wait.
+  // PostMessage is asynchronous, so we should not receive a response yet.
+  ASSERT_EQ(message_data_.size(), 0);
+
+  testing_interface_->RunMessageLoop(instance_->pp_instance());
   ASSERT_EQ(message_data_.size(), 1);
   ASSERT_TRUE(message_data_.back().is_string());
   ASSERT_EQ(message_data_.back().AsString(), kTestString);
 
   message_data_.clear();
   instance_->PostMessage(pp::Var(kTestBool));
+  ASSERT_EQ(message_data_.size(), 0);
+  testing_interface_->RunMessageLoop(instance_->pp_instance());
   ASSERT_EQ(message_data_.size(), 1);
   ASSERT_TRUE(message_data_.back().is_bool());
   ASSERT_EQ(message_data_.back().AsBool(), kTestBool);
 
   message_data_.clear();
   instance_->PostMessage(pp::Var(kTestInt));
+  ASSERT_EQ(message_data_.size(), 0);
+  testing_interface_->RunMessageLoop(instance_->pp_instance());
   ASSERT_EQ(message_data_.size(), 1);
   ASSERT_TRUE(message_data_.back().is_number());
   ASSERT_DOUBLE_EQ(message_data_.back().AsDouble(),
@@ -95,17 +102,23 @@ std::string TestPostMessage::TestSendingData() {
 
   message_data_.clear();
   instance_->PostMessage(pp::Var(kTestDouble));
+  ASSERT_EQ(message_data_.size(), 0);
+  testing_interface_->RunMessageLoop(instance_->pp_instance());
   ASSERT_EQ(message_data_.size(), 1);
   ASSERT_TRUE(message_data_.back().is_number());
   ASSERT_DOUBLE_EQ(message_data_.back().AsDouble(), kTestDouble);
 
   message_data_.clear();
   instance_->PostMessage(pp::Var());
+  ASSERT_EQ(message_data_.size(), 0);
+  testing_interface_->RunMessageLoop(instance_->pp_instance());
   ASSERT_EQ(message_data_.size(), 1);
   ASSERT_TRUE(message_data_.back().is_undefined());
 
   message_data_.clear();
   instance_->PostMessage(pp::Var(pp::Var::Null()));
+  ASSERT_EQ(message_data_.size(), 0);
+  testing_interface_->RunMessageLoop(instance_->pp_instance());
   ASSERT_EQ(message_data_.size(), 1);
   ASSERT_TRUE(message_data_.back().is_null());
 
@@ -121,6 +134,8 @@ std::string TestPostMessage::TestMessageEvent() {
   ASSERT_TRUE(MakeOnMessageEcho("typeof(message_event)"));
   message_data_.clear();
   instance_->PostMessage(pp::Var(kTestInt));
+  ASSERT_EQ(message_data_.size(), 0);
+  testing_interface_->RunMessageLoop(instance_->pp_instance());
   ASSERT_EQ(message_data_.size(), 1);
   ASSERT_TRUE(message_data_.back().is_string());
   ASSERT_EQ(message_data_.back().AsString(), "object");
@@ -136,8 +151,8 @@ std::string TestPostMessage::TestMessageEvent() {
   ASSERT_TRUE(success);
   message_data_.clear();
   instance_->PostMessage(pp::Var(kTestInt));
-  // Note that the trusted in-process version is completely synchronous, so we
-  // do not need to use 'RunMessageLoop' to wait.
+  ASSERT_EQ(message_data_.size(), 0);
+  testing_interface_->RunMessageLoop(instance_->pp_instance());
   ASSERT_EQ(message_data_.size(), 1);
   ASSERT_TRUE(message_data_.back().is_bool());
   ASSERT_TRUE(message_data_.back().AsBool());
@@ -159,6 +174,7 @@ std::string TestPostMessage::TestNoHandler() {
   // don't crash).
   message_data_.clear();
   instance_->PostMessage(pp::Var());
+  testing_interface_->RunMessageLoop(instance_->pp_instance());
   ASSERT_EQ(message_data_.size(), 0);
 
   PASS();

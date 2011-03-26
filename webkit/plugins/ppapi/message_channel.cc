@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
@@ -78,7 +79,7 @@ bool PPVarToNPVariantNoCopy(PP_Var var, NPVariant* result) {
     }
     case PP_VARTYPE_OBJECT:
       // Objects are not currently supported.
-      DCHECK(false);
+      NOTIMPLEMENTED();
       VOID_TO_NPVARIANT(*result);
       return false;
     default:
@@ -86,6 +87,27 @@ bool PPVarToNPVariantNoCopy(PP_Var var, NPVariant* result) {
       return false;
   }
   return true;
+}
+
+// Copy a PP_Var in to a PP_Var that is appropriate for sending via postMessage.
+// This currently just copies the value.  For a string Var, the result is a
+// PP_Var with the a copy of |var|'s string contents and a reference count of 1.
+//
+// TODO(dmichael):  We need to do structured clone eventually to copy a object
+// structure.  The details and PPAPI changes for this are TBD.
+PP_Var CopyPPVar(const PP_Var& var) {
+  if (var.type == PP_VARTYPE_OBJECT) {
+    // Objects are not currently supported.
+    NOTIMPLEMENTED();
+    return PP_MakeUndefined();
+  } else if (var.type == PP_VARTYPE_STRING) {
+    scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
+    if (!string)
+      return PP_MakeUndefined();
+    return StringVar::StringToPPVar(string->module(), string->value());
+  } else {
+    return var;
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -256,7 +278,8 @@ MessageChannel::MessageChannelNPObject::~MessageChannelNPObject() {}
 MessageChannel::MessageChannel(PluginInstance* instance)
     : instance_(instance),
       passthrough_object_(NULL),
-      np_object_(NULL) {
+      np_object_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   VOID_TO_NPVARIANT(onmessage_invoker_);
 
   // Now create an NPObject for receiving calls to postMessage.
@@ -306,8 +329,18 @@ bool MessageChannel::EvaluateOnMessageInvoker() {
 }
 
 void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
-  // Make sure we have our function for invoking a JavaScript onmessage
-  // function.
+  // Make a copy of the message data for the Task we will run.
+  PP_Var var_copy(CopyPPVar(message_data));
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &MessageChannel::PostMessageToJavaScriptImpl,
+          var_copy));
+}
+
+void MessageChannel::PostMessageToJavaScriptImpl(PP_Var message_data) {
+  // Make sure we have our function for invoking onmessage on JavaScript.
   bool success = EvaluateOnMessageInvoker();
   DCHECK(success);
   if (!success)
@@ -320,13 +353,8 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
   NPVariant npvariant_args[2];
   OBJECT_TO_NPVARIANT(instance_->container()->scriptableObjectForElement(),
                       npvariant_args[0]);
-  // Convert message to an NPVariant without copying.  Note this means that
-  // in-process plugins will not copy the data, so isn't really following the
-  // postMessage spec in spirit.  Copying is handled in the proxy, and we don't
-  // want to re-copy unnecessarily.
-  //
-  // TODO(dmichael):  We need to do structured clone eventually to copy a object
-  // structure.  The details and PPAPI changes for this are TBD.
+  // Convert message to an NPVariant without copying. At this point, the data
+  // has already been copied.
   if (!PPVarToNPVariantNoCopy(message_data, &npvariant_args[1]))
     return;
 
@@ -338,6 +366,16 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
 }
 
 void MessageChannel::PostMessageToNative(PP_Var message_data) {
+  // Make a copy of the message data for the Task we will run.
+  PP_Var var_copy(CopyPPVar(message_data));
+
+  MessageLoop::current()->PostTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &MessageChannel::PostMessageToNativeImpl,
+          var_copy));
+}
+
+void MessageChannel::PostMessageToNativeImpl(PP_Var message_data) {
   instance_->HandleMessage(message_data);
 }
 
