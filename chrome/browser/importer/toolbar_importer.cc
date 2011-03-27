@@ -9,47 +9,15 @@
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/libxml_utils.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "grit/generated_resources.h"
-#include "net/base/cookie_monster.h"
-#include "net/base/data_url.h"
-#include "net/url_request/url_request_context.h"
 
-// ToolbarImporterUtils
-static const char* kGoogleDomainUrl = "http://.google.com/";
-static const wchar_t kSplitStringToken = L';';
-static const char* kGoogleDomainSecureCookieId = "SID=";
-
-bool toolbar_importer_utils::IsGoogleGAIACookieInstalled() {
-  net::CookieStore* store =
-      Profile::GetDefaultRequestContext()->GetCookieStore();
-  GURL url(kGoogleDomainUrl);
-  net::CookieOptions options;
-  options.set_include_httponly();  // The SID cookie might be httponly.
-  std::string cookies = store->GetCookiesWithOptions(url, options);
-  std::vector<std::string> cookie_list;
-  base::SplitString(cookies, kSplitStringToken, &cookie_list);
-  for (std::vector<std::string>::iterator current = cookie_list.begin();
-       current != cookie_list.end();
-       ++current) {
-    size_t position = (*current).find(kGoogleDomainSecureCookieId);
-    if (0 == position)
-      return true;
-  }
-  return false;
-}
-
-//
 // Toolbar5Importer
-//
 const char Toolbar5Importer::kXmlApiReplyXmlTag[] = "xml_api_reply";
 const char Toolbar5Importer::kBookmarksXmlTag[] = "bookmarks";
 const char Toolbar5Importer::kBookmarkXmlTag[] = "bookmark";

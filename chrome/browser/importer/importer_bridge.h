@@ -14,8 +14,10 @@
 #include "base/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/importer/profile_writer.h"
+
 // TODO: remove this, see friend declaration in ImporterBridge.
-#include "chrome/browser/importer/toolbar_importer.h"
+class Toolbar5Importer;
 
 class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
  public:

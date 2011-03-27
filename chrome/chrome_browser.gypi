@@ -1237,6 +1237,8 @@
         'browser/importer/safari_importer.mm',
         'browser/importer/toolbar_importer.cc',
         'browser/importer/toolbar_importer.h',
+        'browser/importer/toolbar_importer_utils.cc',
+        'browser/importer/toolbar_importer_utils.h',
         'browser/instant/instant_commit_type.h',
         'browser/instant/instant_confirm_dialog.cc',
         'browser/instant/instant_confirm_dialog.h',

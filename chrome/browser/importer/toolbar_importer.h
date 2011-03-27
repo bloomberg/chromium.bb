@@ -24,13 +24,6 @@
 class ImporterBridge;
 class XmlReader;
 
-// Currently the only configuration information we need is to check whether or
-// not the user currently has their GAIA cookie.  This is done by the function
-// exposed through the ToolbarImportUtils namespace.
-namespace toolbar_importer_utils {
-bool IsGoogleGAIACookieInstalled();
-}
-
 // Toolbar5Importer is a class which exposes the functionality needed to
 // communicate with the Google Toolbar v5 front-end, negotiate the download of
 // Toolbar bookmarks, parse them, and install them on the client.
