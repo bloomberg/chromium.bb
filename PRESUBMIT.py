@@ -1,34 +1,13 @@
-# Copyright 2009, Google Inc.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Documentation on PRESUBMIT.py can be found at:
+# http://www.chromium.org/developers/how-tos/depottools/presubmit-scripts
 
 import os.path
 import sys
+
 
 TOP_DIR = 'native_client'
 MAIN_DEPS = os.path.join(TOP_DIR, 'DEPS')
@@ -41,14 +20,12 @@ def NaclTopDir():
   return cwd[:pos + len(TOP_DIR)]
 
 
-def CheckEolStyle(input_api, output_api, affected_files):
-  """Verifies the svn:eol-style is set to LF.
-  Canned checks implementation can be found in depot_tools.
-  """
-  sources = lambda x: affected_files
-  res = input_api.canned_checks.CheckChangeSvnEolStyle(
-      input_api, output_api, sources)
-  return res
+def _CommonChecks(input_api, output_api):
+  """Checks for both upload and commit."""
+  results = []
+  results.extend(input_api.canned_checks.PanProjectChecks(
+      input_api, output_api, project_name='Native Client'))
+  return results
 
 
 def CheckChangeOnUpload(input_api, output_api):
@@ -57,8 +34,12 @@ def CheckChangeOnUpload(input_api, output_api):
     input_api: the limited set of input modules allowed in presubmit.
     output_api: the limited set of output modules allowed in presubmit.
   """
-  # Apparently the commit queue doesn't like it when we muck with sys.path.
-  # Be clean.
+  report = []
+  report.extend(_CommonChecks(input_api, output_api))
+
+  # The commit queue assumes PRESUBMIT.py is standalone.
+  # TODO(bradnelson): Migrate code_hygiene to a common location so that
+  # it can be used by the commit queue.
   old_sys_path = list(sys.path)
   try:
     sys.path.append(os.path.join(NaclTopDir(), 'tools'))
@@ -69,7 +50,6 @@ def CheckChangeOnUpload(input_api, output_api):
     sys.path = old_sys_path
     del old_sys_path
 
-  report = []
   affected_files = input_api.AffectedFiles(include_deletes=False)
   for filename in affected_files:
     filename = filename.AbsoluteLocalPath()
@@ -87,7 +67,6 @@ def CheckChangeOnUpload(input_api, output_api):
         msg = "Could not validate Chrome revision: %s" % repr(e)
         report.append(output_api.PresubmitError(filename, items=[msg]))
 
-  report.extend(CheckEolStyle(input_api, output_api, affected_files))
   return report
 
 
@@ -104,3 +83,26 @@ def CheckChangeOnCommit(input_api, output_api):
       input_api, output_api,
       json_url='http://nativeclient-status.appspot.com/current?format=json'))
   return report
+
+
+def GetPreferredTrySlaves():
+  return [
+      'nacl-hardy32_m32_n32_opt',
+      'nacl-lucid32_m32_n32_dbg',
+      'nacl-lucid32_m32_n32_opt',
+      'nacl-hardy64_m32_n32_opt',
+      'nacl-lucid64_m32_n32_opt',
+      'nacl-hardy64_m64_n64_opt',
+      'nacl-lucid64_m64_n64_opt',
+      'nacl-lucid64-pnacl1',
+      'nacl-lucid64-pnacl2',
+      'nacl-mac_opt',
+      'nacl-mac10.5_opt',
+      'nacl-win32_opt',
+      'nacl-win64_dbg',
+      'nacl-win64_opt',
+      'nacl-arm_opt',
+      'nacl-modular-toolchain-32',
+      'nacl-modular-toolchain-64',
+      'nacl-modular-toolchain-mac',
+  ]
