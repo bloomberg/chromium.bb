@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,22 +7,19 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/scoped_ptr.h"
+#include "base/string_split.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/sqlite_utils.h"
+#include "webkit/glue/password_form.h"
 
 #if defined(USE_NSS)
 #include <pk11pub.h>
 #include <pk11sdr.h>
 #endif  // defined(USE_NSS)
-
-#include "base/base64.h"
-#include "base/string_split.h"
-#include "base/string_util.h"
-#include "base/utf_string_conversions.h"
-#include "webkit/glue/password_form.h"
-
-using webkit_glue::PasswordForm;
 
 // This method is based on some Firefox code in
 //   security/manager/ssl/src/nsSDR.cpp
@@ -114,7 +111,7 @@ string16 NSSDecryptor::Decrypt(const std::string& crypt) const {
 // http://kb.mozillazine.org/Signons2.txt
 // http://kb.mozillazine.org/Signons3.txt
 void NSSDecryptor::ParseSignons(const std::string& content,
-                                std::vector<PasswordForm>* forms) {
+                                std::vector<webkit_glue::PasswordForm>* forms) {
   forms->clear();
 
   // Splits the file content into lines.
@@ -143,7 +140,7 @@ void NSSDecryptor::ParseSignons(const std::string& content,
   // Reads never-saved list. Domains are stored one per line.
   size_t i;
   for (i = 1; i < lines.size() && lines[i].compare(".") != 0; ++i) {
-    PasswordForm form;
+    webkit_glue::PasswordForm form;
     form.origin = GURL(lines[i]).ReplaceComponents(rep);
     form.signon_realm = form.origin.GetOrigin().spec();
     form.blacklisted_by_user = true;
@@ -165,7 +162,7 @@ void NSSDecryptor::ParseSignons(const std::string& content,
     if (end - begin < 5)
       continue;
 
-    PasswordForm form;
+    webkit_glue::PasswordForm form;
 
     // The first line is the site URL.
     // For HTTP authentication logins, the URL may contain http realm,
@@ -253,7 +250,7 @@ bool NSSDecryptor::ReadAndParseSignons(const FilePath& sqlite_file,
   rep.ClearPassword();
   // Read domains for which passwords are never saved.
   while (s.step() == SQLITE_ROW) {
-    PasswordForm form;
+    webkit_glue::PasswordForm form;
     form.origin = GURL(s.column_string(0)).ReplaceComponents(rep);
     form.signon_realm = form.origin.GetOrigin().spec();
     form.blacklisted_by_user = true;
@@ -284,7 +281,7 @@ bool NSSDecryptor::ReadAndParseSignons(const FilePath& sqlite_file,
     if (!url.is_valid())
       continue;
 
-    PasswordForm form;
+    webkit_glue::PasswordForm form;
     form.origin = url.ReplaceComponents(rep);
     form.signon_realm = form.origin.GetOrigin().spec();
     if (!realm.empty())

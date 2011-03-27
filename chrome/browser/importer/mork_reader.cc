@@ -55,8 +55,6 @@
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_bridge.h"
 
-using base::Time;
-
 namespace {
 
 // Convert a hex character (0-9, A-F) to its corresponding byte value.
@@ -534,7 +532,7 @@ void AddToHistory(MorkReader::ColumnDataList* column_values,
     int64 date;
     base::StringToInt64(values[kLastVisitColumn], &date);
     if (date != 0)
-      row.set_last_visit(Time::FromTimeT(date / 1000000));
+      row.set_last_visit(base::Time::FromTimeT(date / 1000000));
 
     bool is_typed = (values[kTypedColumn] == "1");
     if (is_typed)

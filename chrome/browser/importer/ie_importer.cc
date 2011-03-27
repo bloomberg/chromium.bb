@@ -23,8 +23,8 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "base/values.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
@@ -42,14 +42,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/password_form.h"
 
-using base::Time;
-using webkit_glue::PasswordForm;
-
 namespace {
 
 // Gets the creation time of the given file or directory.
-static Time GetFileCreationTime(const std::wstring& file) {
-  Time creation_time;
+base::Time GetFileCreationTime(const std::wstring& file) {
+  base::Time creation_time;
   base::win::ScopedHandle file_handle(
       CreateFile(file.c_str(), GENERIC_READ,
                  FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -57,7 +54,7 @@ static Time GetFileCreationTime(const std::wstring& file) {
                  FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL));
   FILETIME creation_filetime;
   if (GetFileTime(file_handle, &creation_filetime, NULL, NULL))
-    creation_time = Time::FromFileTime(creation_filetime);
+    creation_time = base::Time::FromFileTime(creation_filetime);
   return creation_time;
 }
 
@@ -221,7 +218,7 @@ void IEImporter::ImportPasswordsIE6() {
       continue;
     }
 
-    PasswordForm form;
+    webkit_glue::PasswordForm form;
     GURL::Replacements rp;
     rp.ClearUsername();
     rp.ClearPassword();
@@ -281,7 +278,7 @@ void IEImporter::ImportPasswordsIE7() {
                         &password_info.encrypted_data.front(),
                         &value_len, NULL) == ERROR_SUCCESS) {
         password_info.url_hash = reg_iterator.Name();
-        password_info.date_created = Time::Now();
+        password_info.date_created = base::Time::Now();
 
         bridge_->AddIE7PasswordInfo(password_info);
       }
@@ -332,7 +329,7 @@ void IEImporter::ImportHistory() {
 
       history::URLRow row(url);
       row.set_title(title_string);
-      row.set_last_visit(Time::FromFileTime(stat_url.ftLastVisited));
+      row.set_last_visit(base::Time::FromFileTime(stat_url.ftLastVisited));
       if (stat_url.dwFlags == STATURL_QUERYFLAG_TOPLEVEL) {
         row.set_visit_count(1);
         row.set_hidden(false);

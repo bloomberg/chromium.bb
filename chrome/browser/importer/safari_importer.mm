@@ -61,10 +61,9 @@ bool SafariImporter::CanImport(const FilePath& library_dir,
   FilePath bookmarks_path = safari_dir.Append("Bookmarks.plist");
   FilePath history_path = safari_dir.Append("History.plist");
 
-  using file_util::PathExists;
-  if (PathExists(bookmarks_path))
+  if (file_util::PathExists(bookmarks_path))
     *services_supported |= importer::FAVORITES;
-  if (PathExists(history_path))
+  if (file_util::PathExists(history_path))
     *services_supported |= importer::HISTORY;
 
   return *services_supported != importer::NONE;
@@ -346,13 +345,11 @@ void SafariImporter::ParseHistoryItems(
       objectForKey:@"WebHistoryDates"];
 
   for (NSDictionary* history_item in safari_history_items) {
-    using base::SysNSStringToUTF8;
-    using base::SysNSStringToUTF16;
     NSString* url_ns = [history_item objectForKey:@""];
     if (!url_ns)
       continue;
 
-    GURL url(SysNSStringToUTF8(url_ns));
+    GURL url(base::SysNSStringToUTF8(url_ns));
 
     if (!CanImportSafariURL(url))
       continue;
@@ -365,7 +362,7 @@ void SafariImporter::ParseHistoryItems(
     if (!title_ns)
       title_ns = url_ns;
 
-    row.set_title(SysNSStringToUTF16(title_ns));
+    row.set_title(base::SysNSStringToUTF16(title_ns));
     int visit_count = [[history_item objectForKey:@"visitCount"]
                           intValue];
     row.set_visit_count(visit_count);
