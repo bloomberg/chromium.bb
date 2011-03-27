@@ -43,6 +43,8 @@ void DataDrivenTest::RunDataDrivenTest(
   for (FilePath input_file = input_files.Next();
        !input_file.empty();
        input_file = input_files.Next()) {
+    SCOPED_TRACE(input_file.BaseName().value());
+
     std::string input;
     ASSERT_TRUE(ReadFile(input_file, &input));
 
