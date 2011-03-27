@@ -760,8 +760,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
 }
 
 // Visit a page over bad https that is a redirect to a page with good https.
-// Marked as flaky, see bug 40932.
-IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestRedirectBadToGoodHTTPS) {
+// Crashes: http://crbug.com/77374
+// Previously marked as flaky: http://crbug.com/40932
+IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestRedirectBadToGoodHTTPS) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
