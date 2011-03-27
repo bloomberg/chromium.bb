@@ -366,7 +366,7 @@ class EBuild(object):
     # check.
     # TODO(davidjames): Fix the project name in the chromeos-kernel ebuild.
     cmd = 'cd %s && git config --get remote.cros.projectname' % srcdir
-    actual_project = _SimpleRunCommand(cmd).rstrip()
+    actual_project = os.path.basename(_SimpleRunCommand(cmd).rstrip())
     if project not in (actual_project, 'chromeos-kernel'):
       Die('Project name mismatch for %s (%s != %s)' % (unstable_ebuild, project,
           actual_project))
