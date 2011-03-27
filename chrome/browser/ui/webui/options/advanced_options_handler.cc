@@ -59,6 +59,10 @@ AdvancedOptionsHandler::AdvancedOptionsHandler() {
 }
 
 AdvancedOptionsHandler::~AdvancedOptionsHandler() {
+  // There may be pending file dialogs, we need to tell them that we've gone
+  // away so they don't try and call back to us.
+  if (select_folder_dialog_.get())
+    select_folder_dialog_->ListenerDestroyed();
 }
 
 void AdvancedOptionsHandler::GetLocalizedValues(

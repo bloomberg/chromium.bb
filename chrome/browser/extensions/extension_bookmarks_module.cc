@@ -800,7 +800,12 @@ void CreateBookmarkFunction::GetQuotaLimitHeuristics(
 
 BookmarksIOFunction::BookmarksIOFunction() {}
 
-BookmarksIOFunction::~BookmarksIOFunction() {}
+BookmarksIOFunction::~BookmarksIOFunction() {
+  // There may be pending file dialogs, we need to tell them that we've gone
+  // away so they don't try and call back to us.
+  if (select_file_dialog_.get())
+    select_file_dialog_->ListenerDestroyed();
+}
 
 void BookmarksIOFunction::SelectFile(SelectFileDialog::Type type) {
   // Balanced in one of the three callbacks of SelectFileDialog:

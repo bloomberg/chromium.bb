@@ -681,8 +681,13 @@ void CertificateManagerHandler::ImportExportCleanup() {
   password_.clear();
   file_data_.clear();
   selected_cert_list_.clear();
-  select_file_dialog_ = NULL;
   module_ = NULL;
+
+  // There may be pending file dialogs, we need to tell them that we've gone
+  // away so they don't try and call back to us.
+  if (select_file_dialog_.get())
+    select_file_dialog_->ListenerDestroyed();
+  select_file_dialog_ = NULL;
 }
 
 void CertificateManagerHandler::ImportServer(const ListValue* args) {
