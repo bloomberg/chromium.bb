@@ -122,7 +122,7 @@ PP_Resource GetResponseInfo(PP_Resource loader_id) {
 }
 
 int32_t ReadResponseBody(PP_Resource loader_id,
-                         char* buffer,
+                         void* buffer,
                          int32_t bytes_to_read,
                          PP_CompletionCallback callback) {
   scoped_refptr<PPB_URLLoader_Impl> loader(
@@ -311,7 +311,7 @@ bool PPB_URLLoader_Impl::GetDownloadProgress(
   return true;
 }
 
-int32_t PPB_URLLoader_Impl::ReadResponseBody(char* buffer,
+int32_t PPB_URLLoader_Impl::ReadResponseBody(void* buffer,
                                              int32_t bytes_to_read,
                                              PP_CompletionCallback callback) {
   int32_t rv = ValidateCallback(callback);
@@ -322,7 +322,7 @@ int32_t PPB_URLLoader_Impl::ReadResponseBody(char* buffer,
   if (bytes_to_read <= 0 || !buffer)
     return PP_ERROR_BADARGUMENT;
 
-  user_buffer_ = buffer;
+  user_buffer_ = static_cast<char*>(buffer);
   user_buffer_size_ = bytes_to_read;
 
   if (!buffer_.empty())

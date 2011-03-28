@@ -97,7 +97,7 @@ class URLLoader : public Resource {
   bool GetDownloadProgress(int64_t* bytes_received,
                            int64_t* total_bytes_to_be_received) const;
   URLResponseInfo GetResponseInfo() const;
-  int32_t ReadResponseBody(char* buffer,
+  int32_t ReadResponseBody(void* buffer,
                            int32_t bytes_to_read,
                            const CompletionCallback& cc);
   int32_t FinishStreamingToFile(const CompletionCallback& cc);

@@ -11,7 +11,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE "PPB_Context3DTrusted(Dev);0.2"
+#define PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE "PPB_Context3DTrusted(Dev);0.3"
 
 typedef enum {
   kNoError,
@@ -77,7 +77,7 @@ struct PPB_Context3DTrusted_Dev {
 
   // Create a transfer buffer and return a handle that uniquely
   // identifies it or -1 on error.
-  int32_t (*CreateTransferBuffer)(PP_Resource context, size_t size);
+  int32_t (*CreateTransferBuffer)(PP_Resource context, uint32_t size);
 
   // Destroy a transfer buffer and recycle the handle.
   PP_Bool (*DestroyTransferBuffer)(PP_Resource context, int32_t id);

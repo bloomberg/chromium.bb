@@ -79,7 +79,7 @@ PP_Bool SetProperty(PP_Resource request_id,
 }
 
 PP_Bool AppendDataToBody(PP_Resource request_id,
-                         const char* data, uint32_t len) {
+                         const void* data, uint32_t len) {
   PluginDispatcher* dispatcher;
   URLRequestInfo* request_info;
   if (!DispatcherFromURLRequestInfo(request_id, &dispatcher, &request_info))
@@ -87,7 +87,7 @@ PP_Bool AppendDataToBody(PP_Resource request_id,
 
   dispatcher->Send(new PpapiHostMsg_PPBURLRequestInfo_AppendDataToBody(
       INTERFACE_ID_PPB_URL_REQUEST_INFO, request_info->host_resource(),
-      std::string(data, len)));
+      std::string(static_cast<const char*>(data), len)));
 
   // TODO(brettw) do some validation. We should be able to tell on the plugin
   // side whether the request will succeed or fail in the renderer.

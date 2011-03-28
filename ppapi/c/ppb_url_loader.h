@@ -96,7 +96,7 @@ struct PPB_URLLoader {
   // perform a partial read.  Returns the number of bytes read or an error
   // code.
   int32_t (*ReadResponseBody)(PP_Resource loader,
-                              char* buffer,
+                              void* buffer,
                               int32_t bytes_to_read,
                               struct PP_CompletionCallback callback);
 

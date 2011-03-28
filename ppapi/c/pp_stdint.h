@@ -49,7 +49,5 @@ typedef unsigned __int64 uint64_t;
 #include <stdint.h>
 #endif
 
-#include <stddef.h>  /* Needed for size_t. */
-
 #endif  /* PPAPI_C_PP_STDINT_H_ */
 

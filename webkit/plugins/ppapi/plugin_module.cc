@@ -137,7 +137,7 @@ void ReleaseResource(PP_Resource resource) {
   }
 }
 
-void* MemAlloc(size_t num_bytes) {
+void* MemAlloc(uint32_t num_bytes) {
   return malloc(num_bytes);
 }
 

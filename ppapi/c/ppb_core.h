@@ -13,7 +13,7 @@
 
 struct PP_CompletionCallback;
 
-#define PPB_CORE_INTERFACE "PPB_Core;0.3"
+#define PPB_CORE_INTERFACE "PPB_Core;0.4"
 
 /**
  * @file
@@ -54,11 +54,11 @@ struct PPB_Core {
   /**
    * MemAlloc is a pointer to a function that allocate memory.
    *
-   * @param[in] num_bytes A size_t number of bytes to allocate.
+   * @param[in] num_bytes A number of bytes to allocate.
    * @return A pointer to the memory if successful, NULL If the
    * allocation fails.
    */
-  void* (*MemAlloc)(size_t num_bytes);
+  void* (*MemAlloc)(uint32_t num_bytes);
 
   /**
    * MemFree is a pointer to a function that deallocates memory.

@@ -47,7 +47,7 @@ class URLLoader : public PluginResource {
   // When an asynchronous read is pending, this will contain the callback and
   // the buffer to put the data.
   PP_CompletionCallback current_read_callback_;
-  char* current_read_buffer_;
+  void* current_read_buffer_;
 
   // Cached copy of the response info. When nonzero, we're holding a reference
   // to this resource.
@@ -205,7 +205,7 @@ PP_Resource GetResponseInfo(PP_Resource loader_id) {
 }
 
 int32_t ReadResponseBody(PP_Resource loader_id,
-                         char* buffer,
+                         void* buffer,
                          int32_t bytes_to_read,
                          PP_CompletionCallback callback) {
   URLLoader* loader_object;

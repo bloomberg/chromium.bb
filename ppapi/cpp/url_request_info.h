@@ -24,7 +24,7 @@ class URLRequestInfo : public Resource {
 
   // PPB_URLRequestInfo methods:
   bool SetProperty(PP_URLRequestProperty property, const Var& value);
-  bool AppendDataToBody(const char* data, uint32_t len);
+  bool AppendDataToBody(const void* data, uint32_t len);
   bool AppendFileToBody(const FileRef_Dev& file_ref,
                         PP_Time expected_last_modified_time = 0);
   bool AppendFileRangeToBody(const FileRef_Dev& file_ref,

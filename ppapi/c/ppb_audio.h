@@ -11,7 +11,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_AUDIO_INTERFACE "PPB_Audio;0.5"
+#define PPB_AUDIO_INTERFACE "PPB_Audio;0.6"
 
 /**
  * @file
@@ -31,7 +31,7 @@
  * fill the audio buffer with data.
  */
 typedef void (*PPB_Audio_Callback)(void* sample_buffer,
-                                   size_t buffer_size_in_bytes,
+                                   uint32_t buffer_size_in_bytes,
                                    void* user_data);
 /**
  * @}
@@ -50,8 +50,8 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  * A C++ example:
  *
  * void audio_callback(void* sample_buffer,
- *                     size_t buffer_size_in_bytes,
- *                      void* user_data) {
+ *                     uint32_t buffer_size_in_bytes,
+ *                     void* user_data) {
  *   ... fill in the buffer with samples ...
  *  }
  *

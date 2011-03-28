@@ -27,7 +27,7 @@ class Core {
     interface_->ReleaseResource(resource);
   }
 
-  void* MemAlloc(size_t num_bytes) {
+  void* MemAlloc(uint32_t num_bytes) {
     return interface_->MemAlloc(num_bytes);
   }
   void MemFree(void* ptr) {

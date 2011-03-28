@@ -127,14 +127,15 @@ PP_Bool SetProperty(PP_Resource request_id,
 }
 
 PP_Bool AppendDataToBody(PP_Resource request_id,
-                         const char* data,
+                         const void* data,
                          uint32_t len) {
   scoped_refptr<PPB_URLRequestInfo_Impl> request(
       Resource::GetAs<PPB_URLRequestInfo_Impl>(request_id));
   if (!request)
     return PP_FALSE;
 
-  return BoolToPPBool(request->AppendDataToBody(std::string(data, len)));
+  return BoolToPPBool(request->AppendDataToBody(std::string(
+      static_cast<const char*>(data), len)));
 }
 
 PP_Bool AppendFileToBody(PP_Resource request_id,

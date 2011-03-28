@@ -194,7 +194,7 @@ PP_Context3DTrustedState FlushSync(PP_Resource context_id, int32_t put_offset) {
   return PPStateFromGPUState(context->command_buffer()->FlushSync(put_offset));
 }
 
-int32_t CreateTransferBuffer(PP_Resource context_id, size_t size) {
+int32_t CreateTransferBuffer(PP_Resource context_id, uint32_t size) {
   scoped_refptr<PPB_Context3D_Impl> context(
       Resource::GetAs<PPB_Context3D_Impl>(context_id));
   if (!context.get() || !context->command_buffer())

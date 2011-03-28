@@ -39,7 +39,7 @@ bool URLRequestInfo::SetProperty(PP_URLRequestProperty property,
       pp_resource(), property, value.pp_var()));
 }
 
-bool URLRequestInfo::AppendDataToBody(const char* data, uint32_t len) {
+bool URLRequestInfo::AppendDataToBody(const void* data, uint32_t len) {
   if (!has_interface<PPB_URLRequestInfo>())
     return false;
   return PPBoolToBool(get_interface<PPB_URLRequestInfo>()->AppendDataToBody(

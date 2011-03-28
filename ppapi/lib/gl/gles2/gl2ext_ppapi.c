@@ -4,6 +4,8 @@
 
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
 
+#include <stddef.h>
+
 #ifndef GL_FALSE
 #define GL_FALSE 0
 #endif  // GL_FALSE

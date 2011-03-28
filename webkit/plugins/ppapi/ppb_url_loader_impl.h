@@ -56,7 +56,7 @@ class PPB_URLLoader_Impl : public Resource, public WebKit::WebURLLoaderClient {
                          int64_t* total_bytes_to_be_sent);
   bool GetDownloadProgress(int64_t* bytes_received,
                            int64_t* total_bytes_to_be_received);
-  int32_t ReadResponseBody(char* buffer, int32_t bytes_to_read,
+  int32_t ReadResponseBody(void* buffer, int32_t bytes_to_read,
                            PP_CompletionCallback callback);
   int32_t FinishStreamingToFile(PP_CompletionCallback callback);
   void Close();

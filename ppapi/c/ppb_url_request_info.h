@@ -87,7 +87,7 @@ struct PPB_URLRequestInfo {
   //
   // Returns PP_FALSE if any of the parameters are invalid, PP_TRUE on success.
   PP_Bool (*AppendDataToBody)(PP_Resource request,
-                              const char* data,
+                              const void* data,
                               uint32_t len);
 
   // Append a file reference to be uploaded.

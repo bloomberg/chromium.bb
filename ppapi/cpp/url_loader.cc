@@ -88,7 +88,7 @@ URLResponseInfo URLLoader::GetResponseInfo() const {
                              pp_resource()));
 }
 
-int32_t URLLoader::ReadResponseBody(char* buffer,
+int32_t URLLoader::ReadResponseBody(void* buffer,
                                     int32_t bytes_to_read,
                                     const CompletionCallback& cc) {
   if (!has_interface<PPB_URLLoader>())
