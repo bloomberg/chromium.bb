@@ -243,7 +243,7 @@ void ThumbnailLoader::LoadThumbnail() {
   int bottomOffset = 0;
   TabContentsWrapper* devToolsContents =
       DevToolsWindow::GetDevToolsContents(contents_);
-  if (devToolsContents->tab_contents() &&
+  if (devToolsContents && devToolsContents->tab_contents() &&
       devToolsContents->tab_contents()->render_view_host() &&
       devToolsContents->tab_contents()->render_view_host()->view()) {
     // The devtool's size might not be up-to-date, but since its height doesn't
