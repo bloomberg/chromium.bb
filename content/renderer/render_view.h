@@ -62,7 +62,6 @@ class ExternalHostBindings;
 class ExternalPopupMenu;
 class FilePath;
 class GeolocationDispatcher;
-class GeolocationDispatcherOld;
 class GURL;
 class ListValue;
 class LoadProgressTracker;
