@@ -7,7 +7,7 @@ vars = {
   "chrome_rev": "78322",
   "gyp_rev": "856",
   "gtest_rev": "364",
-  "tools_rev": "4214",
+  "tools_rev": "4632",
   "python_26_rev": "53573",
   "wix_rev": "153",
   "lcov_rev": "54822",
@@ -32,8 +32,9 @@ deps = {
     Var("native_client_trunk") + "/src/third_party/mpfr@" + Var("tools_rev"),
   "third_party/pylib":
     Var("native_client_trunk") + "/src/third_party/pylib@" + Var("tools_rev"),
-  "third_party/scons":
-    Var("native_client_trunk") + "/src/third_party/scons@" + Var("tools_rev"),
+  "third_party/scons-2.0.1":
+    (Var("native_client_trunk") + "/src/third_party/scons-2.0.1@" +
+     Var("tools_rev")),
   "third_party/selenium":
     (Var("native_client_trunk") + "/src/third_party/selenium@" +
      Var("tools_rev")),

@@ -261,9 +261,11 @@ def generate(env):
   # NOTE: SCons requires the use of this name, which fails gpylint.
   """SCons entry point for this tool."""
 
-  # TODO: Several sections here are gated out on the mac to prevent failure.
-  # This appears to be SCons issue 1720 manifesting itself on Mac when using
-  # windows tools like msvs or msvc.
+  # TODO(ncbray): Several sections here are gated out on to prevent failure on
+  # non-windows platforms.  This appears to be SCons issue 1720 manifesting
+  # itself.  A more principled fix would be nice.
+
+  use_msvc_tools = env['PLATFORM'] in ('win32', 'cygwin')
 
   # Preserve some variables that get blown away by the tools.
   saved = dict()
@@ -278,14 +280,14 @@ def generate(env):
     env.AppendENVPath('LIB', os.environ.get('LIB', '[]'))
 
   # Load various Visual Studio related tools.
-  if env['PLATFORM'] != 'darwin':
+  if use_msvc_tools:
     env.Tool('as')
     env.Tool('msvs')
     env.Tool('windows_hard_link')
 
   pre_msvc_env = env['ENV'].copy()
 
-  if env['PLATFORM'] != 'darwin':
+  if use_msvc_tools:
     env.Tool('msvc')
     env.Tool('mslib')
     env.Tool('mslink')
@@ -414,7 +416,7 @@ def generate(env):
   # TODO: mslink.py creates a shlibLinkAction which doesn't specify
   # '$SHLINKCOMSTR' as its command string.  This breaks --brief.  For now,
   # hack into the existing action and override its command string.
-  if env['PLATFORM'] != 'darwin':
+  if use_msvc_tools:
     env['SHLINKCOM'].list[0].cmdstr = '$SHLINKCOMSTR'
 
   # Restore saved flags.
