@@ -894,7 +894,7 @@ void PersonalDataManager::EmptyMigrationTrash() {
 void PersonalDataManager::LogProfileCount() const {
   if (!g_has_logged_profile_count) {
     g_has_logged_profile_count = true;
-    metric_logger_->LogProfileCount(web_profiles_.size());
+    metric_logger_->LogStoredProfileCount(web_profiles_.size());
   }
 }
 

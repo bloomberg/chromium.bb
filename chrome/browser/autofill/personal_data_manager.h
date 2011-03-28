@@ -72,7 +72,7 @@ class PersonalDataManager
                       const CreditCard** credit_card);
 
   // Saves a credit card value detected in |ImportedFormData|.
-  void SaveImportedCreditCard(const CreditCard& imported_credit_card);
+  virtual void SaveImportedCreditCard(const CreditCard& imported_credit_card);
 
   // Sets |web_profiles_| to the contents of |profiles| and updates the web
   // database by adding, updating and removing profiles.

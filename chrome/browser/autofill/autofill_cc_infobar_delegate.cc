@@ -4,21 +4,36 @@
 
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 
-#include "base/metrics/histogram.h"
-#include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/autofill/credit_card.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser_list.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(TabContents* tab_contents,
-                                                     AutofillManager* host)
+AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(
+    TabContents* tab_contents,
+    const CreditCard* credit_card,
+    PersonalDataManager* personal_data,
+    const AutofillMetrics* metric_logger)
     : ConfirmInfoBarDelegate(tab_contents),
-      host_(host) {
+      credit_card_(credit_card),
+      personal_data_(personal_data),
+      metric_logger_(metric_logger),
+      had_user_interaction_(false) {
+  metric_logger_->Log(AutofillMetrics::CREDIT_CARD_INFOBAR_SHOWN);
 }
 
 AutofillCCInfoBarDelegate::~AutofillCCInfoBarDelegate() {
+}
+
+void AutofillCCInfoBarDelegate::LogUserAction(
+    AutofillMetrics::CreditCardInfoBarMetric user_action) {
+  DCHECK(!had_user_interaction_);
+
+  metric_logger_->Log(user_action);
+  had_user_interaction_ = true;
 }
 
 bool AutofillCCInfoBarDelegate::ShouldExpire(
@@ -30,11 +45,14 @@ bool AutofillCCInfoBarDelegate::ShouldExpire(
 }
 
 void AutofillCCInfoBarDelegate::InfoBarClosed() {
-  if (host_) {
-    host_->OnInfoBarClosed(false);
-    host_ = NULL;
-  }
+  if (!had_user_interaction_)
+    LogUserAction(AutofillMetrics::CREDIT_CARD_INFOBAR_IGNORED);
+
   delete this;
+}
+
+void AutofillCCInfoBarDelegate::InfoBarDismissed() {
+  LogUserAction(AutofillMetrics::CREDIT_CARD_INFOBAR_DENIED);
 }
 
 SkBitmap* AutofillCCInfoBarDelegate::GetIcon() const {
@@ -56,16 +74,13 @@ string16 AutofillCCInfoBarDelegate::GetButtonLabel(InfoBarButton button) const {
 }
 
 bool AutofillCCInfoBarDelegate::Accept() {
-  UMA_HISTOGRAM_COUNTS("Autofill.CCInfoBarAccepted", 1);
-  if (host_) {
-    host_->OnInfoBarClosed(true);
-    host_ = NULL;
-  }
+  personal_data_->SaveImportedCreditCard(*credit_card_);
+  LogUserAction(AutofillMetrics::CREDIT_CARD_INFOBAR_ACCEPTED);
   return true;
 }
 
 bool AutofillCCInfoBarDelegate::Cancel() {
-  UMA_HISTOGRAM_COUNTS("Autofill.CCInfoBarDenied", 1);
+  LogUserAction(AutofillMetrics::CREDIT_CARD_INFOBAR_DENIED);
   return true;
 }
 

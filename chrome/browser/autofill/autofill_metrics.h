@@ -12,26 +12,17 @@
 
 class AutofillMetrics {
  public:
-  // Each of these is logged at most once per query to the server, which in turn
-  // occurs at most once per page load.
-  enum ServerQueryMetric {
-    // Logged for each query sent to the server.
-    QUERY_SENT = 0,
-    // Logged for each query response received from the server.
-    QUERY_RESPONSE_RECEIVED,
-    // Logged for each parsable response received from the server.
-    QUERY_RESPONSE_PARSED,
-    // Logged for each parsable response that provided no improvements relative
-    // to our heuristics.
-    QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS,
-    // Logged for each page for which our heuristics detected at least one
-    // auto-fillable field, but the server response overrode the type of at
-    // least one field.
-    QUERY_RESPONSE_OVERRODE_LOCAL_HEURISTICS,
-    // Logged for each page for which our heuristics did not detect any
-    // auto-fillable fields, but the server response did detect some.
-    QUERY_RESPONSE_WITH_NO_LOCAL_HEURISTICS,
-    NUM_SERVER_QUERY_METRICS
+  // Each of these is logged at most once per form submission.
+  enum CreditCardInfoBarMetric {
+    // Logged when we show an infobar prompting to save credit card info.
+    CREDIT_CARD_INFOBAR_SHOWN = 0,
+    // Logged when the user explicitly accepts the infobar.
+    CREDIT_CARD_INFOBAR_ACCEPTED,
+    // Logged when the user explicitly denies the infobar.
+    CREDIT_CARD_INFOBAR_DENIED,
+    // Logged when the user completely ignores the infobar (on tab close).
+    CREDIT_CARD_INFOBAR_IGNORED,
+    NUM_CREDIT_CARD_INFO_BAR_METRICS
   };
 
   // Each of these is logged at most once per form submission.
@@ -57,15 +48,38 @@ class AutofillMetrics {
     NUM_QUALITY_METRICS
   };
 
+  // Each of these is logged at most once per query to the server, which in turn
+  // occurs at most once per page load.
+  enum ServerQueryMetric {
+    // Logged for each query sent to the server.
+    QUERY_SENT = 0,
+    // Logged for each query response received from the server.
+    QUERY_RESPONSE_RECEIVED,
+    // Logged for each parsable response received from the server.
+    QUERY_RESPONSE_PARSED,
+    // Logged for each parsable response that provided no improvements relative
+    // to our heuristics.
+    QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS,
+    // Logged for each page for which our heuristics detected at least one
+    // auto-fillable field, but the server response overrode the type of at
+    // least one field.
+    QUERY_RESPONSE_OVERRODE_LOCAL_HEURISTICS,
+    // Logged for each page for which our heuristics did not detect any
+    // auto-fillable fields, but the server response did detect some.
+    QUERY_RESPONSE_WITH_NO_LOCAL_HEURISTICS,
+    NUM_SERVER_QUERY_METRICS
+  };
+
   AutofillMetrics();
   virtual ~AutofillMetrics();
 
-  virtual void Log(ServerQueryMetric metric) const;
+  virtual void Log(CreditCardInfoBarMetric metric) const;
   virtual void Log(QualityMetric metric,
                    const std::string& experiment_id) const;
+  virtual void Log(ServerQueryMetric metric) const;
 
   // This should be called at most once per run.
-  virtual void LogProfileCount(size_t num_profiles) const;
+  virtual void LogStoredProfileCount(size_t num_profiles) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillMetrics);

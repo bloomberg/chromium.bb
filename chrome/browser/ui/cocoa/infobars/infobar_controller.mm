@@ -152,6 +152,9 @@ const float kAnimateCloseDuration = 0.12;
 
 // Called when someone clicks on the close button.
 - (void)dismiss:(id)sender {
+  if (delegate_)
+    delegate_->InfoBarDismissed();
+
   [self removeInfoBar];
 }
 

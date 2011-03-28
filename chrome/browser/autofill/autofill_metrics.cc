@@ -12,10 +12,17 @@ AutofillMetrics::AutofillMetrics() {
 AutofillMetrics::~AutofillMetrics() {
 }
 
+void AutofillMetrics::Log(CreditCardInfoBarMetric metric) const {
+  DCHECK(metric < NUM_CREDIT_CARD_INFO_BAR_METRICS);
+
+  UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardInfoBar", metric,
+                            NUM_CREDIT_CARD_INFO_BAR_METRICS);
+}
+
 void AutofillMetrics::Log(ServerQueryMetric metric) const {
   DCHECK(metric < NUM_SERVER_QUERY_METRICS);
 
-  UMA_HISTOGRAM_ENUMERATION("AutoFill.ServerQueryResponse", metric,
+  UMA_HISTOGRAM_ENUMERATION("Autofill.ServerQueryResponse", metric,
                             NUM_SERVER_QUERY_METRICS);
 }
 
@@ -23,13 +30,13 @@ void AutofillMetrics::Log(QualityMetric metric,
                           const std::string& experiment_id) const {
   DCHECK(metric < NUM_QUALITY_METRICS);
 
-  std::string histogram_name = "AutoFill.Quality";
+  std::string histogram_name = "Autofill.Quality";
   if (!experiment_id.empty())
     histogram_name += "_" + experiment_id;
 
   UMA_HISTOGRAM_ENUMERATION(histogram_name, metric, NUM_QUALITY_METRICS);
 }
 
-void AutofillMetrics::LogProfileCount(size_t num_profiles) const {
-  UMA_HISTOGRAM_COUNTS("AutoFill.ProfileCount", num_profiles);
+void AutofillMetrics::LogStoredProfileCount(size_t num_profiles) const {
+  UMA_HISTOGRAM_COUNTS("Autofill.StoredProfileCount", num_profiles);
 }

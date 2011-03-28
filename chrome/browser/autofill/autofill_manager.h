@@ -50,10 +50,6 @@ class AutofillManager : public TabContentsObserver,
       const ViewHostMsg_FrameNavigate_Params& params);
   virtual bool OnMessageReceived(const IPC::Message& message);
 
-  // Called by the AutofillCCInfoBarDelegate when the user interacts with the
-  // infobar.
-  virtual void OnInfoBarClosed(bool should_save);
-
   // AutofillDownloadManager::Observer implementation:
   virtual void OnLoadedAutofillHeuristics(const std::string& heuristic_xml);
   virtual void OnUploadedAutofillHeuristics(const std::string& form_signature);
@@ -83,9 +79,7 @@ class AutofillManager : public TabContentsObserver,
     personal_data_ = personal_data;
   }
 
-  const AutofillMetrics* metric_logger() const {
-    return metric_logger_.get();
-  }
+  const AutofillMetrics* metric_logger() const { return metric_logger_.get(); }
   void set_metric_logger(const AutofillMetrics* metric_logger);
 
   ScopedVector<FormStructure>* form_structures() { return &form_structures_; }
@@ -205,14 +199,6 @@ class AutofillManager : public TabContentsObserver,
 
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;
-
-  // The InfoBar that asks for permission to store credit card information.
-  // Deletes itself when closed.
-  AutofillCCInfoBarDelegate* cc_infobar_;
-
-  // The imported credit card that should be saved if the user accepts the
-  // infobar.
-  scoped_ptr<const CreditCard> imported_credit_card_;
 
   // GUID to ID mapping.  We keep two maps to convert back and forth.
   std::map<std::string, int> guid_id_map_;

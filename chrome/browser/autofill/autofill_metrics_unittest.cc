@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
@@ -28,16 +29,16 @@ namespace {
 class MockAutofillMetrics : public AutofillMetrics {
  public:
   MockAutofillMetrics() {}
-  MOCK_CONST_METHOD1(Log, void(ServerQueryMetric metric));
+  MOCK_CONST_METHOD1(Log, void(CreditCardInfoBarMetric metric));
   MOCK_CONST_METHOD2(Log, void(QualityMetric metric,
                                const std::string& experiment_id));
-  MOCK_CONST_METHOD1(LogProfileCount, void(size_t num_profiles));
+  MOCK_CONST_METHOD1(Log, void(ServerQueryMetric metric));
+  MOCK_CONST_METHOD1(LogStoredProfileCount, void(size_t num_profiles));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
 };
 
-// TODO(isherman): Move this into autofill_common_test.h?
 class TestPersonalDataManager : public PersonalDataManager {
  public:
   TestPersonalDataManager() {
@@ -70,6 +71,9 @@ class TestPersonalDataManager : public PersonalDataManager {
   static void ResetHasLoggedProfileCount() {
     PersonalDataManager::set_has_logged_profile_count(false);
   }
+
+  MOCK_METHOD1(SaveImportedCreditCard,
+               void(const CreditCard& imported_credit_card));
 
  private:
   void CreateTestAutofillProfiles(ScopedVector<AutofillProfile>* profiles) {
@@ -564,16 +568,82 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
 }
 
 // Test that the profile count is logged correctly.
-TEST_F(AutofillMetricsTest, ProfileCount) {
+TEST_F(AutofillMetricsTest, StoredProfileCount) {
   TestPersonalDataManager::ResetHasLoggedProfileCount();
 
   // The metric should be logged when the profiles are first loaded.
   EXPECT_CALL(*test_personal_data_->metric_logger(),
-              LogProfileCount(3)).Times(1);
+              LogStoredProfileCount(3)).Times(1);
   test_personal_data_->LoadProfiles();
 
   // The metric should only be logged once.
   EXPECT_CALL(*test_personal_data_->metric_logger(),
-              LogProfileCount(::testing::_)).Times(0);
+              LogStoredProfileCount(::testing::_)).Times(0);
   test_personal_data_->LoadProfiles();
+}
+
+// Test that credit card infobar metrics are logged correctly.
+TEST_F(AutofillMetricsTest, CreditCardInfoBar) {
+  MockAutofillMetrics metric_logger;
+  CreditCard* credit_card;
+  AutofillCCInfoBarDelegate* infobar;
+  ::testing::InSequence dummy;
+
+  // Accept the infobar.
+  EXPECT_CALL(metric_logger, Log(AutofillMetrics::CREDIT_CARD_INFOBAR_SHOWN));
+  credit_card = new CreditCard();
+  infobar = new AutofillCCInfoBarDelegate(contents(),
+                                          credit_card,
+                                          test_personal_data_.get(),
+                                          &metric_logger);
+
+  EXPECT_CALL(*test_personal_data_.get(), SaveImportedCreditCard(*credit_card));
+  EXPECT_CALL(metric_logger,
+              Log(AutofillMetrics::CREDIT_CARD_INFOBAR_ACCEPTED)).Times(1);
+  EXPECT_CALL(metric_logger,
+              Log(AutofillMetrics::CREDIT_CARD_INFOBAR_IGNORED)).Times(0);
+  EXPECT_TRUE(infobar->Accept());
+  infobar->InfoBarClosed();
+
+  // Cancel the infobar.
+  EXPECT_CALL(metric_logger, Log(AutofillMetrics::CREDIT_CARD_INFOBAR_SHOWN));
+  credit_card = new CreditCard();
+  infobar = new AutofillCCInfoBarDelegate(contents(),
+                                          credit_card,
+                                          test_personal_data_.get(),
+                                          &metric_logger);
+
+  EXPECT_CALL(metric_logger,
+              Log(AutofillMetrics::CREDIT_CARD_INFOBAR_DENIED)).Times(1);
+  EXPECT_CALL(metric_logger,
+              Log(AutofillMetrics::CREDIT_CARD_INFOBAR_IGNORED)).Times(0);
+  EXPECT_TRUE(infobar->Cancel());
+  infobar->InfoBarClosed();
+
+  // Dismiss the infobar.
+  EXPECT_CALL(metric_logger, Log(AutofillMetrics::CREDIT_CARD_INFOBAR_SHOWN));
+  credit_card = new CreditCard();
+  infobar = new AutofillCCInfoBarDelegate(contents(),
+                                          credit_card,
+                                          test_personal_data_.get(),
+                                          &metric_logger);
+
+  EXPECT_CALL(metric_logger,
+              Log(AutofillMetrics::CREDIT_CARD_INFOBAR_DENIED)).Times(1);
+  EXPECT_CALL(metric_logger,
+              Log(AutofillMetrics::CREDIT_CARD_INFOBAR_IGNORED)).Times(0);
+  infobar->InfoBarDismissed();
+  infobar->InfoBarClosed();
+
+  // Ignore the infobar.
+  EXPECT_CALL(metric_logger, Log(AutofillMetrics::CREDIT_CARD_INFOBAR_SHOWN));
+  credit_card = new CreditCard();
+  infobar = new AutofillCCInfoBarDelegate(contents(),
+                                          credit_card,
+                                          test_personal_data_.get(),
+                                          &metric_logger);
+
+  EXPECT_CALL(metric_logger,
+              Log(AutofillMetrics::CREDIT_CARD_INFOBAR_IGNORED)).Times(1);
+  infobar->InfoBarClosed();
 }

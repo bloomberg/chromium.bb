@@ -215,8 +215,7 @@ AutofillManager::AutofillManager(TabContents* tab_contents)
       personal_data_(NULL),
       download_manager_(tab_contents->profile()),
       disable_download_manager_requests_(false),
-      metric_logger_(new AutofillMetrics),
-      cc_infobar_(NULL) {
+      metric_logger_(new AutofillMetrics) {
   DCHECK(tab_contents);
 
   // |personal_data_| is NULL when using TestTabContents.
@@ -598,19 +597,22 @@ void AutofillManager::LogMetricsAboutSubmittedForm(
 }
 
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
-  std::vector<const FormStructure*> import;
-  import.push_back(&submitted_form);
+  std::vector<const FormStructure*> submitted_forms;
+  submitted_forms.push_back(&submitted_form);
 
   const CreditCard* imported_credit_card;
-  if (!personal_data_->ImportFormData(import, &imported_credit_card))
+  if (!personal_data_->ImportFormData(submitted_forms, &imported_credit_card))
     return;
 
   // If credit card information was submitted, show an infobar to offer to save
   // it.
+  scoped_ptr<const CreditCard> scoped_credit_card(imported_credit_card);
   if (imported_credit_card && tab_contents()) {
-    imported_credit_card_.reset(imported_credit_card);
-    tab_contents()->AddInfoBar(new AutofillCCInfoBarDelegate(tab_contents(),
-                                                             this));
+    tab_contents()->AddInfoBar(
+        new AutofillCCInfoBarDelegate(tab_contents(),
+                                      scoped_credit_card.release(),
+                                      personal_data_,
+                                      metric_logger_.get()));
   }
 }
 
@@ -640,19 +642,13 @@ void AutofillManager::Reset() {
   form_structures_.reset();
 }
 
-void AutofillManager::OnInfoBarClosed(bool should_save) {
-  if (should_save)
-    personal_data_->SaveImportedCreditCard(*imported_credit_card_);
-}
-
 AutofillManager::AutofillManager(TabContents* tab_contents,
                                  PersonalDataManager* personal_data)
     : TabContentsObserver(tab_contents),
       personal_data_(personal_data),
       download_manager_(NULL),
       disable_download_manager_requests_(true),
-      metric_logger_(new AutofillMetrics),
-      cc_infobar_(NULL) {
+      metric_logger_(new AutofillMetrics) {
   DCHECK(tab_contents);
 }
 
