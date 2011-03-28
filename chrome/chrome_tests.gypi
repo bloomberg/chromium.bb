@@ -1254,7 +1254,6 @@
         'browser/diagnostics/diagnostics_model_unittest.cc',
         'browser/cocoa/keystone_glue_unittest.mm',
         'browser/command_updater_unittest.cc',
-        'browser/content_exceptions_table_model_unittest.cc',
         'browser/content_settings/content_settings_pattern_unittest.cc',
         'browser/content_settings/content_settings_provider_unittest.cc',
         'browser/content_settings/host_content_settings_map_unittest.cc',

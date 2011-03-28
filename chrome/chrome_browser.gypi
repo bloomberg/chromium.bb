@@ -742,8 +742,6 @@
         'browser/cocoa/scoped_authorizationref.h',
         'browser/command_updater.cc',
         'browser/command_updater.h',
-        'browser/content_exceptions_table_model.cc',
-        'browser/content_exceptions_table_model.h',
         'browser/content_setting_bubble_model.cc',
         'browser/content_setting_bubble_model.h',
         'browser/content_setting_combo_model.cc',
