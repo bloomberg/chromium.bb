@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/size.h"
 
 namespace skia {
 
@@ -126,10 +127,10 @@ class Image {
     std::vector<unsigned char> compressed;
     ASSERT_TRUE(gfx::PNGCodec::Encode(&*data_.begin(),
                                       gfx::PNGCodec::FORMAT_BGRA,
-                                      width_,
-                                      height_,
+                                      gfx::Size(width_, height_),
                                       row_length_,
                                       true,
+                                      std::vector<gfx::PNGCodec::Comment>(),
                                       &compressed));
     ASSERT_TRUE(compressed.size());
     FILE* f = file_util::OpenFile(filename, "wb");

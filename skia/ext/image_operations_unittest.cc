@@ -14,6 +14,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/size.h"
 
 namespace {
 
@@ -193,9 +194,9 @@ void SaveBitmapToPNG(const SkBitmap& bmp, const char* path) {
   gfx::PNGCodec::ColorFormat color_format = gfx::PNGCodec::FORMAT_RGBA;
   if (!gfx::PNGCodec::Encode(
           reinterpret_cast<const unsigned char*>(bmp.getPixels()),
-          color_format, bmp.width(), bmp.height(),
+          color_format, gfx::Size(bmp.width(), bmp.height()),
           static_cast<int>(bmp.rowBytes()),
-          false, &png)) {
+          false, std::vector<gfx::PNGCodec::Comment>(), &png)) {
     FAIL() << "Failed to encode image";
   }
 

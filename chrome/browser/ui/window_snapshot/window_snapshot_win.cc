@@ -9,6 +9,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace browser {
 
@@ -61,7 +62,8 @@ gfx::Rect GrabWindowSnapshot(gfx::NativeWindow window_handle,
   // encode it into a useful format for posting to the bug report
   // server.
   gfx::PNGCodec::Encode(bit_ptr, gfx::PNGCodec::FORMAT_BGRA,
-                        width, height, width * 4, true,
+                        gfx::Size(width, height), width * 4, true,
+                        std::vector<gfx::PNGCodec::Comment>(),
                         png_representation);
 
   ReleaseDC(window_handle, window_hdc);

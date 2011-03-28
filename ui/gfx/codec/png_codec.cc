@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_util.h"
+#include "ui/gfx/size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
@@ -546,6 +548,58 @@ void ConvertBGRAtoRGB(const unsigned char* bgra, int pixel_width,
   }
 }
 
+#ifdef PNG_TEXT_SUPPORTED
+class CommentWriter {
+ public:
+  explicit CommentWriter(const std::vector<PNGCodec::Comment>& comments)
+      : comments_(comments),
+        png_text_(new png_text[comments.size()]) {
+    for (size_t i = 0; i < comments.size(); ++i)
+      AddComment(i, comments[i]);
+  }
+
+  ~CommentWriter() {
+    for (size_t i = 0; i < comments_.size(); ++i) {
+      free(png_text_[i].key);
+      free(png_text_[i].text);
+    }
+    delete [] png_text_;
+  }
+
+  bool HasComments() {
+    return !comments_.empty();
+  }
+
+  png_text* get_png_text() {
+    return png_text_;
+  }
+
+  int size() {
+    return static_cast<int>(comments_.size());
+  }
+
+ private:
+  void AddComment(size_t pos, const PNGCodec::Comment& comment) {
+    png_text_[pos].compression = PNG_TEXT_COMPRESSION_NONE;
+    // A PNG comment's key can only be 79 characters long.
+    DCHECK(comment.key.length() < 79);
+    png_text_[pos].key = base::strdup(comment.key.substr(0, 78).c_str());
+    png_text_[pos].text = base::strdup(comment.text.c_str());
+    png_text_[pos].text_length = comment.text.length();
+#ifdef PNG_iTXt_SUPPORTED
+    png_text_[pos].itxt_length = 0;
+    png_text_[pos].lang = 0;
+    png_text_[pos].lang_key = 0;
+#endif
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(CommentWriter);
+
+  const std::vector<PNGCodec::Comment> comments_;
+  png_text* png_text_;
+};
+#endif  // PNG_TEXT_SUPPORTED
+
 // The type of functions usable for converting between pixel formats.
 typedef void (*FormatConverter)(const unsigned char* in, int w,
                                 unsigned char* out, bool* is_opaque);
@@ -559,7 +613,8 @@ bool DoLibpngWrite(png_struct* png_ptr, png_info* info_ptr,
                    int width, int height, int row_byte_width,
                    const unsigned char* input,
                    int png_output_color_type, int output_color_components,
-                   FormatConverter converter) {
+                   FormatConverter converter,
+                   const std::vector<PNGCodec::Comment>& comments) {
   // Make sure to not declare any locals here -- locals in the presence
   // of setjmp() in C++ code makes gcc complain.
 
@@ -572,6 +627,15 @@ bool DoLibpngWrite(png_struct* png_ptr, png_info* info_ptr,
   png_set_IHDR(png_ptr, info_ptr, width, height, 8, png_output_color_type,
                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
                PNG_FILTER_TYPE_DEFAULT);
+
+#ifdef PNG_TEXT_SUPPORTED
+  CommentWriter comment_writer(comments);
+  if (comment_writer.HasComments()) {
+    png_set_text(png_ptr, info_ptr, comment_writer.get_png_text(),
+                 comment_writer.size());
+  }
+#endif
+
   png_write_info(png_ptr, info_ptr);
 
   if (!converter) {
@@ -598,8 +662,9 @@ bool DoLibpngWrite(png_struct* png_ptr, png_info* info_ptr,
 
 // static
 bool PNGCodec::Encode(const unsigned char* input, ColorFormat format,
-                      int w, int h, int row_byte_width,
+                      const Size& size, int row_byte_width,
                       bool discard_transparency,
+                      const std::vector<Comment>& comments,
                       std::vector<unsigned char>* output) {
   // Run to convert an input row into the output row format, NULL means no
   // conversion is necessary.
@@ -660,7 +725,7 @@ bool PNGCodec::Encode(const unsigned char* input, ColorFormat format,
   }
 
   // Row stride should be at least as long as the length of the data.
-  DCHECK(input_color_components * w <= row_byte_width);
+  DCHECK(input_color_components * size.width() <= row_byte_width);
 
   png_struct* png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
                                                 NULL, NULL, NULL);
@@ -674,9 +739,9 @@ bool PNGCodec::Encode(const unsigned char* input, ColorFormat format,
 
   PngEncoderState state(output);
   bool success = DoLibpngWrite(png_ptr, info_ptr, &state,
-                               w, h, row_byte_width, input,
-                               png_output_color_type, output_color_components,
-                               converter);
+                               size.width(), size.height(), row_byte_width,
+                               input, png_output_color_type,
+                               output_color_components, converter, comments);
   png_destroy_write_struct(&png_ptr, &info_ptr);
 
   return success;
@@ -692,8 +757,16 @@ bool PNGCodec::EncodeBGRASkBitmap(const SkBitmap& input,
   DCHECK(input.empty() || input.bytesPerPixel() == bbp);
 
   return Encode(reinterpret_cast<unsigned char*>(input.getAddr32(0, 0)),
-                FORMAT_SkBitmap, input.width(), input.height(),
-                input.width() * bbp, discard_transparency, output);
+                FORMAT_SkBitmap, Size(input.width(), input.height()),
+                input.width() * bbp, discard_transparency,
+                std::vector<Comment>(), output);
+}
+
+PNGCodec::Comment::Comment(const std::string& k, const std::string& t)
+    : key(k), text(t) {
+}
+
+PNGCodec::Comment::~Comment() {
 }
 
 }  // namespace gfx

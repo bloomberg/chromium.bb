@@ -60,10 +60,10 @@ bool Image::SaveToPng(const FilePath& filepath) const {
   std::vector<unsigned char> compressed;
   bool success = gfx::PNGCodec::Encode(&*data_.begin(),
                                        gfx::PNGCodec::FORMAT_BGRA,
-                                       size_.width(),
-                                       size_.height(),
+                                       size_,
                                        row_length_,
                                        true,
+                                       std::vector<gfx::PNGCodec::Comment>(),
                                        &compressed);
   DCHECK(success && compressed.size());
   if (success) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define UI_GFX_CODEC_PNG_CODEC_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -13,6 +14,8 @@
 class SkBitmap;
 
 namespace gfx {
+
+class Size;
 
 // Interface for encoding and decoding PNG data. This is a wrapper around
 // libpng, which has an inconvenient interface for callers. This is currently
@@ -39,6 +42,15 @@ class PNGCodec {
     FORMAT_SkBitmap
   };
 
+  // Represents a comment in the tEXt ancillary chunk of the png.
+  struct Comment {
+    Comment(const std::string& k, const std::string& t);
+    ~Comment();
+
+    std::string key;
+    std::string text;
+  };
+
   // Encodes the given raw 'input' data, with each pixel being represented as
   // given in 'format'. The encoded PNG data will be written into the supplied
   // vector and true will be returned on success. On failure (false), the
@@ -47,7 +59,7 @@ class PNGCodec {
   // When writing alpha values, the input colors are assumed to be post
   // multiplied.
   //
-  // w, h: dimensions of the image
+  // size: dimensions of the image
   // row_byte_width: the width in bytes of each row. This may be greater than
   //   w * bytes_per_pixel if there is extra padding at the end of each row
   //   (often, each row is padded to the next machine word).
@@ -55,9 +67,13 @@ class PNGCodec {
   //   alpha values, these alpha values will be discarded and only RGB will be
   //   written to the resulting file. Otherwise, alpha values in the input
   //   will be preserved.
-  static bool Encode(const unsigned char* input, ColorFormat format,
-                     int w, int h, int row_byte_width,
+  // comments: comments to be written in the png's metadata.
+  static bool Encode(const unsigned char* input,
+                     ColorFormat format,
+                     const Size& size,
+                     int row_byte_width,
                      bool discard_transparency,
+                     const std::vector<Comment>& comments,
                      std::vector<unsigned char>* output);
 
   // Call PNGCodec::Encode on the supplied SkBitmap |input|, which is assumed

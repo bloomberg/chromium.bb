@@ -1,13 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef WEBKIT_SUPPORT_WEBKIT_SUPPORT_GFX_H_
 #define WEBKIT_SUPPORT_WEBKIT_SUPPORT_GFX_H_
 
+#include <string>
 #include <vector>
 
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/size.h"
 
 namespace webkit_support {
 
@@ -20,20 +22,40 @@ inline bool DecodePNG(const unsigned char* input, size_t input_size,
 }
 
 // Encode an RGBA pixel array into a PNG.
-inline bool EncodeRGBAPNG(const unsigned char* input, int width, int height,
+inline bool EncodeRGBAPNG(const unsigned char* input,
+                          int width,
+                          int height,
                           int row_byte_width,
                           std::vector<unsigned char>* output) {
-  return gfx::PNGCodec::Encode(input, gfx::PNGCodec::FORMAT_RGBA, width,
-                               height, row_byte_width, false, output);
+  return gfx::PNGCodec::Encode(input, gfx::PNGCodec::FORMAT_RGBA,
+      gfx::Size(width, height), row_byte_width, false,
+      std::vector<gfx::PNGCodec::Comment>(), output);
 }
 
 // Encode an BGRA pixel array into a PNG.
-inline bool EncodeBGRAPNG(const unsigned char* input, int width, int height,
-                          int row_byte_width, bool discard_transparency,
+inline bool EncodeBGRAPNG(const unsigned char* input,
+                          int width,
+                          int height,
+                          int row_byte_width,
+                          bool discard_transparency,
                           std::vector<unsigned char>* output) {
-  return gfx::PNGCodec::Encode(input, gfx::PNGCodec::FORMAT_BGRA, width,
-                               height, row_byte_width, discard_transparency,
-                               output);
+  return gfx::PNGCodec::Encode(input, gfx::PNGCodec::FORMAT_BGRA,
+      gfx::Size(width, height), row_byte_width, discard_transparency,
+      std::vector<gfx::PNGCodec::Comment>(), output);
+}
+
+inline bool EncodeBGRAPNGWithChecksum(const unsigned char* input,
+                          int width,
+                          int height,
+                          int row_byte_width,
+                          bool discard_transparency,
+                          const std::string& checksum,
+                          std::vector<unsigned char>* output) {
+  std::vector<gfx::PNGCodec::Comment> comments;
+  comments.push_back(gfx::PNGCodec::Comment("checksum", checksum));
+  return gfx::PNGCodec::Encode(input, gfx::PNGCodec::FORMAT_BGRA,
+      gfx::Size(width, height), row_byte_width, discard_transparency,
+      comments, output);
 }
 
 }  // namespace webkit_support
