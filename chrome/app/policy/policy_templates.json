@@ -906,7 +906,7 @@
 
           You can specify the default search provider to be used by setting the rest of the default search policies. If these are left empty, the user can choose the default provider.
 
-          If you diable this setting, no search is performed when the user enters non-URL text in the omnibox.
+          If you disable this setting, no search is performed when the user enters non-URL text in the omnibox.
 
           If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">
           $1<ex>Google Chrome</ex>
