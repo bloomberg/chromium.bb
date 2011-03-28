@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,28 +44,33 @@ using namespace deprecated;
 
 Var::Var() {
   var_.type = PP_VARTYPE_UNDEFINED;
+  var_.padding = 0;
   needs_release_ = false;
 }
 
 Var::Var(Null) {
   var_.type = PP_VARTYPE_NULL;
+  var_.padding = 0;
   needs_release_ = false;
 }
 
 Var::Var(bool b) {
   var_.type = PP_VARTYPE_BOOL;
+  var_.padding = 0;
   var_.value.as_bool = BoolToPPBool(b);
   needs_release_ = false;
 }
 
 Var::Var(int32_t i) {
   var_.type = PP_VARTYPE_INT32;
+  var_.padding = 0;
   var_.value.as_int = i;
   needs_release_ = false;
 }
 
 Var::Var(double d) {
   var_.type = PP_VARTYPE_DOUBLE;
+  var_.padding = 0;
   var_.value.as_double = d;
   needs_release_ = false;
 }
@@ -77,6 +82,7 @@ Var::Var(const char* utf8_str) {
         Module::Get()->pp_module(), utf8_str, len);
   } else {
     var_.type = PP_VARTYPE_NULL;
+    var_.padding = 0;
   }
   needs_release_ = (var_.type == PP_VARTYPE_STRING);
 }
@@ -89,6 +95,7 @@ Var::Var(const std::string& utf8_str) {
         static_cast<uint32_t>(utf8_str.size()));
   } else {
     var_.type = PP_VARTYPE_NULL;
+    var_.padding = 0;
   }
   needs_release_ = (var_.type == PP_VARTYPE_STRING);
 }
@@ -100,6 +107,7 @@ Var::Var(Instance* instance, ScriptableObject* object) {
     needs_release_ = true;
   } else {
     var_.type = PP_VARTYPE_NULL;
+    var_.padding = 0;
     needs_release_ = false;
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,10 +171,12 @@ class Var {
     OutException(Var* v)
         : output_(v),
           originally_had_exception_(v && v->is_null()) {
-      if (output_)
+      if (output_) {
         temp_ = output_->var_;
-      else
+      } else {
+        temp_.padding = 0;
         temp_.type = PP_VARTYPE_UNDEFINED;
+      }
     }
     ~OutException() {
       if (output_ && !originally_had_exception_)

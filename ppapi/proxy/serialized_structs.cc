@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,12 @@ PPBFlash_DrawGlyphs_Params::PPBFlash_DrawGlyphs_Params()
     : instance(0),
       font_desc(),
       color(0) {
+  clip.point.x = 0;
+  clip.point.y = 0;
+  clip.size.height = 0;
+  clip.size.width = 0;
+  position.x = 0;
+  position.y = 0;
 }
 
 PPBFlash_DrawGlyphs_Params::~PPBFlash_DrawGlyphs_Params() {}

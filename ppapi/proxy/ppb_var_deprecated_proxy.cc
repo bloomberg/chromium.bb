@@ -59,7 +59,7 @@ void ReleaseVar(PP_Var var) {
 }
 
 PP_Var VarFromUtf8(PP_Module module, const char* data, uint32_t len) {
-  PP_Var ret;
+  PP_Var ret = {};
   ret.type = PP_VARTYPE_STRING;
   ret.value.as_id = PluginVarTracker::GetInstance()->MakeString(
       data, len);

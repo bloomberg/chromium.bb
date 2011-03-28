@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -510,7 +510,7 @@ SerializedVarTestConstructor::SerializedVarTestConstructor(
 
 SerializedVarTestConstructor::SerializedVarTestConstructor(
     const std::string& str) {
-  PP_Var string_var;
+  PP_Var string_var = {};
   string_var.type = PP_VARTYPE_STRING;
   string_var.value.as_id = 0;
   inner_->SetVar(string_var);
