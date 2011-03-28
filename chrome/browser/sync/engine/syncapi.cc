@@ -1114,7 +1114,7 @@ class SyncManager::SyncInternal
   }
 
   virtual ~SyncInternal() {
-    DCHECK(!core_message_loop_);
+    CHECK(!core_message_loop_);
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
