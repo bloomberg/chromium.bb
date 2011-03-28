@@ -178,6 +178,7 @@
       # generated headers.
       'target_name': 'chrome_strings',
       'msvs_guid': 'D9DDAF60-663F-49CC-90DC-3D08CC3D1B28',
+      'type': 'none',
       'conditions': [
         ['OS=="win"', {
           # HACK(nsylvain): We want to enforce a fake dependency on
@@ -188,8 +189,6 @@
           # will always get built before installer_util.
           'type': 'dummy_executable',
           'dependencies': ['installer_util_strings'],
-        }, {
-          'type': 'none',
         }],
       ],
       'actions': [
