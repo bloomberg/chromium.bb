@@ -228,6 +228,11 @@ function BrowserBridge() {
   // When viewing a log file, all tabs are hidden except the event view,
   // and all received events are ignored.
   this.isViewingLogFile_ = false;
+
+  // True when cookies and authentication information should be removed from
+  // displayed events.  When true, such information should be hidden from
+  // all pages.
+  this.enableSecurityStripping_ = true;
 }
 
 /*
@@ -846,6 +851,27 @@ BrowserBridge.prototype.deleteAllEvents = function() {
   this.numPassivelyCapturedEvents_ = 0;
   for (var i = 0; i < this.logObservers_.length; ++i)
     this.logObservers_[i].onAllLogEntriesDeleted();
+};
+
+/**
+ * Sets the value of |enableSecurityStripping_| and informs log observers
+ * of the change.
+ */
+BrowserBridge.prototype.setSecurityStripping =
+    function(enableSecurityStripping) {
+  this.enableSecurityStripping_ = enableSecurityStripping;
+  for (var i = 0; i < this.logObservers_.length; ++i) {
+    if (this.logObservers_[i].onSecurityStrippingChanged)
+      this.logObservers_[i].onSecurityStrippingChanged();
+  }
+};
+
+/**
+ * Returns whether or not cookies and authentication information should be
+ * displayed for events that contain them.
+ */
+BrowserBridge.prototype.getSecurityStripping = function() {
+  return this.enableSecurityStripping_;
 };
 
 /**

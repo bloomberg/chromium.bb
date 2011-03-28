@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,8 +28,11 @@ function DataView(mainBoxId,
   DivView.call(this, mainBoxId);
 
   this.textPre_ = document.getElementById(outputTextBoxId);
-  this.securityStrippingCheckbox_ =
+
+  var securityStrippingCheckbox =
       document.getElementById(securityStrippingCheckboxId);
+  securityStrippingCheckbox.onclick =
+      this.onSetSecurityStripping_.bind(this, securityStrippingCheckbox);
 
   var byteLoggingCheckbox = document.getElementById(byteLoggingCheckboxId);
   byteLoggingCheckbox.onclick =
@@ -116,6 +119,22 @@ DataView.prototype.onSetByteLogging_ = function(byteLoggingCheckbox) {
     g_browser.setLogLevel(LogLevelType.LOG_ALL_BUT_BYTES);
   }
 };
+
+/**
+ * Depending on the value of the checkbox, enables or disables stripping
+ * cookies and passwords from log dumps and displayed events.
+ */
+DataView.prototype.onSetSecurityStripping_ =
+    function(securityStrippingCheckbox) {
+  g_browser.setSecurityStripping(securityStrippingCheckbox.checked);
+};
+
+/**
+ * Clears displayed text when security stripping is toggled.
+ */
+DataView.prototype.onSecurityStrippingChanged = function() {
+  this.setText_('');
+}
 
 /**
  * If not already waiting for results from all updates, triggers all
@@ -409,8 +428,7 @@ DataView.prototype.appendEventsPrintedAsText_ = function(out) {
              '  [start=' + startDate.toLocaleString() + ']');
     out.push('------------------------------------------');
 
-    out.push(PrintSourceEntriesAsText(eventList,
-        this.securityStrippingCheckbox_.checked));
+    out.push(PrintSourceEntriesAsText(eventList));
   }
 };
 

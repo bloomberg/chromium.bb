@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ function addSourceEntry_(node, sourceEntry) {
   addTextNode(nobr2, 'Start Time: ' + startDate.toLocaleString());
 
   var pre = addNode(div, 'pre');
-  addTextNode(pre, PrintSourceEntriesAsText(logEntries, false));
+  addTextNode(pre, PrintSourceEntriesAsText(logEntries));
 }
 
 function canCollapseBeginWithEnd(beginEntry) {
@@ -56,7 +56,7 @@ function canCollapseBeginWithEnd(beginEntry) {
              beginEntry.end.orig.wasPassivelyCaptured;
 }
 
-PrintSourceEntriesAsText = function(sourceEntries, doSecurityStripping) {
+PrintSourceEntriesAsText = function(sourceEntries) {
   var entries = LogGroupEntry.createArrayFrom(sourceEntries);
   if (entries.length == 0)
     return '';
@@ -111,8 +111,9 @@ PrintSourceEntriesAsText = function(sourceEntries, doSecurityStripping) {
     // Output the extra parameters.
     if (entry.orig.params != undefined) {
       // Add a continuation row for each line of text from the extra parameters.
-      var extraParamsText = getTextForExtraParams(entry.orig,
-                                                  doSecurityStripping);
+      var extraParamsText = getTextForExtraParams(
+          entry.orig,
+          g_browser.getSecurityStripping());
       var extraParamsTextLines = extraParamsText.split('\n');
 
       for (var j = 0; j < extraParamsTextLines.length; ++j) {
@@ -176,17 +177,18 @@ function formatHexString(hexString, asciiCharsPerLine) {
   return out.join('\n');
 }
 
-function getTextForExtraParams(entry, doSecurityStripping) {
+function getTextForExtraParams(entry, enableSecurityStripping) {
   // Format the extra parameters (use a custom formatter for certain types,
   // but default to displaying as JSON).
   switch (entry.type) {
     case LogEventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS:
     case LogEventType.HTTP_TRANSACTION_SEND_TUNNEL_HEADERS:
-      return getTextForRequestHeadersExtraParam(entry, doSecurityStripping);
+      return getTextForRequestHeadersExtraParam(entry, enableSecurityStripping);
 
     case LogEventType.HTTP_TRANSACTION_READ_RESPONSE_HEADERS:
     case LogEventType.HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS:
-      return getTextForResponseHeadersExtraParam(entry, doSecurityStripping);
+      return getTextForResponseHeadersExtraParam(entry,
+                                                 enableSecurityStripping);
 
     case LogEventType.PROXY_CONFIG_CHANGED:
       return getTextForProxyConfigChangedExtraParam(entry);
@@ -195,8 +197,9 @@ function getTextForExtraParams(entry, doSecurityStripping) {
       var out = [];
       for (var k in entry.params) {
         if (k == 'headers' && entry.params[k] instanceof Array) {
-          out.push(getTextForResponseHeadersExtraParam(entry,
-                                                       doSecurityStripping));
+          out.push(
+              getTextForResponseHeadersExtraParam(entry,
+                                                  enableSecurityStripping));
           continue;
         }
         var value = entry.params[k];
@@ -301,22 +304,22 @@ function stripCookiesAndLoginInfo(headers) {
   return headers.map(stripCookieOrLoginInfo);
 }
 
-function getTextForRequestHeadersExtraParam(entry, doSecurityStripping) {
+function getTextForRequestHeadersExtraParam(entry, enableSecurityStripping) {
   var params = entry.params;
 
   // Strip the trailing CRLF that params.line contains.
   var lineWithoutCRLF = params.line.replace(/\r\n$/g, '');
 
   var headers = params.headers;
-  if (doSecurityStripping)
+  if (enableSecurityStripping)
     headers = stripCookiesAndLoginInfo(headers);
 
   return indentLines(' --> ', [lineWithoutCRLF].concat(headers));
 }
 
-function getTextForResponseHeadersExtraParam(entry, doSecurityStripping) {
+function getTextForResponseHeadersExtraParam(entry, enableSecurityStripping) {
   var headers = entry.params.headers;
-  if (doSecurityStripping)
+  if (enableSecurityStripping)
     headers = stripCookiesAndLoginInfo(headers);
   return indentLines(' --> ', headers);
 }
