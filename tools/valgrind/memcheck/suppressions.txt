@@ -4110,6 +4110,17 @@
    fun:g_object_new
    fun:gtk_file_chooser_dialog_constructor
 }
+{
+   bug_77653
+   Memcheck:Free
+   fun:_ZdlPv
+   fun:_ZN10scoped_ptrIiED2Ev
+   fun:_ZN10scoped_ptrIiED1Ev
+   fun:_ZN12_GLOBAL__N_111FLACEncoder6EncodeEPKsi
+   fun:_ZN12speech_input16SpeechRecognizer12HandleOnDataEPSs
+   fun:_Z16DispatchToMethodIN12speech_input16SpeechRecognizerEMS1_FvPSsES2_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN12speech_input16SpeechRecognizerEMS1_FvPSsE6Tuple1IS2_EE3RunEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
