@@ -1202,6 +1202,7 @@ static void NaClStExpand(char* desc, struct NaClSymbolTable* st) {
             break;
           case nacl_text:
             v_buffer_ptr = val->value.text_value;
+            break;
           case nacl_int:
             SNPRINTF(v_buffer, BUFSIZE, "%d", val->value.int_value);
             break;
