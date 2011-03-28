@@ -4,8 +4,6 @@
 
 #include "webkit/support/webkit_support.h"
 
-#include "app/gfx/gl/gl_context.h"
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/at_exit.h"
 #include "base/base64.h"
 #include "base/command_line.h"
@@ -36,6 +34,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
+#include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_implementation.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/webkit_constants.h"

@@ -7,9 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "app/gfx/gl/gl_bindings.h"
-#include "app/gfx/gl/gl_context.h"
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
@@ -22,6 +19,9 @@
 #include "media/tools/shader_bench/gpu_color_painter_exp.h"
 #include "media/tools/shader_bench/painter.h"
 #include "media/tools/shader_bench/window.h"
+#include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_LINUX)

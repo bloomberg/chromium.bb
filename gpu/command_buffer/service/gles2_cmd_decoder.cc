@@ -12,8 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/gl/gl_context.h"
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/atomicops.h"
 #include "base/at_exit.h"
 #include "base/callback.h"
@@ -37,6 +35,8 @@
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
+#include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 #if !defined(GL_DEPTH24_STENCIL8)
 #define GL_DEPTH24_STENCIL8 0x88F0

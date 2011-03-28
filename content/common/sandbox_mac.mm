@@ -13,7 +13,6 @@ extern "C" {
 #include <signal.h>
 #include <sys/param.h>
 
-#include "app/gfx/gl/gl_context.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -29,6 +28,7 @@ extern "C" {
 #include "content/common/chrome_application_mac.h"
 #include "content/common/content_switches.h"
 #include "unicode/uchar.h"
+#include "ui/gfx/gl/gl_context.h"
 
 namespace {
 

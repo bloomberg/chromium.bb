@@ -4,7 +4,7 @@
 
 // This file implements the ViewGLContext and PbufferGLContext classes.
 
-#include "app/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_context.h"
 
 extern "C" {
 #include <X11/Xlib.h>
@@ -12,15 +12,15 @@ extern "C" {
 
 #include <GL/osmesa.h>
 
-#include "app/gfx/gl/gl_bindings.h"
-#include "app/gfx/gl/gl_context_egl.h"
-#include "app/gfx/gl/gl_context_osmesa.h"
-#include "app/gfx/gl/gl_context_stub.h"
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_context_egl.h"
+#include "ui/gfx/gl/gl_context_osmesa.h"
+#include "ui/gfx/gl/gl_context_stub.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 namespace {
 

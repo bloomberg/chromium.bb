@@ -178,10 +178,10 @@
       'dependencies': [
         'command_buffer_common',
         'gpu_common',
-        '../app/app.gyp:app_base',
         '../base/base.gyp:base',
-        '../ui/ui.gyp:ui_gfx',
+        '../ui/gfx/gl/gl.gyp:gl',
         '../ui/gfx/surface/surface.gyp:surface',
+        '../ui/ui.gyp:ui_gfx',
         '../third_party/angle/src/build_angle.gyp:translator_glsl',
       ],
       'sources': [
@@ -244,6 +244,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gmock.gyp:gmock_main',
         '../testing/gtest.gyp:gtest',
+        '../ui/gfx/gl/gl.gyp:gl',
         'command_buffer_client',
         'command_buffer_common',
         'command_buffer_service',
@@ -307,9 +308,9 @@
       'target_name': 'gpu_unittest_utils',
       'type': 'static_library',
       'dependencies': [
-        '../app/app.gyp:app_base',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../ui/gfx/gl/gl.gyp:gl',
       ],
       'include_dirs': [
         '..',

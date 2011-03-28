@@ -4,20 +4,19 @@
 
 // This file implements the NativeViewGLContext and PbufferGLContext classes.
 
-#include "app/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_context.h"
 
 #include <GL/osmesa.h>
 
 #include <algorithm>
 
-#include "app/gfx/gl/gl_bindings.h"
-#include "app/gfx/gl/gl_context_egl.h"
-#include "app/gfx/gl/gl_context_osmesa.h"
-#include "app/gfx/gl/gl_context_stub.h"
-#include "app/gfx/gl/gl_implementation.h"
-
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_context_egl.h"
+#include "ui/gfx/gl/gl_context_osmesa.h"
+#include "ui/gfx/gl/gl_context_stub.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 namespace gfx {
 

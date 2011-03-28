@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GL_UTILS_H_
 
 #include "build/build_config.h"
-#include "app/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_bindings.h"
 
 // GLES2 defines not part of Desktop GL
 // Shader Precision-Specified Types

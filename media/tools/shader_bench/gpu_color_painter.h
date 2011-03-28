@@ -5,10 +5,10 @@
 #ifndef MEDIA_TOOLS_SHADER_BENCH_GPU_COLOR_PAINTER_H_
 #define MEDIA_TOOLS_SHADER_BENCH_GPU_COLOR_PAINTER_H_
 
-#include "app/gfx/gl/gl_context.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/video_frame.h"
 #include "media/tools/shader_bench/gpu_painter.h"
+#include "ui/gfx/gl/gl_context.h"
 
 // Does color space conversion using luminance textures on GPU,
 // renders using GPU.

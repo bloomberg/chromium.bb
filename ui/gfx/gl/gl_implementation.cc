@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 #include <algorithm>
 #include <string>

@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/gl/gl_context.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "gpu/demos/framework/window.h"
+#include "ui/gfx/gl/gl_context.h"
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>

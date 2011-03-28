@@ -4,14 +4,14 @@
 
 #include "ui/gfx/compositor/compositor.h"
 
-#include "app/gfx/gl/gl_context.h"
-#include "app/gfx/gl/gl_bindings.h"
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 namespace ui {
 

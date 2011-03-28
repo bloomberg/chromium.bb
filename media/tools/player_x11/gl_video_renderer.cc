@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,10 @@
 
 #include <X11/Xutil.h>
 
-#include "app/gfx/gl/gl_implementation.h"
 #include "media/base/buffers.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 GlVideoRenderer* GlVideoRenderer::instance_ = NULL;
 

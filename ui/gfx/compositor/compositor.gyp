@@ -10,7 +10,7 @@
       'msvs_guid': '21CEE0E3-6F4E-4F01-B8C9-F7751CC21AA9',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/app/app.gyp:app_base',
+        '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui_gfx',
       ],
       'sources': [

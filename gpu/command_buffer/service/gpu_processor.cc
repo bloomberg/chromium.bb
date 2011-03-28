@@ -4,12 +4,12 @@
 
 #include "gpu/command_buffer/service/gpu_processor.h"
 
-#include "app/gfx/gl/gl_bindings.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "app/gfx/gl/gl_context.h"
 #include "gpu/common/gpu_trace_event.h"
+#include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_bindings.h"
 
 using ::base::SharedMemory;
 

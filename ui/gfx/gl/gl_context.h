@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GFX_GL_GL_CONTEXT_H_
-#define APP_GFX_GL_GL_CONTEXT_H_
+#ifndef UI_GFX_GL_GL_CONTEXT_H_
+#define UI_GFX_GL_GL_CONTEXT_H_
 #pragma once
 
 #include <string>
@@ -79,4 +79,4 @@ class GLContext {
 
 }  // namespace gfx
 
-#endif  // APP_GFX_GL_GL_CONTEXT_H_
+#endif  // UI_GFX_GL_GL_CONTEXT_H_

@@ -8,10 +8,10 @@
       'target_name': 'webkit_gpu',
       'type': '<(library)',
       'dependencies': [
-        '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_common',
         '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
+        '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
       ],
       'sources': [
         # This list contains all .h and .cc in gpu except for test code.

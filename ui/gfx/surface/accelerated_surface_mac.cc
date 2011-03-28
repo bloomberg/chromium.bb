@@ -4,10 +4,10 @@
 
 #include "ui/gfx/surface/accelerated_surface_mac.h"
 
-#include "app/gfx/gl/gl_bindings.h"
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
 

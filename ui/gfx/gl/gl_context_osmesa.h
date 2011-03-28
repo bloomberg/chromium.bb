@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GFX_GL_GL_CONTEXT_OSMESA_H_
-#define APP_GFX_GL_GL_CONTEXT_OSMESA_H_
+#ifndef UI_GFX_GL_GL_CONTEXT_OSMESA_H_
+#define UI_GFX_GL_GL_CONTEXT_OSMESA_H_
 #pragma once
 
-#include "app/gfx/gl/gl_context.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/size.h"
 
 typedef struct osmesa_context *OSMesaContext;
@@ -51,4 +51,4 @@ class OSMesaGLContext : public GLContext {
 
 }  // namespace gfx
 
-#endif  // APP_GFX_GL_GL_CONTEXT_OSMESA_H_
+#endif  // UI_GFX_GL_GL_CONTEXT_OSMESA_H_

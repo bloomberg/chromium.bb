@@ -7,12 +7,12 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/gl/gl_bindings.h"
-#include "app/gfx/gl/gl_context.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
+#include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_context.h"
 
 namespace {
 

@@ -4,11 +4,11 @@
 
 #include <string>
 
-#include "app/gfx/gl/gl_context.h"
-#include "app/gfx/gl/gl_bindings.h"
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_switches.h"
 
 namespace gfx {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,11 @@
 // testing. It has to be Desktop GL, not GLES2 as it is used to test the service
 // side code.
 
-#ifndef APP_GFX_GL_GL_INTERFACE_H_
-#define APP_GFX_GL_GL_INTERFACE_H_
+#ifndef UI_GFX_GL_GL_INTERFACE_H_
+#define UI_GFX_GL_GL_INTERFACE_H_
 #pragma once
 
-#include "app/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_bindings.h"
 
 namespace gfx {
 
@@ -433,4 +433,4 @@ class GLInterface {
 
 }  // namespace gfx
 
-#endif  // APP_GFX_GL_GL_INTERFACE_H_
+#endif  // UI_GFX_GL_GL_INTERFACE_H_

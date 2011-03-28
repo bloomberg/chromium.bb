@@ -12,7 +12,6 @@
 #include <set>
 #include <vector>
 
-#include "app/gfx/gl/gl_implementation.h"
 #include "app/sql/connection.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -50,6 +49,7 @@
 #include "content/common/debug_flags.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_switches.h"
 
 #if defined(OS_WIN)

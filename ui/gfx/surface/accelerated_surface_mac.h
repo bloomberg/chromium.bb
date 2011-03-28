@@ -8,12 +8,12 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
-#include "app/gfx/gl/gl_context.h"
 #include "base/callback.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/surface/transport_dib.h"
 
 // Should not include GL headers in a header file. Forward declare these types

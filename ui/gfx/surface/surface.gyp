@@ -38,8 +38,8 @@
       'msvs_guid': '6C99567D-6F02-43B5-BB35-D8E3F8D0D6D2',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui_gfx',
       ],
       'sources': [

@@ -12,7 +12,6 @@
 #include <shellapi.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "app/gfx/gl/gl_context.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/callback.h"
@@ -26,6 +25,7 @@
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/gles2_demo_c.h"
 #include "gpu/command_buffer/client/gles2_demo_cc.h"
+#include "ui/gfx/gl/gl_context.h"
 
 using base::SharedMemory;
 using gpu::Buffer;

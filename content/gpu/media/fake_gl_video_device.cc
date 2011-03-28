@@ -4,8 +4,8 @@
 
 #include "content/gpu/media/fake_gl_video_device.h"
 
-#include "app/gfx/gl/gl_bindings.h"
 #include "media/base/video_frame.h"
+#include "ui/gfx/gl/gl_bindings.h"
 
 void* FakeGlVideoDevice::GetDevice() {
   // No actual hardware device should be used.

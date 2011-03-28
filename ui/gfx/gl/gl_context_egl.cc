@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/gl/gl_context_egl.h"
 
 #include "build/build_config.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/angle/include/EGL/egl.h"
+#include "ui/gfx/gl/gl_context_egl.h"
 
 // This header must come after the above third-party include, as
 // it brings in #defines that cause conflicts.
-#include "app/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_bindings.h"
 
 #if defined(OS_LINUX)
 extern "C" {

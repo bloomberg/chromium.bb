@@ -8,13 +8,13 @@
 #include <setupapi.h>
 #include <windows.h>
 
-#include "app/gfx/gl/gl_context_egl.h"
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_native_library.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "ui/gfx/gl/gl_context_egl.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 // ANGLE seems to require that main.h be included before any other ANGLE header.
 #include "libEGL/main.h"

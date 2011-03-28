@@ -7,8 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/gl/gl_context.h"
-#include "app/gfx/gl/gl_implementation.h"
 #include "app/win/scoped_com_initializer.h"
 #include "base/command_line.h"
 #include "base/threading/worker_pool.h"
@@ -20,6 +18,8 @@
 #include "content/gpu/gpu_info_collector.h"
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/sandbox_init_wrapper.h"

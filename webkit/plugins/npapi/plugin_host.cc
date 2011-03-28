@@ -4,8 +4,6 @@
 
 #include "webkit/plugins/npapi/plugin_host.h"
 
-#include "app/gfx/gl/gl_context.h"
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,6 +17,8 @@
 #include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_implementation.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
 #include "webkit/plugins/npapi/npapi_extension_thunk.h"

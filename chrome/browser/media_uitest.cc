@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/string_util.h"
@@ -13,6 +12,7 @@
 #include "chrome/test/ui/ui_layout_test.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 class MediaTest : public UITest {
  protected:

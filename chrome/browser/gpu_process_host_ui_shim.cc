@@ -7,7 +7,6 @@
 
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 
-#include "app/gfx/gl/gl_context.h"
 #include "base/command_line.h"
 #include "base/id_map.h"
 #include "base/process_util.h"
@@ -22,6 +21,7 @@
 #include "content/common/content_switches.h"
 #include "content/common/gpu_messages.h"
 #include "gpu/common/gpu_trace_event.h"
+#include "ui/gfx/gl/gl_context.h"
 
 #if defined(OS_LINUX)
 // These two #includes need to come after gpu_messages.h.

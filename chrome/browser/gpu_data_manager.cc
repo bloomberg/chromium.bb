@@ -4,7 +4,6 @@
 
 #include "chrome/browser/gpu_data_manager.h"
 
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -18,6 +17,7 @@
 #include "content/gpu/gpu_info_collector.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_switches.h"
 
 GpuDataManager::GpuDataManager()

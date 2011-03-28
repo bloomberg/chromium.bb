@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
@@ -15,6 +14,7 @@
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 namespace {
 

@@ -4,7 +4,6 @@
 
 #include "webkit/support/test_webkit_client.h"
 
-#include "app/gfx/gl/gl_bindings_skia.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
@@ -32,6 +31,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
+#include "ui/gfx/gl/gl_bindings_skia.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/database/vfs_backend.h"
 #include "webkit/extensions/v8/gc_extension.h"

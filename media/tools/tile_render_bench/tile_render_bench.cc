@@ -12,13 +12,13 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#include "app/gfx/gl/gl_bindings.h"
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/task.h"
+#include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 // Initial size of the window and the texture.
 static const int kStartSize = 1024;

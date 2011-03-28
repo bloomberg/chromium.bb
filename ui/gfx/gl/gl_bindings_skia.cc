@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 
-#include "app/gfx/gl/gl_bindings_skia.h"
+#include "ui/gfx/gl/gl_bindings_skia.h"
 
-#include "app/gfx/gl/gl_bindings.h"
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/logging.h"
+#include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 // Skia is built against the headers in gpu\GLES.  These functions
 // are exported without any call-type modifiers.
