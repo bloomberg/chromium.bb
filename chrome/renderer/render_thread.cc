@@ -68,6 +68,7 @@
 #include "content/renderer/gpu_video_service_host.h"
 #include "content/renderer/indexed_db_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
+#include "content/renderer/render_process_observer.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_view_visitor.h"
 #include "content/renderer/renderer_webidbfactory_impl.h"
@@ -332,6 +333,9 @@ void RenderThread::Init() {
 }
 
 RenderThread::~RenderThread() {
+  FOR_EACH_OBSERVER(
+      RenderProcessObserver, observers_, OnRenderProcessShutdown());
+
   // Wait for all databases to be closed.
   if (web_database_observer_impl_.get())
     web_database_observer_impl_->WaitForAllDatabasesToClose();
@@ -524,6 +528,14 @@ bool RenderThread::IsIncognitoProcess() const {
   return is_incognito_process_;
 }
 
+void RenderThread::AddObserver(RenderProcessObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void RenderThread::RemoveObserver(RenderProcessObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void RenderThread::DoNotSuspendWebKitSharedTimer() {
   suspend_webkit_shared_timer_ = false;
 }
@@ -634,6 +646,13 @@ void RenderThread::OnDOMStorageEvent(
 }
 
 bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
+  ObserverListBase<RenderProcessObserver>::Iterator it(observers_);
+  RenderProcessObserver* observer;
+  while ((observer = it.GetNext()) != NULL) {
+    if (observer->OnControlMessageReceived(msg))
+      return true;
+  }
+
   // Some messages are handled by delegates.
   if (appcache_dispatcher_->OnMessageReceived(msg))
     return true;

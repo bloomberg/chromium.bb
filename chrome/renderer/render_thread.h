@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/observer_list.h"
 #include "base/shared_memory.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -34,6 +35,7 @@ class IndexedDBDispatcher;
 class ListValue;
 class RendererHistogram;
 class RendererHistogramSnapshots;
+class RenderProcessObserver;
 class RendererNetPredictor;
 class RendererWebKitClientImpl;
 class SpellCheck;
@@ -168,6 +170,9 @@ class RenderThread : public RenderThreadBase,
   virtual void WidgetRestored();
   virtual bool IsExtensionProcess() const;
   virtual bool IsIncognitoProcess() const;
+
+  void AddObserver(RenderProcessObserver* observer);
+  void RemoveObserver(RenderProcessObserver* observer);
 
   // These methods modify how the next message is sent.  Normally, when sending
   // a synchronous message that runs a nested message loop, we need to suspend
@@ -412,6 +417,8 @@ class RenderThread : public RenderThreadBase,
   ExtensionSet extensions_;
 
   chrome::ChromeContentRendererClient renderer_client_;
+
+  ObserverList<RenderProcessObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThread);
 };

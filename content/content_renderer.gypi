@@ -77,6 +77,8 @@
         'renderer/pepper_plugin_delegate_impl.h',
         'renderer/plugin_channel_host.cc',
         'renderer/plugin_channel_host.h',
+        'renderer/render_process_observer.cc',
+        'renderer/render_process_observer.h',
         'renderer/render_view.cc',
         'renderer/render_view.h',
         'renderer/render_view_linux.cc',
