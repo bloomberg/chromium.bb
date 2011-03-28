@@ -715,7 +715,7 @@ cr.define('cr.ui', function() {
 
       var desiredScrollHeight = this.getHeightsForIndex_(dataModel.length).top;
 
-      var autoExpands = this.autoExpands_
+      var autoExpands = this.autoExpands_;
       var firstIndex = autoExpands ? 0 : this.getIndexForListOffset_(scrollTop);
       var itemsInViewPort = autoExpands ? dataModel.length : Math.min(
           dataModel.length - firstIndex,

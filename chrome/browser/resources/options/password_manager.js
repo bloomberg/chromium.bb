@@ -82,12 +82,24 @@ cr.define('options', function() {
     },
 
     /**
+     * Updates the visibility of the list and empty list placeholder.
+     * @param {!List} list The list to toggle visilibility for.
+     */
+    updateListVisibility_: function(list) {
+      var empty = list.dataModel.length == 0;
+      var listPlaceHolderID = list.id + '-empty-placeholder';
+      list.hidden = empty;
+      $(listPlaceHolderID).hidden = !empty;
+    },
+
+    /**
      * Updates the data model for the saved passwords list with the values from
      * |entries|.
      * @param {Array} entries The list of saved password data.
      */
     setSavedPasswordsList_: function(entries) {
       this.savedPasswordsList_.dataModel = new ArrayDataModel(entries);
+      this.updateListVisibility_(this.savedPasswordsList_);
     },
 
     /**
@@ -97,6 +109,7 @@ cr.define('options', function() {
      */
     setPasswordExceptionsList_: function(entries) {
       this.passwordExceptionsList_.dataModel = new ArrayDataModel(entries);
+      this.updateListVisibility_(this.passwordExceptionsList_);
     },
   };
 
@@ -146,4 +159,3 @@ cr.define('options', function() {
   };
 
 });
-

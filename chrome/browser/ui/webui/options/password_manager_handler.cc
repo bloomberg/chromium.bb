@@ -8,6 +8,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -31,30 +32,40 @@ void PasswordManagerHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
+  static const OptionsStringResource resources[] = {
+    { "savedPasswordsTitle",
+      IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE },
+    { "passwordExceptionsTitle",
+      IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE },
+    { "passwordShowButton",
+      IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON },
+    { "passwordHideButton",
+      IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON },
+    { "passwordsSiteColumn",
+      IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN },
+    { "passwordsUsernameColumn",
+      IDS_PASSWORDS_PAGE_VIEW_USERNAME_COLUMN },
+    { "passwordsRemoveButton",
+      IDS_PASSWORDS_PAGE_VIEW_REMOVE_BUTTON },
+    { "passwordsNoPasswordsDescription",
+     IDS_PASSWORDS_PAGE_VIEW_NO_PASSWORDS_DESCRIPTION },
+    { "passwordsNoExceptionsDescription",
+     IDS_PASSWORDS_PAGE_VIEW_NO_EXCEPTIONS_DESCRIPTION },
+    { "passwordsRemoveAllButton",
+      IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON },
+    { "passwordsRemoveAllTitle",
+      IDS_PASSWORDS_PAGE_VIEW_CAPTION_DELETE_ALL_PASSWORDS },
+    { "passwordsRemoveAllWarning",
+      IDS_PASSWORDS_PAGE_VIEW_TEXT_DELETE_ALL_PASSWORDS },
+  };
+
+  RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "passwordsPage",
                 IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE);
-  localized_strings->SetString("savedPasswordsTitle",
-      l10n_util::GetStringUTF16(IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE));
-  localized_strings->SetString("passwordExceptionsTitle",
-      l10n_util::GetStringUTF16(IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE));
-  localized_strings->SetString("passwordShowButton",
-      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON));
-  localized_strings->SetString("passwordHideButton",
-      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON));
-  localized_strings->SetString("passwordsSiteColumn",
-      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN));
-  localized_strings->SetString("passwordsUsernameColumn",
-      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_USERNAME_COLUMN));
-  localized_strings->SetString("passwordsRemoveButton",
-      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_REMOVE_BUTTON));
-  localized_strings->SetString("passwordsRemoveAllButton",
-      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON));
-  localized_strings->SetString("passwordsRemoveAllTitle",
-      l10n_util::GetStringUTF16(
-          IDS_PASSWORDS_PAGE_VIEW_CAPTION_DELETE_ALL_PASSWORDS));
-  localized_strings->SetString("passwordsRemoveAllWarning",
-      l10n_util::GetStringUTF16(
-          IDS_PASSWORDS_PAGE_VIEW_TEXT_DELETE_ALL_PASSWORDS));
+
+  localized_strings->SetString("passwordManagerLearnMoreURL",
+      google_util::AppendGoogleLocaleParam(
+          GURL(chrome::kPasswordManagerLearnMoreURL)).spec());
 }
 
 void PasswordManagerHandler::Initialize() {

@@ -431,9 +431,18 @@ div.disabled {
   color: #000;
 }
 
-.settings-list {
+.settings-list,
+.settings-list-empty {
   border: 1px solid #d9d9d9;
   border-radius: 2px;
+}
+
+.settings-list-empty {
+  background-color: #f4f4f4;
+  box-sizing: border-box;
+  min-height: 125px;
+  padding-left: 20px;
+  padding-top: 20px;
 }
 
 list > * {

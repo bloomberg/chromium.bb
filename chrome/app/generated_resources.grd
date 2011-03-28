@@ -4671,7 +4671,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON" desc="Text for passwords page view's button to hide a stored password">
         Hide
       </message>
-
+      <message name="IDS_PASSWORDS_PAGE_VIEW_NO_PASSWORDS_DESCRIPTION" desc="Text for passwords page view when there are no passwords to show.">
+        Your saved passwords will appear here.
+      </message>
+      <message name="IDS_PASSWORDS_PAGE_VIEW_NO_EXCEPTIONS_DESCRIPTION" desc="Text for passwords page view when there are no password exceptions to show.">
+        Sites which never save passwords will appear here.
+      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON" desc="In sentence case: Passwords page view's 'Remove all' button text">
           Remove all

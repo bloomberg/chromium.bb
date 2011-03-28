@@ -207,6 +207,13 @@ const char kInternetOptionsSubPage[] = "internet";
 const char kSystemOptionsSubPage[] = "system";
 #endif
 
+const char kPasswordManagerLearnMoreURL[] =
+#if defined(OS_CHROMEOS)
+    "http://www.google.com/support/chromeos/bin/answer.py?answer=95606";
+#else
+    "http://www.google.com/support/chrome/bin/answer.py?answer=95606";
+#endif
+
 const char kChromeHelpURL[] =
 #if defined(OS_CHROMEOS)
   "http://www.google.com/support/chromeos/";

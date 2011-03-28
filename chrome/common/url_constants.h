@@ -204,6 +204,8 @@ extern const char kInternetOptionsSubPage[];
 extern const char kSystemOptionsSubPage[];
 #endif
 
+extern const char kPasswordManagerLearnMoreURL[];
+
 // General help link for Chrome.
 extern const char kChromeHelpURL[];
 
