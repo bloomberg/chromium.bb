@@ -22,6 +22,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
@@ -1170,7 +1171,7 @@ void MobileSetupHandler::ReEnableOtherConnections() {
     lib->EnableWifiNetworkDevice(true);
   }
 
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = g_browser_process->local_state();
   if (reenable_cert_check_) {
     prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled,
                       true);
@@ -1185,7 +1186,7 @@ void MobileSetupHandler::SetupActivationProcess(
 
   // Disable SSL cert checks since we will be doing this in
   // restricted pool.
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = g_browser_process->local_state();
   if (!reenable_cert_check_ &&
       prefs->GetBoolean(
           prefs::kCertRevocationCheckingEnabled)) {
