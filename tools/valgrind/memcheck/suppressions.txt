@@ -3925,7 +3925,6 @@
    bug_75634_c
    Memcheck:Value4
    ...
-   fun:_ZNSs6appendEPKcj
    fun:_ZNSs6appendEPKc
    fun:_ZN4base10JSONWriter15BuildJSONStringEPK5Valueib
    fun:_ZN4base10JSONWriter15BuildJSONStringEPK5Valueib
@@ -3940,8 +3939,7 @@
 {
    bug_75634_d
    Memcheck:Cond
-   fun:memcpy
-   fun:_ZNSs6appendEPKcj
+   ...
    fun:_ZNSs6appendEPKc
    fun:_ZN4base10JSONWriter15BuildJSONStringEPK5Valueib
    fun:_ZN4base10JSONWriter15BuildJSONStringEPK5Valueib
