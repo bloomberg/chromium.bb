@@ -4,13 +4,7 @@
 
 {
   'variables': {
-    # TODO: remove this helper when we have loops in GYP
-    'apply_locales_cmd': ['python', '<(DEPTH)/build/apply_locales.py',],
     'chromium_code': 1,
-    'grit_info_cmd': ['python', '../tools/grit/grit_info.py',
-                      '<@(grit_defines)'],
-    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/app',
-    'grit_cmd': ['python', '../tools/grit/grit.py'],
   },
   'includes': [
     'app_base.gypi',
@@ -92,35 +86,19 @@
       'target_name': 'app_resources',
       'type': 'none',
       'msvs_guid': '3FBC4235-3FBD-46DF-AEDC-BADBBA13A095',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/app/app_resources',
+      },
       'actions': [
         {
           'action_name': 'app_resources',
           'variables': {
-            'input_path': 'resources/app_resources.grd',
+            'grit_grd_file': 'resources/app_resources.grd',
           },
-          'inputs': [
-            '<!@(<(grit_info_cmd) --inputs <(input_path))',
-          ],
-          'outputs': [
-            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)/app_resources\' <(input_path))',
-          ],
-          'action': ['<@(grit_cmd)',
-                     '-i', '<(input_path)', 'build',
-                     '-o', '<(grit_out_dir)/app_resources',
-                     '<@(grit_defines)' ],
-          'message': 'Generating resources from <(input_path)',
+          'includes': [ '../build/grit_action.gypi' ],
         },
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(grit_out_dir)/app_resources',
-        ],
-      },
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': ['../build/win/system.gyp:cygwin'],
-        }],
-      ],
+      'includes': [ '../build/grit_target.gypi' ],
     },
   ],
 }

@@ -691,41 +691,19 @@
     {
       'target_name': 'chrome_frame_strings',
       'type': 'none',
-      'rules': [
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome_frame',
+      },
+      'actions': [
         {
-          'rule_name': 'grit',
-          'extension': 'grd',
-          'inputs': [
-            '../tools/grit/grit.py',
-          ],
+          'action_name': 'chrome_frame_resources',
           'variables': {
-            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome_frame',
+            'grit_grd_file': 'resources/chrome_frame_resources.grd',
           },
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/grit/<(RULE_INPUT_ROOT).h',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/<(RULE_INPUT_ROOT).pak',
-          ],
-          'action': ['python', '<@(_inputs)', '-i',
-            '<(RULE_INPUT_PATH)',
-            'build', '-o', '<(grit_out_dir)'
-          ],
-          'message': 'Generating resources from <(RULE_INPUT_PATH)',
+          'includes': [ '../build/grit_action.gypi' ],
         },
       ],
-      'sources': [
-        # Localizable resources.
-        'resources/chrome_frame_resources.grd',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)/chrome_frame',
-        ],
-      },
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': ['../build/win/system.gyp:cygwin'],
-        }],
-      ],
+      'includes': [ '../build/grit_target.gypi' ],
     },
     {
       'target_name': 'chrome_frame_utils',

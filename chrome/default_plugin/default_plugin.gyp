@@ -5,10 +5,6 @@
 {
   'variables': {
     'chromium_code': 1,
-    'grit_info_cmd': ['python', '../../tools/grit/grit_info.py',
-                      '<@(grit_defines)'],
-    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
-    'grit_cmd': ['python', '../../tools/grit/grit.py'],
    },
   'targets': [
     {
@@ -66,35 +62,19 @@
     {
       'target_name': 'default_plugin_resources',
       'type': 'none',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome/default_plugin_resources',
+      },
       'actions': [
         {
           'action_name': 'default_plugin_resources',
           'variables': {
-            'input_path': 'default_plugin_resources.grd',
+            'grit_grd_file': 'default_plugin_resources.grd',
           },
-          'inputs': [
-            '<!@(<(grit_info_cmd) --inputs <(input_path))',
-          ],
-          'outputs': [
-            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)/default_plugin_resources\' <(input_path))',
-          ],
-          'action': ['<@(grit_cmd)',
-                     '-i', '<(input_path)', 'build',
-                     '-o', '<(grit_out_dir)/default_plugin_resources',
-                     '<@(grit_defines)'],
-          'message': 'Generating resources from <(input_path)',
+          'includes': [ '../../build/grit_action.gypi' ],
         },
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(grit_out_dir)/default_plugin_resources',
-        ],
-      },
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': ['../../build/win/system.gyp:cygwin'],
-        }],
-      ],
+      'includes': [ '../../build/grit_target.gypi' ],
     },
   ],
 }

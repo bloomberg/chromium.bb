@@ -3,12 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'grit_info_cmd': ['python', '../tools/grit/grit_info.py',
-                      '<@(grit_defines)'],
-    'grit_cmd': ['python', '../tools/grit/grit.py'],
-    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx',
-  },
   'targets': [
     {
       # TODO(rsesek): Remove this target once ui_unittests is run on the
@@ -164,37 +158,19 @@
       'target_name': 'gfx_resources',
       'type': 'none',
       'msvs_guid' : '5738AE53-E919-4987-A2EF-15FDBD8F90F6',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx',
+      },
       'actions': [
         {
           'action_name': 'gfx_resources',
           'variables': {
-            'input_path': 'gfx/gfx_resources.grd',
+            'grit_grd_file': 'gfx/gfx_resources.grd',
           },
-          'inputs': [
-            '<!@(<(grit_info_cmd) --inputs <(input_path))',
-          ],
-          'outputs': [
-            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
-          ],
-          'action': [
-            '<@(grit_cmd)',
-            '-i', '<(input_path)', 'build',
-            '-o', '<(grit_out_dir)',
-            '<@(grit_defines)',
-          ],
-          'message': 'Generating resources from <(input_path)',
+          'includes': [ '../build/grit_action.gypi' ],
         },
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(grit_out_dir)',
-        ],
-      },
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': ['../build/win/system.gyp:cygwin'],
-        }],
-      ],
+      'includes': [ '../build/grit_target.gypi' ],
     },
 
   ],

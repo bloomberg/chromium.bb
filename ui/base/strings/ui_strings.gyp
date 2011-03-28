@@ -1,49 +1,35 @@
 {
   'variables': {
-    # TODO: remove this helper when we have loops in GYP
-    'apply_locales_cmd': ['python', '<(DEPTH)/build/apply_locales.py',],
     'chromium_code': 1,
-    'grit_cmd': ['python', '../../../tools/grit/grit.py'],
-    'grit_info_cmd': ['python', '../../../tools/grit/grit_info.py',
-                      '<@(grit_defines)'],
-    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/app',
-    'localizable_resources': [
-      'app_locale_settings.grd',
-      'app_strings.grd',
-    ],
+    'grit_base_out_dir': '<(SHARED_INTERMEDIATE_DIR)/app',
   },
   'targets': [
     {
       'target_name': 'ui_strings',
       'type': 'none',
       'msvs_guid': 'BC3C49A3-D061-4E78-84EE-742DA064DC46',
-      'rules': [
+      'actions': [
         {
-          'rule_name': 'grit',
-          'extension': 'grd',
-          'inputs': [
-            '<!@(<(grit_info_cmd) --inputs <(localizable_resources))',
-          ],
-          'outputs': [
-            '<(grit_out_dir)/<(RULE_INPUT_ROOT)/grit/<(RULE_INPUT_ROOT).h',
-            # TODO: remove this helper when we have loops in GYP
-            '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(RULE_INPUT_ROOT)/<(RULE_INPUT_ROOT)_ZZLOCALE.pak\' <(locales))',
-          ],
-          'action': [
-     '<@(grit_cmd)',
-     '-i', '<(RULE_INPUT_PATH)', 'build',
-     '-o', '<(grit_out_dir)/<(RULE_INPUT_ROOT)',
-            '<@(grit_defines)'],
-          'message': 'Generating resources from <(RULE_INPUT_PATH)',
+          'action_name': 'app_strings',
+          'variables': {
+            'grit_grd_file': 'app_strings.grd',
+            'grit_out_dir': '<(grit_base_out_dir)/app_strings',
+          },
+          'includes': [ '../../../build/grit_action.gypi' ],
         },
-      ],
-      'sources': [
-        '<@(localizable_resources)',
+        {
+          'action_name': 'app_locale_settings',
+          'variables': {
+            'grit_grd_file': 'app_locale_settings.grd',
+            'grit_out_dir': '<(grit_base_out_dir)/app_locale_settings',
+          },
+          'includes': [ '../../../build/grit_action.gypi' ],
+        },
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(grit_out_dir)/app_locale_settings',
-          '<(grit_out_dir)/app_strings',
+          '<(grit_base_out_dir)/app_locale_settings',
+          '<(grit_base_out_dir)/app_strings',
         ],
       },
       'conditions': [
@@ -66,8 +52,8 @@
             'action_name': 'repack_ui_unittest_strings',
             'variables': {
               'pak_inputs': [
-                '<(grit_out_dir)/app_strings/app_strings_en-US.pak',
-                '<(grit_out_dir)/app_locale_settings/app_locale_settings_en-US.pak',
+                '<(grit_base_out_dir)/app_strings/app_strings_en-US.pak',
+                '<(grit_base_out_dir)/app_locale_settings/app_locale_settings_en-US.pak',
               ],
             },
             'inputs': [
@@ -85,7 +71,7 @@
           {
             'destination': '<(PRODUCT_DIR)/app_unittests_strings',
             'files': [
-              '<(grit_out_dir)/app_resources/app_resources.pak',
+              '<(grit_base_out_dir)/app_resources/app_resources.pak',
             ],
           },
         ],

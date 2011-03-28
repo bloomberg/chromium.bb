@@ -42,32 +42,6 @@
     'allocator_target': '../base/allocator/allocator.gyp:allocator',
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'protoc_out_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
-    'chrome_strings_grds': [
-      # Localizable resources.
-      'app/resources/locale_settings.grd',
-      'app/chromium_strings.grd',
-      'app/generated_resources.grd',
-      'app/google_chrome_strings.grd',
-    ],
-    'chrome_resources_grds': [
-      # Data resources.
-      'browser/autofill/autofill_resources.grd',
-      'browser/browser_resources.grd',
-      'common/common_resources.grd',
-      'renderer/renderer_resources.grd',
-    ],
-    'chrome_extra_resources_grds': [
-      # These resources end up in resources.pak because they are resources
-      # used by internal pages.  Putting them in a spearate pak file makes
-      # it easier for us to reference them internally.
-      'browser/resources/component_extension_resources.grd',
-      'browser/resources/net_internals_resources.grd',
-      'browser/resources/shared_resources.grd',
-      'browser/resources/sync_internals_resources.grd',
-    ],
-    'grit_info_cmd': ['python', '../tools/grit/grit_info.py',
-                      '<@(grit_defines)'],
-    'grit_cmd': ['python', '../tools/grit/grit.py'],
     'repack_locales_cmd': ['python', 'tools/build/repack_locales.py'],
     # TODO: remove this helper when we have loops in GYP
     'apply_locales_cmd': ['python', '<(DEPTH)/build/apply_locales.py'],
@@ -111,9 +85,13 @@
           ['branding=="Chrome"', {
             'mac_bundle_id': 'com.google.Chrome',
             'mac_creator': 'rimZ',
+            # The policy .grd file also needs the bundle id.
+            'grit_defines': ['-D', 'mac_bundle_id=com.google.Chrome'],
           }, {  # else: branding!="Chrome"
             'mac_bundle_id': 'org.chromium.Chromium',
             'mac_creator': 'Cr24',
+            # The policy .grd file also needs the bundle id.
+            'grit_defines': ['-D', 'mac_bundle_id=org.chromium.Chromium'],
           }],  # branding
         ],  # conditions
       }],  # OS=="mac"
@@ -160,62 +138,38 @@
       'target_name': 'chrome_resources',
       'type': 'none',
       'msvs_guid': 'B95AB527-F7DB-41E9-AD91-EB51EE0F56BE',
-      'variables': {
-        'chrome_resources_inputs': [
-          '<!@(<(grit_info_cmd) --inputs <(chrome_resources_grds))',
-        ],
-      },
-      'rules': [
+      'actions': [
+        # Data resources.
         {
-          'rule_name': 'grit',
-          'extension': 'grd',
+          'action_name': 'autofill_resources',
           'variables': {
-            'conditions': [
-              ['branding=="Chrome"', {
-                'branded_env': 'CHROMIUM_BUILD=google_chrome',
-              }, {  # else: branding!="Chrome"
-                'branded_env': 'CHROMIUM_BUILD=chromium',
-              }],
-            ],
+            'grit_grd_file': 'browser/autofill/autofill_resources.grd',
           },
-          'inputs': [
-            '<@(chrome_resources_inputs)',
-          ],
-          'outputs': [
-            '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT).h',
-            '<(grit_out_dir)/<(RULE_INPUT_ROOT).pak',
-            # TODO(bradnelson): move to something like this instead
-            #'<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(chrome_resources_grds))',
-            # This currently cannot work because gyp only evaluates the
-            # outputs once (rather than per case where the rule applies).
-            # This means you end up with all the outputs from all the grd
-            # files, which angers scons and confuses vstudio.
-            # One alternative would be to turn this into several actions,
-            # but that would be rather verbose.
-          ],
-          'action': ['<@(grit_cmd)', '-i',
-            '<(RULE_INPUT_PATH)',
-            'build', '-o', '<(grit_out_dir)',
-            '-E', '<(branded_env)',
-            '<@(grit_defines)',
-          ],
-          'message': 'Generating resources from <(RULE_INPUT_PATH)',
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
+          'action_name': 'browser_resources',
+          'variables': {
+            'grit_grd_file': 'browser/browser_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
+          'action_name': 'common_resources',
+          'variables': {
+            'grit_grd_file': 'common/common_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
+          'action_name': 'renderer_resources',
+          'variables': {
+            'grit_grd_file': 'renderer/renderer_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
         },
       ],
-      'sources': [
-        '<@(chrome_resources_grds)',
-        '<@(chrome_resources_inputs)',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(grit_out_dir)',
-        ],
-      },
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': ['../build/win/system.gyp:cygwin'],
-        }],
-      ],
+      'includes': [ '../build/grit_target.gypi' ],
     },
     {
       # TODO(mark): It would be better if each static library that needed
@@ -233,54 +187,45 @@
           # the type and making sure we depend on installer_util_strings, it
           # will always get built before installer_util.
           'type': 'dummy_executable',
-          'dependencies': ['../build/win/system.gyp:cygwin',
-                           'installer_util_strings',],
+          'dependencies': ['installer_util_strings'],
         }, {
           'type': 'none',
         }],
       ],
-      'variables': {
-        'chrome_strings_inputs': [
-          '<!@(<(grit_info_cmd) --inputs <(chrome_strings_grds))',
-        ],
-      },
-      'rules': [
+      'actions': [
+        # Localizable resources.
         {
-          'rule_name': 'grit',
-          'extension': 'grd',
-          'inputs': [
-            '<@(chrome_strings_inputs)',
-          ],
-          'outputs': [
-            '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT).h',
-            # TODO: remove this helper when we have loops in GYP
-            '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(RULE_INPUT_ROOT)_ZZLOCALE.pak\' <(locales))',
-            # TODO(bradnelson): move to something like this
-            #'<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(chrome_strings_grds))',
-            # See comment in chrome_resources as to why.
-          ],
-          'action': ['<@(grit_cmd)', '-i',
-                    '<(RULE_INPUT_PATH)',
-                    'build', '-o', '<(grit_out_dir)',
-                    '<@(grit_defines)' ],
-          'message': 'Generating resources from <(RULE_INPUT_PATH)',
+          'action_name': 'locale_settings',
+          'variables': {
+            'grit_grd_file': 'app/resources/locale_settings.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
+          'action_name': 'chromium_strings.grd',
+          'variables': {
+            'grit_grd_file': 'app/chromium_strings.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
+          'action_name': 'generated_resources',
+          'variables': {
+            'grit_grd_file': 'app/generated_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
+          'action_name': 'google_chrome_strings',
+          'variables': {
+            'grit_grd_file': 'app/google_chrome_strings.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
         },
       ],
-      'sources': [
-        '<@(chrome_strings_grds)',
-        '<@(chrome_strings_inputs)',
-      ],
-      'include_dirs': [
-        '<(grit_out_dir)',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(grit_out_dir)',
-        ],
-      },
+      'includes': [ '../build/grit_target.gypi' ],
     },
     {
-      # theme_resources also generates a .cc file, so it can't use the rules above.
       'target_name': 'theme_resources',
       'type': 'none',
       'msvs_guid' : 'A158FB0A-25E4-6523-6B5A-4BB294B73D31',
@@ -288,138 +233,92 @@
         {
           'action_name': 'theme_resources',
           'variables': {
-            'input_path': 'app/theme/theme_resources.grd',
+            'grit_grd_file': 'app/theme/theme_resources.grd',
           },
-          'inputs': [
-            '<!@(<(grit_info_cmd) --inputs <(input_path))',
-          ],
-          'outputs': [
-            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
-          ],
-          'action': [
-            '<@(grit_cmd)',
-            '-i', '<(input_path)', 'build',
-            '-o', '<(grit_out_dir)',
-            '<@(grit_defines)',
-          ],
-          'message': 'Generating resources from <(input_path)',
+          'includes': [ '../build/grit_action.gypi' ],
         },
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(grit_out_dir)',
-        ],
-      },
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': ['../build/win/system.gyp:cygwin'],
-        }],
-      ],
+      'includes': [ '../build/grit_target.gypi' ],
     },
     {
-      # locale_settings_<platform>.grd have slightly different outputs, so it
-      # can't use chrome_strings rules above.
       'target_name': 'platform_locale_settings',
       'type': 'none',
       'actions': [
         {
           'action_name': 'platform_locale_settings',
           'variables': {
-            'input_path': '<(platform_locale_settings_grd)',
+            'grit_grd_file': '<(platform_locale_settings_grd)',
           },
-          'inputs': [
-            '<!@(<(grit_info_cmd) --inputs <(input_path))',
-          ],
-          'outputs': [
-            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
-          ],
-          'action': [
-            '<@(grit_cmd)',
-            '-i', '<(input_path)', 'build',
-            '-o', '<(grit_out_dir)',
-            '<@(grit_defines)',
-          ],
-          'message': 'Generating resources from <(input_path)',
+          'includes': [ '../build/grit_action.gypi' ],
         },
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(grit_out_dir)',
-        ],
-      },
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': ['../build/win/system.gyp:cygwin'],
-        }],
-      ],
+      'includes': [ '../build/grit_target.gypi' ],
     },
     {
       'target_name': 'chrome_extra_resources',
       'type': 'none',
-      'variables': {
-        'chrome_extra_resources_inputs': [
-          '<!@(<(grit_info_cmd) --inputs <(chrome_extra_resources_grds))',
-        ],
-      },
-      'rules': [
-        {
-          'rule_name': 'grit',
-          'extension': 'grd',
-          'variables': {
-            'conditions': [
-              ['branding=="Chrome"', {
-                'branded_env': 'CHROMIUM_BUILD=google_chrome',
-              }, {  # else: branding!="Chrome"
-                'branded_env': 'CHROMIUM_BUILD=chromium',
-              }],
-            ],
-          },
-          'inputs': [
-            '<@(chrome_extra_resources_inputs)',
-            '<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd',
-          ],
-          'outputs': [
-            '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT).h',
-            '<(grit_out_dir)/<(RULE_INPUT_ROOT).pak',
-            '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT)_map.cc',
-            '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT)_map.h',
-            # TODO(bradnelson): move to something like this instead
-            #'<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(chrome_resources_grds))',
-            # This currently cannot work because gyp only evaluates the
-            # outputs once (rather than per case where the rule applies).
-            # This means you end up with all the outputs from all the grd
-            # files, which angers scons and confuses vstudio.
-            # One alternative would be to turn this into several actions,
-            # but that would be rather verbose.
-          ],
-          'action': ['<@(grit_cmd)', '-i',
-            '<(RULE_INPUT_PATH)',
-            'build', '-o', '<(grit_out_dir)',
-            '-D', 'SHARED_INTERMEDIATE_DIR=<(SHARED_INTERMEDIATE_DIR)',
-            '-E', '<(branded_env)',
-            '<@(grit_defines)',
-          ],
-          'message': 'Generating resources from <(RULE_INPUT_PATH)',
-        },
-      ],
-      'sources': [
-        '<@(chrome_extra_resources_grds)',
-        '<@(chrome_extra_resources_inputs)',
-        '<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd',
-      ],
       'dependencies': [
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:generate_devtools_grd',
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(grit_out_dir)',
-        ],
-      },
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': ['../build/win/system.gyp:cygwin'],
-        }],
+      # These resources end up in resources.pak because they are resources
+      # used by internal pages.  Putting them in a spearate pak file makes
+      # it easier for us to reference them internally.
+      'actions': [
+        {
+          'action_name': 'component_extension_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/component_extension_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
+          'action_name': 'net_internals_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/net_internals_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
+          'action_name': 'shared_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/shared_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
+          'action_name': 'sync_internals_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/sync_internals_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
+          'action_name': 'devtools_resources',
+          # This can't use ../build/grit_action.gypi because the grd file
+          # is generated a build time, so the trick of using grit_info to get
+          # the real inputs/outputs at GYP time isn't possible.
+          'variables': {
+            'grit_cmd': ['python', '../tools/grit/grit.py'],
+            'grit_grd_file': '<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd',
+          },
+          'inputs': [
+            '<(grit_grd_file)',
+          ],
+          'outputs': [
+            '<(grit_out_dir)/grit/devtools_resources.h',
+            '<(grit_out_dir)/devtools_resources.pak',
+            '<(grit_out_dir)/grit/devtools_resources_map.cc',
+            '<(grit_out_dir)/grit/devtools_resources_map.h',
+          ],
+          'action': ['<@(grit_cmd)',
+                     '-i', '<(grit_grd_file)', 'build',
+                     '-o', '<(grit_out_dir)',
+                     '-D', 'SHARED_INTERMEDIATE_DIR=<(SHARED_INTERMEDIATE_DIR)',
+                     '<@(grit_defines)' ],
+          'message': 'Generating resources from <(grit_grd_file)',
+        },
       ],
+      'includes': [ '../build/grit_target.gypi' ],
     },
     {
       'target_name': 'default_extensions',
@@ -954,7 +853,7 @@
       'sources': [
         'tools/ipclist/all_messages.h',
         'tools/ipclist/ipclist.cc',
-      ],   
+      ],
     },
   ],
   'conditions': [

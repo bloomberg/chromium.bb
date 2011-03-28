@@ -83,6 +83,9 @@ def main(argv):
   parser.add_option("--inputs", action="store_true", dest="inputs")
   parser.add_option("--outputs", action="store_true", dest="outputs")
   parser.add_option("-D", action="append", dest="defines", default=[])
+  # grit build also supports '-E KEY=VALUE', support that to share command
+  # line flags.
+  parser.add_option("-E", action="append", dest="build_env", default=[])
 
   options, args = parser.parse_args()
 
