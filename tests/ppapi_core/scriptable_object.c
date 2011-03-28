@@ -4,6 +4,7 @@
  * be found in the LICENSE file.
  */
 
+#include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -18,6 +19,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
+
+#include "native_client/src/shared/platform/nacl_check.h"
 
 /* Function prototypes */
 static struct PPB_Var_Deprecated* GetPPB_Var();
@@ -91,10 +94,13 @@ static bool HasMethod(void* object,
   bool has_method = false;
   if (0 == strncmp(method_name, "testAddRefAndReleaseResource", len) ||
       0 == strncmp(method_name, "testAddRefAndReleaseInvalidResource", len) ||
-      0 == strncmp(method_name, "testCallOnMainThread", len) ||
+      0 == strncmp(method_name, "testCallOnMainThread_FromMainThread", len) ||
+      0 == strncmp(method_name, "testCallOnMainThread_FromNonMainThread",
+                   len) ||
       0 == strncmp(method_name, "testGetTime", len) ||
       0 == strncmp(method_name, "testGetTimeTicks", len) ||
-      0 == strncmp(method_name, "testIsMainThread", len) ||
+      0 == strncmp(method_name, "testIsMainThread_FromMainThread", len) ||
+      0 == strncmp(method_name, "testIsMainThread_FromNonMainThread", len) ||
       0 == strncmp(method_name, "testMemAllocAndMemFree", len)) {
     has_method = true;
   }
@@ -133,6 +139,7 @@ static void RemoveProperty(void* object,
 }
 
 void CompletionCallback(void* data, int32_t result) {
+  char* callback_name = (char*)data;
   struct PPB_Instance* instance_interface =
       (struct PPB_Instance*)(*get_browser_interface_func)(
           PPB_INSTANCE_INTERFACE);
@@ -144,13 +151,28 @@ void CompletionCallback(void* data, int32_t result) {
     printf("%s window.type: %i\n", __FUNCTION__, window.type);
   }
   struct PP_Var call_on_main_thread_callback = ppb_var->VarFromUtf8(
-      module,
-      "CallOnMainThreadCallback",
-      strlen("CallOnMainThreadCallback"));
+      module, callback_name, strlen(callback_name));
   struct PP_Var exception = PP_MakeUndefined();
   ppb_var->Call(window, call_on_main_thread_callback, 0, NULL, &exception);
   ppb_var->Release(call_on_main_thread_callback);
   ppb_var->Release(window);
+}
+
+static void* TestCallOnMainThreadFromNewThread(void* thread_argument) {
+  /* Test PPB_Core::CallOnMainThread when called outside of the main thread */
+  struct PPB_Core* core = (struct PPB_Core*)thread_argument;
+  core->CallOnMainThread(0,  /* delay */
+                         PP_MakeCompletionCallback(
+                             CompletionCallback,
+                             "CallOnMainThreadCallback_FromNonMainThread"),
+                         0);  /* dummy result */
+  return NULL;
+}
+
+static void* TestIsMainThreadOnNewThread(void* thread_argument) {
+  /* In this user-created thread, IsMainThread() should return false. */
+  struct PPB_Core* core = (struct PPB_Core*)thread_argument;
+  return (void*)!core->IsMainThread();
 }
 
 static struct PP_Var Call(void* object,
@@ -186,18 +208,37 @@ static struct PP_Var Call(void* object,
     PP_TimeTicks time_ticks2 = core->GetTimeTicks();
     PP_Bool time_passed = (time_ticks2 > time_ticks1) ? PP_TRUE : PP_FALSE;
     return PP_MakeBool(time_passed);
-  } else if (0 == strncmp(method, "testCallOnMainThread", len)) {
-    /* Test PPB_Core::CallOnMainThread */
+  } else if (0 == strncmp(method, "testCallOnMainThread_FromMainThread", len)) {
+    /* Test PPB_Core::CallOnMainThread when called from the main thread */
     core->CallOnMainThread(0,  /* delay */
-                           PP_MakeCompletionCallback(CompletionCallback,
-                                                     NULL),  /* no user data */
+                           PP_MakeCompletionCallback(
+                               CompletionCallback,
+                               "CallOnMainThreadCallback_FromMainThread"),
                            0);  /* dummy result */
     return PP_MakeBool(PP_TRUE);
-  } else if (0 == strncmp(method, "testIsMainThread", len)) {
-    /* Test PPB_Core::IsOnMainThread */
+  } else if (0 == strncmp(method, "testCallOnMainThread_FromNonMainThread",
+                          len)) {
+    /* Test PPB_Core::CallOnMainThread when called outside of the main thread */
+    pthread_t tid;
+    CHECK(pthread_create(&tid, NULL,
+                         TestCallOnMainThreadFromNewThread, core) == 0);
+    /* Use a non-joined thread.  This is a more useful test than
+       joining the thread: we want to test CallOnMainThread() when it
+       is called concurrently with the main thread. */
+    CHECK(pthread_detach(tid) == 0);
+    return PP_MakeBool(PP_TRUE);
+  } else if (0 == strncmp(method, "testIsMainThread_FromMainThread", len)) {
+    /* Test PPB_Core::IsOnMainThread in the main-thread case */
     if (PP_TRUE == core->IsMainThread())
       return PP_MakeBool(PP_TRUE);
     return PP_MakeBool(PP_FALSE);
+  } else if (0 == strncmp(method, "testIsMainThread_FromNonMainThread", len)) {
+    /* Test PPB_Core::IsOnMainThread in the off-main-thread case */
+    pthread_t tid;
+    void* thread_result;
+    CHECK(pthread_create(&tid, NULL, TestIsMainThreadOnNewThread, core) == 0);
+    CHECK(pthread_join(tid, &thread_result) == 0);
+    return PP_MakeBool((PP_Bool)thread_result);
   } else if (0 == strncmp(method, "testMemAllocAndMemFree", len)) {
     /* Test PPB_Core::MemAlloc and PPB_Core::MemFree */
     void* mem = core->MemAlloc(100);  /* No signficance to using 100 */

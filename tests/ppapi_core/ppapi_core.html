@@ -18,8 +18,12 @@ function setupTests(tester, plugin) {
       assert(plugin.testGetTimeTicks());
     });
 
-    tester.addTest('PPB_Core::IsMainThread', function() {
-      assert(plugin.testIsMainThread());
+    tester.addTest('PPB_Core::IsMainThread_FromMainThread', function() {
+      assert(plugin.testIsMainThread_FromMainThread());
+    });
+
+    tester.addTest('PPB_Core::IsMainThread_FromNonMainThread', function() {
+      assert(plugin.testIsMainThread_FromNonMainThread());
     });
 
     tester.addTest('PPB_Core::MemAlloc+MemFree', function() {
@@ -35,15 +39,14 @@ function setupTests(tester, plugin) {
     });
     
     // TODO(ncbray) async test harness
-    tester.addTest('PPB_Core::CallOnMainThread', function() {
-      assert(plugin.testCallOnMainThread());
+    var waitForCallback = function(callbackName) {
       var got_callback = false;
 
       // Deliberately global - this what the nexe expects.
-      CallOnMainThreadCallback = function() {
-        tester.log('CallOnMainThread callback!');
+      window[callbackName] = function() {
+        tester.log('Received callback: ' + callbackName);
         got_callback = true;
-      }
+      };
 
       function wait() {
         if (!got_callback) {
@@ -54,6 +57,16 @@ function setupTests(tester, plugin) {
       }
 
       wait();
+    };
+
+    tester.addTest('PPB_Core::CallOnMainThread_FromMainThread', function() {
+      assert(plugin.testCallOnMainThread_FromMainThread());
+      waitForCallback('CallOnMainThreadCallback_FromMainThread');
+    });
+
+    tester.addTest('PPB_Core::CallOnMainThread_FromNonMainThread', function() {
+      assert(plugin.testCallOnMainThread_FromNonMainThread());
+      waitForCallback('CallOnMainThreadCallback_FromNonMainThread');
     });
 }
       //]]>
