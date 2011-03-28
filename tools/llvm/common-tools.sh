@@ -12,6 +12,8 @@ readonly UTMAN_DEBUG=${UTMAN_DEBUG:-false}
 readonly TC_LOG="$(pwd)/toolchain/hg-log"
 readonly TC_LOG_ALL="${TC_LOG}/ALL"
 
+readonly TIME_AT_STARTUP=$(date '+%s')
+
 ######################################################################
 # Mercurial repository tools
 ######################################################################
@@ -375,7 +377,8 @@ StepBanner() {
   else
     shift 1
     local padding=$(RepeatStr ' ' $((20-${#module})) )
-    echo "${module}${padding}" "$@"
+    local time_stamp=$(date -d "now - ${TIME_AT_STARTUP}sec" '+%M:%S')
+    echo "[${time_stamp}] ${module}${padding}" "$@"
   fi
 }
 
