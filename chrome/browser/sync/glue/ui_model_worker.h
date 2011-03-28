@@ -31,7 +31,7 @@ namespace browser_sync {
 // after the actual syncer pthread has exited.
 class UIModelWorker : public browser_sync::ModelSafeWorker {
  public:
-  explicit UIModelWorker(MessageLoop* ui_loop);
+  UIModelWorker();
   virtual ~UIModelWorker();
 
   // A simple task to signal a waitable event after Run()ning a Closure.
@@ -77,7 +77,7 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
   void OnSyncerShutdownComplete();
 
   // Callback from |pending_work_| to notify us that it has been run.
-  // Called on |ui_loop_|.
+  // Called on ui loop.
   void OnTaskCompleted() { pending_work_ = NULL; }
 
  private:
@@ -109,9 +109,6 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
   // SyncerThread has terminated, so no more work will be scheduled. Read by
   // the UI thread in Stop().
   bool syncapi_has_shutdown_;
-
-  // The UI model home-sweet-home MessageLoop.
-  MessageLoop* const ui_loop_;
 
   // We use a Lock for all data members and a ConditionVariable to synchronize.
   // We do this instead of using a WaitableEvent and a bool condition in order

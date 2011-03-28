@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
+#include "content/browser/browser_thread.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,22 +19,20 @@ using namespace sync_api;
 
 class UIModelWorkerVisitor {
  public:
-  UIModelWorkerVisitor(MessageLoop* faux_ui_loop,
-                       base::WaitableEvent* was_run,
+  UIModelWorkerVisitor(base::WaitableEvent* was_run,
                        bool quit_loop)
-     : faux_ui_loop_(faux_ui_loop), quit_loop_when_run_(quit_loop),
+     : quit_loop_when_run_(quit_loop),
        was_run_(was_run) { }
   virtual ~UIModelWorkerVisitor() { }
 
   virtual void DoWork() {
-    EXPECT_EQ(MessageLoop::current(), faux_ui_loop_);
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     was_run_->Signal();
     if (quit_loop_when_run_)
       MessageLoop::current()->Quit();
   }
 
  private:
-  MessageLoop* faux_ui_loop_;
   bool quit_loop_when_run_;
   base::WaitableEvent* was_run_;
   DISALLOW_COPY_AND_ASSIGN(UIModelWorkerVisitor);
@@ -110,7 +109,8 @@ class UIModelWorkerTest : public testing::Test {
 
   virtual void SetUp() {
     faux_syncer_thread_.Start();
-    bmw_ = new UIModelWorker(&faux_ui_loop_);
+    ui_thread_.reset(new BrowserThread(BrowserThread::UI, &faux_ui_loop_));
+    bmw_ = new UIModelWorker();
     syncer_.reset(new Syncer(bmw_.get()));
   }
 
@@ -118,9 +118,9 @@ class UIModelWorkerTest : public testing::Test {
   UIModelWorker* bmw() { return bmw_.get(); }
   base::Thread* core_thread() { return &faux_core_thread_; }
   base::Thread* syncer_thread() { return &faux_syncer_thread_; }
-  MessageLoop* ui_loop() { return &faux_ui_loop_; }
  private:
   MessageLoop faux_ui_loop_;
+  scoped_ptr<BrowserThread> ui_thread_;
   base::Thread faux_syncer_thread_;
   base::Thread faux_core_thread_;
   scoped_refptr<UIModelWorker> bmw_;
@@ -130,7 +130,7 @@ class UIModelWorkerTest : public testing::Test {
 TEST_F(UIModelWorkerTest, ScheduledWorkRunsOnUILoop) {
   base::WaitableEvent v_was_run(false, false);
   scoped_ptr<UIModelWorkerVisitor> v(
-      new UIModelWorkerVisitor(ui_loop(), &v_was_run, true));
+      new UIModelWorkerVisitor(&v_was_run, true));
 
   syncer_thread()->message_loop()->PostTask(FROM_HERE,
       new FakeSyncShareTask(syncer(), v.get()));
@@ -163,7 +163,7 @@ TEST_F(UIModelWorkerTest, StopWithPendingWork) {
   core_thread()->Start();
   base::WaitableEvent v_ran(false, false);
   scoped_ptr<UIModelWorkerVisitor> v(new UIModelWorkerVisitor(
-       ui_loop(), &v_ran, false));
+       &v_ran, false));
   base::WaitableEvent* jobs[] = { &v_ran };
 
   // The current message loop is not running, so queue a task to cause
@@ -195,13 +195,13 @@ TEST_F(UIModelWorkerTest, HypotheticalManualPumpFlooding) {
   // Our ammunition.
   base::WaitableEvent fox1_ran(false, false);
   scoped_ptr<UIModelWorkerVisitor> fox1(new UIModelWorkerVisitor(
-      ui_loop(), &fox1_ran, false));
+      &fox1_ran, false));
   base::WaitableEvent fox2_ran(false, false);
   scoped_ptr<UIModelWorkerVisitor> fox2(new UIModelWorkerVisitor(
-      ui_loop(), &fox2_ran, false));
+      &fox2_ran, false));
   base::WaitableEvent fox3_ran(false, false);
   scoped_ptr<UIModelWorkerVisitor> fox3(new UIModelWorkerVisitor(
-      ui_loop(), &fox3_ran, false));
+      &fox3_ran, false));
   base::WaitableEvent* jobs[] = { &fox1_ran, &fox2_ran, &fox3_ran };
 
   // The current message loop is not running, so queue a task to cause

@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/synchronization/waitable_event.h"
+#include "content/browser/browser_thread.h"
 
 namespace browser_sync {
 
@@ -19,7 +20,7 @@ void UIModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
   // with state_ = STOPPED, so it is safe to read / compare in this case.
   CHECK_NE(ANNOTATE_UNPROTECTED_READ(state_), STOPPED);
 
-  if (MessageLoop::current() == ui_loop_) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DLOG(WARNING) << "DoWorkAndWaitUntilDone called from "
       << "ui_loop_. Probably a nested invocation?";
     work->Run();
@@ -35,17 +36,21 @@ void UIModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
     base::AutoLock lock(lock_);
     DCHECK(!pending_work_);
     pending_work_ = new CallDoWorkAndSignalTask(work, &work_done, this);
-    ui_loop_->PostTask(FROM_HERE, pending_work_);
+    if (!BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, pending_work_)) {
+      LOG(WARNING) << "Could not post work to UI loop.";
+      pending_work_ = NULL;
+      syncapi_event_.Signal();
+      return;
+    }
   }
   syncapi_event_.Signal();  // Notify that the syncapi produced work for us.
   work_done.Wait();
 }
 
-UIModelWorker::UIModelWorker(MessageLoop* ui_loop)
+UIModelWorker::UIModelWorker()
     : state_(WORKING),
       pending_work_(NULL),
       syncapi_has_shutdown_(false),
-      ui_loop_(ui_loop),
       syncapi_event_(&lock_) {
 }
 
@@ -67,7 +72,7 @@ void UIModelWorker::OnSyncerShutdownComplete() {
 }
 
 void UIModelWorker::Stop() {
-  DCHECK_EQ(MessageLoop::current(), ui_loop_);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::AutoLock lock(lock_);
   DCHECK_EQ(state_, WORKING);
@@ -94,7 +99,7 @@ ModelSafeGroup UIModelWorker::GetModelSafeGroup() {
 }
 
 bool UIModelWorker::CurrentThreadIsWorkThread() {
-  return MessageLoop::current() == ui_loop_;
+  return BrowserThread::CurrentlyOn(BrowserThread::UI);
 }
 
 void UIModelWorker::CallDoWorkAndSignalTask::Run() {
