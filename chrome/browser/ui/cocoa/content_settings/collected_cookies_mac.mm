@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
 #import "chrome/browser/ui/cocoa/vertical_gradient_view.h"
+#include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -138,13 +139,12 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 
 - (id)initWithTabContents:(TabContents*)tabContents {
   DCHECK(tabContents);
-  infoBarVisible_ = NO;
-  tabContents_ = tabContents;
 
   NSString* nibpath =
       [base::mac::MainAppBundle() pathForResource:@"CollectedCookies"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
+    tabContents_ = tabContents;
     [self loadTreeModelFromTabContents];
 
     animation_.reset([[NSViewAnimation alloc] init]);
@@ -212,6 +212,10 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 }
 
 - (void)windowWillClose:(NSNotification*)notif {
+  if (contentSettingsChanged_) {
+    tabContents_->AddInfoBar(
+        new CollectedCookiesInfoBarDelegate(tabContents_));
+  }
   [allowedOutlineView_ setDelegate:nil];
   [blockedOutlineView_ setDelegate:nil];
   [animation_ stopAnimation];
@@ -247,6 +251,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
     [self showInfoBarForMultipleDomainsAndSetting:setting];
   else
     [self showInfoBarForDomain:lastDomain setting:setting];
+  contentSettingsChanged_ = YES;
 }
 
 - (IBAction)allowOrigin:(id)sender {

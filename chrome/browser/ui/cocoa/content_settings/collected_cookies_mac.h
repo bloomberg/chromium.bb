@@ -90,6 +90,8 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegateCustomSheet,
   TabContents* tabContents_;  // weak
 
   BOOL infoBarVisible_;
+
+  BOOL contentSettingsChanged_;
 }
 @property(readonly, nonatomic) NSTreeController* allowedTreeController;
 @property(readonly, nonatomic) NSTreeController* blockedTreeController;
