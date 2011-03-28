@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -306,6 +306,10 @@ TabSpecificContentSettings::LocalSharedObjectsContainer::
 
 void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {
   cookies_ = new net::CookieMonster(NULL, NULL);
+  cookies_->SetCookieableSchemes(
+      net::CookieMonster::kDefaultCookieableSchemes,
+      net::CookieMonster::kDefaultCookieableSchemesCount);
+  cookies_->SetKeepExpiredCookies();
   appcaches_->Reset();
   databases_->Reset();
   indexed_dbs_->Reset();
