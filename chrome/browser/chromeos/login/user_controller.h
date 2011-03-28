@@ -175,7 +175,7 @@ class UserController : public views::WidgetDelegate,
   // A window is used to represent the individual chunks.
   views::WidgetGtk* controls_window_;
   views::WidgetGtk* image_window_;
-  views::WidgetGtk* border_window_;
+  views::Widget* border_window_;
   views::WidgetGtk* label_window_;
   views::WidgetGtk* unselected_label_window_;
 

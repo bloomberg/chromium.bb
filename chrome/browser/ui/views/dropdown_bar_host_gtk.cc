@@ -8,7 +8,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/widget.h"
 #include "views/controls/textfield/textfield.h"
 
 #if defined(TOUCH_UI)
@@ -16,10 +16,10 @@
 #endif
 
 views::Widget* DropdownBarHost::CreateHost() {
-  views::WidgetGtk* host = new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD);
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CONTROL);
   // We own the host.
-  host->set_delete_on_destroy(false);
-  return host;
+  params.delete_on_destroy = false;
+  return views::Widget::CreateWidget(params);
 }
 
 void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,

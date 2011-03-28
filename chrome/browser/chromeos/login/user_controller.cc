@@ -34,6 +34,7 @@
 
 using views::ColumnSet;
 using views::GridLayout;
+using views::Widget;
 using views::WidgetGtk;
 
 namespace chromeos {
@@ -64,7 +65,7 @@ class ControlsWindow : public WidgetGtk {
   }
 
  private:
-  // WidgetGtk overrrides:
+  // WidgetGtk overrides:
   virtual void SetInitialFocus() {
     if (initial_focus_view_)
       initial_focus_view_->RequestFocus();
@@ -98,7 +99,7 @@ class ClickNotifyingWidget : public views::WidgetGtk {
   DISALLOW_COPY_AND_ASSIGN(ClickNotifyingWidget);
 };
 
-void CloseWindow(views::WidgetGtk* window) {
+void CloseWindow(views::Widget* window) {
   if (!window)
     return;
   window->set_widget_delegate(NULL);
@@ -439,8 +440,9 @@ void UserController::CreateBorderWindow(int index,
     height += 2 * kBorderSize + kUserImageSize + kVerticalIntervalSize;
   }
 
-  border_window_ = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
-  border_window_->MakeTransparent();
+  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  params.transparent = true;
+  border_window_ = Widget::CreateWidget(params);
   border_window_->Init(NULL, gfx::Rect(0, 0, width, height));
   if (!is_new_user_) {
     views::View* background_view = new views::View();

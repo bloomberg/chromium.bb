@@ -181,8 +181,8 @@ class WizardController : public chromeos::ScreenObserver,
   // Creates wizard screen window with the specified |bounds|.
   // If |initial_show| initial animation (window & background) is shown.
   // Otherwise only window is animated.
-  views::WidgetGtk* CreateScreenWindow(const gfx::Rect& bounds,
-                                       bool initial_show);
+  views::Widget* CreateScreenWindow(const gfx::Rect& bounds,
+                                    bool initial_show);
 
   // Returns bounds for the wizard screen host window in screen coordinates.
   // Calculates bounds using screen_bounds_.

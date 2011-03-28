@@ -71,11 +71,7 @@ class DraggedTabView : public views::View {
   int ScaleValue(int value);
 
   // The window that contains the DraggedTabView.
-#if defined(OS_WIN)
-  scoped_ptr<views::WidgetWin> container_;
-#elif defined(OS_LINUX)
-  scoped_ptr<views::WidgetGtk> container_;
-#endif
+  scoped_ptr<views::Widget> container_;
 
   // The renderer that paints the Tab shape.
   std::vector<views::View*> renderers_;

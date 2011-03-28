@@ -27,7 +27,7 @@
 #include "views/events/event.h"
 #include "views/painter.h"
 #include "views/view.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/widget.h"
 #include "views/window/window.h"
 
 namespace chromeos {
@@ -123,8 +123,9 @@ void PanelController::Init(bool initial_focus,
                            WmIpcPanelUserResizeType resize_type) {
   gfx::Rect title_bounds(0, 0, window_bounds.width(), kTitleHeight);
 
-  title_window_ = new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
-  title_window_->MakeTransparent();
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_WINDOW);
+  params.transparent = true;
+  title_window_ = views::Widget::CreateWidget(params);
   title_window_->Init(NULL, title_bounds);
   gtk_widget_set_size_request(title_window_->GetNativeView(),
                               title_bounds.width(), title_bounds.height());

@@ -561,7 +561,7 @@ void StatusBubbleViews::Init() {
     params.transparent = true;
     params.accept_events = false;
     params.delete_on_destroy = false;
-    popup_.reset(Widget::CreatePopupWidget(params));
+    popup_.reset(Widget::CreateWidget(params));
     views::Widget* frame = base_view_->GetWidget();
     if (!view_)
       view_ = new StatusView(this, popup_.get(), frame->GetThemeProvider());

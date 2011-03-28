@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/views/tabs/native_view_photobooth.h"
 
 namespace views {
-class WidgetWin;
+class Widget;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ class NativeViewPhotoboothWin : public NativeViewPhotobooth {
   void CreateCaptureWindow(HWND initial_hwnd);
 
   // The nearly off-screen photo-booth layered window used to hold the HWND.
-  views::WidgetWin* capture_window_;
+  views::Widget* capture_window_;
 
   // The current HWND being captured.
   HWND current_hwnd_;

@@ -62,10 +62,11 @@ class Widget : public internal::NativeWidgetDelegate,
  public:
   struct CreateParams {
     enum Type {
-      TYPE_TOPLEVEL,
-      TYPE_CHILD,
-      TYPE_POPUP,
-      TYPE_MENU
+      TYPE_WINDOW,      // A Window, like a frame window.
+      TYPE_CONTROL,     // A control, like a button.
+      TYPE_POPUP,       // An undecorated Window, with transient properties.
+      TYPE_MENU         // An undecorated Window, with transient properties
+                        // specialized to menus.
     };
 
     CreateParams();
@@ -73,9 +74,11 @@ class Widget : public internal::NativeWidgetDelegate,
 
     Type type;
 
+    bool child;
     bool transparent;
     bool accept_events;
     bool can_activate;
+    bool keep_on_top;
     bool delete_on_destroy;
     bool mirror_origin_in_rtl;
     bool has_dropshadow;
@@ -85,8 +88,8 @@ class Widget : public internal::NativeWidgetDelegate,
   Widget();
   virtual ~Widget();
 
-  // Creates a Widget instance suitable for use as a transient popup.
-  static Widget* CreatePopupWidget(const CreateParams& params);
+  // Creates a Widget instance with the supplied params.
+  static Widget* CreateWidget(const CreateParams& params);
 
   // Enumerates all windows pertaining to us and notifies their
   // view hierarchies that the locale has changed.

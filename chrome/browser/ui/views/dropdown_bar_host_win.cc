@@ -24,7 +24,7 @@ NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
 
 views::Widget* DropdownBarHost::CreateHost() {
   views::WidgetWin* widget = new views::WidgetWin();
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CHILD);
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CONTROL);
   // Don't let WidgetWin manage our lifetime. We want our lifetime to
   // coincide with TabContents.
   params.delete_on_destroy = false;

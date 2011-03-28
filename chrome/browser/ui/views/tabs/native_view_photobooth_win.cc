@@ -8,7 +8,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/point.h"
-#include "views/widget/widget_win.h"
+#include "ui/gfx/rect.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -144,17 +145,15 @@ void NativeViewPhotoboothWin::CreateCaptureWindow(HWND initial_hwnd) {
   // associated HWND to it. Note that the details are important here, see below
   // for further comments.
   //
-  CRect contents_rect;
+  RECT contents_rect;
   GetClientRect(initial_hwnd, &contents_rect);
   gfx::Point window_position = GetCaptureWindowPosition();
   gfx::Rect capture_bounds(window_position.x(), window_position.y(),
-                           contents_rect.Width(), contents_rect.Height());
-  capture_window_ = new views::WidgetWin;
-  capture_window_->set_window_style(WS_POPUP);
-  // WS_EX_TOOLWINDOW ensures the capture window doesn't produce a Taskbar
-  // button.
-  capture_window_->set_window_ex_style(WS_EX_LAYERED | WS_EX_TOOLWINDOW);
-  capture_window_->Init(NULL, capture_bounds);
+                           contents_rect.right - contents_rect.left,
+                           contents_rect.bottom - contents_rect.top);
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  params.transparent = true;
+  capture_window_ = views::Widget::CreateWidget(params);
   // If the capture window isn't visible, blitting from the TabContents'
   // HWND's DC to the capture bitmap produces blankness.
   capture_window_->Show();

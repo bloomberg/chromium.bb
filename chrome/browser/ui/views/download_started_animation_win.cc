@@ -13,7 +13,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/rect.h"
 #include "views/controls/image_view.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/widget.h"
 
 // How long to spend moving downwards and fading out after waiting.
 static const int kMoveTimeMs = 600;
@@ -55,7 +55,7 @@ class DownloadStartedAnimationWin : public ui::LinearAnimation,
                        const NotificationDetails& details);
 
   // We use a HWND for the popup so that it may float above any HWNDs in our UI.
-  views::WidgetWin* popup_;
+  views::Widget* popup_;
 
   // The content area holding us.
   TabContents* tab_contents_;
@@ -102,11 +102,10 @@ DownloadStartedAnimationWin::DownloadStartedAnimationWin(
   SetImage(kDownloadImage);
 
   gfx::Rect rc(0, 0, 0, 0);
-  popup_ = new views::WidgetWin;
   views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
   params.transparent = true;
   params.accept_events = false;
-  popup_->SetCreateParams(params);
+  popup_ = views::Widget::CreateWidget(params);
   popup_->SetOpacity(0x00);
   popup_->Init(tab_contents_->GetNativeView(), rc);
   popup_->SetContentsView(this);
@@ -125,12 +124,12 @@ void DownloadStartedAnimationWin::Reposition() {
   gfx::Size size = GetPreferredSize();
   int x = base::i18n::IsRTL() ?
       tab_contents_bounds_.right() - size.width() : tab_contents_bounds_.x();
-  popup_->MoveWindow(
+  popup_->SetBounds(gfx::Rect(
       x,
       static_cast<int>(tab_contents_bounds_.bottom() -
           size.height() - size.height() * (1 - GetCurrentValue())),
       size.width(),
-      size.height());
+      size.height()));
 }
 
 void DownloadStartedAnimationWin::Close() {

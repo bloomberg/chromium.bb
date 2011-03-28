@@ -211,20 +211,19 @@ class DraggedTabController::DockDisplayer : public ui::AnimationDelegate {
         hidden_(false),
         in_enable_area_(info.in_enable_area()) {
 #if defined(OS_WIN)
-    views::WidgetWin* popup = new views::WidgetWin;
-    popup_ = popup;
-    popup->set_window_style(WS_POPUP);
-    popup->set_window_ex_style(WS_EX_LAYERED | WS_EX_TOOLWINDOW |
-                               WS_EX_TOPMOST);
-    popup->SetOpacity(0x00);
-    popup->Init(NULL, info.GetPopupRect());
-    popup->SetContentsView(new DockView(info.type()));
+    // TODO(sky): This should "just work" on Gtk now.
+    views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+    params.transparent = true;
+    params.keep_on_top = true;
+    popup_ = views::Widget::CreateWidget(params);
+    popup_->SetOpacity(0x00);
+    popup_->Init(NULL, info.GetPopupRect());
+    popup_->SetContentsView(new DockView(info.type()));
     if (info.in_enable_area())
       animation_.Reset(1);
     else
       animation_.Show();
-    popup->SetWindowPos(HWND_TOP, 0, 0, 0, 0,
-        SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOMOVE | SWP_SHOWWINDOW);
+    popup_->Show();
 #else
     NOTIMPLEMENTED();
 #endif

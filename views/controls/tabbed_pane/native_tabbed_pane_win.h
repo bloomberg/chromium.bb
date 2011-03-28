@@ -13,7 +13,7 @@
 
 namespace views {
 
-class WidgetWin;
+class Widget;
 class TabLayout;
 
 class NativeTabbedPaneWin : public NativeControlWin,
@@ -50,9 +50,8 @@ class NativeTabbedPaneWin : public NativeControlWin,
   virtual FocusTraversable* GetFocusTraversable();
   virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
 
-  virtual Widget* child_widget() {
-    return reinterpret_cast<Widget*>(content_window_);
-  }
+  // TODO(beng): this method should not be unix_hacker
+  virtual Widget* child_widget() { return content_window_; }
 
  private:
   // Called upon creation of native control to initialize tabs that are added
@@ -86,7 +85,7 @@ class NativeTabbedPaneWin : public NativeControlWin,
   int selected_index_;
 
   // The window displayed in the tab.
-  WidgetWin* content_window_;
+  Widget* content_window_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTabbedPaneWin);
 };

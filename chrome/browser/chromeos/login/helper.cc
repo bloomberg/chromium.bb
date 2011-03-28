@@ -108,12 +108,11 @@ void ThrobberHostView::StartThrobber() {
   throbber->set_stop_delay_ms(0);
   gfx::Rect throbber_bounds = CalculateThrobberBounds(throbber);
 
-  views::WidgetGtk* widget_gtk =
-      new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
-  widget_gtk->make_transient_to_parent();
-  widget_gtk->MakeTransparent();
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_WINDOW);
+  params.transparent = true;
+  throbber_widget_ = views::Widget::CreateWidget(params);
+  static_cast<views::WidgetGtk*>(throbber_widget_)->make_transient_to_parent();
 
-  throbber_widget_ = widget_gtk;
   throbber_bounds.Offset(host_view_->GetScreenBounds().origin());
   throbber_widget_->Init(host_gtk_window, throbber_bounds);
   throbber_widget_->SetContentsView(throbber);

@@ -8,10 +8,7 @@
 #include "views/layout/box_layout.h"
 #include "views/layout/layout_manager.h"
 #include "views/view.h"
-
-#if defined(OS_LINUX)
-#include "views/widget/widget_gtk.h"
-#endif
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -111,10 +108,9 @@ void WidgetExample::InitWidget(views::Widget* widget, bool transparent) {
 
 #if defined(OS_LINUX)
 void WidgetExample::CreateChild(views::View* parent, bool transparent) {
-  views::WidgetGtk* widget =
-      new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD);
-  if (transparent)
-    widget->MakeTransparent();
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CONTROL);
+  params.transparent = transparent;
+  views::Widget* widget = views::Widget::CreateWidget(params);
   // Compute where to place the child widget.
   // We'll place it at the center of the root widget.
   views::Widget* parent_widget = parent->GetWidget();
@@ -131,7 +127,7 @@ void WidgetExample::CreateChild(views::View* parent, bool transparent) {
 void WidgetExample::CreatePopup(views::View* parent, bool transparent) {
   views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
   params.transparent = transparent;
-  views::Widget* widget = views::Widget::CreatePopupWidget(params);
+  views::Widget* widget = views::Widget::CreateWidget(params);
 
   // Compute where to place the popup widget.
   // We'll place it right below the create button.

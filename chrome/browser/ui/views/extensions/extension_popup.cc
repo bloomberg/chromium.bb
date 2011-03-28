@@ -93,18 +93,14 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
   relative_to_.set_origin(origin);
 
   // The bubble chrome requires a separate window, so construct it here.
-  gfx::NativeView native_window = frame->GetNativeView();
-#if defined(OS_LINUX)
-  border_widget_ = new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
-  static_cast<views::WidgetGtk*>(border_widget_)->MakeTransparent();
-  static_cast<views::WidgetGtk*>(border_widget_)->make_transient_to_parent();
-#else
   Widget::CreateParams params(Widget::CreateParams::TYPE_POPUP);
   params.transparent = true;
   params.accept_events = false;
-  border_widget_ = Widget::CreatePopupWidget(params);
+  border_widget_ = Widget::CreateWidget(params);
+#if defined(OS_LINUX)
+  static_cast<views::WidgetGtk*>(border_widget_)->make_transient_to_parent();
 #endif
-  border_widget_->Init(native_window, bounds());
+  border_widget_->Init(frame->GetNativeView(), bounds());
 #if defined(OS_CHROMEOS)
   {
     vector<int> params;

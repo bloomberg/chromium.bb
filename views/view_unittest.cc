@@ -54,11 +54,8 @@ class ViewTest : public ViewsTestBase {
   }
 
   Widget* CreateWidget() {
-#if defined(OS_WIN)
-    return new WidgetWin();
-#elif defined(OS_LINUX)
-    return new WidgetGtk(WidgetGtk::TYPE_WINDOW);
-#endif
+    return Widget::CreateWidget(
+        Widget::CreateParams(Widget::CreateParams::TYPE_WINDOW));
   }
 };
 

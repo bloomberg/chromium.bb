@@ -804,8 +804,8 @@ void CandidateWindowView::HideLookupTable() {
   // First, in the following scenario, it seems that the Views popup window does
   // not release mouse/keyboard grab even after it gets hidden.
   //
-  // 1. create a popup window by views::Widget::CreatePopupWidget() with the
-  //    views::Widget::AcceptEvents flag.
+  // 1. create a popup window by views::Widget::CreateWidget() with the
+  //    accept_events flag set to true on the CreateParams.
   // 2. press a mouse button on the window.
   // 3. before releasing the mouse button, Hide() the window.
   // 4. release the button.
@@ -1285,7 +1285,7 @@ bool CandidateWindowController::Impl::Init() {
 
 void CandidateWindowController::Impl::CreateView() {
   // Create a non-decorated frame.
-  frame_.reset(views::Widget::CreatePopupWidget(
+  frame_.reset(views::Widget::CreateWidget(
       views::Widget::CreateParams(views::Widget::CreateParams::TYPE_POPUP)));
   // The size is initially zero.
   frame_->Init(NULL, gfx::Rect(0, 0));

@@ -1547,10 +1547,30 @@ void WidgetGtk::DrawTransparentBackground(GtkWidget* widget,
 // Widget, public:
 
 // static
-Widget* Widget::CreatePopupWidget(const CreateParams& params) {
-  WidgetGtk* popup = new WidgetGtk(WidgetGtk::TYPE_POPUP);
-  popup->SetCreateParams(params);
-  return popup;
+Widget* Widget::CreateWidget(const CreateParams& params) {
+  // TODO(beng): coalesce with CreateParams::Type.
+  WidgetGtk::Type widget_gtk_type;
+  switch (params.type) {
+    case CreateParams::TYPE_CONTROL:
+      widget_gtk_type = WidgetGtk::TYPE_CHILD;
+      break;
+    case CreateParams::TYPE_MENU:
+      widget_gtk_type = WidgetGtk::TYPE_POPUP;
+      break;
+    case CreateParams::TYPE_POPUP:
+      widget_gtk_type = WidgetGtk::TYPE_POPUP;
+      break;
+    case CreateParams::TYPE_WINDOW:
+      widget_gtk_type = WidgetGtk::TYPE_DECORATED_WINDOW;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  WidgetGtk* widget = new WidgetGtk(widget_gtk_type);
+  widget->SetCreateParams(params);
+  return widget;
 }
 
 // static

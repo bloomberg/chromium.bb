@@ -74,7 +74,7 @@ ThemeInstallBubbleView::ThemeInstallBubbleView(TabContents* tab_contents)
   views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
   params.transparent = true;
   params.accept_events = false;
-  popup_ = views::Widget::CreatePopupWidget(params);
+  popup_ = views::Widget::CreateWidget(params);
   popup_->SetOpacity(0xCC);
   popup_->Init(tab_contents->GetNativeView(), rc);
   popup_->SetContentsView(this);

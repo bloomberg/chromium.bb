@@ -25,7 +25,8 @@ using namespace views;
 class GenericInfoViewTest : public testing::Test {
  public:
   Widget* CreateWidget() {
-    return new WidgetWin();
+    return views::Widget::CreateWidget(
+        Widget::CreateParams(Widget::CreateParams::TYPE_POPUP));
   }
  private:
   MessageLoopForUI message_loop_;
@@ -35,9 +36,9 @@ TEST_F(GenericInfoViewTest, GenericInfoView) {
   const string16 kName = ASCIIToUTF16("Name");
   const string16 kValue = ASCIIToUTF16("Value");
 
-  Widget* window = CreateWidget();
-  static_cast<WidgetWin*>(window)->Init(NULL, gfx::Rect(0, 0, 100, 100));
-  RootView* root_view = window->GetRootView();
+  Widget* widget = CreateWidget();
+  widget->Init(NULL, gfx::Rect(0, 0, 100, 100));
+  RootView* root_view = widget->GetRootView();
 
   GenericInfoView* view1 = new GenericInfoView(1);
   root_view->AddChildView(view1);
@@ -60,6 +61,6 @@ TEST_F(GenericInfoViewTest, GenericInfoView) {
   string16 product_desc = l10n_util::GetStringUTF16(IDS_PRODUCT_DESCRIPTION);
   EXPECT_EQ(product_name, view2->name_views_[0]->GetText());
   EXPECT_EQ(product_desc, view2->name_views_[1]->GetText());
-  window->CloseNow();
+  widget->CloseNow();
 }
 #endif  // OS_WIN

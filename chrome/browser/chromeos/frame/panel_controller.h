@@ -21,7 +21,7 @@ class ImageButton;
 class ImageView;
 class Label;
 class MouseEvent;
-class WidgetGtk;
+class Widget;
 }
 
 namespace chromeos {
@@ -120,7 +120,7 @@ class PanelController {
   XID panel_xid_;
 
   // Views object representing title.
-  views::WidgetGtk* title_window_;
+  views::Widget* title_window_;
   // Gtk object representing title.
   GtkWidget* title_;
   // X id representing title.

@@ -38,28 +38,23 @@ DraggedTabView::DraggedTabView(const std::vector<views::View*>& renderers,
       contents_size_(contents_size) {
   set_parent_owned(false);
 
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  params.transparent = true;
+  params.keep_on_top = true;
+  params.delete_on_destroy = false;
+  container_.reset(views::Widget::CreateWidget(params));
 #if defined(OS_WIN)
-  container_.reset(new views::WidgetWin);
-  container_->set_delete_on_destroy(false);
-  container_->set_window_style(WS_POPUP);
-  container_->set_window_ex_style(
-    WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW);
-  container_->set_can_update_layered_window(false);
-  container_->Init(NULL, gfx::Rect(0, 0, 0, 0));
-  container_->SetContentsView(this);
+  static_cast<views::WidgetWin*>(container_.get())->
+      set_can_update_layered_window(false);
 
   BOOL drag;
   if ((::SystemParametersInfo(SPI_GETDRAGFULLWINDOWS, 0, &drag, 0) != 0) &&
       (drag == FALSE)) {
     show_contents_on_drag_ = false;
   }
-#else
-  container_.reset(new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP));
-  container_->MakeTransparent();
-  container_->set_delete_on_destroy(false);
+#endif
   container_->Init(NULL, gfx::Rect(0, 0, 0, 0));
   container_->SetContentsView(this);
-#endif
 }
 
 DraggedTabView::~DraggedTabView() {
@@ -85,9 +80,10 @@ void DraggedTabView::MoveTo(const gfx::Point& screen_point) {
       ScaleValue(mouse_tab_offset_.y());
 
 #if defined(OS_WIN)
+  // TODO(beng): make this cross-platform
   int show_flags = container_->IsVisible() ? SWP_NOZORDER : SWP_SHOWWINDOW;
-  container_->SetWindowPos(HWND_TOP, x, y, 0, 0,
-                           SWP_NOSIZE | SWP_NOACTIVATE | show_flags);
+  SetWindowPos(container_->GetNativeView(), HWND_TOP, x, y, 0, 0,
+               SWP_NOSIZE | SWP_NOACTIVATE | show_flags);
 #else
   gfx::Rect bounds = container_->GetWindowScreenBounds();
   container_->SetBounds(gfx::Rect(x, y, bounds.width(), bounds.height()));

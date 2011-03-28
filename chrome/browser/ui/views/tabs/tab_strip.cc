@@ -807,15 +807,8 @@ void TabStrip::SetDropIndex(int tab_data_index, bool drop_before) {
 
   // Reposition the window. Need to show it too as the window is initially
   // hidden.
-
-#if defined(OS_WIN)
-  drop_info_->arrow_window->SetWindowPos(
-      HWND_TOPMOST, drop_bounds.x(), drop_bounds.y(), drop_bounds.width(),
-      drop_bounds.height(), SWP_NOACTIVATE | SWP_SHOWWINDOW);
-#else
   drop_info_->arrow_window->SetBounds(drop_bounds);
   drop_info_->arrow_window->Show();
-#endif
 }
 
 int TabStrip::GetDropEffect(const views::DropTargetEvent& event) {
@@ -842,15 +835,12 @@ TabStrip::DropInfo::DropInfo(int drop_index, bool drop_before, bool point_down)
   arrow_view = new views::ImageView;
   arrow_view->SetImage(GetDropArrowImage(point_down));
 
-#if defined(OS_WIN)
-  arrow_window = new views::WidgetWin;
-  arrow_window->set_window_style(WS_POPUP);
-  arrow_window->set_window_ex_style(WS_EX_TOPMOST | WS_EX_NOACTIVATE |
-                                    WS_EX_LAYERED | WS_EX_TRANSPARENT);
-#else
-  arrow_window = new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP);
-  arrow_window->MakeTransparent();
-#endif
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  params.keep_on_top = true;
+  params.transparent = true;
+  params.accept_events = false;
+  params.can_activate = false;
+  arrow_window = views::Widget::CreateWidget(params);
   arrow_window->Init(
       NULL,
       gfx::Rect(0, 0, drop_indicator_width, drop_indicator_height));

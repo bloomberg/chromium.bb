@@ -17,7 +17,7 @@
 #include "views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "views/layout/fill_layout.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/widget.h"
 
 namespace views {
 
@@ -289,7 +289,8 @@ void NativeTabbedPaneWin::CreateNativeControl() {
   SendMessage(tab_control, WM_SETFONT, reinterpret_cast<WPARAM>(font), FALSE);
 
   // Create the view container which is a child of the TabControl.
-  content_window_ = new WidgetWin();
+  content_window_ = Widget::CreateWidget(
+      Widget::CreateParams(Widget::CreateParams::TYPE_CONTROL));
   content_window_->Init(tab_control, gfx::Rect());
 
   // Explicitly setting the WS_EX_LAYOUTRTL property for the HWND (see above
@@ -383,13 +384,11 @@ void NativeTabbedPaneWin::DoSelectTabAt(int index, boolean invoke_listener) {
 }
 
 void NativeTabbedPaneWin::ResizeContents() {
-  CRect content_bounds;
+  RECT content_bounds;
   if (!GetClientRect(native_view(), &content_bounds))
     return;
   TabCtrl_AdjustRect(native_view(), FALSE, &content_bounds);
-  content_window_->MoveWindow(content_bounds.left, content_bounds.top,
-                              content_bounds.Width(), content_bounds.Height(),
-                              TRUE);
+  content_window_->SetBounds(gfx::Rect(content_bounds));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

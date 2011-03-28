@@ -154,7 +154,7 @@ void ContentsContainer::CreateOverlay(int initial_opacity) {
   views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
   params.transparent = true;
   params.accept_events = false;
-  active_overlay_ = views::Widget::CreatePopupWidget(params);
+  active_overlay_ = views::Widget::CreateWidget(params);
   active_overlay_->SetOpacity(initial_opacity);
   gfx::Point screen_origin;
   views::View::ConvertPointToScreen(active_, &screen_origin);

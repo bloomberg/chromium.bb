@@ -54,14 +54,14 @@ Rect::Rect(const gfx::Point& origin, const gfx::Size& size)
 #if defined(OS_WIN)
 Rect::Rect(const RECT& r)
     : origin_(r.left, r.top) {
-  set_width(r.right - r.left);
-  set_height(r.bottom - r.top);
+  set_width(std::abs(r.right - r.left));
+  set_height(std::abs(r.bottom - r.top));
 }
 
 Rect& Rect::operator=(const RECT& r) {
   origin_.SetPoint(r.left, r.top);
-  set_width(r.right - r.left);
-  set_height(r.bottom - r.top);
+  set_width(std::abs(r.right - r.left));
+  set_height(std::abs(r.bottom - r.top));
   return *this;
 }
 #elif defined(OS_MACOSX)

@@ -78,7 +78,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     textfield_->SetController(this);
     Widget::CreateParams params(Widget::CreateParams::TYPE_POPUP);
     params.mirror_origin_in_rtl = false;
-    widget_ = Widget::CreatePopupWidget(params);
+    widget_ = Widget::CreateWidget(params);
     widget_->Init(NULL, gfx::Rect(100, 100, 100, 100));
     View* container = new View();
     widget_->SetContentsView(container);

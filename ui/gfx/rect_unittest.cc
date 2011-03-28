@@ -319,3 +319,12 @@ TEST(RectTest, SkRectToRect) {
   SkRect skrect = gfx::RectToSkRect(src);
   EXPECT_EQ(src, gfx::SkRectToRect(skrect));
 }
+
+#if defined(OS_WIN)
+TEST(RectTest, ConstructAndAssign) {
+  const RECT rect_1 = { 0, 0, 10, 10 };
+  const RECT rect_2 = { 0, 0, -10, -10 };
+  gfx::Rect test1(rect_1);
+  gfx::Rect test2(rect_2);
+}
+#endif

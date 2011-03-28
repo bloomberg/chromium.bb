@@ -18,10 +18,12 @@ namespace views {
 // Widget, CreateParams:
 
 Widget::CreateParams::CreateParams()
-    : type(TYPE_TOPLEVEL),
+    : type(TYPE_WINDOW),
+      child(false),
       transparent(false),
       accept_events(true),
       can_activate(true),
+      keep_on_top(false),
       delete_on_destroy(true),
       mirror_origin_in_rtl(true),
       has_dropshadow(false),
@@ -30,9 +32,11 @@ Widget::CreateParams::CreateParams()
 
 Widget::CreateParams::CreateParams(Type type)
     : type(type),
+      child(type == TYPE_CONTROL),
       transparent(false),
       accept_events(true),
       can_activate(type != TYPE_POPUP && type != TYPE_MENU),
+      keep_on_top(type == TYPE_MENU),
       delete_on_destroy(true),
       mirror_origin_in_rtl(true),
       has_dropshadow(false),

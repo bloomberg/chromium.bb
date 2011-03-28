@@ -45,18 +45,19 @@ using WebKit::WebInputEvent;
 //
 // See: http://crbug.com/16476
 static HWND GetHiddenTabHostWindow() {
-  static views::WidgetWin* window = NULL;
+  static views::Widget* widget = NULL;
 
-  if (!window) {
-    window = new views::WidgetWin();
+  if (!widget) {
+    views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+    widget = views::Widget::CreateWidget(params);
+    widget->Init(NULL, gfx::Rect());
     // If a background window requests focus, the hidden tab host will
     // be activated to focus the tab.  Use WS_DISABLED to prevent
     // this.
-    window->set_window_style(WS_POPUP | WS_DISABLED);
-    window->Init(NULL, gfx::Rect());
+    EnableWindow(widget->GetNativeView(), FALSE);
   }
 
-  return window->hwnd();
+  return widget->GetNativeView();
 }
 
 // static

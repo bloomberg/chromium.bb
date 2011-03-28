@@ -290,18 +290,16 @@ class BorderView : public NativeViewHost {
 
     if (child == this && is_add) {
       if (!widget_) {
+        widget_ = Widget::CreateWidget(
+            Widget::CreateParams(Widget::CreateParams::TYPE_CONTROL));
 #if defined(OS_WIN)
-        WidgetWin* widget_win = new WidgetWin();
-        widget_win->Init(parent->GetRootView()->GetWidget()->GetNativeView(),
-                         gfx::Rect(0, 0, 0, 0));
-        widget_win->SetFocusTraversableParentView(this);
-        widget_ = widget_win;
-#else
-        WidgetGtk* widget_gtk = new WidgetGtk(WidgetGtk::TYPE_CHILD);
-        widget_gtk->Init(native_view(), gfx::Rect(0, 0, 0, 0));
-        widget_gtk->SetFocusTraversableParentView(this);
-        widget_ = widget_gtk;
+        gfx::NativeView parent_native_view =
+            parent->GetRootView()->GetWidget()->GetNativeView();
+#elif defined(TOOLKIT_USES_GTK)
+        gfx::NativeView parent_native_view = native_view();
 #endif
+        widget_->Init(parent_native_view, gfx::Rect(0, 0, 0, 0));
+        widget_->SetFocusTraversableParentView(this);
         widget_->SetContentsView(child_);
       }
 

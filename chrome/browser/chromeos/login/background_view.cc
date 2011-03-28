@@ -46,6 +46,7 @@
 #include <X11/cursorfont.h>  // NOLINT
 #include <X11/Xcursor/Xcursor.h>  // NOLINT
 
+using views::Widget;
 using views::WidgetGtk;
 
 namespace {
@@ -166,7 +167,8 @@ views::Widget* BackgroundView::CreateWindowContainingView(
     BackgroundView** view) {
   ResetXCursor();
 
-  WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
+  Widget* window = Widget::CreateWidget(
+      Widget::CreateParams(Widget::CreateParams::TYPE_WINDOW));
   window->Init(NULL, bounds);
   *view = new BackgroundView();
   (*view)->Init(background_url);

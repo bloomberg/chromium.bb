@@ -58,7 +58,7 @@
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/widget.h"
 #include "views/window/window.h"
 
 namespace {
@@ -594,19 +594,18 @@ class TryChromeDialog : public views::ButtonListener,
     gfx::Size icon_size = icon->GetPreferredSize();
 
     // An approximate window size. After Layout() we'll get better bounds.
-    gfx::Rect pos(310, 160);
-    views::WidgetWin* popup = new views::WidgetWin();
-    if (!popup) {
+    views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+    params.can_activate = true;
+    popup_ = views::Widget::CreateWidget(params);
+    if (!popup_) {
       NOTREACHED();
       return Upgrade::TD_DIALOG_ERROR;
     }
 
-    views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
-    params.can_activate = true;
-    popup->SetCreateParams(params);
-    popup->Init(NULL, pos);
+    gfx::Rect pos(310, 160);
+    popup_->Init(NULL, pos);
 
-    views::RootView* root_view = popup->GetRootView();
+    views::RootView* root_view = popup_->GetRootView();
     // The window color is a tiny bit off-white.
     root_view->set_background(
         views::Background::CreateSolidBackground(0xfc, 0xfc, 0xfc));
@@ -726,16 +725,15 @@ class TryChromeDialog : public views::ButtonListener,
     gfx::Size preferred = layout->GetPreferredSize(root_view);
     pos = ComputeWindowPosition(preferred.width(), preferred.height(),
                                 base::i18n::IsRTL());
-    popup->SetBounds(pos);
+    popup_->SetBounds(pos);
 
     // Carve the toast shape into the window.
-    SetToastRegion(popup->GetNativeView(),
+    SetToastRegion(popup_->GetNativeView(),
                    preferred.width(), preferred.height());
-    popup_ = popup;
 
     // Time to show the window in a modal loop. We don't want this chrome
     // instance trying to serve WM_COPYDATA requests, as we'll surely crash.
-    process_singleton->Lock(popup->GetNativeView());
+    process_singleton->Lock(popup_->GetNativeView());
     popup_->Show();
     MessageLoop::current()->Run();
     process_singleton->Unlock();
@@ -817,7 +815,7 @@ class TryChromeDialog : public views::ButtonListener,
 
   // We don't own any of this pointers. The |popup_| owns itself and owns
   // the other views.
-  views::WidgetWin* popup_;
+  views::Widget* popup_;
   views::RadioButton* try_chrome_;
   views::RadioButton* kill_chrome_;
   Upgrade::TryResult result_;

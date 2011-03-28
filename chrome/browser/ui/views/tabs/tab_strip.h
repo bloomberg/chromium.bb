@@ -130,12 +130,7 @@ class TabStrip : public BaseTabStrip,
     bool point_down;
 
     // Renders the drop indicator.
-    // TODO(beng): should be views::Widget.
-#if defined(OS_WIN)
-    views::WidgetWin* arrow_window;
-#else
-    views::WidgetGtk* arrow_window;
-#endif
+    views::Widget* arrow_window;
     views::ImageView* arrow_view;
 
    private:
