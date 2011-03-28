@@ -5,7 +5,7 @@
 
 REVISION=0
 cd "$(dirname "$0")"
-if [[ "$(uname -s)" = Darwin ]] || [[ "$(uname -o)" != "CygWin" ]] ; then
+if [[ "$(uname -s)" = Darwin ]] || [[ "$(uname -o)" != "Cygwin" ]] ; then
   SVN="svn"
 else
   SVN="svn.bat"
