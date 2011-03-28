@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,8 +92,9 @@ IN_PROC_BROWSER_TEST_F(LoginProfileTest, UserNotPassed) {
   Profile* profile = browser()->profile();
   EXPECT_EQ("Default", profile->GetPath().BaseName().value());
   EXPECT_TRUE(profile->IsOffTheRecord());
-  // Ensure there's no extension service for this profile.
-  EXPECT_EQ(NULL, profile->GetExtensionService());
+  // Ensure there's extension service for this profile.
+  EXPECT_NE(static_cast<ExtensionService*>(NULL),
+            profile->GetExtensionService());
 }
 
 } // namespace chromeos
