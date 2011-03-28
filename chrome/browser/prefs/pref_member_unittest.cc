@@ -234,16 +234,15 @@ TEST(PrefMemberTest, NoInit) {
   IntegerPrefMember pref;
 }
 
-// Flakily triggers an assertion, http://crbug.com/74386.
-TEST(PrefMemberTest, DISABLED_MoveToThread) {
+TEST(PrefMemberTest, MoveToThread) {
+  TestingPrefService prefs;
+  scoped_refptr<GetPrefValueCallback> callback =
+      make_scoped_refptr(new GetPrefValueCallback());
   MessageLoop message_loop;
   BrowserThread ui_thread(BrowserThread::UI, &message_loop);
   BrowserThread io_thread(BrowserThread::IO);
   ASSERT_TRUE(io_thread.Start());
-  TestingPrefService prefs;
   RegisterTestPrefs(&prefs);
-  scoped_refptr<GetPrefValueCallback> callback =
-      make_scoped_refptr(new GetPrefValueCallback());
   callback->Init(kBoolPref, &prefs);
 
   ASSERT_TRUE(callback->FetchValue());
