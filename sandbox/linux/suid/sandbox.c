@@ -37,29 +37,8 @@
 #define CLONE_NEWNET 0x40000000
 #endif
 
-#if !defined(BTRFS_SUPER_MAGIC)
-#define BTRFS_SUPER_MAGIC 0x9123683E
-#endif
-#if !defined(EXT2_SUPER_MAGIC)
-#define EXT2_SUPER_MAGIC 0xEF53
-#endif
-#if !defined(EXT3_SUPER_MAGIC)
-#define EXT3_SUPER_MAGIC 0xEF53
-#endif
-#if !defined(EXT4_SUPER_MAGIC)
-#define EXT4_SUPER_MAGIC 0xEF53
-#endif
-#if !defined(REISERFS_SUPER_MAGIC)
-#define REISERFS_SUPER_MAGIC 0x52654973
-#endif
-#if !defined(TMPFS_MAGIC)
-#define TMPFS_MAGIC 0x01021994
-#endif
-#if !defined(XFS_SUPER_MAGIC)
-#define XFS_SUPER_MAGIC 0x58465342
-#endif
-
 static const char kSandboxDescriptorEnvironmentVarName[] = "SBX_D";
+static const char kSandboxHelperPidEnvironmentVarName[] = "SBX_HELPER_PID";
 
 // These are the magic byte values which the sandboxed process uses to request
 // that it be chrooted.
@@ -79,84 +58,35 @@ static void FatalError(const char *msg, ...) {
   exit(1);
 }
 
-static int CloneChrootHelperProcess() {
+// We will chroot() to the helper's /proc/self directory. Anything there will
+// not exist anymore if we make sure to wait() for the helper.
+//
+// /proc/self/fdinfo or /proc/self/fd are especially safe and will be empty
+// even if the helper survives as a zombie.
+//
+// There is very little reason to use fdinfo/ instead of fd/ but we are
+// paranoid. fdinfo/ only exists since 2.6.22 so we allow fallback to fd/
+#define SAFE_DIR "/proc/self/fdinfo"
+#define SAFE_DIR2 "/proc/self/fd"
+
+static bool SpawnChrootHelper() {
   int sv[2];
   if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1) {
     perror("socketpair");
-    return -1;
+    return false;
   }
 
-  // Some people mount /tmp on a non-POSIX filesystem (e.g. NFS). This
-  // breaks all sorts of assumption in our code. So, if we don't recognize the
-  // filesystem, we will try to use an alternative location for our temp
-  // directory.
-  char tempDirectoryTemplate[80] = "/tmp/chrome-sandbox-chroot-XXXXXX";
-  struct statfs sfs;
-  if (!statfs("/tmp", &sfs) &&
-      (unsigned long)sfs.f_type != BTRFS_SUPER_MAGIC &&
-      (unsigned long)sfs.f_type != EXT2_SUPER_MAGIC &&
-      (unsigned long)sfs.f_type != EXT3_SUPER_MAGIC &&
-      (unsigned long)sfs.f_type != EXT4_SUPER_MAGIC &&
-      (unsigned long)sfs.f_type != REISERFS_SUPER_MAGIC &&
-      (unsigned long)sfs.f_type != TMPFS_MAGIC &&
-      (unsigned long)sfs.f_type != XFS_SUPER_MAGIC) {
-    // If /dev/shm exists, it is supposed to be a tmpfs filesystem. While we
-    // are not actually using it for shared memory, moving our temp directory
-    // into a known tmpfs filesystem is preferable over using a potentially
-    // unreliable non-POSIX filesystem.
-    if (!statfs("/dev/shm", &sfs) && sfs.f_type == TMPFS_MAGIC) {
-      *tempDirectoryTemplate = '\000';
-      strncat(tempDirectoryTemplate, "/dev/shm/chrome-sandbox-chroot-XXXXXX",
-              sizeof(tempDirectoryTemplate) - 1);
-    } else {
-      // Neither /tmp is a well-known POSIX filesystem, nor /dev/shm is a
-      // tmpfs. After all, we now use /tmp as the location of our temp
-      // directory, but we quite likely fail the moment we try to access it
-      // through chroot_dir_fd. If so, we will print a verbose error message
-      // (see below)
+  char *safedir = NULL;
+  struct stat sdir_stat;
+  if (!stat(SAFE_DIR, &sdir_stat) && S_ISDIR(sdir_stat.st_mode))
+    safedir = SAFE_DIR;
+  else
+    if (!stat(SAFE_DIR2, &sdir_stat) && S_ISDIR(sdir_stat.st_mode))
+      safedir = SAFE_DIR2;
+    else {
+      fprintf(stderr, "Could not find %s\n", SAFE_DIR2);
+      return false;
     }
-  }
-
-  // We create a temp directory for our chroot. Nobody should ever write into
-  // it, so it's root:root mode 000.
-  const char* temp_dir = mkdtemp(tempDirectoryTemplate);
-  if (!temp_dir) {
-    perror("Failed to create temp directory for chroot");
-    return -1;
-  }
-
-  const int chroot_dir_fd = open(temp_dir, O_DIRECTORY | O_RDONLY);
-  if (chroot_dir_fd < 0) {
-    rmdir(temp_dir);
-    perror("Failed to open chroot temp directory");
-    return -1;
-  }
-
-  if (rmdir(temp_dir)) {
-    perror("rmdir");
-    return -1;
-  }
-
-  char proc_self_fd_str[128];
-  int printed = snprintf(proc_self_fd_str, sizeof(proc_self_fd_str),
-                         "/proc/self/fd/%d", chroot_dir_fd);
-  if (printed < 0 || printed >= (int)sizeof(proc_self_fd_str)) {
-    fprintf(stderr, "Error in snprintf");
-    return -1;
-  }
-
-  if (fchown(chroot_dir_fd, 0 /* root */, 0 /* root */)) {
-    fprintf(stderr, "Could not set up sandbox work directory. Maybe, /tmp is "
-                    "a non-POSIX filesystem and /dev/shm doesn't exist "
-                    "either. Consider mounting a \"tmpfs\" on /tmp.\n");
-    return -1;
-  }
-
-  if (fchmod(chroot_dir_fd, 0000 /* no-access */)) {
-    perror("fchmod");
-    return -1;
-  }
-
 
   const pid_t pid = syscall(
       __NR_clone, CLONE_FS | SIGCHLD, 0, 0, 0);
@@ -165,7 +95,7 @@ static int CloneChrootHelperProcess() {
     perror("clone");
     close(sv[0]);
     close(sv[1]);
-    return -1;
+    return false;
   }
 
   if (pid == 0) {
@@ -196,18 +126,12 @@ static int CloneChrootHelperProcess() {
     if (msg != kMsgChrootMe)
       FatalError("Unknown message from sandboxed process");
 
-    if (fchdir(chroot_dir_fd))
-      FatalError("Cannot chdir into chroot temp directory");
+    // sanity check
+    if (chdir(safedir))
+      FatalError("Cannot chdir into /proc/ directory");
 
-    struct stat st;
-    if (fstat(chroot_dir_fd, &st))
-      FatalError("stat");
-
-    if (st.st_uid || st.st_gid || st.st_mode & 0777)
-      FatalError("Bad permissions on chroot temp directory");
-
-    if (chroot(proc_self_fd_str))
-      FatalError("Cannot chroot into temp directory");
+    if (chroot(safedir))
+      FatalError("Cannot chroot into /proc/ directory");
 
     if (chdir("/"))
       FatalError("Cannot chdir to / after chroot");
@@ -221,13 +145,11 @@ static int CloneChrootHelperProcess() {
       FatalError("Writing reply");
 
     _exit(0);
-  }
-
-  if (close(chroot_dir_fd)) {
-    close(sv[0]);
-    close(sv[1]);
-    perror("close(chroot_dir_fd)");
-    return false;
+    // We now become a zombie. /proc/self/fd(info) is now an empty dir and we
+    // are chrooted there.
+    // Our (unprivileged) parent should not even be able to open "." or "/"
+    // since they would need to pass the ptrace() check. If our parent wait()
+    // for us, our root directory will completely disappear.
   }
 
   if (close(sv[0])) {
@@ -236,19 +158,10 @@ static int CloneChrootHelperProcess() {
     return false;
   }
 
-  return sv[1];
-}
-
-static bool SpawnChrootHelper() {
-  const int chroot_signal_fd = CloneChrootHelperProcess();
-
-  if (chroot_signal_fd == -1)
-    return false;
-
   // In the parent process, we install an environment variable containing the
   // number of the file descriptor.
   char desc_str[64];
-  int printed = snprintf(desc_str, sizeof(desc_str), "%d", chroot_signal_fd);
+  int printed = snprintf(desc_str, sizeof(desc_str), "%u", sv[1]);
   if (printed < 0 || printed >= (int)sizeof(desc_str)) {
     fprintf(stderr, "Failed to snprintf\n");
     return false;
@@ -256,7 +169,21 @@ static bool SpawnChrootHelper() {
 
   if (setenv(kSandboxDescriptorEnvironmentVarName, desc_str, 1)) {
     perror("setenv");
-    close(chroot_signal_fd);
+    close(sv[1]);
+    return false;
+  }
+
+  // We also install an environment variable containing the pid of the child
+  char helper_pid_str[64];
+  printed = snprintf(helper_pid_str, sizeof(helper_pid_str), "%u", pid);
+  if (printed < 0 || printed >= (int)sizeof(helper_pid_str)) {
+    fprintf(stderr, "Failed to snprintf\n");
+    return false;
+  }
+
+  if (setenv(kSandboxHelperPidEnvironmentVarName, helper_pid_str, 1)) {
+    perror("setenv");
+    close(sv[1]);
     return false;
   }
 
