@@ -76,7 +76,7 @@ class Transport : public ITransport {
     timeout.tv_usec= ms * 1000;
 
     // Check if this file handle can select on read
-    int cnt = select(0, &fds, 0, 0, &timeout);
+    int cnt = select(static_cast<int>(handle_) + 1, &fds, 0, 0, &timeout);
 
     // If we are ready, or if there is an error.  We return true
     // on error, to "timeout" and let the next IO request fail.

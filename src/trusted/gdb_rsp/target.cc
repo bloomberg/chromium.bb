@@ -127,7 +127,8 @@ bool Target::RemoveTemporaryBreakpoints() {
     breakMap_.erase(cur);
 
     // Copy back the old code, and free the data
-    IPlatform::SetMemory(addr, bp->size_, data);
+    if (!IPlatform::SetMemory(addr, bp->size_, data))
+      port::IPlatform::LogError("Failed to undo breakpoint.\n");
     delete[] data;
   }
 
@@ -566,7 +567,7 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
       // empty reply.
       string str;
       pktIn->GetString(&str);
-      port::IPlatform::LogError("Unknown command: %s", str.data());
+      port::IPlatform::LogError("Unknown command: %s\n", str.data());
       return false;
     }
   }

@@ -44,9 +44,9 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
   sigCtx->flags = mctx->gregs[REG_EFL];
 
   /* Linux stores CS, GS, FS, PAD into one 64b word. */
-  sigCtx->cs = (uint32_t) ((mctx->gregs[REG_CSGSFS] >> 48) & 0xFFFF);
-  sigCtx->gs = (uint32_t) ((mctx->gregs[REG_CSGSFS] >> 32) & 0xFFFF);
-  sigCtx->fs = (uint32_t) ((mctx->gregs[REG_CSGSFS] >> 16) & 0xFFFF);
+  sigCtx->cs = (uint32_t) (mctx->gregs[REG_CSGSFS] & 0xFFFF);
+  sigCtx->gs = (uint32_t) ((mctx->gregs[REG_CSGSFS] >> 16) & 0xFFFF);
+  sigCtx->fs = (uint32_t) ((mctx->gregs[REG_CSGSFS] >> 32) & 0xFFFF);
 
   /*
    * TODO(noelallen) Pull from current context, since they must be
@@ -87,9 +87,9 @@ void NaClSignalContextToHandler(void *rawCtx,
   mctx->gregs[REG_EFL] = sigCtx->flags;
 
   /* Linux stores CS, GS, FS, PAD into one 64b word. */
-  mctx->gregs[REG_CSGSFS] = (((uint64_t) (sigCtx->cs & 0xFFFF)) << 48)
-                          | (((uint64_t) (sigCtx->gs & 0xFFFF)) << 32)
-                          | (((uint64_t) (sigCtx->fs & 0xFFFF)) << 16);
+  mctx->gregs[REG_CSGSFS] = ((uint64_t) (sigCtx->cs & 0xFFFF))
+                          | (((uint64_t) (sigCtx->gs & 0xFFFF)) << 16)
+                          | (((uint64_t) (sigCtx->fs & 0xFFFF)) << 32);
 
   /*
    * We do not support modification of DS & SS in 64b, so
