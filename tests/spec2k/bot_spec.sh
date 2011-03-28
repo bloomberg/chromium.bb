@@ -104,6 +104,12 @@ test-spec-bot() {
     exit -1
   fi
 
+  # Delete "scons-out" to handle the small number of cases where
+  # incremental builds fail.  Ideally, though, there would be a build
+  # step that deletes all non-checked-in files, rather than having to
+  # list files/directories to delete explicitly.
+  AnnotatedRun "clean scons-out" rm -rf scons-out
+
   local bot_id=$1
   local spec_dir=$2
   case ${bot_id} in
