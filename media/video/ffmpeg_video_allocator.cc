@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,8 @@
 namespace media {
 
 FFmpegVideoAllocator::FFmpegVideoAllocator()
-    : get_buffer_(NULL),
+    : surface_format_(VideoFrame::INVALID),
+      get_buffer_(NULL),
       release_buffer_(NULL) {
 }
 
@@ -126,8 +127,7 @@ int FFmpegVideoAllocator::InternalAllocateBuffer(
   if (available_frames_[index].empty()) {
     int ret = get_buffer_(codec_context, av_frame);
     CHECK_EQ(ret, 0);
-    ffmpeg_video_frame = new RefCountedAVFrame();
-    ffmpeg_video_frame->av_frame_ = *av_frame;
+    ffmpeg_video_frame = new RefCountedAVFrame(av_frame);
     frame_pool_.push_back(ffmpeg_video_frame);
   } else {
     ffmpeg_video_frame = available_frames_[index].front();
@@ -173,9 +173,9 @@ void FFmpegVideoAllocator::InternalReleaseBuffer(
   if (ffmpeg_video_frame->Release() == 0)
     available_frames_[index].push_back(ffmpeg_video_frame);
 
-  for(int k = 0; k < 4; ++k)
+  for (int k = 0; k < 4; ++k)
     av_frame->data[k]=NULL;
 #endif
 }
 
-} // namespace media
+}  // namespace media

@@ -26,7 +26,9 @@ class FFmpegVideoAllocator {
   virtual ~FFmpegVideoAllocator();
 
   struct RefCountedAVFrame {
-    RefCountedAVFrame() : usage_count_(0) {}
+    explicit RefCountedAVFrame(AVFrame* av_frame)
+        : av_frame_(*av_frame),
+          usage_count_(0) {}
 
     // TODO(jiesun): we had commented out "DCHECK_EQ(usage_count_, 0);" here.
     // Because the way FFMPEG-MT handle release buffer in delayed fashion.
@@ -42,6 +44,10 @@ class FFmpegVideoAllocator {
       return base::AtomicRefCountDecN(&usage_count_, 1);
     }
 
+    // Technically AVFrame should *always* be heap-allocated via
+    // avcodec_alloc_frame() otherwise (while rare) we can run into nasty binary
+    // mismatch incompatibility stuff if people swap binaries (which might
+    // happen with some Linux distributions). See http://crbug.com/77629.
     AVFrame av_frame_;
     base::AtomicRefCount usage_count_;
   };
@@ -88,6 +94,6 @@ class FFmpegVideoAllocator {
   void (*release_buffer_)(struct AVCodecContext *c, AVFrame *pic);
 };
 
-} // namespace media
+}  // namespace media
 
 #endif  // MEDIA_VIDEO_FFMPEG_VIDEO_ALLOCATOR_H_
