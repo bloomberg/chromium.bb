@@ -20,7 +20,9 @@ class PrintPreviewUI : public WebUI {
 
   // Notify the Web UI renderer that preview data is available.
   // |expected_pages_count| specifies the total number of pages.
-  void PreviewDataIsAvailable(int expected_pages_count);
+  // |job_title| is the title of the page being previewed.
+  void PreviewDataIsAvailable(int expected_pages_count,
+                              const string16& job_title);
 
  private:
   scoped_refptr<PrintPreviewUIHTMLSource> html_source_;

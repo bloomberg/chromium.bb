@@ -5428,8 +5428,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Print Preview -->
-      <message name="IDS_PRINT_PREVIEW_TITLE" desc="Title for print preview page ">
+      <message name="IDS_PRINT_PREVIEW_TITLE" desc="Fallback title for print preview page ">
         Print Preview
+      </message>
+      <message name="IDS_PRINT_PREVIEW_TITLE_FORMAT" desc="The format for the print preview page title.">
+        Print Preview - <ph name="PREVIEW_TAB_TITLE">$1<ex>Google Search</ex></ph>
       </message>
       <message name="IDS_PRINT_PREVIEW_LOADING" desc="Message to display while the print preview renders.">
         Loading...

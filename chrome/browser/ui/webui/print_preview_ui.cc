@@ -29,7 +29,9 @@ PrintPreviewUIHTMLSource* PrintPreviewUI::html_source() {
   return html_source_.get();
 }
 
-void PrintPreviewUI::PreviewDataIsAvailable(int expected_pages_count) {
+void PrintPreviewUI::PreviewDataIsAvailable(int expected_pages_count,
+                                            const string16& job_title) {
   FundamentalValue pages_count(expected_pages_count);
-  CallJavascriptFunction("updatePrintPreview", pages_count);
+  StringValue title(job_title);
+  CallJavascriptFunction("updatePrintPreview", pages_count, title);
 }

@@ -6,6 +6,7 @@ var localStrings = new LocalStrings();
 var hasPDFPlugin = true;
 var expectedPageCount = 0;
 var pageRangesInfo = [];
+var printJobTitle = '';
 
 /**
  * Window onload handler, sets up the page.
@@ -209,14 +210,22 @@ function onPDFLoad() {
  * Update the print preview when new preview data is available.
  * Create the PDF plugin as needed.
  * @param {number} pageCount The expected total pages count.
+ * @param {string} jobTitle The print job title.
+ *
  */
-function updatePrintPreview(pageCount) {
+function updatePrintPreview(pageCount, jobTitle) {
   // Set the expected page count.
   if (expectedPageCount != pageCount) {
     expectedPageCount = pageCount;
     // Set the initial page range text.
     $('pages').value = '1-' + expectedPageCount;
   }
+
+  // Set the print job title.
+  printJobTitle = jobTitle;
+
+  // Update the current tab title.
+  document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
 
   createPDFPlugin();
 }
