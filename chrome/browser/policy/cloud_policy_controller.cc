@@ -90,40 +90,72 @@ void CloudPolicyController::SetRefreshRate(int64 refresh_rate_milliseconds) {
 
 void CloudPolicyController::HandlePolicyResponse(
     const em::DevicePolicyResponse& response) {
-  if (state_ == STATE_TOKEN_UNAVAILABLE)
+  // In case state has changed by the user while request was in progress ignore
+  // the answer.
+  if (state_ == STATE_TOKEN_UNAVAILABLE ||
+      state_ == STATE_TOKEN_UNMANAGED ||
+      state_ == STATE_TOKEN_ERROR) {
+    LOG(WARNING) << "Unexpected reply from policy server received. Ignoring.";
     return;
+  }
 
   if (response.response_size() > 0) {
     if (response.response_size() > 1) {
       LOG(WARNING) << "More than one policy in the response of the device "
                    << "management server, discarding.";
     }
-    // Use the new version of the protocol
-    cache_->SetPolicy(response.response(0));
-    SetState(STATE_POLICY_VALID);
-  } else {
-    cache_->SetDevicePolicy(response);
-    SetState(STATE_POLICY_VALID);
+    if (response.response(0).error_code() !=
+        DeviceManagementBackend::kErrorServicePolicyNotFound) {
+      cache_->SetPolicy(response.response(0));
+      SetState(STATE_POLICY_VALID);
+    } else {
+      SetState(STATE_POLICY_UNAVAILABLE);
+    }
   }
 }
 
 void CloudPolicyController::OnError(DeviceManagementBackend::ErrorCode code) {
-  if (state_ == STATE_TOKEN_UNAVAILABLE)
+  // In case state has changed by the user while request was in progress ignore
+  // the answer.
+  if (state_ == STATE_TOKEN_UNAVAILABLE ||
+      state_ == STATE_TOKEN_UNMANAGED ||
+      state_ == STATE_TOKEN_ERROR) {
+    LOG(WARNING) << "Unexpected reply from policy server received. Ignoring.";
     return;
+  }
 
-  if (code == DeviceManagementBackend::kErrorServiceDeviceNotFound ||
-      code == DeviceManagementBackend::kErrorServiceManagementTokenInvalid) {
-    LOG(WARNING) << "The device token was either invalid or unknown to the "
-                 << "device manager, re-registering device.";
-    // Will retry fetching a token but gracefully backing off.
-    SetState(STATE_TOKEN_ERROR);
-  } else if (code ==
-             DeviceManagementBackend::kErrorServiceManagementNotSupported) {
-    VLOG(1) << "The device is no longer managed.";
-    token_fetcher_->SetUnmanagedState();
-    SetState(STATE_TOKEN_UNMANAGED);
-  } else {
-    SetState(STATE_POLICY_ERROR);
+  switch (code) {
+    case DeviceManagementBackend::kErrorServiceDeviceNotFound:
+    case DeviceManagementBackend::kErrorServiceManagementTokenInvalid: {
+      LOG(WARNING) << "The device token was either invalid or unknown to the "
+                   << "device manager, re-registering device.";
+      // Will retry fetching a token but gracefully backing off.
+      SetState(STATE_TOKEN_ERROR);
+      break;
+    }
+    case DeviceManagementBackend::kErrorServiceManagementNotSupported: {
+      VLOG(1) << "The device is no longer managed.";
+      token_fetcher_->SetUnmanagedState();
+      SetState(STATE_TOKEN_UNMANAGED);
+      break;
+    }
+    case DeviceManagementBackend::kErrorServicePolicyNotFound:
+    case DeviceManagementBackend::kErrorRequestInvalid:
+    case DeviceManagementBackend::kErrorServiceActivationPending:
+    case DeviceManagementBackend::kErrorResponseDecoding:
+    case DeviceManagementBackend::kErrorHttpStatus: {
+      VLOG(1) << "An error in the communication with the policy server occurred"
+              << ", will retry in a few hours.";
+      SetState(STATE_POLICY_UNAVAILABLE);
+      break;
+    }
+    case DeviceManagementBackend::kErrorRequestFailed:
+    case DeviceManagementBackend::kErrorTemporaryUnavailable: {
+      VLOG(1) << "A temporary error in the communication with the policy server"
+              << " occurred.";
+      // Will retry last operation but gracefully backing off.
+      SetState(STATE_POLICY_ERROR);
+    }
   }
 }
 
@@ -221,14 +253,6 @@ void CloudPolicyController::SendPolicyRequest() {
     fetch_request->set_timestamp(timestamp.InMilliseconds());
   }
 
-  // TODO(gfeher): Remove the following block when the server is migrated.
-  // Set fields for the old protocol.
-  policy_request.set_policy_scope(kChromePolicyScope);
-  em::DevicePolicySettingRequest* setting =
-      policy_request.add_setting_request();
-  setting->set_key(kChromeDevicePolicySettingKey);
-  setting->set_watermark("");
-
   backend_->ProcessPolicyRequest(identity_strategy_->GetDeviceToken(),
                                  identity_strategy_->GetDeviceID(),
                                  policy_request, this);
@@ -246,6 +270,7 @@ void CloudPolicyController::DoDelayedWork() {
     case STATE_TOKEN_VALID:
     case STATE_POLICY_VALID:
     case STATE_POLICY_ERROR:
+    case STATE_POLICY_UNAVAILABLE:
       SendPolicyRequest();
       return;
     case STATE_TOKEN_UNMANAGED:
@@ -296,9 +321,14 @@ void CloudPolicyController::SetState(
     case STATE_POLICY_ERROR:
       refresh_at = now + base::TimeDelta::FromMilliseconds(
                              effective_policy_refresh_error_delay_ms_);
-      effective_policy_refresh_error_delay_ms_ *= 2;
-      if (effective_policy_refresh_error_delay_ms_ > policy_refresh_rate_ms_)
-        effective_policy_refresh_error_delay_ms_ = policy_refresh_rate_ms_;
+      effective_policy_refresh_error_delay_ms_ =
+          std::min(effective_policy_refresh_error_delay_ms_ * 2,
+                   policy_refresh_rate_ms_);
+      break;
+    case STATE_POLICY_UNAVAILABLE:
+      effective_policy_refresh_error_delay_ms_ = policy_refresh_rate_ms_;
+      refresh_at = now + base::TimeDelta::FromMilliseconds(
+                             effective_policy_refresh_error_delay_ms_);
       break;
   }
 

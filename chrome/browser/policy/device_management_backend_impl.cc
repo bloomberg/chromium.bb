@@ -39,6 +39,19 @@ const char kPostContentType[] = "application/protobuf";
 const char kServiceTokenAuthHeader[] = "Authorization: GoogleLogin auth=";
 const char kDMTokenAuthHeader[] = "Authorization: GoogleDMToken token=";
 
+// HTTP Error Codes of the DM Server with their concrete meinings in the context
+// of the DM Server communication.
+const int kSuccess = 200;
+const int kInvalidArgument = 400;
+const int kInvalidAuthCookieOrDMToken = 401;
+const int kDeviceManagementNotAllowed = 403;
+const int kInvalidURL = 404; // This error is not coming from the GFE.
+const int kPendingApproval = 491;
+const int kInternalServerError = 500;
+const int kServiceUnavaiable = 503;
+const int kDeviceNotFound = 901;
+const int kPolicyNotFound = 902; // This error is not sent as HTTP status code.
+
 }  // namespace
 
 // Helper class for URL query parameter encoding/decoding.
@@ -169,45 +182,63 @@ void DeviceManagementJobBase::HandleResponse(
     return;
   }
 
-  if (response_code != 200) {
-    if (response_code == 400)
-      OnError(DeviceManagementBackend::kErrorRequestInvalid);
-    else
-      OnError(DeviceManagementBackend::kErrorHttpStatus);
-    return;
-  }
-
-  em::DeviceManagementResponse response;
-  if (!response.ParseFromString(data)) {
-    OnError(DeviceManagementBackend::kErrorResponseDecoding);
-    return;
-  }
-
-  // Check service error code.
-  switch (response.error()) {
-    case em::DeviceManagementResponse::SUCCESS:
+  switch (response_code) {
+    case kSuccess: {
+      em::DeviceManagementResponse response;
+      if (!response.ParseFromString(data)) {
+        OnError(DeviceManagementBackend::kErrorResponseDecoding);
+        return;
+      }
+      if (response.has_error() &&
+          response.error() != em::DeviceManagementResponse_ErrorCode_SUCCESS) {
+        // TODO(pastarmovj): If we want to support legacy error codes in the
+        // protobuf this is the place to do so.
+      }
       OnResponse(response);
       return;
-    case em::DeviceManagementResponse::DEVICE_MANAGEMENT_NOT_SUPPORTED:
-      OnError(DeviceManagementBackend::kErrorServiceManagementNotSupported);
+    }
+    case kInvalidArgument: {
+      OnError(DeviceManagementBackend::kErrorRequestInvalid);
       return;
-    case em::DeviceManagementResponse::DEVICE_NOT_FOUND:
-      OnError(DeviceManagementBackend::kErrorServiceDeviceNotFound);
-      return;
-    case em::DeviceManagementResponse::DEVICE_MANAGEMENT_TOKEN_INVALID:
+    }
+    case kInvalidAuthCookieOrDMToken: {
       OnError(DeviceManagementBackend::kErrorServiceManagementTokenInvalid);
       return;
-    case em::DeviceManagementResponse::ACTIVATION_PENDING:
+    }
+    case kDeviceManagementNotAllowed: {
+      OnError(DeviceManagementBackend::kErrorServiceManagementNotSupported);
+      return;
+    }
+    case kPendingApproval: {
       OnError(DeviceManagementBackend::kErrorServiceActivationPending);
       return;
-    case em::DeviceManagementResponse::POLICY_NOT_FOUND:
-      OnError(DeviceManagementBackend::kErrorServicePolicyNotFound);
+    }
+    case kInvalidURL:
+    case kInternalServerError:
+    case kServiceUnavaiable: {
+      OnError(DeviceManagementBackend::kErrorTemporaryUnavailable);
       return;
+    }
+    case kDeviceNotFound: {
+      OnError(DeviceManagementBackend::kErrorServiceDeviceNotFound);
+      return;
+    }
+    case kPolicyNotFound: {
+      OnError(DeviceManagementBackend::kErrorServicePolicyNotFound);
+      break;
+    }
+    default: {
+      VLOG(1) << "Unexpected HTTP status in response from DMServer : "
+              << response_code << ".";
+      // Handle all unknown 5xx HTTP error codes as temporary and any other
+      // unknown error as one that needs more time to recover.
+      if (response_code >= 500 && response_code <= 599)
+        OnError(DeviceManagementBackend::kErrorTemporaryUnavailable);
+      else
+        OnError(DeviceManagementBackend::kErrorHttpStatus);
+      return;
+    }
   }
-
-  // This should be caught by the protobuf decoder.
-  NOTREACHED();
-  OnError(DeviceManagementBackend::kErrorResponseDecoding);
 }
 
 GURL DeviceManagementJobBase::GetURL(

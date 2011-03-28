@@ -14,8 +14,10 @@
 
 namespace {
 
-// Retry after 3 seconds (with exponential backoff) after token fetch errors.
-const int64 kTokenFetchErrorDelayMilliseconds = 3 * 1000;
+// Retry after 5 minutes (with exponential backoff) after token fetch errors.
+const int64 kTokenFetchErrorDelayMilliseconds = 5 * 60 * 1000;
+// Retry after max 3 hours after token fetch errors.
+const int64 kTokenFetchErrorMaxDelayMilliseconds = 3 * 60 * 60 * 1000;
 // For unmanaged devices, check once per day whether they're still unmanaged.
 const int64 kUnmanagedDeviceRefreshRateMilliseconds = 24 * 60 * 60 * 1000;
 
@@ -32,6 +34,7 @@ DeviceTokenFetcher::DeviceTokenFetcher(
   Initialize(service,
              cache,
              kTokenFetchErrorDelayMilliseconds,
+             kTokenFetchErrorMaxDelayMilliseconds,
              kUnmanagedDeviceRefreshRateMilliseconds);
 }
 
@@ -39,11 +42,13 @@ DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementService* service,
     CloudPolicyCache* cache,
     int64 token_fetch_error_delay_ms,
+    int64 token_fetch_error_max_delay_ms,
     int64 unmanaged_device_refresh_rate_ms)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   Initialize(service,
              cache,
              token_fetch_error_delay_ms,
+             token_fetch_error_max_delay_ms,
              unmanaged_device_refresh_rate_ms);
 }
 
@@ -114,21 +119,31 @@ void DeviceTokenFetcher::HandleRegisterResponse(
 }
 
 void DeviceTokenFetcher::OnError(DeviceManagementBackend::ErrorCode code) {
-  if (code == DeviceManagementBackend::kErrorServiceManagementNotSupported) {
-    cache_->SetUnmanaged();
-    SetState(STATE_UNMANAGED);
-  } else {
-    SetState(STATE_ERROR);
+  switch (code) {
+    case DeviceManagementBackend::kErrorServiceManagementNotSupported:
+      cache_->SetUnmanaged();
+      SetState(STATE_UNMANAGED);
+      break;
+    case DeviceManagementBackend::kErrorRequestFailed:
+    case DeviceManagementBackend::kErrorTemporaryUnavailable:
+    case DeviceManagementBackend::kErrorServiceDeviceNotFound:
+    case DeviceManagementBackend::kErrorServiceManagementTokenInvalid:
+      SetState(STATE_TEMPORARY_ERROR);
+      break;
+    default:
+      SetState(STATE_ERROR);
   }
 }
 
 void DeviceTokenFetcher::Initialize(DeviceManagementService* service,
                                     CloudPolicyCache* cache,
                                     int64 token_fetch_error_delay_ms,
+                                    int64 token_fetch_error_max_delay_ms,
                                     int64 unmanaged_device_refresh_rate_ms) {
   service_ = service;
   cache_ = cache;
   token_fetch_error_delay_ms_ = token_fetch_error_delay_ms;
+  token_fetch_error_max_delay_ms_ = token_fetch_error_max_delay_ms;
   effective_token_fetch_error_delay_ms_ = token_fetch_error_delay_ms;
   unmanaged_device_refresh_rate_ms_ = unmanaged_device_refresh_rate_ms;
   state_ = STATE_INACTIVE;
@@ -157,11 +172,19 @@ void DeviceTokenFetcher::SetState(FetcherState state) {
       delayed_work_at = cache_->last_policy_refresh_time() +
           base::TimeDelta::FromMilliseconds(unmanaged_device_refresh_rate_ms_);
       break;
-    case STATE_ERROR:
+    case STATE_TEMPORARY_ERROR:
       delayed_work_at = base::Time::Now() +
           base::TimeDelta::FromMilliseconds(
               effective_token_fetch_error_delay_ms_);
-      effective_token_fetch_error_delay_ms_ *= 2;
+      effective_token_fetch_error_delay_ms_ =
+          std::min(effective_token_fetch_error_delay_ms_ * 2,
+                   token_fetch_error_max_delay_ms_);
+      break;
+    case STATE_ERROR:
+      effective_token_fetch_error_delay_ms_ = token_fetch_error_max_delay_ms_;
+      delayed_work_at = base::Time::Now() +
+          base::TimeDelta::FromMilliseconds(
+              effective_token_fetch_error_delay_ms_);
       break;
   }
 
@@ -186,6 +209,7 @@ void DeviceTokenFetcher::ExecuteRetryTask() {
       break;
     case STATE_UNMANAGED:
     case STATE_ERROR:
+    case STATE_TEMPORARY_ERROR:
       FetchTokenInternal();
       break;
   }

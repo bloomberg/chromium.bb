@@ -25,12 +25,8 @@ namespace policy {
 
 const char kServiceUrl[] = "https://example.com/management_service";
 
-// Encoded error response messages for testing the error code paths.
+// Encoded empty response messages for testing the error code paths.
 const char kResponseEmpty[] = "\x08\x00";
-const char kResponseErrorManagementNotSupported[] = "\x08\x01";
-const char kResponseErrorDeviceNotFound[] = "\x08\x02";
-const char kResponseErrorManagementTokenInvalid[] = "\x08\x03";
-const char kResponseErrorActivationPending[] = "\x08\x04";
 
 #define PROTO_STRING(name) (std::string(name, arraysize(name) - 1))
 
@@ -167,7 +163,7 @@ INSTANTIATE_TEST_CASE_P(
         FailedRequestParams(
             DeviceManagementBackend::kErrorHttpStatus,
             net::URLRequestStatus::SUCCESS,
-            500,
+            666,
             PROTO_STRING(kResponseEmpty)),
         FailedRequestParams(
             DeviceManagementBackend::kErrorResponseDecoding,
@@ -177,23 +173,33 @@ INSTANTIATE_TEST_CASE_P(
         FailedRequestParams(
             DeviceManagementBackend::kErrorServiceManagementNotSupported,
             net::URLRequestStatus::SUCCESS,
-            200,
-            PROTO_STRING(kResponseErrorManagementNotSupported)),
+            403,
+            PROTO_STRING(kResponseEmpty)),
         FailedRequestParams(
             DeviceManagementBackend::kErrorServiceDeviceNotFound,
             net::URLRequestStatus::SUCCESS,
-            200,
-            PROTO_STRING(kResponseErrorDeviceNotFound)),
+            901,
+            PROTO_STRING(kResponseEmpty)),
         FailedRequestParams(
             DeviceManagementBackend::kErrorServiceManagementTokenInvalid,
             net::URLRequestStatus::SUCCESS,
-            200,
-            PROTO_STRING(kResponseErrorManagementTokenInvalid)),
+            401,
+            PROTO_STRING(kResponseEmpty)),
+        FailedRequestParams(
+            DeviceManagementBackend::kErrorRequestInvalid,
+            net::URLRequestStatus::SUCCESS,
+            400,
+            PROTO_STRING(kResponseEmpty)),
+        FailedRequestParams(
+            DeviceManagementBackend::kErrorTemporaryUnavailable,
+            net::URLRequestStatus::SUCCESS,
+            404,
+            PROTO_STRING(kResponseEmpty)),
         FailedRequestParams(
             DeviceManagementBackend::kErrorServiceActivationPending,
             net::URLRequestStatus::SUCCESS,
-            200,
-            PROTO_STRING(kResponseErrorActivationPending))));
+            491,
+            PROTO_STRING(kResponseEmpty))));
 
 // Simple query parameter parser for testing.
 class QueryParams {

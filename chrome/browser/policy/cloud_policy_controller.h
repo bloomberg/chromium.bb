@@ -69,8 +69,10 @@ class CloudPolicyController
     STATE_TOKEN_VALID,
     // Policy information is available and valid.
     STATE_POLICY_VALID,
-    // The service returned an error when requesting policy, ask again later.
+    // The service returned an error when requesting policy, will retry.
     STATE_POLICY_ERROR,
+    // The service returned an error that is not going to go away soon.
+    STATE_POLICY_UNAVAILABLE
   };
 
   friend class CloudPolicyControllerTest;

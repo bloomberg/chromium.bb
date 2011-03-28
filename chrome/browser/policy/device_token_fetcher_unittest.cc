@@ -162,7 +162,7 @@ TEST_F(DeviceTokenFetcherTest, RetryOnError) {
       MockDeviceManagementBackendFailRegister(
           DeviceManagementBackend::kErrorRequestFailed)).WillOnce(
       MockDeviceManagementBackendSucceedRegister());
-  DeviceTokenFetcher fetcher(&service_, cache_.get(), 0, 0);
+  DeviceTokenFetcher fetcher(&service_, cache_.get(), 0, 0, 0);
   MockTokenAvailableObserver observer;
   EXPECT_CALL(observer, OnDeviceTokenAvailable());
   fetcher.AddObserver(&observer);

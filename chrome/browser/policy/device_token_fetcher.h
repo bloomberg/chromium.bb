@@ -43,6 +43,7 @@ class DeviceTokenFetcher
   DeviceTokenFetcher(DeviceManagementService* service,
                      CloudPolicyCache* cache,
                      int64 token_fetch_error_delay_ms,
+                     int64 token_fetch_error_max_delay_ms,
                      int64 unmanaged_device_refresh_rate_ms);
   virtual ~DeviceTokenFetcher();
 
@@ -86,12 +87,15 @@ class DeviceTokenFetcher
     STATE_UNMANAGED,
     // Error, retry later.
     STATE_ERROR,
+    // Temporary error. Retry sooner.
+    STATE_TEMPORARY_ERROR
   };
 
   // Common initialization helper.
   void Initialize(DeviceManagementService* service,
                   CloudPolicyCache* cache,
                   int64 token_fetch_error_delay_ms,
+                  int64 token_fetch_error_max_delay_ms,
                   int64 unmanaged_device_refresh_rate_ms);
 
   // Moves the fetcher into a new state.
@@ -117,6 +121,7 @@ class DeviceTokenFetcher
 
   // Refresh parameters.
   int64 token_fetch_error_delay_ms_;
+  int64 token_fetch_error_max_delay_ms_;
   int64 effective_token_fetch_error_delay_ms_;
   int64 unmanaged_device_refresh_rate_ms_;
 
