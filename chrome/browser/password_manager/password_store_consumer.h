@@ -19,6 +19,8 @@ struct PasswordForm;
 // destruction.
 class PasswordStoreConsumer {
  public:
+  PasswordStoreConsumer();
+
   // Call this when the request is finished. If there are no results, call it
   // anyway with an empty vector.
   virtual void OnPasswordStoreRequestDone(

@@ -4,5 +4,8 @@
 
 #include "chrome/browser/password_manager/password_store_consumer.h"
 
+PasswordStoreConsumer::PasswordStoreConsumer() {
+}
+
 PasswordStoreConsumer::~PasswordStoreConsumer() {
 }
