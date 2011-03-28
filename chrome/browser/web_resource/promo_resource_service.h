@@ -29,26 +29,6 @@ class PromoResourceService
  public:
   explicit PromoResourceService(Profile* profile);
 
-  // Unpack the web resource as a set of tips. Expects json in the form of:
-  // {
-  //   "lang": "en",
-  //   "topic": {
-  //     "topid_id": "24013",
-  //     "topics": [
-  //     ],
-  //     "answers": [
-  //       {
-  //         "answer_id": "18625",
-  //         "inproduct": "Text here will be shown as a tip",
-  //       },
-  //       ...
-  //     ]
-  //   }
-  // }
-  //
-  // Public for unit testing.
-  void UnpackTips(const DictionaryValue& parsed_json);
-
   // Unpack the web resource as a custom promo signal. Expects a start and end
   // signal, with the promo to be shown in the tooltip of the start signal
   // field. Delivery will be in json in the form of:
@@ -121,10 +101,7 @@ class PromoResourceService
   // Public for unit testing.
   void UnpackLogoSignal(const DictionaryValue& parsed_json);
 
-  static const char* kCurrentTipPrefName;
-  static const char* kTipCachePrefName;
-
-  // Default server of dynamically loaded NTP HTML elements (promotions, tips):
+  // Default server of dynamically loaded NTP HTML elements.
   static const char* kDefaultPromoResourceServer;
 
  private:

@@ -37,9 +37,6 @@ class NewTabUI : public WebUI,
   static void MigrateUserPrefs(PrefService* prefs, int old_pref_version,
                                int new_pref_version);
 
-  // Whether we should disable the web resources backend service
-  static bool WebResourcesEnabled();
-
   // Whether we should disable the first run notification based on the command
   // line switch.
   static bool FirstRunDisabled();

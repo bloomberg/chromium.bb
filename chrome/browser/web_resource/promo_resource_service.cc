@@ -44,9 +44,6 @@ enum BuildType {
 
 }  // namespace
 
-const char* PromoResourceService::kCurrentTipPrefName = "current_tip";
-const char* PromoResourceService::kTipCachePrefName = "tips";
-
 // Server for dynamically loaded NTP HTML elements. TODO(mirandac): append
 // locale for future usage, when we're serving localizable strings.
 const char* PromoResourceService::kDefaultPromoResourceServer =
@@ -107,46 +104,6 @@ void PromoResourceService::ScheduleNotification(double promo_start,
       if (ms_until_start <= 0) {
         // Notify immediately if time is between start and end.
         PostNotification(0);
-      }
-    }
-  }
-}
-
-void PromoResourceService::UnpackTips(const DictionaryValue& parsed_json) {
-  // Get dictionary of cached preferences.
-  web_resource_cache_ =
-      prefs_->GetMutableDictionary(prefs::kNTPPromoResourceCache);
-
-  // The list of individual tips.
-  ListValue* tip_holder = new ListValue();
-  web_resource_cache_->Set(PromoResourceService::kTipCachePrefName, tip_holder);
-
-  DictionaryValue* topic_dict;
-  ListValue* answer_list;
-  std::string topic_id;
-  std::string answer_id;
-  std::string inproduct;
-  int tip_counter = 0;
-
-  if (parsed_json.GetDictionary("topic", &topic_dict)) {
-    if (topic_dict->GetString("topic_id", &topic_id))
-      web_resource_cache_->SetString("topic_id", topic_id);
-    if (topic_dict->GetList("answers", &answer_list)) {
-      for (ListValue::const_iterator tip_iter = answer_list->begin();
-           tip_iter != answer_list->end(); ++tip_iter) {
-        if (!(*tip_iter)->IsType(Value::TYPE_DICTIONARY))
-          continue;
-        DictionaryValue* a_dic =
-            static_cast<DictionaryValue*>(*tip_iter);
-        if (a_dic->GetString("inproduct", &inproduct)) {
-          tip_holder->Append(Value::CreateStringValue(inproduct));
-        }
-        tip_counter++;
-      }
-      // If tips exist, set current index to 0.
-      if (!inproduct.empty()) {
-        web_resource_cache_->SetInteger(
-            PromoResourceService::kCurrentTipPrefName, 0);
       }
     }
   }

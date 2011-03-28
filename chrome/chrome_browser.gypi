@@ -3252,8 +3252,6 @@
         'browser/ui/webui/theme_source.h',
         'browser/ui/webui/thumbnail_source.cc',
         'browser/ui/webui/thumbnail_source.h',
-        'browser/ui/webui/tips_handler.cc',
-        'browser/ui/webui/tips_handler.h',
         'browser/ui/webui/value_helper.cc',
         'browser/ui/webui/value_helper.h',
         'browser/ui/window_sizer.cc',

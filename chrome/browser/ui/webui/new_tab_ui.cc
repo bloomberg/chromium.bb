@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/webui/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/shown_sections_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
-#include "chrome/browser/ui/webui/tips_handler.h"
 #include "chrome/browser/ui/webui/value_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -431,8 +430,6 @@ void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
 
   MostVisitedHandler::RegisterUserPrefs(prefs);
   ShownSectionsHandler::RegisterUserPrefs(prefs);
-  if (NewTabUI::WebResourcesEnabled())
-    TipsHandler::RegisterUserPrefs(prefs);
 
   UpdateUserPrefsVersion(prefs);
 }
@@ -453,12 +450,6 @@ void NewTabUI::MigrateUserPrefs(PrefService* prefs, int old_pref_version,
                                 int new_pref_version) {
   ShownSectionsHandler::MigrateUserPrefs(prefs, old_pref_version,
                                          current_pref_version());
-}
-
-// static
-bool NewTabUI::WebResourcesEnabled() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(switches::kDisableWebResources);
 }
 
 // static
