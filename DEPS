@@ -8,6 +8,7 @@ vars = {
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
   "nacl_revision": "4559",
+  "nacl_tools_revision": "4632",
   "libjingle_revision": "55",
   "libvpx_revision": "76510",
   "ffmpeg_revision": "78339",
@@ -214,9 +215,10 @@ deps = {
 
   # Needed to support nacl browser test jig.
   "src/third_party/pylib":
-    Var("nacl_trunk") + "/src/third_party/pylib@4214",
-  "src/third_party/scons":
-    Var("nacl_trunk") + "/src/third_party/scons@4214",
+    Var("nacl_trunk") + "/src/third_party/pylib@" + Var("nacl_tools_revision"),
+  "src/third_party/scons-2.0.1":
+    Var("nacl_trunk") + "/src/third_party/scons-2.0.1@" +
+        Var("nacl_tools_revision"),
 }
 
 
