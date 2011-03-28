@@ -992,6 +992,9 @@ TEST_F(ProfileSyncServiceTest,
               HandleJsEvent("onSyncServiceStateChanged",
                             HasArgs(JsArgList()))).Times(AtLeast(3));
   // For some reason, these events may or may not fire.
+  //
+  // TODO(akalin): Figure out exactly why there's non-determinism
+  // here, and if possible remove it.
   EXPECT_CALL(event_handler, HandleJsEvent("onChangesApplied", _))
       .Times(AtMost(1));
   EXPECT_CALL(event_handler, HandleJsEvent("onChangesComplete", _))
@@ -1021,12 +1024,18 @@ TEST_F(ProfileSyncServiceTest,
   EXPECT_EQ(NULL, test_backend->GetJsBackend()->GetParentJsEventRouter());
 }
 
-// http://crbug.com/77485
-TEST_F(ProfileSyncServiceTest, FLAKY_JsFrontendProcessMessageBasic) {
+TEST_F(ProfileSyncServiceTest, JsFrontendProcessMessageBasic) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSyncService();
 
   StrictMock<MockJsEventHandler> event_handler;
+  // For some reason, these events may or may not fire.
+  EXPECT_CALL(event_handler, HandleJsEvent("onChangesApplied", _))
+      .Times(AtMost(1));
+  EXPECT_CALL(event_handler, HandleJsEvent("onChangesComplete", _))
+      .Times(AtMost(1));
+  EXPECT_CALL(event_handler, HandleJsEvent("onSyncNotificationStateChange", _))
+      .Times(AtMost(1));
 
   ListValue arg_list1;
   arg_list1.Append(Value::CreateBooleanValue(true));
