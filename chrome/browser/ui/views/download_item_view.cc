@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/i18n/break_iterator.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
@@ -28,6 +29,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image.h"
+#include "unicode/uchar.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/widget/root_view.h"
@@ -1047,28 +1049,49 @@ void DownloadItemView::SizeLabelToMinWidth() {
 
   gfx::Size size;
   int min_width = -1;
-  size_t sp_index = text.find(L" ");
-  while (sp_index != std::wstring::npos) {
-    text.replace(sp_index, 1, L"\n");
-    dangerous_download_label_->SetText(text);
+  string16 text16 = WideToUTF16(text);
+  // Using BREAK_WORD can work in most cases, but it can also break
+  // lines where it should not. Using BREAK_LINE is safer although
+  // slower for Chinese/Japanese. This is not perf-critical at all, though.
+  base::BreakIterator iter(&text16, base::BreakIterator::BREAK_LINE);
+  bool status = iter.Init();
+  DCHECK(status);
+
+  string16 current_text = text16;
+  string16 prev_text = text16;
+  while (iter.Advance()) {
+    size_t pos = iter.pos();
+    if (pos >= text16.length())
+      break;
+    // This can be a low surrogate codepoint, but u_isUWhiteSpace will
+    // return false and inserting a new line after a surrogate pair
+    // is perfectly ok.
+    char16 line_end_char = text16[pos - 1];
+    if (u_isUWhiteSpace(line_end_char))
+      current_text.replace(pos - 1, 1, 1, char16('\n'));
+    else
+      current_text.insert(pos, 1, char16('\n'));
+    dangerous_download_label_->SetText(UTF16ToWide(current_text));
     size = dangerous_download_label_->GetPreferredSize();
 
     if (min_width == -1)
       min_width = size.width();
 
     // If the width is growing again, it means we passed the optimal width spot.
-    if (size.width() > min_width)
+    if (size.width() > min_width) {
+      dangerous_download_label_->SetText(UTF16ToWide(prev_text));
       break;
-    else
+    } else {
       min_width = size.width();
+    }
 
     // Restore the string.
-    text.replace(sp_index, 1, L" ");
-
-    sp_index = text.find(L" ", sp_index + 1);
+    prev_text = current_text;
+    current_text = text16;
   }
 
-  // If we have a line with no space, we won't cut it.
+  // If we have a line with no line breaking opportunity (which is very
+  // unlikely), we won't cut it.
   if (min_width == -1)
     size = dangerous_download_label_->GetPreferredSize();
 
