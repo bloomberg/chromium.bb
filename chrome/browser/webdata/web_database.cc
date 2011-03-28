@@ -330,38 +330,96 @@ AutofillProfile* AutofillProfileFromStatement(const sql::Statement& s) {
   return profile;
 }
 
-void AddAutofillProfileNameFromStatement(const sql::Statement& s,
+bool AddAutofillProfileNamesToProfile(sql::Connection* db,
                                       AutofillProfile* profile) {
-  DCHECK_EQ(profile->guid(), s.ColumnString(0));
-  DCHECK(guid::IsValidGUID(profile->guid()));
+  sql::Statement s(db->GetUniqueStatement(
+      "SELECT guid, first_name, middle_name, last_name "
+      "FROM autofill_profile_names "
+      "WHERE guid=?"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+  s.BindString(0, profile->guid());
 
-  profile->SetInfo(NAME_FIRST, s.ColumnString16(1));
-  profile->SetInfo(NAME_MIDDLE, s.ColumnString16(2));
-  profile->SetInfo(NAME_LAST, s.ColumnString16(3));
+  std::vector<string16> first_names;
+  std::vector<string16> middle_names;
+  std::vector<string16> last_names;
+  while (s.Step()) {
+    DCHECK_EQ(profile->guid(), s.ColumnString(0));
+    first_names.push_back(s.ColumnString16(1));
+    middle_names.push_back(s.ColumnString16(2));
+    last_names.push_back(s.ColumnString16(3));
+  }
+  profile->SetMultiInfo(NAME_FIRST, first_names);
+  profile->SetMultiInfo(NAME_MIDDLE, middle_names);
+  profile->SetMultiInfo(NAME_LAST, last_names);
+  return true;
 }
 
-void AddAutofillProfileEmailFromStatement(const sql::Statement& s,
+bool AddAutofillProfileEmailsToProfile(sql::Connection* db,
                                        AutofillProfile* profile) {
-  DCHECK_EQ(profile->guid(), s.ColumnString(0));
-  DCHECK(guid::IsValidGUID(profile->guid()));
+  sql::Statement s(db->GetUniqueStatement(
+      "SELECT guid, email "
+      "FROM autofill_profile_emails "
+      "WHERE guid=?"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+  s.BindString(0, profile->guid());
 
-  profile->SetInfo(EMAIL_ADDRESS, s.ColumnString16(1));
+  std::vector<string16> emails;
+  while (s.Step()) {
+    DCHECK_EQ(profile->guid(), s.ColumnString(0));
+    emails.push_back(s.ColumnString16(1));
+  }
+  profile->SetMultiInfo(EMAIL_ADDRESS, emails);
+  return true;
 }
 
-void AddAutofillProfilePhoneFromStatement(const sql::Statement& s,
+bool AddAutofillProfilePhonesToProfile(sql::Connection* db,
                                        AutofillProfile* profile) {
-  DCHECK_EQ(profile->guid(), s.ColumnString(0));
-  DCHECK(guid::IsValidGUID(profile->guid()));
-  DCHECK_EQ(kAutofillPhoneNumber, s.ColumnInt(1));
-  profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, s.ColumnString16(2));
+  sql::Statement s(db->GetUniqueStatement(
+      "SELECT guid, type, number "
+      "FROM autofill_profile_phones "
+      "WHERE guid=? AND type=?"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+  s.BindString(0, profile->guid());
+  s.BindInt(1, kAutofillPhoneNumber);
+
+  std::vector<string16> numbers;
+  while (s.Step()) {
+    DCHECK_EQ(profile->guid(), s.ColumnString(0));
+    numbers.push_back(s.ColumnString16(2));
+  }
+  profile->SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, numbers);
+  return true;
 }
 
-void AddAutofillProfileFaxFromStatement(const sql::Statement& s,
-                                     AutofillProfile* profile) {
-  DCHECK_EQ(profile->guid(), s.ColumnString(0));
-  DCHECK(guid::IsValidGUID(profile->guid()));
-  DCHECK_EQ(kAutofillFaxNumber, s.ColumnInt(1));
-  profile->SetInfo(PHONE_FAX_WHOLE_NUMBER, s.ColumnString16(2));
+bool AddAutofillProfileFaxesToProfile(sql::Connection* db,
+                                      AutofillProfile* profile) {
+  sql::Statement s(db->GetUniqueStatement(
+      "SELECT guid, type, number "
+      "FROM autofill_profile_phones "
+      "WHERE guid=? AND type=?"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+  s.BindString(0, profile->guid());
+  s.BindInt(1, kAutofillFaxNumber);
+
+  std::vector<string16> numbers;
+  while (s.Step()) {
+    DCHECK_EQ(profile->guid(), s.ColumnString(0));
+    numbers.push_back(s.ColumnString16(2));
+  }
+  profile->SetMultiInfo(PHONE_FAX_WHOLE_NUMBER, numbers);
+  return true;
 }
 
 void BindCreditCardToStatement(const CreditCard& credit_card,
@@ -408,33 +466,18 @@ CreditCard* CreditCardFromStatement(const sql::Statement& s) {
   return credit_card;
 }
 
-bool AutofillProfileHasName(const AutofillProfile& profile) {
-  return !profile.GetInfo(NAME_FIRST).empty() ||
-         !profile.GetInfo(NAME_MIDDLE).empty() ||
-         !profile.GetInfo(NAME_MIDDLE).empty();
-}
+bool AddAutofillProfileNames(const AutofillProfile& profile,
+                             sql::Connection* db) {
+  std::vector<string16> first_names;
+  profile.GetMultiInfo(NAME_FIRST, &first_names);
+  std::vector<string16> middle_names;
+  profile.GetMultiInfo(NAME_MIDDLE, &middle_names);
+  std::vector<string16> last_names;
+  profile.GetMultiInfo(NAME_LAST, &last_names);
+  DCHECK_EQ(first_names.size(), middle_names.size());
+  DCHECK_EQ(middle_names.size(), last_names.size());
 
-bool AddAutofillProfileName(const std::string& guid,
-                            const AutofillProfile& profile,
-                            sql::Connection* db) {
-  if (!AutofillProfileHasName(profile))
-    return true;
-
-  // Check for duplicate.
-  sql::Statement s_find(db->GetUniqueStatement(
-    "SELECT guid, first_name, middle_name, last_name "
-    "FROM autofill_profile_names "
-    "WHERE guid=? AND first_name=? AND middle_name=? AND last_name=?"));
-  if (!s_find) {
-    NOTREACHED();
-    return false;
-  }
-  s_find.BindString(0, guid);
-  s_find.BindString16(1, profile.GetInfo(NAME_FIRST));
-  s_find.BindString16(2, profile.GetInfo(NAME_MIDDLE));
-  s_find.BindString16(3, profile.GetInfo(NAME_LAST));
-
-  if (!s_find.Step()) {
+  for (size_t i = 0; i < first_names.size(); ++i) {
     // Add the new name.
     sql::Statement s(db->GetUniqueStatement(
       "INSERT INTO autofill_profile_names"
@@ -444,10 +487,10 @@ bool AddAutofillProfileName(const std::string& guid,
       NOTREACHED();
       return false;
     }
-    s.BindString(0, guid);
-    s.BindString16(1, profile.GetInfo(NAME_FIRST));
-    s.BindString16(2, profile.GetInfo(NAME_MIDDLE));
-    s.BindString16(3, profile.GetInfo(NAME_LAST));
+    s.BindString(0, profile.guid());
+    s.BindString16(1, first_names[i]);
+    s.BindString16(2, middle_names[i]);
+    s.BindString16(3, last_names[i]);
 
     if (!s.Run()) {
       NOTREACHED();
@@ -457,25 +500,13 @@ bool AddAutofillProfileName(const std::string& guid,
   return true;
 }
 
-bool AddAutofillProfileEmail(const std::string& guid,
-                             const AutofillProfile& profile,
-                             sql::Connection* db) {
-  if (profile.GetInfo(EMAIL_ADDRESS).empty())
-    return true;
+bool AddAutofillProfileEmails(const AutofillProfile& profile,
+                              sql::Connection* db) {
+  std::vector<string16> emails;
+  profile.GetMultiInfo(EMAIL_ADDRESS, &emails);
 
-  // Check for duplicate.
-  sql::Statement s_find(db->GetUniqueStatement(
-    "SELECT guid, email "
-    "FROM autofill_profile_emails "
-    "WHERE guid=? AND email=?"));
-  if (!s_find) {
-    NOTREACHED();
-    return false;
-  }
-  s_find.BindString(0, guid);
-  s_find.BindString16(1, profile.GetInfo(EMAIL_ADDRESS));
-
-  if (!s_find.Step()) {
+  for (size_t i = 0; i < emails.size(); ++i) {
+    // Add the new email.
     sql::Statement s(db->GetUniqueStatement(
       "INSERT INTO autofill_profile_emails"
       " (guid, email) "
@@ -484,8 +515,8 @@ bool AddAutofillProfileEmail(const std::string& guid,
       NOTREACHED();
       return false;
     }
-    s.BindString(0, guid);
-    s.BindString16(1, profile.GetInfo(EMAIL_ADDRESS));
+    s.BindString(0, profile.guid());
+    s.BindString16(1, emails[i]);
 
     if (!s.Run()) {
       NOTREACHED();
@@ -495,10 +526,9 @@ bool AddAutofillProfileEmail(const std::string& guid,
   return true;
 }
 
-bool AddAutofillProfilePhone(const std::string& guid,
-                             const AutofillProfile& profile,
-                             AutofillPhoneType phone_type,
-                             sql::Connection* db) {
+bool AddAutofillProfilePhones(const AutofillProfile& profile,
+                              AutofillPhoneType phone_type,
+                              sql::Connection* db) {
   AutofillFieldType field_type;
   if (phone_type == kAutofillPhoneNumber) {
     field_type = PHONE_HOME_WHOLE_NUMBER;
@@ -509,34 +539,22 @@ bool AddAutofillProfilePhone(const std::string& guid,
     return false;
   }
 
-  if (profile.GetInfo(field_type).empty())
-    return true;
+  std::vector<string16> numbers;
+  profile.GetMultiInfo(field_type, &numbers);
 
-  // Check for duplicate.
-  sql::Statement s_find(db->GetUniqueStatement(
-    "SELECT guid, type, number "
-    "FROM autofill_profile_phones "
-    "WHERE guid=? AND type=? AND number=?"));
-  if (!s_find) {
-    NOTREACHED();
-    return false;
-  }
-  s_find.BindString(0, guid);
-  s_find.BindInt(1, phone_type);
-  s_find.BindString16(2, profile.GetInfo(field_type));
-
-  if (!s_find.Step()) {
+  for (size_t i = 0; i < numbers.size(); ++i) {
+    // Add the new number.
     sql::Statement s(db->GetUniqueStatement(
       "INSERT INTO autofill_profile_phones"
       " (guid, type, number) "
       "VALUES (?,?,?)"));
     if (!s) {
       NOTREACHED();
-      return sql::INIT_FAILURE;
+      return false;
     }
-    s.BindString(0, guid);
+    s.BindString(0, profile.guid());
     s.BindInt(1, phone_type);
-    s.BindString16(2, profile.GetInfo(field_type));
+    s.BindString16(2, numbers[i]);
 
     if (!s.Run()) {
       NOTREACHED();
@@ -546,19 +564,18 @@ bool AddAutofillProfilePhone(const std::string& guid,
   return true;
 }
 
-bool AddAutofillProfilePieces(const std::string& guid,
-                              const AutofillProfile& profile,
+bool AddAutofillProfilePieces(const AutofillProfile& profile,
                               sql::Connection* db) {
-  if (!AddAutofillProfileName(guid, profile, db))
+  if (!AddAutofillProfileNames(profile, db))
     return false;
 
-  if (!AddAutofillProfileEmail(guid, profile, db))
+  if (!AddAutofillProfileEmails(profile, db))
     return false;
 
-  if (!AddAutofillProfilePhone(guid, profile, kAutofillPhoneNumber, db))
+  if (!AddAutofillProfilePhones(profile, kAutofillPhoneNumber, db))
     return false;
 
-  if (!AddAutofillProfilePhone(guid, profile, kAutofillFaxNumber, db))
+  if (!AddAutofillProfilePhones(profile, kAutofillFaxNumber, db))
     return false;
 
   return true;
@@ -1894,7 +1911,7 @@ bool WebDatabase::AddAutofillProfile(const AutofillProfile& profile) {
   if (!s.Succeeded())
     return false;
 
-  return AddAutofillProfilePieces(profile.guid(), profile, &db_);
+  return AddAutofillProfilePieces(profile, &db_);
 }
 
 bool WebDatabase::GetAutofillProfile(const std::string& guid,
@@ -1921,66 +1938,16 @@ bool WebDatabase::GetAutofillProfile(const std::string& guid,
   scoped_ptr<AutofillProfile> p(AutofillProfileFromStatement(s));
 
   // Get associated name info.
-  sql::Statement s2(db_.GetUniqueStatement(
-      "SELECT guid, first_name, middle_name, last_name "
-      "FROM autofill_profile_names "
-      "WHERE guid=?"));
-  if (!s2) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-  s2.BindString(0, guid);
-
-  if (s2.Step()) {
-    AddAutofillProfileNameFromStatement(s2, p.get());
-  }
+  AddAutofillProfileNamesToProfile(&db_, p.get());
 
   // Get associated email info.
-  sql::Statement s3(db_.GetUniqueStatement(
-      "SELECT guid, email "
-      "FROM autofill_profile_emails "
-      "WHERE guid=?"));
-  if (!s3) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-  s3.BindString(0, guid);
-
-  if (s3.Step()) {
-    AddAutofillProfileEmailFromStatement(s3, p.get());
-  }
+  AddAutofillProfileEmailsToProfile(&db_, p.get());
 
   // Get associated phone info.
-  sql::Statement s4(db_.GetUniqueStatement(
-      "SELECT guid, type, number "
-      "FROM autofill_profile_phones "
-      "WHERE guid=? AND type=?"));
-  if (!s4) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-  s4.BindString(0, guid);
-  s4.BindInt(1, kAutofillPhoneNumber);
-
-  if (s4.Step()) {
-    AddAutofillProfilePhoneFromStatement(s4, p.get());
-  }
+  AddAutofillProfilePhonesToProfile(&db_, p.get());
 
   // Get associated fax info.
-  sql::Statement s5(db_.GetUniqueStatement(
-      "SELECT guid, type, number "
-      "FROM autofill_profile_phones "
-      "WHERE guid=? AND type=?"));
-  if (!s5) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-  s5.BindString(0, guid);
-  s5.BindInt(1, kAutofillFaxNumber);
-
-  if (s5.Step()) {
-    AddAutofillProfileFaxFromStatement(s5, p.get());
-  }
+  AddAutofillProfileFaxesToProfile(&db_, p.get());
 
   *profile = p.release();
   return true;
@@ -2024,7 +1991,46 @@ bool WebDatabase::UpdateAutofillProfile(const AutofillProfile& profile) {
 
   // Preserve appropriate modification dates by not updating unchanged profiles.
   scoped_ptr<AutofillProfile> old_profile(tmp_profile);
-  if (*old_profile == profile)
+  if (old_profile->Compare(profile) == 0)
+    return true;
+
+  AutofillProfile new_profile(profile);
+  std::vector<string16> values;
+
+  old_profile->GetMultiInfo(NAME_FULL, &values);
+  values[0] = new_profile.GetInfo(NAME_FULL);
+  new_profile.SetMultiInfo(NAME_FULL, values);
+
+  old_profile->GetMultiInfo(EMAIL_ADDRESS, &values);
+  values[0] = new_profile.GetInfo(EMAIL_ADDRESS);
+  new_profile.SetMultiInfo(EMAIL_ADDRESS, values);
+
+  old_profile->GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
+  values[0] = new_profile.GetInfo(PHONE_HOME_WHOLE_NUMBER);
+  new_profile.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
+
+  old_profile->GetMultiInfo(PHONE_FAX_WHOLE_NUMBER, &values);
+  values[0] = new_profile.GetInfo(PHONE_FAX_WHOLE_NUMBER);
+  new_profile.SetMultiInfo(PHONE_FAX_WHOLE_NUMBER, values);
+
+  return UpdateAutofillProfileMulti(new_profile);
+}
+
+bool WebDatabase::UpdateAutofillProfileMulti(const AutofillProfile& profile) {
+  DCHECK(guid::IsValidGUID(profile.guid()));
+
+  // Don't update anything until the trash has been emptied.  There may be
+  // pending modifications to process.
+  if (!IsAutofillProfilesTrashEmpty())
+    return true;
+
+  AutofillProfile* tmp_profile = NULL;
+  if (!GetAutofillProfile(profile.guid(), &tmp_profile))
+    return false;
+
+  // Preserve appropriate modification dates by not updating unchanged profiles.
+  scoped_ptr<AutofillProfile> old_profile(tmp_profile);
+  if (old_profile->CompareMulti(profile) == 0)
     return true;
 
   sql::Statement s(db_.GetUniqueStatement(
@@ -2049,7 +2055,7 @@ bool WebDatabase::UpdateAutofillProfile(const AutofillProfile& profile) {
   if (!RemoveAutofillProfilePieces(profile.guid(), &db_))
     return false;
 
-  return AddAutofillProfilePieces(profile.guid(), profile, &db_);
+  return AddAutofillProfilePieces(profile, &db_);
 }
 
 bool WebDatabase::RemoveAutofillProfile(const std::string& guid) {
@@ -3103,7 +3109,7 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(){
             }
 
             // Add the other bits: names, emails, and phone/fax.
-            if (!AddAutofillProfilePieces(profile.guid(), profile, &db_)) {
+            if (!AddAutofillProfilePieces(profile, &db_)) {
               NOTREACHED();
               return sql::INIT_FAILURE;
             }

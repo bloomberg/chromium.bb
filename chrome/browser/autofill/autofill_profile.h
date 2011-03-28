@@ -27,7 +27,7 @@ class AutofillProfile : public FormGroup {
 
   // For use in STL containers.
   AutofillProfile();
-  AutofillProfile(const AutofillProfile&);
+  AutofillProfile(const AutofillProfile& profile);
   virtual ~AutofillProfile();
 
   AutofillProfile& operator=(const AutofillProfile& profile);
@@ -44,6 +44,12 @@ class AutofillProfile : public FormGroup {
                                std::vector<string16>* matched_text) const;
   virtual string16 GetInfo(AutofillFieldType type) const;
   virtual void SetInfo(AutofillFieldType type, const string16& value);
+
+  // Multi-value equivalents to |GetInfo| and |SetInfo|.
+  void SetMultiInfo(AutofillFieldType type,
+                    const std::vector<string16>& values);
+  void GetMultiInfo(AutofillFieldType type,
+                    std::vector<string16>* values) const;
 
   // The user-visible label of the profile, generated in relation to other
   // profiles. Shows at least 2 fields that differentiate profile from other
@@ -95,9 +101,15 @@ class AutofillProfile : public FormGroup {
   // culling duplicates.  The ordering is based on collation order of the
   // textual contents of the fields.
   // GUIDs are not compared, only the values of the contents themselves.
+  // DEPRECATED: Use |CompareMulti| instead.  |Compare| does not compare
+  // multi-valued items.
   int Compare(const AutofillProfile& profile) const;
 
+  // Comparison for Sync.  Same as |Compare| but includes multi-valued fields.
+  int CompareMulti(const AutofillProfile& profile) const;
+
   // Equality operators compare GUIDs and the contents in the comparison.
+  // TODO(dhollowa): This needs to be made multi-profile once Sync updates.
   bool operator==(const AutofillProfile& profile) const;
   virtual bool operator!=(const AutofillProfile& profile) const;
 
@@ -108,8 +120,6 @@ class AutofillProfile : public FormGroup {
 
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
-  typedef std::map<FieldTypeGroup, const FormGroup*> FormGroupMap;
-  typedef std::map<FieldTypeGroup, FormGroup*> MutableFormGroupMap;
 
   // Builds inferred label from the first |num_fields_to_include| non-empty
   // fields in |label_fields|. Uses as many fields as possible if there are not
@@ -132,9 +142,9 @@ class AutofillProfile : public FormGroup {
 
   // Utilities for listing and lookup of the data members that constitute
   // user-visible profile information.
-  FormGroupList info_list() const;
-  FormGroupMap info_map() const;
-  MutableFormGroupMap mutable_info_map();
+  FormGroupList FormGroups() const;
+  const FormGroup* FormGroupForType(AutofillFieldType type) const;
+  FormGroup* MutableFormGroupForType(AutofillFieldType type);
 
   // The label presented to the user when selecting a profile.
   string16 label_;
@@ -143,11 +153,11 @@ class AutofillProfile : public FormGroup {
   std::string guid_;
 
   // Personal information for this profile.
-  NameInfo name_;
-  EmailInfo email_;
+  std::vector<NameInfo> name_;
+  std::vector<EmailInfo> email_;
   CompanyInfo company_;
-  HomePhoneNumber home_number_;
-  FaxNumber fax_number_;
+  std::vector<HomePhoneNumber> home_number_;
+  std::vector<FaxNumber> fax_number_;
   Address address_;
 };
 

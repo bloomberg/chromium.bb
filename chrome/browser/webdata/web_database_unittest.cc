@@ -1464,7 +1464,7 @@ TEST_F(WebDatabaseTest, AutofillProfile) {
   // Update the 'Billing' profile, name only.
   billing_profile.SetInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
   Time pre_modification_time = Time::Now();
-  EXPECT_TRUE(db.UpdateAutofillProfile(billing_profile));
+  EXPECT_TRUE(db.UpdateAutofillProfileMulti(billing_profile));
   Time post_modification_time = Time::Now();
   ASSERT_TRUE(db.GetAutofillProfile(billing_profile.guid(), &db_profile));
   EXPECT_EQ(billing_profile, *db_profile);
@@ -1495,7 +1495,7 @@ TEST_F(WebDatabaseTest, AutofillProfile) {
   billing_profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181230000"));
   billing_profile.SetInfo(PHONE_FAX_WHOLE_NUMBER, ASCIIToUTF16("1915240000"));
   Time pre_modification_time_2 = Time::Now();
-  EXPECT_TRUE(db.UpdateAutofillProfile(billing_profile));
+  EXPECT_TRUE(db.UpdateAutofillProfileMulti(billing_profile));
   Time post_modification_time_2 = Time::Now();
   ASSERT_TRUE(db.GetAutofillProfile(billing_profile.guid(), &db_profile));
   EXPECT_EQ(billing_profile, *db_profile);
@@ -1514,6 +1514,208 @@ TEST_F(WebDatabaseTest, AutofillProfile) {
   // Remove the 'Billing' profile.
   EXPECT_TRUE(db.RemoveAutofillProfile(billing_profile.guid()));
   EXPECT_FALSE(db.GetAutofillProfile(billing_profile.guid(), &db_profile));
+}
+
+TEST_F(WebDatabaseTest, AutofillProfileMultiValueNames) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  AutofillProfile p;
+  const string16 kJohnDoe(ASCIIToUTF16("John Doe"));
+  const string16 kJohnPDoe(ASCIIToUTF16("John P. Doe"));
+  std::vector<string16> set_values;
+  set_values.push_back(kJohnDoe);
+  set_values.push_back(kJohnPDoe);
+  p.SetMultiInfo(NAME_FULL, set_values);
+
+  EXPECT_TRUE(db.AddAutofillProfile(p));
+
+  AutofillProfile* db_profile;
+  ASSERT_TRUE(db.GetAutofillProfile(p.guid(), &db_profile));
+  EXPECT_EQ(p, *db_profile);
+  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  delete db_profile;
+
+  // Update the values.
+  const string16 kNoOne(ASCIIToUTF16("No One"));
+  set_values[1] = kNoOne;
+  p.SetMultiInfo(NAME_FULL, set_values);
+  EXPECT_TRUE(db.UpdateAutofillProfileMulti(p));
+  ASSERT_TRUE(db.GetAutofillProfile(p.guid(), &db_profile));
+  EXPECT_EQ(p, *db_profile);
+  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  delete db_profile;
+
+  // Delete values.
+  set_values.clear();
+  p.SetMultiInfo(NAME_FULL, set_values);
+  EXPECT_TRUE(db.UpdateAutofillProfileMulti(p));
+  ASSERT_TRUE(db.GetAutofillProfile(p.guid(), &db_profile));
+  EXPECT_EQ(p, *db_profile);
+  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(string16(), db_profile->GetInfo(NAME_FULL));
+  delete db_profile;
+}
+
+TEST_F(WebDatabaseTest, AutofillProfileSingleValue) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  AutofillProfile p;
+  const string16 kJohnDoe(ASCIIToUTF16("John Doe"));
+  const string16 kJohnPDoe(ASCIIToUTF16("John P. Doe"));
+  std::vector<string16> set_values;
+  set_values.push_back(kJohnDoe);
+  set_values.push_back(kJohnPDoe);
+  p.SetMultiInfo(NAME_FULL, set_values);
+
+  EXPECT_TRUE(db.AddAutofillProfile(p));
+
+  AutofillProfile* db_profile;
+  ASSERT_TRUE(db.GetAutofillProfile(p.guid(), &db_profile));
+  EXPECT_EQ(p, *db_profile);
+  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  delete db_profile;
+
+  // Update the values.  This update is the "single value" update, it should
+  // not perturb the multi-values following the zeroth entry.  This simulates
+  // the Sync use-case until Sync can be changed to be multi-value aware.
+  const string16 kNoOne(ASCIIToUTF16("No One"));
+  set_values.resize(1);
+  set_values[0] = kNoOne;
+  p.SetMultiInfo(NAME_FULL, set_values);
+  EXPECT_TRUE(db.UpdateAutofillProfile(p));
+  ASSERT_TRUE(db.GetAutofillProfile(p.guid(), &db_profile));
+  EXPECT_EQ(p, *db_profile);
+  EXPECT_NE(0, p.CompareMulti(*db_profile));
+  db_profile->GetMultiInfo(NAME_FULL, &set_values);
+  ASSERT_EQ(2UL, set_values.size());
+  EXPECT_EQ(kNoOne, set_values[0]);
+  EXPECT_EQ(kJohnPDoe, set_values[1]);
+  delete db_profile;
+}
+
+TEST_F(WebDatabaseTest, AutofillProfileMultiValueEmails) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  AutofillProfile p;
+  const string16 kJohnDoe(ASCIIToUTF16("john@doe.com"));
+  const string16 kJohnPDoe(ASCIIToUTF16("john_p@doe.com"));
+  std::vector<string16> set_values;
+  set_values.push_back(kJohnDoe);
+  set_values.push_back(kJohnPDoe);
+  p.SetMultiInfo(EMAIL_ADDRESS, set_values);
+
+  EXPECT_TRUE(db.AddAutofillProfile(p));
+
+  AutofillProfile* db_profile;
+  ASSERT_TRUE(db.GetAutofillProfile(p.guid(), &db_profile));
+  EXPECT_EQ(p, *db_profile);
+  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  delete db_profile;
+
+  // Update the values.
+  const string16 kNoOne(ASCIIToUTF16("no@one.com"));
+  set_values[1] = kNoOne;
+  p.SetMultiInfo(EMAIL_ADDRESS, set_values);
+  EXPECT_TRUE(db.UpdateAutofillProfileMulti(p));
+  ASSERT_TRUE(db.GetAutofillProfile(p.guid(), &db_profile));
+  EXPECT_EQ(p, *db_profile);
+  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  delete db_profile;
+
+  // Delete values.
+  set_values.clear();
+  p.SetMultiInfo(EMAIL_ADDRESS, set_values);
+  EXPECT_TRUE(db.UpdateAutofillProfileMulti(p));
+  ASSERT_TRUE(db.GetAutofillProfile(p.guid(), &db_profile));
+  EXPECT_EQ(p, *db_profile);
+  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(string16(), db_profile->GetInfo(EMAIL_ADDRESS));
+  delete db_profile;
+}
+
+TEST_F(WebDatabaseTest, AutofillProfileMultiValuePhone) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  AutofillProfile p;
+  const string16 kJohnDoe(ASCIIToUTF16("4151112222"));
+  const string16 kJohnPDoe(ASCIIToUTF16("4151113333"));
+  std::vector<string16> set_values;
+  set_values.push_back(kJohnDoe);
+  set_values.push_back(kJohnPDoe);
+  p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
+
+  EXPECT_TRUE(db.AddAutofillProfile(p));
+
+  AutofillProfile* db_profile;
+  ASSERT_TRUE(db.GetAutofillProfile(p.guid(), &db_profile));
+  EXPECT_EQ(p, *db_profile);
+  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  delete db_profile;
+
+  // Update the values.
+  const string16 kNoOne(ASCIIToUTF16("4151110000"));
+  set_values[1] = kNoOne;
+  p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
+  EXPECT_TRUE(db.UpdateAutofillProfileMulti(p));
+  ASSERT_TRUE(db.GetAutofillProfile(p.guid(), &db_profile));
+  EXPECT_EQ(p, *db_profile);
+  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  delete db_profile;
+
+  // Delete values.
+  set_values.clear();
+  p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
+  EXPECT_TRUE(db.UpdateAutofillProfileMulti(p));
+  ASSERT_TRUE(db.GetAutofillProfile(p.guid(), &db_profile));
+  EXPECT_EQ(p, *db_profile);
+  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(string16(), db_profile->GetInfo(EMAIL_ADDRESS));
+  delete db_profile;
+}
+
+TEST_F(WebDatabaseTest, AutofillProfileMultiValueFax) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  AutofillProfile p;
+  const string16 kJohnDoe(ASCIIToUTF16("4151112222"));
+  const string16 kJohnPDoe(ASCIIToUTF16("4151113333"));
+  std::vector<string16> set_values;
+  set_values.push_back(kJohnDoe);
+  set_values.push_back(kJohnPDoe);
+  p.SetMultiInfo(PHONE_FAX_WHOLE_NUMBER, set_values);
+
+  EXPECT_TRUE(db.AddAutofillProfile(p));
+
+  AutofillProfile* db_profile;
+  ASSERT_TRUE(db.GetAutofillProfile(p.guid(), &db_profile));
+  EXPECT_EQ(p, *db_profile);
+  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  delete db_profile;
+
+  // Update the values.
+  const string16 kNoOne(ASCIIToUTF16("4151110000"));
+  set_values[1] = kNoOne;
+  p.SetMultiInfo(PHONE_FAX_WHOLE_NUMBER, set_values);
+  EXPECT_TRUE(db.UpdateAutofillProfileMulti(p));
+  ASSERT_TRUE(db.GetAutofillProfile(p.guid(), &db_profile));
+  EXPECT_EQ(p, *db_profile);
+  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  delete db_profile;
+
+  // Delete values.
+  set_values.clear();
+  p.SetMultiInfo(PHONE_FAX_WHOLE_NUMBER, set_values);
+  EXPECT_TRUE(db.UpdateAutofillProfileMulti(p));
+  ASSERT_TRUE(db.GetAutofillProfile(p.guid(), &db_profile));
+  EXPECT_EQ(p, *db_profile);
+  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(string16(), db_profile->GetInfo(EMAIL_ADDRESS));
+  delete db_profile;
 }
 
 TEST_F(WebDatabaseTest, AutofillProfileTrash) {
@@ -1576,12 +1778,12 @@ TEST_F(WebDatabaseTest, AutofillProfileTrashInteraction) {
   ASSERT_NE(static_cast<AutofillProfile*>(NULL), added_profile);
   delete added_profile;
 
-  // Mark this profile as in the trash.  This stops |UpdateAutofillProfile| from
-  // updating it.  In normal operation a profile should not be both in the trash
-  // and in the profiles table simultaneously.
+  // Mark this profile as in the trash.  This stops |UpdateAutofillProfileMulti|
+  // from updating it.  In normal operation a profile should not be both in the
+  // trash and in the profiles table simultaneously.
   EXPECT_TRUE(db.AddAutofillGUIDToTrash(profile.guid()));
   profile.SetInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
-  EXPECT_TRUE(db.UpdateAutofillProfile(profile));
+  EXPECT_TRUE(db.UpdateAutofillProfileMulti(profile));
   AutofillProfile* updated_profile = NULL;
   EXPECT_TRUE(db.GetAutofillProfile(profile.guid(), &updated_profile));
   ASSERT_NE(static_cast<AutofillProfile*>(NULL), added_profile);
@@ -1734,7 +1936,7 @@ TEST_F(WebDatabaseTest, UpdateAutofillProfile) {
   // Now, update the profile and save the update to the database.
   // The modification date should change to reflect the update.
   profile.SetInfo(EMAIL_ADDRESS, ASCIIToUTF16("js@smith.xyz"));
-  db.UpdateAutofillProfile(profile);
+  db.UpdateAutofillProfileMulti(profile);
 
   // Get the profile.
   ASSERT_TRUE(db.GetAutofillProfile(profile.guid(), &tmp_profile));
@@ -1755,9 +1957,9 @@ TEST_F(WebDatabaseTest, UpdateAutofillProfile) {
   s_mock_modification_date.BindInt64(0, mock_modification_date);
   ASSERT_TRUE(s_mock_modification_date.Run());
 
-  // Finally, call into |UpdateAutofillProfile()| without changing the profile.
-  // The modification date should not change.
-  db.UpdateAutofillProfile(profile);
+  // Finally, call into |UpdateAutofillProfileMulti()| without changing the
+  // profile.  The modification date should not change.
+  db.UpdateAutofillProfileMulti(profile);
 
   // Get the profile.
   ASSERT_TRUE(db.GetAutofillProfile(profile.guid(), &tmp_profile));
@@ -3095,7 +3297,12 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     // Alfred E Newman.
     // Gets culled during migration from 35 to 36 due to incomplete address.
 
-    // Note no name for 3 Main St.
+    // 3 Main St.
+    ASSERT_TRUE(s2.Step());
+    EXPECT_EQ("9E5FE298-62C7-83DF-6293-381BC589183F", s2.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16(""), s2.ColumnString16(1));
+    EXPECT_EQ(ASCIIToUTF16(""), s2.ColumnString16(2));
+    EXPECT_EQ(ASCIIToUTF16(""), s2.ColumnString16(3));
 
     // Should be all.
     EXPECT_FALSE(s2.Step());
@@ -3115,13 +3322,23 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ("589636FD-9037-3053-200C-80ABC97D7344", s3.ColumnString(0));
     EXPECT_EQ(ASCIIToUTF16("john@doe.com"), s3.ColumnString16(1));
 
-    // Note no email for 2 Main Street.
-    // Note no email for 2 Main St.
+    // 2 Main Street.
+    ASSERT_TRUE(s3.Step());
+    EXPECT_EQ("4C74A9D8-7EEE-423E-F9C2-E7FA70ED1396", s3.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16(""), s3.ColumnString16(1));
+
+    // 2 Main St.
+    ASSERT_TRUE(s3.Step());
+    EXPECT_EQ("722DF5C4-F74A-294A-46F0-31FFDED0D635", s3.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16(""), s3.ColumnString16(1));
 
     // Alfred E Newman.
     // Gets culled during migration from 35 to 36 due to incomplete address.
 
-    // Note no email for 3 Main St.
+    // 3 Main St.
+    ASSERT_TRUE(s3.Step());
+    EXPECT_EQ("9E5FE298-62C7-83DF-6293-381BC589183F", s3.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16(""), s3.ColumnString16(1));
 
     // Should be all.
     EXPECT_FALSE(s3.Step());
@@ -3155,10 +3372,44 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ(1, s4.ColumnInt(1)); // 1 means fax.
     EXPECT_EQ(ASCIIToUTF16("4153334444"), s4.ColumnString16(2));
 
-    // Note no phone or fax for 2 Main Street.
-    // Note no phone or fax for 2 Main St.
+    // 2 Main Street phone.
+    ASSERT_TRUE(s4.Step());
+    EXPECT_EQ("4C74A9D8-7EEE-423E-F9C2-E7FA70ED1396", s4.ColumnString(0));
+    EXPECT_EQ(0, s4.ColumnInt(1)); // 0 means phone.
+    EXPECT_EQ(ASCIIToUTF16(""), s4.ColumnString16(2));
+
+    // 2 Main Street fax.
+    ASSERT_TRUE(s4.Step());
+    EXPECT_EQ("4C74A9D8-7EEE-423E-F9C2-E7FA70ED1396", s4.ColumnString(0));
+    EXPECT_EQ(1, s4.ColumnInt(1)); // 1 means fax.
+    EXPECT_EQ(ASCIIToUTF16(""), s4.ColumnString16(2));
+
+    // 2 Main St phone.
+    ASSERT_TRUE(s4.Step());
+    EXPECT_EQ("722DF5C4-F74A-294A-46F0-31FFDED0D635", s4.ColumnString(0));
+    EXPECT_EQ(0, s4.ColumnInt(1)); // 0 means phone.
+    EXPECT_EQ(ASCIIToUTF16(""), s4.ColumnString16(2));
+
+    // 2 Main St fax.
+    ASSERT_TRUE(s4.Step());
+    EXPECT_EQ("722DF5C4-F74A-294A-46F0-31FFDED0D635", s4.ColumnString(0));
+    EXPECT_EQ(1, s4.ColumnInt(1)); // 1 means fax.
+    EXPECT_EQ(ASCIIToUTF16(""), s4.ColumnString16(2));
+
     // Note no phone or fax for Alfred E Newman.
-    // Note no phone or fax for 3 Main St.
+
+    // 3 Main St phone.
+    ASSERT_TRUE(s4.Step());
+    EXPECT_EQ("9E5FE298-62C7-83DF-6293-381BC589183F", s4.ColumnString(0));
+    EXPECT_EQ(0, s4.ColumnInt(1)); // 0 means phone.
+    EXPECT_EQ(ASCIIToUTF16(""), s4.ColumnString16(2));
+
+    // 2 Main St fax.
+    ASSERT_TRUE(s4.Step());
+    EXPECT_EQ("9E5FE298-62C7-83DF-6293-381BC589183F", s4.ColumnString(0));
+    EXPECT_EQ(1, s4.ColumnInt(1)); // 1 means fax.
+    EXPECT_EQ(ASCIIToUTF16(""), s4.ColumnString16(2));
+
 
     // Should be all.
     EXPECT_FALSE(s4.Step());

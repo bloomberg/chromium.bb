@@ -13,7 +13,7 @@ class FormGroup;
 class HomePhoneNumber : public PhoneNumber {
  public:
   HomePhoneNumber();
-  explicit HomePhoneNumber(const HomePhoneNumber& phone);
+  HomePhoneNumber(const HomePhoneNumber& phone);
   virtual ~HomePhoneNumber();
 
   HomePhoneNumber& operator=(const HomePhoneNumber& phone);

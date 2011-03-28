@@ -642,3 +642,179 @@ TEST(AutofillProfileTest, CountryCode) {
   profile.SetCountryCode("US");
   EXPECT_EQ("US", profile.CountryCode());
 }
+
+TEST(AutofillProfileTest, MultiValueNames) {
+  AutofillProfile p;
+  const string16 kJohnDoe(ASCIIToUTF16("John Doe"));
+  const string16 kJohnPDoe(ASCIIToUTF16("John P. Doe"));
+  std::vector<string16> set_values;
+  set_values.push_back(kJohnDoe);
+  set_values.push_back(kJohnPDoe);
+  p.SetMultiInfo(NAME_FULL, set_values);
+
+  // Expect regular |GetInfo| returns the first element.
+  EXPECT_EQ(kJohnDoe, p.GetInfo(NAME_FULL));
+
+  // Ensure that we get out what we put in.
+  std::vector<string16> get_values;
+  p.GetMultiInfo(NAME_FULL, &get_values);
+  ASSERT_EQ(2UL, get_values.size());
+  EXPECT_EQ(kJohnDoe, get_values[0]);
+  EXPECT_EQ(kJohnPDoe, get_values[1]);
+
+  // Update the values.
+  AutofillProfile p2 = p;
+  EXPECT_EQ(0, p.Compare(p2));
+  EXPECT_EQ(0, p.CompareMulti(p2));
+  const string16 kNoOne(ASCIIToUTF16("No One"));
+  set_values[1] = kNoOne;
+  p.SetMultiInfo(NAME_FULL, set_values);
+  p.GetMultiInfo(NAME_FULL, &get_values);
+  ASSERT_EQ(2UL, get_values.size());
+  EXPECT_EQ(kJohnDoe, get_values[0]);
+  EXPECT_EQ(kNoOne, get_values[1]);
+  EXPECT_EQ(0, p.Compare(p2));
+  EXPECT_NE(0, p.CompareMulti(p2));
+
+  // Delete values.
+  set_values.clear();
+  p.SetMultiInfo(NAME_FULL, set_values);
+  p.GetMultiInfo(NAME_FULL, &get_values);
+  ASSERT_EQ(1UL, get_values.size());
+  EXPECT_EQ(string16(), get_values[0]);
+
+  // Expect regular |GetInfo| returns empty value.
+  EXPECT_EQ(string16(), p.GetInfo(NAME_FULL));
+}
+
+TEST(AutofillProfileTest, MultiValueEmails) {
+  AutofillProfile p;
+  const string16 kJohnDoe(ASCIIToUTF16("john@doe.com"));
+  const string16 kJohnPDoe(ASCIIToUTF16("john_p@doe.com"));
+  std::vector<string16> set_values;
+  set_values.push_back(kJohnDoe);
+  set_values.push_back(kJohnPDoe);
+  p.SetMultiInfo(EMAIL_ADDRESS, set_values);
+
+  // Expect regular |GetInfo| returns the first element.
+  EXPECT_EQ(kJohnDoe, p.GetInfo(EMAIL_ADDRESS));
+
+  // Ensure that we get out what we put in.
+  std::vector<string16> get_values;
+  p.GetMultiInfo(EMAIL_ADDRESS, &get_values);
+  ASSERT_EQ(2UL, get_values.size());
+  EXPECT_EQ(kJohnDoe, get_values[0]);
+  EXPECT_EQ(kJohnPDoe, get_values[1]);
+
+  // Update the values.
+  AutofillProfile p2 = p;
+  EXPECT_EQ(0, p.Compare(p2));
+  EXPECT_EQ(0, p.CompareMulti(p2));
+  const string16 kNoOne(ASCIIToUTF16("no@one.com"));
+  set_values[1] = kNoOne;
+  p.SetMultiInfo(EMAIL_ADDRESS, set_values);
+  p.GetMultiInfo(EMAIL_ADDRESS, &get_values);
+  ASSERT_EQ(2UL, get_values.size());
+  EXPECT_EQ(kJohnDoe, get_values[0]);
+  EXPECT_EQ(kNoOne, get_values[1]);
+  EXPECT_EQ(0, p.Compare(p2));
+  EXPECT_NE(0, p.CompareMulti(p2));
+
+  // Delete values.
+  set_values.clear();
+  p.SetMultiInfo(EMAIL_ADDRESS, set_values);
+  p.GetMultiInfo(EMAIL_ADDRESS, &get_values);
+  ASSERT_EQ(1UL, get_values.size());
+  EXPECT_EQ(string16(), get_values[0]);
+
+  // Expect regular |GetInfo| returns empty value.
+  EXPECT_EQ(string16(), p.GetInfo(EMAIL_ADDRESS));
+}
+
+TEST(AutofillProfileTest, MultiValuePhone) {
+  AutofillProfile p;
+  const string16 kJohnDoe(ASCIIToUTF16("4151112222"));
+  const string16 kJohnPDoe(ASCIIToUTF16("4151113333"));
+  std::vector<string16> set_values;
+  set_values.push_back(kJohnDoe);
+  set_values.push_back(kJohnPDoe);
+  p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
+
+  // Expect regular |GetInfo| returns the first element.
+  EXPECT_EQ(kJohnDoe, p.GetInfo(PHONE_HOME_WHOLE_NUMBER));
+
+  // Ensure that we get out what we put in.
+  std::vector<string16> get_values;
+  p.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &get_values);
+  ASSERT_EQ(2UL, get_values.size());
+  EXPECT_EQ(kJohnDoe, get_values[0]);
+  EXPECT_EQ(kJohnPDoe, get_values[1]);
+
+  // Update the values.
+  AutofillProfile p2 = p;
+  EXPECT_EQ(0, p.Compare(p2));
+  EXPECT_EQ(0, p.CompareMulti(p2));
+  const string16 kNoOne(ASCIIToUTF16("4151110000"));
+  set_values[1] = kNoOne;
+  p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
+  p.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &get_values);
+  ASSERT_EQ(2UL, get_values.size());
+  EXPECT_EQ(kJohnDoe, get_values[0]);
+  EXPECT_EQ(kNoOne, get_values[1]);
+  EXPECT_EQ(0, p.Compare(p2));
+  EXPECT_NE(0, p.CompareMulti(p2));
+
+  // Delete values.
+  set_values.clear();
+  p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
+  p.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &get_values);
+  ASSERT_EQ(1UL, get_values.size());
+  EXPECT_EQ(string16(), get_values[0]);
+
+  // Expect regular |GetInfo| returns empty value.
+  EXPECT_EQ(string16(), p.GetInfo(PHONE_HOME_WHOLE_NUMBER));
+}
+
+TEST(AutofillProfileTest, MultiValueFax) {
+  AutofillProfile p;
+  const string16 kJohnDoe(ASCIIToUTF16("4151112222"));
+  const string16 kJohnPDoe(ASCIIToUTF16("4151113333"));
+  std::vector<string16> set_values;
+  set_values.push_back(kJohnDoe);
+  set_values.push_back(kJohnPDoe);
+  p.SetMultiInfo(PHONE_FAX_WHOLE_NUMBER, set_values);
+
+  // Expect regular |GetInfo| returns the first element.
+  EXPECT_EQ(kJohnDoe, p.GetInfo(PHONE_FAX_WHOLE_NUMBER));
+
+  // Ensure that we get out what we put in.
+  std::vector<string16> get_values;
+  p.GetMultiInfo(PHONE_FAX_WHOLE_NUMBER, &get_values);
+  ASSERT_EQ(2UL, get_values.size());
+  EXPECT_EQ(kJohnDoe, get_values[0]);
+  EXPECT_EQ(kJohnPDoe, get_values[1]);
+
+  // Update the values.
+  AutofillProfile p2 = p;
+  EXPECT_EQ(0, p.Compare(p2));
+  EXPECT_EQ(0, p.CompareMulti(p2));
+  const string16 kNoOne(ASCIIToUTF16("4151110000"));
+  set_values[1] = kNoOne;
+  p.SetMultiInfo(PHONE_FAX_WHOLE_NUMBER, set_values);
+  p.GetMultiInfo(PHONE_FAX_WHOLE_NUMBER, &get_values);
+  ASSERT_EQ(2UL, get_values.size());
+  EXPECT_EQ(kJohnDoe, get_values[0]);
+  EXPECT_EQ(kNoOne, get_values[1]);
+  EXPECT_EQ(0, p.Compare(p2));
+  EXPECT_NE(0, p.CompareMulti(p2));
+
+  // Delete values.
+  set_values.clear();
+  p.SetMultiInfo(PHONE_FAX_WHOLE_NUMBER, set_values);
+  p.GetMultiInfo(PHONE_FAX_WHOLE_NUMBER, &get_values);
+  ASSERT_EQ(1UL, get_values.size());
+  EXPECT_EQ(string16(), get_values[0]);
+
+  // Expect regular |GetInfo| returns empty value.
+  EXPECT_EQ(string16(), p.GetInfo(PHONE_FAX_WHOLE_NUMBER));
+}

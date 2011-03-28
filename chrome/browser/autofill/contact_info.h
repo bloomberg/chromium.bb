@@ -16,7 +16,7 @@
 class NameInfo : public FormGroup {
  public:
   NameInfo();
-  explicit NameInfo(const NameInfo& info);
+  NameInfo(const NameInfo& info);
   virtual ~NameInfo();
 
   NameInfo& operator=(const NameInfo& info);
@@ -105,7 +105,7 @@ class NameInfo : public FormGroup {
 class EmailInfo : public FormGroup {
  public:
   EmailInfo();
-  explicit EmailInfo(const EmailInfo& info);
+  EmailInfo(const EmailInfo& info);
   virtual ~EmailInfo();
 
   EmailInfo& operator=(const EmailInfo& info);
@@ -127,7 +127,7 @@ class EmailInfo : public FormGroup {
 class CompanyInfo : public FormGroup {
  public:
   CompanyInfo();
-  explicit CompanyInfo(const CompanyInfo& info);
+  CompanyInfo(const CompanyInfo& info);
   virtual ~CompanyInfo();
 
   CompanyInfo& operator=(const CompanyInfo& info);

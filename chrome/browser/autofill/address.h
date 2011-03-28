@@ -17,7 +17,7 @@
 class Address : public FormGroup {
  public:
   Address();
-  explicit Address(const Address& address);
+  Address(const Address& address);
   virtual ~Address();
 
   Address& operator=(const Address& address);

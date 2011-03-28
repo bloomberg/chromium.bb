@@ -13,7 +13,7 @@ class FormGroup;
 class FaxNumber : public PhoneNumber {
  public:
   FaxNumber();
-  explicit FaxNumber(const FaxNumber& fax);
+  FaxNumber(const FaxNumber& fax);
   virtual ~FaxNumber();
 
   FaxNumber& operator=(const FaxNumber& fax);

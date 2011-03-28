@@ -1040,7 +1040,7 @@ void WebDataService::UpdateAutofillProfileImpl(
     }
     scoped_ptr<AutofillProfile> scoped_profile(original_profile);
 
-    if (!db_->UpdateAutofillProfile(profile)) {
+    if (!db_->UpdateAutofillProfileMulti(profile)) {
       NOTREACHED();
       return;
     }
