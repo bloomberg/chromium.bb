@@ -28,7 +28,7 @@ revisions_count=100
 if ((${#@}>2)); then
   revisions_count="$3"
 fi
-for ((i=0;i<retry_count;i+=i)); do
+for ((i=1;i<=retry_count;i+=i)); do
   curl --fail --location --url \
       "$glibc_url_prefix$glibc_revision"/glibc_x86.tar.gz -o "$1/.glibc.tar" &&
   tar xSvpf "$1/.glibc.tar" -C "$1" &&

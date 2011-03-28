@@ -5,38 +5,21 @@
 
 REVISION=0
 cd "$(dirname "$0")"
-# We need svn from depot_tools on Windows
-FIXED_PATH="$(
-  IFS=":"
-  FIRST_ELEMENT=1
-  for ELEMENT in $PATH ; do
-    if [[ $ELEMENT = *[/\\]depot_tools[/\\]* ]] ||
-       [[ $ELEMENT = *[/\\]depot_tools ]]; then
-      if ((FIRST_ELEMENT)); then
-        FIRST_ELEMENT=0
-      else
-        echo -n ":"
-      fi
-      echo -n "$ELEMENT"
-    fi
-  done
-  for ELEMENT in $PATH ; do
-    if [[ $ELEMENT != *[/\\]depot_tools[/\\]* ]] &&
-       [[ $ELEMENT != *[/\\]depot_tools ]]; then
-      if ((FIRST_ELEMENT)); then
-        FIRST_ELEMENT=0
-      else
-        echo -n ":"
-      fi
-      echo -n "$ELEMENT"
-    fi
-  done
-)"
+if [[ "$(uname -s)" = Darwin ]] || [[ "$(uname -o)" != "CygWin" ]] ; then
+  SVN="svn"
+else
+  SVN="svn.bat"
+fi
 for i in glibc_revision.sh REVISIONS Makefile ; do
-  NREV="$(PATH="$FIXED_PATH" ; svn log "$i" 2>/dev/null |
-                        head -n 2 | tail -n 1 | sed -e s'+r\([0-9]*\) .*+\1+')"
+  NREV="$("$SVN" log "$i" 2>/dev/null | head -n 2 | tail -n 1 |
+                                                sed -e s'+r\([0-9]*\) .*+\1+')"
   if [[ "$NREV" -gt "$REVISION" ]]; then
     REVISION="$NREV"
   fi
 done
 echo "$REVISION"
+if [[ "$REVISION" == "0" ]]; then
+  exit 1
+else
+  exit 0
+fi
