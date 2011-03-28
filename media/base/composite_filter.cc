@@ -152,7 +152,7 @@ void CompositeFilter::Stop(FilterCallback* stop_callback) {
     return;
   }
 
-  switch(state_) {
+  switch (state_) {
     case kError:
     case kCreated:
     case kPaused:
@@ -258,7 +258,7 @@ void CompositeFilter::StartParallelCallSequence() {
 
 void CompositeFilter::CallFilter(scoped_refptr<Filter>& filter,
                                  FilterCallback* callback) {
-  switch(state_) {
+  switch (state_) {
     case kPlayPending:
       filter->Play(callback);
       break;
@@ -295,7 +295,6 @@ CompositeFilter::State CompositeFilter::GetNextState(State state) const {
       ret = kPlaying;
       break;
     case kPausePending:
-      ret = kPaused;
     case kFlushPending:
       ret = kPaused;
       break;
