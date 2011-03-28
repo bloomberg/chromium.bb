@@ -16,7 +16,7 @@ set -u
 
 export TOOLCHAINLOC=toolchain
 export TOOLCHAINNAME=win_x86
-export INST_GLIBC_PROGRAM="$PWD/glibc_download.sh"
+export INST_GLIBC_PROGRAM="$PWD/tools/glibc_download.sh"
 # Workaround for broken autoconf mmap test (WOW64 limitation)
 # More info here: http://cygwin.com/ml/cygwin/2011-03/msg00596.html
 export ac_cv_func_mmap_fixed_mapped=yes
