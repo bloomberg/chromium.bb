@@ -89,8 +89,8 @@ int CopyOrLinkDragOperation(int drag_operation) {
 // typing, caret position, etc. across tab changes.  We explicitly don't
 // preserve things like whether the popup was open as this might be weird.
 struct AutocompleteEditState {
-  AutocompleteEditState(const AutocompleteEditModel::State model_state,
-                        const AutocompleteEditViewWin::State view_state)
+  AutocompleteEditState(const AutocompleteEditModel::State& model_state,
+                        const AutocompleteEditViewWin::State& view_state)
       : model_state(model_state),
         view_state(view_state) {
   }
@@ -515,7 +515,7 @@ int AutocompleteEditViewWin::WidthOfTextAfterCursor() {
   GetSelection(selection);
   const int start = std::max(0, static_cast<int>(selection.cpMax - 1));
   return WidthNeededToDisplay(GetText().substr(start));
- }
+}
 
 gfx::Font AutocompleteEditViewWin::GetFont() {
   return font_;
