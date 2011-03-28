@@ -37,24 +37,6 @@ ExternalProcessImporterClient::~ExternalProcessImporterClient() {
   bridge_->Release();
 }
 
-void ExternalProcessImporterClient::CancelImportProcessOnIOThread() {
-  profile_import_process_host_->CancelProfileImportProcess();
-}
-
-void ExternalProcessImporterClient::NotifyItemFinishedOnIOThread(
-    importer::ImportItem import_item) {
-  profile_import_process_host_->ReportImportItemFinished(import_item);
-}
-
-void ExternalProcessImporterClient::Cleanup() {
-  if (cancelled_)
-    return;
-
-  if (process_importer_host_)
-    process_importer_host_->NotifyImportEnded();
-  Release();
-}
-
 void ExternalProcessImporterClient::Start() {
   AddRef();  // balanced in Cleanup.
   BrowserThread::ID thread_id;
@@ -62,17 +44,8 @@ void ExternalProcessImporterClient::Start() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this,
-          &ExternalProcessImporterClient::StartProcessOnIOThread,
+          &ExternalProcessImporterClient::StartImportProcessOnIOThread,
           g_browser_process->resource_dispatcher_host(), thread_id));
-}
-
-void ExternalProcessImporterClient::StartProcessOnIOThread(
-    ResourceDispatcherHost* rdh,
-    BrowserThread::ID thread_id) {
-  profile_import_process_host_ =
-      new ProfileImportProcessHost(rdh, this, thread_id);
-  profile_import_process_host_->StartProfileImportProcess(profile_info_,
-      items_, import_to_bookmark_bar_);
 }
 
 void ExternalProcessImporterClient::Cancel() {
@@ -86,6 +59,15 @@ void ExternalProcessImporterClient::Cancel() {
         NewRunnableMethod(this,
             &ExternalProcessImporterClient::CancelImportProcessOnIOThread));
   }
+  Release();
+}
+
+void ExternalProcessImporterClient::Cleanup() {
+  if (cancelled_)
+    return;
+
+  if (process_importer_host_)
+    process_importer_host_->NotifyImportEnded();
   Release();
 }
 
@@ -235,4 +217,22 @@ void ExternalProcessImporterClient::OnKeywordsImportReady(
   }
   bridge_->SetKeywords(template_url_vec, default_keyword_index,
                        unique_on_host_and_path);
+}
+
+void ExternalProcessImporterClient::StartImportProcessOnIOThread(
+    ResourceDispatcherHost* rdh,
+    BrowserThread::ID thread_id) {
+  profile_import_process_host_ =
+      new ProfileImportProcessHost(rdh, this, thread_id);
+  profile_import_process_host_->StartProfileImportProcess(profile_info_,
+      items_, import_to_bookmark_bar_);
+}
+
+void ExternalProcessImporterClient::CancelImportProcessOnIOThread() {
+  profile_import_process_host_->CancelProfileImportProcess();
+}
+
+void ExternalProcessImporterClient::NotifyItemFinishedOnIOThread(
+    importer::ImportItem import_item) {
+  profile_import_process_host_->ReportImportItemFinished(import_item);
 }

@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_IMPORTER_IMPORTER_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-
-#include <vector>
 
 class ImporterBridge;
 
@@ -20,12 +20,10 @@ struct ProfileInfo;
 // The base class of all importers.
 class Importer : public base::RefCountedThreadSafe<Importer> {
  public:
-  // All importers should implement this method by adding their
-  // import logic. And it will be run in file thread by ImporterHost.
-  //
-  // Since we do async import, the importer should invoke
-  // ImporterHost::Finished() to notify its host that import
-  // stuff have been finished.
+  // All importers should implement this method by adding their import logic.
+  // And it will be run in file thread by ImporterHost. Since we do async
+  // import, the importer should invoke ImporterHost::NotifyImportEnded() to
+  // notify its host that import stuff have been finished.
   virtual void StartImport(const importer::ProfileInfo& profile_info,
                            uint16 items,
                            ImporterBridge* bridge) = 0;

@@ -39,24 +39,14 @@ class ExternalProcessImporterClient
                                 bool import_to_bookmark_bar);
   virtual ~ExternalProcessImporterClient();
 
-  // Cancel import process on IO thread.
-  void CancelImportProcessOnIOThread();
-
-  // Report item completely downloaded on IO thread.
-  void NotifyItemFinishedOnIOThread(importer::ImportItem import_item);
-
-  // Notifies the importerhost that import has finished, and calls Release().
-  void Cleanup();
-
   // Launches the task to start the external process.
-  virtual void Start();
-
-  // Creates a new ProfileImportProcessHost, which launches the import process.
-  virtual void StartProcessOnIOThread(ResourceDispatcherHost* rdh,
-                                      BrowserThread::ID thread_id);
+  void Start();
 
   // Called by the ExternalProcessImporterHost on import cancel.
-  virtual void Cancel();
+  void Cancel();
+
+  // Notifies the ImporterHost that import has finished, and calls Release().
+  void Cleanup();
 
   // Begin ProfileImportProcessHost::ImportProcessClient implementation.
   virtual void OnProcessCrashed(int exit_status) OVERRIDE;
@@ -113,6 +103,15 @@ class ExternalProcessImporterClient
   // End ProfileImportProcessHost::ImportProcessClient implementation.
 
  private:
+  // Creates a new ProfileImportProcessHost, which launches the import process.
+  void StartImportProcessOnIOThread(ResourceDispatcherHost* rdh,
+                                    BrowserThread::ID thread_id);
+  // Cancel import process on IO thread.
+  void CancelImportProcessOnIOThread();
+
+  // Report item completely downloaded on IO thread.
+  void NotifyItemFinishedOnIOThread(importer::ImportItem import_item);
+
   // These variables store data being collected from the importer until the
   // entire group has been collected and is ready to be written to the profile.
   std::vector<history::URLRow> history_rows_;
