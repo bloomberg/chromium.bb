@@ -74,7 +74,6 @@ GURL NotificationProvider::ToGURL(const ContentSettingsPattern& pattern) {
     url_spec += pattern_spec;
   }
 
-  LOG(ERROR) << " url_spec=" << url_spec;
   return GURL(url_spec);
 }
 
