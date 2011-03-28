@@ -31,6 +31,12 @@
         '../src/trusted/service_runtime/service_runtime_tests.gyp:*',
       ],
       'conditions': [
+        ['OS=="linux"', {
+          'dependencies': [
+# TODO: fix sandbox.gyp
+#            '../src/trusted/sandbox/sandbox.gyp:*',
+          ],
+        }],
         ['target_arch=="ia32"', {
           'dependencies': [
             '../src/trusted/validator_x86/validator_x86.gyp:*',

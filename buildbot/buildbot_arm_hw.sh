@@ -79,6 +79,12 @@ ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
 echo @@@BUILD_STEP begin_browser_testing@@@
 vncserver -kill :20 || true
 sleep 2 ; vncserver :20 -geometry 1500x1000 -depth 24 ; sleep 10
+ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
+    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl SILENT=1 platform=arm bitcode=1 sdl=none \
+    built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 \
+    firefox_remove || \
+    (RETCODE=$? && echo @@@BUILD_FAILED@@@)
 
 echo @@@BUILD_STEP chrome_browser_tests@@@
 DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority ARM_CC=gcc \
@@ -89,7 +95,30 @@ DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority ARM_CC=gcc \
     chrome_browser_tests || \
     (RETCODE=$? && echo @@@BUILD_FAILED@@@)
 
+echo @@@BUILD_STEP install_plugin@@@
+ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
+    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl SILENT=1 platform=arm bitcode=1 sdl=none \
+    built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 \
+    firefox_install || \
+    (RETCODE=$? && echo @@@BUILD_FAILED@@@)
+
+echo @@@BUILD_STEP selenium@@@
+DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority ARM_CC=gcc \
+    ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
+    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl SILENT=1 platform=arm bitcode=1 sdl=none \
+    built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 browser_tests || \
+    (RETCODE=$? && echo @@@BUILD_FAILED@@@)
+
 echo @@@BUILD_STEP end_browser_testing@@@
 vncserver -kill :20
+ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
+    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl SILENT=1 platform=arm bitcode=1 sdl=none \
+    built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 \
+    firefox_remove || \
+    (RETCODE=$? && echo @@@BUILD_FAILED@@@)
+
 
 exit ${RETCODE}

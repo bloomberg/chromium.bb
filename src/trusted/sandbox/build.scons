@@ -1,0 +1,28 @@
+# -*- python -*-
+# Copyright 2008 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+
+Import('env')
+
+# TODO(neha): eliminate the need for the next line
+env.FilterOut(CCFLAGS=['-Wextra'])
+
+if env.Bit('linux') and env.Bit('build_x86_32'):
+    # ----------------------------------------------------------
+    #
+    # ----------------------------------------------------------
+    env.ComponentLibrary('sandbox',
+                         ['linux/nacl_syscall_filter.cc',
+                          'linux/nacl_syscall_checker.cc',
+                          'linux/nacl_syscall_def.cc',
+                          'linux/nacl_registers.cc',
+                          'linux/nacl_sandbox.cc'])
+
+    env.ComponentProgram('sel_ldr.trace',
+                         ['linux/nacl_sandbox_main.cc'],
+                         EXTRA_LIBS=['sandbox', '${OPTIONAL_COVERAGE_LIBS}'])
+    # we need this to build the plugin, so register it here
+    env.AddPluginPrerequisite(['sel_ldr.trace'])
+    env.AddPluginPrerequisite('${SOURCE_ROOT}/native_client/tools/sel_ldr.bash')
