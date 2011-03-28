@@ -28,13 +28,15 @@ function load() {
   $('copies').addEventListener('input', validateNumberOfCopies);
   $('copies').addEventListener('blur', handleCopiesFieldBlur);
 
+  updateCollateCheckboxState();
   chrome.send('getPrinters');
 };
 
 /**
  * Parses the copies field text for validation and updates the state of print
- * button. If the specified value is invalid, displays an invalid warning icon
- * on the text box and sets the error message as the title message of text box.
+ * button and collate checkbox. If the specified value is invalid, displays an
+ * invalid warning icon on the text box and sets the error message as the title
+ * message of text box.
  */
 function validateNumberOfCopies() {
   var copiesField = $('copies');
@@ -44,6 +46,7 @@ function validateNumberOfCopies() {
   copiesField.setCustomValidity(message);
   copiesField.title = message;
   updatePrintButtonState();
+  updateCollateCheckboxState();
 }
 
 /**
@@ -51,6 +54,23 @@ function validateNumberOfCopies() {
  */
 function handleCopiesFieldBlur() {
   checkAndSetInputFieldDefaultValue($('copies'), 1);
+}
+
+/**
+ * Updates the state of collate checkbox.
+ *
+ * Depending on the validity of 'copies' value, enables/disables the collate
+ * checkbox.
+ */
+function updateCollateCheckboxState() {
+  var copiesField = $('copies');
+  var collateField = $('collate');
+  collateField.disabled = !(copiesField.checkValidity() &&
+                            copiesField.value > 1);
+  if (collateField.disabled)
+    $('collateOptionLabel').classList.add('disabled-label-text');
+  else
+    $('collateOptionLabel').classList.remove('disabled-label-text');
 }
 
 /**

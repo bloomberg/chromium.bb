@@ -88,7 +88,8 @@ select {
   padding: 0;
 }
 
-#example-text {
+#example-text,
+.disabled-label-text {
   color: gray;
 }
 
