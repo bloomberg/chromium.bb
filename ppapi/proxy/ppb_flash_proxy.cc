@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -86,16 +87,24 @@ PP_Var GetProxyForURL(PP_Instance instance, const char* url) {
   return result.Return(dispatcher);
 }
 
-PP_Bool NavigateToURL(PP_Instance instance,
-                      const char* url,
-                      const char* target) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return PP_FALSE;
+int32_t Navigate(PP_Resource request_id,
+                 const char* target,
+                 bool from_user_action) {
+  PluginResource* request_object =
+      PluginResourceTracker::GetInstance()->GetResourceObject(request_id);
+  if (!request_object)
+    return PP_ERROR_BADRESOURCE;
 
-  PP_Bool result = PP_FALSE;
-  dispatcher->Send(new PpapiHostMsg_PPBFlash_NavigateToURL(
-      INTERFACE_ID_PPB_FLASH, instance, url, target, &result));
+  PluginDispatcher* dispatcher =
+      PluginDispatcher::GetForInstance(request_object->instance());
+  if (!dispatcher)
+    return PP_ERROR_FAILED;
+
+  int32_t result = PP_ERROR_FAILED;
+  dispatcher->Send(new PpapiHostMsg_PPBFlash_Navigate(
+      INTERFACE_ID_PPB_FLASH,
+      request_object->host_resource(), target, from_user_action,
+      &result));
   return result;
 }
 
@@ -121,7 +130,7 @@ const PPB_Flash flash_interface = {
   &SetInstanceAlwaysOnTop,
   &DrawGlyphs,
   &GetProxyForURL,
-  &NavigateToURL,
+  &Navigate,
   &RunMessageLoop,
   &QuitMessageLoop,
 };
@@ -162,7 +171,7 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgDrawGlyphs)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetProxyForURL,
                         OnMsgGetProxyForURL)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_NavigateToURL, OnMsgNavigateToURL)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_Navigate, OnMsgNavigate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_RunMessageLoop,
                         OnMsgRunMessageLoop)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_QuitMessageLoop,
@@ -208,12 +217,13 @@ void PPB_Flash_Proxy::OnMsgGetProxyForURL(PP_Instance instance,
       instance, url.c_str()));
 }
 
-void PPB_Flash_Proxy::OnMsgNavigateToURL(PP_Instance instance,
-                                         const std::string& url,
-                                         const std::string& target,
-                                         PP_Bool* result) {
-  *result = ppb_flash_target()->NavigateToURL(instance, url.c_str(),
-                                              target.c_str());
+void PPB_Flash_Proxy::OnMsgNavigate(const HostResource& request_info,
+                                    const std::string& target,
+                                    bool from_user_action,
+                                    int32_t* result) {
+  *result = ppb_flash_target()->Navigate(request_info.host_resource(),
+                                         target.c_str(),
+                                         from_user_action);
 }
 
 void PPB_Flash_Proxy::OnMsgRunMessageLoop(PP_Instance instance) {

@@ -10,6 +10,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
+#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
 struct PP_FileInfo_Dev;
@@ -44,10 +45,10 @@ class PPB_Flash_Proxy : public InterfaceProxy {
   void OnMsgGetProxyForURL(PP_Instance instance,
                            const std::string& url,
                            SerializedVarReturnValue result);
-  void OnMsgNavigateToURL(PP_Instance instance,
-                          const std::string& url,
-                          const std::string& target,
-                          PP_Bool* result);
+  void OnMsgNavigate(const HostResource& request_info,
+                     const std::string& target,
+                     bool from_user_action,
+                     int32_t* result);
   void OnMsgRunMessageLoop(PP_Instance instance);
   void OnMsgQuitMessageLoop(PP_Instance instance);
 };

@@ -37,6 +37,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/rect.h"
@@ -53,6 +54,7 @@
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
+#include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppp_pdf.h"
 #include "webkit/plugins/ppapi/string.h"
 #include "webkit/plugins/ppapi/var.h"
@@ -1130,25 +1132,34 @@ void PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
   }
 }
 
-bool PluginInstance::NavigateToURL(const char* url, const char* target) {
-  if (!url || !target || !container_)
-    return false;
+int32_t PluginInstance::Navigate(PPB_URLRequestInfo_Impl* request,
+                                 const char* target,
+                                 bool from_user_action) {
+  if (!container_)
+    return PP_ERROR_FAILED;
 
   WebDocument document = container_->element().document();
-  GURL complete_url = document.completeURL(WebString::fromUTF8(url));
-  // Don't try to deal with the security issues of javascript.
-  if (complete_url.SchemeIs("javascript"))
-    return false;
+  WebFrame* frame = document.frame();
+  if (!frame)
+    return PP_ERROR_FAILED;
+  WebURLRequest web_request(request->ToWebURLRequest(frame));
+  web_request.setFirstPartyForCookies(document.firstPartyForCookies());
+  web_request.setHasUserGesture(from_user_action);
 
-  WebURLRequest request(complete_url);
-  document.frame()->setReferrerForRequest(request, GURL());
-  request.setHTTPMethod(WebString::fromUTF8("GET"));
-  request.setFirstPartyForCookies(document.firstPartyForCookies());
-  request.setHasUserGesture(true);
+  if (GURL(web_request.url()).SchemeIs("javascript")) {
+    // TODO(vtl)
+    NOTIMPLEMENTED();
+    return PP_ERROR_FAILED;
+  }
+
+  // Only GETs and POSTs are supported.
+  if (web_request.httpMethod() != "GET" &&
+      web_request.httpMethod() != "POST")
+    return PP_ERROR_BADARGUMENT;
 
   WebString target_str = WebString::fromUTF8(target);
-  container_->loadFrameRequest(request, target_str, false, NULL);
-  return true;
+  container_->loadFrameRequest(web_request, target_str, false, NULL);
+  return PP_OK;
 }
 
 PluginDelegate::PlatformContext3D* PluginInstance::CreateContext3D() {

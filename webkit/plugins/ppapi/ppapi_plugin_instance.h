@@ -64,6 +64,7 @@ class PPB_Graphics2D_Impl;
 class PPB_ImageData_Impl;
 class PPB_Surface3D_Impl;
 class PPB_URLLoader_Impl;
+class PPB_URLRequestInfo_Impl;
 class Resource;
 
 // Represents one time a plugin appears on one web page.
@@ -217,7 +218,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   void SetFullscreen(bool fullscreen, bool delay_report);
 
   // Implementation of PPB_Flash.
-  bool NavigateToURL(const char* url, const char* target);
+  int32_t Navigate(PPB_URLRequestInfo_Impl* request,
+                   const char* target,
+                   bool from_user_action);
 
   // Implementation of PPB_Messaging and PPP_Messaging.
   void PostMessage(PP_Var message);

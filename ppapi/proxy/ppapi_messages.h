@@ -380,11 +380,11 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetProxyForURL,
                            PP_Instance /* instance */,
                            std::string /* url */,
                            pp::proxy::SerializedVar /* result */)
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_NavigateToURL,
-                           PP_Instance /* instance */,
-                           std::string /* url */,
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_Navigate,
+                           pp::proxy::HostResource /* request_info */,
                            std::string /* target */,
-                           PP_Bool /* result */)
+                           bool /* from_user_action */,
+                           int32_t /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_RunMessageLoop,
                            PP_Instance /* instance */)
 IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_QuitMessageLoop,
