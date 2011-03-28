@@ -255,6 +255,14 @@ void ClearCache(bool preserve_ssl_host_info) {
   RenderThread::current()->ClearCache(preserve_ssl_host_info);
 }
 
+void ClearHostResolverCache() {
+  RenderThread::current()->ClearHostResolverCache();
+}
+
+void ClearPredictorCache() {
+  RenderThread::current()->ClearPredictorCache();
+}
+
 std::string GetProductVersion() {
   chrome::VersionInfo version_info;
   std::string product("Chrome/");

@@ -61,6 +61,9 @@ void PreconnectUrlAndSubresources(const GURL& url);
 // When displaying info in about:dns, the following API is called.
 void PredictorGetHtmlInfo(std::string* output);
 
+// Destroy the predictor's internal state: referrers and work queue.
+void ClearPredictorCache();
+
 //------------------------------------------------------------------------------
 // When we navigate to a frame that may contain embedded resources, we may know
 // in advance some other URLs that will need to be connected to (via TCP and

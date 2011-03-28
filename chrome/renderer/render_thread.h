@@ -225,6 +225,12 @@ class RenderThread : public RenderThreadBase,
   // entries related to cached SSL information.
   void ClearCache(bool preserve_ssl_host_info);
 
+  // Sends a message to the browser to clear thed host cache.
+  void ClearHostResolverCache();
+
+  // Sends a message to the browser to clear the predictor cache.
+  void ClearPredictorCache();
+
   // Sends a message to the browser to enable/disable spdy.
   void EnableSpdy(bool enable);
 

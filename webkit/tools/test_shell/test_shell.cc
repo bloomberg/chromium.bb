@@ -683,6 +683,14 @@ void ClearCache(bool preserve_ssl_entries) {
   // Used in benchmarking,  Ignored for test_shell.
 }
 
+void ClearHostResolverCache() {
+  // Used in benchmarking,  Ignored for test_shell.
+}
+
+void ClearPredictorCache() {
+  // Used in benchmarking,  Ignored for test_shell.
+}
+
 void EnableSpdy(bool enable) {
   // Used in benchmarking,  Ignored for test_shell.
 }

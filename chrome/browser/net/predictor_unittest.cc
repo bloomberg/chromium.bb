@@ -585,4 +585,28 @@ TEST_F(PredictorTest, CanonicalizeUrl) {
             long_https.GetWithEmptyPath());
 }
 
+TEST_F(PredictorTest, DiscardPredictorResults) {
+  scoped_refptr<Predictor> predictor(
+      new Predictor(host_resolver_.get(),
+                    default_max_queueing_delay_,
+                    PredictorInit::kMaxSpeculativeParallelResolves,
+                    false));
+  ListValue referral_list;
+  predictor->SerializeReferrers(&referral_list);
+  EXPECT_EQ(1U, referral_list.GetSize());
+
+  GURL host_1("http://test_1");
+  GURL host_2("http://test_2");
+  predictor->LearnFromNavigation(host_1, host_2);
+
+  predictor->SerializeReferrers(&referral_list);
+  EXPECT_EQ(2U, referral_list.GetSize());
+
+  predictor->DiscardAllResults();
+  predictor->SerializeReferrers(&referral_list);
+  EXPECT_EQ(1U, referral_list.GetSize());
+
+  predictor->Shutdown();
+}
+
 }  // namespace chrome_browser_net

@@ -381,6 +381,13 @@ void PredictorGetHtmlInfo(std::string* output) {
   output->append("</body></html>");
 }
 
+void ClearPredictorCache() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!predictor_enabled || NULL == g_predictor)
+    return;
+  g_predictor->DiscardAllResults();
+}
+
 //------------------------------------------------------------------------------
 // This section intializes global DNS prefetch services.
 //------------------------------------------------------------------------------

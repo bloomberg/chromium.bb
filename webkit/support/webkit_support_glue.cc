@@ -75,6 +75,12 @@ void SetCacheMode(bool enabled) {
 void ClearCache(bool preserve_ssl_info) {
 }
 
+void ClearHostResolverCache() {
+}
+
+void ClearPredictorCache() {
+}
+
 std::string GetProductVersion() {
   return std::string("DumpRenderTree/0.0.0.0");
 }

@@ -828,6 +828,16 @@ void RenderThread::ClearCache(bool preserve_ssl_host_info) {
   Send(new ViewHostMsg_ClearCache(preserve_ssl_host_info, &rv));
 }
 
+void RenderThread::ClearHostResolverCache() {
+  int rv;
+  Send(new ViewHostMsg_ClearHostResolverCache(&rv));
+}
+
+void RenderThread::ClearPredictorCache() {
+  int rv;
+  Send(new ViewHostMsg_ClearPredictorCache(&rv));
+}
+
 void RenderThread::EnableSpdy(bool enable) {
   Send(new ViewHostMsg_EnableSpdy(enable));
 }

@@ -267,6 +267,13 @@ void SetCacheMode(bool enabled);
 // SSL information should be purged.
 void ClearCache(bool preserve_ssl_host_info);
 
+// Clear the host resolver cache.  Used for debugging.
+void ClearHostResolverCache();
+
+// Clear the predictor cache (for DNS prefetch and preconnect).  Used for
+// debugging.
+void ClearPredictorCache();
+
 // Returns the product version.  E.g., Chrome/4.1.333.0
 std::string GetProductVersion();
 

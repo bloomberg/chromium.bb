@@ -17,6 +17,7 @@
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/platform_util.h"
@@ -39,6 +40,7 @@
 #include "content/common/view_messages.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/cookie_monster.h"
+#include "net/base/host_resolver_impl.h"
 #include "net/base/io_buffer.h"
 #include "net/base/keygen_handler.h"
 #include "net/base/mime_util.h"
@@ -348,6 +350,10 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnCloseCurrentConnections)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode, OnSetCacheMode)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClearCache, OnClearCache)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClearHostResolverCache,
+                                    OnClearHostResolverCache)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClearPredictorCache,
+                                    OnClearPredictorCache)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
                         OnCacheableMetadataAvailable)
     IPC_MESSAGE_HANDLER(ViewHostMsg_EnableSpdy, OnEnableSpdy)
@@ -852,6 +858,33 @@ void RenderMessageFilter::OnClearCache(bool preserve_ssl_host_info,
     }
   }
   ViewHostMsg_ClearCache::WriteReplyParams(reply_msg, rv);
+  Send(reply_msg);
+}
+
+void RenderMessageFilter::OnClearHostResolverCache(IPC::Message* reply_msg) {
+  // This function is disabled unless the user has enabled
+  // benchmarking extensions.
+  int rv = -1;
+  DCHECK(CheckBenchmarkingEnabled());
+  net::HostResolverImpl* host_resolver_impl =
+      request_context_->GetURLRequestContext()->
+      host_resolver()->GetAsHostResolverImpl();
+  if (host_resolver_impl) {
+    net::HostCache* cache = host_resolver_impl->cache();
+    DCHECK(cache);
+    cache->clear();
+    rv = 0;
+  }
+  ViewHostMsg_ClearHostResolverCache::WriteReplyParams(reply_msg, rv);
+  Send(reply_msg);
+}
+
+void RenderMessageFilter::OnClearPredictorCache(IPC::Message* reply_msg) {
+  // This function is disabled unless the user has enabled
+  // benchmarking extensions.
+  CHECK(CheckBenchmarkingEnabled());
+  chrome_browser_net::ClearPredictorCache();
+  ViewHostMsg_ClearPredictorCache::WriteReplyParams(reply_msg, 0);
   Send(reply_msg);
 }
 
