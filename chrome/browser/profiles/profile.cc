@@ -30,6 +30,7 @@
 #include "chrome/browser/ssl/ssl_host_state.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
@@ -305,8 +306,13 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual net::TransportSecurityState* GetTransportSecurityState() {
-    if (!transport_security_state_.get())
+    if (!transport_security_state_.get()) {
       transport_security_state_ = new net::TransportSecurityState();
+      transport_security_loader_ =
+          new TransportSecurityPersister(true /* readonly */);
+      transport_security_loader_->Initialize(transport_security_state_.get(),
+                                             GetOriginalProfile()->GetPath());
+    }
 
     return transport_security_state_.get();
   }
@@ -736,6 +742,9 @@ class OffTheRecordProfileImpl : public Profile,
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
+
+  // Used read-only.
+  scoped_refptr<TransportSecurityPersister> transport_security_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };

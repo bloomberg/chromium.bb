@@ -729,7 +729,7 @@ net::TransportSecurityState*
   if (!transport_security_state_.get()) {
     transport_security_state_ = new net::TransportSecurityState();
     transport_security_persister_ =
-        new TransportSecurityPersister();
+        new TransportSecurityPersister(false /* read-write */);
     transport_security_persister_->Initialize(
         transport_security_state_.get(), path_);
   }

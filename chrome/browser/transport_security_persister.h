@@ -43,7 +43,7 @@ class TransportSecurityPersister
     : public base::RefCountedThreadSafe<TransportSecurityPersister>,
       public net::TransportSecurityState::Delegate {
  public:
-  TransportSecurityPersister();
+  explicit TransportSecurityPersister(bool readonly);
   void Initialize(net::TransportSecurityState* state,
                   const FilePath& profile_path);
 
@@ -69,6 +69,9 @@ class TransportSecurityPersister
 
   // The path to the file in which we store the serialised state.
   FilePath state_file_;
+
+  // Whether or not we're in read-only mode.
+  bool readonly_;
 };
 
 #endif  // CHROME_BROWSER_TRANSPORT_SECURITY_PERSISTER_H_
