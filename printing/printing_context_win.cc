@@ -213,11 +213,12 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
     const DictionaryValue& job_settings, const PageRanges& ranges) {
   DCHECK(!in_print_job_);
 
+  // TODO(kmadhusu): Update other print settings such as number of copies,
+  // collate, duplex printing, job title, etc.,
+
   settings_.ranges = ranges;
 
-  NOTIMPLEMENTED();
-
-  return FAILED;
+  return OK;
 }
 
 PrintingContext::Result PrintingContextWin::InitWithSettings(
