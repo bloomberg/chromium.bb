@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/linked_ptr.h"
+#include "base/memory/linked_ptr.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "chrome/browser/sessions/session_id.h"

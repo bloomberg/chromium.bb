@@ -9,8 +9,8 @@
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CALayer.h>
 
-#include "base/scoped_nsobject.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/accessibility/browser_accessibility_delegate_mac.h"

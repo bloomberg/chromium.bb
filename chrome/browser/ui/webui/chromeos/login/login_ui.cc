@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/ref_counted_memory.h"
-#include "base/singleton.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/singleton.h"
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"

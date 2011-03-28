@@ -4,8 +4,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_nsobject.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/page_info_model.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 

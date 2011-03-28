@@ -9,7 +9,7 @@
 #include <bitset>
 #include <vector>
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/timer.h"
 
 typedef unsigned long Cursor;

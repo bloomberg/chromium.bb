@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/scoped_nsobject.h"
+#import "base/memory/scoped_nsobject.h"
 #import "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/app/chrome_command_ids.h"  // For translate menu command ids.

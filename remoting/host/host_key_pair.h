@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 
 namespace base {

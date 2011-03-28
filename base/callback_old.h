@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 #define BASE_CALLBACK_OLD_H_
 #pragma once
 
+#include "base/memory/raw_scoped_refptr_mismatch_checker.h"
 #include "base/tuple.h"
-#include "base/raw_scoped_refptr_mismatch_checker.h"
 
 // Callback --------------------------------------------------------------------
 //

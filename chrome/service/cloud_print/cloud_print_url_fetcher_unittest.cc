@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
-#include "base/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chrome/common/net/url_request_context_getter.h"

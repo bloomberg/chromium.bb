@@ -6,7 +6,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/logging.h"
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 #include "grit/generated_resources.h"

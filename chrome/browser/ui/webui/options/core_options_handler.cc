@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 
 #include "base/json/json_reader.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"

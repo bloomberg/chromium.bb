@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"

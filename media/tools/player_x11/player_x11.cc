@@ -10,7 +10,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "media/base/callback.h"

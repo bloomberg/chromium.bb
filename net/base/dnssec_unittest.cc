@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/dns_util.h"
 #include "net/base/dnssec_chain_verifier.h"
 #include "net/base/dnssec_keyset.h"

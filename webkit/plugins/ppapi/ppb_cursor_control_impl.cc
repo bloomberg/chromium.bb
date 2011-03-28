@@ -5,7 +5,7 @@
 #include "webkit/plugins/ppapi/ppb_cursor_control_impl.h"
 
 #include "base/logging.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/pp_point.h"

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 
 class SessionBackend;
 class SessionCommand;

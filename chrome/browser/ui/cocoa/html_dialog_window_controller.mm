@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/html_dialog_window_controller.h"
 
 #include "base/logging.h"
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/browser_dialogs.h"

@@ -11,7 +11,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/win/registry.h"
 #include "chrome_frame/infobars/infobar_content.h"
 #include "chrome_frame/ready_mode/internal/ready_mode_state.h"

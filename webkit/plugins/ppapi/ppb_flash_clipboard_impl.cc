@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_clipboard.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebClipboard.h"

@@ -4,7 +4,7 @@
 
 #include <dlfcn.h>
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
 
 typedef CFTypeRef (*IOSurfaceCreateProcPtr)(CFDictionaryRef properties);

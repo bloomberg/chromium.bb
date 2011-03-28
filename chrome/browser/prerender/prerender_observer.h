@@ -9,7 +9,7 @@
 #include <list>
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "googleurl/src/gurl.h"

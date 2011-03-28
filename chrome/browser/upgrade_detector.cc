@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/scoped_ptr.h"
-#include "base/singleton.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task.h"

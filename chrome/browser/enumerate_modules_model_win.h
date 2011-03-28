@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/ref_counted.h"
-#include "base/singleton.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "base/string16.h"
 #include "base/timer.h"
 #include "content/browser/browser_thread.h"

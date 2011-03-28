@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_
 #pragma once
 
+#include "base/memory/scoped_vector.h"
 #include "base/string16.h"
-#include "base/scoped_vector.h"
 #include "base/time.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/geolocation/access_token_store.h"

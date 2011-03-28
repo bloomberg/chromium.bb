@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sessions/session_service_test_helper.h"
 
-#include "base/scoped_vector.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_service.h"

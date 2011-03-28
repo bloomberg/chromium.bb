@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function.h"
 
 class DictionaryValue;

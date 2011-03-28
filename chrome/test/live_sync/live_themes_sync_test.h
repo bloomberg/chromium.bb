@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/scoped_temp_dir.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "chrome/test/live_sync/live_extensions_sync_test_base.h"
 
 class Extension;

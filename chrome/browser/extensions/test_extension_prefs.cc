@@ -5,9 +5,9 @@
 #include "chrome/browser/extensions/test_extension_prefs.h"
 
 #include "base/file_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/extensions/extension_pref_store.h"

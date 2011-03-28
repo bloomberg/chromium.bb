@@ -8,8 +8,8 @@
 #include <deque>
 #include <map>
 
+#include "base/memory/singleton.h"
 #include "base/shared_memory.h"
-#include "base/singleton.h"
 #include "content/renderer/gpu_channel_host.h"
 #include "media/base/buffers.h"
 #include "media/base/video_frame.h"

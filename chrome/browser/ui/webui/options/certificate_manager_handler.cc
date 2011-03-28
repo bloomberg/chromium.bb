@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/webui/options/certificate_manager_handler.h"
 
 #include "base/file_util.h"  // for FileAccessProvider
+#include "base/memory/scoped_vector.h"
 #include "base/safe_strerror_posix.h"
-#include "base/scoped_vector.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"

@@ -10,7 +10,7 @@
 #include "sandbox/src/interception.h"
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/win/pe_image.h"
 #include "base/win/windows_version.h"
 #include "sandbox/src/interception_internal.h"

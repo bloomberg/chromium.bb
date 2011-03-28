@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/linked_ptr.h"
+#include "base/memory/linked_ptr.h"
 #include "chrome/common/extensions/extension.h"
 
 class FilePath;

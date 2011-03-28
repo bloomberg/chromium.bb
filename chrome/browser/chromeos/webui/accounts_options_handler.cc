@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/webui/accounts_options_handler.h"
 
 #include "base/json/json_reader.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"

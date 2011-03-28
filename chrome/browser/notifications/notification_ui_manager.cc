@@ -5,7 +5,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/fullscreen.h"

@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 

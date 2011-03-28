@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/callback.h"
-#include "base/ref_counted.h"
-#include "base/scoped_vector.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"

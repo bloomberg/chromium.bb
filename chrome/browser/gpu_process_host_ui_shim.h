@@ -15,11 +15,11 @@
 #include <queue>
 
 #include "base/callback.h"
-#include "base/linked_ptr.h"
+#include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/process.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
-#include "base/singleton.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/gpu_feature_flags.h"
 #include "content/common/gpu_info.h"

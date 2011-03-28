@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/browser/profiles/profile.h"

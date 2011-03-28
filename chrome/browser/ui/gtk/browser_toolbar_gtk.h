@@ -9,7 +9,7 @@
 #include <gtk/gtk.h>
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/gtk/custom_button.h"

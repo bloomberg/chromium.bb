@@ -13,10 +13,10 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/process_util.h"
-#include "base/ref_counted.h"
-#include "base/singleton.h"
 #include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"

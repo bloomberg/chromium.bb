@@ -11,8 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
-#include "base/ref_counted.h"
-#include "base/weak_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
 

@@ -4,8 +4,8 @@
 
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "chrome/common/autofill_messages.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"

@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/json/json_writer.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/debugger/devtools_client_host.h"

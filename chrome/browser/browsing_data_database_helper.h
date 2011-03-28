@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"

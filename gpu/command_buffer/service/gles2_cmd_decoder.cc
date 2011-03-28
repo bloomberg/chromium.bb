@@ -17,8 +17,8 @@
 #include "base/atomicops.h"
 #include "base/at_exit.h"
 #include "base/callback.h"
-#include "base/scoped_ptr.h"
-#include "base/weak_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/gles2_cmd_format.h"

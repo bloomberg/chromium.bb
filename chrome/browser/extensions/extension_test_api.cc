@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/profiles/profile.h"

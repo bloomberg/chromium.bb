@@ -11,9 +11,9 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"

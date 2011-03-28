@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/basictypes.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 
 // This class keeps track of a map between renderer IDs and tab/window IDs, for
 // use on the IO thread. All methods should be called on the IO thread except

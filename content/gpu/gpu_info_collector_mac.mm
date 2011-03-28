@@ -9,7 +9,7 @@
 #include "app/gfx/gl/gl_implementation.h"
 #include "app/gfx/gl/gl_interface.h"
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
 

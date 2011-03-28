@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/applescript/bookmark_node_applescript.h"
 
 #include "base/logging.h"
-#import "base/scoped_nsobject.h"
+#import "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"

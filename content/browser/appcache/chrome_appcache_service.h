@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_registrar.h"

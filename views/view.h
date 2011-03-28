@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"

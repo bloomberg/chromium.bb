@@ -12,7 +12,7 @@
 
 #include "app/sql/init_status.h"
 #include "base/file_path.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "content/browser/browser_thread.h"

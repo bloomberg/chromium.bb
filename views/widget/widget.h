@@ -8,8 +8,8 @@
 
 #include <vector>
 
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/focus/focus_manager.h"

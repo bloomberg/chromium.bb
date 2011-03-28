@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/login_container_ui.h"
 
-#include "base/ref_counted_memory.h"
-#include "base/singleton.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/singleton.h"
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/frame/dom_browser.h"

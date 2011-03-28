@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "base/weak_ptr.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"

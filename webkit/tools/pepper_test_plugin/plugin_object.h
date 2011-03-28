@@ -27,7 +27,7 @@
 #define WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_PLUGIN_OBJECT_H_
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 #if !defined(INDEPENDENT_PLUGIN)
 #include "gpu/pgl/pgl.h"

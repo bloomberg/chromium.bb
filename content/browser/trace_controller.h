@@ -8,8 +8,8 @@
 #include <set>
 #include <string>
 
-#include "base/ref_counted.h"
-#include "base/singleton.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "base/task.h"
 
 class TraceMessageFilter;

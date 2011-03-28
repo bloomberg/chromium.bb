@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/app/chrome_command_ids.h"

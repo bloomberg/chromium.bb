@@ -7,9 +7,9 @@
 #include <gtk/gtk.h>
 
 #include "base/environment.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/nix/xdg_util.h"
-#include "base/scoped_ptr.h"
-#include "base/singleton.h"
 #include "chrome/browser/ui/gtk/browser_titlebar.h"
 
 namespace {

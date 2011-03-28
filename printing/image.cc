@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/md5.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "printing/native_metafile_factory.h"
 #include "third_party/skia/include/core/SkColor.h"

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "printing/printing_context.h"
 
 #ifdef __OBJC__

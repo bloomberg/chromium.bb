@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "views/focus/focus_manager.h"
 #include "views/focus/focus_search.h"
 #include "views/view.h"

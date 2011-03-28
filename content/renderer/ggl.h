@@ -12,7 +12,7 @@
 #pragma once
 
 #include "base/callback.h"
-#include "base/weak_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 

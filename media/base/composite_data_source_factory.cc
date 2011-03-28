@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 
 namespace media {

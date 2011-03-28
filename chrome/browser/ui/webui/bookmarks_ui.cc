@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
 
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "base/ref_counted_memory.h"
-#include "base/singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"

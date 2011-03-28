@@ -11,7 +11,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/burn_library.h"

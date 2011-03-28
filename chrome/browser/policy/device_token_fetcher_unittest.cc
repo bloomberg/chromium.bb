@@ -5,8 +5,8 @@
 #include "chrome/browser/policy/device_token_fetcher.h"
 
 #include "base/file_util.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/cloud_policy_cache.h"
 #include "chrome/browser/policy/device_management_service.h"

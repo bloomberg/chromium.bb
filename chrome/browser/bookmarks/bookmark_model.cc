@@ -8,7 +8,7 @@
 #include <functional>
 
 #include "base/callback.h"
-#include "base/scoped_vector.h"
+#include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/downloads_ui.h"
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/string_piece.h"
 #include "base/threading/thread.h"
 #include "base/values.h"

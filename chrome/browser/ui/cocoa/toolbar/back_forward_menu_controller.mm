@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/back_forward_menu_controller.h"
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"

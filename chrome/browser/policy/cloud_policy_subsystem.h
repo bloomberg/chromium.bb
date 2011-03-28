@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_POLICY_CLOUD_POLICY_SUBSYSTEM_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/common/notification_observer.h"
 

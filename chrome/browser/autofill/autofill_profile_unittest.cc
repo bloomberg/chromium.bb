@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
-#include "base/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"

@@ -4,8 +4,8 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"

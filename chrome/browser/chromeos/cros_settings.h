@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/hash_tables.h"
+#include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "base/singleton.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "content/common/notification_observer.h"

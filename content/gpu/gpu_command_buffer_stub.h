@@ -11,8 +11,8 @@
 #include <vector>
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/process.h"
-#include "base/weak_ptr.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
 #include "ipc/ipc_channel.h"

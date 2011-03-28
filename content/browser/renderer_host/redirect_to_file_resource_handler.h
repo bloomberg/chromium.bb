@@ -6,10 +6,10 @@
 #define CONTENT_BROWSER_RENDERER_HOST_REDIRECT_TO_FILE_RESOURCE_HANDLER_H_
 
 #include "base/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "base/ref_counted.h"
-#include "base/scoped_callback_factory.h"
-#include "base/scoped_ptr.h"
 #include "content/browser/renderer_host/resource_handler.h"
 #include "net/base/completion_callback.h"
 

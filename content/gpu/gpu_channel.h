@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/common/message_router.h"
 #include "content/gpu/gpu_command_buffer_stub.h"

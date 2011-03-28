@@ -9,8 +9,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/memory/singleton.h"
 #include "base/path_service.h"
-#include "base/singleton.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

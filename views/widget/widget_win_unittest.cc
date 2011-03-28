@@ -5,8 +5,8 @@
 #include "views/widget/widget_win.h"
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace views;

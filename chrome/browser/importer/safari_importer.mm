@@ -11,8 +11,8 @@
 
 #include "base/file_util.h"
 #include "base/mac/mac_util.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
-#include "base/scoped_nsobject.h"
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"

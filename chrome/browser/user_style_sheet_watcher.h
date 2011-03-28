@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/file_path.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/file_path_watcher/file_path_watcher.h"
 #include "content/common/notification_observer.h"

@@ -8,8 +8,8 @@
 #include <urlmon.h>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"

@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_test_sink.h"

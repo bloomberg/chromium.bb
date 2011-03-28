@@ -16,8 +16,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
 #include "chrome/browser/sync/notifier/state_writer.h"

@@ -16,7 +16,7 @@
 #endif  // defined(OS_WIN)
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/notification_type.h"
 #include "ipc/ipc_channel_proxy.h"
 

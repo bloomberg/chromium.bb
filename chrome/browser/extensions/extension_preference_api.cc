@@ -7,7 +7,7 @@
 #include <map>
 
 #include "base/json/json_writer.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/stl_util-inl.h"
 #include "base/stringprintf.h"
 #include "base/values.h"

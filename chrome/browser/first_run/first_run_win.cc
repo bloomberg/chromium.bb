@@ -13,9 +13,9 @@
 
 #include "base/environment.h"
 #include "base/file_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/scoped_comptr_win.h"
-#include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"

@@ -38,9 +38,9 @@
 #ifndef O3D_PLUGIN_CROSS_PLUGIN_LOGGING_H_
 #define O3D_PLUGIN_CROSS_PLUGIN_LOGGING_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "statsreport/metrics.h"
 #include "statsreport/common/highres_timer.h"
-#include "base/scoped_ptr.h"
 #include "base/basictypes.h"
 
 namespace o3d {

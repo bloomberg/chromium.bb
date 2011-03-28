@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef REMOTING_BASE_DECOMPRESSOR_ZLIB_H_
 #define REMOTING_BASE_DECOMPRESSOR_ZLIB_H_
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "remoting/base/decompressor.h"
 
 typedef struct z_stream_s z_stream;

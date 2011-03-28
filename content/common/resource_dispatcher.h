@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/hash_tables.h"
-#include "base/linked_ptr.h"
+#include "base/memory/linked_ptr.h"
 #include "base/shared_memory.h"
 #include "base/task.h"
 #include "ipc/ipc_channel.h"

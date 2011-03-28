@@ -48,13 +48,13 @@
 // WARNING: weak pointers are not threadsafe!!!  You must only use a WeakPtr
 // instance on thread where it was created.
 
-#ifndef BASE_WEAK_PTR_H_
-#define BASE_WEAK_PTR_H_
+#ifndef BASE_MEMORY_WEAK_PTR_H_
+#define BASE_MEMORY_WEAK_PTR_H_
 #pragma once
 
 #include "base/base_api.h"
 #include "base/logging.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 
 namespace base {
@@ -243,4 +243,4 @@ class WeakPtrFactory {
 
 }  // namespace base
 
-#endif  // BASE_WEAK_PTR_H_
+#endif  // BASE_MEMORY_WEAK_PTR_H_

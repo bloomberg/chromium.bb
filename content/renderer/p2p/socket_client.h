@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "content/common/p2p_sockets.h"
 #include "net/base/ip_endpoint.h"
 

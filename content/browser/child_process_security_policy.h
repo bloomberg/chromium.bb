@@ -13,7 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 
 class FilePath;

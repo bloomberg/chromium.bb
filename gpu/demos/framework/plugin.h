@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define GPU_DEMOS_FRAMEWORK_PLUGIN_H_
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "gpu/demos/framework/demo.h"
 #include "gpu/pgl/pgl.h"
 #include "third_party/npapi/bindings/nphostapi.h"

@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/scoped_vector.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "media/base/video_frame.h"

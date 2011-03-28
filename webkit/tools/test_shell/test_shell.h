@@ -34,12 +34,12 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/scoped_temp_dir.h"
+#include "base/memory/scoped_temp_dir.h"
 #if defined(OS_MACOSX)
 #include "base/lazy_instance.h"
 #endif
-#include "base/ref_counted.h"
-#include "base/weak_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/tools/test_shell/layout_test_controller.h"

@@ -10,7 +10,7 @@
 
 #include <gtk/gtk.h>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_tree.h"
 #include "chrome/common/content_settings.h"

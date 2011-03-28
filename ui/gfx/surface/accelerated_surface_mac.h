@@ -11,7 +11,7 @@
 #include "app/gfx/gl/gl_context.h"
 #include "base/callback.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"

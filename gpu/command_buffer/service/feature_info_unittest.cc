@@ -4,7 +4,7 @@
 
 #include "gpu/command_buffer/service/feature_info.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/gl_mock.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"

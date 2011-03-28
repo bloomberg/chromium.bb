@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 // A specialization of the ExternalExtensionLoader that uses a json file to

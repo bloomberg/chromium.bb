@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/keyboard_overlay_delegate.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"

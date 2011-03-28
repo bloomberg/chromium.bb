@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "content/browser/browser_thread.h"

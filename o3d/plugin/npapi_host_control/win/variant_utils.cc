@@ -30,8 +30,8 @@
  */
 
 
+#include "base/memory/scoped_ptr.h"
 #include "plugin/npapi_host_control/win/variant_utils.h"
-#include "base/scoped_ptr.h"
 #include "plugin/npapi_host_control/win/dispatch_proxy.h"
 
 void VariantToNPVariant(NPBrowserProxy* browser_proxy,

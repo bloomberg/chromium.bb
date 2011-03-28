@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/gtk/focus_store_gtk.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/browser/tab_contents/tab_contents_view.h"

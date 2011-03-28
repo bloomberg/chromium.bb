@@ -16,8 +16,8 @@
 
 #include <string>
 
-#include "base/ref_counted.h"
-#include "base/weak_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 
 class MessageLoop;
 

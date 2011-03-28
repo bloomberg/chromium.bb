@@ -9,10 +9,10 @@
 #include <set>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
-#include "base/scoped_vector.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"

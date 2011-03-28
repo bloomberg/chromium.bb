@@ -25,9 +25,9 @@
 #include "chrome/browser/history/history.h"
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/ref_counted.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"

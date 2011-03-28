@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_GEOLOCATION_ARBITRATOR_DEPENDENCY_FACTORY_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/string16.h"
 
 class AccessTokenStore;

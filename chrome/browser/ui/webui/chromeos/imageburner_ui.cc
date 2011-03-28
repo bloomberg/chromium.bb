@@ -7,9 +7,9 @@
 #include <algorithm>
 
 #include "base/i18n/rtl.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"

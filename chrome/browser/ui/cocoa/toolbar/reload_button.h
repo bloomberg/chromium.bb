@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/scoped_nsobject.h"
+#import "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_button.h"
 
 // ToolbarButton subclass which defers certain state changes when the mouse

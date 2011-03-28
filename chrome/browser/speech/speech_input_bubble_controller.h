@@ -8,8 +8,8 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/speech/speech_input_bubble.h"
 #include "content/common/notification_observer.h"
 

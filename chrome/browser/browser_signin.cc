@@ -9,8 +9,8 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"

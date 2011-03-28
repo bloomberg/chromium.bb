@@ -24,12 +24,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
-#include "base/weak_ptr.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/communicator/login.h"
 #include "jingle/notifier/listener/mediator_thread.h"

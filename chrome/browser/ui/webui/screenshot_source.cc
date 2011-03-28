@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/webui/screenshot_source.h"
 
 #include "base/file_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
-#include "base/ref_counted_memory.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task.h"
 #include "chrome/common/chrome_paths.h"

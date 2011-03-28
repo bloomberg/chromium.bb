@@ -18,7 +18,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/safe_browsing/chunk_range.h"

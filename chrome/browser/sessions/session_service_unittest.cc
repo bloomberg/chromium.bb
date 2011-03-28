@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
-#include "base/scoped_ptr.h"
-#include "base/scoped_vector.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"

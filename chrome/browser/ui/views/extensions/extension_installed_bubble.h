@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/views/info_bubble.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"

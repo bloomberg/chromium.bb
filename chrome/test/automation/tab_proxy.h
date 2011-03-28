@@ -16,8 +16,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "base/ref_counted.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/security_style.h"

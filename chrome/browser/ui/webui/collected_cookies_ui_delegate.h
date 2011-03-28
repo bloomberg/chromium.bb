@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/cookies_tree_model_adapter.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/content_settings.h"

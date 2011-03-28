@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_TOOLBAR_WRENCH_MENU_MODEL_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"

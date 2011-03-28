@@ -8,7 +8,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "base/basictypes.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 
 class Launchd {
  public:

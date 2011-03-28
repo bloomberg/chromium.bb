@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/lazy_instance.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"

@@ -10,7 +10,7 @@
 #include <vssym32.h>
 
 #include "base/logging.h"
-#include "base/scoped_handle.h"
+#include "base/memory/scoped_handle.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/windows_version.h"

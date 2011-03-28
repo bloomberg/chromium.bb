@@ -8,7 +8,7 @@
 
 #include <gtk/gtk.h>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"

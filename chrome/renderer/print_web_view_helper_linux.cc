@@ -6,7 +6,7 @@
 
 #include "base/file_descriptor_posix.h"
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/common/print_messages.h"
 #include "content/common/view_messages.h"
 #include "printing/native_metafile_factory.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/sessions/sync_session.h"
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/engine/syncer_types.h"

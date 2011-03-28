@@ -5,8 +5,8 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_WRITER_H_
 #define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_WRITER_H_
 
-#include "base/ref_counted.h"
-#include "base/weak_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "webkit/fileapi/webfilewriter_base.h"
 
 namespace net {

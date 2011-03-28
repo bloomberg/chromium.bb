@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/file_version_info.h"
 #include "base/file_util.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"

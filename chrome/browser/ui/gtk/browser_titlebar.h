@@ -13,7 +13,7 @@
 
 #include <gtk/gtk.h>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"

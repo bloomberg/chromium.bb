@@ -1,10 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/dock_icon.h"
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 
 // The fraction of the size of the dock icon that the badge is.
 static const float kBadgeFraction = 0.4f;

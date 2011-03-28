@@ -34,8 +34,8 @@
 #ifndef O3D_UTILS_CROSS_DATAURL_H_
 #define O3D_UTILS_CROSS_DATAURL_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "core/cross/types.h"
-#include "base/scoped_ptr.h"
 
 namespace o3d {
 namespace dataurl {

@@ -8,9 +8,9 @@
 
 #include <vector>
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "content/browser/appcache/appcache_frontend_proxy.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"

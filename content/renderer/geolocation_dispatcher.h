@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_GEOLOCATION_DISPATCHER_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationController.h"

@@ -12,7 +12,7 @@
 #include "app/sql/init_status.h"
 #include "app/sql/meta_table.h"
 #include "base/gtest_prod_util.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 

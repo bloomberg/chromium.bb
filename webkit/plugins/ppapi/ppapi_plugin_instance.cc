@@ -5,9 +5,9 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"

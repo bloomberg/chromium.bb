@@ -4,7 +4,7 @@
 
 #include "chrome/browser/policy/policy_map.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "policy/configuration_policy_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

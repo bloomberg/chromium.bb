@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/timer.h"

@@ -10,7 +10,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"

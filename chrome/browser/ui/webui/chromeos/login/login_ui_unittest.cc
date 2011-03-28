@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/chromeos/login/login_ui.h"

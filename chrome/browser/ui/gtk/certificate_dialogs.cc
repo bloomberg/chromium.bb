@@ -12,7 +12,7 @@
 #include "base/base64.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "content/browser/browser_thread.h"

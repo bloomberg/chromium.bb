@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 
 #include "base/path_service.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
-#import "base/scoped_nsobject.h"
+#import "base/memory/scoped_nsobject.h"
 #include "chrome/common/chrome_constants.h"
 #import "content/common/chrome_application_mac.h"
 #include "testing/platform_test.h"

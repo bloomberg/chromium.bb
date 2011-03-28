@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/notifier/non_blocking_invalidation_notifier.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/sync/notifier/mock_sync_notifier_observer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"

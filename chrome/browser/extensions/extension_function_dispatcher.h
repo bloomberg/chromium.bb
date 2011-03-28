@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
 

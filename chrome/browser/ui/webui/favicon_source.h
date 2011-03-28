@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 

@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/scoped_ptr.h"
-#include "base/weak_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/browsing_data_remover.h"

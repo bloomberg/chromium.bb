@@ -14,8 +14,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
 #include "chrome/browser/browser_process.h"

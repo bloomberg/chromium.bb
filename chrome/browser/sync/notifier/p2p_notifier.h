@@ -10,8 +10,8 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "jingle/notifier/listener/talk_mediator.h"

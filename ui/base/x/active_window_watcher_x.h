@@ -9,8 +9,8 @@
 #include <gdk/gdk.h>
 
 #include "base/basictypes.h"
+#include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "base/singleton.h"
 
 namespace ui {
 

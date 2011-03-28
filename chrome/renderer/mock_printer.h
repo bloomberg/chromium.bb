@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "printing/image.h"
 #include "ui/gfx/size.h"
 

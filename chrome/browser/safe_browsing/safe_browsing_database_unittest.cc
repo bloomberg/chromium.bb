@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -8,8 +8,8 @@
 #include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/sha2.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"

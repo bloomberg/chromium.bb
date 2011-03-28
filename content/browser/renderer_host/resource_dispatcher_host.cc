@@ -11,9 +11,9 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/stl_util-inl.h"
 #include "base/time.h"

@@ -6,7 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/theme_install_bubble_view.h"
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"

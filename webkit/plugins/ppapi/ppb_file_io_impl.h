@@ -7,10 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "base/ref_counted.h"
-#include "base/scoped_callback_factory.h"
-#include "base/scoped_ptr.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/pp_time.h"
 #include "webkit/plugins/ppapi/callbacks.h"

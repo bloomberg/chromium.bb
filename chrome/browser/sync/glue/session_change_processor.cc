@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/scoped_vector.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"

@@ -11,8 +11,8 @@
 
 #include <string>
 
-#include "base/ref_counted.h"
-#include "base/singleton.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"

@@ -12,7 +12,7 @@
 
 #include <map>
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"

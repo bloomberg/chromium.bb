@@ -6,7 +6,7 @@
 #define REMOTING_HOST_DESKTOP_ENVIRONMENT_H_
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace remoting {
 

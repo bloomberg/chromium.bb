@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"

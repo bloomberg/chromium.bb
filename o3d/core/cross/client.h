@@ -44,7 +44,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "core/cross/service_dependency.h"
 #include "core/cross/error_status.h"
 #include "core/cross/draw_list_manager.h"

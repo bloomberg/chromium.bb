@@ -13,7 +13,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"

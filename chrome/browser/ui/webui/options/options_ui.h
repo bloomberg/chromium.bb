@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/common/notification_observer.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/cocoa/gradient_button_cell.h"
 
 #include "base/logging.h"
-#import "base/scoped_nsobject.h"
+#import "base/memory/scoped_nsobject.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"

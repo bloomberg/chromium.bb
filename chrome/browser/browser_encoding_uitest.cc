@@ -1,10 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include <string>
 
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/common/pref_names.h"

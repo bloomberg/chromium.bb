@@ -7,8 +7,8 @@
 
 #include <map>
 
-#include "base/ref_counted.h"
-#include "base/singleton.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "content/gpu/gpu_video_decoder.h"
 #include "ipc/ipc_channel.h"
 

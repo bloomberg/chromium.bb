@@ -8,8 +8,8 @@
 
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "base/ref_counted.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/time.h"
 #include "content/browser/appcache/chrome_appcache_service.h"

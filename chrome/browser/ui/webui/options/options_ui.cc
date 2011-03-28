@@ -9,8 +9,8 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"

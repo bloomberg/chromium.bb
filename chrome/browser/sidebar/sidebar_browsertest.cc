@@ -4,8 +4,8 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
-#include "base/ref_counted.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"

@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "ipc/ipc_message.h"
 
 class AutomationProviderList;

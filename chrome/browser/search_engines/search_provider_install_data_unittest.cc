@@ -5,8 +5,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/ref_counted.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/search_provider_install_data.h"

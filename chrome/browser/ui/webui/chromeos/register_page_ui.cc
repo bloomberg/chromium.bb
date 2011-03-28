@@ -8,10 +8,10 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/weak_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"

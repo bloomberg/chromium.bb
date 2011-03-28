@@ -21,9 +21,9 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process.h"
-#include "base/scoped_ptr.h"
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "build/build_config.h"

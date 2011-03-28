@@ -6,9 +6,9 @@
 
 #include <list>
 
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/singleton.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_shutdown.h"

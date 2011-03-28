@@ -5,9 +5,9 @@
 #define CONTENT_RENDERER_PEPPER_PLATFORM_CONTEXT_3D_IMPL_H_
 
 #include "base/callback.h"
-#include "base/scoped_callback_factory.h"
-#include "base/scoped_ptr.h"
-#include "base/weak_ptr.h"
+#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 #ifdef ENABLE_GPU

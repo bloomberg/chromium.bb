@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/autoupdate_interceptor.h"

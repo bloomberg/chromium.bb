@@ -18,10 +18,10 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "base/weak_ptr.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/content_settings.h"

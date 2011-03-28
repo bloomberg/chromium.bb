@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/sidebar/sidebar_container.h"
 #include "content/common/notification_observer.h"

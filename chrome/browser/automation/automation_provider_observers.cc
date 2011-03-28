@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/json/json_writer.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"

@@ -5,8 +5,8 @@
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD_ADAPTER_H_
 #pragma once
 
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/engine/syncer_thread2.h"

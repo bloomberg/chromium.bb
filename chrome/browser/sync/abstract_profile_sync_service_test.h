@@ -8,8 +8,8 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"

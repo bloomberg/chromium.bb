@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"

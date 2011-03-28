@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/ui/views/frame/browser_bubble_host.h"

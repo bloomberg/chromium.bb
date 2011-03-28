@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/common/pref_store_observer_mock.h"

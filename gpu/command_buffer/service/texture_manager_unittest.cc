@@ -4,7 +4,7 @@
 
 #include "gpu/command_buffer/service/texture_manager.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
 #include "gpu/command_buffer/common/gl_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"

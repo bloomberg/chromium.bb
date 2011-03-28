@@ -11,8 +11,8 @@
 #import <AppKit/AppKit.h>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/message_pump_mac.h"
-#include "base/scoped_nsobject.h"
 
 // Event hooks must implement this protocol.
 @protocol CrApplicationEventHookProtocol

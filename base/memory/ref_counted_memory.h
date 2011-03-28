@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_REF_COUNTED_MEMORY_H_
-#define BASE_REF_COUNTED_MEMORY_H_
+#ifndef BASE_MEMORY_REF_COUNTED_MEMORY_H_
+#define BASE_MEMORY_REF_COUNTED_MEMORY_H_
 #pragma once
 
 #include <vector>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 
 // TODO(erg): The contents of this file should be in a namespace. This would
 // require touching >100 files in chrome/ though.
@@ -79,4 +79,4 @@ class RefCountedBytes : public RefCountedMemory {
   DISALLOW_COPY_AND_ASSIGN(RefCountedBytes);
 };
 
-#endif  // BASE_REF_COUNTED_MEMORY_H_
+#endif  // BASE_MEMORY_REF_COUNTED_MEMORY_H_

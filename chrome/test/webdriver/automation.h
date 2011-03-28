@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "chrome/common/automation_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 

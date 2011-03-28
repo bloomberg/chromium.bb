@@ -6,7 +6,7 @@
 #define CONTENT_WORKER_WORKER_WEBKITCLIENT_IMPL_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMimeRegistry.h"
 #include "webkit/glue/webkitclient_impl.h"
 

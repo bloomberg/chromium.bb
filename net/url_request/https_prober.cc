@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "net/url_request/https_prober.h"
 
 #include "net/url_request/url_request.h"

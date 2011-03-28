@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/ref_counted.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/chrome_paths.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/extension_localization_peer.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/render_messages.h"

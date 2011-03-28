@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_MOCK_H__
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"

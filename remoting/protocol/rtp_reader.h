@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef REMOTING_PROTOCOL_RTP_READER_H_
 #define REMOTING_PROTOCOL_RTP_READER_H_
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/protocol/rtp_utils.h"
 #include "remoting/protocol/socket_reader_base.h"

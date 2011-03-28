@@ -25,9 +25,9 @@
 #include "base/file_descriptor_posix.h"
 #endif
 #include "base/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"

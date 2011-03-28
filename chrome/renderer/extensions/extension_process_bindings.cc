@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"

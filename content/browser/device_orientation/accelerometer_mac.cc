@@ -55,7 +55,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/device_orientation/orientation.h"
 
 namespace device_orientation {

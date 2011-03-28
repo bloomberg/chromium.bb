@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/filter_factories.h"
 #include "webkit/glue/media/buffered_resource_loader.h"

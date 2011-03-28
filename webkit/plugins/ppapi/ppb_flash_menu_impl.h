@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "webkit/plugins/ppapi/callbacks.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define MEDIA_TOOLS_PLAYER_X11_GL_VIDEO_RENDERER_H_
 
 #include "app/gfx/gl/gl_bindings.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"
 

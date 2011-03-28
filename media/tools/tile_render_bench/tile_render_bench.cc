@@ -16,8 +16,8 @@
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/at_exit.h"
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "base/task.h"
 
 // Initial size of the window and the texture.

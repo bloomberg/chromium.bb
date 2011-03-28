@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"

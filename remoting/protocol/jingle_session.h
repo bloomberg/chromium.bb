@@ -6,7 +6,7 @@
 #define REMOTING_PROTOCOL_JINGLE_SESSION_H_
 
 #include "base/crypto/rsa_private_key.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "net/base/completion_callback.h"
 #include "remoting/protocol/session.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"

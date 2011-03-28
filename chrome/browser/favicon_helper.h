@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/common/ref_counted_util.h"
 #include "content/browser/cancelable_request.h"

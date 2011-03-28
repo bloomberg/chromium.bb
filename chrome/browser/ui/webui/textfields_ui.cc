@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <string>
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"

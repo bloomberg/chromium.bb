@@ -10,11 +10,11 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/weak_ptr.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"

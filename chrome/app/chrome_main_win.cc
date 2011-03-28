@@ -11,7 +11,7 @@
 #include <shlobj.h>
 
 #include "base/file_path.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/policy/policy_path_parser.h"

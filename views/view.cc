@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/accessibility/accessibility_types.h"

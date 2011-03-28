@@ -9,7 +9,7 @@
 #include <deque>
 #include <string>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/browser_message_filter.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"

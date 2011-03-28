@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PLUGIN_DATA_REMOVER_HELPER_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"

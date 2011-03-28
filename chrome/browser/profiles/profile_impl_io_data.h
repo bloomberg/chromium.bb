@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 
 namespace net {

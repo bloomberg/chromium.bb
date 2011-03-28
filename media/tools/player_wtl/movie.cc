@@ -4,7 +4,7 @@
 
 #include "media/tools/player_wtl/movie.h"
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "media/base/filter_collection.h"

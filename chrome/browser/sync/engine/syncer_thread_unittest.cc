@@ -5,7 +5,7 @@
 #include <list>
 #include <map>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/synchronization/waitable_event.h"

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_API_H__
 #pragma once
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"

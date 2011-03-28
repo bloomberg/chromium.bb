@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
-#include "base/ref_counted_memory.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 
 class Profile;

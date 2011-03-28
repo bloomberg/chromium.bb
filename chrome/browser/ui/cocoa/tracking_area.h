@@ -7,7 +7,7 @@
 
 #import <AppKit/AppKit.h>
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 
 @class CrTrackingAreaOwnerProxy;
 

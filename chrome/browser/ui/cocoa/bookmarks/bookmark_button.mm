@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 
 #include "base/logging.h"
-#import "base/scoped_nsobject.h"
+#import "base/memory/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"

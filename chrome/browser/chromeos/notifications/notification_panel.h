@@ -8,7 +8,7 @@
 #define CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_NOTIFICATION_PANEL_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/chromeos/frame/panel_controller.h"
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"

@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/common/persistent_pref_store.h"
 

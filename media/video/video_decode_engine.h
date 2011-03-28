@@ -6,7 +6,7 @@
 #define MEDIA_VIDEO_VIDEO_DECODE_ENGINE_H_
 
 #include "base/callback.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/base/video_frame.h"
 
 class MessageLoop;

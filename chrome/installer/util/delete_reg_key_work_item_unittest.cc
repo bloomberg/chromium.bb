@@ -5,7 +5,7 @@
 #include <windows.h>
 #include <atlsecurity.h>  // NOLINT
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/delete_reg_key_work_item.h"
 #include "chrome/installer/util/work_item.h"

@@ -6,9 +6,9 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/string_piece.h"
 #include "base/values.h"
-#include "base/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/jstemplate_builder.h"

@@ -8,7 +8,7 @@
 #define MEDIA_FILTERS_FFMPEG_DEMUXER_FACTORY_H_
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/base/filter_factories.h"
 
 class MessageLoop;

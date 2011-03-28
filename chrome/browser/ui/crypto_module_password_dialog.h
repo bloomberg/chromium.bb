@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 
 namespace base {
 class CryptoModuleBlockingPasswordDelegate;

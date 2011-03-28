@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 

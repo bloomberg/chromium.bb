@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/ui/cocoa/animation_utils.h"

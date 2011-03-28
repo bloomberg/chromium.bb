@@ -5,10 +5,10 @@
 #include "webkit/chromeos/fileapi/cros_mount_point_provider.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/scoped_callback_factory.h"
-#include "base/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"

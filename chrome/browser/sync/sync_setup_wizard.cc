@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/sync_setup_wizard.h"
 
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "base/singleton.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"

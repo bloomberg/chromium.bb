@@ -16,7 +16,7 @@
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"

@@ -13,7 +13,7 @@
 
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 namespace ui {

@@ -4,7 +4,7 @@
 
 #include "remoting/host/client_session.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "remoting/host/user_authenticator.h"
 #include "remoting/proto/auth.pb.h"

@@ -8,8 +8,8 @@
 // the case of redirects. It may also mean problems with the history system.
 
 #include "base/file_util.h"
-#include "base/scoped_ptr.h"
-#include "base/scoped_temp_dir.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/string16.h"
 #include "base/test/test_timeouts.h"

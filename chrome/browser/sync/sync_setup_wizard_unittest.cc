@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/sync_setup_wizard.h"
 
 #include "base/json/json_writer.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"

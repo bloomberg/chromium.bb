@@ -46,10 +46,10 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
-#include "base/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/atomicops.h"
-#include "base/singleton.h"
+#include "base/memory/scoped_vector.h"
+#include "base/memory/singleton.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/callback.h"

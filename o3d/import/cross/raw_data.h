@@ -39,7 +39,7 @@
 #ifndef O3D_IMPORT_CROSS_RAW_DATA_H_
 #define O3D_IMPORT_CROSS_RAW_DATA_H_
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "core/cross/param_object.h"
 
 namespace o3d {

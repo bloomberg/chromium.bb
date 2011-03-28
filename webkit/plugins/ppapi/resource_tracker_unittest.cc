@@ -4,7 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppapi_unittest.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "third_party/npapi/bindings/npruntime.h"

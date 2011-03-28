@@ -9,7 +9,7 @@
 #endif
 
 #include "base/command_line.h"
-#include "base/scoped_vector.h"
+#include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/stl_util-inl.h"

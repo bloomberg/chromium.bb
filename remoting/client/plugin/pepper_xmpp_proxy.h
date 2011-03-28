@@ -5,7 +5,7 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_XMPP_PROXY_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_XMPP_PROXY_H_
 
-#include "base/weak_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/jingle_glue/xmpp_proxy.h"
 
 namespace remoting {

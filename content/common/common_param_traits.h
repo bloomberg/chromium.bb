@@ -14,8 +14,8 @@
 #define CONTENT_COMMON_COMMON_PARAM_TRAITS_H_
 #pragma once
 
+#include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
-#include "base/ref_counted.h"
 #include "base/string_number_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"

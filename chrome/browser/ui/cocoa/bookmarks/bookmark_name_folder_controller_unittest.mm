@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"

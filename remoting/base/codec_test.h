@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef REMOTING_BASE_CODEC_TEST_H_
 #define REMOTING_BASE_CODEC_TEST_H_
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "media/base/video_frame.h"
 #include "remoting/base/capture_data.h"
 

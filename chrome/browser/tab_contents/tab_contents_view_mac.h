@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/base_view.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/notification_observer.h"

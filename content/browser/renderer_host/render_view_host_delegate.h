@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/process_util.h"
-#include "base/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/translate_errors.h"

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/renderer/mock_keyboard.h"
 #include "chrome/renderer/mock_render_thread.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"

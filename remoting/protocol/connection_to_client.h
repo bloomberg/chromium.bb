@@ -8,9 +8,9 @@
 #include <deque>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/video_writer.h"
 

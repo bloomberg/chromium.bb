@@ -9,7 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 
 class HtmlDialogWindowDelegateBridge;

@@ -13,8 +13,8 @@
 #include <algorithm>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "media/base/filter_factories.h"
 #include "media/base/filters.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"

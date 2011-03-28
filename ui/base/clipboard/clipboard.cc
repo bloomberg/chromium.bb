@@ -5,7 +5,7 @@
 #include "ui/base/clipboard/clipboard.h"
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/size.h"
 
 namespace ui {

@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/render_view_commands.h"

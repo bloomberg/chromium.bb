@@ -5,8 +5,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"

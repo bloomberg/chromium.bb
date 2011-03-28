@@ -14,10 +14,10 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/scoped_comptr_win.h"
-#include "base/scoped_ptr.h"
 #include "base/win/registry.h"
 
 #include "chrome_frame/test_utils.h"

@@ -7,7 +7,7 @@
 #include "chrome/browser/policy/policy_path_parser.h"
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace policy {
 

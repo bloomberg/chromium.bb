@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/file_path.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "webkit/fileapi/file_system_types.h"
 
 class GURL;

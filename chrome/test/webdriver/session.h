@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/threading/thread.h"
 #include "chrome/common/automation_constants.h"

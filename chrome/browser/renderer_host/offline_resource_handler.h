@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "content/browser/renderer_host/resource_handler.h"
 #include "net/base/completion_callback.h"

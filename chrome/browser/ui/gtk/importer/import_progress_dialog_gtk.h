@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "ui/base/gtk/gtk_signal.h"

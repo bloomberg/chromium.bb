@@ -8,7 +8,7 @@
 #import <objc/objc-runtime.h>
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_folder_applescript.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"

@@ -16,7 +16,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/content_settings.h"
 #include "content/common/notification_observer.h"

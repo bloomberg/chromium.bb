@@ -6,7 +6,7 @@
 #define UI_BASE_MODELS_MENU_MODEL_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "ui/base/models/menu_model_delegate.h"
 #include "ui/gfx/native_widget_types.h"

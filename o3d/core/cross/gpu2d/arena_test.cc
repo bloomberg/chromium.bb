@@ -34,7 +34,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "core/cross/gpu2d/arena.h"
 #include "gtest/gtest.h"
 

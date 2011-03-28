@@ -9,7 +9,7 @@
 #include <objidl.h>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 
 namespace ui {
 

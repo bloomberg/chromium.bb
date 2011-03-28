@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/notification_observer.h"

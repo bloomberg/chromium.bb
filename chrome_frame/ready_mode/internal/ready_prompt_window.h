@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 #include <atlframe.h>
 #include <atlwin.h>
 
-#include "base/weak_ptr.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome_frame/infobars/infobar_content.h"
 #include "chrome_frame/resource.h"

@@ -49,7 +49,7 @@
 #include <dispex.h>
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 
 // Directory not included, as this file is auto-generated from the
 // type library.

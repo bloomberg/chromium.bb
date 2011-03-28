@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/spellcheck_host_observer.h"
 #include "chrome/common/net/url_fetcher.h"

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_NETWORK_SELECTION_VIEW_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/chromeos/views/dropdown_button.h"

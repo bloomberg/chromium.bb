@@ -11,8 +11,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/ref_counted.h"
-#include "base/singleton.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/ui/shell_dialogs.h"

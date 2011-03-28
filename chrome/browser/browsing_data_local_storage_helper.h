@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/file_path.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "chrome/common/url_constants.h"

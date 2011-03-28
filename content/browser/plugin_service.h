@@ -14,8 +14,8 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/hash_tables.h"
-#include "base/scoped_vector.h"
-#include "base/singleton.h"
+#include "base/memory/scoped_vector.h"
+#include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "build/build_config.h"
@@ -28,7 +28,7 @@
 #include "webkit/plugins/npapi/webplugininfo.h"
 
 #if defined(OS_WIN)
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/win/registry.h"
 #endif
 

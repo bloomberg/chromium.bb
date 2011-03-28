@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/cros/cros_mock.h"
 
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/ref_counted.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_input_method_library.h"

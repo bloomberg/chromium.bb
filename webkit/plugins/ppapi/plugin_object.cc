@@ -5,8 +5,8 @@
 #include "webkit/plugins/ppapi/plugin_object.h"
 
 #include "base/logging.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "third_party/npapi/bindings/npapi.h"

@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/scoped_vector.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 
 #import "base/mac/cocoa_protocols.h"
-#import "base/scoped_nsobject.h"
-#include "base/scoped_ptr.h"
+#import "base/memory/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"

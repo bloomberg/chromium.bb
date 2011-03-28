@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "gtest/gtest.h"
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/scoped_comptr_win.h"
 #include "chrome_frame/urlmon_upload_data_stream.h"
 

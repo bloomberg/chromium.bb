@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_COOKIES_VIEW_HANDLER_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 

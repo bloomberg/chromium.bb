@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/string_util.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "content/common/notification_observer.h"

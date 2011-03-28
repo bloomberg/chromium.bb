@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_SKIA_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

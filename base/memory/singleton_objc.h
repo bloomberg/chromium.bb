@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,12 +27,12 @@
 //   ...
 //   Foo* widgetSingleton = SingletonObjC<Foo, FooSingletonTraits>::get();
 
-#ifndef BASE_SINGLETON_OBJC_H_
-#define BASE_SINGLETON_OBJC_H_
+#ifndef BASE_MEMORY_SINGLETON_OBJC_H_
+#define BASE_MEMORY_SINGLETON_OBJC_H_
 #pragma once
 
 #import <Foundation/Foundation.h>
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 
 // Singleton traits usable to manage traditional Objective-C objects, which
 // are instantiated by sending |alloc| and |init| messages, and are deallocated
@@ -58,4 +58,4 @@ template<typename Type,
 class SingletonObjC : public Singleton<Type, Traits, DifferentiatingType> {
 };
 
-#endif  // BASE_SINGLETON_OBJC_H_
+#endif  // BASE_MEMORY_SINGLETON_OBJC_H_

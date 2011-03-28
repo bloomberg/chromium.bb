@@ -6,7 +6,7 @@
 #define CONTENT_WORKER_WEBWORKER_STUB_BASE_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/worker/webworkerclient_proxy.h"
 #include "content/worker/worker_webapplicationcachehost_impl.h"
 #include "ipc/ipc_channel.h"

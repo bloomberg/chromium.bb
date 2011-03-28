@@ -10,7 +10,7 @@
 #include <set>
 #include <string>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/common/view_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"

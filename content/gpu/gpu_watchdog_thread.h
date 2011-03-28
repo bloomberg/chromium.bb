@@ -5,9 +5,9 @@
 #ifndef CONTENT_GPU_GPU_WATCHDOG_THREAD_H_
 #define CONTENT_GPU_GPU_WATCHDOG_THREAD_H_
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/time.h"

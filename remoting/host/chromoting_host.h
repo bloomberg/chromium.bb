@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "remoting/base/encoder.h"
 #include "remoting/host/access_verifier.h"

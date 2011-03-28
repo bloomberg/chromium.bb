@@ -9,8 +9,8 @@
 
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "base/singleton.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"

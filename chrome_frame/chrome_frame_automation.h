@@ -11,8 +11,8 @@
 #include <map>
 #include <vector>
 
-#include "base/ref_counted.h"
-#include "base/scoped_handle.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_handle.h"
 #include "base/stack_container.h"
 #include "base/synchronization/lock.h"
 #include "base/task.h"

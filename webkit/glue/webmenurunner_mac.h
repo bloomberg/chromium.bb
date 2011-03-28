@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "webkit/glue/webmenuitem.h"
 
 

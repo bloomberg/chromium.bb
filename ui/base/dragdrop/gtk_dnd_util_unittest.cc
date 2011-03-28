@@ -4,8 +4,8 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
-#include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -7,9 +7,9 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
-#include "base/scoped_callback_factory.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "googleurl/src/gurl.h"

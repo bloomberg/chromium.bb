@@ -36,7 +36,7 @@
 #include <npapi.h>
 #include <string>
 #include <vector>
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "core/cross/callback.h"
 #include "plugin/cross/download_stream.h"
 

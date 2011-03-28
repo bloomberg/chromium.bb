@@ -30,7 +30,7 @@
 
 #if defined(OS_WIN)
 #include "app/win/iat_patch_function.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
 #include "printing/emf_win.h"
 #endif

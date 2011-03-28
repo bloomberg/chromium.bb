@@ -4,8 +4,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
-#include "base/scoped_nsobject.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"

@@ -22,7 +22,7 @@ template <typename T> struct DefaultSingletonTraits;
 // Everywhere else, SetTiltebarButtons() just calls back into BrowserTitlebar
 // with the default ordering.
 //
-// Meant to be used as a Singleton through base/singleton.h's interface.
+// Meant to be used as a Singleton through base/memory/singleton.h's interface.
 class GConfTitlebarListener {
  public:
   // Returns the singleton instance.

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
-#include "base/ref_counted.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/profiles/profile.h"

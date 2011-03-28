@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/ref_counted_memory.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/stack_container.h"
 #include "base/string16.h"
 #include "base/time.h"

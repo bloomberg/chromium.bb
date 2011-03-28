@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "base/ref_counted.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/common/persistent_pref_store.h"
 

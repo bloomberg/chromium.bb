@@ -4,7 +4,7 @@
 
 #include "base/file_path.h"
 #include "base/i18n/rtl.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"

@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"

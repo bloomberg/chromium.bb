@@ -6,7 +6,7 @@
 
 #include <gdk/gdkkeysyms.h>
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"

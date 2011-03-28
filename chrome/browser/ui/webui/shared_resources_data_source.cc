@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"

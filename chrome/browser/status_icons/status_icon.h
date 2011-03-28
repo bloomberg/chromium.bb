@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_STATUS_ICONS_STATUS_ICON_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
 #include "base/string16.h"
 
 class SkBitmap;

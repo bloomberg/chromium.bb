@@ -12,7 +12,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/icu_util.h"
-#include "base/memory_debug.h"
+#include "base/memory/memory_debug.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"

@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/events/accelerator.h"
 #include "ui/views/events/focus_event.h"

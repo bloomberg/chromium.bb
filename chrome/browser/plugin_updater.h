@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "content/common/notification_observer.h"
 
 class DictionaryValue;

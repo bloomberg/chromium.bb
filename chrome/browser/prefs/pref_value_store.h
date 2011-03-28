@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/common/pref_store.h"
 #include "content/browser/browser_thread.h"

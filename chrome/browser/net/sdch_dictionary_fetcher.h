@@ -14,7 +14,7 @@
 #include <set>
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "net/base/sdch_manager.h"

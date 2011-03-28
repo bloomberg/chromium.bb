@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/weak_ptr.h"
 #include "jingle/notifier/base/weak_xmpp_client.h"
 #include "net/base/cert_verifier.h"
 #include "talk/xmpp/prexmppauth.h"

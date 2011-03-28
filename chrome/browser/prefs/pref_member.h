@@ -29,7 +29,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"

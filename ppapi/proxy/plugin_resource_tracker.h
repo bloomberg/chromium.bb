@@ -8,7 +8,7 @@
 #include <map>
 #include <utility>
 
-#include "base/linked_ptr.h"
+#include "base/memory/linked_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"

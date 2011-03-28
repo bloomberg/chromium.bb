@@ -6,7 +6,7 @@
 
 #include "app/sql/connection.h"
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/quota/quota_database.h"
 

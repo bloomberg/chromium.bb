@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
-#include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,11 +19,11 @@
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/linux_util.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/pickle.h"
 #include "base/process_util.h"
-#include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
-#include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "content/common/font_config_ipc_linux.h"

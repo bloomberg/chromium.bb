@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PLUGIN_DATA_REMOVER_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "content/browser/plugin_process_host.h"
 

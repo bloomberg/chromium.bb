@@ -7,9 +7,9 @@
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD2_H_
 #pragma once
 
-#include "base/linked_ptr.h"
+#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/time.h"

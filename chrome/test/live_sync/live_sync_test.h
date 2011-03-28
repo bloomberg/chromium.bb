@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/process_util.h"
-#include "base/scoped_ptr.h"
-#include "base/scoped_vector.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
 

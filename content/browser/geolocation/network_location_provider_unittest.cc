@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/json/json_reader.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"

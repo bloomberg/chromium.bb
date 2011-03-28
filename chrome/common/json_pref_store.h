@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
 #include "chrome/common/important_file_writer.h"
 #include "chrome/common/persistent_pref_store.h"
 

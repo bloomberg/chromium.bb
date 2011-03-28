@@ -7,8 +7,8 @@
 #import <AddressBook/AddressBook.h>
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
-#include "base/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/phone_number.h"

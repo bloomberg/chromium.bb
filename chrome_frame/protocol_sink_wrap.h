@@ -14,7 +14,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_bstr.h"
 #include "googleurl/src/gurl.h"

@@ -11,9 +11,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "ui/gfx/image.h"
 
 #if defined(TOOLKIT_USES_GTK)

@@ -9,9 +9,9 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"

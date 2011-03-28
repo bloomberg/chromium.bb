@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/message_router.h"
 #include "webkit/glue/resource_loader_bridge.h"
 

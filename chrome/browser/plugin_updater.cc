@@ -6,9 +6,9 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"

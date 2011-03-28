@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "content/common/renderer_preferences.h"

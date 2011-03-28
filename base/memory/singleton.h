@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_SINGLETON_H_
-#define BASE_SINGLETON_H_
+#ifndef BASE_MEMORY_SINGLETON_H_
+#define BASE_MEMORY_SINGLETON_H_
 #pragma once
 
 #include "base/at_exit.h"
@@ -126,7 +126,7 @@ template <typename Type> base::subtle::Atomic32
 // Example usage:
 //
 // In your header:
-//   #include "base/singleton.h"
+//   #include "base/memory/singleton.h"
 //   class FooClass {
 //    public:
 //     static FooClass* GetInstance();  <-- See comment below on this.
@@ -268,4 +268,4 @@ template <typename Type, typename Traits, typename DifferentiatingType>
 base::subtle::AtomicWord Singleton<Type, Traits, DifferentiatingType>::
     instance_ = 0;
 
-#endif  // BASE_SINGLETON_H_
+#endif  // BASE_MEMORY_SINGLETON_H_

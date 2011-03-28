@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"

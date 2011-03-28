@@ -7,7 +7,7 @@
 #ifndef REMOTING_PROTOCOL_SOCKET_WRAPPER_H_
 #define REMOTING_PROTOCOL_SOCKET_WRAPPER_H_
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/socket/socket.h"
 
 namespace remoting {

@@ -6,7 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"

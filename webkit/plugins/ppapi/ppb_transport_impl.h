@@ -6,7 +6,7 @@
 #define WEBKIT_PLUGINS_PPAPI_PPB_TRANSPORT_IMPL_H_
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/p2p/base/candidate.h"

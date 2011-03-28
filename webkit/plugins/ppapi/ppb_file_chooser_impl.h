@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "webkit/plugins/ppapi/resource.h"
 

@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/perftimer.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"

@@ -9,8 +9,8 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/hash_tables.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 
 class ChromeURLRequestContext;

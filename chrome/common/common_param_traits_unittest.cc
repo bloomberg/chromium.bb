@@ -5,7 +5,7 @@
 #include <string.h>
 #include <utility>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "content/common/common_param_traits.h"
 #include "googleurl/src/gurl.h"

@@ -8,8 +8,8 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"

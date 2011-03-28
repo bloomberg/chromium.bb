@@ -8,8 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
-#include "base/ref_counted.h"
 #include "base/task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"

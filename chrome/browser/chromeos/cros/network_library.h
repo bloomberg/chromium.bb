@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_vector.h"
+#include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "base/scoped_vector.h"
-#include "base/singleton.h"
 #include "base/string16.h"
 #include "base/timer.h"
 #include "third_party/cros/chromeos_network.h"

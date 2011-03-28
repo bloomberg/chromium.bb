@@ -1,10 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/renderer/mock_render_process.h"
 #include "chrome/renderer/mock_render_thread.h"
 #include "chrome/renderer/render_thread.h"

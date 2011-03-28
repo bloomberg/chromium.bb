@@ -6,7 +6,7 @@
 #define UI_GFX_PLATFORM_FONT_GTK_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/platform_font.h"
 

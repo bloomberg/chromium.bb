@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "third_party/cros/chromeos_login.h"
 
 namespace chromeos {

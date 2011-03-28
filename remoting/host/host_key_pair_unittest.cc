@@ -1,13 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/ref_counted.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/json_host_config.h"

@@ -7,7 +7,7 @@
 #pragma once
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/login_ui_helpers.h"
 #include "content/browser/webui/web_ui.h"

@@ -9,9 +9,9 @@
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"

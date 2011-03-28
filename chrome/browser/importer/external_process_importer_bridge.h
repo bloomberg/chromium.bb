@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/profile_writer.h"

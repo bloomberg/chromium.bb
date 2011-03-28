@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_UI_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/webui/web_ui.h"
 
 class PrintPreviewUIHTMLSource;

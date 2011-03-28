@@ -32,8 +32,8 @@
 
 // This file contains the implementation for the CanvasShader class.
 
+#include "base/memory/scoped_ptr.h"
 #include "core/cross/canvas_shader.h"
-#include "base/scoped_ptr.h"
 #include "core/cross/canvas_utils.h"
 #include "core/cross/error.h"
 

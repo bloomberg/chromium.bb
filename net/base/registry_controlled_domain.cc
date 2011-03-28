@@ -40,7 +40,7 @@
 #include "net/base/registry_controlled_domain.h"
 
 #include "base/logging.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_parse.h"

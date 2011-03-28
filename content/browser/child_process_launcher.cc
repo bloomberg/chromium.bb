@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_switches.h"
@@ -21,7 +21,7 @@
 #include "base/file_path.h"
 #include "chrome/common/sandbox_policy.h"
 #elif defined(OS_LINUX)
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/crash_handler_host_linux.h"
 #include "content/browser/zygote_host_linux.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"

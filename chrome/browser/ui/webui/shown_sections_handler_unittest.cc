@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/shown_sections_handler.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"

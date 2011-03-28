@@ -10,8 +10,8 @@
 #include <vector>
 
 #import "base/mac/cocoa_protocols.h"
-#include "base/scoped_nsobject.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 
 @class AboutWindowController;
 class BookmarkMenuBridge;

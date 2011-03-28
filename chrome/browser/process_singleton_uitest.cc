@@ -14,10 +14,10 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/ref_counted.h"
-#include "base/scoped_temp_dir.h"
 #include "base/threading/thread.h"
 #include "base/test/test_timeouts.h"
 #include "base/synchronization/waitable_event.h"

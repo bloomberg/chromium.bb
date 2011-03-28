@@ -9,8 +9,8 @@
 
 #include "base/at_exit.h"
 #include "base/environment.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"

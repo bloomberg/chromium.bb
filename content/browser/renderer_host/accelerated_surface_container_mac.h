@@ -31,7 +31,7 @@
 
 #include "base/basictypes.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/surface/transport_dib.h"

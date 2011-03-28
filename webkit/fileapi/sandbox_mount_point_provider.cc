@@ -5,11 +5,11 @@
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/rand_util.h"
-#include "base/scoped_callback_factory.h"
-#include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"

@@ -13,13 +13,13 @@
 #include <vector>
 
 #include "base/debug/trace_event.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/platform_file.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
-#include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"

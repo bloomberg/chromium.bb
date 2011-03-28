@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/extension_icon_source.h"
 
 #include "base/callback.h"
-#include "base/ref_counted_memory.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"

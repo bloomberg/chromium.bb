@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/omx/omx_configurator.h"
 #include "media/video/video_decode_engine.h"
 #include "third_party/openmax/il/OMX_Component.h"

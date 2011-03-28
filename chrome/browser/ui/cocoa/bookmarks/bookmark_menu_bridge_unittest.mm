@@ -4,7 +4,7 @@
 
 #import <AppKit/AppKit.h>
 
-#import "base/scoped_nsobject.h"
+#import "base/memory/scoped_nsobject.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"

@@ -7,7 +7,7 @@
 #include "app/app_paths.h"
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/linked_ptr.h"
+#include "base/memory/linked_ptr.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "base/version.h"

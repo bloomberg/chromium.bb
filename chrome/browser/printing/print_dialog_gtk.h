@@ -10,7 +10,7 @@
 #include <gtk/gtkprintunixdialog.h>
 
 #include "base/file_path.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "printing/native_metafile.h"
 #include "printing/printing_context_cairo.h"
 #include "ui/base/gtk/gtk_signal.h"

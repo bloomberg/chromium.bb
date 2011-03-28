@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/i18n/rtl.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"

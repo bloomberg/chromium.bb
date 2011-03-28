@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_PRINT_WEB_VIEW_HELPER_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/time.h"
 #include "content/renderer/render_view_observer.h"

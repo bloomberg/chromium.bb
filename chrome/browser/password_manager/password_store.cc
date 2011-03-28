@@ -4,8 +4,8 @@
 
 #include "chrome/browser/password_manager/password_store.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "content/browser/browser_thread.h"
 

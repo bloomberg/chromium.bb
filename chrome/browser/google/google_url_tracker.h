@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "content/common/notification_observer.h"

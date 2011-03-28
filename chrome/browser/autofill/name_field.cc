@@ -5,7 +5,7 @@
 #include "chrome/browser/autofill/name_field.h"
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_type.h"

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_REMOTING_SETUP_FLOW_H_
 
 #include "base/callback.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/remoting/chromoting_host_info.h"
 #include "content/browser/webui/web_ui.h"

@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/ui/webui/chromeos/login/authenticator_facade.h"
 #include "chrome/browser/ui/webui/chromeos/login/authenticator_facade_cros_helpers.h"

@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "base/weak_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"

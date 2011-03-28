@@ -40,7 +40,7 @@
 #import "plugin_mac.h"
 #import "base/cocoa_protocols_mac.h"
 #import "base/logging.h"
-#import "base/scoped_nsobject.h"
+#import "base/memory/scoped_nsobject.h"
 #import "core/cross/display_mode.h"
 #import "plugin/cross/o3d_glue.h"
 #import "plugin/mac/graphics_utils_mac.h"

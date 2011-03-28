@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 #define CHROME_RENDERER_EXTENSIONS_BINDINGS_UTILS_H_
 #pragma once
 
-#include "base/linked_ptr.h"
-#include "base/singleton.h"
+#include "base/memory/linked_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/string_piece.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"

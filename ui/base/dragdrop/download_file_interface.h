@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 
 #if defined(OS_WIN)
 #include <objidl.h>

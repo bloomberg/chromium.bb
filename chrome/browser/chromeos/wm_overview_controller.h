@@ -8,8 +8,8 @@
 
 #include <vector>
 
-#include "base/linked_ptr.h"
-#include "base/singleton.h"
+#include "base/memory/linked_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/timer.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"

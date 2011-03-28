@@ -10,7 +10,7 @@
 
 #include <set>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"

@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"

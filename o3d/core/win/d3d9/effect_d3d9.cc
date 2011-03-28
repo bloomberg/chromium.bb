@@ -38,7 +38,7 @@
 
 #include "core/win/d3d9/effect_d3d9.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "core/cross/core_metrics.h"
 #include "core/cross/error.h"
 #include "core/cross/material.h"

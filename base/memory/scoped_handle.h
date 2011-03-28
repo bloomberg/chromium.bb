@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_SCOPED_HANDLE_H_
-#define BASE_SCOPED_HANDLE_H_
+#ifndef BASE_MEMORY_SCOPED_HANDLE_H_
+#define BASE_MEMORY_SCOPED_HANDLE_H_
 #pragma once
 
 #include <stdio.h>
@@ -48,4 +48,4 @@ class ScopedStdioHandle {
   DISALLOW_COPY_AND_ASSIGN(ScopedStdioHandle);
 };
 
-#endif  // BASE_SCOPED_HANDLE_H_
+#endif  // BASE_MEMORY_SCOPED_HANDLE_H_

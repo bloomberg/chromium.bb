@@ -8,8 +8,8 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
-#include "base/ref_counted.h"
 
 class URLRequestContextGetter;
 

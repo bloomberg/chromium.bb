@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/nacl_host/nacl_broker_host_win.h"
 
 class NaClProcessHost;

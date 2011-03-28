@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/scoped_vector.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/field_types.h"

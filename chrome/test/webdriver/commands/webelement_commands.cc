@@ -4,7 +4,7 @@
 
 #include "chrome/test/webdriver/commands/webelement_commands.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "base/values.h"

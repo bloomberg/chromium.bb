@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,9 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/linked_ptr.h"
+#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
-#include "base/scoped_vector.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/webplugininfo.h"

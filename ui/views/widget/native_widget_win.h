@@ -7,9 +7,9 @@
 
 #include "ui/base/win/window_impl.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
-#include "base/scoped_vector.h"
 #include "ui/views/widget/native_widget.h"
 
 namespace gfx {

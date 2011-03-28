@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
-#include "base/ref_counted_memory.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"

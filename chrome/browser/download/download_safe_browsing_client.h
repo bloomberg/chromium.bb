@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/callback.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 

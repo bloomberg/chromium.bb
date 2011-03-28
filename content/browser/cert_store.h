@@ -8,7 +8,7 @@
 
 #include <map>
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"

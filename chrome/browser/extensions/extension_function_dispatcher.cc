@@ -6,9 +6,9 @@
 
 #include <map>
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "base/process_util.h"
-#include "base/ref_counted.h"
-#include "base/singleton.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_list.h"

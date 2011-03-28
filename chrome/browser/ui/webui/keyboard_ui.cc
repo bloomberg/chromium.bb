@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/keyboard_ui.h"
 
-#include "base/ref_counted_memory.h"
-#include "base/singleton.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/singleton.h"
 #include "base/string_piece.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"

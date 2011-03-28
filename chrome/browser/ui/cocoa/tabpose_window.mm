@@ -10,7 +10,7 @@
 
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/scoped_callback_factory.h"
+#include "base/memory/scoped_callback_factory.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/linked_ptr.h"
+#include "base/memory/linked_ptr.h"
 #include "content/common/property_bag.h"
 
 PropertyBag::PropertyBag() {

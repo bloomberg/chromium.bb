@@ -10,7 +10,7 @@
 #include <map>
 #include <string>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/history/history.h"
 #include "content/common/notification_registrar.h"
 #include "net/base/file_stream.h"

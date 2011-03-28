@@ -8,7 +8,7 @@
 #include "chrome_frame/protocol_sink_wrap.h"
 
 #include "base/logging.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"

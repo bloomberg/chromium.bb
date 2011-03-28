@@ -8,7 +8,7 @@
 
 #include <Foundation/Foundation.h>
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "ui/base/models/accelerator.h"
 
 namespace ui {

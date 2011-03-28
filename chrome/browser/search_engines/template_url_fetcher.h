@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_
 #pragma once
 
-#include "base/scoped_vector.h"
+#include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
 

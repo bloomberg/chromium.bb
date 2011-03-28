@@ -37,7 +37,7 @@
 #define O3D_CONVERTER_CROSS_BUFFER_STUB_H_
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "core/cross/buffer.h"
 
 namespace o3d {

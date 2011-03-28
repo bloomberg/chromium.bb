@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/string16.h"
 #include "chrome/browser/status_icons/status_icon.h"
 

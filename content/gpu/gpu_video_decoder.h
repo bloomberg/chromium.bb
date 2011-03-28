@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "content/gpu/media/gpu_video_device.h"
 #include "media/video/video_decode_context.h"

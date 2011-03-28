@@ -5,7 +5,7 @@
 #include <map>
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_test_sink.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/host_dispatcher.h"

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/scoped_comptr_win.h"
 #include "base/time.h"
 #include "chrome_frame/chrome_frame_delegate.h"

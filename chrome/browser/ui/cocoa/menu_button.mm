@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/menu_button.h"
 
 #include "base/logging.h"
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/clickhold_button_cell.h"
 
 @interface MenuButton (Private)

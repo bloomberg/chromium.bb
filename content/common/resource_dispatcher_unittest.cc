@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process.h"
 #include "base/process_util.h"
-#include "base/scoped_ptr.h"
 #include "content/common/resource_dispatcher.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_response.h"

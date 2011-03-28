@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <map>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
-#include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"

@@ -7,10 +7,10 @@
 #include "app/gfx/gl/gl_context.h"
 #include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_implementation.h"
-#include "base/scoped_ptr.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {

@@ -7,8 +7,8 @@
 
 #include <deque>
 
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"

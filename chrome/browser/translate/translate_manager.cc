@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
-#include "base/singleton.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/browser/autofill/autofill_manager.h"

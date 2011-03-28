@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/linked_ptr.h"
+#include "base/memory/linked_ptr.h"
 #include "base/timer.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/common/notification_observer.h"

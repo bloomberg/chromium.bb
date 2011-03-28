@@ -5,7 +5,7 @@
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_CONTEXT_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_CONTEXT_H_
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_types.h"

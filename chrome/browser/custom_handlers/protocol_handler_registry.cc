@@ -4,7 +4,7 @@
 
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/pref_names.h"

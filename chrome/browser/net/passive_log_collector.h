@@ -12,7 +12,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "net/base/net_log.h"

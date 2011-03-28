@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/system_info_ui.h"
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_piece.h"
@@ -13,7 +14,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/weak_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/syslogs_library.h"
 #include "chrome/browser/profiles/profile.h"

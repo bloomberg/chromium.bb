@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_WIN_H_
 #pragma once
 
-#include "base/weak_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "views/widget/widget_win.h"
 
 class AutocompletePopupWin

@@ -12,9 +12,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
-#include "base/scoped_vector.h"
 #include "base/string16.h"
 #include "ui/base/models/tree_model.h"
 

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/js_arg_list.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

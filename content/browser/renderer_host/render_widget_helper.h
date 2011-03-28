@@ -10,8 +10,8 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/process.h"
-#include "base/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/common/window_container_type.h"

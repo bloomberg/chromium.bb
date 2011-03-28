@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_tokenizer.h"
 #include "base/utf_string_conversions.h"

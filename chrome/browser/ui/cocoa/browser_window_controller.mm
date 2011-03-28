@@ -9,7 +9,7 @@
 #include "app/mac/scoped_nsdisable_screen_updates.h"
 #include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
-#import "base/scoped_nsobject.h"
+#import "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/bookmarks/bookmark_editor.h"

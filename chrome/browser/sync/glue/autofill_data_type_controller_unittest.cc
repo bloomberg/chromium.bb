@@ -5,9 +5,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"

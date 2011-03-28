@@ -4,8 +4,8 @@
 
 #include "content/renderer/audio_device.h"
 
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "base/singleton.h"
 #include "chrome/renderer/render_thread.h"
 #include "content/common/audio_messages.h"
 #include "content/common/child_process.h"

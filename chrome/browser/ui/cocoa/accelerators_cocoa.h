@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ template <typename T> struct DefaultSingletonTraits;
 // It is recommended that this class be used as a singleton so that the key map
 // isn't created multiple places.
 //
-//   #import "base/singleton.h"
+//   #import "base/memory/singleton.h"
 //   ...
 //   AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
 //   return keymap->GetAcceleratorForCommand(IDC_COPY);

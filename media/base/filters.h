@@ -27,9 +27,9 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "base/scoped_ptr.h"
 #include "media/base/media_format.h"
 #include "media/base/video_frame.h"
 

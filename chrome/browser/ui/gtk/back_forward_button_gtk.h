@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_BACK_FORWARD_BUTTON_GTK_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"

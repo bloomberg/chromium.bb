@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/views/tabs/base_tab_strip.h"
 #include "ui/base/animation/animation_container.h"

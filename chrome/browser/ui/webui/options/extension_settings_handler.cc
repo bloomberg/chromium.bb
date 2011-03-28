@@ -9,7 +9,7 @@
 #include "base/base64.h"
 #include "base/callback.h"
 #include "base/file_util.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_instance.h"

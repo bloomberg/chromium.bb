@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/remoting_ui.h"
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"

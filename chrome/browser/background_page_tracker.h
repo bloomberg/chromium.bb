@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 

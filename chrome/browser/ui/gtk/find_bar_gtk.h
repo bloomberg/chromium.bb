@@ -9,7 +9,7 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/gtk/focus_store_gtk.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"

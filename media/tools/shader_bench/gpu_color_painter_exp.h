@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define MEDIA_TOOLS_SHADER_BENCH_GPU_COLOR_PAINTER_EXP_H_
 
 #include "app/gfx/gl/gl_context.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/base/video_frame.h"
 #include "media/tools/shader_bench/gpu_painter.h"
 

@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

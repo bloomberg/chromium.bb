@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DATABASE_CALLBACKS_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseCallbacks.h"
 
 class IndexedDBDispatcherHost;

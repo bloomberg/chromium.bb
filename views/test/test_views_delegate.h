@@ -5,7 +5,7 @@
 #ifndef VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
 #define VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "views/views_delegate.h"

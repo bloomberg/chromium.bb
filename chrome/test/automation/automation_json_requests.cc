@@ -4,7 +4,7 @@
 
 #include "chrome/test/automation/automation_json_requests.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"

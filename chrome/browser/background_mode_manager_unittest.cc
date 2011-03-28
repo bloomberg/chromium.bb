@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/common/chrome_switches.h"

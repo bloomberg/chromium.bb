@@ -8,9 +8,9 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/browser/browser_thread.h"

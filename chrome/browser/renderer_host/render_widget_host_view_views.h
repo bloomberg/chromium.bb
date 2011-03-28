@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"

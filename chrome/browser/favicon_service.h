@@ -8,8 +8,8 @@
 
 #include <vector>
 
-#include "base/ref_counted.h"
-#include "base/ref_counted_memory.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/task.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/common/ref_counted_util.h"

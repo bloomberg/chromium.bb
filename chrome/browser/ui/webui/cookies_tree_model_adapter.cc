@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/cookies_tree_model_adapter.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/cookies_tree_model_util.h"

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"

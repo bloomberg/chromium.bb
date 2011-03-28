@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,8 @@
 #include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
-#include "base/scoped_vector.h"
 #include "base/string_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/utf_string_conversions.h"

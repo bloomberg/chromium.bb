@@ -9,9 +9,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/linked_ptr.h"
-#include "base/scoped_ptr.h"
-#include "base/weak_ptr.h"
+#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"

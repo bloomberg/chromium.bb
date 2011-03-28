@@ -14,9 +14,9 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
-#include "base/scoped_vector.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/base/win/window_impl.h"
 #include "views/focus/focus_manager.h"

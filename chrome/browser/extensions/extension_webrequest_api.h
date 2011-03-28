@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
 #include "ipc/ipc_message.h"

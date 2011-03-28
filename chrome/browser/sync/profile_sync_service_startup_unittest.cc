@@ -4,8 +4,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"

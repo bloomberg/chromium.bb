@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 
 class Balloon;
 class GURL;

@@ -6,7 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 
 WebUIMessageHandler* CloudPrintSetupMessageHandler::Attach(WebUI* web_ui) {

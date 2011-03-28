@@ -6,7 +6,7 @@
 #define UI_GFX_COMPOSITOR_COMPOSITOR_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {

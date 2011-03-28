@@ -8,7 +8,7 @@
 
 #include <list>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"

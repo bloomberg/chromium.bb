@@ -9,7 +9,7 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/sys_info.h"
 #include "skia/ext/platform_canvas.h"
 

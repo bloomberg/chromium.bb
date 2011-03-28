@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/webui/user_image_source.h"
 
-#include "base/ref_counted_memory.h"
+#include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/url_constants.h"
 #include "grit/theme_resources.h"

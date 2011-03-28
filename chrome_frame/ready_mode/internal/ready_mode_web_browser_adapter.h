@@ -14,7 +14,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_comptr.h"
 
 // Observes navigation and rendering in an IWebBrowser2 instance and reports

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/scoped_vector.h"
+#include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"

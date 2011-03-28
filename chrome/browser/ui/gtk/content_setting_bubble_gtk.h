@@ -8,7 +8,7 @@
 
 #include <map>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/common/content_settings_types.h"
 #include "content/common/notification_observer.h"

@@ -8,7 +8,7 @@
 
 #include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete.h"

@@ -8,7 +8,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <X11/XF86keysym.h>
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "chrome/app/chrome_command_ids.h"
 
 namespace {

@@ -5,7 +5,7 @@
 #include "base/crypto/secure_hash.h"
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/sha2.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

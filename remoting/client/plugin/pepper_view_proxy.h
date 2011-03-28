@@ -16,7 +16,7 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_VIEW_PROXY_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_VIEW_PROXY_H_
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "remoting/client/plugin/pepper_view.h"
 
 namespace remoting {

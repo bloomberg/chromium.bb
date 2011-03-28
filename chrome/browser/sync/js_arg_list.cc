@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/js_arg_list.h"
 
 #include "base/json/json_writer.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace browser_sync {
 

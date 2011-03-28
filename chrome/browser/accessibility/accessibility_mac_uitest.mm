@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui/ui_test.h"

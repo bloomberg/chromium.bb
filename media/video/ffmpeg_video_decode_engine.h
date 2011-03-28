@@ -7,7 +7,7 @@
 
 #include <deque>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/video/video_decode_engine.h"
 

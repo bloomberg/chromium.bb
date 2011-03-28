@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/ref_counted_memory.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/stringprintf.h"
 #include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"

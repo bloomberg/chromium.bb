@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 
 #include "base/lazy_instance.h"
-#include "base/scoped_handle.h"
+#include "base/memory/scoped_handle.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
 #include "content/common/content_client.h"

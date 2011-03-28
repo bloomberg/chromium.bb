@@ -8,7 +8,7 @@
 
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/external_extension_loader.h"
 
 class DictionaryValue;

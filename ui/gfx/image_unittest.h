@@ -8,7 +8,7 @@
 #ifndef UI_GFX_IMAGE_UNITTEST_H_
 #define UI_GFX_IMAGE_UNITTEST_H_
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

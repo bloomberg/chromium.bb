@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
-#include "base/ref_counted.h"
 #include "content/browser/browser_thread.h"
 
 class Profile;

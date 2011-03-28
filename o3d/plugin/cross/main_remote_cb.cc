@@ -36,7 +36,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "core/cross/command_buffer/renderer_cb.h"
 #include "core/cross/command_buffer/display_window_cb.h"
 #include "gpu_plugin/command_buffer.h"

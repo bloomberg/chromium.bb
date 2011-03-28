@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/hash_tables.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/prerender/prerender_contents.h"

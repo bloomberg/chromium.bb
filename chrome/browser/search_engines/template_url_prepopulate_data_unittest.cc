@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
-#include "base/scoped_vector.h"
+#include "base/memory/scoped_temp_dir.h"
+#include "base/memory/scoped_vector.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/search_terms_data.h"

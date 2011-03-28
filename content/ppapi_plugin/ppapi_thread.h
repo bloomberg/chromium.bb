@@ -7,9 +7,9 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_native_library.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "base/scoped_native_library.h"
-#include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/common/child_thread.h"
 #include "ppapi/c/pp_module.h"

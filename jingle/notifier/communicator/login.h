@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "base/weak_ptr.h"
 #include "jingle/notifier/base/server_information.h"
 #include "jingle/notifier/communicator/single_login_attempt.h"
 #include "net/base/network_change_notifier.h"

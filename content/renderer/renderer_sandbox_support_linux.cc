@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 
 #include "base/eintr_wrapper.h"
 #include "base/global_descriptors_posix.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
-#include "base/scoped_ptr.h"
 #include "content/common/chrome_descriptors.h"
 #include "content/common/sandbox_methods_linux.h"
 #include "content/common/unix_domain_socket_posix.h"

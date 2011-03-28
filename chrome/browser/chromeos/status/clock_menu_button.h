@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_CLOCK_MENU_BUTTON_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"

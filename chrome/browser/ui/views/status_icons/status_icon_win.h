@@ -9,8 +9,8 @@
 #include <windows.h>
 #include <shellapi.h>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_gdi_object.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/status_icons/status_icon.h"
 
 namespace views {

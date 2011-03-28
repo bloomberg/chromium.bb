@@ -8,7 +8,7 @@
 #include <queue>
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/base/pipeline.h"
 #include "media/video/video_decode_engine.h"
 

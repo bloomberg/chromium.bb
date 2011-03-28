@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 #include <queue>
 
 #include "base/callback.h"
-#include "base/linked_ptr.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"

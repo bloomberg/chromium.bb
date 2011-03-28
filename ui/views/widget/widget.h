@@ -6,7 +6,7 @@
 #define UI_VIEWS_WIDGET_WIDGET_H_
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "ui/gfx/point.h"
 #include "ui/views/native_types.h"

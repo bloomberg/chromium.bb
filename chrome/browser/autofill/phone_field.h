@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/form_field.h"
 #include "chrome/browser/autofill/phone_number.h"

@@ -10,7 +10,7 @@
 
 #include <map>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_window.h"

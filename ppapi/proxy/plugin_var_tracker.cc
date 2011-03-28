@@ -4,8 +4,8 @@
 
 #include "ppapi/proxy/plugin_var_tracker.h"
 
-#include "base/ref_counted.h"
-#include "base/singleton.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"

@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/test/values_test_util.h"
 #include "net/base/net_errors.h"

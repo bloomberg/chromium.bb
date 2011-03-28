@@ -6,7 +6,7 @@
 #define WEBKIT_PLUGINS_PPAPI_PPB_FLASH_NET_CONNECTOR_IMPL_H_
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/resource.h"

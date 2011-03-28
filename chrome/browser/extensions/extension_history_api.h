@@ -9,7 +9,7 @@
 #include <map>
 #include <string>
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"

@@ -13,7 +13,7 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 
 class BreakpadInfo;
 

@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/policy/cloud_policy_identity_strategy.h"

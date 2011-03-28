@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_FONT_SETTINGS_FONTS_LIST_LOADER_H_
 #pragma once
 
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 // This class allows asynchronous retrieval of the system fonts list. The

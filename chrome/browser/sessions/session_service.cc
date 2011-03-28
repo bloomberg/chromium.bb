@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
-#include "base/scoped_vector.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"

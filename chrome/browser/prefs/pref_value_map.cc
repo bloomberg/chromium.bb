@@ -5,7 +5,7 @@
 #include "chrome/browser/prefs/pref_value_map.h"
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/values.h"
 

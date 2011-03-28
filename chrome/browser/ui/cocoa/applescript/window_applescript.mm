@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
 
 #include "base/logging.h"
-#import "base/scoped_nsobject.h"
-#include "base/scoped_ptr.h"
+#import "base/memory/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/chrome_browser_application_mac.h"

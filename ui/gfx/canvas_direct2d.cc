@@ -4,7 +4,7 @@
 
 #include "ui/gfx/canvas_direct2d.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/brush.h"
 #include "ui/gfx/rect.h"
 

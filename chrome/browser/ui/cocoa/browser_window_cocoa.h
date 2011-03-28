@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_COCOA_H_
 #pragma once
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_window.h"

@@ -6,8 +6,8 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
-#include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "skia/ext/vector_platform_device_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"

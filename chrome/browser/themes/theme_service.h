@@ -10,7 +10,7 @@
 #include <set>
 #include <string>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "ui/base/theme_provider.h"
 

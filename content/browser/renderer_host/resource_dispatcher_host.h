@@ -19,8 +19,8 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/common/child_process_info.h"

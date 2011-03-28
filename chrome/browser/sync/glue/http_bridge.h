@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/common/net/url_fetcher.h"

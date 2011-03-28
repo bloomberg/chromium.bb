@@ -8,8 +8,8 @@
 
 #include <string>
 
-#include "base/ref_counted.h"
-#include "base/weak_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud_policy_identity_strategy.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"

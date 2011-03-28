@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/scoped_nsobject.h"
+#import "base/memory/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/test_event_utils.h"

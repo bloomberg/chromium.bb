@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/threading/simple_thread.h"
 #include "content/renderer/audio_message_filter.h"

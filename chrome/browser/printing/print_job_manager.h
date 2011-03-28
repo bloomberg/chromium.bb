@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"

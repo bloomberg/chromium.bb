@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "content/common/font_loader_mac.h"
 #include "content/common/sandbox_mac_unittest_helper.h"

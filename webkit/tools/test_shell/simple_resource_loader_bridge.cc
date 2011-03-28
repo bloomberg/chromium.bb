@@ -40,7 +40,7 @@
 #if defined(OS_MACOSX) || defined(OS_WIN)
 #include "base/nss_util.h"
 #endif
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/threading/thread.h"

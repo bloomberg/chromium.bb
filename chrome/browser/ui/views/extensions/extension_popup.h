@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/views/browser_bubble.h"
 #include "chrome/browser/ui/views/bubble_border.h"

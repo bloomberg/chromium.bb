@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"

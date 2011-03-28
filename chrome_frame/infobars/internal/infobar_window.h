@@ -6,7 +6,7 @@
 #define CHROME_FRAME_INFOBARS_INTERNAL_INFOBAR_WINDOW_H_
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 
 #include "chrome_frame/infobars/infobar_content.h"

@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/browsing_data_helper_browsertest.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/test/in_process_browser_test.h"

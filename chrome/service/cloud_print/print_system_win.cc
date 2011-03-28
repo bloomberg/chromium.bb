@@ -14,7 +14,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_bstr.h"

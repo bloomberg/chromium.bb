@@ -39,8 +39,8 @@
 #include <Cocoa/Cocoa.h>
 
 #include <string>
+#include "base/memory/scoped_ptr.h"
 #include "statsreport/aggregator.h"
-#include "base/scoped_ptr.h"
 
 namespace stats_report {
 

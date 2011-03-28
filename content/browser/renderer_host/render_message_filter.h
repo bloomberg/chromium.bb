@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/linked_ptr.h"
+#include "base/memory/linked_ptr.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
 #include "base/task.h"

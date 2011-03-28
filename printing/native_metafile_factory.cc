@@ -4,7 +4,7 @@
 
 #include "printing/native_metafile_factory.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 
 #if defined(OS_WIN)
 #include "printing/emf_win.h"

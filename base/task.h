@@ -7,10 +7,10 @@
 #pragma once
 
 #include "base/base_api.h"
-#include "base/raw_scoped_refptr_mismatch_checker.h"
+#include "base/memory/raw_scoped_refptr_mismatch_checker.h"
+#include "base/memory/weak_ptr.h"
 #include "base/tracked.h"
 #include "base/tuple.h"
-#include "base/weak_ptr.h"
 
 // Task ------------------------------------------------------------------------
 //

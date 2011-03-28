@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/image_decoder.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"

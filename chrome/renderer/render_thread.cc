@@ -100,7 +100,7 @@
 #if defined(OS_WIN)
 #include "content/plugin/plugin_channel.h"
 #else
-#include "base/scoped_handle.h"
+#include "base/memory/scoped_handle.h"
 #include "content/plugin/plugin_channel_base.h"
 #endif
 

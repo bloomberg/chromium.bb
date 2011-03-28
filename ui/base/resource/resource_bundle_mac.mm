@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/mac/mac_util.h"
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_string_conversions.h"
 #include "ui/gfx/image.h"

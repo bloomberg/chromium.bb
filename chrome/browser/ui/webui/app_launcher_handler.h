@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_APP_LAUNCHER_HANDLER_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"

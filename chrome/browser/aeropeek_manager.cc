@@ -9,8 +9,8 @@
 
 #include "app/win/shell.h"
 #include "base/command_line.h"
+#include "base/memory/scoped_native_library.h"
 #include "base/scoped_comptr_win.h"
-#include "base/scoped_native_library.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"

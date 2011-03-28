@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 #define VIEWS_CONTROLS_NATIVE_CONTROL_WIN_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
-#include "base/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/widget/child_window_message_processor.h"

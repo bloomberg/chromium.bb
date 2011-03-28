@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/renderer/render_process.h"
 #include "content/renderer/paint_aggregator.h"
 #include "ipc/ipc_channel.h"

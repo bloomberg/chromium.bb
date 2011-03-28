@@ -4,7 +4,7 @@
 
 #include "ui/views/widget/native_widget_win.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/system_monitor/system_monitor.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"

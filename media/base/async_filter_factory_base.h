@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/filter_factories.h"
 

@@ -9,9 +9,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "base/platform_file.h"
-#include "base/ref_counted.h"
-#include "base/singleton.h"
 #include "base/tracked_objects.h"
 
 namespace base {

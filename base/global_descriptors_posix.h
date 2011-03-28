@@ -13,7 +13,7 @@
 
 #include <stdint.h>
 
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 
 namespace base {
 

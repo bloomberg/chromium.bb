@@ -9,8 +9,8 @@
 #include <set>
 
 #include "base/callback.h"
-#include "base/scoped_ptr.h"
-#include "base/singleton.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/web_resource/gpu_blacklist_updater.h"
 #include "content/common/gpu_feature_flags.h"

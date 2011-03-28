@@ -7,7 +7,7 @@
 #pragma once
 
 #include <string>
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
 #include "chrome/browser/chromeos/login/client_login_response_handler.h"
 #include "chrome/browser/chromeos/login/issue_response_handler.h"

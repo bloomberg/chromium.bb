@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
-#include "base/singleton.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"

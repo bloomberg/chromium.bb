@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "net/socket_stream/socket_stream.h"
 
 class GURL;

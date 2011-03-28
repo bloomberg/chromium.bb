@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "ipc/ipc_channel_handle.h"
 

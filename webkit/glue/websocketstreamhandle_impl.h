@@ -1,11 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef WEBKIT_GLUE_WEBSOCKETSTREAMHANDLE_IMPL_H_
 #define WEBKIT_GLUE_WEBSOCKETSTREAMHANDLE_IMPL_H_
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSocketStreamHandle.h"
 
 namespace webkit_glue {

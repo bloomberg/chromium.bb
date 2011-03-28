@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/history/history.h"

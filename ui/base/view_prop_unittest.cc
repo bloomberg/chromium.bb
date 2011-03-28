@@ -4,7 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/view_prop.h"
 
 namespace ui {

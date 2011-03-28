@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
 #include "chrome/browser/ui/webui/chromeos/login/authenticator_facade_cros.h"
 #include "chrome/browser/ui/webui/chromeos/login/mock_authenticator_facade_cros_helpers.h"

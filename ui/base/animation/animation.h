@@ -6,7 +6,7 @@
 #define UI_BASE_ANIMATION_ANIMATION_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "ui/base/animation/animation_container_element.h"
 

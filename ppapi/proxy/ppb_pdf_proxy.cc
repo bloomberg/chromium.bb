@@ -8,8 +8,8 @@
 
 #include <map>
 
-#include "base/linked_ptr.h"
 #include "base/logging.h"
+#include "base/memory/linked_ptr.h"
 #include "build/build_config.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/proxy/plugin_dispatcher.h"

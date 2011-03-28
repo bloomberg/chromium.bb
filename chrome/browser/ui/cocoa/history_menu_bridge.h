@@ -9,8 +9,8 @@
 #import <Cocoa/Cocoa.h>
 #include <map>
 
-#include "base/ref_counted.h"
-#include "base/scoped_nsobject.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/sessions/session_id.h"

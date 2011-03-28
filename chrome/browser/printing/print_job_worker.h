@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H__
 #pragma once
 
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "printing/page_number.h"

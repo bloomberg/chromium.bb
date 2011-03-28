@@ -9,9 +9,9 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/md5.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/rand_util.h"
-#include "base/scoped_ptr.h"
-#include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

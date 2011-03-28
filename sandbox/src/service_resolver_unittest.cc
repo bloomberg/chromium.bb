@@ -5,7 +5,7 @@
 // This file contains unit tests for ServiceResolverThunk.
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/win/windows_version.h"
 #include "sandbox/src/resolver.h"
 #include "sandbox/src/sandbox_utils.h"

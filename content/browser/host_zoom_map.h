@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/browser/browser_thread.h"

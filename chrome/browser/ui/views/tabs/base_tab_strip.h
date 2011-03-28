@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/tabs/abstract_tab_strip_view.h"
 #include "chrome/browser/ui/views/tabs/base_tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"

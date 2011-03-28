@@ -6,7 +6,7 @@
 #define CHROME_TEST_TESTING_PREF_SERVICE_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/prefs/pref_service.h"
 
 class TestingPrefStore;

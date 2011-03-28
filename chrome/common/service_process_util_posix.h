@@ -10,9 +10,9 @@
 #include <signal.h>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_pump_libevent.h"
-#include "base/scoped_ptr.h"
 
 #if defined(OS_LINUX)
 #include "chrome/common/multi_process_lock.h"

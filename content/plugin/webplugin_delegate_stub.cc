@@ -23,7 +23,7 @@
 #include "webkit/glue/webcursor.h"
 
 #if defined(OS_WIN)
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "printing/native_metafile_factory.h"
 #include "printing/native_metafile.h"
 #endif  // defined(OS_WIN)

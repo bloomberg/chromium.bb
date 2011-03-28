@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/extensions/autoupdate_interceptor.h"
 #include "chrome/browser/extensions/extension_browsertest.h"

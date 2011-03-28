@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/linked_ptr.h"
+#include "base/memory/linked_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/chromeos/wm_overview_favicon.h"

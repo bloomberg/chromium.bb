@@ -8,7 +8,7 @@
 #include <list>
 #include <string>
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "net/base/x509_certificate.h"
 #include "remoting/protocol/jingle_session.h"
 #include "remoting/protocol/session_manager.h"

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_observer.h"

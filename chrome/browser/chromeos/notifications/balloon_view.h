@@ -9,7 +9,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "content/common/notification_observer.h"

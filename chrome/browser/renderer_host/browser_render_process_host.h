@@ -10,10 +10,10 @@
 #include <queue>
 #include <string>
 
+#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/process.h"
-#include "base/scoped_callback_factory.h"
-#include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/child_process_launcher.h"

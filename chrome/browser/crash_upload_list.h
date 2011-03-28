@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CRASH_UPLOAD_LIST_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/time.h"
 
 #include <string>

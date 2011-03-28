@@ -11,8 +11,8 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "base/singleton.h"
 #include "base/time.h"
 
 // Note to future well meaning engineers. Unless kqueue semantics have changed

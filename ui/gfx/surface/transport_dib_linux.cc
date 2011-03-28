@@ -10,7 +10,7 @@
 #include <sys/shm.h>
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/size.h"

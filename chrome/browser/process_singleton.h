@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -23,7 +23,7 @@
 #endif  // defined(OS_POSIX)
 
 #if defined(USE_X11)
-#include "base/scoped_temp_dir.h"
+#include "base/memory/scoped_temp_dir.h"
 #endif  // defined(USE_X11)
 
 class CommandLine;

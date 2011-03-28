@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
 #include "net/proxy/proxy_config.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,11 +33,11 @@
 // callback runs, it will notice that the MyClass instance is dead, and it will
 // avoid calling the GotData method.
 
-#ifndef BASE_SCOPED_CALLBACK_FACTORY_H_
-#define BASE_SCOPED_CALLBACK_FACTORY_H_
+#ifndef BASE_MEMORY_SCOPED_CALLBACK_FACTORY_H_
+#define BASE_MEMORY_SCOPED_CALLBACK_FACTORY_H_
 
 #include "base/callback.h"
-#include "base/weak_ptr.h"
+#include "base/memory/weak_ptr.h"
 
 namespace base {
 
@@ -130,4 +130,4 @@ class ScopedCallbackFactory {
 
 }  // namespace base
 
-#endif  // BASE_SCOPED_CALLBACK_FACTORY_H_
+#endif  // BASE_MEMORY_SCOPED_CALLBACK_FACTORY_H_

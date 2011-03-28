@@ -12,7 +12,7 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/size.h"

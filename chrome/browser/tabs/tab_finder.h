@@ -10,7 +10,7 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/history/history_types.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/tab_contents/navigation_controller.h"

@@ -4,7 +4,7 @@
 
 #include "content/common/webblobregistry_impl.h"
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "content/common/webblob_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"

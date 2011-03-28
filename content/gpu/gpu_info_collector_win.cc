@@ -12,7 +12,7 @@
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/scoped_native_library.h"
+#include "base/memory/scoped_native_library.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 

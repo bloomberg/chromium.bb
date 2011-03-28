@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_nsobject.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"

@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"

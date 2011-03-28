@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 
-#import "base/scoped_nsobject.h"
+#import "base/memory/scoped_nsobject.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"

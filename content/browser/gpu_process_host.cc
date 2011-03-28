@@ -5,8 +5,8 @@
 #include "content/browser/gpu_process_host.h"
 
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
-#include "base/ref_counted.h"
 #include "base/string_piece.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"

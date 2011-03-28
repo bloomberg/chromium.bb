@@ -9,12 +9,12 @@
 #include <string>
 
 #include "base/hash_tables.h"
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_cftyperef.h"
 #endif
-#include "base/scoped_handle.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_handle.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"

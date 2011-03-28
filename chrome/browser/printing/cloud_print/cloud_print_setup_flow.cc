@@ -5,7 +5,7 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 
 #include "base/json/json_writer.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

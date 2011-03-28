@@ -5,8 +5,8 @@
 #include <gtest/gtest.h>
 #include <windows.h>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"

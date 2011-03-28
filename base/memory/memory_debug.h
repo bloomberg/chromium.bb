@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 // All methods are effectively no-ops unless this program is being run through
 // a supported memory tool (currently, only Purify)
 
-#ifndef BASE_MEMORY_DEBUG_H_
-#define BASE_MEMORY_DEBUG_H_
+#ifndef BASE_MEMORY_MEMORY_DEBUG_H_
+#define BASE_MEMORY_MEMORY_DEBUG_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -44,4 +44,4 @@ class MemoryDebug {
 
 }  // namespace base
 
-#endif  // BASE_MEMORY_DEBUG_H_
+#endif  // BASE_MEMORY_MEMORY_DEBUG_H_

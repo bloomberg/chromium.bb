@@ -1,12 +1,12 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_RAW_SCOPED_REFPTR_MISMATCH_CHECKER_H_
-#define BASE_RAW_SCOPED_REFPTR_MISMATCH_CHECKER_H_
+#ifndef BASE_MEMORY_RAW_SCOPED_REFPTR_MISMATCH_CHECKER_H_
+#define BASE_MEMORY_RAW_SCOPED_REFPTR_MISMATCH_CHECKER_H_
 #pragma once
 
-#include "base/ref_counted.h"
+#include "base/memory/ref_counted.h"
 #include "base/template_util.h"
 #include "base/tuple.h"
 #include "build/build_config.h"
@@ -127,4 +127,4 @@ struct ParamsUseScopedRefptrCorrectly<Tuple8<A, B, C, D, E, F, G, H> > {
 
 }  // namespace base
 
-#endif  // BASE_RAW_SCOPED_REFPTR_MISMATCH_CHECKER_H_
+#endif  // BASE_MEMORY_RAW_SCOPED_REFPTR_MISMATCH_CHECKER_H_

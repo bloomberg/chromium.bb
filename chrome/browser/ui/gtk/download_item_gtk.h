@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/icon_manager.h"

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_BROWSER_TAB_STRIP_CONTROLLER_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "content/common/notification_observer.h"

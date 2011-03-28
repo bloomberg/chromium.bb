@@ -5,7 +5,7 @@
 #include <map>
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_localization_peer.h"
 #include "ipc/ipc_message.h"
