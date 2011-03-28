@@ -45,7 +45,7 @@ class FormStructure {
   void DetermineHeuristicTypes();
 
   // Encodes the XML upload request from this FormStructure.
-  bool EncodeUploadRequest(bool auto_fill_used, std::string* encoded_xml) const;
+  bool EncodeUploadRequest(bool autofill_used, std::string* encoded_xml) const;
 
   // Encodes the XML query request for the set of forms.
   // All fields are returned in one XML. For example, there are three forms,

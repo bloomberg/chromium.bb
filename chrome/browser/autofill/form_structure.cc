@@ -94,15 +94,15 @@ void FormStructure::DetermineHeuristicTypes() {
     DCHECK(field);
     FieldTypeMap::iterator iter = field_type_map.find(field->unique_name());
 
-    AutofillFieldType heuristic_auto_fill_type;
+    AutofillFieldType heuristic_autofill_type;
     if (iter == field_type_map.end()) {
-      heuristic_auto_fill_type = UNKNOWN_TYPE;
+      heuristic_autofill_type = UNKNOWN_TYPE;
     } else {
-      heuristic_auto_fill_type = iter->second;
+      heuristic_autofill_type = iter->second;
       ++autofill_count_;
     }
 
-    field->set_heuristic_type(heuristic_auto_fill_type);
+    field->set_heuristic_type(heuristic_autofill_type);
 
     AutofillType autofill_type(field->type());
     if (autofill_type.group() == AutofillType::CREDIT_CARD)
@@ -112,13 +112,13 @@ void FormStructure::DetermineHeuristicTypes() {
   }
 }
 
-bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
+bool FormStructure::EncodeUploadRequest(bool autofill_used,
                                         std::string* encoded_xml) const {
   DCHECK(encoded_xml);
   encoded_xml->clear();
-  bool auto_fillable = ShouldBeParsed(true);
-  DCHECK(auto_fillable);  // Caller should've checked for search pages.
-  if (!auto_fillable)
+  bool autofillable = ShouldBeParsed(true);
+  DCHECK(autofillable);  // Caller should've checked for search pages.
+  if (!autofillable)
     return false;
 
   // Set up the <autofillupload> element and its attributes.
@@ -129,7 +129,7 @@ bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
   autofill_request_xml.SetAttr(buzz::QName(kAttributeFormSignature),
                                FormSignature());
   autofill_request_xml.SetAttr(buzz::QName(kAttributeAutofillUsed),
-                               auto_fill_used ? "true" : "false");
+                               autofill_used ? "true" : "false");
   autofill_request_xml.SetAttr(buzz::QName(kAttributeDataPresent),
                                ConvertPresenceBitsToString().c_str());
 

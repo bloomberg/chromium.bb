@@ -16,7 +16,7 @@ cr.define('options', function() {
   function AutofillOptions() {
     OptionsPage.call(this,
                      'autofill',
-                     templateData.autoFillOptionsPageTabTitle,
+                     templateData.autofillOptionsPageTabTitle,
                      'autofill-options');
   }
 
@@ -63,7 +63,7 @@ cr.define('options', function() {
      */
     createAddressList_: function() {
       this.addressList_ = $('address-list');
-      options.autoFillOptions.AutofillAddressList.decorate(this.addressList_);
+      options.autofillOptions.AutofillAddressList.decorate(this.addressList_);
       this.addressList_.autoExpands = true;
     },
 
@@ -73,7 +73,7 @@ cr.define('options', function() {
      */
     createCreditCardList_: function() {
       this.creditCardList_ = $('creditcard-list');
-      options.autoFillOptions.AutofillCreditCardList.decorate(
+      options.autofillOptions.AutofillCreditCardList.decorate(
           this.creditCardList_);
       this.creditCardList_.autoExpands = true;
     },
@@ -88,7 +88,7 @@ cr.define('options', function() {
       var title = localStrings.getString('addAddressTitle');
       AutofillEditAddressOverlay.setTitle(title);
       AutofillEditAddressOverlay.clearInputFields();
-      OptionsPage.navigateToPage('autoFillEditAddress');
+      OptionsPage.navigateToPage('autofillEditAddress');
     },
 
     /**
@@ -101,7 +101,7 @@ cr.define('options', function() {
       var title = localStrings.getString('addCreditCardTitle');
       AutofillEditCreditCardOverlay.setTitle(title);
       AutofillEditCreditCardOverlay.clearInputFields();
-      OptionsPage.navigateToPage('autoFillEditCreditCard');
+      OptionsPage.navigateToPage('autofillEditCreditCard');
     },
 
     /**
@@ -172,7 +172,7 @@ cr.define('options', function() {
       var title = localStrings.getString('editAddressTitle');
       AutofillEditAddressOverlay.setTitle(title);
       AutofillEditAddressOverlay.loadAddress(address);
-      OptionsPage.navigateToPage('autoFillEditAddress');
+      OptionsPage.navigateToPage('autofillEditAddress');
     },
 
     /**
@@ -185,7 +185,7 @@ cr.define('options', function() {
       var title = localStrings.getString('editCreditCardTitle');
       AutofillEditCreditCardOverlay.setTitle(title);
       AutofillEditCreditCardOverlay.loadCreditCard(creditCard);
-      OptionsPage.navigateToPage('autoFillEditCreditCard');
+      OptionsPage.navigateToPage('autofillEditCreditCard');
     },
   };
 

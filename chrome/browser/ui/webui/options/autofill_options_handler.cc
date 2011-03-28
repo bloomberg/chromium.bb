@@ -86,10 +86,10 @@ void AutofillOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-    { "autoFillAddresses", IDS_AUTOFILL_ADDRESSES_GROUP_NAME },
-    { "autoFillCreditCards", IDS_AUTOFILL_CREDITCARDS_GROUP_NAME },
-    { "autoFillAddAddress", IDS_AUTOFILL_ADD_ADDRESS_BUTTON },
-    { "autoFillAddCreditCard", IDS_AUTOFILL_ADD_CREDITCARD_BUTTON },
+    { "autofillAddresses", IDS_AUTOFILL_ADDRESSES_GROUP_NAME },
+    { "autofillCreditCards", IDS_AUTOFILL_CREDITCARDS_GROUP_NAME },
+    { "autofillAddAddress", IDS_AUTOFILL_ADD_ADDRESS_BUTTON },
+    { "autofillAddCreditCard", IDS_AUTOFILL_ADD_CREDITCARD_BUTTON },
     { "helpButton", IDS_AUTOFILL_HELP_LABEL },
     { "addAddressTitle", IDS_AUTOFILL_ADD_ADDRESS_CAPTION },
     { "editAddressTitle", IDS_AUTOFILL_EDIT_ADDRESS_CAPTION },
@@ -101,7 +101,7 @@ void AutofillOptionsHandler::GetLocalizedValues(
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
-  RegisterTitle(localized_strings, "autoFillOptionsPage",
+  RegisterTitle(localized_strings, "autofillOptionsPage",
                 IDS_AUTOFILL_OPTIONS_TITLE);
 
   SetAddressOverlayStrings(localized_strings);
@@ -148,7 +148,7 @@ void AutofillOptionsHandler::OnPersonalDataChanged() {
 
 void AutofillOptionsHandler::SetAddressOverlayStrings(
     DictionaryValue* localized_strings) {
-  localized_strings->SetString("autoFillEditAddressTitle",
+  localized_strings->SetString("autofillEditAddressTitle",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_ADDRESS_CAPTION));
   localized_strings->SetString("fullNameLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_FULL_NAME));
@@ -178,7 +178,7 @@ void AutofillOptionsHandler::SetAddressOverlayStrings(
 
 void AutofillOptionsHandler::SetCreditCardOverlayStrings(
     DictionaryValue* localized_strings) {
-  localized_strings->SetString("autoFillEditCreditCardTitle",
+  localized_strings->SetString("autofillEditCreditCardTitle",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION));
   localized_strings->SetString("nameOnCardLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_NAME_ON_CARD));

@@ -14,8 +14,8 @@ cr.define('options', function() {
    * @class
    */
   function AutofillEditAddressOverlay() {
-    OptionsPage.call(this, 'autoFillEditAddress',
-                     templateData.autoFillEditAddressTitle,
+    OptionsPage.call(this, 'autofillEditAddress',
+                     templateData.autofillEditAddressTitle,
                      'autofill-edit-address-overlay');
   }
 

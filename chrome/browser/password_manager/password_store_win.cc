@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,15 +119,15 @@ PasswordForm* PasswordStoreWin::GetIE7Result(const WDTypedResult *result,
       return NULL;
     }
 
-    PasswordForm* auto_fill = new PasswordForm(form);
-    auto_fill->username_value = username;
-    auto_fill->password_value = password;
-    auto_fill->preferred = true;
-    auto_fill->ssl_valid = form.origin.SchemeIsSecure();
-    auto_fill->date_created = info.date_created;
+    PasswordForm* autofill = new PasswordForm(form);
+    autofill->username_value = username;
+    autofill->password_value = password;
+    autofill->preferred = true;
+    autofill->ssl_valid = form.origin.SchemeIsSecure();
+    autofill->date_created = info.date_created;
     // Add this PasswordForm to the saved password table.
-    AddLogin(*auto_fill);
-    return auto_fill;
+    AddLogin(*autofill);
+    return autofill;
   }
   return NULL;
 }
