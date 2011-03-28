@@ -93,23 +93,20 @@ void PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
 
 void PasswordStoreDefault::GetLoginsImpl(
     GetLoginsRequest* request, const webkit_glue::PasswordForm& form) {
-  std::vector<PasswordForm*> forms;
-  login_db_->GetLogins(form, &forms);
-  NotifyConsumer(request, forms);
+  login_db_->GetLogins(form, &request->value);
+  ForwardLoginsResult(request);
 }
 
 void PasswordStoreDefault::GetAutofillableLoginsImpl(
     GetLoginsRequest* request) {
-  std::vector<PasswordForm*> forms;
-  FillAutofillableLogins(&forms);
-  NotifyConsumer(request, forms);
+  FillAutofillableLogins(&request->value);
+  ForwardLoginsResult(request);
 }
 
 void PasswordStoreDefault::GetBlacklistLoginsImpl(
     GetLoginsRequest* request) {
-  std::vector<PasswordForm*> forms;
-  FillBlacklistLogins(&forms);
-  NotifyConsumer(request, forms);
+  FillBlacklistLogins(&request->value);
+  ForwardLoginsResult(request);
 }
 
 bool PasswordStoreDefault::FillAutofillableLogins(

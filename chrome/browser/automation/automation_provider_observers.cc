@@ -1464,7 +1464,8 @@ AutomationProviderGetPasswordsObserver::
 ~AutomationProviderGetPasswordsObserver() {}
 
 void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
-    int handle, const std::vector<webkit_glue::PasswordForm*>& result) {
+    CancelableRequestProvider::Handle handle,
+    const std::vector<webkit_glue::PasswordForm*>& result) {
   if (!provider_) {
     delete this;
     return;

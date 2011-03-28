@@ -36,14 +36,13 @@ int PasswordStoreWin::GetLogins(const webkit_glue::PasswordForm& form,
   return request_handle;
 }
 
-void PasswordStoreWin::NotifyConsumer(GetLoginsRequest* request,
-                                      const std::vector<PasswordForm*> forms) {
-  if (!forms.empty()) {
-    pending_request_forms_.erase(request->handle);
-    PasswordStore::NotifyConsumer(request, forms);
+void PasswordStoreWin::ForwardLoginsResult(GetLoginsRequest* request) {
+  if (!request->value.empty()) {
+    pending_request_forms_.erase(request->handle());
+    PasswordStore::ForwardLoginsResult(request);
   } else {
     PendingRequestFormMap::iterator it(pending_request_forms_.find(
-        request->handle));
+        request->handle()));
     if (it != pending_request_forms_.end()) {
       IE7PasswordInfo info;
       std::wstring url = ASCIIToWide(it->second.origin.spec());
@@ -69,16 +68,15 @@ void PasswordStoreWin::OnWebDataServiceRequestDone(
 
     // This is a response from WebDataService::GetIE7Login.
     PendingRequestFormMap::iterator it(pending_request_forms_.find(
-        request->handle));
+        request->handle()));
     DCHECK(pending_request_forms_.end() != it);
     PasswordForm* ie7_form = GetIE7Result(result, it->second);
 
-    std::vector<PasswordForm*> forms;
     if (ie7_form)
-      forms.push_back(ie7_form);
+      request->value.push_back(ie7_form);
 
     pending_request_forms_.erase(it);
-    PasswordStore::NotifyConsumer(request.release(), forms);
+    PasswordStore::ForwardLoginsResult(request.release());
   } else {
     PasswordStoreDefault::OnWebDataServiceRequestDone(handle, result);
   }

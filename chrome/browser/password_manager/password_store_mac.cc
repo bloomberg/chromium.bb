@@ -886,7 +886,7 @@ void PasswordStoreMac::GetLoginsImpl(GetLoginsRequest* request,
   std::vector<PasswordForm*> database_forms;
   login_metadata_db_->GetLogins(form, &database_forms);
 
-  std::vector<PasswordForm*> merged_forms;
+  std::vector<PasswordForm*>& merged_forms = request->value;
   internal_keychain_helpers::MergePasswordForms(&keychain_forms,
                                                 &database_forms,
                                                 &merged_forms);
@@ -904,19 +904,17 @@ void PasswordStoreMac::GetLoginsImpl(GetLoginsRequest* request,
   RemoveDatabaseForms(database_forms);
   STLDeleteElements(&database_forms);
 
-  NotifyConsumer(request, merged_forms);
+  ForwardLoginsResult(request);
 }
 
 void PasswordStoreMac::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
-  std::vector<PasswordForm*> database_forms;
-  FillBlacklistLogins(&database_forms);
-  NotifyConsumer(request, database_forms);
+  FillBlacklistLogins(&request->value);
+  ForwardLoginsResult(request);
 }
 
 void PasswordStoreMac::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
-  std::vector<PasswordForm*> database_forms;
-  FillAutofillableLogins(&database_forms);
-  NotifyConsumer(request, database_forms);
+  FillAutofillableLogins(&request->value);
+  ForwardLoginsResult(request);
 }
 
 bool PasswordStoreMac::FillAutofillableLogins(

@@ -4,7 +4,8 @@
 
 #include "content/browser/cancelable_request.h"
 
-CancelableRequestProvider::CancelableRequestProvider() : next_handle_(1) {
+CancelableRequestProvider::CancelableRequestProvider()
+    : next_handle_(1) {
 }
 
 CancelableRequestProvider::~CancelableRequestProvider() {
@@ -28,6 +29,8 @@ CancelableRequestProvider::Handle CancelableRequestProvider::AddRequest(
     handle = next_handle_;
     pending_requests_[next_handle_] = request;
     ++next_handle_;
+    DCHECK(next_handle_)
+        << "next_handle_ may have wrapped around to invalid state.";
   }
 
   consumer->OnRequestAdded(this, handle);

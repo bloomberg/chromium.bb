@@ -6,13 +6,27 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/stl_util-inl.h"
 #include "base/task.h"
+#include "chrome/browser/password_manager/password_store_consumer.h"
 #include "content/browser/browser_thread.h"
+#include "webkit/glue/password_form.h"
 
 using std::vector;
 using webkit_glue::PasswordForm;
 
-PasswordStore::PasswordStore() : handle_(0) {
+PasswordStore::GetLoginsRequest::GetLoginsRequest(GetLoginsCallback* callback)
+    : CancelableRequest1<GetLoginsCallback,
+                         std::vector<webkit_glue::PasswordForm*> >(callback) {
+}
+
+PasswordStore::GetLoginsRequest::~GetLoginsRequest() {
+  if (canceled()) {
+    STLDeleteElements(&value);
+  }
+}
+
+PasswordStore::PasswordStore() {
 }
 
 bool PasswordStore::Init() {
@@ -47,36 +61,19 @@ void PasswordStore::RemoveLoginsCreatedBetween(const base::Time& delete_begin,
       NewRunnableMethod(this, &PasswordStore::WrapModificationTask, task));
 }
 
-int PasswordStore::GetLogins(const PasswordForm& form,
-                             PasswordStoreConsumer* consumer) {
-  int handle = GetNewRequestHandle();
-  GetLoginsRequest* request = new GetLoginsRequest(consumer, handle);
-  ScheduleTask(NewRunnableMethod(this, &PasswordStore::GetLoginsImpl, request,
-                                 form));
-  return handle;
+CancelableRequestProvider::Handle PasswordStore::GetLogins(
+    const PasswordForm& form, PasswordStoreConsumer* consumer) {
+  return Schedule(&PasswordStore::GetLoginsImpl, consumer, form);
 }
 
-int PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
-  int handle = GetNewRequestHandle();
-  GetLoginsRequest* request = new GetLoginsRequest(consumer, handle);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &PasswordStore::GetAutofillableLoginsImpl,
-                                 request));
-  return handle;
+CancelableRequestProvider::Handle PasswordStore::GetAutofillableLogins(
+    PasswordStoreConsumer* consumer) {
+  return Schedule(&PasswordStore::GetAutofillableLoginsImpl, consumer);
 }
 
-int PasswordStore::GetBlacklistLogins(PasswordStoreConsumer* consumer) {
-  int handle = GetNewRequestHandle();
-  GetLoginsRequest* request = new GetLoginsRequest(consumer, handle);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &PasswordStore::GetBlacklistLoginsImpl,
-                                 request));
-  return handle;
-}
-
-void PasswordStore::CancelLoginsQuery(int handle) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  pending_requests_.erase(handle);
+CancelableRequestProvider::Handle PasswordStore::GetBlacklistLogins(
+    PasswordStoreConsumer* consumer) {
+  return Schedule(&PasswordStore::GetBlacklistLoginsImpl, consumer);
 }
 
 void PasswordStore::ReportMetrics() {
@@ -93,50 +90,34 @@ void PasswordStore::RemoveObserver(Observer* observer) {
 
 PasswordStore::~PasswordStore() {}
 
-PasswordStore::GetLoginsRequest::GetLoginsRequest(
-    PasswordStoreConsumer* consumer, int handle)
-    : consumer(consumer), handle(handle), message_loop(MessageLoop::current()) {
-}
-
 void PasswordStore::ScheduleTask(Task* task) {
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, task);
 }
-
-void PasswordStore::NotifyConsumer(GetLoginsRequest* request,
-                                   const vector<PasswordForm*>& forms) {
-  scoped_ptr<GetLoginsRequest> request_ptr(request);
-
-#if !defined(OS_MACOSX)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-#endif
-  request->message_loop->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this,
-                        &PasswordStore::NotifyConsumerImpl,
-                        request->consumer, request->handle, forms));
+void PasswordStore::ForwardLoginsResult(GetLoginsRequest* request) {
+  request->ForwardResult(GetLoginsRequest::TupleType(request->handle(),
+                                                     request->value));
 }
 
-void PasswordStore::NotifyConsumerImpl(PasswordStoreConsumer* consumer,
-                                       int handle,
-                                       const vector<PasswordForm*>& forms) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Don't notify the consumer if the request was canceled.
-  if (pending_requests_.find(handle) == pending_requests_.end()) {
-    // |forms| is const so we iterate rather than use STLDeleteElements().
-    for (size_t i = 0; i < forms.size(); ++i)
-      delete forms[i];
-    return;
-  }
-  pending_requests_.erase(handle);
-
-  consumer->OnPasswordStoreRequestDone(handle, forms);
+template<typename BackendFunc>
+CancelableRequestProvider::Handle PasswordStore::Schedule(
+    BackendFunc func, PasswordStoreConsumer* consumer) {
+  scoped_refptr<GetLoginsRequest> request(new GetLoginsRequest(
+      NewCallback(consumer,
+                  &PasswordStoreConsumer::OnPasswordStoreRequestDone)));
+  AddRequest(request, consumer->cancelable_consumer());
+  ScheduleTask(NewRunnableMethod(this, func, request));
+  return request->handle();
 }
 
-int PasswordStore::GetNewRequestHandle() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  int handle = handle_++;
-  pending_requests_.insert(handle);
-  return handle;
+template<typename BackendFunc, typename ArgA>
+CancelableRequestProvider::Handle PasswordStore::Schedule(
+    BackendFunc func, PasswordStoreConsumer* consumer, const ArgA& a) {
+  scoped_refptr<GetLoginsRequest> request(new GetLoginsRequest(
+      NewCallback(consumer,
+                  &PasswordStoreConsumer::OnPasswordStoreRequestDone)));
+  AddRequest(request, consumer->cancelable_consumer());
+  ScheduleTask(NewRunnableMethod(this, func, request, a));
+  return request->handle();
 }
 
 void PasswordStore::WrapModificationTask(Task* task) {

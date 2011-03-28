@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <set>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -64,7 +65,8 @@ class LivePasswordsSyncTest : public LiveSyncTest {
         : PasswordStoreConsumer(), result_(result) {}
 
     virtual void OnPasswordStoreRequestDone(
-        int handle, const std::vector<webkit_glue::PasswordForm*>& result) {
+        CancelableRequestProvider::Handle handle,
+        const std::vector<webkit_glue::PasswordForm*>& result) {
       result_.clear();
       for (std::vector<webkit_glue::PasswordForm*>::const_iterator it =
            result.begin(); it != result.end(); ++it) {

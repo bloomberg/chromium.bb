@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_thread.h"
 #include "chrome/browser/keychain_mock_mac.h"
+#include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
 #include "chrome/browser/password_manager/password_store_mac_internal.h"
 #include "chrome/common/chrome_paths.h"
@@ -28,7 +29,8 @@ namespace {
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
 public:
   MOCK_METHOD2(OnPasswordStoreRequestDone,
-               void(int, const std::vector<webkit_glue::PasswordForm*>&));
+               void(CancelableRequestProvider::Handle,
+                    const std::vector<webkit_glue::PasswordForm*>&));
 };
 
 ACTION(STLDeleteElements0) {

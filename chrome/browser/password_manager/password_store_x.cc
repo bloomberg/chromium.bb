@@ -99,45 +99,44 @@ void PasswordStoreX::RemoveLoginsCreatedBetweenImpl(
 }
 
 void PasswordStoreX::GetLoginsImpl(GetLoginsRequest* request,
-                                     const PasswordForm& form) {
+                                   const PasswordForm& form) {
   CheckMigration();
-  vector<PasswordForm*> forms;
-  if (use_native_backend() && backend_->GetLogins(form, &forms)) {
-    NotifyConsumer(request, forms);
+  if (use_native_backend() && backend_->GetLogins(form, &request->value)) {
+    ForwardLoginsResult(request);
     allow_fallback_ = false;
   } else if (allow_default_store()) {
     PasswordStoreDefault::GetLoginsImpl(request, form);
   } else {
     // The consumer will be left hanging unless we reply.
-    NotifyConsumer(request, forms);
+    ForwardLoginsResult(request);
   }
 }
 
 void PasswordStoreX::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
   CheckMigration();
-  vector<PasswordForm*> forms;
-  if (use_native_backend() && backend_->GetAutofillableLogins(&forms)) {
-    NotifyConsumer(request, forms);
+  if (use_native_backend() &&
+      backend_->GetAutofillableLogins(&request->value)) {
+    ForwardLoginsResult(request);
     allow_fallback_ = false;
   } else if (allow_default_store()) {
     PasswordStoreDefault::GetAutofillableLoginsImpl(request);
   } else {
     // The consumer will be left hanging unless we reply.
-    NotifyConsumer(request, forms);
+    ForwardLoginsResult(request);
   }
 }
 
 void PasswordStoreX::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
   CheckMigration();
-  vector<PasswordForm*> forms;
-  if (use_native_backend() && backend_->GetBlacklistLogins(&forms)) {
-    NotifyConsumer(request, forms);
+  if (use_native_backend() &&
+      backend_->GetBlacklistLogins(&request->value)) {
+    ForwardLoginsResult(request);
     allow_fallback_ = false;
   } else if (allow_default_store()) {
     PasswordStoreDefault::GetBlacklistLoginsImpl(request);
   } else {
     // The consumer will be left hanging unless we reply.
-    NotifyConsumer(request, forms);
+    ForwardLoginsResult(request);
   }
 }
 

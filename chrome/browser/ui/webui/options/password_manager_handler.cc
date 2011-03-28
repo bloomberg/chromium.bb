@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/options/password_manager_handler.h"
 
 #include "base/callback.h"
-#include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -17,6 +16,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "webkit/glue/password_form.h"
 
 PasswordManagerHandler::PasswordManagerHandler()
     : ALLOW_THIS_IN_INITIALIZER_LIST(populater_(this)),
@@ -24,9 +24,6 @@ PasswordManagerHandler::PasswordManagerHandler()
 }
 
 PasswordManagerHandler::~PasswordManagerHandler() {
-  // TODO(scr): ScopedVector.
-  STLDeleteElements(&password_list_);
-  STLDeleteElements(&password_exception_list_);
   GetPasswordStore()->RemoveObserver(this);
 }
 
@@ -90,8 +87,8 @@ PasswordStore* PasswordManagerHandler::GetPasswordStore() {
 
 void PasswordManagerHandler::UpdatePasswordLists(const ListValue* args) {
   // Reset the current lists.
-  STLDeleteElements(&password_list_);
-  STLDeleteElements(&password_exception_list_);
+  password_list_.reset();
+  password_exception_list_.reset();
 
   languages_ =
       web_ui_->GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
@@ -158,14 +155,12 @@ void PasswordManagerHandler::SetPasswordExceptionList() {
 }
 
 PasswordManagerHandler::ListPopulater::ListPopulater(
-    PasswordManagerHandler* page) : page_(page),
-                                    pending_login_query_(0) {
+    PasswordManagerHandler* page)
+    : page_(page),
+      pending_login_query_(0) {
 }
 
 PasswordManagerHandler::ListPopulater::~ListPopulater() {
-  PasswordStore* store = page_->GetPasswordStore();
-  if (store)
-    store->CancelLoginsQuery(pending_login_query_);
 }
 
 PasswordManagerHandler::PasswordListPopulater::PasswordListPopulater(
@@ -173,20 +168,26 @@ PasswordManagerHandler::PasswordListPopulater::PasswordListPopulater(
 }
 
 void PasswordManagerHandler::PasswordListPopulater::Populate() {
-  DCHECK(!pending_login_query_);
   PasswordStore* store = page_->GetPasswordStore();
-  if (store != NULL)
+  if (store != NULL) {
+    if (pending_login_query_)
+      store->CancelRequest(pending_login_query_);
+
     pending_login_query_ = store->GetAutofillableLogins(this);
-  else
+  } else {
     LOG(ERROR) << "No password store! Cannot display passwords.";
+  }
 }
 
 void PasswordManagerHandler::PasswordListPopulater::
-    OnPasswordStoreRequestDone(int handle,
-    const std::vector<webkit_glue::PasswordForm*>& result) {
+    OnPasswordStoreRequestDone(
+        CancelableRequestProvider::Handle handle,
+        const std::vector<webkit_glue::PasswordForm*>& result) {
   DCHECK_EQ(pending_login_query_, handle);
   pending_login_query_ = 0;
-  page_->password_list_ = result;
+  page_->password_list_.reset();
+  page_->password_list_.insert(page_->password_list_.end(),
+                               result.begin(), result.end());
   page_->SetPasswordList();
 }
 
@@ -196,19 +197,25 @@ PasswordManagerHandler::PasswordExceptionListPopulater::
 }
 
 void PasswordManagerHandler::PasswordExceptionListPopulater::Populate() {
-  DCHECK(!pending_login_query_);
   PasswordStore* store = page_->GetPasswordStore();
-  if (store != NULL)
+  if (store != NULL) {
+    if (pending_login_query_)
+      store->CancelRequest(pending_login_query_);
+
     pending_login_query_ = store->GetBlacklistLogins(this);
-  else
+  } else {
     LOG(ERROR) << "No password store! Cannot display exceptions.";
+  }
 }
 
 void PasswordManagerHandler::PasswordExceptionListPopulater::
-    OnPasswordStoreRequestDone(int handle,
-    const std::vector<webkit_glue::PasswordForm*>& result) {
+    OnPasswordStoreRequestDone(
+        CancelableRequestProvider::Handle handle,
+        const std::vector<webkit_glue::PasswordForm*>& result) {
   DCHECK_EQ(pending_login_query_, handle);
   pending_login_query_ = 0;
-  page_->password_exception_list_ = result;
+  page_->password_exception_list_.reset();
+  page_->password_exception_list_.insert(page_->password_exception_list_.end(),
+                                         result.begin(), result.end());
   page_->SetPasswordExceptionList();
 }

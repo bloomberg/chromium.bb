@@ -12,10 +12,11 @@
 #include "build/build_config.h"
 
 #include "base/stl_util-inl.h"
-#include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/password_manager/password_store_consumer.h"
 #include "webkit/glue/password_form.h"
 
 class PasswordManager;
+class PasswordStore;
 class Profile;
 
 // Per-password-form-{on-page, dialog} class responsible for interactions
@@ -72,7 +73,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // PasswordStoreConsumer implementation.
   virtual void OnPasswordStoreRequestDone(
-      int handle, const std::vector<webkit_glue::PasswordForm*>& result);
+      CancelableRequestProvider::Handle handle,
+      const std::vector<webkit_glue::PasswordForm*>& result);
 
   // A user opted to 'never remember' passwords for this form.
   // Blacklist it so that from now on when it is seen we ignore it.
@@ -136,10 +138,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
   static const int kMaxNumActionsTaken = kManagerActionMax * kUserActionMax *
                                          kSubmitResultMax;
 
-  // Called by destructor to ensure if this object is deleted, no potential
-  // outstanding callbacks can call OnPasswordStoreRequestDone.
-  void CancelLoginsQuery();
-
   // Helper for OnPasswordStoreRequestDone to determine whether or not
   // the given result form is worth scoring.
   bool IgnoreResult(const webkit_glue::PasswordForm& form) const;
@@ -197,7 +195,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   const PasswordManager* const password_manager_;
 
   // Handle to any pending PasswordStore::GetLogins query.
-  int pending_login_query_;
+  CancelableRequestProvider::Handle pending_login_query_;
 
   // Convenience pointer to entry in best_matches_ that is marked
   // as preferred. This is only allowed to be null if there are no best matches

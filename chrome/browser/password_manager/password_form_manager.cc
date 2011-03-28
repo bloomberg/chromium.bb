@@ -10,6 +10,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "webkit/glue/password_form_dom_manager.h"
 
@@ -39,7 +40,6 @@ PasswordFormManager::PasswordFormManager(Profile* profile,
 }
 
 PasswordFormManager::~PasswordFormManager() {
-  CancelLoginsQuery();
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTaken",
                             GetActionsTaken(),
                             kMaxNumActionsTaken);
@@ -306,7 +306,8 @@ void PasswordFormManager::OnRequestDone(int handle,
 }
 
 void PasswordFormManager::OnPasswordStoreRequestDone(
-    int handle, const std::vector<PasswordForm*>& result) {
+    CancelableRequestProvider::Handle handle,
+    const std::vector<PasswordForm*>& result) {
   DCHECK_EQ(state_, MATCHING_PHASE);
   DCHECK_EQ(pending_login_query_, handle);
 
@@ -316,6 +317,7 @@ void PasswordFormManager::OnPasswordStoreRequestDone(
   }
 
   OnRequestDone(handle, result);
+  pending_login_query_ = 0;
 }
 
 bool PasswordFormManager::IgnoreResult(const PasswordForm& form) const {
@@ -418,16 +420,6 @@ void PasswordFormManager::UpdateLogin() {
   } else {
     password_store->UpdateLogin(pending_credentials_);
   }
-}
-
-void PasswordFormManager::CancelLoginsQuery() {
-  PasswordStore* password_store =
-      profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS);
-  if (!password_store) {
-    // Can be NULL in unit tests.
-    return;
-  }
-  password_store->CancelLoginsQuery(pending_login_query_);
 }
 
 int PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {

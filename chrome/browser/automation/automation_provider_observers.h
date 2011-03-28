@@ -27,7 +27,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
-#include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/automation_constants.h"
@@ -908,8 +908,7 @@ class AutomationProviderImportSettingsObserver
 };
 
 // Allows automation provider to wait for getting passwords to finish.
-class AutomationProviderGetPasswordsObserver
-    : public PasswordStoreConsumer {
+class AutomationProviderGetPasswordsObserver : public PasswordStoreConsumer {
  public:
   AutomationProviderGetPasswordsObserver(
       AutomationProvider* provider,
@@ -917,7 +916,8 @@ class AutomationProviderGetPasswordsObserver
   virtual ~AutomationProviderGetPasswordsObserver();
 
   virtual void OnPasswordStoreRequestDone(
-      int handle, const std::vector<webkit_glue::PasswordForm*>& result);
+      CancelableRequestProvider::Handle handle,
+      const std::vector<webkit_glue::PasswordForm*>& result);
 
  private:
   base::WeakPtr<AutomationProvider> provider_;

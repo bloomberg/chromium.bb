@@ -36,7 +36,8 @@ namespace {
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
   MOCK_METHOD2(OnPasswordStoreRequestDone,
-               void(int, const std::vector<PasswordForm*>&));
+               void(CancelableRequestProvider::Handle,
+                    const std::vector<PasswordForm*>&));
 };
 
 class MockWebDataServiceConsumer : public WebDataServiceConsumer {

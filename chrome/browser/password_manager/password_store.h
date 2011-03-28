@@ -6,16 +6,16 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_H_
 #pragma once
 
-#include <set>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "webkit/glue/password_form.h"
+#include "content/browser/cancelable_request.h"
 
-class Profile;
+class PasswordStoreConsumer;
 class Task;
 
 namespace browser_sync {
@@ -24,20 +24,39 @@ class PasswordModelAssociator;
 class PasswordModelWorker;
 };
 
-class PasswordStoreConsumer {
- public:
-  virtual ~PasswordStoreConsumer() {}
-  // Call this when the request is finished. If there are no results, call it
-  // anyway with an empty vector.
-  virtual void OnPasswordStoreRequestDone(
-      int handle, const std::vector<webkit_glue::PasswordForm*>& result) = 0;
+namespace webkit_glue {
+struct PasswordForm;
 };
 
 // Interface for storing form passwords in a platform-specific secure way.
 // The login request/manipulation API is not threadsafe and must be used
 // from the UI thread.
-class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
+class PasswordStore
+    : public base::RefCountedThreadSafe<PasswordStore>,
+      public CancelableRequestProvider {
  public:
+  typedef Callback2<Handle,
+                    const std::vector<webkit_glue::PasswordForm*>&>::Type
+      GetLoginsCallback;
+
+  // PasswordForm vector elements are meant to be owned by the
+  // PasswordStoreConsumer. However, if the request is canceled after the
+  // allocation, then the request must take care of the deletion.
+  // TODO(scr) If we can convert vector<PasswordForm*> to
+  // ScopedVector<PasswordForm>, then we can move the following class to merely
+  // a typedef. At the moment, a subclass of CancelableRequest1 is required to
+  // provide a destructor, which cleans up after canceled requests by deleting
+  // vector elements.
+  class GetLoginsRequest : public CancelableRequest1<
+    GetLoginsCallback, std::vector<webkit_glue::PasswordForm*> > {
+   public:
+    explicit GetLoginsRequest(GetLoginsCallback* callback);
+    virtual ~GetLoginsRequest();
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(GetLoginsRequest);
+  };
+
   // An interface used to notify clients (observers) of this object that data in
   // the password store has changed. Register the observer via
   // PasswordStore::SetObserver.
@@ -69,24 +88,21 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
                                   const base::Time& delete_end);
 
   // Searches for a matching PasswordForm and returns a handle so the async
-  // request can be tracked. Implement the PasswordStoreConsumer interface to
-  // be notified on completion.
-  virtual int GetLogins(const webkit_glue::PasswordForm& form,
-                        PasswordStoreConsumer* consumer);
+  // request can be tracked. Implement the PasswordStoreConsumer interface to be
+  // notified on completion.
+  virtual Handle GetLogins(const webkit_glue::PasswordForm& form,
+                           PasswordStoreConsumer* consumer);
 
   // Gets the complete list of PasswordForms that are not blacklist entries--and
   // are thus auto-fillable--and returns a handle so the async request can be
-  // tracked. Implement the PasswordStoreConsumer interface to be notified
-  // on completion.
-  int GetAutofillableLogins(PasswordStoreConsumer* consumer);
+  // tracked. Implement the PasswordStoreConsumer interface to be notified on
+  // completion.
+  Handle GetAutofillableLogins(PasswordStoreConsumer* consumer);
 
   // Gets the complete list of PasswordForms that are blacklist entries, and
   // returns a handle so the async request can be tracked. Implement the
   // PasswordStoreConsumer interface to be notified on completion.
-  int GetBlacklistLogins(PasswordStoreConsumer* consumer);
-
-  // Cancels a previous Get*Logins query (async)
-  void CancelLoginsQuery(int handle);
+  Handle GetBlacklistLogins(PasswordStoreConsumer* consumer);
 
   // Reports usage metrics for the database.
   void ReportMetrics();
@@ -106,25 +122,7 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
 
   virtual ~PasswordStore();
 
-  // Simple container class that represents a login lookup request.
-  class GetLoginsRequest {
-   public:
-    GetLoginsRequest(PasswordStoreConsumer* c,
-                     int handle);
-
-    // The consumer to notify when this request is complete.
-    PasswordStoreConsumer* consumer;
-    // A unique handle for the request
-    int handle;
-    // The message loop that the request was made from.  We send the result
-    // back to the consumer in this same message loop.
-    MessageLoop* message_loop;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(GetLoginsRequest);
-  };
-
-  // Schedule the given task to be run in the PasswordStore's own thread.
+  // Schedule the given |task| to be run in the PasswordStore's own thread.
   virtual void ScheduleTask(Task* task);
 
   // These will be run in PasswordStore's own thread.
@@ -156,22 +154,23 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   virtual bool FillBlacklistLogins(
       std::vector<webkit_glue::PasswordForm*>* forms) = 0;
 
-  // Notifies the consumer that a Get*Logins() request is complete.
-  virtual void NotifyConsumer(
-      GetLoginsRequest* request,
-      const std::vector<webkit_glue::PasswordForm*>& forms);
+  // Dispatches the result to the PasswordStoreConsumer on the original caller's
+  // thread so the callback can be executed there.  This should be the UI
+  // thread.
+  virtual void ForwardLoginsResult(GetLoginsRequest* request);
+
+  // Schedule the given |func| to be run in the PasswordStore's own thread with
+  // responses delivered to |consumer| on the current thread.
+  template<typename BackendFunc>
+  Handle Schedule(BackendFunc func, PasswordStoreConsumer* consumer);
+
+  // Schedule the given |func| to be run in the PasswordStore's own thread with
+  // argument |a| and responses delivered to |consumer| on the current thread.
+  template<typename BackendFunc, typename ArgA>
+  Handle Schedule(BackendFunc func, PasswordStoreConsumer* consumer,
+                  const ArgA& a);
 
  private:
-  // Called by NotifyConsumer, but runs in the consumer's thread.  Will not
-  // call the consumer if the request was canceled.  This extra layer is here so
-  // that PasswordStoreConsumer doesn't have to be reference counted (we assume
-  // consumers will cancel their requests before they are destroyed).
-  void NotifyConsumerImpl(PasswordStoreConsumer* consumer, int handle,
-                          const std::vector<webkit_glue::PasswordForm*>& forms);
-
-  // Returns a new request handle tracked in pending_requests_.
-  int GetNewRequestHandle();
-
   // Wrapper method called on the destination thread (DB for non-mac) that calls
   // the method specified in |task| and then calls back into the source thread
   // to notify observers that the password store may have been modified via
@@ -184,14 +183,6 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // operation has been performed. Notifies observers that password store data
   // may have been changed.
   void NotifyLoginsChanged();
-
-  // Next handle to return from Get*Logins() to allow callers to track
-  // their request.
-  int handle_;
-
-  // List of pending request handles.  Handles are removed from the set when
-  // they finish or are canceled.
-  std::set<int> pending_requests_;
 
   // The observers.
   ObserverList<Observer> observers_;

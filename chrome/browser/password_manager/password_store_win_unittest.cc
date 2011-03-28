@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/password_manager/password_form_data.h"
+#include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/password_manager/password_store_win.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -35,7 +36,8 @@ namespace {
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
   MOCK_METHOD2(OnPasswordStoreRequestDone,
-               void(int, const std::vector<webkit_glue::PasswordForm*>&));
+               void(CancelableRequestProvider::Handle,
+                    const std::vector<webkit_glue::PasswordForm*>&));
 };
 
 class MockWebDataServiceConsumer : public WebDataServiceConsumer {
