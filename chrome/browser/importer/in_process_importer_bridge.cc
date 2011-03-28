@@ -39,7 +39,7 @@ void InProcessImporterBridge::AddHomePage(const GURL &home_page) {
 
 #if defined(OS_WIN)
 void InProcessImporterBridge::AddIE7PasswordInfo(
-    const IE7PasswordInfo password_info) {
+    const IE7PasswordInfo& password_info) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(writer_, &ProfileWriter::AddIE7PasswordInfo,

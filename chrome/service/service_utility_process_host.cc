@@ -157,7 +157,7 @@ bool ServiceUtilityProcessHost::MessageForClient(const IPC::Message& message) {
 }
 
 #if defined(OS_WIN)  // This hack is Windows-specific.
-void ServiceUtilityProcessHost::OnPreCacheFont(LOGFONT font) {
+void ServiceUtilityProcessHost::OnPreCacheFont(const LOGFONT& font) {
   PreCacheFont(font);
 }
 #endif  // OS_WIN

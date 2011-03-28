@@ -39,7 +39,7 @@ void ExternalProcessImporterBridge::AddHomePage(const GURL& home_page) {
 
 #if defined(OS_WIN)
 void ExternalProcessImporterBridge::AddIE7PasswordInfo(
-    const IE7PasswordInfo password_info) {
+    const IE7PasswordInfo& password_info) {
   NOTIMPLEMENTED();
 }
 #endif

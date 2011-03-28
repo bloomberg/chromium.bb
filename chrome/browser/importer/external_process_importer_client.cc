@@ -85,8 +85,8 @@ void ExternalProcessImporterClient::OnImportStart() {
   bridge_->NotifyStarted();
 }
 
-void ExternalProcessImporterClient::OnImportFinished(bool succeeded,
-                                                     std::string error_msg) {
+void ExternalProcessImporterClient::OnImportFinished(
+    bool succeeded, const std::string& error_msg) {
   if (cancelled_)
     return;
 
@@ -147,8 +147,9 @@ void ExternalProcessImporterClient::OnHomePageImportReady(
 }
 
 void ExternalProcessImporterClient::OnBookmarksImportStart(
-    const std::wstring first_folder_name,
-    int options, size_t total_bookmarks_count) {
+    const std::wstring& first_folder_name,
+    int options,
+    size_t total_bookmarks_count) {
   if (cancelled_)
     return;
 

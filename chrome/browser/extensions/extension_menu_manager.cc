@@ -285,7 +285,8 @@ bool ExtensionMenuManager::RemoveContextMenuItem(
   return result;
 }
 
-void ExtensionMenuManager::RemoveAllContextItems(std::string extension_id) {
+void ExtensionMenuManager::RemoveAllContextItems(
+    const std::string& extension_id) {
   ExtensionMenuItem::List::iterator i;
   for (i = context_items_[extension_id].begin();
        i != context_items_[extension_id].end(); ++i) {

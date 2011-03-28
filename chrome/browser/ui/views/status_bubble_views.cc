@@ -472,7 +472,8 @@ class StatusBubbleViews::StatusViewExpander : public ui::LinearAnimation,
   }
 
   // Manage the expansion of the bubble.
-  void StartExpansion(string16 expanded_text, int current_width,
+  void StartExpansion(const string16& expanded_text,
+                      int current_width,
                       int expansion_end);
 
   // Set width of fully expanded bubble.
@@ -510,7 +511,8 @@ void StatusBubbleViews::StatusViewExpander::AnimationEnded(
 }
 
 void StatusBubbleViews::StatusViewExpander::StartExpansion(
-    string16 expanded_text, int expansion_start,
+    const string16& expanded_text,
+    int expansion_start,
     int expansion_end) {
   expanded_text_ = expanded_text;
   expansion_start_ = expansion_start;

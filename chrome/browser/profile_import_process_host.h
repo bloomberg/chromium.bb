@@ -41,10 +41,11 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
     // ImporterHost.
     virtual void OnProcessCrashed(int exit_status) {}
     virtual void OnImportStart() {}
-    virtual void OnImportFinished(bool succeeded, std::string error_msg) {}
+    virtual void OnImportFinished(bool succeeded,
+                                  const std::string& error_msg) {}
     virtual void OnImportItemStart(int item) {}
     virtual void OnImportItemFinished(int item) {}
-    virtual void OnImportItemFailed(std::string error_msg) {}
+    virtual void OnImportItemFailed(const std::string& error_msg) {}
 
     // These methods pass back data to be written to the user's profile from
     // the external process to the process host client.
@@ -56,9 +57,9 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
     virtual void OnHomePageImportReady(
         const GURL& home_page) {}
 
-    virtual void OnBookmarksImportStart(
-        const std::wstring first_folder_name,
-        int options, size_t total_bookmarks_count) {}
+    virtual void OnBookmarksImportStart(const std::wstring& first_folder_name,
+                                        int options,
+                                        size_t total_bookmarks_count) {}
     virtual void OnBookmarksImportGroup(
         const std::vector<ProfileWriter::BookmarkEntry>& bookmarks) {}
 

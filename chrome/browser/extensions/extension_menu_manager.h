@@ -124,7 +124,7 @@ class ExtensionMenuItem {
   }
 
   // Simple mutator methods.
-  void set_title(std::string new_title) { title_ = new_title; }
+  void set_title(const std::string& new_title) { title_ = new_title; }
   void set_contexts(ContextList contexts) { contexts_ = contexts; }
   void set_type(Type type) { type_ = type; }
   void set_document_url_patterns(const ExtensionExtent& patterns) {
@@ -233,7 +233,7 @@ class ExtensionMenuManager : public NotificationObserver {
   bool RemoveContextMenuItem(const ExtensionMenuItem::Id& id);
 
   // Removes all items for the given extension id.
-  void RemoveAllContextItems(std::string extension_id);
+  void RemoveAllContextItems(const std::string& extension_id);
 
   // Returns the item with the given |id| or NULL.
   ExtensionMenuItem* GetItemById(const ExtensionMenuItem::Id& id) const;

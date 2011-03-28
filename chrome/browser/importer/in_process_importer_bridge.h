@@ -30,7 +30,8 @@ class InProcessImporterBridge : public ImporterBridge {
   virtual void AddHomePage(const GURL &home_page) OVERRIDE;
 
 #if defined(OS_WIN)
-  virtual void AddIE7PasswordInfo(const IE7PasswordInfo password_info) OVERRIDE;
+  virtual void AddIE7PasswordInfo(
+      const IE7PasswordInfo& password_info) OVERRIDE;
 #endif
 
   virtual void SetFavicons(

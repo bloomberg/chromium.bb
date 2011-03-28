@@ -258,9 +258,9 @@ bool CloudPrintProxyBackend::InitializeWithLsid(const std::string& lsid,
 }
 
 bool CloudPrintProxyBackend::InitializeWithToken(
-    const std::string cloud_print_token,
-    const std::string cloud_print_xmpp_token,
-    const std::string email,
+    const std::string& cloud_print_token,
+    const std::string& cloud_print_xmpp_token,
+    const std::string& email,
     const std::string& proxy_id) {
   if (!core_thread_.Start())
     return false;

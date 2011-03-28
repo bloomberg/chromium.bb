@@ -51,7 +51,8 @@ class ExternalProcessImporterClient
   // Begin ProfileImportProcessHost::ImportProcessClient implementation.
   virtual void OnProcessCrashed(int exit_status) OVERRIDE;
   virtual void OnImportStart() OVERRIDE;
-  virtual void OnImportFinished(bool succeeded, std::string error_msg) OVERRIDE;
+  virtual void OnImportFinished(bool succeeded,
+                                const std::string& error_msg) OVERRIDE;
   virtual void OnImportItemStart(int item) OVERRIDE;
   virtual void OnImportItemFinished(int item) OVERRIDE;
 
@@ -72,7 +73,7 @@ class ExternalProcessImporterClient
   // |first_folder_name| can be NULL.
   // |options| is described in ProfileWriter::BookmarkOptions.
   // |total_bookmarks_count| is the total number of bookmarks to be imported.
-  virtual void OnBookmarksImportStart(const std::wstring first_folder_name,
+  virtual void OnBookmarksImportStart(const std::wstring& first_folder_name,
                                       int options,
                                       size_t total_bookmarks_count) OVERRIDE;
 

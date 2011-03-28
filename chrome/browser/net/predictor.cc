@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -281,7 +281,7 @@ struct RightToLeftStringSorter {
   }
 
   static bool string_compare(const std::string& left_host,
-                             const std::string right_host) {
+                             const std::string& right_host) {
     if (left_host == right_host) return true;
     size_t left_already_matched = left_host.size();
     size_t right_already_matched = right_host.size();

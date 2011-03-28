@@ -130,7 +130,7 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
   bool MessageForClient(const IPC::Message& message);
 
 #if defined(OS_WIN)  // This hack is Windows-specific.
-  void OnPreCacheFont(LOGFONT font);
+  void OnPreCacheFont(const LOGFONT& font);
 #endif  // defined(OS_WIN)
 
   // A pointer to our client interface, who will be informed of progress.
