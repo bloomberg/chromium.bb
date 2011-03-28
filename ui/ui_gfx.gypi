@@ -152,6 +152,12 @@
             'gfx/native_widget_types_gtk.cc',
           ],
         }],
+        ['chromeos==1', {
+          'sources': [
+            'gfx/native_theme_chromeos.cc',
+            'gfx/native_theme_chromeos.h',
+          ],
+        }],
       ],
     },
     {

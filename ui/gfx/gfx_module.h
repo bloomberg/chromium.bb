@@ -9,6 +9,8 @@
 #include "base/basictypes.h"
 #include "base/string_piece.h"
 
+class SkBitmap;
+
 namespace gfx {
 
 // Defines global initializers and associated methods for the gfx module.
@@ -24,6 +26,11 @@ class GfxModule {
   // Returns an empty string if the resource does not exist or if there is no
   // resource provider.
   static base::StringPiece GetResource(int key);
+
+  // Load named resource and return decoded SkBitmap.
+  // Note this function is not thread-safe and assumes that it would only be
+  // called from UI thread.
+  static SkBitmap* GetBitmapNamed(int key);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(GfxModule);

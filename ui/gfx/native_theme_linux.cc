@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "grit/gfx_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/gfx_module.h"
 #include "ui/gfx/rect.h"
@@ -59,24 +58,6 @@ static SkColor BrightenColor(const color_utils::HSL& hsl, SkAlpha alpha,
     adjusted.l = 0.0;
 
   return color_utils::HSLToSkColor(adjusted, alpha);
-}
-
-static SkBitmap* GfxGetBitmapNamed(int key) {
-  base::StringPiece data = GfxModule::GetResource(key);
-  if (!data.size()) {
-    NOTREACHED() << "Unable to load image resource " << key;
-    return NULL;
-  }
-
-  SkBitmap bitmap;
-  if (!gfx::PNGCodec::Decode(
-      reinterpret_cast<const unsigned char*>(data.data()),
-      data.size(), &bitmap)) {
-    NOTREACHED() << "Unable to decode image resource " << key;
-    return NULL;
-  }
-
-  return new SkBitmap(bitmap);
 }
 
 NativeThemeLinux::NativeThemeLinux() {
@@ -402,25 +383,19 @@ void NativeThemeLinux::PaintCheckbox(skia::PlatformCanvas* canvas,
                                      State state,
                                      const gfx::Rect& rect,
                                      const ButtonExtraParams& button) {
-  static SkBitmap* image_disabled_indeterminate = GfxGetBitmapNamed(
-      IDR_LINUX_CHECKBOX_DISABLED_INDETERMINATE);
-  static SkBitmap* image_indeterminate = GfxGetBitmapNamed(
-      IDR_LINUX_CHECKBOX_INDETERMINATE);
-  static SkBitmap* image_disabled_on = GfxGetBitmapNamed(
-      IDR_LINUX_CHECKBOX_DISABLED_ON);
-  static SkBitmap* image_on = GfxGetBitmapNamed(IDR_LINUX_CHECKBOX_ON);
-  static SkBitmap* image_disabled_off = GfxGetBitmapNamed(
-      IDR_LINUX_CHECKBOX_DISABLED_OFF);
-  static SkBitmap* image_off = GfxGetBitmapNamed(IDR_LINUX_CHECKBOX_OFF);
-
   SkBitmap* image = NULL;
   if (button.indeterminate) {
-    image = state == kDisabled ? image_disabled_indeterminate
-                               : image_indeterminate;
+    image = state == kDisabled ?
+        GfxModule::GetBitmapNamed(IDR_LINUX_CHECKBOX_DISABLED_INDETERMINATE) :
+        GfxModule::GetBitmapNamed(IDR_LINUX_CHECKBOX_INDETERMINATE);
   } else if (button.checked) {
-    image = state == kDisabled ? image_disabled_on : image_on;
+    image = state == kDisabled ?
+        GfxModule::GetBitmapNamed(IDR_LINUX_CHECKBOX_DISABLED_ON) :
+        GfxModule::GetBitmapNamed(IDR_LINUX_CHECKBOX_ON);
   } else {
-    image = state == kDisabled ? image_disabled_off : image_off;
+    image = state == kDisabled ?
+        GfxModule::GetBitmapNamed(IDR_LINUX_CHECKBOX_DISABLED_OFF) :
+        GfxModule::GetBitmapNamed(IDR_LINUX_CHECKBOX_OFF);
   }
 
   gfx::Rect bounds = rect.Center(gfx::Size(image->width(), image->height()));
@@ -432,18 +407,16 @@ void NativeThemeLinux::PaintRadio(skia::PlatformCanvas* canvas,
                                   State state,
                                   const gfx::Rect& rect,
                                   const ButtonExtraParams& button) {
-  static SkBitmap* image_disabled_on = GfxGetBitmapNamed(
-      IDR_LINUX_RADIO_DISABLED_ON);
-  static SkBitmap* image_on = GfxGetBitmapNamed(IDR_LINUX_RADIO_ON);
-  static SkBitmap* image_disabled_off = GfxGetBitmapNamed(
-      IDR_LINUX_RADIO_DISABLED_OFF);
-  static SkBitmap* image_off = GfxGetBitmapNamed(IDR_LINUX_RADIO_OFF);
-
   SkBitmap* image = NULL;
-  if (state == kDisabled)
-    image = button.checked ? image_disabled_on : image_disabled_off;
-  else
-    image = button.checked ? image_on : image_off;
+  if (state == kDisabled) {
+    image = button.checked ?
+        GfxModule::GetBitmapNamed(IDR_LINUX_RADIO_DISABLED_ON) :
+        GfxModule::GetBitmapNamed(IDR_LINUX_RADIO_DISABLED_OFF);
+  } else {
+    image = button.checked ?
+        GfxModule::GetBitmapNamed(IDR_LINUX_RADIO_ON) :
+        GfxModule::GetBitmapNamed(IDR_LINUX_RADIO_OFF);
+  }
 
   gfx::Rect bounds = rect.Center(gfx::Size(image->width(), image->height()));
   DrawBitmapInt(canvas, *image, 0, 0, image->width(), image->height(),
@@ -724,11 +697,10 @@ void NativeThemeLinux::PaintProgressBar(skia::PlatformCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const ProgressBarExtraParams& progress_bar) {
-  static SkBitmap* bar_image = GfxGetBitmapNamed(IDR_PROGRESS_BAR);
-  static SkBitmap* value_image = GfxGetBitmapNamed(IDR_PROGRESS_VALUE);
-  static SkBitmap* left_border_image = GfxGetBitmapNamed(
+  SkBitmap* bar_image = GfxModule::GetBitmapNamed(IDR_PROGRESS_BAR);
+  SkBitmap* left_border_image = GfxModule::GetBitmapNamed(
       IDR_PROGRESS_BORDER_LEFT);
-  static SkBitmap* right_border_image = GfxGetBitmapNamed(
+  SkBitmap* right_border_image = GfxModule::GetBitmapNamed(
       IDR_PROGRESS_BORDER_RIGHT);
 
   double tile_scale = static_cast<double>(rect.height()) /
@@ -742,6 +714,7 @@ void NativeThemeLinux::PaintProgressBar(skia::PlatformCanvas* canvas,
       rect.x(), rect.y(), rect.width(), rect.height());
 
   if (progress_bar.value_rect_width) {
+    SkBitmap* value_image = GfxModule::GetBitmapNamed(IDR_PROGRESS_VALUE);
 
     new_tile_width = static_cast<int>(value_image->width() * tile_scale);
     tile_scale_x = static_cast<double>(new_tile_width) /

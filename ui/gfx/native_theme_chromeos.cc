@@ -1,16 +1,16 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/native_theme_chromeos.h"
+#include "ui/gfx/native_theme_chromeos.h"
 
 #include "base/logging.h"
-#include "grit/theme_resources.h"
+#include "grit/gfx_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/gfx_module.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -228,7 +228,7 @@ void GetRadioIndicatorGradientPaint(const gfx::Rect bounds,
   }
 }
 
-}
+}  // namespace
 
 /* static */
 gfx::NativeThemeLinux* gfx::NativeThemeLinux::instance() {
@@ -244,46 +244,51 @@ NativeThemeChromeos::~NativeThemeChromeos() {
 }
 
 gfx::Size NativeThemeChromeos::GetPartSize(Part part) const {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  int scrollbar_width = rb.GetBitmapNamed(IDR_SCROLL_BACKGROUND)->width();
+  // This function might be called from Worker process during html layout
+  // without calling GfxModule::SetResourceProvider. So using dimension
+  // constants instead of getting it from resource images.
+  static const int kScrollbarWidth = 13;
+  static const int kScrollbarArrowUpHeight = 12;
+  static const int kScrollbarArrowDownHeight = 12;
+
   int width = 0, height = 0;
   switch (part) {
     case kScrollbarUpArrow:
-      width = scrollbar_width;
-      height = rb.GetBitmapNamed(IDR_SCROLL_ARROW_UP)->height();
+      width = kScrollbarWidth;
+      height = kScrollbarArrowUpHeight;
       break;
     case kScrollbarDownArrow:
-      width = scrollbar_width;
-      height = rb.GetBitmapNamed(IDR_SCROLL_ARROW_DOWN)->height();
+      width = kScrollbarWidth;
+      height = kScrollbarArrowDownHeight;
       break;
     case kScrollbarLeftArrow:
-      width = rb.GetBitmapNamed(IDR_SCROLL_ARROW_UP)->height();
-      height = scrollbar_width;
+      width = kScrollbarArrowUpHeight;
+      height = kScrollbarWidth;
       break;
     case kScrollbarRightArrow:
-      width = rb.GetBitmapNamed(IDR_SCROLL_ARROW_DOWN)->height();
-      height = scrollbar_width;
+      width = kScrollbarArrowDownHeight;
+      height = kScrollbarWidth;
       break;
     case kScrollbarHorizontalTrack:
       width = 0;
-      height = scrollbar_width;
+      height = kScrollbarWidth;
       break;
     case kScrollbarVerticalTrack:
-      width = scrollbar_width;
+      width = kScrollbarWidth;
       height = 0;
       break;
     case kScrollbarHorizontalThumb:
     case kScrollbarVerticalThumb:
       // allow thumb to be square but no shorter.
-      width = scrollbar_width;
-      height = scrollbar_width;
+      width = kScrollbarWidth;
+      height = kScrollbarWidth;
       break;
     case kSliderThumb:
       width = kSliderThumbWidth;
       height = kSliderThumbHeight;
       break;
     case kInnerSpinButton:
-      return gfx::Size(scrollbar_width, 0);
+      return gfx::Size(kScrollbarWidth, 0);
     default:
       return NativeThemeLinux::GetPartSize(part);
   }
@@ -293,14 +298,13 @@ gfx::Size NativeThemeChromeos::GetPartSize(Part part) const {
 void NativeThemeChromeos::PaintScrollbarTrack(skia::PlatformCanvas* canvas,
     Part part, State state,
     const ScrollbarTrackExtraParams& extra_params, const gfx::Rect& rect) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (part == kScrollbarVerticalTrack) {
     SkBitmap* background =
-        rb.GetBitmapNamed(IDR_SCROLL_BACKGROUND);
+        gfx::GfxModule::GetBitmapNamed(IDR_SCROLL_BACKGROUND);
     SkBitmap* border_up =
-        rb.GetBitmapNamed(IDR_SCROLL_BACKGROUND_BORDER_UP);
+        gfx::GfxModule::GetBitmapNamed(IDR_SCROLL_BACKGROUND_BORDER_UP);
     SkBitmap* border_down =
-        rb.GetBitmapNamed(IDR_SCROLL_BACKGROUND_BORDER_DOWN);
+        gfx::GfxModule::GetBitmapNamed(IDR_SCROLL_BACKGROUND_BORDER_DOWN);
     // Draw track background.
     DrawBitmapInt(
         canvas, *background,
@@ -338,14 +342,13 @@ void NativeThemeChromeos::PaintScrollbarTrack(skia::PlatformCanvas* canvas,
 
 void NativeThemeChromeos::PaintScrollbarThumb(skia::PlatformCanvas* canvas,
     Part part, State state, const gfx::Rect& rect) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int resource_id = IDR_SCROLL_THUMB;
   if (state == kHovered)
     resource_id++;
   else if (state == kPressed)
     resource_id += 2;
   if (part == kScrollbarVerticalThumb) {
-    SkBitmap* bitmap = rb.GetBitmapNamed(resource_id);
+    SkBitmap* bitmap = gfx::GfxModule::GetBitmapNamed(resource_id);
     // Top
     DrawBitmapInt(
         canvas, *bitmap,
@@ -383,7 +386,6 @@ void NativeThemeChromeos::PaintScrollbarThumb(skia::PlatformCanvas* canvas,
 
 void NativeThemeChromeos::PaintArrowButton(skia::PlatformCanvas* canvas,
     const gfx::Rect& rect, Part part, State state) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int resource_id =
       (part == kScrollbarUpArrow || part == kScrollbarLeftArrow) ?
           IDR_SCROLL_ARROW_UP : IDR_SCROLL_ARROW_DOWN;
@@ -393,7 +395,7 @@ void NativeThemeChromeos::PaintArrowButton(skia::PlatformCanvas* canvas,
     resource_id += 2;
   SkBitmap* bitmap;
   if (part == kScrollbarUpArrow || part == kScrollbarDownArrow)
-    bitmap = rb.GetBitmapNamed(resource_id);
+    bitmap = gfx::GfxModule::GetBitmapNamed(resource_id);
   else
     bitmap = GetHorizontalBitmapNamed(resource_id);
   DrawBitmapInt(canvas, *bitmap,
@@ -676,8 +678,7 @@ SkBitmap* NativeThemeChromeos::GetHorizontalBitmapNamed(int resource_id) {
   if (found != horizontal_bitmaps_.end())
     return found->second;
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SkBitmap* vertical_bitmap = rb.GetBitmapNamed(resource_id);
+  SkBitmap* vertical_bitmap = gfx::GfxModule::GetBitmapNamed(resource_id);
 
   if (vertical_bitmap) {
     SkBitmap transposed_bitmap =

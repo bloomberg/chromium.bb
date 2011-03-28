@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_NATIVE_THEME_CHROMEOS_H_
-#define CHROME_BROWSER_CHROMEOS_NATIVE_THEME_CHROMEOS_H_
+#ifndef UI_GFX_NATIVE_THEME_CHROMEOS_H_
+#define UI_GFX_NATIVE_THEME_CHROMEOS_H_
 
 #include <map>
 #include "base/compiler_specific.h"
@@ -81,7 +81,7 @@ class NativeThemeChromeos : public gfx::NativeThemeLinux {
   void PaintButtonLike(skia::PlatformCanvas* canvas,
       State state, const gfx::Rect& rect, bool stroke_border);
 
-  // Cached images. The ResourceBundle caches all retrieved bitmaps and keeps
+  // Cached images. Resource loader caches all retrieved bitmaps and keeps
   // ownership of the pointers.
   typedef std::map<int, SkBitmap*> SkImageMap;
   SkImageMap horizontal_bitmaps_;
@@ -89,4 +89,4 @@ class NativeThemeChromeos : public gfx::NativeThemeLinux {
   DISALLOW_COPY_AND_ASSIGN(NativeThemeChromeos);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_NATIVE_THEME_CHROMEOS_H_
+#endif  // UI_GFX_NATIVE_THEME_CHROMEOS_H_
