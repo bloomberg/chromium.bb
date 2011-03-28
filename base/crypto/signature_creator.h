@@ -20,6 +20,7 @@ struct SGNContextStr;
 
 #include <vector>
 
+#include "base/base_api.h"
 #include "base/basictypes.h"
 #include "base/crypto/rsa_private_key.h"
 
@@ -31,7 +32,7 @@ namespace base {
 
 // Signs data using a bare private key (as opposed to a full certificate).
 // Currently can only sign data using SHA-1 with RSA encryption.
-class SignatureCreator {
+class BASE_API SignatureCreator {
  public:
   ~SignatureCreator();
 

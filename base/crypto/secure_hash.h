@@ -6,13 +6,14 @@
 #define BASE_CRYPTO_SECURE_HASH_H_
 #pragma once
 
+#include "base/base_api.h"
 #include "base/basictypes.h"
 
 namespace base {
 
 // A wrapper to calculate secure hashes incrementally, allowing to
 // be used when the full input is not known in advance.
-class SecureHash {
+class BASE_API SecureHash {
  public:
   enum Algorithm {
     SHA256,

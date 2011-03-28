@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 
 #include <windows.h>
 #include <wincrypt.h>
+
+#include "base/base_api.h"
 
 namespace base {
 
@@ -21,11 +23,11 @@ namespace base {
 // "The CryptAcquireContext function is generally thread safe unless
 // CRYPT_NEWKEYSET or CRYPT_DELETEKEYSET is specified in the dwFlags
 // parameter."
-BOOL CryptAcquireContextLocked(HCRYPTPROV* prov,
-                               LPCWSTR container,
-                               LPCWSTR provider,
-                               DWORD prov_type,
-                               DWORD flags);
+BASE_API BOOL CryptAcquireContextLocked(HCRYPTPROV* prov,
+                                        LPCWSTR container,
+                                        LPCWSTR provider,
+                                        DWORD prov_type,
+                                        DWORD flags);
 
 }  // namespace base
 

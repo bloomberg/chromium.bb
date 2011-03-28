@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/base_api.h"
 #include "base/basictypes.h"
 
 #if defined(USE_NSS)
@@ -22,7 +23,7 @@ namespace base {
 
 // Wraps a platform-specific symmetric key and allows it to be held in a
 // scoped_ptr.
-class SymmetricKey {
+class BASE_API SymmetricKey {
  public:
   // Defines the algorithm that a key will be used with. See also
   // classs Encrptor.

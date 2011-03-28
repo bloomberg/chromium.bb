@@ -22,6 +22,7 @@ struct SECKEYPublicKeyStr;
 #include <list>
 #include <vector>
 
+#include "base/base_api.h"
 #include "base/basictypes.h"
 
 #if defined(OS_WIN)
@@ -35,7 +36,7 @@ namespace base {
 
 // Used internally by RSAPrivateKey for serializing and deserializing
 // PKCS #8 PrivateKeyInfo and PublicKeyInfo.
-class PrivateKeyInfoCodec {
+class BASE_API PrivateKeyInfoCodec {
  public:
 
   // ASN.1 encoding of the AlgorithmIdentifier from PKCS #8.
@@ -170,7 +171,7 @@ class PrivateKeyInfoCodec {
 // Encapsulates an RSA private key. Can be used to generate new keys, export
 // keys to other formats, or to extract a public key.
 // TODO(hclam): This class should be ref-counted so it can be reused easily.
-class RSAPrivateKey {
+class BASE_API RSAPrivateKey {
  public:
   ~RSAPrivateKey();
 
