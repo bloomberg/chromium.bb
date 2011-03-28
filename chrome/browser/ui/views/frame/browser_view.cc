@@ -689,6 +689,12 @@ void BrowserView::Show() {
   frame_->GetWindow()->Show();
 }
 
+void BrowserView::ShowInactive() {
+  views::Window* window = frame_->GetWindow();
+  if (!window->IsVisible())
+    window->ShowInactive();
+}
+
 void BrowserView::SetBounds(const gfx::Rect& bounds) {
   SetFullscreen(false);
   GetWidget()->SetBounds(bounds);

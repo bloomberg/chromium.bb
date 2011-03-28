@@ -412,6 +412,7 @@ bool CreateWindowFunction::RunImpl() {
 
   Profile* window_profile = profile();
   Browser::Type window_type = Browser::TYPE_NORMAL;
+  bool focused = true;
 
   if (args) {
     // Any part of the bounds can optionally be set by the caller.
@@ -457,6 +458,10 @@ bool CreateWindowFunction::RunImpl() {
         window_profile = window_profile->GetOffTheRecordProfile();
     }
 
+    if (args->HasKey(keys::kFocusedKey))
+      EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kFocusedKey,
+                                                   &focused));
+
     std::string type_str;
     if (args->HasKey(keys::kWindowTypeKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kWindowTypeKey,
@@ -486,7 +491,11 @@ bool CreateWindowFunction::RunImpl() {
     new_window->window()->SetBounds(popup_bounds);
   else
     new_window->window()->SetBounds(window_bounds);
-  new_window->window()->Show();
+
+  if (focused)
+    new_window->window()->Show();
+  else
+    new_window->window()->ShowInactive();
 
   if (new_window->profile()->IsOffTheRecord() && !include_incognito()) {
     // Don't expose incognito windows if the extension isn't allowed.

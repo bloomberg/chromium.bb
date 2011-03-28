@@ -71,6 +71,10 @@ void BrowserWindowCocoa::Show() {
   [window() makeKeyAndOrderFront:controller_];
 }
 
+void BrowserWindowCocoa::ShowInactive() {
+    [window() orderFront:controller_];
+}
+
 void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   SetFullscreen(false);
   NSRect cocoa_bounds = NSMakeRect(bounds.x(), 0, bounds.width(),

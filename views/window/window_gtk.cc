@@ -248,6 +248,8 @@ gfx::Rect WindowGtk::GetRestoredBounds() const {
 
 void WindowGtk::ShowNativeWindow(ShowState state) {
   // No concept of maximization (yet) on ChromeOS.
+  if (state == NativeWindow::SHOW_INACTIVE)
+    gtk_window_set_focus_on_map(GetNativeWindow(), false);
   gtk_widget_show(GetNativeView());
 }
 

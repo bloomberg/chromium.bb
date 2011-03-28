@@ -30,7 +30,8 @@ class NativeWindow {
  public:
   enum ShowState {
     SHOW_RESTORED,
-    SHOW_MAXIMIZED
+    SHOW_MAXIMIZED,
+    SHOW_INACTIVE
   };
 
   virtual ~NativeWindow() {}

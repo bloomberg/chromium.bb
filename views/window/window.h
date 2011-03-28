@@ -85,6 +85,9 @@ class Window : public internal::NativeWindowDelegate {
   // Makes the window visible.
   void Show();
 
+  // Like Show(), but does not activate the window.
+  void ShowInactive();
+
   // Hides the window. This does not delete the window, it just hides it. This
   // always hides the window, it is separate from the stack maintained by
   // Push/PopForceHidden.

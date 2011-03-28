@@ -48,6 +48,10 @@ class BrowserWindow {
   // Show the window, or activates it if it's already visible.
   virtual void Show() = 0;
 
+  // Show the window, but do not activate it. Does nothing if window
+  // is already visible.
+  virtual void ShowInactive() = 0;
+
   // Sets the window's size and position to the specified values.
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
 

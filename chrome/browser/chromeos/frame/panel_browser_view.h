@@ -27,6 +27,7 @@ class PanelBrowserView : public ::BrowserView,
 
   // BrowserView overrides.
   virtual void Show();
+  virtual void ShowInactive();
   virtual void SetBounds(const gfx::Rect& bounds);
   virtual void Close();
   virtual void UpdateTitleBar();
@@ -44,6 +45,8 @@ class PanelBrowserView : public ::BrowserView,
  private:
   // Enforces the min, max, and default bounds.
   void LimitBounds(gfx::Rect* bounds) const;
+
+  void InitPanelController(bool is_active);
 
   // Controls interactions with the window manager for popup panels.
   scoped_ptr<chromeos::PanelController> panel_controller_;

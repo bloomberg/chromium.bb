@@ -252,7 +252,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        state_(GDK_WINDOW_STATE_WITHDRAWN),
        bookmark_bar_is_floating_(false),
        frame_cursor_(NULL),
-       is_active_(true),
+       is_active_(false),
        last_click_time_(0),
        maximize_after_show_(false),
        suppress_window_raise_(false),
@@ -572,6 +572,11 @@ void BrowserWindowGtk::Show() {
   // area, then undo it so that the render view can later adjust its own
   // size.
   gtk_widget_set_size_request(contents_container_->widget(), -1, -1);
+}
+
+void BrowserWindowGtk::ShowInactive() {
+  gtk_window_set_focus_on_map(window_, false);
+  gtk_widget_show(GTK_WIDGET(window_));
 }
 
 void BrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds,

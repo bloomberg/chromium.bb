@@ -19,6 +19,7 @@ class TestBrowserWindow : public BrowserWindow {
 
   virtual void Init() {}
   virtual void Show() {}
+  virtual void ShowInactive() {}
   virtual void SetBounds(const gfx::Rect& bounds) {}
   virtual void Close() {}
   virtual void Activate() {}

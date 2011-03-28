@@ -252,8 +252,19 @@ void BrowserView::Init() {
 }
 
 void BrowserView::Show() {
+  ShowInternal(true);
+}
+
+void BrowserView::ShowInactive() {
+  ShowInternal(false);
+}
+
+void BrowserView::ShowInternal(bool is_active) {
   bool was_visible = frame()->GetWindow()->IsVisible();
-  ::BrowserView::Show();
+  if (is_active)
+    ::BrowserView::Show();
+  else
+    ::BrowserView::ShowInactive();
   if (!was_visible) {
     // Have to update the tab count and selected index to reflect reality.
     std::vector<int> params;

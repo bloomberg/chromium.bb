@@ -49,6 +49,7 @@ class BrowserView : public ::BrowserView,
   // BrowserView overrides.
   virtual void Init();
   virtual void Show();
+  virtual void ShowInactive();
   virtual void FocusChromeOSStatus();
   virtual views::LayoutManager* CreateLayoutManager() const;
   virtual void ChildPreferredSizeChanged(View* child);
@@ -84,6 +85,8 @@ class BrowserView : public ::BrowserView,
 
  private:
   void InitSystemMenu();
+
+  void ShowInternal(bool is_active);
 
   // Status Area view.
   StatusAreaView* status_area_;

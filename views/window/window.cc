@@ -98,6 +98,10 @@ void Window::Show() {
   saved_maximized_state_ = false;
 }
 
+void Window::ShowInactive() {
+  native_window_->ShowNativeWindow(NativeWindow::SHOW_INACTIVE);
+}
+
 void Window::HideWindow() {
   native_window_->HideWindow();
 }

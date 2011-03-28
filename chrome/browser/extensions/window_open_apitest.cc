@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,3 +92,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PopupBlockingHostedApp) {
 
   WaitForTabsAndPopups(browser(), 3, 1);
 }
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+// Focus test fails if there is no window manager on Linux.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenFocus) {
+  ASSERT_TRUE(RunExtensionTest("window_open/focus")) << message_;
+}
+#endif

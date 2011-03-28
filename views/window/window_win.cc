@@ -900,7 +900,19 @@ gfx::Rect WindowWin::GetRestoredBounds() const {
 }
 
 void WindowWin::ShowNativeWindow(ShowState state) {
-  Show(state == SHOW_MAXIMIZED ? SW_SHOWMAXIMIZED : GetShowState());
+  DWORD native_show_state;
+  switch (state) {
+    case SHOW_INACTIVE:
+      native_show_state = SW_SHOWNOACTIVATE;
+      break;
+    case SHOW_MAXIMIZED:
+      native_show_state = SW_SHOWMAXIMIZED;
+      break;
+    default:
+      native_show_state = GetShowState();
+      break;
+  }
+  Show(native_show_state);
 }
 
 void WindowWin::BecomeModal() {
