@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -121,7 +121,9 @@ def ToKeys(hotkey):
       continue
   modifiers.sort()
   keycode = value.lower().rstrip()
-  if not modifiers and keycode not in ['backspace']:
+  # The keys which are highlighted even without modifier keys.
+  base_keys = ['backspace', 'power']
+  if not modifiers and keycode not in base_keys:
     return None
   return ' '.join([keycode] + modifiers)
 
