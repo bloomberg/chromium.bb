@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
+#include "base/string_util.h"
 #include "base/win/wrapped_window_proc.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -557,6 +558,9 @@ void NativeMenuWin::UpdateMenuItemInfoForString(
     const std::wstring& label) {
   std::wstring formatted = label;
   ui::MenuModel::ItemType type = model_->GetTypeAt(model_index);
+  // Strip out any tabs, otherwise they get interpreted as accelerators and can
+  // lead to weird behavior.
+  ReplaceSubstringsAfterOffset(&formatted, 0, L"\t", L" ");
   if (type != ui::MenuModel::TYPE_SUBMENU) {
     // Add accelerator details to the label if provided.
     views::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
