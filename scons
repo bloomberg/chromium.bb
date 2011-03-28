@@ -47,9 +47,9 @@ if [ "${OSTYPE}" = "cygwin" ]; then
   exit
 fi
 
-readonly BASE_SCRIPT="${SCRIPT_DIR_ABS}/../third_party/scons-2.0.1/script/scons"
+readonly BASE_SCRIPT="${SCRIPT_DIR_ABS}/../third_party/scons/scons.py"
 
-export PYTHONPATH="${SCRIPT_DIR_ABS}/../third_party/scons-2.0.1/engine"
+export PYTHONPATH="${SCRIPT_DIR_ABS}/../third_party/scons/scons-local"
 
 "${BASE_SCRIPT}" $*
 

@@ -118,7 +118,7 @@ def BuildEnvironmentSConscripts(env):
       # Also, if we are passed a SConscript that
       # is not under $MAIN_DIR, we should fail loudly, because it is unclear how
       # this will correspond to things under $OBJ_ROOT.
-      ec.SConscript(c_script, variant_dir='$OBJ_ROOT/' + c_dir,
+      ec.SConscript(c_script, build_dir='$OBJ_ROOT/' + c_dir,
                     exports={'env': ec}, duplicate=0)
     else:
       raise SCons.Error.UserError(

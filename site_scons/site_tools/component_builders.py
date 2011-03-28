@@ -124,17 +124,6 @@ def _ComponentPlatformSetup(env, builder_name, **kwargs):
   for h in env['INCLUDES']:
     env.Append(CCFLAGS=['${CCFLAG_INCLUDE}%s' % h])
 
-  # This supports a NaCl convention that was previously supported with a
-  # modification to SCons.  Previously, EXTRA_LIBS was interpolated into LIBS
-  # using the ${EXTRA_LIBS} syntax.  It appears, however, that SCons naturally
-  # computes library dependencies before interpolation, so EXTRA_LIBS will not
-  # be correctly depended upon if interpolated.  In the past, SCons was modified
-  # to force interpolation before library dependencies were computed.  This new
-  # approach allows us to use an unmodified version of SCons.
-  # In general, the use of EXTRA_LIBS is discouraged.
-  if 'EXTRA_LIBS' in env:
-    env['LIBS'] = env['EXTRA_LIBS'] + env['LIBS']
-
   # Call platform-specific component setup function, if any
   if env.get('COMPONENT_PLATFORM_SETUP'):
     env['COMPONENT_PLATFORM_SETUP'](env, builder_name)

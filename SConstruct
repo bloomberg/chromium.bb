@@ -1659,6 +1659,7 @@ base_env.Append(
   CFLAGS = ['${EXTRA_CFLAGS}'],
   CCFLAGS = ['${EXTRA_CCFLAGS}'],
   CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
+  LIBS = ['${EXTRA_LIBS}'],
 )
 
 base_env.Append(
@@ -2097,7 +2098,7 @@ nacl_env = pre_base_env.Clone(
                 '-Wno-long-long',
                 ] +
                ['${EXTRA_CXXFLAGS}'],
-    LIBS = [],
+    LIBS = ['${EXTRA_LIBS}'],
     LINKFLAGS = ['${EXTRA_LINKFLAGS}'],
     CPPDEFINES = [
       # _GNU_SOURCE ensures that strtof() gets declared.
