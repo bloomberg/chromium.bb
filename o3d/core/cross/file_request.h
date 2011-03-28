@@ -38,7 +38,7 @@
 #include <algorithm>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/scoped_ptr.h"
 #include "core/cross/callback.h"
 #include "core/cross/object_base.h"
 #include "core/cross/pack.h"

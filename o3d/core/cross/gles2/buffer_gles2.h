@@ -36,7 +36,7 @@
 #ifndef O3D_CORE_CROSS_GLES2_BUFFER_GLES2_H_
 #define O3D_CORE_CROSS_GLES2_BUFFER_GLES2_H_
 
-#include "base/memory/scoped_ptr.h"
+#include "base/scoped_ptr.h"
 #include "core/cross/buffer.h"
 #include "core/cross/gles2/gles2_headers.h"
 

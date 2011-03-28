@@ -41,7 +41,7 @@
 
 #include <sstream>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/scoped_ptr.h"
 #include "core/win/d3d9/d3d_entry_points.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;

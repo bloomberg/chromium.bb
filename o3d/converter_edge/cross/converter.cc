@@ -40,7 +40,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/scoped_ptr.h"
 #include "core/cross/class_manager.h"
 #include "core/cross/client.h"
 #include "core/cross/client_info.h"

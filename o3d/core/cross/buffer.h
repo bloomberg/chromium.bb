@@ -37,10 +37,10 @@
 #define O3D_CORE_CROSS_BUFFER_H_
 
 #include <vector>
-#include "base/memory/scoped_ptr.h"
 #include "core/cross/field.h"
 #include "core/cross/named_object.h"
 #include "core/cross/types.h"
+#include "base/scoped_ptr.h"
 
 namespace o3d {
 

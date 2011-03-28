@@ -37,7 +37,7 @@
 #include <atlbase.h>
 #include <atlstr.h>
 #include <iterator>
-#include "base/memory/scoped_ptr.h"
+#include "base/scoped_ptr.h"
 #include "metrics.h"
 #include "const-win32.h"
 

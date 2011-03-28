@@ -37,7 +37,7 @@
 #include <npapi.h>
 #include <sstream>
 #include <vector>
-#include "base/memory/scoped_ptr.h"
+#include "base/scoped_ptr.h"
 #include "plugin/cross/np_v8_bridge.h"
 
 using v8::AccessorInfo;

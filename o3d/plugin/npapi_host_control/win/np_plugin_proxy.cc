@@ -36,7 +36,7 @@
 #include <shlwapi.h>
 
 #include <algorithm>
-#include "base/memory/scoped_ptr.h"
+#include "base/scoped_ptr.h"
 #include "plugin/npapi_host_control/win/module.h"
 #include "plugin/npapi_host_control/win/np_browser_proxy.h"
 #include "plugin/npapi_host_control/win/np_object_proxy.h"

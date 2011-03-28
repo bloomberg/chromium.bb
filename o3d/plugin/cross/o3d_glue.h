@@ -52,8 +52,8 @@
 #include <set>
 #include <string>
 #include <vector>
+#include "base/scoped_ptr.h"
 #include "base/hash_tables.h"
-#include "base/memory/scoped_ptr.h"
 #include "core/cross/bitmap.h"
 #include "core/cross/display_mode.h"
 #include "core/cross/display_window.h"

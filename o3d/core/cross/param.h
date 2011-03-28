@@ -36,7 +36,7 @@
 #define O3D_CORE_CROSS_PARAM_H_
 
 #include <vector>
-#include "base/memory/scoped_ptr.h"
+#include "base/scoped_ptr.h"
 #include "core/cross/named_object.h"
 #include "core/cross/types.h"
 #include "core/cross/weak_ptr.h"

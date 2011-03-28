@@ -38,8 +38,8 @@
 
 #include <string>
 #include "aggregator.h"
+#include "base/scoped_ptr.h"
 #include "backend/keyvaluetable.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace stats_report {
 
