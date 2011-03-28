@@ -88,11 +88,12 @@ void CreateApplicationShortcutsDialogGtk::CreateDialogBox(GtkWindow* parent) {
       l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_TITLE).c_str(),
       parent,
       (GtkDialogFlags) (GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
-      GTK_STOCK_CANCEL,
-      GTK_RESPONSE_REJECT,
       NULL);
   gtk_widget_realize(create_dialog_);
   gtk_window_set_resizable(GTK_WINDOW(create_dialog_), false);
+  gtk_util::AddButtonToDialog(create_dialog_,
+      l10n_util::GetStringUTF8(IDS_CANCEL).c_str(),
+      GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT);
   gtk_util::AddButtonToDialog(create_dialog_,
       l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_COMMIT).c_str(),
       GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
