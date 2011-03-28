@@ -171,6 +171,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // This is needed to exit the event loop once the prerendered page has
     // stopped loading or was cancelled.
     ASSERT_TRUE(prerender_manager());
+    prerender_manager()->rate_limit_enabled_ = false;
     ASSERT_TRUE(prc_factory_ == NULL);
     prc_factory_ =
         new WaitForLoadPrerenderContentsFactory(expected_final_status);
@@ -271,10 +272,6 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     DCHECK(prerender_manager()->prerender_contents_factory_.get() ==
            prc_factory_);
     prc_factory_->set_expected_final_status_for_url(url, expected_final_status);
-  }
-
-  void set_rate_limit_enabled(bool enabled) {
-    prerender_manager()->rate_limit_enabled_ = enabled;
   }
 
  private:
@@ -432,8 +429,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
   const char* const kHtmlFileA = "prerender_infinite_a.html";
   const char* const kHtmlFileB = "prerender_infinite_b.html";
 
-  set_rate_limit_enabled(false);
-
   PrerenderTestURL(kHtmlFileA, FINAL_STATUS_USED, 1);
 
   // Next url should be in pending list but not an active entry.
@@ -451,8 +446,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
   // and not pending.
   EXPECT_TRUE(UrlIsInPrerenderManager(kHtmlFileB));
   EXPECT_FALSE(UrlIsPendingInPrerenderManager(kHtmlFileB));
-
-  set_rate_limit_enabled(true);
 }
 
 // Checks that we don't prerender in an infinite loop and multiple links are
@@ -462,8 +455,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderInfiniteLoopMultiple
   const char* const kHtmlFileA = "prerender_infinite_a_multiple.html";
   const char* const kHtmlFileB = "prerender_infinite_b_multiple.html";
   const char* const kHtmlFileC = "prerender_infinite_c_multiple.html";
-
-  set_rate_limit_enabled(false);
 
   PrerenderTestURL(kHtmlFileA, FINAL_STATUS_USED, 1);
 
@@ -488,8 +479,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderInfiniteLoopMultiple
   EXPECT_TRUE(UrlIsInPrerenderManager(kHtmlFileC));
   EXPECT_FALSE(UrlIsPendingInPrerenderManager(kHtmlFileB));
   EXPECT_FALSE(UrlIsPendingInPrerenderManager(kHtmlFileC));
-
-  set_rate_limit_enabled(true);
 }
 
 }  // namespace prerender
