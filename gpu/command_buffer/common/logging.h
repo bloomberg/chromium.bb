@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,7 +128,9 @@ class Logger {
   }
 
  private:
-  Logger(const Logger& logger): condition_(logger.condition_) {
+  Logger(const Logger& logger)
+      : condition_(logger.condition_),
+        level_(logger.level_) {
   }
 
   bool condition_;

@@ -1783,6 +1783,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       offscreen_target_depth_format_(0),
       offscreen_target_stencil_format_(0),
       offscreen_target_samples_(0),
+      copy_texture_to_parent_texture_fb_(0),
       offscreen_saved_color_format_(0),
       back_buffer_color_format_(0),
       current_decoder_error_(error::kNoError),

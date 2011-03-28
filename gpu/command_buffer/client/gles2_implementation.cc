@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// A class to emluate GLES2 over command buffers.
+// A class to emulate GLES2 over command buffers.
 
 #include "../client/gles2_implementation.h"
 #include <GLES2/gles2_command_buffer.h>
@@ -446,6 +446,7 @@ GLES2Implementation::GLES2Implementation(
   // Allocate space for simple GL results.
   result_buffer_ = transfer_buffer;
   result_shm_offset_ = 0;
+  memset(&reserved_ids_, 0, sizeof(reserved_ids_));
 
   mapped_memory_.reset(new MappedMemoryManager(helper_));
 
@@ -664,7 +665,7 @@ void GLES2Implementation::Flush() {
   // Insert the cmd to call glFlush
   helper_->Flush();
   // Flush our command buffer
-  // (tell the service to execute upto the flush cmd.)
+  // (tell the service to execute up to the flush cmd.)
   helper_->CommandBufferHelper::Flush();
 }
 
@@ -672,7 +673,7 @@ void GLES2Implementation::Finish() {
   // Insert the cmd to call glFinish
   helper_->Finish();
   // Finish our command buffer
-  // (tell the service to execute upto the Finish cmd and wait for it to
+  // (tell the service to execute up to the Finish cmd and wait for it to
   // execute.)
   helper_->CommandBufferHelper::Finish();
 }
@@ -1037,7 +1038,7 @@ void GLES2Implementation::TexSubImage2D(
       height -= num_rows;
     }
   } else {
-    // Transfer by sub rows. Beacuse GL has no maximum texture dimensions.
+    // Transfer by sub rows. Because GL has no maximum texture dimensions.
     uint32 temp;
     GLES2Util::ComputeImageDataSize(
        1, 1, format, type, unpack_alignment_, &temp);
@@ -1255,7 +1256,7 @@ void GLES2Implementation::ReadPixels(
     return;
   }
 
-  // glReadPixel pads the size of each row of pixels by an ammount specified by
+  // glReadPixel pads the size of each row of pixels by an amount specified by
   // glPixelStorei. So, we have to take that into account both in the fact that
   // the pixels returned from the ReadPixel command will include that padding
   // and that when we copy the results to the user's buffer we need to not
@@ -1320,7 +1321,7 @@ void GLES2Implementation::ReadPixels(
       height -= num_rows;
     }
   } else {
-    // Transfer by sub rows. Beacuse GL has no maximum texture dimensions.
+    // Transfer by sub rows. Because GL has no maximum texture dimensions.
     GLES2Util::ComputeImageDataSize(
        1, 1, format, type, pack_alignment_, &temp_size);
     GLsizeiptr element_size = temp_size;

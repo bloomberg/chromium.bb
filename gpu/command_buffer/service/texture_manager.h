@@ -41,6 +41,7 @@ class TextureManager {
           texture_complete_(false),
           cube_complete_(false),
           npot_(false),
+          has_been_bound_(false),
           owned_(true) {
     }
 

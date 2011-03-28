@@ -71,6 +71,7 @@ GpuChildThread::GpuChildThread(const std::string& channel_id)
     : ChildThread(channel_id) {
 #if defined(OS_WIN)
   target_services_ = NULL;
+  collecting_dx_diagnostics_ = false;
 #endif
 }
 

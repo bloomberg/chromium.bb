@@ -57,7 +57,13 @@ const char* GetPhaseStr(TraceEventPhase phase) {
 }
 }
 
-TraceEvent::TraceEvent() {
+TraceEvent::TraceEvent()
+    : processId(0),
+      threadId(0),
+      phase(GPU_TRACE_EVENT_PHASE_BEGIN),
+      category(NULL),
+      name(NULL) {
+  memset(&argNames, 0, sizeof(argNames));
 }
 
 TraceEvent::~TraceEvent() {
@@ -129,7 +135,7 @@ TraceLog::~TraceLog() {
 TraceCategory* TraceLog::GetCategory(const char* name) {
   AutoLock lock(lock_);
   // TODO(nduca): replace with a hash_map.
-  for (int i = static_cast<int>(categories_.size()) - 1; i >= 0; i-- ) {
+  for (int i = static_cast<int>(categories_.size()) - 1; i >= 0; i--) {
     if (strcmp(categories_[i]->name(), name) == 0)
       return categories_[i];
   }

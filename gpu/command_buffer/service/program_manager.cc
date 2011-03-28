@@ -32,6 +32,7 @@ ProgramManager::ProgramInfo::UniformInfo::UniformInfo(GLsizei _size,
                                                       const std::string& _name)
     : size(_size),
       type(_type),
+      is_array(false),
       name(_name) {
 }
 
