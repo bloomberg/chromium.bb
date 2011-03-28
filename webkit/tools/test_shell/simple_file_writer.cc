@@ -104,7 +104,9 @@ class SimpleFileWriter::IOThreadProxy
       proxy_->DidWrite(bytes, complete);
     }
 
-    virtual void DidReadMetadata(const base::PlatformFileInfo&) {
+    virtual void DidReadMetadata(
+        const base::PlatformFileInfo&,
+        const FilePath&) {
       NOTREACHED();
     }
 
@@ -114,8 +116,9 @@ class SimpleFileWriter::IOThreadProxy
       NOTREACHED();
     }
 
-    virtual void DidOpenFileSystem(const std::string& name,
-                                   const FilePath& root_path) {
+    virtual void DidOpenFileSystem(
+        const std::string& name,
+        const FilePath& root_path) {
       NOTREACHED();
     }
 

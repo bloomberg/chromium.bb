@@ -454,7 +454,8 @@ void FileSystemOperation::DidFinishFileOperation(
 
 void FileSystemOperation::DidDirectoryExists(
     base::PlatformFileError rv,
-    const base::PlatformFileInfo& file_info) {
+    const base::PlatformFileInfo& file_info,
+    const FilePath& unused) {
   if (rv == base::PLATFORM_FILE_OK) {
     if (file_info.is_directory)
       dispatcher_->DidSucceed();
@@ -468,7 +469,8 @@ void FileSystemOperation::DidDirectoryExists(
 
 void FileSystemOperation::DidFileExists(
     base::PlatformFileError rv,
-    const base::PlatformFileInfo& file_info) {
+    const base::PlatformFileInfo& file_info,
+    const FilePath& unused) {
   if (rv == base::PLATFORM_FILE_OK) {
     if (file_info.is_directory)
       dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_NOT_A_FILE);
@@ -482,9 +484,10 @@ void FileSystemOperation::DidFileExists(
 
 void FileSystemOperation::DidGetMetadata(
     base::PlatformFileError rv,
-    const base::PlatformFileInfo& file_info) {
+    const base::PlatformFileInfo& file_info,
+    const FilePath& platform_path) {
   if (rv == base::PLATFORM_FILE_OK)
-    dispatcher_->DidReadMetadata(file_info);
+    dispatcher_->DidReadMetadata(file_info, platform_path);
   else
     dispatcher_->DidFail(rv);
   delete this;

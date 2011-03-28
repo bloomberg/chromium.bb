@@ -84,7 +84,8 @@ class FileSystemDispatcher : public IPC::Channel::Listener {
       const FilePath& root_path);
   void OnDidSucceed(int request_id);
   void OnDidReadMetadata(int request_id,
-                         const base::PlatformFileInfo& file_info);
+                         const base::PlatformFileInfo& file_info,
+                         const FilePath& platform_path);
   void OnDidReadDirectory(
       int request_id,
       const std::vector<base::FileUtilProxy::Entry>& entries,

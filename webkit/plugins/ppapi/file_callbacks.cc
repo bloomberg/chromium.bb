@@ -44,7 +44,8 @@ void FileCallbacks::DidSucceed() {
 }
 
 void FileCallbacks::DidReadMetadata(
-    const base::PlatformFileInfo& file_info) {
+    const base::PlatformFileInfo& file_info,
+    const FilePath& unused) {
   if (callback_->completed())
     return;
 

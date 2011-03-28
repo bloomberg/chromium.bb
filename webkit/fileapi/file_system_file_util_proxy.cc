@@ -208,11 +208,11 @@ class RelayGetFileInfo : public MessageLoopRelay {
   virtual void RunWork() {
     set_error_code(
         file_system_file_util()->GetFileInfo(
-            context(), file_path_, &file_info_));
+            context(), file_path_, &file_info_, &platform_path_));
   }
 
   virtual void RunCallback() {
-    callback_->Run(error_code(), file_info_);
+    callback_->Run(error_code(), file_info_, platform_path_);
     delete callback_;
   }
 
@@ -220,6 +220,7 @@ class RelayGetFileInfo : public MessageLoopRelay {
   fileapi::FileSystemFileUtilProxy::GetFileInfoCallback* callback_;
   FilePath file_path_;
   base::PlatformFileInfo file_info_;
+  FilePath platform_path_;
 };
 
 class RelayReadDirectory : public MessageLoopRelay {

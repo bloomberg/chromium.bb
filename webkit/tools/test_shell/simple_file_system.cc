@@ -64,7 +64,8 @@ class SimpleFileSystemCallbackDispatcher
     callbacks_->didSucceed();
   }
 
-  virtual void DidReadMetadata(const base::PlatformFileInfo& info) {
+  virtual void DidReadMetadata(const base::PlatformFileInfo& info,
+      const FilePath& platform_path) {
     DCHECK(file_system_);
     WebFileInfo web_file_info;
     web_file_info.length = info.size;
@@ -72,7 +73,7 @@ class SimpleFileSystemCallbackDispatcher
     web_file_info.type = info.is_directory ?
         WebFileInfo::TypeDirectory : WebFileInfo::TypeFile;
     web_file_info.platformPath =
-        webkit_glue::FilePathToWebString(info.path);
+        webkit_glue::FilePathToWebString(platform_path);
     callbacks_->didReadMetadata(web_file_info);
   }
 

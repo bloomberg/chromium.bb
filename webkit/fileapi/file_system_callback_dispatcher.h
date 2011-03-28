@@ -22,7 +22,9 @@ class FileSystemCallbackDispatcher {
   virtual void DidSucceed() = 0;
 
   // Callback to report information for a file.
-  virtual void DidReadMetadata(const base::PlatformFileInfo& file_info) = 0;
+  virtual void DidReadMetadata(
+      const base::PlatformFileInfo& file_info,
+      const FilePath& platform_path) = 0;
 
   // Callback to report the contents of a directory. If the contents of
   // the given directory are reported in one batch, then |entries| will have

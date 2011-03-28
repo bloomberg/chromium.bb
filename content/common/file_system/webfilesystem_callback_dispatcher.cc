@@ -33,7 +33,7 @@ void WebFileSystemCallbackDispatcher::DidSucceed() {
 }
 
 void WebFileSystemCallbackDispatcher::DidReadMetadata(
-    const base::PlatformFileInfo& file_info) {
+    const base::PlatformFileInfo& file_info, const FilePath& platform_path) {
   WebFileInfo web_file_info;
   web_file_info.modificationTime = file_info.last_modified.ToDoubleT();
   web_file_info.length = file_info.size;
@@ -42,7 +42,7 @@ void WebFileSystemCallbackDispatcher::DidReadMetadata(
   else
     web_file_info.type = WebFileInfo::TypeFile;
   web_file_info.platformPath =
-    webkit_glue::FilePathToWebString(file_info.path);
+    webkit_glue::FilePathToWebString(platform_path);
   callbacks_->didReadMetadata(web_file_info);
 }
 

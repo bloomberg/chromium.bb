@@ -510,7 +510,6 @@ void ParamTraits<base::PlatformFileInfo>::Write(
   WriteParam(m, p.last_modified.ToDoubleT());
   WriteParam(m, p.last_accessed.ToDoubleT());
   WriteParam(m, p.creation_time.ToDoubleT());
-  WriteParam(m, p.path);
 }
 
 bool ParamTraits<base::PlatformFileInfo>::Read(
@@ -523,8 +522,7 @@ bool ParamTraits<base::PlatformFileInfo>::Read(
       ReadParam(m, iter, &p->is_directory) &&
       ReadParam(m, iter, &last_modified) &&
       ReadParam(m, iter, &last_accessed) &&
-      ReadParam(m, iter, &creation_time) &&
-      ReadParam(m, iter, &p->path);
+      ReadParam(m, iter, &creation_time);
   if (result) {
     p->last_modified = base::Time::FromDoubleT(last_modified);
     p->last_accessed = base::Time::FromDoubleT(last_accessed);
@@ -545,8 +543,6 @@ void ParamTraits<base::PlatformFileInfo>::Log(
   LogParam(p.last_accessed.ToDoubleT(), l);
   l->append(",");
   LogParam(p.creation_time.ToDoubleT(), l);
-  l->append(",");
-  LogParam(p.path, l);
   l->append(")");
 }
 

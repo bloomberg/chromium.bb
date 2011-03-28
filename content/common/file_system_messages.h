@@ -30,9 +30,10 @@ IPC_MESSAGE_CONTROL4(FileSystemMsg_OpenComplete,
 // WebFileSystem response messages.
 IPC_MESSAGE_CONTROL1(FileSystemMsg_DidSucceed,
                      int /* request_id */)
-IPC_MESSAGE_CONTROL2(FileSystemMsg_DidReadMetadata,
+IPC_MESSAGE_CONTROL3(FileSystemMsg_DidReadMetadata,
                      int /* request_id */,
-                     base::PlatformFileInfo)
+                     base::PlatformFileInfo,
+                     FilePath /* true platform path, where possible */)
 IPC_MESSAGE_CONTROL3(FileSystemMsg_DidReadDirectory,
                      int /* request_id */,
                      std::vector<base::FileUtilProxy::Entry> /* entries */,

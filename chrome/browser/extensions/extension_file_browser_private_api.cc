@@ -24,7 +24,8 @@ class LocalFileSystemCallbackDispatcher
   virtual void DidSucceed() OVERRIDE {
     NOTREACHED();
   }
-  virtual void DidReadMetadata(const base::PlatformFileInfo& info) OVERRIDE {
+  virtual void DidReadMetadata(const base::PlatformFileInfo& info,
+                               const FilePath& unused) OVERRIDE {
     NOTREACHED();
   }
   virtual void DidReadDirectory(

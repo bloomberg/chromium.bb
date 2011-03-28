@@ -235,11 +235,12 @@ void FileSystemDispatcher::OnDidSucceed(int request_id) {
 }
 
 void FileSystemDispatcher::OnDidReadMetadata(
-    int request_id, const base::PlatformFileInfo& file_info) {
+    int request_id, const base::PlatformFileInfo& file_info,
+    const FilePath& platform_path) {
   fileapi::FileSystemCallbackDispatcher* dispatcher =
       dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
-  dispatcher->DidReadMetadata(file_info);
+  dispatcher->DidReadMetadata(file_info, platform_path);
   dispatchers_.Remove(request_id);
 }
 

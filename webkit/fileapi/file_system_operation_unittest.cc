@@ -43,6 +43,8 @@ class FileSystemOperationTest : public testing::Test {
   int status() const { return status_; }
   void set_info(const base::PlatformFileInfo& info) { info_ = info; }
   const base::PlatformFileInfo& info() const { return info_; }
+  void set_path(const FilePath& path) { path_ = path; }
+  const FilePath& path() const { return path_; }
   void set_entries(const std::vector<base::FileUtilProxy::Entry>& entries) {
     entries_ = entries;
   }
@@ -57,6 +59,7 @@ class FileSystemOperationTest : public testing::Test {
   // For post-operation status.
   int status_;
   base::PlatformFileInfo info_;
+  FilePath path_;
   std::vector<base::FileUtilProxy::Entry> entries_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationTest);
@@ -74,8 +77,11 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
     test_->set_status(kFileOperationSucceeded);
   }
 
-  virtual void DidReadMetadata(const base::PlatformFileInfo& info) {
+  virtual void DidReadMetadata(
+      const base::PlatformFileInfo& info,
+      const FilePath& platform_path) {
     test_->set_info(info);
+    test_->set_path(platform_path);
     test_->set_status(kFileOperationSucceeded);
   }
 
@@ -564,6 +570,7 @@ TEST_F(FileSystemOperationTest, TestExistsAndMetadataSuccess) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_TRUE(info().is_directory);
+  EXPECT_EQ(dir.path(), path());
 
   FilePath file;
   file_util::CreateTemporaryFileInDir(dir.path(), &file);
@@ -575,6 +582,7 @@ TEST_F(FileSystemOperationTest, TestExistsAndMetadataSuccess) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_FALSE(info().is_directory);
+  EXPECT_EQ(file, path());
 }
 
 TEST_F(FileSystemOperationTest, TestTypeMismatchErrors) {
@@ -592,9 +600,9 @@ TEST_F(FileSystemOperationTest, TestTypeMismatchErrors) {
 }
 
 TEST_F(FileSystemOperationTest, TestReadDirFailure) {
-  // Path doesn't exists
-    FilePath nonexisting_dir_path(base_.path().Append(
-        FILE_PATH_LITERAL("NonExistingDir")));
+  // Path doesn't exist
+  FilePath nonexisting_dir_path(base_.path().Append(
+      FILE_PATH_LITERAL("NonExistingDir")));
   file_util::EnsureEndsWithSeparator(&nonexisting_dir_path);
   operation()->ReadDirectory(nonexisting_dir_path);
   MessageLoop::current()->RunAllPending();

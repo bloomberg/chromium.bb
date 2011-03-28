@@ -51,7 +51,9 @@ class LocalFileSystemFileUtil : public FileSystemFileUtil {
 
   virtual PlatformFileError GetFileInfo(
       FileSystemOperationContext* context,
-      const FilePath& file_, base::PlatformFileInfo* file_info);
+      const FilePath& file_,
+      base::PlatformFileInfo* file_info,
+      FilePath* platform_file);
 
   virtual PlatformFileError ReadDirectory(
       FileSystemOperationContext* context,

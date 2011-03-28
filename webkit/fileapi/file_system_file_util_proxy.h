@@ -25,6 +25,8 @@ class FileSystemOperationContext;
 
 using base::MessageLoopProxy;
 using base::PlatformFile;
+using base::PlatformFileError;
+using base::PlatformFileInfo;
 
 // This class provides asynchronous access to common file routines for the
 // FileSystem API.
@@ -34,7 +36,10 @@ class FileSystemFileUtilProxy {
   typedef base::FileUtilProxy::CreateOrOpenCallback CreateOrOpenCallback;
   typedef base::FileUtilProxy::EnsureFileExistsCallback
     EnsureFileExistsCallback;
-  typedef base::FileUtilProxy::GetFileInfoCallback GetFileInfoCallback;
+  typedef Callback3<PlatformFileError /* error code */,
+                    const PlatformFileInfo& /* file_info */,
+                    const FilePath& /* platform_path, where possible */
+                    >::Type GetFileInfoCallback;
   typedef base::FileUtilProxy::ReadDirectoryCallback ReadDirectoryCallback;
 
   // Creates or opens a file with the given flags.  It is invalid to pass NULL

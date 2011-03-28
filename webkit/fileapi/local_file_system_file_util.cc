@@ -47,14 +47,15 @@ PlatformFileError LocalFileSystemFileUtil::EnsureFileExists(
 PlatformFileError LocalFileSystemFileUtil::GetFileInfo(
     FileSystemOperationContext* context,
     const FilePath& file_path,
-    base::PlatformFileInfo* file_info) {
+    base::PlatformFileInfo* file_info,
+    FilePath* platform_file_path) {
   FilePath local_path =
       GetLocalPath(context, context->src_origin_url(), context->src_type(),
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
   return FileSystemFileUtil::GetInstance()->GetFileInfo(
-      context, local_path, file_info);
+      context, local_path, file_info, platform_file_path);
 }
 
 PlatformFileError LocalFileSystemFileUtil::ReadDirectory(

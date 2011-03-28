@@ -45,9 +45,11 @@ class BrowserFileSystemCallbackDispatcher
     dispatcher_host_->Send(new FileSystemMsg_DidSucceed(request_id_));
   }
 
-  virtual void DidReadMetadata(const base::PlatformFileInfo& info) {
+  virtual void DidReadMetadata(
+      const base::PlatformFileInfo& info,
+      const FilePath& platform_path) {
     dispatcher_host_->Send(new FileSystemMsg_DidReadMetadata(
-        request_id_, info));
+        request_id_, info, platform_path));
   }
 
   virtual void DidReadDirectory(

@@ -68,7 +68,9 @@ class FileSystemFileUtil {
   // callback.
   virtual PlatformFileError GetFileInfo(
       FileSystemOperationContext* context,
-      const FilePath& file_, base::PlatformFileInfo* file_info);
+      const FilePath& file_,
+      base::PlatformFileInfo* file_info,
+      FilePath* platform_path);
 
   virtual PlatformFileError ReadDirectory(
       FileSystemOperationContext* context,

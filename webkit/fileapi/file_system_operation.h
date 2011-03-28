@@ -112,11 +112,14 @@ class FileSystemOperation {
   void DidFinishFileOperation(base::PlatformFileError rv);
 
   void DidDirectoryExists(base::PlatformFileError rv,
-                          const base::PlatformFileInfo& file_info);
+                          const base::PlatformFileInfo& file_info,
+                          const FilePath& unused);
   void DidFileExists(base::PlatformFileError rv,
-                     const base::PlatformFileInfo& file_info);
+                     const base::PlatformFileInfo& file_info,
+                     const FilePath& unused);
   void DidGetMetadata(base::PlatformFileError rv,
-                      const base::PlatformFileInfo& file_info);
+                      const base::PlatformFileInfo& file_info,
+                      const FilePath& platform_path);
   void DidReadDirectory(
       base::PlatformFileError rv,
       const std::vector<base::FileUtilProxy::Entry>& entries);

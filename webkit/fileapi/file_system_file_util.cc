@@ -61,12 +61,13 @@ PlatformFileError FileSystemFileUtil::EnsureFileExists(
 PlatformFileError FileSystemFileUtil::GetFileInfo(
     FileSystemOperationContext* unused,
     const FilePath& file_path,
-    base::PlatformFileInfo* file_info) {
+    base::PlatformFileInfo* file_info,
+    FilePath* platform_file_path) {
   if (!file_util::PathExists(file_path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   if (!file_util::GetFileInfo(file_path, file_info))
     return base::PLATFORM_FILE_ERROR_FAILED;
-  file_info->path = file_path;
+  *platform_file_path = file_path;
   return base::PLATFORM_FILE_OK;
 }
 
