@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,12 +13,14 @@ namespace protocol {
 namespace {
 const int kInitialSequenceNumber = -1;
 
-// Recomended values from RTP spec.
+// Recommended values from RTP spec.
 const int kMaxDropout = 3000;
 const int kMaxMisorder = 100;
 }  // namespace
 
-RtpPacket::RtpPacket() { }
+RtpPacket::RtpPacket()
+    : extended_sequence_number_(0) {
+}
 
 RtpPacket::~RtpPacket() { }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,9 @@ ConnectionToHost::ConnectionToHost(
       socket_factory_(socket_factory),
       port_allocator_session_factory_(session_factory),
       event_callback_(NULL),
-      dispatcher_(new ClientMessageDispatcher()) {
+      dispatcher_(new ClientMessageDispatcher()),
+      client_stub_(NULL),
+      video_stub_(NULL) {
 }
 
 ConnectionToHost::~ConnectionToHost() {
