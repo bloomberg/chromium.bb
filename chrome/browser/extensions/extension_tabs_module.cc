@@ -70,7 +70,7 @@ static bool GetTabById(int tab_id, Profile* profile,
 // (chrome-extension://<id>/). Using the source frame url would be more correct,
 // but because the api shipped with urls resolved relative to their extension
 // base, we decided it wasn't worth breaking existing extensions to fix.
-static GURL ResolvePossiblyRelativeURL(std::string url_string,
+static GURL ResolvePossiblyRelativeURL(const std::string& url_string,
                                        const Extension* extension);
 
 // Return the type name for a browser window type.
@@ -1228,6 +1228,7 @@ void DetectTabLanguageFunction::GotLanguage(const std::string& language) {
 }
 
 // static helpers
+// TODO(jhawkins): Move these to unnamed namespace and remove static modifier.
 
 static Browser* GetBrowserInProfileWithId(Profile* profile,
                                           const int window_id,
@@ -1280,7 +1281,7 @@ static std::string GetWindowTypeText(Browser::Type type) {
   return keys::kWindowTypeValueNormal;
 }
 
-static GURL ResolvePossiblyRelativeURL(std::string url_string,
+static GURL ResolvePossiblyRelativeURL(const std::string& url_string,
                                        const Extension* extension) {
   GURL url = GURL(url_string);
   if (!url.is_valid())

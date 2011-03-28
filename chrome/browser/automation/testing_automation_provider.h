@@ -366,7 +366,7 @@ class TestingAutomationProvider : public AutomationProvider,
   // Generic pattern for pyautolib
   // Uses the JSON interface for input/output.
   void SendJSONRequest(int handle,
-                       std::string json_request,
+                       const std::string& json_request,
                        IPC::Message* reply_message);
 
   // Method ptr for json handlers.

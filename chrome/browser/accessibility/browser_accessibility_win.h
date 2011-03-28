@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -464,7 +464,7 @@ class BrowserAccessibilityWin
       WebAccessibility::Attribute attribute, BSTR* value_bstr);
 
   // Escape a string like it would be escaped for a URL or HTML form.
-  string16 Escape(string16 str);
+  string16 Escape(const string16& str);
 
   // Get the text of this node for the purposes of IAccessibleText - it may
   // be the name, it may be the value, etc. depending on the role.

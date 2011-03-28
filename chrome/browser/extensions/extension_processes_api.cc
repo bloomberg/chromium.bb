@@ -27,7 +27,7 @@
 namespace keys = extension_processes_api_constants;
 
 DictionaryValue* CreateProcessValue(int process_id,
-                                    std::string type,
+                                    const std::string& type,
                                     double cpu,
                                     int64 net,
                                     int64 pr_mem,

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -257,7 +257,7 @@ void ExtensionTtsController::Stop() {
 }
 
 void ExtensionTtsController::OnSpeechFinished(
-    int request_id, std::string error_message) {
+    int request_id, const std::string& error_message) {
   // We may sometimes receive completion callbacks "late", after we've
   // already finished the utterance (for example because another utterance
   // interrupted or we got a call to Stop). It's also possible that a buggy

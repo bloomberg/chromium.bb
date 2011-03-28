@@ -77,8 +77,8 @@ class BrowserSigninHtml : public HtmlDialogUIDelegate,
                           public WebUIMessageHandler {
  public:
   BrowserSigninHtml(BrowserSignin* signin,
-                    string16 suggested_email,
-                    string16 login_message);
+                    const string16& suggested_email,
+                    const string16& login_message);
   virtual ~BrowserSigninHtml() {}
 
   // HtmlDialogUIDelegate implementation
@@ -135,8 +135,8 @@ class BrowserSigninHtml : public HtmlDialogUIDelegate,
 };
 
 BrowserSigninHtml::BrowserSigninHtml(BrowserSignin* signin,
-                                     string16 suggested_email,
-                                     string16 login_message)
+                                     const string16& suggested_email,
+                                     const string16& login_message)
     : signin_(signin),
       suggested_email_(suggested_email),
       login_message_(login_message),

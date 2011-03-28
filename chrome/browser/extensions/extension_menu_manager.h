@@ -36,7 +36,7 @@ class ExtensionMenuItem {
   // An Id uniquely identifies a context menu item registered by an extension.
   struct Id {
     Id();
-    Id(Profile* profile, std::string extension_id, int uid);
+    Id(Profile* profile, const std::string& extension_id, int uid);
     ~Id();
 
     bool operator==(const Id& other) const;
@@ -99,7 +99,10 @@ class ExtensionMenuItem {
     uint32 value_;  // A bitmask of Context values.
   };
 
-  ExtensionMenuItem(const Id& id, std::string title, bool checked, Type type,
+  ExtensionMenuItem(const Id& id,
+                    const std::string& title,
+                    bool checked,
+                    Type type,
                     const ContextList& contexts);
   virtual ~ExtensionMenuItem();
 

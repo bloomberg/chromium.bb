@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1193,7 +1193,7 @@ HRESULT BrowserAccessibilityWin::GetAttributeAsBstr(
   return S_OK;
 }
 
-string16 BrowserAccessibilityWin::Escape(string16 str) {
+string16 BrowserAccessibilityWin::Escape(const string16& str) {
   return EscapeQueryParamValueUTF8(str, false);
 }
 

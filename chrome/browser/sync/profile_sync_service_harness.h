@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -187,7 +187,7 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   bool MatchesOtherClient(ProfileSyncServiceHarness* partner);
 
   // Logs message with relevant info about client's sync state (if available).
-  void LogClientInfo(std::string message);
+  void LogClientInfo(const std::string& message);
 
   // Gets the current progress indicator of the current sync session
   // for a particular datatype.

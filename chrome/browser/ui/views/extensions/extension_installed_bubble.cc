@@ -235,13 +235,13 @@ class InstalledBubbleContent : public views::View,
 
 void ExtensionInstalledBubble::Show(const Extension* extension,
                                     Browser *browser,
-                                    SkBitmap icon) {
+                                    const SkBitmap& icon) {
   new ExtensionInstalledBubble(extension, browser, icon);
 }
 
 ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
                                                    Browser *browser,
-                                                   SkBitmap icon)
+                                                   const SkBitmap& icon)
     : extension_(extension),
       browser_(browser),
       icon_(icon),

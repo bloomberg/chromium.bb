@@ -580,7 +580,7 @@ std::string ProfileSyncServiceHarness::GetUpdatedTimestamp(
   return snap->download_progress_markers[model_type];
 }
 
-void ProfileSyncServiceHarness::LogClientInfo(std::string message) {
+void ProfileSyncServiceHarness::LogClientInfo(const std::string& message) {
   if (service()) {
     const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
     if (snap) {

@@ -503,7 +503,7 @@ void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
 // command line, but HKCU otherwise. |experiment_group| is the value to write
 // and |last_write| is used when writing to HKLM to determine whether to close
 // the handle when done.
-void SetClient(std::wstring experiment_group, bool last_write) {
+void SetClient(const std::wstring& experiment_group, bool last_write) {
   static int reg_key_handle = -1;
   if (reg_key_handle == -1) {
     // If a specific Toast Results key handle (presumably to our HKLM key) was

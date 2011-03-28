@@ -2007,7 +2007,7 @@ void TestingAutomationProvider::CaptureEntirePageAsPNG(
 }
 
 void TestingAutomationProvider::SendJSONRequest(int handle,
-                                                std::string json_request,
+                                                const std::string& json_request,
                                                 IPC::Message* reply_message) {
   scoped_ptr<Value> values;
   base::JSONReader reader;

@@ -30,7 +30,7 @@ namespace {
 // Implementation of SearchTermsData that may be used on the I/O thread.
 class IOThreadSearchTermsData : public SearchTermsData {
  public:
-  explicit IOThreadSearchTermsData(std::string google_base_url);
+  explicit IOThreadSearchTermsData(const std::string& google_base_url);
 
   // Implementation of SearchTermsData.
   virtual std::string GoogleBaseURLValue() const;
@@ -48,8 +48,8 @@ class IOThreadSearchTermsData : public SearchTermsData {
   DISALLOW_COPY_AND_ASSIGN(IOThreadSearchTermsData);
 };
 
-IOThreadSearchTermsData::IOThreadSearchTermsData(std::string google_base_url)
-    : google_base_url_(google_base_url) {
+IOThreadSearchTermsData::IOThreadSearchTermsData(
+    const std::string& google_base_url) : google_base_url_(google_base_url) {
 }
 
 std::string IOThreadSearchTermsData::GoogleBaseURLValue() const {

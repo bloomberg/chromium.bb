@@ -22,7 +22,7 @@
 #include "webkit/glue/context_menu.h"
 
 ExtensionMenuItem::ExtensionMenuItem(const Id& id,
-                                     std::string title,
+                                     const std::string& title,
                                      bool checked,
                                      Type type,
                                      const ContextList& contexts)
@@ -477,7 +477,9 @@ ExtensionMenuItem::Id::Id()
     : profile(NULL), uid(0) {
 }
 
-ExtensionMenuItem::Id::Id(Profile* profile, std::string extension_id, int uid)
+ExtensionMenuItem::Id::Id(Profile* profile,
+                          const std::string& extension_id,
+                          int uid)
     : profile(profile), extension_id(extension_id), uid(uid) {
 }
 

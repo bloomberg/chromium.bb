@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -193,7 +193,8 @@ class AccessibilityTextBoxInfo : public AccessibilityControlInfo {
 
   virtual void SerializeToDict(DictionaryValue* dict) const;
 
-  void SetValue(std::string value, int selection_start, int selection_end) {
+  void SetValue(
+      const std::string& value, int selection_start, int selection_end) {
     value_ = value;
     selection_start_ = selection_start;
     selection_end_ = selection_end;

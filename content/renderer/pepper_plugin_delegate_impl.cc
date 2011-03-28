@@ -378,7 +378,7 @@ class DispatcherWrapper
   virtual ~DispatcherWrapper() {}
 
   bool Init(base::ProcessHandle plugin_process_handle,
-            IPC::ChannelHandle channel_handle,
+            const IPC::ChannelHandle& channel_handle,
             PP_Module pp_module,
             pp::proxy::Dispatcher::GetInterfaceFunc local_get_interface);
 
@@ -399,7 +399,7 @@ class DispatcherWrapper
 
 bool DispatcherWrapper::Init(
     base::ProcessHandle plugin_process_handle,
-    IPC::ChannelHandle channel_handle,
+    const IPC::ChannelHandle& channel_handle,
     PP_Module pp_module,
     pp::proxy::Dispatcher::GetInterfaceFunc local_get_interface) {
   dispatcher_.reset(new pp::proxy::HostDispatcher(
