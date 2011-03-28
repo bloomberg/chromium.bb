@@ -1056,13 +1056,14 @@ TabContents* Browser::AddRestoredTab(
   new_tab->controller().RestoreFromState(navigations, selected_navigation,
                                          from_last_session);
 
-  bool really_pin =
-      (pin && tab_index == tabstrip_model()->IndexOfFirstNonMiniTab());
-  tab_handler_->GetTabStripModel()->InsertTabContentsAt(
-      tab_index, wrapper,
-      select ? TabStripModel::ADD_SELECTED : TabStripModel::ADD_NONE);
-  if (really_pin)
-    tab_handler_->GetTabStripModel()->SetTabPinned(tab_index, true);
+  int add_types = select ? TabStripModel::ADD_SELECTED :
+      TabStripModel::ADD_NONE;
+  if (pin) {
+    tab_index = std::min(tab_index, tabstrip_model()->IndexOfFirstNonMiniTab());
+    add_types |= TabStripModel::ADD_PINNED;
+  }
+  tab_handler_->GetTabStripModel()->InsertTabContentsAt(tab_index, wrapper,
+                                                        add_types);
   if (select) {
     window_->Activate();
   } else {
@@ -1078,7 +1079,7 @@ TabContents* Browser::AddRestoredTab(
   if (profile_->HasSessionService()) {
     SessionService* session_service = profile_->GetSessionService();
     if (session_service)
-      session_service->TabRestored(&new_tab->controller(), really_pin);
+      session_service->TabRestored(&new_tab->controller(), pin);
   }
   return new_tab;
 }
