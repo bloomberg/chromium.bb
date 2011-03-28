@@ -3,8 +3,6 @@
 # See http://code.google.com/p/data-race-test/wiki/ThreadSanitizerIgnores.
 
 # ignore these libraries
-obj:*/ld-2*
-obj:*/libpthread-*
 obj:*/libfreetype*
 obj:*/libdbus*
 
@@ -27,8 +25,6 @@ fun_r:random_r
 fun_r:random
 fun_r:rand
 fun_r:srand
-fun:__lll_mutex_unlock_wake
-fun:__cxa_atexit
 fun:__new_exitfn
 fun:_dl_*
 fun:__dl_*
@@ -39,7 +35,6 @@ fun:sys_*
 
 # ignore libc's printf functions
 fun_r:_IO_*
-fun:vfprintf
 fun:fwrite
 fun:fflush
 
@@ -142,6 +137,9 @@ fun_r:mbsrtowcs
 # This may be related to
 # https://bugs.launchpad.net/ubuntu/+source/glibc/+bug/59449
 fun_r:gethostbyname2_r*
+
+# TODO(timurrrr): remove this when TSan is updated past r3232
+fun_r:gaih_inet
 
 # Strange reports below _IO_getline, every time in "Concurrent access".
 # Probably the reports are there since we're missing the libc internal locks

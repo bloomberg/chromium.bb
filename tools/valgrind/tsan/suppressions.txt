@@ -1,6 +1,5 @@
 ############################
-# Chromium
-
+# Real races in Chromium
 {
   bug_23433
   ThreadSanitizer:Race
@@ -150,7 +149,13 @@
 }
 
 ############################
-# Benign races
+# Benign races in Chromium
+{
+  bug_61179 [benign race on tracked_objects::Births]
+  ThreadSanitizer:Race
+  fun:tracked_objects::Births::*Birth*
+}
+
 {
   bug_62694 [benign races in Histogram in CookieMonster]
   ThreadSanitizer:Race
