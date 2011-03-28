@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,8 +31,8 @@ const bool kShowCancelButtonInTaskManager = true;
 
 #elif defined(TOOLKIT_USES_GTK)
 
-// 13.4px = 10pt @ 96dpi.
-const int kAutocompleteEditFontPixelSize = 13;
+// 14px = 10.5pt @ 96dpi.
+const int kAutocompleteEditFontPixelSize = 14;
 
 // On Windows, popup windows' location text uses a font 5/6 the size of
 // that in a regular window, which we duplicate here for GTK.

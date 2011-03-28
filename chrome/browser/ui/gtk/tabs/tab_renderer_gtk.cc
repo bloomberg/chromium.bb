@@ -32,7 +32,7 @@
 
 namespace {
 
-const int kFontPixelSize = 13;
+const int kFontPixelSize = 12;
 const int kLeftPadding = 16;
 const int kTopPadding = 6;
 const int kRightPadding = 15;
