@@ -724,11 +724,12 @@ def _GetApprovers(messages, email_regexp, owner_regexp):
 
 def _CheckConstNSObject(input_api, output_api, source_file_filter):
   """Checks to make sure no objective-c files have |const NSSomeClass*|."""
-  pattern = input_api.re.compile(r'const\s+NS\w*\s*\*')
+  pattern = input_api.re.compile(
+      r'const\s+NS(?!(Point|Range|Rect|Size)\s*\*)\w*\s*\*')
 
   def objective_c_filter(f):
     return (source_file_filter(f) and
-            input_api.os_path.splitext(f.LocalPath())[1] in ('.h', '.mm'))
+            input_api.os_path.splitext(f.LocalPath())[1] in ('.h', '.m', '.mm'))
 
   files = []
   for f in input_api.AffectedSourceFiles(objective_c_filter):
