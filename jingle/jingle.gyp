@@ -7,6 +7,22 @@
     'chromium_code': 1,
   },  # variables
   'targets': [
+    # A library of various utils for integration with libjingle.
+    {
+      'target_name': 'jingle_glue',
+      'type': '<(library)',
+      'sources': [
+        'glue/thread_wrapper.cc',
+        'glue/thread_wrapper.h',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../third_party/libjingle/libjingle.gyp:libjingle',
+      ],
+      'export_dependent_settings': [
+        '../third_party/libjingle/libjingle.gyp:libjingle',
+      ],
+    },
     # A library for sending and receiving peer-issued notifications.
     #
     # TODO(akalin): Separate out the XMPP stuff from this library into
@@ -103,11 +119,10 @@
       ],
     },
     {
-      'target_name': 'notifier_unit_tests',
+      'target_name': 'jingle_unittests',
       'type': 'executable',
       'sources': [
-        # TODO(akalin): Write our own test suite and runner.
-        '../base/test/run_all_unittests.cc',
+        'glue/thread_wrapper_unittest.cc',
         'notifier/base/chrome_async_socket_unittest.cc',
         'notifier/base/fake_ssl_client_socket_unittest.cc',
         'notifier/base/xmpp_connection_unittest.cc',
@@ -119,11 +134,13 @@
         'notifier/listener/push_notifications_subscribe_task_unittest.cc',
         'notifier/listener/talk_mediator_unittest.cc',
         'notifier/listener/xml_element_util_unittest.cc',
+        'run_all_unittests.cc',
       ],
       'include_dirs': [
         '..',
       ],
       'dependencies': [
+        'jingle_glue',
         'notifier',
         'notifier_test_util',
         '../base/base.gyp:base',
@@ -133,18 +150,6 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/libjingle/libjingle.gyp:libjingle',
-      ],
-      # TODO(akalin): Remove this once we have our own test suite and
-      # runner.
-      'conditions': [
-        ['OS == "linux" or OS == "freebsd" or OS == "openbsd" or OS == "solaris"', {
-          'dependencies': [
-            # Needed to handle the #include chain:
-            #   base/test/test_suite.h
-            #   gtk/gtk.h
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
       ],
     },
   ],
