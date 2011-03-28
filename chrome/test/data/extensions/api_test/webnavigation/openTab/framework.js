@@ -25,9 +25,6 @@ function checkExpectations() {
 
 function captureEvent(name, details) {
   // normalize details.
-  if ('timeStamp' in details) {
-    details.timeStamp = 0;
-  }
   if (('frameId' in details) && (details.frameId != 0)) {
     if (frameIds[details.frameId] === undefined) {
       frameIds[details.frameId] = nextFrameId++;

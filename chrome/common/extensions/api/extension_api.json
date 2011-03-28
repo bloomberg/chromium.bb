@@ -3411,8 +3411,7 @@
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation is about to occur."},
               "url": {"type": "string"},
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
-              "requestId": {"type": "string", "description": "The ID of the request to retrieve the document of this navigation. Note that this event is fired prior to the corresponding chrome.experimental.webRequest.onBeforeRequest."},
-              "timeStamp": {"type": "number", "description": "The time when the browser was about to start the navigation, in milliseconds since the epoch."}
+              "requestId": {"type": "string", "description": "The ID of the request to retrieve the document of this navigation. Note that this event is fired prior to the corresponding chrome.experimental.webRequest.onBeforeRequest."}
             }
           }
         ]
@@ -3430,8 +3429,7 @@
               "url": {"type": "string"},
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe."},
               "transitionType": {"type": "string", "enum": ["link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "start_page", "form_submit", "reload", "keyword", "keyword_generated"], "description": "Cause of the navigation. The same transition types as defined in the history API are used."},
-              "transitionQualifiers": {"type": "array", "description": "A list of transition qualifiers.", "items:": {"type": "string", "enum": ["client_redirect", "server_redirect", "forward_back"]}},
-              "timeStamp": {"type": "number", "description": "The time when the navigation was committed, in milliseconds since the epoch."}
+              "transitionQualifiers": {"type": "array", "description": "A list of transition qualifiers.", "items:": {"type": "string", "enum": ["client_redirect", "server_redirect", "forward_back"]}}
             }
           }
         ]
@@ -3447,8 +3445,7 @@
             "properties": {
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
               "url": {"type": "string"},
-              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe."},
-              "timeStamp": {"type": "number", "description": "The time when the page's DOM was fully constructed, in milliseconds since the epoch."}
+              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe."}
             }
           }
         ]
@@ -3464,8 +3461,7 @@
             "properties": {
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
               "url": {"type": "string"},
-              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe."},
-              "timeStamp": {"type": "number", "description": "The time when the document finished loading, in milliseconds since the epoch."}
+              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe."}
             }
           }
         ]
@@ -3482,8 +3478,7 @@
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
               "url": {"type": "string"},
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe."},
-              "error": {"type": "string", "description": "The error description."},
-              "timeStamp": {"type": "number", "description": "The time when the error occurred, in milliseconds since the epoch."}
+              "error": {"type": "string", "description": "The error description."}
             }
           }
         ]
@@ -3499,8 +3494,7 @@
             "properties": {
               "sourceTabId": {"type": "integer", "description": "The ID of the tab in which the navigation is triggered."},
               "sourceUrl": {"type": "string", "description": "The URL of the document that is opening the new window."},
-              "url": {"type": "string", "description": "The URL to be opened in the new window."},
-              "timeStamp": {"type": "number", "description": "The time when the browser was about to create a new view, in milliseconds since the epoch."}
+              "url": {"type": "string", "description": "The URL to be opened in the new window."}
             }
           }
         ]
