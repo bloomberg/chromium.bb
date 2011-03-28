@@ -26,46 +26,4 @@ void ParamTraits<ContentSettings>::Log(
   l->append("<ContentSettings>");
 }
 
-void ParamTraits<URLPattern>::Write(Message* m, const param_type& p) {
-  WriteParam(m, p.valid_schemes());
-  WriteParam(m, p.GetAsString());
-}
-
-bool ParamTraits<URLPattern>::Read(const Message* m, void** iter,
-                                   param_type* p) {
-  int valid_schemes;
-  std::string spec;
-  if (!ReadParam(m, iter, &valid_schemes) ||
-      !ReadParam(m, iter, &spec))
-    return false;
-
-  p->set_valid_schemes(valid_schemes);
-  return URLPattern::PARSE_SUCCESS == p->Parse(spec, URLPattern::PARSE_LENIENT);
-}
-
-void ParamTraits<URLPattern>::Log(const param_type& p, std::string* l) {
-  LogParam(p.GetAsString(), l);
-}
-
-void ParamTraits<ExtensionExtent>::Write(Message* m, const param_type& p) {
-  WriteParam(m, p.patterns());
-}
-
-bool ParamTraits<ExtensionExtent>::Read(const Message* m, void** iter,
-                                        param_type* p) {
-  std::vector<URLPattern> patterns;
-  bool success =
-      ReadParam(m, iter, &patterns);
-  if (!success)
-    return false;
-
-  for (size_t i = 0; i < patterns.size(); ++i)
-    p->AddPattern(patterns[i]);
-  return true;
-}
-
-void ParamTraits<ExtensionExtent>::Log(const param_type& p, std::string* l) {
-  LogParam(p.patterns(), l);
-}
-
 }  // namespace IPC

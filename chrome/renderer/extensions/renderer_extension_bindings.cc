@@ -11,7 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
@@ -104,7 +104,7 @@ class ExtensionImpl : public ExtensionBase {
       std::string target_id = *v8::String::Utf8Value(args[1]->ToString());
       std::string channel_name = *v8::String::Utf8Value(args[2]->ToString());
       int port_id = -1;
-      renderview->Send(new ViewHostMsg_OpenChannelToExtension(
+      renderview->Send(new ExtensionHostMsg_OpenChannelToExtension(
           renderview->routing_id(), source_id, target_id,
           channel_name, &port_id));
       return v8::Integer::New(port_id);
@@ -125,7 +125,7 @@ class ExtensionImpl : public ExtensionBase {
           v8::String::New(kPortClosedError)));
       }
       std::string message = *v8::String::Utf8Value(args[1]->ToString());
-      renderview->Send(new ViewHostMsg_ExtensionPostMessage(
+      renderview->Send(new ExtensionHostMsg_PostMessage(
           renderview->routing_id(), port_id, message));
     }
     return v8::Undefined();
@@ -142,7 +142,7 @@ class ExtensionImpl : public ExtensionBase {
       bool notify_browser = args[1]->BooleanValue();
       if (notify_browser)
         EventBindings::GetRenderThread()->Send(
-            new ViewHostMsg_ExtensionCloseChannel(port_id));
+            new ExtensionHostMsg_CloseChannel(port_id));
       ClearPortData(port_id);
     }
     return v8::Undefined();
@@ -167,7 +167,7 @@ class ExtensionImpl : public ExtensionBase {
       if (HasPortData(port_id) && --GetPortData(port_id).ref_count == 0) {
         // Send via the RenderThread because the RenderView might be closing.
         EventBindings::GetRenderThread()->Send(
-            new ViewHostMsg_ExtensionCloseChannel(port_id));
+            new ExtensionHostMsg_CloseChannel(port_id));
         ClearPortData(port_id);
       }
     }
@@ -199,7 +199,7 @@ class ExtensionImpl : public ExtensionBase {
 
       L10nMessagesMap messages;
       // A sync call to load message catalogs for current extension.
-      renderview->Send(new ViewHostMsg_GetExtensionMessageBundle(
+      renderview->Send(new ExtensionHostMsg_GetMessageBundle(
           extension_id, &messages));
 
       // Save messages we got.

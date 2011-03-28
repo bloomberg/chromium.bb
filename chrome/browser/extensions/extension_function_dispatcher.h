@@ -20,7 +20,7 @@ class ListValue;
 class Profile;
 class RenderViewHost;
 class TabContents;
-struct ViewHostMsg_DomMessage_Params;
+struct ExtensionHostMsg_DomMessage_Params;
 
 // A factory function for creating new ExtensionFunction instances.
 typedef ExtensionFunction* (*ExtensionFunctionFactory)();
@@ -86,7 +86,7 @@ class ExtensionFunctionDispatcher {
   Delegate* delegate() { return delegate_; }
 
   // Handle a request to execute an extension function.
-  void HandleRequest(const ViewHostMsg_DomMessage_Params& params);
+  void HandleRequest(const ExtensionHostMsg_DomMessage_Params& params);
 
   // Send a response to a function.
   void SendResponse(ExtensionFunction* api, bool success);

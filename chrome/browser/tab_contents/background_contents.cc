@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
 #include "content/browser/browsing_instance.h"
@@ -211,7 +211,7 @@ WebPreferences BackgroundContents::GetWebkitPrefs() {
 }
 
 void BackgroundContents::ProcessWebUIMessage(
-    const ViewHostMsg_DomMessage_Params& params) {
+    const ExtensionHostMsg_DomMessage_Params& params) {
   // TODO(rafaelw): It may make sense for extensions to be able to open
   // BackgroundContents to chrome-extension://<id> pages. Consider implementing.
   render_view_host_->BlockExtensionRequest(params.request_id);

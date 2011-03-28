@@ -12,7 +12,7 @@
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/test/profile_mock.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -164,7 +164,7 @@ TEST_F(SyncInternalsUITest, HandleJsEventNullService) {
 TEST_F(SyncInternalsUITest, ProcessWebUIMessageBasic) {
   ExpectSetupTeardownCalls();
 
-  ViewHostMsg_DomMessage_Params params;
+  ExtensionHostMsg_DomMessage_Params params;
   params.name = "testName";
   params.arguments.Append(Value::CreateIntegerValue(10));
 
@@ -182,7 +182,7 @@ TEST_F(SyncInternalsUITest, ProcessWebUIMessageBasicNullService) {
 
   ConstructTestSyncInternalsUI();
 
-  ViewHostMsg_DomMessage_Params params;
+  ExtensionHostMsg_DomMessage_Params params;
   params.name = "testName";
   params.arguments.Append(Value::CreateIntegerValue(5));
 
@@ -198,7 +198,7 @@ const char kAboutInfoCall[] =
 TEST_F(SyncInternalsUITest, ProcessWebUIMessageGetAboutInfo) {
   ExpectSetupTeardownCalls();
 
-  ViewHostMsg_DomMessage_Params params;
+  ExtensionHostMsg_DomMessage_Params params;
   params.name = "getAboutInfo";
 
   ConstructTestSyncInternalsUI();
@@ -212,7 +212,7 @@ TEST_F(SyncInternalsUITest, ProcessWebUIMessageGetAboutInfo) {
 TEST_F(SyncInternalsUITest, ProcessWebUIMessageGetAboutInfoNullService) {
   ExpectSetupTeardownCallsNullService();
 
-  ViewHostMsg_DomMessage_Params params;
+  ExtensionHostMsg_DomMessage_Params params;
   params.name = "getAboutInfo";
 
   ConstructTestSyncInternalsUI();

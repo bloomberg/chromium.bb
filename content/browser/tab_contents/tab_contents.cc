@@ -58,12 +58,12 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/host_zoom_map.h"
@@ -417,9 +417,9 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_PDFHasUnsupportedFeature,
                         OnPDFHasUnsupportedFeature)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidGetApplicationInfo,
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_DidGetApplicationInfo,
                         OnDidGetApplicationInfo)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_InstallApplication,
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_InstallApplication,
                         OnInstallApplication)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
@@ -892,9 +892,13 @@ bool TabContents::ExecuteCode(int request_id, const std::string& extension_id,
   if (!host)
     return false;
 
-  return host->Send(new ViewMsg_ExecuteCode(host->routing_id(),
-      ViewMsg_ExecuteCode_Params(request_id, extension_id,
-                                 is_js_code, code_string, all_frames)));
+  ExtensionMsg_ExecuteCode_Params params;
+  params.request_id = request_id;
+  params.extension_id = extension_id;
+  params.is_javascript = is_js_code;
+  params.code = code_string;
+  params.all_frames = all_frames;
+  return host->Send(new ExtensionMsg_ExecuteCode(host->routing_id(), params));
 }
 
 void TabContents::PopupNotificationVisibilityChanged(bool visible) {
@@ -2314,7 +2318,7 @@ void TabContents::DomOperationResponse(const std::string& json_string,
 }
 
 void TabContents::ProcessWebUIMessage(
-    const ViewHostMsg_DomMessage_Params& params) {
+    const ExtensionHostMsg_DomMessage_Params& params) {
   if (!render_manager_.web_ui()) {
     // This can happen if someone uses window.open() to open an extension URL
     // from a non-extension context.

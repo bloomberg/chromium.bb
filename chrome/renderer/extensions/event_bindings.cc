@@ -6,8 +6,8 @@
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
@@ -108,8 +108,8 @@ class ExtensionImpl : public ExtensionBase {
 
       if (++listener_counts[event_name] == 1) {
         EventBindings::GetRenderThread()->Send(
-            new ViewHostMsg_ExtensionAddListener(context_info->extension_id,
-                                                 event_name));
+            new ExtensionHostMsg_AddListener(context_info->extension_id,
+                                             event_name));
       }
 
       if (++context_info->num_connected_events == 1)
@@ -135,8 +135,8 @@ class ExtensionImpl : public ExtensionBase {
       std::string event_name(*v8::String::AsciiValue(args[0]));
       if (--listener_counts[event_name] == 0) {
         EventBindings::GetRenderThread()->Send(
-            new ViewHostMsg_ExtensionRemoveListener(context_info->extension_id,
-                                                    event_name));
+            new ExtensionHostMsg_RemoveListener(context_info->extension_id,
+                                                event_name));
       }
 
       if (--context_info->num_connected_events == 0) {

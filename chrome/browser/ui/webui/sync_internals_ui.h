@@ -36,7 +36,7 @@ class SyncInternalsUI : public WebUI, public browser_sync::JsEventHandler {
   // TODO(akalin): Add a simple isSyncEnabled() message and make
   // getAboutInfo() be handled by the sync service.
   virtual void ProcessWebUIMessage(
-      const ViewHostMsg_DomMessage_Params& params);
+      const ExtensionHostMsg_DomMessage_Params& params);
 
   // browser_sync::JsEventHandler implementation.
   virtual void HandleJsEvent(const std::string& name,

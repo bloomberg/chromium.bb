@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/automation_messages.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 
@@ -95,8 +95,7 @@ bool ExtensionPortContainer::Send(IPC::Message *message) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
   IPC_BEGIN_MESSAGE_MAP(ExtensionPortContainer, *message)
-    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionMessageInvoke,
-                        OnExtensionMessageInvoke)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 

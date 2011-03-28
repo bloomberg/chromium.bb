@@ -22,7 +22,7 @@ class Profile;
 class RenderViewHost;
 class TabContents;
 class Value;
-struct ViewHostMsg_DomMessage_Params;
+struct ExtensionHostMsg_DomMessage_Params;
 
 // A WebUI sets up the datasources and message handlers for a given HTML-based
 // UI. It is contained by a WebUIManager.
@@ -53,7 +53,8 @@ class WebUI {
   virtual void DidBecomeActiveForReusedRenderView() {}
 
   // Called from TabContents.
-  virtual void ProcessWebUIMessage(const ViewHostMsg_DomMessage_Params& params);
+  virtual void ProcessWebUIMessage(
+      const ExtensionHostMsg_DomMessage_Params& params);
 
   // Used by WebUIMessageHandlers.
   typedef Callback1<const ListValue*>::Type MessageCallback;

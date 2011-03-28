@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/notification_service.h"
@@ -30,7 +30,7 @@ static void DispatchEvent(RenderProcessHost* renderer,
   ListValue args;
   args.Set(0, Value::CreateStringValue(event_name));
   args.Set(1, Value::CreateStringValue(event_args));
-  renderer->Send(new ViewMsg_ExtensionMessageInvoke(MSG_ROUTING_CONTROL,
+  renderer->Send(new ExtensionMsg_MessageInvoke(MSG_ROUTING_CONTROL,
       extension_id, kDispatchEvent, args, event_url));
 }
 

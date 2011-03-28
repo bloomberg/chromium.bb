@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/process_util.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -104,7 +105,7 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(MockRenderThread, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToExtension,
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
                         OnMsgOpenChannelToExtension)
     IPC_MESSAGE_HANDLER(PrintHostMsg_GetDefaultPrintSettings,
                         OnGetDefaultPrintSettings)

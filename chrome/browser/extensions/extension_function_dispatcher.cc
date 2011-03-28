@@ -53,8 +53,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -421,9 +420,9 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
   // Update the extension permissions. Doing this each time we create an EFD
   // ensures that new processes are informed of permissions for newly installed
   // extensions.
-  render_view_host->Send(new ViewMsg_Extension_SetAPIPermissions(
+  render_view_host->Send(new ExtensionMsg_SetAPIPermissions(
       extension->id(), extension->api_permissions()));
-  render_view_host->Send(new ViewMsg_Extension_SetHostPermissions(
+  render_view_host->Send(new ExtensionMsg_SetHostPermissions(
       extension->url(), extension->host_permissions()));
 
   NotificationService::current()->Notify(
@@ -468,7 +467,7 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
 }
 
 void ExtensionFunctionDispatcher::HandleRequest(
-    const ViewHostMsg_DomMessage_Params& params) {
+    const ExtensionHostMsg_DomMessage_Params& params) {
   scoped_refptr<ExtensionFunction> function(
       FactoryRegistry::GetInstance()->NewFunction(params.name));
   function->set_dispatcher_peer(peer_);

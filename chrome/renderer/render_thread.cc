@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_localization_peer.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_messages.h"
@@ -578,8 +579,7 @@ void RenderThread::OnSetExtensionFunctionNames(
   ExtensionProcessBindings::SetFunctionNames(names);
 }
 
-void RenderThread::OnExtensionLoaded(
-    const ViewMsg_ExtensionLoaded_Params& params) {
+void RenderThread::OnExtensionLoaded(const ExtensionMsg_Loaded_Params& params) {
   scoped_refptr<const Extension> extension(params.ConvertToExtension());
   if (!extension) {
     // This can happen if extension parsing fails for any reason. One reason
@@ -666,21 +666,19 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_UserScripts_UpdatedScripts, OnUpdateUserScripts)
     // TODO(rafaelw): create an ExtensionDispatcher that handles extension
     // messages seperates their handling from the RenderThread.
-    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionMessageInvoke,
-                        OnExtensionMessageInvoke)
-    IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetFunctionNames,
+    IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_SetFunctionNames,
                         OnSetExtensionFunctionNames)
-    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionLoaded, OnExtensionLoaded)
-    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionUnloaded, OnExtensionUnloaded)
-    IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetScriptingWhitelist,
+    IPC_MESSAGE_HANDLER(ExtensionMsg_Loaded, OnExtensionLoaded)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_Unloaded, OnExtensionUnloaded)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_SetScriptingWhitelist,
                         OnSetExtensionScriptingWhitelist)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgeMemory, OnPurgeMemory)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
-    IPC_MESSAGE_HANDLER(ViewMsg_Extension_UpdatePageActions,
-                        OnPageActionsUpdated)
-    IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetAPIPermissions,
+    IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePageActions, OnPageActionsUpdated)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_SetAPIPermissions,
                         OnExtensionSetAPIPermissions)
-    IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetHostPermissions,
+    IPC_MESSAGE_HANDLER(ExtensionMsg_SetHostPermissions,
                         OnExtensionSetHostPermissions)
     IPC_MESSAGE_HANDLER(DOMStorageMsg_Event, OnDOMStorageEvent)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_Init, OnInitSpellChecker)

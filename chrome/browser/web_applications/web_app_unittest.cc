@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +49,7 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
   web_app_info.app_url = url;
 
   rvh()->TestOnMessageReceived(
-      ViewHostMsg_DidGetApplicationInfo(0, 0, web_app_info));
+      ExtensionHostMsg_DidGetApplicationInfo(0, 0, web_app_info));
   ShellIntegration::ShortcutInfo info;
   web_app::GetShortcutInfoForTab(contents_wrapper(), &info);
 

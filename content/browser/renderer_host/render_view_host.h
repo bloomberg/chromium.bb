@@ -39,10 +39,10 @@ class SkBitmap;
 class ViewMsg_Navigate;
 struct ContentSettings;
 struct ContextMenuParams;
+struct ExtensionHostMsg_DomMessage_Params;
 struct MediaPlayerAction;
 struct ViewHostMsg_AccessibilityNotification_Params;
 struct ViewHostMsg_CreateWindow_Params;
-struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewMsg_Navigate_Params;
 struct WebApplicationInfo;
@@ -602,7 +602,7 @@ class RenderViewHost : public RenderWidgetHost {
                                 const std::string& value);
   void OnMsgShouldCloseACK(bool proceed);
 
-  void OnExtensionRequest(const ViewHostMsg_DomMessage_Params& params);
+  void OnExtensionRequest(const ExtensionHostMsg_DomMessage_Params& params);
   void OnExtensionPostMessage(int port_id, const std::string& message);
   void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);

@@ -554,7 +554,7 @@ WebPreferences ExtensionHost::GetWebkitPrefs() {
 }
 
 void ExtensionHost::ProcessWebUIMessage(
-    const ViewHostMsg_DomMessage_Params& params) {
+    const ExtensionHostMsg_DomMessage_Params& params) {
   if (extension_function_dispatcher_.get()) {
     extension_function_dispatcher_->HandleRequest(params);
   }

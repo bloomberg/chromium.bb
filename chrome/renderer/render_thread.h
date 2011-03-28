@@ -46,7 +46,7 @@ struct ContentSettings;
 struct RendererPreferences;
 struct DOMStorageMsg_Event_Params;
 struct GPUInfo;
-struct ViewMsg_ExtensionLoaded_Params;
+struct ExtensionMsg_Loaded_Params;
 struct ViewMsg_New_Params;
 struct WebPreferences;
 
@@ -272,7 +272,7 @@ class RenderThread : public RenderThreadBase,
       const GURL& url, const ContentSettings& content_settings);
   void OnUpdateUserScripts(base::SharedMemoryHandle table);
   void OnSetExtensionFunctionNames(const std::vector<std::string>& names);
-  void OnExtensionLoaded(const ViewMsg_ExtensionLoaded_Params& params);
+  void OnExtensionLoaded(const ExtensionMsg_Loaded_Params& params);
   void OnExtensionUnloaded(const std::string& id);
   void OnSetExtensionScriptingWhitelist(
       const Extension::ScriptingWhitelist& extension_ids);

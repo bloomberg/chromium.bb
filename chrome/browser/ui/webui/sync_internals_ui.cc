@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/sync_internals_html_source.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/browser_thread.h"
 
 SyncInternalsUI::SyncInternalsUI(TabContents* contents)
@@ -43,7 +43,7 @@ SyncInternalsUI::~SyncInternalsUI() {
 }
 
 void SyncInternalsUI::ProcessWebUIMessage(
-    const ViewHostMsg_DomMessage_Params& params) {
+    const ExtensionHostMsg_DomMessage_Params& params) {
   const std::string& name = params.name;
   browser_sync::JsArgList args(params.arguments);
   VLOG(1) << "Received message: " << name << " with args "

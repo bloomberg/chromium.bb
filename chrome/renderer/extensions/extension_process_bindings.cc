@@ -17,6 +17,7 @@
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/render_messages.h"
@@ -332,7 +333,7 @@ class ExtensionImpl : public ExtensionBase {
       std::string extension_id = *v8::String::Utf8Value(args[1]->ToString());
       std::string channel_name = *v8::String::Utf8Value(args[2]->ToString());
       int port_id = -1;
-      renderview->Send(new ViewHostMsg_OpenChannelToTab(
+      renderview->Send(new ExtensionHostMsg_OpenChannelToTab(
           renderview->routing_id(), tab_id, extension_id, channel_name,
           &port_id));
       return v8::Integer::New(port_id);
@@ -398,14 +399,15 @@ class ExtensionImpl : public ExtensionBase {
     GetPendingRequestMap()[request_id].reset(new PendingRequest(
         current_context, name));
 
-    ViewHostMsg_DomMessage_Params params;
+    ExtensionHostMsg_DomMessage_Params params;
     params.name = name;
     params.arguments.Swap(value_args);
     params.source_url = source_url;
     params.request_id = request_id;
     params.has_callback = has_callback;
     params.user_gesture = webframe->isProcessingUserGesture();
-    renderview->SendExtensionRequest(params);
+    renderview->Send(new ExtensionHostMsg_Request(
+        renderview->routing_id(), params));
 
     return v8::Undefined();
   }

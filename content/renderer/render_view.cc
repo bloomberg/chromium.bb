@@ -30,11 +30,11 @@
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/common/render_view_commands.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/thumbnail_score.h"
@@ -50,6 +50,7 @@
 #include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
+#include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/extension_resource_request_policy.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
@@ -647,6 +648,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 
   // Observer for Malware DOM details messages.
   new safe_browsing::MalwareDOMDetails(this);
+
+  new ExtensionHelper(this);
 }
 
 RenderView::~RenderView() {
@@ -856,7 +859,7 @@ void RenderView::DidDownloadApplicationDefinition(
               NewCallback(this, &RenderView::DidDownloadApplicationIcon))));
     }
   } else {
-    Send(new ViewHostMsg_InstallApplication(routing_id_, *app_info));
+    Send(new ExtensionHostMsg_InstallApplication(routing_id_, *app_info));
   }
 }
 
@@ -905,7 +908,8 @@ void RenderView::DidDownloadApplicationIcon(ImageResourceFetcher* fetcher,
     actual_icon_size += current_size;
   }
 
-  Send(new ViewHostMsg_InstallApplication(routing_id_, *pending_app_info_));
+  Send(new ExtensionHostMsg_InstallApplication(
+      routing_id_, *pending_app_info_));
   pending_app_info_.reset(NULL);
 }
 
@@ -1028,7 +1032,7 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(
         ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
         OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetApplicationInfo, OnGetApplicationInfo)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_GetApplicationInfo, OnGetApplicationInfo)
     IPC_MESSAGE_HANDLER(ViewMsg_ShouldClose, OnShouldClose)
     IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
     IPC_MESSAGE_HANDLER(ViewMsg_ThemeChanged, OnThemeChanged)
@@ -1039,9 +1043,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_AllowScriptToClose,
                         OnAllowScriptToClose)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
-    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionResponse, OnExtensionResponse)
-    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionMessageInvoke,
-                        OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ViewMsg_ClearFocusedNode, OnClearFocusedNode)
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackground, OnSetBackground)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
@@ -1063,8 +1064,7 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
-    IPC_MESSAGE_HANDLER(ViewMsg_ExecuteCode,
-                        OnExecuteCode)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_ExecuteCode, OnExecuteCode)
     IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableAccessibility, OnEnableAccessibility)
@@ -3370,7 +3370,7 @@ void RenderView::OnUserScriptIdleTriggered(WebFrame* frame) {
   WebFrame* main_frame = webview()->mainFrame();
   if (frame == main_frame) {
     while (!pending_code_execution_queue_.empty()) {
-      linked_ptr<ViewMsg_ExecuteCode_Params>& params =
+      linked_ptr<ExtensionMsg_ExecuteCode_Params>& params =
           pending_code_execution_queue_.front();
       ExecuteCodeImpl(main_frame, *params);
       pending_code_execution_queue_.pop();
@@ -3905,7 +3905,8 @@ void RenderView::OnGetApplicationInfo(int page_id) {
     }
   }
 
-  Send(new ViewHostMsg_DidGetApplicationInfo(routing_id_, page_id, app_info));
+  Send(new ExtensionHostMsg_DidGetApplicationInfo(
+      routing_id_, page_id, app_info));
 }
 
 GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
@@ -4893,27 +4894,6 @@ void RenderView::OnPluginImeCompositionCompleted(const string16& text,
 }
 #endif  // OS_MACOSX
 
-void RenderView::SendExtensionRequest(
-    const ViewHostMsg_DomMessage_Params& params) {
-  Send(new ViewHostMsg_ExtensionRequest(routing_id_, params));
-}
-
-void RenderView::OnExtensionResponse(int request_id,
-                                     bool success,
-                                     const std::string& response,
-                                     const std::string& error) {
-  ExtensionProcessBindings::HandleResponse(
-      request_id, success, response, error);
-}
-
-void RenderView::OnExtensionMessageInvoke(const std::string& extension_id,
-                                          const std::string& function_name,
-                                          const ListValue& args,
-                                          const GURL& event_url) {
-  RendererExtensionBindings::Invoke(
-      extension_id, function_name, args, this, event_url);
-}
-
 void RenderView::postAccessibilityNotification(
     const WebAccessibilityObject& obj,
     WebAccessibilityNotification notification) {
@@ -4982,7 +4962,7 @@ void RenderView::OnSetEditCommandsForNextKeyEvent(
   edit_commands_ = edit_commands;
 }
 
-void RenderView::OnExecuteCode(const ViewMsg_ExecuteCode_Params& params) {
+void RenderView::OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (!main_frame) {
     Send(new ViewHostMsg_ExecuteCodeFinished(routing_id_, params.request_id,
@@ -4994,16 +4974,16 @@ void RenderView::OnExecuteCode(const ViewMsg_ExecuteCode_Params& params) {
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
   if (!navigation_state->user_script_idle_scheduler()->has_run()) {
     pending_code_execution_queue_.push(
-        linked_ptr<ViewMsg_ExecuteCode_Params>(
-            new ViewMsg_ExecuteCode_Params(params)));
+        linked_ptr<ExtensionMsg_ExecuteCode_Params>(
+            new ExtensionMsg_ExecuteCode_Params(params)));
     return;
   }
 
   ExecuteCodeImpl(main_frame, params);
 }
 
-void RenderView::ExecuteCodeImpl(WebFrame* frame,
-                                 const ViewMsg_ExecuteCode_Params& params) {
+void RenderView::ExecuteCodeImpl(
+    WebFrame* frame, const ExtensionMsg_ExecuteCode_Params& params) {
   std::vector<WebFrame*> frame_vector;
   frame_vector.push_back(frame);
   if (params.all_frames)

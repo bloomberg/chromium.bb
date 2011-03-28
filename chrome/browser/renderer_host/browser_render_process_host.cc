@@ -52,6 +52,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
@@ -830,19 +831,19 @@ void BrowserRenderProcessHost::InitExtensions() {
   // Valid extension function names, used to setup bindings in renderer.
   std::vector<std::string> function_names;
   ExtensionFunctionDispatcher::GetAllFunctionNames(&function_names);
-  Send(new ViewMsg_Extension_SetFunctionNames(function_names));
+  Send(new ExtensionMsg_SetFunctionNames(function_names));
 
   // Scripting whitelist. This is modified by tests and must be communicated to
   // renderers.
-  Send(new ViewMsg_Extension_SetScriptingWhitelist(
+  Send(new ExtensionMsg_SetScriptingWhitelist(
       *Extension::GetScriptingWhitelist()));
 
   // Loaded extensions.
   ExtensionService* service = profile()->GetExtensionService();
   if (service) {
     for (size_t i = 0; i < service->extensions()->size(); ++i) {
-      Send(new ViewMsg_ExtensionLoaded(
-          ViewMsg_ExtensionLoaded_Params(service->extensions()->at(i))));
+      Send(new ExtensionMsg_Loaded(
+          ExtensionMsg_Loaded_Params(service->extensions()->at(i))));
     }
   }
 }
@@ -1002,11 +1003,10 @@ bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
                           OnUpdatedCacheStats)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SuddenTerminationChanged,
                           SuddenTerminationChanged);
-      IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionAddListener,
-                          OnExtensionAddListener)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionRemoveListener,
+      IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddListener, OnExtensionAddListener)
+      IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveListener,
                           OnExtensionRemoveListener)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionCloseChannel,
+      IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel,
                           OnExtensionCloseChannel)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                           OnUserMetricsRecordAction)
@@ -1144,13 +1144,12 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
       break;
     }
     case NotificationType::EXTENSION_LOADED: {
-      Send(new ViewMsg_ExtensionLoaded(
-          ViewMsg_ExtensionLoaded_Params(
-              Details<const Extension>(details).ptr())));
+      Send(new ExtensionMsg_Loaded(
+          ExtensionMsg_Loaded_Params(Details<const Extension>(details).ptr())));
       break;
     }
     case NotificationType::EXTENSION_UNLOADED: {
-      Send(new ViewMsg_ExtensionUnloaded(
+      Send(new ExtensionMsg_Unloaded(
           Details<UnloadedExtensionInfo>(details).ptr()->extension->id()));
       break;
     }

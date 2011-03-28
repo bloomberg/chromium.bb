@@ -21,7 +21,7 @@ class PrefService;
 class Profile;
 class RenderViewHost;
 class TabContents;
-struct ViewHostMsg_DomMessage_Params;
+struct ExtensionHostMsg_DomMessage_Params;
 
 // This class implements WebUI for extensions and allows extensions to put UI in
 // the main tab contents area. For example, each extension can specify an
@@ -44,7 +44,8 @@ class ExtensionWebUI
   // WebUI
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void RenderViewReused(RenderViewHost* render_view_host);
-  virtual void ProcessWebUIMessage(const ViewHostMsg_DomMessage_Params& params);
+  virtual void ProcessWebUIMessage(
+      const ExtensionHostMsg_DomMessage_Params& params);
 
   // ExtensionFunctionDispatcher::Delegate
   virtual Browser* GetBrowser();

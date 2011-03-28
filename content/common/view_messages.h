@@ -1235,6 +1235,10 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ScriptEvalResponse,
                     int  /* id */,
                     ListValue  /* result */)
 
+// Sent by the renderer process to acknowledge receipt of a
+// ViewMsg_CSSInsertRequest message and css has been inserted into the frame.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_OnCSSInserted)
+
 // Result of string search in the page.
 // Response to ViewMsg_Find with the results of the requested find-in-page
 // search, the number of matches found and the selection rect (in screen

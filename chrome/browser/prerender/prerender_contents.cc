@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
 #include "content/browser/browsing_instance.h"
@@ -360,7 +360,7 @@ WebPreferences PrerenderContents::GetWebkitPrefs() {
 }
 
 void PrerenderContents::ProcessWebUIMessage(
-    const ViewHostMsg_DomMessage_Params& params) {
+    const ExtensionHostMsg_DomMessage_Params& params) {
   render_view_host_->BlockExtensionRequest(params.request_id);
 }
 

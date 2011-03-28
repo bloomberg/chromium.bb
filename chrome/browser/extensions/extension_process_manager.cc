@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
@@ -236,8 +236,7 @@ void ExtensionProcessManager::RegisterExtensionProcess(
     page_action_ids.push_back(extension->page_action()->id());
 
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
-  rph->Send(new ViewMsg_Extension_UpdatePageActions(extension_id,
-                                                    page_action_ids));
+  rph->Send(new ExtensionMsg_UpdatePageActions(extension_id, page_action_ids));
 }
 
 void ExtensionProcessManager::UnregisterExtensionProcess(int process_id) {

@@ -63,7 +63,6 @@ class ExternalPopupMenu;
 class FilePath;
 class GeolocationDispatcher;
 class GURL;
-class ListValue;
 class LoadProgressTracker;
 class NavigationState;
 class NotificationProvider;
@@ -80,14 +79,13 @@ class WebPluginDelegatePepper;
 class WebPluginDelegateProxy;
 class WebUIBindings;
 struct ContextMenuMediaParams;
+struct ExtensionMsg_ExecuteCode_Params;
 struct PP_Flash_NetAddress;
 struct ThumbnailScore;
-struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_GetSearchProviderInstallState_Params;
 struct ViewHostMsg_PageHasOSDD_Type;
 struct ViewHostMsg_RunFileChooser_Params;
 struct ViewMsg_ClosePage_Params;
-struct ViewMsg_ExecuteCode_Params;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_StopFinding_Params;
 struct WebApplicationInfo;
@@ -311,16 +309,9 @@ class RenderView : public RenderWidget,
 
   // Extensions ----------------------------------------------------------------
 
-  void SendExtensionRequest(const ViewHostMsg_DomMessage_Params& params);
-
-  void OnExtensionResponse(int request_id, bool success,
-                           const std::string& response,
-                           const std::string& error);
-
-  void OnSetExtensionViewMode(const std::string& mode);
-
   // Called when the "idle" user script state has been reached. See
   // UserScript::DOCUMENT_IDLE.
+  // TODO(jam): remove me
   void OnUserScriptIdleTriggered(WebKit::WebFrame* frame);
 
   // Plugin-related functions --------------------------------------------------
@@ -847,12 +838,8 @@ class RenderView : public RenderWidget,
                             WebKit::WebDragOperationsMask operations_allowed);
   void OnEnablePreferredSizeChangedMode(int flags);
   void OnEnableViewSourceMode();
-  void OnExecuteCode(const ViewMsg_ExecuteCode_Params& params);
+  void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
-  void OnExtensionMessageInvoke(const std::string& extension_id,
-                                const std::string& function_name,
-                                const ListValue& args,
-                                const GURL& event_url);
   void OnFileChooserResponse(const std::vector<FilePath>& paths);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
   void OnFindReplyAck();
@@ -1002,7 +989,7 @@ class RenderView : public RenderWidget,
   // Backend for the IPC Message ExecuteCode in addition to being used
   // internally by other RenderView functions.
   void ExecuteCodeImpl(WebKit::WebFrame* frame,
-                       const ViewMsg_ExecuteCode_Params& params);
+                       const ExtensionMsg_ExecuteCode_Params& params);
 
   // Get all child frames of parent_frame, returned by frames_vector.
   bool GetAllChildFrames(WebKit::WebFrame* parent_frame,
@@ -1352,7 +1339,7 @@ class RenderView : public RenderWidget,
   struct PendingFileChooser;
   std::deque< linked_ptr<PendingFileChooser> > file_chooser_completions_;
 
-  std::queue<linked_ptr<ViewMsg_ExecuteCode_Params> >
+  std::queue<linked_ptr<ExtensionMsg_ExecuteCode_Params> >
       pending_code_execution_queue_;
 
   // ImageResourceFetchers schedule via DownloadImage.

@@ -59,6 +59,8 @@
         'renderer/extensions/chrome_app_bindings.h',
         'renderer/extensions/event_bindings.cc',
         'renderer/extensions/event_bindings.h',
+        'renderer/extensions/extension_helper.cc',
+        'renderer/extensions/extension_helper.h',
         'renderer/extensions/extension_process_bindings.cc',
         'renderer/extensions/extension_process_bindings.h',
         'renderer/extensions/extension_resource_request_policy.cc',

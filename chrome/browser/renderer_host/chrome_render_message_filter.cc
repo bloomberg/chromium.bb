@@ -16,6 +16,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 
@@ -49,10 +50,10 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_RendererHistograms, OnRendererHistograms)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ResourceTypeStats, OnResourceTypeStats)
     IPC_MESSAGE_HANDLER(ViewHostMsg_V8HeapStats, OnV8HeapStats)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToExtension,
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
                         OnOpenChannelToExtension)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToTab, OnOpenChannelToTab)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetExtensionMessageBundle,
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToTab, OnOpenChannelToTab)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ExtensionHostMsg_GetMessageBundle,
                                     OnGetExtensionMessageBundle)
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
@@ -216,7 +217,7 @@ void ChromeRenderMessageFilter::OnGetExtensionMessageBundleOnFileThread(
   dictionary_map.insert(
       std::make_pair(ExtensionMessageBundle::kExtensionIdKey, extension_id));
 
-  ViewHostMsg_GetExtensionMessageBundle::WriteReplyParams(
+  ExtensionHostMsg_GetMessageBundle::WriteReplyParams(
       reply_msg, dictionary_map);
   Send(reply_msg);
 }

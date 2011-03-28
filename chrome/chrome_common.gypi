@@ -171,6 +171,8 @@
         'common/extensions/extension_localization_peer.h',
         'common/extensions/extension_message_bundle.cc',
         'common/extensions/extension_message_bundle.h',
+        'common/extensions/extension_messages.cc',
+        'common/extensions/extension_messages.h',
         'common/extensions/extension_resource.cc',
         'common/extensions/extension_resource.h',
         'common/extensions/extension_set.cc',

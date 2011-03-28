@@ -14,7 +14,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -70,7 +70,7 @@ static void DispatchOnConnect(const ExtensionMessageService::MessagePort& port,
   args.Set(3, Value::CreateStringValue(source_extension_id));
   args.Set(4, Value::CreateStringValue(target_extension_id));
   CHECK(port.sender);
-  port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
+  port.sender->Send(new ExtensionMsg_MessageInvoke(port.routing_id,
        "", ExtensionMessageService::kDispatchOnConnect, args, GURL()));
 }
 
@@ -80,7 +80,7 @@ static void DispatchOnDisconnect(
   ListValue args;
   args.Set(0, Value::CreateIntegerValue(source_port_id));
   args.Set(1, Value::CreateBooleanValue(connection_error));
-  port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
+  port.sender->Send(new ExtensionMsg_MessageInvoke(port.routing_id,
       "", ExtensionMessageService::kDispatchOnDisconnect, args, GURL()));
 }
 
@@ -89,7 +89,7 @@ static void DispatchOnMessage(const ExtensionMessageService::MessagePort& port,
   ListValue args;
   args.Set(0, Value::CreateStringValue(message));
   args.Set(1, Value::CreateIntegerValue(source_port_id));
-  port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
+  port.sender->Send(new ExtensionMsg_MessageInvoke(port.routing_id,
       "", ExtensionMessageService::kDispatchOnMessage, args, GURL()));
 }
 

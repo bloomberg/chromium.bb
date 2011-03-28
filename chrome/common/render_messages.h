@@ -18,35 +18,22 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_extent.h"
-#include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
-#include "chrome/common/web_apps.h"
 #include "content/common/common_param_traits.h"
-#include "chrome/common/web_apps.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 
-// TODO(mpcomplete): rename ViewMsg and ViewHostMsg to something that makes
-// more sense with our current design.
-
-// Singly-included section, not yet converted.
+// Singly-included section for enums and custom IPC traits.
 #ifndef CHROME_COMMON_RENDER_MESSAGES_H_
 #define CHROME_COMMON_RENDER_MESSAGES_H_
-
-// IPC_MESSAGE macros choke on extra , in the std::map, when expanding. We need
-// to typedef it to avoid that.
-// Substitution map for l10n messages.
-typedef std::map<std::string, std::string> SubstitutionMap;
 
 // Values that may be OR'd together to form the 'flags' parameter of the
 // ViewMsg_EnablePreferredSizeChangedMode message.
@@ -104,22 +91,6 @@ struct ParamTraits<ContentSettings> {
   static void Log(const param_type& p, std::string* l);
 };
 
-template <>
-struct ParamTraits<URLPattern> {
-  typedef URLPattern param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ExtensionExtent> {
-  typedef ExtensionExtent param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
 }  // namespace IPC
 
 #endif  // CHROME_COMMON_RENDER_MESSAGES_H_
@@ -138,22 +109,6 @@ IPC_STRUCT_TRAITS_BEGIN(ThumbnailScore)
   IPC_STRUCT_TRAITS_MEMBER(good_clipping)
   IPC_STRUCT_TRAITS_MEMBER(at_top)
   IPC_STRUCT_TRAITS_MEMBER(time_at_snapshot)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo::IconInfo)
-  IPC_STRUCT_TRAITS_MEMBER(url)
-  IPC_STRUCT_TRAITS_MEMBER(width)
-  IPC_STRUCT_TRAITS_MEMBER(height)
-  IPC_STRUCT_TRAITS_MEMBER(data)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo)
-  IPC_STRUCT_TRAITS_MEMBER(title)
-  IPC_STRUCT_TRAITS_MEMBER(description)
-  IPC_STRUCT_TRAITS_MEMBER(app_url)
-  IPC_STRUCT_TRAITS_MEMBER(icons)
-  IPC_STRUCT_TRAITS_MEMBER(permissions)
-  IPC_STRUCT_TRAITS_MEMBER(launch_container)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCache::ResourceTypeStat)
@@ -269,10 +224,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
                     std::vector<FilePath> /* paths of local copy */,
                     FilePath /* local directory path */)
 
-// Requests application info for the page. The renderer responds back with
-// ViewHostMsg_DidGetApplicationInfo.
-IPC_MESSAGE_ROUTED1(ViewMsg_GetApplicationInfo, int32 /*page_id*/)
-
 // Requests the renderer to download the specified favicon image encode it as
 // PNG and send the PNG data back ala ViewHostMsg_DidDownloadFavicon.
 IPC_MESSAGE_ROUTED3(ViewMsg_DownloadFavicon,
@@ -316,63 +267,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_DisassociateFromPopupCount)
 IPC_MESSAGE_ROUTED1(ViewMsg_AllowScriptToClose,
                     bool /* script_can_close */)
 
-// The browser sends this message in response to all extension api calls.
-IPC_MESSAGE_ROUTED4(ViewMsg_ExtensionResponse,
-                    int /* request_id */,
-                    bool /* success */,
-                    std::string /* response */,
-                    std::string /* error */)
-
-// This message is optionally routed.  If used as a control message, it
-// will call a javascript function in every registered context in the
-// target process.  If routed, it will be restricted to the contexts that
-// are part of the target RenderView.
-// If |extension_id| is non-empty, the function will be invoked only in
-// contexts owned by the extension. |args| is a list of primitive Value types
-// that are passed to the function.
-IPC_MESSAGE_ROUTED4(ViewMsg_ExtensionMessageInvoke,
-                    std::string /* extension_id */,
-                    std::string /* function_name */,
-                    ListValue /* args */,
-                    GURL /* event URL */)
-
-// Tell the renderer process all known extension function names.
-IPC_MESSAGE_CONTROL1(ViewMsg_Extension_SetFunctionNames,
-                     std::vector<std::string>)
-
-// TODO(aa): SetAPIPermissions, SetHostPermissions, and possibly
-// UpdatePageActions should be replaced with just sending additional data in
-// ExtensionLoaded. See: crbug.com/70516.
-
-// Tell the renderer process which permissions the given extension has. See
-// Extension::Permissions for which elements correspond to which permissions.
-IPC_MESSAGE_CONTROL2(ViewMsg_Extension_SetAPIPermissions,
-                     std::string /* extension_id */,
-                     std::set<std::string> /* permissions */)
-
-// Tell the renderer process which host permissions the given extension has.
-IPC_MESSAGE_CONTROL2(
-    ViewMsg_Extension_SetHostPermissions,
-    GURL /* source extension's origin */,
-    std::vector<URLPattern> /* URLPatterns the extension can access */)
-
-// Tell the renderer process all known page action ids for a particular
-// extension.
-IPC_MESSAGE_CONTROL2(ViewMsg_Extension_UpdatePageActions,
-                     std::string /* extension_id */,
-                     std::vector<std::string> /* page_action_ids */)
-
-// Notifies the renderer that an extension was loaded in the browser.
-IPC_MESSAGE_CONTROL1(ViewMsg_ExtensionLoaded, ViewMsg_ExtensionLoaded_Params)
-
-// Notifies the renderer that an extension was unloaded in the browser.
-IPC_MESSAGE_CONTROL1(ViewMsg_ExtensionUnloaded, std::string)
-
-// Updates the scripting whitelist for extensions in the render process. This is
-// only used for testing.
-IPC_MESSAGE_CONTROL1(ViewMsg_Extension_SetScriptingWhitelist,
-                     Extension::ScriptingWhitelist /* extenison ids */)
-
 IPC_MESSAGE_ROUTED4(ViewMsg_SearchBoxChange,
                     string16 /* value */,
                     bool /* verbatim */,
@@ -397,10 +291,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_UpdateBrowserWindowId,
 // Tell the renderer which type this view is.
 IPC_MESSAGE_ROUTED1(ViewMsg_NotifyRenderViewType,
                     ViewType::Type /* view_type */)
-
-// Notification that renderer should run some JavaScript code.
-IPC_MESSAGE_ROUTED1(ViewMsg_ExecuteCode,
-                    ViewMsg_ExecuteCode_Params)
 
 // Tells the renderer to translate the page contents from one language to
 // another.
@@ -434,11 +324,6 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_UpdatedCacheStats,
 IPC_MESSAGE_ROUTED2(ViewHostMsg_ContentBlocked,
                     ContentSettingsType, /* type of blocked content */
                     std::string /* resource identifier */)
-
-// Used to get the extension message bundle.
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetExtensionMessageBundle,
-                            std::string /* extension id */,
-                            SubstitutionMap /* message bundle */)
 
 // Specifies the URL as the first parameter (a wstring) and thumbnail as
 // binary data as the second parameter.
@@ -550,14 +435,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SendSerializedHtmlData,
                     std::string /* data buffer */,
                     int32 /* complete status */)
 
-IPC_MESSAGE_ROUTED2(ViewHostMsg_DidGetApplicationInfo,
-                    int32 /* page_id */,
-                    WebApplicationInfo)
-
-// Sent by the renderer to implement chrome.app.installApplication().
-IPC_MESSAGE_ROUTED1(ViewHostMsg_InstallApplication,
-                    WebApplicationInfo)
-
 IPC_MESSAGE_ROUTED4(ViewHostMsg_DidDownloadFavicon,
                     int /* Identifier of the request */,
                     GURL /* URL of the image */,
@@ -569,22 +446,6 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_DidDownloadFavicon,
 IPC_MESSAGE_CONTROL1(ViewHostMsg_ResourceTypeStats,
                      WebKit::WebCache::ResourceTypeStats)
 
-// A renderer sends this message when an extension process starts an API
-// request. The browser will always respond with a ViewMsg_ExtensionResponse.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ExtensionRequest,
-                    ViewHostMsg_DomMessage_Params)
-
-// Notify the browser that the given extension added a listener to an event.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_ExtensionAddListener,
-                     std::string /* extension_id */,
-                     std::string /* name */)
-
-// Notify the browser that the given extension removed a listener from an
-// event.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_ExtensionRemoveListener,
-                     std::string /* extension_id */,
-                     std::string /* name */)
-
 // Message sent from renderer to the browser to update the state of a command.
 // The |command| parameter is a RenderViewCommand. The |checked_state| parameter
 // is a CommandCheckedState.
@@ -593,40 +454,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_CommandStateChanged,
                     bool /* is_enabled */,
                     int /* checked_state */)
 
-// Open a channel to all listening contexts owned by the extension with
-// the given ID.  This always returns a valid port ID which can be used for
-// sending messages.  If an error occurred, the opener will be notified
-// asynchronously.
-IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_OpenChannelToExtension,
-                            int /* routing_id */,
-                            std::string /* source_extension_id */,
-                            std::string /* target_extension_id */,
-                            std::string /* channel_name */,
-                            int /* port_id */)
-
-// Get a port handle to the given tab.  The handle can be used for sending
-// messages to the extension.
-IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_OpenChannelToTab,
-                            int /* routing_id */,
-                            int /* tab_id */,
-                            std::string /* extension_id */,
-                            std::string /* channel_name */,
-                            int /* port_id */)
-
-// Send a message to an extension process.  The handle is the value returned
-// by ViewHostMsg_OpenChannelTo*.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_ExtensionPostMessage,
-                    int /* port_id */,
-                    std::string /* message */)
-
-// Send a message to an extension process.  The handle is the value returned
-// by ViewHostMsg_OpenChannelTo*.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_ExtensionCloseChannel,
-                     int /* port_id */)
-
-// Sent by the renderer process to acknowledge receipt of a
-// ViewMsg_CSSInsertRequest message and css has been inserted into the frame.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_OnCSSInserted)
 
 // Notifies the browser of the language (ISO 639_1 code language, such as fr,
 // en, zh...) of the current page.
@@ -671,8 +498,3 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_RegisterProtocolHandler,
                     std::string /* scheme */,
                     GURL /* url */,
                     string16 /* title */)
-
-// Send from the renderer to the browser to return the script running result.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_ExecuteCodeFinished,
-                    int, /* request id */
-                    bool /* whether the script ran successfully */)

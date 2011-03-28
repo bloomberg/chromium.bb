@@ -23,6 +23,7 @@
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/print_messages.h"
@@ -565,7 +566,7 @@ int RenderViewHost::DownloadFavicon(const GURL& url, int image_size) {
 }
 
 void RenderViewHost::GetApplicationInfo(int32 page_id) {
-  Send(new ViewMsg_GetApplicationInfo(routing_id(), page_id));
+  Send(new ExtensionMsg_GetApplicationInfo(routing_id(), page_id));
 }
 
 void RenderViewHost::CaptureSnapshot() {
@@ -772,10 +773,9 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionRequest, OnExtensionRequest)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnExtensionRequest)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnMsgSelectionChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionPostMessage,
-                        OnExtensionPostMessage)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_PostMessage, OnExtensionPostMessage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityNotifications,
                         OnAccessibilityNotifications)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OnCSSInserted, OnCSSInserted)
@@ -1115,7 +1115,7 @@ void RenderViewHost::OnMsgWebUISend(
     }
   }
 
-  ViewHostMsg_DomMessage_Params params;
+  ExtensionHostMsg_DomMessage_Params params;
   params.name = message;
   if (value.get())
     params.arguments.Swap(static_cast<ListValue*>(value.get()));
@@ -1399,7 +1399,7 @@ void RenderViewHost::ForwardMessageFromExternalHost(const std::string& message,
 }
 
 void RenderViewHost::OnExtensionRequest(
-    const ViewHostMsg_DomMessage_Params& params) {
+    const ExtensionHostMsg_DomMessage_Params& params) {
   if (!ChildProcessSecurityPolicy::GetInstance()->
           HasExtensionBindings(process()->id())) {
     // This can happen if someone uses window.open() to open an extension URL
@@ -1414,8 +1414,8 @@ void RenderViewHost::OnExtensionRequest(
 void RenderViewHost::SendExtensionResponse(int request_id, bool success,
                                            const std::string& response,
                                            const std::string& error) {
-  Send(new ViewMsg_ExtensionResponse(routing_id(), request_id, success,
-      response, error));
+  Send(new ExtensionMsg_Response(
+      routing_id(), request_id, success, response, error));
 }
 
 void RenderViewHost::BlockExtensionRequest(int request_id) {

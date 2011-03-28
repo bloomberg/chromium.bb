@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_errors.h"
@@ -100,7 +100,7 @@ void ExtensionLocalizationPeer::ReplaceMessages() {
   L10nMessagesMap* l10n_messages = GetL10nMessagesMap(extension_id);
   if (!l10n_messages) {
     L10nMessagesMap messages;
-    message_sender_->Send(new ViewHostMsg_GetExtensionMessageBundle(
+    message_sender_->Send(new ExtensionHostMsg_GetMessageBundle(
         extension_id, &messages));
 
     // Save messages we got, so we don't have to ask again.

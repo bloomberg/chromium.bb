@@ -183,7 +183,7 @@ void ExtensionWebUI::RenderViewReused(RenderViewHost* render_view_host) {
 }
 
 void ExtensionWebUI::ProcessWebUIMessage(
-    const ViewHostMsg_DomMessage_Params& params) {
+    const ExtensionHostMsg_DomMessage_Params& params) {
   extension_function_dispatcher_->HandleRequest(params);
 }
 

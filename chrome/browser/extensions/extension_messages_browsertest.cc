@@ -4,6 +4,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
@@ -57,19 +58,19 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
   // Verify that we opened a channel and sent a message through it.
   const IPC::Message* open_channel_msg =
       render_thread_.sink().GetUniqueMessageMatching(
-          ViewHostMsg_OpenChannelToExtension::ID);
+          ExtensionHostMsg_OpenChannelToExtension::ID);
   ASSERT_TRUE(open_channel_msg);
   void* iter = IPC::SyncMessage::GetDataIterator(open_channel_msg);
-  ViewHostMsg_OpenChannelToExtension::SendParam open_params;
+  ExtensionHostMsg_OpenChannelToExtension::SendParam open_params;
   ASSERT_TRUE(IPC::ReadParam(open_channel_msg, &iter, &open_params));
   EXPECT_EQ("testName", open_params.d);
 
   const IPC::Message* post_msg =
       render_thread_.sink().GetUniqueMessageMatching(
-          ViewHostMsg_ExtensionPostMessage::ID);
+          ExtensionHostMsg_PostMessage::ID);
   ASSERT_TRUE(post_msg);
-  ViewHostMsg_ExtensionPostMessage::Param post_params;
-  ViewHostMsg_ExtensionPostMessage::Read(post_msg, &post_params);
+  ExtensionHostMsg_PostMessage::Param post_params;
+  ExtensionHostMsg_PostMessage::Read(post_msg, &post_params);
   EXPECT_EQ("{\"message\":\"content ready\"}", post_params.b);
 
   // Now simulate getting a message back from the other side.
@@ -117,10 +118,10 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
   // Verify that we handled the new connection by posting a message.
   const IPC::Message* post_msg =
       render_thread_.sink().GetUniqueMessageMatching(
-          ViewHostMsg_ExtensionPostMessage::ID);
+          ExtensionHostMsg_PostMessage::ID);
   ASSERT_TRUE(post_msg);
-  ViewHostMsg_ExtensionPostMessage::Param post_params;
-  ViewHostMsg_ExtensionPostMessage::Read(post_msg, &post_params);
+  ExtensionHostMsg_PostMessage::Param post_params;
+  ExtensionHostMsg_PostMessage::Read(post_msg, &post_params);
   std::string expected_msg =
       "{\"message\":\"onconnect from foo://bar name " + kPortName + "\"}";
   EXPECT_EQ(expected_msg, post_params.b);

@@ -8,16 +8,7 @@
 
 #include <string>
 
-#include "base/values.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_extent.h"
-#include "chrome/common/extensions/url_pattern.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_param_traits.h"
-
-namespace net {
-class UploadData;
-}
 
 // The type of OSDD that the renderer is giving to the browser.
 struct ViewHostMsg_PageHasOSDD_Type {
@@ -104,82 +95,6 @@ struct ViewHostMsg_GetSearchProviderInstallState_Params {
   }
 };
 
-// Allows an extension to execute code in a tab.
-struct ViewMsg_ExecuteCode_Params {
-  ViewMsg_ExecuteCode_Params();
-  ViewMsg_ExecuteCode_Params(int request_id, const std::string& extension_id,
-                             bool is_javascript, const std::string& code,
-                             bool all_frames);
-  ~ViewMsg_ExecuteCode_Params();
-
-  // The extension API request id, for responding.
-  int request_id;
-
-  // The ID of the requesting extension. To know which isolated world to
-  // execute the code inside of.
-  std::string extension_id;
-
-  // Whether the code is JavaScript or CSS.
-  bool is_javascript;
-
-  // String of code to execute.
-  std::string code;
-
-  // Whether to inject into all frames, or only the root frame.
-  bool all_frames;
-};
-
-struct ViewMsg_ExtensionLoaded_Params {
-  ViewMsg_ExtensionLoaded_Params();
-  ~ViewMsg_ExtensionLoaded_Params();
-  explicit ViewMsg_ExtensionLoaded_Params(const Extension* extension);
-
-  // A copy constructor is needed because this structure can end up getting
-  // copied inside the IPC machinery on gcc <= 4.2.
-  ViewMsg_ExtensionLoaded_Params(
-      const ViewMsg_ExtensionLoaded_Params& other);
-
-  // Creates a new extension from the data in this object.
-  scoped_refptr<Extension> ConvertToExtension() const;
-
-  // The subset of the extension manifest data we send to renderers.
-  scoped_ptr<DictionaryValue> manifest;
-
-  // The location the extension was installed from.
-  Extension::Location location;
-
-  // The path the extension was loaded from. This is used in the renderer only
-  // to generate the extension ID for extensions that are loaded unpacked.
-  FilePath path;
-
-  // We keep this separate so that it can be used in logging.
-  std::string id;
-};
-
-// Parameters structure for ViewHostMsg_ExtensionRequest.
-struct ViewHostMsg_DomMessage_Params {
-  ViewHostMsg_DomMessage_Params();
-  ~ViewHostMsg_DomMessage_Params();
-
-  // Message name.
-  std::string name;
-
-  // List of message arguments.
-  ListValue arguments;
-
-  // URL of the frame request was sent from.
-  GURL source_url;
-
-  // Unique request id to match requests and responses.
-  int request_id;
-
-  // True if request has a callback specified.
-  bool has_callback;
-
-  // True if request is executed in response to an explicit user gesture.
-  bool user_gesture;
-};
-
 namespace IPC {
 
 class Message;
@@ -195,30 +110,6 @@ struct ParamTraits<ViewHostMsg_PageHasOSDD_Type> {
 template <>
 struct ParamTraits<ViewHostMsg_GetSearchProviderInstallState_Params> {
   typedef ViewHostMsg_GetSearchProviderInstallState_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewMsg_ExecuteCode_Params> {
-  typedef ViewMsg_ExecuteCode_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewMsg_ExtensionLoaded_Params> {
-  typedef ViewMsg_ExtensionLoaded_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewHostMsg_DomMessage_Params> {
-  typedef ViewHostMsg_DomMessage_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

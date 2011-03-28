@@ -63,7 +63,7 @@ class ExtensionLocalizationPeer
   // We just pass though the response info. This holds the copy of the original.
   webkit_glue::ResourceResponseInfo response_info_;
 
-  // Sends ViewHostMsg_GetExtensionMessageBundle message to the browser to fetch
+  // Sends ExtensionHostMsg_GetMessageBundle message to the browser to fetch
   // message catalog.
   IPC::Message::Sender* message_sender_;
 

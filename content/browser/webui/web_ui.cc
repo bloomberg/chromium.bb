@@ -13,8 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/generic_handler.h"
 #include "chrome/common/bindings_policy.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
@@ -59,7 +59,8 @@ WebUI::~WebUI() {
 
 // WebUI, public: -------------------------------------------------------------
 
-void WebUI::ProcessWebUIMessage(const ViewHostMsg_DomMessage_Params& params) {
+void WebUI::ProcessWebUIMessage(
+    const ExtensionHostMsg_DomMessage_Params& params) {
   // Look up the callback for this message.
   MessageCallbackMap::const_iterator callback =
       message_callbacks_.find(params.name);

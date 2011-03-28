@@ -21,7 +21,7 @@
 #include "chrome/browser/debugger/inspectable_tab_proxy.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/devtools_messages.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
@@ -226,8 +226,7 @@ bool ExtensionPortsRemoteService::Send(IPC::Message *message) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
   IPC_BEGIN_MESSAGE_MAP(ExtensionPortsRemoteService, *message)
-    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionMessageInvoke,
-                        OnExtensionMessageInvoke)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 

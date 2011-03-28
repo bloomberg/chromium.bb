@@ -6,8 +6,7 @@
 
 #include "base/stl_util-inl.h"
 #include "base/values.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/extensions/extension_messages.h"
 
 namespace chromeos {
 
@@ -27,7 +26,7 @@ bool BalloonViewHost::AddWebUIMessageCallback(
 }
 
 void BalloonViewHost::ProcessWebUIMessage(
-    const ViewHostMsg_DomMessage_Params& params) {
+    const ExtensionHostMsg_DomMessage_Params& params) {
   ::BalloonViewHost::ProcessWebUIMessage(params);
 
   // Look up the callback for this message.
