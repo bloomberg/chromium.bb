@@ -65,7 +65,10 @@ class PopupsTest(pyauto.PyUITest):
     file_url = self.GetFileURLForPath(os.path.join(
         self.DataDir(), 'popup_blocker', 'popup-window-open.html'))
     self.NavigateToURL(file_url, 1, 0)
-    self.assertEqual(1, len(self.GetBlockedPopupsInfo(tab_index=0, windex=1)))
+    # Wait until the popup is blocked
+    self.assertTrue(self.WaitUntil(lambda:
+        len(self.GetBlockedPopupsInfo(tab_index=0, windex=1)) is 1),
+        msg='Popup not blocked')
     self.UnblockAndLaunchBlockedPopup(0, tab_index=0, windex=1)
     # Verify that no more popups are blocked
     self.assertFalse(self.GetBlockedPopupsInfo(tab_index=0, windex=1))
