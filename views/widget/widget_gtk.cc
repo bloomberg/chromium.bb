@@ -1549,7 +1549,7 @@ void WidgetGtk::DrawTransparentBackground(GtkWidget* widget,
 // static
 Widget* Widget::CreateWidget(const CreateParams& params) {
   // TODO(beng): coalesce with CreateParams::Type.
-  WidgetGtk::Type widget_gtk_type;
+  WidgetGtk::Type widget_gtk_type = WidgetGtk::TYPE_DECORATED_WINDOW;
   switch (params.type) {
     case CreateParams::TYPE_CONTROL:
       widget_gtk_type = WidgetGtk::TYPE_CHILD;
