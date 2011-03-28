@@ -61,13 +61,10 @@ class HistoryQuickProvider : public HistoryProvider {
   history::InMemoryURLIndex* GetIndex();
 
   // Fill and return an ACMatchClassifications structure given the term
-  // matches (|matches|) to highlight where terms were found. |adjust| is
-  // subtracted form each offset and is used to account for any leading
-  // 'http://' in the potential result.
+  // matches (|matches|) to highlight where terms were found.
   static ACMatchClassifications SpansFromTermMatch(
       const history::TermMatches& matches,
-      size_t text_length,
-      size_t adjust);
+      size_t text_length);
 
   // Only for use in unittests.  Takes ownership of |index|.
   void SetIndexForTesting(history::InMemoryURLIndex* index);

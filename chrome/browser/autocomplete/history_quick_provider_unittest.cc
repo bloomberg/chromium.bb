@@ -65,6 +65,8 @@ struct TestURLInfo {
   {"http://abcdefxyzghijklmnopqrstuvw.com/a", "An XYZ", 1, 1, 0},
   {"http://abcxyzdefghijklmnopqrstuvw.com/a", "An XYZ", 1, 1, 0},
   {"http://xyzabcdefghijklmnopqrstuvw.com/a", "An XYZ", 1, 1, 0},
+  {"http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice",
+   "Dogs & Cats & Mice", 1, 1, 0},
 };
 
 class HistoryQuickProviderTest : public TestingBrowserProcessTest,
@@ -109,6 +111,8 @@ class HistoryQuickProviderTest : public TestingBrowserProcessTest,
 
   scoped_ptr<TestingProfile> profile_;
   HistoryService* history_service_;
+
+  ACMatches ac_matches_;  // The resulting matches after running RunTest.
 
  private:
   scoped_refptr<HistoryQuickProvider> provider_;
@@ -177,23 +181,23 @@ void HistoryQuickProviderTest::RunTest(const string16 text,
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->done());
 
-  ACMatches matches = provider_->matches();
+  ac_matches_ = provider_->matches();
   // If the number of expected and actual matches aren't equal then we need
   // test no further, but let's do anyway so that we know which URLs failed.
-  EXPECT_EQ(expected_urls.size(), matches.size());
+  EXPECT_EQ(expected_urls.size(), ac_matches_.size());
 
   // Verify that all expected URLs were found and that all found URLs
   // were expected.
   std::set<std::string> leftovers =
       for_each(expected_urls.begin(), expected_urls.end(),
-               SetShouldContain(matches)).LeftOvers();
+               SetShouldContain(ac_matches_)).LeftOvers();
   EXPECT_TRUE(leftovers.empty());
 
   // See if we got the expected top scorer.
-  if (!matches.empty()) {
-    std::partial_sort(matches.begin(), matches.begin() + 1,
-                      matches.end(), AutocompleteMatch::MoreRelevant);
-    EXPECT_EQ(expected_top_result, matches[0].destination_url.spec());
+  if (!ac_matches_.empty()) {
+    std::partial_sort(ac_matches_.begin(), ac_matches_.begin() + 1,
+                      ac_matches_.end(), AutocompleteMatch::MoreRelevant);
+    EXPECT_EQ(expected_top_result, ac_matches_[0].destination_url.spec());
   }
 }
 
@@ -240,6 +244,27 @@ TEST_F(HistoryQuickProviderTest, RecencyMatch) {
   RunTest(text, expected_urls, "http://startest.com/y/a");
 }
 
+TEST_F(HistoryQuickProviderTest, EncodingLimitMatch) {
+  string16 text(ASCIIToUTF16("ice"));
+  std::vector<std::string> expected_urls;
+  std::string url(
+      "http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice");
+  expected_urls.push_back(url);
+  RunTest(text, expected_urls, url);
+  // Verify that the matches' ACMatchClassifications offsets are in range.
+  ACMatchClassifications content(ac_matches_[0].contents_class);
+  // The max offset accounts for 6 occurrences of '%20' plus the 'http://'.
+  const size_t max_offset = url.size() - ((6 * 2) + 7);
+  for (ACMatchClassifications::const_iterator citer = content.begin();
+       citer != content.end(); ++citer)
+    EXPECT_GT(max_offset, citer->offset);
+  ACMatchClassifications description(ac_matches_[0].description_class);
+  std::string page_title("Dogs & Cats & Mice");
+  for (ACMatchClassifications::const_iterator diter = content.begin();
+       diter != content.end(); ++diter)
+    EXPECT_GT(page_title.size(), diter->offset);
+}
+
 TEST_F(HistoryQuickProviderTest, Spans) {
   // Test SpansFromTermMatch
   history::TermMatches matches_a;
@@ -251,7 +276,7 @@ TEST_F(HistoryQuickProviderTest, Spans) {
   matches_a.push_back(history::TermMatch(3, 10, 1));
   matches_a.push_back(history::TermMatch(4, 14, 5));
   ACMatchClassifications spans_a =
-      HistoryQuickProvider::SpansFromTermMatch(matches_a, 20, 0);
+      HistoryQuickProvider::SpansFromTermMatch(matches_a, 20);
   // ACMatch spans should be: 'NM-NM---N-M-N--M----N-'
   ASSERT_EQ(9U, spans_a.size());
   EXPECT_EQ(0U, spans_a[0].offset);
@@ -278,7 +303,7 @@ TEST_F(HistoryQuickProviderTest, Spans) {
   matches_b.push_back(history::TermMatch(1, 0, 2));
   matches_b.push_back(history::TermMatch(2, 3, 2));
   ACMatchClassifications spans_b =
-      HistoryQuickProvider::SpansFromTermMatch(matches_b, 5, 0);
+      HistoryQuickProvider::SpansFromTermMatch(matches_b, 5);
   // ACMatch spans should be: 'M-NM-'
   ASSERT_EQ(3U, spans_b.size());
   EXPECT_EQ(0U, spans_b[0].offset);

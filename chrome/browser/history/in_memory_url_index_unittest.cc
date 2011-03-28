@@ -234,6 +234,12 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
             matches[0].url_info.url().spec());  // Note: URL gets lowercased.
   EXPECT_EQ(ASCIIToUTF16("Practically Useless Search Result"),
             matches[0].url_info.title());
+
+  // Search which will match at the end of an URL with encoded characters.
+  terms.clear();
+  terms.push_back(ASCIIToUTF16("ice"));
+  matches = url_index_->HistoryItemsForTerms(terms);
+  ASSERT_EQ(1U, matches.size());
 }
 
 TEST_F(ExpandedInMemoryURLIndexTest, ShortCircuit) {

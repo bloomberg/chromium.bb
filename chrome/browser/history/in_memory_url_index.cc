@@ -206,7 +206,7 @@ bool InMemoryURLIndex::RestoreFromCacheFile() {
   // SQLite table checksums automatically stored.
   base::TimeTicks beginning_time = base::TimeTicks::Now();
   FilePath file_path;
-  if (!GetCacheFilePath(&file_path))
+  if (!GetCacheFilePath(&file_path) || !file_util::PathExists(file_path))
     return false;
   std::string data;
   if (!file_util::ReadFileToString(file_path, &data)) {

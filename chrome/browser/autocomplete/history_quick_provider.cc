@@ -136,12 +136,12 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   match.contents = net::FormatUrl(info.url(), languages_, format_types,
                                   UnescapeRule::SPACES, NULL, NULL, NULL);
   match.contents_class = SpansFromTermMatch(history_match.url_matches,
-                                            match.contents.size(), 0);
+                                            match.contents.size());
 
   // Format the description autocomplete presentation.
   match.description = info.title();
   match.description_class = SpansFromTermMatch(history_match.title_matches,
-                                               match.description.size(), 0);
+                                               match.description.size());
 
   return match;
 }
@@ -184,26 +184,31 @@ int HistoryQuickProvider::CalculateRelevance(int raw_score,
 // static
 ACMatchClassifications HistoryQuickProvider::SpansFromTermMatch(
     const history::TermMatches& matches,
-    size_t text_length,
-    size_t adjust) {
+    size_t text_length) {
   ACMatchClassifications spans;
   if (matches.empty()) {
     if (text_length)
       spans.push_back(ACMatchClassification(0, ACMatchClassification::DIM));
     return spans;
   }
-  if (matches[0].offset > adjust)
+  if (matches[0].offset)
     spans.push_back(ACMatchClassification(0, ACMatchClassification::NONE));
   size_t match_count = matches.size();
   for (size_t i = 0; i < match_count;) {
-    size_t offset = matches[i].offset - adjust;
+    size_t offset = matches[i].offset;
+    // TODO(mrossetti): Remove the following 'if' when http://crbug.com/77210
+    // has been properly fixed. This guards against trying to highlight
+    // substrings which fall off the end of the string as a result of having
+    // encoded characters in the string.
+    if (offset >= text_length)
+      return spans;
     spans.push_back(ACMatchClassification(offset,
                                           ACMatchClassification::MATCH));
     // Skip all adjacent matches.
     do {
       offset += matches[i].length;
       ++i;
-    } while ((i < match_count) && (offset == matches[i].offset - adjust));
+    } while ((i < match_count) && (offset == matches[i].offset));
     if (offset < text_length) {
       spans.push_back(ACMatchClassification(offset,
                                             ACMatchClassification::NONE));
