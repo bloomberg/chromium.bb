@@ -1507,6 +1507,7 @@
         'browser/sync/profile_sync_factory_mock.cc',
         'browser/sync/profile_sync_factory_mock.h',
         'browser/sync/profile_sync_service_autofill_unittest.cc',
+        'browser/sync/profile_sync_service_bookmark_unittest.cc',
         'browser/sync/profile_sync_service_password_unittest.cc',
         'browser/sync/profile_sync_service_preference_unittest.cc',
         'browser/sync/profile_sync_service_session_unittest.cc',
