@@ -41,10 +41,16 @@ cr.define('options', function() {
   /**
    * Returns the item's height, like offsetHeight but such that it works better
    * when the page is zoomed. See the similar calculation in @{code cr.ui.List}.
+   * This version also accounts for the animation done in this file.
    * @param {Element} item The item to get the height of.
    * @return {number} The height of the item, calculated with zooming in mind.
    */
   function getItemHeight(item) {
+    var height = item.style.height;
+    // Use the fixed animation target height if set, in case the element is
+    // currently being animated and we'd get an intermediate height below.
+    if (height && height.substr(-2) == 'px')
+      return parseInt(height.substr(0, height.length - 2));
     return item.getBoundingClientRect().height;
   }
 
@@ -271,14 +277,26 @@ cr.define('options', function() {
      * @param {number} itemIndex The index to set as the selected index.
      */
     set selectedIndex(itemIndex) {
-      if (itemIndex < 0 || itemIndex >= this.itemList_.length)
-        return;
+      // Get the list index up front before we change anything.
       var index = this.list.getIndexOfListItem(this);
+      // Unselect any previously selected item.
       if (this.selectedIndex_ >= 0) {
         var item = this.itemList_[this.selectedIndex_];
         if (item && item.div)
           item.div.removeAttribute('selected');
       }
+      // Special case: decrementing -1 wraps around to the end of the list.
+      if (itemIndex == -2)
+        itemIndex = this.itemList_.length - 1;
+      // Check if we're going out of bounds and hide the item details.
+      if (itemIndex < 0 || itemIndex >= this.itemList_.length) {
+        this.selectedIndex_ = -1;
+        this.disableAnimation_();
+        this.infoChild.classList.add('hidden');
+        this.enableAnimation_();
+        return;
+      }
+      // Set the new selected item and show the item details for it.
       this.selectedIndex_ = itemIndex;
       this.itemList_[itemIndex].div.setAttribute('selected', '');
       this.disableAnimation_();
@@ -430,7 +448,12 @@ cr.define('options', function() {
         div.setAttribute('role', 'button');
         div.textContent = text;
         var index = item.appendItem(this, div);
-        div.onclick = function() { item.selectedIndex = index; };
+        div.onclick = function() {
+          if (item.selectedIndex == index)
+            item.selectedIndex = -1;
+          else
+            item.selectedIndex = index;
+        };
       }
     },
 
