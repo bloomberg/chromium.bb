@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,6 @@ class ProfileSyncServicePreferenceTest
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
-    profile_->set_has_history_service(true);
     prefs_ = profile_->GetTestingPrefService();
 
     prefs_->RegisterStringPref(not_synced_preference_name_.c_str(),

@@ -48,7 +48,6 @@ class BookmarkContextMenuControllerTest : public testing::Test {
 #endif
 
     profile_.reset(new TestingProfile());
-    profile_->set_has_history_service(true);
     profile_->CreateBookmarkModel(true);
     profile_->BlockUntilBookmarkModelLoaded();
 

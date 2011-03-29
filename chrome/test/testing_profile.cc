@@ -144,7 +144,6 @@ class TestExtensionURLRequestContextGetter : public URLRequestContextGetter {
 TestingProfile::TestingProfile()
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
-      has_history_service_(false),
       incognito_(false),
       last_session_exited_cleanly_(true) {
   if (!temp_dir_.CreateUniqueTempDir()) {

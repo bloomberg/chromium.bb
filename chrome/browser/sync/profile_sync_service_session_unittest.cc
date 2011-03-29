@@ -67,7 +67,6 @@ class ProfileSyncServiceSessionTest
     // BrowserWithTestWindowTest implementation.
     BrowserWithTestWindowTest::SetUp();
 
-    profile()->set_has_history_service(true);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     SessionService* session_service = new SessionService(temp_dir_.path());
     helper_.set_service(session_service);

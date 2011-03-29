@@ -29,7 +29,6 @@ class BookmarkEditorViewTest : public testing::Test {
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
-    profile_->set_has_history_service(true);
     profile_->CreateBookmarkModel(true);
 
     model_ = profile_->GetBookmarkModel();

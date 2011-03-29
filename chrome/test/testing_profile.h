@@ -155,9 +155,6 @@ class TestingProfile : public Profile {
   virtual FaviconService* GetFaviconService(ServiceAccessType access);
   virtual HistoryService* GetHistoryService(ServiceAccessType access);
   virtual HistoryService* GetHistoryServiceWithoutCreating();
-  void set_has_history_service(bool has_history_service) {
-    has_history_service_ = has_history_service;
-  }
   // The CookieMonster will only be returned if a Context has been created. Do
   // this by calling CreateRequestContext(). See the note at GetRequestContext
   // for more information.
@@ -339,10 +336,6 @@ class TestingProfile : public Profile {
   // request context. Currently, only the CookieMonster is hooked up.
   scoped_refptr<URLRequestContextGetter> request_context_;
   scoped_refptr<URLRequestContextGetter> extensions_request_context_;
-
-  // Do we have a history service? This defaults to the value of
-  // history_service, but can be explicitly set.
-  bool has_history_service_;
 
   std::wstring id_;
 

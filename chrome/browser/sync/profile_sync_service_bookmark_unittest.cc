@@ -284,7 +284,6 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
         model_associator_(NULL),
         change_processor_(NULL) {
     profile_.reset(new TestingProfile());
-    profile_->set_has_history_service(true);
   }
   virtual ~ProfileSyncServiceBookmarkTest() {
     // Kill the service before the profile.
