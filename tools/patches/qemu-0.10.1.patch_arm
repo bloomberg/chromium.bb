@@ -1,6 +1,6 @@
 diff -Naur qemu-0.10.1.orig/cpu-all.h qemu-0.10.1/cpu-all.h
 --- qemu-0.10.1.orig/cpu-all.h	2009-03-21 19:05:48.000000000 -0400
-+++ qemu-0.10.1/cpu-all.h	2010-12-15 14:34:06.000000000 -0500
++++ qemu-0.10.1/cpu-all.h	2011-03-28 14:22:39.000000000 -0400
 @@ -817,6 +817,7 @@
  #define CPU_LOG_IOPORT     (1 << 7)
  #define CPU_LOG_TB_CPU     (1 << 8)
@@ -11,7 +11,7 @@ diff -Naur qemu-0.10.1.orig/cpu-all.h qemu-0.10.1/cpu-all.h
  typedef struct CPULogItem {
 diff -Naur qemu-0.10.1.orig/cpu-exec.c qemu-0.10.1/cpu-exec.c
 --- qemu-0.10.1.orig/cpu-exec.c	2009-03-21 19:05:48.000000000 -0400
-+++ qemu-0.10.1/cpu-exec.c	2010-12-15 14:34:06.000000000 -0500
++++ qemu-0.10.1/cpu-exec.c	2011-03-28 14:22:39.000000000 -0400
 @@ -48,8 +48,10 @@
  
  int tb_invalidated_flag;
@@ -83,8 +83,8 @@ diff -Naur qemu-0.10.1.orig/cpu-exec.c qemu-0.10.1/cpu-exec.c
                     doing it in tb_find_slow */
                  if (tb_invalidated_flag) {
 @@ -592,6 +630,9 @@
-                       tb_add_jump((TranslationBlock *)(next_tb & ~3), next_tb & 3, tb);
-                     }
+                     tb_add_jump((TranslationBlock *)(next_tb & ~3), next_tb & 3, tb);
+                 }
                  }
 +
 +                loglevel = loglevel_saved;  /* @LOCALMOD */
@@ -111,7 +111,7 @@ diff -Naur qemu-0.10.1.orig/cpu-exec.c qemu-0.10.1/cpu-exec.c
      if (is_write && page_unprotect(address, pc, puc)) {
 diff -Naur qemu-0.10.1.orig/disas.c qemu-0.10.1/disas.c
 --- qemu-0.10.1.orig/disas.c	2009-03-21 19:05:48.000000000 -0400
-+++ qemu-0.10.1/disas.c	2010-12-15 14:34:06.000000000 -0500
++++ qemu-0.10.1/disas.c	2011-03-28 14:22:39.000000000 -0400
 @@ -10,7 +10,9 @@
  
  /* Filled in by elfload.c.  Simplistic, but will do for now. */
@@ -148,7 +148,7 @@ diff -Naur qemu-0.10.1.orig/disas.c qemu-0.10.1/disas.c
  #if !defined(CONFIG_USER_ONLY)
 diff -Naur qemu-0.10.1.orig/disas.h qemu-0.10.1/disas.h
 --- qemu-0.10.1.orig/disas.h	2009-03-21 19:05:48.000000000 -0400
-+++ qemu-0.10.1/disas.h	2010-12-15 14:34:06.000000000 -0500
++++ qemu-0.10.1/disas.h	2011-03-28 14:22:39.000000000 -0400
 @@ -29,5 +29,8 @@
  
  /* Filled in by elfload.c.  Simplistic, but will do for now. */
@@ -160,7 +160,7 @@ diff -Naur qemu-0.10.1.orig/disas.h qemu-0.10.1/disas.h
  #endif /* _QEMU_DISAS_H */
 diff -Naur qemu-0.10.1.orig/exec.c qemu-0.10.1/exec.c
 --- qemu-0.10.1.orig/exec.c	2009-03-21 19:05:48.000000000 -0400
-+++ qemu-0.10.1/exec.c	2010-12-15 14:34:06.000000000 -0500
++++ qemu-0.10.1/exec.c	2011-03-28 14:22:39.000000000 -0400
 @@ -1570,6 +1570,10 @@
      { CPU_LOG_IOPORT, "ioport",
        "show all i/o ports accesses" },
@@ -174,7 +174,7 @@ diff -Naur qemu-0.10.1.orig/exec.c qemu-0.10.1/exec.c
  
 diff -Naur qemu-0.10.1.orig/i386.ld qemu-0.10.1/i386.ld
 --- qemu-0.10.1.orig/i386.ld	2009-03-21 19:05:48.000000000 -0400
-+++ qemu-0.10.1/i386.ld	2010-12-15 14:34:06.000000000 -0500
++++ qemu-0.10.1/i386.ld	2011-03-28 14:22:39.000000000 -0400
 @@ -40,8 +40,23 @@
    .rela.fini     : { *(.rela.fini)	}
    .rel.bss       : { *(.rel.bss)		}
@@ -203,7 +203,7 @@ diff -Naur qemu-0.10.1.orig/i386.ld qemu-0.10.1/i386.ld
    {
 diff -Naur qemu-0.10.1.orig/linux-user/elfload.c qemu-0.10.1/linux-user/elfload.c
 --- qemu-0.10.1.orig/linux-user/elfload.c	2009-03-21 19:05:41.000000000 -0400
-+++ qemu-0.10.1/linux-user/elfload.c	2010-12-15 14:34:06.000000000 -0500
++++ qemu-0.10.1/linux-user/elfload.c	2011-03-28 14:22:39.000000000 -0400
 @@ -1030,18 +1030,22 @@
  }
  
@@ -316,7 +316,7 @@ diff -Naur qemu-0.10.1.orig/linux-user/elfload.c qemu-0.10.1/linux-user/elfload.
      info->personality = (ibcs2_interpreter ? PER_SVR4 : PER_LINUX);
 diff -Naur qemu-0.10.1.orig/linux-user/main.c qemu-0.10.1/linux-user/main.c
 --- qemu-0.10.1.orig/linux-user/main.c	2009-03-21 19:05:42.000000000 -0400
-+++ qemu-0.10.1/linux-user/main.c	2010-12-15 14:34:06.000000000 -0500
++++ qemu-0.10.1/linux-user/main.c	2011-03-28 14:22:39.000000000 -0400
 @@ -2351,7 +2351,25 @@
      filename = argv[optind];
      exec_path = argv[optind];
@@ -344,9 +344,33 @@ diff -Naur qemu-0.10.1.orig/linux-user/main.c qemu-0.10.1/linux-user/main.c
      memset(regs, 0, sizeof(struct target_pt_regs));
  
      /* Zero out image_info */
+diff -Naur qemu-0.10.1.orig/linux-user/syscall.c qemu-0.10.1/linux-user/syscall.c
+--- qemu-0.10.1.orig/linux-user/syscall.c	2009-03-21 19:05:41.000000000 -0400
++++ qemu-0.10.1/linux-user/syscall.c	2011-03-28 16:19:58.000000000 -0400
+@@ -4879,6 +4879,20 @@
+             }
+         }
+         break;
++/* @LOCALMOD-BEGIN */
++/* NOTE: this adds limited support for syscall shmctl.
++ * We do not support any use that requires arg3 at this time.
++ */
++#ifdef TARGET_NR_shmctl
++/* from /usr/include/linux/ipc.h */
++#define IPC_64  0x0100 
++     case TARGET_NR_shmctl:
++      if (arg2 != IPC_RMID && arg2 != (IPC_RMID|IPC_64)) goto  unimplemented;
++        
++      ret = get_errno(shmctl(arg1, arg2, 0));
++      break;
++#endif
++/* @LOCALMOD-END */      
+ #ifdef TARGET_NR_ipc
+     case TARGET_NR_ipc:
+ 	ret = do_ipc(arg1, arg2, arg3, arg4, arg5, arg6);
 diff -Naur qemu-0.10.1.orig/target-arm/cpu.h qemu-0.10.1/target-arm/cpu.h
 --- qemu-0.10.1.orig/target-arm/cpu.h	2009-03-21 19:05:47.000000000 -0400
-+++ qemu-0.10.1/target-arm/cpu.h	2010-12-15 14:34:06.000000000 -0500
++++ qemu-0.10.1/target-arm/cpu.h	2011-03-28 14:22:39.000000000 -0400
 @@ -446,4 +446,11 @@
          *flags |= (1 << 7);
  }
@@ -361,7 +385,7 @@ diff -Naur qemu-0.10.1.orig/target-arm/cpu.h qemu-0.10.1/target-arm/cpu.h
  #endif
 diff -Naur qemu-0.10.1.orig/x86_64.ld qemu-0.10.1/x86_64.ld
 --- qemu-0.10.1.orig/x86_64.ld	2009-03-21 19:05:48.000000000 -0400
-+++ qemu-0.10.1/x86_64.ld	2010-12-15 14:34:06.000000000 -0500
++++ qemu-0.10.1/x86_64.ld	2011-03-28 14:22:39.000000000 -0400
 @@ -36,8 +36,23 @@
    .rela.got       : { *(.rela.got) }
    .rel.bss        : { *(.rel.bss .rel.bss.* .rel.gnu.linkonce.b.*) }
