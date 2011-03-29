@@ -188,7 +188,7 @@ class RenderThread : public RenderThreadBase,
     return idle_notification_delay_in_s_;
   }
   void set_idle_notification_delay_in_s(double idle_notification_delay_in_s) {
-    idle_notification_delay_in_s = idle_notification_delay_in_s;
+    idle_notification_delay_in_s_ = idle_notification_delay_in_s;
   }
 
   // Do DNS prefetch resolution of a hostname.
