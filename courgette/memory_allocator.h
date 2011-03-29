@@ -181,7 +181,9 @@ class MemoryAllocator {
   MemoryAllocator() _THROW0() {
   }
 
-  explicit MemoryAllocator(const MemoryAllocator<T>& other) _THROW0() {
+  // We can't use an explicit constructor here, as dictated by our style guide.
+  // The implementation of basic_string in Visual Studio 2010 prevents this.
+  MemoryAllocator(const MemoryAllocator<T>& other) _THROW0() {
   }
 
   template<class OtherT>
