@@ -2052,8 +2052,11 @@ WebExternalPopupMenu* RenderView::createExternalPopupMenu(
 webkit::ppapi::FullscreenContainer*
 RenderView::CreatePepperFullscreenContainer(
     webkit::ppapi::PluginInstance* plugin) {
-  RenderWidgetFullscreenPepper* widget =
-      RenderWidgetFullscreenPepper::Create(routing_id_, render_thread_, plugin);
+  GURL active_url;
+  if(webview() && webview()->mainFrame())
+    active_url = GURL(webview()->mainFrame()->url());
+  RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
+      routing_id_, render_thread_, plugin, active_url);
   widget->show(WebKit::WebNavigationPolicyIgnore);
   return widget;
 }

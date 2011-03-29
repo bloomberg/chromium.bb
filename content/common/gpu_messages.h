@@ -25,6 +25,7 @@
 IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
   IPC_STRUCT_MEMBER(std::string, allowed_extensions)
   IPC_STRUCT_MEMBER(std::vector<int>, attribs)
+  IPC_STRUCT_MEMBER(GURL, active_url)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuVideoDecoderInitParam)

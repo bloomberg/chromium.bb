@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 #include "chrome/renderer/render_thread.h"
 #include "content/renderer/gpu_channel_host.h"
 #include "content/renderer/render_view.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
@@ -75,7 +76,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     ggl::GGL_NONE,
   };
 
-  GPUInfo gpu_info = host->gpu_info();
+  const GPUInfo& gpu_info = host->gpu_info();
   UMA_HISTOGRAM_ENUMERATION(
       "GPU.WebGraphicsContext3D_Init_CanLoseContext",
       attributes.canRecoverFromContextLoss * 2 + gpu_info.can_lose_context,
@@ -84,6 +85,10 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     if (gpu_info.can_lose_context)
       return false;
   }
+
+  GURL active_url;
+  if (web_view && web_view->mainFrame())
+    active_url = GURL(web_view->mainFrame()->url());
 
   if (render_directly_to_web_view) {
     RenderView* renderview = RenderView::FromWebView(web_view);
@@ -95,7 +100,8 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
         host,
         renderview->routing_id(),
         kWebGraphicsContext3DPerferredGLExtensions,
-        attribs);
+        attribs,
+        active_url);
     if (context_) {
       ggl::SetSwapBuffersCallback(
           context_,
@@ -125,7 +131,8 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
         parent_context,
         gfx::Size(1, 1),
         kWebGraphicsContext3DPerferredGLExtensions,
-        attribs);
+        attribs,
+        active_url);
     web_view_ = NULL;
   }
   if (!context_)

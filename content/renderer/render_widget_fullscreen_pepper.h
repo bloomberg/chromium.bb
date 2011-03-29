@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,8 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   static RenderWidgetFullscreenPepper* Create(
       int32 opener_id,
       RenderThreadBase* render_thread,
-      webkit::ppapi::PluginInstance* plugin);
+      webkit::ppapi::PluginInstance* plugin,
+      const GURL& active_url);
 
   // pepper::FullscreenContainer API.
   virtual void Invalidate();
@@ -43,7 +44,8 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
 
  protected:
   RenderWidgetFullscreenPepper(RenderThreadBase* render_thread,
-                               webkit::ppapi::PluginInstance* plugin);
+                               webkit::ppapi::PluginInstance* plugin,
+                               const GURL& active_url);
   virtual ~RenderWidgetFullscreenPepper();
 
   // RenderWidget API.
@@ -74,6 +76,9 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   // Checks (and returns) whether accelerated compositing should be on or off,
   // and notify the browser.
   bool CheckCompositing();
+
+  // URL that is responsible for this widget, passed to ggl::CreateViewContext.
+  GURL active_url_;
 
   // The plugin instance this widget wraps.
   webkit::ppapi::PluginInstance* plugin_;

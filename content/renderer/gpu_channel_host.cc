@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "content/common/gpu_messages.h"
 #include "content/renderer/command_buffer_proxy.h"
 #include "content/renderer/gpu_video_service_host.h"
+#include "googleurl/src/gurl.h"
 
 GpuChannelHost::GpuChannelHost() : state_(kUnconnected) {
 }
@@ -98,7 +99,8 @@ bool GpuChannelHost::Send(IPC::Message* message) {
 CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
     int render_view_id,
     const std::string& allowed_extensions,
-    const std::vector<int32>& attribs) {
+    const std::vector<int32>& attribs,
+    const GURL& active_url) {
 #if defined(ENABLE_GPU)
   // An error occurred. Need to get the host again to reinitialize it.
   if (!channel_.get())
@@ -107,6 +109,7 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
   GPUCreateCommandBufferConfig init_params;
   init_params.allowed_extensions = allowed_extensions;
   init_params.attribs = attribs;
+  init_params.active_url = active_url;
   int32 route_id;
   if (!RenderThread::current()->Send(
       new GpuHostMsg_CreateViewCommandBuffer(
@@ -131,7 +134,8 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
     const gfx::Size& size,
     const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
-    uint32 parent_texture_id) {
+    uint32 parent_texture_id,
+    const GURL& active_url) {
 #if defined(ENABLE_GPU)
   // An error occurred. Need to get the host again to reinitialize it.
   if (!channel_.get())
@@ -140,6 +144,7 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
   GPUCreateCommandBufferConfig init_params;
   init_params.allowed_extensions = allowed_extensions;
   init_params.attribs = attribs;
+  init_params.active_url = active_url;
   int32 parent_route_id = parent ? parent->route_id() : 0;
   int32 route_id;
   if (!Send(new GpuChannelMsg_CreateOffscreenCommandBuffer(parent_route_id,

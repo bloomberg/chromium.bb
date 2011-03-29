@@ -21,6 +21,7 @@
 
 class CommandBufferProxy;
 class GpuVideoServiceHost;
+class GURL;
 
 // Encapsulates an IPC channel between the renderer and one plugin process.
 // On the plugin side there's a corresponding GpuChannel.
@@ -67,7 +68,8 @@ class GpuChannelHost : public IPC::Channel::Listener,
   CommandBufferProxy* CreateViewCommandBuffer(
       int render_view_id,
       const std::string& allowed_extensions,
-      const std::vector<int32>& attribs);
+      const std::vector<int32>& attribs,
+      const GURL& active_url);
 
   // Create and connect to a command buffer in the GPU process.
   CommandBufferProxy* CreateOffscreenCommandBuffer(
@@ -75,7 +77,8 @@ class GpuChannelHost : public IPC::Channel::Listener,
       const gfx::Size& size,
       const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
-      uint32 parent_texture_id);
+      uint32 parent_texture_id,
+      const GURL& active_url);
 
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxy* command_buffer);

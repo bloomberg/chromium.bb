@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,18 +139,21 @@ class PepperWidget : public WebWidget {
 // static
 RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     int32 opener_id, RenderThreadBase* render_thread,
-    webkit::ppapi::PluginInstance* plugin) {
+    webkit::ppapi::PluginInstance* plugin,
+    const GURL& active_url) {
   DCHECK_NE(MSG_ROUTING_NONE, opener_id);
   scoped_refptr<RenderWidgetFullscreenPepper> widget(
-      new RenderWidgetFullscreenPepper(render_thread, plugin));
+      new RenderWidgetFullscreenPepper(render_thread, plugin, active_url));
   widget->Init(opener_id);
   return widget.release();
 }
 
 RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     RenderThreadBase* render_thread,
-    webkit::ppapi::PluginInstance* plugin)
+    webkit::ppapi::PluginInstance* plugin,
+    const GURL& active_url)
     : RenderWidgetFullscreen(render_thread),
+      active_url_(active_url),
       plugin_(plugin),
       context_(NULL),
       buffer_(0),
@@ -266,7 +269,8 @@ void RenderWidgetFullscreenPepper::CreateContext() {
       host,
       routing_id(),
       "GL_OES_packed_depth_stencil GL_OES_depth24",
-      attribs);
+      attribs,
+      active_url_);
   if (!context_ || !InitContext()) {
     DestroyContext();
     return;

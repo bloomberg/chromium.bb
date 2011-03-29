@@ -12,6 +12,7 @@
 #include "content/renderer/gpu_video_service_host.h"
 #include "content/renderer/media/gles2_video_decode_context.h"
 #include "content/renderer/render_widget.h"
+#include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
 
 #if defined(ENABLE_GPU)
@@ -66,7 +67,8 @@ class Context : public base::SupportsWeakPtr<Context> {
                   int render_view_id,
                   const gfx::Size& size,
                   const char* allowed_extensions,
-                  const int32* attrib_list);
+                  const int32* attrib_list,
+                  const GURL& active_url);
 
 #if defined(OS_MACOSX)
   // Asynchronously resizes an onscreen frame buffer.
@@ -169,7 +171,8 @@ bool Context::Initialize(bool onscreen,
                          int render_view_id,
                          const gfx::Size& size,
                          const char* allowed_extensions,
-                         const int32* attrib_list) {
+                         const int32* attrib_list,
+                         const GURL& active_url) {
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
   if (channel_->state() != GpuChannelHost::kConnected)
@@ -220,7 +223,8 @@ bool Context::Initialize(bool onscreen,
     command_buffer_ = channel_->CreateViewCommandBuffer(
         render_view_id,
         allowed_extensions,
-        attribs);
+        attribs,
+        active_url);
   } else {
     CommandBufferProxy* parent_command_buffer =
         parent_.get() ? parent_->command_buffer_ : NULL;
@@ -229,7 +233,8 @@ bool Context::Initialize(bool onscreen,
         size,
         allowed_extensions,
         attribs,
-        parent_texture_id_);
+        parent_texture_id_,
+        active_url);
   }
   if (!command_buffer_) {
     Destroy();
@@ -448,11 +453,13 @@ void Context::OnContextLost() {
 Context* CreateViewContext(GpuChannelHost* channel,
                            int render_view_id,
                            const char* allowed_extensions,
-                           const int32* attrib_list) {
+                           const int32* attrib_list,
+                           const GURL& active_url) {
 #if defined(ENABLE_GPU)
   scoped_ptr<Context> context(new Context(channel, NULL));
   if (!context->Initialize(
-      true, render_view_id, gfx::Size(), allowed_extensions, attrib_list))
+      true, render_view_id, gfx::Size(), allowed_extensions, attrib_list,
+      active_url))
     return NULL;
 
   return context.release();
@@ -473,10 +480,12 @@ Context* CreateOffscreenContext(GpuChannelHost* channel,
                                 Context* parent,
                                 const gfx::Size& size,
                                 const char* allowed_extensions,
-                                const int32* attrib_list) {
+                                const int32* attrib_list,
+                                const GURL& active_url) {
 #if defined(ENABLE_GPU)
   scoped_ptr<Context> context(new Context(channel, parent));
-  if (!context->Initialize(false, 0, size, allowed_extensions, attrib_list))
+  if (!context->Initialize(false, 0, size, allowed_extensions, attrib_list,
+                           active_url))
     return NULL;
 
   return context.release();

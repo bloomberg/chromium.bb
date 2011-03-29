@@ -19,6 +19,7 @@
 class GpuChannelHost;
 class MessageLoop;
 class CommandBufferProxy;
+class GURL;
 
 namespace gpu {
 namespace gles2 {
@@ -84,7 +85,8 @@ bool Terminate();
 Context* CreateViewContext(GpuChannelHost* channel,
                            int render_view_id,
                            const char* allowed_extensions,
-                           const int32* attrib_list);
+                           const int32* attrib_list,
+                           const GURL& active_url);
 
 #if defined(OS_MACOSX)
 // On Mac OS X only, view contexts actually behave like offscreen contexts, and
@@ -104,7 +106,8 @@ Context* CreateOffscreenContext(GpuChannelHost* channel,
                                 Context* parent,
                                 const gfx::Size& size,
                                 const char* allowed_extensions,
-                                const int32* attrib_list);
+                                const int32* attrib_list,
+                                const GURL& active_url);
 
 // Resize an offscreen frame buffer. The resize occurs on the next call to
 // SwapBuffers. This is to avoid waiting until all pending GL calls have been

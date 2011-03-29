@@ -8,6 +8,7 @@
 #include "content/renderer/command_buffer_proxy.h"
 #include "content/renderer/ggl.h"
 #include "content/renderer/gpu_channel_host.h"
+#include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 
@@ -77,7 +78,8 @@ bool PlatformContext3DImpl::Init() {
       gfx::Size(1, 1),
       "*",
       attribs,
-      parent_texture_id_);
+      parent_texture_id_,
+      GURL::EmptyGURL());
   if (!command_buffer_)
     return false;
   command_buffer_->SetChannelErrorCallback(callback_factory_.NewCallback(

@@ -12,6 +12,7 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "content/common/child_process.h"
+#include "content/common/content_client.h"
 #include "content/common/content_switches.h"
 #include "content/common/gpu_messages.h"
 #include "content/gpu/gpu_render_thread.h"
@@ -94,6 +95,7 @@ void GpuChannel::CreateViewCommandBuffer(
     const GPUCreateCommandBufferConfig& init_params,
     int32* route_id) {
   *route_id = MSG_ROUTING_NONE;
+  content::GetContentClient()->SetActiveURL(init_params.active_url);
 
 #if defined(ENABLE_GPU)
   *route_id = GenerateRouteID();
@@ -168,6 +170,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
     const GPUCreateCommandBufferConfig& init_params,
     uint32 parent_texture_id,
     int32* route_id) {
+  content::GetContentClient()->SetActiveURL(init_params.active_url);
 #if defined(ENABLE_GPU)
   *route_id = GenerateRouteID();
   GpuCommandBufferStub* parent_stub = NULL;
