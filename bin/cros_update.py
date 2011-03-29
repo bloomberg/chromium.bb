@@ -81,14 +81,13 @@ class Updater(object):
     if latest_cpv != cpv: return latest_cpv
     return None
 
-  def _FindLatestVersions(self, cpvlist):
-    """Given a list of cpvs, returns a list of cpv/latest_cpv info maps."""
+  def _FindLatestVersions(self, infolist):
+    """Given a list of cpv info maps, adds the latest_cpv to the infos."""
     checkout_gentoo = False
     upstream = self._options.upstream
     if not upstream:
       checkout_gentoo = True
       upstream = os.path.join(self._options.srcroot, 'third_party', 'portage')
-    infolist = []
     dash_q = ''
     if not self._options.verbose: dash_q = '-q'
     try:
@@ -102,20 +101,20 @@ class Updater(object):
                              'cd %s && git checkout %s cros/gentoo' % (
                                  upstream, dash_q)],
                             print_cmd=self._options.verbose);
-      for cpv in cpvlist:
+      for info in infolist:
         # No need to report or try to upgrade chromeos-base packages.
-        if cpv.startswith('chromeos-base/'): continue
-        latest_cpv = self._FindLatestVersion(upstream, cpv)
-        infolist.append({'cpv': cpv, 'latest_cpv': latest_cpv})
+        if info['cpv'].startswith('chromeos-base/'): continue
+        latest_cpv = self._FindLatestVersion(upstream, info['cpv'])
+        info['latest_cpv'] = latest_cpv
     finally:
       if checkout_gentoo:
         cros_lib.RunCommand(['/bin/sh', '-c',
                              'cd %s && git checkout %s cros/master' % (
                                  upstream, dash_q)],
                             print_cmd=self._options.verbose);
-    return infolist
 
-  def _PrintUpgrades(self):
+  def _GetCurrentVersions(self):
+    """Returns a list of cpvs of the current package dependencies."""
     argv = ['--emptytree']
     argv.append('--board=%s' % self._options.board)
     if not self._options.verbose:
@@ -128,30 +127,34 @@ class Updater(object):
     deps.Initialize(argv)
     deps_tree, deps_info = deps.GenDependencyTree({})
     deps_graph = deps.GenDependencyGraph(deps_tree, deps_info, {})
-    cpvlist = Updater._GetPreOrderDepGraph(deps_graph)
+    return Updater._GetPreOrderDepGraph(deps_graph)
 
-    infolist = self._FindLatestVersions(cpvlist)
-    for info in infolist:
+  def _GetInfoListWithOverlays(self, cpvlist):
+    """Returns a list of cpv/overlay info maps corresponding to |cpvlist|."""
+    infolist = []
+    for cpv in cpvlist:
       # TODO(petkov): Use internal portage utilities to find the overlay instead
       # of equery to improve performance, if possible.
-      cpv = info['cpv']
       equery = ['equery-%s' % self._options.board, 'which', cpv]
       ebuild_path = cros_lib.RunCommand(equery, print_cmd=self._options.verbose,
                                         redirect_stdout=True).output.strip()
       (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
-      info['overlay'] = overlay
+      infolist.append({'cpv': cpv, 'overlay': overlay})
 
-    for info in infolist:
-      update = ''
-      if info['latest_cpv']: update = ' -> %s' % info['latest_cpv']
-      print '[%s] %s%s' % (info['overlay'], info['cpv'], update)
+    return infolist
 
   def Run(self):
     """Runs the updater based on the supplied options and arguments.
 
     Currently just lists all package dependencies in pre-order along with
     potential upgrades."""
-    self._PrintUpgrades()
+    cpvlist = self._GetCurrentVersions()
+    infolist = self._GetInfoListWithOverlays(cpvlist)
+    self._FindLatestVersions(infolist)
+    for info in infolist:
+      update = ''
+      if info['latest_cpv']: update = ' -> %s' % info['latest_cpv']
+      print '[%s] %s%s' % (info['overlay'], info['cpv'], update)
 
 
 def main():
