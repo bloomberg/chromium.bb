@@ -192,6 +192,11 @@ void BookmarkBubbleView::Init() {
 
   edit_button_ = new NativeButton(
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_OPTIONS)));
+#if defined(TOUCH_UI)
+  // TODO(saintlou): We need to disable the Edit button for touch since we are
+  // missing some of the controls for the dialog that would pop up next.
+  edit_button_->SetEnabled(false);
+#endif
 
   close_button_ =
       new NativeButton(this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_DONE)));
@@ -205,6 +210,10 @@ void BookmarkBubbleView::Init() {
   parent_combobox_->set_listener(this);
   parent_combobox_->SetAccessibleName(
       WideToUTF16Hack(combobox_label->GetText()));
+#if defined(TOUCH_UI)
+  // TODO(saintlou): This is a short term workaround for touch
+  parent_combobox_->SetEnabled(false);
+#endif
 
   Label* title_label = new Label(UTF16ToWide(l10n_util::GetStringUTF16(
       newly_bookmarked_ ? IDS_BOOMARK_BUBBLE_PAGE_BOOKMARKED :
