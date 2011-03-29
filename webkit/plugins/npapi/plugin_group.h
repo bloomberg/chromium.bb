@@ -87,6 +87,8 @@ class PluginGroup {
   static const char* kJavaGroupName;
   static const char* kQuickTimeGroupName;
   static const char* kShockwaveGroupName;
+  static const char* kRealPlayerGroupName;
+  static const char* kSilverlightGroupName;
 
   PluginGroup(const PluginGroup& other);
 

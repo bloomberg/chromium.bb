@@ -121,6 +121,10 @@
 0xf73bbd9fdcaeb1f9	BlockedPluginInfobar.Dismissed
 0x4937bd47014fb3e0	BlockedPluginInfobar.LearnMore
 0x127e30ad4cde6b00	BlockedPluginInfobar.Shown
+0x4353c1e2880c75be	BlockedPluginInfobar.Shown.Java
+0x84cc82257207df8d	BlockedPluginInfobar.Shown.QuickTime
+0x819dbe166b094c47	BlockedPluginInfobar.Shown.RealPlayer
+0x65add1afd150b840	BlockedPluginInfobar.Shown.Shockwave
 0x114c3050111d8b8d	Bold
 0x02f476e54c6d58bd	BookmarkBarFolder_CtxMenu
 0x3012b56b98c28823	BookmarkBarFolder_DragEnd
@@ -947,6 +951,12 @@
 0xb4be73d2951aab5b	OutdatedPluginInfobar.Dismissed
 0x883c4259bb3beddd	OutdatedPluginInfobar.LearnMore
 0xaf62158873b29888	OutdatedPluginInfobar.Shown
+0x3691471b03ca8103	OutdatedPluginInfobar.Shown.Java
+0x25e1fc613aa70de4	OutdatedPluginInfobar.Shown.QuickTime
+0x703e5cc7ad485d8f	OutdatedPluginInfobar.Shown.Reader
+0x5c977c210e40986b	OutdatedPluginInfobar.Shown.RealPlayer
+0xcc2c490fe5fc55ef	OutdatedPluginInfobar.Shown.Shockwave
+0x0ef39278378fe05d	OutdatedPluginInfobar.Shown.Silverlight
 0x7e7073691a152241	OutdatedPluginInfobar.Update
 0x016839db155e0468	Outdent
 0x69fae31849862d21	OverrideEncoding

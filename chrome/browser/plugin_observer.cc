@@ -22,6 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
+#include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 
@@ -112,9 +113,22 @@ class BlockedPluginInfoBarDelegate : public PluginInfoBarDelegate {
 
 BlockedPluginInfoBarDelegate::BlockedPluginInfoBarDelegate(
     TabContents* tab_contents,
-    const string16& name)
-    : PluginInfoBarDelegate(tab_contents, name) {
+    const string16& utf16_name)
+    : PluginInfoBarDelegate(tab_contents, utf16_name) {
   UserMetrics::RecordAction(UserMetricsAction("BlockedPluginInfobar.Shown"));
+  std::string name = UTF16ToUTF8(utf16_name);
+  if (name == webkit::npapi::PluginGroup::kJavaGroupName)
+    UserMetrics::RecordAction(
+        UserMetricsAction("BlockedPluginInfobar.Shown.Java"));
+  else if (name == webkit::npapi::PluginGroup::kQuickTimeGroupName)
+    UserMetrics::RecordAction(
+        UserMetricsAction("BlockedPluginInfobar.Shown.QuickTime"));
+  else if (name == webkit::npapi::PluginGroup::kShockwaveGroupName)
+    UserMetrics::RecordAction(
+        UserMetricsAction("BlockedPluginInfobar.Shown.Shockwave"));
+  else if (name == webkit::npapi::PluginGroup::kRealPlayerGroupName)
+    UserMetrics::RecordAction(
+        UserMetricsAction("BlockedPluginInfobar.Shown.RealPlayer"));
 }
 
 BlockedPluginInfoBarDelegate::~BlockedPluginInfoBarDelegate() {
@@ -190,11 +204,30 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate {
 
 OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     TabContents* tab_contents,
-    const string16& name,
+    const string16& utf16_name,
     const GURL& update_url)
-    : PluginInfoBarDelegate(tab_contents, name),
+    : PluginInfoBarDelegate(tab_contents, utf16_name),
       update_url_(update_url) {
   UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
+  std::string name = UTF16ToUTF8(utf16_name);
+  if (name == webkit::npapi::PluginGroup::kJavaGroupName)
+    UserMetrics::RecordAction(
+        UserMetricsAction("OutdatedPluginInfobar.Shown.Java"));
+  else if (name == webkit::npapi::PluginGroup::kQuickTimeGroupName)
+    UserMetrics::RecordAction(
+        UserMetricsAction("OutdatedPluginInfobar.Shown.QuickTime"));
+  else if (name == webkit::npapi::PluginGroup::kShockwaveGroupName)
+    UserMetrics::RecordAction(
+        UserMetricsAction("OutdatedPluginInfobar.Shown.Shockwave"));
+  else if (name == webkit::npapi::PluginGroup::kRealPlayerGroupName)
+    UserMetrics::RecordAction(
+        UserMetricsAction("OutdatedPluginInfobar.Shown.RealPlayer"));
+  else if (name == webkit::npapi::PluginGroup::kSilverlightGroupName)
+    UserMetrics::RecordAction(
+        UserMetricsAction("OutdatedPluginInfobar.Shown.Silverlight"));
+  else if (name == webkit::npapi::PluginGroup::kAdobeReaderGroupName)
+    UserMetrics::RecordAction(
+        UserMetricsAction("OutdatedPluginInfobar.Shown.Reader"));
 }
 
 OutdatedPluginInfoBarDelegate::~OutdatedPluginInfoBarDelegate() {

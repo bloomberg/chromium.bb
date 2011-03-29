@@ -117,15 +117,15 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
   { "adobe-reader", PluginGroup::kAdobeReaderGroupName, "Adobe Acrobat",
     kAdobeReaderVersionRange, arraysize(kAdobeReaderVersionRange),
     "http://get.adobe.com/reader/" },
-  { "silverlight", "Silverlight", "Silverlight", kSilverlightVersionRange,
-    arraysize(kSilverlightVersionRange),
+  { "silverlight", PluginGroup::kSilverlightGroupName, "Silverlight",
+    kSilverlightVersionRange, arraysize(kSilverlightVersionRange),
     "http://www.microsoft.com/getsilverlight/" },
   kShockwaveDefinition,
   { "divx-player", "DivX Player", "DivX Web Player", kDivXVersionRange,
     arraysize(kDivXVersionRange),
     "http://download.divx.com/divx/autoupdate/player/"
     "DivXWebPlayerInstaller.exe" },
-  { "realplayer", "RealPlayer", "RealPlayer",
+  { "realplayer", PluginGroup::kRealPlayerGroupName, "RealPlayer",
     kRealPlayerVersionRange, arraysize(kRealPlayerVersionRange),
     "http://www.real.com/realplayer/downloads" },
   // These are here for grouping, no vulnerabilities known.

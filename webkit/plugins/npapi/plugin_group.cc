@@ -23,6 +23,8 @@ const char* PluginGroup::kAdobeReaderUpdateURL = "http://get.adobe.com/reader/";
 const char* PluginGroup::kJavaGroupName = "Java";
 const char* PluginGroup::kQuickTimeGroupName = "QuickTime";
 const char* PluginGroup::kShockwaveGroupName = "Shockwave";
+const char* PluginGroup::kRealPlayerGroupName = "RealPlayer";
+const char* PluginGroup::kSilverlightGroupName = "Silverlight";
 
 /*static*/
 std::set<string16>* PluginGroup::policy_disabled_plugin_patterns_;
