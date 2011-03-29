@@ -14,6 +14,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 
 class AutomationMessageSender;
+class FilePath;
 class GURL;
 class DictionaryValue;
 class ListValue;
@@ -99,6 +100,15 @@ bool SendReloadJSONRequest(
     AutomationMessageSender* sender,
     int browser_index,
     int tab_index) WARN_UNUSED_RESULT;
+
+// Requests a snapshot of the entire page to be saved to the given path
+// in PNG format.
+// Returns true on success.
+bool SendCaptureEntirePageJSONRequest(
+    AutomationMessageSender* sender,
+    int browser_index,
+    int tab_index,
+    const FilePath& path) WARN_UNUSED_RESULT;
 
 // Requests the url of the specified tab. Returns true on success.
 bool SendGetTabURLJSONRequest(

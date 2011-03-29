@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
@@ -358,8 +359,6 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowTitle, GetWindowTitle)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetShelfVisibility, SetShelfVisibility)
     IPC_MESSAGE_HANDLER(AutomationMsg_BlockedPopupCount, GetBlockedPopupCount)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CaptureEntirePageAsPNG,
-                                    CaptureEntirePageAsPNG)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_SendJSONRequest,
                                     SendJSONRequest)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForTabCountToBecome,
@@ -1991,22 +1990,6 @@ void TestingAutomationProvider::GetBlockedPopupCount(int handle, int* count) {
   }
 }
 
-void TestingAutomationProvider::CaptureEntirePageAsPNG(
-    int tab_handle, const FilePath& path, IPC::Message* reply_message) {
-  RenderViewHost* render_view = GetViewForTab(tab_handle);
-  if (render_view) {
-    // This will delete itself when finished.
-    PageSnapshotTaker* snapshot_taker = new PageSnapshotTaker(
-        this, reply_message, render_view, path);
-    snapshot_taker->Start();
-  } else {
-    LOG(ERROR) << "Could not get render view for tab handle";
-    AutomationMsg_CaptureEntirePageAsPNG::WriteReplyParams(reply_message,
-                                                           false);
-    Send(reply_message);
-  }
-}
-
 void TestingAutomationProvider::SendJSONRequest(int handle,
                                                 const std::string& json_request,
                                                 IPC::Message* reply_message) {
@@ -2054,6 +2037,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetTabURLJSON;
   handler_map["GetTabTitle"] =
       &TestingAutomationProvider::GetTabTitleJSON;
+  handler_map["CaptureEntirePage"] =
+      &TestingAutomationProvider::CaptureEntirePageJSON;
   handler_map["GetCookies"] =
       &TestingAutomationProvider::GetCookiesJSON;
   handler_map["DeleteCookie"] =
@@ -4971,6 +4956,37 @@ void TestingAutomationProvider::GetTabTitleJSON(
   DictionaryValue dict;
   dict.SetString("title", tab_contents->GetTitle());
   reply.SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::CaptureEntirePageJSON(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  TabContents* tab_contents;
+  std::string error;
+
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+
+  FilePath::StringType path_str;
+  if (!args->GetString("path", &path_str)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'path' missing or invalid");
+    return;
+  }
+
+  RenderViewHost* render_view = tab_contents->render_view_host();
+  if (render_view) {
+    FilePath path(path_str);
+    // This will delete itself when finished.
+    PageSnapshotTaker* snapshot_taker = new PageSnapshotTaker(
+        this, reply_message, render_view, path);
+    snapshot_taker->Start();
+  } else {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Tab has no associated RenderViewHost");
+  }
 }
 
 void TestingAutomationProvider::GetCookiesJSON(

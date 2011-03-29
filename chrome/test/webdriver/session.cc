@@ -14,6 +14,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop_proxy.h"
 #include "base/process.h"
 #include "base/process_util.h"
@@ -59,6 +60,7 @@ Session::Session()
     : id_(GenerateRandomID()),
       thread_(id_.c_str()),
       implicit_wait_(0),
+      screenshot_on_error_(false),
       current_target_(FrameId(0, FramePath())) {
   SessionManager::GetInstance()->Add(this);
 }
@@ -979,6 +981,58 @@ ErrorCode Session::GetLocationInViewHelper(const FrameId& frame_id,
   }
   *location = gfx::Point(x, y);
   return kSuccess;
+}
+
+bool Session::GetScreenShot(std::string* png) {
+  bool success = false;
+  ScopedTempDir screenshots_dir;
+
+  // Create a temp directory for screenshots.
+  if (!screenshots_dir.CreateUniqueTempDir()) {
+    return false;
+  }
+
+  FilePath path = screenshots_dir.path().AppendASCII("screen");
+
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::CaptureEntirePageAsPNG,
+      current_target_.window_id,
+      path,
+      &success));
+
+  if (success) {
+    success = file_util::ReadFileToString(path, png);
+  }
+  return success;
+}
+
+void Session::set_screenshot_on_error(bool error) {
+  screenshot_on_error_ = error;
+}
+
+bool Session::screenshot_on_error() const {
+  return screenshot_on_error_;
+}
+
+const std::string& Session::id() const {
+  return id_;
+}
+
+int Session::implicit_wait() const {
+  return implicit_wait_;
+}
+
+void Session::set_implicit_wait(const int& timeout) {
+  implicit_wait_ = timeout > 0 ? timeout : 0;
+}
+
+Session::Speed Session::speed() const {
+  return speed_;
+}
+
+void Session::set_speed(Speed speed) {
+  speed_ = speed;
 }
 
 }  // namespace webdriver

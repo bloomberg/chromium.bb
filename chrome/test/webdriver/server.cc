@@ -37,6 +37,7 @@
 #include "chrome/test/webdriver/commands/implicit_wait_command.h"
 #include "chrome/test/webdriver/commands/navigate_commands.h"
 #include "chrome/test/webdriver/commands/mouse_commands.h"
+#include "chrome/test/webdriver/commands/screenshot_command.h"
 #include "chrome/test/webdriver/commands/session_with_id.h"
 #include "chrome/test/webdriver/commands/source_command.h"
 #include "chrome/test/webdriver/commands/speed_command.h"
@@ -102,6 +103,8 @@ void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
   dispatcher->Add<ElementToggleCommand>(  "/session/*/element/*/toggle");
   dispatcher->Add<ElementValueCommand>(   "/session/*/element/*/value");
 
+  dispatcher->Add<ScreenshotCommand>("/session/*/screenshot");
+
   // Mouse Commands
   dispatcher->Add<ClickCommand>("/session/*/element/*/click");
   dispatcher->Add<DragCommand>( "/session/*/element/*/drag");
@@ -135,7 +138,6 @@ void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
   // so that tests that attempt to use them fail with a meaningful error.
   dispatcher->SetNotImplemented("/session/*/execute_async");
   dispatcher->SetNotImplemented("/session/*/timeouts/async_script");
-  dispatcher->SetNotImplemented("/session/*/screenshot");
 
   // Since the /session/* is a wild card that would match the above URIs, this
   // line MUST be the last registered URI with the server.
@@ -162,6 +164,7 @@ bool SetMongooseOptions(struct mg_context* ctx,
   mg_set_option(ctx, "idle_time", "1");
   return true;
 }
+
 
 // Sets up and runs the Mongoose HTTP server for the JSON over HTTP
 // protcol of webdriver.  The spec is located at:

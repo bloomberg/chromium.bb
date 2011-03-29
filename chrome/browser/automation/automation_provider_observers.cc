@@ -1677,9 +1677,13 @@ void PageSnapshotTaker::ExecuteScript(const std::wstring& javascript) {
 
 void PageSnapshotTaker::SendMessage(bool success) {
   if (automation_) {
-    AutomationMsg_CaptureEntirePageAsPNG::WriteReplyParams(reply_message_.get(),
-                                                           success);
-    automation_->Send(reply_message_.release());
+    if (success) {
+      AutomationJSONReply(automation_, reply_message_.release())
+          .SendSuccess(NULL);
+    } else {
+      AutomationJSONReply(automation_, reply_message_.release())
+          .SendError("Failed to take snapshot of page");
+    }
   }
   delete this;
 }

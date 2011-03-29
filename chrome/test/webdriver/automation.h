@@ -60,6 +60,11 @@ class Automation {
   // been processed by the web page.
   void SendWebKeyEvent(int tab_id, const WebKeyEvent& key_event, bool* success);
 
+  // Captures a snapshot of the tab to the specified path.  The  PNG will
+  // contain the entire page, including what is not in the current view
+  // on the  screen.
+  void CaptureEntirePageAsPNG(int tab_id, const FilePath& path, bool* success);
+
   void NavigateToURL(int tab_id, const std::string& url, bool* success);
   void GoForward(int tab_id, bool* success);
   void GoBack(int tab_id, bool* success);

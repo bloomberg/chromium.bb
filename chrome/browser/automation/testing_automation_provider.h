@@ -358,11 +358,6 @@ class TestingAutomationProvider : public AutomationProvider,
   // Returns the number of blocked popups in the tab |handle|.
   void GetBlockedPopupCount(int handle, int* count);
 
-  // Captures the entire page for the given tab and saves it as PNG at the
-  // given path.
-  void CaptureEntirePageAsPNG(int tab_handle, const FilePath& path,
-                              IPC::Message* reply_message);
-
   // Generic pattern for pyautolib
   // Uses the JSON interface for input/output.
   void SendJSONRequest(int handle,
@@ -861,6 +856,14 @@ class TestingAutomationProvider : public AutomationProvider,
   //   input: { "windex": 1, "tab_index": 1 }
   //   output: { "title": "Google" }
   void GetTabTitleJSON(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Captures the entire page of the the specified tab, including the
+  // non-visible portions of the page, and saves the PNG to a file.
+  // Example:
+  //   input: { "windex": 1, "tab_index": 1, "path":"/tmp/foo.png"}
+  //   output: none
+  void CaptureEntirePageJSON(
+      DictionaryValue* args, IPC::Message* reply_message);
 
   // Gets the cookies for the given URL. Uses the JSON interface.
   // "expiry" refers to the amount of seconds since the Unix epoch. If omitted,

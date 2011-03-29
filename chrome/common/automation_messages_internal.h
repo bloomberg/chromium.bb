@@ -1427,14 +1427,17 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_LoadBlockedPlugins,
                             int /* tab handle */,
                             bool /* success */)
 
+// TODO(phajdan.jr): Remove this message.
 // Captures the entire page for the tab, including those portions not in
 // view, and saves the image as a PNG in the given file location.
+// This message is deprecated, use the JSON testing interface for
+// similar functionality.
 // Request:
 //   -int: Tab handle
 //   -FilePath: Path to save the captured image to
 // Response:
 //   -bool: Whether the method succeeded
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_CaptureEntirePageAsPNG,
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_CaptureEntirePageAsPNG_Deprecated,
                             int,
                             FilePath,
                             bool)

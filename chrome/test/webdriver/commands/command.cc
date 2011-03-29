@@ -29,6 +29,10 @@ bool Command::Init(Response* const response) {
   return true;
 }
 
+std::string Command::GetPathVariable(const size_t i) const {
+  return i < path_segments_.size() ? path_segments_.at(i) : "";
+}
+
 bool Command::HasParameter(const std::string& key) const {
   return parameters_.get() && parameters_->HasKey(key);
 }

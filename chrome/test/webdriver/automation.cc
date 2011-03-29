@@ -232,6 +232,19 @@ void Automation::SendWebKeyEvent(int tab_id,
       automation(), windex, tab_index, key_event);
 }
 
+void Automation::CaptureEntirePageAsPNG(int tab_id,
+                                        const FilePath& path,
+                                        bool* success) {
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
+    *success = false;
+    return;
+  }
+
+  *success = SendCaptureEntirePageJSONRequest(
+      automation(), windex, tab_index, path);
+}
+
 void Automation::NavigateToURL(int tab_id,
                                const std::string& url,
                                bool* success) {

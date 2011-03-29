@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/json_value_serializer.h"
+#include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "googleurl/src/gurl.h"
@@ -746,10 +747,14 @@ bool TabProxy::CaptureEntirePageAsPNG(const FilePath& path) {
   if (!is_valid())
     return false;
 
-  bool succeeded = false;
-  sender_->Send(new AutomationMsg_CaptureEntirePageAsPNG(handle_, path,
-                                                         &succeeded));
-  return succeeded;
+  int browser_index, tab_index;
+  if (!SendGetIndicesFromTabHandleJSONRequest(
+         sender_, handle_, &browser_index, &tab_index)) {
+    return false;
+  }
+
+  return SendCaptureEntirePageJSONRequest(sender_, browser_index,
+                                          tab_index, path);
 }
 
 #if defined(OS_WIN)

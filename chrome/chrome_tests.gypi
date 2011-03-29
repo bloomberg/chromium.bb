@@ -781,6 +781,8 @@
         'test/webdriver/commands/mouse_commands.cc',
         'test/webdriver/commands/response.cc',
         'test/webdriver/commands/response.h',
+        'test/webdriver/commands/screenshot_command.h',
+        'test/webdriver/commands/screenshot_command.cc',
         'test/webdriver/commands/session_with_id.h',
         'test/webdriver/commands/session_with_id.cc',
         'test/webdriver/commands/source_command.h',

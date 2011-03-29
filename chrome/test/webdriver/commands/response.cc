@@ -4,6 +4,7 @@
 
 #include "chrome/test/webdriver/commands/response.h"
 
+#include "base/base64.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
@@ -73,6 +74,31 @@ void Response::SetError(ErrorCode error_code, const std::string& message,
   SetStatus(error_code);
   SetValue(error);
 }
+
+void Response::SetError(ErrorCode error_code,
+                        const std::string& message,
+                        const std::string& file,
+                        int line,
+                        const std::string& png) {
+  DictionaryValue* error = new DictionaryValue;
+
+  error->SetString(kMessageKey, message);
+  error->SetString(kStackTraceFileNameKey, file);
+  error->SetInteger(kStackTraceLineNumberKey, line);
+  std::string base64_png;
+
+  // Convert the raw binary data to base 64 encoding for webdriver.
+  if (!base::Base64Encode(png, &base64_png)) {
+    LOG(ERROR) << "Failed to encode screenshot to base64 "
+               << "sending back an empty string instead.";
+  } else {
+    error->SetString(kScreenKey, base64_png);
+  }
+
+  SetStatus(error_code);
+  SetValue(error);
+}
+
 
 void Response::SetField(const std::string& key, Value* value) {
   data_.Set(key, value);

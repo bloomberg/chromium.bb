@@ -49,9 +49,7 @@ class Command {
   // Returns the path variable encoded at the |i|th index (0-based) in the
   // request URL for this command. If the index is out of bounds, an empty
   // string will be returned.
-  inline std::string GetPathVariable(const size_t i) const {
-    return i < path_segments_.size() ? path_segments_.at(i) : "";
-  }
+  std::string GetPathVariable(const size_t i) const;
 
   // Returns whether the command has a parameter with the given |key|.
   bool HasParameter(const std::string& key) const;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,13 @@ void CreateSession::ExecutePost(Response* const response) {
                         "Failed to initialize session",
                         kInternalServerError);
     return;
+  }
+
+  bool screenshot_on_error = false;
+  DictionaryValue* capabilities = NULL;
+  if (GetDictionaryParameter("desiredCapabilities", &capabilities)) {
+    capabilities->GetBoolean("takeScreenshotOnError", &screenshot_on_error);
+    session->set_screenshot_on_error(screenshot_on_error);
   }
 
   VLOG(1) << "Created session " << session->id();

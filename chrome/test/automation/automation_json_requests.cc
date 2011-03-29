@@ -4,6 +4,7 @@
 
 #include "chrome/test/automation/automation_json_requests.h"
 
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "base/json/json_reader.h"
@@ -192,6 +193,21 @@ bool SendReloadJSONRequest(
   dict.SetInteger("windex", browser_index);
   dict.SetInteger("tab_index", tab_index);
   DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, dict, &reply_dict);
+}
+
+bool SendCaptureEntirePageJSONRequest(
+    AutomationMessageSender* sender,
+    int browser_index,
+    int tab_index,
+    const FilePath& path) {
+  DictionaryValue dict;
+  dict.SetString("command", "CaptureEntirePage");
+  dict.SetInteger("windex", browser_index);
+  dict.SetInteger("tab_index", tab_index);
+  dict.SetString("path", path.value());
+  DictionaryValue reply_dict;
+
   return SendAutomationJSONRequest(sender, dict, &reply_dict);
 }
 

@@ -1620,40 +1620,6 @@ class AutomationProxySnapshotTest : public UITest {
 
 // See http://crbug.com/63022.
 #if defined(OS_LINUX)
-#define MAYBE_ContentSmallerThanView FAILS_ContentSmallerThanView
-#else
-#define MAYBE_ContentSmallerThanView ContentSmallerThanView
-#endif
-// Tests that taking a snapshot when the content is smaller than the view
-// produces a snapshot equal to the view size.
-TEST_F(AutomationProxySnapshotTest, MAYBE_ContentSmallerThanView) {
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
-
-  scoped_refptr<WindowProxy> window(browser->GetWindow());
-  ASSERT_TRUE(window.get());
-  ASSERT_TRUE(window->SetBounds(gfx::Rect(300, 400)));
-
-  scoped_refptr<TabProxy> tab(browser->GetTab(0));
-  ASSERT_TRUE(tab.get());
-
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(GURL(chrome::kAboutBlankURL)));
-
-  gfx::Rect view_bounds;
-  ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_CONTAINER, &view_bounds,
-                                    false));
-
-  ASSERT_TRUE(tab->CaptureEntirePageAsPNG(snapshot_path_));
-
-  SkBitmap bitmap;
-  ASSERT_NO_FATAL_FAILURE(AssertReadPNG(snapshot_path_, &bitmap));
-  ASSERT_EQ(view_bounds.width(), bitmap.width());
-  ASSERT_EQ(view_bounds.height(), bitmap.height());
-}
-
-// See http://crbug.com/63022.
-#if defined(OS_LINUX)
 #define MAYBE_ContentLargerThanView FAILS_ContentLargerThanView
 #else
 #define MAYBE_ContentLargerThanView ContentLargerThanView

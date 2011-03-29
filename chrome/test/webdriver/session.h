@@ -98,6 +98,7 @@ class Session {
   bool GetURL(GURL* url);
   bool GetURL(std::string* url);
   bool GetTabTitle(std::string* tab_title);
+  bool GetScreenShot(std::string* png);
 
   bool GetCookies(const std::string& url, ListValue** cookies);
   bool GetCookiesDeprecated(const GURL& url, std::string* cookies);
@@ -194,18 +195,20 @@ class Session {
   // Waits for all tabs to stop loading. Returns true on success.
   bool WaitForAllTabsToStopLoading();
 
-  inline const std::string& id() const { return id_; }
+  const std::string& id() const;
 
-  inline int implicit_wait() const { return implicit_wait_; }
-  inline void set_implicit_wait(const int& timeout) {
-    implicit_wait_ = timeout > 0 ? timeout : 0;
-  }
+  int implicit_wait() const;
+  void set_implicit_wait(const int& timeout);
 
   enum Speed { kSlow, kMedium, kFast, kUnknown };
-  inline Speed speed() { return speed_; }
-  inline void set_speed(Speed speed) {
-    speed_ = speed;
-  }
+  Speed speed() const;
+  void set_speed(Speed speed);
+
+  // Since screenshots can be very large when in base64 PNG format; the
+  // client is allowed to dyamically enable/disable screenshots on error
+  // during the lifetime of the session.
+  bool screenshot_on_error() const;
+  void set_screenshot_on_error(bool error);
 
   const FrameId& current_target() const;
 
@@ -237,6 +240,7 @@ class Session {
   base::Thread thread_;
 
   int implicit_wait_;
+  bool screenshot_on_error_;
   Speed speed_;
 
   FrameId current_target_;

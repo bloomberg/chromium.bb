@@ -10,10 +10,12 @@ If your test is testing a specific part of the WebDriver API, consider adding
 it to the appropriate place in the WebDriver tree instead.
 """
 
-import platform
+import hashlib
 import os
+import platform
 import sys
 import unittest
+import urllib
 import urllib2
 import urlparse
 
@@ -28,6 +30,28 @@ import simplejson as json
 
 from selenium.webdriver.remote.command import Command
 from selenium.webdriver.remote.webdriver import WebDriver
+
+
+def DataDir():
+  """Returns the path to the data dir chrome/test/data."""
+  return os.path.normpath(
+    os.path.join(os.path.dirname(__file__), os.pardir, "data"))
+
+
+def GetFileURLForPath(path):
+  """Get file:// url for the given path.
+  Also quotes the url using urllib.quote().
+  """
+  abs_path = os.path.abspath(path)
+  if sys.platform == 'win32':
+    # Don't quote the ':' in drive letter ( say, C: ) on win.
+    # Also, replace '\' with '/' as expected in a file:/// url.
+    drive, rest = os.path.splitdrive(abs_path)
+    quoted_path = drive.upper() + urllib.quote((rest.replace('\\', '/')))
+    return 'file:///' + quoted_path
+  else:
+    quoted_path = urllib.quote(abs_path)
+    return 'file://' + quoted_path
 
 
 class Request(urllib2.Request):
@@ -155,6 +179,32 @@ class CookieTest(unittest.TestCase):
     self._driver.delete_cookie("chromedriver_cookie_test")
     cookie_dict = self._driver.get_cookie("chromedriver_cookie_test")
     self.assertEqual(cookie_dict, None)
+
+
+class ScreenshotTest(unittest.TestCase):
+  """Tests to verify screenshot retrieval"""
+
+  REDBOX = "automation_proxy_snapshot/set_size.html"
+
+  def setUp(self):
+    self._launcher = ChromeDriverLauncher()
+    self._driver = WebDriver(self._launcher.GetURL(), {})
+
+  def tearDown(self):
+    self._driver.quit()
+    self._launcher.Kill()
+
+  def testScreenCaptureAgainstReference(self):
+    # Create a red square of 2000x2000 pixels.
+    url = GetFileURLForPath(os.path.join(DataDir(),
+                                         self.REDBOX))
+    url += "?2000,2000"
+    self._driver.get(url)
+    s = self._driver.get_screenshot_as_base64();
+    self._driver.get_screenshot_as_file("/tmp/foo.png")
+    h = hashlib.md5(s).hexdigest()
+    # Compare the PNG created to the reference hash.
+    self.assertEquals(h, '12c0ade27e3875da3d8866f52d2fa84f')
 
 
 class SessionTest(unittest.TestCase):
