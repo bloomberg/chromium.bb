@@ -12,7 +12,6 @@
 #include "chrome/common/translate_errors.h"
 #include "content/renderer/render_view_observer.h"
 
-class RenderView;
 namespace WebKit {
 class WebDocument;
 class WebFrame;
@@ -117,9 +116,6 @@ class TranslateHelper : public RenderViewObserver {
   // Convenience method to access the main frame.  Can return NULL, typically
   // if the page is being closed.
   WebKit::WebFrame* GetMainFrame();
-
-  // The RenderView we are performing translations for.
-  RenderView* render_view_;
 
   // The states associated with the current translation.
   bool translation_pending_;
