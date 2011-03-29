@@ -26,7 +26,6 @@
 #include "chrome/browser/tab_contents/popup_menu_helper_mac.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/extensions/extension.h"
@@ -42,6 +41,7 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/webui/web_ui_factory.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
@@ -573,8 +573,8 @@ void ExtensionHost::CreateNewWindow(
       route_id,
       render_view_host()->process()->profile(),
       site_instance(),
-      ChromeWebUIFactory::GetInstance()->GetWebUIType(
-          render_view_host()->process()->profile(), url_),
+      WebUIFactory::GetWebUIType(render_view_host()->process()->profile(),
+          url_),
       this,
       params.window_container_type,
       params.frame_name);

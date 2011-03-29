@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/webui/generic_handler.h"
+#include "chrome/browser/ui/webui/generic_handler.h"
 
 #include "base/logging.h"
 #include "base/values.h"

@@ -7,8 +7,8 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui_factory.h"
 
 FaviconService::FaviconService(Profile* profile) : profile_(profile) {
 }
@@ -54,8 +54,7 @@ FaviconService::Handle FaviconService::GetFaviconForURL(
   FaviconService::Handle handle = request->handle();
   if (page_url.SchemeIs(chrome::kChromeUIScheme) ||
       page_url.SchemeIs(chrome::kExtensionScheme)) {
-    ChromeWebUIFactory::GetInstance()->GetFaviconForURL(
-        profile_, request, page_url);
+    WebUIFactory::GetFaviconForURL(profile_, request, page_url);
   } else {
     HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
     if (hs)

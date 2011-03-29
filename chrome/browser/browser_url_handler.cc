@@ -8,9 +8,8 @@
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui_factory.h"
 #include "googleurl/src/gurl.h"
 
 // Handles rewriting view-source URLs for what we'll actually load.
@@ -62,7 +61,7 @@ static bool ReverseViewSource(GURL* url, Profile* profile) {
 
 // Handles rewriting Web UI URLs.
 static bool HandleWebUI(GURL* url, Profile* profile) {
-  if (!ChromeWebUIFactory::GetInstance()->UseWebUIForURL(profile, *url))
+  if (!WebUIFactory::UseWebUIForURL(profile, *url))
     return false;
 
   // Special case the new tab page. In older versions of Chrome, the new tab

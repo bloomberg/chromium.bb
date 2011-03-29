@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"

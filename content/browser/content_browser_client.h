@@ -14,8 +14,6 @@ class RenderViewHost;
 
 namespace content {
 
-class WebUIFactory;
-
 // Embedder API for participating in browser logic.
 class ContentBrowserClient {
  public:
@@ -23,9 +21,6 @@ class ContentBrowserClient {
   virtual void PreCreateRenderView(RenderViewHost* render_view_host,
                                    Profile* profile,
                                    const GURL& url) {}
-
-  // Gets the WebUIFactory which will be responsible for generating WebUIs.
-  virtual WebUIFactory* GetWebUIFactory();
 };
 
 }  // namespace content

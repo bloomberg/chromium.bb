@@ -7,7 +7,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "content/browser/renderer_host/render_view_host.h"
 
 namespace chrome {
@@ -26,10 +25,6 @@ void ChromeContentBrowserClient::PreCreateRenderView(
     static_cast<BrowserRenderProcessHost*>(render_view_host->process())->
         set_installed_app(installed_app);
   }
-}
-
-content::WebUIFactory* ChromeContentBrowserClient::GetWebUIFactory() {
-  return ChromeWebUIFactory::GetInstance();
 }
 
 }  // namespace chrome

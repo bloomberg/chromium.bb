@@ -8,10 +8,8 @@
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browsing_instance.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/common/notification_service.h"
-#include "content/common/content_client.h"
 #include "net/base/registry_controlled_domain.h"
 
 // We treat javascript:, about:crash, about:hang, and about:shorthang as the
@@ -213,7 +211,7 @@ RenderProcessHost::Type SiteInstance::RendererTypeForURL(const GURL& url) {
     return RenderProcessHost::TYPE_EXTENSION;
 
   // TODO(erikkay) creis recommends using UseWebUIForURL instead.
-  if (content::WebUIFactory::Get()->HasWebUIScheme(url))
+  if (WebUIFactory::HasWebUIScheme(url))
     return RenderProcessHost::TYPE_WEBUI;
 
   return RenderProcessHost::TYPE_NORMAL;

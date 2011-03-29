@@ -66,7 +66,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -80,8 +79,7 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/browser/webui/web_ui_factory.h"
-#include "content/common/content_client.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/common/navigation_types.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
@@ -252,7 +250,7 @@ TabContents::TabContents(Profile* profile,
 #endif
       suppress_javascript_messages_(false),
       is_showing_before_unload_dialog_(false),
-      opener_web_ui_type_(WebUI::kNoWebUI),
+      opener_web_ui_type_(WebUIFactory::kNoWebUI),
       language_state_(&controller_),
       closed_by_user_gesture_(false),
       minimum_zoom_percent_(
@@ -552,7 +550,7 @@ bool TabContents::ShouldDisplayURL() {
   }
 
   // We always display the URL for non-WebUI URLs to prevent spoofing.
-  if (entry && !content::WebUIFactory::Get()->HasWebUIScheme(entry->url()))
+  if (entry && !WebUIFactory::HasWebUIScheme(entry->url()))
     return true;
 
   WebUI* web_ui = GetWebUIForCurrentState();
@@ -715,9 +713,8 @@ bool TabContents::NavigateToEntry(
   // For security, we should never send non-Web-UI URLs to a Web UI renderer.
   // Double check that here.
   int enabled_bindings = dest_render_view_host->enabled_bindings();
-  bool is_allowed_in_web_ui_renderer = content::GetContentClient()->
-      browser()->GetWebUIFactory()->IsURLAcceptableForWebUI(profile(),
-                                                            entry.url());
+  bool is_allowed_in_web_ui_renderer =
+      WebUIFactory::IsURLAcceptableForWebUI(profile(), entry.url());
   CHECK(!BindingsPolicy::is_web_ui_enabled(enabled_bindings) ||
         is_allowed_in_web_ui_renderer);
 
@@ -1601,27 +1598,23 @@ WebUI* TabContents::GetWebUIForCurrentState() {
   return render_manager_.web_ui();
 }
 
-WebUI::TypeID TabContents::GetWebUITypeForCurrentState() {
-  return content::WebUIFactory::Get()->GetWebUIType(profile(), GetURL());
-}
-
 void TabContents::DidNavigateMainFramePostCommit(
     const NavigationController::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
-  if (opener_web_ui_type_ != WebUI::kNoWebUI) {
+  if (opener_web_ui_type_ != WebUIFactory::kNoWebUI) {
     // If this is a window.open navigation, use the same WebUI as the renderer
     // that opened the window, as long as both renderers have the same
     // privileges.
-    if (delegate_ && opener_web_ui_type_ == GetWebUITypeForCurrentState()) {
-      WebUI* web_ui = content::GetContentClient()->browser()->
-          GetWebUIFactory()->CreateWebUIForURL(this, GetURL());
+    if (opener_web_ui_type_ ==
+        WebUIFactory::GetWebUIType(profile(), GetURL())) {
+      WebUI* web_ui = WebUIFactory::CreateWebUIForURL(this, GetURL());
       // web_ui might be NULL if the URL refers to a non-existent extension.
       if (web_ui) {
         render_manager_.SetWebUIPostCommit(web_ui);
         web_ui->RenderViewCreated(render_view_host());
       }
     }
-    opener_web_ui_type_ = WebUI::kNoWebUI;
+    opener_web_ui_type_ = WebUIFactory::kNoWebUI;
   }
 
   if (details.is_user_initiated_main_frame_load()) {
@@ -2001,8 +1994,9 @@ void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
 
   // When we're creating views, we're still doing initial setup, so we always
   // use the pending Web UI rather than any possibly existing committed one.
-  if (render_manager_.pending_web_ui())
+  if (render_manager_.pending_web_ui()) {
     render_manager_.pending_web_ui()->RenderViewCreated(render_view_host);
+  }
 
   if (entry->IsViewSourceMode()) {
     // Put the renderer in view source mode.
@@ -2577,7 +2571,7 @@ NavigationController& TabContents::GetControllerForRenderManager() {
 }
 
 WebUI* TabContents::CreateWebUIForRenderManager(const GURL& url) {
-  return content::WebUIFactory::Get()->CreateWebUIForURL(this, url);
+  return WebUIFactory::CreateWebUIForURL(this, url);
 }
 
 NavigationEntry*

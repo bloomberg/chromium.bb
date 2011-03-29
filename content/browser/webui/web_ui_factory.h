@@ -6,51 +6,62 @@
 #define CONTENT_BROWSER_WEBUI_WEB_UI_FACTORY_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
+#include "base/basictypes.h"
+#include "chrome/browser/favicon_service.h"
 
-class Profile;
-class TabContents;
+class WebUI;
 class GURL;
+class Profile;
+class RefCountedMemory;
+class TabContents;
 
-namespace content {
+// An opaque identifier used to identify a WebUI. This can only be compared to
+// kNoWebUI or other WebUI types. See GetWebUIType.
+typedef void* WebUITypeID;
 
-// Interface for an object which controls which URLs are considered WebUI URLs
-// and creates WebUI instances for given URLs.
 class WebUIFactory {
  public:
-  // Returns a WebUI instance for the given URL, or NULL if the URL doesn't
-  // correspond to a WebUI.
-  virtual WebUI* CreateWebUIForURL(TabContents* source,
-                                   const GURL& url) const = 0;
+  // A special WebUI type that signifies that a given page would not use the
+  // Web UI system.
+  static const WebUITypeID kNoWebUI;
 
-  // Gets the WebUI type for the given URL. This will return kNoWebUI if the
-  // corresponding call to CreateWebUIForURL would fail, or something non-NULL
-  // if CreateWebUIForURL would succeed.
-  virtual WebUI::TypeID GetWebUIType(Profile* profile,
-                                     const GURL& url) const = 0;
+  // Returns a type identifier indicating what WebUI we would use for the
+  // given URL. This is useful for comparing the potential WebUIs for two URLs.
+  // Returns kNoWebUI if the given URL will not use the Web UI system.
+  static WebUITypeID GetWebUIType(Profile* profile, const GURL& url);
 
-  // Shorthand for the above, but returns a simple yes/no.
-  virtual bool UseWebUIForURL(Profile* profile, const GURL& url) const = 0;
+  // Returns true if the given URL's scheme would trigger the Web UI system.
+  // This is a less precise test than UseDONUIForURL, which tells you whether
+  // that specific URL matches a known one. This one is faster and can be used
+  // to determine security policy.
+  static bool HasWebUIScheme(const GURL& url);
 
-  // Returns true if the url has a scheme for WebUI. This differs from the above
-  // in that it only checks the scheme; it is faster and can be used to
-  // determine security policy.
-  virtual bool HasWebUIScheme(const GURL& url) const = 0;
+  // Returns true if the given URL must use the Web UI system.
+  static bool UseWebUIForURL(Profile* profile, const GURL& url);
 
-  // Returns true if the given URL can be loaded by Web UI system. This allows
-  // URLs with WebUI types (as above) and also URLs that can be loaded by
-  // normal tabs such as javascript: URLs or about:hang.
-  virtual bool IsURLAcceptableForWebUI(Profile* profile,
-                                       const GURL& url) const = 0;
+  // Returns true if the given URL can be loaded by Web UI system.  This
+  // includes URLs that can be loaded by normal tabs as well, such as
+  // javascript: URLs or about:hang.
+  static bool IsURLAcceptableForWebUI(Profile* profile, const GURL& url);
 
-  virtual ~WebUIFactory() {}
+  // Allocates a new WebUI object for the given URL, and returns it. If the URL
+  // is not a Web UI URL, then it will return NULL. When non-NULL, ownership of
+  // the returned pointer is passed to the caller.
+  static WebUI* CreateWebUIForURL(TabContents* tab_contents, const GURL& url);
 
-  // Helper function to streamline retrieval of the current WebUIFactory. Only
-  // to be used in content/.
-  static WebUIFactory* Get();
+  // Get the favicon for |page_url| and forward the result to the |request|
+  // when loaded.
+  static void GetFaviconForURL(Profile* profile,
+                               FaviconService::GetFaviconRequest* request,
+                               const GURL& page_url);
+
+ private:
+  // Gets the data for the favicon for a WebUI page. Returns NULL if the WebUI
+  // does not have a favicon.
+  static RefCountedMemory* GetFaviconResourceBytes(Profile* profile,
+                                                   const GURL& page_url);
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(WebUIFactory);
 };
-
-
-}  // namespace content
 
 #endif  // CONTENT_BROWSER_WEBUI_WEB_UI_FACTORY_H_

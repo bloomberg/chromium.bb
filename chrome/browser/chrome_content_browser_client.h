@@ -15,7 +15,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void PreCreateRenderView(RenderViewHost* render_view_host,
                                    Profile* profile,
                                    const GURL& url);
-  virtual content::WebUIFactory* GetWebUIFactory();
 };
 
 }  // namespace chrome

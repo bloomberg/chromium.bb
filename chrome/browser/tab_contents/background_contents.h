@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/scoped_ptr.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/common/view_types.h"

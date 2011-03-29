@@ -31,7 +31,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui_factory.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/property_bag.h"
 #include "content/common/renderer_preferences.h"
@@ -600,7 +600,7 @@ class TabContents : public PageNavigator,
     return &renderer_preferences_;
   }
 
-  void set_opener_web_ui_type(WebUI::TypeID opener_web_ui_type) {
+  void set_opener_web_ui_type(WebUITypeID opener_web_ui_type) {
     opener_web_ui_type_ = opener_web_ui_type;
   }
 
@@ -692,9 +692,6 @@ class TabContents : public PageNavigator,
   safe_browsing::ClientSideDetectionHost* safebrowsing_detection_host() {
     return safebrowsing_detection_host_.get();
   }
-
-  // Query the WebUIFactory for the TypeID for the current URL.
-  WebUI::TypeID GetWebUITypeForCurrentState();
 
  protected:
   // from RenderViewHostDelegate.
@@ -1177,7 +1174,7 @@ class TabContents : public PageNavigator,
 
   // If this tab was created from a renderer using window.open, this will be
   // non-NULL and represent the WebUI of the opening renderer.
-  WebUI::TypeID opener_web_ui_type_;
+  WebUITypeID opener_web_ui_type_;
 
   // The time that we started to create the new tab page.
   base::TimeTicks new_tab_start_time_;
