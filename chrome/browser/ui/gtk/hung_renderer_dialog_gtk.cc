@@ -148,12 +148,13 @@ void HungRendererDialogGtk::ShowForTabContents(TabContents* hung_contents) {
 
   GtkTreeIter tree_iter;
   for (TabContentsIterator it; !it.done(); ++it) {
-    if (it->GetRenderProcessHost() == hung_contents->GetRenderProcessHost()) {
+    if (it->tab_contents()->GetRenderProcessHost() ==
+        hung_contents->GetRenderProcessHost()) {
       gtk_list_store_append(model_, &tree_iter);
-      std::string title = UTF16ToUTF8(it->GetTitle());
+      std::string title = UTF16ToUTF8(it->tab_contents()->GetTitle());
       if (title.empty())
         title = UTF16ToUTF8(TabContentsWrapper::GetDefaultTitle());
-      SkBitmap favicon = it->GetFavicon();
+      SkBitmap favicon = it->tab_contents()->GetFavicon();
 
       GdkPixbuf* pixbuf = NULL;
       if (favicon.width() > 0)

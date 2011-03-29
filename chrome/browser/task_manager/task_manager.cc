@@ -19,6 +19,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_resource_providers.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -407,7 +408,7 @@ TaskManager::Resource::Type TaskManagerModel::GetResourceType(int index) const {
   return resources_[index]->GetType();
 }
 
-TabContents* TaskManagerModel::GetResourceTabContents(int index) const {
+TabContentsWrapper* TaskManagerModel::GetResourceTabContents(int index) const {
   CHECK_LT(index, ResourceCount());
   return resources_[index]->GetTabContents();
 }
@@ -967,9 +968,10 @@ void TaskManager::ActivateProcess(int index) {
   // GetResourceTabContents returns a pointer to the relevant tab contents for
   // the resource.  If the index doesn't correspond to a Tab (i.e. refers to
   // the Browser process or a plugin), GetTabContents will return NULL.
-  TabContents* chosen_tab_contents = model_->GetResourceTabContents(index);
+  TabContentsWrapper* chosen_tab_contents =
+      model_->GetResourceTabContents(index);
   if (chosen_tab_contents)
-    chosen_tab_contents->Activate();
+    chosen_tab_contents->tab_contents()->Activate();
 }
 
 void TaskManager::AddResourceProvider(ResourceProvider* provider) {

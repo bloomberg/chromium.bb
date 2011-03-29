@@ -17,6 +17,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -191,7 +192,7 @@ Browser* ExtensionWebUI::GetBrowser() {
   TabContents* contents = tab_contents();
   TabContentsIterator tab_iterator;
   for (; !tab_iterator.done(); ++tab_iterator) {
-    if (contents == *tab_iterator)
+    if (contents == (*tab_iterator)->tab_contents())
       return tab_iterator.browser();
   }
 
@@ -346,7 +347,7 @@ void ExtensionWebUI::UnregisterAndReplaceOverride(const std::string& page,
     // This is the active override, so we need to find all existing
     // tabs for this override and get them to reload the original URL.
     for (TabContentsIterator iterator; !iterator.done(); ++iterator) {
-      TabContents* tab = *iterator;
+      TabContents* tab = (*iterator)->tab_contents();
       if (tab->profile() != profile)
         continue;
 

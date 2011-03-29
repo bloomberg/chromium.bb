@@ -23,7 +23,7 @@ class BalloonHost;
 class Extension;
 class ExtensionHost;
 class RenderViewHost;
-class TabContents;
+class TabContentsWrapper;
 
 // These file contains the resource providers used in the task manager.
 
@@ -79,18 +79,18 @@ class TaskManagerRendererResource : public TaskManager::Resource {
 
 class TaskManagerTabContentsResource : public TaskManagerRendererResource {
  public:
-  explicit TaskManagerTabContentsResource(TabContents* tab_contents);
+  explicit TaskManagerTabContentsResource(TabContentsWrapper* tab_contents);
   virtual ~TaskManagerTabContentsResource();
 
   // TaskManager::Resource methods:
   virtual Type GetType() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual SkBitmap GetIcon() const OVERRIDE;
-  virtual TabContents* GetTabContents() const OVERRIDE;
+  virtual TabContentsWrapper* GetTabContents() const OVERRIDE;
   virtual const Extension* GetExtension() const OVERRIDE;
 
  private:
-  TabContents* tab_contents_;
+  TabContentsWrapper* tab_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
 };
@@ -115,10 +115,10 @@ class TaskManagerTabContentsResourceProvider
  private:
   virtual ~TaskManagerTabContentsResourceProvider();
 
-  void Add(TabContents* tab_contents);
-  void Remove(TabContents* tab_contents);
+  void Add(TabContentsWrapper* tab_contents);
+  void Remove(TabContentsWrapper* tab_contents);
 
-  void AddToTaskManager(TabContents* tab_contents);
+  void AddToTaskManager(TabContentsWrapper* tab_contents);
 
   // Whether we are currently reporting to the task manager. Used to ignore
   // notifications sent after StopUpdating().
@@ -126,9 +126,9 @@ class TaskManagerTabContentsResourceProvider
 
   TaskManager* task_manager_;
 
-  // Maps the actual resources (the TabContents) to the Task Manager
+  // Maps the actual resources (the TabContentsWrappers) to the Task Manager
   // resources.
-  std::map<TabContents*, TaskManagerTabContentsResource*> resources_;
+  std::map<TabContentsWrapper*, TaskManagerTabContentsResource*> resources_;
 
   // A scoped container for notification registries.
   NotificationRegistrar registrar_;

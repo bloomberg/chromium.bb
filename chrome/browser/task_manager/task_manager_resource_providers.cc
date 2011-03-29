@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/sqlite_utils.h"
@@ -155,9 +156,9 @@ bool TaskManagerRendererResource::SupportNetworkUsage() const {
 ////////////////////////////////////////////////////////////////////////////////
 
 TaskManagerTabContentsResource::TaskManagerTabContentsResource(
-    TabContents* tab_contents)
+    TabContentsWrapper* tab_contents)
     : TaskManagerRendererResource(
-          tab_contents->GetRenderProcessHost()->GetHandle(),
+          tab_contents->tab_contents()->GetRenderProcessHost()->GetHandle(),
           tab_contents->render_view_host()),
       tab_contents_(tab_contents) {
 }
@@ -166,14 +167,14 @@ TaskManagerTabContentsResource::~TaskManagerTabContentsResource() {
 }
 
 TaskManager::Resource::Type TaskManagerTabContentsResource::GetType() const {
-  return tab_contents_->HostsExtension() ? EXTENSION : RENDERER;
+  return tab_contents_->tab_contents()->HostsExtension() ? EXTENSION : RENDERER;
 }
 
 string16 TaskManagerTabContentsResource::GetTitle() const {
   // Fall back on the URL if there's no title.
-  string16 tab_title = tab_contents_->GetTitle();
+  string16 tab_title = tab_contents_->tab_contents()->GetTitle();
   if (tab_title.empty()) {
-    tab_title = UTF8ToUTF16(tab_contents_->GetURL().spec());
+    tab_title = UTF8ToUTF16(tab_contents_->tab_contents()->GetURL().spec());
     // Force URL to be LTR.
     tab_title = base::i18n::GetDisplayStringInLTRDirectionality(tab_title);
   } else {
@@ -192,25 +193,27 @@ string16 TaskManagerTabContentsResource::GetTitle() const {
   ExtensionService* extensions_service =
       tab_contents_->profile()->GetExtensionService();
   int message_id = GetMessagePrefixID(
-      extensions_service->IsInstalledApp(tab_contents_->GetURL()),
-      tab_contents_->HostsExtension(),
+      extensions_service->IsInstalledApp(
+          tab_contents_->tab_contents()->GetURL()),
+      tab_contents_->tab_contents()->HostsExtension(),
       tab_contents_->profile()->IsOffTheRecord());
   return l10n_util::GetStringFUTF16(message_id, tab_title);
 }
 
 SkBitmap TaskManagerTabContentsResource::GetIcon() const {
-  return tab_contents_->GetFavicon();
+  return tab_contents_->tab_contents()->GetFavicon();
 }
 
-TabContents* TaskManagerTabContentsResource::GetTabContents() const {
-  return static_cast<TabContents*>(tab_contents_);
+TabContentsWrapper* TaskManagerTabContentsResource::GetTabContents() const {
+  return tab_contents_;
 }
 
 const Extension* TaskManagerTabContentsResource::GetExtension() const {
-  if (tab_contents_->HostsExtension()) {
+  if (tab_contents_->tab_contents()->HostsExtension()) {
     ExtensionService* extensions_service =
         tab_contents_->profile()->GetExtensionService();
-    return extensions_service->GetExtensionByURL(tab_contents_->GetURL());
+    return extensions_service->GetExtensionByURL(
+        tab_contents_->tab_contents()->GetURL());
   }
 
   return NULL;
@@ -244,8 +247,10 @@ TaskManager::Resource* TaskManagerTabContentsResourceProvider::GetResource(
   if (origin_pid)
     return NULL;
 
-  std::map<TabContents*, TaskManagerTabContentsResource*>::iterator
-      res_iter = resources_.find(tab_contents);
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  std::map<TabContentsWrapper*, TaskManagerTabContentsResource*>::iterator
+      res_iter = resources_.find(wrapper);
   if (res_iter == resources_.end()) {
     // Can happen if the tab was closed while a network request was being
     // performed.
@@ -298,24 +303,25 @@ void TaskManagerTabContentsResourceProvider::StopUpdating() {
 }
 
 void TaskManagerTabContentsResourceProvider::AddToTaskManager(
-    TabContents* tab_contents) {
+    TabContentsWrapper* tab_contents) {
   TaskManagerTabContentsResource* resource =
       new TaskManagerTabContentsResource(tab_contents);
   resources_[tab_contents] = resource;
   task_manager_->AddResource(resource);
 }
 
-void TaskManagerTabContentsResourceProvider::Add(TabContents* tab_contents) {
+void TaskManagerTabContentsResourceProvider::Add(
+    TabContentsWrapper* tab_contents) {
   if (!updating_)
     return;
 
   // Don't add dead tabs or tabs that haven't yet connected.
-  if (!tab_contents->GetRenderProcessHost()->GetHandle() ||
-      !tab_contents->notify_disconnection()) {
+  if (!tab_contents->tab_contents()->GetRenderProcessHost()->GetHandle() ||
+      !tab_contents->tab_contents()->notify_disconnection()) {
     return;
   }
 
-  std::map<TabContents*, TaskManagerTabContentsResource*>::const_iterator
+  std::map<TabContentsWrapper*, TaskManagerTabContentsResource*>::const_iterator
       iter = resources_.find(tab_contents);
   if (iter != resources_.end()) {
     // The case may happen that we have added a TabContents as part of the
@@ -327,10 +333,11 @@ void TaskManagerTabContentsResourceProvider::Add(TabContents* tab_contents) {
   AddToTaskManager(tab_contents);
 }
 
-void TaskManagerTabContentsResourceProvider::Remove(TabContents* tab_contents) {
+void TaskManagerTabContentsResourceProvider::Remove(
+    TabContentsWrapper* tab_contents) {
   if (!updating_)
     return;
-  std::map<TabContents*, TaskManagerTabContentsResource*>::iterator
+  std::map<TabContentsWrapper*, TaskManagerTabContentsResource*>::iterator
       iter = resources_.find(tab_contents);
   if (iter == resources_.end()) {
     // Since TabContents are destroyed asynchronously (see TabContentsCollector
@@ -352,22 +359,25 @@ void TaskManagerTabContentsResourceProvider::Remove(TabContents* tab_contents) {
 void TaskManagerTabContentsResourceProvider::Observe(NotificationType type,
     const NotificationSource& source,
     const NotificationDetails& details) {
+  TabContentsWrapper* tab_contents =
+      TabContentsWrapper::GetCurrentWrapperForContents(
+          Source<TabContents>(source).ptr());
   switch (type.value) {
     case NotificationType::TAB_CONTENTS_CONNECTED:
-      Add(Source<TabContents>(source).ptr());
+      Add(tab_contents);
       break;
     case NotificationType::TAB_CONTENTS_SWAPPED:
-      Remove(Source<TabContents>(source).ptr());
-      Add(Source<TabContents>(source).ptr());
+      Remove(tab_contents);
+      Add(tab_contents);
       break;
     case NotificationType::TAB_CONTENTS_DESTROYED:
-      // If this DCHECK is triggered, it could explain http://crbug.com/7321.
-      DCHECK(resources_.find(Source<TabContents>(source).ptr()) ==
+      // If this DCHECK is triggered, it could explain http://crbug.com/7321 .
+      DCHECK(resources_.find(tab_contents) ==
              resources_.end()) << "TAB_CONTENTS_DESTROYED with no associated "
                                   "TAB_CONTENTS_DISCONNECTED";
       // Fall through.
     case NotificationType::TAB_CONTENTS_DISCONNECTED:
-      Remove(Source<TabContents>(source).ptr());
+      Remove(tab_contents);
       break;
     default:
       NOTREACHED() << "Unexpected notification.";

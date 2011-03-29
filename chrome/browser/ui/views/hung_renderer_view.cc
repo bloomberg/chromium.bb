@@ -75,8 +75,9 @@ HungPagesTableModel::~HungPagesTableModel() {
 void HungPagesTableModel::InitForTabContents(TabContents* hung_contents) {
   tab_contentses_.clear();
   for (TabContentsIterator it; !it.done(); ++it) {
-    if (it->GetRenderProcessHost() == hung_contents->GetRenderProcessHost())
-      tab_contentses_.push_back(*it);
+    if (it->tab_contents()->GetRenderProcessHost() ==
+        hung_contents->GetRenderProcessHost())
+      tab_contentses_.push_back((*it)->tab_contents());
   }
   // The world is different.
   if (observer_)

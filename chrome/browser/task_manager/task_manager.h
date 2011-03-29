@@ -25,7 +25,7 @@
 
 class Extension;
 class SkBitmap;
-class TabContents;
+class TabContentsWrapper;
 class TaskManagerModel;
 
 namespace base {
@@ -80,7 +80,7 @@ class TaskManager {
 
     // A helper function for ActivateFocusedTab.  Returns NULL by default
     // because not all resources have an associated tab.
-    virtual TabContents* GetTabContents() const { return NULL; }
+    virtual TabContentsWrapper* GetTabContents() const { return NULL; }
 
     // Whether this resource does report the network usage accurately.
     // This controls whether 0 or N/A is displayed when no bytes have been
@@ -290,7 +290,7 @@ class TaskManagerModel : public net::URLRequestJobTracker::JobObserver,
   TaskManager::Resource::Type GetResourceType(int index) const;
 
   // Returns TabContents of given resource or NULL if not applicable.
-  TabContents* GetResourceTabContents(int index) const;
+  TabContentsWrapper* GetResourceTabContents(int index) const;
 
   // Returns Extension of given resource or NULL if not applicable.
   const Extension* GetResourceExtension(int index) const;

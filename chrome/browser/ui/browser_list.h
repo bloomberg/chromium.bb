@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -189,7 +189,7 @@ class BrowserList {
   static int keep_alive_count_;
 };
 
-class TabContents;
+class TabContentsWrapper;
 
 // Iterates through all web view hosts in all browser windows. Because the
 // renderers act asynchronously, getting a host through this interface does
@@ -219,20 +219,20 @@ class TabContentsIterator {
   }
 
   // Returns the current TabContents, valid as long as !Done()
-  TabContents* operator->() const {
+  TabContentsWrapper* operator->() const {
     return cur_;
   }
-  TabContents* operator*() const {
+  TabContentsWrapper* operator*() const {
     return cur_;
   }
 
   // Incrementing operators, valid as long as !Done()
-  TabContents* operator++() {  // ++preincrement
+  TabContentsWrapper* operator++() {  // ++preincrement
     Advance();
     return cur_;
   }
-  TabContents* operator++(int) {  // postincrement++
-    TabContents* tmp = cur_;
+  TabContentsWrapper* operator++(int) {  // postincrement++
+    TabContentsWrapper* tmp = cur_;
     Advance();
     return tmp;
   }
@@ -252,7 +252,7 @@ class TabContentsIterator {
   // Current TabContents, or NULL if we're at the end of the list. This can
   // be extracted given the browser iterator and index, but it's nice to cache
   // this since the caller may access the current host many times.
-  TabContents* cur_;
+  TabContentsWrapper* cur_;
 };
 
 #endif  // CHROME_BROWSER_UI_BROWSER_LIST_H_

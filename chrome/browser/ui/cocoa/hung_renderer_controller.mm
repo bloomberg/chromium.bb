@@ -138,15 +138,16 @@ HungRendererController* g_instance = NULL;
   scoped_nsobject<NSMutableArray> titles([[NSMutableArray alloc] init]);
   scoped_nsobject<NSMutableArray> favicons([[NSMutableArray alloc] init]);
   for (TabContentsIterator it; !it.done(); ++it) {
-    if (it->GetRenderProcessHost() == hungContents_->GetRenderProcessHost()) {
-      string16 title = (*it)->GetTitle();
+    if (it->tab_contents()->GetRenderProcessHost() ==
+        hungContents_->GetRenderProcessHost()) {
+      string16 title = (*it)->tab_contents()->GetTitle();
       if (title.empty())
         title = TabContentsWrapper::GetDefaultTitle();
       [titles addObject:base::SysUTF16ToNSString(title)];
 
       // TabContents can return a null SkBitmap if it has no favicon.  If this
       // happens, use the default favicon.
-      const SkBitmap& bitmap = it->GetFavicon();
+      const SkBitmap& bitmap = it->tab_contents()->GetFavicon();
       if (!bitmap.isNull()) {
         [favicons addObject:gfx::SkBitmapToNSImage(bitmap)];
       } else {
