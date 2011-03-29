@@ -15,7 +15,7 @@ namespace views {
 class Label;
 
 // A NativeButton subclass representing a checkbox.
-class Checkbox : public NativeButton {
+class Checkbox : public NativeButtonBase {
  public:
   // The button's class name.
   static const char kViewClassName[];
