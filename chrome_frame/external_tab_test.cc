@@ -39,6 +39,7 @@ struct MockUIDelegate : public UIDelegate {
   MOCK_METHOD3(OnExtensionInstalled, void(const FilePath& path, void* user_data,
       AutomationMsg_ExtensionResponseValues response));
   MOCK_METHOD1(OnLoad, void(const GURL& url));
+  MOCK_METHOD1(OnMoveWindow, void(const gfx::Rect& pos));
   MOCK_METHOD3(OnMessageFromChromeFrame, void(const std::string& message,
       const std::string& origin, const std::string& target));
   MOCK_METHOD3(OnHandleContextMenu, void(HANDLE menu_handle, int align_flags,

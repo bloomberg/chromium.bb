@@ -603,7 +603,6 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
           return AtlHresultFromLastError();
         }
       }
-      SetWindowDimensions();
     }
     SetObjectRects(&position_rect, &clip_rect);
   }
@@ -700,12 +699,6 @@ void ChromeActiveDocument::OnDidNavigate(const NavigationInfo& nav_info) {
   CrashMetricsReporter::GetInstance()->IncrementMetric(
       CrashMetricsReporter::CHROME_FRAME_NAVIGATION_COUNT);
 
-  // This could be NULL if the active document instance is being destroyed.
-  if (!m_spInPlaceSite) {
-    DVLOG(1) << __FUNCTION__ << "m_spInPlaceSite is NULL. Returning";
-    return;
-  }
-
   UpdateNavigationState(nav_info, 0);
 }
 
@@ -722,6 +715,12 @@ void ChromeActiveDocument::OnCloseTab() {
 
 void ChromeActiveDocument::UpdateNavigationState(
     const NavigationInfo& new_navigation_info, int flags) {
+  // This could be NULL if the active document instance is being destroyed.
+  if (!m_spInPlaceSite) {
+    DVLOG(1) << __FUNCTION__ << "m_spInPlaceSite is NULL. Returning";
+    return;
+  }
+
   HRESULT hr = S_OK;
   bool is_title_changed =
       (navigation_info_->title != new_navigation_info.title);
@@ -1057,9 +1056,8 @@ bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
 
   url_.Allocate(UTF8ToWide(cf_url.gurl().spec()).c_str());
   if (cf_url.attach_to_external_tab()) {
-    dimensions_ = cf_url.dimensions();
     automation_client_->AttachExternalTab(cf_url.cookie());
-    SetWindowDimensions();
+    OnMoveWindow(cf_url.dimensions());
   } else if (!automation_client_->InitiateNavigation(cf_url.gurl().spec(),
                                                      referrer,
                                                      this)) {
@@ -1085,7 +1083,6 @@ bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
                                 false);
   }
 }
-
 
 HRESULT ChromeActiveDocument::OnRefreshPage(const GUID* cmd_group_guid,
     DWORD command_id, DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args) {
@@ -1263,6 +1260,32 @@ void ChromeActiveDocument::OnGoToHistoryEntryOffset(int offset) {
     travel_log->Travel(browser_service, offset);
 }
 
+void ChromeActiveDocument::OnMoveWindow(const gfx::Rect& dimensions) {
+  ScopedComPtr<IWebBrowser2> web_browser2;
+  DoQueryService(SID_SWebBrowserApp, m_spClientSite,
+                 web_browser2.Receive());
+  if (!web_browser2)
+    return;
+  DVLOG(1) << "this:" << this << "\ndimensions: width:" << dimensions.width()
+           << " height:" << dimensions.height();
+  if (!dimensions.IsEmpty()) {
+    web_browser2->put_MenuBar(VARIANT_FALSE);
+    web_browser2->put_ToolBar(VARIANT_FALSE);
+
+    int width = dimensions.width();
+    int height = dimensions.height();
+    // Compute the size of the browser window given the desired size of the
+    // content area. As per MSDN, the WebBrowser object returns an error from
+    // this method. As a result the code below is best effort.
+    web_browser2->ClientToWindow(&width, &height);
+
+    web_browser2->put_Width(width);
+    web_browser2->put_Height(height);
+    web_browser2->put_Left(dimensions.x());
+    web_browser2->put_Top(dimensions.y());
+  }
+}
+
 HRESULT ChromeActiveDocument::GetBrowserServiceAndTravelLog(
     IBrowserService** browser_service, ITravelLog** travel_log) {
   DCHECK(browser_service || travel_log);
@@ -1350,37 +1373,6 @@ LRESULT ChromeActiveDocument::OnSetFocus(UINT message, WPARAM wparam,
   if (!ignore_setfocus_)
     GiveFocusToChrome(false);
   return 0;
-}
-
-void ChromeActiveDocument::SetWindowDimensions() {
-  ScopedComPtr<IWebBrowser2> web_browser2;
-  DoQueryService(SID_SWebBrowserApp, m_spClientSite,
-                 web_browser2.Receive());
-  if (!web_browser2)
-    return;
-  DVLOG(1) << "this:" << this << "\ndimensions: width:" << dimensions_.width()
-           << " height:" << dimensions_.height();
-  if (!dimensions_.IsEmpty()) {
-    web_browser2->put_MenuBar(VARIANT_FALSE);
-    web_browser2->put_ToolBar(VARIANT_FALSE);
-
-    int width = dimensions_.width();
-    int height = dimensions_.height();
-    // Compute the size of the browser window given the desired size of the
-    // content area. As per MSDN, the WebBrowser object returns an error from
-    // this method. As a result the code below is best effort.
-    if (SUCCEEDED(web_browser2->ClientToWindow(&width, &height))) {
-      dimensions_.set_width(width);
-      dimensions_.set_height(height);
-    }
-    web_browser2->put_Width(dimensions_.width());
-    web_browser2->put_Height(dimensions_.height());
-    web_browser2->put_Left(dimensions_.x());
-    web_browser2->put_Top(dimensions_.y());
-
-    dimensions_.set_height(0);
-    dimensions_.set_width(0);
-  }
 }
 
 bool ChromeActiveDocument::IsNewNavigation(

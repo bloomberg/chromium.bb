@@ -100,7 +100,8 @@ ExternalTabContainer::ExternalTabContainer(
       focus_manager_(NULL),
       external_tab_view_(NULL),
       unload_reply_message_(NULL),
-      route_all_top_level_navigations_(false) {
+      route_all_top_level_navigations_(false),
+      is_popup_window_(false) {
 }
 
 ExternalTabContainer::~ExternalTabContainer() {
@@ -438,6 +439,7 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
     uintptr_t cookie = reinterpret_cast<uintptr_t>(new_container.get());
     pending_tabs_.Get()[cookie] = new_container;
     new_container->set_pending(true);
+    new_container->set_is_popup_window(disposition == NEW_POPUP);
     AttachExternalTabParams attach_params_;
     attach_params_.cookie = static_cast<uint64>(cookie);
     attach_params_.dimensions = initial_pos;
@@ -491,6 +493,12 @@ void ExternalTabContainer::CloseContents(TabContents* source) {
 
 void ExternalTabContainer::MoveContents(TabContents* source,
                                         const gfx::Rect& pos) {
+  if (automation_ && is_popup_window_)
+    automation_->Send(new AutomationMsg_MoveWindow(tab_handle_, pos));
+}
+
+bool ExternalTabContainer::IsPopup(const TabContents* source) const {
+  return is_popup_window_;
 }
 
 void ExternalTabContainer::UpdateTargetURL(TabContents* source,

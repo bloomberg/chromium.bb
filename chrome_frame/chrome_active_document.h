@@ -365,6 +365,7 @@ END_EXEC_COMMAND_MAP()
       const GURL& url_to_open, const GURL& referrer, int open_disposition);
   virtual void OnAttachExternalTab(const AttachExternalTabParams& params);
   virtual void OnGoToHistoryEntryOffset(int offset);
+  virtual void OnMoveWindow(const gfx::Rect& dimensions);
 
   // A helper method that updates our internal navigation state
   // as well as IE's navigation state (viz Title and current URL).
@@ -436,10 +437,6 @@ END_EXEC_COMMAND_MAP()
   LRESULT OnSetFocus(UINT message, WPARAM wparam, LPARAM lparam,
                      BOOL& handled);
 
-  // Sets the dimensions on the IE window. These dimensions are parsed out from
-  // the information passed in from Chrome during window.open.
-  void SetWindowDimensions();
-
   // Returns true if the NavigationInfo object passed in represents a new
   // navigation initiated by the renderer.
   bool IsNewNavigation(const NavigationInfo& new_navigation_info,
@@ -481,8 +478,6 @@ END_EXEC_COMMAND_MAP()
   UrlmonUrlRequestManager::PrivacyInfo::PrivacyRecords::iterator
       next_privacy_record_;
 
-  // Dimensions of the window. Used only when opening popups.
-  gfx::Rect dimensions_;
  public:
   OLEINPLACEFRAMEINFO frame_info_;
 };

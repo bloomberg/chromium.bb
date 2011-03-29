@@ -46,6 +46,7 @@ bool ExternalTabProxy::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_NavigationFailed, OnNavigationFailed)
     IPC_MESSAGE_HANDLER(AutomationMsg_DidNavigate, OnDidNavigate)
     IPC_MESSAGE_HANDLER(AutomationMsg_TabLoaded, OnTabLoaded)
+    IPC_MESSAGE_HANDLER(AutomationMsg_MoveWindow, OnMoveWindow)
     IPC_MESSAGE_HANDLER(AutomationMsg_ForwardMessageToExternalHost,
                         OnMessageToHost)
     IPC_MESSAGE_HANDLER(AutomationMsg_ForwardContextMenuToExternalHost,
@@ -297,6 +298,11 @@ void ExternalTabProxy::OnUpdateTargetUrl(const std::wstring& url) {
 void ExternalTabProxy::OnTabLoaded(const GURL& url) {
   ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
       &UIDelegate::OnLoad, url));
+}
+
+void ExternalTabProxy::OnMoveWindow(const gfx::Rect& pos) {
+  ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
+      &UIDelegate::OnMoveWindow, pos));
 }
 
 void ExternalTabProxy::OnMessageToHost(const std::string& message,

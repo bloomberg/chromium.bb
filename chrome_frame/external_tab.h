@@ -33,6 +33,11 @@ struct NavigationInfo;
 struct MiniContextMenuParams;
 }
 
+namespace gfx {
+class Rect;
+}
+
+
 // This is the delegate/callback interface that has to be implemented
 // by the customers of ExternalTabProxy class.
 class UIDelegate {
@@ -43,6 +48,8 @@ class UIDelegate {
   virtual void OnExtensionInstalled(const FilePath& path, void* user_data,
       AutomationMsg_ExtensionResponseValues response) = 0;
   virtual void OnLoad(const GURL& url) = 0;
+  virtual void OnMoveWindow(const gfx::Rect& pos) = 0;
+
   virtual void OnMessageFromChromeFrame(
       const std::string& message, const std::string& origin,
       const std::string& target) = 0;
@@ -163,6 +170,7 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
   virtual void OnNavigationFailed(int error_code, const GURL& gurl);
   virtual void OnDidNavigate(const NavigationInfo& navigation_info);
   virtual void OnTabLoaded(const GURL& url);
+  virtual void OnMoveWindow(const gfx::Rect& pos);
 
   virtual void OnOpenURL(const GURL& url_to_open, const GURL& referrer,
                          int open_disposition);

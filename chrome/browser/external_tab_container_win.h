@@ -127,6 +127,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   virtual void LoadingStateChanged(TabContents* source);
   virtual void CloseContents(TabContents* source);
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
+  virtual bool IsPopup(const TabContents* source) const;
   virtual void UpdateTargetURL(TabContents* source, const GURL& url);
   virtual void ContentsZoomChange(bool zoom_in);
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
@@ -204,6 +205,10 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   void set_pending(bool pending) {
     pending_ = pending;
+  }
+
+  void set_is_popup_window(bool is_popup_window) {
+    is_popup_window_ = is_popup_window;
   }
 
   // InfoBarContainer::Delegate overrides
@@ -337,6 +342,9 @@ class ExternalTabContainer : public TabContentsDelegate,
   bool route_all_top_level_navigations_;
 
   scoped_ptr<ui::ViewProp> prop_;
+
+  // if this tab is a popup
+  bool is_popup_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };

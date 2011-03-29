@@ -1459,3 +1459,13 @@ IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_GetParentBrowserOfTab,
                             int /* tab handle */,
                             int /* browser handle */,
                             bool /* success */)
+
+// This message is an outgoing message from Chrome to an external host.
+// It is a notification that a popup window position or dimentions have
+// changed
+// Request:
+//   gfx::Rect - the bounds of the window
+// Response:
+//   None expected
+IPC_MESSAGE_ROUTED1(AutomationMsg_MoveWindow,
+                    gfx::Rect /* window position and dimentions */)

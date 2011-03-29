@@ -28,6 +28,10 @@ namespace net {
 class URLRequestStatus;
 }
 
+namespace gfx {
+class Rect;
+}
+
 // A common interface supported by all the browser specific ChromeFrame
 // implementations.
 class ChromeFrameDelegate {
@@ -111,6 +115,7 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
   virtual void OnDidNavigate(const NavigationInfo& navigation_info) {}
   virtual void OnNavigationFailed(int error_code, const GURL& gurl) {}
   virtual void OnLoad(const GURL& url) {}
+  virtual void OnMoveWindow(const gfx::Rect& pos) {}
   virtual void OnMessageFromChromeFrame(const std::string& message,
                                         const std::string& origin,
                                         const std::string& target) {}
