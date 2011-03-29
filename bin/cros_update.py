@@ -5,12 +5,15 @@
 
 """Perform various tasks related to updating Portage packages."""
 
+import glob
+import logging
 import optparse
 import os
 import parallel_emerge
+import portage
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 import chromite.lib.cros_build_lib as cros_lib
 
 
@@ -20,6 +23,10 @@ class Updater(object):
   def __init__(self, options, args):
     self._options = options
     self._args = args
+
+  def _Log(self, message):
+    """Logs |message| if --verbose is set."""
+    logging.debug(message)
 
   @staticmethod
   def _GetPreOrderDepGraphPackage(deps_graph, package, pkglist, visited):
@@ -40,9 +47,66 @@ class Updater(object):
       Updater._GetPreOrderDepGraphPackage(deps_graph, package, pkglist, visited)
     return pkglist
 
-  def _PrintDependencies(self):
-    argv = ['--quiet', '--emptytree']
+  def _SplitEBuildPath(self, ebuild_path):
+    """Split a full ebuild path into (overlay, cat, pn, pv)."""
+    self._Log('ebuild: %s' % ebuild_path)
+    (ebuild_path, ebuild) = os.path.splitext(ebuild_path)
+    (ebuild_path, pv) = os.path.split(ebuild_path)
+    (ebuild_path, pn) = os.path.split(ebuild_path)
+    (ebuild_path, cat) = os.path.split(ebuild_path)
+    (ebuild_path, overlay) = os.path.split(ebuild_path)
+    self._Log('%s | %s | %s | %s' % (overlay, cat, pn, pv))
+    return (overlay, cat, pn, pv)
+
+  def _FindLatestVersion(self, upstream, cpv):
+    """Returns the latest cpv in |upstream| if it's newer than |cpv|."""
+    latest_cpv = cpv
+    (cat, pn, version, rev) = portage.versions.catpkgsplit(cpv)
+    pkgpath = os.path.join(upstream, cat, pn)
+    for ebuild_path in glob.glob(os.path.join(pkgpath, '%s*.ebuild' % pn)):
+      (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
+      upstream_cpv = os.path.join(cat, pv)
+      # TODO(petkov): Filter out unstable versions.
+      if portage.versions.pkgcmp(portage.versions.pkgsplit(upstream_cpv),
+                                 portage.versions.pkgsplit(latest_cpv)) > 0:
+        latest_cpv = upstream_cpv
+    self._Log('cpv: %s latest_cpv: %s' % (cpv, latest_cpv))
+    if latest_cpv != cpv: return latest_cpv
+    return None
+
+  def _FindLatestVersions(self, cpvlist):
+    """Given a list of cpvs, returns a list of cpv/latest_cpv info maps."""
+    upstream = os.path.join(self._options.srcroot, 'third_party', 'portage')
+    infolist = []
+    dash_q = ''
+    if not self._options.verbose: dash_q = '-q'
+    try:
+      # TODO(petkov): Currently portage's master branch is stale so we need to
+      # checkout latest upstream. At some point portage's master branch will be
+      # upstream so there will be no need to chdir/checkout. At that point we
+      # can also fuse this loop into the caller and avoid generating a separate
+      # list.
+      cros_lib.RunCommand(['/bin/sh', '-c',
+                           'cd %s && git checkout %s cros/gentoo' % (
+                               upstream, dash_q)],
+                          print_cmd=self._options.verbose);
+      for cpv in cpvlist:
+        # No need to report or try to upgrade chromeos-base packages.
+        if cpv.startswith('chromeos-base/'): continue
+        latest_cpv = self._FindLatestVersion(upstream, cpv)
+        infolist.append({'cpv': cpv, 'latest_cpv': latest_cpv})
+    finally:
+      cros_lib.RunCommand(['/bin/sh', '-c',
+                           'cd %s && git checkout %s cros/master' % (
+                               upstream, dash_q)],
+                          print_cmd=self._options.verbose);
+    return infolist
+
+  def _PrintUpgrades(self):
+    argv = ['--emptytree']
     argv.append('--board=%s' % self._options.board)
+    if not self._options.verbose:
+      argv.append('--quiet')
     if self._options.rdeps:
       argv.append('--root-deps=rdeps')
     argv.extend(self._args)
@@ -51,18 +115,30 @@ class Updater(object):
     deps.Initialize(argv)
     deps_tree, deps_info = deps.GenDependencyTree({})
     deps_graph = deps.GenDependencyGraph(deps_tree, deps_info, {})
-    for package in Updater._GetPreOrderDepGraph(deps_graph):
-      if self._options.full_path:
-        equery = ['equery-%s' % self._options.board, 'which', package]
-        package = cros_lib.RunCommand(equery, print_cmd=False,
-                                      redirect_stdout=True).output.strip()
-      print package
+    cpvlist = Updater._GetPreOrderDepGraph(deps_graph)
+
+    infolist = self._FindLatestVersions(cpvlist)
+    for info in infolist:
+      # TODO(petkov): Use internal portage utilities to find the overlay instead
+      # of equery to improve performance, if possible.
+      cpv = info['cpv']
+      equery = ['equery-%s' % self._options.board, 'which', cpv]
+      ebuild_path = cros_lib.RunCommand(equery, print_cmd=self._options.verbose,
+                                        redirect_stdout=True).output.strip()
+      (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
+      info['overlay'] = overlay
+
+    for info in infolist:
+      update = ''
+      if info['latest_cpv']: update = ' -> %s' % info['latest_cpv']
+      print '[%s] %s%s' % (info['overlay'], info['cpv'], update)
 
   def Run(self):
     """Runs the updater based on the supplied options and arguments.
 
-    Currently just lists all package dependencies in pre-order."""
-    self._PrintDependencies()
+    Currently just lists all package dependencies in pre-order along with
+    potential upgrades."""
+    self._PrintUpgrades()
 
 
 def main():
@@ -70,14 +146,19 @@ def main():
   parser = optparse.OptionParser(usage=usage)
   parser.add_option('--board', dest='board', type='string', action='store',
                     default=None, help="Target board [default: '%default']")
-  parser.add_option('--no-full-path', dest='full_path', action='store_false',
-                    default=True,
-                    help="Don't print the full path to the package")
   parser.add_option('--rdeps', dest='rdeps', action='store_true',
                     default=False,
                     help="Use runtime dependencies only")
+  parser.add_option('--srcroot', dest='srcroot', type='string', action='store',
+                    default='%s/trunk/src' % os.environ['HOME'],
+                    help="Path to root src directory [default: '%default']")
+  parser.add_option('--verbose', dest='verbose', action='store_true',
+                    default=False,
+                    help="Enable verbose output (for debugging)")
 
   (options, args) = parser.parse_args()
+
+  if (options.verbose): logging.basicConfig(level=logging.DEBUG)
 
   if not options.board:
     parser.print_help()
