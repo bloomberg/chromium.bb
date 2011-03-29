@@ -179,9 +179,9 @@ bool SyncBackendHost::IsUsingExplicitPassphrase() {
       core_->syncapi()->IsUsingExplicitPassphrase();
 }
 
-bool SyncBackendHost::IsCryptographerReady() const {
-  return syncapi_initialized_ &&
-      GetUserShare()->dir_manager->cryptographer()->is_ready();
+bool SyncBackendHost::IsCryptographerReady(
+    const sync_api::BaseTransaction* trans) const {
+  return syncapi_initialized_ && trans->GetCryptographer()->is_ready();
 }
 
 JsBackend* SyncBackendHost::GetJsBackend() {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/engine/build_and_process_conflict_sets_command.h"
 
+#include <set>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -47,7 +48,7 @@ bool BuildAndProcessConflictSetsCommand::BuildAndProcessConflictSets(
         session->status_controller()->mutable_conflict_progress());
     had_single_direction_sets = ProcessSingleDirectionConflictSets(&trans,
         session->context()->resolver(),
-        session->context()->directory_manager()->cryptographer(),
+        session->context()->directory_manager()->GetCryptographer(&trans),
         session->status_controller(), session->routing_info());
     // We applied some updates transactionally, lets try syncing again.
     if (had_single_direction_sets)
@@ -65,7 +66,7 @@ bool BuildAndProcessConflictSetsCommand::ProcessSingleDirectionConflictSets(
   for (all_sets_iterator = status->conflict_progress().ConflictSetsBegin();
        all_sets_iterator != status->conflict_progress().ConflictSetsEnd();) {
     const ConflictSet* conflict_set = *all_sets_iterator;
-    CHECK(conflict_set->size() >= 2);
+    CHECK_GE(conflict_set->size(), 2U);
     // We scan the set to see if it consists of changes of only one type.
     ConflictSet::const_iterator i;
     size_t unsynced_count = 0, unapplied_count = 0;

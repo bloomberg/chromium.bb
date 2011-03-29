@@ -72,6 +72,9 @@ class AutofillProfileModelAssociator
   // See ModelAssociator interface.
   virtual void AbortAssociation();
 
+  // See ModelAssociator interface.
+  virtual bool CryptoReadyIfNecessary();
+
   virtual const std::string* GetChromeNodeFromSyncId(int64 sync_id);
 
   virtual bool InitSyncNodeFromChromeId(const std::string& node_id,

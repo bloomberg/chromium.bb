@@ -184,6 +184,11 @@ void TypedUrlDataTypeController::StartImpl(history::HistoryBackend* backend) {
     change_processor_.reset(sync_components.change_processor);
   }
 
+  if (!model_associator_->CryptoReadyIfNecessary()) {
+    StartFailed(NEEDS_CRYPTO);
+    return;
+  }
+
   bool sync_has_nodes = false;
   if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
     StartFailed(UNRECOVERABLE_ERROR);

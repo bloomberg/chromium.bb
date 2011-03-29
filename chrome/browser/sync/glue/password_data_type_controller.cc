@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,12 +52,6 @@ void PasswordDataTypeController::Start(StartCallback* start_callback) {
                << " aborting.";
     state_ = NOT_RUNNING;
     start_callback->Run(ABORTED);
-    delete start_callback;
-    return;
-  }
-
-  if (!sync_service_->IsCryptographerReady()) {
-    start_callback->Run(NEEDS_CRYPTO);
     delete start_callback;
     return;
   }
@@ -146,6 +140,11 @@ void PasswordDataTypeController::StartImpl() {
             this);
     model_associator_.reset(sync_components.model_associator);
     change_processor_.reset(sync_components.change_processor);
+  }
+
+  if (!model_associator_->CryptoReadyIfNecessary()) {
+    StartFailed(NEEDS_CRYPTO);
+    return;
   }
 
   bool sync_has_nodes = false;

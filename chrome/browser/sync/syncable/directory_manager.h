@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -25,6 +25,7 @@
 #include "chrome/common/deprecated/event_sys.h"
 
 namespace sync_api { class BaseTransaction; }
+namespace syncable { class BaseTransaction; }
 
 namespace syncable {
 
@@ -72,11 +73,20 @@ class DirectoryManager {
 
   Channel* channel() const { return channel_; }
 
+  // Wrappers for cryptographer() that enforce holding a transaction.
+  // Note: the Cryptographer is NOT thread safe. It must only be accessed while
+  // the transaction is still active. The Cryptographer's pointer should not be
+  // stored separately.
+  browser_sync::Cryptographer* GetCryptographer(
+      const sync_api::BaseTransaction* trans) const { return cryptographer(); }
+  browser_sync::Cryptographer* GetCryptographer(
+      const syncable::BaseTransaction* trans) const { return cryptographer(); }
+
+ protected:
   browser_sync::Cryptographer* cryptographer() const {
     return cryptographer_.get();
   }
 
- protected:
   DirOpenResult OpenImpl(const std::string& name, const FilePath& path,
                          bool* was_open);
 

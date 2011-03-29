@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -194,6 +194,13 @@ void PasswordModelAssociator::AbortAssociation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock lock(abort_association_pending_lock_);
   abort_association_pending_ = true;
+}
+
+bool PasswordModelAssociator::CryptoReadyIfNecessary() {
+  // We only access the cryptographer while holding a transaction.
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  // We always encrypt passwords, so no need to check if encryption is enabled.
+  return sync_service_->IsCryptographerReady(&trans);
 }
 
 const std::string* PasswordModelAssociator::GetChromeNodeFromSyncId(

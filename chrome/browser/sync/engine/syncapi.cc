@@ -1411,7 +1411,8 @@ class SyncManager::SyncInternal
   // 'using_explicit_passphrase' in the NigoriSpecifics.
   // TODO(tim): Bug 62103.  Remove this after it has been pushed out to dev
   // channel users.
-  void SetUsingExplicitPassphrasePrefForMigration();
+  void SetUsingExplicitPassphrasePrefForMigration(
+      WriteTransaction* const trans);
 
   // Checks for server reachabilty and requests a nudge.
   void OnIPAddressChangedImpl();
@@ -1702,12 +1703,13 @@ void SyncManager::SyncInternal::BootstrapEncryption(
   if (!lookup->initial_sync_ended_for_type(syncable::NIGORI))
     return;
 
-  Cryptographer* cryptographer = share_.dir_manager->cryptographer();
-  cryptographer->Bootstrap(restored_key_for_bootstrapping);
-
   sync_pb::NigoriSpecifics nigori;
   {
+    // Cryptographer should only be accessed while holding a transaction.
     ReadTransaction trans(GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    cryptographer->Bootstrap(restored_key_for_bootstrapping);
+
     ReadNode node(&trans);
     if (!node.InitByTagLookup(kNigoriTag)) {
       NOTREACHED();
@@ -1862,9 +1864,9 @@ void SyncManager::SyncInternal::RaiseAuthNeededEvent() {
       OnAuthError(AuthError(AuthError::INVALID_GAIA_CREDENTIALS)));
 }
 
-void SyncManager::SyncInternal::SetUsingExplicitPassphrasePrefForMigration() {
-  WriteTransaction trans(&share_);
-  WriteNode node(&trans);
+void SyncManager::SyncInternal::SetUsingExplicitPassphrasePrefForMigration(
+    WriteTransaction* const trans) {
+  WriteNode node(trans);
   if (!node.InitByTagLookup(kNigoriTag)) {
     // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
     NOTREACHED();
@@ -1877,8 +1879,11 @@ void SyncManager::SyncInternal::SetUsingExplicitPassphrasePrefForMigration() {
 
 void SyncManager::SyncInternal::SetPassphrase(
     const std::string& passphrase, bool is_explicit) {
-  Cryptographer* cryptographer = dir_manager()->cryptographer();
+  // All accesses to the cryptographer are protected by a transaction.
+  WriteTransaction trans(GetUserShare());
+  Cryptographer* cryptographer = trans.GetCryptographer();
   KeyParams params = {"localhost", "dummy", passphrase};
+
   if (cryptographer->has_pending_keys()) {
     if (!cryptographer->DecryptPendingKeys(params)) {
       VLOG(1) << "Passphrase failed to decrypt pending keys.";
@@ -1891,14 +1896,13 @@ void SyncManager::SyncInternal::SetPassphrase(
     // since the protocol changed to store passphrase preferences in the cloud,
     // make sure we update this preference. See bug 62103.
     if (is_explicit)
-      SetUsingExplicitPassphrasePrefForMigration();
+      SetUsingExplicitPassphrasePrefForMigration(&trans);
 
     // Nudge the syncer so that encrypted datatype updates that were waiting for
     // this passphrase get applied as soon as possible.
     sync_manager_->RequestNudge();
   } else {
     VLOG(1) << "No pending keys, adding provided passphrase.";
-    WriteTransaction trans(GetUserShare());
     WriteNode node(&trans);
     if (!node.InitByTagLookup(kNigoriTag)) {
       // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
@@ -2325,6 +2329,7 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
   LOG_IF(WARNING, !ChangeBuffersAreEmpty()) <<
       "CALCULATE_CHANGES called with unapplied old changes.";
 
+  Cryptographer* crypto = dir_manager()->GetCryptographer(event.trans);
   for (syncable::OriginalEntries::const_iterator i = event.originals->begin();
        i != event.originals->end(); ++i) {
     int64 id = i->ref(syncable::META_HANDLE);
@@ -2343,12 +2348,11 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
     else if (!exists_now && existed_before)
       change_buffers_[type].PushDeletedItem(id);
     else if (exists_now && existed_before &&
-             VisiblePropertiesDiffer(*i, e, dir_manager()->cryptographer())) {
+             VisiblePropertiesDiffer(*i, e, crypto)) {
       change_buffers_[type].PushUpdatedItem(id, VisiblePositionsDiffer(*i, e));
     }
 
-    SetExtraChangeRecordData(id, type, &change_buffers_[type],
-                             dir_manager()->cryptographer(), *i,
+    SetExtraChangeRecordData(id, type, &change_buffers_[type], crypto, *i,
                              existed_before, exists_now);
   }
 }
@@ -2388,8 +2392,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       if (enabled_types.count(syncable::PASSWORDS) > 0)
         encrypted_types.insert(syncable::PASSWORDS);
       if (!encrypted_types.empty()) {
-        Cryptographer* cryptographer =
-            GetUserShare()->dir_manager->cryptographer();
+        Cryptographer* cryptographer = trans.GetCryptographer();
         if (!cryptographer->is_ready() && !cryptographer->has_pending_keys()) {
           if (!nigori.encrypted().blob().empty()) {
             DCHECK(!cryptographer->CanDecrypt(nigori.encrypted()));
@@ -2670,7 +2673,7 @@ BaseTransaction::BaseTransaction(UserShare* share)
   DCHECK(share && share->dir_manager.get());
   lookup_ = new syncable::ScopedDirLookup(share->dir_manager.get(),
                                           share->name);
-  cryptographer_ = share->dir_manager->cryptographer();
+  cryptographer_ = share->dir_manager->GetCryptographer(this);
   if (!(lookup_->good()))
     DCHECK(false) << "ScopedDirLookup failed on valid DirManager.";
 }

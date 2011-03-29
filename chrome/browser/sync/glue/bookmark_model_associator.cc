@@ -554,4 +554,13 @@ bool BookmarkModelAssociator::LoadAssociations() {
   return sync_node_count == id_index.count();
 }
 
+bool BookmarkModelAssociator::CryptoReadyIfNecessary() {
+  // We only access the cryptographer while holding a transaction.
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  syncable::ModelTypeSet encrypted_types;
+  sync_service_->GetEncryptedDataTypes(&encrypted_types);
+  return encrypted_types.count(syncable::BOOKMARKS) == 0 ||
+         sync_service_->IsCryptographerReady(&trans);
+}
+
 }  // namespace browser_sync

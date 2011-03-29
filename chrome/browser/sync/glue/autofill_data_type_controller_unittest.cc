@@ -118,7 +118,8 @@ class AutofillDataTypeControllerTest : public testing::Test {
         WillOnce(Return(
             ProfileSyncFactory::SyncComponents(model_associator_,
                                                change_processor_)));
-
+    EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
+        WillRepeatedly(Return(true));
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
         WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
     EXPECT_CALL(*model_associator_, AssociateModels()).
@@ -221,6 +222,8 @@ TEST_F(AutofillDataTypeControllerTest, AbortWhileAssociatingNotActivated) {
   // that signals the event and lets the DB thread continue.
   WaitableEvent pause_db_thread(false, false);
   WaitableEvent wait_for_db_thread_pause(false, false);
+  EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
+      WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillOnce(DoAll(
           SignalEvent(&wait_for_db_thread_pause),
@@ -250,6 +253,8 @@ TEST_F(AutofillDataTypeControllerTest, AbortWhileAssociatingActivated) {
       WillOnce(Return(
           ProfileSyncFactory::SyncComponents(model_associator_,
                                              change_processor_)));
+  EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
+      WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
   EXPECT_CALL(*model_associator_, AssociateModels()).

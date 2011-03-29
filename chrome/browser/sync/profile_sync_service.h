@@ -399,8 +399,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       syncable::ModelTypeSet* registered_types) const;
 
   // Checks whether the Cryptographer is ready to encrypt and decrypt updates
-  // for sensitive data types.
-  virtual bool IsCryptographerReady() const;
+  // for sensitive data types. Caller must be holding a
+  // syncapi::BaseTransaction to ensure thread safety.
+  virtual bool IsCryptographerReady(
+      const sync_api::BaseTransaction* trans) const;
 
   // Returns true if a secondary passphrase is being used.
   virtual bool IsUsingSecondaryPassphrase() const;

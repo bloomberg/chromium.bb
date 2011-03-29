@@ -237,7 +237,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // True if the cryptographer has any keys available to attempt decryption.
   // Could mean we've downloaded and loaded Nigori objects, or we bootstrapped
   // using a token previously received.
-  bool IsCryptographerReady() const;
+  bool IsCryptographerReady(const sync_api::BaseTransaction* trans) const;
 
   // Returns a pointer to the JsBackend (which is owned by the
   // service).  Must be called only after the sync backend has been

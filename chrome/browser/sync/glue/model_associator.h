@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,12 @@ class AssociatorInterface {
   // method is only implemented for model associators that are invoked
   // off the main thread.
   virtual void AbortAssociation() = 0;
+
+  // Returns whether the datatype is ready for encryption/decryption if the
+  // sync service requires it.
+  // TODO(zea): This should be implemented automatically for each datatype, see
+  // http://crbug.com/76232.
+  virtual bool CryptoReadyIfNecessary() = 0;
 };
 
 // In addition to the generic methods, association can refer to operations

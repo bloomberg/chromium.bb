@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -215,8 +215,16 @@ TEST_F(ApplyUpdatesCommandTest, ItemsBothKnownAndUnknown) {
 
 TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
   // Decryptable password updates should be applied.
-  Cryptographer* cryptographer =
-      session()->context()->directory_manager()->cryptographer();
+  Cryptographer* cryptographer;
+  {
+      // Storing the cryptographer separately is bad, but for this test we
+      // know it's safe.
+      ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
+      ASSERT_TRUE(dir.good());
+      ReadTransaction trans(dir, __FILE__, __LINE__);
+      cryptographer =
+          session()->context()->directory_manager()->GetCryptographer(&trans);
+  }
 
   browser_sync::KeyParams params = {"localhost", "dummy", "foobar"};
   cryptographer->AddKey(params);
@@ -262,18 +270,22 @@ TEST_F(ApplyUpdatesCommandTest, UndecryptablePassword) {
 TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
   // Only decryptable password updates should be applied.
   {
-    Cryptographer* cryptographer =
-        session()->context()->directory_manager()->cryptographer();
-
-    KeyParams params = {"localhost", "dummy", "foobar"};
-    cryptographer->AddKey(params);
-
     sync_pb::EntitySpecifics specifics;
     sync_pb::PasswordSpecificsData data;
     data.set_origin("http://example.com/1");
+    {
+      ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
+      ASSERT_TRUE(dir.good());
+      ReadTransaction trans(dir, __FILE__, __LINE__);
+      Cryptographer* cryptographer =
+          session()->context()->directory_manager()->GetCryptographer(&trans);
 
-    cryptographer->Encrypt(data,
-        specifics.MutableExtension(sync_pb::password)->mutable_encrypted());
+      KeyParams params = {"localhost", "dummy", "foobar"};
+      cryptographer->AddKey(params);
+
+      cryptographer->Encrypt(data,
+          specifics.MutableExtension(sync_pb::password)->mutable_encrypted());
+    }
     CreateUnappliedNewItem("item1", specifics, false);
   }
   {
@@ -304,12 +316,17 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
 }
 
 TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
+  // Storing the cryptographer separately is bad, but for this test we
+  // know it's safe.
+  Cryptographer* cryptographer;
   syncable::ModelTypeSet encrypted_types;
   {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
     ReadTransaction trans(dir, __FILE__, __LINE__);
     EXPECT_EQ(encrypted_types, GetEncryptedDataTypes(&trans));
+    cryptographer =
+        session()->context()->directory_manager()->GetCryptographer(&trans);
   }
 
   // Nigori node updates should update the Cryptographer.
@@ -325,9 +342,6 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   encrypted_types.insert(syncable::BOOKMARKS);
   CreateUnappliedNewItem(syncable::ModelTypeToRootTag(syncable::NIGORI),
                          specifics, true);
-
-  Cryptographer* cryptographer =
-      session()->context()->directory_manager()->cryptographer();
   EXPECT_FALSE(cryptographer->has_pending_keys());
 
   apply_updates_command_.ExecuteImpl(session());
@@ -346,12 +360,17 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
 }
 
 TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
+  // Storing the cryptographer separately is bad, but for this test we
+  // know it's safe.
+  Cryptographer* cryptographer;
   syncable::ModelTypeSet encrypted_types;
   {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
     ReadTransaction trans(dir, __FILE__, __LINE__);
     EXPECT_EQ(encrypted_types, GetEncryptedDataTypes(&trans));
+    cryptographer =
+        session()->context()->directory_manager()->GetCryptographer(&trans);
 
     // With empty encrypted_types, this should be true.
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
@@ -381,8 +400,6 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
                        syncable::BOOKMARKS, NULL);
   }
 
-  Cryptographer* cryptographer =
-      session()->context()->directory_manager()->cryptographer();
   KeyParams params = {"localhost", "dummy", "foobar"};
   cryptographer->AddKey(params);
   sync_pb::EntitySpecifics specifics;
@@ -437,12 +454,17 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
 }
 
 TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
+  // Storing the cryptographer separately is bad, but for this test we
+  // know it's safe.
+  Cryptographer* cryptographer;
   syncable::ModelTypeSet encrypted_types;
   {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
     ReadTransaction trans(dir, __FILE__, __LINE__);
     EXPECT_EQ(encrypted_types, GetEncryptedDataTypes(&trans));
+    cryptographer =
+        session()->context()->directory_manager()->GetCryptographer(&trans);
 
     // With empty encrypted_types, this should be true.
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
@@ -485,8 +507,6 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   encrypted_types.insert(syncable::BOOKMARKS);
   CreateUnappliedNewItem(syncable::ModelTypeToRootTag(syncable::NIGORI),
                          specifics, true);
-  Cryptographer* cryptographer =
-      session()->context()->directory_manager()->cryptographer();
   EXPECT_FALSE(cryptographer->has_pending_keys());
 
   {

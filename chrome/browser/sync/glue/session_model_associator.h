@@ -68,6 +68,9 @@ class SessionModelAssociator
     // No implementation needed, this associator runs on the main thread.
   }
 
+  // See ModelAssociator interface.
+  virtual bool CryptoReadyIfNecessary();
+
   // Returns sync id for the given chrome model id.
   // Returns sync_api::kInvalidId if the sync node is not found for the given
   // chrome id.

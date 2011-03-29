@@ -1,13 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/glue/extension_model_associator.h"
 
 #include "base/logging.h"
+#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/extension_data.h"
 #include "chrome/browser/sync/glue/extension_sync_traits.h"
 #include "chrome/browser/sync/glue/extension_sync.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "content/browser/browser_thread.h"
 
@@ -46,6 +48,15 @@ bool ExtensionModelAssociator::DisassociateModels() {
 bool ExtensionModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return RootNodeHasChildren(traits_.root_node_tag, sync_service_, has_nodes);
+}
+
+bool ExtensionModelAssociator::CryptoReadyIfNecessary() {
+  // We only access the cryptographer while holding a transaction.
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  syncable::ModelTypeSet encrypted_types;
+  sync_service_->GetEncryptedDataTypes(&encrypted_types);
+  return encrypted_types.count(traits_.model_type) == 0 ||
+         sync_service_->IsCryptographerReady(&trans);
 }
 
 }  // namespace browser_sync

@@ -961,8 +961,9 @@ bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
        observed_passphrase_required_));
 }
 
-bool ProfileSyncService::IsCryptographerReady() const {
-  return backend_.get() && backend_->IsCryptographerReady();
+bool ProfileSyncService::IsCryptographerReady(
+    const sync_api::BaseTransaction* trans) const {
+  return backend_.get() && backend_->IsCryptographerReady(trans);
 }
 
 SyncBackendHost* ProfileSyncService::GetBackendForTest() {

@@ -367,7 +367,10 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
 
 TEST_F(SyncApiTest, WriteAndReadPassword) {
   KeyParams params = {"localhost", "username", "passphrase"};
-  share_.dir_manager->cryptographer()->AddKey(params);
+  {
+    ReadTransaction trans(&share_);
+    trans.GetCryptographer()->AddKey(params);
+  }
   {
     WriteTransaction trans(&share_);
     ReadNode root_node(&trans);
@@ -716,14 +719,14 @@ class SyncManagerTest : public testing::Test,
       return false;
 
     // Set the nigori cryptographer information.
-    Cryptographer* cryptographer = share->dir_manager->cryptographer();
+    WriteTransaction trans(share);
+    Cryptographer* cryptographer = trans.GetCryptographer();
     if (!cryptographer)
       return false;
     KeyParams params = {"localhost", "dummy", "foobar"};
     cryptographer->AddKey(params);
     sync_pb::NigoriSpecifics nigori;
     cryptographer->GetKeys(nigori.mutable_encrypted());
-    WriteTransaction trans(share);
     WriteNode node(&trans);
     node.InitByIdLookup(nigori_id);
     node.SetNigoriSpecifics(nigori);

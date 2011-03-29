@@ -68,6 +68,8 @@ class BookmarkDataTypeControllerTest : public testing::Test {
   }
 
   void SetAssociateExpectations() {
+    EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
+        WillRepeatedly(Return(true));
     EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _));
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
         WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
@@ -153,6 +155,8 @@ TEST_F(BookmarkDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
   // Set up association to fail.
   EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _));
+  EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
+      WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
   EXPECT_CALL(*model_associator_, AssociateModels()).
@@ -168,6 +172,8 @@ TEST_F(BookmarkDataTypeControllerTest,
   SetStartExpectations();
   // Set up association to fail with an unrecoverable error.
   EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _));
+  EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
+      WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::UNRECOVERABLE_ERROR));
