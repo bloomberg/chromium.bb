@@ -4,7 +4,7 @@ vars = {
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "x86_toolchain_version": "4575",
   "arm_toolchain_version": "4590",
-  "chrome_rev": "78322",
+  "chrome_rev": "79560",
   "gyp_rev": "856",
   "gtest_rev": "364",
   "tools_rev": "4214",
