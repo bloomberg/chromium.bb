@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,15 +65,17 @@ FilePath ExtensionResource::GetFilePath(
 
 // Unit-testing helpers.
 FilePath::StringType ExtensionResource::NormalizeSeperators(
-    FilePath::StringType path) const {
+    const FilePath::StringType& path) const {
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
-  FilePath::StringType ret_val;
-  for (size_t i = 0; i < path.length(); i++) {
-    if (FilePath::IsSeparator(path[i]))
-      path[i] = FilePath::kSeparators[0];
+  FilePath::StringType win_path = path;
+  for (size_t i = 0; i < win_path.length(); i++) {
+    if (FilePath::IsSeparator(win_path[i]))
+      win_path[i] = FilePath::kSeparators[0];
   }
-#endif  // FILE_PATH_USES_WIN_SEPARATORS
+  return win_path;
+#else
   return path;
+#endif  // FILE_PATH_USES_WIN_SEPARATORS
 }
 
 bool ExtensionResource::ComparePathWithDefault(const FilePath& path) const {
