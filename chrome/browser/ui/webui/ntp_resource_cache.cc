@@ -162,30 +162,30 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
 
 NTPResourceCache::~NTPResourceCache() {}
 
-RefCountedBytes* NTPResourceCache::GetNewTabHTML(bool is_off_the_record) {
+RefCountedBytes* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (is_off_the_record) {
+  if (is_incognito) {
     if (!new_tab_incognito_html_.get())
       CreateNewTabIncognitoHTML();
   } else {
     if (!new_tab_html_.get())
       CreateNewTabHTML();
   }
-  return is_off_the_record ? new_tab_incognito_html_.get()
-                           : new_tab_html_.get();
+  return is_incognito ? new_tab_incognito_html_.get()
+                      : new_tab_html_.get();
 }
 
-RefCountedBytes* NTPResourceCache::GetNewTabCSS(bool is_off_the_record) {
+RefCountedBytes* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (is_off_the_record) {
+  if (is_incognito) {
     if (!new_tab_incognito_css_.get())
       CreateNewTabIncognitoCSS();
   } else {
     if (!new_tab_css_.get())
       CreateNewTabCSS();
   }
-  return is_off_the_record ? new_tab_incognito_css_.get()
-                           : new_tab_css_.get();
+  return is_incognito ? new_tab_incognito_css_.get()
+                      : new_tab_css_.get();
 }
 
 void NTPResourceCache::Observe(NotificationType type,

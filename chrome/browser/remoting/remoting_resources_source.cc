@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,8 @@ RemotingResourcesSource::RemotingResourcesSource()
 }
 
 void RemotingResourcesSource::StartDataRequest(const std::string& path_raw,
-    bool is_off_the_record, int request_id) {
+                                               bool is_incognito,
+                                               int request_id) {
   const char kRemotingGaiaLoginPath[] = "gaialogin";
   const char kRemotingSetupFlowPath[] = "setup";
   const char kRemotingSetupDonePath[] = "setupdone";

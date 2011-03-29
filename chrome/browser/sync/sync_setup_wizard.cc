@@ -42,7 +42,7 @@ class SyncResourcesSource : public ChromeURLDataManager::DataSource {
   }
 
   virtual void StartDataRequest(const std::string& path,
-                                bool is_off_the_record,
+                                bool is_incognito,
                                 int request_id);
 
   virtual std::string GetMimeType(const std::string& path) const {
@@ -80,7 +80,8 @@ const char* SyncResourcesSource::kCreateNewAccountUrl =
     "https://www.google.com/accounts/NewAccount?service=chromiumsync";
 
 void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
-    bool is_off_the_record, int request_id) {
+                                           bool is_incognito,
+                                           int request_id) {
   using l10n_util::GetStringUTF16;
   using l10n_util::GetStringFUTF16;
 

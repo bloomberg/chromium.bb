@@ -29,7 +29,7 @@ class RemotingUIHTMLSource : public ChromeURLDataManager::DataSource {
   // Called when the network layer has requested a resource underneath
   // the path we registered.
   virtual void StartDataRequest(const std::string& path,
-                                bool is_off_the_record,
+                                bool is_incognito,
                                 int request_id);
   virtual std::string GetMimeType(const std::string&) const {
     return "pepper-application/x-chromoting";
@@ -42,8 +42,8 @@ class RemotingUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 void RemotingUIHTMLSource::StartDataRequest(const std::string& path,
-                                           bool is_off_the_record,
-                                           int request_id) {
+                                            bool is_incognito,
+                                            int request_id) {
   // Dummy data. Not used, but we need to send something back in the response.
   std::string full_html = "remoting";
 

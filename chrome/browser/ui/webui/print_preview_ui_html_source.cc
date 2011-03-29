@@ -91,7 +91,7 @@ void PrintPreviewUIHTMLSource::SetPrintPreviewData(
 }
 
 void PrintPreviewUIHTMLSource::StartDataRequest(const std::string& path,
-                                                bool is_off_the_record,
+                                                bool is_incognito,
                                                 int request_id) {
   if (path.empty()) {
     // Print Preview Index page.

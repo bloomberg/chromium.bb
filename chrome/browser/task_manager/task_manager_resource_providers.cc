@@ -56,13 +56,13 @@ namespace {
 // Returns the appropriate message prefix ID for tabs and extensions,
 // reflecting whether they are apps or in incognito mode.
 int GetMessagePrefixID(bool is_app, bool is_extension,
-    bool is_off_the_record) {
+                       bool is_incognito) {
   return is_app ?
-      (is_off_the_record ?
+      (is_incognito ?
           IDS_TASK_MANAGER_APP_INCOGNITO_PREFIX :
           IDS_TASK_MANAGER_APP_PREFIX) :
       (is_extension ?
-          (is_off_the_record ?
+          (is_incognito ?
               IDS_TASK_MANAGER_EXTENSION_INCOGNITO_PREFIX :
               IDS_TASK_MANAGER_EXTENSION_PREFIX) :
           IDS_TASK_MANAGER_TAB_PREFIX);

@@ -170,7 +170,7 @@ class BugReportUIHTMLSource : public ChromeURLDataManager::DataSource {
   // Called when the network layer has requested a resource underneath
   // the path we registered.
   virtual void StartDataRequest(const std::string& path,
-                                bool is_off_the_record,
+                                bool is_incognito,
                                 int request_id);
   virtual std::string GetMimeType(const std::string&) const {
     return "text/html";
@@ -239,8 +239,8 @@ BugReportUIHTMLSource::BugReportUIHTMLSource(base::StringPiece html)
 }
 
 void BugReportUIHTMLSource::StartDataRequest(const std::string& path,
-                                              bool is_off_the_record,
-                                              int request_id) {
+                                             bool is_incognito,
+                                             int request_id) {
   DictionaryValue localized_strings;
   localized_strings.SetString(std::string("title"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_TITLE));

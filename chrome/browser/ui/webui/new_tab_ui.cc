@@ -570,7 +570,7 @@ NewTabUI::NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
 }
 
 void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
-                                                  bool is_off_the_record,
+                                                  bool is_incognito,
                                                   int request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -584,7 +584,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
   }
 
   scoped_refptr<RefCountedBytes> html_bytes(
-      profile_->GetNTPResourceCache()->GetNewTabHTML(is_off_the_record));
+      profile_->GetNTPResourceCache()->GetNewTabHTML(is_incognito));
 
   SendResponse(request_id, html_bytes);
 }

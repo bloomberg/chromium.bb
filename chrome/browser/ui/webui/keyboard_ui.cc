@@ -34,7 +34,7 @@ KeyboardUI::KeyboardHTMLSource::KeyboardHTMLSource()
 }
 
 void KeyboardUI::KeyboardHTMLSource::StartDataRequest(const std::string& path,
-                                                      bool is_off_the_record,
+                                                      bool is_incognito,
                                                       int request_id) {
   NOTREACHED() << "We should never get here since the extension should have"
                << "been triggered";

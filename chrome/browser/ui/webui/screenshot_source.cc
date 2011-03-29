@@ -106,7 +106,7 @@ ScreenshotSource::ScreenshotSource(
 ScreenshotSource::~ScreenshotSource() {}
 
 void ScreenshotSource::StartDataRequest(const std::string& path,
-                                            bool is_off_the_record,
+                                            bool is_incognito,
                                             int request_id) {
   SendResponse(request_id, new RefCountedBytes(GetScreenshot(path)));
 }

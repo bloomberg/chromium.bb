@@ -571,20 +571,20 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   if (!browser_view_->IsBrowserTypeNormal()) {
     // Never theme app and popup windows.
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    bool is_off_the_record = browser_view_->IsOffTheRecord();
+    bool is_incognito = browser_view_->IsOffTheRecord();
     if (ShouldPaintAsActive()) {
-      theme_frame = rb.GetBitmapNamed(is_off_the_record ?
+      theme_frame = rb.GetBitmapNamed(is_incognito ?
                                       IDR_THEME_FRAME_INCOGNITO : IDR_FRAME);
-      frame_color = is_off_the_record ?
-          ResourceBundle::frame_color_incognito :
-          ResourceBundle::frame_color;
+      frame_color = is_incognito ?
+                    ResourceBundle::frame_color_incognito :
+                    ResourceBundle::frame_color;
     } else {
-      theme_frame = rb.GetBitmapNamed(is_off_the_record ?
+      theme_frame = rb.GetBitmapNamed(is_incognito ?
                                       IDR_THEME_FRAME_INCOGNITO_INACTIVE :
                                       IDR_THEME_FRAME_INACTIVE);
-      frame_color = is_off_the_record ?
-          ResourceBundle::frame_color_incognito_inactive :
-          ResourceBundle::frame_color_inactive;
+      frame_color = is_incognito ?
+                    ResourceBundle::frame_color_incognito_inactive :
+                    ResourceBundle::frame_color_inactive;
     }
   } else if (!browser_view_->IsOffTheRecord()) {
     if (ShouldPaintAsActive()) {

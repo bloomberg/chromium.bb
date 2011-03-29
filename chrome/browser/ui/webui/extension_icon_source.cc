@@ -107,7 +107,7 @@ std::string ExtensionIconSource::GetMimeType(const std::string&) const {
 }
 
 void ExtensionIconSource::StartDataRequest(const std::string& path,
-                                           bool is_off_the_record,
+                                           bool is_incognito,
                                            int request_id) {
   // This is where everything gets started. First, parse the request and make
   // the request data available for later.

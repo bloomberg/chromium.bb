@@ -22,8 +22,8 @@ class NTPResourceCache : public NotificationObserver {
   explicit NTPResourceCache(Profile* profile);
   virtual ~NTPResourceCache();
 
-  RefCountedBytes* GetNewTabHTML(bool is_off_the_record);
-  RefCountedBytes* GetNewTabCSS(bool is_off_the_record);
+  RefCountedBytes* GetNewTabHTML(bool is_incognito);
+  RefCountedBytes* GetNewTabCSS(bool is_incognito);
 
   // NotificationObserver interface.
   virtual void Observe(NotificationType type,

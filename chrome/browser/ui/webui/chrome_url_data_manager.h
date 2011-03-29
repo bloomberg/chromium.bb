@@ -67,7 +67,7 @@ class ChromeURLDataManager {
     // call SendResponse() when the data is available or if the request could
     // not be satisfied.
     virtual void StartDataRequest(const std::string& path,
-                                  bool is_off_the_record,
+                                  bool is_incognito,
                                   int request_id) = 0;
 
     // Return the mimetype that should be sent with this response, or empty
