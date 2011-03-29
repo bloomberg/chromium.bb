@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Google Chrome tidak terinstal atau gagal menemukan direktori penginstalan. Unduh kembali Google Chrome.</translation>
 <translation id="1761870329818521071">Tidak dapat memasang versi Google Chrome Frame yang sama dengan yang sedang dijalankan. Tutup Google Chrome Frame dan coba lagi.</translation>
 <translation id="2040709530900803995">Pengaju Google Chrome</translation>
+<translation id="5339639696978861456">Chrome Frame telah diperbarui. Harap luncurkan ulang peramban Anda. Versi Chrome: <ph name="TODO_0001"/>, Versi Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Persyaratan Layanan</translation>
 <translation id="1779550429052479749">Terjadi konflik pemasangan Google Chrome atau Google Chrome Frame pada sistem. Hapus pemasangan dan coba lagi.</translation>
 <translation id="3555616473548901994">Pencopotan pemasangan selesai.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Utilitas Google Chrome</translation>
 <translation id="4343226815564935778">Direktori instalasi Google Chrome kelihatannya sedang digunakan. Nyalakan ulang komputer dan coba lagi.</translation>
 <translation id="8227755444512189073">Google Chrome harus menjalankan aplikasi eksternal untuk menangani link <ph name="SCHEME"/>. Link yang diminta adalah <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Aduh! Google Chrome ngadat. Luncurkan ulang sekarang?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Pengurai Chrome</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Hapus Penginstalan Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Tersedia versi Google Chrome yang baru dan lebih aman.</translation>
+<translation id="5037239767309817516">Harap tutup semua jendela Google Chrome dan luncurkan kembali agar perubahan ini berlaku.</translation>
 <translation id="8810218179782551669">Bahasa Google Chrome:</translation>
 <translation id="7451721381978275812">Parameter tidak valid. Google Chrome Frame tidak dapat dipasang dalam modus siap bila Google Chrome belum dipasang.</translation>
 <translation id="5809236835374558741">Komputer ini telah memasang versi Google Chrome yang lebih baru. Jika perangkat lunak tidak berfungsi, hapus pemasangan Google Chrome Frame dan unduh kembali.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Google Chrome menggunakan mesin telusur bawaan, yang saat ini disetel ke <ph name="PAGE_TITLE"/>. Anda ingin mempertahankan mesin telusur bawaan?</translation>
 <translation id="7161904924553537242">Selamat Datang di Google Chrome</translation>
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
+<translation id="3444832043240812445">Laman ini hanya menunjukkan informasi tentang kondisi ngadat terkini jika Anda <ph name="BEGIN_LINK"/>mengaktifkan pelaporan kondisi ngadat<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome tidak merespons. Luncurkan ulang sekarang?</translation>
 <translation id="2681064822612051220">Terjadi konflik pemasangan Google Chrome pada sistem. Hapus pemasangan dan coba lagi.</translation>
 <translation id="5318056482164160049">Inang Pengaya Google Chrome</translation>
 <translation id="6126631249883707068">Ingin Google Chrome menyimpan sandi Anda?</translation>

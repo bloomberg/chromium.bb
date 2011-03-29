@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">O Google Chrome não está instalado ou não foi possível localizar o directório de instalação. Transfira de novo o Google Chrome.</translation>
 <translation id="1761870329818521071">Não é possível instalar a mesma versão do Google Chrome actualmente em execução. Feche o Google Chrome Frame e tente novamente.</translation>
 <translation id="2040709530900803995">Processador do Google Chrome</translation>
+<translation id="5339639696978861456">O Chrome Frame foi atualizado. Reinicie o navegador. Versão do Chrome: <ph name="TODO_0001"/>, Versão do Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Termos de utilização</translation>
 <translation id="1779550429052479749">Foi encontrada uma instalação do Google Chrome ou Google Chrome Frame em conflito no sistema. Desinstale-a e tente novamente.</translation>
 <translation id="3555616473548901994">Desinstalação concluída.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Utilitário do Google Chrome</translation>
 <translation id="4343226815564935778">O directório para instalação do Google Chrome parece estar a ser utilizado. Reinicie o computador e tente de novo.</translation>
 <translation id="8227755444512189073">O Google Chrome precisa de executar uma aplicação externa para processar links <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Ups! O Google Chrome falhou. Reiniciar agora?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Processador do Chrome</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Está disponível uma versão nova e mais segura do Google Chrome.</translation>
+<translation id="5037239767309817516">Feche todas as janelas do Google Chrome e reinicie-o para que esta alteração tenha efeito.</translation>
 <translation id="8810218179782551669">Idioma do Google Chrome:</translation>
 <translation id="7451721381978275812">Argumentos inválidos. Não é possível instalar o Google Chrome Frame no modo de prontidão sem instalar o Google Chrome.</translation>
 <translation id="5809236835374558741">Este computador já tem uma versão mais recente do Google Chrome Frame. Se o software não estiver a funcionar, desinstale o Google Chrome Frame e transfira-o de novo.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">O Google Chrome utiliza o motor de pesquisa predefinido, que está actualmente definido como <ph name="PAGE_TITLE"/>. Pretende manter o motor de pesquisa predefinido?</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
 <translation id="8669527147644353129">Ajudante do Google Chrome</translation>
+<translation id="3444832043240812445">Esta página mostra informações sobre falhas recentes apenas se <ph name="BEGIN_LINK"/>ativar relatórios de falha<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">O Google Chrome não responde. Reiniciar agora?</translation>
 <translation id="2681064822612051220">Foi encontrada uma instalação do Google Chrome em conflito no sistema. Desinstale-a e tente novamente.</translation>
 <translation id="5318056482164160049">Anfitrião do plug-in do Google Chrome</translation>
 <translation id="6126631249883707068">Pretende que o Google Chrome guarde a sua palavra-passe?</translation>

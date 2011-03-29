@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">Вибрати файл</translation>
 <translation id="2761667185364618470">Поставте тут прапорець, якщо хочете продовжити.</translation>
 <translation id="8964020114565522021">Перетягніть файл сюди</translation>
+<translation id="5129723458012748440">Плагін <ph name="PLUGIN"/> не встановлено.</translation>
 <translation id="838869780401515933">установити прапорець</translation>
 <translation id="2846343701378493991">1024 (Середній рівень)</translation>
 <translation id="5476505524087279545">зняти прапорець</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">Заповніть це поле.</translation>
 <translation id="5253117816378681419">Підтвердьте встановлення плагіна <ph name="PLUGIN"/>. Слід установлювати лише плагіни, яким ви довіряєте.</translation>
 <translation id="6663448176199120256">Останні пошуки</translation>
+<translation id="7335060848622232389">Встановлення плагінів вимкнено.</translation>
 <translation id="2597378329261239068">Цей документ захищено паролем. Введіть пароль.</translation>
 <translation id="5466621249238537318">Виберіть один або декілька файлів.</translation>
 <translation id="8750798805984357768">Виберіть один із запропонованих варіантів.</translation>
 <translation id="7740050170769002709">Вміст HTML</translation>
 <translation id="2226276347425096477">Скоротіть текст до такої кількості символів або менше: <ph name="MAX_CHARACTERS"/> (наразі використано символів: <ph name="CURRENT_LENGTH"/>).</translation>
+<translation id="1639239467298939599">Завантаження</translation>
 <translation id="2908441821576996758">Введіть список електронних адрес, розділених комою.</translation>
 <translation id="5939518447894949180">Скинути</translation>
 <translation id="835897206747267392">Недійсне значення</translation>
+<translation id="3851140433852960970">Немає плагінів для відображення цього вмісту.</translation>
 <translation id="1842960171412779397">вибрати</translation>
 <translation id="3450233048674729344">Значення має бути меншим або дорівнювати <ph name="MAXIMUM"/>.</translation>
+<translation id="9198010615634362518">Потрібний плагін не встановлено.</translation>
 <translation id="7638452146404718955">Натисніть тут, щоб завантажити плагін</translation>
 <translation id="6119846243427417423">активувати</translation>
 <translation id="8444882422881193423">файлів: <ph name="NUMBER_OF_FILES"/></translation>

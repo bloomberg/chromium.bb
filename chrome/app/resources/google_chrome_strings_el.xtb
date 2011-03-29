@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Το Google Chrome δεν έχει εγκατασταθεί ή απέτυχε στην εύρεση καταλόγου εγκατάστασης.  Κάντε λήψη του Google Chrome ξανά.</translation>
 <translation id="1761870329818521071">Δεν είναι δυνατή η εγκατάσταση της ίδιας έκδοσης του Google Chrome Frame που εκτελείται αυτήν τη στιγμή. Κλείστε το Google Chrome Frame και δοκιμάστε ξανά.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="5339639696978861456">Έγινε ενημέρωση του Chrome Frame. Επανεκκινήστε το πρόγραμμα περιήγησής σας. Έκδοση Chrome: <ph name="TODO_0001"/>, έκδοση Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Όροι Παροχής Υπηρεσιών</translation>
 <translation id="1779550429052479749">Εντοπίστηκε στο σύστημα μια εγκατάσταση σε διένεξη του Google Chrome ή του Google Chrome Frame. Καταργήστε την εγκατάσταση και προσπαθήστε ξανά.</translation>
 <translation id="3555616473548901994">Η κατάργηση εγκατάστασης ολοκληρώθηκε.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Βοηθητικό Πρόγραμμα του Google Chrome</translation>
 <translation id="4343226815564935778">Ο κατάλογος εγκατάστασης του Google Chrome φαίνεται να χρησιμοποιείται. Κάντε επανεκκίνηση του υπολογιστή σας και προσπαθήστε ξανά.</translation>
 <translation id="8227755444512189073">Το Google Chrome πρέπει να εκκινήσει μια εξωτερική εφαρμογή για το χειρισμό των συνδέσμων <ph name="SCHEME"/>. Ζητήθηκε ο σύνδεσμος <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Πω πω! Το Google Chrome παρουσίασε σφάλμα. Επανεκκίνηση τώρα;</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Κατάργηση εγκατάστασης Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Υπάρχει μια νέα, ασφαλέστερη έκδοση του Google Chrome.</translation>
+<translation id="5037239767309817516">Κλείστε όλα τα παράθυρα του Google Chrome και επανεκκινήστε τον για να εφαρμοστεί αυτή η αλλαγή.</translation>
 <translation id="8810218179782551669">Γλώσσα του Google Chrome:</translation>
 <translation id="7451721381978275812">Μη έγκυρα ορίσματα. Το Google Chrome Frame δεν μπορεί να εγκατασταθεί σε κατάσταση ετοιμότητας χωρίς να γίνει εγκατάσταση και του Google Chrome.</translation>
 <translation id="5809236835374558741">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome. Αν το λογισμικό δεν λειτουργεί, καταργήστε την εγκατάσταση του Google Chrome και κάντε λήψη ξανά.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Το Google Chrome χρησιμοποιεί την προεπιλεγμένη μηχανή αναζήτησης, η οποία αυτή τη στιγμή έχει οριστεί στην <ph name="PAGE_TITLE"/>. Θέλετε να διατηρήσετε την προεπιλεγμένη μηχανή αναζήτησης;</translation>
 <translation id="7161904924553537242">Καλώς ήρθατε στο Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="3444832043240812445">Αυτή η σελίδα εμφανίζει μόνο πληροφορίες για τα σφάλματα που παρουσιάστηκαν πρόσφατα εφόσον <ph name="BEGIN_LINK"/>έχετε ενεργοποιημένη την αναφορά σφαλμάτων<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Το Google Chrome δεν αποκρίνεται. Επανεκκίνηση τώρα;</translation>
 <translation id="2681064822612051220">Εντοπίστηκε στο σύστημα εγκατάσταση σε διένεξη του Google Chrome. Καταργήστε την εγκατάσταση και προσπαθήστε ξανά.</translation>
 <translation id="5318056482164160049">Εφαρμογή Προσθήκης του Google Chrome</translation>
 <translation id="6126631249883707068">Θέλετε το Google Chrome να αποθηκεύσει τον κωδικό πρόσβασής σας;</translation>

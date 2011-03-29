@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Google Chrome не встановлено, або не вдалося знайти каталог установки. Завантажте Google Chrome ще раз.</translation>
 <translation id="1761870329818521071">Неможливо встановити версію Google Chrome Frame, аналогічну запущеній на цей момент. Закрийте Google Chrome Frame і повторіть спробу.</translation>
 <translation id="2040709530900803995">Рендерер Google Chrome</translation>
+<translation id="5339639696978861456">Chrome Frame оновлено. Перезапустіть свій веб-переглядач. Версія Chrome: <ph name="TODO_0001"/>, версія Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Загальні положення та умови Google</translation>
 <translation id="1779550429052479749">У системі виявлено конфліктуюче встановлення Google Chrome або Google Chrome Frame. Видаліть його та повторіть спробу.</translation>
 <translation id="3555616473548901994">Видалення завершено.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Утиліта Google Chrome</translation>
 <translation id="4343226815564935778">Каталог встановлення Google Chrome наразі використовується. Перезавантажте свій комп'ютер і спробуйте ще раз.</translation>
 <translation id="8227755444512189073">Google Chrome потребує запуску зовнішньої прикладної програми для опрацювання посилань <ph name="SCHEME"/>. Посилання, на яке здійснено запит, - <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Відбулося аварійне завершення роботи Google Chrome. Перезапустити зараз?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Рендерер Chrome</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Видалити Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Доступна нова, безпечніша версія Google Chrome.</translation>
+<translation id="5037239767309817516">Щоб зміна почала діяти, закрийте всі вікна Google Chrome і перезапустіть веб-переглядач.</translation>
 <translation id="8810218179782551669">Мова Google Chrome:</translation>
 <translation id="7451721381978275812">Недійсні аргументи. Google Chrome Frame неможливо встановити в режимі готовності, не встановивши при цьому Google Chrome.</translation>
 <translation id="5809236835374558741">На цьому комп'ютері вже встановлено новішу версію Google Chrome Frame. Якщо це програмне забезпечення не працює, слід видалити Google Chrome Frame і завантажити його знову.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Google Chrome використовує вашу пошукову систему за умовчанням, якою на даний момент є <ph name="PAGE_TITLE"/>. Не змінювати пошукову систему за умовчанням?</translation>
 <translation id="7161904924553537242">Вітаємо у Google Chrome:</translation>
 <translation id="8669527147644353129">Помічник Google Chrome</translation>
+<translation id="3444832043240812445">На цій сторінці відображається інформація лише про останні випадки аварійного завершення роботи, якщо <ph name="BEGIN_LINK"/>ввімкнено повідомлення про аварійне завершення роботи<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome не відповідає. Перезапустити зараз?</translation>
 <translation id="2681064822612051220">У системі виявлено конфліктуюче встановлення Google Chrome. Видаліть його та повторіть спробу.</translation>
 <translation id="5318056482164160049">Хост модуля Google Chrome</translation>
 <translation id="6126631249883707068">Зберігати ваш пароль у Google Chrome?</translation>

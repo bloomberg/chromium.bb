@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">Vælg fil</translation>
 <translation id="2761667185364618470">Marker dette felt, hvis du vil fortsætte.</translation>
 <translation id="8964020114565522021">Træk filer hertil</translation>
+<translation id="5129723458012748440"><ph name="PLUGIN"/>-plugin er ikke installeret.</translation>
 <translation id="838869780401515933">marker</translation>
 <translation id="2846343701378493991">1024 (Mellemklasse)</translation>
 <translation id="5476505524087279545">fjern markering</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">Udfyld dette felt.</translation>
 <translation id="5253117816378681419">Bekræft, at du vil installere dette <ph name="PLUGIN"/>-plugin. Du skal kun installere plugins, som du har tillid til.</translation>
 <translation id="6663448176199120256">Nylige søgninger</translation>
+<translation id="7335060848622232389">Installation af plug-ins er blevet deaktiveret.</translation>
 <translation id="2597378329261239068">Dette dokument er adgangskodebeskyttet. Indtast en adgangskode.</translation>
 <translation id="5466621249238537318">Vælg en eller flere filer.</translation>
 <translation id="8750798805984357768">Vælg en af disse muligheder.</translation>
 <translation id="7740050170769002709">HTML-indhold</translation>
 <translation id="2226276347425096477">Forkort denne tekst til <ph name="MAX_CHARACTERS"/> tegn eller færre (du bruger i øjeblikket <ph name="CURRENT_LENGTH"/> tegn).</translation>
+<translation id="1639239467298939599">Indlæser...</translation>
 <translation id="2908441821576996758">Angiv en kommasepareret liste over e-mail-adresser.</translation>
 <translation id="5939518447894949180">Nulstil</translation>
 <translation id="835897206747267392">Ugyldig værdi.</translation>
+<translation id="3851140433852960970">Der er intet tilgængeligt plugin, som kan vise dette indhold.</translation>
 <translation id="1842960171412779397">vælg</translation>
 <translation id="3450233048674729344">Værdien skal være mindre end eller lig med <ph name="MAXIMUM"/>.</translation>
+<translation id="9198010615634362518">Det påkrævede plugin er ikke installeret.</translation>
 <translation id="7638452146404718955">Klik her for at downloade plugin</translation>
 <translation id="6119846243427417423">aktiver</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> filer</translation>

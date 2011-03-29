@@ -43,7 +43,7 @@
 <translation id="561349411957324076">पूर्ण</translation>
 <translation id="2757513101875140959">आधी चौड़ाई वाले मोड में स्विच करें</translation>
 <translation id="4764776831041365478"><ph name="URL"/> पर मौजूद वेबपृष्ठ संभवतः अस्थायी रूप से बंद है या उसे स्थायी रूप से किसी नए वेब पते पर ले जाया गया है.</translation>
-<translation id="6156863943908443225">स्क्रिप्ट कैश</translation>
+<translation id="6156863943908443225">स्क्रिप्ट संचय</translation>
 <translation id="4610656722473172270">Google टूलबार</translation>
 <translation id="5955683490115499713">अंग्रेज़ी (USA विस्तारित)</translation>
 <translation id="151501797353681931">Safari से आयातित</translation>
@@ -233,7 +233,7 @@
 <translation id="1684638090259711957">कोई नया अपवाद प्रतिमान जोड़ें</translation>
 <translation id="4925481733100738363">दूरस्थ पहुंच सेट करें...</translation>
 <translation id="1880905663253319515">प्रमाणपत्र &quot;<ph name="CERTIFICATE_NAME"/>&quot; हटाएं?</translation>
-<translation id="8546306075665861288">छवि कैश</translation>
+<translation id="8546306075665861288">छवि संचय</translation>
 <translation id="5904093760909470684">प्रॉक्सी कॉन्फ़िगरेशन</translation>
 <translation id="4558734465070698159">पिछली इनपुट विधि का चयन करने के लिए <ph name="HOTKEY_NAME"/> दबाएं.</translation>
 <translation id="3391060940042023865">निम्न प्लग-इन क्रैश हो गया है: <ph name="PLUGIN_NAME"/></translation>
@@ -544,14 +544,14 @@
 <translation id="939736085109172342">नया फ़ोल्डर</translation>
 <translation id="4933484234309072027"><ph name="URL"/> पर एम्बेड किया गया</translation>
 <translation id="5554720593229208774">ईमेल प्रमाणन प्राधिकरण</translation>
-<translation id="862750493060684461">CSS कैश</translation>
+<translation id="862750493060684461">CSS संचय</translation>
 <translation id="2832519330402637498">ऊपरी बायां कोना</translation>
 <translation id="6204994989617056362">SSL रीनिगोशिएशन एक्सटेंशन सुरक्षित हैंडशेक से गुम था. कुछ साइटों के लिए, जिन्हें रीनिगोशिएशन एक्सटेंशन का समर्थन करने के लिए जाना जाता है, ज्ञात आक्रमणों की एक श्रेणी से बचाने के लिए Chrome को और सुरक्षित हैंडशेक की आवश्यकता होती है. इस एक्सटेंशन को छोड़ने से यह सुझाव देता है कि आपका कनेक्शन ट्रांज़िट में बाधित किया गया और परिवर्तित कर दिया गया था.</translation>
 <translation id="7789962463072032349">रोकें</translation>
 <translation id="121827551500866099">सभी डाउनलोड दिखाएं...</translation>
 <translation id="1562633988311880769"><ph name="CLOUD_PRINT_NAME"/> में साइन इन करें</translation>
 <translation id="888062562827966298">इटैलिक में प्रदर्शित अपवाद केवल इस अज्ञात सत्र के लिए लागू होते हैं.</translation>
-<translation id="3115147772012638511">कैश की प्रतीक्षा कर रहा है...</translation>
+<translation id="3115147772012638511">संचय की प्रतीक्षा कर रहा है...</translation>
 <translation id="257088987046510401">थीम</translation>
 <translation id="6771079623344431310">प्रॉक्सी सर्वर से कनेक्ट करने में असमर्थ</translation>
 <translation id="2200129049109201305">एन्क्रिप्ट किए गए डेटा को सिंक करना छोड़ें?</translation>
@@ -1007,7 +1007,7 @@
 <translation id="569109051430110155">स्वतः पता लगाएं</translation>
 <translation id="4408599188496843485">स&amp;हायता</translation>
 <translation id="8494234776635784157">वेब सामग्रियां</translation>
-<translation id="2681441671465314329">कैश खाली करें</translation>
+<translation id="2681441671465314329">संचय खाली करें</translation>
 <translation id="3646789916214779970">डिफ़ॉल्ट थीम पर रीसेट करें</translation>
 <translation id="1592960452683145077">दूरस्थ सेटअप सफलतापूर्वक प्रारंभ हो गया. अब आप इस कंप्यूटर से दूरस्थ रूप से कनेक्ट हो सकेंगे.</translation>
 <translation id="1679068421605151609">डेवलपर टूल</translation>
@@ -1885,6 +1885,7 @@
 <translation id="3031433885594348982"><ph name="DOMAIN"/> से आपके कनेक्शन को किसी कमज़ोर एन्क्रिप्शन द्वारा एन्क्रिप्ट किया गया है.</translation>
 <translation id="4047345532928475040">उपलब्‍ध नहीं</translation>
 <translation id="3220630151624181591">टैब 2 को सक्रिय करें</translation>
+<translation id="8898139864468905752">टैब ओवरव्यू</translation>
 <translation id="5771816112378578655">सेटअप प्रगति में है...</translation>
 <translation id="1197979282329025000">प्रिंटर <ph name="PRINTER_NAME"/> की प्रिंटर क्षमताएं पुनर्प्राप्त करते समय एक त्रुटि आई. इस प्रिंटर को <ph name="CLOUD_PRINT_NAME"/> के साथ पंजीकृत नहीं किया जा सका.</translation>
 <translation id="8820901253980281117">पॉप-अप अपवाद</translation>
@@ -2667,6 +2668,7 @@
 <translation id="21381969153622804">कार्रवाई</translation>
 <translation id="1971538228422220140">कुकी और अन्य साइट तथा प्लग-इन डेटा हटाएं</translation>
 <translation id="883487340845134897">खोज और बाईं Control कुंजियों की अदला-बदली करें</translation>
+<translation id="5692957461404855190">अपने सभी टैब का ओवरव्‍यू देखने के लिए अपने ट्रैकपैड पर तीन उंगलियों से नीचे स्‍वाइप करें. इसका चयन करने के लिए किसी थंबनेल पर क्‍लिक करें. पूर्णस्‍क्रीन मोड में बहुत अच्‍छा काम करता है.</translation>
 <translation id="1375215959205954975">नया! पासवर्ड सिंक कॉन्फ़िगर करें.</translation>
 <translation id="5183088099396036950">सर्वर से कनेक्ट नहीं हो सका</translation>
 <translation id="4469842253116033348"><ph name="SITE"/> से सूचनाएं अक्षम करें</translation>

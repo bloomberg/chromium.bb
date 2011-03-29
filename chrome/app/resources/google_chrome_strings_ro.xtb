@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Google Chrome nu este instalat sau nu a putut găsi directorul de instalare. Descărcați din nou Google Chrome.</translation>
 <translation id="1761870329818521071">Nu se poate instala aceeaşi versiune Google Chrome Frame care rulează în prezent. Închideţi Google Chrome Frame şi încercaţi din nou.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="5339639696978861456">Chrome Frame s-a actualizat. Reporniţi browserul. Versiune Google Chrome: <ph name="TODO_0001"/>. Versiune Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Condiții de furnizare a serviciilor</translation>
 <translation id="1779550429052479749">A fost găsită o instalare conflictuală a Google Chrome sau Google Chrome Frame în sistem. Dezinstalaţi-o şi încercaţi din nou.</translation>
 <translation id="3555616473548901994">Dezinstalare finalizată.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Directorul de instalare al Google Chrome pare a fi utilizat. Reporniți computerul și încercați din nou.</translation>
 <translation id="8227755444512189073">Google Chrome necesită lansarea unei aplicații externe pentru a gestiona link-uri <ph name="SCHEME"/>. Link-ul solicitat este <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Hopa! Google Chrome s-a închis cu eroare. Reporniţi acum?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Dezinstalați Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Google Chrome este disponibil într-o versiune nouă şi mai sigură.</translation>
+<translation id="5037239767309817516">Pentru ca această modificare să aibă efect, închideţi toate ferestrele Google Chrome şi reporniţi-l.</translation>
 <translation id="8810218179782551669">Limba Google Chrome:</translation>
 <translation id="7451721381978275812">Argumentele nu sunt valide. Google Chrome Frame nu poate fi instalat în modul Pregătit fără a instala şi Google Chrome.</translation>
 <translation id="5809236835374558741">Acest computer are deja o versiune Google Chrome Frame mai recentă. Dacă programul nu funcţionează, vă rugăm să dezinstalaţi Google Chrome Frame şi să-l descărcaţi din nou.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Google Chrome utilizează motorul de căutare prestabilit, setat în prezent la <ph name="PAGE_TITLE"/>. Doriți să păstrați motorul de căutare prestabilit?</translation>
 <translation id="7161904924553537242">Bun venit la Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="3444832043240812445">Această pagină afişează informaţii cu privire la recentele opriri cu eroare numai dacă <ph name="BEGIN_LINK"/>activaţi raportarea opririlor cu eroare<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome nu mai răspunde. Îl reporniţi acum?</translation>
 <translation id="2681064822612051220">A fost găsită o instalare conflictuală a Google Chrome în sistem. Dezinstalaţi-o şi încercaţi din nou.</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
 <translation id="6126631249883707068">Doriți ca Google Chrome să vă salveze parola?</translation>

@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">Valitse tiedosto</translation>
 <translation id="2761667185364618470">Valitse tämä ruutu jatkaaksesi.</translation>
 <translation id="8964020114565522021">Vedä tiedosto tähän</translation>
+<translation id="5129723458012748440">Laajennusta <ph name="PLUGIN"/> ei ole asennettu.</translation>
 <translation id="838869780401515933">valitse</translation>
 <translation id="2846343701378493991">1024 (keskitaso)</translation>
 <translation id="5476505524087279545">poista valinta</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">Täytä tämä kenttä.</translation>
 <translation id="5253117816378681419">Vahvista, että haluat asentaa laajennuksen <ph name="PLUGIN"/>. Suosittelemme asentamaan vain laajennuksia, joihin luotat.</translation>
 <translation id="6663448176199120256">Viimeisimmät haut</translation>
+<translation id="7335060848622232389">Laajennuksien asentaminen on poistettu käytöstä.</translation>
 <translation id="2597378329261239068">Tämä asiakirja on suojattu salasanalla. Anna salasana.</translation>
 <translation id="5466621249238537318">Valitse vähintään yksi tiedosto.</translation>
 <translation id="8750798805984357768">Valitse yksi vaihtoehdoista.</translation>
 <translation id="7740050170769002709">HTML-sisältö</translation>
 <translation id="2226276347425096477">Lyhennä tämä teksti alle <ph name="MAX_CHARACTERS"/> merkkiin (tällä hetkellä käytössä <ph name="CURRENT_LENGTH"/> merkkiä).</translation>
+<translation id="1639239467298939599">Ladataan</translation>
 <translation id="2908441821576996758">Anna pilkuilla erotettu sähköpostiosoitteiden luettelo.</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
 <translation id="835897206747267392">Virheellinen arvo.</translation>
+<translation id="3851140433852960970">Tämän sisällön näyttämiseen ei ole saatavissa laajennusta.</translation>
 <translation id="1842960171412779397">Valitse</translation>
 <translation id="3450233048674729344">Arvon tulee olla pienempi tai yhtä suuri kuin <ph name="MAXIMUM"/>.</translation>
+<translation id="9198010615634362518">Vaadittua laajennusta ei ole asennettu.</translation>
 <translation id="7638452146404718955">Lataa laajennus napsauttamalla tätä</translation>
 <translation id="6119846243427417423">aktivoi</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> tiedostoa</translation>

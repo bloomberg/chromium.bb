@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">파일 선택</translation>
 <translation id="2761667185364618470">계속하려면 이 확인란을 선택하세요.</translation>
 <translation id="8964020114565522021">여기로 파일 드래그</translation>
+<translation id="5129723458012748440"><ph name="PLUGIN"/> 플러그인이 설치되지 않았습니다.</translation>
 <translation id="838869780401515933">선택</translation>
 <translation id="2846343701378493991">1024(중간 등급)</translation>
 <translation id="5476505524087279545">선택취소</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">이 입력란을 작성하세요.</translation>
 <translation id="5253117816378681419"><ph name="PLUGIN"/> 플러그인을 설치할지 여부를 확인하시기 바랍니다. 신뢰할 수 있는 플러그인만 설치해야 합니다.</translation>
 <translation id="6663448176199120256">최근 수행된 검색</translation>
+<translation id="7335060848622232389">플러그인 설치가 중단되었습니다.</translation>
 <translation id="2597378329261239068">문서가 비밀번호로 보호되고 있습니다. 비밀번호를 입력하세요.</translation>
 <translation id="5466621249238537318">파일을 한 개 이상 선택하세요.</translation>
 <translation id="8750798805984357768">다음 옵션 중 하나를 선택하세요.</translation>
 <translation id="7740050170769002709">HTML 콘텐츠</translation>
 <translation id="2226276347425096477">이 텍스트를 <ph name="MAX_CHARACTERS"/>자 이하로 줄이세요(현재 <ph name="CURRENT_LENGTH"/>자 사용 중).</translation>
+<translation id="1639239467298939599">로드 중</translation>
 <translation id="2908441821576996758">이메일 주소를 쉼표로 구분하여 입력하세요.</translation>
 <translation id="5939518447894949180">재설정</translation>
 <translation id="835897206747267392">값이 잘못되었습니다.</translation>
+<translation id="3851140433852960970">이 콘텐츠를 표시하는 데 사용할 플러그인이 없습니다.</translation>
 <translation id="1842960171412779397">선택</translation>
 <translation id="3450233048674729344">값은 <ph name="MAXIMUM"/> 이하여야 합니다.</translation>
+<translation id="9198010615634362518">필수 플러그인이 설치되지 않았습니다.</translation>
 <translation id="7638452146404718955">여기를 클릭하여 플러그인 다운로드</translation>
 <translation id="6119846243427417423">활성화</translation>
 <translation id="8444882422881193423">파일 <ph name="NUMBER_OF_FILES"/>개</translation>

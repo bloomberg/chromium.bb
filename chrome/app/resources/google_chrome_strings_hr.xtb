@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Google Chrome nije instaliran ili nije pronađen direktorij za instalaciju. Ponovno preuzmite program Google Chrome.</translation>
 <translation id="1761870329818521071">Nije moguće instalirati istu verziju programa Google Chrome Frame koja je trenutačno pokrenuta. Zatvorite Google Chrome Frame i pokušajte ponovo.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="5339639696978861456">Chrome Frame je ažuriran. Ponovo pokrenite preglednik. Verzija preglednika Chrome: <ph name="TODO_0001"/>, verzija dodatka Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Uvjeti upotrebe usluge</translation>
 <translation id="1779550429052479749">Na sustavu je pronađena konfliktna instalacija aplikacije Google Chrome ili Google Chrome Frame. Deinstalirajte je i pokušajte ponovo.</translation>
 <translation id="3555616473548901994">Deinstalacija dovršena.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Uslužni program za Google Chrome</translation>
 <translation id="4343226815564935778">Čini se da je instalacijski direktorij preglednika Google Chrome u upotrebi. Ponovno pokrenite računalo i pokušajte još jednom.</translation>
 <translation id="8227755444512189073">Google Chrome treba pokrenuti vanjsku aplikaciju da bi mogao koristiti veze <ph name="SCHEME"/>. Zatražena je veza <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Opa! Google Chrome je pao. Ponovo pokrenuti sada?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Deinstaliranje preglednika Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Dostupna je nova, sigurnija verzija preglednika Google Chrome.</translation>
+<translation id="5037239767309817516">Zatvorite sve prozore preglednika Google Chrome i ponovo ga pokrenite kako bi ova promjena stupila na snagu.</translation>
 <translation id="8810218179782551669">Jezik programa Google Chrome:</translation>
 <translation id="7451721381978275812">Nevažeći argumenti. Google Chrome Frame ne može se instalirati u načinu spremno, a da se ne instalira i Google Chrome.</translation>
 <translation id="5809236835374558741">Ovo računalo već ima noviju verziju programa Google Chrome Frame. Ako softver ne radi, deinstalirajte Google Chrome Frame i ponovno ga preuzmite.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Google Chrome koristi vašu zadanu tražilicu koja je trenutno postavljena na <ph name="PAGE_TITLE"/>. Želite li zadržati zadanu tražilicu?</translation>
 <translation id="7161904924553537242">Dobro došli u Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="3444832043240812445">Ova stranica prikazuje samo informacije o vašim nedavnim padovima ako <ph name="BEGIN_LINK"/>omogućite izvješćivanja o padu<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome ne reagira. Ponovo pokrenuti sada?</translation>
 <translation id="2681064822612051220">Na sustavu je pronađena konfliktna instalacija aplikacije Google Chrome. Deinstalirajte je i pokušajte ponovo.</translation>
 <translation id="5318056482164160049">Google Chrome host dodatka</translation>
 <translation id="6126631249883707068">Želite li da vam Google Chrome spremi zaporku?</translation>

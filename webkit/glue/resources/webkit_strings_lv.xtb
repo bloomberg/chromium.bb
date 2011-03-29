@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">Izvēlieties failu</translation>
 <translation id="2761667185364618470">Lai turpinātu, atzīmējiet šo izvēles rūtiņu.</translation>
 <translation id="8964020114565522021">Ievelciet failu šeit</translation>
+<translation id="5129723458012748440">Spraudnis <ph name="PLUGIN"/> nav instalēts.</translation>
 <translation id="838869780401515933">prbaudt</translation>
 <translation id="2846343701378493991">1024 (Vidēja Atzīme)</translation>
 <translation id="5476505524087279545">neprbaudt</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">Aizpildiet šo lauku.</translation>
 <translation id="5253117816378681419">Lūdzu, apstipriniet, ka vēlaties instalēt <ph name="PLUGIN"/> spraudni. Jums ir jāinstalē tikai tie spraudņi, kuriem uzticaties.</translation>
 <translation id="6663448176199120256">Neseni meklējumi</translation>
+<translation id="7335060848622232389">Spraudņu instalēšana ir atspējota.</translation>
 <translation id="2597378329261239068">Šis dokuments ir aizsargāts ar paroli. Lūdzu, ievadiet paroli.</translation>
 <translation id="5466621249238537318">Lūdzu, atlasiet vienu vai vairākus failus.</translation>
 <translation id="8750798805984357768">Lūdzu, atlasiet vienu no šīm opcijām.</translation>
 <translation id="7740050170769002709">HTML saturs</translation>
 <translation id="2226276347425096477">Lūdzu, saīsiniet šo tekstu līdz <ph name="MAX_CHARACTERS"/> vai mazāk zīmēm (pašreiz tas ietver <ph name="CURRENT_LENGTH"/> rakstzīmes).</translation>
+<translation id="1639239467298939599">Notiek ielāde</translation>
 <translation id="2908441821576996758">Lūdzu, ievadiet ar komatu atdalītu e-pasta adrešu sarakstu.</translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
 <translation id="835897206747267392">Nederīga vērtība.</translation>
+<translation id="3851140433852960970">Nav pieejams neviens spraudnis, kas var attēlot šo saturu.</translation>
 <translation id="1842960171412779397">Atlasiet</translation>
 <translation id="3450233048674729344">Vērtībai ir jābūt mazākai vai vienādai ar <ph name="MAXIMUM"/>.</translation>
+<translation id="9198010615634362518">Nepieciešamais spraudnis nav instalēts.</translation>
 <translation id="7638452146404718955">Noklikšķiniet šeit, lai lejupielādētu spraudni</translation>
 <translation id="6119846243427417423">aktivizt</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> faili</translation>

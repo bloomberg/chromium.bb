@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Google Chrome není nainstalován nebo se nepodařilo nalézt instalační adresář. Stáhněte prosím Google Chrome ještě jednou.</translation>
 <translation id="1761870329818521071">Nelze nainstalovat stejnou verzi pluginu Google Chrome Frame, jaká je právě spuštěná. Ukončete plugin Google Chrome Frame a zkuste to prosím znovu.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="5339639696978861456">Plugin Chrome Frame byl aktualizován. Restartujte prosím prohlížeč. Verze prohlížeče Chrome: <ph name="TODO_0001"/>, verze pluginu Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Smluvní podmínky</translation>
 <translation id="1779550429052479749">V systému byla nalezena konfliktní instalace prohlížeče Google Chrome nebo pluginu Google Chrome Frame. Odinstalujte tuto instanci a zkuste to znovu.</translation>
 <translation id="3555616473548901994">Odinstalace byla dokončena.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Instalační adresář aplikace Google Chrome je zřejmě používán. Restartujte počítač a zkuste to znovu.</translation>
 <translation id="8227755444512189073">Aplikace Chrome potřebuje spustit externí aplikaci pro práci s odkazy <ph name="SCHEME"/>. Požadovaný odkaz je <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Ouha! Prohlížeč Google Chrome spadl. Restartovat?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> prohlížeče Google Chrome</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Odinstalovat Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">K dispozici je nová, bezpečnější verze prohlížeče Google Chrome.</translation>
+<translation id="5037239767309817516">Aby se změna projevila, zavřete prosím všechna okna aplikace Google Chrome a spusťte ji znovu.</translation>
 <translation id="8810218179782551669">Jazyk aplikace Google Chrome:</translation>
 <translation id="7451721381978275812">Neplatné argumenty. Plugin Google Chrome Frame nemůže být v pohotovostním režimu nainstalován bez toho, aby byl zároveň nainstalován prohlížeč Google Chrome.</translation>
 <translation id="5809236835374558741">V tomto počítači je již nainstalována novější verze pluginu Google Chrome Frame. Jestliže software nefunguje, odinstalujte prosím plugin Google Chrome Frame a stáhněte jej znovu.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Google Chrome používá váš výchozí vyhledávač. Aktuálně nastavený výchozí vyhledávač: <ph name="PAGE_TITLE"/>. Chcete zachovat nastavení výchozího vyhledávače?</translation>
 <translation id="7161904924553537242">Vítejte v aplikaci Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="3444832043240812445">Pokud zvolíte možnost <ph name="BEGIN_LINK"/>povolit zprávy o selhání<ph name="END_LINK"/>, tato stránka bude zobrazovat jen informace o posledních selháních.</translation>
+<translation id="8614913330719544658">Google Chrome neodpovídá. Restartovat?</translation>
 <translation id="2681064822612051220">V systému byla nalezena konfliktní instalace prohlížeče Google Chrome. Odinstalujte prosím tuto instanci a zkuste to znovu.</translation>
 <translation id="5318056482164160049">Hostitel pluginu aplikace Google Chrome</translation>
 <translation id="6126631249883707068">Přejete si, aby aplikace Google Chrome uložila vaše heslo?</translation>

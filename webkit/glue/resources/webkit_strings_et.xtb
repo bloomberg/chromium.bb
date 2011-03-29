@@ -10,7 +10,7 @@
 <translation id="372362261556059955">Vaja on täiendavat pistikprogrammi</translation>
 <translation id="4202807286478387388">liigu</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
-<translation id="7658239707568436148">Loobu</translation>
+<translation id="7658239707568436148">Tühista</translation>
 <translation id="795667975304826397">Ühtegi faili pole valitud</translation>
 <translation id="1416462845279468967">Pistikprogrammi installimine nurjus</translation>
 <translation id="8141602879876242471">See on otsitav indeks. Sisestage otsingu jaoks märksõnad:</translation>
@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">Vali fail</translation>
 <translation id="2761667185364618470">Märkige see ruut, kui soovite jätkata.</translation>
 <translation id="8964020114565522021">Lohistage fail siia</translation>
+<translation id="5129723458012748440">Pistikprogramm <ph name="PLUGIN"/> ei ole installitud.</translation>
 <translation id="838869780401515933">mrgista</translation>
 <translation id="2846343701378493991">1024 (keskmine)</translation>
 <translation id="5476505524087279545">eemalda mrgistus</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">Täitke see väli.</translation>
 <translation id="5253117816378681419">Palun kinnitage, et soovite pistikprogrammi <ph name="PLUGIN"/> installida. Peaksite installima vaid usaldusväärseid pistikprogramme.</translation>
 <translation id="6663448176199120256">Viimased otsingud</translation>
+<translation id="7335060848622232389">Pistikprogrammide installimine on keelatud.</translation>
 <translation id="2597378329261239068">Dokument on parooliga kaitstud. Sisestage parool.</translation>
 <translation id="5466621249238537318">Valige üks või mitu faili.</translation>
 <translation id="8750798805984357768">Tehke üks nendest valikutest.</translation>
 <translation id="7740050170769002709">HTML-sisu</translation>
 <translation id="2226276347425096477">Lühendage seda teksti <ph name="MAX_CHARACTERS"/> tähemärgini või rohkem (praegu kasutate <ph name="CURRENT_LENGTH"/> tähemärki).</translation>
+<translation id="1639239467298939599">Laadimine</translation>
 <translation id="2908441821576996758">Sisestage meiliaadresside loend komadega eraldatult.</translation>
 <translation id="5939518447894949180">Lähtesta</translation>
 <translation id="835897206747267392">Kehtetu väärtus.</translation>
+<translation id="3851140433852960970">Sisu kuvamiseks ei ole pistikprogrammi saadaval.</translation>
 <translation id="1842960171412779397">vali</translation>
 <translation id="3450233048674729344">Väärtus peab olema väiksem või võrdne <ph name="MAXIMUM"/>-ga.</translation>
+<translation id="9198010615634362518">Nõutav pistikprogramm ei ole installitud.</translation>
 <translation id="7638452146404718955">Pistikprogrammi allalaadimiseks klõpsake siin</translation>
 <translation id="6119846243427417423">aktiveeri</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> faili</translation>

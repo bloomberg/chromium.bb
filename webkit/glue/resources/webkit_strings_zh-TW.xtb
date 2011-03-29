@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">選擇檔案</translation>
 <translation id="2761667185364618470">如果您要繼續執行，請勾選這個核取方塊。</translation>
 <translation id="8964020114565522021">拖曳檔案至此</translation>
+<translation id="5129723458012748440">未安裝 <ph name="PLUGIN"/> 外掛程式。</translation>
 <translation id="838869780401515933">選取</translation>
 <translation id="2846343701378493991">1024 (中等)</translation>
 <translation id="5476505524087279545">取消選取</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">請填寫這個欄位。</translation>
 <translation id="5253117816378681419">請確認您要安裝 <ph name="PLUGIN"/> 外掛程式，建議您僅安裝您所信任的外掛程式。</translation>
 <translation id="6663448176199120256">最近的搜尋</translation>
+<translation id="7335060848622232389">外掛程式安裝功能已停用。</translation>
 <translation id="2597378329261239068">此文件受到密碼保護，請輸入密碼。</translation>
 <translation id="5466621249238537318">請選取一或多個檔案。</translation>
 <translation id="8750798805984357768">請選取其中一個選項。</translation>
 <translation id="7740050170769002709">HTML 內容</translation>
 <translation id="2226276347425096477">請將這段文字刪減至 <ph name="MAX_CHARACTERS"/> 個字元以下 (目前的字元數為 <ph name="CURRENT_LENGTH"/> 個)。</translation>
+<translation id="1639239467298939599">載入中</translation>
 <translation id="2908441821576996758">請輸入以逗號分隔的電子郵件地址清單。</translation>
 <translation id="5939518447894949180">重設</translation>
 <translation id="835897206747267392">無效的值。</translation>
+<translation id="3851140433852960970">沒有可以顯示這個內容的外掛程式</translation>
 <translation id="1842960171412779397">選取</translation>
 <translation id="3450233048674729344">值必須小於或等於 <ph name="MAXIMUM"/>。</translation>
+<translation id="9198010615634362518">未安裝必要的外掛程式</translation>
 <translation id="7638452146404718955">按一下這裡下載外掛程式</translation>
 <translation id="6119846243427417423">啟動</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> 個檔案</translation>

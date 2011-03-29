@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">Vybrať súbor</translation>
 <translation id="2761667185364618470">Ak chcete pokračovať, začiarknite toto políčko.</translation>
 <translation id="8964020114565522021">Súbor presunúť sem</translation>
+<translation id="5129723458012748440">Nie je nainštalovaný doplnok <ph name="PLUGIN"/>.</translation>
 <translation id="838869780401515933">označiť</translation>
 <translation id="2846343701378493991">1024 (stredný stupeň)</translation>
 <translation id="5476505524087279545">zrušiť označenie</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">Vyplňte toto pole.</translation>
 <translation id="5253117816378681419">Potvrďte, že chcete nainštalovať doplnok <ph name="PLUGIN"/>. Mali by ste inštalovať len doplnky, ktorým dôverujete.</translation>
 <translation id="6663448176199120256">Posledné vyhľadávania</translation>
+<translation id="7335060848622232389">Inštalovanie doplnkov bolo zakázané.</translation>
 <translation id="2597378329261239068">Tento dokument je chránený heslom. Zadajte heslo.</translation>
 <translation id="5466621249238537318">Vyberte jeden alebo viac súborov.</translation>
 <translation id="8750798805984357768">Vyberte jednu z týchto možností.</translation>
 <translation id="7740050170769002709">Obsah HTML</translation>
 <translation id="2226276347425096477">Tento text musíte skrátiť na <ph name="MAX_CHARACTERS"/> znakov alebo menej (súčasný počet znakov: <ph name="CURRENT_LENGTH"/>).</translation>
+<translation id="1639239467298939599">Prebieha načítavanie</translation>
 <translation id="2908441821576996758">Zadajte zoznam e-mailových adries oddelených čiarkou.</translation>
 <translation id="5939518447894949180">Vynulovať</translation>
 <translation id="835897206747267392">Neplatná hodnota.</translation>
+<translation id="3851140433852960970">Na zobrazenie tohto obsahu nie je k dispozícii žiadny doplnok.</translation>
 <translation id="1842960171412779397">vybrať</translation>
 <translation id="3450233048674729344">Hodnota musí byť menšia alebo rovná hodnote <ph name="MAXIMUM"/>.</translation>
+<translation id="9198010615634362518">Požadovaný doplnok nie je nainštalovaný.</translation>
 <translation id="7638452146404718955">Kliknutím sem prevezmete doplnok</translation>
 <translation id="6119846243427417423">aktivovať</translation>
 <translation id="8444882422881193423">Počet súborov: <ph name="NUMBER_OF_FILES"/></translation>

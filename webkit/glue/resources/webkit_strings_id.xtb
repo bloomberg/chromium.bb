@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">Pilih Berkas</translation>
 <translation id="2761667185364618470">Centang kotak ini jika Anda ingin melanjutkan.</translation>
 <translation id="8964020114565522021">Tarik file ke sini</translation>
+<translation id="5129723458012748440">Pengaya <ph name="PLUGIN"/> tidak dipasang.</translation>
 <translation id="838869780401515933">centangi</translation>
 <translation id="2846343701378493991">1024 (Tingkat Menengah)</translation>
 <translation id="5476505524087279545">batalkan centang</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">Harap isi bidang ini.</translation>
 <translation id="5253117816378681419">Konfirmasikan bahwa Anda ingin memasang pengaya <ph name="PLUGIN"/>. Anda harus memasang pengaya yang Anda percayai saja.</translation>
 <translation id="6663448176199120256">Penelusuran Barusan</translation>
+<translation id="7335060848622232389">Pemasangan pengaya telah dinonaktifkan.</translation>
 <translation id="2597378329261239068">Dokumen ini dilindungi sandi. Masukkan sandi.</translation>
 <translation id="5466621249238537318">Pilih salah satu atau beberapa berkas.</translation>
 <translation id="8750798805984357768">Pilih salah satu opsi berikut.</translation>
 <translation id="7740050170769002709">Konten HTML</translation>
 <translation id="2226276347425096477">Pendekkan teks ini menjadi <ph name="MAX_CHARACTERS"/> karakter atau kurang (saat ini Anda menggunakan <ph name="CURRENT_LENGTH"/> karakter).</translation>
+<translation id="1639239467298939599">Memuat</translation>
 <translation id="2908441821576996758">Masukkan daftar alamat email yang dipisahkan dengan koma.</translation>
 <translation id="5939518447894949180">Atur ulang</translation>
 <translation id="835897206747267392">Nilai tidak valid.</translation>
+<translation id="3851140433852960970">Tidak ada pengaya yang tersedia untuk menampilkan konten ini.</translation>
 <translation id="1842960171412779397">pilih</translation>
 <translation id="3450233048674729344">Nilai harus lebih kecil atau sama dengan <ph name="MAXIMUM"/>.</translation>
+<translation id="9198010615634362518">Pengaya yang diperlukan tidak dipasang.</translation>
 <translation id="7638452146404718955">Klik di sini untuk mengunduh pengaya</translation>
 <translation id="6119846243427417423">aktifkan</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> berkas</translation>

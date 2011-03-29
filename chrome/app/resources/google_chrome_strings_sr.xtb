@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Google Chrome није инсталиран или није нашао директоријум за инсталацију. Преузмите Google Chrome поново.</translation>
 <translation id="1761870329818521071">Није могуће инсталирати верзију Google Chrome Frame-а која је иста као и тренутно покренута верзија. Затворите Google Chrome Frame и покушајте поново.</translation>
 <translation id="2040709530900803995">Google Chrome апликација за приказивање</translation>
+<translation id="5339639696978861456">Chrome Frame је ажуриран. Поново покрените прегледач. Верзија Chrome прегледача: <ph name="TODO_0001"/>, верзија Chrome Frame-а: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Услови коришћења услуге</translation>
 <translation id="1779550429052479749">У систему је пронађена некомпатибилна инсталација Google Chrome прегледача или Google Chrome Frame-а. Деинсталирајте је и покушајте поново.</translation>
 <translation id="3555616473548901994">Деинсталација је довршена.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Google Chrome услужни програм</translation>
 <translation id="4343226815564935778">Изгледа да се инсталациони директоријум Google Chrome-а тренутно користи. Поново покрените рачунар и покушајте поново.</translation>
 <translation id="8227755444512189073">Google Chrome мора да покрене спољну апликацију за управљање <ph name="SCHEME"/> везама. Тражена веза је <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Опа! Google Chrome је отказао. Желите ли да га одмах поново покренете?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome апликација за приказивање</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Деинсталирај Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> – Google Chrome</translation>
 <translation id="3089968997497233615">Доступна је нова, безбеднија верзија Google Chrome прегледача.</translation>
+<translation id="5037239767309817516">Затворите све прозоре Google Chrome прегледача и поново га покрените да би ова промена ступила на снагу.</translation>
 <translation id="8810218179782551669">Језик програма Google Chrome:</translation>
 <translation id="7451721381978275812">Неважећи аргументи. Google Chrome Frame не може да се инсталира у спремном режиму, а да се притом не инсталира и Google Chrome.</translation>
 <translation id="5809236835374558741">Овај рачунар већ има новију верзију Google Chrome Frame-а. Уколико софтвер не ради, деинсталирајте Google Chrome Frame и поново га преузмите.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Google Chrome користи подразумевани претраживач, који је тренутно постављен на <ph name="PAGE_TITLE"/>. Желите ли да овај претраживач остане подразумевани претраживач?</translation>
 <translation id="7161904924553537242">Добро дошли у Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome помоћник</translation>
+<translation id="3444832043240812445">Ова страница приказује информације о недавним отказивањима само уколико <ph name="BEGIN_LINK"/>омогућите извештавање о отказивањима<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome не реагује. Желите ли да га одмах поново покренете?</translation>
 <translation id="2681064822612051220">У систему је пронађена некомпатибилна инсталација Google Chrome прегледача. Деинсталирајте је и покушајте поново.</translation>
 <translation id="5318056482164160049">Хост Google Chrome додатне компоненте</translation>
 <translation id="6126631249883707068">Желите ли да Google Chrome сачува лозинку?</translation>

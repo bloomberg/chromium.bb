@@ -6,10 +6,12 @@
 <translation id="7146678227226703416">访问 &lt;a&gt;Chrome 网上应用店&lt;/a&gt;，向“新标签”页的此区域添加精彩的应用程序和游戏。</translation>
 <translation id="1058418043520174283">已选中第 <ph name="INDEX"/> 项，共 <ph name="COUNT"/> 项</translation>
 <translation id="7040807039050164757">检查该字段的拼写(&amp;C)</translation>
+<translation id="778579833039460630">未收到数据</translation>
 <translation id="1852799913675865625">尝试读取文件时发生错误：<ph name="ERROR_TEXT"/>。</translation>
 <translation id="3828924085048779000">请勿使用空密码。</translation>
 <translation id="8265562484034134517">从其他浏览器导入数据…</translation>
 <translation id="2709516037105925701">自动填充</translation>
+<translation id="4857138207355690859">P2P API</translation>
 <translation id="250599269244456932">自动运行（推荐）</translation>
 <translation id="3581034179710640788">该网站的安全证书已过期！</translation>
 <translation id="2825758591930162672">证书持有者的公共密钥</translation>
@@ -31,8 +33,10 @@
 <translation id="1420684932347524586">糟糕！无法生成随机的 RSA 私有密钥。</translation>
 <translation id="2501173422421700905">待批证书</translation>
 <translation id="2313634973119803790">网络技术：</translation>
+<translation id="2382901536325590843">DNS 中不包含服务器证书</translation>
 <translation id="2833791489321462313">需要密码才能从睡眠状态唤醒</translation>
 <translation id="3850258314292525915">停用同步</translation>
+<translation id="2721561274224027017">索引型数据库</translation>
 <translation id="8208216423136871611">不保存</translation>
 <translation id="4405141258442788789">操作超时。</translation>
 <translation id="5048179823246820836">北欧语言</translation>
@@ -40,6 +44,7 @@
 <translation id="2105006017282194539">尚未载入</translation>
 <translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="9137125502445441547">退出之前收到确认操作的提示。</translation>
+<translation id="777702478322588152">辖区</translation>
 <translation id="561349411957324076">已完成</translation>
 <translation id="2757513101875140959">切换到半角模式</translation>
 <translation id="4764776831041365478">网址为 <ph name="URL"/> 的网页可能暂时无法连接，或者它已永久性地移动到了新网址。</translation>
@@ -68,7 +73,7 @@
 <translation id="1858072074757584559">该连接未进行压缩处理。</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="1723824996674794290">新建窗口(&amp;N)</translation>
-<translation id="1313405956111467313">自动代理配置</translation>
+<translation id="1313405956111467313">自动配置代理</translation>
 <translation id="1589055389569595240">显示拼写和语法</translation>
 <translation id="4364779374839574930">未找到任何打印机。请安装打印机。</translation>
 <translation id="7017587484910029005">键入下面图片中显示的字符。</translation>
@@ -137,6 +142,7 @@
 <translation id="1818606096021558659">网页</translation>
 <translation id="1657406563541664238">将使用情况统计信息和崩溃报告自动发送给 Google，帮助我们完善 <ph name="PRODUCT_NAME"/></translation>
 <translation id="7982789257301363584">网络</translation>
+<translation id="8528962588711550376">正在登录。</translation>
 <translation id="2336228925368920074">为所有标签页添加书签...</translation>
 <translation id="4985312428111449076">标签页或窗口</translation>
 <translation id="4108206167095122329">全部删除(&amp;A)</translation>
@@ -154,6 +160,7 @@
 <translation id="300544934591011246">旧密码</translation>
 <translation id="989988560359834682">修改地址</translation>
 <translation id="8487678622945914333">放大</translation>
+<translation id="735327918767574393">显示此网页时出现了错误。要继续浏览，请重新载入或转到其他网页。</translation>
 <translation id="8028060951694135607">Microsoft 密钥恢复</translation>
 <translation id="9187657844611842955">双面</translation>
 <translation id="6391832066170725637">无法找到该文件或目录。</translation>
@@ -162,6 +169,7 @@
 <translation id="2857834222104759979">清单文件无效。</translation>
 <translation id="7931071620596053769">以下网页已无响应。可等待这些网页的响应，也可将其关闭。</translation>
 <translation id="1209866192426315618">还有 <ph name="NUMBER_DEFAULT"/> 分钟</translation>
+<translation id="7938958445268990899">服务器的证书尚未生效。</translation>
 <translation id="4569998400745857585">包含隐藏扩展程序的菜单</translation>
 <translation id="4081383687659939437">保存信息</translation>
 <translation id="5786805320574273267">设置此计算机的远程访问。</translation>
@@ -221,6 +229,7 @@
 <translation id="5111692334209731439">书签管理器(&amp;B)</translation>
 <translation id="8295070100601117548">服务器错误</translation>
 <translation id="443008484043213881">工具</translation>
+<translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="7957054228628133943">管理弹出式窗口拦截…</translation>
 <translation id="179767530217573436">最近 4 周</translation>
 <translation id="2279770628980885996">服务器尝试执行请求时遇到了意外情况。</translation>
@@ -228,8 +237,10 @@
 <translation id="9123413579398459698">FTP 代理</translation>
 <translation id="8534801226027872331">在这种情况下，向您浏览器出示的证书有误，您无法了解实情。这可能表明我们无法了解证书中的身份信息或者用来保护连接安全的某些其他信息。您应该停止操作。</translation>
 <translation id="3608527593787258723">激活标签页 1</translation>
+<translation id="861850123230661844">匿名身份：</translation>
 <translation id="4497369307931735818">远程</translation>
 <translation id="3855676282923585394">导入书签和设置...</translation>
+<translation id="8007420400389197224">作为 Cr-48 试用用户，您可以在两年内每 30 天获得 Verizon Wireless 提供的 100MB 免费流量。只需注册即可变为在线状态！</translation>
 <translation id="1116694919640316211">关于</translation>
 <translation id="8381977081675353473">斯洛伐克语</translation>
 <translation id="8904976895050290827">Chrome 浏览器同步</translation>
@@ -278,6 +289,7 @@
 <translation id="715487527529576698">初始中文输入模式是简体中文</translation>
 <translation id="1674989413181946727">计算机总体 SSL 设置：</translation>
 <translation id="8703575177326907206">与 <ph name="DOMAIN"/> 的连接未加密。</translation>
+<translation id="8472623782143987204">硬件支持</translation>
 <translation id="4865571580044923428">管理例外...</translation>
 <translation id="2526619973349913024">检查是否有更新</translation>
 <translation id="3874070094967379652">使用同步密码加密我的数据</translation>
@@ -291,10 +303,12 @@
 <translation id="2518917559152314023">添加(&amp;D)...</translation>
 <translation id="6204930791202015665">查看...</translation>
 <translation id="7464038383832981644">重置为默认设置</translation>
+<translation id="5941343993301164315">请登录 <ph name="TOKEN_NAME"/>。</translation>
 <translation id="8049151370369915255">自定义字体...</translation>
 <translation id="2886862922374605295">硬件：</translation>
 <translation id="5303618139271450299">未找到此网页</translation>
 <translation id="4256316378292851214">视频存储为(&amp;V)...</translation>
+<translation id="3528171143076753409">服务器的证书不受信任。</translation>
 <translation id="7767960058630128695">密码：</translation>
 <translation id="6518014396551869914">复制图片(&amp;Y)</translation>
 <translation id="3236997602556743698">3 Set (390)</translation>
@@ -322,6 +336,7 @@
 <translation id="6533668113756472185">页面格式或布局</translation>
 <translation id="5910363049092958439">图片存储为(&amp;V)...</translation>
 <translation id="1363055550067308502">切换全角/半角模式</translation>
+<translation id="3108967419958202225">选择...</translation>
 <translation id="6451650035642342749">清除“自动打开”设置</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> secs</translation>
 <translation id="1378451347523657898">不发送屏幕截图</translation>
@@ -331,6 +346,8 @@
 <translation id="950108145290971791">要启用即搜即得，实现更快速的搜索和浏览吗？</translation>
 <translation id="144136026008224475">获得更多扩展程序 &gt;&gt;</translation>
 <translation id="5486326529110362464">请输入私有密钥值。</translation>
+<translation id="2393657444484157959">服务器证书：</translation>
+<translation id="9039663905644212491">PEAP</translation>
 <translation id="62780591024586043">实验性位置功能</translation>
 <translation id="8584280235376696778">在新标签页中打开视频(&amp;O)</translation>
 <translation id="2845382757467349449">总是显示书签栏</translation>
@@ -377,6 +394,7 @@
 <translation id="58625595078799656">“<ph name="PRODUCT_NAME"/>”要求您使用 Google 密码或自定义的密码对数据进行加密。</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="6840184929775541289">不是证书授权中心</translation>
+<translation id="6099520380851856040">发生时间：<ph name="CRASH_TIME"/></translation>
 <translation id="144518587530125858">无法载入主题的路径“<ph name="IMAGE_PATH"/>”。</translation>
 <translation id="5355097969896547230">重新查找</translation>
 <translation id="7925285046818567682">正在等待 <ph name="HOST_NAME"/> 的响应...</translation>
@@ -434,6 +452,7 @@
 <translation id="119944043368869598">全部清除</translation>
 <translation id="3467848195100883852">启用自动拼写更正</translation>
 <translation id="1336254985736398701">查看网页信息(&amp;I)</translation>
+<translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
 <translation id="6828153365543658583">仅限以下用户登录：</translation>
 <translation id="1652965563555864525">静音(&amp;M)</translation>
 <translation id="4200983522494130825">新建标签页(&amp;T)</translation>
@@ -472,6 +491,7 @@
 <translation id="1725149567830788547">显示控件(&amp;C)</translation>
 <translation id="3528033729920178817">此网页正在跟踪您的位置。</translation>
 <translation id="5518584115117143805">电子邮件加密证书</translation>
+<translation id="9203398526606335860">分析已启用(&amp;P)</translation>
 <translation id="2849936225196189499">关键</translation>
 <translation id="9001035236599590379">MIME 类型</translation>
 <translation id="5612754943696799373">是否允许下载？</translation>
@@ -507,10 +527,12 @@
 <translation id="5774515636230743468">网址：</translation>
 <translation id="1817871734039893258">Microsoft 文件恢复</translation>
 <translation id="2423578206845792524">图片另存为(&amp;V)...</translation>
+<translation id="6839929833149231406">区域</translation>
 <translation id="9068931793451030927">路径：</translation>
 <translation id="283278805979278081">生成屏幕截图。</translation>
 <translation id="7320906967354320621">空闲</translation>
 <translation id="1407050882688520094">您的存档证书可标识以下证书授权中心：</translation>
+<translation id="4287689875748136217">服务器未发送任何数据，因此无法载入该网页。</translation>
 <translation id="1634788685286903402">信任该证书，以便标识电子邮件用户的身份。</translation>
 <translation id="7052402604161570346">该类型的文件可能会损坏您的计算机。确定要下载<ph name="FILE_NAME"/>吗？</translation>
 <translation id="8642489171979176277">从 Google 工具栏导入的书签</translation>
@@ -524,6 +546,8 @@
 <translation id="1290691390430578691">切换到英语模式</translation>
 <translation id="2686759344028411998">未检测到任何已载入的模块。</translation>
 <translation id="4481614464927987190">捷克语</translation>
+<translation id="572525680133754531">在合成渲染层周围呈现边框，以帮助调试和研究层合成。</translation>
+<translation id="2188985920108004776">EAP 方法：</translation>
 <translation id="2011110593081822050">Web Worker：<ph name="WORKER_NAME"/></translation>
 <translation id="3294437725009624529">访客</translation>
 <translation id="350069200438440499">文件名：</translation>
@@ -546,6 +570,8 @@
 <translation id="8214489666383623925">打开文件...</translation>
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="1701567960725324452">如果您停止同步，存储在此计算机中以及您 Google 帐户中的数据都会保留在原处。但是，新的数据或您对数据进行的改动不会在计算机与 Google 帐户之间同步。</translation>
+<translation id="7761701407923456692">服务器的证书与网址不相符。</translation>
+<translation id="3885155851504623709">行政区</translation>
 <translation id="4910171858422458941">无法启用已根据企业政策停用的插件</translation>
 <translation id="4495419450179050807">不要在本页上显示</translation>
 <translation id="939736085109172342">新文件夹</translation>
@@ -558,6 +584,7 @@
 <translation id="121827551500866099">显示所有下载内容...</translation>
 <translation id="1562633988311880769">登录<ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="888062562827966298">只在隐身会话中才用斜体显示例外。</translation>
+<translation id="5949910269212525572">无法解析服务器的 DNS 地址。</translation>
 <translation id="3115147772012638511">正在等待存入缓存...</translation>
 <translation id="257088987046510401">主题</translation>
 <translation id="6771079623344431310">无法连接到代理服务器</translation>
@@ -566,6 +593,7 @@
 <translation id="6725970970008349185">每页显示的候选字词数</translation>
 <translation id="3520476450377425184"><ph name="NUMBER_MANY"/> days left</translation>
 <translation id="9055207877339166954">主题：</translation>
+<translation id="7384668165723613230">Verizon Wireless 提供的免费数据</translation>
 <translation id="7643817847124207232">互联网连接已中断。</translation>
 <translation id="932327136139879170">主页</translation>
 <translation id="4764675709794295630">« 上一步</translation>
@@ -587,16 +615,19 @@
 <translation id="9086455579313502267">无法访问网络</translation>
 <translation id="5595485650161345191">修改地址</translation>
 <translation id="2374144379568843525">隐藏拼写面板(&amp;H)</translation>
+<translation id="2694026874607847549">1 个 Cookie</translation>
 <translation id="6390842777729054533"><ph name="NUMBER_ZERO"/> secs left</translation>
 <translation id="3909791450649380159">剪切(&amp;T)</translation>
 <translation id="2955913368246107853">关闭查找栏</translation>
 <translation id="5642508497713047">CRL 签名人</translation>
+<translation id="813082847718468539">查看网站信息</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="1684861821302948641">关闭网页</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6802031077390104172"><ph name="USAGE"/> (<ph name="OID"/>)</translation>
 <translation id="4052120076834320548">最小</translation>
 <translation id="8969837897925075737">正在确认系统更新...</translation>
+<translation id="3393716657345709557">缓存中未找到请求的条目。</translation>
 <translation id="7241389281993241388">请登录“<ph name="TOKEN_NAME"/>”，导入客户端证书。</translation>
 <translation id="40334469106837974">更改网页布局</translation>
 <translation id="4804818685124855865">断开连接</translation>
@@ -606,6 +637,7 @@
 <translation id="5323213332664049067">拉丁美洲</translation>
 <translation id="6002148394280876541">媒体播放器</translation>
 <translation id="5469868506864199649">意大利语</translation>
+<translation id="7427315641433634153">MSCHAP</translation>
 <translation id="323509738684635129">Cookie 例外</translation>
 <translation id="6622980291894852883">继续拦截图片</translation>
 <translation id="5937837224523037661">当我在网站上遇到插件时：</translation>
@@ -624,15 +656,19 @@
 <translation id="1722567105086139392">链接</translation>
 <translation id="2620436844016719705">系统</translation>
 <translation id="5362741141255528695">选择私有密钥文件。</translation>
+<translation id="1972131420608645908">FPS 计数器。</translation>
 <translation id="8065982201906486420">点击即可运行“<ph name="PLUGIN_NAME"/>”插件。</translation>
 <translation id="6219717821796422795">Hanyu</translation>
+<translation id="7931405184645203530">请以普通用户的身份启动 <ph name="PRODUCT_NAME"/>。如果您曾经以根用户的身份运行 <ph name="PRODUCT_NAME"/>，则需要更改您的个人资料目录的所有权。</translation>
 <translation id="2688477613306174402">配置</translation>
+<translation id="505077122661873132">请按照以下步骤尝试停用 DNS 预提取：转到<ph name="BEGIN_BOLD"/>扳手菜单 &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/><ph name="END_BOLD"/>，并取消选中“<ph name="NO_PREFETCH_DESCRIPTION"/>”。</translation>
 <translation id="1195447618553298278">未知错误。</translation>
 <translation id="3353284378027041011"><ph name="NUMBER_FEW"/> 天前</translation>
 <translation id="1087119889335281750">无拼写建议(&amp;N)</translation>
 <translation id="5228309736894624122">SSL 协议出错。</translation>
 <translation id="6180504945088020651">选择要同步的数据类型：</translation>
 <translation id="8216170236829567922">泰语输入法（泰语键盘）</translation>
+<translation id="6812349420832218321">不能以根用户身份运行 <ph name="PRODUCT_NAME"/>。</translation>
 <translation id="5076340679995252485">粘贴(&amp;P)</translation>
 <translation id="2904348843321044456">内容设置...</translation>
 <translation id="3128292904422893714">Adobe Flash Player</translation>
@@ -654,6 +690,7 @@
 <translation id="1071917609930274619">数据加密</translation>
 <translation id="3473105180351527598">启用网上诱骗和恶意软件保护功能</translation>
 <translation id="6151323131516309312">按 <ph name="SEARCH_KEY"/> 可通过 <ph name="SITE_NAME"/> 进行搜索</translation>
+<translation id="3753317529742723206">您是否希望以后使用 <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) 代替 <ph name="REPLACED_HANDLER_TITLE"/> 处理 <ph name="PROTOCOL"/>:// 链接？</translation>
 <translation id="8774154763730062725">新的异常</translation>
 <translation id="6216679966696797604">启动访客会话</translation>
 <translation id="5456397824015721611">预编辑缓冲区内的中文字符数上限（包括正在输入的注音
@@ -675,15 +712,19 @@
 <translation id="7017354871202642555">无法在创建窗口后设置模式。</translation>
 <translation id="3101709781009526431">日期和时间</translation>
 <translation id="833853299050699606">未提供套餐信息。</translation>
+<translation id="1737968601308870607">提交错误</translation>
 <translation id="4571852245489094179">导入书签和设置</translation>
+<translation id="99648783926443049">转到<ph name="BEGIN_BOLD"/>扳手菜单 &gt; 设置 &gt; 高级选项 &gt; 更改代理服务器设置<ph name="END_BOLD"/>，并确保将配置设为“无代理”或“直接”。</translation>
 <translation id="6514771739083339959">主页：</translation>
 <translation id="4421917670248123270">关闭并取消下载</translation>
 <translation id="5605623530403479164">其他搜索引擎</translation>
 <translation id="8887243200615092733">“<ph name="PRODUCT_NAME"/>”现在可同步您的密码。为了保护数据，您需要确认自己的帐户信息。</translation>
+<translation id="4740663705480958372">启用 P2P Pepper API 和 P2P JavaScript API。但 API 仍在开发中，尚不能工作。</translation>
 <translation id="5710435578057952990">此网站的身份尚未得到验证。</translation>
 <translation id="1421046588786494306">外部会话</translation>
 <translation id="1661245713600520330">此网页列出了已载入主进程中的所有模块以及稍后要载入的模块。</translation>
 <translation id="5451646087589576080">查看框架信息(&amp;I)</translation>
+<translation id="6127884830679585004">合成渲染层边框。</translation>
 <translation id="3368922792935385530">已连接</translation>
 <translation id="3498309188699715599">酷音输入法设置</translation>
 <translation id="8486154204771389705">在本网页上固定显示</translation>
@@ -696,10 +737,12 @@
 <translation id="4925520021222027859">请输入您的应用程序专用密码：</translation>
 <translation id="3494768541638400973">Google 日语输入法（日语键盘）</translation>
 <translation id="5844183150118566785"><ph name="PRODUCT_NAME"/>目前是最新版 (<ph name="VERSION"/>)</translation>
+<translation id="3118046075435288765">服务器意外关闭了连接。</translation>
 <translation id="4254921211241441775">停止同步此帐户</translation>
 <translation id="7791543448312431591">添加</translation>
 <translation id="5449451542704866098">无流量套餐</translation>
 <translation id="307505906468538196">创建 Google 帐户</translation>
+<translation id="2053553514270667976">邮政编码</translation>
 <translation id="48838266408104654">任务管理器(&amp;T)</translation>
 <translation id="4378154925671717803">电话</translation>
 <translation id="3694027410380121301">选择上一个标签</translation>
@@ -739,6 +782,7 @@
 <translation id="7033648024564583278">正在初始化刻录进程...</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> 分钟前</translation>
 <translation id="2816269189405906839">中文输入法（仓颉）</translation>
+<translation id="7087282848513945231">县/郡</translation>
 <translation id="2149951639139208969">在新标签页中打开相应地址</translation>
 <translation id="175196451752279553">重新打开关闭的标签页(&amp;E)</translation>
 <translation id="5992618901488170220">无法载入网页，因为您的电脑进入了睡眠或休眠模式。
@@ -767,6 +811,7 @@
 <translation id="2155931291251286316">始终允许显示 <ph name="HOST"/> 的弹出式窗口</translation>
 <translation id="5650551054760837876">未找到搜索结果。</translation>
 <translation id="5494362494988149300">完成后打开(&amp;D)</translation>
+<translation id="2956763290572484660"><ph name="COOKIES"/> 个 Cookie</translation>
 <translation id="6989836856146457314">日语输入法（美式键盘）</translation>
 <translation id="9187787570099877815">继续拦截插件</translation>
 <translation id="8425492902634685834">固定在任务栏上</translation>
@@ -780,19 +825,23 @@
 <translation id="1553538517812678578">无限制</translation>
 <translation id="7947315300197525319">（选择其他屏幕截图）</translation>
 <translation id="3612070600336666959">停用</translation>
+<translation id="3759461132968374835">您最近未收到崩溃报告。崩溃报告停用时发生的崩溃不会在此处显示。</translation>
 <translation id="1516602185768225813">重新打开最后一次打开的网页</translation>
 <translation id="189210018541388520">以全屏模式打开</translation>
 <translation id="8795668016723474529">添加信用卡</translation>
 <translation id="5860033963881614850">关闭</translation>
+<translation id="3956882961292411849">正在载入移动数据计划信息，请稍候...</translation>
 <translation id="689050928053557380">购买流量套餐...</translation>
 <translation id="4235618124995926194">包含此电子邮件地址：</translation>
 <translation id="4874539263382920044">标题必须至少包含一个字符</translation>
 <translation id="798525203920325731">网络命名空间</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/>无法完成安装，但是会通过其磁盘映像继续运行。</translation>
+<translation id="7025190659207909717">移动数据服务管理</translation>
 <translation id="8265096285667890932">使用竖排提示条</translation>
 <translation id="7344633671344536647">浏览数据：</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="6291953229176937411">在 Finder 中显示(&amp;S)</translation>
+<translation id="2476990193835943955">按住 Ctrl、Alt 或 Shift 键，以查看这些修改键的键盘&lt;br&gt;快捷键。</translation>
 <translation id="9187827965378254003">目前似乎没有任何实验。</translation>
 <translation id="8933960630081805351">在 Finder 中显示(&amp;S)</translation>
 <translation id="3041612393474885105">证书信息</translation>
@@ -839,7 +888,9 @@
 <translation id="1665770420914915777">使用“新标签页”页面</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> 小时前</translation>
 <translation id="1691063574428301566">您的计算机会在更新完成后重新启动。</translation>
+<translation id="131364520783682672">Caps Lock</translation>
 <translation id="6259308910735500867">访问远程托管目录时遭拒，请使用其他帐户重试。</translation>
+<translation id="3415261598051655619">可访问脚本的 Cookie：</translation>
 <translation id="2335122562899522968">该页用于设置 Cookie。</translation>
 <translation id="8461914792118322307">代理</translation>
 <translation id="4089521618207933045">有子菜单</translation>
@@ -886,6 +937,7 @@
 <translation id="5958418293370246440">已保存 <ph name="SAVED_FILES"/> 个文件，共有 <ph name="TOTAL_FILES"/> 个文件</translation>
 <translation id="2350172092385603347">已使用本地化功能，但未在清单中指定 default_locale。</translation>
 <translation id="8221729492052686226">如果您并未发出此请求，则可能表明有人企图攻击您的系统。除非您确实执行过发出请求的操作，否则应按“不执行任何操作”。</translation>
+<translation id="4734773543612306111">由于 DNS 查找失败，因此无法找到 <ph name="HOST_NAME"/> 上的服务器。DNS 是将网站名称转换成互联网地址的网络服务。此错误最常见的原因是未连接到互联网或网络配置不正确；原因也可能是 DNS 服务器未响应或防火墙阻止了 <ph name="PRODUCT_NAME"/>访问网络。</translation>
 <translation id="5894314466642127212">用户反馈已成功提交</translation>
 <translation id="894360074127026135">Netscape International Step-Up</translation>
 <translation id="1201402288615127009">下一步</translation>
@@ -900,6 +952,7 @@
 <translation id="3232318083971127729">值：</translation>
 <translation id="4209092469652827314">大</translation>
 <translation id="4222982218026733335">服务器证书无效</translation>
+<translation id="5600599436595580114">此网页为预呈现的网页。</translation>
 <translation id="8494214181322051417">新功能！</translation>
 <translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>已进入隐身模式<ph name="END_BOLD"/>。在此窗口中查看的网页不会显示在浏览器历史记录或搜索历史记录中，关闭隐身窗口后也不会在计算机上留下 Cookie 之类的其他痕迹，但会保留所有下载的文件或创建的书签。
         <ph name="LINE_BREAK"/>
@@ -912,6 +965,7 @@
           <ph name="BEGIN_LIST_ITEM"/>站在身后的人<ph name="END_LIST_ITEM"/>
         <ph name="END_LIST"/>
         <ph name="BEGIN_LINK"/>详细了解<ph name="END_LINK"/>隐身浏览。</translation>
+<translation id="2386255080630008482">服务器的证书已撤消。</translation>
 <translation id="2135787500304447609">继续(&amp;R)</translation>
 <translation id="8309505303672555187">选择网络：</translation>
 <translation id="6143635259298204954">无法将扩展程序解包。要安全地将扩展程序解包，您的个人资料目录中的解包路径不得包含符号链接。您的个人资料中不存在这样的路径。</translation>
@@ -923,6 +977,7 @@
 <translation id="5436510242972373446">用 <ph name="SITE_NAME"/> 搜索：</translation>
 <translation id="3800764353337460026">符号样式</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
+<translation id="2096368010154057602">部门</translation>
 <translation id="1036561994998035917">继续使用 <ph name="ENGINE_NAME"/></translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="6267166720438879315">请选择证书，以在 <ph name="HOST_NAME"/> 上对您本人进行身份验证</translation>
@@ -963,6 +1018,7 @@
 <translation id="6453605194836205054">允许已安装的网络应用程序在后台运行，并随系统一起启动。</translation>
 <translation id="8525306231823319788">全屏</translation>
 <translation id="9054208318010838">允许所有网站跟踪我的地理位置</translation>
+<translation id="4922397891305598564">需要重新启动 <ph name="PRODUCT_NAME"/>以应用更新。</translation>
 <translation id="2815382244540487333">已拦截以下 Cookie：</translation>
 <translation id="8882395288517865445">包含我的地址簿卡片上的地址</translation>
 <translation id="374530189620960299">该网站的安全证书不受信任！</translation>
@@ -997,11 +1053,13 @@
 <translation id="7053983685419859001">拦截</translation>
 <translation id="2727712005121231835">实际大小</translation>
 <translation id="8887733174653581061">前端显示</translation>
+<translation id="5581211282705227543">未安装插件</translation>
 <translation id="610886263749567451">Javascript 警报</translation>
 <translation id="5488468185303821006">在隐身模式下启用</translation>
 <translation id="6556866813142980365">重做</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>，截止日期：<ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="6584811624537923135">确认卸载</translation>
+<translation id="7429235532957570505">无法停用已根据企业政策启用的插件</translation>
 <translation id="7866522434127619318">在插件内容设置中启用“点击播放”选项。</translation>
 <translation id="8860923508273563464">等待下载结束</translation>
 <translation id="6406506848690869874">同步状态</translation>
@@ -1010,11 +1068,13 @@
 <translation id="1956050014111002555">该文件包含多个证书，但均未导入：</translation>
 <translation id="302620147503052030">显示按钮</translation>
 <translation id="1251010908205284827">英语（德沃夏克）</translation>
+<translation id="5512074755152723588">在多功能框中键入现有标签的网址后，会重新定位该标签而不是在当前标签中载入。</translation>
 <translation id="9157595877708044936">正在设置...</translation>
 <translation id="1823768272150895732">字体</translation>
 <translation id="4475552974751346499">搜索下载内容</translation>
 <translation id="3021256392995617989">网站尝试跟踪我的地理位置时询问我（推荐）</translation>
 <translation id="3384622754274354489">俄语（注音）</translation>
+<translation id="5185386675596372454">由于最新版的“<ph name="EXTENSION_NAME"/>”需要更多权限，因此已将其停用。</translation>
 <translation id="3034556148956616333"><ph name="PRODUCT_NAME"/>会安全地与您的 Google 帐户同步数据。您可以将所有的数据保持同步，也可以选择此电脑中要同步的数据。</translation>
 <translation id="2320435940785160168">此服务器要求提供用于身份验证的证书，且没有接受由
         浏览器发送的证书。您的证书可能已过期，或者服务器可能不信任该证书的颁发者。
@@ -1062,6 +1122,7 @@
 <translation id="2007404777272201486">报告问题...</translation>
 <translation id="2390045462562521613">不保存此网络信息</translation>
 <translation id="1666788816626221136">您的存档证书不适合以下任一类别：</translation>
+<translation id="4821935166599369261">分析已启用(&amp;P)</translation>
 <translation id="1603914832182249871">（隐身）</translation>
 <translation id="7910768399700579500">新建文件夹(&amp;N)</translation>
 <translation id="7472639616520044048">MIME 类型：</translation>
@@ -1072,11 +1133,13 @@
 <translation id="3664704721673470303"><ph name="PRODUCT_NAME"/>偏好设置</translation>
 <translation id="7469894403370665791">自动连接到该网络</translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
+<translation id="4094130554533891764">它可以现在访问：</translation>
 <translation id="4131410914670010031">黑白色</translation>
 <translation id="3800503346337426623">跳过登录并以访客身份浏览</translation>
 <translation id="2615413226240911668">但是，此页中包含其他不安全的资源。他人能在传输过程中查看这些资源，攻击者也可以进行修改，从而改变网页的外观。</translation>
 <translation id="5880867612172997051">网络访问已暂停</translation>
 <translation id="7842346819602959665">最新版的扩展程序“<ph name="EXTENSION_NAME"/>”需要更多的权限，因此已将其禁用。</translation>
+<translation id="3776667127601582921">在这种情况下，提交给您的浏览器的服务器证书或中间 CA 证书无效。这可能意味着该证书格式错误、包含无效字段或不受支持。</translation>
 <translation id="6979448128170032817">例外…</translation>
 <translation id="7584802760054545466">正在连接至<ph name="NETWORK_ID"/></translation>
 <translation id="208047771235602537">您正在进行一项下载，确定要退出<ph name="PRODUCT_NAME"/> 吗？</translation>
@@ -1091,6 +1154,7 @@
 <translation id="2621889926470140926">您正在进行 <ph name="DOWNLOAD_COUNT"/> 项下载，确定要退出<ph name="PRODUCT_NAME"/> 吗？</translation>
 <translation id="7279701417129455881">管理 Cookie 拦截…</translation>
 <translation id="1166359541137214543">ABC</translation>
+<translation id="5412713837047574330">由于您的网络连接已断开，因此无法访问网址为 <ph name="HOST_NAME"/> 的应用程序。当网络连接恢复时，将会载入该网页。&lt;br&gt;</translation>
 <translation id="5528368756083817449">书签管理器</translation>
 <translation id="7275974018215686543"><ph name="NUMBER_MANY"/> 秒前</translation>
 <translation id="215753907730220065">退出全屏模式</translation>
@@ -1142,6 +1206,7 @@
 <translation id="6449085810994685586">检查该字段的拼写(&amp;C)</translation>
 <translation id="3621320549246006887">这是一项实验性方案，可通过 HTTPS 证书进行身份验证，并由（DNSSEC 保障）DNS 记录拒绝。如果您看到此讯息，则表明您已使用命令行选项启用了实验性功能。您可以删除相应的命令行选项，以忽略该错误。</translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> mins left</translation>
+<translation id="3174168572213147020">岛</translation>
 <translation id="748138892655239008">证书基本约束</translation>
 <translation id="457386861538956877">更多...</translation>
 <translation id="8063491445163840780">激活标签页 4</translation>
@@ -1182,7 +1247,9 @@
 <translation id="1110155001042129815">等待</translation>
 <translation id="2607101320794533334">证书持有者的公共密钥信息</translation>
 <translation id="7071586181848220801">未知插件</translation>
+<translation id="3354601307791487577">以访客模式登录。</translation>
 <translation id="2956070106555335453">摘要</translation>
+<translation id="917450738466192189">服务器证书无效。</translation>
 <translation id="2649045351178520408">Base64 编码 ASCII，证书链</translation>
 <translation id="380271916710942399">未列出的服务器证书</translation>
 <translation id="6459488832681039634">使用所选内容查找</translation>
@@ -1200,6 +1267,7 @@
 <translation id="4585473702689066695">无法连接网络“<ph name="NAME"/>”</translation>
 <translation id="4647175434312795566">接受协议</translation>
 <translation id="1084824384139382525">复制链接地址(&amp;E)</translation>
+<translation id="3220586366024592812">该 <ph name="CLOUD_PRINT_NAME"/> 连接器进程已崩溃。是否重新启动？</translation>
 <translation id="5042992464904238023">网页内容</translation>
 <translation id="6254503684448816922">密钥泄漏</translation>
 <translation id="1181037720776840403">删除</translation>
@@ -1217,6 +1285,7 @@
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6575134580692778371">未配置</translation>
 <translation id="4624768044135598934">成功！</translation>
+<translation id="6014776969142880350">重新启动 <ph name="PRODUCT_NAME"/>以完成更新</translation>
 <translation id="5582768900447355629">加密我的所有数据</translation>
 <translation id="6122365914076864562">我们正在为您设置移动网络，请稍候。</translation>
 <translation id="1974043046396539880">CRL 分发点</translation>
@@ -1239,9 +1308,11 @@
 <translation id="7186367841673660872">已将此网页从<ph name="ORIGINAL_LANGUAGE"/>翻译成<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="6052976518993719690">SSL 证书授权中心</translation>
 <translation id="1636959874332483835"><ph name="HOST_NAME"/> 包含恶意软件。如果您访问此网站，您的计算机可能会中毒。</translation>
+<translation id="8050783156231782848">无可用数据</translation>
 <translation id="1791662854739702043">安装位置</translation>
 <translation id="1175364870820465910">打印(&amp;P)...</translation>
 <translation id="3866249974567520381">说明</translation>
+<translation id="2900139581179749587">无法识别语音。</translation>
 <translation id="2294358108254308676">要安装<ph name="PRODUCT_NAME"/>吗？</translation>
 <translation id="6549689063733911810">最近的活动</translation>
 <translation id="1529968269513889022">最近一周</translation>
@@ -1254,10 +1325,12 @@
 <translation id="1588343679702972132">此网站已要求您用以下某个证书标识自己：</translation>
 <translation id="7211994749225247711">删除...</translation>
 <translation id="2819994928625218237">无拼写建议(&amp;N)</translation>
+<translation id="2950186680359523359">服务器已断开连接，且未发送任何数据。</translation>
 <translation id="9142623379911037913">允许 <ph name="SITE"/> 显示桌面通知吗？</translation>
 <translation id="4196320913210960460">您可以通过点击“工具”菜单中的“扩展程序”，管理已安装的扩展程序。</translation>
 <translation id="3449494395612243720">同步错误 - 请重新登录</translation>
 <translation id="9118804773997839291">以下所列为此页面上包含的所有不安全元素。点击“诊断”链接可了解有关特定元素的详情。</translation>
+<translation id="7139724024395191329">酋长国</translation>
 <translation id="1761265592227862828">同步所有设置和数据\n（此过程可能需要一些时间）</translation>
 <translation id="7754704193130578113">下载前询问每个文件的保存位置</translation>
 <translation id="204914487372604757">创建快捷方式</translation>
@@ -1265,8 +1338,10 @@
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="945332329539165145">GPU 加速画布 2D</translation>
 <translation id="5220797120063118010">启用关于安装 Chrome 浏览器应用程序的支持，这些支持是使用网页上的清单文件部署的，而不是通过将清单和图标打包到一个 crx 文件中来部署的。</translation>
+<translation id="6987977084204837193">在后台预测性地预呈现完整网页，以提供更快速的浏览体验。默认设置“自动”可以随机启用/停用该功能，以进行测试。\n</translation>
 <translation id="9148126808321036104">重新登录</translation>
 <translation id="2282146716419988068">GPU 进程</translation>
+<translation id="428771275901304970">可用数据少于 1MB</translation>
 <translation id="4690246192099372265">瑞典语</translation>
 <translation id="1682548588986054654">新建隐身窗口</translation>
 <translation id="6833901631330113163">南欧语言</translation>
@@ -1276,6 +1351,7 @@
 <translation id="569520194956422927">添加(&amp;A)...</translation>
 <translation id="4018133169783460046">以这种语言显示 <ph name="PRODUCT_NAME"/></translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> 天前</translation>
+<translation id="5586942249556966598">不执行任何操作</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> sec</translation>
 <translation id="1077946062898560804">为所有用户设置自动更新</translation>
 <translation id="3122496702278727796">无法创建数据目录</translation>
@@ -1317,7 +1393,9 @@
 <translation id="4312207540304900419">激活下一个标签页</translation>
 <translation id="8456362689280298700">还需 <ph name="HOUR"/>:<ph name="MINUTE"/> 才能充满电</translation>
 <translation id="7648048654005891115">键盘映射样式</translation>
+<translation id="539295039523818097">您的麦克风存在问题。</translation>
 <translation id="4033319557821527966"><ph name="CLOUD_PRINT_NAME"/>可让您随处访问该计算机的打印机。登录即可启用该服务。</translation>
+<translation id="6970216967273061347">区</translation>
 <translation id="4479639480957787382">以太网</translation>
 <translation id="751377616343077236">证书名称</translation>
 <translation id="7154108546743862496">详情</translation>
@@ -1347,6 +1425,7 @@
         这也可能表示硬件开始出现故障。</translation>
 <translation id="5298219193514155779">主题创建者：</translation>
 <translation id="1047726139967079566">为此页添加书签...</translation>
+<translation id="9020142588544155172">服务器拒绝了连接。</translation>
 <translation id="6113225828180044308">模数（<ph name="MODULUS_NUM_BITS"/> 位）：\n<ph name="MODULUS_HEX_DUMP"/>\n\n公共指数（<ph name="PUBLIC_EXPONENT_NUM_BITS"/> 位）：\n<ph name="EXPONENT_HEX_DUMP"/></translation>
 <translation id="2544782972264605588">还有 <ph name="NUMBER_DEFAULT"/> 秒</translation>
 <translation id="5428105026674456456">西班牙语</translation>
@@ -1362,6 +1441,7 @@
 <translation id="1198271701881992799">让我们开始吧</translation>
 <translation id="782590969421016895">使用当前网页</translation>
 <translation id="6521850982405273806">报告错误</translation>
+<translation id="7330933557557138066">启用更好的多功能框历史记录匹配</translation>
 <translation id="8026334261755873520">清除浏览数据</translation>
 <translation id="1769104665586091481">在新窗口中打开链接(&amp;W)</translation>
 <translation id="8503813439785031346">用户名</translation>
@@ -1379,10 +1459,11 @@
 <translation id="4775879719735953715">默认浏览器</translation>
 <translation id="5575473780076478375">隐身模式下使用的应用程序...<ph name="EXTENSION_NAME"/></translation>
 <translation id="4188026131102273494">关键字：</translation>
+<translation id="3461610253915486539">您的 IT 管理员已停用了部分偏好设置。</translation>
 <translation id="5750053751252005701">缺少 <ph name="NETWORK"/> 数据</translation>
 <translation id="8858939932848080433">请先告知哪里出现了问题，然后再发送反馈。</translation>
 <translation id="1720318856472900922">TLS WWW 服务器身份验证</translation>
-<translation id="3355823806454867987">更改代理服务器设置...</translation>
+<translation id="3355823806454867987">更改代理设置...</translation>
 <translation id="4780374166989101364">启用实验性扩展程序 API。请注意，扩展程序库不允许上传使用实验性 API 的扩展程序。</translation>
 <translation id="7227780179130368205">检测到恶意软件！</translation>
 <translation id="435243347905038008"><ph name="NETWORK"/> 数据量低</translation>
@@ -1396,6 +1477,8 @@
 <translation id="5539694491979265537">访问“Google 信息中心”</translation>
 <translation id="3942946088478181888">帮助我了解</translation>
 <translation id="3722396466546931176">添加语言，并根据您的喜好以拖动的方式进行排序。</translation>
+<translation id="7396845648024431313"><ph name="APP_NAME"/> 会在系统启动时启动，即使您将其他所有 <ph name="PRODUCT_NAME"/>窗口关闭，它也会继续在后台运行。</translation>
+<translation id="8539727552378197395">否（仅 Http）</translation>
 <translation id="4519351128520996510">请输入您的同步密码</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/>（默认）</translation>
 <translation id="5392544185395226057">启用 Native Client 支持。</translation>
@@ -1416,8 +1499,10 @@
 <translation id="3202578601642193415">最后</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> hours</translation>
 <translation id="1398853756734560583">最大化</translation>
+<translation id="8988255471271407508">在缓存中未找到该网页。某些资源只能从缓存安全载入，如由已提交数据生成的网页。<ph name="LINE_BREAK"/>由于关闭方式不当而引起缓存损坏也可能会导致此错误。<ph name="LINE_BREAK"/>如果问题仍然存在，请尝试清除缓存。</translation>
 <translation id="1195977189444203128"><ph name="PLUGIN_NAME"/> 插件已过期。</translation>
 <translation id="3878562341724547165">您似乎已经更改了域名。要使用 <ph name="NEW_GOOGLE_URL"/> 吗？</translation>
+<translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="8978540966440585844">浏览(&amp;O)...</translation>
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> hours</translation>
 <translation id="8053390638574070785">重新载入此页</translation>
@@ -1449,6 +1534,7 @@
 <translation id="1641504961675316934"><ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="1715941336038158809">用户名或密码无效。</translation>
 <translation id="1901303067676059328">全选(&amp;A)</translation>
+<translation id="674375294223700098">未知的服务器证书错误。</translation>
 <translation id="7780428956635859355">发送保存的屏幕截图</translation>
 <translation id="2850961597638370327">颁发对象：<ph name="NAME"/></translation>
 <translation id="2168039046890040389">向上翻页</translation>
@@ -1459,6 +1545,7 @@
 <translation id="2435457462613246316">显示密码</translation>
 <translation id="7988355189918024273">启用辅助功能</translation>
 <translation id="5438653034651341183">包括当前屏幕截图：</translation>
+<translation id="1899708097738826574"><ph name="OPTIONS_TITLE"/> - <ph name="SUBPAGE_TITLE"/></translation>
 <translation id="6983783921975806247">已注册的 OID</translation>
 <translation id="394984172568887996">从 IE 中导入</translation>
 <translation id="5311260548612583999">私有密钥文件（可选）：</translation>
@@ -1466,6 +1553,7 @@
 <translation id="345397654570398207">信任该证书的真实性。</translation>
 <translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="7568790562536448087">更新</translation>
+<translation id="4856408283021169561">未找到麦克风。</translation>
 <translation id="8190193592390505034">正在连接到<ph name="PROVIDER_NAME"/></translation>
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/>目前不是默认浏览器。</translation>
 <translation id="823241703361685511">流量套餐</translation>
@@ -1510,7 +1598,9 @@
 <translation id="4087089424473531098">已创建扩展程序：
 
 <ph name="EXTENSION_FILE"/></translation>
+<translation id="5441086706523683872">点击 Esc 键隐藏</translation>
 <translation id="16620462294541761">抱歉，您的密码无法进行验证，请重试。</translation>
+<translation id="1394630846966197578">连接到语音服务器失败。</translation>
 <translation id="2498765460639677199">最大</translation>
 <translation id="2378982052244864789">选择扩展程序目录。</translation>
 <translation id="7861215335140947162">下载内容(&amp;D)</translation>
@@ -1521,6 +1611,7 @@
 <translation id="6644512095122093795">提示保存密码</translation>
 <translation id="5384051050210890146">选择受信任的 SSL 证书。</translation>
 <translation id="4724450788351008910">附属关系已更改</translation>
+<translation id="8691686986795184760">（根据企业政策已启用）</translation>
 <translation id="1911483096198679472">这是什么？</translation>
 <translation id="1976323404609382849">已拦截来自多个网站的 Cookie。</translation>
 <translation id="2662952950313424742">用户指定的 DNS 服务器，Chrome 浏览器将使用该服务器而不是系统默认服务器进行 DNS 解析。</translation>
@@ -1534,6 +1625,7 @@
 <translation id="1384616079544830839">此网站的身份已经过 <ph name="ISSUER"/> 验证。</translation>
 <translation id="8710160868773349942">电子邮箱：<ph name="EMAIL_ADDRESSES"/></translation>
 <translation id="4057991113334098539">正在激活...</translation>
+<translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">网络诱骗</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> 秒前</translation>
 <translation id="402759845255257575">不允许任何网站运行 JavaScript</translation>
@@ -1573,11 +1665,13 @@
 <translation id="2550839177807794974">管理搜索引擎...</translation>
 <translation id="7031711645186424727">使用外部显示器</translation>
 <translation id="6316768948917110108">正在刻录映像...</translation>
+<translation id="5089810972385038852">州</translation>
 <translation id="2872961005593481000">关闭</translation>
 <translation id="8986267729801483565">下载内容保存位置：</translation>
 <translation id="4322394346347055525">关闭其他标签页</translation>
 <translation id="881799181680267069">隐藏其他应用程序</translation>
 <translation id="1442054921249164535">其他数据</translation>
+<translation id="6042308850641462728">灵敏度较高</translation>
 <translation id="8318945219881683434">无法核实吊销状态。</translation>
 <translation id="1650709179466243265">添加 www. 和 .com 并打开地址</translation>
 <translation id="3524079319150349823">要审查弹出内容，请右键点击网页或浏览器操作的图标，然后选择“审查弹出内容”。</translation>
@@ -1645,6 +1739,7 @@
 <translation id="701080569351381435">显示源代码</translation>
 <translation id="163309982320328737">初始字符用全角</translation>
 <translation id="5107325588313356747">要禁止使用本程序，必须通过使用\n控制面板中的<ph name="CONTROL_PANEL_APPLET_NAME"/>将其卸载。\n\n是否要启动<ph name="CONTROL_PANEL_APPLET_NAME"/>？</translation>
+<translation id="4841055638263130507">麦克风设置</translation>
 <translation id="6965648386495488594">端口</translation>
 <translation id="7631887513477658702">总是打开此类文件(&amp;A)</translation>
 <translation id="8627795981664801467">仅限安全连接</translation>
@@ -1654,6 +1749,7 @@
 <translation id="2190355936436201913">（空）</translation>
 <translation id="8515737884867295000">基于证书的身份验证失败</translation>
 <translation id="5868426874618963178">发送当前页的源代码</translation>
+<translation id="1269138312169077280">您的 IT 管理员已停用了部分设置。</translation>
 <translation id="5818003990515275822">韩语</translation>
 <translation id="4182252350869425879">警告：这可能是网上诱骗网站！</translation>
 <translation id="5458214261780477893">Dvorak</translation>
@@ -1691,6 +1787,7 @@
 <translation id="6484929352454160200">新版<ph name="PRODUCT_NAME"/>发布</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="2406439899894600510">荷兰语键盘布局</translation>
+<translation id="4589094618264613095">第二阶段：身份验证</translation>
 <translation id="778881183694837592">必填字段不得为空</translation>
 <translation id="2371076942591664043">完成时打开(&amp;D)</translation>
 <translation id="3920504717067627103">证书政策</translation>
@@ -1786,7 +1883,9 @@
 <translation id="5135533361271311778">无法创建书签项。</translation>
 <translation id="5271247532544265821">在简体中文/繁体中文模式之间切换</translation>
 <translation id="2052610617971448509">您没有进行充分的沙盒测试！</translation>
+<translation id="7384913436093989340">转到<ph name="BEGIN_BOLD"/>扳手菜单 &gt; 偏好设置 &gt; 高级选项 &gt; 更改代理服务器设置<ph name="END_BOLD"/>，并确保将配置设为“无代理”或“直接”。</translation>
 <translation id="6417515091412812850">无法检查证书是否已吊销。</translation>
+<translation id="7282743297697561153">数据库存储</translation>
 <translation id="7347702518873971555">购买套餐</translation>
 <translation id="5285267187067365830">安装插件...</translation>
 <translation id="5334844597069022743">查看源代码</translation>
@@ -1801,25 +1900,33 @@
 <translation id="1425734930786274278">已拦截以下 Cookie（第三方 Cookie 一律拦截）：</translation>
 <translation id="6805647936811177813">请登录“<ph name="TOKEN_NAME"/>”，从 <ph name="HOST_NAME"/> 导入客户端证书。</translation>
 <translation id="3437016096396740659">充电完毕</translation>
+<translation id="6916146760805488559">创建新的配置文件...</translation>
+<translation id="1199232041627643649">按住 <ph name="KEY_EQUIVALENT"/> 键退出。</translation>
 <translation id="5428562714029661924">隐藏此插件</translation>
 <translation id="7907591526440419938">打开文件</translation>
 <translation id="2568774940984945469">信息栏容器</translation>
+<translation id="8971063699422889582">服务器的证书已过期。</translation>
 <translation id="3202812515056344404">密码太短或无效。</translation>
+<translation id="8281596639154340028">使用 <ph name="HANDLER_TITLE"/></translation>
 <translation id="7134098520442464001">缩小文字</translation>
 <translation id="21133533946938348">固定标签页</translation>
 <translation id="1325040735987616223">系统更新</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="9090669887503413452">发送系统信息</translation>
+<translation id="3084771660770137092">Chrome 浏览器内存不足或因其他原因网页进程终止。要继续，请重新载入或转到其他网页。</translation>
 <translation id="1114901192629963971">无法在当前网络上验证您的密码。请选择其他网络。</translation>
 <translation id="5179510805599951267">不是<ph name="ORIGINAL_LANGUAGE"/>？报告此错误</translation>
 <translation id="6430814529589430811">Base64 编码 ASCII，单一证书</translation>
 <translation id="5143712164865402236">进入全屏模式</translation>
 <translation id="8434177709403049435">编码(&amp;E)</translation>
+<translation id="4051923669149193910">已使用 <ph name="HANDLER_TITLE"/> 处理 <ph name="PROTOCOL"/>:// 链接。</translation>
 <translation id="2722201176532936492">选择键</translation>
 <translation id="9012607008263791152">我知道访问此网站可能会损害我的计算机。</translation>
+<translation id="6640442327198413730">缓存中没有所需资源</translation>
 <translation id="1441458099223378239">我无法访问我的帐户</translation>
 <translation id="5793220536715630615">复制视频网址(&amp;O)</translation>
 <translation id="523397668577733901">要改为<ph name="BEGIN_LINK"/>浏览该程序库<ph name="END_LINK"/>吗？</translation>
+<translation id="2922350208395188000">无法核实服务器证书。</translation>
 <translation id="3778740492972734840">开发人员工具(&amp;D)</translation>
 <translation id="8335971947739877923">导出...</translation>
 <translation id="5680966941935662618">自动填充设置</translation>
@@ -1861,12 +1968,14 @@
 <translation id="7031962166228839643">正在准备 TPM，请稍候（这可能需要几分钟时间）...</translation>
 <translation id="8123426182923614874">剩余数据量：</translation>
 <translation id="3707020109030358290">不是证书授权中心。</translation>
+<translation id="3824846808674205670">该文件似乎是恶意文件。您确定要继续吗？</translation>
 <translation id="2115926821277323019">必须是有效网址</translation>
 <translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
 <translation id="7070714457904110559">启用地理定位功能的实验性扩展功能。包括使用操作系统位置 API（可用时），并将其他本地网络配置数据发送到 Google 位置服务，以提供精确度更高的定位。</translation>
 <translation id="6701535245008341853">无法获取个人资料。</translation>
 <translation id="527605982717517565">始终允许使用 <ph name="HOST"/> 上的 JavaScript</translation>
 <translation id="702373420751953740">PRL 版本：</translation>
+<translation id="1307041843857566458">确认重新启用</translation>
 <translation id="8314308967132194952">添加新地址...</translation>
 <translation id="1221024147024329929">PKCS #1，带有 RSA 加密的 MD2</translation>
 <translation id="3323447499041942178">文本框</translation>
@@ -1874,6 +1983,7 @@
 <translation id="5230516054153933099">窗口</translation>
 <translation id="7554791636758816595">新标签页</translation>
 <translation id="5503844897713343920">您尝试访问 <ph name="DOMAIN"/>，但服务器出示的证书已被其颁发者吊销。这表明绝对不应该信任此服务器出示的安全凭据。您可能正在与攻击者进行通信。您应该停止操作。</translation>
+<translation id="6928853950228839340">合成纹理</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="7671576867600624">技术：</translation>
 <translation id="1103966635949043187">进入此网站的首页：</translation>
@@ -1883,6 +1993,7 @@
 <translation id="2645575947416143543">但是，如果您为之工作的组织机构会自行生成证书，而且您要尝试用此类证书连接本组织机构的内部网站，则您可以安全地解决此问题。您可将本组织机构的根证书作为“根证书”导入，由本组织机构颁发或验证的证书随即会得到信任，下次尝试连接内部网站时就不会出现此错误。请联系贵组织机构的支持人员，让他们协助您向计算机中添加新根证书。</translation>
 <translation id="376466258076168640">将“<ph name="PRODUCT_NAME"/>”设置为默认浏览器</translation>
 <translation id="1056898198331236512">警告</translation>
+<translation id="8630826211403662855">搜索设置</translation>
 <translation id="8151639108075998630">启用访客浏览</translation>
 <translation id="3157931365184549694">恢复</translation>
 <translation id="7426243339717063209">想要卸载“<ph name="EXTENSION_NAME"/>”？</translation>
@@ -1902,6 +2013,8 @@
 <translation id="3031433885594348982">与 <ph name="DOMAIN"/> 的连接采用弱加密技术。</translation>
 <translation id="4047345532928475040">无</translation>
 <translation id="3220630151624181591">激活标签页 2</translation>
+<translation id="8898139864468905752">标签页概览</translation>
+<translation id="2799223571221894425">重新启动</translation>
 <translation id="5771816112378578655">正在设置...</translation>
 <translation id="1197979282329025000">检索打印机“<ph name="PRINTER_NAME"/>”的打印功能时发生错误。此打印机无法使用“<ph name="CLOUD_PRINT_NAME"/>”进行注册。</translation>
 <translation id="8820901253980281117">弹出式窗口例外</translation>
@@ -1921,7 +2034,9 @@
 <translation id="3693415264595406141">密码：</translation>
 <translation id="74568296546932365">保持 <ph name="PAGE_TITLE"/> 的默认搜索引擎状态</translation>
 <translation id="8602184400052594090">清单文件缺失或不可读。</translation>
+<translation id="2784949926578158345">连接已重置。</translation>
 <translation id="6663792236418322902">以后恢复文件时需要使用您所选择的密码。请将密码记录在安全的地方。</translation>
+<translation id="4532822216683966758">您已启用 DNS 证书出处检查，这可能会导致将隐私信息发送给 Google。</translation>
 <translation id="3412265149091626468">跳到所选部分</translation>
 <translation id="8167737133281862792">添加证书</translation>
 <translation id="2911372483530471524">PID 命名空间</translation>
@@ -1936,6 +2051,8 @@
 <translation id="952992212772159698">未激活</translation>
 <translation id="8299269255470343364">日文</translation>
 <translation id="7589833470611397405">您的密码已更改</translation>
+<translation id="5926736929537538875">始终停用</translation>
+<translation id="5187826826541650604"><ph name="KEY_NAME"/> (<ph name="DEVICE"/>)</translation>
 <translation id="6429639049555216915">目前无法获取该应用程序。</translation>
 <translation id="2144536955299248197">证书查看者：<ph name="CERTIFICATE_NAME"/></translation>
 <translation id="8166891226371092444">宽度固定的字体：</translation>
@@ -1952,6 +2069,7 @@
 <translation id="5509693895992845810">存储为(&amp;A)...</translation>
 <translation id="5986279928654338866"><ph name="DOMAIN"/> 服务器要求提供用户名和密码。</translation>
 <translation id="521467793286158632">删除所有密码</translation>
+<translation id="2491120439723279231">服务器证书中包含错误。</translation>
 <translation id="4448844063988177157">正在搜索 Wi-Fi 网络...</translation>
 <translation id="5765780083710877561">说明：</translation>
 <translation id="338583716107319301">分隔符</translation>
@@ -1966,6 +2084,7 @@
 <translation id="345693547134384690">在新标签页中打开图片(&amp;I)</translation>
 <translation id="7422192691352527311">偏好设置...</translation>
 <translation id="1823606533857384982">比利时键盘布局</translation>
+<translation id="354211537509721945">管理员已停用更新</translation>
 <translation id="1375198122581997741">关于版本</translation>
 <translation id="7915471803647590281">请先告诉我们所发生的情况，然后再发送反馈。</translation>
 <translation id="5725124651280963564">请登录“<ph name="TOKEN_NAME"/>”，生成 <ph name="HOST_NAME"/> 的密钥。</translation>
@@ -1990,6 +2109,7 @@
 <translation id="8571226144504132898">符号字典</translation>
 <translation id="7229570126336867161">需要 EVDO</translation>
 <translation id="7240072072812590475">更改 Gears 设置</translation>
+<translation id="7582844466922312471">移动数据</translation>
 <translation id="945522503751344254">发送反馈</translation>
 <translation id="6867459744367338172">语言和输入法</translation>
 <translation id="7671130400130574146">使用系统标题栏和边框</translation>
@@ -2041,6 +2161,8 @@
 <translation id="7823073559911777904">更改代理服务器设置...</translation>
 <translation id="5438430601586617544">（正在开发）</translation>
 <translation id="6460601847208524483">查找下一个</translation>
+<translation id="8433186206711564395">网络设置</translation>
+<translation id="4856478137399998590">您的移动数据服务已激活，可以立即使用</translation>
 <translation id="1676388805288306495">更改网页的默认字体和语言。</translation>
 <translation id="8969761905474557563">GPU 加速合成</translation>
 <translation id="3937640725563832867">证书颁发者的备用名称</translation>
@@ -2083,6 +2205,7 @@
 <translation id="5833726373896279253">只有拥有者才能修改这些设置：</translation>
 <translation id="6858960932090176617">启用 WebKit 的 XSS Auditor（跨网站脚本保护）。该功能专用于保护您免受恶意网站的某些攻击。它可以提高安全性，但可能无法兼容所有的网站。</translation>
 <translation id="8831104962952173133">检测到网上诱骗！</translation>
+<translation id="5141720258550370428">您是否希望以后使用 <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) 处理 <ph name="PROTOCOL"/>:// 链接？</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE"/>（隐身）</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="2812989263793994277">不显示任何图片</translation>
@@ -2100,6 +2223,7 @@
 <translation id="3369521687965833290">无法将扩展程序解包。要安全地将扩展程序解包，您的个人资料目录中的解包路径必须以驱动器号开头，并且不能包含交接点、装入点或符号链接。您的个人资料中不存在这样的路径。</translation>
 <translation id="337920581046691015">系统将要安装<ph name="PRODUCT_NAME"/>。</translation>
 <translation id="574892445775113786">确认密码：</translation>
+<translation id="6282194474023008486">邮政编码</translation>
 <translation id="7733107687644253241">右下</translation>
 <translation id="5139955368427980650">打开(&amp;O)</translation>
 <translation id="7375268158414503514">一般反馈/其他</translation>
@@ -2115,13 +2239,15 @@
 <translation id="461656879692943278"><ph name="HOST_NAME"/> 包含 <ph name="ELEMENTS_HOST_NAME"/> 中的内容，后一个网站是已知分发恶意软件的网站。如果您访问该网站，您的计算机可能会中毒。</translation>
 <translation id="1387022316521171484">我们随时可能会更改、中止或取消这些实验性功能。因此，无法保证您开启某项实验后会发生什么情况，您的浏览器甚至可能会自动崩溃。言归正传，您的浏览器可能会删除所有数据，或者您的安全性和隐私可能会受到意外损害。请谨慎操作。</translation>
 <translation id="357479282490346887">立陶宛语</translation>
-<translation id="2143778271340628265">手动代理配置</translation>
+<translation id="2143778271340628265">手动配置代理</translation>
 <translation id="5294529402252479912">立即更新 Adobe Reader</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> 天前</translation>
 <translation id="7461850476009326849">停用个别插件...</translation>
 <translation id="4097411759948332224">发送当前网页的屏幕截图</translation>
 <translation id="2231990265377706070">感叹号</translation>
+<translation id="7199540622786492483">由于有一段时间没有重新启动，<ph name="PRODUCT_NAME"/>已过期。现已有可用更新，系统会在您重新启动后应用此更新。</translation>
 <translation id="8652722422052983852">赶快让我们解决此错误吧！</translation>
+<translation id="5970231080121144965">在历史记录的网址内启用子字符串和多片段匹配。</translation>
 <translation id="3726527440140411893">以下 Cookie 是在您查看此网页时设置的：</translation>
 <translation id="3349967884971794272">不重置</translation>
 <translation id="8562413501751825163">导入之前关闭 Firefox</translation>
@@ -2130,6 +2256,7 @@
 <translation id="4928569512886388887">正在完成系统更新...</translation>
 <translation id="8258002508340330928">确定要删除吗？</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/> K（实际大小为 <ph name="NUM_KILOBYTES_LIVE"/> K）</translation>
+<translation id="4535899795609763134"><ph name="PRODUCT_NAME"/>已检测到某款 ESET 产品正在拦截安全连接。由于 ESET 软件往往在同一台计算机上运行，这一般不属于安全问题。但是，由于对 <ph name="PRODUCT_NAME"/>安全连接的某些特定方面不兼容，因此您需要对 ESET 产品进行配置，禁止其执行这种拦截。有关说明，请点击“了解详情”链接。</translation>
 <translation id="5034259512732355072">选择其他目录...</translation>
 <translation id="8885905466771744233">指定扩展程序的私有密钥已存在。请重复使用该密钥，或者先删除它。</translation>
 <translation id="7831504847856284956">添加地址</translation>
@@ -2139,6 +2266,7 @@
 <translation id="8109246889182548008">证书存储</translation>
 <translation id="5030338702439866405">颁发者</translation>
 <translation id="5280833172404792470">退出全屏模式 (<ph name="ACCELERATOR"/>)</translation>
+<translation id="2728127805433021124">服务器的证书是使用弱签名算法进行签名的。</translation>
 <translation id="2137808486242513288">添加用户</translation>
 <translation id="6193618946302416945">对不是用我阅读的语言撰写的页面进行翻译</translation>
 <translation id="129553762522093515">最近关闭的标签页</translation>
@@ -2152,6 +2280,7 @@
 <translation id="1038168778161626396">仅加密</translation>
 <translation id="2756651186786928409">请勿切换修改键</translation>
 <translation id="1217515703261622005">特殊数字转化</translation>
+<translation id="7179921470347911571">立即重新启动</translation>
 <translation id="3715099868207290855">与 <ph name="USER_EMAIL_ADDRESS"/> 同步</translation>
 <translation id="2679312662830811292"><ph name="NUMBER_ONE"/> 分钟前</translation>
 <translation id="9065203028668620118">修改</translation>
@@ -2171,6 +2300,7 @@
 <translation id="6512448926095770873">离开此页</translation>
 <translation id="5457599981699367932">以访客身份浏览</translation>
 <translation id="6294193300318171613">总是显示书签栏(&amp;A)</translation>
+<translation id="4088820693488683766">搜索选项</translation>
 <translation id="3414952576877147120">大小：</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> 秒前</translation>
 <translation id="7009102566764819240">以下所列为此页面上包含的所有不安全元素。点击“诊断”链接可了解有关来自特定资源的恶意软件的详情。如果您发现某个资源被误报为网络诱骗内容，请点击“报告错误”链接。</translation>
@@ -2196,11 +2326,13 @@
 <translation id="3968739731834770921">假名</translation>
 <translation id="3729920814805072072">管理已保存的密码...</translation>
 <translation id="8023801379949507775">立即更新扩展程序</translation>
+<translation id="6549677549082720666">安装了新后台应用程序</translation>
 <translation id="1983108933174595844">发送当前页的屏幕截图</translation>
 <translation id="3298789223962368867">输入的网址无效。</translation>
 <translation id="2202898655984161076">列出打印机时发生问题。您的某些打印机可能尚未成功使用“<ph name="CLOUD_PRINT_NAME"/>”进行注册。</translation>
 <translation id="6154697846084421647">当前已登录</translation>
 <translation id="8241707690549784388">您所查找的网页要使用已输入的信息。返回此页可能需要重复已进行的所有操作。是否要继续操作？</translation>
+<translation id="5359419173856026110">当硬件加速处于活动状态时，显示网页的实际帧速率（帧/秒）。</translation>
 <translation id="4104163789986725820">导出(&amp;X)...</translation>
 <translation id="486595306984036763">打开网上诱骗报告</translation>
 <translation id="3140353188828248647">将地址栏设为焦点</translation>
@@ -2208,6 +2340,7 @@
 <translation id="2587203970400270934">运算符代码：</translation>
 <translation id="3355936511340229503">连接出错</translation>
 <translation id="1824910108648426227">您可以视情况停用这些服务</translation>
+<translation id="3092040396860056776">仍然尝试载入网页</translation>
 <translation id="4350711002179453268">无法与服务器建立安全连接。可能是服务器出现了问题，也可能是您没有服务器要求的客户端身份验证证书。</translation>
 <translation id="5963026469094486319">获取主题</translation>
 <translation id="2441719842399509963">重置为默认设置</translation>
@@ -2227,6 +2360,7 @@
 <translation id="5125751979347152379">网址无效。</translation>
 <translation id="2791364193466153585">安全信息</translation>
 <translation id="4673916386520338632">该应用程序与已安装的“<ph name="APP_NAME"/>”冲突，因此无法安装。</translation>
+<translation id="2024918351532495204">您的设备处于离线状态</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="5787146423283493983">密钥协议</translation>
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> 分钟前</translation>
@@ -2240,10 +2374,12 @@
 <translation id="2752805177271551234">使用输入历史记录功能</translation>
 <translation id="4910619056351738551">以下是一些建议：</translation>
 <translation id="5489059749897101717">显示拼写面板(&amp;S)</translation>
+<translation id="3423858849633684918">请重新启动 <ph name="PRODUCT_NAME"/></translation>
 <translation id="1232569758102978740">无标题</translation>
 <translation id="1903219944620007795">要进行文字输入，请选择一种语言，以查看可用的输入法。</translation>
 <translation id="4362187533051781987">县/市</translation>
 <translation id="9149866541089851383">修改...</translation>
+<translation id="7255289656011555258">始终启用</translation>
 <translation id="7608619752233383356">重置同步</translation>
 <translation id="1065245965611933814">包括已保存的屏幕截图：</translation>
 <translation id="7876243839304621966">全部删除</translation>
@@ -2252,8 +2388,10 @@
 <translation id="4593021220803146968">转到 <ph name="URL"/>(&amp;G)</translation>
 <translation id="869257642790614972">重新打开最后关闭的标签页</translation>
 <translation id="3978267865113951599">（已崩溃）</translation>
+<translation id="8412145213513410671">崩溃次数（<ph name="CRASH_COUNT"/> 次）</translation>
 <translation id="3146535743396545770">停止同步并从 Google 删除数据</translation>
 <translation id="7649070708921625228">帮助</translation>
+<translation id="976526967778596630">由于您的网络连接已断开，因此无法访问网址为 <ph name="HOST_NAME"/> 的网页。当网络连接恢复时，将会载入该网页。&lt;br&gt;</translation>
 <translation id="1734072960870006811">传真</translation>
 <translation id="5129662217315786329">波兰语</translation>
 <translation id="3095995014811312755">版本</translation>
@@ -2309,6 +2447,7 @@
 <translation id="6929555043669117778">继续拦截弹出式窗口</translation>
 <translation id="5864471791310927901">DHCP 查找失败</translation>
 <translation id="3508920295779105875">选择其他文件夹...</translation>
+<translation id="2503458975635466059">主机 <ph name="HOST_NAME"/> 上的进程 <ph name="PROCESS_ID"/> 可能正在使用此配置文件。如果您确定无其他进程正在使用此配置文件，则请删除文件 <ph name="LOCK_FILE"/>，然后重新启动 <ph name="PRODUCT_NAME"/>。</translation>
 <translation id="2987775926667433828">中文（繁体）</translation>
 <translation id="6684737638449364721">清除所有浏览数据...</translation>
 <translation id="3954582159466790312">取消静音(&amp;M)</translation>
@@ -2317,6 +2456,7 @@
 <translation id="7867353655952609678">最后更新时间：</translation>
 <translation id="5731698828607291678">标签页或窗口</translation>
 <translation id="1152775729948968688">但是，此页中包含其他不安全的资源。他人能在传输过程中查看这些资源，攻击者也可以进行修改，从而改变网页的行为。</translation>
+<translation id="604124094241169006">自动</translation>
 <translation id="862542460444371744">扩展程序(&amp;E)</translation>
 <translation id="8045462269890919536">罗马尼亚文</translation>
 <translation id="6320286250305104236">网络设置...</translation>
@@ -2325,6 +2465,8 @@
 <translation id="464745974361668466">模式：</translation>
 <translation id="5308380583665731573">连接</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>：<ph name="STATUS"/></translation>
+<translation id="6310196325815724087">连接到 Verizon Wireless</translation>
+<translation id="9049981332609050619">您试图访问 <ph name="DOMAIN"/>，但服务器提供的证书无效。</translation>
 <translation id="4414232939543644979">新建隐身窗口(&amp;I)</translation>
 <translation id="1693754753824026215"><ph name="SITE"/> 上的网页显示：</translation>
 <translation id="7148804936871729015">网址为 <ph name="URL"/> 的服务器的响应等待时间过长。该服务器可能已超载。</translation>
@@ -2337,6 +2479,7 @@
 <translation id="5550431144454300634">自动更正输入内容</translation>
 <translation id="3308006649705061278">组织单位 (OU)</translation>
 <translation id="8912362522468806198">Google 帐户</translation>
+<translation id="1466288268059179648">检查您的互联网连接。重新启动任何您可能正在使用的路由器、调制解调器或其他网络设备。</translation>
 <translation id="340485819826776184">借助预测服务，填写在地址栏中键入的搜索字词和网址</translation>
 <translation id="4074900173531346617">电子邮件签名人证书</translation>
 <translation id="6165508094623778733">了解详情</translation>
@@ -2350,9 +2493,11 @@
 <translation id="2649911884196340328">该服务器的安全证书有误！</translation>
 <translation id="6666647326143344290">使用您的 Google 帐户</translation>
 <translation id="3828029223314399057">搜索书签</translation>
+<translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="5614190747811328134">用户须知</translation>
 <translation id="8906421963862390172">拼写检查选项(&amp;S)</translation>
 <translation id="9046895021617826162">连接失败</translation>
+<translation id="1492188167929010410">崩溃 ID <ph name="CRASH_ID"/></translation>
 <translation id="1963692530539281474">还有 <ph name="NUMBER_DEFAULT"/> 天</translation>
 <translation id="4470270245053809099">颁发者：<ph name="NAME"/></translation>
 <translation id="5365539031341696497">泰语输入法（泰语键盘）</translation>
@@ -2377,7 +2522,9 @@
 <translation id="7269802741830436641">此网页包含重定向循环</translation>
 <translation id="4180788401304023883">要删除 CA 证书“<ph name="CERTIFICATE_NAME"/>”吗？</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
+<translation id="2089090684895656482">灵敏度较低</translation>
 <translation id="1709220265083931213">高级选项</translation>
+<translation id="5748266869826978907">检查您的 DNS 设置。如果您不确定是什么意思，请与您的网络管理员联系。</translation>
 <translation id="4771973620359291008">发生未知错误。</translation>
 <translation id="5509914365760201064">颁发者：<ph name="CERTIFICATE_AUTHORITY"/></translation>
 <translation id="7073385929680664879">循环浏览输入法</translation>
@@ -2395,6 +2542,7 @@
 <translation id="2835170189407361413">清除表单</translation>
 <translation id="4631110328717267096">系统更新失败。</translation>
 <translation id="3695919544155087829">请输入用于加密该证书文件的密码。</translation>
+<translation id="2230051135190148440">CHAP</translation>
 <translation id="6308937455967653460">链接另存为(&amp;K)...</translation>
 <translation id="5421136146218899937">清除浏览数据...</translation>
 <translation id="5441100684135434593">有线网络</translation>
@@ -2435,9 +2583,11 @@
 <translation id="4092878864607680421">最新版的应用程序“<ph name="APP_NAME"/>”需要更多的权限，因此已将其停用。</translation>
 <translation id="8421864404045570940"><ph name="NUMBER_DEFAULT"/> secs</translation>
 <translation id="5828228029189342317">您已选择在下载后自动打开特定类型的文件。</translation>
+<translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="176587472219019965">新建窗口(&amp;N)</translation>
 <translation id="2788135150614412178">+</translation>
 <translation id="4055738107007928968">您尝试访问的是 <ph name="DOMAIN"/>，但是服务器出示的证书带有使用弱签名算法的签名。这意味着服务器出示的安全凭据可能是伪造的，所以这个服务器可能并不是您想要访问的服务器（您可能正在与攻击者进行通信）。您应该停止操作。</translation>
+<translation id="5308689395849655368">已停用崩溃报告。</translation>
 <translation id="8372369524088641025">WEP 密钥错误</translation>
 <translation id="8689341121182997459">过期时间：</translation>
 <translation id="899403249577094719">Netscape 证书基本网址</translation>
@@ -2467,6 +2617,7 @@
 <translation id="2517143724531502372">来自 <ph name="DOMAIN"/> 的 Cookie 只允许用于会话。</translation>
 <translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">根据之前输入的内容对转化进行调整</translation>
+<translation id="2307719516243503680">托管此网页的服务器可能已过载或遇到了错误。为避免带来过大的流量并导致问题更为严重，<ph name="PRODUCT_NAME"/>已暂时禁止对该服务器发出请求。<ph name="LINE_BREAK"/>如果您不希望这样（例如，您正在调试自己的网站），则可使用命令行标记 <ph name="COMMAND_LINE_FLAG"/> 重新启动 <ph name="PRODUCT_NAME"/>，以将其停用。</translation>
 <translation id="5398353896536222911">显示拼写面板(&amp;S)</translation>
 <translation id="5811533512835101223">（返回原始屏幕截图）</translation>
 <translation id="5131817835990480221">更新<ph name="PRODUCT_NAME"/>(&amp;G)</translation>
@@ -2494,7 +2645,7 @@
 <translation id="3127589841327267804">PYJJ</translation>
 <translation id="8808478386290700967">Chrome 网上应用店</translation>
 <translation id="4084682180776658562">书签</translation>
-<translation id="8859057652521303089">选择您的语言：</translation>
+<translation id="8859057652521303089">选择语言：</translation>
 <translation id="3030138564564344289">重试下载</translation>
 <translation id="8525552230188318924">配置密码同步。</translation>
 <translation id="4381091992796011497">用户名：</translation>
@@ -2517,7 +2668,7 @@
 <translation id="6264485186158353794">返回安全连接</translation>
 <translation id="5130080518784460891">Eten</translation>
 <translation id="5847724078457510387">该网站列出了 DNS 中所有的有效证书，但服务器使用的证书并不在其中。</translation>
-<translation id="6895607028040775325">英语（美国）</translation>
+<translation id="6895607028040775325">英文（美国）</translation>
 <translation id="5037676449506322593">全选</translation>
 <translation id="2785530881066938471">无法为内容脚本载入“<ph name="RELATIVE_PATH"/>”文件。该文件采用的不是 UTF-8 编码。</translation>
 <translation id="3807747707162121253">取消(&amp;C)</translation>
@@ -2537,8 +2688,10 @@
         <ph name="LINE_BREAK"/>
         <ph name="PLATFORM_TEXT"/></translation>
 <translation id="3533943170037501541">欢迎访问您的主页！</translation>
+<translation id="2333340435262918287">您所做的更改会在下次重新启动 <ph name="PRODUCT_NAME"/> 时生效。</translation>
 <translation id="5906065664303289925">硬件地址：</translation>
 <translation id="2187895286714876935">服务器证书导入错误</translation>
+<translation id="5460896875189097758">本地存储的数据</translation>
 <translation id="343107786065952164">不信任该证书的真实性。</translation>
 <translation id="614998064310228828">设备型号：</translation>
 <translation id="1581962803218266616">在 Finder 中显示</translation>
@@ -2546,6 +2699,7 @@
 <translation id="6086259540486894113">您至少应选择一种要同步的数据类型。</translation>
 <translation id="923467487918828349">显示全部</translation>
 <translation id="5101042277149003567">打开所有书签</translation>
+<translation id="6621440228032089700">启用屏幕外纹理合成，而不是直接显示。</translation>
 <translation id="3488065109653206955">部分激活</translation>
 <translation id="1481244281142949601">您已经进行了充分的沙盒测试。</translation>
 <translation id="4849517651082200438">不安装</translation>
@@ -2568,6 +2722,7 @@
 <translation id="1208126399996836490">不要重置</translation>
 <translation id="2670965183549957348">酷音输入法</translation>
 <translation id="3380286644315743596">切换到全角模式</translation>
+<translation id="5095208057601539847">省/自治区/直辖市</translation>
 <translation id="4085298594534903246">已拦截此网页上的 JavaScript。</translation>
 <translation id="5630492933376732170">注意：点击“发送反馈”时，Chrome 操作系统会同时发送您设备中的
         系统事件的日志。我们会使用这些信息来诊断问题、了解
@@ -2617,6 +2772,7 @@
 <translation id="8321738493186308836">启用远程服务进程的用户界面和支持代码，以及客户端插件。警告：目前这些内容仅供开发人员测试之用。除非您是开发小组的成员，并列入了白名单，否则启用的用户界面不会有任何作用。</translation>
 <translation id="2149973817440762519">修改书签</translation>
 <translation id="5431318178759467895">颜色</translation>
+<translation id="2784407158394623927">正在激活您的移动数据服务</translation>
 <translation id="3679848754951088761"><ph name="SOURCE_ORIGIN"/></translation>
 <translation id="1486740077039107580">启用高级文件系统（包括 USB 和 SD 卡支持）。</translation>
 <translation id="6920989436227028121">在常规标签页中打开</translation>
@@ -2662,6 +2818,7 @@
 <translation id="5154702632169343078">主题</translation>
 <translation id="2273562597641264981">运算符：</translation>
 <translation id="122082903575839559">证书签名算法</translation>
+<translation id="6643595002576738836">德语 (Neo 2)</translation>
 <translation id="2181257377760181418">启用在标签页内预览打印操作的功能。</translation>
 <translation id="7240120331469437312">证书主题的备用名称</translation>
 <translation id="6900113680982781280">启用自动填充功能后，只需点击一次即可填写多个网络表单</translation>
@@ -2692,6 +2849,7 @@
 <translation id="21381969153622804">操作</translation>
 <translation id="1971538228422220140">删除 Cookie 以及其他网站数据和插件数据</translation>
 <translation id="883487340845134897">切换“搜索”键和左侧 Control 键</translation>
+<translation id="5692957461404855190">在您的触摸板上用三根手指向下滑动，即可查看所有标签页的概览。点击缩略图可将其选中。在全屏模式下效果极佳。</translation>
 <translation id="1375215959205954975">新功能！配置密码同步。</translation>
 <translation id="5183088099396036950">无法连接到服务器</translation>
 <translation id="4469842253116033348">停用 <ph name="SITE"/> 的通知</translation>
@@ -2707,10 +2865,12 @@
 <translation id="7685049629764448582">JavaScript 使用的内存</translation>
 <translation id="6398765197997659313">退出全屏模式</translation>
 <translation id="6059652578941944813">证书层次结构</translation>
+<translation id="4886690096315032939">将现有标签定位至打开</translation>
 <translation id="774576312655125744">您在 <ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/> 和其他 <ph name="NUMBER_OF_OTHER_WEBSITES"/> 个网站上的数据。</translation>
 <translation id="4508765956121923607">显示源代码(&amp;O)</translation>
 <translation id="5975083100439434680">缩小</translation>
 <translation id="8080048886850452639">复制音频网址(&amp;O)</translation>
+<translation id="2817109084437064140">导入并绑定到设备...</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET"/>) <ph name="LONGTZNAME"/> (<ph name="EXEMPLARCITY"/>)</translation>
 <translation id="619398760000422129">插件（如 Adobe Flash Player、Quicktime 等）</translation>
 <translation id="5849869942539715694">打包扩展程序...</translation>

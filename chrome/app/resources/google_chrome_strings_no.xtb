@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Google Chrome er ikke installert, eller installasjonskatalogen ble ikke funnet. Last ned Google Chrome på nytt.</translation>
 <translation id="1761870329818521071">Versjonen av Google Chrome Frame du prøver å installere, kjører allerede. Lukk Google Chrome Frame, og forsøk å installere på nytt.</translation>
 <translation id="2040709530900803995">Google Chrome-gjengiver</translation>
+<translation id="5339639696978861456">Chrome Frame har blitt oppdatert. Start nettleseren på nytt. Chrome-versjon: <ph name="TODO_0001"/>, Chrome Frame-versjon: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Vilkår for bruk</translation>
 <translation id="1779550429052479749">En motstridende installasjon av Google Chrome eller Google Chrome Frame ble oppdaget i systemet. Avinstaller denne og prøv på nytt.</translation>
 <translation id="3555616473548901994">Avinstallering fullført.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Google Chromes verktøy</translation>
 <translation id="4343226815564935778">Det ser ut til at installasjonsmappen for Google Chrome er i bruk. Du må starte datamaskinen på nytt og prøve igjen.</translation>
 <translation id="8227755444512189073">Google Chrome må starte et eksternt program for å behandle <ph name="SCHEME"/>-koblinger. Den forespurte koblingen er <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Google Chrome har fått et programstopp. Vil du starte på nytt nå?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome-gjengiver</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Avinstaller Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">En ny, sikrere versjon av Google Chrome er tilgjengelig</translation>
+<translation id="5037239767309817516">For at endringen skal tre i kraft, må du lukke alle vinduer og starte Google Chrome på nytt.</translation>
 <translation id="8810218179782551669">Google Chrome-språk:</translation>
 <translation id="7451721381978275812">Ugyldige argumenter. Google Chrome Frame kan ikke installeres i klar modus uten at Chrome Frame også er installert.</translation>
 <translation id="5809236835374558741">Denne datamaskinen har allerede en nyere versjon av Google Chrome Frame. Hvis programvaren ikke fungerer, må du avinstallere Google Chrome Frame og laste det ned på nytt.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Google Chrome bruker din standard søkemotor, som er <ph name="PAGE_TITLE"/>. Vil du beholde denne?</translation>
 <translation id="7161904924553537242">Velkommen til Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome-hjelper</translation>
+<translation id="3444832043240812445">Denne siden viser kun informasjon om nylige programstopp hvis du <ph name="BEGIN_LINK"/>aktiverer rapportering av programstopp<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome svarer ikke. Vil du starte på nytt nå?</translation>
 <translation id="2681064822612051220">En motstridende installasjon av Google Chrome ble oppdaget i systemet. Avinstaller denne og prøv igjen.</translation>
 <translation id="5318056482164160049">Vert for programtillegg i Google Chrome</translation>
 <translation id="6126631249883707068">Vil du at Google Chrome skal lagre passordet?</translation>

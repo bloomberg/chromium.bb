@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">ファイルを選択</translation>
 <translation id="2761667185364618470">次に進むにはこのチェックボックスをオンにしてください。</translation>
 <translation id="8964020114565522021">ファイルをここにドラッグ</translation>
+<translation id="5129723458012748440"><ph name="PLUGIN"/> プラグインがインストールされていません。</translation>
 <translation id="838869780401515933">チェックを付ける</translation>
 <translation id="2846343701378493991">1024 (中)</translation>
 <translation id="5476505524087279545">チェックを外す</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">このフィールドを入力してください。</translation>
 <translation id="5253117816378681419">この <ph name="PLUGIN"/> プラグインをインストールしてもよいかご確認ください。信頼できるプラグインのみをインストールする必要があります。</translation>
 <translation id="6663448176199120256">最近の検索</translation>
+<translation id="7335060848622232389">プラグインのインストールが無効になっています。</translation>
 <translation id="2597378329261239068">このドキュメントはパスワードで保護されています。パスワードを入力してください。</translation>
 <translation id="5466621249238537318">1 つ以上のファイルを選択してください。</translation>
 <translation id="8750798805984357768">これらのオプションから 1 つ選択してください。</translation>
 <translation id="7740050170769002709">HTML コンテンツ</translation>
 <translation id="2226276347425096477">このテキストを半角 <ph name="MAX_CHARACTERS"/> 文字以下にしてください（現時点で半角 <ph name="CURRENT_LENGTH"/> 文字です）。</translation>
+<translation id="1639239467298939599">読み込み中</translation>
 <translation id="2908441821576996758">メール アドレスのカンマ区切りリストを入力してください。</translation>
 <translation id="5939518447894949180">リセット</translation>
 <translation id="835897206747267392">値が無効です。</translation>
+<translation id="3851140433852960970">このコンテンツの表示に使用できるプラグインはありません。</translation>
 <translation id="1842960171412779397">選択</translation>
 <translation id="3450233048674729344">値は <ph name="MAXIMUM"/> 以下にする必要があります。</translation>
+<translation id="9198010615634362518">必要なプラグインがインストールされていません。</translation>
 <translation id="7638452146404718955">ここをクリックしてプラグインをダウンロード</translation>
 <translation id="6119846243427417423">アクティブにする</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ファイル</translation>

@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Google Chrome ei ole installitud või installikataloogi ei leitud. Palun laadige Google Chrome uuesti alla.</translation>
 <translation id="1761870329818521071">Töötava Google Chrome Frame'iga sama versiooni ei saa installida. Sulgege Google Chrome Frame ja proovige uuesti.</translation>
 <translation id="2040709530900803995">Google Chrome'i renderdaja</translation>
+<translation id="5339639696978861456">Chrome Frame on värskendatud. Taaskäivitage brauser. Chrome'i versioon: <ph name="TODO_0001"/>, Chrome Frame'i versioon: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Kasutustingimused</translation>
 <translation id="1779550429052479749">Süsteemist leiti Google Chrome'i või Google Chrome Frame'i konfliktne install. Desinstallige see ja proovige uuesti.</translation>
 <translation id="3555616473548901994">Desinstallimine on lõpetatud.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Google Chrome'i utiliit</translation>
 <translation id="4343226815564935778">Google Chrome'i installikataloog paistab olevat kasutusel. Taaskäivitage arvuti ja proovige uuesti.</translation>
 <translation id="8227755444512189073">Google Chrome peab käivitama välise rakenduse <ph name="SCHEME"/> linkide haldamiseks. Küsitud link on <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Tohoh! Google Chrome jooksis kokku. Kas soovite kohe taaskäivitada?</translation>
 <translation id="1281036569101707544">Google Chrome'i <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome'i renderdaja</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Google Chrome'i desinstallimine</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Saadaval on uus ja turvalisem Google Chrome'i versioon.</translation>
+<translation id="5037239767309817516">Muudatuse rakendamiseks sulgege kõik Google Chrome'i aknad ja taaskäivitage Chrome.</translation>
 <translation id="8810218179782551669">Google Chrome'i keel:</translation>
 <translation id="7451721381978275812">Kehtetud argumendid. Google Chrome Frame'i ei saa valmisrežiimil installida ilma ka Google Chrome'i installimata.</translation>
 <translation id="5809236835374558741">Selles arvutis on juba Google Chrome Frame'i viimane versioon. Kui tarkvara ei tööta, desinstallige Google Chrome Frame ja laadige see uuesti alla.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Google Chrome kasutab teie vaikeotsingumootorit, mis praegu on <ph name="PAGE_TITLE"/>. Soovite jätkata sama vaikeotsingumootori kasutamist?</translation>
 <translation id="7161904924553537242">Tere tulemast Google Chrome'i</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="3444832043240812445">Lehel näidatakse vaid teavet hiljutiste krahhide kohta, kui olete <ph name="BEGIN_LINK"/>krahhide aruandluse lubanud<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome ei reageeri. Kas soovite kohe taaskäivitada?</translation>
 <translation id="2681064822612051220">Süsteemist leiti Google Chrome'i konfliktne install. Desinstallige see ja proovige uuesti.</translation>
 <translation id="5318056482164160049">Google Chrome'i pistikprogrammi host</translation>
 <translation id="6126631249883707068">Kas soovite, et Google Chrome salvestaks teie parooli?</translation>

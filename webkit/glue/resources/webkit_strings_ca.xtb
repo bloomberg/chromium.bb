@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">Selecciona el fitxer</translation>
 <translation id="2761667185364618470">Marqueu aquesta casella si voleu continuar.</translation>
 <translation id="8964020114565522021">Arrossegueu el fitxer aquí.</translation>
+<translation id="5129723458012748440">El connector <ph name="PLUGIN"/> no està instal·lat.</translation>
 <translation id="838869780401515933">marca</translation>
 <translation id="2846343701378493991">1024 (Mitjà)</translation>
 <translation id="5476505524087279545">desmarca</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">Empleneu aquest camp.</translation>
 <translation id="5253117816378681419">Confirmeu que voleu instal·lar el connector <ph name="PLUGIN"/>. Us recomanem que només instal·leu connectors de la vostra confiança.</translation>
 <translation id="6663448176199120256">Cerques recents</translation>
+<translation id="7335060848622232389">S'ha desactivat la instal·lació de connectors.</translation>
 <translation id="2597378329261239068">Aquest document està protegit mitjançant contrasenya. Introduïu una contrasenya.</translation>
 <translation id="5466621249238537318">Seleccioneu un o diversos fitxers.</translation>
 <translation id="8750798805984357768">Seleccioneu una d'aquestes opcions.</translation>
 <translation id="7740050170769002709">Contingut HTML</translation>
 <translation id="2226276347425096477">Escurceu aquest text a un màxim de <ph name="MAX_CHARACTERS"/> caràcters (ara n'esteu utilitzant <ph name="CURRENT_LENGTH"/>).</translation>
+<translation id="1639239467298939599">S'està carregant</translation>
 <translation id="2908441821576996758">Introduïu una llista d'adreces electròniques separades per comes.</translation>
 <translation id="5939518447894949180">Restablir</translation>
 <translation id="835897206747267392">Valor no vàlid.</translation>
+<translation id="3851140433852960970">No hi ha cap connector disponible per mostrar aquest contingut.</translation>
 <translation id="1842960171412779397">selecciona</translation>
 <translation id="3450233048674729344">El valor ha de ser més petit o igual que <ph name="MAXIMUM"/>.</translation>
+<translation id="9198010615634362518">El connector necessari no està instal·lat.</translation>
 <translation id="7638452146404718955">Feu clic aquí per baixar el connector</translation>
 <translation id="6119846243427417423">activa</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> fitxers</translation>

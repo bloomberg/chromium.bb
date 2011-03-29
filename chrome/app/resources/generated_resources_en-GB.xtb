@@ -2005,6 +2005,7 @@
 <translation id="3031433885594348982">Your connection to <ph name="DOMAIN"/> is encrypted with weak encryption.</translation>
 <translation id="4047345532928475040">N/A</translation>
 <translation id="3220630151624181591">Activate tab 2</translation>
+<translation id="8898139864468905752">Tab Overview</translation>
 <translation id="2799223571221894425">Relaunch</translation>
 <translation id="5771816112378578655">Setup in progress...</translation>
 <translation id="1197979282329025000">An error occurred while retrieving printer capabilities for printer <ph name="PRINTER_NAME"/>. This printer could not be registered with <ph name="CLOUD_PRINT_NAME"/>.</translation>
@@ -2843,6 +2844,7 @@
 <translation id="21381969153622804">Action</translation>
 <translation id="1971538228422220140">Delete cookies and other site and plug-in data</translation>
 <translation id="883487340845134897">Swap Search and Left Control keys</translation>
+<translation id="5692957461404855190">Swipe down with three fingers on your trackpad to see an overview of all your tabs. Click a thumbnail to select it. Works well in full-screen mode.</translation>
 <translation id="1375215959205954975">New! Configure password sync.</translation>
 <translation id="5183088099396036950">Could not connect to the server</translation>
 <translation id="4469842253116033348">Disable notifications from <ph name="SITE"/></translation>

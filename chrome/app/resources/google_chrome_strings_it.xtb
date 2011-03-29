@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Google Chrome non è stato installato oppure non è stata rilevata la directory di installazione. Scarica nuovamente Google Chrome.</translation>
 <translation id="1761870329818521071">Impossibile installare la stessa versione di Google Chrome Frame attualmente in esecuzione. Chiudi Google Chrome Frame e riprova.</translation>
 <translation id="2040709530900803995">Programma di rendering di Google Chrome</translation>
+<translation id="5339639696978861456">Chrome Frame è stato aggiornato. Riavvia il browser. Versione di Google Chrome: <ph name="TODO_0001"/>, versione di Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Termini di servizio</translation>
 <translation id="1779550429052479749">Nel sistema è stata rilevata un'installazione di Google Chrome o di Google Chrome Frame in conflitto. Disinstallala e riprova.</translation>
 <translation id="3555616473548901994">Disinstallazione completa.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Utilità Google Chrome</translation>
 <translation id="4343226815564935778">Sembra che sia in uso la directory di installazione di Google Chrome. Riavvia il computer e riprova.</translation>
 <translation id="8227755444512189073">Google Chrome deve avviare un'applicazione esterna per gestire i link <ph name="SCHEME"/>. Il link richiesto è <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Spiacenti, si è verificato un arresto anomalo di Google Chrome. Riavviarlo ora?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Programma di rendering di Chrome</translation>
@@ -33,12 +35,13 @@
 <translation id="3889417619312448367">Disinstalla Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">È disponibile una nuova versione più sicura di Google Chrome.</translation>
+<translation id="5037239767309817516">Chiudi tutte le finestre di Google Chrome e riavvialo per rendere effettiva la modifica.</translation>
 <translation id="8810218179782551669">Lingua di Google Chrome:</translation>
 <translation id="7451721381978275812">Argomenti non validi. Google Chrome Frame non è installabile in modalità Pronto senza installare anche Google Chrome.</translation>
 <translation id="5809236835374558741">In questo computer è già installata una versione più recente di Google Chrome Frame. Se il software non funziona, disinstalla Google Chrome Frame e scaricalo nuovamente.</translation>
 <translation id="4357846314885556934">Google Chrome funziona in modo anomalo</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
-<translation id="4331809312908958774">Sistema operativo di Google Chrome</translation>
+<translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">La sessione di Google Chrome è stata terminata in modo non corretto. Per riaprire le pagine che stavi visualizzando, fai clic su Ripristina.</translation>
 <translation id="2580411288591421699">Impossibile installare la stessa versione di Google Chrome attualmente in esecuzione. Chiudi Google Chrome e riprova.</translation>
 <translation id="7747138024166251722">Il programma di installazione non ha creato una directory temporanea. Verifica di disporre di spazio libero sul disco e dell'autorizzazione per l'installazione del software.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Google Chrome utilizza il tuo motore di ricerca predefinito, correntemente impostato su <ph name="PAGE_TITLE"/>. Mantenere il motore di ricerca predefinito?</translation>
 <translation id="7161904924553537242">Benvenuto in Google Chrome</translation>
 <translation id="8669527147644353129">Supporto Google Chrome</translation>
+<translation id="3444832043240812445">Questa pagina mostra solo informazioni sugli arresti anomali recenti se <ph name="BEGIN_LINK"/>attivi la segnalazione degli arresti anomali<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome non risponde. Riavviarlo ora?</translation>
 <translation id="2681064822612051220">Nel sistema è stata rilevata un'installazione di Google Chrome in conflitto. Disinstallala e riprova.</translation>
 <translation id="5318056482164160049">Host plug-in Google Chrome</translation>
 <translation id="6126631249883707068">Desideri che Google Chrome salvi la tua password?</translation>

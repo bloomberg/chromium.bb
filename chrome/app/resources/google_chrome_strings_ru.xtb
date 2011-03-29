@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Не удалось найти каталог установки или браузер Google Chrome не установлен. Загрузите Google Chrome снова.</translation>
 <translation id="1761870329818521071">Невозможно установить ту же самую версию Google Chrome Frame, которая сейчас выполняется. Закройте Google Chrome Frame и повторите попытку.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="5339639696978861456">Выполнено обновление Chrome Frame. Перезапустите браузер. Версия Chrome: <ph name="TODO_0001"/>; версия Chrome Frame: <ph name="TODO_0002"/>.</translation>
 <translation id="4281844954008187215">Условия предоставления услуг</translation>
 <translation id="1779550429052479749">В системе установлена конфликтующая версия Google Chrome или Google Chrome Frame. Удалите ее и повторите попытку.</translation>
 <translation id="3555616473548901994">Удаление завершено.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Похоже, что каталог для установки Google Chrome сейчас используется. Перезагрузите компьютер и повторите попытку.</translation>
 <translation id="8227755444512189073">Браузеру Google Chrome требуется запустить внешнее приложение для обработки ссылок <ph name="SCHEME"/>. Запрошенная ссылка: <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Ошибка Google Chrome. Перезапустить?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> для Google Chrome</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Удалить Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
+<translation id="5037239767309817516">Чтобы изменения вступили в силу, закройте все окна Google Chrome и перезапустите браузер.</translation>
 <translation id="8810218179782551669">Язык Google Chrome:</translation>
 <translation id="7451721381978275812">Недопустимые аргументы. Чтобы установить в режиме готовности Google Chrome Frame, необходимо также установить Google Chrome.</translation>
 <translation id="5809236835374558741">На этом компьютере уже установлена самая последняя версия Google Chrome Frame. Если Google Chrome Frame не работает, удалите эту программу и загрузите ее снова.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Google Chrome использует вашу поисковую систему по умолчанию, сейчас это <ph name="PAGE_TITLE"/>. Продолжить использование этой системы?</translation>
 <translation id="7161904924553537242">Добро пожаловать в Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="3444832043240812445">Информация о недавних сбоях отображается на этой странице только при <ph name="BEGIN_LINK"/>включенной функции отчетов о сбоях<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome не отвечает. Перезапустить сейчас?</translation>
 <translation id="2681064822612051220">В системе установлена конфликтующая версия Google Chrome. Удалите ее и повторите попытку.</translation>
 <translation id="5318056482164160049">Хост подключаемых модулей Google Chrome</translation>
 <translation id="6126631249883707068">Сохранить пароль в Google Chrome?</translation>

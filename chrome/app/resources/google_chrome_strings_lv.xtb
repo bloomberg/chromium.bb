@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Google Chrome nav instalēts, vai tam neizdevās atrast instalācijas katalogu. Lūdzu, vēlreiz lejupielādējiet Google Chrome.</translation>
 <translation id="1761870329818521071">Nevar instalēt to pašu Google Chrome Frame versiju, kas jau darbojas. Aizveriet Google Chrome Frame un mēģiniet vēlreiz.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="5339639696978861456">Chrome Frame ir atjaunināts. Restartējiet pārlūku. Chrome versija: <ph name="TODO_0001"/>; Chrome Frame versija: <ph name="TODO_0002"/>.</translation>
 <translation id="4281844954008187215">Google pakalpojumu noteikumi</translation>
 <translation id="1779550429052479749">Sistēmā konstatēta Google Chrome vai Google Chrome Frame konfliktējoša instalācija. Atinstalējiet to un mēģiniet vēlreiz.</translation>
 <translation id="3555616473548901994">Atinstalēšana ir pabeigta.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Šķiet, ka Google Chrome instalācijas direktorijs tiek lietots. Lūdzu, atsāknējiet datoru un mēģiniet vēlreiz.</translation>
 <translation id="8227755444512189073">Google Chrome nepieciešams ieslēgt ārēju lietojumprogrammu, lai regulētu <ph name="SCHEME"/> saites. Pieprasītā saite ir <ph name="PROTOLINK"/></translation>
+<translation id="8290100596633877290">Eh! Google Chrome ir avarējis. Vai restartēt to tūlīt?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Atinstalēt Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Ir pieejama jauna un drošāka Google Chrome versija.</translation>
+<translation id="5037239767309817516">Lai izmaiņas stātos spēkā, aizveriet visus Google Chrome logus un restartējiet pārlūku.</translation>
 <translation id="8810218179782551669">Google Chrome valoda:</translation>
 <translation id="7451721381978275812">Nederīgi argumenti. Google Chrome Frame nevar instalēt gatavības režīmā, vienlaikus neinstalējot arī Google Chrome.</translation>
 <translation id="5809236835374558741">Šim datoram jau ir instalēta jaunākā Google Chrome Frame versija. Ja programmatūra nedarbojas, atinstalējiet Google Chrome Frame un vēlreiz to lejupielādējiet.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Google Chrome izmanto jūsu noklusējuma meklētājprogrammu — <ph name="PAGE_TITLE"/>. Vai vēlaties turpināt lietot noklusējuma meklētājprogrammu?</translation>
 <translation id="7161904924553537242">Laipni lūdzam Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="3444832043240812445">Šajā lapā tiek parādīta tikai informācija par pēdējā laika avārijām, ja <ph name="BEGIN_LINK"/>iespējojat avāriju pārskatu izveidi<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome nereaģē. Vai restartēt to tūlīt?</translation>
 <translation id="2681064822612051220">Sistēmā konstatēta Google Chrome konfliktējoša instalācija. Atinstalējiet to un mēģiniet vēlreiz.</translation>
 <translation id="5318056482164160049">Google Chrome spraudņa saimniekdators</translation>
 <translation id="6126631249883707068">Vai vēlaties, lai Google Chrome saglabā jūsu paroli?</translation>

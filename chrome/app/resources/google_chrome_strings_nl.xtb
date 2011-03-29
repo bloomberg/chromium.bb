@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Google Chrome is niet geïnstalleerd of de installatiedirectory is niet gevonden. Download Google Chrome opnieuw.</translation>
 <translation id="1761870329818521071">Kan dezelfde Google Chrome Frame-versie die momenteel actief is, niet installeren. Sluit Google Chrome Frame en probeer het opnieuw.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="5339639696978861456">Chrome Frame is bijgewerkt. Start uw browser opnieuw. Chrome-versie: <ph name="TODO_0001"/>, Chrome Frame-versie: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Servicevoorwaarden</translation>
 <translation id="1779550429052479749">Er is een conflicterende installatie van Google Chrome of Google Chrome Frame op het systeem gevonden. Verwijder deze en probeer het opnieuw.</translation>
 <translation id="3555616473548901994">Verwijdering voltooid.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Google Chrome</translation>
 <translation id="4343226815564935778">De installatiedirectory voor Google Chrome lijkt in gebruik te zijn. Start uw computer opnieuw op en probeer het opnieuw.</translation>
 <translation id="8227755444512189073"><ph name="SCHEME"/> De opgevraagde link is <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Oeps! Google Chrome is vastgelopen. Nu opnieuw starten?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> van Google Chrome</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Google Chrome verwijderen</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Er is een nieuwere, veiligere versie van Google Chrome beschikbaar.</translation>
+<translation id="5037239767309817516">Sluit alle Google Chrome-vensters en start Google Chrome opnieuw om deze wijziging door te voeren.</translation>
 <translation id="8810218179782551669">Taal van Google Chrome:</translation>
 <translation id="7451721381978275812">Ongeldige argumenten. Google Chrome Frame kan niet in de ready-modus worden geïnstalleerd zonder dat Google Chrome wordt geïnstalleerd.</translation>
 <translation id="5809236835374558741">Er staat al een nieuwere versie van Google Chrome Frame op deze computer. Als de software niet werkt, verwijdert u Google Chrome Frame en downloadt u het programma opnieuw.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Google Chrome gebruikt uw standaardzoekmachine. Deze is momenteel ingesteld op <ph name="PAGE_TITLE"/>. Wilt u uw standaardzoekmachine behouden?</translation>
 <translation id="7161904924553537242">Welkom bij Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="3444832043240812445">Deze pagina bevat alleen informatie over recente crashes als u <ph name="BEGIN_LINK"/>crashrapportage inschakelt<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome reageert niet meer. Nu opnieuw starten?</translation>
 <translation id="2681064822612051220">Er is een conflicterende installatie van Google Chrome op het systeem gevonden. Verwijder deze en probeer het opnieuw.</translation>
 <translation id="5318056482164160049">Invoegtoepassingshost van Google Chrome</translation>
 <translation id="6126631249883707068">Wilt u dat Google Chrome uw wachtwoord opslaat?</translation>
@@ -82,7 +87,7 @@
 <translation id="8865765905101981392">Internetbrowser</translation>
 <translation id="8776515774046280928">Google Chrome is al geïnstalleerd en beschikbaar voor alle gebruikers van deze computer. Als u Google Chrome wilt installeren op gebruikersniveau, moet u eerst de versie op systeemniveau verwijderen die door een beheerder is geïnstalleerd.</translation>
 <translation id="2189123953385179981">Google Chrome OS biedt geen ondersteuning voor het starten van een externe toepassing om links van <ph name="SCHEME"/> te verwerken. De opgevraagde link is <ph name="PROTOLINK"/>.</translation>
-<translation id="8205111949707227942">Optioneel: help Chrome OS beter te maken door automatisch gebruiksstatistieken en crashmeldingen naar Google te verzenden.</translation>
+<translation id="8205111949707227942">Optioneel: help Chrome OS beter te maken door Google automatisch gebruiksstatistieken en crashmeldingen te sturen.</translation>
 <translation id="7196020411877309443">Waarom zie ik dit venster?</translation>
 <translation id="2769762047821873045">Google Chrome is niet uw standaardbrowser.</translation>
 <translation id="7825851276765848807">De installatie is mislukt vanwege een onbekende fout. Download Google Chrome opnieuw.</translation>

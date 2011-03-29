@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">انتخاب فایل</translation>
 <translation id="2761667185364618470">در صورتی که می خواهید ادامه دهید، این کادر را انتخاب کنید.</translation>
 <translation id="8964020114565522021">فایل را اینجا بکشید</translation>
+<translation id="5129723458012748440">افزونه <ph name="PLUGIN"/> نصب نشده است.</translation>
 <translation id="838869780401515933">علامتگذاری</translation>
 <translation id="2846343701378493991">1024 (درجه متوسط)</translation>
 <translation id="5476505524087279545">برداشتن علامت</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">لطفاً این قسمت را تکمیل کنید.</translation>
 <translation id="5253117816378681419">لطفاً تأیید کنید که مایلید افزونه <ph name="PLUGIN"/> نصب شود. فقط باید افزونه هایی را نصب کنید که به آنها اعتماد دارید.</translation>
 <translation id="6663448176199120256">جستجوهای جدید</translation>
+<translation id="7335060848622232389">نصب افزونه ها غیرفعال شد.</translation>
 <translation id="2597378329261239068">این سند توسط رمز ورود محافظت می شود.  لطفاً یک رمز ورود وارد کنید.</translation>
 <translation id="5466621249238537318">لطفاً یک یا چند فایل را انتخاب کنید.</translation>
 <translation id="8750798805984357768">لطفاً یکی از این گزینه ها را انتخاب کنید.</translation>
 <translation id="7740050170769002709">محتوای HTML</translation>
 <translation id="2226276347425096477">لطفاً این متن را به اندازه <ph name="MAX_CHARACTERS"/> نویسه یا کمتر کوتاه کنید (شما در حال حاضر از <ph name="CURRENT_LENGTH"/> نویسه استفاده می کنید).</translation>
+<translation id="1639239467298939599">بارگیری</translation>
 <translation id="2908441821576996758">لطفاً لیستی از آدرس های ایمیل که با کاما از هم جدا شده اند را وارد کنید.</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
 <translation id="835897206747267392">مقدار نامعتبر.</translation>
+<translation id="3851140433852960970">هیچ افزونه ای برای نمایش این محتوا در دسترس نیست.</translation>
 <translation id="1842960171412779397">انتخاب</translation>
 <translation id="3450233048674729344">مقدار باید کمتر یا برابر با <ph name="MAXIMUM"/> باشد.</translation>
+<translation id="9198010615634362518">افزونه مورد نیاز نصب نشده است.</translation>
 <translation id="7638452146404718955">برای دانلود کردن افزونه اینجا را کلیک کنید</translation>
 <translation id="6119846243427417423">فعالسازی</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> فایل</translation>

@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Hindi na-install o nabigong makahanap ng direktoryo sa pag-install ang Google Chrome. Paki-download muli ang Google Chrome.</translation>
 <translation id="1761870329818521071">Hindi ma-install ang parehong bersyon ng Google Chrome Frame na kasalukuyang tumatakbo. Pakisara ang Google Chrome Frame at subukang muli.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="5339639696978861456">Na-update ang Frame Chrome. Pakilunsad muli ang iyong browser. Chrome na bersyon: <ph name="TODO_0001"/>, Chrome Frame na bersyon: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Mga Tuntunin ng Serbisyo</translation>
 <translation id="1779550429052479749">May nakitang sumasalungat na pag-install ng Google Chrome o Google Chrome Frame sa system. Paki-uninstall ito at subukang muli.</translation>
 <translation id="3555616473548901994">Kumpleto na ang pag-uninstall.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Tila ginagamit ang direktoryo sa pag-install ng Google Chrome. Paki-reboot ang iyong computer at subukan ulit.</translation>
 <translation id="8227755444512189073">Kailangan ng Chrome na maglunsad ng isang panlabas na application upang mahawakan ang mga link <ph name="SCHEME"/>. Ang hiling ng link ay <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Whoa! Nag-crash ang Google Chrome. Ilunsad muli ngayon?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">I-uninstall ang Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">May available na bago, mas ligtas na bersyon ng Google Chrome.</translation>
+<translation id="5037239767309817516">Pakisara ang lahat ng mga window ng Google Chrome at ilunsad itong muli para magkaroon ng epekto ang pagbabagong ito.</translation>
 <translation id="8810218179782551669">Wika ng Google Chrome:</translation>
 <translation id="7451721381978275812">Di-wastong mga argumento. Hindi mai-install ang Google Chrome Frame sa ready mode nang hindi ini-install din ang Google Chrome.</translation>
 <translation id="5809236835374558741">Mayroon nang pinakabagong bersyon ng Google Chrome Frame ang computer na ito. Kung hindi gumagana ang software, mangyaring alisin sa pagkaka-install ang Google Chrome Frame at i-download itong muli.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Ginagamit ng Google Chrome ang iyong default na search engine, na kasalukuyang nakatakda sa <ph name="PAGE_TITLE"/>. Nais mo bang panatilihin ang iyong default na search engine?</translation>
 <translation id="7161904924553537242">Maligayang pagdating sa Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="3444832043240812445">Ipinapakita lang ng pahinang ito ang impormasyon ng iyong kamakailang mga pag-crash kung <ph name="BEGIN_LINK"/>papaganahin mo ang pag-uulat ng pag-crash<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Hindi gumagana ang Google Chrome. Ilunsad muli ngayon?</translation>
 <translation id="2681064822612051220">May nakitang sumasalungat na pag-install ng Google Chrome sa system. Paki-uninstall ito at subukang muli.</translation>
 <translation id="5318056482164160049">Plug-In Host ng Google Chrome</translation>
 <translation id="6126631249883707068">Nais mo bang i-save ng Google Chrome ang iyong password?</translation>

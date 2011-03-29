@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Google Chromea ei ole asennettu tai asennushakemistoa ei löytynyt. Lataa Google Chrome uudelleen.</translation>
 <translation id="1761870329818521071">Ei voi asentaa samaa Google Chrome -kehyksen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome -kehys ja yritä uudelleen.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="5339639696978861456">Chrome-kehys on päivitetty. Käynnistä selain uudelleen. Chromen versio: <ph name="TODO_0001"/> , Chrome-kehyksen versio: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Käyttöehdot</translation>
 <translation id="1779550429052479749">Järjestelmästä löytyi ristiriidan aiheuttava toinen Google Chromen tai Google Chrome -kehyksen asennus. Poista tuote ja yritä uudelleen.</translation>
 <translation id="3555616473548901994">Poistaminen valmis.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chromen asennushakemisto vaikuttaa olevan käytössä. Käynnistä tietokoneesi uudelleen ja yritä uudestaan.</translation>
 <translation id="8227755444512189073">Google Chrome käynnistää ulkopuolisen ohjelman käsitelläkseen <ph name="SCHEME"/> linkkiä. Pyydetty linkki on <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Hups! Google Chrome kaatui. Käynnistetäänkö uudelleen?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome -kehys</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Poista Google Chromen asennus</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Google Chromesta on saatavillaa uusi, turvallisempi versio.</translation>
+<translation id="5037239767309817516">Sulje kaikki Chrome-ikkunat ja käynnistä selain uudelleen, jotta muutos tulee voimaan.</translation>
 <translation id="8810218179782551669">Google Chromen käyttökieli:</translation>
 <translation id="7451721381978275812">Virheelliset argumentit. Google Chrome -kehystä ei voi asentaa ilman Google Chromen asennusta.</translation>
 <translation id="5809236835374558741">Tietokoneessa on jo uudempi Google Chrome -kehyksen versio. Jos ohjelma ei toimi, poista Google Chrome -kehyksen asennus ja lataa se uudelleen.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Google Chrome käyttää oletushakukonettasi, joka on tällä hetkellä <ph name="PAGE_TITLE"/>. Haluatko säilyttää oletushakukoneen samana?</translation>
 <translation id="7161904924553537242">Tervetuloa Google Chromeen</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="3444832043240812445">Tällä sivulla näkyy tietoja viimeaikaisista kaatumisista vain, jos <ph name="BEGIN_LINK"/>otat kaatumisraportit käyttöön<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome ei vastaa. Käynnistetäänkö uudelleen?</translation>
 <translation id="2681064822612051220">Järjestelmästä löytyi ristiriidan aiheuttava toinen Google Chromen asennus. Poista tuote ja yritä uudelleen.</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
 <translation id="6126631249883707068">Haluatko, että Google Chrome tallentaa salasanasi?</translation>

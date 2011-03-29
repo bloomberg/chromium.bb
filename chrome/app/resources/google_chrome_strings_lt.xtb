@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">„Google Chrome“ neįdiegta arba nepavyko rasti diegimo katalogo. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="1761870329818521071">Negalima įdiegti tos pačios „Google Chrome“ rėmelio versijos, kuri dabar paleista. Uždarykite „Google Chrome“ rėmelį ir bandykite dar kartą.</translation>
 <translation id="2040709530900803995">„Google Chrome“ atvaizdavimo priemonė</translation>
+<translation id="5339639696978861456">„Chrome Frame“ buvo atnaujinta. Paleiskite naršyklę iš naujo. „Chrome“ versija: <ph name="TODO_0001"/>, „Chrome Frame“ versija: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Paslaugų teikimo sąlygos</translation>
 <translation id="1779550429052479749">Sistemoje nustatyta prieštaringa „Google Chrome“ arba „Google Chrome“ rėmelio įdiegtis. Pašalinkite ir bandykite dar kartą.</translation>
 <translation id="3555616473548901994">Pašalinimas baigtas.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">„Google Chrome“ paslaugų programa</translation>
 <translation id="4343226815564935778">Panašu, kad „Google Chrome“ diegimo katalogas yra naudojamas. Paleiskite kompiuterį iš naujo ir mėginkite dar kartą.</translation>
 <translation id="8227755444512189073">„Google Chrome“ turi paleisti išorinę taikomąją programą <ph name="SCHEME"/> nuorodoms valdyti. Prašyta nuoroda: <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Oi! „Google Chrome“ užstrigo. Paleisti iš naujo dabar?</translation>
 <translation id="1281036569101707544">„Google Chrome“ <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">„Google Chrome Frame“</translation>
 <translation id="2653935705142821164">„Chrome“ atvaizdavimo priemonė</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Išdiegti „Google Chrome“</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/>– „Google Chrome“</translation>
 <translation id="3089968997497233615">Galima nauja, saugesnė „Google Chrome“ versija.</translation>
+<translation id="5037239767309817516">Uždarykite visus „Google Chrome“ langus ir paleiskite iš naujo, kad įsigaliotų šis pakeitimas.</translation>
 <translation id="8810218179782551669">„Google Chrome“ kalba:</translation>
 <translation id="7451721381978275812">Netinkami argumentai. „Google Chrome“ rėmelio negalima įdiegti parengties režimu taip pat neįdiegus „Google Chrome“.</translation>
 <translation id="5809236835374558741">Kompiuteryje jau įdiegta naujesnė „Google Chrome“ rėmelio versija. Jei programinė įranga neveikia, pašalinkite „Google Chrome“ rėmelį ir vėl jį atsisiųskite.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">„Google Chrome“ naudoja numatytąjį paieškos variklį, kuris šiuo metu nustatytas į·„<ph name="PAGE_TITLE"/>“. Ar norite išlaikyti numatytąjį paieškos variklį?</translation>
 <translation id="7161904924553537242">Sveiki atvykę į „Google Chrome“</translation>
 <translation id="8669527147644353129">„Google Chrome“ pagalbos priemonė</translation>
+<translation id="3444832043240812445">Šiame puslapyje rodoma informacija apie paskutines strigtis, jei <ph name="BEGIN_LINK"/>įgalinote strigčių ataskaitų teikimą<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">„Google Chrome“ neatsako. Paleisti iš naujo dabar?</translation>
 <translation id="2681064822612051220">Sistemoje nustatyta prieštaringa „Google Chrome“ įdiegtis. Pašalinkite ir bandykite dar kartą.</translation>
 <translation id="5318056482164160049">„Google Chrome“ papildinio priegloba</translation>
 <translation id="6126631249883707068">Ar norite, kad „Google Chrome“ išsaugotų slaptažodį?</translation>

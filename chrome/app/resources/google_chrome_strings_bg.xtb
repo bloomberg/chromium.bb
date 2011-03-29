@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Google Chrome не е инсталиран или не е успял да намери инсталационната директория. Моля, изтеглете Google Chrome отново.</translation>
 <translation id="1761870329818521071">Не може да се инсталира същата версия на Google Chrome Frame, която се използва понастоящем. Моля, затворете приставката и опитайте отново.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="5339639696978861456">Chrome Frame се актуализира. Моля, рестартирайте браузъра си. Версия на Chrome: <ph name="TODO_0001"/>, версия на Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Условия за ползване</translation>
 <translation id="1779550429052479749">В системата бе намерена несъвместима инсталация на Google Chrome или Google Chrome Frame. Моля, деинсталирайте я и опитайте отново.</translation>
 <translation id="3555616473548901994">Деинсталирането завърши.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Изглежда, че директорията за инсталиране на Google Chrome се използва. Моля, рестартирайте компютъра си и опитайте отново.</translation>
 <translation id="8227755444512189073">Google Chrome трябва да стартира външно приложение, за да обработва връзки от тип <ph name="SCHEME"/>. Поисканата връзка е <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Опа! Google Chrome претърпя срив. Да се стартира ли отново сега?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> на Google Chrome</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Деинсталиране на Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Налице е нова, по-сигурна версия на Google Chrome.</translation>
+<translation id="5037239767309817516">Моля, затворете всички прозорци на Google Chrome и го стартирайте отново, за да влезе в сила промяната.</translation>
 <translation id="8810218179782551669">Език на Google Chrome:</translation>
 <translation id="7451721381978275812">Невалидни аргументи. Google Chrome Frame не може да се инсталира в режим на готовност, без да се инсталира и Google Chrome.</translation>
 <translation id="5809236835374558741">На този компютър вече има по-нова версия на Google Chrome Frame. Ако софтуерът не работи, моля, деинсталирайте Google Chrome Frame и го изтеглете отново.</translation>
@@ -74,6 +77,8 @@
 <translation id="7018032895891496381">Google Chrome използва търсещата ви машина по подразбиране, която понастоящем е <ph name="PAGE_TITLE"/>. Искате ли да я запазите?</translation>
 <translation id="7161904924553537242">Добре дошли в Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="3444832043240812445">В тази страница се показва информация за скорошните сривове само ако сте <ph name="BEGIN_LINK"/>активирали изпращането на сигнали за сривове<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome блокира. Да се стартира ли отново сега?</translation>
 <translation id="2681064822612051220">В системата бе намерена несъвместима инсталация на Google Chrome. Моля, деинсталирайте я и опитайте отново.</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
 <translation id="6126631249883707068">Искате ли Google Chrome да запази паролата ви?</translation>

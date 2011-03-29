@@ -33,7 +33,7 @@
 <translation id="1420684932347524586">عذرًا! أخفق إنشاء ملف خاص RSA عشوائي.</translation>
 <translation id="2501173422421700905">شهادة معلقة</translation>
 <translation id="2313634973119803790">تقنية الشبكة:</translation>
-<translation id="2382901536325590843">لم يتم تضمين شهادة الخادم في نظام أسماء النطاقات.</translation>
+<translation id="2382901536325590843">شهادة الخادم غير مضمنة في نظام أسماء النطاقات.</translation>
 <translation id="2833791489321462313">يلزم إدخال كلمة المرور للتنبيه من حالة السكون</translation>
 <translation id="3850258314292525915">تعطيل المزامنة</translation>
 <translation id="2721561274224027017">قاعدة بيانات مفهرسة</translation>
@@ -313,7 +313,7 @@
 <translation id="542155483965056918">قبل <ph name="NUMBER_ZERO"/> دقيقة</translation>
 <translation id="3986287159189541211">خطأ HTTP <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
 <translation id="3225319735946384299">التوقيع بالرمز</translation>
-<translation id="3118319026408854581">تعليمات <ph name="PRODUCT_NAME"/></translation>
+<translation id="3118319026408854581">مساعدة <ph name="PRODUCT_NAME"/></translation>
 <translation id="2422426094670600218">&lt;unnamed&gt;</translation>
 <translation id="2012766523151663935">مراجعة البرامج الثابتة:</translation>
 <translation id="4120898696391891645">تعذّر تحميل الصفحة</translation>
@@ -807,7 +807,7 @@
 <translation id="189210018541388520">فتح في وضع ملء الشاشة</translation>
 <translation id="8795668016723474529">إضافة بطاقة ائتمان</translation>
 <translation id="5860033963881614850">إيقاف</translation>
-<translation id="3956882961292411849">جارٍ تحميل معلومات خطة البيانات للهاتف الجوال، يرجى الانتظار...</translation>
+<translation id="3956882961292411849">جارٍ تحميل معلومات خطة بيانات الجوال، يرجى الانتظار...</translation>
 <translation id="689050928053557380">شراء خطة بيانات...</translation>
 <translation id="4235618124995926194">تضمين عنوان البريد الإلكتروني هذا:</translation>
 <translation id="4874539263382920044">يجب أن يحتوي العنوان على حرف واحد على الأقل</translation>
@@ -1044,7 +1044,7 @@
 <translation id="1956050014111002555">احتوى الملف على شهادات متعددة، لم يتم استيراد أي منها:</translation>
 <translation id="302620147503052030">الزر إظهار</translation>
 <translation id="1251010908205284827">الإنجليزية (Dvorak)</translation>
-<translation id="5512074755152723588">يؤدي كتابة عنوان URL لعلامة تبويب حالية في المربع متعدد الاستخدامات إلى إعادة التركيز على علامة التبويب بدلاً من تحميلها في علامة التبويب الحالية.</translation>
+<translation id="5512074755152723588">تؤدي كتابة عنوان URL لعلامة تبويب حالية في المربع متعدد الاستخدامات إلى إعادة التركيز على علامة التبويب بدلاً من تحميلها في علامة التبويب الحالية.</translation>
 <translation id="9157595877708044936">جارٍ الإعداد...</translation>
 <translation id="1823768272150895732">الخطّ</translation>
 <translation id="4475552974751346499">البحث في التنزيلات</translation>
@@ -1134,7 +1134,7 @@
 <translation id="8766796754185931010">Kotoeri</translation>
 <translation id="7781829728241885113">أمس</translation>
 <translation id="2762402405578816341">مزامنة العناصر التالية تلقائيًا:</translation>
-<translation id="1623661092385839831">يحتوي الكمبيوتر على جهاز أمان الوحدة النمطية للنظام الأساسي الموثوق به (TPM)، والذي يستخدم لتنفيذ العديد من ميزات الأمان المهمة في نظام تشغيل Chrome.</translation>
+<translation id="1623661092385839831">يحتوي الكمبيوتر على جهاز أمان الوحدة النمطية للنظام الأساسي الموثوق به (TPM)، والذي يستخدم لتنفيذ العديد من ميزات الأمان المهمة في نظام التشغيل Chrome.</translation>
 <translation id="3359256513598016054">القيود على سياسة الشهادة</translation>
 <translation id="4509345063551561634">المجلد:</translation>
 <translation id="7596288230018319236">ستظهر جميع الصفحات التي زرتها هنا، ما عدا تلك التي فتحتها في نافذة التصفح المتخفي. يمكنك استخدام زر البحث في هذه الصفحة للبحث في جميع صفحات السجل.</translation>
@@ -1176,7 +1176,7 @@
 <translation id="6449085810994685586">&amp;مراجعة هذا الحقل إملائيًا</translation>
 <translation id="3621320549246006887">هذا المخطط تجريبي، ويمكن فيه مصادقة شهادات HTTPS ورفضها من خلال سجلات نظام أسماء النطاقات (DNSSEC الآمن). إذا ظهرت لك هذه الرسالة، فاعلم أنك قد مكنت الميزات التجريبية باستخدام خيارات سطر الأوامر. يمكنك إزالة خيارات سطر الأوامر لتجاهل هذا الخطأ.</translation>
 <translation id="50960180632766478">عدد الدقائق المتبقية: <ph name="NUMBER_FEW"/></translation>
-<translation id="3174168572213147020">الجزيرة</translation>
+<translation id="3174168572213147020">جزيرة</translation>
 <translation id="748138892655239008">القيود الأساسية على الشهادة</translation>
 <translation id="457386861538956877">المزيد...</translation>
 <translation id="8063491445163840780">تنشيط علامة التبويب 4</translation>
@@ -1400,7 +1400,7 @@
 <translation id="3950820424414687140">تسجيل الدخول</translation>
 <translation id="2840798130349147766">قواعد بيانات الويب</translation>
 <translation id="1628736721748648976">التشفير</translation>
-<translation id="1198271701881992799">لنبدأ التشغيل</translation>
+<translation id="1198271701881992799">لنبدأ</translation>
 <translation id="782590969421016895">استخدام الصفحات الحالية</translation>
 <translation id="6521850982405273806">الإبلاغ عن خطأ</translation>
 <translation id="7330933557557138066">تمكين مطابقة أفضل في سجل المربع متعدد الاستخدامات</translation>
@@ -1461,7 +1461,7 @@
 <translation id="3202578601642193415">الأحدث</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> ساعات</translation>
 <translation id="1398853756734560583">تكبير</translation>
-<translation id="8988255471271407508">لم يتم العثور على صفحة الويب في ذاكرة التخزين المؤقت. يمكن فقط تحميل موارد معينة بأمان من ذاكرة التخزين المؤقت، مثل الصفحات التي يتم إنشاؤها من البيانات التي تم تقديمها. <ph name="LINE_BREAK"/> قد يكون سبب حدوث هذا الخطأ هو تلف في ذاكرة التخزين المؤقت بسبب عملية إغلاق بشكل غير صحيح. <ph name="LINE_BREAK"/> إذا استمرت المشكلة، فجرّب محو ذاكرة التخزين المؤقت.</translation>
+<translation id="8988255471271407508">لم يتم العثور على صفحة الويب في ذاكرة التخزين المؤقت. يمكن فقط تحميل موارد معينة بأمان من ذاكرة التخزين المؤقت، مثل الصفحات التي يتم إنشاؤها من البيانات التي تم إرسالها. <ph name="LINE_BREAK"/> قد يكون سبب حدوث هذا الخطأ هو تلف في ذاكرة التخزين المؤقت بسبب عملية إغلاق بشكل غير صحيح. <ph name="LINE_BREAK"/> إذا استمرت المشكلة، فجرّب محو ذاكرة التخزين المؤقت.</translation>
 <translation id="1195977189444203128">المكون <ph name="PLUGIN_NAME"/> قديم.</translation>
 <translation id="3878562341724547165">يبدو أنك قد انتقلت لمكان آخر.  هل تريد استخدام <ph name="NEW_GOOGLE_URL"/>؟</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -1835,7 +1835,7 @@
 <translation id="5135533361271311778">تعذر إنشاء عنصر إشارة.</translation>
 <translation id="5271247532544265821">التبديل بين وضعي الصينية المبسطة/التقليدية</translation>
 <translation id="2052610617971448509">ليس لديك صناديق حماية كافية.</translation>
-<translation id="7384913436093989340">انتقل إلى <ph name="BEGIN_BOLD"/> قائمة زر مفتاح الربط &gt; التفضيلات &gt; الخيارات المتقدمة &gt; تغيير إعدادات الخادم الوكيل <ph name="END_BOLD"/> وتأكد من ضبط التهيئة على &quot;بلا خادم وكيل&quot; أو &quot;مباشر&quot;.</translation>
+<translation id="7384913436093989340">انتقل إلى <ph name="BEGIN_BOLD"/> قائمة زر مفتاح الربط &gt; الخيارات &gt; الخيارات المتقدمة &gt; تغيير إعدادات الخادم الوكيل <ph name="END_BOLD"/> وتأكد من ضبط التهيئة على &quot;بلا خادم وكيل&quot; أو &quot;مباشر&quot;.</translation>
 <translation id="6417515091412812850">تعذر التحقق مما إذا كانت الشهادة قد تم إبطالها.</translation>
 <translation id="7282743297697561153">تخزين قاعدة البيانات</translation>
 <translation id="7347702518873971555">خطة الشراء</translation>
@@ -1858,7 +1858,7 @@
 <translation id="7907591526440419938">فتح ملف</translation>
 <translation id="2568774940984945469">حاوية شريط المعلومات</translation>
 <translation id="8971063699422889582">انتهت صلاحية شهادة الخادم.</translation>
-<translation id="3202812515056344404">كلمة المرور أقصر مما يجب أو غير صحيحة.</translation>
+<translation id="3202812515056344404">كلمة المرور قصيرة جدًا أو غير صحيحة.</translation>
 <translation id="8281596639154340028">استخدام <ph name="HANDLER_TITLE"/></translation>
 <translation id="7134098520442464001">لتصغير النص</translation>
 <translation id="21133533946938348">إضافة علامة التبويب</translation>
@@ -1965,6 +1965,7 @@
 <translation id="3031433885594348982">الاتصال بالموقع <ph name="DOMAIN"/> محميّ بنظام تشفير ضعيف.</translation>
 <translation id="4047345532928475040">غير متوفّر</translation>
 <translation id="3220630151624181591">تنشيط علامة التبويب 2</translation>
+<translation id="8898139864468905752">نظرة عامة على علامة التبويب</translation>
 <translation id="2799223571221894425">إعادة تشغيل</translation>
 <translation id="5771816112378578655">الإعداد قيد التقديم...</translation>
 <translation id="1197979282329025000">حدث خطأ أثناء استرداد إمكانيات الطابعة للطابعة <ph name="PRINTER_NAME"/>. تعذر تسجيل هذه الطابعة في <ph name="CLOUD_PRINT_NAME"/>.</translation>
@@ -2427,7 +2428,7 @@
 <translation id="1466288268059179648">تحقق من اتصالك بالإنترنت. أعد تشغيل أي أجهزة توجيه أو أجهزة مودم أو أجهزة أخرى من أجهزة الشبكات ربما تستخدمها.</translation>
 <translation id="340485819826776184">استخدام خدمة تنبؤ للمساعدة في تكملة عمليات البحث وعناوين URL التي تمت كتابتها في شريط العنوان</translation>
 <translation id="4074900173531346617">شهادة توقيع البريد الإلكتروني</translation>
-<translation id="6165508094623778733">لمزيد من المعلومات</translation>
+<translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="9052208328806230490">لقد سجّلت طابعاتك في <ph name="CLOUD_PRINT_NAME"/> باستخدام الحساب <ph name="EMAIL"/></translation>
 <translation id="822618367988303761">قبل <ph name="NUMBER_TWO"/> يوم</translation>
 <translation id="7928333295097642153"><ph name="HOUR"/>:<ph name="MINUTE"/> متبقية</translation>
@@ -2781,6 +2782,7 @@
 <translation id="21381969153622804">إجراء</translation>
 <translation id="1971538228422220140">حذف ملفات تعريف الارتباط وبيانات الموقع والمكونات الإضافية الأخرى</translation>
 <translation id="883487340845134897">تبديل مفتاح البحث ومفتاح التحكم (Control) الأيسر</translation>
+<translation id="5692957461404855190">مرر أصابعك الثلاثة لأسفل على لوحة التعقب للاطلاع على نظرة عامة حول جميع علامات التبويب. انقر على صورة مصغرة لتحديدها. وهي تعمل بطريقة ممتازة في وضع ملء الشاشة.</translation>
 <translation id="1375215959205954975">جديد! تهيئة مزامنة كلمة المرور</translation>
 <translation id="5183088099396036950">تعذر الاتصال بالخادم</translation>
 <translation id="4469842253116033348">تعطيل التنبيهات من الموقع <ph name="SITE"/></translation>
@@ -2801,7 +2803,7 @@
 <translation id="4508765956121923607">عرض الم&amp;صدر</translation>
 <translation id="5975083100439434680">تصغير</translation>
 <translation id="8080048886850452639">نسخ &amp;عنوان URL للصوت</translation>
-<translation id="2817109084437064140">استيراد شهادات وإلزام الجهاز بها...</translation>
+<translation id="2817109084437064140">استيراد شهادات وربط الجهاز بها...</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET"/>) <ph name="LONGTZNAME"/> (<ph name="EXEMPLARCITY"/>)</translation>
 <translation id="619398760000422129">المكونات الإضافية (على سبيل المثال Adobe Flash Player وQuicktime وغير ذلك)</translation>
 <translation id="5849869942539715694">إنشاء حزمة للإضافة...</translation>

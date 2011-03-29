@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">Escolher arquivo</translation>
 <translation id="2761667185364618470">Marque esta caixa se deseja continuar.</translation>
 <translation id="8964020114565522021">Arraste o arquivo até aquil</translation>
+<translation id="5129723458012748440">O plug-in <ph name="PLUGIN"/> não está instalado.</translation>
 <translation id="838869780401515933">marcar</translation>
 <translation id="2846343701378493991">1024 (Nível médio)</translation>
 <translation id="5476505524087279545">desmarcar</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">Preencha este campo.</translation>
 <translation id="5253117816378681419">Confirme se você deseja instalar o plug-in do <ph name="PLUGIN"/>. Você deve instalar apenas plug-ins em que você confia.</translation>
 <translation id="6663448176199120256">Pesquisas recentes</translation>
+<translation id="7335060848622232389">A instalação de plug-ins foi desativada.</translation>
 <translation id="2597378329261239068">Este documento está protegido por senha.  Digite a senha.</translation>
 <translation id="5466621249238537318">Selecione um ou mais arquivos.</translation>
 <translation id="8750798805984357768">Selecione uma das opções.</translation>
 <translation id="7740050170769002709">Conteúdo HTML</translation>
 <translation id="2226276347425096477">Reduza este texto para <ph name="MAX_CHARACTERS"/> caracteres ou menos (você está usando <ph name="CURRENT_LENGTH"/> caracteres).</translation>
+<translation id="1639239467298939599">Carregando</translation>
 <translation id="2908441821576996758">Insira uma lista de endereços de e-mail separados por vírgula.</translation>
 <translation id="5939518447894949180">Redefinir</translation>
 <translation id="835897206747267392">Valor inválido.</translation>
+<translation id="3851140433852960970">Não há plug-ins disponíveis para exibir este conteúdo.</translation>
 <translation id="1842960171412779397">selecione</translation>
 <translation id="3450233048674729344">O valor deve ser menor ou igual a <ph name="MAXIMUM"/>.</translation>
+<translation id="9198010615634362518">O plug-in exigido não está instalado.</translation>
 <translation id="7638452146404718955">Clique aqui para fazer download do plug-in</translation>
 <translation id="6119846243427417423">ativar</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> arquivos</translation>

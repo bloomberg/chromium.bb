@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">בחר קובץ</translation>
 <translation id="2761667185364618470">סמן תיבה זו אם אתה רוצה להמשיך.</translation>
 <translation id="8964020114565522021">גרור את הקובץ לכאן</translation>
+<translation id="5129723458012748440">הפלאגין <ph name="PLUGIN"/> אינו מותקן.</translation>
 <translation id="838869780401515933">סמן</translation>
 <translation id="2846343701378493991">1024 (Medium Grade)</translation>
 <translation id="5476505524087279545">בטל סימון</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">מלא שדה זה.</translation>
 <translation id="5253117816378681419">אשר שברצונך להתקין את הפלאגין <ph name="PLUGIN"/>. יש להתקין רכיבי פלאגין שאתה בוטח בהם בלבד.</translation>
 <translation id="6663448176199120256">חיפושים אחרונים</translation>
+<translation id="7335060848622232389">התקנת יישומי הפלאגין הושבתה.</translation>
 <translation id="2597378329261239068">מסמך זה מוגן באמצעות סיסמה. הזן סיסמה.</translation>
 <translation id="5466621249238537318">בחר קובץ אחד או יותר.</translation>
 <translation id="8750798805984357768">בחר אחת מהאפשרויות הבאות.</translation>
 <translation id="7740050170769002709">תוכן HTML</translation>
 <translation id="2226276347425096477">קצר טקסט זה ל-<ph name="MAX_CHARACTERS"/> תווים או פחות (אתה משתמש כעת ב-<ph name="CURRENT_LENGTH"/> תווים).</translation>
+<translation id="1639239467298939599">טוען</translation>
 <translation id="2908441821576996758">הזן רשימה של כתובות דוא&quot;ל המופרדות באמצעות פסיקים.</translation>
 <translation id="5939518447894949180">אפס</translation>
 <translation id="835897206747267392">ערך לא חוקי.</translation>
+<translation id="3851140433852960970">אין פלאגין זמין להצגת תוכן זה.</translation>
 <translation id="1842960171412779397">בחר</translation>
 <translation id="3450233048674729344">הערך חייב להיות קטן מ-<ph name="MAXIMUM"/> או שווה לו.</translation>
+<translation id="9198010615634362518">הפלאגין הדרוש אינו מותקן.</translation>
 <translation id="7638452146404718955">לחץ כאן להורדת פלאגין</translation>
 <translation id="6119846243427417423">הפעל</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> קבצים</translation>

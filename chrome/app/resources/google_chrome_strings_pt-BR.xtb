@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">O Google Chrome não está instalado ou não foi possível localizar o diretório de instalação. Baixe o Google Chrome novamente.</translation>
 <translation id="1761870329818521071">Não é possível instalar a mesma versão do Frame do Google Chrome que está em execução. Feche o Frame do Google Chrome e tente novamente.</translation>
 <translation id="2040709530900803995">Visualizador do Google Chrome</translation>
+<translation id="5339639696978861456">O Frame do Google Chrome foi atualizado. Reinicie seu navegador. Versão do Google Chrome: <ph name="TODO_0001"/>, versão do Frame do Google Chrome: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Termos de Serviço</translation>
 <translation id="1779550429052479749">Foi encontrada uma instalação conflituosa do Frame do Google Chrome ou do Google Chrome no sistema. Desinstale-o e tente novamente.</translation>
 <translation id="3555616473548901994">Desinstalação concluída.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Utilitário do Google Chrome</translation>
 <translation id="4343226815564935778">Aparentemente o diretório de instalação do Google Chrome está sendo utilizado. Reinicie o computador e tente novamente.</translation>
 <translation id="8227755444512189073">O Google Chrome precisa iniciar um aplicativo externo para lidar com  os links <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Nossa! Houve uma falha no Google Chrome. Reiniciar agora?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> do Google Chrome</translation>
 <translation id="1697213158865901863">Frame do Google Chrome</translation>
 <translation id="2653935705142821164">Visualizador do Google Chrome</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Há uma versão nova e mais segura do Google Chrome disponível.</translation>
+<translation id="5037239767309817516">Feche todas as janelas do Google Chrome e reinicie-o para que essa alteração entre em vigor.</translation>
 <translation id="8810218179782551669">Idioma do Google Chrome:</translation>
 <translation id="7451721381978275812">Argumentos inválidos. O Frame do Google Chrome não pode ser instalado em modo pronto sem a instalação do Google Chrome.</translation>
 <translation id="5809236835374558741">Este computador já tem uma versão mais recente do Frame do Google Chrome. Se o software não estiver funcionando, desinstale o Frame do Google Chrome e faça o download novamente.</translation>
@@ -74,6 +77,8 @@ Se continuar, o Chrome não procurará nenhuma outra correspondência incorreta 
 <translation id="7018032895891496381">O Google Chrome usa o seu mecanismo de pesquisa padrão, que no momento está definido como <ph name="PAGE_TITLE"/>. Deseja manter o seu mecanismo de pesquisa padrão?</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
 <translation id="8669527147644353129">Auxiliar do Google Chrome</translation>
+<translation id="3444832043240812445">Esta página mostra apenas informações sobre suas falhas recentes se você <ph name="BEGIN_LINK"/>ativar relatórios de erros<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">O Google Chrome não responde. Reiniciar agora?</translation>
 <translation id="2681064822612051220">Foi encontrada uma instalação conflituosa do Google Chrome no sistema. Desinstale-o e tente novamente.</translation>
 <translation id="5318056482164160049">Host do plug-in do Google Chrome</translation>
 <translation id="6126631249883707068">Deseja que o Google Chrome salve a sua senha?</translation>
@@ -83,7 +88,7 @@ Se continuar, o Chrome não procurará nenhuma outra correspondência incorreta 
 <translation id="8865765905101981392">Navegador da internet</translation>
 <translation id="8776515774046280928">O Google Chrome já está instalado e disponível para todos os usuários deste computador. Se você desejar instalar o Google Chrome para um usuário específico, primeiro desinstale a versão para sistema instalada pelo administrador.</translation>
 <translation id="2189123953385179981">O Google ChromeOS não suporta a inicialização de um aplicativo externo para manipular links de <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
-<translation id="8205111949707227942">Opcional: ajude a melhorar o sistema operacional do Google Chrome enviando estatísticas de uso e relatórios de problemas para o Google.</translation>
+<translation id="8205111949707227942">Opcional: ajude a melhorar este sistema operacional enviando-nos estatísticas de uso e relatórios de problemas.</translation>
 <translation id="7196020411877309443">Por que estou vendo este aviso?</translation>
 <translation id="2769762047821873045">O Google Chrome não é o seu navegador padrão.</translation>
 <translation id="7825851276765848807">Houve uma falha na instalação devido a um erro não-especificado. Faça o download do Google Chrome novamente.</translation>

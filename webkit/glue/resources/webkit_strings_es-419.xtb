@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">Seleccionar archivo</translation>
 <translation id="2761667185364618470">Controla esta casilla si deseas continuar.</translation>
 <translation id="8964020114565522021">Arrastre el archivo hasta aquí</translation>
+<translation id="5129723458012748440">El complemento <ph name="PLUGIN"/> no está instalado.</translation>
 <translation id="838869780401515933">marcar</translation>
 <translation id="2846343701378493991">1024 (Mediano)</translation>
 <translation id="5476505524087279545">desmarcar</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">Completa este campo</translation>
 <translation id="5253117816378681419">Confirma que deseas instalar el complemento <ph name="PLUGIN"/>. Sólo deberías instalar los complementos confiables.</translation>
 <translation id="6663448176199120256">Búsquedas recientes</translation>
+<translation id="7335060848622232389">Se ha desactivado la instalación de complementos.</translation>
 <translation id="2597378329261239068">Este documento está protegido por contraseña. Ingresa una contraseña.</translation>
 <translation id="5466621249238537318">Selecciona uno o más archivos.</translation>
 <translation id="8750798805984357768">Selecciona una de estas opciones.</translation>
 <translation id="7740050170769002709">Contenido HTML</translation>
 <translation id="2226276347425096477">Acorta este texto a <ph name="MAX_CHARACTERS"/> caracteres o menos (actualmente estás usando <ph name="CURRENT_LENGTH"/> caracteres).</translation>
+<translation id="1639239467298939599">Cargando</translation>
 <translation id="2908441821576996758">Ingresa una lista de direcciones de correo electrónico separadas por coma</translation>
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="835897206747267392">Valor no válido.</translation>
+<translation id="3851140433852960970">Ningún complemento disponible para mostrar este contenido.</translation>
 <translation id="1842960171412779397">seleccionar</translation>
 <translation id="3450233048674729344">El valor debe ser menor de o igual a <ph name="MAXIMUM"/></translation>
+<translation id="9198010615634362518">El complemento requerido no está instalado.</translation>
 <translation id="7638452146404718955">Haz clic aquí para descargar el complemento</translation>
 <translation id="6119846243427417423">activar</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> archivos</translation>

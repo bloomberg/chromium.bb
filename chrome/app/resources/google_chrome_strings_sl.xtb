@@ -16,6 +16,7 @@
 <translation id="8970027151245482499">Google Chrome ni nameščen ali pa mu ni uspelo najti namestitvenega imenika. Ponovno prenesite program Google Chrome.</translation>
 <translation id="1761870329818521071">Ni mogoče namestiti različice programa Google Chrome Frame, enake tisti, ki se trenutno izvaja. Zaprite Google Chrome Frame in poskusite znova.</translation>
 <translation id="2040709530900803995">Upodabljalnik za Google Chrome</translation>
+<translation id="5339639696978861456">Chrome Frame je bil posodobljen. Znova zaženite brskalnik. Različica Chroma: <ph name="TODO_0001"/>, Različica Chrome Framea: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Pogoji storitve</translation>
 <translation id="1779550429052479749">V sistemu je bila odkrita namestitev Google Chroma ali vtičnika Google Chrome Frame, ki je v sporu. Odstranite ga in poskusite znova.</translation>
 <translation id="3555616473548901994">Odstranitev je končana.</translation>
@@ -26,6 +27,7 @@
 <translation id="5744005218040929396">Orodje za Google Chrome</translation>
 <translation id="4343226815564935778">Videti je, da je namestitveni imenik za Google Chrome že v uporabi. Ponovno zaženite računalnik in poskusite znova.</translation>
 <translation id="8227755444512189073">Google Chrome mora zagnati zunanjo aplikacijo, da bo lahko obravnaval povezave <ph name="SCHEME"/>. Zahtevana povezava je <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Opa! Google Chrome se je zrušil. Ga želite znova zagnati?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Upodabljalnik za Chrome</translation>
@@ -33,6 +35,7 @@
 <translation id="3889417619312448367">Odstrani Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> – Google Chrome</translation>
 <translation id="3089968997497233615">Na voljo je nova, varnejša različica Google Chroma.</translation>
+<translation id="5037239767309817516">Zaprite vsa okna brskalnika Google Chrome in ga znova zaženite, da uveljavite spremembe.</translation>
 <translation id="8810218179782551669">Jezik za Google Chrome:</translation>
 <translation id="7451721381978275812">Neveljavni argumenti. Vtičnika Google Chrome Frame ni mogoče namestiti v načinu pripravljenosti brez namestitve Google Chroma.</translation>
 <translation id="5809236835374558741">V tem računalniku je že nameščena novejša različica programa Google Chrome Frame. Če programska oprema ne deluje, odstranite Google Chrome Frame in ga znova prenesite.</translation>
@@ -73,6 +76,8 @@
 <translation id="7018032895891496381">Google Chrome uporablja privzet iskalnik, ki je trenutno <ph name="PAGE_TITLE"/>. Ali želite obdržati privzet iskalnik?</translation>
 <translation id="7161904924553537242">Dobrodošli v brskalniku Google Chrome</translation>
 <translation id="8669527147644353129">Pomočnik za Google Chrome</translation>
+<translation id="3444832043240812445">Ta stran prikazuje informacije o zadnjih zrušitvah, samo če <ph name="BEGIN_LINK"/>omogočite poročanje o zrušitvah<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome se ne odziva. Ga želite znova zagnati?</translation>
 <translation id="2681064822612051220">V sistemu je bila odkrita namestitev Google Chroma v sporu. Odstranite ga in poskusite znova.</translation>
 <translation id="5318056482164160049">Gostitelj za vtičnike za Google Chrome</translation>
 <translation id="6126631249883707068">Ali želite, da Google Chrome shrani vaše geslo?</translation>

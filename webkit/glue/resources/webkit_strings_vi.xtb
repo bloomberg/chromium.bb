@@ -10,7 +10,7 @@
 <translation id="372362261556059955">Cần trình cắm bổ sung</translation>
 <translation id="4202807286478387388">chuyển</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
-<translation id="7658239707568436148">Huỷ</translation>
+<translation id="7658239707568436148">Hủy</translation>
 <translation id="795667975304826397">Không có tệp nào được chọn</translation>
 <translation id="1416462845279468967">Cài đặt trình cắm không thành công</translation>
 <translation id="8141602879876242471">Đây là chỉ mục có thể tìm kiếm. Nhập từ khoá tìm kiếm vào:</translation>
@@ -39,7 +39,7 @@
 <translation id="2507943997699731163">Vui lòng điền vào trường này.</translation>
 <translation id="5253117816378681419">Vui lòng xác nhận rằng bạn muốn cài đặt trình cắm <ph name="PLUGIN"/>. Bạn chỉ nên cài đặt những trình cắm mà bạn tin tưởng.</translation>
 <translation id="6663448176199120256">Tìm kiếm Gần đây</translation>
-<translation id="7335060848622232389">Cài đặt plug-in đã bị vô hiệu.</translation>
+<translation id="7335060848622232389">Cài đặt plug-in đã bị tắt.</translation>
 <translation id="2597378329261239068">Tài liệu này được bảo vệ bằng mật khẩu. Vui lòng nhập mật khẩu.</translation>
 <translation id="5466621249238537318">Vui lòng chọn một hoặc nhiều tệp.</translation>
 <translation id="8750798805984357768">Vui lòng chọn một trong các tùy chọn sau.</translation>
