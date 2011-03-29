@@ -195,10 +195,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
 // Test for crbug.com/14505. This tests that chrome:// urls are still functional
 // after download of a file while viewing another chrome://.
-// Hangs flakily in Win, http://crbug.com/45040, and started hanging on Linux,
-// Mac and ChromeOS, http://crbug.com/77762.
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
-                       DISABLED_ChromeURLAfterDownload) {
+                       ChromeURLAfterDownload) {
   GURL downloads_url("chrome://downloads");
   GURL extensions_url("chrome://extensions");
   FilePath zip_download;
@@ -206,20 +204,26 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   zip_download = zip_download.AppendASCII("zip").AppendASCII("test.zip");
   GURL zip_url = net::FilePathToFileURL(zip_download);
 
+  LOG(INFO) << "Navigating to chrome URL.";
   ui_test_utils::NavigateToURL(browser(), downloads_url);
+  LOG(INFO) << "Navigating to zip URL.";
   ui_test_utils::NavigateToURL(browser(), zip_url);
+  LOG(INFO) << "Waiting for the zip download to complete.";
   ui_test_utils::WaitForDownloadCount(
       browser()->profile()->GetDownloadManager(), 1);
+  LOG(INFO) << "Download complete. Navigating to the extensions URL.";
   ui_test_utils::NavigateToURL(browser(), extensions_url);
 
   TabContents *contents = browser()->GetSelectedTabContents();
   ASSERT_TRUE(contents);
   bool webui_responded = false;
+  LOG(INFO) << "Executing javascript.";
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       contents->render_view_host(),
       L"",
       L"window.domAutomationController.send(window.webui_responded_);",
       &webui_responded));
+  LOG(INFO) << "Javascript executed.";
   EXPECT_TRUE(webui_responded);
 }
 
