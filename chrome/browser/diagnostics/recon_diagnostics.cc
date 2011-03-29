@@ -321,7 +321,7 @@ class DiskSpaceTest : public DiagnosticTest {
 // Checks that a given json file can be correctly parsed.
 class JSONTest : public DiagnosticTest {
  public:
-  JSONTest(const FilePath& path, const string16 name, int64 max_file_size)
+  JSONTest(const FilePath& path, const string16& name, int64 max_file_size)
       : DiagnosticTest(name), path_(path), max_file_size_(max_file_size) {
   }
 

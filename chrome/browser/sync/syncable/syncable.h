@@ -810,11 +810,11 @@ class Directory {
 
   const std::string& name() const { return kernel_->name; }
 
-  // (Account) Store birthday is opaque to the client,
-  // so we keep it in the format it is in the proto buffer
-  // in case we switch to a binary birthday later.
+  // (Account) Store birthday is opaque to the client, so we keep it in the
+  // format it is in the proto buffer in case we switch to a binary birthday
+  // later.
   std::string store_birthday() const;
-  void set_store_birthday(std::string store_birthday);
+  void set_store_birthday(const std::string& store_birthday);
 
   std::string GetAndClearNotificationState();
   void SetNotificationState(const std::string& notification_state);

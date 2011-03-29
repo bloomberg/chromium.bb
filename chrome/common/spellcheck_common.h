@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,12 +25,6 @@ std::string GetCorrespondingSpellCheckLanguage(const std::string& language);
 
 // Get SpellChecker supported languages.
 void SpellCheckLanguages(std::vector<std::string>* languages);
-
-
-// This function returns ll (language code) from ll-RR where 'RR' (region
-// code) is redundant. However, if the region code matters, it's preserved.
-// That is, it returns 'hi' and 'en-GB' for 'hi-IN' and 'en-GB' respectively.
-std::string GetLanguageFromLanguageRegion(std::string input_language);
 
 }  // namespace SpellCheckCommon
 
