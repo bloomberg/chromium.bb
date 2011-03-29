@@ -7,28 +7,41 @@
 #pragma once
 
 #include <list>
+#include <map>
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/string16.h"
 #include "chrome/browser/autofill/autofill_download.h"
-#include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/field_types.h"
+#include "chrome/browser/autofill/form_structure.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
-class AutofillCCInfoBarDelegate;
+class AutofillField;
 class AutofillProfile;
 class AutofillMetrics;
 class CreditCard;
-class FormStructure;
+class PersonalDataManager;
 class PrefService;
 class RenderViewHost;
+class TabContents;
+
+struct ViewHostMsg_FrameNavigate_Params;
+
+namespace IPC {
+class Message;
+}
 
 namespace webkit_glue {
 struct FormData;
 struct FormField;
-}  // namespace webkit_glue
+}
 
 // Manages saving and restoring the user's personal information entered into web
 // forms.

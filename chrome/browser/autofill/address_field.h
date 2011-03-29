@@ -8,7 +8,10 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
+#include "base/string16.h"
 #include "chrome/browser/autofill/autofill_type.h"
+#include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_field.h"
 
 class AutofillField;
@@ -28,7 +31,7 @@ class AddressField : public FormField {
 
   // Returns true if this is a full address as opposed to an address fragment
   // such as a stand-alone ZIP code.
-  bool IsFullAddress() { return address1_ != NULL; }
+  bool IsFullAddress();
 
  private:
   AddressField();

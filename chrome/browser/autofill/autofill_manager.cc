@@ -4,22 +4,31 @@
 
 #include "chrome/browser/autofill/autofill_manager.h"
 
+#include <stddef.h>
+
 #include <limits>
 #include <map>
 #include <set>
 #include <utility>
 
-#include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/string16.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
+#include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
+#include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/autofill/autofill_type.h"
+#include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/select_control_handler.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/autofill_messages.h"
@@ -27,10 +36,13 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/common/notification_details.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
+#include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
+#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "ipc/ipc_message_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"

@@ -6,12 +6,19 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_CC_INFOBAR_DELEGATE_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "content/browser/tab_contents/navigation_controller.h"
+#include "webkit/glue/window_open_disposition.h"
 
 class CreditCard;
 class PersonalDataManager;
+class SkBitmap;
+class TabContents;
 
 // An InfoBar delegate that enables the user to allow or deny storing credit
 // card information gathered from a form submission.

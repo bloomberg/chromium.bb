@@ -4,9 +4,12 @@
 
 #include "chrome/browser/autofill/autofill_country.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <map>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util-inl.h"
@@ -14,13 +17,14 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "unicode/coll.h"
 #include "unicode/locid.h"
-#include "unicode/sortkey.h"
 #include "unicode/ucol.h"
 #include "unicode/uloc.h"
+#include "unicode/unistr.h"
+#include "unicode/urename.h"
+#include "unicode/utypes.h"
 
 namespace {
 

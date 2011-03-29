@@ -4,6 +4,8 @@
 
 #include "chrome/browser/autofill/address_field.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
@@ -150,6 +152,10 @@ AddressType AddressField::FindType() const {
   // and Ecom_ShipTo contain "bill" and "ship" anyway.
   string16 name = StringToLowerASCII(address1_->name);
   return AddressTypeFromText(name);
+}
+
+bool AddressField::IsFullAddress() {
+  return address1_ != NULL;
 }
 
 AddressField::AddressField()

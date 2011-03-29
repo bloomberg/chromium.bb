@@ -11,6 +11,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/autofill/autofill_type.h"
+#include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_group.h"
 
 // A form group that stores address information.
