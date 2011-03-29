@@ -27,6 +27,7 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/webui/web_ui.h"
 
 RenderViewHostDelegateViewHelper::RenderViewHostDelegateViewHelper() {}
 
@@ -78,7 +79,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
     int route_id,
     Profile* profile,
     SiteInstance* site,
-    WebUITypeID webui_type,
+    WebUI::TypeID webui_type,
     RenderViewHostDelegate* opener,
     WindowContainerType window_container_type,
     const string16& frame_name) {

@@ -10,14 +10,13 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/generic_handler.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/webui/generic_handler.h"
 
 namespace {
 
@@ -58,6 +57,8 @@ WebUI::~WebUI() {
 }
 
 // WebUI, public: -------------------------------------------------------------
+
+const WebUI::TypeID WebUI::kNoWebUI = NULL;
 
 void WebUI::ProcessWebUIMessage(
     const ExtensionHostMsg_DomMessage_Params& params) {

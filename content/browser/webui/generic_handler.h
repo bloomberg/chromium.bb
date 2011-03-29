@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_GENERIC_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_GENERIC_HANDLER_H_
+#ifndef CONTENT_BROWSER_WEBUI_GENERIC_HANDLER_H_
+#define CONTENT_BROWSER_WEBUI_GENERIC_HANDLER_H_
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
@@ -25,4 +25,4 @@ class GenericHandler : public WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(GenericHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_GENERIC_HANDLER_H_
+#endif  // CONTENT_BROWSER_WEBUI_GENERIC_HANDLER_H_

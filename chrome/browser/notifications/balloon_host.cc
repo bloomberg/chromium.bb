@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -147,7 +148,7 @@ void BalloonHost::CreateNewWindow(
       route_id,
       balloon_->profile(),
       site_instance_.get(),
-      WebUIFactory::GetWebUIType(balloon_->profile(),
+      ChromeWebUIFactory::GetInstance()->GetWebUIType(balloon_->profile(),
           balloon_->notification().content_url()),
       this,
       params.window_container_type,

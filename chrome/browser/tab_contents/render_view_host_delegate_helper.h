@@ -9,7 +9,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "content/browser/webui/web_ui_factory.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/gfx/rect.h"
@@ -41,7 +41,7 @@ class RenderViewHostDelegateViewHelper {
       int route_id,
       Profile* profile,
       SiteInstance* site,
-      WebUITypeID webui_type,
+      WebUI::TypeID webui_type,
       RenderViewHostDelegate* opener,
       WindowContainerType window_container_type,
       const string16& frame_name);

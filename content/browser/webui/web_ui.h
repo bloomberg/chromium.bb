@@ -144,6 +144,14 @@ class WebUI {
 
   TabContents* tab_contents() const { return tab_contents_; }
 
+  // An opaque identifier used to identify a WebUI. This can only be compared to
+  // kNoWebUI or other WebUI types. See GetWebUIType.
+  typedef void* TypeID;
+
+  // A special WebUI type that signifies that a given page would not use the
+  // Web UI system.
+  static const TypeID kNoWebUI;
+
  protected:
   void AddMessageHandler(WebUIMessageHandler* handler);
 

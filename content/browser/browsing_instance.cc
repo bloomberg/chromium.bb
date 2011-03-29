@@ -9,8 +9,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/webui/web_ui_factory.h"
+#include "content/common/content_client.h"
 
 // static
 BrowsingInstance::ProfileSiteInstanceMap
@@ -39,9 +41,10 @@ bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
     return true;
 
   // DevTools pages have WebUI type but should not reuse the same host.
-  if (WebUIFactory::UseWebUIForURL(profile_, url) &&
-      !url.SchemeIs(chrome::kChromeDevToolsScheme))
+  if (content::WebUIFactory::Get()->UseWebUIForURL(profile_, url) &&
+      !url.SchemeIs(chrome::kChromeDevToolsScheme)) {
     return true;
+  }
 
   // In all other cases, don't use process-per-site logic.
   return false;
