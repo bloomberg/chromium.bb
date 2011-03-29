@@ -70,8 +70,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_AudioSampleRate, 4);
 /**
  * The PPB_AudioConfig interface contains pointers to several functions for
  * establishing your audio configuration within the browser. This interface
- * only supports stereo * 16bit output. This class is not mutable, therefore
- * it is okay to access instances from different threads.
+ * only supports stereo * 16bit output.
  */
 struct PPB_AudioConfig {
   /**

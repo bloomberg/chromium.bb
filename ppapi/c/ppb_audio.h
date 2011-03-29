@@ -15,8 +15,8 @@
 
 /**
  * @file
- * This file defines the PPB_Audio interface for handling audio resources on
- * the browser. Refer to the
+ * This file defines the PPB_Audio interface, which provides realtime stereo
+ * audio streaming capabilities. Please refer to the
  * <a href="/chrome/nativeclient/docs/audio.html">Pepper Audio API Code
  * Walkthrough</a> for information on using this interface.
  */
@@ -28,7 +28,8 @@
 
 /**
  * PPB_Audio_Callback defines the type of an audio callback function used to
- * fill the audio buffer with data.
+ * fill the audio buffer with data. Please see the Create() function in the
+ * PPB_Audio interface for more details on this callback.
  */
 typedef void (*PPB_Audio_Callback)(void* sample_buffer,
                                    uint32_t buffer_size_in_bytes,
@@ -43,22 +44,29 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  */
 /**
  * The PPB_Audio interface contains pointers to several functions for handling
- * audio resources on the browser. This interface is a callback-based audio
- * interface. Users of audio must set the callback that will be called each time
- * that the buffer needs to be filled.
+ * audio resources. Please see descriptions for each PPB_Audio and
+ * PPB_AudioConfig function for more details.
  *
- * A C++ example:
+ * A C example using PPB_Audio and PPB_AudioConfig:
  *
  * void audio_callback(void* sample_buffer,
  *                     uint32_t buffer_size_in_bytes,
  *                     void* user_data) {
- *   ... fill in the buffer with samples ...
+ *   ... quickly fill in the buffer with samples and return to caller ...
  *  }
  *
- * uint32_t obtained;
- * AudioConfig config(PP_AUDIOSAMPLERATE_44100, 4096, &obtained);
- * Audio audio(config, audio_callback, NULL);
- * audio.StartPlayback();
+ * ...Assume the application has cached the audio configuration interface in
+ * |audio_config_interface| and the audio interface in |audio_interface|...
+ *
+ * uint32_t count = audio_config_interface->RecommendSampleFrameCount(
+ *     PP_AUDIOSAMPLERATE_44100, 4096);
+ * PP_Resource pp_audio_config = audio_config_interface->CreateStereo16Bit(
+ *     pp_instance, PP_AUDIOSAMPLERATE_44100, count);
+ * PP_Resource pp_audio = audio_interface->Create(pp_instance, pp_audio_config,
+ *     audio_callback, NULL);
+ * audio_interface->StartPlayback(pp_audio);
+ *
+ * ...audio_callback() will now be periodically invoked on a seperate thread...
  */
 struct PPB_Audio {
  /**
