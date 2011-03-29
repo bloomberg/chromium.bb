@@ -52,6 +52,8 @@ class MediaFormat {
   bool GetAsReal(const std::string& key, double* out_value) const;
   bool GetAsString(const std::string& key, std::string* out_value) const;
 
+  bool operator==(MediaFormat const& other) const;
+
  private:
   // Helper to return a value.
   Value* GetValue(const std::string& key) const;

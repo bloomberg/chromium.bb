@@ -19,6 +19,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/message_loop_factory_impl.h"
 #include "media/base/pipeline_impl.h"
+#include "media/filters/adaptive_demuxer.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
@@ -111,8 +112,10 @@ bool InitPipeline(MessageLoop* message_loop,
   // Create our filter factories.
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
-  collection->SetDemuxerFactory(new media::FFmpegDemuxerFactory(
-      new media::FileDataSourceFactory(), message_loop));
+  collection->SetDemuxerFactory(
+      new media::AdaptiveDemuxerFactory(
+          new media::FFmpegDemuxerFactory(
+              new media::FileDataSourceFactory(), message_loop)));
   collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
       message_loop_factory->GetMessageLoop("AudioDecoderThread")));
   if (CommandLine::ForCurrentProcess()->HasSwitch(

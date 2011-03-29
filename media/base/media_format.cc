@@ -86,4 +86,8 @@ void MediaFormat::ReleaseValue(const std::string& key) {
   }
 }
 
+bool MediaFormat::operator==(MediaFormat const& other) const {
+  return value_map_ == other.value_map_;
+}
+
 }  // namespace media

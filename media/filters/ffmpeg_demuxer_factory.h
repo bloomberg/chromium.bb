@@ -22,6 +22,7 @@ class FFmpegDemuxerFactory : public DemuxerFactory {
                        MessageLoop* loop);
   virtual ~FFmpegDemuxerFactory();
 
+  // DemuxerFactory methods.
   virtual void Build(const std::string& url, BuildCallback* cb);
   virtual DemuxerFactory* Clone() const;
 
@@ -29,7 +30,7 @@ class FFmpegDemuxerFactory : public DemuxerFactory {
   scoped_ptr<DataSourceFactory> data_source_factory_;
   MessageLoop* loop_;  // Unowned.
 
-  DISALLOW_COPY_AND_ASSIGN(FFmpegDemuxerFactory);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(FFmpegDemuxerFactory);
 };
 
 }  // namespace media
