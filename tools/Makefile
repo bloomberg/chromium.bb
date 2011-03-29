@@ -642,7 +642,7 @@ glibc-adhoc-files: | SRC/glibc SRC/linux-headers-for-nacl
 SCONS_DESTINATIONS_NOLIB=\
  DESTINATION_ROOT=tools/BUILD/build-extra_sdk-$(CROSSARCH) \
  naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
- extra_sdk_include_destination=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include \
+ extra_sdk_include_destination=$(DESTDIR)$(SDKROOT)/include \
 
 BUILD_EXTRA_SDK=BUILD/build-extra_sdk-$(CROSSARCH)
 
