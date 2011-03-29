@@ -16,16 +16,21 @@ class CapturerLinuxPimpl;
 // A class to perform capturing for Linux.
 class CapturerLinux : public Capturer {
  public:
-  explicit CapturerLinux(MessageLoop* message_loop);
+  CapturerLinux();
   virtual ~CapturerLinux();
 
+  // Capturer interface.
   virtual void ScreenConfigurationChanged();
+  virtual media::VideoFrame::Format pixel_format() const;
+  virtual void ClearInvalidRects();
+  virtual void InvalidateRects(const InvalidRects& inval_rects);
+  virtual void InvalidateScreen(const gfx::Size& size);
+  virtual void InvalidateFullScreen();
+  virtual void CaptureInvalidRects(CaptureCompletedCallback* callback);
+  virtual const gfx::Size& size_most_recent() const;
 
  private:
   friend class CapturerLinuxPimpl;
-  virtual void CalculateInvalidRects();
-  virtual void CaptureRects(const InvalidRects& rects,
-                            CaptureCompletedCallback* callback);
 
   scoped_ptr<CapturerLinuxPimpl> pimpl_;
   DISALLOW_COPY_AND_ASSIGN(CapturerLinux);

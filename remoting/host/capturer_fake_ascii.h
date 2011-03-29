@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/capturer.h"
+#include "remoting/host/capturer_helper.h"
 
 namespace remoting {
 
@@ -17,16 +18,20 @@ namespace remoting {
 // remoting/host/capturer.h.
 class CapturerFakeAscii : public Capturer {
  public:
-  explicit CapturerFakeAscii(MessageLoop* message_loop);
-  virtual ~CapturerFakeAscii();
+  CapturerFakeAscii();
+  ~CapturerFakeAscii();
 
+  // Capturer interface.
   virtual void ScreenConfigurationChanged();
+  virtual media::VideoFrame::Format pixel_format() const;
+  virtual void ClearInvalidRects();
+  virtual void InvalidateRects(const InvalidRects& inval_rects);
+  virtual void InvalidateScreen(const gfx::Size& size);
+  virtual void InvalidateFullScreen();
+  virtual void CaptureInvalidRects(CaptureCompletedCallback* callback);
+  virtual const gfx::Size& size_most_recent() const;
 
  private:
-  virtual void CalculateInvalidRects();
-  virtual void CaptureRects(const InvalidRects& rects,
-                            CaptureCompletedCallback* callback);
-
   // Generates an image in the front buffer.
   void GenerateImage();
 
@@ -35,8 +40,17 @@ class CapturerFakeAscii : public Capturer {
   int height_;
   int bytes_per_row_;
 
+  CapturerHelper helper;
+
   // We have two buffers for the screen images as required by Capturer.
+  static const int kNumBuffers = 2;
   scoped_array<uint8> buffers_[kNumBuffers];
+
+  // The current buffer with valid data for reading.
+  int current_buffer_;
+
+  // Format of pixels returned in buffer.
+  media::VideoFrame::Format pixel_format_;
 
   DISALLOW_COPY_AND_ASSIGN(CapturerFakeAscii);
 };

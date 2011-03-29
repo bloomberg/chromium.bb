@@ -6,7 +6,7 @@
 
 namespace remoting {
 
-MockCapturer::MockCapturer() : Capturer(NULL) {}
+MockCapturer::MockCapturer() {}
 
 MockCapturer::~MockCapturer() {}
 

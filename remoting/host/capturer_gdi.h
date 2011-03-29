@@ -9,6 +9,7 @@
 typedef HBITMAP BitmapRef;
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/capturer.h"
+#include "remoting/host/capturer_helper.h"
 
 namespace remoting {
 
@@ -16,14 +17,22 @@ class Differ;
 
 // CapturerGdi captures 32bit RGB using GDI.
 //
-// CapturerGdi is doubled buffered as required by Capturer. See
+// CapturerGdi is double-buffered as required by Capturer. See
 // remoting/host/capturer.h.
 class CapturerGdi : public Capturer {
  public:
-  explicit CapturerGdi(MessageLoop* message_loop);
+  CapturerGdi();
   virtual ~CapturerGdi();
 
+  // Capturer interface.
   virtual void ScreenConfigurationChanged();
+  virtual media::VideoFrame::Format pixel_format() const;
+  virtual void ClearInvalidRects();
+  virtual void InvalidateRects(const InvalidRects& inval_rects);
+  virtual void InvalidateScreen(const gfx::Size& size);
+  virtual void InvalidateFullScreen();
+  virtual void CaptureInvalidRects(CaptureCompletedCallback* callback);
+  virtual const gfx::Size& size_most_recent() const;
 
  private:
   struct VideoFrameBuffer {
@@ -51,9 +60,9 @@ class CapturerGdi : public Capturer {
   // allocated for that buffer.
   void ReallocateBuffer(int buffer_index, const gfx::Size& size);
 
-  virtual void CalculateInvalidRects();
-  virtual void CaptureRects(const InvalidRects& rects,
-                            CaptureCompletedCallback* callback);
+  void CalculateInvalidRects();
+  void CaptureRects(const InvalidRects& rects,
+                    CaptureCompletedCallback* callback);
 
   void ReleaseBuffers();
   // Generates an image in the current buffer.
@@ -66,6 +75,14 @@ class CapturerGdi : public Capturer {
   // Gets the screen size.
   gfx::Size GetScreenSize();
 
+  // A thread-safe list of invalid rectangles, and the size of the most
+  // recently captured screen.
+  CapturerHelper helper;
+
+  // There are two buffers for the screen images, as required by Capturer.
+  static const int kNumBuffers = 2;
+  VideoFrameBuffer buffers_[kNumBuffers];
+
   // Gdi specific information about screen.
   HDC desktop_dc_;
   HDC memory_dc_;
@@ -75,8 +92,11 @@ class CapturerGdi : public Capturer {
   // is captured.
   gfx::Size dc_size_;
 
-  // We have two buffers for the screen images as required by Capturer.
-  VideoFrameBuffer buffers_[kNumBuffers];
+  // The current buffer with valid data for reading.
+  int current_buffer_;
+
+  // Format of pixels returned in buffer.
+  media::VideoFrame::Format pixel_format_;
 
   // Class to calculate the difference between two screen bitmaps.
   scoped_ptr<Differ> differ_;

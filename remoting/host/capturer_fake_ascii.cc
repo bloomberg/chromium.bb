@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,9 @@ static const int kWidth = 32;
 static const int kHeight = 20;
 static const int kBytesPerPixel = 1;
 
-CapturerFakeAscii::CapturerFakeAscii(MessageLoop* message_loop)
-    : Capturer(message_loop) {
+CapturerFakeAscii::CapturerFakeAscii()
+    : current_buffer_(0),
+      pixel_format_(media::VideoFrame::ASCII) {
 }
 
 CapturerFakeAscii::~CapturerFakeAscii() {
@@ -32,22 +33,45 @@ void CapturerFakeAscii::ScreenConfigurationChanged() {
   }
 }
 
-void CapturerFakeAscii::CalculateInvalidRects() {
-  // Capture and invalidate the entire screen.
-  // Performing the capture here is modelled on the Windows
-  // GDI capturer.
-  GenerateImage();
-  InvalidateFullScreen();
+media::VideoFrame::Format CapturerFakeAscii::pixel_format() const {
+  return pixel_format_;
 }
 
-void CapturerFakeAscii::CaptureRects(const InvalidRects& rects,
-                                     CaptureCompletedCallback* callback) {
+void CapturerFakeAscii::ClearInvalidRects() {
+  helper.ClearInvalidRects();
+}
+
+void CapturerFakeAscii::InvalidateRects(const InvalidRects& inval_rects) {
+  helper.InvalidateRects(inval_rects);
+}
+
+void CapturerFakeAscii::InvalidateScreen(const gfx::Size& size) {
+  helper.InvalidateScreen(size);
+}
+
+void CapturerFakeAscii::InvalidateFullScreen() {
+  helper.InvalidateFullScreen();
+}
+
+void CapturerFakeAscii::CaptureInvalidRects(
+    CaptureCompletedCallback* callback) {
+  scoped_ptr<CaptureCompletedCallback> callback_deleter(callback);
+
+  GenerateImage();
   DataPlanes planes;
   planes.data[0] = buffers_[current_buffer_].get();
+  current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
   planes.strides[0] = bytes_per_row_;
   scoped_refptr<CaptureData> capture_data(new CaptureData(
       planes, gfx::Size(width_, height_), pixel_format_));
-  FinishCapture(capture_data, callback);
+
+  helper.set_size_most_recent(capture_data->size());
+
+  callback->Run(capture_data);
+}
+
+const gfx::Size& CapturerFakeAscii::size_most_recent() const {
+  return helper.size_most_recent();
 }
 
 void CapturerFakeAscii::GenerateImage() {

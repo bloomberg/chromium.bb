@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/synchronization/lock.h"
-#include "base/task.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/types.h"
-
-class MessageLoop;
 
 namespace remoting {
 
@@ -44,29 +40,29 @@ class Capturer {
   // CaptureCompletedCallback is called when the capturer has completed.
   typedef Callback1<scoped_refptr<CaptureData> >::Type CaptureCompletedCallback;
 
-  virtual ~Capturer();
+  virtual ~Capturer() {};
 
-  // Create platform-specific cpaturer.
-  static Capturer* Create(MessageLoop* message_loop);
+  // Create platform-specific capturer.
+  static Capturer* Create();
 
   // Called when the screen configuration is changed.
   virtual void ScreenConfigurationChanged() = 0;
 
   // Return the pixel format of the screen.
-  virtual media::VideoFrame::Format pixel_format() const;
+  virtual media::VideoFrame::Format pixel_format() const = 0;
 
   // Clear out the list of invalid rects.
-  void ClearInvalidRects();
+  virtual void ClearInvalidRects() = 0;
 
   // Invalidate the specified screen rects.
-  void InvalidateRects(const InvalidRects& inval_rects);
+  virtual void InvalidateRects(const InvalidRects& inval_rects) = 0;
 
   // Invalidate the entire screen, of a given size.
-  void InvalidateScreen(const gfx::Size& size);
+  virtual void InvalidateScreen(const gfx::Size& size) = 0;
 
   // Invalidate the entire screen, using the size of the most recently
   // captured screen.
-  virtual void InvalidateFullScreen();
+  virtual void InvalidateFullScreen() = 0;
 
   // Capture the screen data associated with each of the accumulated
   // rects in |inval_rects|.
@@ -81,67 +77,10 @@ class Capturer {
   // data of the last capture.
   // There can be at most one concurrent read going on when this
   // method is called.
-  virtual void CaptureInvalidRects(CaptureCompletedCallback* callback);
+  virtual void CaptureInvalidRects(CaptureCompletedCallback* callback) = 0;
 
   // Get the size of the most recently captured screen.
-  const gfx::Size& size_most_recent() const { return size_most_recent_; }
-
- protected:
-  explicit Capturer(MessageLoop* message_loop);
-
-  // Update the list of |invalid_rects| to prepare for capturing the
-  // screen data.
-  // Depending on the platform implementation, this routine might:
-  // (a) Analyze screen and calculate the list of rects that have changed
-  //     since the last capture.
-  // (b) Merge already-acculumated rects into a more optimal list (for
-  //     example, by combining or removing rects).
-  virtual void CalculateInvalidRects() = 0;
-
-  // Capture the specified screen rects and call |callback| when complete.
-  // Dirty or invalid regions are ignored and only the given |rects| areas are
-  // captured.
-  // This routine is used internally by CaptureInvalidRects().
-  virtual void CaptureRects(const InvalidRects& rects,
-                            CaptureCompletedCallback* callback) = 0;
-
-  // Finish/cleanup capture task.
-  // This should be called by CaptureRects() when it finishes.
-  // This routine should (at least):
-  // (1) Call the |callback| routine.
-  // (2) Select the next screen buffer.
-  //     Note that capturers are required to be double-buffered so that we can
-  //     read from one which capturing into another.
-  void FinishCapture(scoped_refptr<CaptureData> data,
-                     CaptureCompletedCallback* callback);
-
-  // Called by subclasses' CalculateInvalidRects() method to check if
-  // InvalidateFullScreen() was called by user.
-  bool IsCaptureFullScreen(int width, int height);
-
-  // Number of screen buffers.
-  static const int kNumBuffers = 2;
-
-  // Format of pixels returned in buffer.
-  media::VideoFrame::Format pixel_format_;
-
-  // The current buffer with valid data for reading.
-  int current_buffer_;
-
-  // Message loop that operations should run on.
-  MessageLoop* message_loop_;
-
- private:
-  // Rects that have been manually invalidated (through InvalidateRect).
-  // These will be returned as dirty_rects in the capture data during the next
-  // capture.
-  InvalidRects inval_rects_;
-
-  // A lock protecting |inval_rects_| across threads.
-  base::Lock inval_rects_lock_;
-
-  // The size of the most recently captured screen.
-  gfx::Size size_most_recent_;
+  virtual const gfx::Size& size_most_recent() const = 0;
 };
 
 }  // namespace remoting

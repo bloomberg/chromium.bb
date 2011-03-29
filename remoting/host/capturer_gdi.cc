@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,12 @@ static const int kPixelsPerMeter = 3780;
 // 32 bit RGBA is 4 bytes per pixel.
 static const int kBytesPerPixel = 4;
 
-CapturerGdi::CapturerGdi(MessageLoop* message_loop)
-    : Capturer(message_loop),
-      desktop_dc_(NULL),
+CapturerGdi::CapturerGdi()
+    : desktop_dc_(NULL),
       memory_dc_(NULL),
       dc_size_(0, 0),
+      current_buffer_(0),
+      pixel_format_(media::VideoFrame::RGB32),
       capture_fullscreen_(true) {
   memset(target_bitmap_, 0, sizeof(target_bitmap_));
   memset(buffers_, 0, sizeof(buffers_));
@@ -27,6 +28,37 @@ CapturerGdi::CapturerGdi(MessageLoop* message_loop)
 
 CapturerGdi::~CapturerGdi() {
   ReleaseBuffers();
+}
+
+media::VideoFrame::Format CapturerGdi::pixel_format() const {
+  return pixel_format_;
+}
+
+void CapturerGdi::ClearInvalidRects() {
+  helper.ClearInvalidRects();
+}
+
+void CapturerGdi::InvalidateRects(const InvalidRects& inval_rects) {
+  helper.InvalidateRects(inval_rects);
+}
+
+void CapturerGdi::InvalidateScreen(const gfx::Size& size) {
+  helper.InvalidateScreen(size);
+}
+
+void CapturerGdi::InvalidateFullScreen() {
+  helper.InvalidateFullScreen();
+}
+
+void CapturerGdi::CaptureInvalidRects(CaptureCompletedCallback* callback) {
+  CalculateInvalidRects();
+  InvalidRects inval_rects;
+  helper.SwapInvalidRects(inval_rects);
+  CaptureRects(inval_rects, callback);
+}
+
+const gfx::Size& CapturerGdi::size_most_recent() const {
+  return helper.size_most_recent();
 }
 
 void CapturerGdi::ReleaseBuffers() {
@@ -117,7 +149,7 @@ void CapturerGdi::CalculateInvalidRects() {
   CaptureImage();
 
   const VideoFrameBuffer& current = buffers_[current_buffer_];
-  if (IsCaptureFullScreen(current.size.width(), current.size.height()))
+  if (helper.IsCaptureFullScreen(current.size))
     capture_fullscreen_ = true;
 
   if (capture_fullscreen_) {
@@ -160,7 +192,11 @@ void CapturerGdi::CalculateInvalidRects() {
 
 void CapturerGdi::CaptureRects(const InvalidRects& rects,
                                CaptureCompletedCallback* callback) {
+  scoped_ptr<CaptureCompletedCallback> callback_deleter(callback);
+
   const VideoFrameBuffer& buffer = buffers_[current_buffer_];
+  current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
+
   DataPlanes planes;
   planes.data[0] = static_cast<uint8*>(buffer.data);
   planes.strides[0] = buffer.bytes_per_row;
@@ -170,7 +206,9 @@ void CapturerGdi::CaptureRects(const InvalidRects& rects,
                                                   pixel_format_));
   data->mutable_dirty_rects() = rects;
 
-  FinishCapture(data, callback);
+  helper.set_size_most_recent(data->size());
+
+  callback->Run(data);
 }
 
 void CapturerGdi::CaptureImage() {
@@ -192,8 +230,8 @@ gfx::Size CapturerGdi::GetScreenSize() {
 }
 
 // static
-Capturer* Capturer::Create(MessageLoop* message_loop) {
-  return new CapturerGdi(message_loop);
+Capturer* Capturer::Create() {
+  return new CapturerGdi();
 }
 
 }  // namespace remoting

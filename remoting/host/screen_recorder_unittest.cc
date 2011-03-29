@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,11 +115,8 @@ TEST_F(ScreenRecorderTest, OneRecordCycle) {
     planes.data[i] = reinterpret_cast<uint8*>(i);
     planes.strides[i] = kWidth * 4;
   }
-  scoped_refptr<CaptureData> data(new CaptureData(planes,
-                                                  gfx::Size(kWidth, kHeight),
-                                                  kFormat));
-  EXPECT_CALL(capturer_, width()).WillRepeatedly(Return(kWidth));
-  EXPECT_CALL(capturer_, height()).WillRepeatedly(Return(kHeight));
+  gfx::Size size(kWidth, kHeight);
+  scoped_refptr<CaptureData> data(new CaptureData(planes, size, kFormat));
   EXPECT_CALL(capturer_, InvalidateFullScreen());
 
   // First the capturer is called.
@@ -167,11 +164,9 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
     planes.data[i] = reinterpret_cast<uint8*>(i);
     planes.strides[i] = kWidth * 4;
   }
-  scoped_refptr<CaptureData> data(new CaptureData(planes,
-                                                  gfx::Size(kWidth, kHeight),
-                                                  kFormat));
-  EXPECT_CALL(capturer_, width()).WillRepeatedly(Return(kWidth));
-  EXPECT_CALL(capturer_, height()).WillRepeatedly(Return(kHeight));
+
+  gfx::Size size(kWidth, kHeight);
+  scoped_refptr<CaptureData> data(new CaptureData(planes, size, kFormat));
   EXPECT_CALL(capturer_, InvalidateFullScreen());
 
   // First the capturer is called.

@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
   bool fake = cmd_line->HasSwitch(kFakeSwitchName);
   if (fake) {
     remoting::Capturer* capturer =
-        new remoting::CapturerFake(context.main_message_loop());
+        new remoting::CapturerFake();
     remoting::protocol::InputStub* input_stub =
         CreateEventExecutor(context.ui_message_loop(), capturer);
     host = ChromotingHost::Create(

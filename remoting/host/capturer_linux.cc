@@ -10,24 +10,37 @@
 
 #include <set>
 
+#include "base/logging.h"
 #include "remoting/base/types.h"
+#include "remoting/host/capturer_helper.h"
 #include "remoting/host/x_server_pixel_buffer.h"
 
 namespace remoting {
 
 // Private Implementation pattern to avoid leaking the X11 types into the header
 // file.
-class CapturerLinuxPimpl {
+class CapturerLinuxPimpl : public Capturer {
  public:
-  explicit CapturerLinuxPimpl(CapturerLinux* capturer);
-  ~CapturerLinuxPimpl();
+  CapturerLinuxPimpl();
+  virtual ~CapturerLinuxPimpl();
 
   bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
+
+  // Capturer interface.
+  virtual void ScreenConfigurationChanged();
+  virtual media::VideoFrame::Format pixel_format() const;
+  virtual void ClearInvalidRects();
+  virtual void InvalidateRects(const InvalidRects& inval_rects);
+  virtual void InvalidateScreen(const gfx::Size& size);
+  virtual void InvalidateFullScreen();
+  virtual void CaptureInvalidRects(CaptureCompletedCallback* callback);
+  virtual const gfx::Size& size_most_recent() const;
+
+ private:
   void CalculateInvalidRects();
   void CaptureRects(const InvalidRects& rects,
                     Capturer::CaptureCompletedCallback* callback);
 
- private:
   void DeinitXlib();
   // We expose two forms of blitting to handle variations in the pixel format.
   // In FastBlit, the operation is effectively a memcpy.
@@ -35,10 +48,6 @@ class CapturerLinuxPimpl {
   void SlowBlit(uint8* image, const gfx::Rect& rect, CaptureData* capture_data);
 
   static const int kBytesPerPixel = 4;
-
-  // Reference to containing class so we can access friend functions.
-  // Not owned.
-  CapturerLinux* capturer_;
 
   // X11 graphics context.
   Display* display_;
@@ -55,10 +64,19 @@ class CapturerLinuxPimpl {
   // Access to the X Server's pixel buffer.
   XServerPixelBuffer x_server_pixel_buffer_;
 
+  // A thread-safe list of invalid rectangles, and the size of the most
+  // recently captured screen.
+  CapturerHelper helper_;
+
   // Capture state.
-  uint8* buffers_[CapturerLinux::kNumBuffers];
+  static const int kNumBuffers = 2;
+  uint8* buffers_[kNumBuffers];
+  int current_buffer_;
   int stride_;
   bool capture_fullscreen_;
+
+  // Format of pixels returned in buffer.
+  media::VideoFrame::Format pixel_format_;
 
   // Invalid rects in the last capture. This is used to synchronize current with
   // the previous buffer used.
@@ -68,9 +86,8 @@ class CapturerLinuxPimpl {
   uint8* last_buffer_;
 };
 
-CapturerLinux::CapturerLinux(MessageLoop* message_loop)
-    : Capturer(message_loop),
-      pimpl_(new CapturerLinuxPimpl(this)) {
+CapturerLinux::CapturerLinux()
+    : pimpl_(new CapturerLinuxPimpl()) {
   // TODO(ajwong): This should be moved into an Init() method on Capturer
   // itself.  Then we can remove the CHECK.
   CHECK(pimpl_->Init());
@@ -80,22 +97,39 @@ CapturerLinux::~CapturerLinux() {
 }
 
 void CapturerLinux::ScreenConfigurationChanged() {
-  // TODO(ajwong): Support resolution changes.
-  NOTIMPLEMENTED();
+  pimpl_->ScreenConfigurationChanged();
 }
 
-void CapturerLinux::CalculateInvalidRects() {
-  pimpl_->CalculateInvalidRects();
+media::VideoFrame::Format CapturerLinux::pixel_format() const {
+  return pimpl_->pixel_format();
 }
 
-void CapturerLinux::CaptureRects(const InvalidRects& rects,
-                                 CaptureCompletedCallback* callback) {
-  pimpl_->CaptureRects(rects, callback);
+void CapturerLinux::ClearInvalidRects() {
+  pimpl_->ClearInvalidRects();
 }
 
-CapturerLinuxPimpl::CapturerLinuxPimpl(CapturerLinux* capturer)
-    : capturer_(capturer),
-      display_(NULL),
+void CapturerLinux::InvalidateRects(const InvalidRects& inval_rects) {
+  pimpl_->InvalidateRects(inval_rects);
+}
+
+void CapturerLinux::InvalidateScreen(const gfx::Size& size) {
+  pimpl_->InvalidateScreen(size);
+}
+
+void CapturerLinux::InvalidateFullScreen() {
+  pimpl_->InvalidateFullScreen();
+}
+
+void CapturerLinux::CaptureInvalidRects(CaptureCompletedCallback* callback) {
+  pimpl_->CaptureInvalidRects(callback);
+}
+
+const gfx::Size& CapturerLinux::size_most_recent() const {
+  return pimpl_->size_most_recent();
+}
+
+CapturerLinuxPimpl::CapturerLinuxPimpl()
+    : display_(NULL),
       gc_(NULL),
       root_window_(BadValue),
       width_(0),
@@ -103,10 +137,12 @@ CapturerLinuxPimpl::CapturerLinuxPimpl(CapturerLinux* capturer)
       damage_handle_(BadValue),
       damage_event_base_(-1),
       damage_error_base_(-1),
+      current_buffer_(0),
       stride_(0),
       capture_fullscreen_(true),
+      pixel_format_(media::VideoFrame::RGB32),
       last_buffer_(NULL) {
-  for (int i = 0; i < CapturerLinux::kNumBuffers; i++) {
+  for (int i = 0; i < kNumBuffers; i++) {
     buffers_[i] = NULL;
   }
 }
@@ -114,7 +150,7 @@ CapturerLinuxPimpl::CapturerLinuxPimpl(CapturerLinux* capturer)
 CapturerLinuxPimpl::~CapturerLinuxPimpl() {
   DeinitXlib();
 
-  for (int i = 0; i < CapturerLinux::kNumBuffers; i++) {
+  for (int i = 0; i < kNumBuffers; i++) {
     delete [] buffers_[i];
     buffers_[i] = NULL;
   }
@@ -173,15 +209,50 @@ bool CapturerLinuxPimpl::Init() {
   VLOG(1) << "Initialized with Geometry: " << width_ << "x" << height_;
 
   // Allocate the screen buffers.
-  for (int i = 0; i < CapturerLinux::kNumBuffers; i++) {
+  for (int i = 0; i < kNumBuffers; i++) {
     buffers_[i] = new uint8[width_ * height_ * kBytesPerPixel];
   }
 
   return true;
 }
 
+void CapturerLinuxPimpl::ScreenConfigurationChanged() {
+  // TODO(ajwong): Support resolution changes.
+  NOTIMPLEMENTED();
+}
+
+media::VideoFrame::Format CapturerLinuxPimpl::pixel_format() const {
+  return pixel_format_;
+}
+
+void CapturerLinuxPimpl::ClearInvalidRects() {
+  helper_.ClearInvalidRects();
+}
+
+void CapturerLinuxPimpl::InvalidateRects(const InvalidRects& inval_rects) {
+  helper_.InvalidateRects(inval_rects);
+}
+
+void CapturerLinuxPimpl::InvalidateScreen(const gfx::Size& size) {
+  helper_.InvalidateScreen(size);
+}
+
+void CapturerLinuxPimpl::InvalidateFullScreen() {
+  helper_.InvalidateFullScreen();
+}
+
+void CapturerLinuxPimpl::CaptureInvalidRects(
+    CaptureCompletedCallback* callback) {
+  CalculateInvalidRects();
+
+  InvalidRects rects;
+  helper_.SwapInvalidRects(rects);
+
+  CaptureRects(rects, callback);
+}
+
 void CapturerLinuxPimpl::CalculateInvalidRects() {
-  if (capturer_->IsCaptureFullScreen(width_, height_))
+  if (helper_.IsCaptureFullScreen(gfx::Size(width_, height_)))
     capture_fullscreen_ = true;
 
   // TODO(ajwong): The capture_fullscreen_ logic here is very ugly. Refactor.
@@ -216,17 +287,19 @@ void CapturerLinuxPimpl::CalculateInvalidRects() {
 
   if (capture_fullscreen_) {
     // TODO(hclam): Check the new dimension again.
-    capturer_->InvalidateScreen(gfx::Size(width_, height_));
+    helper_.InvalidateScreen(gfx::Size(width_, height_));
     capture_fullscreen_ = false;
   } else {
-    capturer_->InvalidateRects(invalid_rects);
+    helper_.InvalidateRects(invalid_rects);
   }
 }
 
 void CapturerLinuxPimpl::CaptureRects(
     const InvalidRects& rects,
     Capturer::CaptureCompletedCallback* callback) {
-  uint8* buffer = buffers_[capturer_->current_buffer_];
+  scoped_ptr<CaptureCompletedCallback> callback_deleter(callback);
+
+  uint8* buffer = buffers_[current_buffer_];
   DataPlanes planes;
   planes.data[0] = buffer;
   planes.strides[0] = stride_;
@@ -275,9 +348,10 @@ void CapturerLinuxPimpl::CaptureRects(
   last_invalid_rects_ = rects;
   last_buffer_ = buffer;
 
-  // TODO(ajwong): These completion signals back to the upper class are very
-  // strange.  Fix it.
-  capturer_->FinishCapture(capture_data, callback);
+  current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
+  helper_.set_size_most_recent(capture_data->size());
+
+  callback->Run(capture_data);
 }
 
 void CapturerLinuxPimpl::DeinitXlib() {
@@ -365,9 +439,13 @@ void CapturerLinuxPimpl::SlowBlit(uint8* image, const gfx::Rect& rect,
   }
 }
 
+const gfx::Size& CapturerLinuxPimpl::size_most_recent() const {
+  return helper_.size_most_recent();
+}
+
 // static
-Capturer* Capturer::Create(MessageLoop* message_loop) {
-  return new CapturerLinux(message_loop);
+Capturer* Capturer::Create() {
+  return new CapturerLinux();
 }
 
 }  // namespace remoting

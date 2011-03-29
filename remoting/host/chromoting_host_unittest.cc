@@ -75,7 +75,7 @@ class ChromotingHostTest : public testing::Test {
     EXPECT_CALL(context_, network_message_loop())
         .Times(AnyNumber());
 
-    Capturer* capturer = new CapturerFake(context_.main_message_loop());
+    Capturer* capturer = new CapturerFake();
     host_stub_ = new MockHostStub();
     host_stub2_ = new MockHostStub();
     input_stub_ = new MockInputStub();

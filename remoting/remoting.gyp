@@ -199,8 +199,9 @@
       'sources': [
         'host/access_verifier.cc',
         'host/access_verifier.h',
-        'host/capturer.cc',
         'host/capturer.h',
+        'host/capturer_helper.cc',
+        'host/capturer_helper.h',
         'host/capturer_fake.cc',
         'host/capturer_fake.h',
         'host/chromoting_host.cc',

@@ -17,7 +17,7 @@ namespace remoting {
 class CapturerMacTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    capturer_.reset(new CapturerMac(NULL));
+    capturer_.reset(new CapturerMac());
   }
 
   void AddDirtyRect() {
