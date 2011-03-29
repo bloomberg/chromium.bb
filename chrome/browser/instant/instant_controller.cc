@@ -29,6 +29,9 @@
 // Number of ms to delay between loading urls.
 static const int kUpdateDelayMS = 200;
 
+// Amount of time we delay before showing pages that have a non-200 status.
+static const int kShowDelayMS = 800;
+
 // static
 InstantController::HostBlacklist* InstantController::host_blacklist_ = NULL;
 
@@ -355,6 +358,7 @@ TabContentsWrapper* InstantController::ReleasePreviewContents(
   omnibox_bounds_ = gfx::Rect();
   loader_manager_.reset();
   update_timer_.Stop();
+  show_timer_.Stop();
   return tab;
 }
 
@@ -382,23 +386,19 @@ GURL InstantController::GetCurrentURL() {
       loader_manager_->active_loader()->url() : GURL();
 }
 
-void InstantController::ShowInstantLoader(InstantLoader* loader) {
-  DCHECK(loader_manager_.get());
-  scoped_ptr<InstantLoader> old_loader;
-  if (loader == loader_manager_->pending_loader()) {
-    loader_manager_->MakePendingCurrent(&old_loader);
-  } else if (loader != loader_manager_->current_loader()) {
-    // Notification from a loader that is no longer the current (either we have
-    // a pending, or its an instant loader). Ignore it.
+void InstantController::InstantStatusChanged(InstantLoader* loader) {
+  if (!loader->http_status_ok()) {
+    // Status isn't ok, start a timer that when fires shows the result. This
+    // delays showing 403 pages and the like.
+    show_timer_.Stop();
+    show_timer_.Start(
+        base::TimeDelta::FromMilliseconds(kShowDelayMS),
+        this, &InstantController::ShowTimerFired);
+    UpdateDisplayableLoader();
     return;
   }
 
-  UpdateDisplayableLoader();
-
-  NotificationService::current()->Notify(
-      NotificationType::INSTANT_CONTROLLER_SHOWN,
-      Source<InstantController>(this),
-      NotificationService::NoDetails());
+  ProcessInstantStatusChanged(loader);
 }
 
 void InstantController::SetSuggestedTextFor(
@@ -476,7 +476,9 @@ void InstantController::UpdateDisplayableLoader() {
   // As soon as the pending loader is displayable it becomes the current loader,
   // so we need only concern ourselves with the current loader here.
   if (loader_manager_.get() && loader_manager_->current_loader() &&
-      loader_manager_->current_loader()->ready()) {
+      loader_manager_->current_loader()->ready() &&
+      (!show_timer_.IsRunning() ||
+       loader_manager_->current_loader()->http_status_ok())) {
     loader = loader_manager_->current_loader();
   }
   if (loader == displayable_loader_)
@@ -547,6 +549,28 @@ void InstantController::ProcessScheduledUpdate() {
                &suggested_text);
 }
 
+void InstantController::ProcessInstantStatusChanged(InstantLoader* loader) {
+  DCHECK(loader_manager_.get());
+  scoped_ptr<InstantLoader> old_loader;
+  if (loader == loader_manager_->pending_loader()) {
+    loader_manager_->MakePendingCurrent(&old_loader);
+  } else if (loader != loader_manager_->current_loader()) {
+    // Notification from a loader that is no longer the current (either we have
+    // a pending, or its an instant loader). Ignore it.
+    return;
+  }
+
+  UpdateDisplayableLoader();
+}
+
+void InstantController::ShowTimerFired() {
+  DCHECK(loader_manager_.get());
+
+  InstantLoader* loader = loader_manager_->active_loader();
+  if (loader->ready())
+    ProcessInstantStatusChanged(loader);
+}
+
 void InstantController::UpdateLoader(const TemplateURL* template_url,
                                      const GURL& url,
                                      PageTransition::Type transition_type,
@@ -561,8 +585,15 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
       loader_manager_->UpdateLoader(template_url_id, &owned_loader);
 
   new_loader->SetOmniboxBounds(omnibox_bounds_);
-  new_loader->Update(tab_contents_, template_url, url, transition_type,
-                     user_text, verbatim, suggested_text);
+  if (new_loader->Update(tab_contents_, template_url, url, transition_type,
+                         user_text, verbatim, suggested_text)) {
+    show_timer_.Stop();
+    if (!new_loader->http_status_ok()) {
+      show_timer_.Start(
+          base::TimeDelta::FromMilliseconds(kShowDelayMS),
+          this, &InstantController::ShowTimerFired);
+    }
+  }
   UpdateDisplayableLoader();
 }
 

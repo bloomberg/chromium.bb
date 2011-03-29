@@ -173,7 +173,7 @@ class InstantController : public InstantLoaderDelegate {
   GURL GetCurrentURL();
 
   // InstantLoaderDelegate
-  virtual void ShowInstantLoader(InstantLoader* loader) OVERRIDE;
+  virtual void InstantStatusChanged(InstantLoader* loader) OVERRIDE;
   virtual void SetSuggestedTextFor(InstantLoader* loader,
                                    const string16& text,
                                    InstantCompleteBehavior behavior) OVERRIDE;
@@ -205,6 +205,14 @@ class InstantController : public InstantLoaderDelegate {
 
   // Invoked from the timer to process the last scheduled url.
   void ProcessScheduledUpdate();
+
+  // Does the work of processing a change in the status (ready or
+  // http_status_ok) of a loader.
+  void ProcessInstantStatusChanged(InstantLoader* loader);
+
+  // Callback when the |show_timer_| fires. Invokes
+  // |ProcessInstantStatusChanged| with the appropriate arguments.
+  void ShowTimerFired();
 
   // Updates InstantLoaderManager and its current InstantLoader. This is invoked
   // internally from Update.
@@ -274,6 +282,9 @@ class InstantController : public InstantLoaderDelegate {
 
   // Timer used to delay calls to |UpdateLoader|.
   base::OneShotTimer<InstantController> update_timer_;
+
+  // Timer used to delay showing loaders whose status isn't ok.
+  base::OneShotTimer<InstantController> show_timer_;
 
   // Used by ScheduleForDestroy; see it for details.
   ScopedRunnableMethodFactory<InstantController> destroy_factory_;

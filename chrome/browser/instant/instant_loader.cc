@@ -613,6 +613,7 @@ InstantLoader::InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id)
     : delegate_(delegate),
       template_url_id_(id),
       ready_(false),
+      http_status_ok_(true),
       last_transition_type_(PageTransition::LINK),
       verbatim_(false),
       needs_reload_(false) {
@@ -626,7 +627,7 @@ InstantLoader::~InstantLoader() {
   preview_contents_.reset();
 }
 
-void InstantLoader::Update(TabContentsWrapper* tab_contents,
+bool InstantLoader::Update(TabContentsWrapper* tab_contents,
                            const TemplateURL* template_url,
                            const GURL& url,
                            PageTransition::Type transition_type,
@@ -660,7 +661,7 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
     // when we get the suggest text we set user_text_ to the new suggest text,
     // but yet the url is much different.
     url_ = url;
-    return;
+    return false;
   }
 
   url_ = url;
@@ -681,7 +682,7 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
         frame_load_observer_->set_text(user_text_);
         frame_load_observer_->set_verbatim(verbatim);
         preview_tab_contents_delegate_->set_user_typed_before_load();
-        return;
+        return true;
       }
       // TODO: support real cursor position.
       int text_length = static_cast<int>(user_text_.size());
@@ -731,6 +732,7 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
     frame_load_observer_.reset(NULL);
     preview_contents_->controller().LoadURL(url_, GURL(), transition_type);
   }
+  return true;
 }
 
 void InstantLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
@@ -876,10 +878,19 @@ void InstantLoader::PreviewPainted() {
     ShowPreview();
 }
 
+void InstantLoader::SetHTTPStatusOK(bool is_ok) {
+  if (is_ok == http_status_ok_)
+    return;
+
+  http_status_ok_ = is_ok;
+  if (ready_)
+    delegate_->InstantStatusChanged(this);
+}
+
 void InstantLoader::ShowPreview() {
   if (!ready_) {
     ready_ = true;
-    delegate_->ShowInstantLoader(this);
+    delegate_->InstantStatusChanged(this);
   }
 }
 
@@ -898,9 +909,12 @@ void InstantLoader::Observe(NotificationType type,
   if (type.value == NotificationType::NAV_ENTRY_COMMITTED) {
     NavigationController::LoadCommittedDetails* load_details =
         Details<NavigationController::LoadCommittedDetails>(details).ptr();
-    if (load_details->is_main_frame &&
-        load_details->http_status_code == kHostBlacklistStatusCode) {
-      delegate_->AddToBlacklist(this, load_details->entry->url());
+    if (load_details->is_main_frame) {
+      if (load_details->http_status_code == kHostBlacklistStatusCode) {
+        delegate_->AddToBlacklist(this, load_details->entry->url());
+      } else {
+        SetHTTPStatusOK(load_details->http_status_code == 200);
+      }
     }
     return;
   }

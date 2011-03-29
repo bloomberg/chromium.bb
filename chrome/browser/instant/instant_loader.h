@@ -41,8 +41,9 @@ class InstantLoader : public NotificationObserver {
   virtual ~InstantLoader();
 
   // Invoked to load a URL. |tab_contents| is the TabContents the preview is
-  // going to be shown on top of and potentially replace.
-  void Update(TabContentsWrapper* tab_contents,
+  // going to be shown on top of and potentially replace. Returns true if the
+  // arguments differ from the last call to |Update|.
+  bool Update(TabContentsWrapper* tab_contents,
               const TemplateURL* template_url,
               const GURL& url,
               PageTransition::Type transition_type,
@@ -81,6 +82,9 @@ class InstantLoader : public NotificationObserver {
   // Returns true if the preview TabContents is ready to be shown.
   bool ready() const { return ready_; }
 
+  // Returns true if the current load returned a 200.
+  bool http_status_ok() const { return http_status_ok_; }
+
   // Returns true if the url needs to be reloaded. This is set to true for
   // downloads.
   bool needs_reload() const { return needs_reload_; }
@@ -113,6 +117,9 @@ class InstantLoader : public NotificationObserver {
 
   // Invoked when the page paints.
   void PreviewPainted();
+
+  // Invoked when the http status code changes. This may notify the delegate.
+  void SetHTTPStatusOK(bool is_ok);
 
   // Invoked to show the preview. This is invoked in two possible cases: when
   // the renderer paints, or when an auth dialog is shown. This notifies the
@@ -164,6 +171,9 @@ class InstantLoader : public NotificationObserver {
 
   // Is the preview_contents ready to be shown?
   bool ready_;
+
+  // Was the last status code a 200?
+  bool http_status_ok_;
 
   // The text the user typed in the omnibox, stripped of the leading ?, if any.
   string16 user_text_;

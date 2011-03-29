@@ -14,7 +14,7 @@ class InstantLoaderDelegateImpl : public InstantLoaderDelegate {
  public:
   InstantLoaderDelegateImpl() {}
 
-  virtual void ShowInstantLoader(InstantLoader* loader) OVERRIDE {}
+  virtual void InstantStatusChanged(InstantLoader* loader) OVERRIDE {}
 
   virtual void SetSuggestedTextFor(InstantLoader* loader,
                                    const string16& text,
