@@ -11,10 +11,6 @@
         'webkit_src_dir': '../../third_party/WebKit',
       }],
     ],
-
-    'grit_info_cmd': ['python', '<(DEPTH)/tools/grit/grit_info.py',
-                      '<@(grit_defines)'],
-    'grit_cmd': ['python', '<(DEPTH)/tools/grit/grit.py'],
   },
   'targets': [
     {
@@ -28,48 +24,19 @@
         {
           'action_name': 'webkit_resources',
           'variables': {
-            'input_path': './webkit_resources.grd',
+            'grit_grd_file': 'webkit_resources.grd',
           },
-          'inputs': [
-            '<!@(<(grit_info_cmd) --inputs <(input_path))',
-          ],
-          'outputs': [
-            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
-          ],
-          'action': ['<@(grit_cmd)',
-                     '-i', '<(input_path)', 'build',
-                     '-o', '<(grit_out_dir)',
-                     '<@(grit_defines)'],
-          'message': 'Generating resources from <(input_path)',
+          'includes': [ '../../build/grit_action.gypi' ],
         },
         {
           'action_name': 'webkit_chromium_resources',
           'variables': {
-            'input_path': '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.grd',
+            'grit_grd_file': '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.grd',
           },
-          'inputs': [
-            '<!@(<(grit_info_cmd) --inputs <(input_path))',
-          ],
-          'outputs': [
-            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
-          ],
-          'action': ['<@(grit_cmd)',
-                     '-i', '<(input_path)', 'build',
-                     '-o', '<(grit_out_dir)',
-                     '<@(grit_defines)'],
-          'message': 'Generating resources from <(input_path)',
+          'includes': [ '../../build/grit_action.gypi' ],
         },
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)/webkit',
-        ],
-      },
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': ['<(DEPTH)/build/win/system.gyp:cygwin'],
-        }],
-      ],
+      'includes': [ '../../build/grit_target.gypi' ],
     },
     {
       'target_name': 'webkit_strings',
@@ -82,31 +49,12 @@
         {
           'action_name': 'webkit_strings',
           'variables': {
-            'input_path': './webkit_strings.grd',
+            'grit_grd_file': 'webkit_strings.grd',
           },
-          'inputs': [
-            '<!@(<(grit_info_cmd) --inputs <(input_path))',
-          ],
-          'outputs': [
-            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
-          ],
-          'action': ['<@(grit_cmd)',
-                     '-i', '<(input_path)', 'build',
-                     '-o', '<(grit_out_dir)',
-                     '<@(grit_defines)'],
-          'message': 'Generating resources from <(input_path)',
+          'includes': [ '../../build/grit_action.gypi' ],
         },
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)/webkit',
-        ],
-      },
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': ['<(DEPTH)/build/win/system.gyp:cygwin'],
-        }],
-      ],
+      'includes': [ '../../build/grit_target.gypi' ],
     },
     {
       'target_name': 'webkit_user_agent',
@@ -566,26 +514,12 @@
             {
               'action_name': 'inspector_strings',
               'variables': {
-                'input_path': './inspector_strings.grd',
+                'grit_grd_file': 'inspector_strings.grd',
               },
-              'inputs': [
-                '<!@(<(grit_info_cmd) --inputs <(input_path))',
-              ],
-              'outputs': [
-                '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
-              ],
-              'action': ['<@(grit_cmd)',
-                         '-i', '<(input_path)', 'build',
-                         '-o', '<(grit_out_dir)',
-                         '<@(grit_defines)'],
-              'message': 'Generating resources from <(input_path)',
+              'includes': [ '../../build/grit_action.gypi' ],
             },
           ],
-          'conditions': [
-            ['OS=="win"', {
-              'dependencies': ['<(DEPTH)/build/win/system.gyp:cygwin'],
-            }],
-          ],
+          'includes': [ '../../build/grit_target.gypi' ],
         },
       ],
     }],
