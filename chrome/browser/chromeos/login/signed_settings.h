@@ -29,6 +29,11 @@
 // and then call the appropriate method of the Delegate you passed in
 // -- again, on the UI thread.
 
+namespace enterprise_management {
+class PolicyFetchResponse;
+}  // namespace enterprise_management
+namespace em = enterprise_management;
+
 namespace chromeos {
 class OwnershipService;
 
@@ -76,11 +81,11 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
   // These are both "policy" operations, and only one instance of
   // one type can be in flight at a time.
   static SignedSettings* CreateStorePolicyOp(
-      const std::string& value,
+      em::PolicyFetchResponse* policy,
       SignedSettings::Delegate<bool>* d);
 
   static SignedSettings* CreateRetrievePolicyOp(
-      SignedSettings::Delegate<std::string>* d);
+      SignedSettings::Delegate<const em::PolicyFetchResponse&>* d);
 
   static ReturnCode MapKeyOpCode(OwnerManager::KeyOpCode code);
 
@@ -91,6 +96,8 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
                        const std::vector<uint8>& payload) = 0;
 
  protected:
+  static void OnBoolComplete(void* delegate, bool success);
+
   OwnershipService* service_;
 
  private:

@@ -49,11 +49,23 @@ class LoginLibraryImpl : public LoginLibrary {
     return false;
   }
 
+  void RequestRetrievePolicy(RetrievePolicyCallback callback, void* delegate) {
+    DCHECK(callback) << "must provide a callback to RequestRetrievePolicy()";
+    chromeos::RetrievePolicy(callback, delegate);
+  }
+
   void RequestRetrieveProperty(const std::string& name,
                                RetrievePropertyCallback callback,
                                void* user_data) {
     DCHECK(callback) << "must provide a callback to RequestRetrieveProperty()";
     chromeos::RequestRetrieveProperty(name.c_str(), callback, user_data);
+  }
+
+  void RequestStorePolicy(const std::string& policy,
+                          StorePolicyCallback callback,
+                          void* delegate) {
+    DCHECK(callback) << "must provide a callback to StorePolicy()";
+    chromeos::StorePolicy(policy.c_str(), callback, delegate);
   }
 
   bool StorePropertyAsync(const std::string& name,
@@ -268,6 +280,9 @@ class LoginLibraryStubImpl : public LoginLibrary {
     OUT_signature->assign(2, 0);
     return true;
   }
+  void RequestRetrievePolicy(RetrievePolicyCallback callback, void* delegate) {
+    callback(delegate, "");
+  }
   void RequestRetrieveProperty(const std::string& name,
                                RetrievePropertyCallback callback,
                                void* user_data) {
@@ -280,6 +295,11 @@ class LoginLibraryStubImpl : public LoginLibrary {
     };
 
     callback(user_data, true, &prop);
+  }
+  void RequestStorePolicy(const std::string& policy,
+                          StorePolicyCallback callback,
+                          void* delegate) {
+    callback(delegate, true);
   }
   bool StorePropertyAsync(const std::string& name,
                           const std::string& value,

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "content/browser/browser_thread.h"
 
 namespace chromeos {
@@ -30,6 +31,12 @@ SignedSettings::ReturnCode SignedSettings::MapKeyOpCode(
     OwnerManager::KeyOpCode return_code) {
   return (return_code == OwnerManager::KEY_UNAVAILABLE ?
           KEY_UNAVAILABLE : OPERATION_FAILED);
+}
+
+void SignedSettings::OnBoolComplete(void* delegate, bool success) {
+  SignedSettings::Delegate<bool>* d =
+      static_cast< SignedSettings::Delegate<bool>* >(delegate);
+  d->OnSettingsOpCompleted(success ? SUCCESS : NOT_FOUND, success);
 }
 
 class CheckWhitelistOp : public SignedSettings {
@@ -110,25 +117,27 @@ class RetrievePropertyOp : public SignedSettings {
   SignedSettings::Delegate<std::string>* d_;
 };
 
-class StorePolicyOp : public SignedSettings, public LoginLibrary::Delegate {
+class StorePolicyOp : public SignedSettings {
  public:
-  StorePolicyOp(const std::string& value, SignedSettings::Delegate<bool>* d);
+  StorePolicyOp(em::PolicyFetchResponse* policy,
+                SignedSettings::Delegate<bool>* d);
   virtual ~StorePolicyOp();
   void Execute();
   // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
   void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                        const std::vector<uint8>& payload);
-  // Implementation of LoginLibrary::Delegate::OnComplete()
-  void OnComplete(bool value);
 
  private:
-  std::string value_;
+  em::PolicyFetchResponse* policy_;
   SignedSettings::Delegate<bool>* d_;
+
+  void RequestStorePolicy();
 };
 
 class RetrievePolicyOp : public SignedSettings {
  public:
-  explicit RetrievePolicyOp(SignedSettings::Delegate<std::string>* d);
+  explicit RetrievePolicyOp(
+      SignedSettings::Delegate<const em::PolicyFetchResponse&>* d);
   virtual ~RetrievePolicyOp();
   void Execute();
   // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
@@ -136,8 +145,12 @@ class RetrievePolicyOp : public SignedSettings {
                        const std::vector<uint8>& payload);
 
  private:
-  std::string value_;
-  SignedSettings::Delegate<std::string>* d_;
+  static void OnStringComplete(void* delegate, const char* policy);
+
+  em::PolicyFetchResponse policy_;
+  SignedSettings::Delegate<const em::PolicyFetchResponse&>* d_;
+
+  void ProcessPolicy(const char* policy);
 };
 
 // static
@@ -178,15 +191,16 @@ SignedSettings* SignedSettings::CreateRetrievePropertyOp(
 
 // static
 SignedSettings* SignedSettings::CreateStorePolicyOp(
-    const std::string& value,
+    em::PolicyFetchResponse* policy,
     SignedSettings::Delegate<bool>* d) {
   DCHECK(d != NULL);
-  return new StorePolicyOp(value, d);
+  DCHECK(policy != NULL);
+  return new StorePolicyOp(policy, d);
 }
 
 // static
 SignedSettings* SignedSettings::CreateRetrievePolicyOp(
-    SignedSettings::Delegate<std::string>* d) {
+    SignedSettings::Delegate<const em::PolicyFetchResponse&>* d) {
   DCHECK(d != NULL);
   return new RetrievePolicyOp(d);
 }
@@ -415,24 +429,26 @@ void RetrievePropertyOp::OnKeyOpComplete(
                               std::string());
 }
 
-StorePolicyOp::StorePolicyOp(const std::string& value,
+StorePolicyOp::StorePolicyOp(em::PolicyFetchResponse* policy,
                              SignedSettings::Delegate<bool>* d)
-    : value_(value),
+    : policy_(policy),
       d_(d) {
 }
 
 StorePolicyOp::~StorePolicyOp() {}
 
 void StorePolicyOp::Execute() {
-  // Just a stub for now.
-  // TODO(cmasone): wire this to the real API after http://crosbug.com/12670
-  d_->OnSettingsOpCompleted(SUCCESS, true);
+  // get protobuf contents to sign
+  if (!policy_->has_policy_data())
+    d_->OnSettingsOpCompleted(OPERATION_FAILED, false);
+  if (!policy_->has_policy_data_signature())
+    service_->StartSigningAttempt(policy_->policy_data(), this);
+  else
+    RequestStorePolicy();
 }
 
 void StorePolicyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                                     const std::vector<uint8>& payload) {
-  // TODO(cmasone): wire this to the real API after http://crosbug.com/12670
-  NOTREACHED();
   // Ensure we're on the UI thread, due to the need to send DBus traffic.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
@@ -445,40 +461,41 @@ void StorePolicyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
   VLOG(2) << "StorePolicyOp::OnKeyOpComplete return_code = " << return_code;
   // Now, sure we're on the UI thread.
   if (return_code == OwnerManager::SUCCESS) {
-    // TODO(cmasone): wire this to the real API after http://crosbug.com/12670
-    // OnComplete() will be called by this call, if it succeeds.
-    // if (!CrosLibrary::Get()->GetLoginLibrary()->StorePolicyAsync(value_,
-    //                                                              payload,
-    //                                                              this)) {
-    //   d_->OnSettingsOpCompleted(OPERATION_FAILED, false);
-    // }
+    policy_->set_policy_data_signature(std::string(payload.begin(),
+                                                   payload.end()));
+    RequestStorePolicy();
+    return;
+  }
+  d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code), false);
+}
+
+void StorePolicyOp::RequestStorePolicy() {
+  std::string serialized;
+  if (policy_->SerializeToString(&serialized)) {
+    CrosLibrary::Get()->GetLoginLibrary()->RequestStorePolicy(
+        serialized,
+        &SignedSettings::OnBoolComplete,
+        d_);
   } else {
-    d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code), false);
+    d_->OnSettingsOpCompleted(OPERATION_FAILED, false);
   }
 }
 
-void StorePolicyOp::OnComplete(bool value) {
-  // TODO(cmasone): wire this to the real API after http://crosbug.com/12670
-  NOTREACHED();
-}
-
-RetrievePolicyOp::RetrievePolicyOp(SignedSettings::Delegate<std::string>* d)
+RetrievePolicyOp::RetrievePolicyOp(
+    SignedSettings::Delegate<const em::PolicyFetchResponse&>* d)
     : d_(d) {
 }
 
 RetrievePolicyOp::~RetrievePolicyOp() {}
 
 void RetrievePolicyOp::Execute() {
-  // Just a stub for now.
-  // TODO(cmasone): wire this to the real API after http://crosbug.com/12670
-  d_->OnSettingsOpCompleted(SUCCESS, std::string());
+  CrosLibrary::Get()->GetLoginLibrary()->RequestRetrievePolicy(
+      &RetrievePolicyOp::OnStringComplete, this);
 }
 
 void RetrievePolicyOp::OnKeyOpComplete(
     const OwnerManager::KeyOpCode return_code,
     const std::vector<uint8>& payload) {
-  // TODO(cmasone): wire this to the real API after http://crosbug.com/12670
-  NOTREACHED();
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -489,10 +506,31 @@ void RetrievePolicyOp::OnKeyOpComplete(
   }
   // Now, sure we're on the UI thread.
   if (return_code == OwnerManager::SUCCESS)
-    d_->OnSettingsOpCompleted(SUCCESS, value_);
+    d_->OnSettingsOpCompleted(SUCCESS, policy_);
   else
     d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code),
-                              std::string());
+                              em::PolicyFetchResponse());
+}
+
+// static
+void RetrievePolicyOp::OnStringComplete(void* delegate, const char* out) {
+  RetrievePolicyOp* op = static_cast<RetrievePolicyOp*>(delegate);
+  op->ProcessPolicy(out);
+}
+
+void RetrievePolicyOp::ProcessPolicy(const char* out) {
+  if (!out || !policy_.ParseFromString(out)) {
+    d_->OnSettingsOpCompleted(NOT_FOUND, policy_);
+    return;
+  }
+  if (!policy_.has_policy_data() || !policy_.has_policy_data_signature()) {
+    d_->OnSettingsOpCompleted(OPERATION_FAILED, em::PolicyFetchResponse());
+    return;
+  }
+  std::vector<uint8> sig;
+  const char* sig_ptr = policy_.policy_data_signature().c_str();
+  sig.assign(sig_ptr, sig_ptr + policy_.policy_data_signature().length());
+  service_->StartVerifyAttempt(policy_.policy_data(), sig, this);
 }
 
 }  // namespace chromeos

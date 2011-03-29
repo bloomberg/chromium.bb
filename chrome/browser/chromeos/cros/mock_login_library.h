@@ -20,9 +20,13 @@ class MockLoginLibrary : public LoginLibrary {
   MOCK_METHOD2(CheckWhitelist, bool(const std::string&, std::vector<uint8>*));
   MOCK_METHOD0(EmitLoginPromptReady, bool(void));
   MOCK_METHOD1(EnumerateWhitelisted, bool(std::vector<std::string>*));
+  MOCK_METHOD2(RequestRetrievePolicy, void(RetrievePolicyCallback, void*));
   MOCK_METHOD3(RequestRetrieveProperty, void(const std::string&,
                                              RetrievePropertyCallback,
                                              void*));
+  MOCK_METHOD3(RequestStorePolicy, void(const std::string&,
+                                        StorePolicyCallback,
+                                        void*));
   MOCK_METHOD4(StorePropertyAsync, bool(const std::string&,
                                         const std::string&,
                                         const std::vector<uint8>&,

@@ -32,6 +32,9 @@ class LoginLibrary {
   virtual bool CheckWhitelist(const std::string& email,
                               std::vector<uint8>* OUT_signature) = 0;
 
+  virtual void RequestRetrievePolicy(RetrievePolicyCallback callback,
+                                     void* delegate_string) = 0;
+
   // Start fetch the value associated with |name|, if its present.
   // When fetching is done/failed, |callback| is called to pass back the fetch
   // results. If fetching is successful, |callback| will be called with
@@ -40,6 +43,10 @@ class LoginLibrary {
   virtual void RequestRetrieveProperty(const std::string& name,
                                        RetrievePropertyCallback callback,
                                        void* user_data) = 0;
+
+  virtual void RequestStorePolicy(const std::string& policy,
+                                  StorePolicyCallback callback,
+                                  void* delegate_bool) = 0;
 
   // Attempts to issue a signed async request to store |name|=|value|.
   // |signature| must by a SHA1 with RSA encryption signature over the string
