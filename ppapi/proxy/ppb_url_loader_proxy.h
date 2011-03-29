@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,6 +45,12 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
+  // URLLoader objects are sent from places other than just URLLoader.Create,
+  // in particular when doing a full-frame plugin. This function does the
+  // necessary setup in the host before the resource is sent. Call this any
+  // time you're sending a new URLLoader that the plugin hasn't seen yet.
+  void PrepareURLLoaderForSendingToPlugin(PP_Resource resource);
+
  private:
   // Data associated with callbacks for ReadResponseBody.
   struct ReadCallbackInfo;
@@ -72,12 +78,20 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
                                 int32_t result,
                                 const std::string& data);
 
+  // Hooks the given URLLoader resource up in the host for receiving download
+  // and upload status callbacks.
+  void RegisterStatusCallback(PP_Resource resource);
+
   // Handles callbacks for read complete messages. Takes ownership of the info
   // pointer.
   void OnReadCallback(int32_t result, ReadCallbackInfo* info);
 
   CompletionCallbackFactory<PPB_URLLoader_Proxy,
                             ProxyNonThreadSafeRefCount> callback_factory_;
+
+  // Valid only in the host, this lazily-initialized pointer indicates the
+  // URLLoaderTrusted interface.
+  const PPB_URLLoaderTrusted* host_urlloader_trusted_interface_;
 };
 
 class PPB_URLLoaderTrusted_Proxy : public InterfaceProxy {

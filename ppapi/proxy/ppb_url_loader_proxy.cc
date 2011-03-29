@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -296,6 +296,27 @@ InterfaceProxy* CreateURLLoaderTrustedProxy(Dispatcher* dispatcher,
   return new PPB_URLLoaderTrusted_Proxy(dispatcher, target_interface);
 }
 
+// Called in the renderer when the byte counts have changed. We send a message
+// to the plugin to synchronize its counts so it can respond to status polls
+// from the plugin.
+void UpdateResourceLoadStatus(PP_Instance pp_instance,
+                              PP_Resource pp_resource,
+                              int64 bytes_sent,
+                              int64 total_bytes_to_be_sent,
+                              int64 bytes_received,
+                              int64 total_bytes_to_be_received) {
+  Dispatcher* dispatcher = HostDispatcher::GetForInstance(pp_instance);
+  PPBURLLoader_UpdateProgress_Params params;
+  params.instance = pp_instance;
+  params.resource.SetHostResource(pp_instance, pp_resource);
+  params.bytes_sent = bytes_sent;
+  params.total_bytes_to_be_sent = total_bytes_to_be_sent;
+  params.bytes_received = bytes_received;
+  params.total_bytes_to_be_received = total_bytes_to_be_received;
+  dispatcher->Send(new PpapiMsg_PPBURLLoader_UpdateProgress(
+      INTERFACE_ID_PPB_URL_LOADER, params));
+}
+
 }  // namespace
 
 // PPB_URLLoader_Proxy ---------------------------------------------------------
@@ -308,7 +329,8 @@ struct PPB_URLLoader_Proxy::ReadCallbackInfo {
 PPB_URLLoader_Proxy::PPB_URLLoader_Proxy(Dispatcher* dispatcher,
                                          const void* target_interface)
     : InterfaceProxy(dispatcher, target_interface),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      host_urlloader_trusted_interface_(NULL) {
 }
 
 PPB_URLLoader_Proxy::~PPB_URLLoader_Proxy() {
@@ -361,9 +383,17 @@ bool PPB_URLLoader_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+void PPB_URLLoader_Proxy::PrepareURLLoaderForSendingToPlugin(
+    PP_Resource resource) {
+  // So the plugin can query load status, we need to register our status
+  // callback before sending any URLLoader to the plugin.
+  RegisterStatusCallback(resource);
+}
+
 void PPB_URLLoader_Proxy::OnMsgCreate(PP_Instance instance,
                                       HostResource* result) {
   result->SetHostResource(instance, ppb_url_loader_target()->Create(instance));
+  PrepareURLLoaderForSendingToPlugin(result->host_resource());
 }
 
 void PPB_URLLoader_Proxy::OnMsgOpen(const HostResource& loader,
@@ -488,6 +518,23 @@ void PPB_URLLoader_Proxy::OnMsgReadResponseBodyAck(
   object->current_read_callback_ = PP_BlockUntilComplete();
   object->current_read_buffer_ = NULL;
   PP_RunCompletionCallback(&temp_callback, result);
+}
+
+void PPB_URLLoader_Proxy::RegisterStatusCallback(PP_Resource resource) {
+  DCHECK(!dispatcher()->IsPlugin());
+  if (!host_urlloader_trusted_interface_) {
+    host_urlloader_trusted_interface_ =
+        static_cast<const PPB_URLLoaderTrusted*>(
+            dispatcher()->GetLocalInterface(PPB_URLLOADERTRUSTED_INTERFACE));
+    if (!host_urlloader_trusted_interface_) {
+      NOTREACHED();
+      return;
+    }
+  }
+
+  host_urlloader_trusted_interface_->RegisterStatusCallback(
+      resource,
+      &UpdateResourceLoadStatus);
 }
 
 void PPB_URLLoader_Proxy::OnReadCallback(int32_t result,

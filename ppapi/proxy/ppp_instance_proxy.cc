@@ -73,12 +73,18 @@ PP_Bool HandleInputEvent(PP_Instance instance,
 PP_Bool HandleDocumentLoad(PP_Instance instance,
                            PP_Resource url_loader) {
   PP_Bool result = PP_FALSE;
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+
+  // Set up the URLLoader for proxying.
+
+  PPB_URLLoader_Proxy* url_loader_proxy = static_cast<PPB_URLLoader_Proxy*>(
+      dispatcher->GetOrCreatePPBInterfaceProxy(INTERFACE_ID_PPB_URL_LOADER));
+  url_loader_proxy->PrepareURLLoaderForSendingToPlugin(url_loader);
+
   HostResource serialized_loader;
   serialized_loader.SetHostResource(instance, url_loader);
-  HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiMsg_PPPInstance_HandleDocumentLoad(INTERFACE_ID_PPP_INSTANCE,
-                                                  instance, serialized_loader,
-                                                  &result));
+  dispatcher->Send(new PpapiMsg_PPPInstance_HandleDocumentLoad(
+      INTERFACE_ID_PPP_INSTANCE, instance, serialized_loader, &result));
   return result;
 }
 
