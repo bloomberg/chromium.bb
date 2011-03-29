@@ -195,18 +195,16 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
 // Test for crbug.com/14505. This tests that chrome:// urls are still functional
 // after download of a file while viewing another chrome://.
-// Hangs flakily in Win, http://crbug.com/45040, and started hanging on Linux,
-// Mac and ChromeOS, http://crbug.com/77762.
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
-                       DISABLED_ChromeURLAfterDownload) {
-  GURL downloads_url("chrome://downloads");
+                       ChromeURLAfterDownload) {
+  GURL flags_url("chrome://flags");
   GURL extensions_url("chrome://extensions");
   FilePath zip_download;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &zip_download));
   zip_download = zip_download.AppendASCII("zip").AppendASCII("test.zip");
   GURL zip_url = net::FilePathToFileURL(zip_download);
 
-  ui_test_utils::NavigateToURL(browser(), downloads_url);
+  ui_test_utils::NavigateToURL(browser(), flags_url);
   ui_test_utils::NavigateToURL(browser(), zip_url);
   ui_test_utils::WaitForDownloadCount(
       browser()->profile()->GetDownloadManager(), 1);
