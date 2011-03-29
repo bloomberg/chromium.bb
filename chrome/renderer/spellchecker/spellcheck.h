@@ -32,7 +32,7 @@ class SpellCheck {
 
   void Init(base::PlatformFile file,
             const std::vector<std::string>& custom_words,
-            const std::string& language);
+            const std::string language);
 
   // SpellCheck a word.
   // Returns true if spelled correctly, false otherwise.

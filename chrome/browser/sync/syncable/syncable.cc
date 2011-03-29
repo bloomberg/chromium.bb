@@ -886,7 +886,7 @@ string Directory::store_birthday() const {
   return kernel_->persisted_info.store_birthday;
 }
 
-void Directory::set_store_birthday(const string& store_birthday) {
+void Directory::set_store_birthday(string store_birthday) {
   ScopedKernelLock lock(this);
   if (kernel_->persisted_info.store_birthday == store_birthday)
     return;

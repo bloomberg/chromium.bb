@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -312,8 +312,8 @@ class ServerDeletedPathChecker {
 
   // returns 0 if we should stop investigating the path.
   static syncable::Id GetAndExamineParent(syncable::BaseTransaction* trans,
-                                          const syncable::Id& id,
-                                          const syncable::Id& check_id,
+                                          syncable::Id id,
+                                          syncable::Id check_id,
                                           const syncable::Entry& log_entry) {
     syncable::Entry parent(trans, syncable::GET_BY_ID, id);
     CHECK(parent.good()) << "Tree inconsitency, missing id" << id << " "
@@ -334,8 +334,8 @@ class LocallyDeletedPathChecker {
 
   // returns 0 if we should stop investigating the path.
   static syncable::Id GetAndExamineParent(syncable::BaseTransaction* trans,
-                                          const syncable::Id& id,
-                                          const syncable::Id& check_id,
+                                          syncable::Id id,
+                                          syncable::Id check_id,
                                           const syncable::Entry& log_entry) {
     syncable::Entry parent(trans, syncable::GET_BY_ID, id);
     if (!parent.good())

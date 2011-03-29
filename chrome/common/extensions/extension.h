@@ -311,9 +311,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Expects base64 encoded |input| and formats into |output| including
   // the appropriate header & footer.
-  static bool FormatPEMForFileOutput(const std::string& input,
-                                     std::string* output,
-                                     bool is_public);
+  static bool FormatPEMForFileOutput(const std::string input,
+      std::string* output, bool is_public);
 
   // Determine whether |new_extension| has increased privileges compared to
   // its previously granted permissions, specified by |granted_apis|,

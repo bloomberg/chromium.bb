@@ -127,7 +127,7 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
 
   // Parses the image names out of an extension.
   void ParseImageNamesFromJSON(DictionaryValue* images_value,
-                               const FilePath& images_path,
+                               FilePath images_path,
                                FilePathMap* file_paths) const;
 
   // Creates the data for |source_images_| from |file_paths|.

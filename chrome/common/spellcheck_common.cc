@@ -169,4 +169,17 @@ void SpellCheckLanguages(std::vector<std::string>* languages) {
   }
 }
 
+
+std::string GetLanguageFromLanguageRegion(std::string input_language) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(g_supported_spellchecker_languages);
+       ++i) {
+    std::string language(
+        g_supported_spellchecker_languages[i].language_region);
+    if (language == input_language)
+      return std::string(g_supported_spellchecker_languages[i].language);
+  }
+
+  return input_language;
+}
+
 }  // namespace SpellCheckCommon

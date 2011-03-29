@@ -154,7 +154,7 @@ bool ManifestFetchData::AddExtension(std::string id, std::string version,
   return true;
 }
 
-bool ManifestFetchData::Includes(const std::string& extension_id) const {
+bool ManifestFetchData::Includes(std::string extension_id) const {
   return extension_ids_.find(extension_id) != extension_ids_.end();
 }
 

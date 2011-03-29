@@ -75,7 +75,7 @@ class ManifestFetchData {
   const std::set<std::string>& extension_ids() const { return extension_ids_; }
 
   // Returns true if the given id is included in this manifest fetch.
-  bool Includes(const std::string& extension_id) const;
+  bool Includes(std::string extension_id) const;
 
   // Returns true if a ping parameter for |type| was added to full_url for this
   // extension id.

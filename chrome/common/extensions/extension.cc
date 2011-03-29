@@ -1266,7 +1266,8 @@ bool Extension::ParsePEMKeyBytes(const std::string& input,
   return base::Base64Decode(working, output);
 }
 
-bool Extension::ProducePEM(const std::string& input, std::string* output) {
+bool Extension::ProducePEM(const std::string& input,
+                                  std::string* output) {
   CHECK(output);
   if (input.length() == 0)
     return false;
@@ -1274,7 +1275,7 @@ bool Extension::ProducePEM(const std::string& input, std::string* output) {
   return base::Base64Encode(input, output);
 }
 
-bool Extension::FormatPEMForFileOutput(const std::string& input,
+bool Extension::FormatPEMForFileOutput(const std::string input,
                                        std::string* output,
                                        bool is_public) {
   CHECK(output);
