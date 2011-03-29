@@ -23,6 +23,7 @@ void GenericHandler::RegisterMessages() {
 
 void GenericHandler::HandleNavigateToUrl(const ListValue* args) {
   std::string url_string;
+  std::string target_string;
   double button;
   bool alt_key;
   bool ctrl_key;
@@ -30,11 +31,12 @@ void GenericHandler::HandleNavigateToUrl(const ListValue* args) {
   bool shift_key;
 
   CHECK(args->GetString(0, &url_string));
-  CHECK(args->GetDouble(1, &button));
-  CHECK(args->GetBoolean(2, &alt_key));
-  CHECK(args->GetBoolean(3, &ctrl_key));
-  CHECK(args->GetBoolean(4, &meta_key));
-  CHECK(args->GetBoolean(5, &shift_key));
+  CHECK(args->GetString(1, &target_string));
+  CHECK(args->GetDouble(2, &button));
+  CHECK(args->GetBoolean(3, &alt_key));
+  CHECK(args->GetBoolean(4, &ctrl_key));
+  CHECK(args->GetBoolean(5, &meta_key));
+  CHECK(args->GetBoolean(6, &shift_key));
 
   CHECK(button == 0.0 || button == 1.0);
   bool middle_button = (button == 1.0);
@@ -42,6 +44,8 @@ void GenericHandler::HandleNavigateToUrl(const ListValue* args) {
   WindowOpenDisposition disposition =
       disposition_utils::DispositionFromClick(middle_button, alt_key, ctrl_key,
                                               meta_key, shift_key);
+  if (disposition == CURRENT_TAB && target_string == "_blank")
+    disposition = NEW_FOREGROUND_TAB;
 
   web_ui_->tab_contents()->OpenURL(
       GURL(url_string), GURL(), disposition, PageTransition::LINK);

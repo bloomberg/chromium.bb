@@ -124,8 +124,15 @@ document.addEventListener('click', function(e) {
 
     if ((el.protocol == 'file:' || el.protocol == 'about:') &&
         (e.button == 0 || e.button == 1)) {
-      chrome.send('navigateToUrl',
-          [el.href, e.button, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey]);
+      chrome.send('navigateToUrl', [
+        el.href,
+        el.target,
+        e.button,
+        e.altKey,
+        e.ctrlKey,
+        e.metaKey,
+        e.shiftKey
+      ]);
       e.preventDefault();
     }
   }
