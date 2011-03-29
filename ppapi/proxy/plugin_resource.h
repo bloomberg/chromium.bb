@@ -21,6 +21,7 @@
   F(FileRef) \
   F(FileSystem) \
   F(FlashMenu) \
+  F(FlashNetConnector) \
   F(Font) \
   F(Graphics2D) \
   F(ImageData) \

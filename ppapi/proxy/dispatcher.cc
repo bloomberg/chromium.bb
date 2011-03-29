@@ -41,6 +41,7 @@
 #include "ppapi/c/private/ppb_flash_clipboard.h"
 #include "ppapi/c/private/ppb_flash_file.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
+#include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -59,6 +60,7 @@
 #include "ppapi/proxy/ppb_flash_file_proxy.h"
 #include "ppapi/proxy/ppb_flash_proxy.h"
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
+#include "ppapi/proxy/ppb_flash_net_connector_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_fullscreen_proxy.h"
 #include "ppapi/proxy/ppb_gles_chromium_texture_mapping_proxy.h"
@@ -136,6 +138,10 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_URLResponseInfo_Proxy::GetInfo());
   AddPPB(PPB_URLUtil_Proxy::GetInfo());
   AddPPB(PPB_Var_Deprecated_Proxy::GetInfo());
+
+#ifdef ENABLE_FLAPPER_HACKS
+  AddPPB(PPB_Flash_NetConnector_Proxy::GetInfo());
+#endif
 
   // PPP (plugin) interfaces.
   AddPPP(PPP_Instance_Proxy::GetInfo());

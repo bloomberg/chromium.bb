@@ -96,6 +96,14 @@ IPC_MESSAGE_ROUTED2(
     pp::proxy::HostResource /* filesystem */,
     int32_t /* result */)
 
+// PPB_Flash_NetConnector.
+IPC_MESSAGE_ROUTED5(PpapiMsg_PPBFlashNetConnector_ConnectACK,
+                    pp::proxy::HostResource /* net_connector */,
+                    int32_t /* result */,
+                    IPC::PlatformFileForTransit /* handle */,
+                    std::string /* local_addr_as_string */,
+                    std::string /* remote_addr_as_string */)
+
 // PPB_Graphics2D.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
                     pp::proxy::HostResource /* graphics_2d */,
@@ -463,6 +471,17 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPBFlashMenu_ShowACK,
                     int32_t /* selected_id */,
                     int32_t /* result */)
 
+// PPB_Flash_NetConnector.
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlashNetConnector_Create,
+                           PP_Instance /* instance_id */,
+                           pp::proxy::HostResource /* result */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFlashNetConnector_ConnectTcp,
+                    pp::proxy::HostResource /* connector */,
+                    std::string /* host */,
+                    uint16_t /* port */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlashNetConnector_ConnectTcpAddress,
+                    pp::proxy::HostResource /* connector */,
+                    std::string /* net_address_as_string */)
 
 // PPB_Font.
 IPC_SYNC_MESSAGE_ROUTED2_3(

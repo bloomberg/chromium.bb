@@ -109,6 +109,8 @@
         'proxy/ppb_flash_proxy.h',
         'proxy/ppb_flash_menu_proxy.cc',
         'proxy/ppb_flash_menu_proxy.h',
+        'proxy/ppb_flash_net_connector_proxy.cc',
+        'proxy/ppb_flash_net_connector_proxy.h',
         'proxy/ppb_font_proxy.cc',
         'proxy/ppb_font_proxy.h',
         'proxy/ppb_fullscreen_proxy.cc',

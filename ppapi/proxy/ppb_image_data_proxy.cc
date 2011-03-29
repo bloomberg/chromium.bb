@@ -152,7 +152,7 @@ PP_Resource Create(PP_Instance instance,
                    PP_Bool init_to_zero) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
-    return PP_ERROR_BADARGUMENT;
+    return 0;
 
   HostResource result;
   std::string image_data_desc;
