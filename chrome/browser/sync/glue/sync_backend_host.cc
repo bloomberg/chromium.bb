@@ -348,6 +348,9 @@ void SyncBackendHost::ConfigureAutofillMigration() {
 SyncBackendHost::PendingConfigureDataTypesState::
 PendingConfigureDataTypesState() : deleted_type(false) {}
 
+SyncBackendHost::PendingConfigureDataTypesState::
+~PendingConfigureDataTypesState() {}
+
 void SyncBackendHost::ConfigureDataTypes(
     const DataTypeController::TypeMap& data_type_controllers,
     const syncable::ModelTypeSet& types,

@@ -606,6 +606,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   struct PendingConfigureDataTypesState {
     PendingConfigureDataTypesState();
+    ~PendingConfigureDataTypesState();
+
     // A task that should be called once data type configuration is
     // complete.
     scoped_ptr<CancelableTask> ready_task;
