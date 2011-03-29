@@ -197,7 +197,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 #if defined(OS_WIN)
 #define MAYBE_ChromeURLAfterDownload DISABLED_ChromeURLAfterDownload
 #else
-#define MAYBE_ChromeURLAfterDownload ChromeURLAfterDownload
+// Started failing on Linux and Mac too, http://crbug.com/77762.
+#define MAYBE_ChromeURLAfterDownload FLAKY_ChromeURLAfterDownload
 #endif  // defined(OS_WIN)
 
 // Test for crbug.com/14505. This tests that chrome:// urls are still functional
