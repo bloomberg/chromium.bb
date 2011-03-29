@@ -727,6 +727,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
   ASSERT_FALSE(translate_client1_prefs.IsSiteBlacklisted(host));
 }
 
+// TCM ID - 6515252.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
                        kExtensionsUIDeveloperMode) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -747,3 +748,67 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
   ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode),
             GetPrefs(1)->GetBoolean(prefs::kExtensionsUIDeveloperMode));
 }
+
+// TCM ID - 6473347.
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kTapToClickEnabled) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kTapToClickEnabled),
+            GetPrefs(1)->GetBoolean(prefs::kTapToClickEnabled));
+
+  bool new_kTapToClickEnabled = !GetPrefs(0)->GetBoolean(
+      prefs::kTapToClickEnabled);
+  GetVerifierPrefs()->SetBoolean(prefs::kTapToClickEnabled,
+      new_kTapToClickEnabled);
+  GetPrefs(0)->SetBoolean(prefs::kTapToClickEnabled, new_kTapToClickEnabled);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kTapToClickEnabled),
+            GetPrefs(1)->GetBoolean(prefs::kTapToClickEnabled));
+  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kTapToClickEnabled),
+            GetPrefs(1)->GetBoolean(prefs::kTapToClickEnabled));
+
+  GetVerifierPrefs()->SetBoolean(prefs::kTapToClickEnabled,
+      !new_kTapToClickEnabled);
+  GetPrefs(0)->SetBoolean(prefs::kTapToClickEnabled,
+      !new_kTapToClickEnabled);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kTapToClickEnabled),
+            GetPrefs(1)->GetBoolean(prefs::kTapToClickEnabled));
+  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kTapToClickEnabled),
+            GetPrefs(1)->GetBoolean(prefs::kTapToClickEnabled));
+}
+#endif  // OS_CHROMEOS
+
+// TCM ID - 6458824.
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kEnableScreenLock) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kEnableScreenLock),
+            GetPrefs(1)->GetBoolean(prefs::kEnableScreenLock));
+
+  bool new_kEnableScreenLock = !GetPrefs(0)->GetBoolean(
+      prefs::kEnableScreenLock);
+  GetVerifierPrefs()->SetBoolean(prefs::kEnableScreenLock,
+      new_kEnableScreenLock);
+  GetPrefs(0)->SetBoolean(prefs::kTapToClickEnabled, new_kEnableScreenLock);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kEnableScreenLock),
+            GetPrefs(1)->GetBoolean(prefs::kEnableScreenLock));
+  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kEnableScreenLock),
+            GetPrefs(1)->GetBoolean(prefs::kEnableScreenLock));
+
+  GetVerifierPrefs()->SetBoolean(prefs::kEnableScreenLock,
+      !new_kEnableScreenLock);
+  GetPrefs(0)->SetBoolean(prefs::kEnableScreenLock,
+      !new_kEnableScreenLock);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kEnableScreenLock),
+            GetPrefs(1)->GetBoolean(prefs::kEnableScreenLock));
+  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kEnableScreenLock),
+            GetPrefs(1)->GetBoolean(prefs::kEnableScreenLock));
+}
+#endif  // OS_CHROMEOS
