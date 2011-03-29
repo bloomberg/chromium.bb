@@ -22,8 +22,6 @@ bool EVBubbleView::OnMousePressed(const views::MouseEvent& event) {
   return true;
 }
 
-void EVBubbleView::OnMouseReleased(const views::MouseEvent& event,
-                                   bool canceled) {
-  click_handler_.OnMouseReleased(event, canceled);
+void EVBubbleView::OnMouseReleased(const views::MouseEvent& event) {
+  click_handler_.OnMouseReleased(event);
 }
-

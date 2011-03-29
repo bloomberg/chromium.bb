@@ -16,9 +16,8 @@ ClickHandler::ClickHandler(const views::View* owner,
       location_bar_(location_bar) {
 }
 
-void ClickHandler::OnMouseReleased(const views::MouseEvent& event,
-                                   bool canceled) {
-  if (canceled || !owner_->HitTest(event.location()))
+void ClickHandler::OnMouseReleased(const views::MouseEvent& event) {
+  if (!owner_->HitTest(event.location()))
     return;
 
   // Do not show page info if the user has been editing the location
@@ -34,4 +33,3 @@ void ClickHandler::OnMouseReleased(const views::MouseEvent& event,
   }
   tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
 }
-

@@ -130,7 +130,7 @@ bool DispatchX2Event(RootView* root, XEvent* xev) {
         case XI_ButtonPress:
           return root->OnMousePressed(mouseev);
         case XI_ButtonRelease:
-          root->OnMouseReleased(mouseev, false);
+          root->OnMouseReleased(mouseev);
           return true;
         case XI_Motion: {
           if (mouseev.type() == ui::ET_MOUSE_DRAGGED) {
@@ -185,7 +185,7 @@ bool DispatchXEvent(XEvent* xev) {
           if (xev->type == ButtonPress) {
             return root->OnMousePressed(mouseev);
           } else {
-            root->OnMouseReleased(mouseev, false);
+            root->OnMouseReleased(mouseev);
             return true;  // Assume the event has been processed to make sure we
                           // don't process it twice.
           }

@@ -23,9 +23,8 @@ bool LocationIconView::OnMousePressed(const views::MouseEvent& event) {
   return true;
 }
 
-void LocationIconView::OnMouseReleased(const views::MouseEvent& event,
-                                       bool canceled) {
-  click_handler_.OnMouseReleased(event, canceled);
+void LocationIconView::OnMouseReleased(const views::MouseEvent& event) {
+  click_handler_.OnMouseReleased(event);
 }
 
 void LocationIconView::ShowTooltip(bool show) {

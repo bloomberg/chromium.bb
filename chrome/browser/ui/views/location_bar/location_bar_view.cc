@@ -741,12 +741,9 @@ bool LocationBarView::OnMouseDragged(const views::MouseEvent& event) {
   return true;
 }
 
-void LocationBarView::OnMouseReleased(const views::MouseEvent& event,
-                                      bool canceled) {
+void LocationBarView::OnMouseReleased(const views::MouseEvent& event) {
   UINT msg;
-  if (canceled) {
-    msg = WM_CAPTURECHANGED;
-  } else if (event.IsLeftMouseButton()) {
+  if (event.IsLeftMouseButton()) {
     msg = WM_LBUTTONUP;
   } else if (event.IsMiddleMouseButton()) {
     msg = WM_MBUTTONUP;
@@ -757,6 +754,10 @@ void LocationBarView::OnMouseReleased(const views::MouseEvent& event,
     return;
   }
   OnMouseEvent(event, msg);
+}
+
+void LocationBarView::OnMouseCaptureLost() {
+  location_entry_->HandleExternalMsg(WM_CAPTURECHANGED, 0, CPoint());
 }
 #endif
 
@@ -946,18 +947,7 @@ void LocationBarView::RefreshPageActionViews() {
 
 #if defined(OS_WIN)
 void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
-  UINT flags = 0;
-  if (event.IsControlDown())
-    flags |= MK_CONTROL;
-  if (event.IsShiftDown())
-    flags |= MK_SHIFT;
-  if (event.IsLeftMouseButton())
-    flags |= MK_LBUTTON;
-  if (event.IsMiddleMouseButton())
-    flags |= MK_MBUTTON;
-  if (event.IsRightMouseButton())
-    flags |= MK_RBUTTON;
-
+  UINT flags = event.GetWindowsFlags();
   gfx::Point screen_point(event.location());
   ConvertPointToScreen(this, &screen_point);
   location_entry_->HandleExternalMsg(msg, flags, screen_point.ToPOINT());

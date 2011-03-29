@@ -99,8 +99,7 @@ class BrowserActionButton : public views::MenuButton,
   // case) is dismissed.
   virtual bool Activate() OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const views::MouseEvent& event,
-                               bool canceled) OVERRIDE;
+  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
   virtual void ShowContextMenu(const gfx::Point& p,

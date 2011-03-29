@@ -85,17 +85,17 @@ NativeTextfieldViews::~NativeTextfieldViews() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldViews, View overrides:
 
-bool NativeTextfieldViews::OnMousePressed(const views::MouseEvent& e) {
+bool NativeTextfieldViews::OnMousePressed(const views::MouseEvent& event) {
   OnBeforeUserAction();
-  if (HandleMousePressed(e))
+  if (HandleMousePressed(event))
     SchedulePaint();
   OnAfterUserAction();
   return true;
 }
 
-bool NativeTextfieldViews::OnMouseDragged(const views::MouseEvent& e) {
+bool NativeTextfieldViews::OnMouseDragged(const views::MouseEvent& event) {
   OnBeforeUserAction();
-  size_t pos = FindCursorPosition(e.location());
+  size_t pos = FindCursorPosition(event.location());
   if (model_->MoveCursorTo(pos, true)) {
     UpdateCursorBoundsAndTextOffset();
     SchedulePaint();
@@ -104,18 +104,14 @@ bool NativeTextfieldViews::OnMouseDragged(const views::MouseEvent& e) {
   return true;
 }
 
-void NativeTextfieldViews::OnMouseReleased(const views::MouseEvent& e,
-                                          bool canceled) {
-}
-
-bool NativeTextfieldViews::OnKeyPressed(const views::KeyEvent& e) {
+bool NativeTextfieldViews::OnKeyPressed(const views::KeyEvent& event) {
   // OnKeyPressed/OnKeyReleased/OnFocus/OnBlur will never be invoked on
   // NativeTextfieldViews as it will never gain focus.
   NOTREACHED();
   return false;
 }
 
-bool NativeTextfieldViews::OnKeyReleased(const views::KeyEvent& e) {
+bool NativeTextfieldViews::OnKeyReleased(const views::KeyEvent& event) {
   NOTREACHED();
   return false;
 }
@@ -470,7 +466,7 @@ void NativeTextfieldViews::UpdateCursorBoundsAndTextOffset() {
   } else if (x_left < 0) {
     // when the cursor overflows to the left
     text_offset_ = -cursor_bounds_.x();
-  } else if(full_width > width && text_offset_ + full_width < width) {
+  } else if (full_width > width && text_offset_ + full_width < width) {
     // when the cursor moves within the textfield with the text
     // longer than the field.
     text_offset_ = width - full_width;

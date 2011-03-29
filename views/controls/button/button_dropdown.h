@@ -28,7 +28,9 @@ class ButtonDropDown : public ImageButton {
   // Overridden from views::View
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
+  // Showing the drop down results in a MouseCaptureLost, we need to ignore it.
+  virtual void OnMouseCaptureLost() OVERRIDE {}
   virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
   // Display the right-click menu, as triggered by the keyboard, for instance.
   // Using the member function ShowDropDownMenu for the actual display.

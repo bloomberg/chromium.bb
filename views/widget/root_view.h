@@ -59,10 +59,6 @@ class RootView : public View,
 
   // Input ---------------------------------------------------------------------
 
-  // Invoked By the Widget if the mouse drag is interrupted by
-  // the system. Invokes OnMouseReleased with a value of true for canceled.
-  void ProcessMouseDragCanceled();
-
   // Process a key event. Send the event to the focused view and up the focus
   // path, and finally to the default keyboard handler, until someone consumes
   // it.  Returns whether anyone consumed the event.
@@ -106,7 +102,8 @@ class RootView : public View,
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;

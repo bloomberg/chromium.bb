@@ -159,16 +159,14 @@ void PanelController::Init(bool initial_focus,
 void PanelController::UpdateTitleBar() {
   if (!delegate_ || !title_window_)
     return;
-  DCHECK(title_content_);
   title_content_->title_label()->SetText(
       UTF16ToWideHack(delegate_->GetPanelTitle()));
   title_content_->title_icon()->SetImage(delegate_->GetPanelIcon());
 }
 
 bool PanelController::TitleMousePressed(const views::MouseEvent& event) {
-  if (!event.IsOnlyLeftMouseButton()) {
+  if (!event.IsOnlyLeftMouseButton())
     return false;
-  }
   GdkEvent* gdk_event = gtk_get_current_event();
   if (gdk_event->type != GDK_BUTTON_PRESS) {
     gdk_event_free(gdk_event);
@@ -194,15 +192,15 @@ bool PanelController::TitleMousePressed(const views::MouseEvent& event) {
   return true;
 }
 
-void PanelController::TitleMouseReleased(
-    const views::MouseEvent& event, bool canceled) {
-  if (!event.IsLeftMouseButton()) {
-    return;
-  }
+void PanelController::TitleMouseReleased(const views::MouseEvent& event) {
+  if (event.IsLeftMouseButton())
+    TitleMouseCaptureLost();
+}
+
+void PanelController::TitleMouseCaptureLost() {
   // Only handle clicks that started in our window.
-  if (!mouse_down_) {
+  if (!mouse_down_)
     return;
-  }
 
   mouse_down_ = false;
   if (!dragging_) {
@@ -224,10 +222,8 @@ void PanelController::SetState(State state) {
 }
 
 bool PanelController::TitleMouseDragged(const views::MouseEvent& event) {
-  if (!mouse_down_) {
+  if (!mouse_down_)
     return false;
-  }
-
   GdkEvent* gdk_event = gtk_get_current_event();
   if (gdk_event->type != GDK_MOTION_NOTIFY) {
     gdk_event_free(gdk_event);
@@ -363,19 +359,20 @@ void PanelController::TitleContentView::Layout() {
 
 bool PanelController::TitleContentView::OnMousePressed(
     const views::MouseEvent& event) {
-  DCHECK(panel_controller_) << "OnMousePressed after Close";
   return panel_controller_->TitleMousePressed(event);
 }
 
 void PanelController::TitleContentView::OnMouseReleased(
-    const views::MouseEvent& event, bool canceled) {
-  DCHECK(panel_controller_) << "MouseReleased after Close";
-  return panel_controller_->TitleMouseReleased(event, canceled);
+    const views::MouseEvent& event) {
+  panel_controller_->TitleMouseReleased(event);
+}
+
+void PanelController::TitleContentView::OnMouseCaptureLost() {
+  panel_controller_->TitleMouseCaptureLost();
 }
 
 bool PanelController::TitleContentView::OnMouseDragged(
     const views::MouseEvent& event) {
-  DCHECK(panel_controller_) << "MouseDragged after Close";
   return panel_controller_->TitleMouseDragged(event);
 }
 

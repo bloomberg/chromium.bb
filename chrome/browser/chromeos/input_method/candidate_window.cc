@@ -528,15 +528,11 @@ class CandidateView : public views::View {
   gfx::Point GetCandidateLabelPosition() const;
 
  private:
-  // View::OnMousePressed() implementation.
-  virtual bool OnMousePressed(const views::MouseEvent& event);
-
-  // View::OnMouseDragged() implementation.
-  virtual bool OnMouseDragged(const views::MouseEvent& event);
-
-  // View::OnMouseReleased() implementation.
-  virtual void OnMouseReleased(const views::MouseEvent& event,
-                               bool canceled);
+  // Overridden from View:
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseCaptureLost() OVERRIDE;
 
   // Zero-origin index in the current page.
   int index_in_page_;
@@ -735,12 +731,13 @@ bool CandidateView::OnMouseDragged(const views::MouseEvent& event) {
   return true;
 }
 
-void CandidateView::OnMouseReleased(const views::MouseEvent& event,
-                                       bool canceled) {
-  // Commit the current candidate unless it's canceled.
-  if (!canceled) {
-    parent_candidate_window_->CommitCandidate();
-  }
+void CandidateView::OnMouseReleased(const views::MouseEvent& event) {
+  // Commit the current candidate.
+  parent_candidate_window_->CommitCandidate();
+  OnMouseCaptureLost();
+}
+
+void CandidateView::OnMouseCaptureLost() {
   parent_candidate_window_->OnMouseReleased();
 }
 

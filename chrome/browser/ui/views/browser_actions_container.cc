@@ -226,14 +226,13 @@ bool BrowserActionButton::OnMousePressed(const views::MouseEvent& event) {
   return false;
 }
 
-void BrowserActionButton::OnMouseReleased(const views::MouseEvent& event,
-                                          bool canceled) {
+void BrowserActionButton::OnMouseReleased(const views::MouseEvent& event) {
   if (IsPopup() || showing_context_menu_) {
     // TODO(erikkay) this never actually gets called (probably because of the
     // loss of focus).
-    MenuButton::OnMouseReleased(event, canceled);
+    MenuButton::OnMouseReleased(event);
   } else {
-    TextButton::OnMouseReleased(event, canceled);
+    TextButton::OnMouseReleased(event);
   }
 }
 

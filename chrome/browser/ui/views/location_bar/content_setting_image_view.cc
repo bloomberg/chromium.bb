@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,9 +124,8 @@ bool ContentSettingImageView::OnMousePressed(const views::MouseEvent& event) {
   return true;
 }
 
-void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event,
-                                              bool canceled) {
-  if (canceled || !HitTest(event.location()))
+void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
+  if (!HitTest(event.location()))
     return;
 
   TabContents* tab_contents = parent_->GetTabContentsWrapper()->tab_contents();

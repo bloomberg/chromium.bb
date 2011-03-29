@@ -23,8 +23,8 @@ class LocationIconView : public views::ImageView {
   virtual ~LocationIconView();
 
   // Overridden from views::ImageView:
-  virtual bool OnMousePressed(const views::MouseEvent& event);
-  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
 
   // Whether we should show the tooltip for this icon or not.
   void ShowTooltip(bool show);

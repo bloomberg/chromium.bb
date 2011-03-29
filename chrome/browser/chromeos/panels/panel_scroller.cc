@@ -162,10 +162,6 @@ bool PanelScroller::OnMouseDragged(const views::MouseEvent& event) {
   return true;
 }
 
-void PanelScroller::OnMouseReleased(const views::MouseEvent& event,
-                                    bool canceled) {
-}
-
 void PanelScroller::HeaderClicked(PanelScrollerHeader* source) {
   for (size_t i = 0; i < panels_.size(); i++) {
     if (panels_[i]->header == source) {

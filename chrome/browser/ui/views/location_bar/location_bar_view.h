@@ -184,8 +184,8 @@ class LocationBarView : public LocationBar,
   // Event Handlers
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const views::MouseEvent& event,
-                               bool canceled) OVERRIDE;
+  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseCaptureLost() OVERRIDE;
 #endif
 
   const LocationIconView* location_icon_view() const {
@@ -209,7 +209,8 @@ class LocationBarView : public LocationBar,
 
   // Overridden from views::View:
   virtual std::string GetClassName() const OVERRIDE;
-  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) OVERRIDE;
+  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& event)
+      OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Overridden from views::DragController:

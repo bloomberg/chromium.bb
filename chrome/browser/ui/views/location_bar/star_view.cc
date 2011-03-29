@@ -51,13 +51,14 @@ bool StarView::OnMousePressed(const views::MouseEvent& event) {
   return true;
 }
 
-void StarView::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
-  if (!canceled && HitTest(event.location()))
+void StarView::OnMouseReleased(const views::MouseEvent& event) {
+  if (HitTest(event.location()))
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
 }
 
-bool StarView::OnKeyPressed(const views::KeyEvent& e) {
-  if (e.key_code() == ui::VKEY_SPACE || e.key_code() == ui::VKEY_RETURN) {
+bool StarView::OnKeyPressed(const views::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_SPACE ||
+      event.key_code() == ui::VKEY_RETURN) {
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
     return true;
   }

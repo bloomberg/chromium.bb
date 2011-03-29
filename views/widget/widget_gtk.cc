@@ -1279,7 +1279,7 @@ void WidgetGtk::HandleXGrabBroke() {
 
 void WidgetGtk::HandleGtkGrabBroke() {
   if (is_mouse_down_)
-    GetRootView()->ProcessMouseDragCanceled();
+    GetRootView()->OnMouseCaptureLost();
   is_mouse_down_ = false;
 }
 
@@ -1350,7 +1350,7 @@ void WidgetGtk::ProcessMouseReleased(GdkEventButton* event) {
   is_mouse_down_ = false;
   // GTK generates a mouse release at the end of dnd. We need to ignore it.
   if (!drag_data_)
-    GetRootView()->OnMouseReleased(mouse_up, false);
+    GetRootView()->OnMouseReleased(mouse_up);
 }
 
 bool WidgetGtk::ProcessScroll(GdkEventScroll* event) {

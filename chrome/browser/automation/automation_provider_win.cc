@@ -107,7 +107,7 @@ class MouseEventTask : public Task {
         break;
 
       case ui::ET_MOUSE_RELEASED:
-        view_->OnMouseReleased(event, false);
+        view_->OnMouseReleased(event);
         break;
 
       default:

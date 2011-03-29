@@ -801,7 +801,10 @@ bool View::OnMouseDragged(const MouseEvent& event) {
   return false;
 }
 
-void View::OnMouseReleased(const MouseEvent& event, bool canceled) {
+void View::OnMouseReleased(const MouseEvent& event) {
+}
+
+void View::OnMouseCaptureLost() {
 }
 
 void View::OnMouseMoved(const MouseEvent& event) {
@@ -1557,18 +1560,18 @@ bool View::ProcessMouseDragged(const MouseEvent& event, DragInfo* drag_info) {
   return (context_menu_controller != NULL) || possible_drag;
 }
 
-void View::ProcessMouseReleased(const MouseEvent& event, bool canceled) {
-  if (!canceled && context_menu_controller_ && event.IsOnlyRightMouseButton()) {
+void View::ProcessMouseReleased(const MouseEvent& event) {
+  if (context_menu_controller_ && event.IsOnlyRightMouseButton()) {
     // Assume that if there is a context menu controller we won't be deleted
     // from mouse released.
     gfx::Point location(event.location());
-    OnMouseReleased(event, canceled);
+    OnMouseReleased(event);
     if (HitTest(location)) {
       ConvertPointToScreen(this, &location);
       ShowContextMenu(location, true);
     }
   } else {
-    OnMouseReleased(event, canceled);
+    OnMouseReleased(event);
   }
   // WARNING: we may have been deleted.
 }

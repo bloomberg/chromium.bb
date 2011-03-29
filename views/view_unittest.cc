@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -154,7 +154,7 @@ class TestView : public View {
       bool is_add, View *parent, View *child) OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
 #if defined(TOUCH_UI)
   virtual TouchStatus OnTouchEvent(const TouchEvent& event);
 #endif
@@ -354,7 +354,7 @@ bool TestView::OnMouseDragged(const MouseEvent& event) {
   return true;
 }
 
-void TestView::OnMouseReleased(const MouseEvent& event, bool canceled) {
+void TestView::OnMouseReleased(const MouseEvent& event) {
   last_mouse_event_type_ = event.type();
   location_.SetPoint(event.x(), event.y());
 }
@@ -1475,7 +1475,7 @@ TEST_F(ButtonDropDownTest, RegularClickTest) {
   MouseEvent release_event(ui::ET_MOUSE_RELEASED, 1, 1,
                            ui::EF_LEFT_BUTTON_DOWN);
   button_as_view_->OnMousePressed(press_event);
-  button_as_view_->OnMouseReleased(release_event, false);
+  button_as_view_->OnMouseReleased(release_event);
   EXPECT_EQ(test_dialog_->last_pressed_button_, test_dialog_->button_drop_);
 }
 
@@ -1750,7 +1750,7 @@ TEST_F(ViewTest, TransformEvent) {
   EXPECT_EQ(10, v2->location_.y());
 
   MouseEvent released(ui::ET_MOUSE_RELEASED, 0, 0, 0);
-  root->OnMouseReleased(released, false);
+  root->OnMouseReleased(released);
 
   // Now rotate |v2| inside |v1| clockwise.
   v2->SetRotation(90.0);
@@ -1771,7 +1771,7 @@ TEST_F(ViewTest, TransformEvent) {
   EXPECT_EQ(10, v2->location_.x());
   EXPECT_EQ(20, v2->location_.y());
 
-  root->OnMouseReleased(released, false);
+  root->OnMouseReleased(released);
 
   v1->ResetTransform();
   v2->ResetTransform();
@@ -1802,7 +1802,7 @@ TEST_F(ViewTest, TransformEvent) {
   EXPECT_EQ(10, v3->location_.x());
   EXPECT_EQ(25, v3->location_.y());
 
-  root->OnMouseReleased(released, false);
+  root->OnMouseReleased(released);
 
   v1->ResetTransform();
   v2->ResetTransform();
@@ -1834,7 +1834,7 @@ TEST_F(ViewTest, TransformEvent) {
   EXPECT_EQ(10, v3->location_.x());
   EXPECT_EQ(25, v3->location_.y());
 
-  root->OnMouseReleased(released, false);
+  root->OnMouseReleased(released);
 
   widget->CloseNow();
 }

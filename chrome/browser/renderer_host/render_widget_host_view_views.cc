@@ -662,8 +662,8 @@ bool RenderWidgetHostViewViews::OnMouseDragged(const views::MouseEvent& event) {
   return true;
 }
 
-void RenderWidgetHostViewViews::OnMouseReleased(const views::MouseEvent& event,
-                                                bool canceled) {
+void RenderWidgetHostViewViews::OnMouseReleased(
+    const views::MouseEvent& event) {
   WebKit::WebMouseEvent e = WebMouseEventFromViewsEvent(event);
 
   e.type = WebKit::WebInputEvent::MouseUp;

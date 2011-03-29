@@ -440,23 +440,18 @@ bool View::OnMouseDragged(const MouseEvent& event) {
 }
 
 void View::OnMouseReleased(const MouseEvent& event) {
-
 }
 
 void View::OnMouseCaptureLost() {
-
 }
 
 void View::OnMouseMoved(const MouseEvent& event) {
-
 }
 
 void View::OnMouseEntered(const MouseEvent& event) {
-
 }
 
 void View::OnMouseExited(const MouseEvent& event) {
-
 }
 
 // Accelerators ----------------------------------------------------------------

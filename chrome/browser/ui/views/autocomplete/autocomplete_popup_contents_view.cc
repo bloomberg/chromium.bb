@@ -444,10 +444,9 @@ bool AutocompletePopupContentsView::OnMouseDragged(
 }
 
 void AutocompletePopupContentsView::OnMouseReleased(
-    const views::MouseEvent& event,
-    bool canceled) {
-  if (canceled || ignore_mouse_drag_) {
-    ignore_mouse_drag_ = false;
+    const views::MouseEvent& event) {
+  if (ignore_mouse_drag_) {
+    OnMouseCaptureLost();
     return;
   }
 
@@ -456,6 +455,10 @@ void AutocompletePopupContentsView::OnMouseReleased(
     OpenIndex(index, NEW_BACKGROUND_TAB);
   else if (event.IsOnlyLeftMouseButton())
     OpenIndex(index, CURRENT_TAB);
+}
+
+void AutocompletePopupContentsView::OnMouseCaptureLost() {
+  ignore_mouse_drag_ = false;
 }
 
 void AutocompletePopupContentsView::OnMouseMoved(

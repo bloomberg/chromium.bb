@@ -407,9 +407,12 @@ bool BaseTabStrip::OnMouseDragged(const views::MouseEvent&  event) {
   return true;
 }
 
-void BaseTabStrip::OnMouseReleased(const views::MouseEvent& event,
-                                   bool canceled) {
-  EndDrag(canceled);
+void BaseTabStrip::OnMouseReleased(const views::MouseEvent& event) {
+  EndDrag(false);
+}
+
+void BaseTabStrip::OnMouseCaptureLost() {
+  EndDrag(true);
 }
 
 void BaseTabStrip::StartMoveTabAnimation() {

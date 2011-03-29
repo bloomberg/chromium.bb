@@ -541,24 +541,31 @@ bool DownloadItemView::OnMouseDragged(const views::MouseEvent& event) {
   return true;
 }
 
-void DownloadItemView::OnMouseReleased(const views::MouseEvent& event,
-                                       bool canceled) {
+void DownloadItemView::OnMouseReleased(const views::MouseEvent& event) {
   // Mouse should not activate us in dangerous mode.
   if (IsDangerousMode())
     return;
 
-  if (dragging_) {
-    // Starting a drag results in a MouseReleased, we need to ignore it.
-    dragging_ = false;
-    starting_drag_ = false;
-    return;
-  }
   if (event.IsOnlyLeftMouseButton() &&
       !InDropDownButtonXCoordinateRange(event.x())) {
     OpenDownload();
   }
 
   SetState(NORMAL, NORMAL);
+}
+
+void DownloadItemView::OnMouseCaptureLost() {
+  // Mouse should not activate us in dangerous mode.
+  if (IsDangerousMode())
+    return;
+
+  if (dragging_) {
+    // Starting a drag results in a MouseCaptureLost.
+    dragging_ = false;
+    starting_drag_ = false;
+  } else {
+    SetState(NORMAL, NORMAL);
+  }
 }
 
 void DownloadItemView::OnMouseMoved(const views::MouseEvent& event) {

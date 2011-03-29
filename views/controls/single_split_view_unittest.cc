@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,9 +133,9 @@ TEST(SingleSplitViewTest, MouseDrag) {
 
   ON_CALL(observer, SplitHandleMoved(_))
       .WillByDefault(Return(true));
-  // SplitHandleMoved is expected to be called once for every mouse move.
+  // SplitHandleMoved is called for two mouse moves and one mouse capture loss.
   EXPECT_CALL(observer, SplitHandleMoved(_))
-      .Times(2);
+      .Times(3);
 
   split.SetBounds(0, 0, 10, 100);
   const int kInitialDividerOffset = 33;
@@ -166,9 +166,14 @@ TEST(SingleSplitViewTest, MouseDrag) {
   MouseEvent mouse_released(
       ui::ET_MOUSE_RELEASED, 7,
       kInitialDividerOffset + kMouseOffset + kMouseMoveDelta * 2, 0);
-  split.OnMouseReleased(mouse_released, false);
+  split.OnMouseReleased(mouse_released);
   EXPECT_EQ(kInitialDividerOffset + kMouseMoveDelta * 2,
             split.divider_offset());
+
+  // Expect intial offset after a system/user gesture cancels the drag.
+  // This shouldn't occur after mouse release, but it's sufficient for testing.
+  split.OnMouseCaptureLost();
+  EXPECT_EQ(kInitialDividerOffset, split.divider_offset());
 }
 
 }  // namespace views

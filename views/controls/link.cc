@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,38 +97,41 @@ const LinkController* Link::GetController() {
   return controller_;
 }
 
-bool Link::OnMousePressed(const MouseEvent& e) {
-  if (!enabled_ || (!e.IsLeftMouseButton() && !e.IsMiddleMouseButton()))
+bool Link::OnMousePressed(const MouseEvent& event) {
+  if (!enabled_ || (!event.IsLeftMouseButton() && !event.IsMiddleMouseButton()))
     return false;
   SetHighlighted(true);
   return true;
 }
 
-bool Link::OnMouseDragged(const MouseEvent& e) {
+bool Link::OnMouseDragged(const MouseEvent& event) {
   SetHighlighted(enabled_ &&
-                 (e.IsLeftMouseButton() || e.IsMiddleMouseButton()) &&
-                 HitTest(e.location()));
+                 (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
+                 HitTest(event.location()));
   return true;
 }
 
-void Link::OnMouseReleased(const MouseEvent& e, bool canceled) {
+void Link::OnMouseReleased(const MouseEvent& event) {
   // Change the highlight first just in case this instance is deleted
   // while calling the controller
-  SetHighlighted(false);
-  if (enabled_ && !canceled &&
-      (e.IsLeftMouseButton() || e.IsMiddleMouseButton()) &&
-      HitTest(e.location())) {
+  OnMouseCaptureLost();
+  if (enabled_ && (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
+      HitTest(event.location())) {
     // Focus the link on click.
     RequestFocus();
 
     if (controller_)
-      controller_->LinkActivated(this, e.flags());
+      controller_->LinkActivated(this, event.flags());
   }
 }
 
-bool Link::OnKeyPressed(const KeyEvent& e) {
-  bool activate = ((e.key_code() == ui::VKEY_SPACE) ||
-                   (e.key_code() == ui::VKEY_RETURN));
+void Link::OnMouseCaptureLost() {
+  SetHighlighted(false);
+}
+
+bool Link::OnKeyPressed(const KeyEvent& event) {
+  bool activate = ((event.key_code() == ui::VKEY_SPACE) ||
+                   (event.key_code() == ui::VKEY_RETURN));
   if (!activate)
     return false;
 
@@ -138,15 +141,15 @@ bool Link::OnKeyPressed(const KeyEvent& e) {
   RequestFocus();
 
   if (controller_)
-    controller_->LinkActivated(this, e.flags());
+    controller_->LinkActivated(this, event.flags());
 
   return true;
 }
 
-bool Link::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
+bool Link::SkipDefaultKeyEventProcessing(const KeyEvent& event) {
   // Make sure we don't process space or enter as accelerators.
-  return (e.key_code() == ui::VKEY_SPACE) ||
-      (e.key_code() == ui::VKEY_RETURN);
+  return (event.key_code() == ui::VKEY_SPACE) ||
+      (event.key_code() == ui::VKEY_RETURN);
 }
 
 void Link::GetAccessibleState(ui::AccessibleViewState* state) {

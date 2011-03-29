@@ -129,9 +129,8 @@ bool CustomButton::OnMouseDragged(const MouseEvent& event) {
   return true;
 }
 
-void CustomButton::OnMouseReleased(const MouseEvent& event, bool canceled) {
-  // Starting a drag results in a MouseReleased, we need to ignore it.
-  if ((state_ == BS_DISABLED) || InDrag())
+void CustomButton::OnMouseReleased(const MouseEvent& event) {
+  if (state_ == BS_DISABLED)
     return;
 
   if (!HitTest(event.location())) {
@@ -140,11 +139,17 @@ void CustomButton::OnMouseReleased(const MouseEvent& event, bool canceled) {
   }
 
   SetState(BS_HOT);
-  if (!canceled && IsTriggerableEvent(event)) {
+  if (IsTriggerableEvent(event)) {
     NotifyClick(event);
     // NOTE: We may be deleted at this point (by the listener's notification
     // handler).
   }
+}
+
+void CustomButton::OnMouseCaptureLost() {
+  // Starting a drag results in a MouseCaptureLost, we need to ignore it.
+  if (state_ != BS_DISABLED && !InDrag())
+    SetState(BS_NORMAL);
 }
 
 void CustomButton::OnMouseEntered(const MouseEvent& event) {

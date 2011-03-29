@@ -47,12 +47,10 @@ class NativeTextfieldViews : public views::View,
   ~NativeTextfieldViews();
 
   // views::View overrides:
-  virtual bool OnMousePressed(const views::MouseEvent& e) OVERRIDE;
-  virtual bool OnMouseDragged(const views::MouseEvent& e) OVERRIDE;
-  virtual void OnMouseReleased(const views::MouseEvent& e,
-                               bool canceled) OVERRIDE;
-  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE;
-  virtual bool OnKeyReleased(const views::KeyEvent& e) OVERRIDE;
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;

@@ -377,7 +377,7 @@ void MenuController::Cancel(ExitType type) {
   MenuItemView* selected = state_.item;
   exit_type_ = type;
 
-  SendMouseReleaseToActiveView();
+  SendMouseCaptureLostToActiveView();
 
   // Hide windows immediately.
   SetSelection(NULL, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
@@ -518,7 +518,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     // If we open a context menu just return now
     if (part.menu->GetDelegate()->ShowContextMenu(
             part.menu, part.menu->GetCommand(), loc, true)) {
-      SendMouseReleaseToActiveView(source, event, true);
+      SendMouseCaptureLostToActiveView();
       return;
     }
   }
@@ -530,7 +530,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
       !(part.menu->HasSubmenu() &&
         (event.flags() == ui::EF_LEFT_BUTTON_DOWN))) {
     if (active_mouse_view_) {
-      SendMouseReleaseToActiveView(source, event, false);
+      SendMouseReleaseToActiveView(source, event);
       return;
     }
     if (part.menu->GetDelegate()->IsTriggerableEvent(event)) {
@@ -542,7 +542,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     SetSelection(part.menu ? part.menu : state_.item,
                  SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
   }
-  SendMouseReleaseToActiveView(source, event, true);
+  SendMouseCaptureLostToActiveView();
 }
 
 void MenuController::OnMouseMoved(SubmenuView* source,
@@ -1796,12 +1796,7 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
       target = NULL;
   }
   if (target != active_mouse_view_) {
-    if (active_mouse_view_) {
-      // TODO(msw): Revise api and uses with OnMouseCaptureLost (like ui/views).
-      // Send a mouse release with cancel set to true.
-      active_mouse_view_->OnMouseReleased(event, true);
-      active_mouse_view_ = NULL;
-    }
+    SendMouseCaptureLostToActiveView();
     active_mouse_view_ = target;
     if (active_mouse_view_) {
       gfx::Point target_point(target_menu_loc);
@@ -1828,8 +1823,7 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
 }
 
 void MenuController::SendMouseReleaseToActiveView(SubmenuView* event_source,
-                                                  const MouseEvent& event,
-                                                  bool cancel) {
+                                                  const MouseEvent& event) {
   if (!active_mouse_view_)
     return;
 
@@ -1839,23 +1833,22 @@ void MenuController::SendMouseReleaseToActiveView(SubmenuView* event_source,
   View::ConvertPointToView(NULL, active_mouse_view_, &target_loc);
   MouseEvent release_event(ui::ET_MOUSE_RELEASED, target_loc.x(),
                            target_loc.y(), event.flags());
-  // Reset the active_mouse_view_ before sending mouse released. That way if if
-  // calls back to use we aren't in a weird state.
+  // Reset the active_mouse_view_ before sending mouse released. That way if it
+  // calls back to us, we aren't in a weird state.
   View* active_view = active_mouse_view_;
   active_mouse_view_ = NULL;
-  active_view->OnMouseReleased(release_event, cancel);
+  active_view->OnMouseReleased(release_event);
 }
 
-void MenuController::SendMouseReleaseToActiveView() {
+void MenuController::SendMouseCaptureLostToActiveView() {
   if (!active_mouse_view_)
     return;
 
-  MouseEvent release_event(ui::ET_MOUSE_RELEASED, -1, -1, 0);
-  // Reset the active_mouse_view_ before sending mouse released. That way if if
-  // calls back to use we aren't in a weird state.
+  // Reset the active_mouse_view_ before sending mouse capture lost. That way if
+  // it calls back to us, we aren't in a weird state.
   View* active_view = active_mouse_view_;
   active_mouse_view_ = NULL;
-  active_view->OnMouseReleased(release_event, true);
+  active_view->OnMouseCaptureLost();
 }
 
 }  // namespace views

@@ -42,20 +42,20 @@ class ContentSettingImageView : public views::ImageView,
 
  private:
   // views::ImageView overrides:
-  virtual bool OnMousePressed(const views::MouseEvent& event);
-  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
-  virtual void VisibilityChanged(View* starting_from, bool is_visible);
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual void OnPaintBackground(gfx::Canvas* canvas);
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
+  virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
   // InfoBubbleDelegate overrides:
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape);
-  virtual bool CloseOnEscape();
-  virtual bool FadeInOnShow();
+                                 bool closed_by_escape) OVERRIDE;
+  virtual bool CloseOnEscape() OVERRIDE;
+  virtual bool FadeInOnShow() OVERRIDE;
 
   // ui::LinearAnimation override:
-  virtual void AnimateToState(double state);
+  virtual void AnimateToState(double state) OVERRIDE;
 
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
 

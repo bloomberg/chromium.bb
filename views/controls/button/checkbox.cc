@@ -131,12 +131,16 @@ bool Checkbox::OnMouseDragged(const MouseEvent& event) {
   return false;
 }
 
-void Checkbox::OnMouseReleased(const MouseEvent& event, bool canceled) {
-  native_wrapper_->SetPushed(false);
-  if (!canceled && HitTestLabel(event)) {
+void Checkbox::OnMouseReleased(const MouseEvent& event) {
+  OnMouseCaptureLost();
+  if (HitTestLabel(event)) {
     SetChecked(!checked());
     ButtonPressed();
   }
+}
+
+void Checkbox::OnMouseCaptureLost() {
+  native_wrapper_->SetPushed(false);
 }
 
 void Checkbox::OnMouseMoved(const MouseEvent& event) {

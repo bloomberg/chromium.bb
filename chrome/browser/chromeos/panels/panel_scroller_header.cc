@@ -26,8 +26,11 @@ bool PanelScrollerHeader::OnMouseDragged(const views::MouseEvent& event) {
   return false;
 }
 
-void PanelScrollerHeader::OnMouseReleased(const views::MouseEvent& event,
-                                          bool canceled) {
+void PanelScrollerHeader::OnMouseReleased(const views::MouseEvent& event) {
+  OnMouseCaptureLost();
+}
+
+void PanelScrollerHeader::OnMouseCaptureLost() {
   scroller_->HeaderClicked(this);
 }
 

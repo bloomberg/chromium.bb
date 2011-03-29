@@ -567,7 +567,7 @@ void WidgetWin::OnCancelMode() {
 
 void WidgetWin::OnCaptureChanged(HWND hwnd) {
   if (is_mouse_down_)
-    GetRootView()->ProcessMouseDragCanceled();
+    GetRootView()->OnMouseCaptureLost();
   is_mouse_down_ = false;
 }
 
@@ -1024,7 +1024,7 @@ bool WidgetWin::ProcessMouseReleased(UINT message,
   MSG msg;
   MakeMSG(&msg, message, w_param, l_param, 0, GET_X_LPARAM(l_param),
           GET_Y_LPARAM(l_param));
-  GetRootView()->OnMouseReleased(MouseEvent(msg), false);
+  GetRootView()->OnMouseReleased(MouseEvent(msg));
   return true;
 }
 

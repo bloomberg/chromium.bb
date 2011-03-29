@@ -43,15 +43,15 @@ class PageActionImageView : public views::ImageView,
   // Overridden from view.
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled)
-      OVERRIDE;
-  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE;
-  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture)
-      OVERRIDE;
+  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual void ShowContextMenu(const gfx::Point& p,
+                               bool is_mouse_gesture) OVERRIDE;
 
   // Overridden from ImageLoadingTracker.
-  virtual void OnImageLoaded(
-      SkBitmap* image, const ExtensionResource& resource, int index);
+  virtual void OnImageLoaded(SkBitmap* image,
+                             const ExtensionResource& resource,
+                             int index) OVERRIDE;
 
   // Overridden from ExtensionContextMenuModelModel::Delegate
   virtual void InspectPopup(ExtensionAction* action) OVERRIDE;

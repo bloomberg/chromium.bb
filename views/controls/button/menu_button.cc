@@ -198,17 +198,17 @@ bool MenuButton::OnMousePressed(const MouseEvent& event) {
   return true;
 }
 
-void MenuButton::OnMouseReleased(const MouseEvent& event, bool canceled) {
+void MenuButton::OnMouseReleased(const MouseEvent& event) {
   // Explicitly test for left mouse button to show the menu. If we tested for
   // !IsTriggerableEvent it could lead to a situation where we end up showing
   // the menu and context menu (this would happen if the right button is not
   // triggerable and there's a context menu).
   if (GetDragOperations(event.location()) != ui::DragDropTypes::DRAG_NONE &&
-      state() != BS_DISABLED && !canceled && !InDrag() &&
-      event.IsOnlyLeftMouseButton() && HitTest(event.location())) {
+      state() != BS_DISABLED && !InDrag() && event.IsOnlyLeftMouseButton() &&
+      HitTest(event.location())) {
     Activate();
   } else {
-    TextButton::OnMouseReleased(event, canceled);
+    TextButton::OnMouseReleased(event);
   }
 }
 

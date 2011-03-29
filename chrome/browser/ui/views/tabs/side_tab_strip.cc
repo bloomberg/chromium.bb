@@ -29,10 +29,10 @@ class SideTabNewTabButton : public SideTab {
  public:
   explicit SideTabNewTabButton(TabStripController* controller);
 
-  virtual bool ShouldPaintHighlight() const { return false; }
-  virtual bool IsSelected() const { return false; }
-  bool OnMousePressed(const views::MouseEvent& event);
-  void OnMouseReleased(const views::MouseEvent& event, bool canceled);
+  virtual bool ShouldPaintHighlight() const OVERRIDE { return false; }
+  virtual bool IsSelected() const OVERRIDE { return false; }
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
 
  private:
   TabStripController* controller_;
@@ -56,9 +56,8 @@ bool SideTabNewTabButton::OnMousePressed(const views::MouseEvent& event) {
   return true;
 }
 
-void SideTabNewTabButton::OnMouseReleased(const views::MouseEvent& event,
-                                          bool canceled) {
-  if (!canceled && event.IsOnlyLeftMouseButton() && HitTest(event.location()))
+void SideTabNewTabButton::OnMouseReleased(const views::MouseEvent& event) {
+  if (event.IsOnlyLeftMouseButton() && HitTest(event.location()))
     controller_->CreateNewTab();
 }
 

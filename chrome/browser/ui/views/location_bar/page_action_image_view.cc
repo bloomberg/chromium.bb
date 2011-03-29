@@ -113,9 +113,8 @@ bool PageActionImageView::OnMousePressed(const views::MouseEvent& event) {
   return true;
 }
 
-void PageActionImageView::OnMouseReleased(const views::MouseEvent& event,
-                                          bool canceled) {
-  if (canceled || !HitTest(event.location()))
+void PageActionImageView::OnMouseReleased(const views::MouseEvent& event) {
+  if (!HitTest(event.location()))
     return;
 
   int button = -1;
@@ -136,8 +135,9 @@ void PageActionImageView::OnMouseReleased(const views::MouseEvent& event,
   ExecuteAction(button, false);  // inspect_with_devtools
 }
 
-bool PageActionImageView::OnKeyPressed(const views::KeyEvent& e) {
-  if (e.key_code() == ui::VKEY_SPACE || e.key_code() == ui::VKEY_RETURN) {
+bool PageActionImageView::OnKeyPressed(const views::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_SPACE ||
+      event.key_code() == ui::VKEY_RETURN) {
     ExecuteAction(1, false);
     return true;
   }

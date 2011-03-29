@@ -311,7 +311,7 @@ bool BaseTab::OnMouseDragged(const views::MouseEvent& event) {
   return true;
 }
 
-void BaseTab::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
+void BaseTab::OnMouseReleased(const views::MouseEvent& event) {
   if (!controller())
     return;
 
@@ -320,7 +320,7 @@ void BaseTab::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
   // In some cases, ending the drag will schedule the tab for destruction; if
   // so, bail immediately, since our members are already dead and we shouldn't
   // do anything else except drop the tab where it is.
-  if (controller()->EndDrag(canceled))
+  if (controller()->EndDrag(false))
     return;
 
   // Close tab on middle click, but only if the button is released over the tab
@@ -345,6 +345,11 @@ void BaseTab::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
     // selected.
     controller()->SelectTab(this);
   }
+}
+
+void BaseTab::OnMouseCaptureLost() {
+  if (controller())
+    controller()->EndDrag(true);
 }
 
 void BaseTab::OnMouseEntered(const views::MouseEvent& event) {
