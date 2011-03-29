@@ -231,12 +231,17 @@ function setPrinters(printers) {
       option.textContent = printers[i];
       $('printer-list').add(option);
     }
-    $('printer-list').disabled = false;
   } else {
     var option = document.createElement('option');
     option.textContent = localStrings.getString('noPrinter');
     $('printer-list').add(option);
   }
+
+  // Adding option for saving PDF to disk.
+  var option = document.createElement('option');
+  option.textContent = localStrings.getString('printToPDF');
+  $('printer-list').add(option);
+  $('printer-list').disabled = false;
 
   // Once the printer list is populated, generate the initial preview.
   getPreview();
