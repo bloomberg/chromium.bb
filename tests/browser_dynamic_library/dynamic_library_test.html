@@ -7,8 +7,7 @@
 <script type="text/javascript" src="nacltest.js"></script>
 <script type="text/javascript" src="dynamic_library_helper.js"></script>
 
-<embed id="plugin_element" src="lib/runnable-ld.so"
-  type="application/x-nacl" onload="onProcessStart()" width="0" height="0" />
+<embed id="plugin_element" type="application/x-nacl" width="0" height="0" />
 
 <script type="text/javascript">
 
@@ -19,22 +18,29 @@ var log = function(message) {
   rpc.log('test', message);
 };
 
-var handleTestRequest = function(message_body) {
-  if (message_body === 'Hello world! (async message)') {
-    rpc.pass('test');
-  } else {
-    rpc.fail('test', 'Received unexpected message: ' + message_body);
-  }
+// This is based on the test in ppapi_core.html.
+// Deliberately global - this what the nexe expects.
+var CallOnMainThreadCallback_FromMainThread = function() {
+  log('Received CallOnMainThread callback!');
+  rpc.pass('test');
   rpc.shutdown();
 };
 
-var onProcessStart = function() {
-  log('in on_start()');
+var onPageLoad = function() {
+  log('in onPageLoad()');
   var plugin = document.getElementById('plugin_element');
-  var handlers = {
-    'TEST': handleTestRequest,
+
+  var onPluginStart = function() {
+    log('started OK');
+    var value = plugin.testCallOnMainThread_FromMainThread();
+    if (value !== true) {
+      rpc.fail('test', 'Unexpected value: ' + value);
+    }
   };
-  handlePluginInstance(plugin, log, ['./async_hello_world.nexe'], handlers);
+
+  startPluginInstance(plugin, log, ['./ppapi_core.nexe'], onPluginStart);
 };
+
+window.onload = onPageLoad;
 
 </script>

@@ -49,9 +49,9 @@ var encodeHex = function(data) {
 };
 
 
-var handlePluginInstance = function(plugin, log, args, handlers) {
+var handlePluginInstance = function(plugin, log, args, onload_callback) {
   var argv = [args[0], '--library-path', 'lib'].concat(args);
-  var envv = ['NACL_FILE_RPC=1'];
+  var envv = ['NACL_FILE_RPC=1', 'NACL_LD_ACCEPTS_PLUGIN_CONNECTION=1'];
   var startup_message = packArgs(argv, envv);
   /* As a workaround for a limitation in the NaCl plugin, hex-encode the
      message.  This is because __sendAsyncMessage*() does not support
@@ -78,7 +78,16 @@ var handlePluginInstance = function(plugin, log, args, handlers) {
     });
   };
 
-  handlers['Open'] = handleOpenRequest;
+  var handleInitRequest = function(message_body) {
+    log('starting PPAPI...');
+    plugin.__startSrpcServices();
+    onload_callback();
+  };
+
+  var handlers = {
+    'Open': handleOpenRequest,
+    'Init': handleInitRequest
+  };
 
   var handleRequest = function(message) {
     // The first 4 bytes are a message type tag.
@@ -92,4 +101,18 @@ var handlePluginInstance = function(plugin, log, args, handlers) {
   };
 
   plugin.__setAsyncCallback(handleRequest);
+};
+
+var startPluginInstance = function(plugin, log, args, onload_callback) {
+  var dynamic_linker_url = 'lib/runnable-ld.so';
+  plugin.__urlAsNaClDesc(dynamic_linker_url, {
+    onload: function(fd) {
+      plugin.__launchExecutableFromFd(fd);
+      handlePluginInstance(plugin, log, args, onload_callback);
+    },
+    onfail: function(error) {
+      log('Failed to fetch dynamic linker, ' +
+          dynamic_linker_url + ': ' + error);
+    }
+  });
 };

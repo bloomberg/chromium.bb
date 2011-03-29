@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <sys/nacl_imc_api.h>
+#include <sys/nacl_syscalls.h>
+
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_core.h"
@@ -10,6 +13,9 @@
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "srpcgen/ppp_rpc.h"
+
+
+#define NACL_SEND_FD 6
 
 namespace ppapi_proxy {
 
@@ -71,6 +77,24 @@ const PPB_Var_Deprecated* PPBVarInterface() {
 }
 
 int PluginMain() {
+  if (getenv("NACL_LD_ACCEPTS_PLUGIN_CONNECTION") != NULL) {
+    // Send a message to the page to ask it to reinitialise the
+    // plugin's SRPC/PPAPI connection.  This triggers a call to
+    // __startSrpcServices() which in turn calls
+    // StartProxiedExecution() which sets up the PPAPI proxy.  This is
+    // necessary because LoadNaClModule()'s earlier call to
+    // StartSrpcServices() was matched by the dynamic linker before
+    // libppruntime was available.
+    // For background, see:
+    // http://code.google.com/p/nativeclient/issues/detail?id=617
+    // http://code.google.com/p/nativeclient/issues/detail?id=1501
+    // TODO(mseaborn): This is a temporary measure.  Find a less hacky
+    // way to do this.
+    struct NaClImcMsgIoVec iov = { const_cast<char*>("Init"), 4 };
+    struct NaClImcMsgHdr message = { &iov, 1, NULL, 0, 0 };
+    imc_sendmsg(NACL_SEND_FD, &message, 0);
+  }
+
   if (!NaClSrpcModuleInit()) {
     return 1;
   }
