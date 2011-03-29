@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/message_loop.h"
 #include "ppapi/c/pp_var.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
@@ -94,11 +95,12 @@ NPObject* WebPluginImpl::scriptableObject() {
   // If there's an InstanceObject, tell the Instance's MessageChannel to pass
   // any non-postMessage calls to it.
   if (object) {
-    instance_->message_channel().set_passthrough_object(
-        object->np_object());
+    instance_->message_channel().SetPassthroughObject(object->np_object());
   }
-  // And return the instance's MessageChannel.
-  return instance_->message_channel().np_object();
+  NPObject* message_channel_np_object(instance_->message_channel().np_object());
+  // The object is expected to be retained before it is returned.
+  WebKit::WebBindings::retainObject(message_channel_np_object);
+  return message_channel_np_object;
 }
 
 void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& rect) {

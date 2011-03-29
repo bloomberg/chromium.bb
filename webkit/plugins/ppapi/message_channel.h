@@ -59,9 +59,7 @@ class MessageChannel {
   NPObject* passthrough_object() {
     return passthrough_object_;
   }
-  void set_passthrough_object(NPObject* passthrough) {
-    passthrough_object_ = passthrough;
-  }
+  void SetPassthroughObject(NPObject* passthrough);
 
   NPObject* np_object() { return np_object_; }
 

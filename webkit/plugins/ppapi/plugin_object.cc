@@ -290,7 +290,14 @@ PP_Var PluginObject::Create(PluginInstance* instance,
   // We can just use a normal ObjectVar to refer to this object from the
   // plugin. It will hold a ref to the underlying NPObject which will in turn
   // hold our pluginObject.
-  return ObjectVar::NPObjectToPPVar(instance, wrapper);
+  PP_Var obj_var(ObjectVar::NPObjectToPPVar(instance, wrapper));
+
+  // Note that the ObjectVar constructor incremented the reference count, and so
+  // did WebBindings::createObject above. Now that the PP_Var has taken
+  // ownership, we need to release to balance out the createObject reference
+  // count bump.
+  WebBindings::releaseObject(wrapper);
+  return obj_var;
 }
 
 NPObject* PluginObject::GetNPObject() const {

@@ -282,7 +282,8 @@ MessageChannel::MessageChannel(PluginInstance* instance)
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   VOID_TO_NPVARIANT(onmessage_invoker_);
 
-  // Now create an NPObject for receiving calls to postMessage.
+  // Now create an NPObject for receiving calls to postMessage. This sets the
+  // reference count to 1.  We release it in the destructor.
   NPObject* obj = WebBindings::createObject(NULL, &message_channel_class);
   DCHECK(obj);
   np_object_ = static_cast<MessageChannel::MessageChannelNPObject*>(obj);
@@ -381,7 +382,24 @@ void MessageChannel::PostMessageToNativeImpl(PP_Var message_data) {
 
 MessageChannel::~MessageChannel() {
   WebBindings::releaseObject(np_object_);
+  if (passthrough_object_)
+    WebBindings::releaseObject(passthrough_object_);
   WebBindings::releaseVariantValue(&onmessage_invoker_);
+}
+
+void MessageChannel::SetPassthroughObject(NPObject* passthrough) {
+  // Retain the passthrough object; We need to ensure it lives as long as this
+  // MessageChannel.
+  WebBindings::retainObject(passthrough);
+
+  // If we had a passthrough set already, release it. Note that we retain the
+  // incoming passthrough object first, so that we behave correctly if anyone
+  // invokes:
+  //   SetPassthroughObject(passthrough_object());
+  if (passthrough_object_)
+    WebBindings::releaseObject(passthrough_object_);
+
+  passthrough_object_ = passthrough;
 }
 
 }  // namespace ppapi
