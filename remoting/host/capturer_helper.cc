@@ -5,6 +5,7 @@
 #include "remoting/host/capturer_helper.h"
 
 #include <algorithm>
+#include <iterator>
 
 namespace remoting {
 
