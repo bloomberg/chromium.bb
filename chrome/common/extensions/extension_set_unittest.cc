@@ -36,12 +36,10 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
     urls->Append(Value::CreateStringValue(extent));
   }
 
-  const bool kRequireKey = false;
-  const bool kStrictErrorChecks = true;
   std::string error;
   scoped_refptr<Extension> extension(
-      Extension::Create(path, Extension::INTERNAL, manifest, kRequireKey,
-                        kStrictErrorChecks, &error));
+      Extension::Create(path, Extension::INTERNAL, manifest,
+                        Extension::STRICT_ERROR_CHECKS, &error));
   EXPECT_TRUE(extension.get()) << error;
   return extension;
 }

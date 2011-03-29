@@ -275,12 +275,11 @@ const int Extension::kValidHostPermissionSchemes =
 scoped_refptr<Extension> Extension::Create(const FilePath& path,
                                            Location location,
                                            const DictionaryValue& value,
-                                           bool require_key,
-                                           bool strict_error_checks,
+                                           int flags,
                                            std::string* error) {
   scoped_refptr<Extension> extension = new Extension(path, location);
 
-  if (!extension->InitFromValue(value, require_key, strict_error_checks, error))
+  if (!extension->InitFromValue(value, flags, error))
     return NULL;
   return extension;
 }
@@ -1402,12 +1401,12 @@ GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
               chrome::kStandardSchemeSeparator + extension_id + "/");
 }
 
-bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
-                              bool strict_error_checks, std::string* error) {
+bool Extension::InitFromValue(const DictionaryValue& source, int flags,
+                              std::string* error) {
   // When strict error checks are enabled, make URL pattern parsing strict.
   URLPattern::ParseOption parse_strictness =
-      (strict_error_checks ? URLPattern::PARSE_STRICT
-                           : URLPattern::PARSE_LENIENT);
+      (flags & STRICT_ERROR_CHECKS ? URLPattern::PARSE_STRICT
+                                   : URLPattern::PARSE_LENIENT);
 
   if (source.HasKey(keys::kPublicKey)) {
     std::string public_key_bytes;
@@ -1419,7 +1418,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       *error = errors::kInvalidKey;
       return false;
     }
-  } else if (require_key) {
+  } else if (flags & REQUIRE_KEY) {
     *error = errors::kInvalidKey;
     return false;
   } else {

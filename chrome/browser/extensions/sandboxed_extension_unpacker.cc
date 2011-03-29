@@ -184,8 +184,7 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
       extension_root_,
       Extension::INTERNAL,
       *final_manifest,
-      true,  // Require key
-      false,  // Disable strict error checks
+      Extension::REQUIRE_KEY,
       &error);
 
   if (!extension_.get()) {

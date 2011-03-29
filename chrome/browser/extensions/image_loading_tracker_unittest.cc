@@ -74,8 +74,8 @@ class ImageLoadingTrackerTest : public testing::Test,
     if (!valid_value.get())
       return NULL;
 
-    return Extension::Create(
-        test_file, Extension::INVALID, *valid_value, false, true, &error);
+    return Extension::Create(test_file, Extension::INVALID, *valid_value,
+        Extension::STRICT_ERROR_CHECKS, &error);
   }
 
   SkBitmap image_;

@@ -386,8 +386,7 @@ void CrxInstaller::CompleteInstall() {
   extension_ = extension_file_util::LoadExtension(
       version_dir,
       install_source_,
-      true,  // Require key
-      false,  // Disable strict error checks
+      Extension::REQUIRE_KEY,
       &error);
   CHECK(error.empty()) << error;
 

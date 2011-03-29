@@ -171,8 +171,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
       temp_dir.path(),
       Extension::INTERNAL,
       *root,
-      false,  // Don't require a key.
-      true,  // Enable strict error checks.
+      Extension::STRICT_ERROR_CHECKS,
       &error);
   if (!extension) {
     LOG(ERROR) << error;

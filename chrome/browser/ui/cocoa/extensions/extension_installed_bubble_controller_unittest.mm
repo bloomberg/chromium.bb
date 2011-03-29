@@ -100,8 +100,8 @@ class ExtensionInstalledBubbleControllerTest : public CocoaTest {
     }
 
     std::string error;
-    return Extension::Create(
-        path, Extension::INVALID, extension_input_value, false, true, &error);
+    return Extension::Create(path, Extension::INVALID, extension_input_value,
+                             Extension::STRICT_ERROR_CHECKS, &error);
   }
 
   // Allows us to create the window and browser for testing.

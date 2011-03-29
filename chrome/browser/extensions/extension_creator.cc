@@ -66,8 +66,7 @@ bool ExtensionCreator::InitializeInput(
   scoped_refptr<Extension> extension(
       extension_file_util::LoadExtension(absolute_extension_dir,
                                          Extension::INTERNAL,
-                                         false,  // key not required
-                                         true,  // enable strict error checks
+                                         Extension::STRICT_ERROR_CHECKS,
                                          &error_message_));
   if (!extension.get())
     return false;  // LoadExtension already set error_message_.

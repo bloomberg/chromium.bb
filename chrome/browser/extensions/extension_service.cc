@@ -199,12 +199,14 @@ void ExtensionServiceBackend::LoadSingleExtension(
   FilePath extension_path = path_in;
   file_util::AbsolutePath(&extension_path);
 
+  int flags = Extension::NO_FLAGS;
+  if (Extension::ShouldDoStrictErrorChecking(Extension::LOAD))
+    flags |= Extension::STRICT_ERROR_CHECKS;
   std::string error;
   scoped_refptr<const Extension> extension(extension_file_util::LoadExtension(
       extension_path,
       Extension::LOAD,
-      false,  // Don't require id
-      Extension::ShouldDoStrictErrorChecking(Extension::LOAD),
+      flags,
       &error));
 
   if (!extension) {
@@ -744,13 +746,15 @@ void ExtensionService::LoadComponentExtension(
     return;
   }
 
+  int flags = Extension::REQUIRE_KEY;
+  if (Extension::ShouldDoStrictErrorChecking(Extension::COMPONENT))
+    flags |= Extension::STRICT_ERROR_CHECKS;
   std::string error;
   scoped_refptr<const Extension> extension(Extension::Create(
       info.root_directory,
       Extension::COMPONENT,
       *static_cast<DictionaryValue*>(manifest.get()),
-      true,  // Require key
-      Extension::ShouldDoStrictErrorChecking(Extension::COMPONENT),
+      flags,
       &error));
   if (!extension.get()) {
     NOTREACHED() << error;
@@ -791,13 +795,15 @@ void ExtensionService::LoadAllExtensions() {
       // thread.
       base::ThreadRestrictions::ScopedAllowIO allow_io;
 
+      int flags = Extension::NO_FLAGS;
+      if (Extension::ShouldDoStrictErrorChecking(info->extension_location))
+        flags |= Extension::STRICT_ERROR_CHECKS;
       std::string error;
       scoped_refptr<const Extension> extension(
           extension_file_util::LoadExtension(
               info->extension_path,
               info->extension_location,
-              false,  // Don't require key
-              Extension::ShouldDoStrictErrorChecking(info->extension_location),
+              flags,
               &error));
 
       if (extension.get()) {
@@ -911,13 +917,16 @@ void ExtensionService::LoadInstalledExtension(const ExtensionInfo& info,
   if (!extension_prefs_->IsExtensionAllowedByPolicy(info.extension_id)) {
     error = errors::kDisabledByPolicy;
   } else if (info.extension_manifest.get()) {
-    bool require_key = info.extension_location != Extension::LOAD;
+    int flags = Extension::NO_FLAGS;
+    if (info.extension_location != Extension::LOAD)
+      flags |= Extension::REQUIRE_KEY;
+    if (Extension::ShouldDoStrictErrorChecking(info.extension_location))
+      flags |= Extension::STRICT_ERROR_CHECKS;
     extension = Extension::Create(
         info.extension_path,
         info.extension_location,
         *info.extension_manifest,
-        require_key,
-        Extension::ShouldDoStrictErrorChecking(info.extension_location),
+        flags,
         &error);
   } else {
     error = errors::kManifestUnreadable;

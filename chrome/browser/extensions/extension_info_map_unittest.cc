@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,8 +42,8 @@ static scoped_refptr<Extension> CreateExtension(const std::string& name) {
 
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
-      path.AppendASCII(name), Extension::INVALID, manifest, false, true,
-      &error);
+      path.AppendASCII(name), Extension::INVALID, manifest,
+      Extension::STRICT_ERROR_CHECKS, &error);
   EXPECT_TRUE(extension) << error;
 
   return extension;
@@ -65,7 +65,7 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
       path, Extension::INVALID, *static_cast<DictionaryValue*>(result.get()),
-      false, true, &error);
+      Extension::STRICT_ERROR_CHECKS, &error);
   EXPECT_TRUE(extension) << error;
 
   return extension;

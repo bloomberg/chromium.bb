@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,8 @@ namespace {
     EXPECT_EQ("", error);
 
     scoped_refptr<Extension> extension(Extension::Create(
-        path, Extension::INVALID, *extension_data, true, true, &error));
+        path, Extension::INVALID, *extension_data,
+        Extension::REQUIRE_KEY | Extension::STRICT_ERROR_CHECKS, &error));
     EXPECT_TRUE(extension.get());
     EXPECT_EQ("", error);
 

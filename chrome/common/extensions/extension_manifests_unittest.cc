@@ -48,8 +48,10 @@ class ExtensionManifestTest : public testing::Test {
     FilePath path;
     PathService::Get(chrome::DIR_TEST_DATA, &path);
     path = path.AppendASCII("extensions").AppendASCII("manifest_tests");
-    return Extension::Create(path.DirName(), location, *value, false,
-                             strict_error_checks, error);
+    int flags = Extension::NO_FLAGS;
+    if (strict_error_checks)
+      flags |= Extension::STRICT_ERROR_CHECKS;
+    return Extension::Create(path.DirName(), location, *value, flags, error);
   }
 
   scoped_refptr<Extension> LoadExtension(const std::string& name,

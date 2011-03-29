@@ -627,13 +627,13 @@ class ExtensionPrefsPreferencesBase : public ExtensionPrefsTest {
 
     ext1_scoped_ = Extension::Create(
         prefs_.temp_dir().AppendASCII("ext1_"), Extension::EXTERNAL_PREF,
-        simple_dict, false, true, &error);
+        simple_dict, Extension::STRICT_ERROR_CHECKS, &error);
     ext2_scoped_ = Extension::Create(
         prefs_.temp_dir().AppendASCII("ext2_"), Extension::EXTERNAL_PREF,
-        simple_dict, false, true, &error);
+        simple_dict, Extension::STRICT_ERROR_CHECKS, &error);
     ext3_scoped_ = Extension::Create(
         prefs_.temp_dir().AppendASCII("ext3_"), Extension::EXTERNAL_PREF,
-        simple_dict, false, true, &error);
+        simple_dict, Extension::STRICT_ERROR_CHECKS, &error);
 
     ext1_ = ext1_scoped_.get();
     ext2_ = ext2_scoped_.get();

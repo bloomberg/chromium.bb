@@ -180,8 +180,7 @@ bool ExtensionUnpacker::Run() {
       temp_install_dir_,
       Extension::INVALID,
       *parsed_manifest_,
-      false,  // Do not require a key
-      false,  // Do not enable strict error checks
+      Extension::NO_FLAGS,
       &error));
   if (!extension.get()) {
     SetError(error);

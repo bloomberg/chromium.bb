@@ -406,8 +406,8 @@ TEST_F(BrowserThemePackTest, CanBuildAndReadPack) {
     EXPECT_EQ("", error);
     ASSERT_TRUE(valid_value.get());
     scoped_refptr<Extension> extension(Extension::Create(
-        star_gazing_path, Extension::INVALID, *valid_value, true, true,
-        &error));
+        star_gazing_path, Extension::INVALID, *valid_value,
+        Extension::REQUIRE_KEY | Extension::STRICT_ERROR_CHECKS, &error));
     ASSERT_TRUE(extension.get());
     ASSERT_EQ("", error);
 

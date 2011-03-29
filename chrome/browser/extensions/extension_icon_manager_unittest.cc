@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,7 +111,7 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
 
   scoped_refptr<Extension> extension(Extension::Create(
       manifest_path.DirName(), Extension::INVALID, *manifest.get(),
-      false, true, NULL));
+      Extension::STRICT_ERROR_CHECKS, NULL));
   ASSERT_TRUE(extension.get());
   TestIconManager icon_manager(this);
 
