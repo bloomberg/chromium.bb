@@ -62,9 +62,12 @@ class PopupsTest(pyauto.PyUITest):
   def testLaunchBlockedPopupInIncognito(self):
     """Verify that a blocked popup can be unblocked in incognito."""
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.assertTrue(2, self.GetBrowserWindowCount())
     file_url = self.GetFileURLForPath(os.path.join(
         self.DataDir(), 'popup_blocker', 'popup-window-open.html'))
     self.NavigateToURL(file_url, 1, 0)
+    self.assertEquals('Popup created using window.open',
+                      self.GetActiveTabTitle(window_index=1))
     # Wait until the popup is blocked
     self.assertTrue(self.WaitUntil(lambda:
         len(self.GetBlockedPopupsInfo(tab_index=0, windex=1)) is 1),
