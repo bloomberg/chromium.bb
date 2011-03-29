@@ -862,7 +862,7 @@ void BrowserRenderProcessHost::SendUserScriptsUpdate(
   }
 
   if (base::SharedMemory::IsHandleValid(handle_for_process)) {
-    Send(new ViewMsg_UserScripts_UpdatedScripts(handle_for_process));
+    Send(new ExtensionMsg_UpdateUserScripts(handle_for_process));
   }
 }
 

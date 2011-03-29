@@ -5,6 +5,7 @@
 // IPC messages for extensions.
 // Multiply-included message file, hence no include guard.
 
+#include "base/shared_memory.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_extent.h"
@@ -199,6 +200,12 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_SetScriptingWhitelist,
 // Notification that renderer should run some JavaScript code.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_ExecuteCode,
                     ExtensionMsg_ExecuteCode_Params)
+
+// Notification that the user scripts have been updated. It has one
+// SharedMemoryHandle argument consisting of the pickled script data. This
+// handle is valid in the context of the renderer.
+IPC_MESSAGE_CONTROL1(ExtensionMsg_UpdateUserScripts,
+                     base::SharedMemoryHandle)
 
 // Requests application info for the page. The renderer responds back with
 // ExtensionHostMsg_DidGetApplicationInfo.

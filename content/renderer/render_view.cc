@@ -48,8 +48,8 @@
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/devtools_client.h"
 #include "chrome/renderer/extension_groups.h"
-#include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/extension_resource_request_policy.h"
@@ -2573,12 +2573,8 @@ void RenderView::show(WebNavigationPolicy policy) {
     return;
   did_show_ = true;
 
-  // Extensions and apps always allowed to create unrequested popups. The second
-  // check is necessary to include content scripts.
-  if (render_thread_->GetExtensions()->GetByURL(creator_url_) ||
-      bindings_utils::GetInfoForCurrentContext()) {
+  if (content::GetContentClient()->renderer()->AllowPopup(creator_url_))
     opened_by_user_gesture_ = true;
-  }
 
   // Force new windows to a popup if they were not opened with a user gesture.
   if (!opened_by_user_gesture_) {
@@ -2830,9 +2826,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
     // window.opener) if the window navigates back.  See crbug.com/65953.
     if (!should_fork &&
         CrossesExtensionExtents(
-            render_thread_->GetExtensions(),
-            frame,
-            url)) {
+            ExtensionDispatcher::Get()->extensions(), frame, url)) {
       // Include the referrer in this case since we're going from a hosted web
       // page. (the packaged case is handled previously by the extension
       // navigation test)
@@ -2841,7 +2835,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
 
       if (is_content_initiated) {
         const Extension* extension =
-            render_thread_->GetExtensions()->GetByURL(url);
+            ExtensionDispatcher::Get()->extensions()->GetByURL(url);
         if (extension && extension->is_app()) {
           UMA_HISTOGRAM_ENUMERATION(
               extension_misc::kAppLaunchHistogram,
@@ -3307,7 +3301,7 @@ void RenderView::didClearWindowObject(WebFrame* frame) {
 
 void RenderView::didCreateDocumentElement(WebFrame* frame) {
   if (RenderThread::current()) {  // Will be NULL during unit tests.
-    RenderThread::current()->user_script_slave()->InjectScripts(
+    ExtensionDispatcher::Get()->user_script_slave()->InjectScripts(
         frame, UserScript::DOCUMENT_START);
   }
 
@@ -3350,7 +3344,7 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 
   if (RenderThread::current()) {  // Will be NULL during unit tests.
-    RenderThread::current()->user_script_slave()->InjectScripts(
+    ExtensionDispatcher::Get()->user_script_slave()->InjectScripts(
         frame, UserScript::DOCUMENT_END);
   }
 
@@ -3362,7 +3356,7 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
 
 void RenderView::OnUserScriptIdleTriggered(WebFrame* frame) {
   if (RenderThread::current()) {  // Will be NULL during unit tests.
-    RenderThread::current()->user_script_slave()->InjectScripts(
+    ExtensionDispatcher::Get()->user_script_slave()->InjectScripts(
         frame, UserScript::DOCUMENT_IDLE);
   }
 
@@ -3448,7 +3442,7 @@ void RenderView::willSendRequest(
       !ExtensionResourceRequestPolicy::CanRequestResource(
           request_url,
           GURL(frame->url()),
-          render_thread_->GetExtensions())) {
+          ExtensionDispatcher::Get()->extensions())) {
     request.setURL(WebURL(GURL("chrome-extension://invalid/")));
   }
 
@@ -4993,7 +4987,8 @@ void RenderView::ExecuteCodeImpl(
     WebFrame* frame = *frame_it;
     if (params.is_javascript) {
       const Extension* extension =
-          render_thread_->GetExtensions()->GetByID(params.extension_id);
+          ExtensionDispatcher::Get()->extensions()->GetByID(
+              params.extension_id);
 
     // Since extension info is sent separately from user script info, they can
     // be out of sync. We just ignore this situation.

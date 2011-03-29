@@ -24,6 +24,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/user_script_slave.h"
@@ -202,8 +203,7 @@ class ExtensionImpl : public ExtensionBase {
       return std::string();  // this can happen as a tab is closing.
 
     GURL url = renderview->webview()->mainFrame()->url();
-    const ExtensionSet* extensions =
-        EventBindings::GetRenderThread()->GetExtensions();
+    const ExtensionSet* extensions = ExtensionDispatcher::Get()->extensions();
     if (!extensions->ExtensionBindingsAllowed(url))
       return std::string();
 
@@ -518,7 +518,7 @@ class ExtensionImpl : public ExtensionBase {
   static v8::Handle<v8::Value> IsExtensionProcess(const v8::Arguments& args) {
     bool retval = false;
     if (EventBindings::GetRenderThread())
-      retval = EventBindings::GetRenderThread()->IsExtensionProcess();
+      retval = ExtensionDispatcher::Get()->is_extension_process();
     return v8::Boolean::New(retval);
   }
 

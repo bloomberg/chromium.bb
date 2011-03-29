@@ -12,6 +12,7 @@
 #include "chrome/renderer/autofill/autofill_agent.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/extensions/event_bindings.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
@@ -50,7 +51,7 @@ const int32 kRouteId = 5;
 const int32 kOpenerId = 7;
 }  // namespace
 
-RenderViewTest::RenderViewTest() {
+RenderViewTest::RenderViewTest() : extension_dispatcher_(NULL) {
 }
 
 RenderViewTest::~RenderViewTest() {
@@ -100,6 +101,7 @@ void RenderViewTest::SetUp() {
   gfx::GfxModule::SetResourceProvider(chrome::GfxResourceProvider);
 
   content::GetContentClient()->set_renderer(&content_renderer_client_);
+  extension_dispatcher_ = new ExtensionDispatcher();
   sandbox_init_wrapper_.reset(new SandboxInitWrapper());
   command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   params_.reset(new MainFunctionParams(*command_line_, *sandbox_init_wrapper_,
@@ -184,6 +186,9 @@ void RenderViewTest::TearDown() {
   params_.reset();
   command_line_.reset();
   sandbox_init_wrapper_.reset();
+
+  extension_dispatcher_->OnRenderProcessShutdown();
+  extension_dispatcher_ = NULL;
 }
 
 int RenderViewTest::SendKeyEvent(MockKeyboard::Layout layout,

@@ -31,8 +31,6 @@ class MockRenderThread : public RenderThreadBase {
   MockRenderThread();
   virtual ~MockRenderThread();
 
-  virtual const ExtensionSet* GetExtensions() const;
-
   // Provides access to the messages that have been received by this thread.
   IPC::TestSink& sink() { return sink_; }
 
@@ -56,9 +54,7 @@ class MockRenderThread : public RenderThreadBase {
   virtual void WidgetHidden() { }
   virtual void WidgetRestored() { }
 
-  virtual bool IsExtensionProcess() const;
   virtual bool IsIncognitoProcess() const;
-  void SetExtensionProcess(bool value) { is_extension_process_ = value; }
 
   //////////////////////////////////////////////////////////////////////////
   // The following functions are called by the test itself.
@@ -143,12 +139,6 @@ class MockRenderThread : public RenderThreadBase {
 
   // A mock printer device used for printing tests.
   scoped_ptr<MockPrinter> printer_;
-
-  // Contains extensions currently loaded by browser. This is usually empty
-  // for MockRenderThread.
-  ExtensionSet extensions_;
-
-  bool is_extension_process_;
 
   // True to simulate user clicking print. False to cancel.
   bool print_dialog_user_response_;

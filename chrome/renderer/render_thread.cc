@@ -24,22 +24,14 @@
 #include "base/values.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_localization_peer.h"
-#include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/safebrowsing_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/automation/dom_automation_v8_extension.h"
 #include "chrome/renderer/devtools_agent_filter.h"
-#include "chrome/renderer/extension_groups.h"
-#include "chrome/renderer/extensions/chrome_app_bindings.h"
-#include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_process_bindings.h"
-#include "chrome/renderer/extensions/js_only_v8_extensions.h"
-#include "chrome/renderer/extensions/renderer_extension_bindings.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/net/renderer_net_predictor.h"
@@ -50,7 +42,6 @@
 #include "chrome/renderer/searchbox_extension.h"
 #include "chrome/renderer/security_filter_peer.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
-#include "chrome/renderer/user_script_slave.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/database_messages.h"
 #include "content/common/db_message_filter.h"
@@ -63,6 +54,7 @@
 #include "content/common/view_messages.h"
 #include "content/common/web_database_observer_impl.h"
 #include "content/plugin/npobject_util.h"
+#include "content/renderer/content_renderer_client.h"
 #include "content/renderer/cookie_message_filter.h"
 #include "content/renderer/gpu_channel_host.h"
 #include "content/renderer/gpu_video_service_host.h"
@@ -133,8 +125,6 @@ using WebKit::WebView;
 namespace {
 static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
 static const double kInitialIdleHandlerDelayS = 1.0 /* seconds */;
-static const double kInitialExtensionIdleHandlerDelayS = 5.0 /* seconds */;
-static const int64 kMaxExtensionIdleHandlerDelayS = 5*60 /* seconds */;
 
 // Keep the global RenderThread in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
@@ -289,11 +279,7 @@ void RenderThread::Init() {
     CoInitialize(0);
 #endif
 
-  std::string type_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kProcessType);
   // In single process the single process is all there is.
-  is_extension_process_ = type_str == switches::kExtensionProcess ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
   is_incognito_process_ = false;
   suspend_webkit_shared_timer_ = true;
   notify_webkit_of_modal_loop_ = true;
@@ -301,14 +287,12 @@ void RenderThread::Init() {
   cache_stats_task_pending_ = false;
   widget_count_ = 0;
   hidden_widget_count_ = 0;
-  idle_notification_delay_in_s_ = is_extension_process_ ?
-      kInitialExtensionIdleHandlerDelayS : kInitialIdleHandlerDelayS;
+  idle_notification_delay_in_s_ = kInitialIdleHandlerDelayS;
   task_factory_.reset(new ScopedRunnableMethodFactory<RenderThread>(this));
 
   resource_dispatcher()->set_observer(new RenderResourceObserver());
 
   visited_link_slave_.reset(new VisitedLinkSlave());
-  user_script_slave_.reset(new UserScriptSlave(&extensions_));
   renderer_net_predictor_.reset(new RendererNetPredictor());
   histogram_snapshots_.reset(new RendererHistogramSnapshots());
   appcache_dispatcher_.reset(new AppCacheDispatcher(this));
@@ -328,6 +312,8 @@ void RenderThread::Init() {
   suicide_on_channel_error_filter_ = new SuicideOnChannelErrorFilter;
   AddFilter(suicide_on_channel_error_filter_.get());
 #endif
+
+  AddObserver(new ExtensionDispatcher());
 
   TRACE_EVENT_END("RenderThread::Init", 0, "");
 }
@@ -381,10 +367,6 @@ int32 RenderThread::RoutingIDForCurrentContext() {
     DLOG(WARNING) << "Not called within a script context!";
   }
   return routing_id;
-}
-
-const ExtensionSet* RenderThread::GetExtensions() const {
-  return &extensions_;
 }
 
 bool RenderThread::Send(IPC::Message* msg) {
@@ -508,20 +490,25 @@ void RenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
 void RenderThread::WidgetHidden() {
   DCHECK(hidden_widget_count_ < widget_count_);
   hidden_widget_count_++;
-  if (!is_extension_process_ &&
-      widget_count_ && hidden_widget_count_ == widget_count_)
+
+  if (!content::GetContentClient()->renderer()->
+          RunIdleHandlerWhenWidgetsHidden()) {
+    return;
+  }
+
+  if (widget_count_ && hidden_widget_count_ == widget_count_)
     ScheduleIdleHandler(kInitialIdleHandlerDelayS);
 }
 
 void RenderThread::WidgetRestored() {
   DCHECK_GT(hidden_widget_count_, 0);
   hidden_widget_count_--;
-  if (!is_extension_process_)
-    idle_timer_.Stop();
-}
+  if (!content::GetContentClient()->renderer()->
+          RunIdleHandlerWhenWidgetsHidden()) {
+    return;
+  }
 
-bool RenderThread::IsExtensionProcess() const {
-  return is_extension_process_;
+  idle_timer_.Stop();
 }
 
 bool RenderThread::IsIncognitoProcess() const {
@@ -580,62 +567,6 @@ void RenderThread::OnSetZoomLevelForCurrentURL(const GURL& url,
   RenderView::ForEach(&zoomer);
 }
 
-void RenderThread::OnUpdateUserScripts(base::SharedMemoryHandle scripts) {
-  DCHECK(base::SharedMemory::IsHandleValid(scripts)) << "Bad scripts handle";
-  user_script_slave_->UpdateScripts(scripts);
-  UpdateActiveExtensions();
-}
-
-void RenderThread::OnSetExtensionFunctionNames(
-    const std::vector<std::string>& names) {
-  ExtensionProcessBindings::SetFunctionNames(names);
-}
-
-void RenderThread::OnExtensionLoaded(const ExtensionMsg_Loaded_Params& params) {
-  scoped_refptr<const Extension> extension(params.ConvertToExtension());
-  if (!extension) {
-    // This can happen if extension parsing fails for any reason. One reason
-    // this can legitimately happen is if the
-    // --enable-experimental-extension-apis changes at runtime, which happens
-    // during browser tests. Existing renderers won't know about the change.
-    return;
-  }
-
-  extensions_.Insert(extension);
-}
-
-void RenderThread::OnSetExtensionScriptingWhitelist(
-    const Extension::ScriptingWhitelist& extension_ids) {
-  Extension::SetScriptingWhitelist(extension_ids);
-}
-
-void RenderThread::OnExtensionUnloaded(const std::string& id) {
-  extensions_.Remove(id);
-}
-
-void RenderThread::OnPageActionsUpdated(
-    const std::string& extension_id,
-    const std::vector<std::string>& page_actions) {
-  ExtensionProcessBindings::SetPageActions(extension_id, page_actions);
-}
-
-void RenderThread::OnExtensionSetAPIPermissions(
-    const std::string& extension_id,
-    const std::set<std::string>& permissions) {
-  ExtensionProcessBindings::SetAPIPermissions(extension_id, permissions);
-
-  // This is called when starting a new extension page, so start the idle
-  // handler ticking.
-  ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayS);
-
-  UpdateActiveExtensions();
-}
-
-void RenderThread::OnExtensionSetHostPermissions(
-    const GURL& extension_url, const std::vector<URLPattern>& permissions) {
-  ExtensionProcessBindings::SetHostPermissions(extension_url, permissions);
-}
-
 void RenderThread::OnDOMStorageEvent(
     const DOMStorageMsg_Event_Params& params) {
   if (!dom_storage_event_dispatcher_.get())
@@ -682,23 +613,8 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_GetV8HeapStats, OnGetV8HeapStats)
     IPC_MESSAGE_HANDLER(ViewMsg_GetCacheResourceStats, OnGetCacheResourceStats)
-    IPC_MESSAGE_HANDLER(ViewMsg_UserScripts_UpdatedScripts, OnUpdateUserScripts)
-    // TODO(rafaelw): create an ExtensionDispatcher that handles extension
-    // messages seperates their handling from the RenderThread.
-    IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_SetFunctionNames,
-                        OnSetExtensionFunctionNames)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_Loaded, OnExtensionLoaded)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_Unloaded, OnExtensionUnloaded)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_SetScriptingWhitelist,
-                        OnSetExtensionScriptingWhitelist)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgeMemory, OnPurgeMemory)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePageActions, OnPageActionsUpdated)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_SetAPIPermissions,
-                        OnExtensionSetAPIPermissions)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_SetHostPermissions,
-                        OnExtensionSetHostPermissions)
     IPC_MESSAGE_HANDLER(DOMStorageMsg_Event, OnDOMStorageEvent)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_Init, OnInitSpellChecker)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_WordAdded, OnSpellCheckWordAdded)
@@ -842,17 +758,6 @@ void RenderThread::EnableSpdy(bool enable) {
   Send(new ViewHostMsg_EnableSpdy(enable));
 }
 
-void RenderThread::UpdateActiveExtensions() {
-  // In single-process mode, the browser process reports the active extensions.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
-    return;
-
-  std::set<std::string> active_extensions;
-  user_script_slave_->GetActiveExtensions(&active_extensions);
-  ExtensionProcessBindings::GetActiveExtensions(&active_extensions);
-  child_process_logging::SetActiveExtensions(active_extensions);
-}
-
 void RenderThread::EstablishGpuChannel() {
   if (gpu_channel_.get()) {
     // Do nothing if we already have a GPU channel or are already
@@ -911,14 +816,6 @@ void RenderThread::EnsureWebKitInitialized() {
   if (webkit_client_.get())
     return;
 
-  // For extensions, we want to ensure we call the IdleHandler every so often,
-  // even if the extension keeps up activity.
-  if (is_extension_process_) {
-    forced_idle_timer_.Start(
-        base::TimeDelta::FromSeconds(kMaxExtensionIdleHandlerDelayS),
-        this, &RenderThread::IdleHandler);
-  }
-
   v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
   v8::V8::SetCreateHistogramFunction(CreateHistogram);
   v8::V8::SetAddHistogramSampleFunction(AddHistogramSample);
@@ -943,34 +840,25 @@ void RenderThread::EnsureWebKitInitialized() {
   WebString extension_scheme(ASCIIToUTF16(chrome::kExtensionScheme));
   WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
 
-  RegisterExtension(extensions_v8::LoadTimesExtension::Get(), false);
-  RegisterExtension(extensions_v8::ChromeAppExtension::Get(), false);
-  RegisterExtension(extensions_v8::ExternalExtension::Get(), false);
-  RegisterExtension(extensions_v8::SearchBoxExtension::Get(), false);
+  RegisterExtension(extensions_v8::LoadTimesExtension::Get());
+  RegisterExtension(extensions_v8::ExternalExtension::Get());
+  RegisterExtension(extensions_v8::SearchBoxExtension::Get());
   v8::Extension* search_extension = extensions_v8::SearchExtension::Get();
   // search_extension is null if not enabled.
   if (search_extension)
-    RegisterExtension(search_extension, false);
+    RegisterExtension(search_extension);
 
   if (command_line.HasSwitch(switches::kEnableBenchmarking))
-    RegisterExtension(extensions_v8::BenchmarkingExtension::Get(), false);
+    RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
 
   if (command_line.HasSwitch(switches::kPlaybackMode) ||
       command_line.HasSwitch(switches::kRecordMode) ||
       command_line.HasSwitch(switches::kNoJsRandomness)) {
-    RegisterExtension(extensions_v8::PlaybackExtension::Get(), false);
+    RegisterExtension(extensions_v8::PlaybackExtension::Get());
   }
 
   if (command_line.HasSwitch(switches::kDomAutomationController))
-    RegisterExtension(DomAutomationV8Extension::Get(), false);
-
-  // Add v8 extensions related to chrome extensions.
-  RegisterExtension(ExtensionProcessBindings::Get(), true);
-  RegisterExtension(BaseJsV8Extension::Get(), true);
-  RegisterExtension(JsonSchemaJsV8Extension::Get(), true);
-  RegisterExtension(EventBindings::Get(), true);
-  RegisterExtension(RendererExtensionBindings::Get(), true);
-  RegisterExtension(ExtensionApiTestV8Extension::Get(), true);
+    RegisterExtension(DomAutomationV8Extension::Get());
 
   web_database_observer_impl_.reset(new WebDatabaseObserverImpl(this));
   WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
@@ -1030,6 +918,8 @@ void RenderThread::EnsureWebKitInitialized() {
 
   WebRuntimeFeatures::enableJavaScriptI18NAPI(
       !command_line.HasSwitch(switches::kDisableJavaScriptI18NAPI));
+
+  FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 }
 
 void RenderThread::IdleHandler() {
@@ -1048,17 +938,8 @@ void RenderThread::IdleHandler() {
   // kInitialIdleHandlerDelayS in RenderThread::WidgetHidden.
   ScheduleIdleHandler(idle_notification_delay_in_s_ +
                       1.0 / (idle_notification_delay_in_s_ + 2.0));
-  if (is_extension_process_) {
-    // Dampen the forced delay as well if the extension stays idle for long
-    // periods of time.
-    int64 forced_delay_s =
-        std::max(static_cast<int64>(idle_notification_delay_in_s_),
-                 kMaxExtensionIdleHandlerDelayS);
-    forced_idle_timer_.Stop();
-    forced_idle_timer_.Start(
-        base::TimeDelta::FromSeconds(forced_delay_s),
-        this, &RenderThread::IdleHandler);
-  }
+
+  FOR_EACH_OBSERVER(RenderProcessObserver, observers_, IdleNotification());
 }
 
 void RenderThread::ScheduleIdleHandler(double initial_delay_s) {
@@ -1067,19 +948,6 @@ void RenderThread::ScheduleIdleHandler(double initial_delay_s) {
   idle_timer_.Start(
       base::TimeDelta::FromSeconds(static_cast<int64>(initial_delay_s)),
       this, &RenderThread::IdleHandler);
-}
-
-void RenderThread::OnExtensionMessageInvoke(const std::string& extension_id,
-                                            const std::string& function_name,
-                                            const ListValue& args,
-                                            const GURL& event_url) {
-  RendererExtensionBindings::Invoke(
-      extension_id, function_name, args, NULL, event_url);
-
-  // Reset the idle handler each time there's any activity like event or message
-  // dispatch, for which Invoke is the chokepoint.
-  if (is_extension_process_)
-    ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayS);
 }
 
 void RenderThread::OnPurgeMemory() {
@@ -1185,23 +1053,17 @@ bool RenderThread::AllowScriptExtension(const std::string& v8_extension_name,
   if (v8_extensions_.find(v8_extension_name) == v8_extensions_.end())
     return true;
 
-  // If the V8 extension is not restricted, allow it to run anywhere.
-  bool restrict_to_extensions = v8_extensions_[v8_extension_name];
-  if (!restrict_to_extensions)
-    return true;
-
-  // Extension-only bindings should be restricted to content scripts and
-  // extension-blessed URLs.
-  if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS ||
-      extensions_.ExtensionBindingsAllowed(url)) {
-    return true;
+  ObserverListBase<RenderProcessObserver>::Iterator it(observers_);
+  RenderProcessObserver* observer;
+  while ((observer = it.GetNext()) != NULL) {
+    if (observer->AllowScriptExtension(v8_extension_name, url, extension_group))
+      return true;
   }
 
   return false;
 }
 
-void RenderThread::RegisterExtension(v8::Extension* extension,
-                                     bool restrict_to_extensions) {
+void RenderThread::RegisterExtension(v8::Extension* extension) {
   WebScriptController::registerExtension(extension);
-  v8_extensions_[extension->name()] = restrict_to_extensions;
+  v8_extensions_.insert(extension->name());
 }

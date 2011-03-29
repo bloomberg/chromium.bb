@@ -23,15 +23,10 @@ MockRenderThread::MockRenderThread()
       widget_(NULL),
       reply_deserializer_(NULL),
       printer_(new MockPrinter),
-      is_extension_process_(false),
       print_dialog_user_response_(true) {
 }
 
 MockRenderThread::~MockRenderThread() {
-}
-
-const ExtensionSet* MockRenderThread::GetExtensions() const {
-  return &extensions_;
 }
 
 // Called by the Widget. The routing_id must match the routing id assigned
@@ -58,9 +53,6 @@ void MockRenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
   filter->OnFilterRemoved();
 }
 
-bool MockRenderThread::IsExtensionProcess() const {
-  return is_extension_process_;
-}
 
 bool MockRenderThread::IsIncognitoProcess() const {
   return false;

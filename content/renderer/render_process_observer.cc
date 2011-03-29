@@ -4,6 +4,9 @@
 
 #include "content/renderer/render_process_observer.h"
 
+RenderProcessObserver::RenderProcessObserver() {
+}
+
 RenderProcessObserver::~RenderProcessObserver() {
 }
 
@@ -13,4 +16,17 @@ bool RenderProcessObserver::OnControlMessageReceived(
 }
 
 void RenderProcessObserver::OnRenderProcessShutdown() {
+}
+
+void RenderProcessObserver::WebKitInitialized() {
+}
+
+bool RenderProcessObserver::AllowScriptExtension(
+    const std::string& v8_extension_name,
+    const GURL& url,
+    int extension_group) {
+  return false;
+}
+
+void RenderProcessObserver::IdleNotification() {
 }

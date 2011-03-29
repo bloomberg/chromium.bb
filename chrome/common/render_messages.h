@@ -173,12 +173,6 @@ IPC_MESSAGE_CONTROL1(ViewMsg_VisitedLink_Add, std::vector<uint64>)
 // re-calculated.
 IPC_MESSAGE_CONTROL0(ViewMsg_VisitedLink_Reset)
 
-// Notification that the user scripts have been updated. It has one
-// SharedMemoryHandle argument consisting of the pickled script data. This
-// handle is valid in the context of the renderer.
-IPC_MESSAGE_CONTROL1(ViewMsg_UserScripts_UpdatedScripts,
-                     base::SharedMemoryHandle)
-
 // Sent when user prompting is required before a ViewHostMsg_GetCookies
 // message can complete.  This message indicates that the renderer should
 // pump messages while waiting for cookies.

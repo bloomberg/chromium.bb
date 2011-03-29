@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "content/common/content_client.h"
 
+class GURL;
 class RenderView;
 class SkBitmap;
 
@@ -28,20 +29,31 @@ namespace content {
 class ContentRendererClient {
  public:
   virtual SkBitmap* GetSadPluginBitmap();
+
   virtual std::string GetDefaultEncoding();
+
   // Create a plugin in the given frame.  Can return NULL, in which case
   // RenderView will create a plugin itself.
   virtual WebKit::WebPlugin* CreatePlugin(
       RenderView* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params);
+
   // Returns the html to display when a navigation error occurs.
   virtual std::string GetNavigationErrorHtml(
       const WebKit::WebURLRequest& failed_request,
       const WebKit::WebURLError& error);
+
   // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
   // if it failed.
   virtual std::string DetermineTextLanguage(const string16& text);
+
+  // Returns true if the renderer process should schedule the idle handler when
+  // all widgets are hidden.
+  virtual bool RunIdleHandlerWhenWidgetsHidden();
+
+  // Returns true if the given url can create popup windows.
+  virtual bool AllowPopup(const GURL& creator);
 };
 
 }  // namespace content

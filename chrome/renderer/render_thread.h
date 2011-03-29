@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_RENDER_THREAD_H_
 #pragma once
 
-#include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -15,7 +15,6 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "build/build_config.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "content/common/child_thread.h"
@@ -28,11 +27,9 @@ class AppCacheDispatcher;
 class CookieMessageFilter;
 class DBMessageFilter;
 class DevToolsAgentFilter;
-class ExtensionSet;
 class FilePath;
 class GpuChannelHost;
 class IndexedDBDispatcher;
-class ListValue;
 class RendererHistogram;
 class RendererHistogramSnapshots;
 class RenderProcessObserver;
@@ -40,15 +37,12 @@ class RendererNetPredictor;
 class RendererWebKitClientImpl;
 class SpellCheck;
 class SkBitmap;
-class UserScriptSlave;
-class URLPattern;
 class WebDatabaseObserverImpl;
 
 struct ContentSettings;
 struct RendererPreferences;
 struct DOMStorageMsg_Event_Params;
 struct GPUInfo;
-struct ExtensionMsg_Loaded_Params;
 struct ViewMsg_New_Params;
 struct WebPreferences;
 
@@ -103,11 +97,6 @@ class RenderThreadBase {
  public:
   virtual ~RenderThreadBase() {}
 
-  // Gets currently loaded extensions. This is essentially the renderer
-  // counterpart to ExtensionService in the browser. It contains information
-  // about all extensions currently loaded by the browser.
-  virtual const ExtensionSet* GetExtensions() const = 0;
-
   virtual bool Send(IPC::Message* msg) = 0;
 
   // Called to add or remove a listener for a particular message routing ID.
@@ -121,9 +110,6 @@ class RenderThreadBase {
   // Called by a RenderWidget when it is hidden or restored.
   virtual void WidgetHidden() = 0;
   virtual void WidgetRestored() = 0;
-
-  // True if this process should be treated as an extension process.
-  virtual bool IsExtensionProcess() const = 0;
 
   // True if this process is running in an incognito profile.
   virtual bool IsIncognitoProcess() const = 0;
@@ -160,7 +146,6 @@ class RenderThread : public RenderThreadBase,
   static int32 RoutingIDForCurrentContext();
 
   // Overridden from RenderThreadBase.
-  virtual const ExtensionSet* GetExtensions() const;
   virtual bool Send(IPC::Message* msg);
   virtual void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
   virtual void RemoveRoute(int32 routing_id);
@@ -168,7 +153,6 @@ class RenderThread : public RenderThreadBase,
   virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter);
   virtual void WidgetHidden();
   virtual void WidgetRestored();
-  virtual bool IsExtensionProcess() const;
   virtual bool IsIncognitoProcess() const;
 
   void AddObserver(RenderProcessObserver* observer);
@@ -186,10 +170,6 @@ class RenderThread : public RenderThreadBase,
     return visited_link_slave_.get();
   }
 
-  UserScriptSlave* user_script_slave() const {
-    return user_script_slave_.get();
-  }
-
   AppCacheDispatcher* appcache_dispatcher() const {
     return appcache_dispatcher_.get();
   }
@@ -203,6 +183,13 @@ class RenderThread : public RenderThreadBase,
   }
 
   bool plugin_refresh_allowed() const { return plugin_refresh_allowed_; }
+
+  double idle_notification_delay_in_s() const {
+    return idle_notification_delay_in_s_;
+  }
+  void set_idle_notification_delay_in_s(double idle_notification_delay_in_s) {
+    idle_notification_delay_in_s = idle_notification_delay_in_s;
+  }
 
   // Do DNS prefetch resolution of a hostname.
   void Resolve(const char* name, size_t length);
@@ -233,9 +220,6 @@ class RenderThread : public RenderThreadBase,
 
   // Sends a message to the browser to enable/disable spdy.
   void EnableSpdy(bool enable);
-
-  // Update the list of active extensions that will be reported when we crash.
-  void UpdateActiveExtensions();
 
   // Asynchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).
@@ -270,6 +254,15 @@ class RenderThread : public RenderThreadBase,
     return webkit_client_.get();
   }
 
+  // Schedule a call to IdleHandler with the given initial delay.
+  void ScheduleIdleHandler(double initial_delay_s);
+
+  // A task we invoke periodically to assist with idle cleanup.
+  void IdleHandler();
+
+  // Registers the given V8 extension with WebKit.
+  void RegisterExtension(v8::Extension* extension);
+
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
@@ -281,21 +274,7 @@ class RenderThread : public RenderThreadBase,
   void OnSetZoomLevelForCurrentURL(const GURL& url, double zoom_level);
   void OnSetContentSettingsForCurrentURL(
       const GURL& url, const ContentSettings& content_settings);
-  void OnUpdateUserScripts(base::SharedMemoryHandle table);
-  void OnSetExtensionFunctionNames(const std::vector<std::string>& names);
-  void OnExtensionLoaded(const ExtensionMsg_Loaded_Params& params);
-  void OnExtensionUnloaded(const std::string& id);
-  void OnSetExtensionScriptingWhitelist(
-      const Extension::ScriptingWhitelist& extension_ids);
-  void OnPageActionsUpdated(const std::string& extension_id,
-      const std::vector<std::string>& page_actions);
   void OnDOMStorageEvent(const DOMStorageMsg_Event_Params& params);
-  void OnExtensionSetAPIPermissions(
-      const std::string& extension_id,
-      const std::set<std::string>& permissions);
-  void OnExtensionSetHostPermissions(
-      const GURL& extension_url,
-      const std::vector<URLPattern>& permissions);
   void OnSetNextPageID(int32 next_page_id);
   void OnSetIsIncognitoProcess(bool is_incognito_process);
   void OnSetCSSColors(const std::vector<CSSColors::CSSColorMapping>& colors);
@@ -314,10 +293,6 @@ class RenderThread : public RenderThreadBase,
   void OnGetRendererTcmalloc();
   void OnGetV8HeapStats();
 
-  void OnExtensionMessageInvoke(const std::string& extension_id,
-                                const std::string& function_name,
-                                const ListValue& args,
-                                const GURL& event_url);
   void OnPurgeMemory();
   void OnPurgePluginListCache(bool reload_pages);
 
@@ -344,20 +319,9 @@ class RenderThread : public RenderThreadBase,
   // We initialize WebKit as late as possible.
   void EnsureWebKitInitialized();
 
-  // A task we invoke periodically to assist with idle cleanup.
-  void IdleHandler();
-
-  // Schedule a call to IdleHandler with the given initial delay.
-  void ScheduleIdleHandler(double initial_delay_s);
-
-  // Registers the given V8 extension with WebKit, and also tracks what pages
-  // it is allowed to run on.
-  void RegisterExtension(v8::Extension* extension, bool restrict_to_extensions);
-
   // These objects live solely on the render thread.
   scoped_ptr<ScopedRunnableMethodFactory<RenderThread> > task_factory_;
   scoped_ptr<VisitedLinkSlave> visited_link_slave_;
-  scoped_ptr<UserScriptSlave> user_script_slave_;
   scoped_ptr<RendererNetPredictor> renderer_net_predictor_;
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> indexed_db_dispatcher_;
@@ -392,9 +356,6 @@ class RenderThread : public RenderThreadBase,
   // The current value of the idle notification timer delay.
   double idle_notification_delay_in_s_;
 
-  // True if this renderer is running extensions.
-  bool is_extension_process_;
-
   // True if this renderer is incognito.
   bool is_incognito_process_;
 
@@ -404,23 +365,14 @@ class RenderThread : public RenderThreadBase,
   // Timer that periodically calls IdleHandler.
   base::RepeatingTimer<RenderThread> idle_timer_;
 
-  // Same as above, but on a longer timer and will run even if the process is
-  // not idle, to ensure that IdleHandle gets called eventually.
-  base::RepeatingTimer<RenderThread> forced_idle_timer_;
-
   // The channel from the renderer process to the GPU process.
   scoped_refptr<GpuChannelHost> gpu_channel_;
 
   // A lazily initiated thread on which file operations are run.
   scoped_ptr<base::Thread> file_thread_;
 
-  // Map of registered v8 extensions. The key is the extension name. The value
-  // is true if the extension should be restricted to extension-related
-  // contexts.
-  std::map<std::string, bool> v8_extensions_;
-
-  // Contains all loaded extensions.
-  ExtensionSet extensions_;
+  // Map of registered v8 extensions. The key is the extension name.
+  std::set<std::string> v8_extensions_;
 
   chrome::ChromeContentRendererClient renderer_client_;
 

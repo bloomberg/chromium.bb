@@ -28,6 +28,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const WebKit::WebURLRequest& failed_request,
       const WebKit::WebURLError& error);
   virtual std::string DetermineTextLanguage(const string16& text);
+  virtual bool RunIdleHandlerWhenWidgetsHidden();
+  virtual bool AllowPopup(const GURL& creator);
 
  private:
   WebKit::WebPlugin* CreatePluginPlaceholder(

@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
-#include "chrome/renderer/render_thread.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
@@ -58,7 +58,7 @@ class ChromeAppExtensionWrapper : public v8::Extension {
       return v8::Boolean::New(false);
 
     bool has_web_extent =
-        RenderThread::current()->GetExtensions()->GetByURL(url) != NULL;
+        ExtensionDispatcher::Get()->extensions()->GetByURL(url) != NULL;
     return v8::Boolean::New(has_web_extent);
   }
 

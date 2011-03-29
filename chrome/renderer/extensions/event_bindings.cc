@@ -11,6 +11,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/render_thread.h"
@@ -265,7 +266,7 @@ void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
   if (!ds)
     ds = frame->dataSource();
   GURL url = ds->request().url();
-  const ExtensionSet* extensions = GetRenderThread()->GetExtensions();
+  const ExtensionSet* extensions = ExtensionDispatcher::Get()->extensions();
   std::string extension_id = extensions->GetIdByURL(url);
 
   if (!extensions->ExtensionBindingsAllowed(url) &&

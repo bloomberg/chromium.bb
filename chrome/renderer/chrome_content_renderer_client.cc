@@ -12,8 +12,9 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/blocked_plugin.h"
+#include "chrome/renderer/extensions/bindings_utils.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/localized_error.h"
-#include "chrome/renderer/render_thread.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
@@ -169,7 +170,7 @@ std::string ChromeContentRendererClient::GetNavigationErrorHtml(
   int resource_id;
   DictionaryValue error_strings;
   if (failed_url.is_valid() && !failed_url.SchemeIs(chrome::kExtensionScheme))
-    extension = RenderThread::current()->GetExtensions()->GetByURL(failed_url);
+    extension = ExtensionDispatcher::Get()->extensions()->GetByURL(failed_url);
   if (extension) {
     LocalizedError::GetAppErrorStrings(error, failed_url, extension,
                                        &error_strings);
@@ -226,6 +227,17 @@ std::string ChromeContentRendererClient::DetermineTextLanguage(
     language = LanguageCodeWithDialects(cld_language);
   }
   return language;
+}
+
+bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
+  return !ExtensionDispatcher::Get()->is_extension_process();
+}
+
+bool ChromeContentRendererClient::AllowPopup(const GURL& creator) {
+  // Extensions and apps always allowed to create unrequested popups. The second
+  // check is necessary to include content scripts.
+  return ExtensionDispatcher::Get()->extensions()->GetByURL(creator) ||
+      bindings_utils::GetInfoForCurrentContext();
 }
 
 }  // namespace chrome

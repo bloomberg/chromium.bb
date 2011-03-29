@@ -26,6 +26,8 @@ namespace autofill {
 class AutofillAgent;
 class PasswordAutofillManager;
 }
+
+class ExtensionDispatcher;
 class MockRenderProcess;
 
 class RenderViewTest : public testing::Test {
@@ -94,6 +96,7 @@ class RenderViewTest : public testing::Test {
 
   MessageLoop msg_loop_;
   content::ContentRendererClient content_renderer_client_;
+  ExtensionDispatcher* extension_dispatcher_;
   MockRenderThread render_thread_;
   scoped_ptr<MockRenderProcess> mock_process_;
   scoped_refptr<RenderView> view_;

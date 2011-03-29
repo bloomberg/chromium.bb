@@ -9,9 +9,13 @@
 #include "base/basictypes.h"
 #include "ipc/ipc_message.h"
 
-// Base class for objects that want to filter control IPC messages.
+class GURL;
+
+// Base class for objects that want to filter control IPC messages and get
+// notified of events.
 class RenderProcessObserver {
  public:
+  RenderProcessObserver();
   virtual ~RenderProcessObserver();
 
   // Allows filtering of control messages.
@@ -19,6 +23,16 @@ class RenderProcessObserver {
 
   // Notification that the render process is shutting down.
   virtual void OnRenderProcessShutdown();
+
+  // Called right after the WebKit API is initialized.
+  virtual void WebKitInitialized();
+
+  // See WebViewClient::allowScriptExtension
+  virtual bool AllowScriptExtension(const std::string& v8_extension_name,
+                                    const GURL& url,
+                                    int extension_group);
+
+  virtual void IdleNotification();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderProcessObserver);

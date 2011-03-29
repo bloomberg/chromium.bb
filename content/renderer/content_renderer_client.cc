@@ -33,4 +33,12 @@ std::string ContentRendererClient::DetermineTextLanguage(const string16& text) {
   return std::string();
 }
 
+bool ContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
+  return true;
+}
+
+bool ContentRendererClient::AllowPopup(const GURL& creator) {
+  return false;
+}
+
 }  // namespace content
