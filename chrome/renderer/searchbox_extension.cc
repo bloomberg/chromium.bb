@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/searchbox.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"

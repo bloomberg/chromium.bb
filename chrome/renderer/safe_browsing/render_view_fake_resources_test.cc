@@ -10,7 +10,6 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/mock_render_process.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"

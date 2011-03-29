@@ -1899,7 +1899,7 @@ bool RenderView::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
 
 void RenderView::AddGURLSearchProvider(
     const GURL& osd_url,
-    const ViewHostMsg_PageHasOSDD_Type& provider_type) {
+    search_provider::OSDDType provider_type) {
   if (!osd_url.is_empty())
     Send(new ViewHostMsg_PageHasOSDD(routing_id_, page_id_, osd_url,
                                      provider_type));
@@ -1911,23 +1911,22 @@ void RenderView::OnAllowScriptToClose(bool script_can_close) {
 
 void RenderView::AddSearchProvider(
     const std::string& url,
-    const ViewHostMsg_PageHasOSDD_Type& provider_type) {
-  if (provider_type.type ==
-      ViewHostMsg_PageHasOSDD_Type::EXPLICIT_DEFAULT_PROVIDER &&
+    search_provider::OSDDType provider_type) {
+  if (provider_type == search_provider::EXPLICIT_DEFAULT_PROVIDER &&
       !webview()->mainFrame()->isProcessingUserGesture())
     return;
 
   AddGURLSearchProvider(GURL(url), provider_type);
 }
 
-ViewHostMsg_GetSearchProviderInstallState_Params
+search_provider::InstallState
 RenderView::GetSearchProviderInstallState(WebFrame* frame,
                                           const std::string& url) {
   GURL inquiry_url = GURL(url);
   if (inquiry_url.is_empty())
-    return ViewHostMsg_GetSearchProviderInstallState_Params::Denied();
+    return search_provider::DENIED;
 
-  ViewHostMsg_GetSearchProviderInstallState_Params install;
+  search_provider::InstallState install;
   Send(new ViewHostMsg_GetSearchProviderInstallState(routing_id_,
                                                      frame->url(),
                                                      inquiry_url,
@@ -2116,7 +2115,7 @@ void RenderView::didStopLoading() {
     Send(new ViewHostMsg_UpdateFaviconURL(routing_id_, page_id_, favicon_url));
 
   AddGURLSearchProvider(webview()->mainFrame()->openSearchDescriptionURL(),
-                        ViewHostMsg_PageHasOSDD_Type::Autodetected());
+                        search_provider::AUTODETECTED_PROVIDER);
 
   Send(new ViewHostMsg_DidStopLoading(routing_id_));
 

@@ -50,7 +50,7 @@ bool SearchEngineTabHelper::OnMessageReceived(const IPC::Message& message) {
 void SearchEngineTabHelper::OnPageHasOSDD(
     int32 page_id,
     const GURL& doc_url,
-    const ViewHostMsg_PageHasOSDD_Type& msg_provider_type) {
+    const search_provider::OSDDType& msg_provider_type) {
   // Checks to see if we should generate a keyword based on the OSDD, and if
   // necessary uses TemplateURLFetcher to download the OSDD and create a
   // keyword.
@@ -65,16 +65,16 @@ void SearchEngineTabHelper::OnPageHasOSDD(
     return;
 
   TemplateURLFetcher::ProviderType provider_type;
-  switch (msg_provider_type.type) {
-    case ViewHostMsg_PageHasOSDD_Type::AUTODETECTED_PROVIDER:
+  switch (msg_provider_type) {
+    case search_provider::AUTODETECTED_PROVIDER:
       provider_type = TemplateURLFetcher::AUTODETECTED_PROVIDER;
       break;
 
-    case ViewHostMsg_PageHasOSDD_Type::EXPLICIT_DEFAULT_PROVIDER:
+    case search_provider::EXPLICIT_DEFAULT_PROVIDER:
       provider_type = TemplateURLFetcher::EXPLICIT_DEFAULT_PROVIDER;
       break;
 
-    case ViewHostMsg_PageHasOSDD_Type::EXPLICIT_PROVIDER:
+    case search_provider::EXPLICIT_PROVIDER:
       provider_type = TemplateURLFetcher::EXPLICIT_PROVIDER;
       break;
 

@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/notification_source.h"
@@ -49,7 +48,7 @@ bool SearchProviderInstallStateMessageFilter::OnMessageReceived(
   return handled;
 }
 
-ViewHostMsg_GetSearchProviderInstallState_Params
+search_provider::InstallState
 SearchProviderInstallStateMessageFilter::GetSearchProviderInstallState(
     const GURL& page_location,
     const GURL& requested_host) {
@@ -57,31 +56,27 @@ SearchProviderInstallStateMessageFilter::GetSearchProviderInstallState(
 
   // Do the security check before any others to avoid information leaks.
   if (page_location.GetOrigin() != requested_origin)
-    return ViewHostMsg_GetSearchProviderInstallState_Params::Denied();
+    return search_provider::DENIED;
 
   // In incognito mode, no search information is exposed. (This check must be
   // done after the security check or else a web site can detect that the
   // user is in incognito mode just by doing a cross origin request.)
   if (is_off_the_record_)
-      return ViewHostMsg_GetSearchProviderInstallState_Params::NotInstalled();
+      return search_provider::NOT_INSTALLED;
 
   switch (provider_data_.GetInstallState(requested_origin)) {
     case SearchProviderInstallData::NOT_INSTALLED:
-      return ViewHostMsg_GetSearchProviderInstallState_Params::
-          NotInstalled();
+      return search_provider::NOT_INSTALLED;
 
     case SearchProviderInstallData::INSTALLED_BUT_NOT_DEFAULT:
-      return ViewHostMsg_GetSearchProviderInstallState_Params::
-          InstallButNotDefault();
+      return search_provider::INSTALLED_BUT_NOT_DEFAULT;
 
     case SearchProviderInstallData::INSTALLED_AS_DEFAULT:
-      return ViewHostMsg_GetSearchProviderInstallState_Params::
-          InstalledAsDefault();
+      return search_provider::INSTALLED_AS_DEFAULT;
   }
 
   NOTREACHED();
-  return ViewHostMsg_GetSearchProviderInstallState_Params::
-      NotInstalled();
+  return search_provider::NOT_INSTALLED;
 }
 
 void
@@ -103,7 +98,7 @@ void SearchProviderInstallStateMessageFilter::ReplyWithProviderInstallState(
     const GURL& requested_host,
     IPC::Message* reply_msg) {
   DCHECK(reply_msg);
-  ViewHostMsg_GetSearchProviderInstallState_Params install_state =
+  search_provider::InstallState install_state =
       GetSearchProviderInstallState(page_location, requested_host);
 
   ViewHostMsg_GetSearchProviderInstallState::WriteReplyParams(

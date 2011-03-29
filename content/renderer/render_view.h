@@ -22,6 +22,7 @@
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/search_provider.h"
 #include "chrome/common/view_types.h"
 #include "chrome/renderer/page_load_histograms.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
@@ -82,8 +83,6 @@ struct ContextMenuMediaParams;
 struct ExtensionMsg_ExecuteCode_Params;
 struct PP_Flash_NetAddress;
 struct ThumbnailScore;
-struct ViewHostMsg_GetSearchProviderInstallState_Params;
-struct ViewHostMsg_PageHasOSDD_Type;
 struct ViewHostMsg_RunFileChooser_Params;
 struct ViewMsg_ClosePage_Params;
 struct ViewMsg_Navigate_Params;
@@ -263,12 +262,12 @@ class RenderView : public RenderWidget,
   // Called from JavaScript window.external.AddSearchProvider() to add a
   // keyword for a provider described in the given OpenSearch document.
   void AddSearchProvider(const std::string& url,
-                         const ViewHostMsg_PageHasOSDD_Type& provider_type);
+                         search_provider::OSDDType provider_type);
 
   // Returns the install state for the given search provider url.
-  ViewHostMsg_GetSearchProviderInstallState_Params
-      GetSearchProviderInstallState(WebKit::WebFrame* frame,
-                                    const std::string& url);
+  search_provider::InstallState GetSearchProviderInstallState(
+      WebKit::WebFrame* frame,
+      const std::string& url);
 
   // Evaluates a string of JavaScript in a particular frame.
   void EvaluateScript(const string16& frame_xpath,
@@ -772,7 +771,7 @@ class RenderView : public RenderWidget,
   // Adds search provider from the given OpenSearch description URL as a
   // keyword search.
   void AddGURLSearchProvider(const GURL& osd_url,
-                             const ViewHostMsg_PageHasOSDD_Type& provider_type);
+                             search_provider::OSDDType provider_type);
 
   // Send queued accessibility notifications from the renderer to the browser.
   void SendPendingAccessibilityNotifications();

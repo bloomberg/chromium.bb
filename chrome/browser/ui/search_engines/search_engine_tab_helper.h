@@ -8,11 +8,11 @@
 
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
+#include "chrome/common/search_provider.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
 class SearchEngineTabHelperDelegate;
 class TabContentsWrapper;
-struct ViewHostMsg_PageHasOSDD_Type;
 
 // Per-tab search engine manager. Handles dealing search engine processing
 // functionality.
@@ -34,7 +34,7 @@ class SearchEngineTabHelper : public TabContentsObserver {
   // Handles when a page specifies an OSDD (OpenSearch Description Document).
   void OnPageHasOSDD(int32 page_id,
                      const GURL& doc_url,
-                     const ViewHostMsg_PageHasOSDD_Type& msg_provider_type);
+                     const search_provider::OSDDType& msg_provider_type);
 
   // If params has a searchable form, this tries to create a new keyword.
   void GenerateKeywordIfNecessary(

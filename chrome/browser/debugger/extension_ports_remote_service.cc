@@ -22,7 +22,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
 namespace {

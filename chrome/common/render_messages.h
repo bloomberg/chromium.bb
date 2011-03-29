@@ -20,7 +20,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/nacl_types.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/search_provider.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
@@ -100,6 +100,8 @@ struct ParamTraits<ContentSettings> {
 IPC_ENUM_TRAITS(ContentSetting)
 IPC_ENUM_TRAITS(ContentSettingsType)
 IPC_ENUM_TRAITS(InstantCompleteBehavior)
+IPC_ENUM_TRAITS(search_provider::OSDDType)
+IPC_ENUM_TRAITS(search_provider::InstallState)
 IPC_ENUM_TRAITS(TranslateErrors::Type)
 IPC_ENUM_TRAITS(ViewType::Type)
 IPC_ENUM_TRAITS(WebKit::WebConsoleMessage::Level)
@@ -372,15 +374,14 @@ IPC_SYNC_MESSAGE_CONTROL2_3(ViewHostMsg_LaunchNaCl,
 IPC_MESSAGE_ROUTED3(ViewHostMsg_PageHasOSDD,
                     int32 /* page_id */,
                     GURL /* url of OS description document */,
-                    ViewHostMsg_PageHasOSDD_Type)
+                    search_provider::OSDDType)
 
 // Find out if the given url's security origin is installed as a search
 // provider.
-IPC_SYNC_MESSAGE_ROUTED2_1(
-    ViewHostMsg_GetSearchProviderInstallState,
-    GURL /* page url */,
-    GURL /* inquiry url */,
-    ViewHostMsg_GetSearchProviderInstallState_Params /* install */)
+IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetSearchProviderInstallState,
+                           GURL /* page url */,
+                           GURL /* inquiry url */,
+                           search_provider::InstallState /* install */)
 
 // Stores new inspector setting in the profile.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateInspectorSetting,

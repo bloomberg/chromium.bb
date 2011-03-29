@@ -8,7 +8,6 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"

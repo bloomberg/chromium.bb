@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages_params.h"
+#include "chrome/common/search_provider.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
@@ -116,10 +116,10 @@ v8::Handle<v8::Value> ExternalExtensionWrapper::AddSearchProvider(
   std::string name = std::string(*v8::String::Utf8Value(args[0]));
   if (!name.length()) return v8::Undefined();
 
-  ViewHostMsg_PageHasOSDD_Type provider_type =
+  search_provider::OSDDType provider_type =
       ((args.Length() < 2) || !args[1]->BooleanValue()) ?
-      ViewHostMsg_PageHasOSDD_Type::Explicit() :
-      ViewHostMsg_PageHasOSDD_Type::ExplicitDefault();
+      search_provider::EXPLICIT_PROVIDER :
+      search_provider::EXPLICIT_DEFAULT_PROVIDER;
 
   RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
@@ -142,14 +142,13 @@ v8::Handle<v8::Value> ExternalExtensionWrapper::IsSearchProviderInstalled(
   WebFrame* webframe = WebFrame::frameForEnteredContext();
   if (!webframe) return v8::Undefined();
 
-  ViewHostMsg_GetSearchProviderInstallState_Params install
-      = render_view->GetSearchProviderInstallState(webframe, name);
-  if (install.state ==
-      ViewHostMsg_GetSearchProviderInstallState_Params::DENIED) {
+  search_provider::InstallState install =
+      render_view->GetSearchProviderInstallState(webframe, name);
+  if (install == search_provider::DENIED) {
     // FIXME: throw access denied exception.
     return v8::ThrowException(v8::Exception::Error(v8::String::Empty()));
   }
-  return v8::Integer::New(install.state);
+  return v8::Integer::New(install);
 }
 
 v8::Extension* ExternalExtension::Get() {

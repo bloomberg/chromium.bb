@@ -16,7 +16,6 @@
 #include "base/time.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_thread.h"
 #include "content/common/audio_messages.h"
 #include "content/common/child_process_messages.h"

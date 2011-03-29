@@ -29,7 +29,6 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
