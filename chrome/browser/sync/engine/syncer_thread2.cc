@@ -78,22 +78,63 @@ SyncerThread::~SyncerThread() {
   DCHECK(!thread_.IsRunning());
 }
 
-void SyncerThread::Start(Mode mode) {
-  if (!thread_.IsRunning() && !thread_.Start()) {
-    NOTREACHED() << "Unable to start SyncerThread.";
-    return;
+void SyncerThread::CheckServerConnectionManagerStatus(
+    HttpResponse::ServerConnectionCode code) {
+  // Note, be careful when adding cases here because if the SyncerThread
+  // thinks there is no valid connection as determined by this method, it
+  // will drop out of *all* forward progress sync loops (it won't poll and it
+  // will queue up Talk notifications but not actually call SyncShare) until
+  // some external action causes a ServerConnectionManager to broadcast that
+  // a valid connection has been re-established.
+  if (HttpResponse::CONNECTION_UNAVAILABLE == code ||
+      HttpResponse::SYNC_AUTH_ERROR == code) {
+    server_connection_ok_ = false;
+  } else if (HttpResponse::SERVER_CONNECTION_OK == code) {
+    server_connection_ok_ = true;
+  }
+}
+
+void SyncerThread::Start(Mode mode, ModeChangeCallback* callback) {
+  if (!thread_.IsRunning()) {
+    if (!thread_.Start()) {
+      NOTREACHED() << "Unable to start SyncerThread.";
+      return;
+    }
+    WatchConnectionManager();
+    thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &SyncerThread::SendInitialSnapshot));
   }
 
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SyncerThread::StartImpl, mode));
+      this, &SyncerThread::StartImpl, mode, make_linked_ptr(callback)));
 }
 
-void SyncerThread::StartImpl(Mode mode) {
+void SyncerThread::SendInitialSnapshot() {
+  DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
+  scoped_ptr<SyncSession> dummy(new SyncSession(session_context_.get(), this,
+      SyncSourceInfo(), ModelSafeRoutingInfo(),
+      std::vector<ModelSafeWorker*>()));
+  SyncEngineEvent event(SyncEngineEvent::STATUS_CHANGED);
+  sessions::SyncSessionSnapshot snapshot(dummy->TakeSnapshot());
+  event.snapshot = &snapshot;
+  session_context_->NotifyListeners(event);
+}
+
+void SyncerThread::WatchConnectionManager() {
+  ServerConnectionManager* scm = session_context_->connection_manager();
+  CheckServerConnectionManagerStatus(scm->server_status());
+  scm->AddListener(this);
+}
+
+void SyncerThread::StartImpl(Mode mode,
+                             linked_ptr<ModeChangeCallback> callback) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
   DCHECK(!session_context_->account_name().empty());
   DCHECK(syncer_.get());
   mode_ = mode;
   AdjustPolling(NULL);  // Will kick start poll timer if needed.
+  if (callback.get())
+    callback->Run();
 }
 
 bool SyncerThread::ShouldRunJob(SyncSessionJobPurpose purpose,
@@ -221,6 +262,11 @@ void SyncerThread::ScheduleNudgeImpl(const TimeDelta& delay,
     NudgeSource source, const ModelTypePayloadMap& types_with_payloads) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
   TimeTicks rough_start = TimeTicks::Now() + delay;
+  if (!ShouldRunJob(NUDGE, rough_start)) {
+    LOG(WARNING) << "Dropping nudge at scheduling time, source = "
+                 << source;
+    return;
+  }
 
   // Note we currently nudge for all types regardless of the ones incurring
   // the nudge.  Doing different would throw off some syncer commands like
@@ -349,6 +395,11 @@ void SyncerThread::SetSyncerStepsForPurpose(SyncSessionJobPurpose purpose,
 
 void SyncerThread::DoSyncSessionJob(const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
+  if (!ShouldRunJob(job.purpose, job.scheduled_start)) {
+    LOG(WARNING) << "Dropping nudge at DoSyncSessionJob, source = "
+        << job.session->source().updates_source;
+    return;
+  }
 
   if (job.purpose == NUDGE) {
     DCHECK(pending_nudge_.get());
@@ -362,10 +413,8 @@ void SyncerThread::DoSyncSessionJob(const SyncSessionJob& job) {
   SetSyncerStepsForPurpose(job.purpose, &begin, &end);
 
   bool has_more_to_sync = true;
-  bool did_job = false;
   while (ShouldRunJob(job.purpose, job.scheduled_start) && has_more_to_sync) {
     VLOG(1) << "SyncerThread: Calling SyncShare.";
-    did_job = true;
     // Synchronously perform the sync session from this thread.
     syncer_->SyncShare(job.session.get(), begin, end);
     has_more_to_sync = job.session->HasMoreToSync();
@@ -373,8 +422,26 @@ void SyncerThread::DoSyncSessionJob(const SyncSessionJob& job) {
       job.session->ResetTransientState();
   }
   VLOG(1) << "SyncerThread: Done SyncShare looping.";
-  if (did_job)
-    FinishSyncSessionJob(job);
+  FinishSyncSessionJob(job);
+}
+
+void SyncerThread::UpdateCarryoverSessionState(const SyncSessionJob& old_job) {
+  if (old_job.purpose == CONFIGURATION) {
+    // Whatever types were part of a configuration task will have had updates
+    // downloaded.  For that reason, we make sure they get recorded in the
+    // event that they get disabled at a later time.
+    ModelSafeRoutingInfo r(session_context_->previous_session_routing_info());
+    if (!r.empty()) {
+      ModelSafeRoutingInfo temp_r;
+      ModelSafeRoutingInfo old_info(old_job.session->routing_info());
+      std::set_union(r.begin(), r.end(), old_info.begin(), old_info.end(),
+          std::insert_iterator<ModelSafeRoutingInfo>(temp_r, temp_r.begin()));
+      session_context_->set_previous_session_routing_info(temp_r);
+    }
+  } else {
+    session_context_->set_previous_session_routing_info(
+        old_job.session->routing_info());
+  }
 }
 
 void SyncerThread::FinishSyncSessionJob(const SyncSessionJob& job) {
@@ -391,6 +458,7 @@ void SyncerThread::FinishSyncSessionJob(const SyncSessionJob& job) {
     }
   }
   last_sync_session_end_time_ = now;
+  UpdateCarryoverSessionState(job);
   if (IsSyncingCurrentlySilenced())
     return;  // Nothing to do.
 
@@ -506,8 +574,8 @@ TimeDelta SyncerThread::GetRecommendedDelay(const TimeDelta& last_delay) {
 
 void SyncerThread::Stop() {
   syncer_->RequestEarlyExit();  // Safe to call from any thread.
+  session_context_->connection_manager()->RemoveListener(this);
   thread_.Stop();
-  Notify(SyncEngineEvent::SYNCER_THREAD_EXITING);
 }
 
 void SyncerThread::DoCanaryJob() {
@@ -577,8 +645,10 @@ void SyncerThread::OnShouldStopSyncingPermanently() {
 }
 
 void SyncerThread::OnServerConnectionEvent(
-    const ServerConnectionEvent& event) {
-  NOTIMPLEMENTED();
+    const ServerConnectionEvent2& event) {
+  thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &SyncerThread::CheckServerConnectionManagerStatus,
+      event.connection_code));
 }
 
 void SyncerThread::set_notifications_enabled(bool notifications_enabled) {

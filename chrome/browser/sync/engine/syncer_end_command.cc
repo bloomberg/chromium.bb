@@ -15,10 +15,12 @@ SyncerEndCommand::SyncerEndCommand() {}
 SyncerEndCommand::~SyncerEndCommand() {}
 
 void SyncerEndCommand::ExecuteImpl(sessions::SyncSession* session) {
-  sessions::StatusController* status(session->status_controller());
-  status->set_syncing(false);
-  session->context()->set_previous_session_routing_info(
-      session->routing_info());
+  // Always send out a cycle ended notification, regardless of end-state.
+  session->status_controller()->set_syncing(false);
+  SyncEngineEvent event(SyncEngineEvent::SYNC_CYCLE_ENDED);
+  sessions::SyncSessionSnapshot snapshot(session->TakeSnapshot());
+  event.snapshot = &snapshot;
+  session->context()->NotifyListeners(event);
   session->context()->set_last_snapshot(session->TakeSnapshot());
 }
 

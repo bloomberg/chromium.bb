@@ -15,6 +15,8 @@
 
 using browser_sync::HttpResponse;
 using browser_sync::ServerConnectionManager;
+using browser_sync::ServerConnectionEventListener;
+using browser_sync::ServerConnectionEvent2;
 using browser_sync::SyncerProtoUtil;
 using browser_sync::TestIdFactory;
 using std::map;
@@ -608,7 +610,10 @@ void MockConnectionManager::SetServerReachable() {
     browser_sync::ServerConnectionEvent::STATUS_CHANGED,
     server_status_,
     server_reachable_ };
+
   channel_->NotifyListeners(event);
+  listeners_->Notify(&ServerConnectionEventListener::OnServerConnectionEvent,
+      ServerConnectionEvent2(server_status_, server_reachable_));
 }
 
 void MockConnectionManager::SetServerNotReachable() {
@@ -619,4 +624,6 @@ void MockConnectionManager::SetServerNotReachable() {
     server_status_,
     server_reachable_ };
   channel_->NotifyListeners(event);
+  listeners_->Notify(&ServerConnectionEventListener::OnServerConnectionEvent,
+      ServerConnectionEvent2(server_status_, server_reachable_));
 }

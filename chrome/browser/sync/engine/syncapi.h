@@ -43,6 +43,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
@@ -828,6 +829,8 @@ class SyncManager {
     virtual ~Observer();
   };
 
+  typedef Callback0::Type ModeChangeCallback;
+
   // Create an uninitialized SyncManager.  Callers must Init() before using.
   SyncManager();
   virtual ~SyncManager();
@@ -924,6 +927,12 @@ class SyncManager {
   // paused).
   // TODO(tim): Deprecated.
   bool RequestResume();
+
+  // Puts the SyncerThread into a mode where no normal nudge or poll traffic
+  // will occur, but calls to RequestConfig will be supported.  If |callback|
+  // is provided, it will be invoked (from the internal SyncerThread) when
+  // the thread has changed to configuration mode.
+  void StartConfigurationMode(ModeChangeCallback* callback);
 
   // For the new SyncerThread impl, this switches the mode of operation to
   // CONFIGURATION_MODE and schedules a config task to fetch updates for

@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/atomicops.h"
+#include "base/observer_list_threadsafe.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
@@ -107,6 +108,7 @@ inline bool IsGoodReplyFromServer(HttpResponse::ServerConnectionCode code) {
   return code >= HttpResponse::SERVER_CONNECTION_OK;
 }
 
+// TODO(tim): Deprecated.
 struct ServerConnectionEvent {
   // Traits.
   typedef ServerConnectionEvent EventType;
@@ -122,6 +124,21 @@ struct ServerConnectionEvent {
   WhatHappened what_happened;
   HttpResponse::ServerConnectionCode connection_code;
   bool server_reachable;
+};
+
+struct ServerConnectionEvent2 {
+  HttpResponse::ServerConnectionCode connection_code;
+  bool server_reachable;
+  ServerConnectionEvent2(HttpResponse::ServerConnectionCode code,
+                         bool server_reachable) :
+      connection_code(code), server_reachable(server_reachable) {}
+};
+
+class ServerConnectionEventListener {
+ public:
+  virtual void OnServerConnectionEvent(const ServerConnectionEvent2& event) = 0;
+ protected:
+  virtual ~ServerConnectionEventListener() {}
 };
 
 class ServerConnectionManager;
@@ -240,6 +257,9 @@ class ServerConnectionManager {
 
   inline Channel* channel() const { return channel_; }
 
+  void AddListener(ServerConnectionEventListener* listener);
+  void RemoveListener(ServerConnectionEventListener* listener);
+
   inline std::string user_agent() const { return user_agent_; }
 
   inline HttpResponse::ServerConnectionCode server_status() const {
@@ -344,7 +364,11 @@ class ServerConnectionManager {
   base::Lock error_count_mutex_;  // Protects error_count_
   int error_count_;  // Tracks the number of connection errors.
 
+  // TODO(tim): Deprecated.
   Channel* const channel_;
+
+  scoped_refptr<ObserverListThreadSafe<ServerConnectionEventListener> >
+     listeners_;
 
   // Volatile so various threads can call server_status() without
   // synchronization.

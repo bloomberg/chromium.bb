@@ -97,13 +97,16 @@ struct SyncEngineEvent {
 
     // This event is sent when the thread is waiting for a connection
     // to be established.
+    // TODO(tim): Deprecated.
     SYNCER_THREAD_WAITING_FOR_CONNECTION,
 
     // This event is sent when a connection has been established and
     // the thread continues.
+    // TODO(tim): Deprecated.
     SYNCER_THREAD_CONNECTED,
 
     // Sent when the main syncer loop finishes.
+    // TODO(tim): Deprecated.
     SYNCER_THREAD_EXITING,
 
     ////////////////////////////////////////////////////////////////

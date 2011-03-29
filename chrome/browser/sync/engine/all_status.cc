@@ -127,9 +127,6 @@ void AllStatus::HandleServerConnectionEvent(
     status_.server_reachable = event.server_reachable;
 
     if (event.connection_code == HttpResponse::SERVER_CONNECTION_OK) {
-      if (!status_.authenticated) {
-        status_ = CreateBlankStatus();
-      }
       status_.authenticated = true;
     } else {
       status_.authenticated = false;

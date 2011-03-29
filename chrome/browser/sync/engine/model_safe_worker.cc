@@ -14,7 +14,7 @@ ModelSafeGroup GetGroupForModelType(const syncable::ModelType type,
     // with the server's PermanentItemPopulator is causing TLF updates in
     // some cases.  See bug 36735.
     if (type != syncable::UNSPECIFIED && type != syncable::TOP_LEVEL_FOLDER)
-      NOTREACHED() << "Entry does not belong to active ModelSafeGroup!";
+      LOG(WARNING) << "Entry does not belong to active ModelSafeGroup!";
     return GROUP_PASSIVE;
   }
   return it->second;

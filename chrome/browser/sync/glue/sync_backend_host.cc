@@ -345,20 +345,24 @@ void SyncBackendHost::ConfigureAutofillMigration() {
   }
 }
 
+SyncBackendHost::PendingConfigureDataTypesState::
+PendingConfigureDataTypesState() : deleted_type(false) {}
+
 void SyncBackendHost::ConfigureDataTypes(
     const DataTypeController::TypeMap& data_type_controllers,
     const syncable::ModelTypeSet& types,
     CancelableTask* ready_task) {
   // Only one configure is allowed at a time.
-  DCHECK(!configure_ready_task_.get());
+  DCHECK(!pending_config_mode_state_.get());
+  DCHECK(!pending_download_state_.get());
   DCHECK(syncapi_initialized_);
 
   if (types.count(syncable::AUTOFILL_PROFILE) != 0) {
     ConfigureAutofillMigration();
   }
 
-  bool deleted_type = false;
-  syncable::ModelTypeBitSet added_types;
+  scoped_ptr<PendingConfigureDataTypesState> state(new
+      PendingConfigureDataTypesState());
 
   {
     base::AutoLock lock(registrar_lock_);
@@ -370,32 +374,34 @@ void SyncBackendHost::ConfigureDataTypes(
       // If a type is not specified, remove it from the routing_info.
       if (types.count(type) == 0) {
         registrar_.routing_info.erase(type);
-        deleted_type = true;
+        state->deleted_type = true;
       } else {
         // Add a newly specified data type as GROUP_PASSIVE into the
         // routing_info, if it does not already exist.
         if (registrar_.routing_info.count(type) == 0) {
           registrar_.routing_info[type] = GROUP_PASSIVE;
-          added_types.set(type);
+          state->added_types.set(type);
         }
       }
     }
   }
 
-  // If no new data types were added to the passive group, no need to
-  // wait for the syncer.
-  if (core_->syncapi()->InitialSyncEndedForAllEnabledTypes()) {
-    ready_task->Run();
-    delete ready_task;
-  } else {
-    // Save the task here so we can run it when the syncer finishes
-    // initializing the new data types.  It will be run only when the
-    // set of initially synced data types matches the types requested in
-    // this configure.
-    configure_ready_task_.reset(ready_task);
-    configure_initial_sync_types_ = types;
-  }
+  state->ready_task.reset(ready_task);
+  state->initial_types = types;
+  pending_config_mode_state_.reset(state.release());
 
+  // If we're doing the first configure (at startup) this is redundant as the
+  // syncer thread always must start in config mode.
+  if (using_new_syncer_thread_) {
+    core_->syncapi()->StartConfigurationMode(NewCallback(core_.get(),
+        &SyncBackendHost::Core::FinishConfigureDataTypes));
+  } else {
+    FinishConfigureDataTypesOnFrontendLoop();
+  }
+}
+
+void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
+  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
   // Nudge the syncer. This is necessary for both datatype addition/deletion.
   //
   // Deletions need a nudge in order to ensure the deletion occurs in a timely
@@ -404,34 +410,50 @@ void SyncBackendHost::ConfigureDataTypes(
   // In the case of additions, on the next sync cycle, the syncer should
   // notice that the routing info has changed and start the process of
   // downloading updates for newly added data types.  Once this is
-  // complete, the configure_ready_task_ is run via an
+  // complete, the configure_state_.ready_task_ is run via an
   // OnInitializationComplete notification.
-  ScheduleSyncEventForConfigChange(deleted_type, added_types);
+  bool request_nudge = false;
+  if (pending_config_mode_state_->deleted_type) {
+    if (using_new_syncer_thread_) {
+      core_thread_.message_loop()->PostTask(FROM_HERE,
+          NewRunnableMethod(core_.get(),
+          &SyncBackendHost::Core::DeferNudgeForCleanup));
+    } else {
+      request_nudge = true;
+    }
+  }
+
+  if (core_->syncapi()->InitialSyncEndedForAllEnabledTypes()) {
+    pending_config_mode_state_->ready_task->Run();
+  } else {
+    if (!pending_config_mode_state_->added_types.any()) {
+      LOG(WARNING) << "No new types, but initial sync not finished."
+                   << "Possible sync db corruption / removal.";
+      // TODO(tim): Log / UMA / count this somehow?
+      // TODO(tim): If no added types, we could (should?) config only for
+      // types that are needed... but this is a rare corruption edge case or
+      // implies the user mucked around with their syncdb, so for now do all.
+      pending_config_mode_state_->added_types =
+          syncable::ModelTypeBitSetFromSet(
+              pending_config_mode_state_->initial_types);
+    }
+    pending_download_state_.reset(pending_config_mode_state_.release());
+    if (using_new_syncer_thread_) {
+      RequestConfig(pending_download_state_->added_types);
+    } else {
+      request_nudge = true;
+    }
+  }
+
+  if (request_nudge)
+    RequestNudge();
+
+  pending_config_mode_state_.reset();
 
   // Notify the SyncManager about the new types.
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(),
                         &SyncBackendHost::Core::DoUpdateEnabledTypes));
-}
-
-void SyncBackendHost::ScheduleSyncEventForConfigChange(bool deleted_type,
-    const syncable::ModelTypeBitSet& added_types) {
-  // We can only nudge when we've either deleted a dataype or added one, else
-  // we can cause unnecessary syncs. Unit tests cover this.
-  if (using_new_syncer_thread_) {
-    if (added_types.size() > 0)
-      RequestConfig(added_types);
-
-    // TODO(tim): Bug 76233.  Fix this once only one impl exists.
-    if (deleted_type) {
-      core_thread_.message_loop()->PostTask(FROM_HERE,
-          NewRunnableMethod(core_.get(),
-                            &SyncBackendHost::Core::DeferNudgeForCleanup));
-    }
-  } else if (deleted_type ||
-             !core_->syncapi()->InitialSyncEndedForAllEnabledTypes()) {
-    RequestNudge();
-  }
 }
 
 void SyncBackendHost::EncryptDataTypes(
@@ -450,7 +472,12 @@ void SyncBackendHost::RequestNudge() {
 void SyncBackendHost::RequestConfig(
     const syncable::ModelTypeBitSet& added_types) {
   DCHECK(core_->syncapi());
-  core_->syncapi()->RequestConfig(added_types);
+
+  syncable::ModelTypeBitSet types_copy(added_types);
+  if (IsNigoriEnabled())
+    types_copy.set(syncable::NIGORI);
+
+  core_->syncapi()->RequestConfig(types_copy);
 }
 
 void SyncBackendHost::ActivateDataType(
@@ -577,6 +604,15 @@ void SyncBackendHost::Core::NotifyEncryptionComplete(
     return;
   DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
   host_->frontend_->OnEncryptionComplete(encrypted_types);
+}
+
+void SyncBackendHost::Core::FinishConfigureDataTypes() {
+  host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &SyncBackendHost::Core::FinishConfigureDataTypesOnFrontendLoop));
+}
+
+void SyncBackendHost::Core::FinishConfigureDataTypesOnFrontendLoop() {
+  host_->FinishConfigureDataTypesOnFrontendLoop();
 }
 
 SyncBackendHost::Core::DoInitializeOptions::DoInitializeOptions(
@@ -865,18 +901,21 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
   // If we are waiting for a configuration change, check here to see
   // if this sync cycle has initialized all of the types we've been
   // waiting for.
-  if (host_->configure_ready_task_.get()) {
-    bool found_all = true;
+  if (host_->pending_download_state_.get()) {
+    bool found_all_added = true;
     for (syncable::ModelTypeSet::const_iterator it =
-             host_->configure_initial_sync_types_.begin();
-         it != host_->configure_initial_sync_types_.end(); ++it) {
-      found_all &= snapshot->initial_sync_ended.test(*it);
+             host_->pending_download_state_->initial_types.begin();
+         it != host_->pending_download_state_->initial_types.end();
+         ++it) {
+      if (host_->pending_download_state_->added_types.test(*it))
+        found_all_added &= snapshot->initial_sync_ended.test(*it);
     }
-
-    if (found_all) {
-      host_->configure_ready_task_->Run();
-      host_->configure_ready_task_.reset();
-      host_->configure_initial_sync_types_.clear();
+    if (!found_all_added) {
+      CHECK(false);
+      DCHECK(!host_->using_new_syncer_thread_);
+    } else {
+      host_->pending_download_state_->ready_task->Run();
+      host_->pending_download_state_.reset();
     }
   }
   host_->frontend_->OnSyncCycleCompleted();

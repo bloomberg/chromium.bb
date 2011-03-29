@@ -274,13 +274,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return passphrase_required_for_decryption_;
   }
 
-  // A timestamp marking the last time the service observed a transition from
-  // the SYNCING state to the READY state. Note that this does not reflect the
-  // last time we polled the server to see if there were any changes; the
-  // timestamp is only snapped when syncing takes place and we download or
-  // upload some bookmark entity.
-  const base::Time& last_synced_time() const { return last_synced_time_; }
-
   // Returns a user-friendly string form of last synced time (in minutes).
   virtual string16 GetLastSyncedTimeString() const;
 

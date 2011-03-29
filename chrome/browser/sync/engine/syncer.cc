@@ -271,9 +271,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case SYNCER_END: {
-        VLOG(1) << "Syncer End";
-        SyncerEndCommand syncer_end_command;
-        syncer_end_command.Execute(session);
         break;
       }
       default:
@@ -284,11 +281,9 @@ void Syncer::SyncShare(sessions::SyncSession* session,
     current_step = next_step;
   }
 
-  // Always send out a cycle ended notification, regardless of end-state.
-  SyncEngineEvent event(SyncEngineEvent::SYNC_CYCLE_ENDED);
-  sessions::SyncSessionSnapshot snapshot(session->TakeSnapshot());
-  event.snapshot = &snapshot;
-  session->context()->NotifyListeners(event);
+  VLOG(1) << "Syncer End";
+  SyncerEndCommand syncer_end_command;
+  syncer_end_command.Execute(session);
   return;
 }
 

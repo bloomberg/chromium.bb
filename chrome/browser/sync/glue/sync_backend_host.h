@@ -388,6 +388,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         const std::string& name, const JsArgList& args,
         const JsEventHandler* sender);
 
+    // A callback from the SyncerThread when it is safe to continue config.
+    void FinishConfigureDataTypes();
+
 #if defined(UNIT_TEST)
     // Special form of initialization that does not try and authenticate the
     // last known user (since it will fail in test mode) and does some extra
@@ -482,6 +485,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         const std::string& name, const JsArgList& args,
         const JsEventHandler* dst);
 
+    void FinishConfigureDataTypesOnFrontendLoop();
+
     // Return true if a model lives on the current thread.
     bool IsCurrentThreadSafeForModel(syncable::ModelType model_type);
 
@@ -522,6 +527,11 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Posts a config request on the core thread.
   virtual void RequestConfig(const syncable::ModelTypeBitSet& added_types);
 
+  // Called to finish the job of ConfigureDataTypes once the syncer is in
+  // configuration mode.
+  void FinishConfigureDataTypes();
+  void FinishConfigureDataTypesOnFrontendLoop();
+
   // Allows tests to perform alternate core initialization work.
   virtual void InitCore(const Core::DoInitializeOptions& options);
 
@@ -547,12 +557,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   UIModelWorker* ui_worker();
 
   void ConfigureAutofillMigration();
-
-  // Depending on switches::kUseNewSyncerThread, kicks the syncapi to respond
-  // to a change in the set of enabled data types.
-  void ScheduleSyncEventForConfigChange(
-      bool deleted_type,
-      const syncable::ModelTypeBitSet& added_types);
 
   // A thread we dedicate for use by our Core to perform initialization,
   // authentication, handle messages from the syncapi, and periodically tell
@@ -600,13 +604,23 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Path of the folder that stores the sync data files.
   FilePath sync_data_folder_path_;
 
-  // A task that should be called once data type configuration is
-  // complete.
-  scoped_ptr<CancelableTask> configure_ready_task_;
+  struct PendingConfigureDataTypesState {
+    PendingConfigureDataTypesState();
+    // A task that should be called once data type configuration is
+    // complete.
+    scoped_ptr<CancelableTask> ready_task;
 
-  // The set of types that we are waiting to be initially synced in a
-  // configuration cycle.
-  syncable::ModelTypeSet configure_initial_sync_types_;
+    // The set of types that we are waiting to be initially synced in a
+    // configuration cycle.
+    syncable::ModelTypeSet initial_types;
+
+    // Additional details about which types were added / removed.
+    bool deleted_type;
+    syncable::ModelTypeBitSet added_types;
+  };
+
+  scoped_ptr<PendingConfigureDataTypesState> pending_download_state_;
+  scoped_ptr<PendingConfigureDataTypesState> pending_config_mode_state_;
 
   // UI-thread cache of the last AuthErrorState received from syncapi.
   GoogleServiceAuthError last_auth_error_;

@@ -16,7 +16,7 @@ SyncerThreadAdapter::SyncerThreadAdapter(sessions::SyncSessionContext* context,
     : legacy_(NULL), new_impl_(NULL), using_new_impl_(using_new_impl) {
   if (using_new_impl_) {
     new_impl_.reset(new s3::SyncerThread(context, new Syncer()));
-    new_impl_->Start(s3::SyncerThread::CONFIGURATION_MODE);
+    new_impl_->Start(s3::SyncerThread::CONFIGURATION_MODE, NULL);
   } else {
     legacy_ = new SyncerThread(context);
   }
@@ -35,7 +35,7 @@ void SyncerThreadAdapter::WatchConnectionManager(
 
 bool SyncerThreadAdapter::Start() {
   if (using_new_impl_) {
-    new_impl_->Start(s3::SyncerThread::NORMAL_MODE);
+    new_impl_->Start(s3::SyncerThread::NORMAL_MODE, NULL);
     return true;
   } else {
     return legacy_->Start();

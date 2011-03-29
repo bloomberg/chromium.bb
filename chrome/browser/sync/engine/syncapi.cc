@@ -72,6 +72,8 @@ using browser_sync::ModelSafeRoutingInfo;
 using browser_sync::ModelSafeWorker;
 using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::ServerConnectionEvent;
+using browser_sync::ServerConnectionEvent2;
+using browser_sync::ServerConnectionEventListener;
 using browser_sync::SyncEngineEvent;
 using browser_sync::SyncEngineEventListener;
 using browser_sync::Syncer;
@@ -1099,7 +1101,8 @@ class SyncManager::SyncInternal
       public sync_notifier::SyncNotifierObserver,
       public browser_sync::ChannelEventHandler<syncable::DirectoryChangeEvent>,
       public browser_sync::JsBackend,
-      public SyncEngineEventListener {
+      public SyncEngineEventListener,
+      public ServerConnectionEventListener {
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
  public:
@@ -1295,6 +1298,9 @@ class SyncManager::SyncInternal
 
   // SyncEngineEventListener implementation.
   virtual void OnSyncEngineEvent(const SyncEngineEvent& event);
+
+  // ServerConnectionEventListener implementation.
+  virtual void OnServerConnectionEvent(const ServerConnectionEvent2& event);
 
   // browser_sync::JsBackend implementation.
   virtual void SetParentJsEventRouter(browser_sync::JsEventRouter* router);
@@ -1597,9 +1603,16 @@ void SyncManager::RequestConfig(const syncable::ModelTypeBitSet& types) {
   if (!data_->syncer_thread())
     return;
   // It is an error for this to be called if new_impl is null.
-  data_->syncer_thread()->new_impl()->Start(
-      browser_sync::s3::SyncerThread::CONFIGURATION_MODE);
+  StartConfigurationMode(NULL);
   data_->syncer_thread()->new_impl()->ScheduleConfig(types);
+}
+
+void SyncManager::StartConfigurationMode(ModeChangeCallback* callback) {
+  if (!data_->syncer_thread())
+    return;
+  // It is an error for this to be called if new_impl is null.
+  data_->syncer_thread()->new_impl()->Start(
+      browser_sync::s3::SyncerThread::CONFIGURATION_MODE, callback);
 }
 
 const std::string& SyncManager::GetAuthenticatedUsername() {
@@ -1635,11 +1648,19 @@ bool SyncManager::SyncInternal::Init(
   connection_manager_.reset(new SyncAPIServerConnectionManager(
       sync_server_and_path, port, use_ssl, user_agent, post_factory));
 
-  connection_manager_hookup_.reset(
-      NewEventListenerHookup(connection_manager()->channel(), this,
-          &SyncManager::SyncInternal::HandleServerConnectionEvent));
-
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
+
+  bool new_syncer_thread = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNewSyncerThread);
+
+  if (new_syncer_thread) {
+    connection_manager()->AddListener(this);
+  } else {
+    connection_manager_hookup_.reset(
+        NewEventListenerHookup(connection_manager()->channel(), this,
+            &SyncManager::SyncInternal::HandleServerConnectionEvent));
+  }
+
   // TODO(akalin): CheckServerReachable() can block, which may cause jank if we
   // try to shut down sync.  Fix this.
   core_message_loop_->PostTask(FROM_HERE,
@@ -1660,8 +1681,7 @@ bool SyncManager::SyncInternal::Init(
     context->set_account_name(credentials.email);
     // The SyncerThread takes ownership of |context|.
     syncer_thread_.reset(new SyncerThreadAdapter(context,
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kNewSyncerThread)));
+        new_syncer_thread));
   }
 
   bool signed_in = SignIn(credentials);
@@ -2159,6 +2179,15 @@ void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
       model_has_change_.reset(i);
     }
   }
+}
+
+void SyncManager::SyncInternal::OnServerConnectionEvent(
+    const ServerConnectionEvent2& event) {
+  ServerConnectionEvent legacy;
+  legacy.what_happened = ServerConnectionEvent::STATUS_CHANGED;
+  legacy.connection_code = event.connection_code;
+  legacy.server_reachable = event.server_reachable;
+  HandleServerConnectionEvent(legacy);
 }
 
 void SyncManager::SyncInternal::HandleServerConnectionEvent(

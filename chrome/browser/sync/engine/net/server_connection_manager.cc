@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/engine/net/url_translator.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/http_return.h"
 #include "googleurl/src/gurl.h"
 
@@ -144,6 +146,7 @@ ServerConnectionManager::ServerConnectionManager(
       get_time_path_(kSyncServerGetTimePath),
       error_count_(0),
       channel_(new Channel(shutdown_event)),
+      listeners_(new ObserverListThreadSafe<ServerConnectionEventListener>()),
       server_status_(HttpResponse::NONE),
       server_reachable_(false),
       reset_count_(0),
@@ -155,10 +158,16 @@ ServerConnectionManager::~ServerConnectionManager() {
 }
 
 void ServerConnectionManager::NotifyStatusChanged() {
-  ServerConnectionEvent event = { ServerConnectionEvent::STATUS_CHANGED,
-                                  server_status_,
-                                  server_reachable_ };
-  channel_->NotifyListeners(event);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNewSyncerThread)) {
+    listeners_->Notify(&ServerConnectionEventListener::OnServerConnectionEvent,
+        ServerConnectionEvent2(server_status_, server_reachable_));
+  }  else {
+    ServerConnectionEvent event = { ServerConnectionEvent::STATUS_CHANGED,
+                                    server_status_,
+                                    server_reachable_ };
+    channel_->NotifyListeners(event);
+  }
 }
 
 bool ServerConnectionManager::PostBufferWithCachedAuth(
@@ -327,6 +336,16 @@ std::string ServerConnectionManager::GetServerHost() const {
   GURL gurl(server_url);
   DCHECK(gurl.is_valid()) << gurl;
   return gurl.host();
+}
+
+void ServerConnectionManager::AddListener(
+    ServerConnectionEventListener* listener) {
+  listeners_->AddObserver(listener);
+}
+
+void ServerConnectionManager::RemoveListener(
+    ServerConnectionEventListener* listener) {
+  listeners_->RemoveObserver(listener);
 }
 
 ServerConnectionManager::Post* ServerConnectionManager::MakePost() {

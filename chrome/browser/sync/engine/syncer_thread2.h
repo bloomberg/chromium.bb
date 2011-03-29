@@ -7,6 +7,7 @@
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD2_H_
 #pragma once
 
+#include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/sync/engine/polling_constants.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
+#include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 
@@ -27,7 +29,8 @@ struct ServerConnectionEvent;
 
 namespace s3 {
 
-class SyncerThread : public sessions::SyncSession::Delegate {
+class SyncerThread : public sessions::SyncSession::Delegate,
+                     public ServerConnectionEventListener {
  public:
   enum Mode {
     // In this mode, the thread only performs configuration tasks.  This is
@@ -44,6 +47,8 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   SyncerThread(sessions::SyncSessionContext* context, Syncer* syncer);
   virtual ~SyncerThread();
 
+  typedef Callback0::Type ModeChangeCallback;
+
   // Change the mode of operation.
   // We don't use a lock when changing modes, so we won't cause currently
   // scheduled jobs to adhere to the new mode.  We could protect it, but it
@@ -52,7 +57,10 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   // all their required state and won't be affected by potential change at
   // higher levels (i.e. the registrar), and c) we service tasks FIFO, so once
   // the mode changes all future jobs will be run against the updated mode.
-  void Start(Mode mode);
+  // If supplied, |callback| will be invoked when the mode has been
+  // changed to |mode| *from the SyncerThread*, and not from the caller
+  // thread.
+  void Start(Mode mode, ModeChangeCallback* callback);
 
   // Joins on the thread as soon as possible (currently running session
   // completes).
@@ -83,6 +91,10 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   virtual void OnReceivedLongPollIntervalUpdate(
       const base::TimeDelta& new_interval);
   virtual void OnShouldStopSyncingPermanently();
+
+  // ServerConnectionEventListener implementation.
+  // TODO(tim): schedule a nudge when valid connection detected? in 1 minute?
+  virtual void OnServerConnectionEvent(const ServerConnectionEvent2& event);
 
  private:
   friend class SyncerThread2Test;
@@ -133,6 +145,10 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   // reset our state.
   void FinishSyncSessionJob(const SyncSessionJob& job);
 
+  // Record important state that might be needed in future syncs, such as which
+  // data types may require cleanup.
+  void UpdateCarryoverSessionState(const SyncSessionJob& old_job);
+
   // Helper to FinishSyncSessionJob to schedule the next sync operation.
   void ScheduleNextSync(const SyncSessionJob& old_job);
 
@@ -150,7 +166,7 @@ class SyncerThread : public sessions::SyncSession::Delegate {
 
   // 'Impl' here refers to real implementation of public functions, running on
   // |thread_|.
-  void StartImpl(Mode mode);
+  void StartImpl(Mode mode, linked_ptr<ModeChangeCallback> callback);
   void ScheduleNudgeImpl(
       const base::TimeDelta& delay,
       NudgeSource source,
@@ -165,10 +181,6 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   // Helper to signal all listeners registered with |session_context_|.
   void Notify(SyncEngineEvent::EventCause cause);
 
-  // ServerConnectionEventListener implementation.
-  // TODO(tim): schedule a nudge when valid connection detected? in 1 minute?
-  virtual void OnServerConnectionEvent(const ServerConnectionEvent& event);
-
   // Callback to change backoff state.
   void DoCanaryJob();
   void Unthrottle();
@@ -181,6 +193,18 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   void SetSyncerStepsForPurpose(SyncSessionJobPurpose purpose,
                                 SyncerStep* start,
                                 SyncerStep* end);
+
+  // Initializes the hookup between the ServerConnectionManager and us.
+  void WatchConnectionManager();
+
+  // Used to update |server_connection_ok_|, see below.
+  void CheckServerConnectionManagerStatus(
+      HttpResponse::ServerConnectionCode code);
+
+  // Called once the first time thread_ is started to broadcast an initial
+  // session snapshot containing data like initial_sync_ended.  Important when
+  // the client starts up and does not need to perform an initial sync.
+  void SendInitialSnapshot();
 
   base::Thread thread_;
 

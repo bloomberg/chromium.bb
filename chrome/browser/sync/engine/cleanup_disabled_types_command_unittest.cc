@@ -82,17 +82,5 @@ TEST_F(CleanupDisabledTypesCommandTest, TypeDisabled) {
   command.ExecuteImpl(session());
 }
 
-TEST_F(CleanupDisabledTypesCommandTest,
-       SyncerEndCommandSetsPreviousRoutingInfo) {
-  SyncerEndCommand command;
-
-  ModelSafeRoutingInfo info;
-  EXPECT_TRUE(info == session()->context()->previous_session_routing_info());
-  command.ExecuteImpl(session());
-  ASSERT_FALSE(routing_info().empty());
-  EXPECT_TRUE(routing_info() ==
-              session()->context()->previous_session_routing_info());
-}
-
 }  // namespace browser_sync
 
