@@ -5,8 +5,7 @@ Version: 1.2.44
 Description:
 Our custom configuration options are defined in pngusr.h. This was previously
 called mozpngconf.h, which was copied from Mozilla and modified by Apple (hence
-the webkit_* names).
+the wk_* names).
 
 Updated to 1.2.44, no changes to the source files but all unneeded files
 stripped.
-
