@@ -8,9 +8,13 @@ import os
 import pickle
 
 import autofill_dataset_converter
+import autofill_dataset_generator
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
 
+TAB_KEYPRESS = 0x09  # Tab keyboard key press.
+DOWN_KEYPRESS = 0x28  # Down arrow keyboard key press.
+RETURN_KEYPRESS = 0x0D  # Return keyboard key press.
 
 class AutofillTest(pyauto.PyUITest):
   """Tests that autofill works correctly"""
@@ -104,7 +108,7 @@ class AutofillTest(pyauto.PyUITest):
                'COMPANY_NAME': 'Company X',
                'PHONE_HOME_WHOLE_NUMBER': '650-123-4567',}
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'dup-profiles-test.html'))
+        os.path.join('autofill', 'duplicate_profiles_test.html'))
     self.NavigateToURL(url)
     for key, value in profile.iteritems():
       script = ('document.getElementById("%s").value = "%s"; '
@@ -131,7 +135,7 @@ class AutofillTest(pyauto.PyUITest):
                'COMPANY_NAME': 'Company X',
                'PHONE_HOME_WHOLE_NUMBER': '408-123-4567',}
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'dup-profiles-test.html'))
+        os.path.join('autofill', 'duplicate_profiles_test.html'))
     self.NavigateToURL(url)
     for key, value in profile.iteritems():
       script = ('document.getElementById("%s").value = "%s"; '
@@ -146,6 +150,84 @@ class AutofillTest(pyauto.PyUITest):
     self.ExecuteJavascript(js_code, 0, 0)
     if 'EMAIL_ADDRESS' in self.GetAutofillProfile()['profiles'][0]:
       raise KeyError('TEST FAIL: Malformed email address is saved in profiles.')
+
+  def testComparePhoneNumbers(self):
+    """Test phone fields parse correctly from a given profile.
+
+    The high level key presses execute the following: Select the first text
+    field, invoke the autofill popup list, select the first profile within the
+    list, and commit to the profile to populate the form.
+    """
+    profile_path = os.path.join(self.DataDir(), 'autofill',
+                                'phone_pinput_autofill.txt')
+    profile_expected_path = os.path.join(self.DataDir(), 'autofill',
+                                         'phone_pexpected_autofill.txt')
+    profiles = self.EvalDataFrom(profile_path)
+    profiles_expected = self.EvalDataFrom(profile_expected_path)
+    self.FillAutofillProfile(profiles=profiles)
+    url = self.GetHttpURLForDataPath(
+        os.path.join('autofill', 'form_phones.html'))
+    for profile_expected in profiles_expected:
+      self.NavigateToURL(url)
+      # Tab keyboard key press.
+      self.SendWebkitKeyEvent(TAB_KEYPRESS, tab_index=0, windex=0)
+      # Down arrow keyboard key press.
+      self.SendWebkitKeyEvent(DOWN_KEYPRESS, tab_index=0, windex=0)
+      # Down arrow keyboard key press.
+      self.SendWebkitKeyEvent(DOWN_KEYPRESS, tab_index=0, windex=0)
+      # Return keyboard key press.
+      self.SendWebkitKeyEvent(RETURN_KEYPRESS, tab_index=0, windex=0)
+      form_values = {}
+      for key, value in profile_expected.iteritems():
+        js_returning_field_value = (
+            'var field_value = document.getElementById("%s").value;'
+            'window.domAutomationController.send(field_value);'
+            ) % key
+        form_values[key] = self.ExecuteJavascript(
+            js_returning_field_value, 0, 0)
+        self.assertEqual(
+            form_values[key], value,
+            ('Original profile not equal to expected profile at key: "%s"\n'
+             'Expected: "%s"\nReturned: "%s"' % (key, value, form_values[key])))
+
+  def FormFillLatencyAfterSubmit(self):
+    """Test latency time on form submit with lots of stored Autofill profiles.
+
+    This test verifies when a profile is selected from the Autofill dictionary
+    that consists of thousands of profiles, the form does not hang after being
+    submitted.
+
+    The high level key presses execute the following: Select the first text
+    field, invoke the autofill popup list, select the first profile within the
+    list, and commit to the profile to populate the form.
+
+    This test is partially automated. The bulk of the work is done, such as
+    generating 1500 plus profiles, inserting those profiles into Autofill,
+    selecting a profile from the list. The tester will need to click on the
+    submit button and check if the browser hangs.
+    """
+    # HTML file needs to be run from a http:// url.
+    url = self.GetHttpURLForDataPath(
+        os.path.join('autofill', 'latency_after_submit_test.html'))
+    # Run the generator script to generate the dictionary list needed for the
+    # profiles.
+    gen = autofill_dataset_generator.DatasetGenerator(
+        logging_level=logging.ERROR)
+    list_of_dict = gen.GenerateDataset(num_of_dict_to_generate=1501)
+    self.FillAutofillProfile(profiles=list_of_dict)
+    self.NavigateToURL(url)
+    # Tab keyboard key press.
+    self.SendWebkitKeyEvent(TAB_KEYPRESS, windex=0, tab_index=0)
+    # Down arrow keyboard key press.
+    self.SendWebkitKeyEvent(DOWN_KEYPRESS, windex=0, tab_index=0)
+    # Down arrow keyboard key press.
+    self.SendWebkitKeyEvent(DOWN_KEYPRESS, windex=0, tab_index=0)
+    # Return keyboard key press.
+    self.SendWebkitKeyEvent(RETURN_KEYPRESS, windex=0, tab_index=0)
+    # TODO (dyu): add automated form hang or crash verification.
+    raw_input(
+        'Verify the test manually. Test hang time after submitting the form.')
+
 
   def AutofillCrowdsourcing(self):
     """Test able to send POST request of web form to Autofill server.

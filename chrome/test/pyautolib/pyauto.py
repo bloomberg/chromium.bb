@@ -757,6 +757,33 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict)
 
+  def SendWebkitKeyEvent(self, key_code, tab_index=0, windex=0):
+    """Send a webkit key event to the browser.
+
+    Used to simulate key presses from the keyboard to interact with the browser.
+
+    Args:
+      key_code: the hex value associated with the keypress (virtual key code).
+      tab_index: tab index to work on. Defaults to 0 (first tab)
+      windex: window index to work on. Defaults to 0 (first window)
+    """
+    cmd_dict = {
+      'command': 'SendWebkitKeyEvent',
+      'type': 0,  # kRawKeyDownType
+      'text': '',
+      'isSystemKey': False,
+      'unmodifiedText': '',
+      'nativeKeyCode': 0,
+      'windowsKeyCode': key_code,
+      'modifiers': 0,
+      'windex': windex,
+      'tab_index': tab_index,
+    }
+    # Sending two requests, one each for "key down" and "key up".
+    self._GetResultFromJSONRequest(cmd_dict)
+    cmd_dict['type'] = 3  # kKeyUpType
+    self._GetResultFromJSONRequest(cmd_dict)
+
   def WaitForAllDownloadsToComplete(self, windex=0):
     """Wait for all downloads to complete.
 

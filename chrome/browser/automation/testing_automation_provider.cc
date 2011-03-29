@@ -4319,6 +4319,7 @@ std::vector<CreditCard> TestingAutomationProvider::GetCreditCardsFromList(
 std::map<AutofillFieldType, std::string>
     TestingAutomationProvider::GetAutofillFieldToStringMap() {
   std::map<AutofillFieldType, std::string> autofill_type_to_string;
+  // Strings ordered by order of fields when adding a profile in Autofill prefs.
   autofill_type_to_string[NAME_FIRST] = "NAME_FIRST";
   autofill_type_to_string[NAME_MIDDLE] = "NAME_MIDDLE";
   autofill_type_to_string[NAME_LAST] = "NAME_LAST";
@@ -4330,10 +4331,14 @@ std::map<AutofillFieldType, std::string>
   autofill_type_to_string[ADDRESS_HOME_STATE] = "ADDRESS_HOME_STATE";
   autofill_type_to_string[ADDRESS_HOME_ZIP] = "ADDRESS_HOME_ZIP";
   autofill_type_to_string[ADDRESS_HOME_COUNTRY] = "ADDRESS_HOME_COUNTRY";
+  autofill_type_to_string[PHONE_HOME_COUNTRY_CODE] =
+      "PHONE_HOME_COUNTRY_CODE";
+  autofill_type_to_string[PHONE_HOME_CITY_CODE] = "PHONE_HOME_CITY_CODE";
   autofill_type_to_string[PHONE_HOME_WHOLE_NUMBER] =
       "PHONE_HOME_WHOLE_NUMBER";
+  autofill_type_to_string[PHONE_FAX_COUNTRY_CODE] = "PHONE_FAX_COUNTRY_CODE";
+  autofill_type_to_string[PHONE_FAX_CITY_CODE] = "PHONE_FAX_CITY_CODE";
   autofill_type_to_string[PHONE_FAX_WHOLE_NUMBER] = "PHONE_FAX_WHOLE_NUMBER";
-  autofill_type_to_string[NAME_FIRST] = "NAME_FIRST";
   return autofill_type_to_string;
 }
 
