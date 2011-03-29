@@ -68,6 +68,8 @@
         'printing_context_mac.h',
         'printing_context_win.cc',
         'printing_context_win.h',
+        'print_job_constants.cc',
+        'print_job_constants.h',
         'print_settings.cc',
         'print_settings.h',
         'print_settings_initializer_gtk.cc',

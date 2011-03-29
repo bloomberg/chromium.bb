@@ -12,6 +12,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_win.h"
 #include "printing/printed_document.h"
 #include "skia/ext/platform_device_win.h"
@@ -212,6 +213,11 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
 PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
     const DictionaryValue& job_settings, const PageRanges& ranges) {
   DCHECK(!in_print_job_);
+
+  bool landscape;
+  if (!job_settings.GetBoolean(kSettingLandscape, &landscape))
+    return OnError();
+  settings_.SetOrientation(landscape);
 
   // TODO(kmadhusu): Update other print settings such as number of copies,
   // collate, duplex printing, job title, etc.,

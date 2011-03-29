@@ -6,8 +6,9 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "printing/units.h"
+#include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_gtk.h"
+#include "printing/units.h"
 
 #if defined(OS_CHROMEOS)
 #include <unicode/ulocdata.h>
@@ -151,6 +152,11 @@ PrintingContext::Result PrintingContextCairo::UseDefaultSettings() {
 PrintingContext::Result PrintingContextCairo::UpdatePrintSettings(
     const DictionaryValue& job_settings, const PageRanges& ranges) {
   DCHECK(!in_print_job_);
+
+  bool landscape;
+  if (!job_settings.GetBoolean(kSettingLandscape, &landscape))
+    return OnError();
+  settings_.SetOrientation(landscape);
 
   settings_.ranges = ranges;
 

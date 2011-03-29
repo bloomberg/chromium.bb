@@ -43,8 +43,23 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Send the list of printers to the Web UI.
   void SendPrinterList(const ListValue& printers);
 
+  // Helper function to process the color setting in the dictionary.
+  void ProcessColorSetting(const DictionaryValue& settings);
+
+  // Helper function to process the landscape setting in the dictionary.
+  void ProcessLandscapeSetting(const DictionaryValue& settings);
+
   // Pointer to current print system.
   scoped_refptr<printing::PrintBackend> print_backend_;
+
+  // Set to true if we need to generate a new print preview.
+  bool need_to_generate_preview_;
+
+  // Set to true if the preview should be in color.
+  bool color_;
+
+  // Set to true if the preview should be landscape.
+  bool landscape_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandler);
 };

@@ -1,8 +1,10 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "printing/page_setup.h"
+
+#include <algorithm>
 
 #include "base/logging.h"
 
@@ -123,6 +125,19 @@ void PageSetup::SetRequestedMargins(const PageMargins& requested_margins) {
   requested_margins_ = requested_margins;
   if (physical_size_.width() && physical_size_.height())
     Init(physical_size_, printable_area_, text_height_);
+}
+
+void PageSetup::FlipOrientation() {
+  if (physical_size_.width() && physical_size_.height()) {
+    gfx::Size new_size(physical_size_.height(), physical_size_.width());
+    int new_y = physical_size_.width() -
+                (printable_area_.width() + printable_area_.x());
+    gfx::Rect new_printable_area(printable_area_.y(),
+                                 new_y,
+                                 printable_area_.height(),
+                                 printable_area_.width());
+    Init(new_size, new_printable_area, text_height_);
+  }
 }
 
 }  // namespace printing

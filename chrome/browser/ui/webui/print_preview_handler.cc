@@ -15,8 +15,12 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "printing/backend/print_backend.h"
+#include "printing/print_job_constants.h"
 
 namespace {
+
+const bool kColorDefaultValue = false;
+const bool kLandscapeDefaultValue = false;
 
 TabContents* GetInitiatorTab(TabContents* preview_tab) {
   printing::PrintPreviewTabController* tab_controller =
@@ -26,6 +30,8 @@ TabContents* GetInitiatorTab(TabContents* preview_tab) {
   return tab_controller->GetInitiatorTab(preview_tab);
 }
 
+// Get the print job settings dictionary from |args|. The caller takes
+// ownership of the returned DictionaryValue. Returns NULL on failure.
 DictionaryValue* GetSettingsDictionary(const ListValue* args) {
   std::string json_str;
   if (!args->GetString(0, &json_str)) {
@@ -100,7 +106,10 @@ class EnumeratePrintersTaskProxy
 };
 
 PrintPreviewHandler::PrintPreviewHandler()
-    : print_backend_(printing::PrintBackend::CreateInstance(NULL)) {
+    : print_backend_(printing::PrintBackend::CreateInstance(NULL)),
+      need_to_generate_preview_(true),
+      color_(kColorDefaultValue),
+      landscape_(kLandscapeDefaultValue) {
 }
 
 PrintPreviewHandler::~PrintPreviewHandler() {
@@ -131,7 +140,17 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
   if (!settings.get())
     return;
-  initiator_tab->render_view_host()->PrintPreview(*settings);
+
+  // Handle settings that do not require print preview regeneration.
+  ProcessColorSetting(*settings);
+
+  // Handle settings that require print preview regeneration.
+  ProcessLandscapeSetting(*settings);
+
+  if (need_to_generate_preview_) {
+    initiator_tab->render_view_host()->PrintPreview(*settings);
+    need_to_generate_preview_ = false;
+  }
 }
 
 void PrintPreviewHandler::HandlePrint(const ListValue* args) {
@@ -149,4 +168,24 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
 void PrintPreviewHandler::SendPrinterList(const ListValue& printers) {
   web_ui_->CallJavascriptFunction("setPrinters", printers);
+}
+
+void PrintPreviewHandler::ProcessColorSetting(const DictionaryValue& settings) {
+  bool color = kColorDefaultValue;
+  settings.GetBoolean(printing::kSettingColor, &color);
+  if (color != color_) {
+    color_ = color;
+    FundamentalValue color_value(color_);
+    web_ui_->CallJavascriptFunction("setColor", color_value);
+  }
+}
+
+void PrintPreviewHandler::ProcessLandscapeSetting(
+    const DictionaryValue& settings) {
+  bool landscape = kLandscapeDefaultValue;
+  settings.GetBoolean(printing::kSettingLandscape, &landscape);
+  if (landscape != landscape_) {
+    landscape_ = landscape;
+    need_to_generate_preview_ = true;
+  }
 }

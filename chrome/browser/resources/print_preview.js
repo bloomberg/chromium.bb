@@ -27,6 +27,8 @@ function load() {
   $('print-pages').addEventListener('click', validatePageRangeInfo);
   $('copies').addEventListener('input', validateNumberOfCopies);
   $('copies').addEventListener('blur', handleCopiesFieldBlur);
+  $('layout').onchange = getPreview;
+  $('color').onchange = getPreview;
 
   updateCollateCheckboxState();
   chrome.send('getPrinters');
@@ -160,6 +162,24 @@ function parsePageRanges() {
 }
 
 /**
+ * Checks whether the preview layout setting is set to 'landscape' or not.
+ *
+ * @return {boolean} true if layout is 'landscape'.
+ */
+function isLandscape() {
+  return ($('layout').options[$('layout').selectedIndex].value == '1');
+}
+
+/**
+ * Checks whether the preview color setting is set to 'color' or not.
+ *
+ * @return {boolean} true if color is 'color'.
+ */
+function isColor() {
+  return ($('color').options[$('color').selectedIndex].value == '1');
+}
+
+/**
  * Creates a JSON string based on the values in the printer settings.
  *
  * @return {string} JSON string with print job settings.
@@ -173,8 +193,8 @@ function getSettingsJSON() {
   var twoSided = $('two-sided').checked;
   var copies = $('copies').value;
   var collate = $('collate').checked;
-  var landscape = ($('layout').options[$('layout').selectedIndex].value == '1');
-  var color = ($('color').options[$('color').selectedIndex].value == '1');
+  var landscape = isLandscape();
+  var color = isColor();
 
   return JSON.stringify({'printerName': printerName,
                          'pageRange': pageRangesInfo,
@@ -222,8 +242,22 @@ function setPrinters(printers) {
   getPreview();
 }
 
+/**
+ * Sets the color mode for the PDF plugin.
+ * @param {boolean} color is true if the PDF plugin should display in color.
+ */
+function setColor(color) {
+  if (!hasPDFPlugin) {
+    return;
+  }
+  $('pdf-viewer').grayscale(!color);
+}
+
 function onPDFLoad() {
-  $('pdf-viewer').fitToHeight();
+  if (isLandscape())
+    $('pdf-viewer').fitToWidth();
+  else
+    $('pdf-viewer').fitToHeight();
 }
 
 /**
@@ -265,6 +299,7 @@ function createPDFPlugin() {
 
   if ($('pdf-viewer')) {
     $('pdf-viewer').reload();
+    $('pdf-viewer').grayscale(!isColor());
     return;
   }
 
@@ -283,6 +318,7 @@ function createPDFPlugin() {
     $('no-plugin').classList.remove('hidden');
     return;
   }
+  pdfPlugin.grayscale(true);
   pdfPlugin.onload('onPDFLoad()');
 }
 

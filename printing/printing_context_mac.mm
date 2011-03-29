@@ -11,6 +11,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "base/values.h"
+#include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_mac.h"
 
 namespace printing {
@@ -90,6 +91,11 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
 
   ResetSettings();
   print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
+
+  bool landscape;
+  if (!job_settings.GetBoolean(kSettingLandscape, &landscape))
+    return OnError();
+  settings_.SetOrientation(landscape);
 
   std::string printer_name;
   if (!job_settings.GetString("printerName", &printer_name))
