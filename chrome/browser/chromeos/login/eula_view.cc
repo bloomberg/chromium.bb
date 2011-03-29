@@ -54,7 +54,7 @@ using views::WidgetGtk;
 namespace {
 
 const int kBorderSize = 10;
-const int kCheckboxWidth = 20;
+const int kCheckboxWidth = 26;
 const int kLastButtonHorizontalMargin = 10;
 const int kMargin = 20;
 const int kTextMargin = 10;
