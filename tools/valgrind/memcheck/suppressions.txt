@@ -4111,26 +4111,6 @@
    fun:gtk_file_chooser_dialog_constructor
 }
 {
-   bug_77653_a
-   Memcheck:Free
-   fun:_ZdlPv
-   ...
-   fun:_ZN10scoped_ptrIiED1Ev
-   fun:*FLACEncoder6EncodeEPKsi
-   fun:_ZN12speech_input16SpeechRecognizer12HandleOnDataEPSs
-   fun:_Z16DispatchToMethodIN12speech_input16SpeechRecognizerEMS1_FvPSsES2_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN12speech_input16SpeechRecognizerEMS1_FvPSsE6Tuple1IS2_EE3RunEv
-}
-{
-   bug_77653_b
-   Memcheck:Free
-   fun:_ZdlPv
-   ...
-   fun:_ZN10scoped_ptrIiED1Ev
-   fun:*FLACEncoder6EncodeEPKsi
-   fun:_ZN12speech_input16SpeechRecognizer13StopRecordingEv
-}
-{
    bug_77712
    Memcheck:Leak
    fun:_Znw*

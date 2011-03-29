@@ -85,7 +85,7 @@ void FLACEncoder::Encode(const short* samples, int num_samples) {
   }
 
   // FLAC encoder wants samples as int32s.
-  scoped_ptr<FLAC__int32> flac_samples(new FLAC__int32[num_samples]);
+  scoped_array<FLAC__int32> flac_samples(new FLAC__int32[num_samples]);
   FLAC__int32* flac_samples_ptr = flac_samples.get();
   for (int i = 0; i < num_samples; ++i)
     flac_samples_ptr[i] = samples[i];
