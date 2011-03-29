@@ -89,10 +89,14 @@ void RegisterSetting(PrefService* local_state, const std::string& pref_path) {
   }
 }
 
-Value* CreateSettingsBooleanValue(bool value, bool managed) {
+// Create a settings boolean value with "managed" and "disabled" property.
+// "managed" property is true if the setting is managed by administrator.
+// "disabled" property is true if the UI for the setting should be disabled.
+Value* CreateSettingsBooleanValue(bool value, bool managed, bool disabled) {
   DictionaryValue* dict = new DictionaryValue;
   dict->Set("value", Value::CreateBooleanValue(value));
   dict->Set("managed", Value::CreateBooleanValue(managed));
+  dict->Set("disabled", Value::CreateBooleanValue(disabled));
   return dict;
 }
 
@@ -510,8 +514,8 @@ bool UserCrosSettingsProvider::Get(const std::string& path,
     PrefService* prefs = g_browser_process->local_state();
     *out_value = CreateSettingsBooleanValue(
         prefs->GetBoolean(path.c_str()),
-        !UserManager::Get()->current_user_is_owner() ||
-            prefs->IsManagedPreference(path.c_str()));
+        prefs->IsManagedPreference(path.c_str()),
+        !UserManager::Get()->current_user_is_owner());
     return true;
   } else if (path == kAccountsPrefUsers) {
     ListValue* user_list = new ListValue;
