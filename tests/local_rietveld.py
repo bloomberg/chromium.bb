@@ -50,9 +50,9 @@ class LocalRietveld(object):
       self.base_dir = os.path.dirname(os.path.abspath(__file__))
       self.base_dir = os.path.realpath(os.path.join(self.base_dir, '..'))
     self.sdk_path = os.path.abspath(
-        os.path.join(self.base_dir, '..', '..', 'google_appengine'))
+        os.path.join(self.base_dir, '..', 'google_appengine'))
     self.dev_app = os.path.join(self.sdk_path, 'dev_appserver.py')
-    self.rietveld = os.path.join(self.base_dir, 'test', 'rietveld')
+    self.rietveld = os.path.join(self.base_dir, 'tests', 'rietveld')
     self.test_server = None
     self.port = None
     # Generate a friendly environment.

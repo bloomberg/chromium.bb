@@ -1,10 +1,8 @@
-#!/usr/bin/python
-# git-cl -- a git-command for integrating reviews on Rietveld
-# Copyright (C) 2008 Evan Martin <martine@danga.com>
+#!/bin/sh
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
-import sys
+base_dir=$(dirname "$0")
 
-import git_cl
-
-if __name__ == '__main__':
-  sys.exit(git_cl.main(sys.argv[1:]))
+"$base_dir"/../git_cl.py "$@"

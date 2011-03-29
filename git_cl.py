@@ -19,19 +19,23 @@ try:
 except ImportError:
   pass
 
-# TODO(dpranke): don't use relative import.
-import upload  # pylint: disable=W0403
 try:
-  # TODO(dpranke): We wrap this in a try block for a limited form of
-  # backwards-compatibility with older versions of git-cl that weren't
-  # dependent on depot_tools. This version should still work outside of
-  # depot_tools as long as --bypass-hooks is used. We should remove this
-  # once this has baked for a while and things seem safe.
-  depot_tools_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-  sys.path.append(depot_tools_path)
-  import breakpad  # pylint: disable=W0611
+  import simplejson as json  # pylint: disable=F0401
 except ImportError:
-  pass
+  try:
+    import json
+  except ImportError:
+    # Fall back to the packaged version.
+    from third_party import simplejson as json
+
+
+from third_party import upload
+import breakpad  # pylint: disable=W0611
+import presubmit_support
+import scm
+import watchlists
+
+
 
 DEFAULT_SERVER = 'http://codereview.appspot.com'
 POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
@@ -771,10 +775,6 @@ def ConvertToInteger(inputval):
 
 def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt):
   """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
-  import presubmit_support
-  import scm
-  import watchlists
-
   root = RunCommand(['git', 'rev-parse', '--show-cdup']).strip()
   if not root:
     root = '.'
@@ -1311,18 +1311,6 @@ def GetTreeStatus():
 def GetTreeStatusReason():
   """Fetches the tree status from a json url and returns the message
   with the reason for the tree to be opened or closed."""
-  # Don't import it at file level since simplejson is not installed by default
-  # on python 2.5 and it is only used for git-cl tree which isn't often used,
-  # forcing everyone to install simplejson isn't efficient.
-  try:
-    import simplejson as json  # pylint: disable=F0401
-  except ImportError:
-    try:
-      import json
-    except ImportError:
-      print >> sys.stderr, 'Please install simplejson'
-      sys.exit(1)
-
   url = settings.GetTreeStatusUrl()
   json_url = urlparse.urljoin(url, '/current?format=json')
   connection = urllib2.urlopen(json_url)
