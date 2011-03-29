@@ -223,9 +223,8 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   void SetServerNotReachable();
 
-  // Const necessary to avoid any hidden copy-on-write issues that would break
-  // in multithreaded scenarios (see |set_store_birthday|).
-  const std::string& store_birthday() {
+  // Return by copy to be thread-safe.
+  const std::string store_birthday() {
     base::AutoLock lock(store_birthday_lock_);
     return store_birthday_;
   }
