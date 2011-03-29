@@ -53,7 +53,7 @@ def _RepoSync(buildroot, retries=_DEFAULT_RETRIES):
   """
   while retries > 0:
     try:
-      cros_lib.OldRunCommand(['repo', 'sync'], cwd=buildroot)
+      cros_lib.OldRunCommand(['repo', 'sync', '-q'], cwd=buildroot)
       cros_lib.OldRunCommand(
           ['repo',
            'forall',
@@ -124,8 +124,8 @@ def FullCheckout(buildroot, tracking_branch,
   cros_lib.OldRunCommand(['sudo', 'rm', '-rf', buildroot])
   os.makedirs(buildroot)
   branch = tracking_branch.split('/');
-  cros_lib.OldRunCommand(['repo', 'init', '-u', url, '-b', '%s' % branch[-1]],
-                         cwd=buildroot, input='\n\ny\n')
+  cros_lib.OldRunCommand(['repo', 'init', '-q', '-u', url, '-b',
+                         '%s' % branch[-1]], cwd=buildroot, input='\n\ny\n')
   _RepoSync(buildroot, retries)
 
 
