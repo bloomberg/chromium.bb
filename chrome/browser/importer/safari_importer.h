@@ -18,7 +18,6 @@
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
-#include "chrome/common/sqlite_utils.h"
 #include "googleurl/src/gurl.h"
 
 #if __OBJC__
@@ -28,6 +27,10 @@
 class NSDictionary;
 class NSString;
 #endif
+
+namespace sql {
+class Connection;
+}
 
 // Importer for Safari on OS X.
 class SafariImporter : public Importer {
@@ -41,13 +44,13 @@ class SafariImporter : public Importer {
                            uint16 items,
                            ImporterBridge* bridge) OVERRIDE;
 
-
  // Does this user account have a Safari Profile and if so, what items
  // are supported?
  // in: library_dir - ~/Library or a standin for testing purposes.
  // out: services_supported - the service supported for import.
  // returns true if we can import the Safari profile.
  static bool CanImport(const FilePath& library_dir, uint16 *services_supported);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, BookmarkImport);
   FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, FaviconImport);
@@ -78,7 +81,6 @@ class SafariImporter : public Importer {
       bool is_in_toolbar,
       std::vector<ProfileWriter::BookmarkEntry>* out_bookmarks);
 
-
   // Converts history time stored by Safari as a double serialized as a string,
   // to seconds-since-UNIX-Ephoch-format used by Chrome.
   double HistoryTimeToEpochTime(NSString* history_time);
@@ -86,14 +88,14 @@ class SafariImporter : public Importer {
   // Parses Safari's history and loads it into the input array.
   void ParseHistoryItems(std::vector<history::URLRow>* history_items);
 
-  // Loads the favicon Database file, returns NULL on failure.
-  sqlite3* OpenFaviconDB();
+  // Opens the favicon database file.
+  bool OpenDatabase(sql::Connection* db);
 
   // Loads the urls associated with the favicons into favicon_map;
-  void ImportFaviconURLs(sqlite3* db, FaviconMap* favicon_map);
+  void ImportFaviconURLs(sql::Connection* db, FaviconMap* favicon_map);
 
   // Loads and reencodes the individual favicons.
-  void LoadFaviconData(sqlite3* db,
+  void LoadFaviconData(sql::Connection* db,
                        const FaviconMap& favicon_map,
                        std::vector<history::ImportedFaviconUsage>* favicons);
 

@@ -9,17 +9,16 @@
 #include <map>
 #include <vector>
 
+#include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/message_loop.h"
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
-#include "base/values.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_bridge.h"
-#include "chrome/common/sqlite_utils.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -111,70 +110,72 @@ void SafariImporter::ImportBookmarks() {
   }
 
   // Import favicons.
-  sqlite_utils::scoped_sqlite_db_ptr db(OpenFaviconDB());
+  sql::Connection db;
+  if (!OpenDatabase(&db))
+    return;
+
   FaviconMap favicon_map;
-  ImportFaviconURLs(db.get(), &favicon_map);
+  ImportFaviconURLs(&db, &favicon_map);
   // Write favicons into profile.
   if (!favicon_map.empty() && !cancelled()) {
     std::vector<history::ImportedFaviconUsage> favicons;
-    LoadFaviconData(db.get(), favicon_map, &favicons);
+    LoadFaviconData(&db, favicon_map, &favicons);
     bridge_->SetFavicons(favicons);
   }
 }
 
-sqlite3* SafariImporter::OpenFaviconDB() {
-  // Construct ~/Library/Safari/WebIcons.db path
+bool SafariImporter::OpenDatabase(sql::Connection* db) {
+  // Construct ~/Library/Safari/WebIcons.db path.
   NSString* library_dir = [NSString
       stringWithUTF8String:library_dir_.value().c_str()];
   NSString* safari_dir = [library_dir
       stringByAppendingPathComponent:@"Safari"];
   NSString* favicons_db_path = [safari_dir
-    stringByAppendingPathComponent:@"WebpageIcons.db"];
+      stringByAppendingPathComponent:@"WebpageIcons.db"];
 
-  sqlite3* favicons_db;
-  const char* safariicons_dbname = [favicons_db_path fileSystemRepresentation];
-  if (sqlite3_open(safariicons_dbname, &favicons_db) != SQLITE_OK)
-    return NULL;
-
-  return favicons_db;
+  const char* db_path = [favicons_db_path fileSystemRepresentation];
+  return db->Open(FilePath(db_path));
 }
 
-void SafariImporter::ImportFaviconURLs(sqlite3* db, FaviconMap* favicon_map) {
-  SQLStatement s;
-  const char* stmt = "SELECT iconID, url FROM PageURL;";
-  if (s.prepare(db, stmt) != SQLITE_OK)
+void SafariImporter::ImportFaviconURLs(sql::Connection* db,
+                                       FaviconMap* favicon_map) {
+  const char* query = "SELECT iconID, url FROM PageURL;";
+  sql::Statement s(db->GetUniqueStatement(query));
+  if (!s)
     return;
 
-  while (s.step() == SQLITE_ROW && !cancelled()) {
-    int64 icon_id = s.column_int(0);
-    GURL url = GURL(s.column_string(1));
+  while (s.Step() && !cancelled()) {
+    int64 icon_id = s.ColumnInt64(0);
+    GURL url = GURL(s.ColumnString(1));
     (*favicon_map)[icon_id].insert(url);
   }
 }
 
-void SafariImporter::LoadFaviconData(sqlite3* db,
-                                     const FaviconMap& favicon_map,
-                        std::vector<history::ImportedFaviconUsage>* favicons) {
-  SQLStatement s;
-  const char* stmt = "SELECT i.url, d.data "
-                     "FROM IconInfo i JOIN IconData d "
-                     "ON i.iconID = d.iconID "
-                     "WHERE i.iconID = ?;";
-  if (s.prepare(db, stmt) != SQLITE_OK)
+void SafariImporter::LoadFaviconData(
+    sql::Connection* db,
+    const FaviconMap& favicon_map,
+    std::vector<history::ImportedFaviconUsage>* favicons) {
+  const char* query = "SELECT i.url, d.data "
+                      "FROM IconInfo i JOIN IconData d "
+                      "ON i.iconID = d.iconID "
+                      "WHERE i.iconID = ?;";
+  sql::Statement s(db->GetUniqueStatement(query));
+  if (!s)
     return;
 
   for (FaviconMap::const_iterator i = favicon_map.begin();
        i != favicon_map.end(); ++i) {
-    s.bind_int64(0, i->first);
-    if (s.step() == SQLITE_ROW) {
+    s.BindInt64(0, i->first);
+    if (s.Step()) {
       history::ImportedFaviconUsage usage;
 
-      usage.favicon_url = GURL(s.column_string(0));
+      usage.favicon_url = GURL(s.ColumnString(0));
       if (!usage.favicon_url.is_valid())
         continue;  // Don't bother importing favicons with invalid URLs.
 
       std::vector<unsigned char> data;
-      if (!s.column_blob_as_vector(1, &data) || data.empty())
+      s.ColumnBlobAsVector(1, &data);
+      if (data.empty())
         continue;  // Data definitely invalid.
 
       if (!ReencodeFavicon(&data[0], data.size(), &usage.png_data))
@@ -183,7 +184,7 @@ void SafariImporter::LoadFaviconData(sqlite3* db,
       usage.urls = i->second;
       favicons->push_back(usage);
     }
-    s.reset();
+    s.Reset();
   }
 }
 

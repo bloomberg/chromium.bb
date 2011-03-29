@@ -17,9 +17,10 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
-#include "googleurl/src/gurl.h"
 
-struct sqlite3;
+namespace sql {
+class Connection;
+}
 
 // Importer for Mozilla Firefox 3 and later.
 // Firefox 3 stores its persistent information in a new system called places.
@@ -52,23 +53,25 @@ class Firefox3Importer : public Importer {
   typedef std::vector<BookmarkItem*> BookmarkList;
 
   // Gets the specific IDs of bookmark root node from |db|.
-  void LoadRootNodeID(sqlite3* db, int* toolbar_folder_id,
+  void LoadRootNodeID(sql::Connection* db, int* toolbar_folder_id,
                       int* menu_folder_id, int* unsorted_folder_id);
 
   // Loads all livemark IDs from database |db|.
-  void LoadLivemarkIDs(sqlite3* db, std::set<int>* livemark);
+  void LoadLivemarkIDs(sql::Connection* db, std::set<int>* livemark);
 
   // Gets the bookmark folder with given ID, and adds the entry in |list|
   // if successful.
-  void GetTopBookmarkFolder(sqlite3* db, int folder_id, BookmarkList* list);
+  void GetTopBookmarkFolder(sql::Connection* db,
+                            int folder_id,
+                            BookmarkList* list);
 
   // Loads all children of the given folder, and appends them to the |list|.
-  void GetWholeBookmarkFolder(sqlite3* db, BookmarkList* list,
+  void GetWholeBookmarkFolder(sql::Connection* db, BookmarkList* list,
                               size_t position, bool* empty_folder);
 
   // Loads the favicons given in the map from the database, loads the data,
   // and converts it into FaviconUsage structures.
-  void LoadFavicons(sqlite3* db,
+  void LoadFavicons(sql::Connection* db,
                     const FaviconMap& favicon_map,
                     std::vector<history::ImportedFaviconUsage>* favicons);
 

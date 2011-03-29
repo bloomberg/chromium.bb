@@ -4,13 +4,13 @@
 
 #include "chrome/browser/importer/safari_importer.h"
 
+#include "app/sql/connection.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/common/chrome_paths.h"
@@ -114,14 +114,14 @@ TEST_F(SafariImporterTest, BookmarkImport) {
 
 TEST_F(SafariImporterTest, FaviconImport) {
   scoped_refptr<SafariImporter> importer(GetSafariImporter());
-  sqlite_utils::scoped_sqlite_db_ptr db(importer->OpenFaviconDB());
-  ASSERT_TRUE(db.get() != NULL);
+  sql::Connection db;
+  ASSERT_TRUE(importer->OpenDatabase(&db));
 
   SafariImporter::FaviconMap favicon_map;
-  importer->ImportFaviconURLs(db.get(), &favicon_map);
+  importer->ImportFaviconURLs(&db, &favicon_map);
 
   std::vector<history::ImportedFaviconUsage> favicons;
-  importer->LoadFaviconData(db.get(), favicon_map, &favicons);
+  importer->LoadFaviconData(&db, favicon_map, &favicons);
 
   size_t num_favicons = favicons.size();
   ASSERT_EQ(num_favicons, 2U);
