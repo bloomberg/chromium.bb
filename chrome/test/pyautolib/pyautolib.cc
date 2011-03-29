@@ -201,10 +201,14 @@ int PyUITestBase::GetBrowserWindowCount() {
   return num_windows;
 }
 
-bool PyUITestBase::InstallExtension(const FilePath& crx_file, bool with_ui) {
+std::string PyUITestBase::InstallExtension(const FilePath& crx_file,
+                                           bool with_ui) {
   scoped_refptr<ExtensionProxy> proxy =
       automation()->InstallExtension(crx_file, with_ui);
-  return proxy.get() != NULL;
+  std::string id;
+  if (!proxy.get() || !proxy.get()->GetId(&id))
+    return "";
+  return id;
 }
 
 bool PyUITestBase::GetBookmarkBarVisibility() {

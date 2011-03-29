@@ -121,9 +121,10 @@ class PyUITestBase : public UITestBase {
   // Fetch the number of browser windows. Includes popups.
   int GetBrowserWindowCount();
 
-  // Installs the extension crx. Returns true only if extension was installed
-  // and loaded successfully. Overinstalls will fail.
-  bool InstallExtension(const FilePath& crx_file, bool with_ui);
+  // Installs the extension crx.  Returns the extension ID only if the extension
+  // was installed and loaded successfully.  Otherwise, returns the empty
+  // string.  Overinstalls will fail.
+  std::string InstallExtension(const FilePath& crx_file, bool with_ui);
 
   // Returns bookmark bar visibility state.
   bool GetBookmarkBarVisibility();

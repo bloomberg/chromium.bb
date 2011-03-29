@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,6 +12,12 @@ import test_utils
 
 class NTPTest(pyauto.PyUITest):
   """Test of the NTP."""
+
+  _EXPECTED_DEFAULT_APPS = [
+    {
+      u'name': u'Chrome Web Store'
+    }
+  ]
 
   def Debug(self):
     """Test method for experimentation.
@@ -335,12 +341,7 @@ class NTPTest(pyauto.PyUITest):
   def testGetAppsInNewProfile(self):
     """Ensures that the only app in a new profile is the Web Store app."""
     app_info = self.GetNTPApps()
-    expected_app_info = [
-      {
-        u'name': u'Chrome Web Store'
-      }
-    ]
-    self._VerifyAppInfo(app_info, expected_app_info)
+    self._VerifyAppInfo(app_info, self._EXPECTED_DEFAULT_APPS)
 
   def testGetAppsWhenInstallApp(self):
     """Ensures that an installed app is reflected in the app info in the NTP."""
@@ -351,12 +352,10 @@ class NTPTest(pyauto.PyUITest):
     app_info = self.GetNTPApps()
     expected_app_info = [
       {
-        u'name': u'Chrome Web Store'
-      },
-      {
         u'name': u'Countdown'
       }
     ]
+    expected_app_info.extend(self._EXPECTED_DEFAULT_APPS)
     self._VerifyAppInfo(app_info, expected_app_info)
 
   def testGetAppsWhenInstallNonApps(self):
@@ -373,12 +372,29 @@ class NTPTest(pyauto.PyUITest):
     self.assertTrue(self.SetTheme(theme_crx_file), msg='Theme install failed.')
     # Verify that no apps are listed on the NTP except for the Web Store.
     app_info = self.GetNTPApps()
+    self._VerifyAppInfo(app_info, self._EXPECTED_DEFAULT_APPS)
+
+  def testUninstallApp(self):
+    """Ensures that an uninstalled app is reflected in the NTP app info."""
+    # First, install an app and verify that it exists in the NTP app info.
+    app_crx_file = pyauto.FilePath(
+        os.path.abspath(os.path.join(self.DataDir(), 'pyauto_private', 'apps',
+                                     'countdown.crx')))
+    installed_app_id = self.InstallApp(app_crx_file)
+    self.assertTrue(installed_app_id, msg='App install failed.')
+    app_info = self.GetNTPApps()
     expected_app_info = [
       {
-        u'name': u'Chrome Web Store'
+        u'name': u'Countdown'
       }
     ]
+    expected_app_info.extend(self._EXPECTED_DEFAULT_APPS)
     self._VerifyAppInfo(app_info, expected_app_info)
+
+    # Next, uninstall the app and verify that it is removed from the NTP.
+    self.UninstallApp(installed_app_id)
+    app_info = self.GetNTPApps()
+    self._VerifyAppInfo(app_info, self._EXPECTED_DEFAULT_APPS)
 
   def _VerifyThumbnailOrMenuMode(self, actual_info, expected_info):
     """Verifies that the expected thumbnail/menu info matches the actual info.

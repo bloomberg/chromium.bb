@@ -1603,7 +1603,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Uses InstallExtension().
 
     Returns:
-      True, on success.
+      The ID of the installed theme, on success.  The empty string, otherwise.
     """
     return self.InstallExtension(crx_file_path, True)
 
@@ -2144,9 +2144,18 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return until the app is installed.
 
     Returns:
-      True, on success.
+      The ID of the installed app, on success.  The empty string, otherwise.
     """
     return self.InstallExtension(app_crx_file_path, False)
+
+  def UninstallApp(self, app_id):
+    """Uninstalls the specified app synchronously.
+
+    Args:
+      app_id: The string ID of the app to uninstall.  It can be retrieved
+              through the call to GetNTPApps above.
+    """
+    return self.UninstallExtensionById(app_id)
 
   def KillRendererProcess(self, pid):
     """Kills the given renderer process.

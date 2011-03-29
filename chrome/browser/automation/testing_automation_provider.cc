@@ -3859,20 +3859,32 @@ void TestingAutomationProvider::UninstallExtensionById(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
   std::string id;
   if (!args->GetString("id", &id)) {
-    reply.SendError("Must include string id.");
+    AutomationJSONReply(this, reply_message).SendError(
+        "Must include string id.");
     return;
   }
   ExtensionService* service = profile()->GetExtensionService();
   if (!service) {
-    reply.SendError("No extensions service.");
+    AutomationJSONReply(this, reply_message).SendError(
+        "No extensions service.");
     return;
   }
-  ExtensionUnloadNotificationObserver observer;
+
+  if (!service->GetExtensionById(id, true) &&
+      !service->GetTerminatedExtension(id)) {
+    // The extension ID does not correspond to any extension, whether crashed
+    // or not.
+    AutomationJSONReply(this, reply_message).SendError(base::StringPrintf(
+        "Extension does not exist: %s.", id.c_str()));
+    return;
+  }
+
+  // Wait for a notification indicating that the extension with the given ID
+  // has been uninstalled.  This observer will delete itself.
+  new ExtensionUninstallObserver(this, reply_message, id);
   service->UninstallExtension(id, false);
-  reply.SendSuccess(NULL);
 }
 
 // Sample json input:

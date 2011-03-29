@@ -504,6 +504,39 @@ void ExtensionInstallNotificationObserver::SendResponse(
   automation_->Send(reply_message_.release());
 }
 
+ExtensionUninstallObserver::ExtensionUninstallObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    const std::string& id)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message),
+      id_(id) {
+  registrar_.Add(this, NotificationType::EXTENSION_UNINSTALLED,
+                 NotificationService::AllSources());
+}
+
+ExtensionUninstallObserver::~ExtensionUninstallObserver() {
+}
+
+void ExtensionUninstallObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (!automation_) {
+    delete this;
+    return;
+  }
+
+  DCHECK(type == NotificationType::EXTENSION_UNINSTALLED);
+  UninstalledExtensionInfo* info =
+      Details<UninstalledExtensionInfo>(details).ptr();
+  if (id_ == info->extension_id) {
+    AutomationJSONReply(automation_, reply_message_.release())
+        .SendSuccess(NULL);
+    delete this;
+  }
+}
+
 ExtensionReadyNotificationObserver::ExtensionReadyNotificationObserver(
     ExtensionProcessManager* manager, AutomationProvider* automation, int id,
     IPC::Message* reply_message)
@@ -740,7 +773,7 @@ BrowserCountChangeNotificationObserver::BrowserCountChangeNotificationObserver(
 }
 
 BrowserCountChangeNotificationObserver::
-~BrowserCountChangeNotificationObserver() {}
+    ~BrowserCountChangeNotificationObserver() {}
 
 void BrowserCountChangeNotificationObserver::Observe(
     NotificationType type,
@@ -1242,7 +1275,7 @@ AutomationProviderBookmarkModelObserver(
 }
 
 AutomationProviderBookmarkModelObserver::
-~AutomationProviderBookmarkModelObserver() {
+    ~AutomationProviderBookmarkModelObserver() {
   model_->RemoveObserver(this);
 }
 
@@ -1274,7 +1307,7 @@ AutomationProviderDownloadItemObserver::AutomationProviderDownloadItemObserver(
 }
 
 AutomationProviderDownloadItemObserver::
-~AutomationProviderDownloadItemObserver() {}
+    ~AutomationProviderDownloadItemObserver() {}
 
 void AutomationProviderDownloadItemObserver::OnDownloadUpdated(
     DownloadItem* download) {
@@ -1307,7 +1340,7 @@ AutomationProviderDownloadUpdatedObserver(
 }
 
 AutomationProviderDownloadUpdatedObserver::
-~AutomationProviderDownloadUpdatedObserver() {}
+    ~AutomationProviderDownloadUpdatedObserver() {}
 
 void AutomationProviderDownloadUpdatedObserver::OnDownloadUpdated(
     DownloadItem* download) {
@@ -1355,7 +1388,7 @@ AutomationProviderDownloadModelChangedObserver(
 }
 
 AutomationProviderDownloadModelChangedObserver::
-~AutomationProviderDownloadModelChangedObserver() {}
+    ~AutomationProviderDownloadModelChangedObserver() {}
 
 void AutomationProviderDownloadModelChangedObserver::ModelChanged() {
   download_manager_->RemoveObserver(this);
@@ -1373,7 +1406,7 @@ AutomationProviderSearchEngineObserver::AutomationProviderSearchEngineObserver(
 }
 
 AutomationProviderSearchEngineObserver::
-~AutomationProviderSearchEngineObserver() {}
+    ~AutomationProviderSearchEngineObserver() {}
 
 void AutomationProviderSearchEngineObserver::OnTemplateURLModelChanged() {
   TemplateURLModel* url_model = provider_->profile()->GetTemplateURLModel();
@@ -1434,7 +1467,7 @@ AutomationProviderImportSettingsObserver(
 }
 
 AutomationProviderImportSettingsObserver::
-~AutomationProviderImportSettingsObserver() {}
+    ~AutomationProviderImportSettingsObserver() {}
 
 void AutomationProviderImportSettingsObserver::ImportStarted() {
 }
@@ -1461,7 +1494,7 @@ AutomationProviderGetPasswordsObserver::AutomationProviderGetPasswordsObserver(
 }
 
 AutomationProviderGetPasswordsObserver::
-~AutomationProviderGetPasswordsObserver() {}
+    ~AutomationProviderGetPasswordsObserver() {}
 
 void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
     CancelableRequestProvider::Handle handle,
@@ -1509,7 +1542,7 @@ AutomationProviderBrowsingDataObserver::AutomationProviderBrowsingDataObserver(
 }
 
 AutomationProviderBrowsingDataObserver::
-~AutomationProviderBrowsingDataObserver() {}
+    ~AutomationProviderBrowsingDataObserver() {}
 
 void AutomationProviderBrowsingDataObserver::OnBrowsingDataRemoverDone() {
   if (provider_)
@@ -2029,7 +2062,7 @@ WaitForProcessLauncherThreadToGoIdleObserver(
 }
 
 WaitForProcessLauncherThreadToGoIdleObserver::
-~WaitForProcessLauncherThreadToGoIdleObserver() {
+    ~WaitForProcessLauncherThreadToGoIdleObserver() {
 }
 
 void WaitForProcessLauncherThreadToGoIdleObserver::

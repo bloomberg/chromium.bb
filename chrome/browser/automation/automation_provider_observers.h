@@ -290,6 +290,28 @@ class ExtensionInstallNotificationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallNotificationObserver);
 };
 
+// Observes when an extension has been uninstalled.
+class ExtensionUninstallObserver : public NotificationObserver {
+ public:
+  ExtensionUninstallObserver(AutomationProvider* automation,
+                             IPC::Message* reply_message,
+                             const std::string& id);
+  virtual ~ExtensionUninstallObserver();
+
+  // Implementation of NotificationObserver.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  std::string id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallObserver);
+};
+
 // Observes when an extension has finished loading and is ready for use. Also
 // checks for possible install errors.
 class ExtensionReadyNotificationObserver : public NotificationObserver {
