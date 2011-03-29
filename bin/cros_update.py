@@ -11,6 +11,7 @@ import optparse
 import os
 import parallel_emerge
 import portage
+import re
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -23,10 +24,6 @@ class Updater(object):
   def __init__(self, options, args):
     self._options = options
     self._args = args
-
-  def _Log(self, message):
-    """Logs |message| if --verbose is set."""
-    logging.debug(message)
 
   @staticmethod
   def _GetPreOrderDepGraphPackage(deps_graph, package, pkglist, visited):
@@ -47,15 +44,25 @@ class Updater(object):
       Updater._GetPreOrderDepGraphPackage(deps_graph, package, pkglist, visited)
     return pkglist
 
+  @staticmethod
+  def _IsStableEBuild(ebuild_path):
+    """Returns true if |ebuild_path| is a stable ebuild, false otherwise."""
+    with open(ebuild_path, 'r') as ebuild:
+      for line in ebuild:
+        if line.startswith('KEYWORDS='):
+          # TODO(petkov): Support non-x86 targets.
+          return re.search(r'[ "]x86[ "]', line)
+    return False
+
   def _SplitEBuildPath(self, ebuild_path):
     """Split a full ebuild path into (overlay, cat, pn, pv)."""
-    self._Log('ebuild: %s' % ebuild_path)
+    logging.debug('ebuild: %s', ebuild_path)
     (ebuild_path, ebuild) = os.path.splitext(ebuild_path)
     (ebuild_path, pv) = os.path.split(ebuild_path)
     (ebuild_path, pn) = os.path.split(ebuild_path)
     (ebuild_path, cat) = os.path.split(ebuild_path)
     (ebuild_path, overlay) = os.path.split(ebuild_path)
-    self._Log('%s | %s | %s | %s' % (overlay, cat, pn, pv))
+    logging.debug('%s | %s | %s | %s', overlay, cat, pn, pv)
     return (overlay, cat, pn, pv)
 
   def _FindLatestVersion(self, upstream, cpv):
@@ -64,19 +71,23 @@ class Updater(object):
     (cat, pn, version, rev) = portage.versions.catpkgsplit(cpv)
     pkgpath = os.path.join(upstream, cat, pn)
     for ebuild_path in glob.glob(os.path.join(pkgpath, '%s*.ebuild' % pn)):
+      if not Updater._IsStableEBuild(ebuild_path): continue
       (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
       upstream_cpv = os.path.join(cat, pv)
-      # TODO(petkov): Filter out unstable versions.
       if portage.versions.pkgcmp(portage.versions.pkgsplit(upstream_cpv),
                                  portage.versions.pkgsplit(latest_cpv)) > 0:
         latest_cpv = upstream_cpv
-    self._Log('cpv: %s latest_cpv: %s' % (cpv, latest_cpv))
+    logging.debug('cpv: %s latest_cpv: %s', cpv, latest_cpv)
     if latest_cpv != cpv: return latest_cpv
     return None
 
   def _FindLatestVersions(self, cpvlist):
     """Given a list of cpvs, returns a list of cpv/latest_cpv info maps."""
-    upstream = os.path.join(self._options.srcroot, 'third_party', 'portage')
+    checkout_gentoo = False
+    upstream = self._options.upstream
+    if not upstream:
+      checkout_gentoo = True
+      upstream = os.path.join(self._options.srcroot, 'third_party', 'portage')
     infolist = []
     dash_q = ''
     if not self._options.verbose: dash_q = '-q'
@@ -86,20 +97,22 @@ class Updater(object):
       # upstream so there will be no need to chdir/checkout. At that point we
       # can also fuse this loop into the caller and avoid generating a separate
       # list.
-      cros_lib.RunCommand(['/bin/sh', '-c',
-                           'cd %s && git checkout %s cros/gentoo' % (
-                               upstream, dash_q)],
-                          print_cmd=self._options.verbose);
+      if checkout_gentoo:
+        cros_lib.RunCommand(['/bin/sh', '-c',
+                             'cd %s && git checkout %s cros/gentoo' % (
+                                 upstream, dash_q)],
+                            print_cmd=self._options.verbose);
       for cpv in cpvlist:
         # No need to report or try to upgrade chromeos-base packages.
         if cpv.startswith('chromeos-base/'): continue
         latest_cpv = self._FindLatestVersion(upstream, cpv)
         infolist.append({'cpv': cpv, 'latest_cpv': latest_cpv})
     finally:
-      cros_lib.RunCommand(['/bin/sh', '-c',
-                           'cd %s && git checkout %s cros/master' % (
-                               upstream, dash_q)],
-                          print_cmd=self._options.verbose);
+      if checkout_gentoo:
+        cros_lib.RunCommand(['/bin/sh', '-c',
+                             'cd %s && git checkout %s cros/master' % (
+                                 upstream, dash_q)],
+                            print_cmd=self._options.verbose);
     return infolist
 
   def _PrintUpgrades(self):
@@ -152,6 +165,9 @@ def main():
   parser.add_option('--srcroot', dest='srcroot', type='string', action='store',
                     default='%s/trunk/src' % os.environ['HOME'],
                     help="Path to root src directory [default: '%default']")
+  parser.add_option('--upstream', dest='upstream', type='string',
+                    action='store', default=None,
+                    help="Latest upstream repo location [default: '%default']")
   parser.add_option('--verbose', dest='verbose', action='store_true',
                     default=False,
                     help="Enable verbose output (for debugging)")
