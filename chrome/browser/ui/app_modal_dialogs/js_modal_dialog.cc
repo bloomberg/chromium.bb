@@ -16,10 +16,35 @@
 
 namespace {
 
-// The maximum sizes of various texts passed to us from javascript.
+// Control maximum sizes of various texts passed to us from javascript.
+#ifdef OS_LINUX
+// Two-dimensional eliding.  Reformat the text of the message dialog
+// inserting line breaks because otherwise a single long line can overflow
+// the message dialog (and crash/hang the GTK, depending on the version).
 const int kMessageTextMaxRows = 32;
 const int kMessageTextMaxCols = 132;
-const int kDefaultPromptTextSize = 2000;
+const int kDefaultPromptMaxRows = 24;
+const int kDefaultPromptMaxCols = 132;
+void EnforceMaxTextSize(const string16& in_string, string16* out_string) {
+  ui::ElideRectangleString(in_string, kMessageTextMaxRows,
+                           kMessageTextMaxCols, false, out_string);
+}
+void EnforceMaxPromptSize(const string16& in_string, string16* out_string) {
+  ui::ElideRectangleString(in_string, kDefaultPromptMaxRows,
+                           kDefaultPromptMaxCols, false, out_string);
+}
+#else
+// One-dimensional eliding.  Trust the window system to break the string
+// appropriately, but limit its overall length to something reasonable.
+const int kMessageTextMaxSize = 3000;
+const int kDefaultPromptMaxSize = 2000;
+void EnforceMaxTextSize(const string16& in_string, string16* out_string) {
+  ui::ElideString(in_string, kMessageTextMaxSize, out_string);
+}
+void EnforceMaxPromptSize(const string16& in_string, string16* out_string) {
+  ui::ElideString(in_string, kDefaultPromptMaxSize, out_string);
+}
+#endif
 
 }  // namespace
 
@@ -39,14 +64,11 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
       display_suppress_checkbox_(display_suppress_checkbox),
       is_before_unload_dialog_(is_before_unload_dialog),
       reply_msg_(reply_msg) {
-  // We trim the various parts of the message dialog because otherwise we can
-  // overflow the message dialog (and crash/hang the GTK+ version).
   string16 elided_text;
-  ui::ElideRectangleString(WideToUTF16(message_text),
-      kMessageTextMaxRows, kMessageTextMaxCols, &elided_text);
+  EnforceMaxTextSize(WideToUTF16(message_text), &elided_text);
   message_text_ = UTF16ToWide(elided_text);
-  ui::ElideString(WideToUTF16Hack(default_prompt_text), kDefaultPromptTextSize,
-                  &default_prompt_text_);
+  EnforceMaxPromptSize(WideToUTF16Hack(default_prompt_text),
+                       &default_prompt_text_);
 
   DCHECK((tab_contents_ != NULL) != (extension_host_ != NULL));
   InitNotifications();

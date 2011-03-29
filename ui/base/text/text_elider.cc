@@ -507,11 +507,13 @@ namespace {
 // can be broken into smaller methods sharing this state.
 class RectangleString {
  public:
-  RectangleString(size_t max_rows, size_t max_cols, string16 *output)
+  RectangleString(size_t max_rows, size_t max_cols,
+                  bool strict, string16 *output)
       : max_rows_(max_rows),
         max_cols_(max_cols),
         current_row_(0),
         current_col_(0),
+        strict_(strict),
         suppressed_(false),
         output_(output) {}
 
@@ -542,10 +544,11 @@ class RectangleString {
   // have not been exceeded, advancing the current position.
   void Append(const string16& string);
 
-  // Add a newline to the output string if the rectangular boundaries
-  // have not been exceeded, resetting the current position to the
-  // beginning of the next line.
-  void NewLine();
+  // Set the current position to the beginning of the next line.  If
+  // |output| is true, add a newline to the output string if the rectangular
+  // boundaries have not been exceeded.  If |output| is false, we assume
+  // some other mechanism will (likely) do similar breaking after the fact.
+  void NewLine(bool output);
 
   // Maximum number of rows allowed in the output string.
   size_t max_rows_;
@@ -563,6 +566,9 @@ class RectangleString {
 
   // Current character position, should never exceed max_cols_.
   size_t current_col_;
+
+  // True when we do whitespace to newline conversions ourselves.
+  bool strict_;
 
   // True when some of the input has been truncated.
   bool suppressed_;
@@ -610,7 +616,7 @@ void RectangleString::AddWord(const string16& word) {
   if (word.length() < max_cols_) {
     // Word can be made to fit, no need to fragment it.
     if (current_col_ + word.length() >= max_cols_)
-      NewLine();
+      NewLine(strict_);
     Append(word);
   } else {
     // Word is so big that it must be fragmented.
@@ -621,7 +627,7 @@ void RectangleString::AddWord(const string16& word) {
       // When boundary is hit, add as much as will fit on this line.
       if (current_col_ + (chars.char_pos() - char_start) >= max_cols_) {
         Append(word.substr(array_start, chars.array_pos() - array_start));
-        NewLine();
+        NewLine(true);
         array_start = chars.array_pos();
         char_start = chars.char_pos();
       }
@@ -641,11 +647,13 @@ void RectangleString::Append(const string16& string) {
   current_col_ += string.length();
 }
 
-void RectangleString::NewLine() {
-  if (current_row_ < max_rows_)
-    output_->append(ASCIIToUTF16("\n"));
-  else
+void RectangleString::NewLine(bool output) {
+  if (current_row_ < max_rows_) {
+    if (output)
+      output_->append(ASCIIToUTF16("\n"));
+  } else {
     suppressed_ = true;
+  }
   ++current_row_;
   current_col_ = 0;
 }
@@ -655,8 +663,8 @@ void RectangleString::NewLine() {
 namespace ui {
 
 bool ElideRectangleString(const string16& input, size_t max_rows,
-                          size_t max_cols, string16* output) {
-  RectangleString rect(max_rows, max_cols, output);
+                          size_t max_cols, bool strict, string16* output) {
+  RectangleString rect(max_rows, max_cols, strict, output);
   rect.Init();
   rect.AddString(input);
   return rect.Finalize();

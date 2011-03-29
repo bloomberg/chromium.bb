@@ -106,13 +106,15 @@ bool ElideString(const string16& input, int max_len, string16* output);
 
 // Reformat |input| into |output| so that it fits into a |max_rows| by
 // |max_cols| rectangle of characters.  Input newlines are respected, but
-// lines that are too long are broken into pieces, first at naturally
-// occuring whitespace boundaries, and then intra-word (respecting UTF-16
-// surrogate pairs) as necssary. Truncation (indicated by an added 3 dots)
-// occurs if the result is still too long.  Returns true if the input had
-// to be truncated (and not just reformatted).
+// lines that are too long are broken into pieces.  If |strict| is true,
+// we break first at naturally occuring whitespace boundaries, otherwise
+// we assume some other mechanism will do this in approximately the same
+// spot after the fact.  If the word itself is too long, we always break
+// intra-word (respecting UTF-16 surrogate pairs) as necssary. Truncation
+// (indicated by an added 3 dots) occurs if the result is still too long.
+//  Returns true if the input had to be truncated (and not just reformatted).
 bool ElideRectangleString(const string16& input, size_t max_rows,
-                          size_t max_cols, string16* output);
+                          size_t max_cols, bool strict, string16* output);
 
 
 } // namespace ui

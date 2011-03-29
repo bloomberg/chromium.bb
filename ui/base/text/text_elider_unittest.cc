@@ -401,7 +401,89 @@ TEST(TextEliderTest, ElideRectangleString) {
     EXPECT_EQ(cases[i].result,
               ui::ElideRectangleString(UTF8ToUTF16(cases[i].input),
                                        cases[i].max_rows, cases[i].max_cols,
-                                       &output));
+                                       true, &output));
+    EXPECT_EQ(cases[i].output, UTF16ToUTF8(output));
+  }
+}
+
+TEST(TextEliderTest, ElideRectangleStringNotStrict) {
+  struct TestData {
+    const char* input;
+    int max_rows;
+    int max_cols;
+    bool result;
+    const char* output;
+  } cases[] = {
+    { "", 0, 0, false, "" },
+    { "", 1, 1, false, "" },
+    { "Hi, my name_is\nDick", 0, 0,  true,  "..." },
+    { "Hi, my name_is\nDick", 1, 0,  true,  "\n..." },
+    { "Hi, my name_is\nDick", 0, 1,  true,  "..." },
+    { "Hi, my name_is\nDick", 1, 1,  true,  "H\n..." },
+    { "Hi, my name_is\nDick", 2, 1,  true,  "H\ni\n..." },
+    { "Hi, my name_is\nDick", 3, 1,  true,  "H\ni\n,\n..." },
+    { "Hi, my name_is\nDick", 4, 1,  true,  "H\ni\n,\n \n..." },
+    { "Hi, my name_is\nDick", 5, 1,  true,  "H\ni\n,\n \nm\n..." },
+    { "Hi, my name_is\nDick", 0, 2,  true,  "..." },
+    { "Hi, my name_is\nDick", 1, 2,  true,  "Hi\n..." },
+    { "Hi, my name_is\nDick", 2, 2,  true,  "Hi\n, \n..." },
+    { "Hi, my name_is\nDick", 3, 2,  true,  "Hi\n, \nmy\n..." },
+    { "Hi, my name_is\nDick", 4, 2,  true,  "Hi\n, \nmy\n n\n..." },
+    { "Hi, my name_is\nDick", 5, 2,  true,  "Hi\n, \nmy\n n\nam\n..." },
+    { "Hi, my name_is\nDick", 0, 3,  true,  "..." },
+    { "Hi, my name_is\nDick", 1, 3,  true,  "Hi,\n..." },
+    { "Hi, my name_is\nDick", 2, 3,  true,  "Hi,\n my\n..." },
+    { "Hi, my name_is\nDick", 3, 3,  true,  "Hi,\n my\n na\n..." },
+    { "Hi, my name_is\nDick", 4, 3,  true,  "Hi,\n my\n na\nme_\n..." },
+    { "Hi, my name_is\nDick", 5, 3,  true,  "Hi,\n my\n na\nme_\nis\n..." },
+    { "Hi, my name_is\nDick", 1, 4,  true,  "Hi, ..." },
+    { "Hi, my name_is\nDick", 2, 4,  true,  "Hi, my n\n..." },
+    { "Hi, my name_is\nDick", 3, 4,  true,  "Hi, my n\name_\n..." },
+    { "Hi, my name_is\nDick", 4, 4,  true,  "Hi, my n\name_\nis\n..." },
+    { "Hi, my name_is\nDick", 5, 4,  false, "Hi, my n\name_\nis\nDick" },
+    { "Hi, my name_is\nDick", 1, 5,  true,  "Hi, ..." },
+    { "Hi, my name_is\nDick", 2, 5,  true,  "Hi, my na\n..." },
+    { "Hi, my name_is\nDick", 3, 5,  true,  "Hi, my na\nme_is\n..." },
+    { "Hi, my name_is\nDick", 4, 5,  true,  "Hi, my na\nme_is\n\n..." },
+    { "Hi, my name_is\nDick", 5, 5,  false, "Hi, my na\nme_is\n\nDick" },
+    { "Hi, my name_is\nDick", 1, 6,  true,  "Hi, ..." },
+    { "Hi, my name_is\nDick", 2, 6,  true,  "Hi, my nam\n..." },
+    { "Hi, my name_is\nDick", 3, 6,  true,  "Hi, my nam\ne_is\n..." },
+    { "Hi, my name_is\nDick", 4, 6,  false, "Hi, my nam\ne_is\nDick" },
+    { "Hi, my name_is\nDick", 5, 6,  false, "Hi, my nam\ne_is\nDick" },
+    { "Hi, my name_is\nDick", 1, 7,  true,  "Hi, ..." },
+    { "Hi, my name_is\nDick", 2, 7,  true,  "Hi, my name\n..." },
+    { "Hi, my name_is\nDick", 3, 7,  true,  "Hi, my name\n_is\n..." },
+    { "Hi, my name_is\nDick", 4, 7,  false, "Hi, my name\n_is\nDick" },
+    { "Hi, my name_is\nDick", 5, 7,  false, "Hi, my name\n_is\nDick" },
+    { "Hi, my name_is\nDick", 1, 8,  true,  "Hi, my n\n..." },
+    { "Hi, my name_is\nDick", 2, 8,  true,  "Hi, my n\name_is\n..." },
+    { "Hi, my name_is\nDick", 3, 8,  false, "Hi, my n\name_is\nDick" },
+    { "Hi, my name_is\nDick", 1, 9,  true,  "Hi, my ..." },
+    { "Hi, my name_is\nDick", 2, 9,  true,  "Hi, my name_is\n..." },
+    { "Hi, my name_is\nDick", 3, 9,  false, "Hi, my name_is\nDick" },
+    { "Hi, my name_is\nDick", 1, 10, true,  "Hi, my ..." },
+    { "Hi, my name_is\nDick", 2, 10, true,  "Hi, my name_is\n..." },
+    { "Hi, my name_is\nDick", 3, 10, false, "Hi, my name_is\nDick" },
+    { "Hi, my name_is\nDick", 1, 11, true,  "Hi, my ..." },
+    { "Hi, my name_is\nDick", 2, 11, true,  "Hi, my name_is\n..." },
+    { "Hi, my name_is\nDick", 3, 11, false, "Hi, my name_is\nDick" },
+    { "Hi, my name_is\nDick", 1, 12, true,  "Hi, my ..." },
+    { "Hi, my name_is\nDick", 2, 12, true,  "Hi, my name_is\n..." },
+    { "Hi, my name_is\nDick", 3, 12, false, "Hi, my name_is\nDick" },
+    { "Hi, my name_is\nDick", 1, 13, true,  "Hi, my ..." },
+    { "Hi, my name_is\nDick", 2, 13, true,  "Hi, my name_is\n..." },
+    { "Hi, my name_is\nDick", 3, 13, false, "Hi, my name_is\nDick" },
+    { "Hi, my name_is\nDick", 1, 20, true,  "Hi, my name_is\n..." },
+    { "Hi, my name_is\nDick", 2, 20, false, "Hi, my name_is\nDick" },
+    { "Hi, my name_is Dick",  1, 40, false, "Hi, my name_is Dick" },
+  };
+  string16 output;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    EXPECT_EQ(cases[i].result,
+              ui::ElideRectangleString(UTF8ToUTF16(cases[i].input),
+                                       cases[i].max_rows, cases[i].max_cols,
+                                       false, &output));
     EXPECT_EQ(cases[i].output, UTF16ToUTF8(output));
   }
 }
@@ -419,9 +501,9 @@ TEST(TextEliderTest, ElideRectangleWide16) {
       L"\x03a0\x03b1\x03b3\x03ba\x03cc\x03c3\x03bc\x03b9\x03bf\x03c2\x0020\n"
       L"\x0399\x03c3\x03c4\x03cc\x03c2"));
   string16 output;
-  EXPECT_TRUE(ui::ElideRectangleString(str, 2, 4, &output));
+  EXPECT_TRUE(ui::ElideRectangleString(str, 2, 4, true, &output));
   EXPECT_EQ(out1, output);
-  EXPECT_FALSE(ui::ElideRectangleString(str, 2, 12, &output));
+  EXPECT_FALSE(ui::ElideRectangleString(str, 2, 12, true, &output));
   EXPECT_EQ(out2, output);
 }
 
@@ -434,7 +516,7 @@ TEST(TextEliderTest, ElideRectangleWide32) {
       "\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C\n"
       "\xF0\x9D\x92\x9C \naaa\n..."));
   string16 output;
-  EXPECT_TRUE(ui::ElideRectangleString(str, 3, 3, &output));
+  EXPECT_TRUE(ui::ElideRectangleString(str, 3, 3, true, &output));
   EXPECT_EQ(out, output);
 }
 
