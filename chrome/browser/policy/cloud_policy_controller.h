@@ -23,7 +23,7 @@ class TokenService;
 
 namespace policy {
 
-class CloudPolicyCache;
+class CloudPolicyCacheBase;
 class DeviceManagementBackend;
 
 // Coordinates the actions of DeviceTokenFetcher, CloudPolicyIdentityStrategy,
@@ -35,7 +35,7 @@ class CloudPolicyController
       public CloudPolicyIdentityStrategy::Observer {
  public:
   // Takes ownership of |backend|; the other parameters are weak pointers.
-  CloudPolicyController(CloudPolicyCache* cache,
+  CloudPolicyController(CloudPolicyCacheBase* cache,
                         DeviceManagementBackend* backend,
                         DeviceTokenFetcher* token_fetcher,
                         CloudPolicyIdentityStrategy* identity_strategy);
@@ -78,7 +78,7 @@ class CloudPolicyController
   friend class CloudPolicyControllerTest;
 
   // More configurable constructor for use by test cases.
-  CloudPolicyController(CloudPolicyCache* cache,
+  CloudPolicyController(CloudPolicyCacheBase* cache,
                         DeviceManagementBackend* backend,
                         DeviceTokenFetcher* token_fetcher,
                         CloudPolicyIdentityStrategy* identity_strategy,
@@ -88,7 +88,7 @@ class CloudPolicyController
                         int64 policy_refresh_error_delay_ms);
 
   // Called by constructors to perform shared initialization.
-  void Initialize(CloudPolicyCache* cache,
+  void Initialize(CloudPolicyCacheBase* cache,
                   DeviceManagementBackend* backend,
                   DeviceTokenFetcher* token_fetcher,
                   CloudPolicyIdentityStrategy* identity_strategy,
@@ -117,7 +117,7 @@ class CloudPolicyController
   // Computes the policy refresh delay to use.
   int64 GetRefreshDelay();
 
-  CloudPolicyCache* cache_;
+  CloudPolicyCacheBase* cache_;
   scoped_ptr<DeviceManagementBackend> backend_;
   CloudPolicyIdentityStrategy* identity_strategy_;
   DeviceTokenFetcher* token_fetcher_;

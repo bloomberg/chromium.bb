@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/user_policy_cache.h"
 #include "chrome/browser/policy/user_policy_identity_strategy.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,8 +52,8 @@ ProfilePolicyConnector::ProfilePolicyConnector(Profile* profile)
         profile_,
         policy_cache_dir.Append(kTokenCacheFile)));
     cloud_policy_subsystem_.reset(new CloudPolicySubsystem(
-        policy_cache_dir.Append(kPolicyCacheFile),
-        identity_strategy_.get()));
+        identity_strategy_.get(),
+        new UserPolicyCache(policy_cache_dir.Append(kPolicyCacheFile))));
   }
 }
 

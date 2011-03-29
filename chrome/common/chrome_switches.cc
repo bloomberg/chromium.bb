@@ -148,10 +148,6 @@ const char kDebugPrint[]                    = "debug-print";
 // device management backend.
 const char kDeviceManagementUrl[]           = "device-management-url";
 
-// Specifies the directory in which to store the shared device policy cache
-// file. If not specified, device policy will be disabled.
-const char kDevicePolicyCacheDir[]          = "device-policy-cache-dir";
-
 // Triggers a pletora of diagnostic modes.
 const char kDiagnostics[]                   = "diagnostics";
 
@@ -1068,6 +1064,9 @@ const char kVersion[]                       = "version";
 const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 
 #if defined(OS_CHROMEOS)
+// Enables device policy support on ChromeOS.
+const char kEnableDevicePolicy[]            = "enable-device-policy";
+
 // Enable the redirection of viewable document requests to the Google
 // Document Viewer.
 const char kEnableGView[]                   = "enable-gview";

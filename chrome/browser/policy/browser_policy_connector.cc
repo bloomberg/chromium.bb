@@ -29,15 +29,9 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/policy/device_policy_cache.h"
 #include "chrome/browser/policy/device_policy_identity_strategy.h"
 #endif
-
-namespace {
-
-const FilePath::CharType kDevicePolicyCacheFile[] =
-    FILE_PATH_LITERAL("Policy");
-
-}  // namespace
 
 namespace policy {
 
@@ -49,20 +43,11 @@ BrowserPolicyConnector::BrowserPolicyConnector() {
 
 #if defined(OS_CHROMEOS)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDevicePolicyCacheDir)) {
-    FilePath cache_dir(command_line->GetSwitchValuePath(
-        switches::kDevicePolicyCacheDir));
-
-    if (!file_util::CreateDirectory(cache_dir)) {
-      LOG(WARNING) << "Device policy cache directory "
-                   << cache_dir.value()
-                   << " is not accessible, skipping initialization.";
-    } else {
-      identity_strategy_.reset(new DevicePolicyIdentityStrategy());
-      cloud_policy_subsystem_.reset(
-          new CloudPolicySubsystem(cache_dir.Append(kDevicePolicyCacheFile),
-                                   identity_strategy_.get()));
-    }
+  if (command_line->HasSwitch(switches::kEnableDevicePolicy)) {
+    identity_strategy_.reset(new DevicePolicyIdentityStrategy());
+    cloud_policy_subsystem_.reset(
+        new CloudPolicySubsystem(identity_strategy_.get(),
+                                 new DevicePolicyCache()));
   }
 #endif
 }

@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/message_loop.h"
-#include "chrome/browser/policy/cloud_policy_cache.h"
+#include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
@@ -29,7 +29,7 @@ namespace em = enterprise_management;
 
 DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementService* service,
-    CloudPolicyCache* cache)
+    CloudPolicyCacheBase* cache)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   Initialize(service,
              cache,
@@ -40,7 +40,7 @@ DeviceTokenFetcher::DeviceTokenFetcher(
 
 DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementService* service,
-    CloudPolicyCache* cache,
+    CloudPolicyCacheBase* cache,
     int64 token_fetch_error_delay_ms,
     int64 token_fetch_error_max_delay_ms,
     int64 unmanaged_device_refresh_rate_ms)
@@ -136,7 +136,7 @@ void DeviceTokenFetcher::OnError(DeviceManagementBackend::ErrorCode code) {
 }
 
 void DeviceTokenFetcher::Initialize(DeviceManagementService* service,
-                                    CloudPolicyCache* cache,
+                                    CloudPolicyCacheBase* cache,
                                     int64 token_fetch_error_delay_ms,
                                     int64 token_fetch_error_max_delay_ms,
                                     int64 unmanaged_device_refresh_rate_ms) {

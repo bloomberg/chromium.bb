@@ -8,10 +8,10 @@
 #include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/policy/cloud_policy_cache.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
+#include "chrome/browser/policy/user_policy_cache.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
@@ -106,7 +106,7 @@ class DeviceTokenFetcherTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    cache_.reset(new CloudPolicyCache(
+    cache_.reset(new UserPolicyCache(
         temp_user_data_dir_.path().AppendASCII("DeviceTokenFetcherTest")));
     service_.set_backend(&backend_);
   }
@@ -118,7 +118,7 @@ class DeviceTokenFetcherTest : public testing::Test {
   MessageLoop loop_;
   MockDeviceManagementBackend backend_;
   MockDeviceManagementService service_;
-  scoped_ptr<CloudPolicyCache> cache_;
+  scoped_ptr<CloudPolicyCacheBase> cache_;
   ScopedTempDir temp_user_data_dir_;
 
  private:

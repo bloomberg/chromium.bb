@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "content/browser/browser_thread.h"
 
 namespace chromeos {
@@ -54,7 +55,7 @@ class OpContext {
   void Cancel() {
     CancelCallback();
 
-   if (!executing_)
+    if (!executing_)
       OnOpCompleted();
   }
 
@@ -117,7 +118,7 @@ class WhitelistOpContext : public SignedSettings::Delegate<bool>,
 
   // chromeos::SignedSettings::Delegate implementation
   virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
-                                     bool value) {
+                                     bool value) OVERRIDE {
     if (callback_) {
       switch (type_) {
         case CHECK:
@@ -139,7 +140,7 @@ class WhitelistOpContext : public SignedSettings::Delegate<bool>,
 
  protected:
   // OpContext implemenetation
-  virtual void CreateOp() {
+  virtual void CreateOp() OVERRIDE {
     switch (type_) {
       case CHECK:
         op_ = SignedSettings::CreateCheckWhitelistOp(email_, this);
@@ -177,7 +178,7 @@ class StorePropertyOpContext : public SignedSettings::Delegate<bool>,
 
   // chromeos::SignedSettings::Delegate implementation
   virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
-                                     bool unused) {
+                                     bool unused) OVERRIDE {
     VLOG(2) << "OnSettingsOpCompleted, code = " << code;
     if (callback_)
       callback_->OnStorePropertyCompleted(code, name_, value_);
@@ -186,7 +187,7 @@ class StorePropertyOpContext : public SignedSettings::Delegate<bool>,
 
  protected:
   // OpContext implemenetation
-  virtual void CreateOp() {
+  virtual void CreateOp() OVERRIDE {
     op_ = SignedSettings::CreateStorePropertyOp(name_, value_, this);
   }
 
@@ -210,7 +211,7 @@ class RetrievePropertyOpContext
 
   // chromeos::SignedSettings::Delegate implementation
   virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
-                                     std::string value) {
+                                     std::string value) OVERRIDE {
     if (callback_)
       callback_->OnRetrievePropertyCompleted(code, name_, value);
 
@@ -219,7 +220,7 @@ class RetrievePropertyOpContext
 
  protected:
   // OpContext implemenetation
-  virtual void CreateOp() {
+  virtual void CreateOp() OVERRIDE {
     op_ = SignedSettings::CreateRetrievePropertyOp(name_, this);
   }
 
@@ -227,6 +228,64 @@ class RetrievePropertyOpContext
   std::string name_;
 
   DISALLOW_COPY_AND_ASSIGN(RetrievePropertyOpContext);
+};
+
+class StorePolicyOpContext : public SignedSettings::Delegate<bool>,
+                             public OpContext {
+ public:
+  StorePolicyOpContext(const em::PolicyFetchResponse& policy,
+                       SignedSettingsHelper::Callback* callback,
+                       Delegate* delegate)
+      : OpContext(callback, delegate),
+        policy_(policy) {
+  }
+
+  // chromeos::SignedSettings::Delegate implementation
+  virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
+                                     bool unused) OVERRIDE {
+    VLOG(2) << "OnSettingsOpCompleted, code = " << code;
+    if (callback_)
+      callback_->OnStorePolicyCompleted(code);
+    OnOpCompleted();
+  }
+
+ protected:
+  // OpContext implementation
+  virtual void CreateOp() OVERRIDE {
+    op_ = SignedSettings::CreateStorePolicyOp(&policy_, this);
+  }
+
+ private:
+  em::PolicyFetchResponse policy_;
+  DISALLOW_COPY_AND_ASSIGN(StorePolicyOpContext);
+};
+
+class RetrievePolicyOpContext
+    : public SignedSettings::Delegate<const em::PolicyFetchResponse&>,
+      public OpContext {
+ public:
+  RetrievePolicyOpContext(SignedSettingsHelper::Callback* callback,
+                          Delegate* delegate)
+      : OpContext(callback, delegate) {
+  }
+
+  // chromeos::SignedSettings::Delegate implementation
+  virtual void OnSettingsOpCompleted(
+      SignedSettings::ReturnCode code,
+      const em::PolicyFetchResponse& policy) OVERRIDE {
+    if (callback_)
+      callback_->OnRetrievePolicyCompleted(code, policy);
+    OnOpCompleted();
+  }
+
+ protected:
+  // OpContext implementation
+  virtual void CreateOp() OVERRIDE {
+    op_ = SignedSettings::CreateRetrievePolicyOp(this);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RetrievePolicyOpContext);
 };
 
 }  // namespace
@@ -237,16 +296,19 @@ class SignedSettingsHelperImpl : public SignedSettingsHelper,
  public:
   // SignedSettingsHelper implementation
   virtual void StartCheckWhitelistOp(const std::string& email,
-                                     Callback* callback);
+                                     Callback* callback) OVERRIDE;
   virtual void StartWhitelistOp(const std::string& email,
                                 bool add_to_whitelist,
-                                Callback* callback);
+                                Callback* callback) OVERRIDE;
   virtual void StartStorePropertyOp(const std::string& name,
                                     const std::string& value,
-                                    Callback* callback);
+                                    Callback* callback) OVERRIDE;
   virtual void StartRetrieveProperty(const std::string& name,
-                                     Callback* callback);
-  virtual void CancelCallback(Callback* callback);
+                                     Callback* callback) OVERRIDE;
+  virtual void StartStorePolicyOp(const em::PolicyFetchResponse& policy,
+                                  Callback* callback) OVERRIDE;
+  virtual void StartRetrievePolicyOp(Callback* callback) OVERRIDE;
+  virtual void CancelCallback(Callback* callback) OVERRIDE;
 
   // OpContext::Delegate implementation
   virtual void OnOpCreated(OpContext* context);
@@ -304,7 +366,7 @@ void SignedSettingsHelperImpl::StartWhitelistOp(
 void SignedSettingsHelperImpl::StartStorePropertyOp(
     const std::string& name,
     const std::string& value,
-    SignedSettingsHelper::SignedSettingsHelper::Callback* callback) {
+    SignedSettingsHelper::Callback* callback) {
   AddOpContext(new StorePropertyOpContext(
       name,
       value,
@@ -319,6 +381,17 @@ void SignedSettingsHelperImpl::StartRetrieveProperty(
       name,
       callback,
       this));
+}
+
+void SignedSettingsHelperImpl::StartStorePolicyOp(
+    const em::PolicyFetchResponse& policy,
+    SignedSettingsHelper::Callback* callback) {
+  AddOpContext(new StorePolicyOpContext(policy, callback, this));
+}
+
+void SignedSettingsHelperImpl::StartRetrievePolicyOp(
+    SignedSettingsHelper::Callback* callback) {
+  AddOpContext(new RetrievePolicyOpContext(callback, this));
 }
 
 void SignedSettingsHelperImpl::CancelCallback(

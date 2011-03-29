@@ -6,10 +6,11 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/policy/cloud_policy_cache.h"
+#include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
@@ -59,7 +60,7 @@ static const int kPolicyRefreshRateInMilliseconds =
     3 * 60 * 60 * 1000;  // 3 hours.
 
 CloudPolicyController::CloudPolicyController(
-    CloudPolicyCache* cache,
+    CloudPolicyCacheBase* cache,
     DeviceManagementBackend* backend,
     DeviceTokenFetcher* token_fetcher,
     CloudPolicyIdentityStrategy* identity_strategy)
@@ -176,7 +177,7 @@ void CloudPolicyController::OnCredentialsChanged() {
 }
 
 CloudPolicyController::CloudPolicyController(
-    CloudPolicyCache* cache,
+    CloudPolicyCacheBase* cache,
     DeviceManagementBackend* backend,
     DeviceTokenFetcher* token_fetcher,
     CloudPolicyIdentityStrategy* identity_strategy,
@@ -196,7 +197,7 @@ CloudPolicyController::CloudPolicyController(
 }
 
 void CloudPolicyController::Initialize(
-    CloudPolicyCache* cache,
+    CloudPolicyCacheBase* cache,
     DeviceManagementBackend* backend,
     DeviceTokenFetcher* token_fetcher,
     CloudPolicyIdentityStrategy* identity_strategy,

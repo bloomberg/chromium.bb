@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SIGNED_SETTINGS_HELPER_H_
 #pragma once
 
+#include <string>
+
 #include "chrome/browser/chromeos/login/signed_settings.h"
 
+namespace enterprise_management {
+class PolicyFetchResponse;
+}  // namespace enterprise_management
+namespace em = enterprise_management;
 namespace chromeos {
 
 class SignedSettings;
@@ -43,6 +49,15 @@ class SignedSettingsHelper {
         SignedSettings::ReturnCode code,
         const std::string& name,
         const std::string& value) {}
+
+    // Callback of StorePolicyOp.
+    virtual void OnStorePolicyCompleted(
+        SignedSettings::ReturnCode code) {}
+
+    // Callback of RetrievePolicyOp.
+    virtual void OnRetrievePolicyCompleted(
+        SignedSettings::ReturnCode code,
+        const em::PolicyFetchResponse& policy) {}
   };
 
   // Class factory
@@ -59,6 +74,9 @@ class SignedSettingsHelper {
                                     Callback* callback) = 0;
   virtual void StartRetrieveProperty(const std::string& name,
                                      Callback* callback) = 0;
+  virtual void StartStorePolicyOp(const em::PolicyFetchResponse& policy,
+                                  Callback* callback) = 0;
+  virtual void StartRetrievePolicyOp(Callback* callback) = 0;
 
   // Cancels all pending calls of given callback.
   virtual void CancelCallback(Callback* callback) = 0;

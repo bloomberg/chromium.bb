@@ -56,7 +56,6 @@ extern const char kCountry[];
 extern const char kDebugDevTools[];
 extern const char kDebugPrint[];
 extern const char kDeviceManagementUrl[];
-extern const char kDevicePolicyCacheDir[];
 extern const char kDiagnostics[];
 extern const char kDisableAcceleratedCompositing[];
 extern const char kDisableAcceleratedLayers[];
@@ -297,6 +296,7 @@ extern const char kVersion[];
 extern const char kWinHttpProxyResolver[];
 
 #if defined(OS_CHROMEOS)
+extern const char kEnableDevicePolicy[];
 extern const char kEnableGView[];
 extern const char kEnableLoginImages[];
 extern const char kLoginManager[];

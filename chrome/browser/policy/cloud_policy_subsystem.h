@@ -10,13 +10,12 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/common/notification_observer.h"
 
-class FilePath;
 class PrefService;
 class URLRequestContextGetter;
 
 namespace policy {
 
-class CloudPolicyCache;
+class CloudPolicyCacheBase;
 class CloudPolicyController;
 class CloudPolicyIdentityStrategy;
 class ConfigurationPolicyProvider;
@@ -28,8 +27,8 @@ class DeviceTokenFetcher;
 // life cycle of the policy providers.
 class CloudPolicySubsystem : public NotificationObserver {
  public:
-  CloudPolicySubsystem(const FilePath& policy_cache_file,
-                       CloudPolicyIdentityStrategy* identity_strategy);
+  CloudPolicySubsystem(CloudPolicyIdentityStrategy* identity_strategy,
+                       CloudPolicyCacheBase* policy_cache);
   virtual ~CloudPolicySubsystem();
 
   // Initializes the subsystem.
@@ -62,7 +61,7 @@ class CloudPolicySubsystem : public NotificationObserver {
   // Cloud policy infrastructure stuff.
   scoped_ptr<DeviceManagementService> device_management_service_;
   scoped_ptr<DeviceTokenFetcher> device_token_fetcher_;
-  scoped_ptr<CloudPolicyCache> cloud_policy_cache_;
+  scoped_ptr<CloudPolicyCacheBase> cloud_policy_cache_;
   scoped_ptr<CloudPolicyController> cloud_policy_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicySubsystem);

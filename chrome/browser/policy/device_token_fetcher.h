@@ -16,7 +16,7 @@
 
 namespace policy {
 
-class CloudPolicyCache;
+class CloudPolicyCacheBase;
 class DeviceManagementService;
 
 namespace em = enterprise_management;
@@ -38,10 +38,10 @@ class DeviceTokenFetcher
   // |service| is used to talk to the device management service and |cache| is
   // used to persist whether the device is unmanaged.
   DeviceTokenFetcher(DeviceManagementService* service,
-                     CloudPolicyCache* cache);
+                     CloudPolicyCacheBase* cache);
   // Version for tests that allows to set timing paramters.
   DeviceTokenFetcher(DeviceManagementService* service,
-                     CloudPolicyCache* cache,
+                     CloudPolicyCacheBase* cache,
                      int64 token_fetch_error_delay_ms,
                      int64 token_fetch_error_max_delay_ms,
                      int64 unmanaged_device_refresh_rate_ms);
@@ -93,7 +93,7 @@ class DeviceTokenFetcher
 
   // Common initialization helper.
   void Initialize(DeviceManagementService* service,
-                  CloudPolicyCache* cache,
+                  CloudPolicyCacheBase* cache,
                   int64 token_fetch_error_delay_ms,
                   int64 token_fetch_error_max_delay_ms,
                   int64 unmanaged_device_refresh_rate_ms);
@@ -117,7 +117,7 @@ class DeviceTokenFetcher
   scoped_ptr<DeviceManagementBackend> backend_;
 
   // Reference to the cache. Used to persist and read unmanaged state.
-  CloudPolicyCache* cache_;
+  CloudPolicyCacheBase* cache_;
 
   // Refresh parameters.
   int64 token_fetch_error_delay_ms_;

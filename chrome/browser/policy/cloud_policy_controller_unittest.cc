@@ -6,11 +6,11 @@
 
 #include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "chrome/browser/policy/cloud_policy_cache.h"
 #include "chrome/browser/policy/device_token_fetcher.h"
-#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/browser/policy/user_policy_cache.h"
 #include "content/browser/browser_thread.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -54,7 +54,7 @@ ACTION_P2(MockCloudPolicyIdentityStrategyGetCredentials, username, auth_token) {
 
 class MockDeviceTokenFetcher : public DeviceTokenFetcher {
  public:
-  explicit MockDeviceTokenFetcher(CloudPolicyCache* cache)
+  explicit MockDeviceTokenFetcher(CloudPolicyCacheBase* cache)
       : DeviceTokenFetcher(NULL, cache) {}
   virtual ~MockDeviceTokenFetcher() {}
 
@@ -78,7 +78,7 @@ class CloudPolicyControllerTest : public testing::Test {
 
   virtual void SetUp() {
     ASSERT_TRUE(temp_user_data_dir_.CreateUniqueTempDir());
-    cache_.reset(new CloudPolicyCache(
+    cache_.reset(new UserPolicyCache(
         temp_user_data_dir_.path().AppendASCII("CloudPolicyControllerTest")));
     token_fetcher_.reset(new MockDeviceTokenFetcher(cache_.get()));
   }
@@ -140,7 +140,7 @@ class CloudPolicyControllerTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<CloudPolicyCache> cache_;
+  scoped_ptr<CloudPolicyCacheBase> cache_;
   scoped_ptr<CloudPolicyController> controller_;
   scoped_ptr<MockDeviceTokenFetcher> token_fetcher_;
   MockCloudPolicyIdentityStrategy identity_strategy_;

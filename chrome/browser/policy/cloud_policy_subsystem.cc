@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "chrome/browser/policy/cloud_policy_cache.h"
+#include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_controller.h"
 #include "chrome/browser/policy/cloud_policy_identity_strategy.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
@@ -30,15 +30,15 @@ const int64 kPolicyRefreshRateMaxMs = 24 * 60 * 60 * 1000;  // 1 day
 namespace policy {
 
 CloudPolicySubsystem::CloudPolicySubsystem(
-    const FilePath& policy_cache_file,
-    CloudPolicyIdentityStrategy* identity_strategy)
+    CloudPolicyIdentityStrategy* identity_strategy,
+    CloudPolicyCacheBase* policy_cache)
     : prefs_(NULL) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDeviceManagementUrl)) {
     device_management_service_.reset(new DeviceManagementService(
         command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl)));
-    cloud_policy_cache_.reset(new CloudPolicyCache(policy_cache_file));
-    cloud_policy_cache_->LoadFromFile();
+    cloud_policy_cache_.reset(policy_cache);
+    cloud_policy_cache_->Load();
 
     device_token_fetcher_.reset(
         new DeviceTokenFetcher(device_management_service_.get(),
