@@ -337,6 +337,7 @@ class Changelist(object):
     self.description = None
     self.has_patchset = False
     self.patchset = None
+    self._rpc_server = None
 
   def GetBranch(self):
     """Returns the short branch name, e.g. 'master'."""
@@ -464,6 +465,13 @@ or verify this branch is set up to track another (via the --track argument to
              swallow_stderr=True, error_ok=True)
     self.has_patchset = False
 
+  def GetPatchSetDiff(self, issue):
+    # Grab the last patchset of the issue first.
+    data = json.loads(self._RpcServer().Send('/api/%s' % issue))
+    patchset = data['patchsets'][-1]
+    return self._RpcServer().Send(
+        '/download/issue%s_%s.diff' % (issue, patchset))
+
   def SetIssue(self, issue):
     """Set this branch's issue.  If issue=0, clears the issue."""
     if issue:
@@ -493,8 +501,10 @@ or verify this branch is set up to track another (via the --track argument to
   def _RpcServer(self):
     """Returns an upload.RpcServer() to access this review's rietveld instance.
     """
-    server = self.GetRietveldServer()
-    return upload.GetRpcServer(server, save_cookies=True)
+    if not self._rpc_server:
+      server = self.GetRietveldServer()
+      self._rpc_server = upload.GetRpcServer(server, save_cookies=True)
+    return self._rpc_server
 
   def _IssueSetting(self):
     """Return the git setting that stores this change's issue."""
@@ -1220,23 +1230,16 @@ def CMDpatch(parser, args):
   if re.match(r'\d+', issue_arg):
     # Input is an issue id.  Figure out the URL.
     issue = issue_arg
-    server = settings.GetDefaultServerUrl()
-    fetch = urllib2.urlopen('%s/%s' % (server, issue)).read()
-    m = re.search(r'/download/issue[0-9]+_[0-9]+.diff', fetch)
-    if not m:
-      DieWithError('Must pass an issue ID or full URL for '
-          '\'Download raw patch set\'')
-    url = '%s%s' % (server, m.group(0).strip())
+    patch_data = Changelist().GetPatchSetDiff(issue)
   else:
     # Assume it's a URL to the patch. Default to http.
     issue_url = FixUrl(issue_arg)
     match = re.match(r'.*?/issue(\d+)_\d+.diff', issue_url)
-    if match:
-      issue = match.group(1)
-      url = issue_arg
-    else:
+    if not match:
       DieWithError('Must pass an issue ID or full URL for '
           '\'Download raw patch set\'')
+    issue = match.group(1)
+    patch_data = urllib2.urlopen(issue_arg).read()
 
   if options.newbranch:
     if options.force:
@@ -1251,7 +1254,6 @@ def CMDpatch(parser, args):
   if top:
     os.chdir(top)
 
-  patch_data = urllib2.urlopen(url).read()
   # Git patches have a/ at the beginning of source paths.  We strip that out
   # with a sed script rather than the -p flag to patch so we can feed either
   # Git or svn-style patches into the same apply command.
