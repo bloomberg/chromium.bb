@@ -4141,10 +4141,7 @@
 {
    bug_77768_a
    Memcheck:Cond
-   fun:memcpy
-   fun:fill_window
-   fun:deflate_fast
-   fun:deflate
+   ...
    fun:_ZN8remoting14CompressorZlib7ProcessEPKhiPhiNS_10Compressor15CompressorFlushEPiS6_
    fun:_ZN8remoting15EncoderRowBased10EncodeRectERKN3gfx4RectEb
    fun:_ZN8remoting15EncoderRowBased6EncodeE13scoped_refptrINS_11CaptureDataEEbP14CallbackRunnerI6Tuple1IPNS_11VideoPacketEEE
@@ -4155,10 +4152,7 @@
 {
    bug_77768_b
    Memcheck:Value4
-   fun:memcpy
-   fun:fill_window
-   fun:deflate_fast
-   fun:deflate
+   ...
    fun:_ZN8remoting14CompressorZlib7ProcessEPKhiPhiNS_10Compressor15CompressorFlushEPiS6_
    fun:_ZN8remoting15EncoderRowBased10EncodeRectERKN3gfx4RectEb
    fun:_ZN8remoting15EncoderRowBased6EncodeE13scoped_refptrINS_11CaptureDataEEbP14CallbackRunnerI6Tuple1IPNS_11VideoPacketEEE
