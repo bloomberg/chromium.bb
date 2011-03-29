@@ -78,6 +78,23 @@ cr.define('options', function() {
         chrome.send('buyDataPlan', []);
         OptionsPage.closeOverlay();
       });
+      $('cellularApnClear').addEventListener('click', function(event) {
+        $('cellularApn').value = "";
+        $('cellularApnUsername').value = "";
+        $('cellularApnPassword').value = "";
+        var data = $('inetAddress').data;
+        chrome.send('setApn', [String(data.servicePath),
+                               String($('cellularApn').value),
+                               String($('cellularApnUsername').value),
+                               String($('cellularApnPassword').value)]);
+      });
+      $('cellularApnSet').addEventListener('click', function(event) {
+        var data = $('inetAddress').data;
+        chrome.send('setApn', [String(data.servicePath),
+                               String($('cellularApn').value),
+                               String($('cellularApnUsername').value),
+                               String($('cellularApnPassword').value)]);
+      });
       this.showNetworkDetails_();
     },
 
@@ -366,6 +383,9 @@ cr.define('options', function() {
         $('operatorName').textContent = data.operatorName;
         $('operatorCode').textContent = data.operatorCode;
         $('imsi').textContent = data.imsi;
+        $('cellularApn').value = data.apn;
+        $('cellularApnUsername').value = data.apn_username;
+        $('cellularApnPassword').value = data.apn_password;
         page.setAttribute('gsm', true);
       }
 

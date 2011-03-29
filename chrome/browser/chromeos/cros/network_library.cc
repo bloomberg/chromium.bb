@@ -107,6 +107,8 @@ const char* kOperatorNameProperty = "Cellular.OperatorName";
 const char* kOperatorCodeProperty = "Cellular.OperatorCode";
 const char* kPaymentURLProperty = "Cellular.OlpUrl";
 const char* kUsageURLProperty = "Cellular.UsageUrl";
+const char* kCellularApnProperty = "Cellular.APN";
+const char* kCellularLastGoodApnProperty = "Cellular.LastGoodAPN";
 const char* kFavoriteProperty = "Favorite";
 const char* kConnectableProperty = "Connectable";
 const char* kAutoConnectProperty = "AutoConnect";
@@ -116,6 +118,12 @@ const char* kErrorProperty = "Error";
 const char* kActiveProfileProperty = "ActiveProfile";
 const char* kEntriesProperty = "Entries";
 const char* kDevicesProperty = "Devices";
+
+// APN info property names.
+const char* kApnProperty = "apn";
+const char* kNetworkIdProperty = "network_id";
+const char* kUsernameProperty = "username";
+const char* kPasswordProperty = "password";
 
 // Flimflam device info property names.
 const char* kScanningProperty = "Scanning";
@@ -322,6 +330,8 @@ enum PropertyIndex {
   PROPERTY_INDEX_AUTO_CONNECT,
   PROPERTY_INDEX_AVAILABLE_TECHNOLOGIES,
   PROPERTY_INDEX_CARRIER,
+  PROPERTY_INDEX_CELLULAR_APN,
+  PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN,
   PROPERTY_INDEX_CERT_PATH,
   PROPERTY_INDEX_CONNECTABLE,
   PROPERTY_INDEX_CONNECTED_TECHNOLOGIES,
@@ -388,6 +398,8 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kActiveProfileProperty, PROPERTY_INDEX_ACTIVE_PROFILE },
   { kAutoConnectProperty, PROPERTY_INDEX_AUTO_CONNECT },
   { kAvailableTechnologiesProperty, PROPERTY_INDEX_AVAILABLE_TECHNOLOGIES },
+  { kCellularApnProperty, PROPERTY_INDEX_CELLULAR_APN },
+  { kCellularLastGoodApnProperty, PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN },
   { kCarrierProperty, PROPERTY_INDEX_CARRIER },
   { kCertPathProperty, PROPERTY_INDEX_CERT_PATH },
   { kConnectableProperty, PROPERTY_INDEX_CONNECTABLE },
@@ -1119,6 +1131,20 @@ string16 CellularDataPlan::GetPlanExpiration() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// CellularNetwork::Apn
+
+void CellularNetwork::Apn::Set(const DictionaryValue& dict) {
+  if (!dict.GetStringWithoutPathExpansion(kApnProperty, &apn))
+    apn.clear();
+  if (!dict.GetStringWithoutPathExpansion(kNetworkIdProperty, &network_id))
+    network_id.clear();
+  if (!dict.GetStringWithoutPathExpansion(kUsernameProperty, &username))
+    username.clear();
+  if (!dict.GetStringWithoutPathExpansion(kPasswordProperty, &password))
+    password.clear();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // CellularNetwork
 
 CellularNetwork::~CellularNetwork() {
@@ -1133,6 +1159,20 @@ bool CellularNetwork::ParseValue(int index, const Value* value) {
         activation_state_ = ParseActivationState(activation_state_string);
         if (activation_state_ != prev_state)
           RefreshDataPlansIfNeeded();
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_CELLULAR_APN: {
+      if (value->IsType(Value::TYPE_DICTIONARY)) {
+        apn_.Set(*static_cast<const DictionaryValue*>(value));
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN: {
+      if (value->IsType(Value::TYPE_DICTIONARY)) {
+        last_good_apn_.Set(*static_cast<const DictionaryValue*>(value));
         return true;
       }
       break;
@@ -1198,6 +1238,22 @@ void CellularNetwork::RefreshDataPlansIfNeeded() const {
     return;
   if (connected() && activated())
     RequestCellularDataPlanUpdate(service_path().c_str());
+}
+
+void CellularNetwork::SetApn(const Apn& apn) {
+  if (!EnsureCrosLoaded())
+    return;
+
+  if (!apn.apn.empty()) {
+    DictionaryValue value;
+    value.SetString(kApnProperty, apn.apn);
+    value.SetString(kNetworkIdProperty, apn.network_id);
+    value.SetString(kUsernameProperty, apn.username);
+    value.SetString(kPasswordProperty, apn.password);
+    SetValueProperty(kCellularApnProperty, &value);
+  } else {
+    ClearProperty(kCellularApnProperty);
+  }
 }
 
 std::string CellularNetwork::GetNetworkTechnologyString() const {

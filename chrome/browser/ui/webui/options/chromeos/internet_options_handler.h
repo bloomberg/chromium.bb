@@ -73,6 +73,7 @@ class InternetOptionsHandler
   void EnableCellularCallback(const ListValue* args);
   void DisableCellularCallback(const ListValue* args);
   void BuyDataPlanCallback(const ListValue* args);
+  void SetApnCallback(const ListValue* args);
 
   // Parses 'path' to determine if the certificate is stored in a pkcs#11
   // device. flimflam recognizes the string "SETTINGS:" to specify

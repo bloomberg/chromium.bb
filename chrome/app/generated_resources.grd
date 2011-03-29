@@ -9558,7 +9558,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING" desc="In the settings tab, the text next to the checkbox for data roaming.">
         Enable data roaming
-      </message>      
+      </message>
       <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
         Enable guest browsing
       </message>
@@ -9835,6 +9835,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION" desc="Cellular device PRL version label under network details in chrome:settings/internet.">
         PRL version:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN" desc="Cellular device APN label under network details in chrome:settings/internet.">
+        Access Point Name:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_USERNAME" desc="Cellular device APN user name label under network details in chrome:settings/internet.">
+        User name:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_PASSWORD" desc="Cellular device APN password label under network details in chrome:settings/internet.">
+        Password:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_CLEAR" desc="Cellular device use default APN settings button under network details in chrome:settings/internet.">
+        Use default
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_SET" desc="Cellular device set APN settings button under network details in chrome:settings/internet.">
+        Save
       </message>
 
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE" desc="In settings Internet options, Title of the section which houses the enable/disable buttons.">

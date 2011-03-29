@@ -254,6 +254,21 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("prlVersion",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION));
+  localized_strings->SetString("cellularApnLabel",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN));
+  localized_strings->SetString("cellularApnUsername",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_USERNAME));
+  localized_strings->SetString("cellularApnPassword",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_PASSWORD));
+  localized_strings->SetString("cellularApnClear",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_CLEAR));
+  localized_strings->SetString("cellularApnSet",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_SET));
 
   localized_strings->SetString("planName",
       l10n_util::GetStringUTF16(
@@ -351,6 +366,8 @@ void InternetOptionsHandler::RegisterMessages() {
       NewCallback(this, &InternetOptionsHandler::BuyDataPlanCallback));
   web_ui_->RegisterMessageCallback("showMorePlanInfo",
       NewCallback(this, &InternetOptionsHandler::BuyDataPlanCallback));
+  web_ui_->RegisterMessageCallback("setApn",
+      NewCallback(this, &InternetOptionsHandler::SetApnCallback));
 }
 
 void InternetOptionsHandler::EnableWifiCallback(const ListValue* args) {
@@ -384,6 +401,30 @@ void InternetOptionsHandler::BuyDataPlanCallback(const ListValue* args) {
       web_ui_->GetProfile(), Browser::FEATURE_TABSTRIP);
   if (browser)
     browser->OpenMobilePlanTabAndActivate();
+}
+
+void InternetOptionsHandler::SetApnCallback(const ListValue* args) {
+  std::string service_path;
+  std::string apn;
+  std::string username;
+  std::string password;
+  if (args->GetSize() != 4 ||
+      !args->GetString(0, &service_path) ||
+      !args->GetString(1, &apn) ||
+      !args->GetString(2, &username) ||
+      !args->GetString(3, &password)) {
+    NOTREACHED();
+    return;
+  }
+
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  chromeos::CellularNetwork* network =
+        cros->FindCellularNetworkByPath(service_path);
+  if (network) {
+    network->SetApn(chromeos::CellularNetwork::Apn(
+        apn, network->apn().network_id, username, password));
+  }
 }
 
 void InternetOptionsHandler::RefreshNetworkData(
@@ -638,6 +679,17 @@ void InternetOptionsHandler::PopulateCellularDetails(
   dictionary->SetString("supportUrl", cellular->payment_url());
   dictionary->SetBoolean("needsPlan", cellular->needs_new_plan());
   dictionary->SetBoolean("gsm", cellular->is_gsm());
+  const chromeos::CellularNetwork::Apn& apn = cellular->apn();
+  dictionary->SetString("apn", apn.apn);
+  dictionary->SetString("apn_network_id", apn.network_id);
+  dictionary->SetString("apn_username", apn.username);
+  dictionary->SetString("apn_password", apn.password);
+  const chromeos::CellularNetwork::Apn& last_good_apn =
+      cellular->last_good_apn();
+  dictionary->SetString("last_good_apn", last_good_apn.apn);
+  dictionary->SetString("last_good_apn_network_id", last_good_apn.network_id);
+  dictionary->SetString("last_good_apn_username", last_good_apn.username);
+  dictionary->SetString("last_good_apn_password", last_good_apn.password);
 
   // Device settings.
   const chromeos::NetworkDevice* device =

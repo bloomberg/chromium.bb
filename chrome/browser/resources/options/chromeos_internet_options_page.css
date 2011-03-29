@@ -124,7 +124,7 @@ html[dir='rtl'] .network-item-text {
 
 #detailsInternetPage {
   min-width: 400px;
-  min-height: 360px;
+  min-height: 420px;
   position: relative;
 }
 
@@ -174,12 +174,12 @@ html[dir='rtl'] .details-button {
   vertical-align: middle;
 }
 
-#internet-owner-only-warning {  
+#internet-owner-only-warning {
   margin-bottom: 10px;
   margin-top: 10px;
   padding-bottom: 1px;
   -webkit-margin-start: 10px;
-  -webkit-padding-start: 20px;  
+  -webkit-padding-start: 20px;
   background-repeat: no-repeat;
   background-image: url('warning.png');
 }
