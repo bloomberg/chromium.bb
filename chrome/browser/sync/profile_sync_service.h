@@ -449,13 +449,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   const std::string& cros_user() const { return cros_user_; }
 
  protected:
-  // Used by ProfileSyncServiceMock only.
-  //
-  // TODO(akalin): Separate this class out into an abstract
-  // ProfileSyncService interface and a ProfileSyncServiceImpl class
-  // so we don't need this hack anymore.
-  ProfileSyncService();
-
   // Used by test classes that derive from ProfileSyncService.
   virtual browser_sync::SyncBackendHost* GetBackendForTest();
 

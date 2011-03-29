@@ -77,10 +77,9 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       wizard_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       unrecoverable_error_detected_(false),
       scoped_runnable_method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      expect_sync_configuration_aborted_(false),
       token_migrator_(NULL),
       clear_server_data_state_(CLEAR_NOT_STARTED) {
-  DCHECK(factory);
-  DCHECK(profile);
   registrar_.Add(this,
                  NotificationType::SYNC_DATA_TYPES_UPDATED,
                  Source<Profile>(profile));
@@ -103,19 +102,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
 #endif
 
   tried_implicit_gaia_remove_when_bug_62103_fixed_ = false;
-}
-
-ProfileSyncService::ProfileSyncService()
-    : last_auth_error_(AuthError::None()),
-      factory_(NULL),
-      profile_(NULL),
-      sync_service_url_(kSyncServerUrl),
-      backend_initialized_(false),
-      is_auth_in_progress_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
-      unrecoverable_error_detected_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)),
-      expect_sync_configuration_aborted_(false) {
 }
 
 ProfileSyncService::~ProfileSyncService() {

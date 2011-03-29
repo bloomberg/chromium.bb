@@ -34,7 +34,8 @@ const char kTestUrlHostname[] = "www.example.com";
 class FakeProfileSyncService : public ProfileSyncService {
  public:
   FakeProfileSyncService()
-      : setup_(false) {
+      : ProfileSyncService(NULL, NULL, ""),
+        setup_(false) {
   }
   virtual ~FakeProfileSyncService() {}
 

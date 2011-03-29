@@ -6,7 +6,9 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 
-ProfileSyncServiceMock::ProfileSyncServiceMock() {}
+ProfileSyncServiceMock::ProfileSyncServiceMock()
+    : ProfileSyncService(NULL, NULL, "") {
+}
 
 ProfileSyncServiceMock::~ProfileSyncServiceMock() {
 }
