@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -717,9 +717,17 @@ cr.define('cr.ui', function() {
 
       var autoExpands = this.autoExpands_;
       var firstIndex = autoExpands ? 0 : this.getIndexForListOffset_(scrollTop);
+      // This is a bit tricky. We take the minimum of the available items to
+      // show and the number we want to show, so as not to go off the end of the
+      // list. For the number we want to show, we take the maximum of the number
+      // that would fit without a differently-sized lead item, and with one. We
+      // do this so that if the size of the lead item changes without a scroll
+      // event to trigger redrawing the list, we won't end up with empty space.
       var itemsInViewPort = autoExpands ? dataModel.length : Math.min(
           dataModel.length - firstIndex,
-          this.countItemsInRange_(firstIndex, scrollTop + clientHeight));
+          Math.max(
+              Math.ceil(clientHeight / itemHeight) + 1,
+              this.countItemsInRange_(firstIndex, scrollTop + clientHeight)));
       var lastIndex = firstIndex + itemsInViewPort;
 
       this.textContent = '';
