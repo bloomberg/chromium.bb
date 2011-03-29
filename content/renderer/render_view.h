@@ -147,7 +147,6 @@ class WebPlugin;
 class WebSpeechInputController;
 class WebSpeechInputListener;
 class WebStorageNamespace;
-class WebTextCheckingCompletion;
 class WebURLRequest;
 class WebView;
 struct WebContextMenuData;
@@ -403,19 +402,6 @@ class RenderView : public RenderWidget,
   virtual void didChangeSelection(bool is_selection_empty);
   virtual void didExecuteCommand(const WebKit::WebString& command_name);
   virtual bool handleCurrentKeyboardEvent();
-  virtual void spellCheck(const WebKit::WebString& text,
-                          int& offset,
-                          int& length);
-  virtual void requestCheckingOfText(
-      const WebKit::WebString& text,
-      WebKit::WebTextCheckingCompletion* completion);
-  virtual WebKit::WebString autoCorrectWord(
-      const WebKit::WebString& misspelled_word);
-  virtual void showSpellingUI(bool show);
-  virtual bool isShowingSpellingUI();
-  virtual void updateSpellingUIWithMisspelledWord(
-      const WebKit::WebString& word);
-  virtual void continuousSpellCheckingEnabledStateChanged();
   virtual bool runFileChooser(
       const WebKit::WebFileChooserParams& params,
       WebKit::WebFileChooserCompletion* chooser_completion);
@@ -784,7 +770,6 @@ class RenderView : public RenderWidget,
   void OnAccessibilityDoDefaultAction(int acc_obj_id);
   void OnAccessibilityNotificationsAck();
   void OnAllowBindings(int enabled_bindings_flags);
-  void OnAdvanceToNextMisspelling();
   void OnAllowScriptToClose(bool script_can_close);
   void OnAsyncFileOpened(base::PlatformFileError error_code,
                          IPC::PlatformFileForTransit file_for_transit,
@@ -897,8 +882,6 @@ class RenderView : public RenderWidget,
   void OnStop();
   void OnStopFinding(const ViewMsg_StopFinding_Params& params);
   void OnThemeChanged();
-  void OnToggleSpellCheck();
-  void OnToggleSpellPanel(bool is_currently_visible);
   void OnUndo();
   void OnUpdateBrowserWindowId(int window_id);
   void OnUpdateTargetURLAck();
@@ -981,9 +964,6 @@ class RenderView : public RenderWidget,
   // multiple frames, the frame whose size is image_size is returned. If the
   // image doesn't have a frame at the specified size, the first is returned.
   bool DownloadImage(int id, const GURL& image_url, int image_size);
-
-  // Initializes the document_tag_ member if necessary.
-  void EnsureDocumentTag();
 
   // Backend for the IPC Message ExecuteCode in addition to being used
   // internally by other RenderView functions.
@@ -1185,13 +1165,6 @@ class RenderView : public RenderWidget,
   // True if the page has any frame-level unload or beforeunload listeners.
   bool has_unload_listener_;
 
-#if defined(OS_MACOSX)
-  // True if the current RenderView has been assigned a document tag.
-  bool has_document_tag_;
-#endif
-
-  int document_tag_;
-
   // UI state ------------------------------------------------------------------
 
   // The state of our target_url transmissions. When we receive a request to
@@ -1222,9 +1195,6 @@ class RenderView : public RenderWidget,
 
   // The next target URL we want to send to the browser.
   GURL pending_target_url_;
-
-  // True if the browser is showing the spelling panel for us.
-  bool spelling_panel_visible_;
 
   // The text selection the last time DidChangeSelection got called.
   std::string last_selection_;
@@ -1297,16 +1267,12 @@ class RenderView : public RenderWidget,
   // Device orientation dispatcher attached to this view; lazily initialized.
   DeviceOrientationDispatcher* device_orientation_dispatcher_;
 
-  // PrintWebViewHelper handles printing.  Weak pointer since it implements
-  // RenderViewObserver interface.
+  // PrintWebViewHelper handles printing
   PrintWebViewHelper* print_helper_;
 
-  // Weak pointer since it implements RenderViewObserver interface.
   SearchBox* searchbox_;
 
   // spellcheck provider which is registered as a view observer.
-  // Note that RenderViewObserver subclasses like this will be deleted
-  // automatically during RenderView destruction.
   SpellCheckProvider* spellcheck_provider_;
 
   scoped_refptr<AudioMessageFilter> audio_message_filter_;

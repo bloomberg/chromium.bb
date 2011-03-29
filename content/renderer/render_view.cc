@@ -36,7 +36,6 @@
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_view_commands.h"
-#include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
@@ -152,7 +151,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
@@ -540,12 +538,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       history_list_offset_(-1),
       history_list_length_(0),
       has_unload_listener_(false),
-#if defined(OS_MACOSX)
-      has_document_tag_(false),
-#endif
-      document_tag_(0),
       target_url_status_(TARGET_NONE),
-      spelling_panel_visible_(false),
       view_type_(ViewType::INVALID),
       browser_window_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
@@ -570,6 +563,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   if (opener_id != MSG_ROUTING_NONE)
     opener_id_ = opener_id;
 
+  webwidget_ = WebView::create(this);
+
   if (counter) {
     shared_popup_counter_ = counter;
     shared_popup_counter_->data++;
@@ -582,12 +577,14 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   notification_provider_ = new NotificationProvider(this);
 
   devtools_agent_ = new DevToolsAgent(this);
+  webview()->setDevToolsAgentClient(devtools_agent_);
+
   PasswordAutofillManager* password_autofill_manager =
       new PasswordAutofillManager(this);
   AutofillAgent* autofill_agent = new AutofillAgent(this,
                                                     password_autofill_manager);
+  webview()->setAutoFillClient(autofill_agent);
 
-  webwidget_ = WebView::create(this, devtools_agent_, autofill_agent);
   g_view_map.Get().insert(std::make_pair(webview(), this));
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
@@ -635,6 +632,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   RenderThread* current_thread = RenderThread::current();
   SpellCheck* spellcheck = current_thread ? current_thread->spellchecker() : 0;
   spellcheck_provider_ = new SpellCheckProvider(this, spellcheck);
+  webview()->setSpellCheckClient(spellcheck_provider_);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableP2PApi)) {
@@ -666,12 +664,6 @@ RenderView::~RenderView() {
   }
 
 #if defined(OS_MACOSX)
-  // Tell the spellchecker that the document is closed.
-  if (has_document_tag_) {
-    Send(new SpellCheckHostMsg_DocumentWithTagClosed(
-        routing_id_, document_tag_));
-  }
-
   // Destroy all fake plugin window handles on the browser side.
   while (!fake_plugin_window_handles_.empty()) {
     // Make sure no NULL plugin window handles were inserted into this list.
@@ -982,10 +974,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_Paste, OnPaste)
     IPC_MESSAGE_HANDLER(ViewMsg_Replace, OnReplace)
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_ToggleSpellPanel, OnToggleSpellPanel)
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_AdvanceToNextMisspelling,
-                        OnAdvanceToNextMisspelling)
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_ToggleSpellCheck, OnToggleSpellCheck)
     IPC_MESSAGE_HANDLER(ViewMsg_Delete, OnDelete)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectAll, OnSelectAll)
     IPC_MESSAGE_HANDLER(ViewMsg_CopyImageAt, OnCopyImageAt)
@@ -1531,32 +1519,6 @@ void RenderView::OnReplace(const string16& text) {
   if (!frame->hasSelection())
     frame->selectWordAroundCaret();
   frame->replaceSelection(text);
-}
-
-void RenderView::OnAdvanceToNextMisspelling() {
-  if (!webview())
-    return;
-  webview()->focusedFrame()->executeCommand(
-      WebString::fromUTF8("AdvanceToNextMisspelling"));
-}
-
-void RenderView::OnToggleSpellPanel(bool is_currently_visible) {
-  if (!webview())
-    return;
-  // We need to tell the webView whether the spelling panel is visible or not so
-  // that it won't need to make ipc calls later.
-  spelling_panel_visible_ = is_currently_visible;
-  webview()->focusedFrame()->executeCommand(
-      WebString::fromUTF8("ToggleSpellPanel"));
-}
-
-void RenderView::OnToggleSpellCheck() {
-  if (!webview())
-    return;
-
-  WebFrame* frame = webview()->focusedFrame();
-  frame->enableContinuousSpellChecking(
-      !frame->isContinuousSpellCheckingEnabled());
 }
 
 void RenderView::OnDelete() {
@@ -2241,60 +2203,6 @@ bool RenderView::handleCurrentKeyboardEvent() {
   return did_execute_command;
 }
 
-void RenderView::spellCheck(const WebString& text,
-                            int& misspelled_offset,
-                            int& misspelled_length) {
-  EnsureDocumentTag();
-
-  string16 word(text);
-  RenderThread* thread = RenderThread::current();
-  // Will be NULL during unit tests.
-  if (thread) {
-    thread->spellchecker()->SpellCheckWord(
-        word.c_str(), word.size(), document_tag_,
-        &misspelled_offset, &misspelled_length, NULL);
-  }
-}
-
-void RenderView::requestCheckingOfText(
-    const WebString& text,
-    WebKit::WebTextCheckingCompletion* completion) {
-  spellcheck_provider_->RequestTextChecking(text, document_tag_, completion);
-}
-
-WebString RenderView::autoCorrectWord(const WebKit::WebString& word) {
-  string16 autocorrect_word;
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
-    EnsureDocumentTag();
-    RenderThread* thread = RenderThread::current();
-    // Will be NULL during unit tests.
-    if (thread) {
-      autocorrect_word =
-          thread->spellchecker()->GetAutoCorrectionWord(
-              word, document_tag_);
-    }
-  }
-  return autocorrect_word;
-}
-
-void RenderView::showSpellingUI(bool show) {
-  Send(new SpellCheckHostMsg_ShowSpellingPanel(routing_id_, show));
-}
-
-bool RenderView::isShowingSpellingUI() {
-  return spelling_panel_visible_;
-}
-
-void RenderView::updateSpellingUIWithMisspelledWord(const WebString& word) {
-  Send(new SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord(routing_id_,
-                                                                   word));
-}
-
-void RenderView::continuousSpellCheckingEnabledStateChanged() {
-  UpdateToggleSpellCheckCommandState();
-}
-
 bool RenderView::runFileChooser(
     const WebKit::WebFileChooserParams& params,
     WebFileChooserCompletion* chooser_completion) {
@@ -2368,7 +2276,7 @@ void RenderView::showContextMenu(
     bool spelled_right = RenderThread::current()->spellchecker()->
         SpellCheckWord(
             params.misspelled_word.c_str(), params.misspelled_word.size(),
-            document_tag_,
+            spellcheck_provider_->document_tag(),
             &misspelled_offset, &misspelled_length,
             &params.dictionary_suggestions);
     if (spelled_right)
@@ -5088,18 +4996,6 @@ void RenderView::OnSetFocus(bool enable) {
     // Notify all Pepper plugins.
     pepper_delegate_.OnSetFocus(enable);
   }
-}
-
-void RenderView::EnsureDocumentTag() {
-  // TODO(darin): There's actually no reason for this to be here.  We should
-  // have the browser side manage the document tag.
-#if defined(OS_MACOSX)
-  if (!has_document_tag_) {
-    // Make the call to get the tag.
-    Send(new SpellCheckHostMsg_GetDocumentTag(routing_id_, &document_tag_));
-    has_document_tag_ = true;
-  }
-#endif
 }
 
 #if defined(OS_MACOSX)

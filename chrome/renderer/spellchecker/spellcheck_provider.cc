@@ -4,14 +4,19 @@
 
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "content/renderer/render_view.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
+using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebTextCheckingCompletion;
 using WebKit::WebTextCheckingResult;
@@ -19,10 +24,22 @@ using WebKit::WebTextCheckingResult;
 SpellCheckProvider::SpellCheckProvider(RenderView* render_view,
                                        SpellCheck* spellcheck)
     : RenderViewObserver(render_view),
+#if defined(OS_MACOSX)
+      has_document_tag_(false),
+#endif
+      document_tag_(0),
+      spelling_panel_visible_(false),
       spellcheck_(spellcheck) {
 }
 
 SpellCheckProvider::~SpellCheckProvider() {
+#if defined(OS_MACOSX)
+  // Tell the spellchecker that the document is closed.
+  if (has_document_tag_) {
+    Send(new SpellCheckHostMsg_DocumentWithTagClosed(
+        routing_id(), document_tag_));
+  }
+#endif
 }
 
 void SpellCheckProvider::RequestTextChecking(
@@ -46,11 +63,82 @@ void SpellCheckProvider::RequestTextChecking(
       text));
 }
 
+bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(SpellCheckProvider, message)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_AdvanceToNextMisspelling,
+                        OnAdvanceToNextMisspelling)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_RespondTextCheck, OnRespondTextCheck)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_ToggleSpellPanel, OnToggleSpellPanel)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_ToggleSpellCheck, OnToggleSpellCheck)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void SpellCheckProvider::spellCheck(const WebString& text,
+                                    int& misspelled_offset,
+                                    int& misspelled_length) {
+  EnsureDocumentTag();
+
+  string16 word(text);
+  RenderThread* thread = RenderThread::current();
+  // Will be NULL during unit tests.
+  if (thread) {
+    thread->spellchecker()->SpellCheckWord(
+        word.c_str(), word.size(), document_tag_,
+        &misspelled_offset, &misspelled_length, NULL);
+  }
+}
+
+void SpellCheckProvider::requestCheckingOfText(
+    const WebString& text,
+    WebTextCheckingCompletion* completion) {
+  RequestTextChecking(text, document_tag_, completion);
+}
+
+WebString SpellCheckProvider::autoCorrectWord(const WebString& word) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
+    EnsureDocumentTag();
+    RenderThread* thread = RenderThread::current();
+    // Will be NULL during unit tests.
+    if (thread)
+      return thread->spellchecker()->GetAutoCorrectionWord(word, document_tag_);
+  }
+  return string16();
+}
+
+void SpellCheckProvider::showSpellingUI(bool show) {
+  Send(new SpellCheckHostMsg_ShowSpellingPanel(routing_id(), show));
+}
+
+bool SpellCheckProvider::isShowingSpellingUI() {
+  return spelling_panel_visible_;
+}
+
+void SpellCheckProvider::updateSpellingUIWithMisspelledWord(
+    const WebString& word) {
+  Send(new SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord(routing_id(),
+                                                                   word));
+}
+
+bool SpellCheckProvider::is_using_platform_spelling_engine() const {
+  return spellcheck_ && spellcheck_->is_using_platform_spelling_engine();
+}
+
+void SpellCheckProvider::OnAdvanceToNextMisspelling() {
+  if (!render_view()->webview())
+    return;
+  render_view()->webview()->focusedFrame()->executeCommand(
+      WebString::fromUTF8("AdvanceToNextMisspelling"));
+}
+
 void SpellCheckProvider::OnRespondTextCheck(
     int identifier,
     int tag,
     const std::vector<WebTextCheckingResult>& results) {
-  WebKit::WebTextCheckingCompletion* completion =
+  WebTextCheckingCompletion* completion =
       text_check_completions_.Lookup(identifier);
   if (!completion)
     return;
@@ -58,15 +146,33 @@ void SpellCheckProvider::OnRespondTextCheck(
   completion->didFinishCheckingText(results);
 }
 
-bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SpellCheckProvider, message)
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_RespondTextCheck, OnRespondTextCheck)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+void SpellCheckProvider::OnToggleSpellPanel(bool is_currently_visible) {
+  if (!render_view()->webview())
+    return;
+  // We need to tell the webView whether the spelling panel is visible or not so
+  // that it won't need to make ipc calls later.
+  spelling_panel_visible_ = is_currently_visible;
+  render_view()->webview()->focusedFrame()->executeCommand(
+      WebString::fromUTF8("ToggleSpellPanel"));
 }
 
-bool SpellCheckProvider::is_using_platform_spelling_engine() const {
-  return spellcheck_ && spellcheck_->is_using_platform_spelling_engine();
+void SpellCheckProvider::OnToggleSpellCheck() {
+  if (!render_view()->webview())
+    return;
+
+  WebFrame* frame = render_view()->webview()->focusedFrame();
+  frame->enableContinuousSpellChecking(
+      !frame->isContinuousSpellCheckingEnabled());
+}
+
+void SpellCheckProvider::EnsureDocumentTag() {
+  // TODO(darin): There's actually no reason for this to be here.  We should
+  // have the browser side manage the document tag.
+#if defined(OS_MACOSX)
+  if (!has_document_tag_) {
+    // Make the call to get the tag.
+    Send(new SpellCheckHostMsg_GetDocumentTag(routing_id(), &document_tag_));
+    has_document_tag_ = true;
+  }
+#endif
 }
