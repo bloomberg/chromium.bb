@@ -2676,6 +2676,7 @@
         'browser/ui/login/login_prompt_gtk.cc',
         'browser/ui/login/login_prompt_mac.h',
         'browser/ui/login/login_prompt_mac.mm',
+        'browser/ui/login/login_prompt_ui.cc',
         'browser/ui/login/login_prompt_win.cc',
         'browser/ui/omnibox/location_bar.h',
         'browser/ui/omnibox/location_bar_util.cc',
@@ -3319,6 +3320,7 @@
             ['exclude', '^browser/ui/webui/chromeos'],
             ['exclude', '^browser/ui/webui/options/chromeos'],
             ['exclude', 'browser/extensions/extension_tts_api_chromeos.cc'],
+            ['exclude', 'browser/ui/login/login_prompt_ui.cc'],
             ['exclude', 'browser/oom_priority_manager.cc'],
             ['exclude', 'browser/oom_priority_manager.h'],
             ['exclude', 'browser/policy/device_policy_cache\\.(h|cc)'],
@@ -4056,10 +4058,12 @@
             }],
             ['OS=="linux" and chromeos==1',{
               'sources/': [
+                ['include', '^browser/ui/login/login_prompt_ui.cc'],
                 ['exclude', '^browser/extensions/extension_tts_api_linux.cc'],
                 ['exclude', '^browser/notifications/balloon_collection_impl.cc'],
                 ['exclude', '^browser/notifications/balloon_collection_impl.h'],
                 ['exclude', '^browser/notifications/balloon_collection_linux.cc'],
+                ['exclude', '^browser/ui/login/login_prompt_gtk.cc'],
               ],
               'dependencies': [
                 '../third_party/protobuf/protobuf.gyp:protobuf_lite',

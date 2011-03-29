@@ -111,7 +111,7 @@ void ConstrainedHtmlDelegateGtk::OnDialogClose() {
 }
 
 // static
-void ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
+ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
     TabContents* container) {
@@ -120,4 +120,5 @@ void ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
   ConstrainedWindow* constrained_window =
       container->CreateConstrainedDialog(constrained_delegate);
   constrained_delegate->set_window(constrained_window);
+  return constrained_window;
 }

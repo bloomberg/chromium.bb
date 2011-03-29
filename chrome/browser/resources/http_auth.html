@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection">
+<head>
+  <style type="text/css">
+    body {
+      margin: 0px;
+    }
+
+    #buttons {
+      text-align: right;
+    }
+
+    html[dir='rtl'] #buttons {
+      text-align: left;
+    }
+
+    #username,
+    #password {
+      width: 220px;
+    }
+  </style>
+  <script type="text/javascript">
+    function $(o) {
+      return document.getElementById(o);
+    }
+
+    function disableControls() {
+      $('username').disabled = true;
+      $('password').disabled = true;
+      $('login').disabled = true;
+      $('cancel').disabled = true;
+    }
+
+    function sendCredentialsAndClose() {
+      disableControls();
+
+      var result = JSON.stringify({
+          'username': $('username').value,
+          'password': $('password').value});
+
+      chrome.send('DialogClose', [result]);
+    }
+
+    function setAutofillCredentials(username, password) {
+      $('username').value = username;
+      $('password').value = password;
+    }
+
+    function load() {
+      $('explanation').textContent = chrome.dialogArguments;
+
+      $('cancel').onclick = function() {
+        disableControls();
+        chrome.send('DialogClose', ['']);
+      };
+
+      $('login').onclick = function() {
+        sendCredentialsAndClose();
+      };
+
+      $('username').focus();
+
+      chrome.send('GetAutofill', ['']);
+    }
+
+    document.addEventListener('DOMContentLoaded', load);
+  </script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+  <div id="explanation"></div>
+  <table>
+    <tr>
+      <td i18n-content="username"></td>
+      <td>
+        <input id="username" type="text">
+      </td>
+    </tr>
+    <tr>
+      <td i18n-content="password"></td>
+      <td>
+        <input id="password" name="password" type="password">
+      </td>
+    </tr>
+  </table>
+  <div id="buttons">
+    <input id="cancel" type="button" i18n-values="value:cancel">
+    <input id="login" type="button" i18n-values="value:signin">
+  </div>
+</body>
+</html>
