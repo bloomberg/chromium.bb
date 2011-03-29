@@ -173,8 +173,10 @@ void AutofillChangeProcessor::RemoveSyncNode(const std::string& tag,
   sync_api::WriteNode sync_node(trans);
   int64 sync_id = model_associator_->GetSyncIdFromChromeId(tag);
   if (sync_api::kInvalidId == sync_id) {
-    std::string err = "Unexpected notification for: " + tag;
-    error_handler()->OnUnrecoverableError(FROM_HERE, err);
+    // This could happen because web db might have duplicates and when an entry
+    // and its duplicate is deleted.
+    LOG(WARNING) <<
+        "Bogus delete notification generate for autofill entry " + tag;
     return;
   } else {
     if (!sync_node.InitByIdLookup(sync_id)) {
