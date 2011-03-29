@@ -421,6 +421,13 @@ void PrerenderContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
       Destroy(FINAL_STATUS_HTTPS);
       return;
     }
+
+    // Usually, this event fires if the user clicks or enters a new URL.
+    // Neither of these can happen in the case of an invisible prerender.
+    // So the cause is: Some JavaScript caused a new URL to be loaded.  In that
+    // case, the spinner would start again in the browser, so we must reset
+    // has_stopped_loading_ so that the spinner won't be stopped.
+    has_stopped_loading_ = false;
   }
 }
 
