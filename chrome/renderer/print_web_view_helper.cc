@@ -360,7 +360,7 @@ bool PrintWebViewHelper::CopyAndPrint(WebKit::WebFrame* web_frame) {
   prefs.javascript_enabled = false;
   prefs.java_enabled = false;
 
-  print_web_view_ = WebView::create(this, NULL, NULL);
+  print_web_view_ = WebView::create(this);
   prefs.Apply(print_web_view_);
   print_web_view_->initializeMainFrame(this);
 

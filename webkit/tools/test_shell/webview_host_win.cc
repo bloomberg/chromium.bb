@@ -42,7 +42,8 @@ WebViewHost* WebViewHost::Create(HWND parent_view,
                              GetModuleHandle(NULL), NULL);
   ui::SetWindowUserData(host->view_, host);
 
-  host->webwidget_ = WebView::create(delegate, dev_tools_client, NULL);
+  host->webwidget_ = WebView::create(delegate);
+  host->webview()->setDevToolsAgentClient(dev_tools_client);
   prefs.Apply(host->webview());
   host->webview()->initializeMainFrame(delegate);
 

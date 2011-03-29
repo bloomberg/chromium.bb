@@ -28,7 +28,8 @@ WebViewHost* WebViewHost::Create(GtkWidget* parent_view,
   host->view_ = WebWidgetHost::CreateWidget(parent_view, host);
   host->plugin_container_manager_.set_host_widget(host->view_);
 
-  host->webwidget_ = WebView::create(delegate, dev_tools_client, NULL);
+  host->webwidget_ = WebView::create(delegate);
+  host->webview()->setDevToolsAgentClient(dev_tools_client);
   prefs.Apply(host->webview());
   host->webview()->initializeMainFrame(delegate);
   host->webwidget_->layout();

@@ -49,7 +49,7 @@ class URLRequestInfoTest : public PpapiUnittest {
   }
 
   static void SetUpTestCase() {
-    web_view_ = WebView::create(NULL, NULL, NULL);
+    web_view_ = WebView::create(NULL);
     web_view_->initializeMainFrame(&web_frame_client_);
     WebURL web_url(GURL(""));
     WebURLRequest url_request;
