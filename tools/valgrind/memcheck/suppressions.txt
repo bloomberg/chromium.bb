@@ -4146,6 +4146,18 @@
    fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoEii
    fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoEii
 }
+{
+   bug_77721
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3gfx9GfxModule14GetBitmapNamedEi
+   fun:_ZN3gfx16NativeThemeLinux*
+   fun:_ZN3gfx16NativeThemeLinux5PaintEPN4skia14PlatformCanvasENS0_4PartENS0_5StateERKNS_4RectERKNS0_11ExtraParamsE
+   fun:_ZN11webkit_glue18WebThemeEngineImpl5paintEPN4skia14PlatformCanvasEN6WebKit14WebThemeEngine4PartENS5_5StateERKNS4_7WebRectEPKNS5_11ExtraParamsE
+   fun:_ZN7WebCore14PlatformBridge14paintThemePartEPNS_15GraphicsContextENS0_9ThemePartENS0_15ThemePaintStateERKNS_7IntRectEPKNS0_21ThemePaintExtraParamsE
+   fun:_ZN7WebCore24RenderThemeChromiumLinux*
+   fun:_ZN7WebCore11RenderTheme5paintEPNS_12RenderObjectERKNS_9PaintInfoERKNS_7IntRectE
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
