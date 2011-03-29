@@ -159,6 +159,6 @@ typedef std::map<std::string, L10nMessagesMap > ExtensionToL10nMessagesMap;
 ExtensionToL10nMessagesMap* GetExtensionToL10nMessagesMap();
 
 // Returns message map that matches given extension_id, or NULL.
-L10nMessagesMap* GetL10nMessagesMap(const std::string extension_id);
+L10nMessagesMap* GetL10nMessagesMap(const std::string& extension_id);
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGE_BUNDLE_H_

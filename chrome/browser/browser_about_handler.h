@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,14 +52,14 @@ class AboutTcmallocOutputs {
   AboutTcmallocOutputsType* outputs() { return &outputs_; }
 
   // Records the output for a specified header string.
-  void SetOutput(std::string header, std::string output) {
+  void SetOutput(const std::string& header, const std::string& output) {
     outputs_[header] = output;
   }
 
   // Callback for output returned from renderer processes.  Adds
   // the output for a canonical renderer header string that
   // incorporates the pid.
-  void RendererCallback(base::ProcessId pid, std::string output) {
+  void RendererCallback(base::ProcessId pid, const std::string& output) {
     SetOutput(StringPrintf("Renderer PID %d", static_cast<int>(pid)), output);
   }
 
@@ -75,7 +75,8 @@ class AboutTcmallocOutputs {
 };
 
 // Glue between the callback task and the method in the singleton.
-void AboutTcmallocRendererCallback(base::ProcessId pid, std::string output);
+void AboutTcmallocRendererCallback(base::ProcessId pid,
+                                   const std::string& output);
 #endif
 
 #endif  // CHROME_BROWSER_BROWSER_ABOUT_HANDLER_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -126,12 +126,6 @@ class SyncerUtil {
       syncable::IndexedBitField inclusion_filter,
       syncable::MetahandleSet* inserted_items,
       std::vector<syncable::Id>* commit_ids);
-
-  static void AddUncommittedParentsAndTheirPredecessors(
-      syncable::BaseTransaction* trans,
-      syncable::MetahandleSet* inserted_items,
-      std::vector<syncable::Id>* commit_ids,
-      syncable::Id parent_id);
 
   static void MarkDeletedChildrenSynced(
       const syncable::ScopedDirLookup &dir,

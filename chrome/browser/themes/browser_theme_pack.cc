@@ -812,7 +812,7 @@ void BrowserThemePack::BuildDisplayPropertiesFromJSON(
 
 void BrowserThemePack::ParseImageNamesFromJSON(
     DictionaryValue* images_value,
-    FilePath images_path,
+    const FilePath& images_path,
     FilePathMap* file_paths) const {
   if (!images_value)
     return;

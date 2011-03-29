@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -637,28 +637,6 @@ void SyncerUtil::AddPredecessorsThenItem(
     return;
   // Reverse what we added to get the correct order.
   std::reverse(commit_ids->begin() + initial_size, commit_ids->end());
-}
-
-// TODO(ncarter): This is redundant to some code in GetCommitIdsCommand.  Unify
-// them.
-// static
-void SyncerUtil::AddUncommittedParentsAndTheirPredecessors(
-    syncable::BaseTransaction* trans,
-    syncable::MetahandleSet* inserted_items,
-    std::vector<syncable::Id>* commit_ids,
-    syncable::Id parent_id) {
-  size_t intial_commit_ids_size = commit_ids->size();
-  // Climb the tree adding entries leaf -> root.
-  while (!parent_id.ServerKnows()) {
-    Entry parent(trans, GET_BY_ID, parent_id);
-    CHECK(parent.good()) << "Bad user-only parent in item path.";
-    if (!AddItemThenPredecessors(trans, &parent, IS_UNSYNCED, inserted_items,
-                                 commit_ids))
-      break;  // Parent was already present in |inserted_items|.
-    parent_id = parent.Get(PARENT_ID);
-  }
-  // Reverse what we added to get the correct order.
-  std::reverse(commit_ids->begin() + intial_commit_ids_size, commit_ids->end());
 }
 
 // static

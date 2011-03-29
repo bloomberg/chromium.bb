@@ -90,7 +90,8 @@ AboutTcmallocOutputs::AboutTcmallocOutputs() {}
 AboutTcmallocOutputs::~AboutTcmallocOutputs() {}
 
 // Glue between the callback task and the method in the singleton.
-void AboutTcmallocRendererCallback(base::ProcessId pid, std::string output) {
+void AboutTcmallocRendererCallback(base::ProcessId pid,
+                                   const std::string& output) {
   AboutTcmallocOutputs::GetInstance()->RendererCallback(pid, output);
 }
 #endif
