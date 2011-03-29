@@ -309,6 +309,7 @@ def CheckLicense(input_api, output_api, license_re, source_file_filter=None,
     else:
       res_type = output_api.PresubmitNotifyResult
     return [res_type(
+        'License must match:\n%s\n' % license_re.pattern +
         'Found a bad license header in these files:', items=bad_files)]
   return []
 
