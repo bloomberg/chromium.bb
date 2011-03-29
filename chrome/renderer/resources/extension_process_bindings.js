@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@ var chrome = chrome || {};
   native function GetExtensionViews();
   native function GetChromeHidden();
   native function GetNextRequestId();
+  native function GetNextContextMenuId();
   native function OpenChannelToTab();
   native function GetRenderViewId();
   native function SetIconCommon();
@@ -795,7 +796,7 @@ var chrome = chrome || {};
     apiFunctions["contextMenus.create"].handleRequest =
         function() {
       var args = arguments;
-      var id = chromeHidden.contextMenus.nextId++;
+      var id = GetNextContextMenuId();
       args[0].generatedId = id;
       sendRequest(this.name, args, this.definition.parameters,
                   this.customCallback);

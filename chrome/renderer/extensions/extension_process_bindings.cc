@@ -220,6 +220,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(GetNextRequestId);
     } else if (name->Equals(v8::String::New("OpenChannelToTab"))) {
       return v8::FunctionTemplate::New(OpenChannelToTab);
+    } else if (name->Equals(v8::String::New("GetNextContextMenuId"))) {
+      return v8::FunctionTemplate::New(GetNextContextMenuId);
     } else if (name->Equals(v8::String::New("GetCurrentPageActions"))) {
       return v8::FunctionTemplate::New(GetCurrentPageActions);
     } else if (name->Equals(v8::String::New("StartRequest"))) {
@@ -338,6 +340,14 @@ class ExtensionImpl : public ExtensionBase {
       return v8::Integer::New(port_id);
     }
     return v8::Undefined();
+  }
+
+  static v8::Handle<v8::Value> GetNextContextMenuId(const v8::Arguments& args) {
+    // Note: this works because contextMenus.create() only works in the
+    // extension process.  If that API is opened up to content scripts, this
+    // will need to change.  See crbug.com/77023
+    static int next_context_menu_id = 0;
+    return v8::Integer::New(next_context_menu_id++);
   }
 
   static v8::Handle<v8::Value> GetCurrentPageActions(
