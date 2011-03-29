@@ -28,7 +28,7 @@ void AdaptiveDemuxerStream::DCheckSanity() {
 
   bool non_null_stream_seen = false;
   Type type;
-  const MediaFormat* media_format;
+  const MediaFormat* media_format = NULL;
   for (size_t i = 0; i < streams_.size(); ++i) {
     if (!streams_[i])
       continue;
