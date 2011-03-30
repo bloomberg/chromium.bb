@@ -1,0 +1,69 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* Defines the core API. */
+
+/* {PENDING: describe PPB_CORE} */
+interface PPB_Core_0_3 {
+  /* Same as AddRefVar for Resources. */
+  void AddRefResource(
+      [in] PP_Resource resource);
+
+  /* Same as ReleaseVar for Resources. */
+  void ReleaseResource(
+      [in] PP_Resource resource);
+
+  /* Allocate memory.
+   *
+   * Returns NULL If the allocation fails.
+   */
+  mem_t MemAlloc(
+      [in] uint32_t num_bytes);
+
+  /* Free memory; it's safe to pass NULL. */
+  void MemFree(
+      [inout] mem_t ptr);
+
+  /* Returns the "wall clock time" according to the browser.
+   *
+   * See the definition of PP_Time.
+   */
+  PP_Time GetTime();
+
+  /* Returns the "tick time" according to the browser. This clock is used by
+   * the browser when passing some event times to the plugin (e.g., via the
+   * PP_InputEvent::time_stamp_seconds field). It is not correlated to any
+   * actual wall clock time (like GetTime()). Because of this, it will not run
+   * change if the user changes their computer clock.
+   *
+   * TODO(brettw) http://code.google.com/p/chromium/issues/detail?id=57448
+   * This currently does change with wall clock time, but will be fixed in
+   * a future release.
+   */
+  PP_TimeTicks GetTimeTicks();
+
+  /* Schedules work to be executed on the main plugin thread after the
+   * specified delay. The delay may be 0 to specify a call back as soon as
+   * possible.
+   *
+   * The |result| parameter will just be passed as the second argument as the
+   * callback. Many applications won't need this, but it allows a plugin to
+   * emulate calls of some callbacks which do use this value.
+   *
+   * NOTE: If the browser is shutting down or if the plugin has no instances,
+   * then the callback function may not be called.
+   */
+  void CallOnMainThread(
+      [in] int32_t delay_in_milliseconds,
+      [in] PP_CompletionCallback callback,
+      [in] int32_t result);
+
+  /* Returns true if the current thread is the main pepper thread.
+   *
+   * This is useful for implementing sanity checks, and deciding if dispatching
+   * via CallOnMainThread() is required.
+   */
+  PP_Bool IsMainThread();
+};

@@ -1,0 +1,60 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* This file contains PPB_Flash interface. */
+
+/* PPB_Flash interface. */
+interface PPB_Flash_0_7 {
+  /* Sets or clears the rendering hint that the given plugin instance is always
+   * on top of page content. Somewhat more optimized painting can be used in
+   * this case.
+   */
+  void SetInstanceAlwaysOnTop(
+      [in] PP_Instance instance,
+      [in] PP_Bool on_top);
+
+  PP_Bool DrawGlyphs(
+      [in] PP_Instance instance,
+      [in] PP_Resource pp_image_data,
+      [in] PP_FontDescription_Dev font_desc,
+      [in] uint32_t color,
+      [in] PP_Point position,
+      [in] PP_Rect clip,
+      [in] float_t[3][3] transformation,
+      [in] uint32_t glyph_count,
+      [in, size_is(glyph_count)] uint16_t[] glyph_indices,
+      [in, size_is(glyph_count)] PP_Point[] glyph_advances);
+
+  /* Retrieves the proxy that will be used for the given URL. The result will
+   * be a string in PAC format, or an undefined var on error.
+   */
+  PP_Var GetProxyForURL(
+      [in] PP_Instance instance,
+      [in] str_t url);
+
+  /* Navigate to URL. May open a new tab if target is not "_self". Return true
+   * if success. This differs from javascript:window.open() in that it bypasses
+   * the popup blocker, even when this is not called from an event handler.
+   */
+  PP_Bool NavigateToURL(
+      [in] PP_Instance instance,
+      [in] str_t url,
+      [in] str_t target);
+
+  /* Runs a nested message loop. The plugin will be reentered from this call.
+   * This function is used in places where Flash would normally enter a nested
+   * message loop (e.g., when displaying context menus), but Pepper provides
+   * only an asynchronous call. After performing that asynchronous call, call
+   * |RunMessageLoop()|. In the callback, call |QuitMessageLoop()|.
+   */
+  void RunMessageLoop(
+      [in] PP_Instance instance);
+
+  /* Posts a quit message for the outermost nested message loop. Use this to
+   * exit and return back to the caller after you call RunMessageLoop.
+   */
+  void QuitMessageLoop(
+      [in] PP_Instance instance);
+};

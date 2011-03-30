@@ -1,0 +1,14 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* This file defines the APIs for creating a 2-dimensional rectangle. */
+
+/* The PP_Rect struct contains the size and location of a 2D rectangle. */
+struct PP_Rect {
+  /* The x and y coordinates of the upper-left corner of the rectangle. */
+  PP_Point point;
+  /* The width and height of the rectangle. */
+  PP_Size size;
+};

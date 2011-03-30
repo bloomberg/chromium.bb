@@ -1,0 +1,49 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* Defines the URL response info API. */
+
+/* Response properties. */
+enum PP_URLResponseProperty{
+  /* string */
+  PP_URLRESPONSEPROPERTY_URL            = 0,
+  /* string */
+  PP_URLRESPONSEPROPERTY_REDIRECTURL    = 1,
+  /* string */
+  PP_URLRESPONSEPROPERTY_REDIRECTMETHOD = 2,
+  /* int32 */
+  PP_URLRESPONSEPROPERTY_STATUSCODE     = 3,
+  /* string */
+  PP_URLRESPONSEPROPERTY_STATUSLINE     = 4,
+  /* string, \n-delim */
+  PP_URLRESPONSEPROPERTY_HEADERS        = 5
+};
+
+/* Interface for receiving URL responses from the URL loader. */
+interface PPB_URLResponseInfo_0_1 {
+  /* Returns PP_TRUE if the given resource is an URLResponseInfo. Returns
+   * PP_FALSE if the resource is invalid or some type other than an
+   * URLResponseInfo.
+   */
+  PP_Bool IsURLResponseInfo(
+      [in] PP_Resource resource);
+
+  /* Gets a response property.  Return PP_VarType_Void if an input parameter is
+   * invalid.
+   */
+  PP_Var GetProperty(
+      [in] PP_Resource response,
+      [in] PP_URLResponseProperty property);
+
+  /* Returns a FileRef pointing to the file containing the response body.  This
+   * is only valid if PP_URLREQUESTPROPERTY_STREAMTOFILE was set on the
+   * URLRequestInfo used to produce this response.  This file remains valid
+   * until the URLLoader associated with this URLResponseInfo is closed or
+   * destroyed.  Returns 0 if PP_URLREQUESTPROPERTY_STREAMTOFILE was not
+   * requested or if the URLLoader has not been opened yet.
+   */
+  PP_Resource GetBodyAsFileRef(
+      [in] PP_Resource response);
+};

@@ -1,0 +1,92 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* Defines the URL request info API. */
+
+/* Request properties. */
+enum PP_URLRequestProperty {
+  /* string */
+  PP_URLREQUESTPROPERTY_URL                    = 0,
+  /* string */
+  PP_URLREQUESTPROPERTY_METHOD                 = 1,
+  /* string, \n-delim */
+  PP_URLREQUESTPROPERTY_HEADERS                = 2,
+  /* PP_Bool (default=PP_FALSE) */
+  PP_URLREQUESTPROPERTY_STREAMTOFILE           = 3,
+  /* PP_Bool (default=PP_TRUE) */
+  PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS        = 4,
+
+  /* Set to true if you want to be able to poll the download progress via the
+   * URLLoader.GetDownloadProgress function.
+   *
+   * Boolean (default = PP_FALSE).
+   */
+  PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS = 5,
+
+  /* Set to true if you want to be able to pull the upload progress via the
+   * URLLoader.GetUploadProgress function.
+   *
+   * Boolean (default = PP_FALSE).
+   */
+  PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS   = 6
+};
+
+/* Interface for making URL requests to URL loader. */
+interface PPB_URLRequestInfo_0_2 {
+  /* Create a new URLRequestInfo object.  Returns 0 if the instance is
+   * invalid. */
+  PP_Resource Create(
+      [in] PP_Instance instance);
+
+  /* Returns PP_TRUE if the given resource is an URLRequestInfo. Returns
+   * PP_FALSE if the resource is invalid or some type other than an
+   * URLRequestInfo.
+   */
+  PP_Bool IsURLRequestInfo(
+      [in] PP_Resource resource);
+
+  /* Sets a request property.  Returns PP_FALSE if any of the parameters are
+   * invalid, PP_TRUE on success.  The value property must be the correct type
+   * according to the property being set.
+   */
+  PP_Bool SetProperty(
+      [in] PP_Resource request,
+      [in] PP_URLRequestProperty property,
+      [in] PP_Var value);
+
+  /* Append data to the request body.
+   *
+   * A Content-Length request header will be automatically generated.
+   *
+   * Returns PP_FALSE if any of the parameters are invalid, PP_TRUE on success.
+   */
+  PP_Bool AppendDataToBody(
+      [in] PP_Resource request,
+      [in] mem_t data,
+      [in] uint32_t len);
+
+  /* Append a file reference to be uploaded.
+   *
+   * A sub-range of the file starting from start_offset may be specified.  If
+   * number_of_bytes is -1, then the sub-range to upload extends to the end of
+   * the file.
+   *
+   * An optional (non-zero) last modified time stamp may be provided, which
+   * will be used to validate that the file was not modified since the given
+   * time before it is uploaded.  The upload will fail with an error code of
+   * PP_Error_FileChanged if the file has been modified since the given time.
+   * If expected_last_modified_time is 0, then no validation is performed.
+   *
+   * A Content-Length request header will be automatically generated.
+   *
+   * Returns PP_FALSE if any of the parameters are invalid, PP_TRUE on success.
+   */
+  PP_Bool AppendFileToBody(
+      [in] PP_Resource request,
+      [in] PP_Resource file_ref,
+      [in] int64_t start_offset,
+      [in] int64_t number_of_bytes,
+      [in] PP_Time expected_last_modified_time);
+};

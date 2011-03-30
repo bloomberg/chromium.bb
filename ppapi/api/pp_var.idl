@@ -1,0 +1,56 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* This file defines the API for handling the passing of data types between
+ * your module and the page.
+ */
+
+/* PP_VarType is an enumeration of the different types that can be contained
+ * within a PP_VAR structure.
+ */
+enum PP_VarType {
+  PP_VARTYPE_UNDEFINED = 0,
+  PP_VARTYPE_NULL = 1,
+  PP_VARTYPE_BOOL = 2,
+  PP_VARTYPE_INT32 = 3,
+  PP_VARTYPE_DOUBLE = 4,
+  PP_VARTYPE_STRING = 5,
+  PP_VARTYPE_OBJECT = 6
+};
+
+/* The value of a Var. */
+[union] struct PP_VarValue {
+  /* Value if type is PP_VARTYPE_BOOL. */
+  PP_Bool as_bool;
+  /* Value if type is PP_VARTYPE_INT32. */
+  int32_t as_int;
+  /* Value if type is PP_VARTYPE_DOUBLE. */
+  double_t as_double;
+  /* Internal ID for strings and objects. The identifier is an opaque handle
+   * assigned by the browser to the plugin. It is guaranteed never to be 0,
+   * so a plugin can initialize this ID to 0 to indicate a "NULL handle."
+   */
+  int64_t as_id;
+};
+
+/* The PP_VAR struct is a variant data type and can contain any
+ * value of one of the types named in the PP_VarType enum. This structure is
+ * for passing data between native code which can be strongly typed and the
+ * browser (JavaScript) which isn't strongly typed.
+ *
+ * JavaScript has a "number" type for holding a number, and does not
+ * differentiate between floating point and integer numbers. The
+ * JavaScript operations will try to optimize operations by using
+ * integers when possible, but could end up with doubles. Therefore,
+ * you can't assume a numeric PP_Var will be the type you expect.
+ * Your code should be capable of handling either int32_t or double for
+ * numeric PP_Vars sent from JavaScript.
+ */
+[passByValue] struct PP_Var {
+  /* Type. */
+  PP_VarType type;
+  /* Type-dependent value. */
+  PP_VarValue value;
+};
