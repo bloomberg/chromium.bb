@@ -5,6 +5,3 @@ JingleSessionTest.TestControlChannel
 JingleSessionTest.TestEventChannel
 JingleSessionTest.TestVideoChannel
 JingleSessionTest.TestVideoRtpChannel
-
-# Fails, http://crbug.com/77909
-ChromotingHostTest.Reconnect
