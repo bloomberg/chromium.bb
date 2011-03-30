@@ -72,6 +72,8 @@ def _RepoSync(buildroot, retries=_DEFAULT_RETRIES):
         cros_lib.Warning('CBUILDBOT -- Retries exhausted')
         raise
 
+  # repo manifest uses PAGER, but we want it to be non-interactive
+  os.environ['PAGER'] = 'cat'
   cros_lib.OldRunCommand(['repo', 'manifest', '-r', '-o', '/dev/stderr'],
                          cwd=buildroot)
 
