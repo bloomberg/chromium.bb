@@ -6,6 +6,7 @@
 #define REMOTING_HOST_HOST_MOCK_OBJECTS_H_
 
 #include "remoting/host/capturer.h"
+#include "remoting/host/curtain.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -27,6 +28,14 @@ class MockCapturer : public Capturer {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCapturer);
+};
+
+class MockCurtain : public Curtain {
+ public:
+  MockCurtain();
+  virtual ~MockCurtain();
+
+  MOCK_METHOD1(EnableCurtainMode, void(bool enable));
 };
 
 class MockChromotingHostContext : public ChromotingHostContext {

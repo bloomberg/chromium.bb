@@ -210,6 +210,7 @@
         'host/chromoting_host_context.h',
         'host/client_session.cc',
         'host/client_session.h',
+        'host/curtain.h',
         'host/desktop_environment.cc',
         'host/desktop_environment.h',
         'host/differ.h',
@@ -233,6 +234,8 @@
           'sources': [
             'host/capturer_gdi.cc',
             'host/capturer_gdi.h',
+            'host/curtain_win.cc',
+            'host/curtain_win.h',
             'host/event_executor_win.cc',
             'host/event_executor_win.h',
             'host/user_authenticator_fake.cc',
@@ -247,6 +250,8 @@
           'sources': [
             'host/capturer_linux.cc',
             'host/capturer_linux.h',
+            'host/curtain_linux.cc',
+            'host/curtain_linux.h',
             'host/event_executor_linux.cc',
             'host/event_executor_linux.h',
             'host/user_authenticator_linux.cc',
@@ -269,6 +274,8 @@
           'sources': [
             'host/capturer_mac.cc',
             'host/capturer_mac.h',
+            'host/curtain_mac.cc',
+            'host/curtain_mac.h',
             'host/event_executor_mac.cc',
             'host/event_executor_mac.h',
             'host/user_authenticator_mac.cc',

@@ -145,6 +145,10 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   std::string GenerateHostAuthToken(const std::string& encoded_client_token);
 
+  bool HasAuthenticatedClients() const;
+
+  void EnableCurtainMode(bool enable);
+
   // The context that the chromoting host runs on.
   ChromotingHostContext* context_;
 
@@ -185,6 +189,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // Configuration of the protocol.
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;
+
+  // Whether or not the host is currently curtained.
+  bool is_curtained_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHost);
 };

@@ -33,6 +33,7 @@
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/curtain.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/json_host_config.h"
@@ -132,8 +133,10 @@ int main(int argc, char** argv) {
         new remoting::CapturerFake();
     remoting::protocol::InputStub* input_stub =
         CreateEventExecutor(context.ui_message_loop(), capturer);
+    remoting::Curtain* curtain = remoting::Curtain::Create();
     host = ChromotingHost::Create(
-        &context, config, new DesktopEnvironment(capturer, input_stub));
+        &context, config,
+        new DesktopEnvironment(capturer, input_stub, curtain));
   } else {
     host = ChromotingHost::Create(&context, config);
   }

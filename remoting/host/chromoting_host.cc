@@ -13,6 +13,7 @@
 #include "remoting/base/encoder_vp8.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/curtain.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
@@ -37,8 +38,9 @@ ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
   Capturer* capturer = Capturer::Create();
   InputStub* input_stub = CreateEventExecutor(context->ui_message_loop(),
                                               capturer);
+  Curtain* curtain = Curtain::Create();
   return Create(context, config,
-                new DesktopEnvironment(capturer, input_stub));
+                new DesktopEnvironment(capturer, input_stub, curtain));
 }
 
 // static
@@ -55,7 +57,8 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       config_(config),
       desktop_environment_(environment),
       state_(kInitial),
-      protocol_config_(protocol::CandidateSessionConfig::CreateDefault()) {
+      protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
+      is_curtained_(false) {
   DCHECK(desktop_environment_.get());
 }
 
@@ -200,6 +203,8 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
       break;
     }
   }
+  if (!HasAuthenticatedClients())
+    EnableCurtainMode(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -369,6 +374,24 @@ std::string ChromotingHost::GenerateHostAuthToken(
   return encoded_client_token;
 }
 
+bool ChromotingHost::HasAuthenticatedClients() const {
+  std::vector<scoped_refptr<ClientSession> >::const_iterator it;
+  for (it = clients_.begin(); it != clients_.end(); ++it) {
+    if (it->get()->connection()->client_authenticated())
+      return true;
+  }
+  return false;
+}
+
+void ChromotingHost::EnableCurtainMode(bool enable) {
+  // TODO(jamiewalch): This will need to be more sophisticated when we think
+  // about proper crash recovery and daemon mode.
+  if (enable == is_curtained_)
+    return;
+  desktop_environment_->curtain()->EnableCurtainMode(enable);
+  is_curtained_ = enable;
+}
+
 void ChromotingHost::LocalLoginSucceeded(
     scoped_refptr<ConnectionToClient> connection) {
   if (MessageLoop::current() != context_->main_message_loop()) {
@@ -417,6 +440,7 @@ void ChromotingHost::LocalLoginSucceeded(
   // Immediately add the connection and start the session.
   recorder_->AddConnection(connection);
   recorder_->Start();
+  EnableCurtainMode(true);
 }
 
 void ChromotingHost::LocalLoginFailed(

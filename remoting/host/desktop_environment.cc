@@ -5,6 +5,7 @@
 #include "remoting/host/desktop_environment.h"
 
 #include "remoting/host/capturer.h"
+#include "remoting/host/curtain.h"
 #include "remoting/protocol/input_stub.h"
 
 using remoting::protocol::InputStub;
@@ -12,9 +13,11 @@ using remoting::protocol::InputStub;
 namespace remoting {
 
 DesktopEnvironment::DesktopEnvironment(Capturer* capturer,
-                                       InputStub* input_stub)
+                                       InputStub* input_stub,
+                                       Curtain* curtain)
     : capturer_(capturer),
-      input_stub_(input_stub) {
+      input_stub_(input_stub),
+      curtain_(curtain) {
 }
 
 DesktopEnvironment::~DesktopEnvironment() {

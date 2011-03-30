@@ -10,6 +10,14 @@ MockCapturer::MockCapturer() {}
 
 MockCapturer::~MockCapturer() {}
 
+MockCurtain::MockCurtain() { }
+
+MockCurtain::~MockCurtain() { }
+
+Curtain* Curtain::Create() {
+  return new MockCurtain();
+}
+
 MockChromotingHostContext::MockChromotingHostContext()
     : ChromotingHostContext(NULL) {}
 
