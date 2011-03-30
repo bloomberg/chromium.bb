@@ -9,10 +9,15 @@
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 
-bool WebUIHandlerBrowserTest::Execute(const std::string& js_test) {
+bool WebUIHandlerBrowserTest::RunJavascript(const std::string& js_test,
+                                            bool is_test) {
   web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
       string16(), UTF8ToUTF16(js_test));
-  return WaitForResult();
+
+  if (is_test)
+    return WaitForResult();
+  else
+    return true;
 }
 
 void WebUIHandlerBrowserTest::HandlePass(const ListValue* args) {

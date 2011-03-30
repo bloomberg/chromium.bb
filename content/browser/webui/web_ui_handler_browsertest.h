@@ -13,8 +13,8 @@
 // This class registers test framework specific handlers on WebUI objects.
 class WebUIHandlerBrowserTest : public WebUIMessageHandler {
  public:
-  // Executes a string of javascript.  Returns pass fail.
-  bool Execute(const std::string& js_test);
+  // Runs a string of javascript. Returns pass fail.
+  bool RunJavascript(const std::string& js_test, bool is_test);
 
  protected:
   // WebUI handlers which deliver results to any waiting message loops.

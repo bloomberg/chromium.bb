@@ -54,24 +54,18 @@
     throw new Error(message);
   }
 
-  // Call this method within your test script file to begin tests.
-  // Takes an array of functions; each function is a test.
-  function runTests(tests) {
-    var currentTest = tests.shift();
+  function runTest(currentTest) {
+    try {
+      console.log('Running test ' + currentTest.name);
+      currentTest.call();
+    } catch (e) {
+      console.error(
+          'Failed: ' + currentTest.name + '\nwith exception: ' + e.message);
 
-    while (currentTest) {
-      try {
-        console.log('Running test ' + currentTest.name);
-        currentTest.call();
-        currentTest = tests.shift();
-      } catch (e) {
-        console.log(
-            'Failed: ' + currentTest.name + '\nwith exception: ' + e.message);
-
-        fail(e.message);
-        return;
-      }
+      fail(e.message);
+      return;
     }
+
 
     // All tests passed.
     pass('');
@@ -82,5 +76,5 @@
   window.assertFalse = assertFalse;
   window.assertEquals = assertEquals;
   window.assertNotReached = assertNotReached;
-  window.runTests = runTests;
+  window.runTest = runTest;
 })();

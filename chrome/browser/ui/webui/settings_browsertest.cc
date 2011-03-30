@@ -66,6 +66,12 @@ class MockCoreOptionsHandler : public CoreOptionsHandler {
 
 class SettingsWebUITest : public WebUIBrowserTest {
  protected:
+  virtual void SetUpInProcessBrowserTestFixture() {
+    WebUIBrowserTest::SetUpInProcessBrowserTestFixture();
+    // TODO(dtseng): change the filename of the js file.
+    AddLibrary(FILE_PATH_LITERAL("settings_set_boolean_pref_triggers.js"));
+  }
+
   virtual WebUIMessageHandler* GetMockMessageHandler() {
     return &mock_core_options_handler_;
   }
@@ -92,7 +98,5 @@ IN_PROC_BROWSER_TEST_F(SettingsWebUITest, MAYBE_TestSetBooleanPrefTriggers) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
   EXPECT_CALL(mock_core_options_handler_,
       HandleSetBooleanPref(Eq_ListValue(&true_list_value)));
-  ASSERT_TRUE(RunWebUITest(
-      FILE_PATH_LITERAL("settings_set_boolean_pref_triggers.js")));
+  ASSERT_TRUE(RunJavascriptTest("testSetBooleanPrefTriggers"));
 }
-

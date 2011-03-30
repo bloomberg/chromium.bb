@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-runTests([
-function() {
+function testSetBooleanPrefTriggers() {
   // TODO(dtseng): make generic to click all buttons.
   var showHomeButton = $('toolbarShowHomeButton');
   assertTrue(showHomeButton != null);
   showHomeButton.click();
   showHomeButton.blur();
 }
-]);

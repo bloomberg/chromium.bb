@@ -27,7 +27,12 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   // Add a custom helper JS library for your test.
   void AddLibrary(const FilePath::CharType* library_path);
 
-  bool RunWebUITest(const FilePath::CharType* src_path);
+  // Runs a javascript function in the context of all libraries.
+  // Note that calls to functions in test_api.js are not supported.
+  bool RunJavascriptFunction(const std::string& function_name);
+
+  // Runs a test that may include calls to functions in test_api.js.
+  bool RunJavascriptTest(const std::string& test_name);
 
  protected:
   WebUIBrowserTest();
@@ -39,14 +44,13 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   virtual WebUIMessageHandler* GetMockMessageHandler();
 
  private:
-  // Builds a javascript test in the form:
-  // <js_library> ...
-  // <src_path> ...
-  //   runTests(function test1() {...},
-  //      ...
-  //   );
-  void BuildJavaScriptTest(const FilePath& src_path,
-                           std::string* content);
+  // Builds a string containing all added javascript libraries.
+  void BuildJavascriptLibraries(std::string* content);
+
+  // Calls the specified function with all libraries available. If |is_test|
+  // is true, the framework listens for pass fail messages from javascript.
+  bool RunJavascriptUsingHandler(const std::string& function_name,
+                                 bool is_test);
 
   // Attaches mock and test handlers.
   void SetupHandlers();
