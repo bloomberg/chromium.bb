@@ -75,35 +75,18 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
     : update_requests_(0),
       update_state_(IDLE),
       goat_salt_(rand()) {
-
-  TaskManagerBrowserProcessResourceProvider* browser_provider =
-      new TaskManagerBrowserProcessResourceProvider(task_manager);
-  browser_provider->AddRef();
-  providers_.push_back(browser_provider);
-  TaskManagerBackgroundContentsResourceProvider* bc_provider =
-      new TaskManagerBackgroundContentsResourceProvider(task_manager);
-  bc_provider->AddRef();
-  providers_.push_back(bc_provider);
-  TaskManagerTabContentsResourceProvider* wc_provider =
-      new TaskManagerTabContentsResourceProvider(task_manager);
-  wc_provider->AddRef();
-  providers_.push_back(wc_provider);
-  TaskManagerPrerenderResourceProvider* prerender_provider =
-      new TaskManagerPrerenderResourceProvider(task_manager);
-  prerender_provider->AddRef();
-  providers_.push_back(prerender_provider);
-  TaskManagerChildProcessResourceProvider* child_process_provider =
-      new TaskManagerChildProcessResourceProvider(task_manager);
-  child_process_provider->AddRef();
-  providers_.push_back(child_process_provider);
-  TaskManagerExtensionProcessResourceProvider* extension_process_provider =
-      new TaskManagerExtensionProcessResourceProvider(task_manager);
-  extension_process_provider->AddRef();
-  providers_.push_back(extension_process_provider);
-  TaskManagerNotificationResourceProvider* notification_provider =
-      new TaskManagerNotificationResourceProvider(task_manager);
-  notification_provider->AddRef();
-  providers_.push_back(notification_provider);
+  AddResourceProvider(
+      new TaskManagerBrowserProcessResourceProvider(task_manager));
+  AddResourceProvider(
+      new TaskManagerBackgroundContentsResourceProvider(task_manager));
+  AddResourceProvider(new TaskManagerTabContentsResourceProvider(task_manager));
+  AddResourceProvider(new TaskManagerPrerenderResourceProvider(task_manager));
+  AddResourceProvider(
+      new TaskManagerChildProcessResourceProvider(task_manager));
+  AddResourceProvider(
+      new TaskManagerExtensionProcessResourceProvider(task_manager));
+  AddResourceProvider(
+      new TaskManagerNotificationResourceProvider(task_manager));
 }
 
 TaskManagerModel::~TaskManagerModel() {
@@ -577,17 +560,9 @@ void TaskManagerModel::StopUpdating() {
 void TaskManagerModel::AddResourceProvider(
     TaskManager::ResourceProvider* provider) {
   DCHECK(provider);
+  // AddRef matched with Release in destructor.
+  provider->AddRef();
   providers_.push_back(provider);
-}
-
-void TaskManagerModel::RemoveResourceProvider(
-    TaskManager::ResourceProvider* provider) {
-  DCHECK(provider);
-  ResourceProviderList::iterator iter = std::find(providers_.begin(),
-                                                  providers_.end(),
-                                                  provider);
-  DCHECK(iter != providers_.end());
-  providers_.erase(iter);
 }
 
 void TaskManagerModel::RegisterForJobDoneNotifications() {
@@ -976,14 +951,6 @@ void TaskManager::ActivateProcess(int index) {
       model_->GetResourceTabContents(index);
   if (chosen_tab_contents)
     chosen_tab_contents->tab_contents()->Activate();
-}
-
-void TaskManager::AddResourceProvider(ResourceProvider* provider) {
-  model_->AddResourceProvider(provider);
-}
-
-void TaskManager::RemoveResourceProvider(ResourceProvider* provider) {
-  model_->RemoveResourceProvider(provider);
 }
 
 void TaskManager::AddResource(Resource* resource) {

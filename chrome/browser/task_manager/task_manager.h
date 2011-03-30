@@ -147,9 +147,6 @@ class TaskManager {
   // index.
   void ActivateProcess(int index);
 
-  void AddResourceProvider(ResourceProvider* provider);
-  void RemoveResourceProvider(ResourceProvider* provider);
-
   // These methods are invoked by the resource providers to add/remove resources
   // to the Task Manager. Note that the resources are owned by the
   // ResourceProviders and are not valid after StopUpdating() has been called
@@ -307,9 +304,6 @@ class TaskManagerModel : public net::URLRequestJobTracker::JobObserver,
                            const char* buf,
                            int byte_count);
 
-  void AddResourceProvider(TaskManager::ResourceProvider* provider);
-  void RemoveResourceProvider(TaskManager::ResourceProvider* provider);
-
   void AddResource(TaskManager::Resource* resource);
   void RemoveResource(TaskManager::Resource* resource);
 
@@ -413,6 +407,9 @@ class TaskManagerModel : public net::URLRequestJobTracker::JobObserver,
   // |memory_usage_map_|.
   bool GetAndCacheMemoryMetrics(base::ProcessHandle handle,
                                 std::pair<size_t, size_t>* usage) const;
+
+  // Adds a resource provider to be managed.
+  void AddResourceProvider(TaskManager::ResourceProvider* provider);
 
   // The list of providers to the task manager. They are ref counted.
   ResourceProviderList providers_;
