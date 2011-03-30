@@ -23,6 +23,8 @@
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -384,6 +386,205 @@ void TaskManagerTabContentsResourceProvider::Observe(NotificationType type,
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// TaskManagerPrerenderResource class
+////////////////////////////////////////////////////////////////////////////////
+// static
+SkBitmap* TaskManagerPrerenderResource::default_icon_ = NULL;
+
+TaskManagerPrerenderResource::TaskManagerPrerenderResource(
+    RenderViewHost* render_view_host)
+    : TaskManagerRendererResource(
+          render_view_host->process()->GetHandle(),
+          render_view_host),
+      process_route_id_pair_(std::make_pair(render_view_host->process()->id(),
+                                            render_view_host->routing_id())) {
+  if (!default_icon_) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    default_icon_ = rb.GetBitmapNamed(IDR_PRERENDER);
+  }
+}
+
+TaskManagerPrerenderResource::~TaskManagerPrerenderResource() {
+}
+
+TaskManager::Resource::Type TaskManagerPrerenderResource::GetType() const {
+  return RENDERER;
+}
+
+string16 TaskManagerPrerenderResource::GetTitle() const {
+  // The URL is used as the title.
+  // TODO(dominich): Expose document title through RenderHostDelegate.
+  // http://crbug.com/77776
+  RenderViewHost* render_view_host =
+      RenderViewHost::FromID(process_route_id_pair_.first,
+                             process_route_id_pair_.second);
+  CHECK(render_view_host);
+  RenderViewHostDelegate* delegate = render_view_host->delegate();
+
+  string16 title = UTF8ToUTF16(delegate->GetURL().spec());
+  // Force URL to be LTR.
+  title = base::i18n::GetDisplayStringInLTRDirectionality(title);
+
+  int message_id = IDS_TASK_MANAGER_PRERENDER_PREFIX;
+  return l10n_util::GetStringFUTF16(message_id, title);
+}
+
+SkBitmap TaskManagerPrerenderResource::GetIcon() const {
+  // TODO(dominich): use the favicon if available.
+  // http://crbug.com/77782
+  return *default_icon_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TaskManagerPrerenderResourceProvider class
+////////////////////////////////////////////////////////////////////////////////
+
+TaskManagerPrerenderResourceProvider::TaskManagerPrerenderResourceProvider(
+    TaskManager* task_manager)
+    :  updating_(false),
+       task_manager_(task_manager) {
+}
+
+TaskManagerPrerenderResourceProvider::~TaskManagerPrerenderResourceProvider() {
+  STLDeleteContainerPairSecondPointers(resources_.begin(), resources_.end());
+}
+
+TaskManager::Resource* TaskManagerPrerenderResourceProvider::GetResource(
+    int origin_pid,
+    int render_process_host_id,
+    int routing_id) {
+  // If an origin PID was specified then the request originated in a plugin so
+  // ignore it.
+  if (origin_pid)
+    return NULL;
+
+  ResourceMap::iterator res_iter = resources_.find(
+      std::make_pair(render_process_host_id, routing_id));
+  if (res_iter == resources_.end())
+    return NULL;
+
+  return res_iter->second;
+}
+
+void TaskManagerPrerenderResourceProvider::StartUpdating() {
+  DCHECK(!updating_);
+  updating_ = true;
+
+  // Add all the existing PrerenderContents.
+  const ResourceDispatcherHost* resource_dispatcher_host =
+      g_browser_process->resource_dispatcher_host();
+  const ResourceDispatcherHost::PrerenderChildRouteIdPairs&
+      prerender_child_route_id_pairs =
+          resource_dispatcher_host->prerender_child_route_id_pairs();
+  for (ResourceDispatcherHost::PrerenderChildRouteIdPairs::const_iterator it =
+           prerender_child_route_id_pairs.begin();
+       it != prerender_child_route_id_pairs.end();
+       ++it) {
+    Add(*it);
+  }
+
+  // Then we register for notifications to get new prerender items.
+  registrar_.Add(this, NotificationType::PRERENDER_CONTENTS_STARTED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::PRERENDER_CONTENTS_USED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::PRERENDER_CONTENTS_DESTROYED,
+                 NotificationService::AllSources());
+}
+
+void TaskManagerPrerenderResourceProvider::StopUpdating() {
+  DCHECK(updating_);
+  updating_ = false;
+
+  // Then we unregister for notifications to get new prerender items.
+  registrar_.Remove(this, NotificationType::PRERENDER_CONTENTS_STARTED,
+                    NotificationService::AllSources());
+  registrar_.Remove(this, NotificationType::PRERENDER_CONTENTS_USED,
+                    NotificationService::AllSources());
+  registrar_.Remove(this, NotificationType::PRERENDER_CONTENTS_DESTROYED,
+                    NotificationService::AllSources());
+
+  // Delete all the resources.
+  STLDeleteContainerPairSecondPointers(resources_.begin(), resources_.end());
+
+  resources_.clear();
+}
+
+void TaskManagerPrerenderResourceProvider::AddToTaskManager(
+    const std::pair<int, int>& process_route_id_pair) {
+  RenderViewHost* render_view_host =
+      RenderViewHost::FromID(process_route_id_pair.first,
+                             process_route_id_pair.second);
+  CHECK(render_view_host);
+  TaskManagerPrerenderResource* resource =
+      new TaskManagerPrerenderResource(render_view_host);
+  resources_[process_route_id_pair] = resource;
+  task_manager_->AddResource(resource);
+}
+
+void TaskManagerPrerenderResourceProvider::Add(
+    const std::pair<int, int>& process_route_id_pair) {
+  if (!updating_)
+    return;
+
+  // Don't add dead prerender contents or prerender contents that haven't yet
+  // started.
+  RenderViewHost* render_view_host =
+      RenderViewHost::FromID(process_route_id_pair.first,
+                             process_route_id_pair.second);
+  if (!render_view_host)
+    return;
+
+  AddToTaskManager(process_route_id_pair);
+}
+
+void TaskManagerPrerenderResourceProvider::Remove(
+    const std::pair<int, int>& process_route_id_pair) {
+  if (!updating_)
+    return;
+
+  RenderViewHost* render_view_host =
+      RenderViewHost::FromID(process_route_id_pair.first,
+                             process_route_id_pair.second);
+
+  if (!render_view_host) {
+    // This will happen if the PrerenderContents was used. We should have had a
+    // PRERENDER_CONTENTS_USED message about it and already removed it, but
+    // either way we can't remove a NULL resource.
+    return;
+  }
+
+  ResourceMap::iterator iter = resources_.find(process_route_id_pair);
+  DCHECK(iter != resources_.end());
+
+  // Remove the resource from the Task Manager.
+  TaskManagerPrerenderResource* resource = iter->second;
+  task_manager_->RemoveResource(resource);
+  // And from the provider.
+  resources_.erase(iter);
+  // Finally, delete the resource.
+  delete resource;
+}
+
+void TaskManagerPrerenderResourceProvider::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK(NotificationService::NoDetails() == details);
+  switch (type.value) {
+    case NotificationType::PRERENDER_CONTENTS_STARTED:
+      Add(*Source<std::pair<int, int> >(source).ptr());
+      break;
+    case NotificationType::PRERENDER_CONTENTS_USED:
+    case NotificationType::PRERENDER_CONTENTS_DESTROYED:
+      Remove(*Source<std::pair<int, int> >(source).ptr());
+      break;
+    default:
+      NOTREACHED() << "Unexpected notification.";
+      return;
+  }
+}
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerBackgroundContentsResource class
 ////////////////////////////////////////////////////////////////////////////////

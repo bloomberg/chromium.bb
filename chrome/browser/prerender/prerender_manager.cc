@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
+#include "content/common/notification_service.h"
 
 namespace prerender {
 
@@ -134,6 +135,7 @@ bool PrerenderManager::AddPreload(const GURL& url,
   // TODO(cbentzel): Move invalid checks here instead of PrerenderContents?
   PrerenderContentsData data(CreatePrerenderContents(url, alias_urls, referrer),
                              GetCurrentTime());
+
   prerender_list_.push_back(data);
   if (!IsControlGroup()) {
     last_prerender_start_time_ = GetCurrentTimeTicks();
@@ -215,7 +217,6 @@ PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
        ++it) {
     PrerenderContents* pc = it->contents_;
     if (pc->MatchesURL(url)) {
-      PrerenderContents* pc = it->contents_;
       prerender_list_.erase(it);
       return pc;
     }
@@ -273,6 +274,11 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
     }
     pending_prerender_list_.erase(pending_it);
   }
+
+  NotificationService::current()->Notify(
+      NotificationType::PRERENDER_CONTENTS_USED,
+      Source<std::pair<int, int> >(&child_route_pair),
+      NotificationService::NoDetails());
 
   ViewHostMsg_FrameNavigate_Params* p = pc->navigate_params();
   if (p != NULL)

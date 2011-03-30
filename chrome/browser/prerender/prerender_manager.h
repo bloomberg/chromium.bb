@@ -130,6 +130,7 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   friend class PrerenderBrowserTest;
 
   friend class base::RefCounted<PrerenderManager>;
+
   struct PrerenderContentsData;
 
   // Starts and stops scheduling periodic cleanups, respectively.

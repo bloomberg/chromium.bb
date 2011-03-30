@@ -1324,6 +1324,19 @@ class NotificationType {
     // Sent when the applications in the NTP app launcher have been reordered.
     EXTENSION_LAUNCHER_REORDERED,
 
+    // Prerender notifications -------------------------------------------------
+    // Sent when a prerender::PrerenderContents starts prerendering. Source is
+    // the process/route id pair for the RenderViewHost. There are no details.
+    PRERENDER_CONTENTS_STARTED,
+
+    // Sent when a prerender::PrerenderContents object is destroyed. Source is
+    // the process/route id pair for the RenderViewHost. There are no details.
+    PRERENDER_CONTENTS_DESTROYED,
+
+    // Sent when a prerender::PrerenderContents is used. Source is the
+    // process/route id pair for the RenderViewHost. There are no details.
+    PRERENDER_CONTENTS_USED,
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.

@@ -271,6 +271,11 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   void AddPrerenderChildRoutePair(int child_id, int route_id);
   void RemovePrerenderChildRoutePair(int child_id, int route_id);
 
+  typedef std::set<std::pair<int, int> > PrerenderChildRouteIdPairs;
+  const PrerenderChildRouteIdPairs& prerender_child_route_id_pairs() const {
+    return prerender_child_route_pairs_;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestBlockedRequestsProcessDies);
@@ -505,7 +510,6 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   ResourceMessageFilter* filter_;
 
   static bool is_prefetch_enabled_;
-  typedef std::set<std::pair<int, int> > PrerenderChildRouteIdPairs;
   PrerenderChildRouteIdPairs prerender_child_route_pairs_;
 
 

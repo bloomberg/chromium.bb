@@ -25,6 +25,10 @@ class ExtensionHost;
 class RenderViewHost;
 class TabContentsWrapper;
 
+namespace prerender {
+class PrerenderContents;
+}
+
 // These file contains the resource providers used in the task manager.
 
 // Base class for various types of render process resources that provides common
@@ -134,6 +138,56 @@ class TaskManagerTabContentsResourceProvider
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResourceProvider);
+};
+
+class TaskManagerPrerenderResource : public TaskManagerRendererResource {
+ public:
+  explicit TaskManagerPrerenderResource(RenderViewHost* render_view_host);
+  virtual ~TaskManagerPrerenderResource();
+
+  // TaskManager::Resource methods:
+  virtual Type GetType() const OVERRIDE;
+  virtual string16 GetTitle() const OVERRIDE;
+  virtual SkBitmap GetIcon() const OVERRIDE;
+
+ private:
+  static SkBitmap* default_icon_;
+  std::pair<int, int> process_route_id_pair_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerPrerenderResource);
+};
+
+class TaskManagerPrerenderResourceProvider
+    : public TaskManager::ResourceProvider,
+      public NotificationObserver {
+ public:
+  explicit TaskManagerPrerenderResourceProvider(TaskManager* task_manager);
+
+  virtual TaskManager::Resource* GetResource(int origin_pid,
+                                             int render_process_host_id,
+                                             int routing_id);
+  virtual void StartUpdating();
+  virtual void StopUpdating();
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+ private:
+  virtual ~TaskManagerPrerenderResourceProvider();
+
+  void Add(const std::pair<int, int>& process_route_id_pair);
+  void Remove(const std::pair<int, int>& process_route_id_pair);
+
+  void AddToTaskManager(const std::pair<int, int>& process_route_id_pair);
+
+  bool updating_;
+  TaskManager* task_manager_;
+  typedef std::map<std::pair<int, int>, TaskManagerPrerenderResource*>
+      ResourceMap;
+  ResourceMap resources_;
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerPrerenderResourceProvider);
 };
 
 class TaskManagerBackgroundContentsResource

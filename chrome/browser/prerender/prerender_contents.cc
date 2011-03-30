@@ -103,6 +103,12 @@ void PrerenderContents::StartPrerendering() {
   // (IO) there is no race condition.
   int process_id = render_view_host_->process()->id();
   int view_id = render_view_host_->routing_id();
+  std::pair<int, int> process_view_pair = std::make_pair(process_id, view_id);
+  NotificationService::current()->Notify(
+      NotificationType::PRERENDER_CONTENTS_STARTED,
+      Source<std::pair<int, int> >(&process_view_pair),
+      NotificationService::NoDetails());
+
   ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           NewRunnableFunction(&AddChildRoutePair, rdh,
@@ -179,6 +185,7 @@ FinalStatus PrerenderContents::final_status() const {
 
 PrerenderContents::~PrerenderContents() {
   DCHECK(final_status_ != FINAL_STATUS_MAX);
+
   // If we haven't even started prerendering, we were just in the control
   // group, which means we do not want to record the status.
   if (prerendering_has_started())
@@ -189,6 +196,12 @@ PrerenderContents::~PrerenderContents() {
 
   int process_id = render_view_host_->process()->id();
   int view_id = render_view_host_->routing_id();
+  std::pair<int, int> process_view_pair = std::make_pair(process_id, view_id);
+  NotificationService::current()->Notify(
+      NotificationType::PRERENDER_CONTENTS_DESTROYED,
+      Source<std::pair<int, int> >(&process_view_pair),
+      NotificationService::NoDetails());
+
   ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           NewRunnableFunction(&RemoveChildRoutePair, rdh,

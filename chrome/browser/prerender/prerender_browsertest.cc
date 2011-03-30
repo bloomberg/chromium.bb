@@ -4,17 +4,22 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "grit/generated_resources.h"
 #include "net/url_request/url_request_context.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // Prerender tests work as follows:
 //
@@ -274,6 +279,10 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     prc_factory_->set_expected_final_status_for_url(url, expected_final_status);
   }
 
+  TaskManagerModel* model() const {
+    return TaskManager::GetInstance()->model();
+  }
+
  private:
   PrerenderManager* prerender_manager() const {
     Profile* profile = browser()->GetSelectedTabContents()->profile();
@@ -305,8 +314,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 // <link rel=prefetch> tag and then loaded into a tab in response to a
 // navigation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
-  PrerenderTestURL("prerender_page.html",
-                   FINAL_STATUS_USED, 1);
+  PrerenderTestURL("prerender_page.html", FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
 
@@ -327,8 +335,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
 // Checks that plugins are not loaded while a page is being preloaded, but
 // are loaded when the page is displayed.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
-  PrerenderTestURL("plugin_delay_load.html",
-                   FINAL_STATUS_USED, 1);
+  PrerenderTestURL("plugin_delay_load.html", FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
 
@@ -353,16 +360,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttpAuthentication) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRedirect) {
   std::string redirect_path;
   ASSERT_TRUE(CreateRedirect("prerender_page.html", &redirect_path));
-  PrerenderTestURL(redirect_path,
-                   FINAL_STATUS_USED, 2);
+  PrerenderTestURL(redirect_path, FINAL_STATUS_USED, 2);
   NavigateToDestURL();
 }
 
 // Prerenders a page that contains an automatic download triggered through an
 // iframe. This should not prerender successfully.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadIFrame) {
-  PrerenderTestURL("prerender_download_iframe.html",
-                   FINAL_STATUS_DOWNLOAD, 1);
+  PrerenderTestURL("prerender_download_iframe.html", FINAL_STATUS_DOWNLOAD, 1);
 }
 
 // Prerenders a page that contains an automatic download triggered through
@@ -377,14 +382,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadLocation) {
 // Prerenders a page that contains an automatic download triggered through a
 // <meta http-equiv="refresh"> tag. This should not prerender successfully.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadRefresh) {
-  PrerenderTestURL("prerender_download_refresh.html",
-                   FINAL_STATUS_DOWNLOAD, 2);
+  PrerenderTestURL("prerender_download_refresh.html", FINAL_STATUS_DOWNLOAD, 2);
 }
 
 // Checks that the referrer is set when prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrer) {
-  PrerenderTestURL("prerender_referrer.html",
-                   FINAL_STATUS_USED, 1);
+  PrerenderTestURL("prerender_referrer.html", FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
 
@@ -392,15 +395,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrer) {
 // HTTPS.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoSSLReferrer) {
   set_use_https_src(true);
-  PrerenderTestURL("prerender_no_referrer.html",
-                   FINAL_STATUS_USED, 1);
+  PrerenderTestURL("prerender_no_referrer.html", FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
 
 // Checks that popups on a prerendered page cause cancellation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
-  PrerenderTestURL("prerender_popup.html",
-                   FINAL_STATUS_CREATE_NEW_WINDOW, 1);
+  PrerenderTestURL("prerender_popup.html", FINAL_STATUS_CREATE_NEW_WINDOW, 1);
 }
 
 // Test that page-based redirects to https will cancel prerenders.
@@ -413,9 +414,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   std::string redirect_path;
   ASSERT_TRUE(CreateRedirect(https_url.spec(), &redirect_path));
-  PrerenderTestURL(redirect_path,
-                   FINAL_STATUS_HTTPS,
-                   2);
+  PrerenderTestURL(redirect_path, FINAL_STATUS_HTTPS, 2);
 }
 
 // Checks that renderers using excessive memory will be terminated.
@@ -481,6 +480,32 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderInfiniteLoopMultiple
   EXPECT_TRUE(UrlIsInPrerenderManager(kHtmlFileC));
   EXPECT_FALSE(UrlIsPendingInPrerenderManager(kHtmlFileB));
   EXPECT_FALSE(UrlIsPendingInPrerenderManager(kHtmlFileC));
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TaskManager) {
+  // Show the task manager. This populates the model.
+  browser()->window()->ShowTaskManager();
+
+  // Start with two resources.
+  EXPECT_EQ(2, model()->ResourceCount());
+  PrerenderTestURL("prerender_page.html", FINAL_STATUS_USED, 1);
+
+  // The prerender makes three.
+  EXPECT_EQ(3, model()->ResourceCount());
+
+  // It shouldn't have a TabContents associated with it.
+  ASSERT_TRUE(model()->GetResourceTabContents(1) == NULL);
+
+  // The prefix should be "Prerender:"
+  string16 prefix =
+      l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX,
+                                 string16());
+  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(1), prefix, true));
+
+  NavigateToDestURL();
+
+  // Prerender task should be killed and removed from the Task Manager.
+  EXPECT_EQ(2, model()->ResourceCount());
 }
 
 }  // namespace prerender
