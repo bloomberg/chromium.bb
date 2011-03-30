@@ -4157,14 +4157,14 @@
    bug_77885
    Memcheck:Leak
    fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN3WTF6VectorINS_6OwnPtrIN7WebCore17CSSParserSelectorEEELj0EEnwEj
+   fun:_ZN3WTF10fastMalloc*
+   fun:_ZN3WTF6VectorINS_6OwnPtrIN7WebCore17CSSParserSelector*
    fun:_ZN7WebCore9CSSParser28createFloatingSelectorVectorEv
    fun:_Z10cssyyparsePv
    fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKN3WTF6StringEiPNS3_7HashMapIPNS_12CSSStyleRuleENS3_6RefPtrINS_17CSSRuleSourceDataEEENS3_7PtrHashIS9_EENS3_10HashTraitsIS9_EENSF_ISC_EEEE
    fun:_ZN7WebCore13CSSStyleSheet17parseStringAtLineERKN3WTF6StringEbi
    fun:_ZN7WebCore13CSSStyleSheet11parseStringERKN3WTF6StringEb
-   fun:_ZN7WebCore12parseUASheetERKN3WTF6StringE
+   fun:_ZN7WebCore*parseUASheetERKN3WTF6StringE
 }
 
 #-----------------------------------------------------------------------
