@@ -254,12 +254,38 @@
         '../testing/gtest.gyp:gtest',
         'sync',
       ],
+      'export_dependent_settings': [
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        'sync',
+      ],
       'include_dirs': [
         '..',
       ],
       'sources': [
         'browser/sync/js_test_util.cc',
         'browser/sync/js_test_util.h',
+        'test/sync/engine/test_directory_setter_upper.cc',
+        'test/sync/engine/test_directory_setter_upper.h',
+      ],
+    },
+    {
+      'target_name': 'test_support_syncapi',
+      'type': '<(library)',
+      'dependencies': [
+        'syncapi',
+        'test_support_sync',
+      ],
+      'export_dependent_settings': [
+        'syncapi',
+        'test_support_sync',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'test/sync/engine/test_user_share.cc',
+        'test/sync/engine/test_user_share.h',
       ],
     },
     {
@@ -1116,6 +1142,7 @@
         'service',
         'test_support_common',
         'test_support_sync',
+        'test_support_syncapi',
         'test_support_unit',
         'utility',
         '../app/app.gyp:app_base',
@@ -2912,8 +2939,6 @@
         'test/sync/engine/mock_gaia_authenticator.h',
         'test/sync/engine/mock_gaia_authenticator_unittest.cc',
         'test/sync/engine/syncer_command_test.h',
-        'test/sync/engine/test_directory_setter_upper.cc',
-        'test/sync/engine/test_directory_setter_upper.h',
         'test/sync/engine/test_id_factory.h',
         'test/sync/engine/test_syncable_utils.cc',
         'test/sync/engine/test_syncable_utils.h',
@@ -2943,6 +2968,7 @@
         'sync_notifier',
         'test_support_common',
         'test_support_sync',
+        'test_support_syncapi',
         'test_support_sync_notifier',
         'test_support_unit',
       ],
