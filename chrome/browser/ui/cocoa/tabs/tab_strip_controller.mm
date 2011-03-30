@@ -1031,7 +1031,6 @@ class NotificationBridge : public NotificationObserver {
     } else {
       maxX = NSMaxX(newTabTargetFrame_);
     }
-    NSRect tabStripViewBounds = [tabStripView_ bounds];
     NSRect profileMenuButtonFrame = [profileMenuButton_ frame];
     NSSize minSize = [profileMenuButton_ minControlSize];
 
