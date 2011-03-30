@@ -13,13 +13,11 @@
 
 namespace {
 
-using namespace gfx::test;
-
 class UiGfxImageTest : public CocoaTest {
 };
 
 TEST_F(UiGfxImageTest, CheckColor) {
-  gfx::Image image(CreateBitmap());
+  gfx::Image image(gfx::test::CreateBitmap());
   [image lockFocus];
   NSColor* color = NSReadPixel(NSMakePoint(10, 10));
   [image unlockFocus];
@@ -44,7 +42,7 @@ TEST_F(UiGfxImageTest, ImageView) {
   [[test_window() contentView] addSubview:image_view];
   [test_window() orderFront:nil];
 
-  gfx::Image image(CreateBitmap());
+  gfx::Image image(gfx::test::CreateBitmap());
   [image_view setImage:image];
 }
 

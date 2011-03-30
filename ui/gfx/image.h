@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// An Image wraps an image any flavor, be it platform-native GdkBitmap/NSImage,
+// or a SkBitmap. This also provides easy conversion to other image types
+// through operator overloading. It will cache the converted representations
+// internally to prevent double-conversion.
+//
+// The lifetime of both the initial representation and any converted ones are
+// tied to the lifetime of the Image object itself.
+
 #ifndef UI_GFX_IMAGE_H_
 #define UI_GFX_IMAGE_H_
 #pragma once
@@ -25,13 +33,6 @@ namespace internal {
 class ImageRep;
 }
 
-// An Image wraps an image any flavor, be it platform-native GdkBitmap/NSImage,
-// or a SkBitmap. This also provides easy conversion to other image types
-// through operator overloading. It will cache the converted representations
-// internally to prevent double-conversion.
-//
-// The lifetime of both the initial representation and any converted ones are
-// tied to the lifetime of the Image object itself.
 class Image {
  public:
   enum RepresentationType {
@@ -70,7 +71,7 @@ class Image {
   void SwapRepresentations(gfx::Image* other);
 
  private:
-  friend class ::ImageTest;
+  typedef std::map<RepresentationType, internal::ImageRep*> RepresentationMap;
 
   // Returns the ImageRep for the default representation.
   internal::ImageRep* DefaultRepresentation();
@@ -86,11 +87,11 @@ class Image {
   // exist in the |representations_| map.
   RepresentationType default_representation_;
 
-  typedef std::map<RepresentationType, internal::ImageRep*> RepresentationMap;
   // All the representations of an Image. Size will always be at least one, with
   // more for any converted representations.
   RepresentationMap representations_;
 
+  friend class ::ImageTest;
   DISALLOW_COPY_AND_ASSIGN(Image);
 };
 

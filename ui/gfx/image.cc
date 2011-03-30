@@ -33,7 +33,7 @@ const SkBitmap* NSImageToSkBitmap(NSImage* image);
 const SkBitmap* GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
   gfx::CanvasSkia canvas(gdk_pixbuf_get_width(pixbuf),
                          gdk_pixbuf_get_height(pixbuf),
-                           false);
+                         /*is_opaque=*/false);
   canvas.DrawGdkPixbuf(pixbuf, 0, 0);
   return new SkBitmap(canvas.ExtractBitmap());
 }
@@ -250,11 +250,9 @@ internal::ImageRep* Image::GetRepresentation(RepresentationType rep_type) {
           internal::NSImageToSkBitmap(nsimage_rep->image()));
     }
 #endif
-    if (rep) {
-      AddRepresentation(rep);
-      return rep;
-    }
-    NOTREACHED();
+    CHECK(rep);
+    AddRepresentation(rep);
+    return rep;
   }
 
   // Handle Skia-to-native conversions.
@@ -273,11 +271,9 @@ internal::ImageRep* Image::GetRepresentation(RepresentationType rep_type) {
       native_rep = new internal::NSImageRep(image);
     }
 #endif
-    if (native_rep) {
-      AddRepresentation(native_rep);
-      return native_rep;
-    }
-    NOTREACHED();
+    CHECK(native_rep);
+    AddRepresentation(native_rep);
+    return native_rep;
   }
 
   // Something went seriously wrong...
