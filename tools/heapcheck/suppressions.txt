@@ -1239,3 +1239,13 @@
    fun:g_realloc
    fun:~SelectFileDialogImpl
 }
+{
+   bug_77885
+   Heapcheck:Leak
+   ...
+   fun:cssyyparse
+   fun:WebCore::CSSParser::parseSheet
+   fun:WebCore::CSSStyleSheet::parseStringAtLine
+   fun:WebCore::CSSStyleSheet::parseString
+   fun:WebCore::parseUASheet
+}
