@@ -94,7 +94,7 @@ ifeq ($(PLATFORM), Cygwin)
   # I'm explicitly coding the path.
   BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:/usr/local/bin:/usr/bin:/bin
   SCONS?=scons.bat
-  SDKLOC_NATIVE=$(shell cygpath -m $(SDKLOC))
+  SDKLOC_NATIVE=$(shell cygpath -m $(SDKLOC)/$(SDKNAME))
   CYGWIN17=$(shell grep '^cygwin cygwin-1.7' /etc/setup/installed.db | wc -l)
   ifeq ($(CYGWIN17), 1)
     DESTDIR := $(SDKROOT)
@@ -129,7 +129,7 @@ ifeq ($(PLATFORM), Cygwin)
 else
   BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:$(PATH)
   SCONS?=scons
-  SDKLOC_NATIVE=$(DESTDIR)$(SDKLOC)
+  SDKLOC_NATIVE=$(DESTDIR)$(SDKLOC)/$(SDKNAME)
   CYGWIN_DLL_COPY=echo "Cygwin not used on this platform"
 endif
 
@@ -642,8 +642,8 @@ glibc-adhoc-files: | SRC/glibc SRC/linux-headers-for-nacl
 # Extra arguments to scons to define build and install destinations.
 SCONS_DESTINATIONS_NOLIB=\
  DESTINATION_ROOT=tools/BUILD/build-extra_sdk-$(CROSSARCH) \
- naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
- extra_sdk_include_destination=$(SDKLOC_NATIVE)/$(SDKNAME)/include \
+ naclsdk_mode=custom:$(SDKLOC_NATIVE)3 \
+ extra_sdk_include_destination=$(SDKLOC_NATIVE)/include \
 
 BUILD_EXTRA_SDK=BUILD/build-extra_sdk-$(CROSSARCH)
 
@@ -836,19 +836,19 @@ gdb: BUILD/stamp-$(CROSSARCH)-gdb
 ##################################################################
 nc_threads: ALWAYS
 	cd .. && \
-	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	  --mode=nacl_extra_sdk install_libpthread --verbose \
 	  targetplatform=x86-$(BITSPLATFORM)
 
 nacl_libraries_nocpp: ALWAYS
 	cd .. && \
-	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	    --mode=nacl_extra_sdk extra_sdk_update_header \
 	    nocpp=yes --verbose ) && \
-	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	    --mode=nacl_extra_sdk extra_sdk_update \
 	    nocpp=yes targetplatform=x86-32 --verbose ) && \
-	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	    --mode=nacl_extra_sdk extra_sdk_update \
 	    nocpp=yes targetplatform=x86-64 --verbose ) ;
 
@@ -858,12 +858,12 @@ nacl_libraries_nocpp: ALWAYS
 ##################################################################
 nacl_libraries: ALWAYS
 	cd .. && \
-	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	    --mode=nacl_extra_sdk extra_sdk_update_header --verbose ) && \
-	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	    --mode=nacl_extra_sdk extra_sdk_update \
 	    targetplatform=x86-32 --verbose ) && \
-	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	    --mode=nacl_extra_sdk extra_sdk_update \
 	    targetplatform=x86-64 --verbose ) ;
 	chmod a-x "$(DESTDIR)$(SDKROOT)/"{nacl,"$(CROSSARCH)"}/lib/*.a
@@ -871,12 +871,12 @@ nacl_libraries: ALWAYS
 
 sdk_minimal_test: ALWAYS
 	cd .. && \
-	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	     --mode=nacl sdk_minimal_test platform=x86-32 --verbose;
 
 gdb_minimal_test: BUILD/stamp-$(CROSSARCH)-gdb
 	cd .. && \
-	  ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	  ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	    --mode=nacl,dbg-linux platform=x86-32 gdb_minimal_test
 
 
