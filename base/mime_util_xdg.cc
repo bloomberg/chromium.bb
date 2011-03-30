@@ -20,10 +20,15 @@
 #include "base/message_loop.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/third_party/xdg_mime/xdgmime.h"
 #include "base/threading/thread_restrictions.h"
 
 namespace {
+
+// None of the XDG stuff is thread-safe, so serialize all accesss under
+// this lock.
+base::Lock g_mime_util_xdg_lock;
 
 class IconTheme;
 
@@ -553,11 +558,13 @@ namespace mime_util {
 
 std::string GetFileMimeType(const FilePath& filepath) {
   base::ThreadRestrictions::AssertIOAllowed();
+  base::AutoLock scoped_lock(g_mime_util_xdg_lock);
   return xdg_mime_get_mime_type_from_file_name(filepath.value().c_str());
 }
 
 std::string GetDataMimeType(const std::string& data) {
   base::ThreadRestrictions::AssertIOAllowed();
+  base::AutoLock scoped_lock(g_mime_util_xdg_lock);
   return xdg_mime_get_mime_type_for_data(data.data(), data.length(), NULL);
 }
 
@@ -585,8 +592,12 @@ FilePath GetMimeIcon(const std::string& mime_type, size_t size) {
   std::string icon_name;
   FilePath icon_file;
 
-  const char* icon = xdg_mime_get_icon(mime_type.c_str());
-  icon_name = std::string(icon ? icon : "");
+  {
+    base::AutoLock scoped_lock(g_mime_util_xdg_lock);
+    const char *icon = xdg_mime_get_icon(mime_type.c_str());
+    icon_name = std::string(icon ? icon : "");
+  }
+
   if (icon_name.length())
     icon_names.push_back(icon_name);
 
