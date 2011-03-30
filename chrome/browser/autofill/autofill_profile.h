@@ -6,14 +6,18 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_PROFILE_H_
 #pragma once
 
+#include <stddef.h>
 #include <list>
-#include <map>
+#include <ostream>
+#include <string>
 #include <vector>
 
 #include "base/string16.h"
 #include "chrome/browser/autofill/address.h"
+#include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/contact_info.h"
 #include "chrome/browser/autofill/fax_number.h"
+#include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/autofill/home_phone_number.h"
 

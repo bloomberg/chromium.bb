@@ -4,9 +4,11 @@
 
 #include "chrome/browser/autofill/credit_card.h"
 
+#include <stddef.h>
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -18,6 +20,7 @@
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRegularExpression.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCaseSensitivity.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {

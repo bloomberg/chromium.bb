@@ -4,13 +4,14 @@
 
 #include "chrome/browser/autofill/autofill_profile.h"
 
-#include <algorithm>
+#include <map>
 #include <set>
 
-#include "base/stl_util-inl.h"
+#include "base/basictypes.h"
+#include "base/logging.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/address.h"
-#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/contact_info.h"
 #include "chrome/browser/autofill/fax_number.h"

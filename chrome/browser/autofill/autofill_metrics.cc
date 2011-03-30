@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autofill/autofill_metrics.h"
 
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 
 AutofillMetrics::AutofillMetrics() {

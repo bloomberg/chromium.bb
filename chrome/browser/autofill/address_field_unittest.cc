@@ -6,6 +6,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/address_field.h"
+#include "chrome/browser/autofill/autofill_field.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_field.h"
 

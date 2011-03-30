@@ -4,13 +4,20 @@
 
 #include "chrome/browser/autofill/autofill_ie_toolbar_import_win.h"
 
+#include <stddef.h>
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/string16.h"
 #include "base/win/registry.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/crypto/rc4_decryptor.h"
 #include "chrome/browser/autofill/field_types.h"
+#include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/util/data_encryption.h"
 
@@ -30,7 +37,7 @@ const wchar_t* const kPasswordHashValue = L"password_hash";
 const wchar_t* const kSaltValue = L"salt";
 
 // This is RC4 decryption for Toolbar credit card data. This is necessary
-// because it is not standard, so Crypto api cannot be used.
+// because it is not standard, so Crypto API cannot be used.
 std::wstring DecryptCCNumber(const std::wstring& data) {
   const wchar_t* kEmptyKey =
     L"\x3605\xCEE5\xCE49\x44F7\xCF4E\xF6CC\x604B\xFCBE\xC70A\x08FD";

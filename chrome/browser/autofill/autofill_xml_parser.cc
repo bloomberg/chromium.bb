@@ -4,7 +4,10 @@
 
 #include "chrome/browser/autofill/autofill_xml_parser.h"
 
-#include "chrome/browser/autofill/autofill_type.h"
+#include <stdlib.h>
+#include <string.h>
+
+#include "base/logging.h"
 #include "third_party/libjingle/overrides/talk/xmllite/qname.h"
 
 AutofillXmlParser::AutofillXmlParser()

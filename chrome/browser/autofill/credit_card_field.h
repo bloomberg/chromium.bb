@@ -8,6 +8,8 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
+#include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/form_field.h"
 
 class AutofillField;

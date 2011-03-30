@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_METRICS_H_
 #pragma once
 
+#include <stddef.h>
 #include <string>
 
 #include "base/basictypes.h"

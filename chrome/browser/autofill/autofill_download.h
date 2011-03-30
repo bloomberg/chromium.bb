@@ -6,20 +6,25 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_DOWNLOAD_H_
 #pragma once
 
+#include <stddef.h>
 #include <list>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
 #include "base/time.h"
-#include "chrome/browser/autofill/autofill_profile.h"
-#include "chrome/browser/autofill/field_types.h"
-#include "chrome/browser/autofill/form_structure.h"
 #include "chrome/common/net/url_fetcher.h"
 
 class AutofillMetrics;
+class FormStructure;
+class GURL;
 class Profile;
+
+namespace net {
+class URLRequestStatus;
+}
 
 // Handles getting and updating Autofill heuristics.
 class AutofillDownloadManager : public URLFetcher::Delegate {

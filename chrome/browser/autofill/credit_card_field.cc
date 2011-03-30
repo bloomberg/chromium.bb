@@ -4,10 +4,15 @@
 
 #include "chrome/browser/autofill/credit_card_field.h"
 
+#include <stddef.h>
+
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
+#include "chrome/browser/autofill/field_types.h"
 #include "grit/autofill_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

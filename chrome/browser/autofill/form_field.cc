@@ -4,16 +4,25 @@
 
 #include "chrome/browser/autofill/form_field.h"
 
+#include <stddef.h>
+#include <string>
+#include <utility>
+
+#include "base/logging.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/address_field.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/credit_card_field.h"
+#include "chrome/browser/autofill/field_types.h"
+#include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/name_field.h"
 #include "chrome/browser/autofill/phone_field.h"
 #include "grit/autofill_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRegularExpression.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCaseSensitivity.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // Field names from the ECML specification; see RFC 3106.  We've

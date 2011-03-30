@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "webkit/glue/form_field.h"

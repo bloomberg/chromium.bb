@@ -4,7 +4,8 @@
 
 #include "chrome/browser/autofill/autofill_type.h"
 
-#include "base/basictypes.h"
+#include <ostream>
+
 #include "base/logging.h"
 
 namespace {

@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
+#include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_group.h"
 
 // A form group that stores name information.

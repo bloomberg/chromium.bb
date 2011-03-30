@@ -5,17 +5,22 @@
 #include "chrome/browser/autofill/autofill_download.h"
 
 #include <algorithm>
+#include <ostream>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util-inl.h"
+#include "base/string_util.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_xml_parser.h"
+#include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "googleurl/src/gurl.h"
 #include "net/http/http_response_headers.h"
+#include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
 
 #define AUTO_FILL_QUERY_SERVER_REQUEST_URL \
     "http://toolbarqueries.clients.google.com:80/tbproxy/af/query"
@@ -290,7 +295,7 @@ void AutofillDownloadManager::OnURLFetchComplete(
                             AUTO_FILL_QUERY_SERVER_NAME_START_IN_HEADER,
                             false) != 0)
           break;
-        // Bad getaway was received from Autofill servers. Fall through to back
+        // Bad gateway was received from Autofill servers. Fall through to back
         // off.
       case kHttpInternalServerError:
       case kHttpServiceUnavailable:

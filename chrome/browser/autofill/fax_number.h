@@ -6,9 +6,8 @@
 #define CHROME_BROWSER_AUTOFILL_FAX_NUMBER_H_
 #pragma once
 
+#include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/phone_number.h"
-
-class FormGroup;
 
 class FaxNumber : public PhoneNumber {
  public:

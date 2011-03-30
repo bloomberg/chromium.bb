@@ -8,10 +8,12 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/string16.h"
-#include "base/string_util.h"
 #include "chrome/browser/autofill/autofill_type.h"
-#include "chrome/browser/autofill/form_structure.h"
+
+class AutofillField;
+class FormStructure;
 
 extern const char kEcmlShipToTitle[];
 extern const char kEcmlShipToFirstName[];
@@ -60,8 +62,6 @@ enum FormFieldType {
   kCreditCardType,
   kOtherFieldType
 };
-
-class AutofillField;
 
 // Represents a logical form field in a web form.  Classes that implement this
 // interface can identify themselves as a particular type of form field, e.g.

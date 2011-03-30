@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_AUTOFILL_CREDIT_CARD_H_
 #pragma once
 
+#include <ostream>
+#include <string>
 #include <vector>
 
 #include "base/string16.h"
+#include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_group.h"
 
 // A form group that stores credit card information.
