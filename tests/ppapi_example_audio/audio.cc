@@ -178,7 +178,7 @@ class MyInstance : public pp::Instance {
   }
 
  private:
-  static void SineWaveCallback(void* samples, size_t num_bytes, void* thiz) {
+  static void SineWaveCallback(void* samples, uint32_t num_bytes, void* thiz) {
     MyInstance* instance = reinterpret_cast<MyInstance*>(thiz);
     const double delta_l = kTwoPi * instance->frequency_l_ / kSampleFrequency;
     const double delta_r = kTwoPi * instance->frequency_r_ / kSampleFrequency;

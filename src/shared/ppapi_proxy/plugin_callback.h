@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,11 +25,11 @@ class CompletionCallbackTable {
   // generating and returning an identifier for it.
   // If |callback| is NULL, then returns 0.
   int32_t AddCallback(const PP_CompletionCallback& callback);
-  int32_t AddCallback(const PP_CompletionCallback& callback, char* read_buffer);
+  int32_t AddCallback(const PP_CompletionCallback& callback, void* read_buffer);
   // Removes and returns the callback and optionally the associated
   // |read_buffer| corresponding to the given |callback_id|.
   // If no callback is found, returns a NULL callback.
-  PP_CompletionCallback RemoveCallback(int32_t callback_id, char** read_buffer);
+  PP_CompletionCallback RemoveCallback(int32_t callback_id, void** read_buffer);
 
  private:
   // Currently implemented as singleton, so use a private constructor.
@@ -38,7 +38,7 @@ class CompletionCallbackTable {
 
   struct CallbackInfo {
     PP_CompletionCallback callback;
-    char* read_buffer;  // To be used with callbacks invoked on byte reads.
+    void* read_buffer;  // To be used with callbacks invoked on byte reads.
   };
 
   typedef std::map<int32_t, CallbackInfo> CallbackTable;

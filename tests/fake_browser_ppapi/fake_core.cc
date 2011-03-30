@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
+ * Copyright 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -30,7 +30,7 @@ static void ReleaseResource(PP_Resource resource) {
   DebugPrintf("Core::ReleaseResource: resource=%"NACL_PRIu64"\n", resource);
 }
 
-static void* MemAlloc(size_t num_bytes) {
+static void* MemAlloc(uint32_t num_bytes) {
   DebugPrintf("Core::MemAlloc: num_bytes=%"NACL_PRIuS"\n", num_bytes);
   return malloc(num_bytes);
 }

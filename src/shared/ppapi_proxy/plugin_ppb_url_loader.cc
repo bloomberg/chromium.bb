@@ -1,4 +1,4 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
+// Copyright 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can
 // be found in the LICENSE file.
 
@@ -157,7 +157,7 @@ PP_Resource GetResponseInfo(PP_Resource loader) {
 }
 
 int32_t ReadResponseBody(PP_Resource loader,
-                         char* buffer,
+                         void* buffer,
                          int32_t bytes_to_read,
                          struct PP_CompletionCallback callback) {
   DebugPrintf("PPB_URLLoader::ReadResponseBody: loader=%"NACL_PRIu32"\n",
@@ -179,7 +179,7 @@ int32_t ReadResponseBody(PP_Resource loader,
           bytes_to_read,
           callback_id,
           &buffer_size,
-          buffer,
+          static_cast<char*>(buffer),
           &pp_error_or_bytes);
   DebugPrintf("PPB_URLLoader::ReadResponseBody: %s\n",
               NaClSrpcErrorString(srpc_result));

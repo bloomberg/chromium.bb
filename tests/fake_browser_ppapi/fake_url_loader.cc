@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
+ * Copyright 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -123,7 +123,7 @@ PP_Resource GetResponseInfo(PP_Resource loader_id) {
 }
 
 int32_t ReadResponseBody(PP_Resource loader_id,
-                         char* buffer,
+                         void* buffer,
                          int32_t bytes_to_read,
                          struct PP_CompletionCallback callback) {
   DebugPrintf("URLLoader::ReadResponseBody: loader_id=%"NACL_PRId32"\n",

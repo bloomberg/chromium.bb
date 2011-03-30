@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ pthread_mutex_t CompletionCallbackTable::mutex_ = PTHREAD_MUTEX_INITIALIZER;
 
 int32_t CompletionCallbackTable::AddCallback(
     const PP_CompletionCallback& callback,
-    char* read_buffer) {
+    void* read_buffer) {
   CallbackTableCriticalSection guard;
   if (callback.func == NULL) {
     DebugPrintf("CompletionCallbackTable attempted to add NULL func!!\n");
@@ -33,7 +33,7 @@ int32_t CompletionCallbackTable::AddCallback(
 }
 
 PP_CompletionCallback CompletionCallbackTable::RemoveCallback(
-    int32_t callback_id, char** read_buffer) {
+    int32_t callback_id, void** read_buffer) {
   CallbackTableCriticalSection guard;
   CallbackTable::iterator it = table_.find(callback_id);
   DebugPrintf("CompletionCallbackTable::RemoveCallback id: %"NACL_PRId32"\n",
@@ -63,7 +63,7 @@ void CompletionCallbackRpcServer::RunCompletionCallback(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
-  char* user_buffer;
+  void* user_buffer;
   PP_CompletionCallback callback =
       ppapi_proxy::CompletionCallbackTable::Get()->RemoveCallback(
           callback_id, &user_buffer);

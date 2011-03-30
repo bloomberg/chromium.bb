@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
+ * Copyright 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -100,7 +100,7 @@ PP_Bool SetProperty(PP_Resource request_id,
 }
 
 PP_Bool AppendDataToBody(PP_Resource request_id,
-                         const char* data,
+                         const void* data,
                          uint32_t len) {
   DebugPrintf("URLRequestInfo::AppendDataToBody: request_id=%"NACL_PRId32"\n",
               request_id);

@@ -1,4 +1,4 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
+// Copyright 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can
 // be found in the LICENSE file.
 
@@ -78,7 +78,7 @@ PP_Bool SetProperty(PP_Resource request,
   return PP_FALSE;
 }
 
-PP_Bool AppendDataToBody(PP_Resource request, const char* data, uint32_t len) {
+PP_Bool AppendDataToBody(PP_Resource request, const void* data, uint32_t len) {
   DebugPrintf("PPB_URLRequestInfo::AppendDataToBody: request=%"NACL_PRIu32"\n",
               request);
   NACL_UNTESTED();
@@ -89,7 +89,7 @@ PP_Bool AppendDataToBody(PP_Resource request, const char* data, uint32_t len) {
           GetMainSrpcChannel(),
           request,
           static_cast<nacl_abi_size_t>(len),
-          const_cast<char*>(data),
+          static_cast<char*>(const_cast<void*>(data)),
           &success);
   DebugPrintf("PPB_URLRequestInfo::AppendDataToBody: %s\n",
               NaClSrpcErrorString(srpc_result));

@@ -1,4 +1,4 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
+// Copyright 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can
 // be found in the LICENSE file.
 
@@ -59,7 +59,7 @@ void ReleaseResource(PP_Resource resource) {
   }
 }
 
-void* MemAlloc(size_t num_bytes) {
+void* MemAlloc(uint32_t num_bytes) {
   DebugPrintf("PPB_Core::MemAlloc: num_bytes=%"NACL_PRIuS"\n",
               num_bytes);
   return malloc(num_bytes);
