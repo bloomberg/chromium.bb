@@ -1,6 +1,6 @@
 @echo off
 setlocal
-set HERMETIC_CYGWIN=hermetic_cygwin_1_7_7-0_1
+set HERMETIC_CYGWIN=hermetic_cygwin_1_7_9-0_1
 if exist "%~dp0..\cygwin\%HERMETIC_CYGWIN%.txt" goto :skip_cygwin_install
 if not exist "%~dp0..\cygwin" goto :dont_remove_cygwin
 rmdir /s /q "%~dp0..\cygwin"

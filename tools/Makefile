@@ -544,6 +544,7 @@ GLIBC_CFLAGS=-O2 -g
 # redefining variables with recursive $(MAKE) calls.
 LIB_BITS?=64
 ARCH_DEST=$(DESTDIR)$(SDKROOT)/$(if $(filter 32,$(LIB_BITS)),nacl,nacl64)
+ARCH_DEST_NATIVE=$(SDKLOC_NATIVE)/$(if $(filter 32,$(LIB_BITS)),nacl,nacl64)
 
 BUILD/stamp-glibc32: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
   | SRC/glibc SRC/linux-headers-for-nacl
@@ -642,7 +643,7 @@ glibc-adhoc-files: | SRC/glibc SRC/linux-headers-for-nacl
 SCONS_DESTINATIONS_NOLIB=\
  DESTINATION_ROOT=tools/BUILD/build-extra_sdk-$(CROSSARCH) \
  naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
- extra_sdk_include_destination=$(DESTDIR)$(SDKROOT)/include \
+ extra_sdk_include_destination=$(SDKLOC_NATIVE)/$(SDKNAME)/include \
 
 BUILD_EXTRA_SDK=BUILD/build-extra_sdk-$(CROSSARCH)
 
@@ -653,7 +654,7 @@ scons-libs-glibc: glibc-adhoc-files
 	cd .. && \
 	  (./$(SCONS) \
 	    $(SCONS_DESTINATIONS_NOLIB) \
-	    extra_sdk_lib_destination=$(ARCH_DEST)/lib \
+	    extra_sdk_lib_destination=$(ARCH_DEST_NATIVE)/lib \
 	    MODE=nacl_extra_sdk --nacl_glibc \
 	    extra_sdk_update_header extra_sdk_update \
 	    targetplatform=x86-$(LIB_BITS) --verbose )
@@ -941,12 +942,12 @@ endif
 	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files LIB_BITS=32
 	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files LIB_BITS=64
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-full-gcc
+	$(MAKE) -f $(THISMAKEFILE) redirector
+	$(MAKE) -f $(THISMAKEFILE) gcc-redirector
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=32
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=64
 	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=32
 	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=64
-	$(MAKE) -f $(THISMAKEFILE) redirector
-	$(MAKE) -f $(THISMAKEFILE) gcc-redirector
 
 .PHONY: dev-build
 dev-build:

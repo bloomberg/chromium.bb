@@ -11,6 +11,7 @@ call gclient runhooks --force
 
 setlocal
 call "%~dp0cygwin_env.bat"
+set CYGWIN=nodosfilewarning %CYGWIN%
 bash buildbot/buildbot_windows-glibc-makefile.sh
 if errorlevel 1 exit 1
 endlocal

@@ -46,8 +46,7 @@ fi
 echo @@@BUILD_STEP compile_toolchain@@@
 (
   cd tools
-  # TODO(khim): use -j8 after switch to CygWin 1.7.8+
-  make -j1 buildbot-build-with-glibc
+  make -j8 buildbot-build-with-glibc
   rm toolchain/win_x86/tmp
 )
 
