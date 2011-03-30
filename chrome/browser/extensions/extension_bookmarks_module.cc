@@ -438,7 +438,7 @@ bool CreateBookmarkFunction::RunImpl() {
     return false;
   }
   if (parent->parent() == NULL) {  // Can't create children of the root.
-    error_ = keys::kNoParentError;
+    error_ = keys::kModifySpecialError;
     return false;
   }
 

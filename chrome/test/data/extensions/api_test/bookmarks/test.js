@@ -1,3 +1,7 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // bookmarks api test
 // browser_tests.exe --gtest_filter=ExtensionApiTest.Bookmarks
 
@@ -162,6 +166,12 @@ chrome.test.runTests([
                              "created node != source");
       expected[0].children[0].children.push(node);
     }));
+  },
+
+  function createInRoot() {
+    const error = "Can't modify the root bookmark folders.";
+    var node = {parentId:"0", title:"g404", url:"http://www.google.com/404"};
+    chrome.bookmarks.create(node, fail(error));
   },
 
   function createFolder() {
