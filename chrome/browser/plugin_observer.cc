@@ -240,20 +240,23 @@ string16 OutdatedPluginInfoBarDelegate::GetMessageText() const {
 string16 OutdatedPluginInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_PLUGIN_UPDATE : IDS_PLUGIN_ENABLE_TEMPORARILY);
+      IDS_PLUGIN_ENABLE_TEMPORARILY : IDS_PLUGIN_UPDATE);
 }
 
 bool OutdatedPluginInfoBarDelegate::Accept() {
+  UserMetrics::RecordAction(
+      UserMetricsAction("OutdatedPluginInfobar.AllowThisTime"));
+  // This is intentional; the base class cancel is mapped to running all
+  // plug-ins and closing the infobar. We've rewired Accept() and Cancel() in
+  // the "outdated" case so that the first button is "Update..."
+  return PluginInfoBarDelegate::Cancel();
+}
+
+bool OutdatedPluginInfoBarDelegate::Cancel() {
   UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Update"));
   tab_contents_->OpenURL(update_url_, GURL(), NEW_FOREGROUND_TAB,
                          PageTransition::LINK);
   return false;
-}
-
-bool OutdatedPluginInfoBarDelegate::Cancel() {
-  UserMetrics::RecordAction(
-      UserMetricsAction("OutdatedPluginInfobar.AllowThisTime"));
-  return PluginInfoBarDelegate::Cancel();
 }
 
 void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
