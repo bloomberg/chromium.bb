@@ -397,10 +397,6 @@ void BaseTabStrip::Layout() {
   DoLayout();
 }
 
-bool BaseTabStrip::CanDrop(const ui::OSExchangeData& data) {
-  return IsVisible() && !IsAnimating();
-}
-
 bool BaseTabStrip::OnMouseDragged(const views::MouseEvent&  event) {
   if (drag_controller_.get())
     drag_controller_->Drag();

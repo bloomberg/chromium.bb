@@ -40,7 +40,7 @@ bool BrowserRootView::AreDropTypesRequired() {
 }
 
 bool BrowserRootView::CanDrop(const ui::OSExchangeData& data) {
-  if (!tabstrip() || !tabstrip()->CanDrop(data))
+  if (!tabstrip() || !tabstrip()->IsVisible())
     return false;
 
   // If there is a URL, we'll allow the drop.
