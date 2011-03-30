@@ -1,12 +1,11 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
+ * Copyright 2009 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
  */
-/* TODO(bradchen): figure out where to move this include file and then move it */
 
-#ifndef NATIVE_CLIENT_SRC_UNTRUSTED_NACL_SYSCALL_BINDINGS_TRAMPOLINE_H
-#define NATIVE_CLIENT_SRC_UNTRUSTED_NACL_SYSCALL_BINDINGS_TRAMPOLINE_H
+#ifndef NATIVE_CLIENT_SRC_UNTRUSTED_SYSCALL_BINDINGS_TRAMPOLINE_H
+#define NATIVE_CLIENT_SRC_UNTRUSTED_SYSCALL_BINDINGS_TRAMPOLINE_H
 
 #if __cplusplus
 extern "C" {
@@ -34,15 +33,15 @@ union NaClMultimediaEvent;
  * parking instrumentation (tls related calls).
  */
 
-extern void IRT_pre_irtcall_hook();
-extern void IRT_post_irtcall_hook();
+extern void nacl_pre_syscall_hook();
+extern void nacl_post_syscall_hook();
 
 #define NACL_GC_WRAP_SYSCALL(_expr) \
   ({                                \
     __typeof__(_expr) __sysret;     \
-    IRT_pre_irtcall_hook();        \
+    nacl_pre_syscall_hook();        \
     __sysret = _expr;               \
-    IRT_post_irtcall_hook();       \
+    nacl_post_syscall_hook();       \
     __sysret;                       \
   })
 
@@ -210,4 +209,4 @@ typedef int (*TYPE_nacl_dyncode_delete) (void *dest, size_t size);
 }
 #endif
 
-#endif  /*  NATIVE_CLIENT_SRC_UNTRUSTED_NACL_SYSCALL_BINDINGS_TRAMPOLINE_H */
+#endif  /*  NATIVE_CLIENT_SRC_UNTRUSTED_SYSCALL_BINDINGS_TRAMPOLINE_H */
