@@ -12,6 +12,7 @@ import os
 import parallel_emerge
 import portage
 import re
+import shutil
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -24,6 +25,12 @@ class Updater(object):
   def __init__(self, options, args):
     self._options = options
     self._args = args
+    self._stable_repo = os.path.join(self._options.srcroot,
+                                     'third_party', 'portage-stable')
+    self._upstream_repo = self._options.upstream
+    if not self._upstream_repo:
+      self._upstream_repo = os.path.join(self._options.srcroot,
+                                         'third_party', 'portage')
 
   @staticmethod
   def _GetPreOrderDepGraphPackage(deps_graph, package, pkglist, visited):
@@ -54,22 +61,25 @@ class Updater(object):
           return re.search(r'[ "]x86[ "]', line)
     return False
 
+  def _RunGit(self, repo, command):
+    """Runs |command| in the git |repo|."""
+    cros_lib.RunCommand(['/bin/sh', '-c', 'cd %s && git %s' % (repo, command)],
+                        print_cmd=self._options.verbose);
+
   def _SplitEBuildPath(self, ebuild_path):
     """Split a full ebuild path into (overlay, cat, pn, pv)."""
-    logging.debug('ebuild: %s', ebuild_path)
     (ebuild_path, ebuild) = os.path.splitext(ebuild_path)
     (ebuild_path, pv) = os.path.split(ebuild_path)
     (ebuild_path, pn) = os.path.split(ebuild_path)
     (ebuild_path, cat) = os.path.split(ebuild_path)
     (ebuild_path, overlay) = os.path.split(ebuild_path)
-    logging.debug('%s | %s | %s | %s', overlay, cat, pn, pv)
     return (overlay, cat, pn, pv)
 
-  def _FindLatestVersion(self, upstream, cpv):
-    """Returns the latest cpv in |upstream| if it's newer than |cpv|."""
+  def _FindLatestVersion(self, cpv):
+    """Returns the latest cpv in |_upstream_repo| if it's newer than |cpv|."""
     latest_cpv = cpv
     (cat, pn, version, rev) = portage.versions.catpkgsplit(cpv)
-    pkgpath = os.path.join(upstream, cat, pn)
+    pkgpath = os.path.join(self._upstream_repo, cat, pn)
     for ebuild_path in glob.glob(os.path.join(pkgpath, '%s*.ebuild' % pn)):
       if not Updater._IsStableEBuild(ebuild_path): continue
       (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
@@ -77,17 +87,52 @@ class Updater(object):
       if portage.versions.pkgcmp(portage.versions.pkgsplit(upstream_cpv),
                                  portage.versions.pkgsplit(latest_cpv)) > 0:
         latest_cpv = upstream_cpv
-    logging.debug('cpv: %s latest_cpv: %s', cpv, latest_cpv)
     if latest_cpv != cpv: return latest_cpv
     return None
 
-  def _FindLatestVersions(self, infolist):
+  def _CopyUpstreamPackage(self, info):
+    """Upgrades package described by |info| by copying from usptream.
+
+    The copy is performed only if it's possible to upgrade the package and
+    --upgrade is specified.
+
+    Returns:
+      True if the packages was upgraded, False otherwise.
+    """
+    latest_cpv = info['latest_cpv']
+    if (not latest_cpv or not self._options.upgrade or
+        not info['overlay'].startswith('portage')):
+      return False
+    (cat, pkgname, version, rev) = portage.versions.catpkgsplit(latest_cpv)
+    catpkgname = os.path.join(cat, pkgname)
+    pkgdir = os.path.join(self._stable_repo, catpkgname)
+    if os.path.exists(pkgdir):
+      shutil.rmtree(pkgdir)
+    upstream_pkgdir = os.path.join(self._upstream_repo, cat, pkgname)
+    # Copy the whole package except the ebuilds.
+    shutil.copytree(upstream_pkgdir, pkgdir,
+                    ignore=shutil.ignore_patterns('*.ebuild'))
+    # Copy just the ebuild that will be used in the build.
+    shutil.copy2(os.path.join(upstream_pkgdir,
+                              latest_cpv.split('/')[1] + '.ebuild'), pkgdir)
+    self._RunGit(self._stable_repo, 'add ' + catpkgname)
+    return True
+
+  def _UpgradePackage(self, info):
+    """Updates |info| with latest_cpv and performs an upgrade if necessary."""
+    cpv = info['cpv']
+    # No need to report or try to upgrade chromeos-base packages.
+    if cpv.startswith('chromeos-base/'): return
+    info['latest_cpv'] = self._FindLatestVersion(cpv)
+    info['upgraded'] = self._CopyUpstreamPackage(info)
+    update = ''
+    if info['latest_cpv']: update = ' -> %s' % info['latest_cpv']
+    upgraded = ''
+    if info['upgraded']: upgraded = ' (UPGRADED)'
+    print '[%s] %s%s%s' % (info['overlay'], info['cpv'], update, upgraded)
+
+  def _UpgradePackages(self, infolist):
     """Given a list of cpv info maps, adds the latest_cpv to the infos."""
-    checkout_gentoo = False
-    upstream = self._options.upstream
-    if not upstream:
-      checkout_gentoo = True
-      upstream = os.path.join(self._options.srcroot, 'third_party', 'portage')
     dash_q = ''
     if not self._options.verbose: dash_q = '-q'
     try:
@@ -96,22 +141,22 @@ class Updater(object):
       # upstream so there will be no need to chdir/checkout. At that point we
       # can also fuse this loop into the caller and avoid generating a separate
       # list.
-      if checkout_gentoo:
-        cros_lib.RunCommand(['/bin/sh', '-c',
-                             'cd %s && git checkout %s cros/gentoo' % (
-                                 upstream, dash_q)],
-                            print_cmd=self._options.verbose);
+      if not self._options.upstream:
+        self._RunGit(self._upstream_repo, 'checkout %s cros/gentoo' % dash_q)
+      message = ''
       for info in infolist:
-        # No need to report or try to upgrade chromeos-base packages.
-        if info['cpv'].startswith('chromeos-base/'): continue
-        latest_cpv = self._FindLatestVersion(upstream, info['cpv'])
-        info['latest_cpv'] = latest_cpv
+        self._UpgradePackage(info)
+        if info['upgraded']:
+          message += 'Upgrade %s to %s\n' % (info['cpv'], info['latest_cpv'])
+      if message:
+        message = 'Upgrade Portage packages\n\n' + message
+        message += '\nBUG=<fill-in>'
+        message += '\nTEST=<fill-in>'
+        self._RunGit(self._stable_repo, "commit -am '%s'" % message)
+        cros_lib.Info('Use "git commit --amend" to update the commit message.')
     finally:
-      if checkout_gentoo:
-        cros_lib.RunCommand(['/bin/sh', '-c',
-                             'cd %s && git checkout %s cros/master' % (
-                                 upstream, dash_q)],
-                            print_cmd=self._options.verbose);
+      if not self._options.upstream:
+        self._RunGit(self._upstream_repo, 'checkout %s cros/master' % dash_q)
 
   def _GetCurrentVersions(self):
     """Returns a list of cpvs of the current package dependencies."""
@@ -150,12 +195,7 @@ class Updater(object):
     potential upgrades."""
     cpvlist = self._GetCurrentVersions()
     infolist = self._GetInfoListWithOverlays(cpvlist)
-    self._FindLatestVersions(infolist)
-    for info in infolist:
-      update = ''
-      if info['latest_cpv']: update = ' -> %s' % info['latest_cpv']
-      print '[%s] %s%s' % (info['overlay'], info['cpv'], update)
-
+    self._UpgradePackages(infolist)
 
 def main():
   usage = 'Usage: %prog [options] packages...'
@@ -168,6 +208,9 @@ def main():
   parser.add_option('--srcroot', dest='srcroot', type='string', action='store',
                     default='%s/trunk/src' % os.environ['HOME'],
                     help="Path to root src directory [default: '%default']")
+  parser.add_option('--upgrade', dest='upgrade', action='store_true',
+                    default=False,
+                    help="Perform package upgrade")
   parser.add_option('--upstream', dest='upstream', type='string',
                     action='store', default=None,
                     help="Latest upstream repo location [default: '%default']")
