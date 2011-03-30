@@ -243,7 +243,7 @@
   ThreadSanitizer:UnlockNonLocked
   fun:pthread_mutex_unlock
   ...
-  fun:WTF::WorkerFileSystemCallbacksBridge::mayPostTaskToWorker*
+  fun:*WorkerFileSystemCallbacksBridge::mayPostTaskToWorker*
 }
 
 {
