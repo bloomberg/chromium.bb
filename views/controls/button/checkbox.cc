@@ -21,12 +21,12 @@ static const int kLabelFocusPaddingVertical = 1;
 ////////////////////////////////////////////////////////////////////////////////
 // Checkbox, public:
 
-Checkbox::Checkbox() : NativeButtonBase(NULL), checked_(false) {
+Checkbox::Checkbox() : NativeButton(NULL), checked_(false) {
   Init(std::wstring());
 }
 
 Checkbox::Checkbox(const std::wstring& label)
-    : NativeButtonBase(NULL, label),
+    : NativeButton(NULL, label),
       checked_(false) {
   Init(label);
 }
@@ -88,7 +88,7 @@ int Checkbox::GetHeightForWidth(int w) {
 }
 
 void Checkbox::SetEnabled(bool enabled) {
-  NativeButtonBase::SetEnabled(enabled);
+  NativeButton::SetEnabled(enabled);
   if (label_)
     label_->SetEnabled(enabled);
 }
@@ -165,7 +165,7 @@ void Checkbox::GetAccessibleState(ui::AccessibleViewState* state) {
 // Checkbox, NativeButton overrides:
 
 void Checkbox::SetLabel(const std::wstring& label) {
-  NativeButtonBase::SetLabel(label);
+  NativeButton::SetLabel(label);
   if (!native_wrapper_->UsesNativeLabel())
     label_->SetText(label);
 }

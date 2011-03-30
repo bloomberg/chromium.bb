@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,12 +32,12 @@ static const int kButtonBorderHWidth = 0;
 #endif
 
 // static
-const char NativeButtonBase::kViewClassName[] = "views/NativeButtonBase";
+const char NativeButton::kViewClassName[] = "views/NativeButton";
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeButtonBase, public:
+// NativeButton, public:
 
-NativeButtonBase::NativeButtonBase(ButtonListener* listener)
+NativeButton::NativeButton(ButtonListener* listener)
     : Button(listener),
       native_wrapper_(NULL),
       is_default_(false),
@@ -47,8 +47,7 @@ NativeButtonBase::NativeButtonBase(ButtonListener* listener)
   SetFocusable(true);
 }
 
-NativeButtonBase::NativeButtonBase(ButtonListener* listener,
-                                   const std::wstring& label)
+NativeButton::NativeButton(ButtonListener* listener, const std::wstring& label)
     : Button(listener),
       native_wrapper_(NULL),
       is_default_(false),
@@ -59,10 +58,10 @@ NativeButtonBase::NativeButtonBase(ButtonListener* listener,
   SetFocusable(true);
 }
 
-NativeButtonBase::~NativeButtonBase() {
+NativeButton::~NativeButton() {
 }
 
-void NativeButtonBase::SetLabel(const std::wstring& label) {
+void NativeButton::SetLabel(const std::wstring& label) {
   label_ = WideToUTF16Hack(label);
 
   // Even though we create a flipped HWND for a native button when the locale
@@ -85,7 +84,7 @@ void NativeButtonBase::SetLabel(const std::wstring& label) {
   PreferredSizeChanged();
 }
 
-void NativeButtonBase::SetIsDefault(bool is_default) {
+void NativeButton::SetIsDefault(bool is_default) {
   if (is_default == is_default_)
     return;
   is_default_ = is_default;
@@ -98,14 +97,14 @@ void NativeButtonBase::SetIsDefault(bool is_default) {
   PreferredSizeChanged();
 }
 
-void NativeButtonBase::SetNeedElevation(bool need_elevation) {
+void NativeButton::SetNeedElevation(bool need_elevation) {
   need_elevation_ = need_elevation;
   if (native_wrapper_)
     native_wrapper_->UpdateLabel();
   PreferredSizeChanged();
 }
 
-void NativeButtonBase::ButtonPressed() {
+void NativeButton::ButtonPressed() {
   RequestFocus();
 
   // TODO(beng): obtain mouse event flags for native buttons someday.
@@ -124,9 +123,9 @@ void NativeButtonBase::ButtonPressed() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeButtonBase, View overrides:
+// NativeButton, View overrides:
 
-gfx::Size NativeButtonBase::GetPreferredSize() {
+gfx::Size NativeButton::GetPreferredSize() {
   if (!native_wrapper_)
     return gfx::Size();
 
@@ -157,20 +156,20 @@ gfx::Size NativeButtonBase::GetPreferredSize() {
   return sz;
 }
 
-void NativeButtonBase::Layout() {
+void NativeButton::Layout() {
   if (native_wrapper_) {
     native_wrapper_->GetView()->SetBounds(0, 0, width(), height());
     native_wrapper_->GetView()->Layout();
   }
 }
 
-void NativeButtonBase::SetEnabled(bool flag) {
+void NativeButton::SetEnabled(bool flag) {
   Button::SetEnabled(flag);
   if (native_wrapper_)
     native_wrapper_->UpdateEnabled();
 }
 
-void NativeButtonBase::ViewHierarchyChanged(bool is_add, View* parent,
+void NativeButton::ViewHierarchyChanged(bool is_add, View* parent,
                                          View* child) {
   if (is_add && !native_wrapper_ && GetWidget()) {
     // The native wrapper's lifetime will be managed by the view hierarchy after
@@ -180,11 +179,11 @@ void NativeButtonBase::ViewHierarchyChanged(bool is_add, View* parent,
   }
 }
 
-std::string NativeButtonBase::GetClassName() const {
+std::string NativeButton::GetClassName() const {
   return kViewClassName;
 }
 
-bool NativeButtonBase::AcceleratorPressed(const Accelerator& accelerator) {
+bool NativeButton::AcceleratorPressed(const Accelerator& accelerator) {
   if (IsEnabled()) {
 #if defined(OS_WIN)
     DWORD pos = GetMessagePos();
@@ -202,7 +201,7 @@ bool NativeButtonBase::AcceleratorPressed(const Accelerator& accelerator) {
   return false;
 }
 
-void NativeButtonBase::OnFocus() {
+void NativeButton::OnFocus() {
   // Forward the focus to the wrapper.
   if (native_wrapper_)
     native_wrapper_->SetFocus();
@@ -211,15 +210,15 @@ void NativeButtonBase::OnFocus() {
                         // keyboard messages).
 }
 
-void NativeButtonBase::OnPaintFocusBorder(gfx::Canvas* canvas) {
+void NativeButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (NativeViewHost::kRenderNativeControlFocus)
     View::OnPaintFocusBorder(canvas);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeButtonBase, protected:
+// NativeButton, protected:
 
-NativeButtonWrapper* NativeButtonBase::CreateWrapper() {
+NativeButtonWrapper* NativeButton::CreateWrapper() {
   NativeButtonWrapper* native_wrapper =
       NativeButtonWrapper::CreateNativeButtonWrapper(this);
   native_wrapper->UpdateLabel();
@@ -227,54 +226,9 @@ NativeButtonWrapper* NativeButtonBase::CreateWrapper() {
   return native_wrapper;
 }
 
-void NativeButtonBase::InitBorder() {
+void NativeButton::InitBorder() {
   set_border(Border::CreateEmptyBorder(0, kButtonBorderHWidth, 0,
                                        kButtonBorderHWidth));
 }
-
-#if defined(TOUCH_UI)
-////////////////////////////////////////////////////////////////////////////////
-// NativeButton, public:
-
-NativeButton::NativeButton(ButtonListener* listener, const std::wstring& label)
-    : TextButton(listener, label), is_default_(false) {
-  set_alignment(TextButton::ALIGN_CENTER);
-  SetNormalHasBorder(true);
-}
-
-void NativeButton::SetLabel(const std::wstring& label) {
-  SetText(label);
-}
-
-void NativeButton::set_font(const gfx::Font& font) {
-  SetFont(font);
-}
-
-void NativeButton::SetIsDefault(bool default_button) {
-  is_default_ = default_button;
-}
-
-bool NativeButton::is_default() const {
-  return is_default_;
-}
-
-void NativeButton::set_ignore_minimum_size(bool) {
-    // TODO(saintlou): ignoring for now
-}
-#elif defined(OS_WIN)
-////////////////////////////////////////////////////////////////////////////////
-// NativeButton, public:
-
-NativeButton::NativeButton(ButtonListener* listener)
-    : NativeButtonBase(listener) {
-}
-
-NativeButton::NativeButton(ButtonListener* listener, const std::wstring& label)
-    : NativeButtonBase(listener, label) {
-}
-
-NativeButton::~NativeButton() {
-}
-#endif
 
 }  // namespace views
