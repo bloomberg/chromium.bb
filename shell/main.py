@@ -148,50 +148,47 @@ def main():
   except:
     sys.exit(1)
 
-  if False:  # To preserve indent and minimize changes in this CL
-    pass
+  # Set up the cros system.
+  cros_env = chromite_env.ChromiteEnv()
+
+  # Configure the operation setup.
+  oper = cros_env.GetOperation()
+  oper.verbose = options.verbose >= 3
+  oper.progress = options.verbose >= 1
+
+  # Look for special "--chroot" argument to allow for alternate chroots
+  if not cros_lib.IsInsideChroot():
+    chroot_spec_path = utils.FindSpec(options.chroot_name,
+                                      spec_type=utils.CHROOT_SPEC_TYPE)
+
+    oper.Info('Using chroot "%s"' % os.path.relpath(chroot_spec_path))
+
+    chroot_config = utils.ReadConfig(chroot_spec_path)
   else:
-    # Set up the cros system.
-    cros_env = chromite_env.ChromiteEnv()
+    # Already in the chroot; no need to get config...
+    chroot_config = None
 
-    # Configure the operation setup.
-    oper = cros_env.GetOperation()
-    oper.verbose = options.verbose >= 3
-    oper.progress = options.verbose >= 1
+  # Get command and arguments
+  if args:
+    cmd_str = args[0].lower()
+    args = args[1:]
+  else:
+    cmd_str = ''
 
-    # Look for special "--chroot" argument to allow for alternate chroots
-    if not cros_lib.IsInsideChroot():
-      chroot_spec_path = utils.FindSpec(options.chroot_name,
-                                        spec_type=utils.CHROOT_SPEC_TYPE)
+  # Validate the subcmd, popping a menu if needed.
+  cmd_str = _FindCommand(cmd_str)
+  oper.Info("Running command '%s'." % cmd_str)
 
-      oper.Info('Using chroot "%s"' % os.path.relpath(chroot_spec_path))
+  # Finally, call the function w/ standard argv.
+  cmd_cls = _COMMAND_HANDLERS[_COMMAND_STRS.index(cmd_str)]
+  cmd_obj = cmd_cls()
+  cmd_obj.SetChromiteEnv(cros_env)
+  try:
+    cmd_obj.Run([cmd_str] + args, chroot_config=chroot_config)
 
-      chroot_config = utils.ReadConfig(chroot_spec_path)
-    else:
-      # Already in the chroot; no need to get config...
-      chroot_config = None
-
-    # Get command and arguments
-    if args:
-      cmd_str = args[0].lower()
-      args = args[1:]
-    else:
-      cmd_str = ''
-
-    # Validate the subcmd, popping a menu if needed.
-    cmd_str = _FindCommand(cmd_str)
-    oper.Info("Running command '%s'." % cmd_str)
-
-    # Finally, call the function w/ standard argv.
-    cmd_cls = _COMMAND_HANDLERS[_COMMAND_STRS.index(cmd_str)]
-    cmd_obj = cmd_cls()
-    cmd_obj.SetChromiteEnv(cros_env)
-    try:
-      cmd_obj.Run([cmd_str] + args, chroot_config=chroot_config)
-
-    # Handle an error in one of the scripts: print a message and exit.
-    except chromite_env.ChromiteError, msg:
-      sys.exit(1)
+  # Handle an error in one of the scripts: print a message and exit.
+  except chromite_env.ChromiteError, msg:
+    sys.exit(1)
 
 if __name__ == '__main__':
   main()
