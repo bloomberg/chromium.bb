@@ -705,6 +705,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDomAutomationController,
     switches::kDumpHistogramsOnExit,
     switches::kEnableAcceleratedDecoding,
+    switches::kEnableAdaptive,
     switches::kEnableBenchmarking,
     switches::kEnableClickToPlay,
     switches::kEnableCrxlessWebApps,

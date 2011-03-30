@@ -16,6 +16,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/pipeline_impl.h"
 #include "media/base/video_frame.h"
+#include "media/filters/adaptive_demuxer.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -343,6 +344,10 @@ bool WebMediaPlayerImpl::Initialize(
   scoped_ptr<media::DemuxerFactory> demuxer_factory(
       new media::FFmpegDemuxerFactory(data_source_factory.release(),
                                       pipeline_message_loop));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAdaptive)) {
+    demuxer_factory.reset(new media::AdaptiveDemuxerFactory(
+        demuxer_factory.release()));
+  }
   filter_collection_->SetDemuxerFactory(demuxer_factory.release());
 
   // Add in the default filter factories.
