@@ -10,12 +10,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace  {
-// Convenience function to return the middle point of the given |rect|.
-static NSPoint MidRect(NSRect rect) {
-  return NSMakePoint(NSMidX(rect), NSMidY(rect));
-}
-
-const CGFloat kCircleRadiusPercentage = 0.415;
+const CGFloat kCircleRadius = 0.415 * 16;
 const CGFloat kCircleHoverWhite = 0.565;
 const CGFloat kCircleClickWhite = 0.396;
 const CGFloat kXShadowAlpha = 0.75;
@@ -23,6 +18,7 @@ const CGFloat kXShadowCircleAlpha = 0.1;
 }  // namespace
 
 @interface HoverCloseButton(Private)
+- (void)updatePaths;
 - (void)setUpDrawingPaths;
 @end
 
@@ -43,6 +39,10 @@ const CGFloat kXShadowCircleAlpha = 0.1;
 - (void)drawRect:(NSRect)rect {
   if (!circlePath_.get() || !xPath_.get())
     [self setUpDrawingPaths];
+
+  // Only call updatePaths if the size changed.
+  if (!NSEqualSizes(oldSize_, [self bounds].size))
+    [self updatePaths];
 
   // If the user is hovering over the button, a light/dark gray circle is drawn
   // behind the 'x'.
@@ -82,12 +82,14 @@ const CGFloat kXShadowCircleAlpha = 0.1;
 }
 
 - (void)setUpDrawingPaths {
-  NSPoint viewCenter = MidRect([self bounds]);
+  // Keep the paths centered around the origin in this function. It is then
+  // translated in -updatePaths.
+  NSPoint xCenter = NSZeroPoint;
 
   circlePath_.reset([[NSBezierPath bezierPath] retain]);
-  [circlePath_ moveToPoint:viewCenter];
-  CGFloat radius = kCircleRadiusPercentage * NSWidth([self bounds]);
-  [circlePath_ appendBezierPathWithArcWithCenter:viewCenter
+  [circlePath_ moveToPoint:xCenter];
+  CGFloat radius = kCircleRadius;
+  [circlePath_ appendBezierPathWithArcWithCenter:xCenter
                                           radius:radius
                                       startAngle:0.0
                                         endAngle:365.0];
@@ -98,14 +100,36 @@ const CGFloat kXShadowCircleAlpha = 0.1;
   [xPath_ appendBezierPathWithRect:NSMakeRect(3.5, 7.0, 9.0, 2.0)];
   [xPath_ appendBezierPathWithRect:NSMakeRect(7.0, 3.5, 2.0, 9.0)];
 
-  NSPoint pathCenter = MidRect([xPath_ bounds]);
+  NSRect pathBounds = [xPath_ bounds];
+  NSPoint pathCenter = NSMakePoint(NSMidX(pathBounds), NSMidY(pathBounds));
 
   NSAffineTransform* transform = [NSAffineTransform transform];
-  [transform translateXBy:viewCenter.x yBy:viewCenter.y];
+  [transform translateXBy:xCenter.x yBy:xCenter.y];
   [transform rotateByDegrees:45.0];
   [transform translateXBy:-pathCenter.x yBy:-pathCenter.y];
 
   [xPath_ transformUsingAffineTransform:transform];
+}
+
+- (void)updatePaths {
+  oldSize_ = [self bounds].size;
+
+  // Revert the current transform for the two points.
+  if (transform_.get()) {
+    [transform_.get() invert];
+    [circlePath_.get() transformUsingAffineTransform:transform_.get()];
+    [xPath_.get() transformUsingAffineTransform:transform_.get()];
+  }
+
+  // Create the new transform. [self bounds] is prefered in case aRect wasn't
+  // literally taken as bounds (e.g. cropped).
+  NSPoint xCenter = NSMakePoint(8, oldSize_.height / 2.0f);
+
+  // Retain here, as scoped_* don't retain.
+  transform_.reset([[NSAffineTransform transform] retain]);
+  [transform_.get() translateXBy:xCenter.x yBy:xCenter.y];
+  [circlePath_.get() transformUsingAffineTransform:transform_.get()];
+  [xPath_.get() transformUsingAffineTransform:transform_.get()];
 }
 
 @end

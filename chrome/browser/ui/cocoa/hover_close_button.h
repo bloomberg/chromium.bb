@@ -17,6 +17,13 @@
 
   // Bezier path for drawing the hover state circle behind the 'x'.
   scoped_nsobject<NSBezierPath> circlePath_;
+
+  // Translation of the 'x' button to the middle vertically.
+  scoped_nsobject<NSAffineTransform> transform_;
+
+  // The size of the control when the last drawRect: was called, to recenter
+  // the paths above if it changed.
+  NSSize oldSize_;
 }
 
 // Sets up the button's tracking areas and accessibility info when instantiated

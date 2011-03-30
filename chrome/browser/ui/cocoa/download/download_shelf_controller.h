@@ -17,6 +17,7 @@ class Browser;
 class DownloadShelf;
 @class DownloadShelfView;
 @class HyperlinkButtonCell;
+@class HoverButton;
 
 // A controller class that manages the download shelf for one window. It is
 // responsible for the behavior of the shelf itself (showing/hiding, handling
@@ -41,7 +42,11 @@ class DownloadShelf;
 
   IBOutlet NSImageView* image_;
 
+  IBOutlet HoverButton* hoverCloseButton_;
+
   BOOL barIsVisible_;
+
+  BOOL isFullscreen_;
 
   scoped_ptr<DownloadShelf> bridge_;
 
