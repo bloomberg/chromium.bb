@@ -9,7 +9,6 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/favicon_helper.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,8 +16,9 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 
 namespace prerender {

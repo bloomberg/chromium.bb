@@ -21,6 +21,8 @@
 #include "net/url_request/url_request_context.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#include <queue>
+
 // Prerender tests work as follows:
 //
 // A page with a prefetch link to the test page is loaded.  Once prerendered,
@@ -87,39 +89,29 @@ class TestPrerenderContents : public PrerenderContents {
 class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
  public:
   explicit WaitForLoadPrerenderContentsFactory(
-      FinalStatus expected_final_status)
-      : expected_final_status_(expected_final_status) {
+      FinalStatus expected_final_status) {
+    PushExpectedFinalStatus(expected_final_status);
   }
 
-  void set_expected_final_status(FinalStatus expected_final_status) {
-    expected_final_status_ = expected_final_status;
-  }
-
-  void set_expected_final_status_for_url(const GURL& url,
-                                         FinalStatus expected_final_status) {
-    DCHECK(expected_final_status_map_.find(url) ==
-           expected_final_status_map_.end());
-    expected_final_status_map_[url] = expected_final_status;
+  void PushExpectedFinalStatus(FinalStatus expected_final_status) {
+    expected_final_status_queue_.push(expected_final_status);
   }
 
   virtual PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
       const std::vector<GURL>& alias_urls, const GURL& referrer) {
-    FinalStatus expected_final_status = expected_final_status_;
-    std::map<GURL, FinalStatus>::iterator it =
-        expected_final_status_map_.find(url);
-    if (it != expected_final_status_map_.end()) {
-      expected_final_status = it->second;
-      expected_final_status_map_.erase(it);
-    }
+    CHECK(!expected_final_status_queue_.empty()) <<
+          "Creating prerender contents for " << url.path() <<
+          "with no expected final status";
+    FinalStatus expected_final_status = expected_final_status_queue_.front();
+    expected_final_status_queue_.pop();
     return new TestPrerenderContents(prerender_manager, profile, url,
                                      alias_urls, referrer,
                                      expected_final_status);
   }
 
  private:
-  FinalStatus expected_final_status_;
-  std::map<GURL, FinalStatus> expected_final_status_map_;
+  std::queue<FinalStatus> expected_final_status_queue_;
 };
 
 }  // namespace
@@ -265,18 +257,10 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     use_https_src_server_ = use_https_src_server;
   }
 
-  void SetExpectedFinalStatus(FinalStatus expected_final_status) {
+  void PushExpectedFinalStatus(FinalStatus expected_final_status) {
     DCHECK(prerender_manager()->prerender_contents_factory_.get() ==
            prc_factory_);
-    prc_factory_->set_expected_final_status(expected_final_status);
-  }
-
-  void SetExpectedFinalStatusForUrl(const std::string& html_file,
-                                    FinalStatus expected_final_status) {
-    GURL url = UrlForHtmlFile(html_file);
-    DCHECK(prerender_manager()->prerender_contents_factory_.get() ==
-           prc_factory_);
-    prc_factory_->set_expected_final_status_for_url(url, expected_final_status);
+    prc_factory_->PushExpectedFinalStatus(expected_final_status);
   }
 
   TaskManagerModel* model() const {
@@ -439,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
   // We are not going to navigate back to kHtmlFileA but we will start the
   // preload so we need to set the final status to expect here before
   // navigating.
-  SetExpectedFinalStatus(FINAL_STATUS_APP_TERMINATING);
+  PushExpectedFinalStatus(FINAL_STATUS_APP_TERMINATING);
 
   NavigateToDestURL();
 
@@ -467,17 +451,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderInfiniteLoopMultiple
 
   // We are not going to navigate back to kHtmlFileA but we will start the
   // preload so we need to set the final status to expect here before
-  // navigating.
-  SetExpectedFinalStatusForUrl(kHtmlFileB, FINAL_STATUS_EVICTED);
-  SetExpectedFinalStatusForUrl(kHtmlFileC, FINAL_STATUS_APP_TERMINATING);
+  // navigating. We set them on a queue so whichever we see first is expected to
+  // be evicted, and the second should stick around until we exit.
+  PushExpectedFinalStatus(FINAL_STATUS_EVICTED);
+  PushExpectedFinalStatus(FINAL_STATUS_APP_TERMINATING);
 
   NavigateToDestURL();
 
   // Make sure the PrerenderContents for the next urls are now in the manager
-  // and not pending. url_c was the last seen so should be the active
-  // entry.
-  EXPECT_FALSE(UrlIsInPrerenderManager(kHtmlFileB));
-  EXPECT_TRUE(UrlIsInPrerenderManager(kHtmlFileC));
+  // and not pending. One and only one of the URLs (the last seen) should be the
+  // active entry.
+  bool url_b_is_active_prerender = UrlIsInPrerenderManager(kHtmlFileB);
+  bool url_c_is_active_prerender = UrlIsInPrerenderManager(kHtmlFileC);
+  EXPECT_TRUE((url_b_is_active_prerender || url_c_is_active_prerender) &&
+              !(url_b_is_active_prerender && url_c_is_active_prerender));
   EXPECT_FALSE(UrlIsPendingInPrerenderManager(kHtmlFileB));
   EXPECT_FALSE(UrlIsPendingInPrerenderManager(kHtmlFileC));
 }
