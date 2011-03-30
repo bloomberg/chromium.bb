@@ -2672,6 +2672,11 @@ void Browser::TabInsertedAt(TabContentsWrapper* contents,
   SetAsDelegate(contents, this);
   contents->controller().SetWindowID(session_id());
 
+  // Each renderer holds the ID of the window that hosts it. Notify the
+  // renderer that the window ID changed.
+  contents->render_view_host()->UpdateBrowserWindowId(
+      contents->controller().window_id().id());
+
   SyncHistoryWithTabs(index);
 
   // Make sure the loading state is updated correctly, otherwise the throbber

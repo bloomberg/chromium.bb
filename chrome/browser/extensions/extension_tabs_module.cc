@@ -964,8 +964,8 @@ bool MoveTabFunction::RunImpl() {
 
   if (has_callback())
     result_.reset(ExtensionTabUtil::CreateTabValue(contents->tab_contents(),
-        source_tab_strip,
-        new_index));
+                                                   source_tab_strip,
+                                                   new_index));
   return true;
 }
 

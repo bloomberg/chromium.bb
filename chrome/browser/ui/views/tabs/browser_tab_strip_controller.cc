@@ -308,10 +308,6 @@ void BrowserTabStripController::TabInsertedAt(TabContentsWrapper* contents,
   DCHECK(contents);
   DCHECK(model_index == TabStripModel::kNoTab ||
          model_->ContainsIndex(model_index));
-  // This tab may be attached to another browser window, we should notify
-  // renderer.
-  contents->render_view_host()->UpdateBrowserWindowId(
-      contents->controller().window_id().id());
 
   TabRendererData data;
   SetTabRendererDataFromModel(contents->tab_contents(), model_index, &data);
