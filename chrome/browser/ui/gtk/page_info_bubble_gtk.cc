@@ -226,6 +226,7 @@ GtkWidget* PageInfoBubbleGtk::CreateSection(
 
   if (!section.headline.empty()) {
     GtkWidget* label = gtk_label_new(UTF16ToUTF8(section.headline).c_str());
+    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
     labels_.push_back(label);
     PangoAttrList* attributes = pango_attr_list_new();
     pango_attr_list_insert(attributes,
@@ -239,6 +240,7 @@ GtkWidget* PageInfoBubbleGtk::CreateSection(
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
   }
   GtkWidget* label = gtk_label_new(UTF16ToUTF8(section.description).c_str());
+  gtk_label_set_selectable(GTK_LABEL(label), TRUE);
   labels_.push_back(label);
   gtk_util::SetLabelWidth(label, 400);
   // Allow linebreaking in the middle of words if necessary, so that extremely
