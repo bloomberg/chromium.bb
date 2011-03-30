@@ -51,7 +51,8 @@
       'execute_javascript',
       'history',
       'https',
-      'imports',
+      # crbug.com/77777
+      '-imports',
       'infobars',
       # crbug.com/72664
       '-infobars.InfobarTest.testPluginCrashForMultiTabs',
