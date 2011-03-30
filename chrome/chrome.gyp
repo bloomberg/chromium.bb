@@ -445,10 +445,10 @@
       'type': '<(library)',
       'sources': [
         'browser/sync/engine/syncapi.cc',
+        'browser/sync/engine/syncapi.h',
       ],
       'include_dirs': [
         '..',
-        '<(protoc_out_dir)',
       ],
       'defines' : [
         '_CRT_SECURE_NO_WARNINGS',
@@ -467,42 +467,18 @@
         'sync',
         'sync_notifier',
       ],
-      'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
-          'dependencies': [
-            '../build/linux/system.gyp:nss'
-          ],
-        }],
+      'export_dependent_settings': [
+        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'sync',
       ],
+      # This target exports a hard dependency because syncapi.h includes
+      # generated proto header files from sync_proto_cpp.
+      'hard_dependency': 1,
     },
     {
       'target_name': 'sync',
       'type': '<(library)',
       'sources': [
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.h',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/encryption.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/encryption.pb.h',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/app_specifics.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/app_specifics.pb.h',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/autofill_specifics.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/autofill_specifics.pb.h',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/bookmark_specifics.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/bookmark_specifics.pb.h',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/extension_specifics.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/extension_specifics.pb.h',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/nigori_specifics.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/nigori_specifics.pb.h',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/password_specifics.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/password_specifics.pb.h',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/preference_specifics.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/preference_specifics.pb.h',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/session_specifics.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/session_specifics.pb.h',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/theme_specifics.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/theme_specifics.pb.h',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/typed_url_specifics.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/typed_url_specifics.pb.h',
         'browser/sync/engine/all_status.cc',
         'browser/sync/engine/all_status.h',
         'browser/sync/engine/apply_updates_command.cc',
@@ -548,7 +524,6 @@
         'browser/sync/engine/resolve_conflicts_command.h',
         'browser/sync/engine/store_timestamps_command.cc',
         'browser/sync/engine/store_timestamps_command.h',
-        'browser/sync/engine/syncapi.h',
         'browser/sync/engine/syncer.cc',
         'browser/sync/engine/syncer.h',
         'browser/sync/engine/syncer_command.cc',
@@ -636,7 +611,6 @@
       ],
       'include_dirs': [
         '..',
-        '<(protoc_out_dir)',
       ],
       'defines' : [
         'SYNC_ENGINE_VERSION_STRING="Unknown"',
@@ -645,10 +619,17 @@
       ],
       'dependencies': [
         'common',
+        '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
-        '../third_party/protobuf/protobuf.gyp:protobuf_lite#target',
       ],
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+      ],
+      # This target exports a hard dependency because its header files include
+      # protobuf header files from sync_proto_cpp.
+      'hard_dependency': 1,
       'conditions': [
         ['OS=="win"', {
           'sources' : [
@@ -659,7 +640,6 @@
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:nss'
           ],
           'link_settings': {
             'libraries': [
