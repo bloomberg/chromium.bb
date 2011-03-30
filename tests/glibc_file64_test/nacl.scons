@@ -1,0 +1,17 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+# This test checks that all file functions are not redirected to their
+# versions with suffix 64. In this case test program will not link
+# because glibc doesn't have them.
+
+Import('env')
+
+# We test existence of functions that are not present in newlib.
+if not env.Bit('nacl_glibc'):
+  Return()
+
+env.ComponentProgram('test_file.nexe', 'test_file.c')
+# We don't want to execute this nexe

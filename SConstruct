@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import atexit
 import glob
@@ -2193,6 +2193,7 @@ nacl_env.Append(
     'tests/fib/nacl.scons',
     'tests/file/nacl.scons',
     'tests/gc_instrumentation/nacl.scons',
+    'tests/glibc_file64_test/nacl.scons',
     'tests/glibc_static_test/nacl.scons',
     'tests/glibc_syscall_wrappers/nacl.scons',
     'tests/hello_world/nacl.scons',
