@@ -1584,3 +1584,26 @@
    fun:_ZN13TabStripModel17AppendTabContentsEP18TabContentsWrapperb
    fun:_ZN12_GLOBAL__N_141TabStripControllerTest_AddRemoveTabs_Test8TestBodyEv
 }
+{
+   bug_77910
+   Memcheck:Leak
+   ...
+   fun:-[NSObject(NSDelayedPerforming) performSelector:withObject:afterDelay:inModes:]
+   fun:-[ProfileMenuDelegate menuWillOpen:]
+   fun:-[NSMenu _sendMenuOpeningNotification]
+   fun:AppKitApplicationEventHandler
+   fun:_Z23DispatchEventToHandlersP14EventTargetRecP14OpaqueEventRefP14HandlerCallRec
+   fun:_Z30SendEventToEventTargetInternalP14OpaqueEventRefP20OpaqueEventTargetRefP14HandlerCallRec
+   fun:SendEventToEventTargetWithOptions
+   fun:_Z15SendMenuOpeningP14MenuSelectDataP8MenuDatadmP14__CFDictionaryhPh
+   fun:_Z19PopUpMenuSelectCoreP8MenuData5PointdS1_tjPK4RecttmS4_S4_PK10__CFStringPP13OpaqueMenuRefPt
+   fun:_HandlePopUpMenuSelection7
+   fun:_NSPopUpCarbonMenu3
+   fun:_NSPopUpCarbonMenu2
+   fun:_NSPopUpCarbonMenu1
+   fun:-[NSCarbonMenuImpl _popUpContextMenu:withEvent:forView:withFont:]
+   fun:-[NSMenu _popUpContextMenu:withEvent:forView:withFont:]
+   fun:-[NSMenu _popUpContextMenu:withEvent:forView:]
+   fun:-[ProfileMenuButton mouseDown:]
+   fun:_ZN35ProfileMenuButtonTest_MenuTest_Test8TestBodyEv
+}
