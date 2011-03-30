@@ -53,6 +53,7 @@ class PluginDispatcher : public Dispatcher {
                                const IPC::ChannelHandle& channel_handle,
                                bool is_client);
   virtual bool IsPlugin() const;
+  virtual bool Send(IPC::Message* msg);
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

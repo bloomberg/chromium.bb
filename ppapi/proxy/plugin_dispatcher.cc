@@ -91,6 +91,18 @@ bool PluginDispatcher::IsPlugin() const {
   return true;
 }
 
+bool PluginDispatcher::Send(IPC::Message* msg) {
+  // We always want plugin->renderer messages to arrive in-order. If some sync
+  // and some async messages are send in response to a synchronous
+  // renderer->plugin call, the sync reply will be processed before the async
+  // reply, and everything will be confused.
+  //
+  // Allowing all async messages to unblock the renderer means more reentrancy
+  // there but gives correct ordering.
+  msg->set_unblock(true);
+  return Dispatcher::Send(msg);
+}
+
 bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
   // Handle common control messages.
   if (Dispatcher::OnMessageReceived(msg))
