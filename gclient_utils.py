@@ -17,13 +17,10 @@ import time
 import xml.dom.minidom
 import xml.parsers.expat
 
+import subprocess2
 
-def hack_subprocess():
-  """subprocess functions may throw exceptions when used in multiple threads.
-
-  See http://bugs.python.org/issue1731717 for more information.
-  """
-  subprocess._cleanup = lambda: None
+# Keep an alias for now.
+Popen = subprocess2.Popen
 
 
 class Error(Exception):
@@ -53,32 +50,6 @@ class CheckCallError(OSError, Error):
     if self.stderr is not None:
       out += '\nstderr: %s\n' % self.stderr
     return out
-
-
-def Popen(args, **kwargs):
-  """Calls subprocess.Popen() with hacks to work around certain behaviors.
-
-  Ensure English outpout for svn and make it work reliably on Windows.
-  """
-  logging.debug(u'%s, cwd=%s' % (u' '.join(args), kwargs.get('cwd', '')))
-  if not 'env' in kwargs:
-    # It's easier to parse the stdout if it is always in English.
-    kwargs['env'] = os.environ.copy()
-    kwargs['env']['LANGUAGE'] = 'en'
-  if not 'shell' in kwargs:
-    # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for the
-    # executable, but shell=True makes subprocess on Linux fail when it's called
-    # with a list because it only tries to execute the first item in the list.
-    kwargs['shell'] = (sys.platform=='win32')
-  try:
-    return subprocess.Popen(args, **kwargs)
-  except OSError, e:
-    if e.errno == errno.EAGAIN and sys.platform == 'cygwin':
-      raise Error(
-          'Visit '
-          'http://code.google.com/p/chromium/wiki/CygwinDllRemappingFailure to '
-          'learn how to fix this error; you need to rebase your cygwin dlls')
-    raise
 
 
 def CheckCall(command, print_error=True, **kwargs):
@@ -566,7 +537,6 @@ class ExecutionQueue(object):
   def __init__(self, jobs, progress):
     """jobs specifies the number of concurrent tasks to allow. progress is a
     Progress instance."""
-    hack_subprocess()
     # Set when a thread is done or a new item is enqueued.
     self.ready_cond = threading.Condition()
     # Maximum number of concurrent tasks.
