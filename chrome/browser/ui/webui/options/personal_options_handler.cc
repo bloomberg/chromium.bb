@@ -40,7 +40,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "content/browser/webui/web_ui_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #endif  // defined(OS_CHROMEOS)
 #if defined(TOOLKIT_GTK)

@@ -10,7 +10,6 @@
 #include "chrome/common/bindings_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/webui/web_ui_util.h"
 
 static base::LazyInstance<PropertyAccessor<ConstrainedHtmlUIDelegate*> >
     g_constrained_html_ui_property_accessor(base::LINKER_INITIALIZED);

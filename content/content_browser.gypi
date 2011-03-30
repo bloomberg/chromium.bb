@@ -308,8 +308,6 @@
         'browser/webui/web_ui.h',
         'browser/webui/web_ui_factory.cc',
         'browser/webui/web_ui_factory.h',
-        'browser/webui/web_ui_util.cc',
-        'browser/webui/web_ui_util.h',
         'browser/worker_host/message_port_service.cc',
         'browser/worker_host/message_port_service.h',
         'browser/worker_host/worker_document_set.cc',
