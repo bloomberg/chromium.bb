@@ -82,6 +82,10 @@ void ExtensionCookiesEventRouter::CookieChanged(
       cause = keys::kEvictedChangeCause;
       break;
 
+    case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED_OVERWRITE:
+      cause = keys::kExpiredOverwriteChangeCause;
+      break;
+
     default:
       NOTREACHED();
   }

@@ -270,9 +270,10 @@ class CookieMonster : public CookieStore {
   // and to provide a public cause for onCookieChange notifications.
   //
   // If you add or remove causes from this list, please be sure to also update
-  // the Delegate::ChangeCause mapping inside InternalDeleteCookie. Moreover,
-  // these are used as array indexes, so please avoid reordering without good
-  // reason.
+  // the Delegate::ChangeCause mapping inside ChangeCauseMapping. Moreover,
+  // these are used as array indexes, so avoid reordering to keep the
+  // histogram buckets consistent. New items (if necessary) should be added
+  // at the end of the list, just before DELETE_COOKIE_LAST_ENTRY.
   enum DeletionCause {
     DELETE_COOKIE_EXPLICIT = 0,
     DELETE_COOKIE_OVERWRITE,
@@ -291,6 +292,10 @@ class CookieMonster : public CookieStore {
     // were accessed more recently than kSafeFromGlobalPurgeDays
     // (and thus would have been preserved by global garbage collection).
     DELETE_COOKIE_EVICTED_DOMAIN_POST_SAFE,
+
+    // A common idiom is to remove a cookie by overwriting it with an
+    // already-expired expiration date. This captures that case.
+    DELETE_COOKIE_EXPIRED_OVERWRITE,
 
     DELETE_COOKIE_LAST_ENTRY
   };
@@ -393,7 +398,8 @@ class CookieMonster : public CookieStore {
   // NOTE: There should never be more than a single matching equivalent cookie.
   bool DeleteAnyEquivalentCookie(const std::string& key,
                                  const CanonicalCookie& ecc,
-                                 bool skip_httponly);
+                                 bool skip_httponly,
+                                 bool already_expired);
 
   // Takes ownership of *cc.
   void InternalInsertCookie(const std::string& key,
@@ -653,6 +659,8 @@ class CookieMonster::Delegate
     CHANGE_COOKIE_EXPIRED,
     // The cookie was automatically evicted during garbage collection.
     CHANGE_COOKIE_EVICTED,
+    // The cookie was overwritten with an already-expired expiration date.
+    CHANGE_COOKIE_EXPIRED_OVERWRITE
   };
 
   // Will be called when a cookie is added or removed. The function is passed

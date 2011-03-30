@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,10 +25,11 @@ const char kUrlKey[] = "url";
 const char kValueKey[] = "value";
 
 // Cause Constants
+extern const char kEvictedChangeCause[] = "evicted";
+extern const char kExpiredChangeCause[] = "expired";
+extern const char kExpiredOverwriteChangeCause[] = "expired_overwrite";
 extern const char kExplicitChangeCause[] = "explicit";
 extern const char kOverwriteChangeCause[] = "overwrite";
-extern const char kExpiredChangeCause[] = "expired";
-extern const char kEvictedChangeCause[] = "evicted";
 
 // Events
 const char kOnChanged[] = "cookies.onChanged";

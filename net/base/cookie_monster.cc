@@ -376,6 +376,8 @@ ChangeCausePair ChangeCauseMapping[] = {
   { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true },
   // DELETE_COOKIE_EVICTED_DOMAIN_POST_SAFE
   { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true },
+  // DELETE_COOKIE_EXPIRED_OVERWRITE
+  { CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED_OVERWRITE, true },
   // DELETE_COOKIE_LAST_ENTRY
   { CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT, false }
 };
@@ -1239,7 +1241,8 @@ void CookieMonster::FindCookiesForKey(
 
 bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
                                               const CanonicalCookie& ecc,
-                                              bool skip_httponly) {
+                                              bool skip_httponly,
+                                              bool already_expired) {
   lock_.AssertAcquired();
   ValidateMapWhileLockHeld(0);
 
@@ -1259,7 +1262,8 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
       if (skip_httponly && cc->IsHttpOnly()) {
         skipped_httponly = true;
       } else {
-        InternalDeleteCookie(curit, true, DELETE_COOKIE_OVERWRITE);
+        InternalDeleteCookie(curit, true, already_expired ?
+            DELETE_COOKIE_EXPIRED_OVERWRITE : DELETE_COOKIE_OVERWRITE);
       }
       found_equivalent_cookie = true;
     }
@@ -1338,7 +1342,9 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
                                        const Time& creation_time,
                                        const CookieOptions& options) {
   const std::string key(GetKey((*cc)->Domain()));
-  if (DeleteAnyEquivalentCookie(key, **cc, options.exclude_httponly())) {
+  bool already_expired = (*cc)->IsExpired(creation_time);
+  if (DeleteAnyEquivalentCookie(key, **cc, options.exclude_httponly(),
+                                already_expired)) {
     VLOG(kVlogSetCookies) << "SetCookie() not clobbering httponly cookie";
     return false;
   }
@@ -1348,7 +1354,7 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
 
   // Realize that we might be setting an expired cookie, and the only point
   // was to delete the cookie which we've already done.
-  if (!(*cc)->IsExpired(creation_time) || keep_expired_cookies_) {
+  if (!already_expired || keep_expired_cookies_) {
     // See InitializeHistograms() for details.
     if ((*cc)->DoesExpire()) {
       histogram_expiration_duration_minutes_->Add(
