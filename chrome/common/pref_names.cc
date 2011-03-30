@@ -1144,10 +1144,6 @@ const char kSyncManaged[] = "sync.managed";
 // used when sync is disabled by the user via the privacy dashboard.
 const char kSyncSuppressStart[] = "sync.suppress_start";
 
-// Boolean to reperesent if sync credentials have been migrated from the
-// user settings DB to the token service.
-const char kSyncCredentialsMigrated[] = "sync.credentials_migrated";
-
 // Boolean to represent whether the legacy autofill profile data has been
 // migrated to the new model.
 const char kAutofillProfileMigrated[] = "sync.autofill_migrated";

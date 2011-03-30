@@ -37,7 +37,6 @@ class NotificationType;
 class Profile;
 class ProfileSyncFactory;
 class TabContents;
-class TokenMigrator;
 
 namespace browser_sync {
 class SessionModelAssociator;
@@ -143,10 +142,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Return whether all sync tokens are loaded and
   // available for the backend to start up.
   bool AreCredentialsAvailable();
-
-  // Loads credentials migrated from the old user settings db.
-  void LoadMigratedCredentials(const std::string& username,
-                               const std::string& token);
 
   // Registers a data type controller with the sync service.  This
   // makes the data type controller available for use, it does not
@@ -588,8 +583,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // DataTypeManager in the event that the server informed us to cease and
   // desist syncing immediately.
   bool expect_sync_configuration_aborted_;
-
-  scoped_ptr<TokenMigrator> token_migrator_;
 
   // Sometimes we need to temporarily hold on to a passphrase because we don't
   // yet have a backend to send it to.  This happens during initialization as

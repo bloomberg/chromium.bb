@@ -1926,8 +1926,6 @@
         'browser/sync/sync_ui_util.h',
         'browser/sync/sync_ui_util_mac.h',
         'browser/sync/sync_ui_util_mac.mm',
-        'browser/sync/token_migrator.cc',
-        'browser/sync/token_migrator.h',
         'browser/tab_closeable_state_watcher.cc',
         'browser/tab_closeable_state_watcher.h',
         'browser/tab_contents/background_contents.cc',

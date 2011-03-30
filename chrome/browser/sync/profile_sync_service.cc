@@ -31,7 +31,6 @@
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/signin_manager.h"
-#include "chrome/browser/sync/token_migrator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
@@ -78,7 +77,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       unrecoverable_error_detected_(false),
       scoped_runnable_method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       expect_sync_configuration_aborted_(false),
-      token_migrator_(NULL),
       clear_server_data_state_(CLEAR_NOT_STARTED) {
   registrar_.Add(this,
                  NotificationType::SYNC_DATA_TYPES_UPDATED,
@@ -125,16 +123,6 @@ bool ProfileSyncService::AreCredentialsAvailable() {
   return false;
 }
 
-void ProfileSyncService::LoadMigratedCredentials(const std::string& username,
-                                                 const std::string& token) {
-  signin_->SetUsername(username);
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername, username);
-  profile()->GetTokenService()->OnIssueAuthTokenSuccess(
-      GaiaConstants::kSyncService, token);
-  profile()->GetPrefs()->SetBoolean(prefs::kSyncCredentialsMigrated, true);
-  token_migrator_.reset();
-}
-
 void ProfileSyncService::Initialize() {
   InitSettings();
   RegisterPreferences();
@@ -176,18 +164,6 @@ void ProfileSyncService::Initialize() {
     // Note that if we haven't finished setting up sync, backend bring up will
     // be done by the wizard.
     StartUp();
-  } else {
-    if (!cros_user_.empty()) {
-      // We don't attempt migration on cros, as we should just get new
-      // credentials from the login manager on startup.
-      return;
-    }
-
-    // Try to migrate the tokens (if that hasn't already succeeded).
-    if (!profile()->GetPrefs()->GetBoolean(prefs::kSyncCredentialsMigrated)) {
-      token_migrator_.reset(new TokenMigrator(this, profile_->GetPath()));
-      token_migrator_->TryMigration();
-    }
   }
 }
 
@@ -270,7 +246,6 @@ void ProfileSyncService::RegisterPreferences() {
   pref_service->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);
   pref_service->RegisterBooleanPref(prefs::kSyncSuppressStart, false);
-  pref_service->RegisterBooleanPref(prefs::kSyncCredentialsMigrated, false);
 
   // If you've never synced before, or if you're using Chrome OS, all datatypes
   // are on by default.
@@ -438,10 +413,6 @@ void ProfileSyncService::SetSyncSetupCompleted() {
   PrefService* prefs = profile()->GetPrefs();
   prefs->SetBoolean(prefs::kSyncHasSetupCompleted, true);
   prefs->SetBoolean(prefs::kSyncSuppressStart, false);
-
-  // Indicate that setup has been completed on the new credentials store
-  // so that we don't try to migrate.
-  prefs->SetBoolean(prefs::kSyncCredentialsMigrated, true);
 
   prefs->ScheduleSavePersistentPrefs();
 }
@@ -645,11 +616,6 @@ void ProfileSyncService::OnPassphraseRequired(bool for_decryption) {
 
   if (WizardIsVisible() && for_decryption) {
     wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
-  } else if (WizardIsVisible() && !for_decryption) {
-    // The user is enabling an encrypted data type for the first
-    // time, and we don't even have a default passphrase.  We need
-    // to refresh credentials and show the passphrase migration.
-    SigninForPassphraseMigration(NULL);
   }
 
   NotifyObservers();
