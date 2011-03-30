@@ -4153,6 +4153,19 @@
    fun:_Z16DispatchToMethodIN8remoting14ScreenRecorderEMS1_Fv13scoped_refptrINS0_11CaptureDataEEES4_EvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodIN8remoting14ScreenRecorderEMS1_Fv13scoped_refptrINS0_11CaptureDataEEE6Tuple1IS4_EE3RunEv
 }
+{
+   bug_77885
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN3WTF6VectorINS_6OwnPtrIN7WebCore17CSSParserSelectorEEELj0EEnwEj
+   fun:_ZN7WebCore9CSSParser28createFloatingSelectorVectorEv
+   fun:_Z10cssyyparsePv
+   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKN3WTF6StringEiPNS3_7HashMapIPNS_12CSSStyleRuleENS3_6RefPtrINS_17CSSRuleSourceDataEEENS3_7PtrHashIS9_EENS3_10HashTraitsIS9_EENSF_ISC_EEEE
+   fun:_ZN7WebCore13CSSStyleSheet17parseStringAtLineERKN3WTF6StringEbi
+   fun:_ZN7WebCore13CSSStyleSheet11parseStringERKN3WTF6StringEb
+   fun:_ZN7WebCore12parseUASheetERKN3WTF6StringE
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
