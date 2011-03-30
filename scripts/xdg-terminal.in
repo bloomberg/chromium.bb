@@ -32,7 +32,7 @@ terminal_kde()
 {
     terminal=`kreadconfig --file kdeglobals --group General --key TerminalApplication --default konsole`
 
-    terminal_exec=`which $terminal >/dev/null 2>/dev/null`
+    terminal_exec=`which $terminal 2>/dev/null`
 
     if [ -x "$terminal_exec" ]; then
         if [ x"$1" == x"" ]; then
@@ -166,7 +166,7 @@ case "$DE" in
     terminal_kde "$command"
     ;;
 
-    gnome)
+    gnome*)
     terminal_gnome "$command"
     ;;
 

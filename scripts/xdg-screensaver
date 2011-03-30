@@ -307,7 +307,7 @@ check_common_commands()
             ;;
 
             --version)
-            echo "xdg-screensaver 1.0.2"
+            echo "xdg-screensaver 1.1.0 rc1"
             exit_success
             ;;
         esac
@@ -335,6 +335,8 @@ detectDE()
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
     elif `dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.gnome.SessionManager > /dev/null 2>&1` ; then DE=gnome;
     elif xprop -root _DT_SAVE_MODE 2> /dev/null | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
+    elif [ x"$DESKTOP_SESSION" == x"LXDE" ]; then DE=lxde;
+    else DE=""
     fi
 }
 
@@ -345,10 +347,11 @@ detectDE()
 
 kfmclient_fix_exit_code()
 {
-    version=`kde${KDE_SESSION_VERSION}-config --version 2>/dev/null | grep KDE`
-    major=`echo $version | sed 's/KDE: \([0-9]\).*/\1/'`
-    minor=`echo $version | sed 's/KDE: [0-9]*\.\([0-9]\).*/\1/'`
-    release=`echo $version | sed 's/KDE: [0-9]*\.[0-9]*\.\([0-9]\).*/\1/'`
+    [ x"$KDE_SESSION_VERSION" = x"4" ] && return 0;
+    version=`LC_ALL=C.UTF-8 kde-config --version 2>/dev/null | grep '^KDE'`
+    major=`echo $version | sed 's/KDE.*: \([0-9]\).*/\1/'`
+    minor=`echo $version | sed 's/KDE.*: [0-9]*\.\([0-9]\).*/\1/'`
+    release=`echo $version | sed 's/KDE.*: [0-9]*\.[0-9]*\.\([0-9]\).*/\1/'`
     test "$major" -gt 3 && return $1
     test "$minor" -gt 5 && return $1
     test "$release" -gt 4 && return $1
@@ -428,6 +431,10 @@ perform_action()
 
     xscreensaver)
       screensaver_xscreensaver "$1"
+      ;;
+
+    '')
+      screensaver_xserver "$1"
       ;;
   esac
 
@@ -629,7 +636,7 @@ screensaver_freedesktop()
         ;;
 
         *)
-        echo "ERROR:  Unknown command '$1'" >&2
+        echo "ERROR: Unknown command '$1'" >&2
         return 1
         ;;
     esac
@@ -672,13 +679,56 @@ screensaver_kde()
         elif [ x"$status" = "xfalse" ]; then
             echo "disabled"
         else
-            echo "ERROR:  kdesktop KScreensaverIface isEnabled returned '$status'" >&2
+            echo "ERROR: kdesktop KScreensaverIface isEnabled returned '$status'" >&2
             return 1
         fi
         ;;
 
         *)
-        echo "ERROR:  Unknown command '$1'" >&2
+        echo "ERROR: Unknown command '$1'" >&2
+        return 1
+        ;;
+    esac
+}
+
+screensaver_xserver()
+{
+    case "$1" in
+        suspend)
+        xset s off > /dev/null
+        result=$?
+        ;;
+
+        resume)
+        xset s default > /dev/null
+        result=$?
+        ;;
+
+        activate)
+        xset s activate > /dev/null
+        result=$?
+        ;;
+
+        reset)
+        xset s reset > /dev/null
+        result=$?
+        ;;
+
+        status)
+        timeout=`xset q | sed '/^Screen Saver:/,/^[^ ]/ { s/.*timeout: *\([0-9]*\).*/\1/; t }; d'`
+        result=$?
+        if [ "$timeout" -gt 0 ]; then
+            echo "enabled"
+        elif [ "$timeout" -eq 0 ]; then
+            echo "disabled"
+        else
+            echo "ERROR: xset q did not report the screensaver timeout" >&2
+            return 1
+        fi
+        ;;
+
+        *)
+        echo "ERROR: Unknown command '$1'" >&2
         return 1
         ;;
     esac
@@ -759,7 +809,7 @@ screensaver_gnome_screensaver()
         ;;
 
         *)
-        echo "ERROR:  Unknown command '$1" >&2
+        echo "ERROR: Unknown command '$1" >&2
         return 1
         ;;
     esac
@@ -804,7 +854,7 @@ screensaver_xscreensaver()
         ;;
 
         *)
-        echo "ERROR:  Unknown command '$1" >&2
+        echo "ERROR: Unknown command '$1" >&2
         return 1
         ;;
     esac
@@ -866,7 +916,7 @@ esac
 detectDE
 # Consider "xscreensaver" a separate DE
 xscreensaver-command -version 2> /dev/null | grep XScreenSaver > /dev/null && DE="xscreensaver"
-# Consider "gnome-screensaver" a separate DE 
+# Consider "gnome-screensaver" a separate DE
 gnome-screensaver-command -q > /dev/null 2>&1 && DE="gnome_screensaver"
 
 if [ "$action" = "resume" ] ; then

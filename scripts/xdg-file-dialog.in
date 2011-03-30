@@ -312,7 +312,7 @@ if [ "$action" = "openfilename" ]; then
         open_kde "$filename"
         ;;
 
-        gnome|xfce|lxde)
+        gnome*|xfce|lxde)
         open_zenity "$filename"
         ;;
 
@@ -326,7 +326,7 @@ elif [ "$action" = "openfilenamelist" ]; then
         open_multi_kde "$filename"
         ;;
 
-        gnome|xfce|lxde)
+        gnome*|xfce|lxde)
         open_multi_zenity "$filename"
         ;;
 
@@ -340,7 +340,7 @@ elif [ "$action" = "savefilename" ]; then
         save_kde "$filename"
         ;;
 
-        gnome|xfce|lxde)
+        gnome*|xfce|lxde)
         save_zenity "$filename"
         ;;
 
@@ -354,7 +354,7 @@ elif [ "$action" = "directory" ]; then
         directory_kde "$filename"
         ;;
 
-        gnome|xfce|lxde)
+        gnome*|xfce|lxde)
         directory_zenity "$filename"
         ;;
 

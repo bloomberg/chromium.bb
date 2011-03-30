@@ -100,6 +100,10 @@ perform_action()
     xscreensaver)
       screensaver_xscreensaver "$1"
       ;;
+
+    '')
+      screensaver_xserver "$1"
+      ;;
   esac
 
   if [ "$1" = "suspend" ] ; then
@@ -300,7 +304,7 @@ screensaver_freedesktop()
         ;;
 
         *)
-        echo "ERROR:  Unknown command '$1'" >&2
+        echo "ERROR: Unknown command '$1'" >&2
         return 1
         ;;
     esac
@@ -343,13 +347,56 @@ screensaver_kde()
         elif [ x"$status" = "xfalse" ]; then
             echo "disabled"
         else
-            echo "ERROR:  kdesktop KScreensaverIface isEnabled returned '$status'" >&2
+            echo "ERROR: kdesktop KScreensaverIface isEnabled returned '$status'" >&2
             return 1
         fi
         ;;
 
         *)
-        echo "ERROR:  Unknown command '$1'" >&2
+        echo "ERROR: Unknown command '$1'" >&2
+        return 1
+        ;;
+    esac
+}
+
+screensaver_xserver()
+{
+    case "$1" in
+        suspend)
+        xset s off > /dev/null
+        result=$?
+        ;;
+
+        resume)
+        xset s default > /dev/null
+        result=$?
+        ;;
+
+        activate)
+        xset s activate > /dev/null
+        result=$?
+        ;;
+
+        reset)
+        xset s reset > /dev/null
+        result=$?
+        ;;
+
+        status)
+        timeout=`xset q | sed '/^Screen Saver:/,/^[^ ]/ { s/.*timeout: *\([0-9]*\).*/\1/; t }; d'`
+        result=$?
+        if [ "$timeout" -gt 0 ]; then
+            echo "enabled"
+        elif [ "$timeout" -eq 0 ]; then
+            echo "disabled"
+        else
+            echo "ERROR: xset q did not report the screensaver timeout" >&2
+            return 1
+        fi
+        ;;
+
+        *)
+        echo "ERROR: Unknown command '$1'" >&2
         return 1
         ;;
     esac
@@ -430,7 +477,7 @@ screensaver_gnome_screensaver()
         ;;
 
         *)
-        echo "ERROR:  Unknown command '$1" >&2
+        echo "ERROR: Unknown command '$1" >&2
         return 1
         ;;
     esac
@@ -475,7 +522,7 @@ screensaver_xscreensaver()
         ;;
 
         *)
-        echo "ERROR:  Unknown command '$1" >&2
+        echo "ERROR: Unknown command '$1" >&2
         return 1
         ;;
     esac

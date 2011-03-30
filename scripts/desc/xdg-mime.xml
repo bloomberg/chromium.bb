@@ -144,16 +144,16 @@ and adding descriptions for new file types</refpurpose>
 	  <simpara>
 	    Adds the file type descriptions provided in <replaceable>mimetypes-file</replaceable>
             to the desktop environment. <replaceable>mimetypes-file</replaceable>
-            must be a XML file that follows the freedesktop.org 
+            must be a XML file that follows the freedesktop.org
             Shared MIME-info Database specification
             and that has a mime-info element as its document root. For
             each new file type one or more icons with name
-            <replaceable>major</replaceable>-<replaceable>minor</replaceable>
+            <replaceable>type</replaceable>-<replaceable>subtype</replaceable>
             must be installed with the <command>xdg-icon-resource</command>
             command in the <emphasis>mimetypes</emphasis> context. For example the
-            application/vnd.oasis.opendocument.text filetype requires an
-            icon by the name of application-vnd.oasis.opendocument.text
-            to be installed.
+            filetype application/vnd.oasis.opendocument.text requires an
+            icon named application-vnd.oasis.opendocument.text
+            to be installed (unless the file type recommends another icon name).
 	  </simpara>
 	</listitem>
       </varlistentry>

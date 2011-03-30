@@ -36,6 +36,12 @@ first_word()
     echo "$first"
 }
 
+last_word()
+{
+    read first rest
+    echo "$rest"
+}
+
 open_kde()
 {
     if kde-open -v 2>/dev/null 1>&2; then
@@ -94,12 +100,26 @@ open_generic_xdg_mime()
         [ -n "$xdg_system_dirs" ] || xdg_system_dirs=/usr/local/share/:/usr/share/
 
         for x in `echo "$xdg_user_dir:$xdg_system_dirs" | sed 's/:/ /g'`; do
-            file="$x/applications/$default"
+            local file
+            # look for both vendor-app.desktop, vendor/app.desktop
+            if [ -r "$x/applications/$default" ]; then
+              file="$x/applications/$default"
+            elif [ -r "$x/applications/`echo $default | sed -e 's|-|/|'`" ]; then
+              file="$x/applications/`echo $default | sed -e 's|-|/|'`"
+            fi
+
             if [ -r "$file" ] ; then
                 command="`grep -E "^Exec(\[[^]=]*])?=" "$file" | cut -d= -f 2- | first_word`"
                 command_exec=`which $command 2>/dev/null`
+                arguments="`grep -E "^Exec(\[[^]=]*])?=" "$file" | cut -d= -f 2- | last_word`"
+                arguments_exec="`echo $arguments | sed -e 's*%[fFuU]*"'"$1"'"*g'`"
                 if [ -x "$command_exec" ] ; then
-                    $command_exec "$1"
+                    if echo $arguments | grep -iq '%[fFuU]' ; then
+                        eval $command_exec $arguments_exec
+                    else
+                        eval $command_exec $arguments_exec "$1"
+                    fi
+
                     if [ $? -eq 0 ]; then
                         exit_success
                     fi
@@ -115,11 +135,13 @@ open_generic()
     if (echo "$1" | grep -q '^file://' ||
         ! echo "$1" | egrep -q '^[a-zA-Z+\.\-]+:'); then
 
-        local file=$(echo "$1" | sed 's%^file://%%')
+        local file="$1"
 
         # Decode URLs
-        # TODO
-
+        if echo "$file" | grep -q '^file:///'; then
+            file=${file#file://}
+            file="$(printf "$(echo "$file" | sed -e 's@%\([a-f0-9A-F]\{2\}\)@\\x\1@g')")"
+        fi
         check_input_file "$file"
 
         open_generic_xdg_mime "$file"
@@ -233,7 +255,7 @@ case "$DE" in
     open_kde "$url"
     ;;
 
-    gnome)
+    gnome*)
     open_gnome "$url"
     ;;
 

@@ -1,11 +1,41 @@
-=== xdg-utils 1.x.x ===
+=== xdg-utils 1.1.x ===
 
-2010-11-18 Rex Dieter <rdieter@fedoraproject.org> 
-   * fixup kfmclient_fix_exit_code() for newer kde-config output
-   * fix typo in xdg-mime manpage 
+2011-03-28 Rex Dieter <rdieter@fedoraproject.org>
+   * xdg-open cannot detect xfce 4.8 correctly (BR33321)
+   * xdg-mime's info_generic doesn't normalize symlinks (BR33097)
+   * mimetype support for xdg-mime (generic) (BR33094)
+   * open_generic_xdg_mime is broken when a .desktop file 
+     Exec has arguments (BR30453)
+
+2011-02-01 Rex Dieter <rdieter@fedoraproject.org>
+   * add support for GNOME 3.x
+
+2011-01-09 Fathi Boudra <fabo@freedesktop.org>
+   * xdg-email: call kfmclient_fix_exit_code() under KDE 3 only.
+     Thanks to Luc Menut. (BR32924)
+   * xdg-utils-common: set C.UTF-8 locale to make sure the version parsing is
+     done as expected. Under some locales the KDE version string doesn't start
+     with "KDE".
+   * xdg-terminal: Fix failure because the which std output is wrongly
+     redirected to /dev/null in terminal_kde(). Thanks to Luc Menut.
+     (BR32927)
+
+=== xdg-utils 1.1.0-rc1 ===
+
+2010-12-31 Fathi Boudra <fabo@freedesktop.org>
+   * xdg-mime: correct install text to use type/subtype.
+     Thanks to Christopher Yeleighton. (BR31441)
+   * xdg-open: declare file variable as local. (BR32487)
+   * xdg-open: decode file:// urls. Thanks to Henning Garus.
+   * xdg-screensaver: support X server blanking. Thanks to Ben Hutchings.
+
+2010-11-18 Rex Dieter <rdieter@fedoraproject.org>
+   * xdg-utils-common: fixup kfmclient_fix_exit_code() for newer kde-config
+     output
+   * xdg-mime: fix typo in manpage
    * xdg-email: Thunderbird is not detected with localized (BR31740)
 
-2010-10-28 Rex Dieter <rdieter@fedoraproject.org> 
+2010-10-28 Rex Dieter <rdieter@fedoraproject.org>
    * add lxde support (BR26058)
 
 2010-09-25 Fathi Boudra <fabo@freedesktop.org>
@@ -14,7 +44,7 @@
      twice. Thanks to David Benjamin.
 
 2010-09-24 Fathi Boudra <fabo@freedesktop.org>
-    * xdg-email: Fix e-mail attachements support with Thunderbird3 (BR13435) 
+    * xdg-email: Fix e-mail attachements support with Thunderbird3 (BR13435)
 
 2010-09-24 Fathi Boudra <fabo@freedesktop.org>
     * xdg-mime: update the required section "[Added Associations]"

@@ -287,7 +287,7 @@ check_common_commands()
             ;;
 
             --version)
-            echo "xdg-settings 1.0.2"
+            echo "xdg-settings 1.1.0 rc1"
             exit_success
             ;;
         esac
@@ -315,6 +315,8 @@ detectDE()
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
     elif `dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.gnome.SessionManager > /dev/null 2>&1` ; then DE=gnome;
     elif xprop -root _DT_SAVE_MODE 2> /dev/null | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
+    elif [ x"$DESKTOP_SESSION" == x"LXDE" ]; then DE=lxde;
+    else DE=""
     fi
 }
 
@@ -325,10 +327,11 @@ detectDE()
 
 kfmclient_fix_exit_code()
 {
-    version=`kde${KDE_SESSION_VERSION}-config --version 2>/dev/null | grep KDE`
-    major=`echo $version | sed 's/KDE: \([0-9]\).*/\1/'`
-    minor=`echo $version | sed 's/KDE: [0-9]*\.\([0-9]\).*/\1/'`
-    release=`echo $version | sed 's/KDE: [0-9]*\.[0-9]*\.\([0-9]\).*/\1/'`
+    [ x"$KDE_SESSION_VERSION" = x"4" ] && return 0;
+    version=`LC_ALL=C.UTF-8 kde-config --version 2>/dev/null | grep '^KDE'`
+    major=`echo $version | sed 's/KDE.*: \([0-9]\).*/\1/'`
+    minor=`echo $version | sed 's/KDE.*: [0-9]*\.\([0-9]\).*/\1/'`
+    release=`echo $version | sed 's/KDE.*: [0-9]*\.[0-9]*\.\([0-9]\).*/\1/'`
     test "$major" -gt 3 && return $1
     test "$minor" -gt 5 && return $1
     test "$release" -gt 4 && return $1

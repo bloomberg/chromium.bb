@@ -146,7 +146,7 @@ case "$DE" in
     su_kde
     ;;
 
-    gnome|lxde)
+    gnome*|lxde)
     su_gnome
     ;;
 

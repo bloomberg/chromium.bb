@@ -85,7 +85,7 @@ default
 
     application is the desktop file id of the application and has the form
     vendor-name.desktop application must already be installed in the desktop
-    menu before it can be made the default handler. The application's desktop
+    menu before it can be made the default handler. The aplication's desktop
     file must list support for all the MIME types that it wishes to be the
     default handler for.
 
@@ -102,10 +102,11 @@ install
     environment. mimetypes-file must be a XML file that follows the
     freedesktop.org Shared MIME-info Database specification and that has a
     mime-info element as its document root. For each new file type one or more
-    icons with name major-minor must be installed with the xdg-icon-resource
-    command in the mimetypes context. For example the application/
-    vnd.oasis.opendocument.text filetype requires an icon by the name of
-    application-vnd.oasis.opendocument.text to be installed.
+    icons with name type-subtype must be installed with the xdg-icon-resource
+    command in the mimetypes context. For example the filetype application/
+    vnd.oasis.opendocument.text requires an icon named
+    application-vnd.oasis.opendocument.text to be installed (unless the file
+    type recommends another icon name).
 uninstall
     Removes the file type descriptions provided in mimetypes-file and
     previously added with xdg-mime install from the desktop environment.
@@ -401,7 +402,7 @@ check_common_commands()
             ;;
 
             --version)
-            echo "xdg-mime 1.0.2"
+            echo "xdg-mime 1.1.0 rc1"
             exit_success
             ;;
         esac
@@ -429,6 +430,8 @@ detectDE()
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
     elif `dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.gnome.SessionManager > /dev/null 2>&1` ; then DE=gnome;
     elif xprop -root _DT_SAVE_MODE 2> /dev/null | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
+    elif [ x"$DESKTOP_SESSION" == x"LXDE" ]; then DE=lxde;
+    else DE=""
     fi
 }
 
@@ -439,10 +442,11 @@ detectDE()
 
 kfmclient_fix_exit_code()
 {
-    version=`kde${KDE_SESSION_VERSION}-config --version 2>/dev/null | grep KDE`
-    major=`echo $version | sed 's/KDE: \([0-9]\).*/\1/'`
-    minor=`echo $version | sed 's/KDE: [0-9]*\.\([0-9]\).*/\1/'`
-    release=`echo $version | sed 's/KDE: [0-9]*\.[0-9]*\.\([0-9]\).*/\1/'`
+    [ x"$KDE_SESSION_VERSION" = x"4" ] && return 0;
+    version=`LC_ALL=C.UTF-8 kde-config --version 2>/dev/null | grep '^KDE'`
+    major=`echo $version | sed 's/KDE.*: \([0-9]\).*/\1/'`
+    minor=`echo $version | sed 's/KDE.*: [0-9]*\.\([0-9]\).*/\1/'`
+    release=`echo $version | sed 's/KDE.*: [0-9]*\.[0-9]*\.\([0-9]\).*/\1/'`
     test "$major" -gt 3 && return $1
     test "$minor" -gt 5 && return $1
     test "$release" -gt 4 && return $1

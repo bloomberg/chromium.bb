@@ -96,7 +96,7 @@ case "$DE" in
     copy_kde "$source" "$dest"
     ;;
 
-    gnome)
+    gnome*)
     copy_gnome "$source" "$dest"
     ;;
 

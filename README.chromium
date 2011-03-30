@@ -1,14 +1,14 @@
 Name: xdg-utils
 URL: http://portland.freedesktop.org/wiki/
-Version: unknown
+Version: a616912e48b7ff1d908852739d16525df79471b9
 
 Description:
-This directory contains a copy of xdg-utils obtained from CVS on 2010-12-31,
+This directory contains a copy of xdg-utils obtained from git on 2011-03-30,
 with this command:
 
-cvs -d:pserver:anoncvs@anoncvs.freedesktop.org:/cvs/portland co -d xdg-utils portland/xdg-utils
+git clone git://anongit.freedesktop.org/xdg/xdg-utils xdg-utils
 
-The .cvsignore files were converted to svn:ignore properties to check it in.
+The .gitignore files were converted to svn:ignore properties to check it in.
 
 Originally, it had been modified to add the xdg-settings command for getting
 and, in some cases, setting various GNU/Linux desktop environment settings like

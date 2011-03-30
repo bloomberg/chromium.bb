@@ -1,13 +1,13 @@
 '\" t
-.\"     Title: xdg-open
-.\"    Author: Kevin Krammer
+.\"     Title: xdg-settings
+.\"    Author: Mike Mammarella
 .\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
 .\"      Date: 12/31/2010
-.\"    Manual: xdg-open Manual
-.\"    Source: xdg-utils 1.0
+.\"    Manual: xdg-settings Manual
+.\"    Source: [FIXME: source]
 .\"  Language: English
 .\"
-.TH "XDG\-OPEN" "1" "12/31/2010" "xdg-utils 1.0" "xdg-open Manual"
+.TH "XDG\-SETTINGS" "1" "12/31/2010" "[FIXME: source]" "xdg-settings Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -28,22 +28,27 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-xdg-open \- opens a file or URL in the user\*(Aqs preferred application
+xdg-settings \- get various settings from the desktop environment
 .SH "SYNOPSIS"
-.HP \w'\fBxdg\-open\fR\ 'u
-\fBxdg\-open\fR {\fB\fIfile\fR\fR | \fB\fIURL\fR\fR}
-.HP \w'\fBxdg\-open\fR\ 'u
-\fBxdg\-open\fR {\fB\-\-help\fR | \fB\-\-manual\fR | \fB\-\-version\fR}
+.HP \w'\fBxdg\-settings\fR\ 'u
+\fBxdg\-settings\fR {\fB\fIget\fR\fR | \fB\fIcheck\fR\fR | \fB\fIset\fR\fR} {\fBproperty\fR} [\fBvalue\fR]
+.HP \w'\fBxdg\-settings\fR\ 'u
+\fBxdg\-settings\fR {\fB\-\-help\fR | \fB\-\-list\fR | \fB\-\-manual\fR | \fB\-\-version\fR}
 .SH "DESCRIPTION"
 .PP
-xdg\-open opens a file or URL in the user\*(Aqs preferred application\&. If a URL is provided the URL will be opened in the user\*(Aqs preferred web browser\&. If a file is provided the file will be opened in the preferred application for files of that type\&. xdg\-open supports file, ftp, http and https URLs\&.
+xdg\-settings gets various settings from the desktop environment\&. For instance, desktop environments often provide proxy configuration and default web browser settings\&. Using xdg\-settings these parameters can be extracted for use by applications that do not use the desktop environment\*(Aqs libraries (which would use the settings natively)\&.
 .PP
-xdg\-open is for use inside a desktop session only\&. It is not recommended to use xdg\-open as root\&.
+xdg\-settings is for use inside a desktop session only\&. It is not recommended to use xdg\-settings as root\&.
 .SH "OPTIONS"
 .PP
 \fB\-\-help\fR
 .RS 4
 Show command synopsis\&.
+.RE
+.PP
+\fB\-\-list\fR
+.RS 4
+List all properties xdg\-settings knows about\&.
 .RE
 .PP
 \fB\-\-manual\fR
@@ -80,45 +85,52 @@ The action failed\&.
 .RE
 .SH "EXAMPLES"
 .PP
-
+Get the desktop file name of the current default web browser
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-xdg\-open \*(Aqhttp://www\&.freedesktop\&.org/\*(Aq
+        xdg\-settings get default\-web\-browser
+      
 .fi
 .if n \{\
 .RE
 .\}
-.sp
-Opens the Freedesktop\&.org website in the user\*(Aqs default browser
 .PP
-
+Check whether the default web browser is firefox\&.desktop, which can be false even if "get default\-web\-browser" says that is the current value (if only some of the underlying settings actually reflect that value)
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-xdg\-open /tmp/foobar\&.png
+        xdg\-settings check default\-web\-browser firefox\&.desktop
+      
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Set the default web browser to google\-chrome\&.desktop
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+        xdg\-settings set default\-web\-browser google\-chrome\&.desktop
+      
 .fi
 .if n \{\
 .RE
 .\}
 .sp
-Opens the PNG image file /tmp/foobar\&.png in the user\*(Aqs default image viewing application\&.
-.SH "AUTHORS"
+.SH "AUTHOR"
 .PP
-\fBKevin Krammer\fR
-.RS 4
-Author.
-.RE
-.PP
-\fBJeremy White\fR
+\fBMike Mammarella\fR
 .RS 4
 Author.
 .RE
 .SH "COPYRIGHT"
 .br
-Copyright \(co 2006
+Copyright \(co 2009
 .br

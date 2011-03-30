@@ -6,6 +6,8 @@
 #
 #   Refer to the usage() function below for usage.
 #
+#   Copyright 2009-2010, Fathi Boudra <fabo@freedesktop.org>
+#   Copyright 2009-2010, Rex Dieter <rdieter@fedoraproject.org>
 #   Copyright 2006, Kevin Krammer <kevin.krammer@gmx.at>
 #
 #   LICENSE:
@@ -195,7 +197,7 @@ exit_failure_file_permission_read()
 }
 
 #------------------------------------------------------------
-# Exit script on insufficient permission to read a specified file
+# Exit script on insufficient permission to write a specified file
 
 exit_failure_file_permission_write()
 {
@@ -272,7 +274,7 @@ check_common_commands()
             ;;
 
             --version)
-            echo "xdg-terminal 1.0.1"
+            echo "xdg-terminal 1.0.2"
             exit_success
             ;;
         esac
@@ -298,7 +300,10 @@ detectDE()
 {
     if [ x"$KDE_FULL_SESSION" = x"true" ]; then DE=kde;
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
-    elif xprop -root _DT_SAVE_MODE | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
+    elif `dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.gnome.SessionManager > /dev/null 2>&1` ; then DE=gnome;
+    elif xprop -root _DT_SAVE_MODE 2> /dev/null | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
+    elif [ x"$DESKTOP_SESSION" == x"LXDE" ]; then DE=lxde;
+    else DE=""
     fi
 }
 
@@ -309,10 +314,10 @@ detectDE()
 
 kfmclient_fix_exit_code()
 {
-    version=`kde${KDE_SESSION_VERSION}-config --version 2>/dev/null | grep KDE`
-    major=`echo $version | sed 's/KDE: \([0-9]\).*/\1/'`
-    minor=`echo $version | sed 's/KDE: [0-9]*\.\([0-9]\).*/\1/'`
-    release=`echo $version | sed 's/KDE: [0-9]*\.[0-9]*\.\([0-9]\).*/\1/'`
+    version=`kde${KDE_SESSION_VERSION}-config --version 2>/dev/null | grep '^KDE'`
+    major=`echo $version | sed 's/KDE.*: \([0-9]\).*/\1/'`
+    minor=`echo $version | sed 's/KDE.*: [0-9]*\.\([0-9]\).*/\1/'`
+    release=`echo $version | sed 's/KDE.*: [0-9]*\.[0-9]*\.\([0-9]\).*/\1/'`
     test "$major" -gt 3 && return $1
     test "$minor" -gt 5 && return $1
     test "$release" -gt 4 && return $1
@@ -323,7 +328,7 @@ terminal_kde()
 {
     terminal=`kreadconfig --file kdeglobals --group General --key TerminalApplication --default konsole`
 
-    terminal_exec=`which $terminal >/dev/null 2>/dev/null`
+    terminal_exec=`which $terminal 2>/dev/null`
 
     if [ -x "$terminal_exec" ]; then
         if [ x"$1" == x"" ]; then
@@ -408,6 +413,19 @@ terminal_generic()
     fi
 }
 
+terminal_lxde()
+{
+    if which lxterminal &>/dev/null; then
+        if [ x"$1" == x"" ]; then
+            lxterminal
+        else
+            lxterminal -e "$1"
+        fi
+    else
+        terminal_generic "$1"
+    fi
+}
+
 #[ x"$1" != x"" ] || exit_failure_syntax
 
 command=
@@ -450,6 +468,10 @@ case "$DE" in
 
     xfce)
     terminal_xfce "$command"
+    ;;
+
+    lxde)
+    terminal_lxde "$command"
     ;;
 
     generic)

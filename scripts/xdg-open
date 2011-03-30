@@ -279,7 +279,7 @@ check_common_commands()
             ;;
 
             --version)
-            echo "xdg-open 1.0.2"
+            echo "xdg-open 1.1.0 rc1"
             exit_success
             ;;
         esac
@@ -307,6 +307,8 @@ detectDE()
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
     elif `dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.gnome.SessionManager > /dev/null 2>&1` ; then DE=gnome;
     elif xprop -root _DT_SAVE_MODE 2> /dev/null | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
+    elif [ x"$DESKTOP_SESSION" == x"LXDE" ]; then DE=lxde;
+    else DE=""
     fi
 }
 
@@ -317,10 +319,11 @@ detectDE()
 
 kfmclient_fix_exit_code()
 {
-    version=`kde${KDE_SESSION_VERSION}-config --version 2>/dev/null | grep KDE`
-    major=`echo $version | sed 's/KDE: \([0-9]\).*/\1/'`
-    minor=`echo $version | sed 's/KDE: [0-9]*\.\([0-9]\).*/\1/'`
-    release=`echo $version | sed 's/KDE: [0-9]*\.[0-9]*\.\([0-9]\).*/\1/'`
+    [ x"$KDE_SESSION_VERSION" = x"4" ] && return 0;
+    version=`LC_ALL=C.UTF-8 kde-config --version 2>/dev/null | grep '^KDE'`
+    major=`echo $version | sed 's/KDE.*: \([0-9]\).*/\1/'`
+    minor=`echo $version | sed 's/KDE.*: [0-9]*\.\([0-9]\).*/\1/'`
+    release=`echo $version | sed 's/KDE.*: [0-9]*\.[0-9]*\.\([0-9]\).*/\1/'`
     test "$major" -gt 3 && return $1
     test "$minor" -gt 5 && return $1
     test "$release" -gt 4 && return $1
@@ -392,7 +395,7 @@ open_generic_xdg_mime()
         [ -n "$xdg_system_dirs" ] || xdg_system_dirs=/usr/local/share/:/usr/share/
 
         for x in `echo "$xdg_user_dir:$xdg_system_dirs" | sed 's/:/ /g'`; do
-            file="$x/applications/$default"
+            local file="$x/applications/$default"
             if [ -r "$file" ] ; then
                 command="`grep -E "^Exec(\[[^]=]*])?=" "$file" | cut -d= -f 2- | first_word`"
                 command_exec=`which $command 2>/dev/null`
@@ -413,11 +416,13 @@ open_generic()
     if (echo "$1" | grep -q '^file://' ||
         ! echo "$1" | egrep -q '^[a-zA-Z+\.\-]+:'); then
 
-        local file=$(echo "$1" | sed 's%^file://%%')
+        local file="$1"
 
         # Decode URLs
-        # TODO
-
+        if echo "$file" | grep -q '^file:///'; then
+            file=${file#file://}
+            file="$(printf "$(echo "$file" | sed -e 's@%\([a-f0-9A-F]\{2\}\)@\\x\1@g')")"
+        fi
         check_input_file "$file"
 
         open_generic_xdg_mime "$file"
@@ -459,6 +464,32 @@ open_generic()
     done
 
     exit_failure_operation_impossible "no method available for opening '$1'"
+}
+
+open_lxde()
+{
+    # pcmanfm only knows how to handle file:// urls and filepaths, it seems.
+    if (echo "$1" | grep -q '^file://' ||
+        ! echo "$1" | egrep -q '^[a-zA-Z+\.\-]+:')
+    then
+        local file="$(echo "$1" | sed 's%^file://%%')"
+
+        # handle relative paths
+        if ! echo "$file" | grep -q '^/'; then
+            file="$(pwd)/$file"
+        fi
+
+        pcmanfm "$file"
+
+    else
+        open_generic "$1"
+    fi
+
+    if [ $? -eq 0 ]; then
+        exit_success
+    else
+        exit_failure_operation_failed
+    fi
 }
 
 [ x"$1" != x"" ] || exit_failure_syntax
@@ -511,6 +542,10 @@ case "$DE" in
 
     xfce)
     open_xfce "$url"
+    ;;
+
+    lxde)
+    open_lxde "$url"
     ;;
 
     generic)

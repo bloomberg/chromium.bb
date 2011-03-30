@@ -120,6 +120,32 @@ open_kde()
     fi
 }
 
+open_gnome3()
+{
+    local client
+    local desktop
+    desktop=`xdg-mime query default "x-scheme-handler/mailto"`
+    client=`desktop_file_to_binary "$browser"`
+    echo $client | grep thunderbird > /dev/null 2>&1
+    if [ $? -eq 0 ] ; then
+        run_thunderbird "$client" "$1"
+    fi
+
+    if gvfs-open --help 2>/dev/null 1>&2; then
+        DEBUG 1 "Running gvfs-open \"$1\""
+        gvfs-open "$1"
+    else
+        DEBUG 1 "Running gnome-open \"$1\""
+        gnome-open "$1"
+    fi
+
+    if [ $? -eq 0 ]; then
+        exit_success
+    else
+        exit_failure_operation_failed
+    fi
+}
+
 open_gnome()
 {
     local client
@@ -358,6 +384,10 @@ case "$DE" in
 
     gnome)
     open_gnome "${mailto}"
+    ;;
+
+    gnome3)
+    open_gnome3 "${mailto}"
     ;;
 
     xfce)
