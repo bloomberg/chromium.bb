@@ -7,6 +7,7 @@
 """Main file for the chromite shell."""
 
 # Python imports
+import optparse
 import os
 import sys
 
@@ -122,65 +123,45 @@ def main():
   #    the menu, but without being interactive).
   # 3. Make "help command" and "--help command" equivalent to "command --help".
   help_str = (
-      """Usage: %(prog)s [chromite_options] [cmd [args]]\n"""
+      """%(prog)s [chromite_options] [cmd [args]]\n"""
       """\n"""
       """The chromite script is a wrapper to make it easy to do various\n"""
-      """build tasks.  For a list of commands, run without any arguments.\n"""
-      """\n"""
-      """Options:\n"""
-      """  -h, --help            show this help message and exit\n"""
+      """build tasks.  For a list of commands, run without any arguments."""
   ) % {'prog': os.path.basename(sys.argv[0])}
+
+  parser = optparse.OptionParser()
+
+  # Verbose defaults to full for now, just to keep people acclimatized to
+  # vast amounts of comforting output.
+  parser.add_option('-v', dest='verbose', default=3,
+      help='Control verbosity: 0=silent, 1=progress, 3=full')
+  parser.add_option('-q', action='store_const', dest='verbose', const=0,
+      help='Be quieter (sets verbosity to 1)')
   if not cros_lib.IsInsideChroot():
-    help_str += (
-        """  --chroot=CHROOT_NAME  Chroot spec to use. Can be an absolute\n"""
-        """                        path to a spec file or a substring of a\n"""
-        """                        chroot spec name (without .spec suffix)\n"""
-    )
+    parser.add_option('--chroot', action='store', type='string',
+        dest='chroot_name', default='chroot',
+        help="Chroot spec to use. Can be an absolute path to a spec file "
+            "or a substring of a chroot spec name (without .spec suffix)")
+  parser.usage = help_str
+  try:
+    (options, args) = parser.parse_args()
+  except:
+    sys.exit(1)
 
-  # We don't use OptionParser here, since options for different subcommands are
-  # so different.  We just look for the chromite options here...
-  # TODO(sjg): I think we should use OptionParser for two reasons:
-  #   1. It allows us to find out what options/paths are in the scripts
-  #   2. It prevents people from adding new options to underlying scripts
-  #         so that Chromite diverges through no fault of the authors.
-  if sys.argv[1:2] == ['--help']:
-    print help_str
-    sys.exit(0)
+  if False:  # To preserve indent and minimize changes in this CL
+    pass
   else:
-    # Start by skipping argv[0]
-    argv = sys.argv[1:]
-
     # Set up the cros system.
     cros_env = chromite_env.ChromiteEnv()
 
     # Configure the operation setup.
     oper = cros_env.GetOperation()
-    oper.verbose = True
-    oper.progress = True
-
-    # Do we want to be quiet? This is just a hack / demo
-    if argv and argv[0] == '-q':
-      oper.verbose = False
-      argv = argv[1:]
+    oper.verbose = options.verbose >= 3
+    oper.progress = options.verbose >= 1
 
     # Look for special "--chroot" argument to allow for alternate chroots
     if not cros_lib.IsInsideChroot():
-      # Default chroot name...
-      chroot_name = 'chroot'
-
-      # Get chroot spec name if specified; trim argv down if needed...
-      if argv:
-        if argv[0].startswith('--chroot='):
-          _, chroot_name = argv[0].split('=', 2)
-          argv = argv[1:]
-        elif argv[0] == '--chroot':
-          if len(argv) < 2:
-            cros_lib.Die('Chroot not specified.')
-
-          chroot_name = argv[1]
-          argv = argv[2:]
-
-      chroot_spec_path = utils.FindSpec(chroot_name,
+      chroot_spec_path = utils.FindSpec(options.chroot_name,
                                         spec_type=utils.CHROOT_SPEC_TYPE)
 
       oper.Info('Using chroot "%s"' % os.path.relpath(chroot_spec_path))
@@ -191,9 +172,9 @@ def main():
       chroot_config = None
 
     # Get command and arguments
-    if argv:
-      cmd_str = argv[0].lower()
-      argv = argv[1:]
+    if args:
+      cmd_str = args[0].lower()
+      args = args[1:]
     else:
       cmd_str = ''
 
@@ -206,7 +187,7 @@ def main():
     cmd_obj = cmd_cls()
     cmd_obj.SetChromiteEnv(cros_env)
     try:
-      cmd_obj.Run([cmd_str] + argv, chroot_config=chroot_config)
+      cmd_obj.Run([cmd_str] + args, chroot_config=chroot_config)
 
     # Handle an error in one of the scripts: print a message and exit.
     except chromite_env.ChromiteError, msg:

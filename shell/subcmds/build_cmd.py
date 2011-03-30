@@ -156,8 +156,9 @@ class BuildCmd(subcmd.ChromiteCmd):
     usage_str = ('usage: %%prog [chromite_options] %s [options] [target]' %
                  raw_argv[0])
     parser = optparse.OptionParser(usage=usage_str)
-    parser.add_option('--clean', default=False, action='store_true',
-                      help='Clean before building.')
+    # This option won't work until a later CL plumbs in optparse
+    #parser.add_option('--clean', default=False, action='store_true',
+                      #help='Clean before building.')
     (options, argv) = parser.parse_args(raw_argv[1:])
 
     # Load the build config if needed...

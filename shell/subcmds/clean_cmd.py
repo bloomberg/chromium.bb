@@ -114,8 +114,9 @@ class CleanCmd(subcmd.ChromiteCmd):
     usage_str = ('usage: %%prog [chromite_options] %s [options] [target]' %
                  raw_argv[0])
     parser = optparse.OptionParser(usage=usage_str)
-    parser.add_option('-y', '--yes', default=False, action='store_true',
-                      help='Answer "YES" to "are you sure?" questions.')
+    # This option won't work until a later CL plumbs in optparse
+    #parser.add_option('-y', '--yes', default=False, action='store_true',
+                      #help='Answer "YES" to "are you sure?" questions.')
     (options, argv) = parser.parse_args(raw_argv[1:])
 
     # Make sure the chroot exists first, before possibly prompting for board...
