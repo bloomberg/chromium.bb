@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,22 +9,26 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
+#include "base/string16.h"
 #include "base/platform_file.h"
 #include "content/common/child_thread.h"
-#include "printing/native_metafile.h"
 
-class GURL;
+class FilePath;
 class IndexedDBKey;
 class SerializedScriptValue;
-class SkBitmap;
 
 namespace gfx {
 class Rect;
-}  // namespace gfx
+}
+
+namespace IPC {
+class Message;
+}
 
 namespace printing {
 struct PageRange;
-}  // namespace printing
+}
 
 // This class represents the background thread where the utility task runs.
 class UtilityThread : public ChildThread {

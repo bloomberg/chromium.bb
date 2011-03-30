@@ -3,15 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
-#include "base/string_util.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/logging_chrome.h"
 #include "chrome/utility/utility_thread.h"
 #include "content/common/child_process.h"
 #include "content/common/hi_res_timer_manager.h"
@@ -20,6 +15,8 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
+#include "base/file_util.h"
+#include "base/path_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/common/sandbox_init_wrapper.h"
 #include "sandbox/src/sandbox.h"

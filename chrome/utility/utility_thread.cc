@@ -4,11 +4,12 @@
 
 #include "chrome/utility/utility_thread.h"
 
+#include <stddef.h>
 #include <vector>
 
-#include "base/file_util.h"
-#include "base/path_service.h"
-#include "base/values.h"
+#include "base/file_path.h"
+#include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_unpacker.h"
@@ -18,19 +19,20 @@
 #include "content/common/child_process.h"
 #include "content/common/indexed_db_key.h"
 #include "content/common/serialized_script_value.h"
+#include "ipc/ipc_message_macros.h"
+#include "printing/backend/print_backend.h"
 #include "printing/page_range.h"
-#include "printing/units.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
-#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
 #include "webkit/glue/idb_bindings.h"
 #include "webkit/glue/image_decoder.h"
 
 #if defined(OS_WIN)
 #include "app/win/iat_patch_function.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
 #include "base/win/scoped_handle.h"
 #include "printing/emf_win.h"
 #endif
