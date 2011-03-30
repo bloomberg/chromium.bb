@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/url_request/url_request_context.h"
 
-net::CookieStore* URLRequestContextGetter::GetCookieStore() {
-  return GetURLRequestContext()->cookie_store();
+net::CookieStore* URLRequestContextGetter::DONTUSEME_GetCookieStore() {
+  return NULL;
 }
 
 URLRequestContextGetter::URLRequestContextGetter() : is_main_(false) {}

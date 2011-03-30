@@ -172,7 +172,8 @@ void BrowsingDataRemover::Remove(int remove_mask) {
                               profile_);
     // Since we are running on the UI thread don't call GetURLRequestContext().
     net::CookieMonster* cookie_monster =
-        profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster();
+        profile_->GetRequestContext()->DONTUSEME_GetCookieStore()->
+        GetCookieMonster();
     if (cookie_monster)
       cookie_monster->DeleteAllCreatedBetween(delete_begin_, delete_end_, true);
 

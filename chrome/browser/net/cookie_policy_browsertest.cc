@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "net/base/cookie_store.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
+#include "net/url_request/url_request_context.cc"
 
 namespace {
 
@@ -28,7 +29,9 @@ class GetCookiesTask : public Task {
         cookies_(cookies) {}
 
   virtual void Run() {
-    *cookies_ = context_getter_->GetCookieStore()->GetCookies(url_);
+    *cookies_ =
+        context_getter_->GetURLRequestContext()->cookie_store()->
+        GetCookies(url_);
     event_->Signal();
   }
 

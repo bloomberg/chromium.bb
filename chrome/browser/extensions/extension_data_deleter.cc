@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/url_request_context.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -60,7 +61,8 @@ void ExtensionDataDeleter::StartDeleting() {
 void ExtensionDataDeleter::DeleteCookiesOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieMonster* cookie_monster =
-      extension_request_context_->GetCookieStore()->GetCookieMonster();
+      extension_request_context_->GetURLRequestContext()->cookie_store()->
+      GetCookieMonster();
   if (cookie_monster)
     cookie_monster->DeleteAllForHost(extension_url_);
 }

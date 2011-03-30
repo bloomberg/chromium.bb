@@ -171,7 +171,7 @@ void ChromeURLRequestContextGetter::ReleaseURLRequestContext() {
   url_request_context_ = NULL;
 }
 
-net::CookieStore* ChromeURLRequestContextGetter::GetCookieStore() {
+net::CookieStore* ChromeURLRequestContextGetter::DONTUSEME_GetCookieStore() {
   // If we are running on the IO thread this is real easy.
   if (BrowserThread::CurrentlyOn(BrowserThread::IO))
     return GetURLRequestContext()->cookie_store();
@@ -348,7 +348,7 @@ void ChromeURLRequestContextGetter::OnDefaultCharsetChange(
 
 void ChromeURLRequestContextGetter::OnClearSiteDataOnExitChange(
     bool clear_site_data) {
-  GetCookieStore()->GetCookieMonster()->
+  GetURLRequestContext()->cookie_store()->GetCookieMonster()->
       SetClearPersistentStoreOnExit(clear_site_data);
 }
 

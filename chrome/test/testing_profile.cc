@@ -450,7 +450,8 @@ HistoryService* TestingProfile::GetHistoryServiceWithoutCreating() {
 net::CookieMonster* TestingProfile::GetCookieMonster() {
   if (!GetRequestContext())
     return NULL;
-  return GetRequestContext()->GetCookieStore()->GetCookieMonster();
+  return GetRequestContext()->GetURLRequestContext()->cookie_store()->
+      GetCookieMonster();
 }
 
 AutocompleteClassifier* TestingProfile::GetAutocompleteClassifier() {

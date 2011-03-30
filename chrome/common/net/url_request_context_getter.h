@@ -27,9 +27,10 @@ class URLRequestContextGetter
  public:
   virtual net::URLRequestContext* GetURLRequestContext() = 0;
 
-  // Defaults to GetURLRequestContext()->cookie_store(), but
-  // implementations can override it.
-  virtual net::CookieStore* GetCookieStore();
+  // See http://crbug.com/77835 for why this shouldn't be used. Instead use
+  // GetURLRequestContext()->cookie_store();
+  virtual net::CookieStore* DONTUSEME_GetCookieStore();
+
   // Returns a MessageLoopProxy corresponding to the thread on which the
   // request IO happens (the thread on which the returned net::URLRequestContext
   // may be used).

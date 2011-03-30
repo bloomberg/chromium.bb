@@ -21,6 +21,7 @@
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "net/base/cookie_monster.h"
+#include "net/url_request/url_request_context.h"
 
 namespace keys = extension_cookies_api_constants;
 
@@ -207,7 +208,8 @@ bool GetCookieFunction::RunImpl() {
 
 void GetCookieFunction::GetCookieOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::CookieStore* cookie_store = store_context_->GetCookieStore();
+  net::CookieStore* cookie_store =
+      store_context_->GetURLRequestContext()->cookie_store();
   net::CookieList cookie_list =
       extension_cookies_helpers::GetCookieListFromStore(cookie_store, url_);
   net::CookieList::iterator it;
@@ -267,7 +269,8 @@ bool GetAllCookiesFunction::RunImpl() {
 
 void GetAllCookiesFunction::GetAllCookiesOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::CookieStore* cookie_store = store_context_->GetCookieStore();
+  net::CookieStore* cookie_store =
+      store_context_->GetURLRequestContext()->cookie_store();
   net::CookieList cookie_list =
       extension_cookies_helpers::GetCookieListFromStore(cookie_store, url_);
 
@@ -364,7 +367,8 @@ bool SetCookieFunction::RunImpl() {
 void SetCookieFunction::SetCookieOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieMonster* cookie_monster =
-      store_context_->GetCookieStore()->GetCookieMonster();
+      store_context_->GetURLRequestContext()->cookie_store()->
+      GetCookieMonster();
   success_ = cookie_monster->SetCookieWithDetails(
       url_, name_, value_, domain_, path_, expiration_time_,
       secure_, http_only_);
@@ -438,7 +442,8 @@ void RemoveCookieFunction::RemoveCookieOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Remove the cookie
-  net::CookieStore* cookie_store = store_context_->GetCookieStore();
+  net::CookieStore* cookie_store =
+      store_context_->GetURLRequestContext()->cookie_store();
   cookie_store->DeleteCookie(url_, name_);
 
   // Build the callback result

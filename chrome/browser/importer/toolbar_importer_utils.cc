@@ -23,7 +23,7 @@ namespace toolbar_importer_utils {
 
 bool IsGoogleGAIACookieInstalled() {
   net::CookieStore* store =
-      Profile::GetDefaultRequestContext()->GetCookieStore();
+      Profile::GetDefaultRequestContext()->DONTUSEME_GetCookieStore();
   GURL url(kGoogleDomainUrl);
   net::CookieOptions options;
   options.set_include_httponly();  // The SID cookie might be httponly.

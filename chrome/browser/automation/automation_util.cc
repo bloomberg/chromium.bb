@@ -31,7 +31,8 @@ void GetCookiesOnIOThread(
     const scoped_refptr<URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event,
     std::string* cookies) {
-  *cookies = context_getter->GetCookieStore()->GetCookies(url);
+  *cookies =
+      context_getter->GetURLRequestContext()->cookie_store()->GetCookies(url);
   event->Signal();
 }
 
@@ -40,8 +41,9 @@ void GetCanonicalCookiesOnIOThread(
     const scoped_refptr<URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event,
     net::CookieList* cookie_list) {
-  *cookie_list = context_getter->GetCookieStore()->GetCookieMonster()->
-      GetAllCookiesForURL(url);
+  *cookie_list =
+      context_getter->GetURLRequestContext()->cookie_store()->
+      GetCookieMonster()->GetAllCookiesForURL(url);
   event->Signal();
 }
 
@@ -51,7 +53,9 @@ void SetCookieOnIOThread(
     const scoped_refptr<URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event,
     bool* success) {
-  *success = context_getter->GetCookieStore()->SetCookie(url, value);
+  *success =
+      context_getter->GetURLRequestContext()->cookie_store()->
+      SetCookie(url, value);
   event->Signal();
 }
 
@@ -62,7 +66,8 @@ void SetCookieWithDetailsOnIOThread(
     const scoped_refptr<URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event,
     bool* success) {
-  net::CookieMonster* cookie_monster = context_getter->GetCookieStore()->
+  net::CookieMonster* cookie_monster =
+      context_getter->GetURLRequestContext()->cookie_store()->
       GetCookieMonster();
   *success = cookie_monster->SetCookieWithDetails(
       url, cookie.Name(), cookie.Value(), original_domain,
@@ -76,7 +81,8 @@ void DeleteCookieOnIOThread(
     const std::string& name,
     const scoped_refptr<URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event) {
-  context_getter->GetCookieStore()->DeleteCookie(url, name);
+  context_getter->GetURLRequestContext()->cookie_store()->
+      DeleteCookie(url, name);
   event->Signal();
 }
 

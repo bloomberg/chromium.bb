@@ -2773,8 +2773,9 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
       webkit_database::DatabaseUtil::GetOriginIdentifier(ext_url);
 
   // Set a cookie for the extension.
-  net::CookieMonster* cookie_monster = profile_
-      ->GetRequestContextForExtensions()->GetCookieStore()->GetCookieMonster();
+  net::CookieMonster* cookie_monster =
+      profile_->GetRequestContextForExtensions()->GetURLRequestContext()->
+      cookie_store()->GetCookieMonster();
   ASSERT_TRUE(cookie_monster);
   net::CookieOptions options;
   cookie_monster->SetCookieWithOptions(ext_url, "dummy=value", options);
