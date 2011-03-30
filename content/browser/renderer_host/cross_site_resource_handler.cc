@@ -13,7 +13,9 @@
 #include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/common/resource_response.h"
 #include "net/base/io_buffer.h"
+#include "net/http/http_response_headers.h"
 
 CrossSiteResourceHandler::CrossSiteResourceHandler(
     ResourceHandler* handler,
@@ -69,7 +71,17 @@ bool CrossSiteResourceHandler::OnResponseStarted(int request_id,
   // If this is a download, just pass the response through without doing a
   // cross-site check.  The renderer will see it is a download and abort the
   // request.
-  if (info->is_download()) {
+  //
+  // Similarly, HTTP 204 (No Content) responses leave us showing the previous
+  // page.  We should allow the navigation to finish without running the unload
+  // handler or swapping in the pending RenderViewHost.
+  //
+  // In both cases, the pending RenderViewHost will stick around until the next
+  // cross-site navigation, since we are unable to tell when to destroy it.
+  // See RenderViewHostManager::RendererAbortedProvisionalLoad.
+  if (info->is_download() ||
+      (response->response_head.headers &&
+       response->response_head.headers->response_code() == 204)) {
     return next_handler_->OnResponseStarted(request_id, response);
   }
 

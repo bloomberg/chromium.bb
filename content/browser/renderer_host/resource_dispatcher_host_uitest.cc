@@ -181,7 +181,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
   EXPECT_TRUE(tab->GetTabTitle(&tab_title));
   EXPECT_EQ(L"set cookie on unload", tab_title);
 
-  // Navigate to a new cross-site page, to dispatch unload event and set theq
+  // Navigate to a new cross-site page, to dispatch unload event and set the
   // cookie.
   CheckTitleTest("content-sniffer-test0.html",
                  "Content Sniffer Test 0", 1);
@@ -191,6 +191,37 @@ TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
   ASSERT_TRUE(tab->GetCookieByName(url, "onunloadCookie", &value_result));
   ASSERT_FALSE(value_result.empty());
   ASSERT_STREQ("foo", value_result.c_str());
+}
+
+// Tests that the unload handler is not run for 204 responses.
+TEST_F(ResourceDispatcherTest, CrossSiteNoUnloadOn204) {
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
+  scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());
+  ASSERT_TRUE(tab.get());
+
+  // Start with a URL that sets a cookie in its unload handler.
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(FilePath().AppendASCII(
+               "onunload_cookie.html")));
+  NavigateToURLBlockUntilNavigationsComplete(url, 1);
+
+  // Confirm that the page has loaded (since it changes its title during load).
+  std::wstring tab_title;
+  EXPECT_TRUE(tab->GetTabTitle(&tab_title));
+  EXPECT_EQ(L"set cookie on unload", tab_title);
+
+  // Navigate to a cross-site URL that returns a 204 No Content response.
+  GURL url2(test_server.GetURL("nocontent"));
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(url2));
+
+  // Check that the unload cookie was not set.
+  std::string value_result;
+  ASSERT_TRUE(tab->GetCookieByName(url, "onunloadCookie", &value_result));
+  ASSERT_TRUE(value_result.empty());
 }
 
 #if !defined(OS_MACOSX)
