@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -223,7 +223,8 @@ function getKeyLabel(keyData, modifiers) {
  * Returns a normalized string used for a key of shortcutData.
  */
 function getAction(keycode, modifiers) {
-  return [keycode].concat(modifiers).join(' ');
+  const SEPARATOR = '<>';
+  return [keycode].concat(modifiers).join(SEPARATOR);
 }
 
 /**

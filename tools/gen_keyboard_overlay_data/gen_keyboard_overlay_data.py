@@ -102,30 +102,19 @@ def ToKeys(hotkey):
   """Converts the action value to shortcut keys used from JavaScript.
 
   Examples:
-    'Ctrl - 9' => '9 CTRL'
-    'Ctrl - Shift - Tab' => 'tab CTRL SHIFT'
+    'Ctrl - 9' => '9<>CTRL'
+    'Ctrl - Shift - Tab' => 'tab<>CTRL<>SHIFT'
   """
-  values = hotkey.split(' ')
-  modifiers = []
-  keycode = -1
-  for i, value in enumerate(values):
-    if i == len(values) - 1:
-      pass
-    elif value == 'Shift':
-      modifiers.append('SHIFT')
-    elif value == 'Ctrl':
-      modifiers.append('CTRL')
-    elif value == 'Alt':
-      modifiers.append('ALT')
-    if value == '-' and i == len(values) - 2:
-      continue
-  modifiers.sort()
-  keycode = value.lower().rstrip()
+  values = hotkey.split(' - ')
+  modifiers = sorted(value.upper() for value in values
+                     if value in ['Shift', 'Ctrl', 'Alt'])
+  keycode = [value.lower() for value in values
+             if value not in ['Shift', 'Ctrl', 'Alt']]
   # The keys which are highlighted even without modifier keys.
   base_keys = ['backspace', 'power']
-  if not modifiers and keycode not in base_keys:
+  if not modifiers and (keycode and keycode[0] not in base_keys):
     return None
-  return ' '.join([keycode] + modifiers)
+  return '<>'.join(keycode + modifiers)
 
 
 def ParseOptions():
