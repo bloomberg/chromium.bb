@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -325,7 +325,9 @@ struct NCValidatorState *NCValidateInit(const uint32_t vbase,
     NCDecodeRegisterCallbacks(ValidateInst, Stats_NewSegment,
                               Stats_SegFault, Stats_InternalError);
     if (NULL == nc_validator_features) {
-      GetCPUFeatures(&(vstate->cpufeatures));
+      NaClCPUData cpu_data;
+      NaClCPUDataGet(&cpu_data);
+      GetCPUFeatures(&cpu_data, &(vstate->cpufeatures));
     } else {
       vstate->cpufeatures = *nc_validator_features;
     }

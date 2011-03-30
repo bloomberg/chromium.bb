@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NACL_TRUSTED_BUT_NOT_TCB
@@ -18,17 +18,19 @@
 
 int main(int argc, char *argv[]) {
   CPUFeatures fv;
+  NaClCPUData cpu_data;
+  NaClCPUDataGet(&cpu_data);
 
-  GetCPUFeatures(&fv);
-  if (NaClArchSupported()) {
+  GetCPUFeatures(&cpu_data, &fv);
+  if (NaClArchSupported(&cpu_data)) {
     printf("This is a native client %d-bit %s compatible computer\n",
-           NACL_TARGET_SUBARCH, GetCPUIDString());
+           NACL_TARGET_SUBARCH, GetCPUIDString(&cpu_data));
   } else {
     if (!fv.arch_features.f_cpuid_supported) {
       printf("Computer doesn't support CPUID\n");
     }
     if (!fv.arch_features.f_cpu_supported) {
-      printf("Computer id %s is not supported\n", GetCPUIDString());
+      printf("Computer id %s is not supported\n", GetCPUIDString(&cpu_data));
     }
   }
 

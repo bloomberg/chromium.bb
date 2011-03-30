@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -21,8 +21,10 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                      uint8_t *data, size_t size) {
   struct NCValidatorState *vstate;
   int validator_result = 0;
+  NaClCPUData cpu_data;
 
-  if (!NaClArchSupported()) return LOAD_VALIDATION_FAILED;
+  NaClCPUDataGet(&cpu_data);
+  if (!NaClArchSupported(&cpu_data)) return LOAD_VALIDATION_FAILED;
 
   if (nap->validator_stub_out_mode) {
     /* In stub out mode, we do two passes.  The second pass acts as a
@@ -56,8 +58,10 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
                                 size_t size) {
   struct NCValidatorState *vstate;
   int validator_result = 0;
+  NaClCPUData cpu_data;
 
-  if (!NaClArchSupported()) return LOAD_VALIDATION_FAILED;
+  NaClCPUDataGet(&cpu_data);
+  if (!NaClArchSupported(&cpu_data)) return LOAD_VALIDATION_FAILED;
 
   if (nap->validator_stub_out_mode) {
     NaClLog(1, "NaClValidateCodeReplacement:  "
@@ -89,8 +93,10 @@ int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  uint8_t *data_old, uint8_t *data_new,
                  size_t size) {
   int result;
+  NaClCPUData cpu_data;
 
-  if (!NaClArchSupported()) return LOAD_UNLOADABLE;
+  NaClCPUDataGet(&cpu_data);
+  if (!NaClArchSupported(&cpu_data)) return LOAD_UNLOADABLE;
 
   result = NCCopyCode(data_old, data_new, guest_addr, size, nap->bundle_size);
   if (0 == result) {
@@ -107,8 +113,10 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                      uint8_t *data, size_t size) {
   struct NaClValidatorState *vstate;
   int is_ok;
+  NaClCPUData cpu_data;
 
-  if (!NaClArchSupported()) return LOAD_VALIDATION_FAILED;
+  NaClCPUDataGet(&cpu_data);
+  if (!NaClArchSupported(&cpu_data)) return LOAD_VALIDATION_FAILED;
 
   vstate = NaClValidatorStateCreate(guest_addr, size, nap->bundle_size,
                                     RegR15);
@@ -144,9 +152,11 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
                                 uint8_t *data_old, uint8_t *data_new,
                                 size_t size) {
   struct NaClValidatorState *vstate;
+  NaClCPUData cpu_data;
   int is_ok;
 
-  if (!NaClArchSupported()) return LOAD_VALIDATION_FAILED;
+  NaClCPUDataGet(&cpu_data);
+  if (!NaClArchSupported(&cpu_data)) return LOAD_VALIDATION_FAILED;
 
   if (nap->validator_stub_out_mode) {
     NaClLog(1, "NaClValidateCodeReplacement:  "
@@ -181,9 +191,11 @@ int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  uint8_t *data_old, uint8_t *data_new,
                  size_t size) {
   int result;
+  NaClCPUData cpu_data;
   UNREFERENCED_PARAMETER(nap);
 
-  if (!NaClArchSupported()) return LOAD_UNLOADABLE;
+  NaClCPUDataGet(&cpu_data);
+  if (!NaClArchSupported(&cpu_data)) return LOAD_UNLOADABLE;
 
   result = NaClCopyCodeIter(data_old, data_new, guest_addr, size);
   if (0 == result) {

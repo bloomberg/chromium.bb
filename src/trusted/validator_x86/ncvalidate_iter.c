@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -356,7 +356,9 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
     state->vlimit = vlimit;
     state->alignment_mask = alignment - 1;
     if (NULL == nacl_validator_features) {
-      GetCPUFeatures(&(state->cpu_features));
+      NaClCPUData cpu_data;
+      NaClCPUDataGet(&cpu_data);
+      GetCPUFeatures(&cpu_data, &(state->cpu_features));
     } else {
       state->cpu_features = *nacl_validator_features;
     }

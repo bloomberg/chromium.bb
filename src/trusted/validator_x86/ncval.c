@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -589,7 +589,9 @@ static int GrokFlags(int argc, const char *argv[]) {
     } else if (0 == strcmp("--cpuid-none", arg)) {
       NaClClearCPUFeatures(&ncval_cpu_features);
     } else if (GrokBoolFlag("--local_cpuid", arg, &flag)) {
-      GetCPUFeatures(&ncval_cpu_features);
+      NaClCPUData data;
+      NaClCPUDataGet(&data);
+      GetCPUFeatures(&data, &ncval_cpu_features);
     } else {
       argv[new_argc++] = argv[i];
     }

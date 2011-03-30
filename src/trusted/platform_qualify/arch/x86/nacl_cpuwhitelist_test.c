@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -15,10 +15,6 @@
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
 #include "native_client/src/trusted/platform_qualify/arch/x86/nacl_cpuidwhitelist.h"
-
-/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
-extern char *GetCPUIDString();
-
 
 static void CPUIDWhitelistUnitTests() {
   if (!NaCl_VerifyWhitelist()) {
@@ -63,7 +59,9 @@ static void CPUIDWhitelistUnitTests() {
 }
 
 int main() {
-  printf("white list ID: %s\n", GetCPUIDString());
+  NaClCPUData data;
+  NaClCPUDataGet(&data);
+  printf("white list ID: %s\n", GetCPUIDString(&data));
   if (NaCl_ThisCPUIsWhitelisted()) {
     printf("this CPU is on the whitelist\n");
   } else {

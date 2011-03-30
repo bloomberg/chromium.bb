@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -99,14 +99,20 @@ bool NaCl_CPUIsBlacklisted(const char *myid) {
 
 
 bool NaCl_ThisCPUIsWhitelisted() {
-  const char* myid = GetCPUIDString();
+  NaClCPUData data;
+  const char* myid;
+  NaClCPUDataGet(&data);
+  myid = GetCPUIDString(&data);
   return IsCpuInList(myid,
                      kNaclCpuWhitelist,
                      NACL_ARRAY_SIZE(kNaclCpuWhitelist));
 }
 
 bool NaCl_ThisCPUIsBlacklisted() {
-  const char* myid = GetCPUIDString();
+  NaClCPUData data;
+  const char* myid;
+  NaClCPUDataGet(&data);
+  myid = GetCPUIDString(&data);
   return IsCpuInList(myid,
                      kNaclCpuBlacklist,
                      NACL_ARRAY_SIZE(kNaclCpuBlacklist));

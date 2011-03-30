@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -148,7 +148,6 @@ typedef enum {
   CFReg_ECX_A,    /* eax == 0x80000001 */
   CFReg_EDX_A     /* eax == 0x80000001 */
 } CPUFeatureReg;
-#define kMaxCPUFeatureReg 8
 
 typedef struct cpufeature {
   CPUFeatureReg reg;
@@ -262,95 +261,63 @@ static void asm_CPUID(uint32_t op, volatile uint32_t reg[4]) {
 #endif
 }
 
-/* Define the set of version id words globally, so that it is initialized
- * at compile time. This allows CPUVersionID to be called from multiple threads
- * without breaking the result, other than some fields not getting set if
- * if a race condition occurs. In such cases, such races will at worst,
- * not allow some CPU features. */
-static uint32_t vidwords[4] = {0, 0, 0, 0 };
-
-
-static char *CPUVersionID() {
-  /* Note: There is a slight race condition here, in that ready, by another
-   * thread may be set to 1 before the global vidwords is set. However, the
-   * worst that will happen is that the initialized value may leak. In such
-   * cases, the validator will fail by assuming that features that are actually
-   * available, aren't.
-   */
-  static int ready = 0;
-  if (!ready) {
-    uint32_t reg[4];
-    asm_CPUID(0, reg);
-    vidwords[0] = reg[1];
-    vidwords[1] = reg[3];
-    vidwords[2] = reg[2];
-    vidwords[3] = 0;
-    ready = 1;
-  }
-  return (char *)vidwords;
+static void CacheCPUVersionID(NaClCPUData* data) {
+  uint32_t reg[4] = {0, 0, 0, 0 };
+  asm_CPUID(0, reg);
+  data->_vidwords[0] = reg[1];
+  data->_vidwords[1] = reg[3];
+  data->_vidwords[2] = reg[2];
+  data->_vidwords[3] = 0;
 }
 
-/* Define the set of CPUID feature register values for the architecture.
- * Note: We have two sets (of 4 registers) so that AMD specific flags can be
- * picked up. These words are defined globally, so that it is initialized at
- * compile time. This allows CPUFeatureVector to be called from multiple threads
- * without breaking the result, other than some fields not getting set if
- * if a race condition occurs. In such cases, such races will at worst,
- * not allow some CPU features.
- */
-static uint32_t featurev[kMaxCPUFeatureReg] = {0, 0, 0, 0, 0, 0, 0, 0};
+/* Defines the (cached) cpu version id */
+#define CPUVersionID(data) ((char*) (data)->_vidwords)
 
-/* returns feature vector as array of uint32_t [ecx, edx] */
-static uint32_t *CPUFeatureVector() {
-  static int ready = 0;
 
-  if (!ready) {
-    asm_CPUID(1, featurev);
-    /* this is for AMD CPUs */
-    asm_CPUID(0x80000001, &featurev[CFReg_EAX_A]);
-    ready = 1;
+/* Cache feature vector as array of uint32_t [ecx, edx] */
+void CacheCPUFeatureVector(NaClCPUData* data) {
+  int i;
+  for (i = 0; i < kMaxCPUFeatureReg; ++i) {
+    data->_featurev[i] = 0;
+  }
+  asm_CPUID(1, data->_featurev);
+  /* this is for AMD CPUs */
+  asm_CPUID(0x80000001, &data->_featurev[CFReg_EAX_A]);
 #if 0
-    /* print feature vector */
-    printf("CPUID:  %08x  %08x  %08x  %08x\n",
-           featurev[0], featurev[1], featurev[2], featurev[3]);
-    printf("CPUID:  %08x  %08x  %08x  %08x\n",
-           featurev[4], featurev[5], featurev[6], featurev[7]);
+  /* print feature vector */
+  printf("CPUID:  %08x  %08x  %08x  %08x\n",
+         data->_featurev[0],
+         data->_featurev[1],
+         data->_featurev[2],
+         data->_featurev[3]);
+  printf("CPUID:  %08x  %08x  %08x  %08x\n",
+         data->_featurev[4],
+         data->_featurev[5],
+         data->_featurev[6],
+         data->_featurev[7]);
 #endif
-  }
-  return featurev;
 }
 
-/* Define a string to hold and cache the CPUID. In such cases, such races
- * will at worst cause the CPUID to not be recognized
- *
- * Note: We have defined this globally, sso that it is initialized at
- * compile time. This allows GetCPUIDString to be called from multiple
- * threads without breaking the result, other than x'x may be inserted
- * into the CPUID string if a race condition occurs. In such cases,
- * such races will at worst cause the CPUID to not be recognized.
- */
-static char wlid[kCPUIDStringLength] = "xxxxxxxxxxxxxxxxxxxx\0";
-
-/* GetCPUIDString creates an ASCII string that identfies this CPU's     */
+/* CacheGetCPUIDString creates an ASCII string that identfies this CPU's */
 /* vendor ID, family, model, and stepping, as per the CPUID instruction */
-/* WARNING: This routine is not threadsafe.                             */
-char *GetCPUIDString() {
-  char *cpuversionid = CPUVersionID();
-  uint32_t *fv = CPUFeatureVector();
-
+static void CacheGetCPUIDString(NaClCPUData* data) {
+  char *cpuversionid = CPUVersionID(data);
+  uint32_t *fv = data->_featurev;
+  char* wlid = data->_wlid;
   /* Subtract 1 in this assert to avoid counting two null characters. */
   assert(9 + kVendorIDLength - 1 == kCPUIDStringLength);
   memcpy(wlid, cpuversionid, kVendorIDLength-1);
   SNPRINTF(&(wlid[kVendorIDLength-1]), 9, "%08x", (int)fv[CFReg_EAX_I]);
-  return wlid;
+}
+
+char *GetCPUIDString(NaClCPUData* data) {
+  return data->_wlid;
 }
 
 /* Returns true if the given feature is defined by the CPUID. */
-static bool CheckCPUFeature(CPUFeatureID fid) {
+static bool CheckCPUFeature(NaClCPUData* data, CPUFeatureID fid) {
   const CPUFeature *f = &CPUFeatureDescriptions[fid];
-  static uint32_t *fv = NULL;
-
-  if (fv == NULL) fv = CPUFeatureVector();
+  uint32_t *fv = data->_featurev;
 #if 0
   printf("%s: %x (%08x & %08x)\n", f->name, (fv[f->reg] & f->mask),
          fv[f->reg], f->mask);
@@ -366,12 +333,13 @@ static bool CheckCPUFeature(CPUFeatureID fid) {
  * As as side effect, the given cpu features is cleared before
  * setting the appropriate fields.
  */
-static void CheckNaClArchFeatures(nacl_arch_features* features) {
+static void CheckNaClArchFeatures(NaClCPUData* data,
+                                  nacl_arch_features* features) {
   const size_t kCPUID0Length = 12;
   char *cpuversionid;
   memset(features, 0, sizeof(*features));
-  if (asm_HasCPUID()) features->f_cpuid_supported = 1;
-  cpuversionid = CPUVersionID();
+  if (data->_has_CPUID) features->f_cpuid_supported = 1;
+  cpuversionid = CPUVersionID(data);
   if (strncmp(cpuversionid, Intel_CPUID0, kCPUID0Length) == 0) {
     features->f_cpu_supported = 1;
   } else if (strncmp(cpuversionid, AMD_CPUID0, kCPUID0Length) == 0) {
@@ -379,9 +347,9 @@ static void CheckNaClArchFeatures(nacl_arch_features* features) {
   }
 }
 
-bool NaClArchSupported() {
+bool NaClArchSupported(NaClCPUData* data) {
   nacl_arch_features features;
-  CheckNaClArchFeatures(&features);
+  CheckNaClArchFeatures(data, &features);
   return features.f_cpuid_supported && features.f_cpu_supported;
 }
 
@@ -402,38 +370,46 @@ void NaClClearCPUFeatures(CPUFeatures *features) {
  * the hardware. Hence, if a race occurs, the validator may reject
  * some features that should not be rejected.
  */
-void GetCPUFeatures(CPUFeatures *cpuf) {
+void GetCPUFeatures(NaClCPUData* data, CPUFeatures *cpuf) {
   NaClClearCPUFeatures(cpuf);
-  CheckNaClArchFeatures(&cpuf->arch_features);
+  CheckNaClArchFeatures(data, &cpuf->arch_features);
   if (!cpuf->arch_features.f_cpuid_supported) return;
-  cpuf->f_x87 = CheckCPUFeature(CPUFeature_x87);
-  cpuf->f_MMX = CheckCPUFeature(CPUFeature_MMX);
-  cpuf->f_SSE = CheckCPUFeature(CPUFeature_SSE);
-  cpuf->f_SSE2 = CheckCPUFeature(CPUFeature_SSE2);
-  cpuf->f_SSE3 = CheckCPUFeature(CPUFeature_SSE3);
-  cpuf->f_SSSE3 = CheckCPUFeature(CPUFeature_SSSE3);
-  cpuf->f_SSE41 = CheckCPUFeature(CPUFeature_SSE41);
-  cpuf->f_SSE42 = CheckCPUFeature(CPUFeature_SSE42);
-  cpuf->f_MOVBE = CheckCPUFeature(CPUFeature_MOVBE);
-  cpuf->f_POPCNT = CheckCPUFeature(CPUFeature_POPCNT);
-  cpuf->f_CX8 = CheckCPUFeature(CPUFeature_CX8);
-  cpuf->f_CX16 = CheckCPUFeature(CPUFeature_CX16);
-  cpuf->f_CMOV = CheckCPUFeature(CPUFeature_CMOV);
-  cpuf->f_MON = CheckCPUFeature(CPUFeature_MON);
-  cpuf->f_FXSR = CheckCPUFeature(CPUFeature_FXSR);
-  cpuf->f_CLFLUSH = CheckCPUFeature(CPUFeature_CLFLUSH);
+  cpuf->f_x87 = CheckCPUFeature(data, CPUFeature_x87);
+  cpuf->f_MMX = CheckCPUFeature(data, CPUFeature_MMX);
+  cpuf->f_SSE = CheckCPUFeature(data, CPUFeature_SSE);
+  cpuf->f_SSE2 = CheckCPUFeature(data, CPUFeature_SSE2);
+  cpuf->f_SSE3 = CheckCPUFeature(data, CPUFeature_SSE3);
+  cpuf->f_SSSE3 = CheckCPUFeature(data, CPUFeature_SSSE3);
+  cpuf->f_SSE41 = CheckCPUFeature(data, CPUFeature_SSE41);
+  cpuf->f_SSE42 = CheckCPUFeature(data, CPUFeature_SSE42);
+  cpuf->f_MOVBE = CheckCPUFeature(data, CPUFeature_MOVBE);
+  cpuf->f_POPCNT = CheckCPUFeature(data, CPUFeature_POPCNT);
+  cpuf->f_CX8 = CheckCPUFeature(data, CPUFeature_CX8);
+  cpuf->f_CX16 = CheckCPUFeature(data, CPUFeature_CX16);
+  cpuf->f_CMOV = CheckCPUFeature(data, CPUFeature_CMOV);
+  cpuf->f_MON = CheckCPUFeature(data, CPUFeature_MON);
+  cpuf->f_FXSR = CheckCPUFeature(data, CPUFeature_FXSR);
+  cpuf->f_CLFLUSH = CheckCPUFeature(data, CPUFeature_CLFLUSH);
   /* These instructions are illegal but included for completeness */
-  cpuf->f_MSR = CheckCPUFeature(CPUFeature_MSR);
-  cpuf->f_TSC = CheckCPUFeature(CPUFeature_TSC);
-  cpuf->f_VME = CheckCPUFeature(CPUFeature_VME);
-  cpuf->f_PSN = CheckCPUFeature(CPUFeature_PSN);
-  cpuf->f_VMX = CheckCPUFeature(CPUFeature_VMX);
+  cpuf->f_MSR = CheckCPUFeature(data, CPUFeature_MSR);
+  cpuf->f_TSC = CheckCPUFeature(data, CPUFeature_TSC);
+  cpuf->f_VME = CheckCPUFeature(data, CPUFeature_VME);
+  cpuf->f_PSN = CheckCPUFeature(data, CPUFeature_PSN);
+  cpuf->f_VMX = CheckCPUFeature(data, CPUFeature_VMX);
   /* AMD-specific features */
-  cpuf->f_3DNOW = CheckCPUFeature(CPUFeature_3DNOW);
-  cpuf->f_EMMX = CheckCPUFeature(CPUFeature_EMMX);
-  cpuf->f_E3DNOW = CheckCPUFeature(CPUFeature_E3DNOW);
-  cpuf->f_LZCNT = CheckCPUFeature(CPUFeature_LZCNT);
-  cpuf->f_SSE4A = CheckCPUFeature(CPUFeature_SSE4A);
-  cpuf->f_LM = CheckCPUFeature(CPUFeature_LM);
-  cpuf->f_SVM = CheckCPUFeature(CPUFeature_SVM);
+  cpuf->f_3DNOW = CheckCPUFeature(data, CPUFeature_3DNOW);
+  cpuf->f_EMMX = CheckCPUFeature(data, CPUFeature_EMMX);
+  cpuf->f_E3DNOW = CheckCPUFeature(data, CPUFeature_E3DNOW);
+  cpuf->f_LZCNT = CheckCPUFeature(data, CPUFeature_LZCNT);
+  cpuf->f_SSE4A = CheckCPUFeature(data, CPUFeature_SSE4A);
+  cpuf->f_LM = CheckCPUFeature(data, CPUFeature_LM);
+  cpuf->f_SVM = CheckCPUFeature(data, CPUFeature_SVM);
+}
+
+void NaClCPUDataGet(NaClCPUData* data) {
+  data->_has_CPUID = asm_HasCPUID();
+  CacheCPUVersionID(data);
+  CacheCPUVersionID(data);
+  CacheCPUFeatureVector(data);
+  CacheGetCPUIDString(data);
 }
