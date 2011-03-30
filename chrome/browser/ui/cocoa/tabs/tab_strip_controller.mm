@@ -40,6 +40,7 @@
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
+#include "chrome/browser/ui/title_prefix_matcher.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -168,6 +169,7 @@ private:
             givesIndex:(NSInteger*)index
            disposition:(WindowOpenDisposition*)disposition;
 - (void)setNewTabButtonHoverState:(BOOL)showHover;
+- (void)updateCommonTitlePrefix;
 - (BOOL)shouldShowProfileMenuButton;
 - (void)updateProfileMenuButton;
 @end
@@ -1130,6 +1132,8 @@ class NotificationBridge : public NotificationObserver {
   // else.
   [self updateFaviconForContents:contents->tab_contents() atIndex:modelIndex];
 
+  [self updateCommonTitlePrefix];
+
   // Send a broadcast that the number of tabs have changed.
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kTabStripNumberOfTabsChanged
@@ -1249,6 +1253,8 @@ class NotificationBridge : public NotificationObserver {
 
   // Once we're totally done with the tab, delete its controller
   [tabArray_ removeObjectAtIndex:index];
+
+  [self updateCommonTitlePrefix];
 }
 
 // Called by the CAAnimation delegate when the tab completes the closing
@@ -1444,6 +1450,8 @@ class NotificationBridge : public NotificationObserver {
   TabContentsController* updatedController =
       [tabContentsArray_ objectAtIndex:index];
   [updatedController tabDidChange:contents->tab_contents()];
+
+  [self updateCommonTitlePrefix];
 }
 
 // Called when a tab is moved (usually by drag&drop). Keep our parallel arrays
@@ -1495,6 +1503,8 @@ class NotificationBridge : public NotificationObserver {
   // the tab has already been rendered, so re-layout the tabstrip. In all other
   // cases, the state is set before the tab is rendered so this isn't needed.
   [self layoutTabs];
+
+  [self updateCommonTitlePrefix];
 }
 
 - (void)setFrameOfSelectedTab:(NSRect)frame {
@@ -2010,6 +2020,40 @@ class NotificationBridge : public NotificationObserver {
   DCHECK(index >= 0);
   if (index >= 0) {
     [controller setTab:[self viewAtIndex:index] isDraggable:YES];
+  }
+}
+
+// Update the lengths of common title prefixes for all tabs. This needs
+// to be done every time tabs are added/removed or when titles change.
+- (void)updateCommonTitlePrefix {
+  DCHECK_EQ([tabArray_ count], [tabArray_ count]);
+
+  std::vector<TitlePrefixMatcher::TitleInfo> tabTitleInfos;
+  ScopedVector<string16> titles;
+  size_t tabIndex;
+  size_t tabCount = [tabArray_ count];
+
+  // Add all tab titles to |tabTitleInfos|.
+  for (tabIndex = 0; tabIndex < tabCount; ++tabIndex) {
+    TabController* tabController = [tabArray_ objectAtIndex:tabIndex];
+    string16 title = base::SysNSStringToUTF16([tabController title]);
+    if (!title.empty() && ![tabController mini]) {
+      titles.push_back(new string16(title));
+      tabTitleInfos.push_back(TitlePrefixMatcher::TitleInfo(
+          titles[titles.size() - 1], tabIndex));
+    }
+  }
+
+  // Calculate the prefix length.
+  TitlePrefixMatcher::CalculatePrefixLengths(&tabTitleInfos);
+
+  // Update the prefix length for each tab.
+  for (size_t infoIndex = 0; infoIndex < tabTitleInfos.size(); ++infoIndex) {
+    tabIndex = tabTitleInfos[infoIndex].caller_value;
+    DCHECK(tabIndex < [tabArray_ count]);
+    TabController* tabController = [tabArray_ objectAtIndex:tabIndex];
+    [tabController setTitleCommonPrefixLength:
+        tabTitleInfos[infoIndex].prefix_length];
   }
 }
 

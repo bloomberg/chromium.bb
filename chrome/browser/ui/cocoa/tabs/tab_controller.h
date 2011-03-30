@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,6 +103,11 @@ class MenuDelegate;
 
 // Update the title color to match the tabs current state.
 - (void)updateTitleColor;
+
+// Sets the maximum number of characters that can be truncated from the
+// beginning of the title. This is used to remove a common prefix among multiple
+// tabs.
+- (void)setTitleCommonPrefixLength:(NSUInteger)length;
 @end
 
 @interface TabController(TestingAPI)

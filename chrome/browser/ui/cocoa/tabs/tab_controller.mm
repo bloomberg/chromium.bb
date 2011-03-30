@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
+#import "third_party/GTM/AppKit/GTMFadeTruncatingTextFieldCell.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 @implementation TabController
@@ -301,6 +302,15 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
         YES : NO;
   }
   return NO;
+}
+
+- (void)setTitleCommonPrefixLength:(NSUInteger)length {
+  DCHECK([[titleView_ cell] isKindOfClass:
+      [GTMFadeTruncatingTextFieldCell class]]);
+  GTMFadeTruncatingTextFieldCell* cell = [titleView_ cell];
+  [cell setDesiredCharactersToTruncateFromHead:length];
+  [cell setTruncateMode:length > 0 ? GTMFadeTruncatingHeadAndTail :
+                                     GTMFadeTruncatingTail];
 }
 
 @end
