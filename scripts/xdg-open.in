@@ -6,6 +6,8 @@
 #
 #   Refer to the usage() function below for usage.
 #
+#   Copyright 2009-2010, Fathi Boudra <fabo@freedesktop.org>
+#   Copyright 2009-2010, Rex Dieter <rdieter@fedoraproject.org>
 #   Copyright 2006, Kevin Krammer <kevin.krammer@gmx.at>
 #   Copyright 2006, Jeremy White <jwhite@codeweavers.com>
 #
@@ -161,6 +163,32 @@ open_generic()
     exit_failure_operation_impossible "no method available for opening '$1'"
 }
 
+open_lxde()
+{
+    # pcmanfm only knows how to handle file:// urls and filepaths, it seems.
+    if (echo "$1" | grep -q '^file://' ||
+        ! echo "$1" | egrep -q '^[a-zA-Z+\.\-]+:')
+    then
+        local file="$(echo "$1" | sed 's%^file://%%')"
+
+        # handle relative paths
+        if ! echo "$file" | grep -q '^/'; then
+            file="$(pwd)/$file"
+        fi
+
+        pcmanfm "$file"
+
+    else
+        open_generic "$1"
+    fi
+
+    if [ $? -eq 0 ]; then
+        exit_success
+    else
+        exit_failure_operation_failed
+    fi
+}
+
 [ x"$1" != x"" ] || exit_failure_syntax
 
 url=
@@ -211,6 +239,10 @@ case "$DE" in
 
     xfce)
     open_xfce "$url"
+    ;;
+
+    lxde)
+    open_lxde "$url"
     ;;
 
     generic)

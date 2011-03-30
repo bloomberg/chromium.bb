@@ -3,7 +3,7 @@ URL: http://portland.freedesktop.org/wiki/
 Version: unknown
 
 Description:
-This directory contains a copy of xdg-utils obtained from CVS on 2010-08-30,
+This directory contains a copy of xdg-utils obtained from CVS on 2010-12-31,
 with this command:
 
 cvs -d:pserver:anoncvs@anoncvs.freedesktop.org:/cvs/portland co -d xdg-utils portland/xdg-utils

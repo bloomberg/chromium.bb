@@ -7,6 +7,8 @@
 #
 #   Refer to the usage() function below for usage.
 #
+#   Copyright 2009-2010, Fathi Boudra <fabo@freedesktop.org>
+#   Copyright 2009-2010, Rex Dieter <rdieter@fedoraproject.org>
 #   Copyright 2006, Kevin Krammer <kevin.krammer@gmx.at>
 #   Copyright 2006, Jeremy White <jwhite@codeweavers.com>
 #
@@ -46,7 +48,7 @@ run_thunderbird()
     BCC=$(echo "$MAILTO" | grep '^bcc=' | sed 's/^bcc=//' | awk '{ printf "%s,",$0 }')
     SUBJECT=$(echo "$MAILTO" | grep '^subject=' | tail -n 1)
     BODY=$(echo "$MAILTO" | grep '^body=' | tail -n 1)
-    ATTACH=$(echo "$MAILTO" | sed 's/^attach=/\n\nfile:\/\//g' | awk '/^file:/ { printf "%s,",$0 }')
+    ATTACH=$(echo "$MAILTO" | sed 's/^attach=/\n\nfile:\/\//g' | awk '/^file:/ { printf "%s,",$0 }' | sed 's/,$//')
 
     if [ -z "$TO" ] ; then
         NEWMAILTO=
@@ -82,8 +84,9 @@ run_thunderbird()
 
 open_kde()
 {
-    local client
-    client=`kreadconfig --file emaildefaults --group PROFILE_Default --key EmailClient | cut -d ' ' -f 1`
+    local client kde_email_profile_name
+    kde_email_profile_name=`kreadconfig --file emaildefaults --group Defaults --key Profile`
+    client=`kreadconfig --file emaildefaults --group PROFILE_"$kde_email_profile_name" --key EmailClient | cut -d ' ' -f 1`
     echo $client | grep thunderbird > /dev/null 2>&1
     if [ $? -eq 0 ] ; then
         run_thunderbird "$client" "$1"
@@ -192,7 +195,7 @@ result=$(echo "$1" | $utf8 | awk '
             c = substr ($0, i, 1)
             if ( ord [c] > 127 ) {
                 e = e "%" sprintf("%02X", ord [c])
-            } else if ( c ~ /[@a-zA-Z0-9.-\\/]/ ) {
+            } else if ( c ~ /[@a-zA-Z0-9.-\\\/]/ ) {
                 e = e c
             } else {
                 e = e "%" sprintf("%02X", ord [c])
@@ -361,7 +364,7 @@ case "$DE" in
     open_xfce "${mailto}"
     ;;
 
-    generic)
+    generic|lxde)
     open_generic "${mailto}"
     ;;
 

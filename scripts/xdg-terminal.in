@@ -6,6 +6,8 @@
 #
 #   Refer to the usage() function below for usage.
 #
+#   Copyright 2009-2010, Fathi Boudra <fabo@freedesktop.org>
+#   Copyright 2009-2010, Rex Dieter <rdieter@fedoraproject.org>
 #   Copyright 2006, Kevin Krammer <kevin.krammer@gmx.at>
 #
 #   LICENSE:
@@ -115,6 +117,19 @@ terminal_generic()
     fi
 }
 
+terminal_lxde()
+{
+    if which lxterminal &>/dev/null; then
+        if [ x"$1" == x"" ]; then
+            lxterminal
+        else
+            lxterminal -e "$1"
+        fi
+    else
+        terminal_generic "$1"
+    fi
+}
+
 #[ x"$1" != x"" ] || exit_failure_syntax
 
 command=
@@ -157,6 +172,10 @@ case "$DE" in
 
     xfce)
     terminal_xfce "$command"
+    ;;
+
+    lxde)
+    terminal_lxde "$command"
     ;;
 
     generic)

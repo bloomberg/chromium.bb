@@ -1,18 +1,46 @@
 === xdg-utils 1.x.x ===
 
-2010-07-09 Rex Dieter <rdieter@fedoraproject.org> 
+2010-11-18 Rex Dieter <rdieter@fedoraproject.org> 
+   * fixup kfmclient_fix_exit_code() for newer kde-config output
+   * fix typo in xdg-mime manpage 
+   * xdg-email: Thunderbird is not detected with localized (BR31740)
+
+2010-10-28 Rex Dieter <rdieter@fedoraproject.org> 
+   * add lxde support (BR26058)
+
+2010-09-25 Fathi Boudra <fabo@freedesktop.org>
+   * xdg-settings: Only run KDE browser fallback when necessary. Otherwise,
+     in some circumstances, read_kde_browser incorrectly prints the result
+     twice. Thanks to David Benjamin.
+
+2010-09-24 Fathi Boudra <fabo@freedesktop.org>
+    * xdg-email: Fix e-mail attachements support with Thunderbird3 (BR13435) 
+
+2010-09-24 Fathi Boudra <fabo@freedesktop.org>
+    * xdg-mime: update the required section "[Added Associations]"
+      Thanks to Mike Mammarella:
+
+2010-09-24 Fathi Boudra <fabo@freedesktop.org>
+    * xdg-email: Fix missing backslash in awk script so that it works with
+      mawk.
+
+2010-09-24 Fathi Boudra <fabo@freedesktop.org>
+    * xdg-desktop-icon: set the execute bit to desktop file.
+      Thanks to Damjan Jovanovic. (BR28394)
+
+2010-07-09 Rex Dieter <rdieter@fedoraproject.org>
     * xdg-screensaver: consider gnome-screensaver a separate DE (BR20027)
 
 2010-07-09 Rex Dieter <rdieter@fedoraproject.org>
     * xdg-mime : use 'gnomevfs-info --slow-mime' (BR 13939)
 
-2010-07-09 Rex Dieter <rdieter@fedoraproject.org> 
+2010-07-09 Rex Dieter <rdieter@fedoraproject.org>
     * xdg-desktop-icon :  use localized desktop folder name (BR19011)
 
 2010-07-09 Rex Dieter <rdieter@fedoraproject.org>
     * xdg-open : use mimeopen -L (follow symlinks)
 
-2010-07-09 Rex Dieter <rdieter@fedoraproject.org> 
+2010-07-09 Rex Dieter <rdieter@fedoraproject.org>
     * xdg-open.1 : add FILES, SEE ALSO sections
 
 2010-05-16 Rex Dieter <rdieter@fedoraproject.org>

@@ -7,6 +7,8 @@
 #
 #   Refer to the usage() function below for usage.
 #
+#   Copyright 2009-2010, Fathi Boudra <fabo@freedesktop.org>
+#   Copyright 2009-2010, Rex Dieter <rdieter@fedoraproject.org>
 #   Copyright 2006, Kevin Krammer <kevin.krammer@gmx.at>
 #   Copyright 2006, Jeremy White <jwhite@codeweavers.com>
 #
@@ -83,7 +85,7 @@ default
 
     application is the desktop file id of the application and has the form
     vendor-name.desktop application must already be installed in the desktop
-    menu before it can be made the default handler. The aplication's desktop
+    menu before it can be made the default handler. The application's desktop
     file must list support for all the MIME types that it wishes to be the
     default handler for.
 
