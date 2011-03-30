@@ -86,6 +86,10 @@ bool KeywordTable::Init() {
   return true;
 }
 
+bool KeywordTable::IsSyncable() {
+  return true;
+}
+
 bool KeywordTable::AddKeyword(const TemplateURL& url) {
   DCHECK(url.id());
   // Be sure to change kUrlIdPosition if you add columns

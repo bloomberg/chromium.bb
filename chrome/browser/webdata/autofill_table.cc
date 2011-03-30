@@ -32,6 +32,10 @@ bool AutofillTable::Init() {
      InitProfileTrashTable());
 }
 
+bool AutofillTable::IsSyncable() {
+  return true;
+}
+
 bool AutofillTable::AddFormFieldValues(const std::vector<FormField>& elements,
                                        std::vector<AutofillChange>* changes) {
   return AddFormFieldValuesTime(elements, changes, Time::Now());

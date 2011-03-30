@@ -114,7 +114,7 @@ class AutofillTable : public WebDatabaseTable {
       : WebDatabaseTable(db, meta_table) {}
   virtual ~AutofillTable() {}
   virtual bool Init();
-  virtual bool IsSyncable() { return true; }
+  virtual bool IsSyncable();
 
   // Records the form elements in |elements| in the database in the
   // autofill table.  A list of all added and updated autofill entries

@@ -54,7 +54,7 @@ class KeywordTable : public WebDatabaseTable {
       : WebDatabaseTable(db, meta_table) {}
   virtual ~KeywordTable();
   virtual bool Init();
-  virtual bool IsSyncable() { return true; }
+  virtual bool IsSyncable();
 
   // Adds a new keyword, updating the id field on success.
   // Returns true if successful.
