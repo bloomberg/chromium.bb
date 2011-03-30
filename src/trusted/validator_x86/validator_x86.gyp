@@ -1,4 +1,4 @@
-# Copyright 2009, Google Inc.
+# Copyright 2011, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -130,6 +130,7 @@
               # compatible with the scons build.
               '<(validate_gen_out)/ncdecodetab.h',
               '<(validate_gen_out)/ncdisasmtab.h',
+              '<(validate_gen_out)/ncbadprefixmask.h',
             ],
             'action': ['<(PRODUCT_DIR)/ncdecode_table<(EXECUTABLE_SUFFIX)',
                        '-m32', '<@(_outputs)'],

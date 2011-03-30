@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
+# Copyright 2011 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -157,12 +157,14 @@ test_env.ComponentLibrary('ncdis_util',
 
 ncv_decodetab_h = env.File(ncv_gen_dir + '/ncdecodetab.h')
 ncv_disasmtab_h = env.File(ncv_gen_dir + '/ncdisasmtab.h')
+ncv_badprefixmask_h = env.File(ncv_gen_dir + '/ncbadprefixmask.h')
 
 env.Command(
-    [ncv_decodetab_h, ncv_disasmtab_h],
+    [ncv_decodetab_h, ncv_disasmtab_h, ncv_badprefixmask_h],
     [ncdecode_table, '${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX}'],
-    ['${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX} -m%s %s %s' %
-     (env['TARGET_SUBARCH'], ncv_decodetab_h, ncv_disasmtab_h)])
+    ['${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX} -m%s %s %s %s' %
+     (env['TARGET_SUBARCH'],
+      ncv_decodetab_h, ncv_disasmtab_h, ncv_badprefixmask_h )])
 
 # TODO(gregoryd): use nc_opcode_table64.h on all 64-bit platforms.
 if env.Bit('target_x86_64') and env.Bit('windows'):

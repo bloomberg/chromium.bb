@@ -19,6 +19,7 @@
 #include "native_client/src/trusted/validator_x86/ncvalidate_internaltypes.h"
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "gen/native_client/src/trusted/validator_x86/ncbadprefixmask.h"
 
 /* debugging stuff */
 #define DEBUGGING 0
@@ -262,31 +263,6 @@ void ValidateInst(const struct NCDecoderState *mstate);
 void ValidateInstReplacement(const struct NCDecoderState *mstate_old,
                              const struct NCDecoderState *mstate_new);
 
-/* In general we are quite paranoid about what prefixes can     */
-/* be used and where. For one-byte opcodes, prefixes are        */
-/* restricted based on the NACLi_ type and the masks in         */
-/* BadPrefixMask. For two-byte opcodes, any                     */
-/* prefix can be used, but they function more to define the     */
-/* opcode as opposed to modify it; hence there are separate     */
-/* tables in ncdecodetab.h for the four allowed prefix bytes.   */
-static uint32_t BadPrefixMask[kNaClInstTypeRange];
-static void InitBadPrefixMask() {
-  int i;
-
-  for (i = 0; i < kNaClInstTypeRange; i++) {
-    BadPrefixMask[i] = 0xffffffff;  /* all prefixes are bad */
-  }
-  BadPrefixMask[NACLi_386]   = ~(kPrefixDATA16 | kPrefixSEGGS);
-  BadPrefixMask[NACLi_386L]  = ~(kPrefixDATA16 | kPrefixLOCK);
-  BadPrefixMask[NACLi_386R]  = ~(kPrefixDATA16 | kPrefixREP);
-  BadPrefixMask[NACLi_386RE] = ~(kPrefixDATA16 | kPrefixREP | kPrefixREPNE);
-  /* CS and DS prefix bytes are used as branch prediction hints  */
-  /* and do not affect target address computation.               */
-  BadPrefixMask[NACLi_JMP8]  = ~(kPrefixSEGCS | kPrefixSEGDS);
-  BadPrefixMask[NACLi_JMPZ]  = ~(kPrefixSEGCS | kPrefixSEGDS);
-  BadPrefixMask[NACLi_CMPXCHG8B] = ~kPrefixLOCK;
-}
-
 /*
  * NCValidateInit: Initialize NaCl validator internal state
  * Parameters:
@@ -303,7 +279,6 @@ struct NCValidatorState *NCValidateInit(const uint32_t vbase,
   struct NCValidatorState *vstate = NULL;
 
   dprint(("NCValidateInit(%08x, %08x, %08x)\n", vbase, vlimit, alignment));
-  InitBadPrefixMask();
   do {
     if (vlimit <= vbase) break;
     if (alignment != 16 && alignment != 32) break;
