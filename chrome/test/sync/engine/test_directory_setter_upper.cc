@@ -4,6 +4,7 @@
 
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -26,8 +27,9 @@ TestDirectorySetterUpper::~TestDirectorySetterUpper() {}
 void TestDirectorySetterUpper::Init() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   reset_directory_manager(new DirectoryManager(temp_dir_.path()));
-  file_path_ = manager_->GetSyncDataDatabasePath();
-  file_util::Delete(file_path_, false);
+  // There shouldn't be any existing database in the newly-created
+  // temp dir.
+  ASSERT_FALSE(file_util::PathExists(manager_->GetSyncDataDatabasePath()));
 }
 
 void TestDirectorySetterUpper::reset_directory_manager(DirectoryManager* d) {
@@ -57,8 +59,7 @@ void TestDirectorySetterUpper::TearDown() {
   manager()->FinalSaveChangesForAll();
   manager()->Close(name());
   manager_.reset();
-  EXPECT_TRUE(file_util::Delete(file_path_, false));
-  file_path_ = FilePath(FILE_PATH_LITERAL(""));
+  ASSERT_TRUE(temp_dir_.Delete());
 }
 
 void TestDirectorySetterUpper::RunInvariantCheck(const ScopedDirLookup& dir) {
