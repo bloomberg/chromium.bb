@@ -4819,49 +4819,68 @@
         ]
       },
       {
-        "name": "postMessage",
+        "name": "sendCommand",
         "type": "function",
-        "description": "Execute.",
+        "description": "Send given command to the debugger.",
         "parameters": [
           {
             "type": "integer",
             "name": "tabId",
-            "description": "The id of the tab to which you want to send debugging message."
+            "description": "The id of the tab to which you want to send debugging command."
+          },
+          {
+            "type": "string",
+            "name": "domain",
+            "description": "Debugging domain to send command in."
+          },
+          {
+            "type": "string",
+            "name": "command",
+            "description": "Command name."
           },
           {
             "type": "object",
-            "name": "request",
+            "name": "arguments",
+            "optional": true,
             "properties": {},
             "additionalProperties": { "type": "any" },
-            "description": "JSON object matching Developer Tools / Web Inspector Protocol request scheme."
+            "description": "JSON object matching Developer Tools / Web Inspector Protocol command scheme."
           },
           {
             "type": "function",
             "name": "callback",
             "optional": true,
-            "parameters": [],
-            "description": "If an error occurs while posting the message, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
+            "parameters": [
+              {
+                "type": "object",
+                "name": "result",
+                "properties": {},
+                "additionalProperties": { "type": "any" },
+                "description": "JSON object with the command response."
+              }
+            ],
+            "description": "Command response body. If an error occurs while posting the message, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
           }
         ]
       }
     ],
     "events": [
       {
-        "name": "onMessage",
+        "name": "onEvent",
         "type": "function",
-        "description": "Fired when debugger wants to send response or event message to its client.",
+        "description": "Fired whenever debugger issues instrumentation event.",
         "parameters": [
           {
             "type": "integer",
             "name": "tabId",
-            "description": "The id of the tab that generated debug message."
+            "description": "The id of the tab that generated debug evet."
           },
           {
             "type": "object",
             "name": "message",
             "properties": {},
             "additionalProperties": { "type": "any" },
-            "description": "JSON object matching Developer Tools / Web Inspector Protocol response or event scheme."
+            "description": "JSON object matching Developer Tools / Web Inspector Protocol event scheme."
           }
         ]
       },

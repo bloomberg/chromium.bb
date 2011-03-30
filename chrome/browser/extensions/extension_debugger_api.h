@@ -17,7 +17,7 @@
 
 class ExtensionDevToolsClientHost;
 
-class DebuggerFunction : public SyncExtensionFunction {
+class DebuggerFunction : public AsyncExtensionFunction {
  protected:
   DebuggerFunction();
   virtual ~DebuggerFunction() {}
@@ -47,13 +47,16 @@ class DetachDebuggerFunction : public DebuggerFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.debugger.detach")
 };
 
-// Implements the debugger.postMessage() extension function.
-class PostMessageDebuggerFunction : public DebuggerFunction {
+// Implements the debugger.sendCommand() extension function.
+class SendCommandDebuggerFunction : public DebuggerFunction {
  public:
-  PostMessageDebuggerFunction();
-  ~PostMessageDebuggerFunction();
+  SendCommandDebuggerFunction();
+  ~SendCommandDebuggerFunction();
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.debugger.postMessage")
+
+  void SendResponseBody(Value* body,
+                        const std::string& error);
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.debugger.sendCommand")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DEBUGGER_API_H_

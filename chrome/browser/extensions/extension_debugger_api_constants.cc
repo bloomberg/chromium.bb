@@ -10,7 +10,7 @@ const char kCommandKey[] = "command";
 const char kDataKey[] = "data";
 const char kTabIdKey[] = "tabId";
 
-const char kOnMessage[] = "experimental.debugger.onMessage";
+const char kOnEvent[] = "experimental.debugger.onEvent";
 const char kOnDetach[] = "experimental.debugger.onDetach";
 
 const char kAlreadyAttachedError[] =

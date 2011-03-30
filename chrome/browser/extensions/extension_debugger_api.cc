@@ -6,8 +6,10 @@
 
 #include "chrome/browser/extensions/extension_debugger_api.h"
 
+#include <map>
 #include <set>
 
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/singleton.h"
 #include "base/string_number_conversions.h"
@@ -39,7 +41,10 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   bool MatchesContentsAndExtensionId(TabContents* tab_contents,
                                      const std::string& extension_id);
   void Close();
-  void SendMessageToBackend(const std::string& message);
+  void SendMessageToBackend(SendCommandDebuggerFunction* function,
+                            const std::string& domain,
+                            const std::string& command,
+                            const Value& body);
 
   // DevToolsClientHost interface
   virtual void InspectedTabClosing();
@@ -58,6 +63,10 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   std::string extension_id_;
   int tab_id_;
   NotificationRegistrar registrar_;
+  int last_request_id_;
+  typedef std::map<int, scoped_refptr<SendCommandDebuggerFunction> >
+      PendingRequests;
+  PendingRequests pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsClientHost);
 };
@@ -103,7 +112,8 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
     int tab_id)
     : tab_contents_(tab_contents),
       extension_id_(extension_id),
-      tab_id_(tab_id) {
+      tab_id_(tab_id),
+      last_request_id_(0) {
   AttachedClientHosts::GetInstance()->Add(this);
 
   // Detach from debugger when extension unloads.
@@ -166,10 +176,23 @@ void ExtensionDevToolsClientHost::Close() {
 }
 
 void ExtensionDevToolsClientHost::SendMessageToBackend(
-    const std::string& message) {
+    SendCommandDebuggerFunction* function,
+    const std::string& domain,
+    const std::string& command,
+    const Value& body) {
+  DictionaryValue protocol_command;
+  int request_id = ++last_request_id_;
+  pending_requests_[request_id] = function;
+  protocol_command.SetInteger("id", request_id);
+  protocol_command.SetString("domain", domain);
+  protocol_command.SetString("command", command);
+  protocol_command.Set("arguments", body.DeepCopy());
+
+  std::string json_args;
+  base::JSONWriter::Write(&protocol_command, false, &json_args);
   DevToolsManager::GetInstance()->ForwardToDevToolsAgent(
       this,
-      DevToolsAgentMsg_DispatchOnInspectorBackend(message));
+      DevToolsAgentMsg_DispatchOnInspectorBackend(json_args));
 }
 
 void ExtensionDevToolsClientHost::Observe(
@@ -183,14 +206,49 @@ void ExtensionDevToolsClientHost::Observe(
 void ExtensionDevToolsClientHost::OnDispatchOnInspectorFrontend(
     const std::string& data) {
   Profile* profile = tab_contents_->profile();
-  if (profile != NULL && profile->GetExtensionEventRouter()) {
-    // data is stringified JSON object, while extension expects
-    // array of objects (tabId, data).
-    std::string message = StringPrintf("[%d,%s]", tab_id_, data.c_str());
+  if (profile == NULL || !profile->GetExtensionEventRouter())
+    return;
 
+  scoped_ptr<Value> result(base::JSONReader::Read(data, false));
+  if (!result->IsType(Value::TYPE_DICTIONARY))
+    return;
+  DictionaryValue* dictionary = static_cast<DictionaryValue*>(result.get());
+
+  std::string type;
+  if (dictionary->GetString("type", &type) && type == "event") {
+    std::string message = StringPrintf("[%d,%s]", tab_id_, data.c_str());
     profile->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, keys::kOnMessage, message, profile, GURL());
+        extension_id_, keys::kOnEvent, message, profile, GURL());
+    return;
   }
+
+  int request_id;
+  if (!dictionary->GetInteger("requestId", &request_id))
+    return;
+
+  SendCommandDebuggerFunction* function = pending_requests_[request_id];
+  if (!function)
+    return;
+
+  std::string error;
+  if (!dictionary->GetString("error", &error))
+    error = "";
+
+  ListValue* protocol_errors;
+  if (dictionary->GetList("protocolErrors", &protocol_errors)) {
+    for (size_t i = 0; i < protocol_errors->GetSize(); ++i) {
+      std::string protocol_error;
+      if (protocol_errors->GetString(i, &protocol_error))
+        error += "\n" + protocol_error;
+    }
+  }
+
+  Value* response_body;
+  if (!dictionary->Get("body", &response_body))
+    response_body = NULL;
+
+  function->SendResponseBody(response_body, error);
+  pending_requests_.erase(request_id);
 }
 
 DebuggerFunction::DebuggerFunction()
@@ -254,6 +312,7 @@ bool AttachDebuggerFunction::RunImpl() {
   }
 
   new ExtensionDevToolsClientHost(contents_, GetExtension()->id(), tab_id);
+  SendResponse(true);
   return true;
 }
 
@@ -269,25 +328,45 @@ bool DetachDebuggerFunction::RunImpl() {
     return false;
 
   client_host_->Close();
+  SendResponse(true);
   return true;
 }
 
-PostMessageDebuggerFunction::PostMessageDebuggerFunction() {}
+SendCommandDebuggerFunction::SendCommandDebuggerFunction() {}
 
-PostMessageDebuggerFunction::~PostMessageDebuggerFunction() {}
+SendCommandDebuggerFunction::~SendCommandDebuggerFunction() {}
 
-bool PostMessageDebuggerFunction::RunImpl() {
+bool SendCommandDebuggerFunction::RunImpl() {
   int tab_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
-
-  Value *command;
-  EXTENSION_FUNCTION_VALIDATE(args_->Get(1, &command));
 
   if (!InitClientHost(tab_id))
     return false;
 
-  std::string json_args;
-  base::JSONWriter::Write(command, false, &json_args);
-  client_host_->SendMessageToBackend(json_args);
+  std::string domain;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &domain));
+
+  std::string command;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &command));
+
+  Value *body;
+  EXTENSION_FUNCTION_VALIDATE(args_->Get(3, &body));
+
+  client_host_->SendMessageToBackend(this, domain, command, *body);
   return true;
+}
+
+void SendCommandDebuggerFunction::SendResponseBody(Value* body,
+                                                   const std::string& error) {
+  if (!error.empty()) {
+    error_ = error;
+    SendResponse(false);
+    return;
+  }
+
+  if (body)
+    result_.reset(body->DeepCopy());
+  else
+    result_.reset(new DictionaryValue());
+  SendResponse(true);
 }

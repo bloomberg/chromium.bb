@@ -20,22 +20,28 @@ chrome.test.runTests([
                  tabId + "."));
   },
 
-  function postMessage() {
-    function onMessage(messageTabId) {
-      chrome.test.assertEq(tabId, messageTabId);
-      chrome.experimental.debugger.onMessage.removeListener(onMessage);
-      chrome.test.succeed();
+  function sendCommand() {
+    function onResponse() {
+      if (chrome.extension.lastError && chrome.extension.lastError.message.indexOf("InvalidDomain") != -1)
+        chrome.test.succeed();
+      else
+        chrome.test.fail();
     }
-    chrome.experimental.debugger.onMessage.addListener(onMessage);
-    chrome.experimental.debugger.postMessage(tabId, {});
+
+    chrome.experimental.debugger.sendCommand(
+        tabId,
+        "InvalidDomain",
+        "invalidCommand",
+        {},
+        onResponse);
   },
 
   function detach() {
     chrome.experimental.debugger.detach(tabId, pass());
   },
 
-  function postMessageAfterDetach() {
-    chrome.experimental.debugger.postMessage(tabId, {},
+  function sendCommandAfterDetach() {
+    chrome.experimental.debugger.sendCommand(tabId, "Foo", "bar", {},
         fail("Debugger is not attached to the tab with id: " + tabId + "."));
   },
 

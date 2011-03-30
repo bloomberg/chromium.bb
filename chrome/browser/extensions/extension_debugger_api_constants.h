@@ -16,7 +16,7 @@ extern const char kDataKey[];
 extern const char kTabIdKey[];
 
 // Events.
-extern const char kOnMessage[];
+extern const char kOnEvent[];
 extern const char kOnDetach[];
 
 // Errors.
