@@ -54,6 +54,7 @@ class DataTypeManager {
     ConfigureResult result;
     scoped_ptr<tracked_objects::Location> location;
 
+    ConfigureResultWithErrorLocation();
     ConfigureResultWithErrorLocation(const ConfigureResult& result,
         const tracked_objects::Location& location) : result(result) {
       this->location.reset(new tracked_objects::Location(
@@ -61,6 +62,8 @@ class DataTypeManager {
           location.file_name(),
           location.line_number()));
     }
+
+      ~ConfigureResultWithErrorLocation();
   };
 
   typedef std::set<syncable::ModelType> TypeSet;
