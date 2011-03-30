@@ -10,6 +10,7 @@
 #include <string>
 
 #include "app/mac/nsimage_cache.h"
+#include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -29,6 +31,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
+#import "chrome/browser/ui/cocoa/profile_menu_button.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
@@ -38,10 +41,13 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/common/notification_service.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -94,6 +100,10 @@ const CGFloat kIncognitoBadgeTabStripShrink = 18;
 
 // Time (in seconds) in which tabs animate to their final position.
 const NSTimeInterval kAnimationDuration = 0.125;
+
+// The amount by wich the profile menu button is offset (from tab tabs or new
+// tab button).
+const CGFloat kProfileMenuButtonOffset = 6.0;
 
 // Helper class for doing NSAnimationContext calls that takes a bool to disable
 // all the work.  Useful for code that wants to conditionally animate.
@@ -158,6 +168,8 @@ private:
             givesIndex:(NSInteger*)index
            disposition:(WindowOpenDisposition*)disposition;
 - (void)setNewTabButtonHoverState:(BOOL)showHover;
+- (BOOL)shouldShowProfileMenuButton;
+- (void)updateProfileMenuButton;
 @end
 
 // A simple view class that prevents the Window Server from dragging the area
@@ -256,6 +268,39 @@ private:
 
 @end
 
+namespace TabStripControllerInternal {
+
+// Bridges C++ notifications back to the TabStripController.
+class NotificationBridge : public NotificationObserver {
+ public:
+  explicit NotificationBridge(TabStripController* controller,
+                              PrefService* prefService)
+      : controller_(controller) {
+    DCHECK(prefService);
+    usernamePref_.Init(prefs::kGoogleServicesUsername, prefService, this);
+  }
+
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    DCHECK_EQ(NotificationType::PREF_CHANGED, type.value);
+    std::string* name = Details<std::string>(details).ptr();
+    if (prefs::kGoogleServicesUsername == *name) {
+      [controller_ updateProfileMenuButton];
+      [controller_ layoutTabsWithAnimation:NO regenerateSubviews:NO];
+    }
+  }
+
+ private:
+  TabStripController* controller_;  // weak, owns us
+
+  // The Google services user name associated with this BrowserView's profile.
+  StringPrefMember usernamePref_;
+};
+
+} // namespace TabStripControllerInternal
+
 #pragma mark -
 
 // In general, there is a one-to-one correspondence between TabControllers,
@@ -331,6 +376,15 @@ private:
     [newTabButton_ setTarget:nil];
     [newTabButton_ setAction:@selector(commandDispatch:)];
     [newTabButton_ setTag:IDC_NEW_TAB];
+
+    profileMenuButton_ = [view profileMenuButton];
+    [self addSubviewToPermanentList:profileMenuButton_];
+    [self updateProfileMenuButton];
+    // Register pref observers for profile name.
+    notificationBridge_.reset(
+        new TabStripControllerInternal::NotificationBridge(
+            self, browser_->profile()->GetPrefs()));
+
     // Set the images from code because Cocoa fails to find them in our sub
     // bundle during tests.
     [newTabButton_ setImage:app::mac::GetCachedImageWithName(kNewTabImage)];
@@ -968,6 +1022,36 @@ private:
         newTabTargetFrame_ = newTabNewFrame;
       }
     }
+  }
+
+  if (![profileMenuButton_ isHidden]) {
+    CGFloat maxX;
+    if ([newTabButton_ isHidden]) {
+      maxX = std::max(offset, NSMaxX(placeholderFrame_) - kTabOverlap);
+    } else {
+      maxX = NSMaxX(newTabTargetFrame_);
+    }
+    NSRect tabStripViewBounds = [tabStripView_ bounds];
+    NSRect profileMenuButtonFrame = [profileMenuButton_ frame];
+    NSSize minSize = [profileMenuButton_ minControlSize];
+
+    // TODO(sail): Animate this.
+    CGFloat availableWidth = NSMaxX(profileMenuButtonFrame) - maxX -
+                             kProfileMenuButtonOffset;
+    if (availableWidth > minSize.width) {
+      [profileMenuButton_ setShouldShowProfileDisplayName:YES];
+    } else {
+      [profileMenuButton_ setShouldShowProfileDisplayName:NO];
+    }
+
+    NSSize desiredSize = [profileMenuButton_ desiredControlSize];
+    NSRect rect;
+    rect.size.width = std::min(desiredSize.width,
+                               std::max(availableWidth, minSize.width));
+    rect.size.height = desiredSize.height;
+    rect.origin.y = NSMaxY(profileMenuButtonFrame) - rect.size.height;
+    rect.origin.x = NSMaxX(profileMenuButtonFrame) - rect.size.width;
+    [profileMenuButton_ setFrame:rect];
   }
 
   [dragBlockingView_ setFrame:enclosingRect];
@@ -1928,6 +2012,39 @@ private:
   if (index >= 0) {
     [controller setTab:[self viewAtIndex:index] isDraggable:YES];
   }
+}
+
+- (BOOL)shouldShowProfileMenuButton {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles))
+    return NO;
+  if (browser_->profile()->IsOffTheRecord())
+    return NO;
+  return (!browser_->profile()->GetPrefs()->GetString(
+        prefs::kGoogleServicesUsername).empty());
+}
+
+- (void)updateProfileMenuButton {
+  if (![self shouldShowProfileMenuButton]) {
+    [profileMenuButton_ setHidden:YES];
+    return;
+  }
+
+  std::string profileName = browser_->profile()->GetPrefs()->GetString(
+      prefs::kGoogleServicesUsername);
+  [profileMenuButton_ setProfileDisplayName:
+      [NSString stringWithUTF8String:profileName.c_str()]];
+  [profileMenuButton_ setHidden:NO];
+
+  NSMenu* menu = [profileMenuButton_ menu];
+  while ([menu numberOfItems] > 0) {
+    [menu removeItemAtIndex:0];
+  }
+
+  NSString* menuTitle =
+      l10n_util::GetNSStringWithFixup(IDS_PROFILES_CREATE_NEW_PROFILE_OPTION);
+  [menu addItemWithTitle:menuTitle
+                  action:NULL
+           keyEquivalent:@""];
 }
 
 @end
