@@ -265,4 +265,55 @@ bool PrefixSet::WriteFile(const FilePath& filter_name) const {
   return true;
 }
 
+size_t PrefixSet::IndexBinFor(size_t target_index) const {
+  // The items in |index_| have the logical index of each previous
+  // item in |index_| plus the count of deltas between the items.
+  // Since the indices into |deltas_| are absolute, the logical index
+  // is then the sum of the two indices.
+  size_t lo = 0;
+  size_t hi = index_.size();
+
+  // Binary search because linear search was too slow (really, the
+  // unit test sucked).  Inline because the elements can't be compared
+  // in isolation (their position matters).
+  while (hi - lo > 1) {
+    const size_t i = (lo + hi) / 2;
+
+    if (target_index < i + index_[i].second) {
+      DCHECK_LT(i, hi);  // Always making progress.
+      hi = i;
+    } else {
+      DCHECK_GT(i, lo);  // Always making progress.
+      lo = i;
+    }
+  }
+  return lo;
+}
+
+size_t PrefixSet::GetSize() const {
+  return index_.size() + deltas_.size();
+}
+
+bool PrefixSet::IsDeltaAt(size_t target_index) const {
+  CHECK_LT(target_index, GetSize());
+
+  const size_t i = IndexBinFor(target_index);
+  return target_index > i + index_[i].second;
+}
+
+uint16 PrefixSet::DeltaAt(size_t target_index) const {
+  CHECK_LT(target_index, GetSize());
+
+  // Find the |index_| entry which contains |target_index|.
+  const size_t i = IndexBinFor(target_index);
+
+  // Exactly on the |index_| entry means no delta.
+  CHECK_GT(target_index, i + index_[i].second);
+
+  // -i backs out the |index_| entries, -1 gets the delta that lead to
+  // the value at |target_index|.
+  CHECK_LT(target_index - i - 1, deltas_.size());
+  return deltas_[target_index - i - 1];
+}
+
 }  // namespace safe_browsing

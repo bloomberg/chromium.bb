@@ -221,6 +221,8 @@ enum PrefixSetEvent {
   PREFIX_SET_SBPREFIX_WAS_BROKEN,
   PREFIX_SET_GETPREFIXES_BROKEN_SORTING,
   PREFIX_SET_GETPREFIXES_BROKEN_DUPLICATION,
+  PREFIX_SET_GETPREFIX_UNSORTED_IS_DELTA,
+  PREFIX_SET_GETPREFIX_UNSORTED_IS_INDEX,
 
   // Memory space for histograms is determined by the max.  ALWAYS ADD
   // NEW VALUES BEFORE THIS ONE.
@@ -285,28 +287,53 @@ safe_browsing::PrefixSet* PrefixSetFromAddPrefixes(
 
   // Check whether |restored| is unsorted, or has duplication.
   if (restored.size()) {
-    bool unsorted = false;
+    size_t unsorted_count = 0;
     bool duplicates = false;
-    std::vector<SBPrefix>::const_iterator prev = restored.begin();
-    for (std::vector<SBPrefix>::const_iterator iter = prev + 1;
-         iter != restored.end(); prev = iter, ++iter) {
-      if (*prev > *iter)
-        unsorted = true;
-      if (*prev == *iter)
+    SBPrefix prev = restored[0];
+    for (size_t i = 0; i < restored.size(); prev = restored[i], ++i) {
+      if (prev > restored[i]) {
+        unsorted_count++;
+        UMA_HISTOGRAM_COUNTS("SB2.PrefixSetUnsortedDifference",
+                             prev - restored[i]);
+
+        // When unsorted, how big is the set, and how far are we into
+        // it.  If the set is very small or large, that might inform
+        // pursuit of a degenerate case.  If the percentage is close
+        // to 0%, 100%, or 50%, then there might be an interesting
+        // degenerate case to explore.
+        UMA_HISTOGRAM_COUNTS("SB2.PrefixSetUnsortedSize", restored.size());
+        UMA_HISTOGRAM_PERCENTAGE("SB2.PrefixSetUnsortedPercent",
+                                 i * 100 / restored.size());
+
+        if (prefix_set->IsDeltaAt(i)) {
+          RecordPrefixSetInfo(PREFIX_SET_GETPREFIX_UNSORTED_IS_DELTA);
+
+          // Histograms require memory on the order of the number of
+          // buckets, making high-precision logging expensive.  For
+          // now aim for a sense of the range of the problem.
+          UMA_HISTOGRAM_CUSTOM_COUNTS("SB2.PrefixSetUnsortedDelta",
+                                      prefix_set->DeltaAt(i), 1, 0xFFFF, 50);
+        } else {
+          RecordPrefixSetInfo(PREFIX_SET_GETPREFIX_UNSORTED_IS_INDEX);
+        }
+      }
+      if (prev == restored[i])
         duplicates = true;
     }
 
     // Record findings.
-    if (unsorted)
+    if (unsorted_count) {
       RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN_SORTING);
+      UMA_HISTOGRAM_COUNTS_100("SB2.PrefixSetUnsorted", unsorted_count);
+    }
     if (duplicates)
       RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN_DUPLICATION);
 
     // Fix the problems noted.  If |restored| was unsorted, then
     // |duplicates| may give a false negative.
-    if (unsorted)
+    if (unsorted_count)
       std::sort(restored.begin(), restored.end());
-    if (unsorted || duplicates)
+    if (unsorted_count || duplicates)
       restored.erase(std::unique(restored.begin(), restored.end()),
                      restored.end());
   }

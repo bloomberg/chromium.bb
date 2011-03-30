@@ -74,6 +74,22 @@ class PrefixSet {
   // |prefixes|.  Prefixes will be added in sorted order.
   void GetPrefixes(std::vector<SBPrefix>* prefixes) const;
 
+  // TODO(shess): The following are debugging accessors.  Delete once
+  // the encoding problem is figured out.
+
+  size_t IndexBinFor(size_t target_index) const;
+
+  // The number of prefixes represented.
+  size_t GetSize() const;
+
+  // Returns |true| if the element at |target_index| is between items in the
+  // |index_| array.
+  bool IsDeltaAt(size_t target_index) const;
+
+  // Returns the delta used to calculate the element at
+  // |target_index|.  Only call if |IsDeltaAt()| returned |true|.
+  uint16 DeltaAt(size_t target_index) const;
+
  private:
   // Maximum number of consecutive deltas to encode before generating
   // a new index entry.  This helps keep the worst-case performance
