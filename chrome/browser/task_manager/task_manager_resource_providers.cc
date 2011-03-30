@@ -4,8 +4,6 @@
 
 #include "chrome/browser/task_manager/task_manager_resource_providers.h"
 
-#include "build/build_config.h"
-
 #include "base/basictypes.h"
 #include "base/file_version_info.h"
 #include "base/i18n/rtl.h"
@@ -14,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/browser_list.h"
@@ -30,7 +29,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/sqlite_utils.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_message_filter.h"
@@ -40,6 +38,7 @@
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
