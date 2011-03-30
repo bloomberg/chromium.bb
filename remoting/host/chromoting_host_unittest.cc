@@ -249,6 +249,7 @@ TEST_F(ChromotingHostTest, Reconnect) {
   // connection.
   {
     InSequence s;
+    // Ensure that curtain mode is activated before the first video packet.
     EXPECT_CALL(*curtain_, EnableCurtainMode(true))
         .Times(1);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
@@ -261,6 +262,8 @@ TEST_F(ChromotingHostTest, Reconnect) {
         .Times(AnyNumber());
     EXPECT_CALL(*curtain_, EnableCurtainMode(false))
         .Times(1);
+    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
+        .Times(AnyNumber());
   }
 
   // If Disconnect() is called we can break the main message loop.

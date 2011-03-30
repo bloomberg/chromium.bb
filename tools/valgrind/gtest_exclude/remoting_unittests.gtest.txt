@@ -1,2 +1,0 @@
-# Fails, http://crbug.com/77909
-ChromotingHostTest.Reconnect
