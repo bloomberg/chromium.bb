@@ -33,8 +33,8 @@ class GclientUtilsUnittest(GclientUtilBase):
         'ParseXML', 'Popen',
         'PrintableObject', 'RemoveDirectory', 'SoftClone', 'SplitUrlRevision',
         'SyntaxErrorToError', 'WorkItem',
-        'errno', 'logging', 'os', 'Queue', 're', 'rmtree',
-        'stat', 'subprocess', 'subprocess2', 'sys','threading', 'time', 'xml',
+        'errno', 'hack_subprocess', 'logging', 'os', 'Queue', 're', 'rmtree',
+        'stat', 'subprocess', 'sys','threading', 'time', 'xml',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gclient_utils, members)
