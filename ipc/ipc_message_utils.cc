@@ -437,7 +437,12 @@ void ParamTraits<IPC::ChannelHandle>::Log(const param_type& p,
   l->append(")");
 }
 
-LogData::LogData() {
+LogData::LogData()
+    : routing_id(0),
+      type(0),
+      sent(0),
+      receive(0),
+      dispatch(0) {
 }
 
 LogData::~LogData() {
@@ -455,7 +460,7 @@ void ParamTraits<LogData>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<LogData>::Read(const Message* m, void** iter, param_type* r) {
-  int type;
+  int type = -1;
   bool result =
       ReadParam(m, iter, &r->channel) &&
       ReadParam(m, iter, &r->routing_id) &&
