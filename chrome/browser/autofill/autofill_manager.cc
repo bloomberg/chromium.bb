@@ -227,7 +227,8 @@ AutofillManager::AutofillManager(TabContents* tab_contents)
       personal_data_(NULL),
       download_manager_(tab_contents->profile()),
       disable_download_manager_requests_(false),
-      metric_logger_(new AutofillMetrics) {
+      metric_logger_(new AutofillMetrics),
+      has_logged_address_suggestions_count_(false) {
   DCHECK(tab_contents);
 
   // |personal_data_| is NULL when using TestTabContents.
@@ -378,8 +379,12 @@ void AutofillManager::OnQueryFormFieldAutofill(
         size_t section_start, section_end;
         FindSectionBounds(*form_structure, *autofill_field,
                           is_filling_credit_card, &section_start, &section_end);
-        if (SectionIsAutofilled(form_structure, form, section_start,
-                                section_end)) {
+
+        bool section_is_autofilled = SectionIsAutofilled(form_structure,
+                                                         form,
+                                                         section_start,
+                                                         section_end);
+        if (section_is_autofilled) {
           // If the relevant section is auto-filled and the renderer is querying
           // for suggestions, then the user is editing the value of a field.
           // In this case, mimic autocomplete: don't display labels or icons,
@@ -389,6 +394,13 @@ void AutofillManager::OnQueryFormFieldAutofill(
         }
 
         RemoveDuplicateSuggestions(&values, &labels, &icons, &unique_ids);
+
+        // The first time we show suggestions on this page, log the number of
+        // suggestions shown.
+        if (!has_logged_address_suggestions_count_ && !section_is_autofilled) {
+          metric_logger_->LogAddressSuggestionsCount(values.size());
+          has_logged_address_suggestions_count_ = true;
+        }
       }
     }
   }
@@ -652,6 +664,7 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
 
 void AutofillManager::Reset() {
   form_structures_.reset();
+  has_logged_address_suggestions_count_ = false;
 }
 
 AutofillManager::AutofillManager(TabContents* tab_contents,
@@ -660,7 +673,8 @@ AutofillManager::AutofillManager(TabContents* tab_contents,
       personal_data_(personal_data),
       download_manager_(NULL),
       disable_download_manager_requests_(true),
-      metric_logger_(new AutofillMetrics) {
+      metric_logger_(new AutofillMetrics),
+      has_logged_address_suggestions_count_(false) {
   DCHECK(tab_contents);
 }
 

@@ -40,3 +40,9 @@ void AutofillMetrics::Log(QualityMetric metric,
 void AutofillMetrics::LogStoredProfileCount(size_t num_profiles) const {
   UMA_HISTOGRAM_COUNTS("Autofill.StoredProfileCount", num_profiles);
 }
+
+void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) const {
+  printf("LogAddressSuggestionsCount(%d)\n", (int)num_suggestions);
+  UMA_HISTOGRAM_COUNTS("Autofill.AddressSuggestionsCount", num_suggestions);
+}
+

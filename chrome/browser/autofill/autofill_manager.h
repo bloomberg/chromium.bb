@@ -213,6 +213,9 @@ class AutofillManager : public TabContentsObserver,
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;
 
+  // Have we logged an address suggestions count metric for this page?
+  bool has_logged_address_suggestions_count_;
+
   // GUID to ID mapping.  We keep two maps to convert back and forth.
   std::map<std::string, int> guid_id_map_;
   std::map<int, std::string> id_guid_map_;
@@ -234,12 +237,13 @@ class AutofillManager : public TabContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormChangesRemoveField);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormChangesAddField);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormSubmitted);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetrics);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSuggestionsCount);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
                            NoQualityMetricsForNonAutofillableForms);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, SaneMetricsWithCacheMismatch);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetrics);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetricsForFailure);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetricsWithExperimentId);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, SaneMetricsWithCacheMismatch);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillManager);
 };

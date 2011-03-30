@@ -81,6 +81,10 @@ class AutofillMetrics {
   // This should be called at most once per run.
   virtual void LogStoredProfileCount(size_t num_profiles) const;
 
+  // Log the number of Autofill suggestions presented to the user when filling a
+  // form.
+  virtual void LogAddressSuggestionsCount(size_t num_suggestions) const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillMetrics);
 };

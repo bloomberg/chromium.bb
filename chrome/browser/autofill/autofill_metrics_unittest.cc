@@ -34,6 +34,7 @@ class MockAutofillMetrics : public AutofillMetrics {
                                const std::string& experiment_id));
   MOCK_CONST_METHOD1(Log, void(ServerQueryMetric metric));
   MOCK_CONST_METHOD1(LogStoredProfileCount, void(size_t num_profiles));
+  MOCK_CONST_METHOD1(LogAddressSuggestionsCount, void(size_t num_suggestions));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
@@ -44,7 +45,6 @@ class TestPersonalDataManager : public PersonalDataManager {
   TestPersonalDataManager() {
     set_metric_logger(new MockAutofillMetrics);
     CreateTestAutofillProfiles(&web_profiles_);
-    CreateTestCreditCards(&credit_cards_);
   }
 
   // Overridden to avoid a trip to the database. This should be a no-op except
@@ -93,30 +93,6 @@ class TestPersonalDataManager : public PersonalDataManager {
                                   "");
     profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(profile);
-    profile = new AutofillProfile;
-    autofill_test::SetProfileInfo(profile, "", "", "", "", "", "", "",
-                                  "", "", "", "", "", "");
-    profile->set_guid("00000000-0000-0000-0000-000000000003");
-    profiles->push_back(profile);
-  }
-
-  void CreateTestCreditCards(ScopedVector<CreditCard>* credit_cards) {
-    CreditCard* credit_card = new CreditCard;
-    autofill_test::SetCreditCardInfo(credit_card, "Elvis Presley",
-                                     "4234567890123456", // Visa
-                                     "04", "2012");
-    credit_card->set_guid("00000000-0000-0000-0000-000000000004");
-    credit_cards->push_back(credit_card);
-    credit_card = new CreditCard;
-    autofill_test::SetCreditCardInfo(credit_card, "Buddy Holly",
-                                     "5187654321098765", // Mastercard
-                                     "10", "2014");
-    credit_card->set_guid("00000000-0000-0000-0000-000000000005");
-    credit_cards->push_back(credit_card);
-    credit_card = new CreditCard;
-    autofill_test::SetCreditCardInfo(credit_card, "", "", "", "");
-    credit_card->set_guid("00000000-0000-0000-0000-000000000006");
-    credit_cards->push_back(credit_card);
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
@@ -573,13 +549,82 @@ TEST_F(AutofillMetricsTest, StoredProfileCount) {
 
   // The metric should be logged when the profiles are first loaded.
   EXPECT_CALL(*test_personal_data_->metric_logger(),
-              LogStoredProfileCount(3)).Times(1);
+              LogStoredProfileCount(2)).Times(1);
   test_personal_data_->LoadProfiles();
 
   // The metric should only be logged once.
   EXPECT_CALL(*test_personal_data_->metric_logger(),
               LogStoredProfileCount(::testing::_)).Times(0);
   test_personal_data_->LoadProfiles();
+}
+
+// Test that we log the number of Autofill suggestions when filling a form.
+TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.user_submitted = true;
+
+  FormField field;
+  std::vector<AutofillFieldType> field_types;
+  autofill_test::CreateTestFormField("Name", "name", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(NAME_FULL);
+  autofill_test::CreateTestFormField("Email", "email", "", "email", &field);
+  form.fields.push_back(field);
+  field_types.push_back(EMAIL_ADDRESS);
+  autofill_test::CreateTestFormField("Phone", "phone", "", "tel", &field);
+  form.fields.push_back(field);
+  field_types.push_back(PHONE_HOME_NUMBER);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  TestFormStructure* form_structure = new TestFormStructure(form);
+  form_structure->SetFieldTypes(field_types, field_types);
+  autofill_manager_->AddSeenForm(form_structure);
+
+  // Establish our expectations.
+  ::testing::InSequence dummy;
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              LogAddressSuggestionsCount(2)).Times(1);
+
+  // Simulate activating the autofill popup for the phone field.
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, field);
+
+  // Simulate activating the autofill popup for the email field after typing.
+  // No new metric should be logged, since we're still on the same page.
+  autofill_test::CreateTestFormField("Email", "email", "b", "email", &field);
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, field);
+
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+  form_structure = new TestFormStructure(form);
+  form_structure->SetFieldTypes(field_types, field_types);
+  autofill_manager_->AddSeenForm(form_structure);
+
+  // Establish our expectations.
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              LogAddressSuggestionsCount(1)).Times(1);
+
+  // Simulate activating the autofill popup for the email field after typing.
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, field);
+
+  // Reset the autofill manager state again.
+  autofill_manager_->Reset();
+  form_structure = new TestFormStructure(form);
+  form_structure->SetFieldTypes(field_types, field_types);
+  autofill_manager_->AddSeenForm(form_structure);
+
+  // Establish our expectations.
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              LogAddressSuggestionsCount(::testing::_)).Times(0);
+
+  // Simulate activating the autofill popup for the email field after typing.
+  form.fields[0].is_autofilled = true;
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, field);
 }
 
 // Test that credit card infobar metrics are logged correctly.
