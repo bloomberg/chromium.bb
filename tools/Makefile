@@ -544,7 +544,7 @@ GLIBC_CFLAGS=-O2 -g
 # redefining variables with recursive $(MAKE) calls.
 LIB_BITS?=64
 ARCH_DEST=$(DESTDIR)$(SDKROOT)/$(if $(filter 32,$(LIB_BITS)),nacl,nacl64)
-ARCH_DEST_NATIVE=$(SDKLOC_NATIVE)/$(if $(filter 32,$(LIB_BITS)),nacl64/lib32,nacl64)
+ARCH_DEST_NATIVE=$(SDKLOC_NATIVE)/$(if $(filter 32,$(LIB_BITS)),nacl64/lib32,nacl64/lib)
 
 BUILD/stamp-glibc32: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
   | SRC/glibc SRC/linux-headers-for-nacl
@@ -654,7 +654,7 @@ scons-libs-glibc: glibc-adhoc-files
 	cd .. && \
 	  (./$(SCONS) \
 	    $(SCONS_DESTINATIONS_NOLIB) \
-	    extra_sdk_lib_destination=$(ARCH_DEST_NATIVE)/lib \
+	    extra_sdk_lib_destination=$(ARCH_DEST_NATIVE) \
 	    MODE=nacl_extra_sdk --nacl_glibc \
 	    extra_sdk_update_header extra_sdk_update \
 	    targetplatform=x86-$(LIB_BITS) --verbose )
