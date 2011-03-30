@@ -1,3 +1,4 @@
+/* src/config.h.  Generated from config.h.in by configure.  */
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
@@ -94,19 +95,23 @@
 #define PACKAGE_NAME "open-vcdiff"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "open-vcdiff 0.1"
+#define PACKAGE_STRING "open-vcdiff 0.7"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "open-vcdiff"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.1"
+#define PACKAGE_VERSION "0.7"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Use custom compare function instead of memcmp */
+#if defined(__i386__) || defined(__x86_64__)
+#define VCDIFF_USE_BLOCK_COMPARE_WORDS 1
+#else
 /* #undef VCDIFF_USE_BLOCK_COMPARE_WORDS */
+#endif
 
 /* Version number of package */
-#define VERSION "0.1"
+#define VERSION "0.7"
