@@ -33,12 +33,13 @@ struct SessionWindow;
 // and tabs so that they can be restored at a later date. The state of the
 // currently open browsers is referred to as the current session.
 //
-// SessionService supports restoring from the previous or last session. The
-// previous session typically corresponds to the last run of the browser, but
-// not always. For example, if the user has a tabbed browser and app window
-// running, closes the tabbed browser, then creates a new tabbed browser the
-// current session is made the last session and the current session reset. This
-// is done to provide the illusion that app windows run in separate processes.
+// SessionService supports restoring from the last session. The last session
+// typically corresponds to the last run of the browser, but not always. For
+// example, if the user has a tabbed browser and app window running, closes the
+// tabbed browser, then creates a new tabbed browser the current session is made
+// the last session and the current session reset. This is done to provide the
+// illusion that app windows run in separate processes. Similar behavior occurs
+// with incognito windows.
 //
 // SessionService itself maintains a set of SessionCommands that allow
 // SessionService to rebuild the open state of the browser (as
@@ -240,9 +241,8 @@ class SessionService : public BaseSessionService,
   SessionCommand* CreatePinnedStateCommand(const SessionID& tab_id,
                                            bool is_pinned);
 
-  // Callback from the backend for getting the commands from the previous
-  // or save file. Converts the commands in SessionWindows and notifies
-  // the real callback.
+  // Callback from the backend for getting the commands from the save file.
+  // Converts the commands in SessionWindows and notifies the real callback.
   void OnGotSessionCommands(
       Handle handle,
       scoped_refptr<InternalGetCommandsRequest> request);
@@ -440,8 +440,8 @@ class SessionService : public BaseSessionService,
 
   // If true and a new tabbed browser is created and there are no opened tabbed
   // browser (has_open_trackable_browsers_ is false), then the current session
-  // is made the previous session. See description above class for details on
-  // current/previous session.
+  // is made the last session. See description above class for details on
+  // current/last session.
   bool move_on_new_browser_;
 
   // Used for reporting frequency of session altering operations.

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
   // And the first url should be url.
   EXPECT_EQ(url, new_browser->GetTabContentsAt(0)->GetURL());
 }
-
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   GURL url1(ui_test_utils::GetTestUrl(
@@ -141,4 +140,36 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
 
   // Make sure the restore was successful.
   EXPECT_EQ(0U, service->entries().size());
+}
+
+// Verifies we remember the last browser window when closing the last
+// non-incognito window while an incognito window is open.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, IncognitotoNonIncognito) {
+  // Turn on session restore.
+  SessionStartupPref pref(SessionStartupPref::LAST);
+  SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+
+  GURL url(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title1.html"))));
+
+  // Add a single tab.
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Create a new incognito window.
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  incognito_browser->AddBlankTab(true);
+  incognito_browser->window()->Show();
+
+  // Close the normal browser. After this we only have the incognito window
+  // open.
+  browser()->window()->Close();
+
+  // Create a new window, which should trigger session restore.
+  incognito_browser->NewWindow();
+
+  // The first tab should have 'url' as its url.
+  Browser* new_browser = ui_test_utils::WaitForNewBrowser();
+  ASSERT_TRUE(new_browser);
+  EXPECT_EQ(url, new_browser->GetTabContentsAt(0)->GetURL());
 }
