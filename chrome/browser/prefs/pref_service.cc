@@ -548,7 +548,9 @@ void PrefService::RegisterInt64Pref(const char* path, int64 default_value) {
       path, Value::CreateStringValue(base::Int64ToString(default_value)));
 }
 
-DictionaryValue* PrefService::GetMutableDictionary(const char* path) {
+Value* PrefService::GetMutableUserPref(const char* path,
+                                       Value::ValueType type) {
+  CHECK(type == Value::TYPE_DICTIONARY || type == Value::TYPE_LIST);
   DCHECK(CalledOnValidThread());
   DLOG_IF(WARNING, IsManagedPreference(path)) <<
       "Attempt to change managed preference " << path;
@@ -558,54 +560,36 @@ DictionaryValue* PrefService::GetMutableDictionary(const char* path) {
     NOTREACHED() << "Trying to get an unregistered pref: " << path;
     return NULL;
   }
-  if (pref->GetType() != Value::TYPE_DICTIONARY) {
-    NOTREACHED() << "Wrong type for GetMutableDictionary: " << path;
+  if (pref->GetType() != type) {
+    NOTREACHED() << "Wrong type for GetMutableValue: " << path;
     return NULL;
   }
 
-  DictionaryValue* dict = NULL;
-  Value* tmp_value = NULL;
   // Look for an existing preference in the user store. If it doesn't
   // exist or isn't the correct type, create a new user preference.
-  if (user_pref_store_->GetMutableValue(path, &tmp_value)
+  Value* value = NULL;
+  if (user_pref_store_->GetMutableValue(path, &value)
           != PersistentPrefStore::READ_OK ||
-      !tmp_value->IsType(Value::TYPE_DICTIONARY)) {
-    dict = new DictionaryValue;
-    user_pref_store_->SetValueSilently(path, dict);
-  } else {
-    dict = static_cast<DictionaryValue*>(tmp_value);
+      !value->IsType(type)) {
+    if (type == Value::TYPE_DICTIONARY) {
+      value = new DictionaryValue;
+    } else if (type == Value::TYPE_LIST) {
+      value = new ListValue;
+    } else {
+      NOTREACHED();
+    }
+    user_pref_store_->SetValueSilently(path, value);
   }
-  return dict;
+  return value;
+}
+
+DictionaryValue* PrefService::GetMutableDictionary(const char* path) {
+  return static_cast<DictionaryValue*>(
+      GetMutableUserPref(path, Value::TYPE_DICTIONARY));
 }
 
 ListValue* PrefService::GetMutableList(const char* path) {
-  DCHECK(CalledOnValidThread());
-  DLOG_IF(WARNING, IsManagedPreference(path)) <<
-      "Attempt to change managed preference " << path;
-
-  const Preference* pref = FindPreference(path);
-  if (!pref) {
-    NOTREACHED() << "Trying to get an unregistered pref: " << path;
-    return NULL;
-  }
-  if (pref->GetType() != Value::TYPE_LIST) {
-    NOTREACHED() << "Wrong type for GetMutableList: " << path;
-    return NULL;
-  }
-
-  ListValue* list = NULL;
-  Value* tmp_value = NULL;
-  // Look for an existing preference in the user store. If it doesn't
-  // exist or isn't the correct type, create a new user preference.
-  if (user_pref_store_->GetMutableValue(path, &tmp_value)
-          != PersistentPrefStore::READ_OK ||
-      !tmp_value->IsType(Value::TYPE_LIST)) {
-    list = new ListValue;
-    user_pref_store_->SetValueSilently(path, list);
-  } else {
-    list = static_cast<ListValue*>(tmp_value);
-  }
-  return list;
+  return static_cast<ListValue*>(GetMutableUserPref(path, Value::TYPE_LIST));
 }
 
 void PrefService::ReportUserPrefChanged(const std::string& key) {

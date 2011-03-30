@@ -29,6 +29,7 @@ class Profile;
 
 namespace subtle {
 class PrefMemberBase;
+class ScopedUserPrefUpdateBase;
 };
 
 class PrefService : public base::NonThreadSafe {
@@ -192,9 +193,10 @@ class PrefService : public base::NonThreadSafe {
   void ClearPref(const char* path);
 
   // If the path is valid (i.e., registered), update the pref value in the user
-  // prefs. Seting a null value on a preference of List or Dictionary type is
-  // equivalent to removing the user value for that preference, allowing the
-  // default value to take effect unless another value takes precedence.
+  // prefs.
+  // To set the value of dictionary or list values in the pref tree use
+  // Set(), but to modify the value of a dictionary or list use
+  // ScopedUserPrefUpdate.
   void Set(const char* path, const Value& value);
   void SetBoolean(const char* path, bool value);
   void SetInteger(const char* path, int value);
@@ -209,6 +211,10 @@ class PrefService : public base::NonThreadSafe {
   int64 GetInt64(const char* path) const;
   void RegisterInt64Pref(const char* path, int64 default_value);
 
+  // TODO(battre): Remove GetMutableDictionary and GetMutableList,
+  // once this has been substituted by the new ScopedUserPrefUpdate.
+  // http://crbug.com/58489
+  //
   // Used to set the value of dictionary or list values in the pref tree.  This
   // will create a dictionary or list if one does not exist in the pref tree.
   // This method returns NULL only if you're requesting an unregistered pref or
@@ -275,8 +281,11 @@ class PrefService : public base::NonThreadSafe {
   friend class PrefChangeRegistrar;
   friend class subtle::PrefMemberBase;
 
-  // Give access to ReportUserPrefChanged();
+  // Give access to ReportUserPrefChanged() and GetMutableUserPref().
+  // TODO(battre) Remove following line once everything uses the new
+  // ScopedUserPrefUpdate. http://crbug.com/58489
   friend class ScopedUserPrefUpdate;
+  friend class subtle::ScopedUserPrefUpdateBase;
 
   // Construct an incognito version of the pref service. Use
   // CreateIncognitoPrefService() instead of calling this constructor directly.
@@ -308,6 +317,15 @@ class PrefService : public base::NonThreadSafe {
   // Load preferences from storage, attempting to diagnose and handle errors.
   // This should only be called from the constructor.
   void InitFromStorage();
+
+  // Used to set the value of dictionary or list values in the user pref store.
+  // This will create a dictionary or list if one does not exist in the user
+  // pref store. This method returns NULL only if you're requesting an
+  // unregistered pref or a non-dict/non-list pref.
+  // |type| may only be Values::TYPE_DICTIONARY or Values::TYPE_LIST and
+  // |path| must point to a registered preference of type |type|.
+  // Ownership of the returned value remains at the user pref store.
+  Value* GetMutableUserPref(const char* path, Value::ValueType type);
 
   // The PrefValueStore provides prioritized preference values. It is created
   // and owned by this PrefService. Subclasses may access it for unit testing.

@@ -31,6 +31,7 @@ class TestingPrefStore : public PersistentPrefStore {
 
   // PersistentPrefStore overrides:
   virtual ReadResult GetMutableValue(const std::string& key, Value** result);
+  virtual void ReportValueChanged(const std::string& key);
   virtual void SetValue(const std::string& key, Value* value);
   virtual void SetValueSilently(const std::string& key, Value* value);
   virtual void RemoveValue(const std::string& key);
@@ -39,8 +40,6 @@ class TestingPrefStore : public PersistentPrefStore {
   virtual bool WritePrefs();
   virtual void ScheduleWritePrefs() {}
   virtual void CommitPendingWrite() {}
-  // TODO(battre) remove this function
-  virtual void ReportValueChanged(const std::string& key);
 
   // Marks the store as having completed initialization.
   void SetInitializationCompleted();
