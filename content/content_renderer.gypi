@@ -119,6 +119,8 @@
         'renderer/renderer_webstoragenamespace_impl.h',
         'renderer/speech_input_dispatcher.cc',
         'renderer/speech_input_dispatcher.h',
+        'renderer/video_decode_accelerator_host.cc',
+        'renderer/video_decode_accelerator_host.h',
         'renderer/webgraphicscontext3d_command_buffer_impl.cc',
         'renderer/webgraphicscontext3d_command_buffer_impl.h',
         'renderer/webplugin_delegate_proxy.cc',
