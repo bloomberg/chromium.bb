@@ -9875,8 +9875,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SIM_UNLOCK_INCORRECT_PIN_MESSAGE" desc="Incorrect PIN message shown on SIM card unlock dialog in chrome:sim-unlock.">
         Incorrect PIN, please try again.
       </message>
-      <message name="IDS_SIM_UNLOCK_TRIES_LEFT_MESSAGE" desc="Message with the number of PIN/PUK tries left shown on SIM card unlock dialog in chrome:sim-unlock.">
-        Tries left:
+      <message name="IDS_SIM_UNLOCK_INCORRECT_PIN_TRIES_MESSAGE" desc="Incorrect PIN message with the number of tries left shown on SIM card unlock dialog in chrome:sim-unlock.">
+        Incorrect PIN, please try again. Tries left: <ph name="TRIES_COUNT">$1<ex>42</ex></ph>
       </message>
       <message name="IDS_SIM_UNLOCK_INCORRECT_PIN_TITLE" desc="Title of the Incorrect PIN stage (no tries left) shown on SIM card unlock dialog in chrome:sim-unlock.">
         Incorrect PIN
@@ -9893,8 +9893,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SIM_UNLOCK_ENTER_PUK_TITLE" desc="Title of the Enter PUK dialog, which is part of SIM card unlock dialog in chrome:sim-unlock.">
         Enter PIN Unlocking Key
       </message>
-      <message name="IDS_SIM_UNLOCK_ENTER_PUK_WARNING" desc="Warning on the Enter PUK dialog, which is pard of SIM card unlock dialog in chrome:sim-unlock.">
-        If you enter ther incorrect PIN Unlocking Key your SIM card will be permanently disabled.
+      <message name="IDS_SIM_UNLOCK_ENTER_PUK_WARNING" desc="Warning on the Enter PUK dialog with the number of tries left, which is part of SIM card unlock dialog in chrome:sim-unlock.">
+        If you enter ther incorrect PIN Unlocking Key your SIM card will be permanently disabled. Tries left: <ph name="TRIES_COUNT">$1<ex>42</ex></ph>
       </message>
       <message name="IDS_SIM_UNLOCK_ENTER_PUK_MESSAGE" desc="Message on the Enter PUK dialog, which is part of SIM card unlock dialog in chrome:sim-unlock.">
         Please enter the 8-digit PIN Unlocking Key provided by <ph name="CARRIER_ID">$1<ex>your carrier</ex></ph>.
@@ -9903,7 +9903,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You have entered the incorrect PIN Unlocking Key too many times. Your SIM card is permanently disabled.
       </message>
       <message name="IDS_SIM_UNLOCK_SIM_DISABLED_TITLE" desc="Title shown when there're not PUK tries left and SIM card is disabled.">
-        SIM Card Disabled.
+        SIM Card Disabled
       </message>
       <message name="IDS_SIM_UNLOCK_SIM_DISABLED_MESSAGE" desc="Message shown when there're not PUK tries left and SIM card is disabled.">
         This SIM card is disabled and cannot be used. Please contact your service provider for a replacement.

@@ -3,12 +3,23 @@ body {
   font-size: 13px;
 }
 
+.container {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  top: 0;
+}
+
 .dialog {
   background: white;
   border: 1px solid rgb(188, 193, 208);
   min-width: 350px;
-  width: 350px;
-  margin: 0 auto;
+  padding: 0;
+  position: relative;
 }
 
 .dialog h1 {
@@ -20,10 +31,12 @@ body {
   margin: 0;
   padding: 10px 15px 8px 15px;
   text-shadow: white 0 1px 2px;
+  width: 320px;
 }
 
 .content-area {
   padding: 10px 15px 5px 15px;
+  width: 320px;
 }
 
 .error {
@@ -37,7 +50,11 @@ body {
 
 .input-area {
   margin: 10px auto 24px auto;
-  width: 105px;
+  width: 125px;
+}
+
+#puk-input-area {
+  margin-bottom: 0;
 }
 
 .code-input {
@@ -59,6 +76,14 @@ html[dir='rtl'] .action-area {
   left: 0;
 }
 
+#locked-puk-action-area {
+  -webkit-box-pack: center;
+}
+
+#disabled-sim-action-area {
+  -webkit-box-pack: center;
+}
+
 .action-area-right {
   display: -webkit-box;
 }
@@ -71,4 +96,12 @@ html[dir='rtl'] .action-area {
 .button-strip > button {
   -webkit-margin-start: 10px;
   display: block;
+}
+
+#puk-warning-msg {
+  padding-bottom: 6px;
+}
+
+#puk-enter-msg {
+  padding-top: 6px;
 }

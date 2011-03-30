@@ -30,6 +30,7 @@ cr.define('mobile', function() {
     changeState_: function(simInfo) {
       var newState = simInfo.state;
       var error = simInfo.error;
+      var tries = simInfo.tries;
       this.hideAll_();
       switch(newState) {
         case SimUnlock.SIM_UNLOCK_LOADING:
@@ -40,27 +41,35 @@ cr.define('mobile', function() {
         case SimUnlock.SIM_LOCKED_PIN:
           $('pin-input').value = '';
           SimUnlock.enablePinDialog(true);
-          $('locked-pin-overlay').hidden = false;
           var pinMessage;
           if (error == SimUnlock.ERROR_OK) {
             pinMessage = SimUnlock.localStrings_.getString('enterPinMessage');
             $('pin-error-msg').classList.remove('error');
           }
           if (error == SimUnlock.ERROR_PIN) {
-            pinMessage =
-                SimUnlock.localStrings_.getString('incorrectPinMessage');
+            if (tries && tries >= 0) {
+              pinMessage = SimUnlock.localStrings_.getStringF(
+                  'enterPinTriesMessage', tries);
+            } else {
+              pinMessage = SimUnlock.localStrings_.getString('enterPinMessage');
+            }
             $('pin-error-msg').classList.add('error');
           }
           $('pin-error-msg').textContent = pinMessage;
-          // TODO(nkostylev): Show pin tries left info.
+          $('locked-pin-overlay').hidden = false;
           break;
         case SimUnlock.SIM_LOCKED_NO_PIN_TRIES_LEFT:
           $('locked-pin-no-tries-overlay').hidden = false;
           break;
         case SimUnlock.SIM_LOCKED_PUK:
+          $('puk-input').value = '';
+          SimUnlock.enablePukDialog(true);
+          if (tries && tries >= 0) {
+            var pukMessage = SimUnlock.localStrings_.getStringF(
+                'enterPukWarning', tries);
+            $('puk-warning-msg').textContent = pukMessage;
+          }
           $('locked-puk-overlay').hidden = false;
-          // TODO(nkostylev): Show PUK warning.
-          // TODO(nkostylev): Show PUK tries left info.
           break;
         case SimUnlock.SIM_LOCKED_NO_PUK_TRIES_LEFT:
           $('locked-puk-no-tries-overlay').hidden = false;
@@ -98,6 +107,25 @@ cr.define('mobile', function() {
     $('enter-pin-dismiss').addEventListener('click', function(event) {
       SimUnlock.close();
     });
+    $('pin-no-tries-proceed').addEventListener('click', function(event) {
+      chrome.send('proceedToPukInput');
+    });
+    $('pin-no-tries-dismiss').addEventListener('click', function(event) {
+      SimUnlock.close();
+    });
+    $('enter-puk-confirm').addEventListener('click', function(event) {
+      SimUnlock.enablePinDialog(false);
+      chrome.send('enterPukCode', [$('puk-input').value]);
+    });
+    $('enter-puk-dismiss').addEventListener('click', function(event) {
+      SimUnlock.close();
+    });
+    $('puk-no-tries-confirm').addEventListener('click', function(event) {
+      SimUnlock.close();
+    });
+    $('sim-disabled-confirm').addEventListener('click', function(event) {
+      SimUnlock.close();
+    });
     chrome.send('simStatusInitialize');
   };
 
@@ -105,6 +133,12 @@ cr.define('mobile', function() {
     $('pin-input').disabled = !enabled;
     $('enter-pin-confirm').disabled = !enabled;
     $('enter-pin-dismiss').disabled = !enabled;
+  };
+
+  SimUnlock.enablePukDialog = function(enabled) {
+    $('puk-input').disabled = !enabled;
+    $('enter-puk-confirm').disabled = !enabled;
+    $('enter-puk-dismiss').disabled = !enabled;
   };
 
   SimUnlock.simStateChanged = function(simInfo) {
