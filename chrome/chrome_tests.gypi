@@ -1110,6 +1110,7 @@
         'chrome_resources',
         'chrome_strings',
         'common',
+        'in_memory_url_index_cache_proto_cpp',
         'profile_import',
         'renderer',
         'service',
@@ -1153,7 +1154,6 @@
         ],
       },
       'sources': [
-        '<(protoc_out_dir)/chrome/browser/history/in_memory_url_index_cache.pb.cc',
         'app/breakpad_mac_stubs.mm',
         'app/chrome_dll.rc',
         # All unittests in browser, common, renderer and service.

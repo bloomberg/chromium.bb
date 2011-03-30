@@ -17,7 +17,7 @@
         'common',
         'common_net',
         'debugger',
-        'in_memory_url_index_cache_proto',
+        'in_memory_url_index_cache_proto_cpp',
         'installer_util',
         'platform_locale_settings',
         'profile_import',
@@ -1100,7 +1100,6 @@
         'browser/history/in_memory_history_backend.h',
         'browser/history/in_memory_url_index.cc',
         'browser/history/in_memory_url_index.h',
-        '<(protoc_out_dir)/chrome/browser/history/in_memory_url_index_cache.pb.cc',
         'browser/history/page_usage_data.cc',
         'browser/history/page_usage_data.h',
         'browser/history/query_parser.cc',
@@ -4355,6 +4354,23 @@
       'export_dependent_settings': [
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
       ],
+    },
+    {
+      'target_name': 'in_memory_url_index_cache_proto_cpp',
+      'type': '<(library)',
+      'sources': [
+        '<(protoc_out_dir)/chrome/browser/history/in_memory_url_index_cache.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/history/in_memory_url_index_cache.pb.h',
+      ],
+      'dependencies': [
+        'in_memory_url_index_cache_proto',
+      ],
+      'export_dependent_settings': [
+        'in_memory_url_index_cache_proto',
+      ],
+      # This target exports a hard dependency because it includes generated
+      # header files.
+      'hard_dependency': 1,
     },
   ],
 }
