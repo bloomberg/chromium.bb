@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -107,6 +107,46 @@ class InstallUtil {
   // given by reg_root.
   static bool DeleteRegistryValue(HKEY reg_root, const std::wstring& key_path,
                                   const std::wstring& value_name);
+
+  // An interface to a predicate function for use by DeleteRegistryKeyIf and
+  // DeleteRegistryValueIf.
+  class RegistryValuePredicate {
+   public:
+    virtual ~RegistryValuePredicate() { }
+    virtual bool Evaluate(const std::wstring& value) const = 0;
+  };
+
+  // Deletes the key |key_to_delete_path| under |root_key| iff the value
+  // |value_name| in the key |key_to_test_path| under |root_key| satisfies
+  // |predicate|.  |value_name| must be an empty string to test the key's
+  // default value.  Returns false if the value satisfied the predicate but
+  // could not be deleted, otherwise returns true.
+  static bool DeleteRegistryKeyIf(HKEY root_key,
+                                  const std::wstring& key_to_delete_path,
+                                  const std::wstring& key_to_test_path,
+                                  const wchar_t* value_name,
+                                  const RegistryValuePredicate& predicate);
+
+  // Deletes the value |value_name| in the key |key_path| under |root_key| iff
+  // its current value satisfies |predicate|.  |value_name| must be an empty
+  // string to test the key's default value.    Returns false if the value
+  // satisfied the predicate but could not be deleted, otherwise returns true.
+  static bool DeleteRegistryValueIf(HKEY root_key,
+                                    const wchar_t* key_path,
+                                    const wchar_t* value_name,
+                                    const RegistryValuePredicate& predicate);
+
+  // A predicate that performs a case-sensitive string comparison.
+  class ValueEquals : public RegistryValuePredicate {
+   public:
+    explicit ValueEquals(const std::wstring& value_to_match)
+        : value_to_match_(value_to_match) { }
+    virtual bool Evaluate(const std::wstring& value) const OVERRIDE;
+   protected:
+    std::wstring value_to_match_;
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ValueEquals);
+  };
 
   // Returns zero on install success, or an InstallStatus value otherwise.
   static int GetInstallReturnCode(installer::InstallStatus install_status);

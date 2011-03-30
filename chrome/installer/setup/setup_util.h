@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -8,9 +8,10 @@
 #define CHROME_INSTALLER_SETUP_SETUP_UTIL_H_
 #pragma once
 
+#include "base/file_path.h"
 #include "base/version.h"
-
-class FilePath;
+#include "base/win/scoped_handle.h"
+#include "chrome/installer/util/install_util.h"
 
 namespace installer {
 
@@ -29,6 +30,30 @@ int ApplyDiffPatch(const FilePath& src,
 // Chrome_path should contain at least one version folder.
 // Returns the maximum version found or NULL if no version is found.
 Version* GetMaxVersionFromArchiveDir(const FilePath& chrome_path);
+
+// A predicate that compares the program portion of a command line with a given
+// file path.  First, the file paths are compared directly.  If they do not
+// match, the filesystem is consulted to determine if the paths reference the
+// same file.
+class ProgramCompare : public InstallUtil::RegistryValuePredicate {
+ public:
+  explicit ProgramCompare(const FilePath& path_to_match);
+  virtual ~ProgramCompare();
+  virtual bool Evaluate(const std::wstring& value) const OVERRIDE;
+
+ protected:
+  static bool OpenForInfo(const FilePath& path,
+                          base::win::ScopedHandle* handle);
+  static bool GetInfo(const base::win::ScopedHandle& handle,
+                      BY_HANDLE_FILE_INFORMATION* info);
+
+  FilePath path_to_match_;
+  base::win::ScopedHandle file_handle_;
+  BY_HANDLE_FILE_INFORMATION file_info_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProgramCompare);
+};  // class ProgramCompare
 
 }  // namespace installer
 

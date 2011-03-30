@@ -875,7 +875,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     DCHECK(chrome_install);
     if (chrome_install) {
       installer::DeleteChromeRegistrationKeys(chrome_install->distribution(),
-          HKEY_LOCAL_MACHINE, suffix, tmp);
+          HKEY_LOCAL_MACHINE, suffix, installer_state->target_path(), &tmp);
     }
     *exit_code = tmp;
   } else if (cmd_line.HasSwitch(installer::switches::kInactiveUserToast)) {

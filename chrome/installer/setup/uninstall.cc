@@ -19,6 +19,7 @@
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
+#include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
@@ -485,7 +486,9 @@ bool ShouldDeleteProfile(const InstallerState& installer_state,
 
 bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
                                   const std::wstring& browser_entry_suffix,
-                                  InstallStatus& exit_code) {
+                                  const FilePath& target_path,
+                                  InstallStatus* exit_code) {
+  DCHECK(exit_code);
   if (!dist->CanSetAsDefault()) {
     // We should have never set those keys.
     return true;
@@ -526,15 +529,50 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
   InstallUtil::DeleteRegistryKey(root, app_path_key);
 
   // Cleanup OpenWithList
+  std::wstring open_with_key;
   for (int i = 0; ShellUtil::kFileAssociations[i] != NULL; i++) {
-    std::wstring open_with_key(ShellUtil::kRegClasses);
+    open_with_key.assign(ShellUtil::kRegClasses);
     file_util::AppendToPath(&open_with_key, ShellUtil::kFileAssociations[i]);
     file_util::AppendToPath(&open_with_key, L"OpenWithList");
     file_util::AppendToPath(&open_with_key, installer::kChromeExe);
     InstallUtil::DeleteRegistryKey(root, open_with_key);
   }
 
-  exit_code = installer::UNINSTALL_SUCCESSFUL;
+  // Cleanup in case Chrome had been made the default browser.
+
+  // Delete the default value of SOFTWARE\Clients\StartMenuInternet if it
+  // references this Chrome.
+  InstallUtil::DeleteRegistryValueIf(
+      root, ShellUtil::kRegStartMenuInternet, L"",
+      InstallUtil::ValueEquals(dist->GetApplicationName() +
+                               browser_entry_suffix));
+
+  // Delete each protocol association if it references this Chrome.
+  ProgramCompare open_command_pred(target_path.Append(kChromeExe));
+  std::wstring parent_key(ShellUtil::kRegClasses);
+  const std::wstring::size_type base_length = parent_key.size();
+  std::wstring child_key;
+  for (const wchar_t* const* proto = &ShellUtil::kProtocolAssociations[0];
+       *proto != NULL; ++proto) {
+    parent_key.resize(base_length);
+    file_util::AppendToPath(&parent_key, *proto);
+    child_key.assign(parent_key).append(ShellUtil::kRegShellOpen);
+    InstallUtil::DeleteRegistryKeyIf(root, parent_key, child_key, L"",
+                                     open_command_pred);
+  }
+
+  // Delete each filetype association if it references this Chrome.
+  InstallUtil::ValueEquals prog_id_pred(ShellUtil::kChromeHTMLProgId +
+                                        browser_entry_suffix);
+  for (const wchar_t* const* filetype = &ShellUtil::kFileAssociations[0];
+       *filetype != NULL; ++filetype) {
+    parent_key.resize(base_length);
+    file_util::AppendToPath(&parent_key, *filetype);
+    InstallUtil::DeleteRegistryKeyIf(root, parent_key, parent_key, L"",
+                                     prog_id_pred);
+  }
+
+  *exit_code = installer::UNINSTALL_SUCCESSFUL;
   return true;
 }
 
@@ -670,8 +708,20 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   product.SetMsiMarker(installer_state.system_install(), false);
 
   // Remove all Chrome registration keys.
+  // Registration data is put in HKCU for both system level and user level
+  // installs.
   InstallStatus ret = installer::UNKNOWN_STATUS;
-  DeleteChromeRegistrationKeys(product.distribution(), reg_root, suffix, ret);
+  DeleteChromeRegistrationKeys(product.distribution(), HKEY_CURRENT_USER,
+                               suffix, installer_state.target_path(), &ret);
+
+  // Registration data is put in HKLM for system level and possibly user level
+  // installs (when Chrome is made the default browser at install-time).
+  if (installer_state.system_install() || remove_all &&
+      (!suffix.empty() || CurrentUserHasDefaultBrowser(installer_state,
+                                                       product))) {
+    DeleteChromeRegistrationKeys(product.distribution(), HKEY_LOCAL_MACHINE,
+                                 suffix, installer_state.target_path(), &ret);
+  }
 
   if (!is_chrome) {
     ProcessChromeFrameWorkItems(original_state, installer_state, setup_path,
@@ -680,15 +730,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
   if (installer_state.is_multi_install())
     ProcessGoogleUpdateItems(original_state, installer_state, product);
-
-  // For user level install also we end up creating some keys in HKLM if user
-  // sets Chrome as default browser. So delete those as well (needs admin).
-  if (remove_all && !installer_state.system_install() &&
-      (!suffix.empty() || CurrentUserHasDefaultBrowser(installer_state,
-                                                       product))) {
-    DeleteChromeRegistrationKeys(product.distribution(), HKEY_LOCAL_MACHINE,
-                                 suffix, ret);
-  }
 
   ProcessQuickEnableWorkItems(installer_state, original_state);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -12,14 +12,18 @@
 
 #include <string>
 
-#include "base/command_line.h"
-#include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
+
+class BrowserDistribution;
+class CommandLine;
+class FilePath;
+class InstallUtil;
 
 namespace installer {
 
 class InstallationState;
 class InstallerState;
+class Product;
 
 // This function removes all Chrome registration related keys. It returns true
 // if successful, otherwise false. The error code is set in |exit_code|.
@@ -27,7 +31,8 @@ class InstallerState;
 // suffix for default browser entry name in the registry (optional).
 bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
                                   const std::wstring& browser_entry_suffix,
-                                  InstallStatus& exit_code);
+                                  const FilePath& target_path,
+                                  InstallStatus* exit_code);
 
 // Removes any legacy registry keys from earlier versions of Chrome that are no
 // longer needed. This is used during autoupdate since we don't do full
@@ -56,6 +61,6 @@ installer::InstallStatus UninstallProduct(
     bool force_uninstall,
     const CommandLine& cmd_line);
 
-}  // namespace installer_setup
+}  // namespace installer
 
 #endif  // CHROME_INSTALLER_SETUP_UNINSTALL_H_

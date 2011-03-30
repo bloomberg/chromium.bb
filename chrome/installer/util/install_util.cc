@@ -294,6 +294,56 @@ bool InstallUtil::DeleteRegistryValue(HKEY reg_root,
 }
 
 // static
+bool InstallUtil::DeleteRegistryKeyIf(
+    HKEY root_key,
+    const std::wstring& key_to_delete_path,
+    const std::wstring& key_to_test_path,
+    const wchar_t* value_name,
+    const RegistryValuePredicate& predicate) {
+  DCHECK(root_key);
+  DCHECK(value_name);
+  RegKey key;
+  std::wstring actual_value;
+  if (key.Open(root_key, key_to_test_path.c_str(),
+               KEY_QUERY_VALUE) == ERROR_SUCCESS &&
+      key.ReadValue(value_name, &actual_value) == ERROR_SUCCESS &&
+      predicate.Evaluate(actual_value)) {
+    key.Close();
+    return DeleteRegistryKey(root_key, key_to_delete_path);
+  }
+  return true;
+}
+
+// static
+bool InstallUtil::DeleteRegistryValueIf(
+    HKEY root_key,
+    const wchar_t* key_path,
+    const wchar_t* value_name,
+    const RegistryValuePredicate& predicate) {
+  DCHECK(root_key);
+  DCHECK(key_path);
+  DCHECK(value_name);
+  RegKey key;
+  std::wstring actual_value;
+  if (key.Open(root_key, key_path,
+               KEY_QUERY_VALUE | KEY_SET_VALUE) == ERROR_SUCCESS &&
+      key.ReadValue(value_name, &actual_value) == ERROR_SUCCESS &&
+      predicate.Evaluate(actual_value)) {
+    LONG result = key.DeleteValue(value_name);
+    if (result != ERROR_SUCCESS) {
+      LOG(ERROR) << "Failed to delete registry value: " << value_name
+                 << " error: " << result;
+      return false;
+    }
+  }
+  return true;
+}
+
+bool InstallUtil::ValueEquals::Evaluate(const std::wstring& value) const {
+  return value == value_to_match_;
+}
+
+// static
 int InstallUtil::GetInstallReturnCode(installer::InstallStatus status) {
   switch (status) {
     case installer::FIRST_INSTALL_SUCCESS:

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,20 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/product_unittest.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 using base::win::RegKey;
 using installer::InstallationState;
 using installer::InstallerState;
 using installer::MasterPreferences;
+using ::testing::_;
+using ::testing::Return;
+using ::testing::StrEq;
+
+class MockRegistryValuePredicate : public InstallUtil::RegistryValuePredicate {
+ public:
+  MOCK_CONST_METHOD1(Evaluate, bool(const std::wstring&));
+};
 
 class InstallUtilTest : public TestWithTempDirAndDeleteTempOverrideKeys {
  protected:
@@ -171,4 +180,174 @@ TEST_F(InstallUtilTest, UpdateInstallerStage) {
     EXPECT_EQ(L"2.0-dev", value);
   }
   TempRegKeyOverride::DeleteAllTempKeys();
+}
+
+TEST_F(InstallUtilTest, DeleteRegistryKeyIf) {
+  const HKEY root = HKEY_CURRENT_USER;
+  std::wstring parent_key_path(L"SomeKey\\ToDelete");
+  std::wstring child_key_path(parent_key_path);
+  child_key_path.append(L"\\ChildKey\\WithAValue");
+  const wchar_t value_name[] = L"some_value_name";
+  const wchar_t value[] = L"hi mom";
+
+  {
+    TempRegKeyOverride override(root, L"root_key");
+    // Nothing to delete if the keys aren't even there.
+    {
+      MockRegistryValuePredicate pred;
+
+      EXPECT_CALL(pred, Evaluate(_)).Times(0);
+      ASSERT_FALSE(RegKey(root, parent_key_path.c_str(),
+                          KEY_QUERY_VALUE).Valid());
+      EXPECT_TRUE(InstallUtil::DeleteRegistryKeyIf(
+          root, parent_key_path, child_key_path, value_name, pred));
+      EXPECT_FALSE(RegKey(root, parent_key_path.c_str(),
+                          KEY_QUERY_VALUE).Valid());
+    }
+
+    // Parent exists, but not child: no delete.
+    {
+      MockRegistryValuePredicate pred;
+
+      EXPECT_CALL(pred, Evaluate(_)).Times(0);
+      ASSERT_TRUE(RegKey(root, parent_key_path.c_str(), KEY_SET_VALUE).Valid());
+      EXPECT_TRUE(InstallUtil::DeleteRegistryKeyIf(
+          root, parent_key_path, child_key_path, value_name, pred));
+      EXPECT_TRUE(RegKey(root, parent_key_path.c_str(),
+                         KEY_QUERY_VALUE).Valid());
+    }
+
+    // Child exists, but no value: no delete.
+    {
+      MockRegistryValuePredicate pred;
+
+      EXPECT_CALL(pred, Evaluate(_)).Times(0);
+      ASSERT_TRUE(RegKey(root, child_key_path.c_str(), KEY_SET_VALUE).Valid());
+      EXPECT_TRUE(InstallUtil::DeleteRegistryKeyIf(
+          root, parent_key_path, child_key_path, value_name, pred));
+      EXPECT_TRUE(RegKey(root, parent_key_path.c_str(),
+                         KEY_QUERY_VALUE).Valid());
+    }
+
+    // Value exists, but doesn't match: no delete.
+    {
+      MockRegistryValuePredicate pred;
+
+      EXPECT_CALL(pred, Evaluate(StrEq(L"foosball!"))).WillOnce(Return(false));
+      ASSERT_EQ(ERROR_SUCCESS,
+                RegKey(root, child_key_path.c_str(),
+                       KEY_SET_VALUE).WriteValue(value_name, L"foosball!"));
+      EXPECT_TRUE(InstallUtil::DeleteRegistryKeyIf(
+          root, parent_key_path, child_key_path, value_name, pred));
+      EXPECT_TRUE(RegKey(root, parent_key_path.c_str(),
+                         KEY_QUERY_VALUE).Valid());
+    }
+
+    // Value exists, and matches: delete.
+    {
+      MockRegistryValuePredicate pred;
+
+      EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
+      ASSERT_EQ(ERROR_SUCCESS,
+                RegKey(root, child_key_path.c_str(),
+                       KEY_SET_VALUE).WriteValue(value_name, value));
+      EXPECT_TRUE(InstallUtil::DeleteRegistryKeyIf(
+          root, parent_key_path, child_key_path, value_name, pred));
+      EXPECT_FALSE(RegKey(root, parent_key_path.c_str(),
+                          KEY_QUERY_VALUE).Valid());
+    }
+  }
+  TempRegKeyOverride::DeleteAllTempKeys();
+}
+
+TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
+  const HKEY root = HKEY_CURRENT_USER;
+  std::wstring key_path(L"SomeKey\\ToDelete");
+  const wchar_t value_name[] = L"some_value_name";
+  const wchar_t value[] = L"hi mom";
+
+  {
+    TempRegKeyOverride override(root, L"root_key");
+    // Nothing to delete if the key isn't even there.
+    {
+      MockRegistryValuePredicate pred;
+
+      EXPECT_CALL(pred, Evaluate(_)).Times(0);
+      ASSERT_FALSE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
+      EXPECT_TRUE(InstallUtil::DeleteRegistryValueIf(
+          root, key_path.c_str(), value_name, pred));
+      EXPECT_FALSE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
+    }
+
+    // Key exists, but no value: no delete.
+    {
+      MockRegistryValuePredicate pred;
+
+      EXPECT_CALL(pred, Evaluate(_)).Times(0);
+      ASSERT_TRUE(RegKey(root, key_path.c_str(), KEY_SET_VALUE).Valid());
+      EXPECT_TRUE(InstallUtil::DeleteRegistryValueIf(
+          root, key_path.c_str(), value_name, pred));
+      EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
+    }
+
+    // Value exists, but doesn't match: no delete.
+    {
+      MockRegistryValuePredicate pred;
+
+      EXPECT_CALL(pred, Evaluate(StrEq(L"foosball!"))).WillOnce(Return(false));
+      ASSERT_EQ(ERROR_SUCCESS,
+                RegKey(root, key_path.c_str(),
+                       KEY_SET_VALUE).WriteValue(value_name, L"foosball!"));
+      EXPECT_TRUE(InstallUtil::DeleteRegistryValueIf(
+          root, key_path.c_str(), value_name, pred));
+      EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
+      EXPECT_TRUE(RegKey(root, key_path.c_str(),
+                         KEY_QUERY_VALUE).ValueExists(value_name));
+    }
+
+    // Value exists, and matches: delete.
+    {
+      MockRegistryValuePredicate pred;
+
+      EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
+      ASSERT_EQ(ERROR_SUCCESS,
+                RegKey(root, key_path.c_str(),
+                       KEY_SET_VALUE).WriteValue(value_name, value));
+      EXPECT_TRUE(InstallUtil::DeleteRegistryValueIf(
+          root, key_path.c_str(), value_name, pred));
+      EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
+      EXPECT_FALSE(RegKey(root, key_path.c_str(),
+                          KEY_QUERY_VALUE).ValueExists(value_name));
+    }
+  }
+  TempRegKeyOverride::DeleteAllTempKeys();
+
+  {
+    TempRegKeyOverride override(root, L"root_key");
+    // Default value matches: delete.
+    {
+      MockRegistryValuePredicate pred;
+
+      EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
+      ASSERT_EQ(ERROR_SUCCESS,
+                RegKey(root, key_path.c_str(),
+                       KEY_SET_VALUE).WriteValue(L"", value));
+      EXPECT_TRUE(InstallUtil::DeleteRegistryValueIf(
+          root, key_path.c_str(), L"", pred));
+      EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
+      EXPECT_FALSE(RegKey(root, key_path.c_str(),
+                          KEY_QUERY_VALUE).ValueExists(L""));
+    }
+  }
+  TempRegKeyOverride::DeleteAllTempKeys();
+}
+
+TEST_F(InstallUtilTest, ValueEquals) {
+  InstallUtil::ValueEquals pred(L"howdy");
+
+  EXPECT_FALSE(pred.Evaluate(L""));
+  EXPECT_FALSE(pred.Evaluate(L"Howdy"));
+  EXPECT_FALSE(pred.Evaluate(L"howdy!"));
+  EXPECT_FALSE(pred.Evaluate(L"!howdy"));
+  EXPECT_TRUE(pred.Evaluate(L"howdy"));
 }
