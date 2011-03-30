@@ -6,85 +6,70 @@
 #define CHROME_TEST_LIVE_SYNC_LIVE_PASSWORDS_SYNC_TEST_H_
 #pragma once
 
-#include <set>
+#include <vector>
 
+#include "base/time.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/password_manager/password_store_consumer.h"
-#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/test/live_sync/live_sync_test.h"
-#include "chrome/test/ui_test_utils.h"
-#include "chrome/test/signaling_task.h"
 #include "webkit/glue/password_form.h"
+
+class PasswordStore;
 
 class LivePasswordsSyncTest : public LiveSyncTest {
  public:
-  explicit LivePasswordsSyncTest(TestType test_type)
-      : LiveSyncTest(test_type) {}
-
+  explicit LivePasswordsSyncTest(TestType test_type);
   virtual ~LivePasswordsSyncTest() {}
+
+  // Overrides LiveSyncTest::CleanUpOnMainThread. Cleans up password forms that
+  // were added by a test.
+  virtual void CleanUpOnMainThread();
+
+  // Overrides LiveSyncTest::SetupClients. Initializes sync clients and profiles
+  // and cleans up old password forms that might have been left behind on the
+  // host machine by a previous test run that crashed before it could clean up
+  // after itself.
+  virtual bool SetupClients() WARN_UNUSED_RESULT;
 
   // Adds the login held in |form| to the password store |store|. Even though
   // logins are normally added asynchronously, this method will block until the
   // login is added.
-  void AddLogin(PasswordStore* store, const webkit_glue::PasswordForm& form) {
-    EXPECT_TRUE(store);
+  void AddLogin(PasswordStore* store,
+                const webkit_glue::PasswordForm& form);
 
-    store->AddLogin(form);
-
-    base::WaitableEvent login_added(false, false);
-    store->ScheduleTask(new SignalingTask(&login_added));
-    login_added.Wait();
-  }
-
-  // Searches |store| for all logins matching |form|, the results are added to
-  // |matches|. Note that the caller is responsible for deleting the forms added
-  // to |matches|.
+  // Searches |store| for all logins matching a fake signon realm used only by
+  // LivePasswordsSyncTest and adds the results to |matches|. Note that the
+  // caller is responsible for deleting the forms added to |matches|.
   void GetLogins(PasswordStore* store,
-                 const webkit_glue::PasswordForm& form,
-                 std::vector<webkit_glue::PasswordForm>& matches) {
-    EXPECT_TRUE(store);
+                 std::vector<webkit_glue::PasswordForm>& matches);
 
-    PasswordStoreConsumerHelper consumer(matches);
-    store->GetLogins(form, &consumer);
-    ui_test_utils::RunMessageLoop();
-  }
 
-  PasswordStore* GetPasswordStore(int index) {
-    return GetProfile(index)->GetPasswordStore(Profile::IMPLICIT_ACCESS);
-  }
+  // Sets the cryptographer's passphrase for the profile at index |index| to
+  // |passphrase|. |is_creation| is true if a new passphrase is being set up
+  // and false otherwise.
+  void SetPassphrase(int index,
+                     const std::string& passphrase,
+                     bool is_creation);
 
-  PasswordStore* GetVerifierPasswordStore() {
-    return verifier()->GetPasswordStore(Profile::IMPLICIT_ACCESS);
-  }
+  // Gets the password store of the profile with index |index|.
+  PasswordStore* GetPasswordStore(int index);
+
+  // Gets the password store of the verifier profile.
+  PasswordStore* GetVerifierPasswordStore();
+
+  // Creates a test password form with a well known fake signon realm used only
+  // by LivePasswordsSyncTest based on |index|.
+  webkit_glue::PasswordForm CreateTestPasswordForm(int index);
 
  private:
-  class PasswordStoreConsumerHelper : public PasswordStoreConsumer {
-   public:
-    explicit PasswordStoreConsumerHelper(
-        std::vector<webkit_glue::PasswordForm>& result)
-        : PasswordStoreConsumer(), result_(result) {}
-
-    virtual void OnPasswordStoreRequestDone(
-        CancelableRequestProvider::Handle handle,
-        const std::vector<webkit_glue::PasswordForm*>& result) {
-      result_.clear();
-      for (std::vector<webkit_glue::PasswordForm*>::const_iterator it =
-           result.begin(); it != result.end(); ++it) {
-        // Make a copy of the form since it gets deallocated after the caller of
-        // this method returns.
-        result_.push_back(**it);
-      }
-      MessageLoopForUI::current()->Quit();
-    }
-
-   private:
-    std::vector<webkit_glue::PasswordForm>& result_;
-
-    DISALLOW_COPY_AND_ASSIGN(PasswordStoreConsumerHelper);
-  };
+  // Cleans up all password forms ever added by LivePasswordsSyncTest. This is
+  // done by matching existing password forms found on a machine against a known
+  // fake sign-on realm used only by LivePasswordsSyncTest.
+  void CleanupTestPasswordForms();
 
   DISALLOW_COPY_AND_ASSIGN(LivePasswordsSyncTest);
 };
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(LivePasswordsSyncTest);
 
 class SingleClientLivePasswordsSyncTest : public LivePasswordsSyncTest {
  public:

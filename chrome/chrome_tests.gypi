@@ -3053,6 +3053,7 @@
         'test/live_sync/live_extensions_sync_test_base.h',
         'test/live_sync/live_extensions_sync_test.cc',
         'test/live_sync/live_extensions_sync_test.h',
+        'test/live_sync/live_passwords_sync_test.cc',
         'test/live_sync/live_passwords_sync_test.h',
         'test/live_sync/live_preferences_sync_test.h',
         'test/live_sync/live_sessions_sync_test.cc',

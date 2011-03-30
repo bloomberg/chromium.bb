@@ -13,24 +13,18 @@ using webkit_glue::PasswordForm;
 IN_PROC_BROWSER_TEST_F(ManyClientLivePasswordsSyncTest, DISABLED_Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  PasswordForm form;
-  form.origin = GURL("http://www.google.com/");
-  form.username_value = ASCIIToUTF16("username");
-  form.password_value = ASCIIToUTF16("password");
-
+  PasswordForm form = CreateTestPasswordForm(0);
   AddLogin(GetVerifierPasswordStore(), form);
   AddLogin(GetPasswordStore(0), form);
-
   ASSERT_TRUE(GetClient(0)->AwaitGroupSyncCycleCompletion(clients()));
 
-  std::vector<PasswordForm> expected;
-  GetLogins(GetVerifierPasswordStore(), form, expected);
-  ASSERT_EQ(1U, expected.size());
+  std::vector<PasswordForm> verifier_forms;
+  GetLogins(GetVerifierPasswordStore(), verifier_forms);
+  ASSERT_EQ(1U, verifier_forms.size());
 
   for (int i = 0; i < num_clients(); ++i) {
-    std::vector<PasswordForm> actual;
-    GetLogins(GetPasswordStore(i), form, actual);
-
-    ASSERT_TRUE(ContainsSamePasswordForms(expected, actual));
+    std::vector<PasswordForm> forms;
+    GetLogins(GetPasswordStore(i), forms);
+    ASSERT_TRUE(ContainsSamePasswordForms(verifier_forms, forms));
   }
 }

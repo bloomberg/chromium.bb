@@ -12,155 +12,118 @@ using webkit_glue::PasswordForm;
 
 static const char* kValidPassphrase = "passphrase!";
 
-// TODO(sync): Remove FAILS_ annotation after http://crbug.com/59867 is fixed.
-#if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FAILS_Add) {
-#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Add) {
-#endif
+
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  PasswordForm form;
-  form.origin = GURL("http://www.google.com/");
-  form.username_value = ASCIIToUTF16("username");
-  form.password_value = ASCIIToUTF16("password");
-
+  PasswordForm form = CreateTestPasswordForm(0);
   AddLogin(GetVerifierPasswordStore(), form);
   AddLogin(GetPasswordStore(0), form);
 
+  std::vector<PasswordForm> verifier_forms;
+  GetLogins(GetVerifierPasswordStore(), verifier_forms);
+  ASSERT_EQ(1U, verifier_forms.size());
+
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
-  std::vector<PasswordForm> expected;
-  GetLogins(GetVerifierPasswordStore(), form, expected);
-  ASSERT_EQ(1U, expected.size());
+  std::vector<PasswordForm> forms0;
+  GetLogins(GetPasswordStore(0), forms0);
+  ASSERT_TRUE(ContainsSamePasswordForms(verifier_forms, forms0));
 
-  std::vector<PasswordForm> actual_zero;
-  GetLogins(GetPasswordStore(0), form, actual_zero);
-  ASSERT_TRUE(ContainsSamePasswordForms(expected, actual_zero));
-
-  std::vector<PasswordForm> actual_one;
-  GetLogins(GetPasswordStore(1), form, actual_one);
-  ASSERT_TRUE(ContainsSamePasswordForms(expected, actual_one));
+  std::vector<PasswordForm> forms1;
+  GetLogins(GetPasswordStore(1), forms1);
+  ASSERT_TRUE(ContainsSamePasswordForms(verifier_forms, forms1));
 }
 
-// TODO(sync): Remove FAILS_ annotation after http://crbug.com/59867 is fixed.
-#if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FAILS_Race) {
-#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Race) {
-#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  PasswordForm form;
-  form.origin = GURL("http://www.google.com/");
+  PasswordForm form0 = CreateTestPasswordForm(0);
+  AddLogin(GetPasswordStore(0), form0);
 
-  PasswordForm form_zero;
-  form_zero.origin = GURL("http://www.google.com/");
-  form_zero.username_value = ASCIIToUTF16("username");
-  form_zero.password_value = ASCIIToUTF16("zero");
-  AddLogin(GetPasswordStore(0), form_zero);
-
-  PasswordForm form_one;
-  form_one.origin = GURL("http://www.google.com/");
-  form_one.username_value = ASCIIToUTF16("username");
-  form_one.password_value = ASCIIToUTF16("one");
-  AddLogin(GetPasswordStore(1), form_one);
+  PasswordForm form1 = form0;
+  form1.password_value = ASCIIToUTF16("password1");
+  AddLogin(GetPasswordStore(1), form1);
 
   ASSERT_TRUE(AwaitQuiescence());
 
-  std::vector<PasswordForm> actual_zero;
-  GetLogins(GetPasswordStore(0), form, actual_zero);
-  ASSERT_EQ(1U, actual_zero.size());
+  std::vector<PasswordForm> forms0;
+  GetLogins(GetPasswordStore(0), forms0);
+  ASSERT_EQ(1U, forms0.size());
 
-  std::vector<PasswordForm> actual_one;
-  GetLogins(GetPasswordStore(1), form, actual_one);
-  ASSERT_EQ(1U, actual_one.size());
+  std::vector<PasswordForm> forms1;
+  GetLogins(GetPasswordStore(1), forms1);
+  ASSERT_EQ(1U, forms1.size());
 
-  ASSERT_TRUE(ContainsSamePasswordForms(actual_zero, actual_one));
+  ASSERT_TRUE(ContainsSamePasswordForms(forms0, forms1));
 }
 
-// TODO(sync): Remove FAILS_ annotation after http://crbug.com/59867 is fixed.
-#if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FAILS_SetPassphrase) {
-#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, SetPassphrase) {
-#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true, true);
-  GetClient(0)->AwaitPassphraseAccepted();
-  GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
-  ASSERT_TRUE(GetClient(1)->service()->observed_passphrase_required());
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true, true);
-  GetClient(1)->AwaitPassphraseAccepted();
-  ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
+
+  SetPassphrase(0, kValidPassphrase, true);
+  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  SetPassphrase(1, kValidPassphrase, false);
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
 }
 
-// TODO(sync): Remove FAILS_ annotation after http://crbug.com/59867 is fixed.
-#if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       FAILS_SetPassphraseAndAddPassword) {
-#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
                        SetPassphraseAndAddPassword) {
-#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true, true);
-  GetClient(0)->AwaitPassphraseAccepted();
 
-  PasswordForm form;
-  form.origin = GURL("http://www.google.com/");
-  form.username_value = ASCIIToUTF16("username");
-  form.password_value = ASCIIToUTF16("password");
+  SetPassphrase(0, kValidPassphrase, true);
+  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
+  SetPassphrase(1, kValidPassphrase, false);
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
+
+  PasswordForm form = CreateTestPasswordForm(0);
   AddLogin(GetPasswordStore(0), form);
 
-  GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
-  ASSERT_TRUE(GetClient(1)->service()->observed_passphrase_required());
-  ASSERT_EQ(1, GetClient(1)->GetLastSessionSnapshot()->
-      num_conflicting_updates);
+  std::vector<PasswordForm> forms0;
+  GetLogins(GetPasswordStore(0), forms0);
+  ASSERT_EQ(1U, forms0.size());
 
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true, true);
-  GetClient(1)->AwaitPassphraseAccepted();
-  ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
-  GetClient(1)->AwaitSyncCycleCompletion("Accept passphrase and decrypt.");
-  ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_conflicting_updates);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  std::vector<PasswordForm> forms1;
+  GetLogins(GetPasswordStore(1), forms1);
+  ASSERT_EQ(1U, forms1.size());
 }
 
-// TODO(sync): Remove DISABLED_ annotation after http://crbug.com/59867 and
-// http://crbug.com/67862 are fixed.
+// TODO(rsimha): This test fails on mac -- see http://crbug.com/77956.
+#if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       DISABLED_SetPassphraseAndThenSetupSync) {
+                       FAILS_SetPassphraseAndThenSetupSync) {
+#else
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
+                       SetPassphraseAndThenSetupSync) {
+#endif
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-  ASSERT_TRUE(GetClient(0)->SetupSync());
-  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true, true);
-  GetClient(0)->AwaitPassphraseAccepted();
-  GetClient(0)->AwaitSyncCycleCompletion("Initial sync.");
 
+  ASSERT_TRUE(GetClient(0)->SetupSync());
+  SetPassphrase(0, kValidPassphrase, true);
+  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Initial sync."));
+
+  SetPassphrase(1, kValidPassphrase, false);
   ASSERT_TRUE(GetClient(1)->SetupSync());
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(GetClient(1)->service()->observed_passphrase_required());
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true, true);
-  GetClient(1)->AwaitPassphraseAccepted();
-  ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
 }
 
-// TODO(sync): Remove DISABLED_ annotation after http://crbug.com/59867 and
-// http://crbug.com/67862 are fixed.
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       DISABLED_SetPassphraseTwice) {
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, SetPassphraseTwice) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true, true);
-  GetClient(0)->AwaitPassphraseAccepted();
-  GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
-  ASSERT_TRUE(GetClient(1)->service()->observed_passphrase_required());
+  SetPassphrase(0, kValidPassphrase, true);
+  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true, true);
-  GetClient(1)->AwaitPassphraseAccepted();
-  ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
+  SetPassphrase(1, kValidPassphrase, false);
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
 
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true, true);
-  GetClient(1)->AwaitPassphraseAccepted();
-  ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
+  SetPassphrase(1, kValidPassphrase, false);
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
 }

@@ -160,28 +160,8 @@ bool ProfileSyncServiceHarness::SetupSync(
       (syncable::MODEL_TYPE_COUNT - syncable::FIRST_REAL_MODEL_TYPE));
   service()->OnUserChoseDatatypes(sync_everything, synced_datatypes);
 
-  // Wait for a passphrase to be required.
-  DCHECK_EQ(wait_state_, WAITING_FOR_PASSPHRASE_REQUIRED);
-  if (!AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
-      "Waiting for Passphrase required.")) {
-    LOG(ERROR) << "Passphrase required not seen after "
-               << kLiveSyncOperationTimeoutMs / 1000
-               << " seconds.";
-    return false;
-  }
-
-  // Wait for initial gaia passphrase to be accepted.
-  DCHECK_EQ(wait_state_, WAITING_FOR_PASSPHRASE_ACCEPTED);
-  if (!AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
-      "Waiting for Passphrase accept.")) {
-    LOG(ERROR) << "Passphrase accept not seen after "
-               << kLiveSyncOperationTimeoutMs / 1000
-               << " seconds.";
-    return false;
-  }
-
-  DCHECK_EQ(wait_state_, WAITING_FOR_INITIAL_SYNC);
   // Wait for initial sync cycle to be completed.
+  DCHECK_EQ(wait_state_, WAITING_FOR_INITIAL_SYNC);
   if (!AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
       "Waiting for initial sync cycle to complete.")) {
     LOG(ERROR) << "Initial sync cycle did not complete after "
@@ -212,27 +192,9 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     case WAITING_FOR_ON_BACKEND_INITIALIZED: {
       LogClientInfo("WAITING_FOR_ON_BACKEND_INITIALIZED");
       if (service()->sync_initialized()) {
-        // The sync backend is initialized. We now wait for passphrase events.
-        SignalStateCompleteWithNextState(WAITING_FOR_PASSPHRASE_REQUIRED);
-      }
-      break;
-    }
-    case WAITING_FOR_PASSPHRASE_REQUIRED: {
-      LogClientInfo("WAITING_FOR_PASSPHRASE_REQUIRED");
-      if (service()->observed_passphrase_required()) {
-        // Special case when the first client signs in to sync.
-        if (id_ == 0)
-          DCHECK(!service()->passphrase_required_for_decryption());
-        // The SYNC_PASSPHRASE_REQUIRED notification has been seen.
-        SignalStateCompleteWithNextState(WAITING_FOR_PASSPHRASE_ACCEPTED);
-      }
-      break;
-    }
-    case WAITING_FOR_PASSPHRASE_ACCEPTED: {
-      LogClientInfo("WAITING_FOR_PASSPHRASE_ACCEPTED");
-      if (service()->ShouldPushChanges())
-        // The SYNC_PASSPHRASE_ACCEPTED notification has been seen.
+        // The sync backend is initialized.
         SignalStateCompleteWithNextState(WAITING_FOR_INITIAL_SYNC);
+      }
       break;
     }
     case WAITING_FOR_INITIAL_SYNC: {
@@ -270,6 +232,25 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
       SignalStateCompleteWithNextState(FULLY_SYNCED);
       break;
     }
+    case WAITING_FOR_PASSPHRASE_ACCEPTED: {
+      LogClientInfo("WAITING_FOR_PASSPHRASE_ACCEPTED");
+      // TODO(atwilson): After ProfileSyncService::OnPassphraseAccepted() is
+      // fixed, add an extra check to make sure that the value of
+      // service()->observed_passphrase_required() is false.
+      if (service()->ShouldPushChanges()) {
+        // The passphrase has been accepted, and sync has been restarted.
+        SignalStateCompleteWithNextState(FULLY_SYNCED);
+      }
+      break;
+    }
+    case WAITING_FOR_ENCRYPTION: {
+      LogClientInfo("WAITING_FOR_ENCRYPTION");
+      if (IsTypeEncrypted(waiting_for_encryption_type_)) {
+        // Encryption is complete for the type we are waiting on.
+        SignalStateCompleteWithNextState(FULLY_SYNCED);
+      }
+      break;
+    }
     case SERVER_UNREACHABLE: {
       LogClientInfo("SERVER_UNREACHABLE");
       if (GetStatus().server_reachable) {
@@ -287,14 +268,6 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     case SYNC_DISABLED: {
       // Syncing is disabled for the client. There is nothing to do.
       LogClientInfo("SYNC_DISABLED");
-      break;
-    }
-    case WAITING_FOR_ENCRYPTION: {
-      // If the type whose encryption we are waiting for is now complete, there
-      // is nothing to do.
-      LogClientInfo("WAITING_FOR_ENCRYPTION");
-      if (IsTypeEncrypted(waiting_for_encryption_type_))
-        SignalStateCompleteWithNextState(FULLY_SYNCED);
       break;
     }
     default:
@@ -315,6 +288,15 @@ bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
     LOG(ERROR) << "Sync disabled for Client " << id_ << ".";
     return false;
   }
+
+  // TODO(atwilson): After ProfileSyncService::OnPassphraseAccepted() is
+  // fixed, add an extra check to make sure that the value of
+  // service()->observed_passphrase_required() is false.
+  if (service()->ShouldPushChanges()) {
+    // Passphrase is already accepted; don't wait.
+    return true;
+  }
+
   wait_state_ = WAITING_FOR_PASSPHRASE_ACCEPTED;
   return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
                                       "Waiting for passphrase accepted.");
@@ -327,30 +309,31 @@ bool ProfileSyncServiceHarness::AwaitSyncCycleCompletion(
     LOG(ERROR) << "Sync disabled for Client " << id_ << ".";
     return false;
   }
-  if (!IsSynced()) {
-    if (wait_state_ == SERVER_UNREACHABLE) {
-      // Client was offline; wait for it to go online, and then wait for sync.
-      AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
-      DCHECK_EQ(wait_state_, WAITING_FOR_SYNC_TO_FINISH);
-      return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
-    } else {
-      DCHECK(service()->sync_initialized());
-      wait_state_ = WAITING_FOR_SYNC_TO_FINISH;
-      AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
-      if (wait_state_ == FULLY_SYNCED) {
-        // Client is online; sync was successful.
-        return true;
-      } else if (wait_state_ == SERVER_UNREACHABLE) {
-        // Client is offline; sync was unsuccessful.
-        return false;
-      } else {
-        LOG(ERROR) << "Invalid wait state:" << wait_state_;
-        return false;
-      }
-    }
-  } else {
+
+  if (IsSynced()) {
     // Client is already synced; don't wait.
     return true;
+  }
+
+  if (wait_state_ == SERVER_UNREACHABLE) {
+    // Client was offline; wait for it to go online, and then wait for sync.
+    AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
+    DCHECK_EQ(wait_state_, WAITING_FOR_SYNC_TO_FINISH);
+    return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
+  } else {
+    DCHECK(service()->sync_initialized());
+    wait_state_ = WAITING_FOR_SYNC_TO_FINISH;
+    AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
+    if (wait_state_ == FULLY_SYNCED) {
+      // Client is online; sync was successful.
+      return true;
+    } else if (wait_state_ == SERVER_UNREACHABLE) {
+      // Client is offline; sync was unsuccessful.
+      return false;
+    } else {
+      LOG(ERROR) << "Invalid wait state:" << wait_state_;
+      return false;
+    }
   }
 }
 
@@ -401,10 +384,13 @@ bool ProfileSyncServiceHarness::WaitUntilTimestampMatches(
     LOG(ERROR) << "Sync disabled for Client " << id_ << ".";
     return false;
   }
-  DCHECK(!timestamp_match_partner_);
-  if (MatchesOtherClient(partner))
-    return true;
 
+  if (MatchesOtherClient(partner)) {
+    // Timestamps already match; don't wait.
+    return true;
+  }
+
+  DCHECK(!timestamp_match_partner_);
   timestamp_match_partner_ = partner;
   partner->service()->AddObserver(this);
   wait_state_ = WAITING_FOR_UPDATES;

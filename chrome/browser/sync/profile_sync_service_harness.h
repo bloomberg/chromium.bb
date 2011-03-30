@@ -87,7 +87,7 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
       std::vector<ProfileSyncServiceHarness*>& clients);
 
   // If a SetPassphrase call has been issued with a valid passphrase, this
-  // will wait until the Cryptographer broadcasts SYNC_PASSPHRASE_ACCEPTED.
+  // will wait until the passphrase has been accepted.
   bool AwaitPassphraseAccepted();
 
   // Returns the ProfileSyncService member of the the sync client.
@@ -135,12 +135,6 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
     // The sync client awaits the OnBackendInitialized() callback.
     WAITING_FOR_ON_BACKEND_INITIALIZED,
 
-    // Waiting for a passphrase to be required.
-    WAITING_FOR_PASSPHRASE_REQUIRED,
-
-    // Waiting for a set passphrase to be accepted by the cryptographer.
-    WAITING_FOR_PASSPHRASE_ACCEPTED,
-
     // The sync client is waiting for the first sync cycle to complete.
     WAITING_FOR_INITIAL_SYNC,
 
@@ -149,6 +143,10 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
 
     // The sync client anticipates incoming updates leading to a new sync cycle.
     WAITING_FOR_UPDATES,
+
+    // The sync client is waiting for its passphrase to be accepted by the
+    // cryptographer.
+    WAITING_FOR_PASSPHRASE_ACCEPTED,
 
     // The sync client anticipates encryption of new datatypes.
     WAITING_FOR_ENCRYPTION,
