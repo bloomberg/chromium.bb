@@ -869,11 +869,7 @@ static void GLibLogHandler(const gchar* log_domain,
   } else if (strstr(message, "gtk_drag_dest_leave: assertion")) {
     LOG(ERROR) << "Drag destination deleted: http://crbug.com/18557";
   } else {
-#ifdef NDEBUG
-    LOG(ERROR) << log_domain << ": " << message;
-#else
-    LOG(FATAL) << log_domain << ": " << message;
-#endif
+    LOG(DFATAL) << log_domain << ": " << message;
   }
 }
 
