@@ -4,13 +4,13 @@
 
 #include "content/common/child_trace_message_filter.h"
 
+#include "base/message_loop.h"
+#include "content/common/child_process.h"
 #include "content/common/child_process_messages.h"
 #include "gpu/common/gpu_trace_event.h"
 
 
 ChildTraceMessageFilter::ChildTraceMessageFilter() : channel_(NULL) {
-  gpu::TraceLog::GetInstance()->SetOutputCallback(
-      NewCallback(this, &ChildTraceMessageFilter::OnTraceDataCollected));
 }
 
 ChildTraceMessageFilter::~ChildTraceMessageFilter() {
@@ -19,6 +19,8 @@ ChildTraceMessageFilter::~ChildTraceMessageFilter() {
 
 void ChildTraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   channel_ = channel;
+  gpu::TraceLog::GetInstance()->SetOutputCallback(
+      NewCallback(this, &ChildTraceMessageFilter::OnTraceDataCollected));
 }
 
 bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -39,14 +41,21 @@ void ChildTraceMessageFilter::OnEndTracing() {
   // SetEnabled(false) may generate a callback to OnTraceDataCollected.
   // It's important that the last OnTraceDataCollected gets called before
   // EndTracingAck below.
+  // We are already on the IO thread, so it is guaranteed that
+  // OnTraceDataCollected is not deferred.
   gpu::TraceLog::GetInstance()->SetEnabled(false);
 
   channel_->Send(new ChildProcessHostMsg_EndTracingAck);
 }
 
 void ChildTraceMessageFilter::OnTraceDataCollected(const std::string& data) {
-  // May be called before channel_ is set if other code is enabling the
-  // trace subsystem earlier.
+  if (MessageLoop::current() != ChildProcess::current()->io_message_loop()) {
+    ChildProcess::current()->io_message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &ChildTraceMessageFilter::OnTraceDataCollected,
+                          data));
+    return;
+  }
+
   channel_->Send(new ChildProcessHostMsg_TraceDataCollected(data));
 }
 
