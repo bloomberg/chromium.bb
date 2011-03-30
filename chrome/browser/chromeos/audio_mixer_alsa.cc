@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/audio_mixer_alsa.h"
 
 #include <cmath>
+#include <unistd.h>
 
 #include <alsa/asoundlib.h>
 
@@ -39,6 +40,14 @@ const double kPrefVolumeInvalid = -999.0;
 const int kPrefMuteOff = 0;
 const int kPrefMuteOn = 1;
 const int kPrefMuteInvalid = 2;
+
+// Maximum number of times that we'll attempt to initialize the mixer.
+// We'll fail until the ALSA modules have been loaded; see
+// http://crosbug.com/13162.
+const int kMaxInitAttempts = 20;
+
+// Number of seconds that we'll sleep between each initialization attempt.
+const int kInitRetrySleepSec = 1;
 
 }  // namespace
 
@@ -198,7 +207,21 @@ void AudioMixerAlsa::RegisterPrefs(PrefService* local_state) {
 // Private functions follow
 
 void AudioMixerAlsa::DoInit(InitDoneCallback* callback) {
-  bool success = InitializeAlsaMixer();
+  bool success = false;
+  for (int num_attempts = 0; num_attempts < kMaxInitAttempts; ++num_attempts) {
+    success = InitializeAlsaMixer();
+    if (success) {
+      break;
+    } else {
+      // If the destructor has reset the state, give up.
+      {
+        base::AutoLock lock(mixer_state_lock_);
+        if (mixer_state_ != INITIALIZING)
+          break;
+      }
+      sleep(kInitRetrySleepSec);
+    }
+  }
 
   if (success) {
     BrowserThread::PostTask(
@@ -236,6 +259,9 @@ void AudioMixerAlsa::InitPrefs() {
 }
 
 bool AudioMixerAlsa::InitializeAlsaMixer() {
+  // We can block; make sure that we're not on the UI thread.
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::AutoLock lock(mixer_state_lock_);
   if (mixer_state_ != INITIALIZING)
     return false;
