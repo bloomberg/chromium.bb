@@ -190,6 +190,39 @@ class AutofillTest(pyauto.PyUITest):
             ('Original profile not equal to expected profile at key: "%s"\n'
              'Expected: "%s"\nReturned: "%s"' % (key, value, form_values[key])))
 
+  def testCCInfoNotStoredWhenAutocompleteOff(self):
+    """Test CC info not offered to be saved when autocomplete=off for CC field.
+
+    If the credit card number field has autocomplete turned off, then the credit
+    card infobar should not offer to save the credit card info.
+    """
+    credit_card_info = {'CREDIT_CARD_NAME': 'Bob Smith',
+                        'CREDIT_CARD_NUMBER': '6011111111111117',
+                        'CREDIT_CARD_EXP_MONTH': '12',
+                        'CREDIT_CARD_EXP_4_DIGIT_YEAR': '2014'}
+
+    url = self.GetHttpURLForDataPath(
+        os.path.join('autofill', 'cc_autocomplete_off_test.html'))
+    self.NavigateToURL(url)
+    for key, value in credit_card_info.iteritems():
+      script = ('document.getElementById("%s").value = "%s"; '
+                'window.domAutomationController.send("done");') % (key, value)
+      self.ExecuteJavascript(script, 0, 0)
+    js_code = """
+      document.getElementById("cc_submit").submit();
+      window.addEventListener("unload", function() {
+        window.domAutomationController.send("done");
+      });
+    """
+    self.ExecuteJavascript(js_code, 0, 0)
+    # Wait until form is submitted and page completes loading.
+    self.WaitUntil(
+        lambda: self.GetDOMValue('document.readyState'),
+        expect_retval='complete')
+    cc_infobar = self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars']
+    self.assertEqual(0, len(cc_infobar),
+                     'Save credit card infobar offered to save CC info.')
+
   def FormFillLatencyAfterSubmit(self):
     """Test latency time on form submit with lots of stored Autofill profiles.
 
