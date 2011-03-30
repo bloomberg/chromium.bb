@@ -4,8 +4,11 @@
 
 #include "chrome/profile_import/profile_import_thread.h"
 
+#include <stddef.h>
 #include <algorithm>
 
+#include "base/message_loop.h"
+#include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/importer/external_process_importer_bridge.h"
 #include "chrome/browser/importer/importer.h"
@@ -13,6 +16,8 @@
 #include "chrome/browser/importer/importer_messages.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "content/common/child_process.h"
+#include "googleurl/src/gurl.h"
+#include "ipc/ipc_message_macros.h"
 
 namespace {
 // Rather than sending all import items over IPC at once we chunk them into

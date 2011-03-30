@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
@@ -20,7 +20,17 @@
 
 class DictionaryValue;
 class ExternalProcessImporterBridge;
+class GURL;
 class Importer;
+class TemplateURL;
+
+namespace base {
+class Thread;
+}
+
+namespace IPC {
+class Message;
+}
 
 // This class represents the background thread which communicates with the
 // importer work thread in the importer process.
