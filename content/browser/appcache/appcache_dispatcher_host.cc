@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/common/appcache_messages.h"
 

@@ -13,8 +13,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/common/file_system_messages.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context.h"

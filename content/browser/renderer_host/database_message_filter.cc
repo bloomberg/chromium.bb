@@ -10,7 +10,6 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "content/common/database_messages.h"
 #include "content/common/result_codes.h"
 #include "googleurl/src/gurl.h"

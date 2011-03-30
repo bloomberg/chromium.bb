@@ -4,7 +4,6 @@
 
 #include "content/browser/chrome_blob_storage_context.h"
 
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "webkit/blob/blob_storage_controller.h"
 
 using webkit_blob::BlobStorageController;
