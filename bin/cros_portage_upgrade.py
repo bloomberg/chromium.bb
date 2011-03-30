@@ -19,7 +19,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 import chromite.lib.cros_build_lib as cros_lib
 
 
-class Updater(object):
+class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
 
   def __init__(self, options, args):
@@ -39,7 +39,7 @@ class Updater(object):
       return
     visited.add(package)
     for parent in deps_graph[package]['provides']:
-      Updater._GetPreOrderDepGraphPackage(deps_graph, parent, pkglist, visited)
+      Upgrader._GetPreOrderDepGraphPackage(deps_graph, parent, pkglist, visited)
     pkglist.append(package)
 
   @staticmethod
@@ -48,7 +48,8 @@ class Updater(object):
     pkglist = []
     visited = set()
     for package in deps_graph:
-      Updater._GetPreOrderDepGraphPackage(deps_graph, package, pkglist, visited)
+      Upgrader._GetPreOrderDepGraphPackage(deps_graph, package, pkglist,
+                                           visited)
     return pkglist
 
   @staticmethod
@@ -81,7 +82,7 @@ class Updater(object):
     (cat, pn, version, rev) = portage.versions.catpkgsplit(cpv)
     pkgpath = os.path.join(self._upstream_repo, cat, pn)
     for ebuild_path in glob.glob(os.path.join(pkgpath, '%s*.ebuild' % pn)):
-      if not Updater._IsStableEBuild(ebuild_path): continue
+      if not Upgrader._IsStableEBuild(ebuild_path): continue
       (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
       upstream_cpv = os.path.join(cat, pv)
       if portage.versions.pkgcmp(portage.versions.pkgsplit(upstream_cpv),
@@ -125,11 +126,11 @@ class Updater(object):
     if cpv.startswith('chromeos-base/'): return
     info['latest_cpv'] = self._FindLatestVersion(cpv)
     info['upgraded'] = self._CopyUpstreamPackage(info)
-    update = ''
-    if info['latest_cpv']: update = ' -> %s' % info['latest_cpv']
+    upgrade = ''
+    if info['latest_cpv']: upgrade = ' -> %s' % info['latest_cpv']
     upgraded = ''
     if info['upgraded']: upgraded = ' (UPGRADED)'
-    print '[%s] %s%s%s' % (info['overlay'], info['cpv'], update, upgraded)
+    print '[%s] %s%s%s' % (info['overlay'], info['cpv'], upgrade, upgraded)
 
   def _UpgradePackages(self, infolist):
     """Given a list of cpv info maps, adds the latest_cpv to the infos."""
@@ -172,7 +173,7 @@ class Updater(object):
     deps.Initialize(argv)
     deps_tree, deps_info = deps.GenDependencyTree({})
     deps_graph = deps.GenDependencyGraph(deps_tree, deps_info, {})
-    return Updater._GetPreOrderDepGraph(deps_graph)
+    return Upgrader._GetPreOrderDepGraph(deps_graph)
 
   def _GetInfoListWithOverlays(self, cpvlist):
     """Returns a list of cpv/overlay info maps corresponding to |cpvlist|."""
@@ -189,7 +190,7 @@ class Updater(object):
     return infolist
 
   def Run(self):
-    """Runs the updater based on the supplied options and arguments.
+    """Runs the upgrader based on the supplied options and arguments.
 
     Currently just lists all package dependencies in pre-order along with
     potential upgrades."""
@@ -230,8 +231,8 @@ def main():
     parser.print_help()
     cros_lib.Die('no packages provided')
 
-  updater = Updater(options, args)
-  updater.Run()
+  upgrader = Upgrader(options, args)
+  upgrader.Run()
 
 
 if __name__ == '__main__':
