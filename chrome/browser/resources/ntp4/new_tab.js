@@ -95,6 +95,9 @@ var ntp = (function() {
    * Invoked at startup once the DOM is available to initialize the app.
    */
   function initialize() {
+    // Load the current theme colors.
+    themeChanged(false);
+
     dotList = getRequiredElement('dot-list');
     appsPageList = getRequiredElement('apps-page-list');
     trash = getRequiredElement('trash');
@@ -789,12 +792,18 @@ var ntp = (function() {
     updateSliderCards();
   }
 
+  // TODO(estade): remove |hasAttribution|.
+  function themeChanged(hasAttribution) {
+    $('themecss').href = 'chrome://theme/css/newtab.css?' + Date.now();
+  }
+
   // Return an object with all the exports
   return {
     assert: assert,
     appsPrefChangeCallback: appsPrefChangeCallback,
     getAppsCallback: getAppsCallback,
-    initialize: initialize
+    initialize: initialize,
+    themeChanged: themeChanged
   };
 })();
 
@@ -804,5 +813,6 @@ var ntp = (function() {
 var assert = ntp.assert;
 var getAppsCallback = ntp.getAppsCallback;
 var appsPrefChangeCallback = ntp.appsPrefChangeCallback;
+var themeChanged = ntp.themeChanged;
 
 document.addEventListener('DOMContentLoaded', ntp.initialize);

@@ -1,0 +1,149 @@
+html,
+.section > h2 span,
+#most-visited-settings {
+  background-attachment: fixed;
+  background-color: $2; /* COLOR_NTP_BACKGROUND */
+  background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?$1);
+  background-position: $3;
+  background-repeat: $5;
+}
+
+html[bookmarkbarattached='true'],
+html[bookmarkbarattached='true'] .section > h2 span,
+html[bookmarkbarattached='true'] #most-visited-settings {
+  background-position: $4;
+}
+
+body {
+  color: $8; /* COLOR_NTP_TEXT */
+  height: 100%;
+  overflow: auto;
+}
+
+/* TODO(aa): Is this still in use? The styling may be incorrect with M7 NTP
+   rework. */
+#notification.first-run {
+  background-color: $$1; /* COLOR_NTP_SECTION */
+  border-color: $$2; /* COLOR_NTP_SECTION_BORDER */
+}
+
+#notification.first-run .link {
+   color: $$5; /* COLOR_NTP_LINK_UNDERLINE */
+}
+
+#notification.first-run .link-color {
+  color: $9; /* COLOR_NTP_LINK */
+}
+
+.thumbnail {
+  border-color: $$1; /* COLOR_NTP_SECTION */
+}
+
+.thumbnail-container,
+.thumbnail-container > .title {
+  color: $8; /* COLOR_NTP_TEXT */
+}
+
+.thumbnail-container:focus .thumbnail,
+.thumbnail-container:hover .thumbnail {
+  border-color: $6; /* COLOR_NTP_HEADER */
+}
+
+.thumbnail-container:focus .edit-bar,
+.thumbnail-container:hover .edit-bar {
+  background-color: $6; /* COLOR_NTP_HEADER */
+  background-image: -webkit-linear-gradient(
+                        $7, /* COLOR_HEADER_GRADIENT_LIGHT */
+                        $6); /* COLOR_NTP_HEADER */
+}
+.thumbnail-container:hover > .edit-mode-border {
+  background-color: $6; /* COLOR_NTP_HEADER */
+}
+
+.filler .thumbnail-wrapper {
+  border: 3px solid $$1; /* COLOR_NTP_SECTION */
+  background-color: $2; /* COLOR_NTP_BACKGROUND */
+}
+
+.filler .thumbnail {
+  border: 1px solid $2; /* COLOR_NTP_BACKGROUND */
+  background-color: $$1; /* COLOR_NTP_SECTION */
+}
+
+.miniview {
+  color: $8; /* COLOR_NTP_TEXT */
+}
+
+.miniview > span {
+  color: $$5; /* COLOR_NTP_LINK_UNDERLINE */
+  text-decoration: underline;
+}
+
+.miniview > span > .item {
+  color: $9; /* COLOR_NTP_LINK */
+  text-decoration: none;
+}
+
+#attribution {
+  color: $9; /* COLOR_NTP_LINK */
+}
+
+#tip-line {
+  color: $8; /* COLOR_NTP_TEXT */
+}
+
+.link-color {
+  color: $9; /* COLOR_NTP_LINK */
+}
+
+:link,
+:visited,
+.link {
+  color: $$5; /* COLOR_NTP_LINK_UNDERLINE */
+}
+
+.section > h2,
+#closed-sections-bar > button {
+  color: $$7; /* COLOR_NTP_SECTION_HEADER_TEXT */
+}
+
+.section:not(.hidden) > h2 {
+  color: $$8; /* COLOR_NTP_SECTION_HEADER_TEXT_HOVER */
+}
+
+.section.hidden:not([noexpand]) > h2:hover,
+#closed-sections-bar > button:hover {
+  color: $$8; /* COLOR_NTP_SECTION_HEADER_TEXT_HOVER */
+}
+
+.section > h2 .back,
+#closed-sections-bar[chromeos] {
+  border-top: 1px solid $$1; /* COLOR_NTP_SECTION  */
+}
+
+.section.hidden > h2 .back {
+  background: none;
+  border-color-top: $$$1; /* COLOR_NTP_SECTION_HEADER_RULE_LIGHT */
+}
+
+.section.hidden:hover > h2 .back {
+  border-color-top: $$9; /* COLOR_NTP_SECTION_HEADER_RULE */
+}
+
+.app a {
+  color: $8; /* COLOR_NTP_TEXT */
+}
+
+.app:hover > a,
+.app.dragging > a {
+  color: $$3; /* COLOR_NTP_SECTION_TEXT */
+  background-color: $$1; /* COLOR_NTP_SECTION */;
+}
+
+#apps-promo-hide {
+  color: $9; /* COLOR_NTP_LINK */
+}
+
+#apps-promo-text2 {
+  color: $$$3; /* COLOR_NTP_TEXT_LIGHT */
+}
