@@ -98,7 +98,7 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
   settings_.SetOrientation(landscape);
 
   std::string printer_name;
-  if (!job_settings.GetString("printerName", &printer_name))
+  if (!job_settings.GetString(kSettingPrinterName, &printer_name))
     return OnError();
 
   if (!SetPrinter(printer_name))

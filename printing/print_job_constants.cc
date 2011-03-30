@@ -12,4 +12,7 @@ const char kSettingColor[] = "color";
 // Page orientation: true for landscape, false for portrait.
 const char kSettingLandscape[] = "landscape";
 
+// Printer name.
+const char kSettingPrinterName[] = "printerName";
+
 }  // namespace printing
