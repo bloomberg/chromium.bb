@@ -983,6 +983,7 @@ buildbot-build-with-glibc: | \
   pinned-src-gcc \
   pinned-src-glibc \
   pinned-src-linux-headers-for-nacl
+	find SRC -print0 | xargs -0 touch -r SRC
 	$(MAKE) -f $(THISMAKEFILE) dev-build-with-glibc
 
 ##################################################################

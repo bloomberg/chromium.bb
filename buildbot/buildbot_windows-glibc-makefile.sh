@@ -36,7 +36,7 @@ ln -sfn "$PWD"/cygwin/tmp tools/toolchain/win_x86
 # If the error result is 2 or more we are stopping the build
 echo @@@BUILD_STEP check_glibc_revision_sanity@@@
 echo "Try to download glibc revision $(tools/glibc_revision.sh)"
-if tools/glibc_download.sh toolchain/win_x86 1; then
+if tools/glibc_download.sh tools/toolchain/win_x86 1; then
   INST_GLIBC_PROGRAM=true
 elif (($?>1)); then
   echo @@@BUILD_FAILED@@@
