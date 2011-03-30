@@ -24,20 +24,25 @@ class PyNetworkUITest(pyauto.PyUITest):
     # Move ethernet to the end of the flimflam priority list,
     # effectively hiding any ssh connections that the
     # test harness might be using and putting wifi ahead.
-    self._SetServiceOrder('vpn,bluetooth,wifi,wimax,cellular,ethernet')
+    self._PushServiceOrder('vpn,bluetooth,wifi,wimax,cellular,ethernet')
     pyauto.PyUITest.setUp(self)
 
   def tearDown(self):
     pyauto.PyUITest.tearDown(self)
-    self._ResetServiceOrder()
+    self._PopServiceOrder()
 
   def _SetServiceOrder(self, service_order):
-    self._old_service_order = self._manager.GetServiceOrder()
     self._manager.SetServiceOrder(service_order)
+    self._manager.DisableTechnology('wifi')
+    self._manager.EnableTechnology('wifi')
+
+  def _PushServiceOrder(self, service_order):
+    self._old_service_order = self._manager.GetServiceOrder()
+    self._SetServiceOrder(service_order)
     assert service_order == self._manager.GetServiceOrder(), \
         'Flimflam service order not set properly.'
 
-  def _ResetServiceOrder(self):
-    self._manager.SetServiceOrder(self._old_service_order)
+  def _PopServiceOrder(self):
+    self._SetServiceOrder(self._old_service_order)
     assert self._old_service_order == self._manager.GetServiceOrder(), \
         'Flimflam service order not reset properly.'
