@@ -27,6 +27,7 @@
 
 class Browser;
 class DesktopNotificationHandler;
+class DevToolsHandler;
 class Extension;
 class FileSelectHelper;
 class RenderProcessHost;
@@ -290,6 +291,9 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   // Handles desktop notification IPCs.
   scoped_ptr<DesktopNotificationHandler> desktop_notification_handler_;
+
+  // Filters dev tools IPCs.
+  scoped_ptr<DevToolsHandler> dev_tools_handler_;
 
   // The time that the last javascript message was dismissed.
   base::TimeTicks last_javascript_message_dismissal_;

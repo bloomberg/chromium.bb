@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/debugger/devtools_handler.h"
 #include "chrome/browser/desktop_notification_handler.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -157,6 +158,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
 
   desktop_notification_handler_.reset(
       new DesktopNotificationHandler(NULL, render_process_host()));
+  dev_tools_handler_.reset(new DevToolsHandler(NULL, render_view_host_));
 }
 
 ExtensionHost::~ExtensionHost() {
@@ -794,10 +796,10 @@ bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  if (!handled) {
-    // Pass desktop notification IPCs to the DesktopNotificationHandler.
+  if (!handled)
     handled = desktop_notification_handler_->OnMessageReceived(message);
-  }
+  if (!handled)
+    handled = dev_tools_handler_->OnMessageReceived(message);
   return handled;
 }
 

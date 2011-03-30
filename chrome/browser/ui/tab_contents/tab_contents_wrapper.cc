@@ -10,7 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
-#include "chrome/browser/debugger/devtools_tab_helper.h"
+#include "chrome/browser/debugger/devtools_handler.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/password_manager/password_manager.h"
