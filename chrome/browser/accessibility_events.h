@@ -163,7 +163,7 @@ class AccessibilityComboBoxInfo : public AccessibilityControlInfo {
 
   virtual void SerializeToDict(DictionaryValue* dict) const;
 
-  void SetValue(int item_index, std::string value) {
+  void SetValue(int item_index, const std::string& value) {
     item_index_ = item_index;
     value_ = value;
   }
