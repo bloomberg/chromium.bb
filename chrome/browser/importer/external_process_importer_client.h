@@ -48,6 +48,16 @@ class ExternalProcessImporterClient
   // Notifies the ImporterHost that import has finished, and calls Release().
   void Cleanup();
 
+ private:
+  // Creates a new ProfileImportProcessHost, which launches the import process.
+  void StartImportProcessOnIOThread(ResourceDispatcherHost* rdh,
+                                    BrowserThread::ID thread_id);
+  // Cancel import process on IO thread.
+  void CancelImportProcessOnIOThread();
+
+  // Report item completely downloaded on IO thread.
+  void NotifyItemFinishedOnIOThread(importer::ImportItem import_item);
+
   // Begin ProfileImportProcessHost::ImportProcessClient implementation.
   virtual void OnProcessCrashed(int exit_status) OVERRIDE;
   virtual void OnImportStart() OVERRIDE;
@@ -102,16 +112,6 @@ class ExternalProcessImporterClient
       bool unique_on_host_and_path) OVERRIDE;
 
   // End ProfileImportProcessHost::ImportProcessClient implementation.
-
- private:
-  // Creates a new ProfileImportProcessHost, which launches the import process.
-  void StartImportProcessOnIOThread(ResourceDispatcherHost* rdh,
-                                    BrowserThread::ID thread_id);
-  // Cancel import process on IO thread.
-  void CancelImportProcessOnIOThread();
-
-  // Report item completely downloaded on IO thread.
-  void NotifyItemFinishedOnIOThread(importer::ImportItem import_item);
 
   // These variables store data being collected from the importer until the
   // entire group has been collected and is ready to be written to the profile.
