@@ -21,6 +21,7 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/browser/webui/web_ui_factory.h"
+#include "content/common/content_client.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "content/common/view_messages.h"
@@ -301,13 +302,14 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
   const GURL& current_url = (cur_entry) ? cur_entry->url() :
       render_view_host_->site_instance()->site();
   Profile* profile = delegate_->GetControllerForRenderManager().profile();
-  if (WebUIFactory::UseWebUIForURL(profile, current_url)) {
+  const content::WebUIFactory* web_ui_factory = content::WebUIFactory::Get();
+  if (web_ui_factory->UseWebUIForURL(profile, current_url)) {
     // Force swap if it's not an acceptable URL for Web UI.
-    if (!WebUIFactory::IsURLAcceptableForWebUI(profile, new_entry->url()))
+    if (!web_ui_factory->IsURLAcceptableForWebUI(profile, new_entry->url()))
       return true;
   } else {
     // Force swap if it's a Web UI URL.
-    if (WebUIFactory::UseWebUIForURL(profile, new_entry->url()))
+    if (web_ui_factory->UseWebUIForURL(profile, new_entry->url()))
       return true;
   }
 
@@ -384,8 +386,9 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     // want to use the curr_instance if it has no site, since it will have a
     // RenderProcessHost of TYPE_NORMAL.  Create a new SiteInstance for this
     // URL instead (with the correct process type).
-    if (WebUIFactory::UseWebUIForURL(profile, dest_url))
+    if (content::WebUIFactory::Get()->UseWebUIForURL(profile, dest_url)) {
       return SiteInstance::CreateSiteInstanceForURL(profile, dest_url);
+    }
 
     // Normally the "site" on the SiteInstance is set lazily when the load
     // actually commits. This is to support better process sharing in case

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"

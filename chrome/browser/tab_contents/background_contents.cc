@@ -8,6 +8,7 @@
 #include "chrome/browser/desktop_notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
@@ -224,7 +225,8 @@ void BackgroundContents::CreateNewWindow(
       route_id,
       render_view_host_->process()->profile(),
       render_view_host_->site_instance(),
-      WebUIFactory::GetWebUIType(render_view_host_->process()->profile(), url_),
+      ChromeWebUIFactory::GetInstance()->GetWebUIType(
+          render_view_host_->process()->profile(), url_),
       this,
       params.window_container_type,
       params.frame_name);

@@ -37,8 +37,7 @@ void TabContentsView::CreateNewWindow(
       route_id,
       tab_contents_->profile(),
       tab_contents_->GetSiteInstance(),
-      WebUIFactory::GetWebUIType(tab_contents_->profile(),
-          tab_contents_->GetURL()),
+      tab_contents_->GetWebUITypeForCurrentState(),
       tab_contents_,
       params.window_container_type,
       params.frame_name);

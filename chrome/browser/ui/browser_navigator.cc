@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
@@ -31,7 +32,7 @@ SiteInstance* GetSiteInstance(TabContents* source_contents, Profile* profile,
   // If url is a WebUI or extension, we need to be sure to use the right type
   // of renderer process up front.  Otherwise, we create a normal SiteInstance
   // as part of creating the tab.
-  if (WebUIFactory::UseWebUIForURL(profile, url))
+  if (ChromeWebUIFactory::GetInstance()->UseWebUIForURL(profile, url))
     return SiteInstance::CreateSiteInstanceForURL(profile, url);
 
   if (!source_contents)
