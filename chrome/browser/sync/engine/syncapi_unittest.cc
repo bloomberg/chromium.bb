@@ -34,7 +34,7 @@
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/util/cryptographer.h"
-#include "chrome/test/sync/engine/test_user_share.h"
+#include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "chrome/test/values_test_util.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -166,29 +166,34 @@ int64 MakeServerNodeForType(UserShare* share,
 class SyncApiTest : public testing::Test {
  public:
   virtual void SetUp() {
-    test_user_share_.SetUp();
+    setter_upper_.SetUp();
+    share_.dir_manager.reset(setter_upper_.manager());
+    share_.name = setter_upper_.name();
   }
 
   virtual void TearDown() {
-    test_user_share_.TearDown();
+    // |share_.dir_manager| does not actually own its value.
+    ignore_result(share_.dir_manager.release());
+    setter_upper_.TearDown();
   }
 
  protected:
-  browser_sync::TestUserShare test_user_share_;
+  UserShare share_;
+  browser_sync::TestDirectorySetterUpper setter_upper_;
 };
 
 TEST_F(SyncApiTest, SanityCheckTest) {
   {
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
     EXPECT_TRUE(trans.GetWrappedTrans() != NULL);
   }
   {
-    WriteTransaction trans(test_user_share_.user_share());
+    WriteTransaction trans(&share_);
     EXPECT_TRUE(trans.GetWrappedTrans() != NULL);
   }
   {
     // No entries but root should exist
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
     ReadNode node(&trans);
     // Metahandle 1 can be root, sanity check 2
     EXPECT_FALSE(node.InitByIdLookup(2));
@@ -197,17 +202,16 @@ TEST_F(SyncApiTest, SanityCheckTest) {
 
 TEST_F(SyncApiTest, BasicTagWrite) {
   {
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
     EXPECT_EQ(root_node.GetFirstChildId(), 0);
   }
 
-  ignore_result(MakeNode(test_user_share_.user_share(),
-                         syncable::BOOKMARKS, "testtag"));
+  ignore_result(MakeNode(&share_, syncable::BOOKMARKS, "testtag"));
 
   {
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
     ReadNode node(&trans);
     EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS,
         "testtag"));
@@ -237,21 +241,18 @@ TEST_F(SyncApiTest, GenerateSyncableHash) {
 
 TEST_F(SyncApiTest, ModelTypesSiloed) {
   {
-    WriteTransaction trans(test_user_share_.user_share());
+    WriteTransaction trans(&share_);
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
     EXPECT_EQ(root_node.GetFirstChildId(), 0);
   }
 
-  ignore_result(MakeNode(test_user_share_.user_share(),
-                         syncable::BOOKMARKS, "collideme"));
-  ignore_result(MakeNode(test_user_share_.user_share(),
-                         syncable::PREFERENCES, "collideme"));
-  ignore_result(MakeNode(test_user_share_.user_share(),
-                         syncable::AUTOFILL, "collideme"));
+  ignore_result(MakeNode(&share_, syncable::BOOKMARKS, "collideme"));
+  ignore_result(MakeNode(&share_, syncable::PREFERENCES, "collideme"));
+  ignore_result(MakeNode(&share_, syncable::AUTOFILL, "collideme"));
 
   {
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
 
     ReadNode bookmarknode(&trans);
     EXPECT_TRUE(bookmarknode.InitByClientTagLookup(syncable::BOOKMARKS,
@@ -273,13 +274,13 @@ TEST_F(SyncApiTest, ModelTypesSiloed) {
 
 TEST_F(SyncApiTest, ReadMissingTagsFails) {
   {
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
     ReadNode node(&trans);
     EXPECT_FALSE(node.InitByClientTagLookup(syncable::BOOKMARKS,
         "testtag"));
   }
   {
-    WriteTransaction trans(test_user_share_.user_share());
+    WriteTransaction trans(&share_);
     WriteNode node(&trans);
     EXPECT_FALSE(node.InitByClientTagLookup(syncable::BOOKMARKS,
         "testtag"));
@@ -294,7 +295,7 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
   std::wstring test_title(L"test1");
 
   {
-    WriteTransaction trans(test_user_share_.user_share());
+    WriteTransaction trans(&share_);
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
 
@@ -315,7 +316,7 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
 
   // Ensure we can delete something with a tag.
   {
-    WriteTransaction trans(test_user_share_.user_share());
+    WriteTransaction trans(&share_);
     WriteNode wnode(&trans);
     EXPECT_TRUE(wnode.InitByClientTagLookup(syncable::BOOKMARKS,
         "testtag"));
@@ -328,7 +329,7 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
   // Lookup of a node which was deleted should return failure,
   // but have found some data about the node.
   {
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
     ReadNode node(&trans);
     EXPECT_FALSE(node.InitByClientTagLookup(syncable::BOOKMARKS,
         "testtag"));
@@ -338,7 +339,7 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
   }
 
   {
-    WriteTransaction trans(test_user_share_.user_share());
+    WriteTransaction trans(&share_);
     ReadNode folder_node(&trans);
     EXPECT_TRUE(folder_node.InitByIdLookup(folder_id));
 
@@ -355,7 +356,7 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
 
   // Now look up should work.
   {
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
     ReadNode node(&trans);
     EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS,
         "testtag"));
@@ -367,11 +368,11 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
 TEST_F(SyncApiTest, WriteAndReadPassword) {
   KeyParams params = {"localhost", "username", "passphrase"};
   {
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
     trans.GetCryptographer()->AddKey(params);
   }
   {
-    WriteTransaction trans(test_user_share_.user_share());
+    WriteTransaction trans(&share_);
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
 
@@ -383,7 +384,7 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
     password_node.SetPasswordSpecifics(data);
   }
   {
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
 
@@ -440,7 +441,7 @@ void CheckNodeValue(const BaseNode& node, const DictionaryValue& value) {
 }  // namespace
 
 TEST_F(SyncApiTest, BaseNodeToValue) {
-  ReadTransaction trans(test_user_share_.user_share());
+  ReadTransaction trans(&share_);
   ReadNode node(&trans);
   node.InitByRootLookup();
   scoped_ptr<DictionaryValue> value(node.ToValue());
@@ -520,11 +521,10 @@ class MockExtraChangeRecordData
 }  // namespace
 
 TEST_F(SyncApiTest, ChangeRecordToValue) {
-  int64 child_id = MakeNode(test_user_share_.user_share(),
-                            syncable::BOOKMARKS, "testtag");
+  int64 child_id = MakeNode(&share_, syncable::BOOKMARKS, "testtag");
   sync_pb::EntitySpecifics child_specifics;
   {
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
     ReadNode node(&trans);
     EXPECT_TRUE(node.InitByIdLookup(child_id));
     child_specifics = node.GetEntry()->Get(syncable::SPECIFICS);
@@ -532,7 +532,7 @@ TEST_F(SyncApiTest, ChangeRecordToValue) {
 
   // Add
   {
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
     SyncManager::ChangeRecord record;
     record.action = SyncManager::ChangeRecord::ACTION_ADD;
     record.id = 1;
@@ -544,7 +544,7 @@ TEST_F(SyncApiTest, ChangeRecordToValue) {
 
   // Update
   {
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
     SyncManager::ChangeRecord record;
     record.action = SyncManager::ChangeRecord::ACTION_UPDATE;
     record.id = child_id;
@@ -556,7 +556,7 @@ TEST_F(SyncApiTest, ChangeRecordToValue) {
 
   // Delete (no extra)
   {
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
     SyncManager::ChangeRecord record;
     record.action = SyncManager::ChangeRecord::ACTION_DELETE;
     record.id = child_id + 1;
@@ -567,7 +567,7 @@ TEST_F(SyncApiTest, ChangeRecordToValue) {
 
   // Delete (with extra)
   {
-    ReadTransaction trans(test_user_share_.user_share());
+    ReadTransaction trans(&share_);
     SyncManager::ChangeRecord record;
     record.action = SyncManager::ChangeRecord::ACTION_DELETE;
     record.id = child_id + 1;

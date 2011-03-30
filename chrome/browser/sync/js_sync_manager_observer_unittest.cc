@@ -13,7 +13,7 @@
 #include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/test/sync/engine/test_user_share.h"
+#include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
@@ -194,8 +194,11 @@ int64 MakeNode(sync_api::UserShare* share, syncable::ModelType model_type) {
 TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
   InSequence dummy;
 
-  TestUserShare test_user_share;
-  test_user_share.SetUp();
+  TestDirectorySetterUpper setter_upper;
+  sync_api::UserShare share;
+  setter_upper.SetUp();
+  share.dir_manager.reset(setter_upper.manager());
+  share.name = setter_upper.name();
 
   // We don't test with passwords as that requires additional setup.
 
@@ -203,8 +206,7 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
   sync_api::SyncManager::ChangeRecord changes[syncable::MODEL_TYPE_COUNT];
   for (int i = syncable::AUTOFILL_PROFILE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
-    changes[i].id =
-        MakeNode(test_user_share.user_share(), syncable::ModelTypeFromInt(i));
+    changes[i].id = MakeNode(&share, syncable::ModelTypeFromInt(i));
     switch (i % 3) {
       case 0:
         changes[i].action =
@@ -220,7 +222,7 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
         break;
     }
     {
-      sync_api::ReadTransaction trans(test_user_share.user_share());
+      sync_api::ReadTransaction trans(&share);
       sync_api::ReadNode node(&trans);
       EXPECT_TRUE(node.InitByIdLookup(changes[i].id));
       changes[i].specifics = node.GetEntry()->Get(syncable::SPECIFICS);
@@ -241,7 +243,7 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
     ListValue* expected_changes = new ListValue();
     expected_args.Append(expected_changes);
     for (int j = i; j < syncable::MODEL_TYPE_COUNT; ++j) {
-      sync_api::ReadTransaction trans(test_user_share.user_share());
+      sync_api::ReadTransaction trans(&share);
       expected_changes->Append(changes[j].ToValue(&trans));
     }
     EXPECT_CALL(mock_router_,
@@ -252,13 +254,15 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
   // Fire OnChangesApplied() for each data type.
   for (int i = syncable::AUTOFILL_PROFILE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
-    sync_api::ReadTransaction trans(test_user_share.user_share());
+    sync_api::ReadTransaction trans(&share);
     sync_manager_observer_.OnChangesApplied(syncable::ModelTypeFromInt(i),
                                             &trans, &changes[i],
                                             syncable::MODEL_TYPE_COUNT - i);
   }
 
-  test_user_share.TearDown();
+  // |share.dir_manager| does not actually own its value.
+  ignore_result(share.dir_manager.release());
+  setter_upper.TearDown();
 }
 
 }  // namespace
