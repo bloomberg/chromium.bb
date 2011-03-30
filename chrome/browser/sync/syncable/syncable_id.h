@@ -13,17 +13,12 @@
 
 #include "base/hash_tables.h"
 
-extern "C" {
-struct sqlite3;
-struct sqlite3_stmt;
-}
-
 class StringValue;
 
 namespace syncable {
 struct EntryKernel;
 class Id;
-}  // namespace syncable
+}
 
 class MockConnectionManager;
 class SQLStatement;
