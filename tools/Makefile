@@ -544,7 +544,7 @@ GLIBC_CFLAGS=-O2 -g
 # redefining variables with recursive $(MAKE) calls.
 LIB_BITS?=64
 ARCH_DEST=$(DESTDIR)$(SDKROOT)/$(if $(filter 32,$(LIB_BITS)),nacl,nacl64)
-ARCH_DEST_NATIVE=$(SDKLOC_NATIVE)/$(if $(filter 32,$(LIB_BITS)),nacl,nacl64)
+ARCH_DEST_NATIVE=$(SDKLOC_NATIVE)/$(if $(filter 32,$(LIB_BITS)),nacl64/lib32,nacl64)
 
 BUILD/stamp-glibc32: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
   | SRC/glibc SRC/linux-headers-for-nacl
