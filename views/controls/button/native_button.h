@@ -120,8 +120,8 @@ class NativeButton : public TextButton {
 
   DISALLOW_COPY_AND_ASSIGN(NativeButton);
 };
-#else
-// TODO(saintlou): Windows and Clang do not like typedef, it
+#elif defined(OS_WIN)
+// TODO(saintlou): Windows does not like typedef, in particluar it
 // chokes in other modules that have a forward declaration for
 // NativeButton
 class NativeButton : public NativeButtonBase {
@@ -133,6 +133,9 @@ class NativeButton : public NativeButtonBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeButton);
 };
+#else
+// Keep the same implementation as before for non-touch case
+typedef NativeButtonBase NativeButton;
 #endif
 
 }  // namespace views
