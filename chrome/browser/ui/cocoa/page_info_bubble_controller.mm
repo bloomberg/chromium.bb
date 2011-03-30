@@ -320,6 +320,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 // in the bubble.
 - (void)configureTextFieldAsLabel:(NSTextField*)textField {
   [textField setEditable:NO];
+  [textField setSelectable:YES];
   [textField setDrawsBackground:NO];
   [textField setBezeled:NO];
 }
