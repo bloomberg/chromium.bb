@@ -3780,8 +3780,11 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       <message name="IDS_EXTENSIONS_VIEW_INCOGNITO" desc="Text that signifies that the extension view is in an incognito process.">
         (Incognito)
       </message>
-      <message name="IDS_EXTENSIONS_ID" desc="The ID label in front if the extension ID.">
+      <message name="IDS_EXTENSIONS_ID" desc="The ID label in front of the extension ID.">
         ID:
+      </message>
+      <message name="IDS_EXTENSIONS_PATH" desc="The label in front of the extension load path.">
+        Loaded from:
       </message>
       <message name="IDS_EXTENSIONS_VERSION" desc="The version label text in front of the version number.">
         Version:

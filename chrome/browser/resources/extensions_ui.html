@@ -838,7 +838,7 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                     i18n-content="extensionDisabled">(DISABLED)</span>
               <span jsdisplay="terminated"
                     i18n-content="extensionCrashed">(CRASHED)</span>
-              <span jsdisplay="order == 1"
+              <span jsdisplay="isUnpacked"
                     i18n-content="inDevelopment">(IN DEVELOPMENT)</span>
             </div>
 
@@ -847,6 +847,10 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
               <div class="extension-details">
                 <span i18n-content="extensionId">ID_LABEL: </span>
                 <span jscontent="id"></span>
+              </div>
+              <div class="extension-details" jsdisplay="path">
+                <span i18n-content="extensionPath">PATH_LABEL: </span>
+                <span jscontent="path"></span>
               </div>
               <div class="extension-details">
                 <span jsdisplay="views.length > 0 || hasPopupAction" i18n-content="inspectViews">

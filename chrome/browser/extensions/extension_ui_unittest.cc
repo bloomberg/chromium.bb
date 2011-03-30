@@ -21,18 +21,10 @@ namespace {
     return static_cast<DictionaryValue*>(value);
   }
 
-  static bool CompareExpectedAndActualOutput(
+  static DictionaryValue* CreateExtensionDetailViewFromPath(
       const FilePath& extension_path,
       const std::vector<ExtensionPage>& pages,
-      const FilePath& expected_output_path) {
-    // TODO(rafaelw): Using the extension_path passed in above, causes this
-    // unit test to fail on linux. The Values come back valid, but the
-    // UserScript.path() values return "".
-#if defined(OS_WIN)
-    FilePath path(FILE_PATH_LITERAL("c:\\foo"));
-#elif defined(OS_POSIX)
-    FilePath path(FILE_PATH_LITERAL("/foo"));
-#endif
+      Extension::Location location) {
     std::string error;
 
     FilePath manifest_path = extension_path.Append(
@@ -42,10 +34,21 @@ namespace {
     EXPECT_EQ("", error);
 
     scoped_refptr<Extension> extension(Extension::Create(
-        path, Extension::INVALID, *extension_data,
+        extension_path, location, *extension_data,
         Extension::REQUIRE_KEY | Extension::STRICT_ERROR_CHECKS, &error));
     EXPECT_TRUE(extension.get());
     EXPECT_EQ("", error);
+
+    return ExtensionsDOMHandler::CreateExtensionDetailValue(
+        NULL, extension.get(), pages, true, false);
+  }
+
+
+  static void CompareExpectedAndActualOutput(
+      const FilePath& extension_path,
+      const std::vector<ExtensionPage>& pages,
+      const FilePath& expected_output_path) {
+    std::string error;
 
     scoped_ptr<DictionaryValue> expected_output_data(DeserializeJSONTestData(
         expected_output_path, &error));
@@ -53,11 +56,25 @@ namespace {
 
     // Produce test output.
     scoped_ptr<DictionaryValue> actual_output_data(
-        ExtensionsDOMHandler::CreateExtensionDetailValue(NULL, extension.get(),
-                                                         pages, true, false));
+        CreateExtensionDetailViewFromPath(
+            extension_path, pages, Extension::INVALID));
 
     // Compare the outputs.
-    return expected_output_data->Equals(actual_output_data.get());
+    // Ignore unknown fields in the actual output data.
+    for (DictionaryValue::key_iterator key = expected_output_data->begin_keys();
+        key != expected_output_data->end_keys();
+        ++key) {
+      Value* expected_value = NULL;
+      Value* actual_value = NULL;
+      EXPECT_TRUE(expected_output_data->Get(*key, &expected_value));
+      EXPECT_TRUE(actual_output_data->Get(*key, &actual_value));
+      if (expected_value == NULL) {
+        EXPECT_EQ(NULL, actual_value) << extension_path.value();
+      } else {
+        EXPECT_TRUE(expected_value->Equals(actual_value))
+            << extension_path.value();
+      }
+    }
   }
 }  // namespace
 
@@ -85,8 +102,7 @@ TEST(ExtensionUITest, GenerateExtensionsJSONData) {
       .AppendASCII("create_extension_detail_value_expected_output")
       .AppendASCII("good-extension1.json");
 
-  EXPECT_TRUE(CompareExpectedAndActualOutput(extension_path, pages,
-      expected_output_path)) << extension_path.value();
+  CompareExpectedAndActualOutput(extension_path, pages, expected_output_path);
 
 #if !defined(OS_CHROMEOS)
   // Test Extension2
@@ -104,8 +120,7 @@ TEST(ExtensionUITest, GenerateExtensionsJSONData) {
   // It's OK to have duplicate URLs, so long as the IDs are different.
   pages[1].url = pages[0].url;
 
-  EXPECT_TRUE(CompareExpectedAndActualOutput(extension_path, pages,
-      expected_output_path)) << extension_path.value();
+  CompareExpectedAndActualOutput(extension_path, pages, expected_output_path);
 #endif
 
   // Test Extension3
@@ -122,6 +137,91 @@ TEST(ExtensionUITest, GenerateExtensionsJSONData) {
 
   pages.clear();
 
-  EXPECT_TRUE(CompareExpectedAndActualOutput(extension_path, pages,
-      expected_output_path)) << extension_path.value();
+  CompareExpectedAndActualOutput(extension_path, pages, expected_output_path);
 }
+
+// Test that using Extension::LOAD for the extension location triggers the
+// correct values in the details, including location, order, and allow_reload.
+TEST(ExtensionUITest, LocationLoadPropagation) {
+  FilePath data_test_dir_path, extension_path;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_test_dir_path));
+
+  extension_path = data_test_dir_path.AppendASCII("extensions")
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+      .AppendASCII("1.0.0.0");
+
+  std::vector<ExtensionPage> pages;
+
+  scoped_ptr<DictionaryValue> extension_details(
+      CreateExtensionDetailViewFromPath(
+          extension_path, pages, Extension::LOAD));
+
+  bool ui_allow_reload = false;
+  bool ui_is_unpacked = false;
+  FilePath::StringType ui_path;
+
+  EXPECT_TRUE(extension_details->GetBoolean("allow_reload", &ui_allow_reload));
+  EXPECT_TRUE(extension_details->GetBoolean("isUnpacked", &ui_is_unpacked));
+  EXPECT_TRUE(extension_details->GetString("path", &ui_path));
+  EXPECT_EQ(true, ui_allow_reload);
+  EXPECT_EQ(true, ui_is_unpacked);
+  EXPECT_EQ(extension_path, FilePath(ui_path));
+}
+
+// Test that using Extension::EXTERNAL_PREF for the extension location triggers
+// the correct values in the details, including location, order, and
+// allow_reload.  Contrast to Extension::LOAD, which has somewhat different
+// values.
+TEST(ExtensionUITest, LocationExternalPrefPropagation) {
+  FilePath data_test_dir_path, extension_path;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_test_dir_path));
+
+  extension_path = data_test_dir_path.AppendASCII("extensions")
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+      .AppendASCII("1.0.0.0");
+
+  std::vector<ExtensionPage> pages;
+
+  scoped_ptr<DictionaryValue> extension_details(
+      CreateExtensionDetailViewFromPath(
+          extension_path, pages, Extension::EXTERNAL_PREF));
+
+  bool ui_allow_reload = true;
+  bool ui_is_unpacked = true;
+  FilePath::StringType ui_path;
+
+  EXPECT_TRUE(extension_details->GetBoolean("allow_reload", &ui_allow_reload));
+  EXPECT_TRUE(extension_details->GetBoolean("isUnpacked", &ui_is_unpacked));
+  EXPECT_FALSE(extension_details->GetString("path", &ui_path));
+  EXPECT_EQ(false, ui_allow_reload);
+  EXPECT_EQ(false, ui_is_unpacked);
+}
+
+// Test that the extension path is correctly propagated into the extension
+// details.
+TEST(ExtensionUITest, PathPropagation) {
+  FilePath data_test_dir_path, extension_path;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_test_dir_path));
+
+  extension_path = data_test_dir_path.AppendASCII("extensions")
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+      .AppendASCII("1.0.0.0");
+
+  std::vector<ExtensionPage> pages;
+
+  scoped_ptr<DictionaryValue> extension_details(
+      CreateExtensionDetailViewFromPath(
+          extension_path, pages, Extension::LOAD));
+
+  FilePath::StringType ui_path;
+
+  EXPECT_TRUE(extension_details->GetString("path", &ui_path));
+  EXPECT_EQ(extension_path, FilePath(ui_path));
+}
+

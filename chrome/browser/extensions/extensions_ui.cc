@@ -130,6 +130,8 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VIEW_INCOGNITO));
   localized_strings.SetString("extensionId",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ID));
+  localized_strings.SetString("extensionPath",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_PATH));
   localized_strings.SetString("extensionVersion",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VERSION));
   localized_strings.SetString("inspectViews",
@@ -719,8 +721,12 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   extension_data->SetString("id", extension->id());
   extension_data->SetString("name", extension->name());
   extension_data->SetString("description", extension->description());
+  if (extension->location() == Extension::LOAD)
+    extension_data->SetString("path", extension->path().value());
   extension_data->SetString("version", extension->version()->GetString());
   extension_data->SetString("icon", icon.spec());
+  extension_data->SetBoolean("isUnpacked",
+                             extension->location() == Extension::LOAD);
   extension_data->SetBoolean("enabled", enabled);
   extension_data->SetBoolean("terminated", terminated);
   extension_data->SetBoolean("enabledIncognito",
