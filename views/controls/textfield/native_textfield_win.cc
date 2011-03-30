@@ -871,9 +871,9 @@ void NativeTextfieldWin::OnNCPaint(HRGN region) {
   int classic_state =
       (!textfield_->IsEnabled() || textfield_->read_only()) ? DFCS_INACTIVE : 0;
 
-  gfx::NativeTheme::instance()->PaintTextField(hdc, part, state, classic_state,
-                                               &window_rect, bg_color_, false,
-                                               true);
+  gfx::NativeThemeWin::instance()->PaintTextField(hdc, part, state,
+                                                  classic_state, &window_rect,
+                                                  bg_color_, false, true);
 
   // NOTE: I tried checking the transparent property of the theme and invoking
   // drawParentBackground, but it didn't seem to make a difference.

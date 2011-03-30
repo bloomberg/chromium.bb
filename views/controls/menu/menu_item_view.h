@@ -336,7 +336,7 @@ class MenuItemView : public View {
   // native theme drawing routines.
   void PaintCheck(HDC dc,
                   int part_id,
-                  gfx::NativeTheme::ControlState control_state,
+                  gfx::NativeThemeWin::ControlState control_state,
                   int icon_width,
                   int icon_height);
 #endif

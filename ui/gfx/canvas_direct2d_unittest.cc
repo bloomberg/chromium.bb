@@ -225,7 +225,7 @@ TEST(CanvasDirect2D, PlatformPainting) {
   // Use the system theme engine to draw a native button. This only works on a
   // GDI device context.
   RECT r = { 20, 20, 220, 80 };
-  gfx::NativeTheme::instance()->PaintButton(
+  gfx::NativeThemeWin::instance()->PaintButton(
       dc, BP_PUSHBUTTON, PBS_NORMAL, DFCS_BUTTONPUSH, &r);
 
   canvas.EndPlatformPaint();

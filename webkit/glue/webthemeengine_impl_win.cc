@@ -30,7 +30,7 @@ void WebThemeEngineImpl::paintButton(
   HDC hdc = canvas->beginPlatformPaint();
 
   RECT native_rect = WebRectToRECT(rect);
-  gfx::NativeTheme::instance()->PaintButton(
+  gfx::NativeThemeWin::instance()->PaintButton(
       hdc, part, state, classic_state, &native_rect);
 
   canvas->endPlatformPaint();
@@ -42,7 +42,7 @@ void WebThemeEngineImpl::paintMenuList(
   HDC hdc = canvas->beginPlatformPaint();
 
   RECT native_rect = WebRectToRECT(rect);
-  gfx::NativeTheme::instance()->PaintMenuList(
+  gfx::NativeThemeWin::instance()->PaintMenuList(
       hdc, part, state, classic_state, &native_rect);
 
   canvas->endPlatformPaint();
@@ -54,7 +54,7 @@ void WebThemeEngineImpl::paintScrollbarArrow(
   HDC hdc = canvas->beginPlatformPaint();
 
   RECT native_rect = WebRectToRECT(rect);
-  gfx::NativeTheme::instance()->PaintScrollbarArrow(
+  gfx::NativeThemeWin::instance()->PaintScrollbarArrow(
       hdc, state, classic_state, &native_rect);
 
   canvas->endPlatformPaint();
@@ -66,7 +66,7 @@ void WebThemeEngineImpl::paintScrollbarThumb(
   HDC hdc = canvas->beginPlatformPaint();
 
   RECT native_rect = WebRectToRECT(rect);
-  gfx::NativeTheme::instance()->PaintScrollbarThumb(
+  gfx::NativeThemeWin::instance()->PaintScrollbarThumb(
       hdc, part, state, classic_state, &native_rect);
 
   canvas->endPlatformPaint();
@@ -79,7 +79,7 @@ void WebThemeEngineImpl::paintScrollbarTrack(
 
   RECT native_rect = WebRectToRECT(rect);
   RECT native_align_rect = WebRectToRECT(align_rect);
-  gfx::NativeTheme::instance()->PaintScrollbarTrack(
+  gfx::NativeThemeWin::instance()->PaintScrollbarTrack(
       hdc, part, state, classic_state, &native_rect, &native_align_rect,
       canvas);
 
@@ -92,7 +92,7 @@ void WebThemeEngineImpl::paintSpinButton(
   HDC hdc = canvas->beginPlatformPaint();
 
   RECT native_rect = WebRectToRECT(rect);
-  gfx::NativeTheme::instance()->PaintSpinButton(
+  gfx::NativeThemeWin::instance()->PaintSpinButton(
       hdc, part, state, classic_state, &native_rect);
 
   canvas->endPlatformPaint();
@@ -107,7 +107,7 @@ void WebThemeEngineImpl::paintTextField(
   RECT native_rect = WebRectToRECT(rect);
   COLORREF c = skia::SkColorToCOLORREF(color);
 
-  gfx::NativeTheme::instance()->PaintTextField(
+  gfx::NativeThemeWin::instance()->PaintTextField(
       hdc, part, state, classic_state, &native_rect, c, fill_content_area,
       draw_edges);
 
@@ -120,7 +120,7 @@ void WebThemeEngineImpl::paintTrackbar(
   HDC hdc = canvas->beginPlatformPaint();
 
   RECT native_rect = WebRectToRECT(rect);
-  gfx::NativeTheme::instance()->PaintTrackbar(
+  gfx::NativeThemeWin::instance()->PaintTrackbar(
       hdc, part, state, classic_state, &native_rect, canvas);
 
   canvas->endPlatformPaint();
@@ -133,7 +133,7 @@ void WebThemeEngineImpl::paintProgressBar(
   HDC hdc = canvas->beginPlatformPaint();
   RECT native_bar_rect = WebRectToRECT(barRect);
   RECT native_value_rect = WebRectToRECT(valueRect);
-  gfx::NativeTheme::instance()->PaintProgressBar(
+  gfx::NativeThemeWin::instance()->PaintProgressBar(
       hdc, &native_bar_rect,
       &native_value_rect, determinate, animatedSeconds, canvas);
   canvas->endPlatformPaint();

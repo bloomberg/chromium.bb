@@ -4,7 +4,7 @@
 //
 // A wrapper class for working with custom XP/Vista themes provided in
 // uxtheme.dll.  This is a singleton class that can be grabbed using
-// NativeTheme::instance().
+// NativeThemeWin::instance().
 // For more information on visual style parts and states, see:
 // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/shellcc/platform/commctls/userex/topics/partsandstates.asp
 
@@ -31,7 +31,7 @@ namespace gfx {
 // simplify usage.
 // TODO: This class should probably be changed to be platform independent at
 // the same time.
-class NativeTheme {
+class NativeThemeWin {
  public:
   enum ThemeName {
     BUTTON,
@@ -280,11 +280,11 @@ class NativeTheme {
   bool IsClassicTheme(ThemeName name) const;
 
   // Gets our singleton instance.
-  static const NativeTheme* instance();
+  static const NativeThemeWin* instance();
 
  private:
-  NativeTheme();
-  ~NativeTheme();
+  NativeThemeWin();
+  ~NativeThemeWin();
 
   HRESULT PaintFrameControl(HDC hdc,
                             RECT* rect,
@@ -313,7 +313,7 @@ class NativeTheme {
   // A cache of open theme handles.
   mutable HANDLE theme_handles_[LAST];
 
-  DISALLOW_COPY_AND_ASSIGN(NativeTheme);
+  DISALLOW_COPY_AND_ASSIGN(NativeThemeWin);
 };
 
 }  // namespace gfx

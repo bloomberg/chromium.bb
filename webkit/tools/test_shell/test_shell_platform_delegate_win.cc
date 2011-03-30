@@ -141,7 +141,7 @@ void TestShellPlatformDelegate::InitializeGUI() {
 }
 
 void TestShellPlatformDelegate::SelectUnifiedTheme() {
-  gfx::NativeTheme::instance()->DisableTheming();
+  gfx::NativeThemeWin::instance()->DisableTheming();
 }
 
 void TestShellPlatformDelegate::SetWindowPositionForRecording(

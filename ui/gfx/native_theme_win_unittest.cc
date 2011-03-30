@@ -7,5 +7,5 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(NativeThemeTest, Init) {
-  ASSERT_TRUE(gfx::NativeTheme::instance() != NULL);
+  ASSERT_TRUE(gfx::NativeThemeWin::instance() != NULL);
 }

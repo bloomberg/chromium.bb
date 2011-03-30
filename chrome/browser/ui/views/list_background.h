@@ -16,8 +16,8 @@ class ListBackground : public views::Background {
  public:
   explicit ListBackground() {
     SkColor list_color =
-        gfx::NativeTheme::instance()->GetThemeColorWithDefault(
-        gfx::NativeTheme::LIST, 1, TS_NORMAL, TMT_FILLCOLOR, COLOR_WINDOW);
+        gfx::NativeThemeWin::instance()->GetThemeColorWithDefault(
+        gfx::NativeThemeWin::LIST, 1, TS_NORMAL, TMT_FILLCOLOR, COLOR_WINDOW);
     SetNativeControlColor(list_color);
   }
   virtual ~ListBackground() {}
@@ -25,7 +25,7 @@ class ListBackground : public views::Background {
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const {
     HDC dc = canvas->BeginPlatformPaint();
     RECT native_lb = view->GetLocalBounds().ToRECT();
-    gfx::NativeTheme::instance()->PaintListBackground(dc, true, &native_lb);
+    gfx::NativeThemeWin::instance()->PaintListBackground(dc, true, &native_lb);
     canvas->EndPlatformPaint();
   }
 

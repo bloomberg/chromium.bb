@@ -429,8 +429,8 @@ void DialogClientView::PaintSizeBox(gfx::Canvas* canvas) {
 #if defined(OS_WIN)
     HDC dc = canvas->BeginPlatformPaint();
     SIZE gripper_size = { 0, 0 };
-    gfx::NativeTheme::instance()->GetThemePartSize(
-        gfx::NativeTheme::STATUS, dc, SP_GRIPPER, 1, NULL, TS_TRUE,
+    gfx::NativeThemeWin::instance()->GetThemePartSize(
+        gfx::NativeThemeWin::STATUS, dc, SP_GRIPPER, 1, NULL, TS_TRUE,
         &gripper_size);
 
     // TODO(beng): (http://b/1085509) In "classic" rendering mode, there isn't
@@ -441,7 +441,7 @@ void DialogClientView::PaintSizeBox(gfx::Canvas* canvas) {
     size_box_bounds_.set_x(size_box_bounds_.right() - gripper_size.cx);
     size_box_bounds_.set_y(size_box_bounds_.bottom() - gripper_size.cy);
     RECT native_bounds = size_box_bounds_.ToRECT();
-    gfx::NativeTheme::instance()->PaintStatusGripper(
+    gfx::NativeThemeWin::instance()->PaintStatusGripper(
         dc, SP_PANE, 1, 0, &native_bounds);
     canvas->EndPlatformPaint();
 #else

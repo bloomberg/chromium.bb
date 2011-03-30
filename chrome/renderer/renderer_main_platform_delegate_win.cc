@@ -11,7 +11,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/common/injection_test_dll.h"
 #include "sandbox/src/sandbox.h"
-#include "ui/gfx/native_theme_win.h"
 #include "unicode/timezone.h"
 
 namespace {

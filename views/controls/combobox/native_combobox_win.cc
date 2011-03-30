@@ -107,8 +107,8 @@ gfx::Size NativeComboboxWin::GetPreferredSize() {
   GetComboBoxInfo(native_view(), &cbi);
   gfx::Rect rect_item(cbi.rcItem);
   gfx::Rect rect_button(cbi.rcButton);
-  gfx::Size border = gfx::NativeTheme::instance()->GetThemeBorderSize(
-      gfx::NativeTheme::MENULIST);
+  gfx::Size border = gfx::NativeThemeWin::instance()->GetThemeBorderSize(
+      gfx::NativeThemeWin::MENULIST);
 
   // The padding value of '3' is the xy offset from the corner of the control
   // to the corner of rcItem.  It does not seem to be queryable from the theme.

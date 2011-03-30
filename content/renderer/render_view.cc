@@ -4596,7 +4596,7 @@ void RenderView::OnClosePage(const ViewMsg_ClosePage_Params& params) {
 
 void RenderView::OnThemeChanged() {
 #if defined(OS_WIN)
-  gfx::NativeTheme::instance()->CloseHandles();
+  gfx::NativeThemeWin::instance()->CloseHandles();
   if (webview())
     webview()->themeChanged();
 #else  // defined(OS_WIN)

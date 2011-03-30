@@ -29,8 +29,8 @@ class TabBackground : public Background {
     // TMT_FILLCOLORHINT returns a color value that supposedly
     // approximates the texture drawn by PaintTabPanelBackground.
     SkColor tab_page_color =
-        gfx::NativeTheme::instance()->GetThemeColorWithDefault(
-            gfx::NativeTheme::TAB, TABP_BODY, 0, TMT_FILLCOLORHINT,
+        gfx::NativeThemeWin::instance()->GetThemeColorWithDefault(
+            gfx::NativeThemeWin::TAB, TABP_BODY, 0, TMT_FILLCOLORHINT,
             COLOR_3DFACE);
     SetNativeControlColor(tab_page_color);
   }
@@ -39,7 +39,7 @@ class TabBackground : public Background {
   virtual void Paint(gfx::Canvas* canvas, View* view) const {
     HDC dc = canvas->BeginPlatformPaint();
     RECT r = {0, 0, view->width(), view->height()};
-    gfx::NativeTheme::instance()->PaintTabPanelBackground(dc, &r);
+    gfx::NativeThemeWin::instance()->PaintTabPanelBackground(dc, &r);
     canvas->EndPlatformPaint();
   }
 

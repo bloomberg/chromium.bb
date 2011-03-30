@@ -25,7 +25,7 @@
 #endif
 
 #if defined(OS_WIN)
-using gfx::NativeTheme;
+using gfx::NativeThemeWin;
 #endif
 
 // Height of the scroll arrow.
@@ -88,8 +88,8 @@ class MenuScrollButton : public View {
 
     // The background.
     RECT item_bounds = { 0, 0, width(), height() };
-    NativeTheme::instance()->PaintMenuItemBackground(
-        NativeTheme::MENU, dc, MENU_POPUPITEM, MPI_NORMAL, false,
+    NativeThemeWin::instance()->PaintMenuItemBackground(
+        NativeThemeWin::MENU, dc, MENU_POPUPITEM, MPI_NORMAL, false,
         &item_bounds);
     canvas->EndPlatformPaint();
 
@@ -189,8 +189,8 @@ void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
 #if defined(OS_WIN)
   HDC dc = canvas->BeginPlatformPaint();
   RECT bounds = {0, 0, width(), height()};
-  NativeTheme::instance()->PaintMenuBackground(
-      NativeTheme::MENU, dc, MENU_POPUPBACKGROUND, 0, &bounds);
+  NativeThemeWin::instance()->PaintMenuBackground(
+      NativeThemeWin::MENU, dc, MENU_POPUPBACKGROUND, 0, &bounds);
   canvas->EndPlatformPaint();
 #elif defined(OS_CHROMEOS)
   static const SkColor kGradientColors[2] = {

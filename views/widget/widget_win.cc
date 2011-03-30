@@ -943,8 +943,8 @@ void WidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
 }
 
 void WidgetWin::OnThemeChanged() {
-  // Notify NativeTheme.
-  gfx::NativeTheme::instance()->CloseHandles();
+  // Notify NativeThemeWin.
+  gfx::NativeThemeWin::instance()->CloseHandles();
 }
 
 void WidgetWin::OnVScroll(int scroll_type, short position, HWND scrollbar) {

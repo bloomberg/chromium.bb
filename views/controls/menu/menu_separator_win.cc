@@ -21,9 +21,9 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   int start_x = 0;
   int start_y = height() / 3 + 1;  // +1 makes separator centered.
   HDC dc = canvas->BeginPlatformPaint();
-  const gfx::NativeTheme* theme = gfx::NativeTheme::instance();
+  const gfx::NativeThemeWin* theme = gfx::NativeThemeWin::instance();
   // Delta is needed for non-classic to move separator up slightly.
-  int delta = theme->IsClassicTheme(gfx::NativeTheme::MENU) ? 0 : 1;
+  int delta = theme->IsClassicTheme(gfx::NativeThemeWin::MENU) ? 0 : 1;
   if (config.render_gutter) {
     // If render_gutter is true, we're on Vista and need to render the
     // gutter, then indent the separator from the gutter.
