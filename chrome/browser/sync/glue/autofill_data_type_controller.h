@@ -74,7 +74,8 @@ class AutofillDataTypeController : public DataTypeController,
  private:
   void StartImpl();
   void StartDone(StartResult result, State state);
-  void StartDoneImpl(StartResult result, State state);
+  void StartDoneImpl(StartResult result, State state,
+      const tracked_objects::Location& location);
   void StopImpl();
   void StartFailed(StartResult result);
   void OnUnrecoverableErrorImpl(const tracked_objects::Location& from_here,

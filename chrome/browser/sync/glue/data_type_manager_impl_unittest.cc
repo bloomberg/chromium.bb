@@ -40,12 +40,12 @@ using testing::Return;
 using testing::SaveArg;
 
 ACTION_P(InvokeCallback, callback_result) {
-  arg0->Run(callback_result);
+  arg0->Run(callback_result, FROM_HERE);
   delete arg0;
 }
 
 ACTION_P2(InvokeCallbackPointer, callback, argument) {
-  callback->Run(argument);
+  callback->Run(argument, FROM_HERE);
   delete callback;
 }
 
@@ -352,7 +352,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhileOneInFlight) {
   // preferences and continue starting bookmarks.
   types_.insert(syncable::PREFERENCES);
   dtm.Configure(types_);
-  callback->Run(DataTypeController::OK);
+  callback->Run(DataTypeController::OK, FROM_HERE);
   delete callback;
 
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());

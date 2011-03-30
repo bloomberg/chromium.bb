@@ -146,7 +146,7 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
       ResumeSyncer();
     } else {
       state_ = CONFIGURED;
-      NotifyDone(OK);
+      NotifyDone(OK, FROM_HERE);
     }
     return;
   }
@@ -267,7 +267,8 @@ void DataTypeManagerImpl::StartNextType() {
 }
 
 void DataTypeManagerImpl::TypeStartCallback(
-    DataTypeController::StartResult result) {
+    DataTypeController::StartResult result,
+    const tracked_objects::Location& location) {
   // When the data type controller invokes this callback, it must be
   // on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -283,7 +284,7 @@ void DataTypeManagerImpl::TypeStartCallback(
   // was starting.  Now that it has finished starting, we can finish
   // stopping the DataTypeManager.  This is considered an ABORT.
   if (state_ == STOPPING) {
-    FinishStopAndNotify(ABORTED);
+    FinishStopAndNotify(ABORTED, FROM_HERE);
     return;
   }
 
@@ -329,7 +330,7 @@ void DataTypeManagerImpl::TypeStartCallback(
       NOTREACHED();
       break;
   }
-  FinishStopAndNotify(configure_result);
+  FinishStopAndNotify(configure_result, location);
 }
 
 void DataTypeManagerImpl::Stop() {
@@ -375,7 +376,7 @@ void DataTypeManagerImpl::Stop() {
 
   state_ = STOPPING;
   if (aborted)
-    FinishStopAndNotify(ABORTED);
+    FinishStopAndNotify(ABORTED, FROM_HERE);
   else
     FinishStop();
 }
@@ -410,10 +411,11 @@ void DataTypeManagerImpl::FinishStop() {
   state_ = STOPPED;
 }
 
-void DataTypeManagerImpl::FinishStopAndNotify(ConfigureResult result) {
+void DataTypeManagerImpl::FinishStopAndNotify(ConfigureResult result,
+    const tracked_objects::Location& location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FinishStop();
-  NotifyDone(result);
+  NotifyDone(result, location);
 }
 
 void DataTypeManagerImpl::Observe(NotificationType type,
@@ -452,7 +454,7 @@ void DataTypeManagerImpl::Observe(NotificationType type,
       }
 
       state_ = CONFIGURED;
-      NotifyDone(OK);
+      NotifyDone(OK, FROM_HERE);
       break;
     default:
       NOTREACHED();
@@ -481,12 +483,14 @@ void DataTypeManagerImpl::NotifyStart() {
       NotificationService::NoDetails());
 }
 
-void DataTypeManagerImpl::NotifyDone(ConfigureResult result) {
+void DataTypeManagerImpl::NotifyDone(ConfigureResult result,
+    const tracked_objects::Location& location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ConfigureResultWithErrorLocation result_with_location(result, location);
   NotificationService::current()->Notify(
       NotificationType::SYNC_CONFIGURE_DONE,
       Source<DataTypeManager>(this),
-      Details<ConfigureResult>(&result));
+      Details<ConfigureResultWithErrorLocation>(&result_with_location));
 }
 
 void DataTypeManagerImpl::ResumeSyncer() {
@@ -494,7 +498,7 @@ void DataTypeManagerImpl::ResumeSyncer() {
   AddObserver(NotificationType::SYNC_RESUMED);
   if (!backend_->RequestResume()) {
     RemoveObserver(NotificationType::SYNC_RESUMED);
-    FinishStopAndNotify(UNRECOVERABLE_ERROR);
+    FinishStopAndNotify(UNRECOVERABLE_ERROR, FROM_HERE);
   }
 }
 
@@ -503,7 +507,7 @@ void DataTypeManagerImpl::PauseSyncer() {
   AddObserver(NotificationType::SYNC_PAUSED);
   if (!backend_->RequestPause()) {
     RemoveObserver(NotificationType::SYNC_PAUSED);
-    FinishStopAndNotify(UNRECOVERABLE_ERROR);
+    FinishStopAndNotify(UNRECOVERABLE_ERROR, FROM_HERE);
   }
 }
 

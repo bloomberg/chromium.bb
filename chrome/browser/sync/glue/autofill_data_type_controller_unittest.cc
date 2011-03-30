@@ -46,7 +46,8 @@ ACTION_P(SignalEvent, event) {
 
 class StartCallback {
  public:
-  MOCK_METHOD1(Run, void(DataTypeController::StartResult result));
+  MOCK_METHOD2(Run, void(DataTypeController::StartResult result,
+      const tracked_objects::Location& location));
 };
 
 class PersonalDataManagerMock : public PersonalDataManager {
@@ -161,7 +162,7 @@ TEST_F(AutofillDataTypeControllerTest, StartPDMAndWDSReady) {
   SetStartExpectations();
   SetAssociateExpectations();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK)).
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _)).
       WillOnce(QuitUIMessageLoop());
   autofill_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   MessageLoop::current()->Run();
@@ -180,7 +181,7 @@ TEST_F(AutofillDataTypeControllerTest, AbortWhilePDMStarting) {
   EXPECT_EQ(DataTypeController::MODEL_STARTING, autofill_dtc_->state());
 
   EXPECT_CALL(service_, DeactivateDataType(_, _)).Times(0);
-  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED, _));
   autofill_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
 }
@@ -198,7 +199,7 @@ TEST_F(AutofillDataTypeControllerTest, AbortWhileWDSStarting) {
   EXPECT_EQ(DataTypeController::MODEL_STARTING, autofill_dtc_->state());
 
   EXPECT_CALL(service_, DeactivateDataType(_, _)).Times(0);
-  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED, _));
   autofill_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
 }
@@ -238,7 +239,7 @@ TEST_F(AutofillDataTypeControllerTest, AbortWhileAssociatingNotActivated) {
   EXPECT_EQ(DataTypeController::ASSOCIATING, autofill_dtc_->state());
 
   EXPECT_CALL(service_, DeactivateDataType(_, _)).Times(0);
-  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED, _));
   autofill_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
 }
@@ -278,7 +279,7 @@ TEST_F(AutofillDataTypeControllerTest, AbortWhileAssociatingActivated) {
   EXPECT_EQ(DataTypeController::ASSOCIATING, autofill_dtc_->state());
 
   SetStopExpectations();
-  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED, _));
   autofill_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
 }

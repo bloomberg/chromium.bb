@@ -17,7 +17,8 @@ ACTION_P3(NotifyFromDataTypeManagerWithResult, dtm, type, result) {
   NotificationService::current()->Notify(
       type,
       Source<browser_sync::DataTypeManager>(dtm),
-      Details<browser_sync::DataTypeManager::ConfigureResult>(result));
+      Details<browser_sync::DataTypeManager::ConfigureResultWithErrorLocation>(
+          result));
 }
 
 ACTION_P2(NotifyFromDataTypeManager, dtm, type) {
@@ -39,7 +40,7 @@ class DataTypeManagerMock : public DataTypeManager {
   MOCK_METHOD0(state, State());
 
  private:
-  DataTypeManager::ConfigureResult result_;
+  browser_sync::DataTypeManager::ConfigureResultWithErrorLocation result_;
 };
 
 }  // namespace browser_sync

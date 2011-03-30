@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/callback.h"
+#include "base/tracked.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
@@ -51,7 +52,8 @@ class DataTypeController
     MAX_START_RESULT
   };
 
-  typedef Callback1<StartResult>::Type StartCallback;
+  typedef Callback2<StartResult,
+      const tracked_objects::Location&>::Type StartCallback;
 
   typedef std::map<syncable::ModelType,
                    scoped_refptr<DataTypeController> > TypeMap;

@@ -51,10 +51,12 @@ class AppDataTypeController : public DataTypeController {
 
  private:
   // Helper method to run the stashed start callback with a given result.
-  void FinishStart(StartResult result);
+  void FinishStart(StartResult result,
+      const tracked_objects::Location& location);
 
   // Cleans up state and calls callback when start fails.
-  void StartFailed(StartResult result);
+  void StartFailed(StartResult result,
+      const tracked_objects::Location& location);
 
   ProfileSyncFactory* profile_sync_factory_;
   Profile* profile_;

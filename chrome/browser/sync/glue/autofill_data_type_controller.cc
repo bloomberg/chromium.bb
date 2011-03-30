@@ -52,7 +52,7 @@ void AutofillDataTypeController::Start(StartCallback* start_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(start_callback);
   if (state() != NOT_RUNNING) {
-    start_callback->Run(BUSY);
+    start_callback->Run(BUSY, FROM_HERE);
     delete start_callback;
     return;
   }
@@ -127,13 +127,13 @@ void AutofillDataTypeController::Stop() {
     }
     // Wait for the model association to abort.
     abort_association_complete_.Wait();
-    StartDoneImpl(ABORTED, STOPPING);
+    StartDoneImpl(ABORTED, STOPPING, FROM_HERE);
   }
 
   // If Stop() is called while Start() is waiting for the personal
   // data manager or web data service to load, abort the start.
   if (state_ == MODEL_STARTING)
-    StartDoneImpl(ABORTED, STOPPING);
+    StartDoneImpl(ABORTED, STOPPING, FROM_HERE);
 
   DCHECK(!start_callback_.get());
 
@@ -257,18 +257,20 @@ void AutofillDataTypeController::StartDone(
                                 this,
                                 &AutofillDataTypeController::StartDoneImpl,
                                 result,
-                                new_state));
+                                new_state,
+                                FROM_HERE));
   }
 }
 
 void AutofillDataTypeController::StartDoneImpl(
     DataTypeController::StartResult result,
-    DataTypeController::State new_state) {
+    DataTypeController::State new_state,
+    const tracked_objects::Location& location) {
   VLOG(1) << "Autofill data type controller StartDoneImpl called.";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   set_state(new_state);
-  start_callback_->Run(result);
+  start_callback_->Run(result, location);
   start_callback_.reset();
 
   if (result == UNRECOVERABLE_ERROR || result == ASSOCIATION_FAILED) {

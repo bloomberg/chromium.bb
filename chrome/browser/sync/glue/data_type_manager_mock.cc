@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/tracked.h"
 #include "chrome/browser/sync/glue/data_type_manager_mock.h"
 
 namespace browser_sync {
 
 DataTypeManagerMock::DataTypeManagerMock()
-    : result_(OK) {
+    : result_(OK, FROM_HERE) {
+
   // By default, calling Configure will send a SYNC_CONFIGURE_START
   // and SYNC_CONFIGURE_DONE notification with a DataTypeManager::OK
   // detail.

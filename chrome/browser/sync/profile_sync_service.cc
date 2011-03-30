@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util-inl.h"
+#include "base/stringprintf.h"
 #include "base/string16.h"
 #include "base/task.h"
 #include "base/threading/thread_restrictions.h"
@@ -1088,15 +1089,20 @@ void ProfileSyncService::Observe(NotificationType type,
       break;
     }
     case NotificationType::SYNC_CONFIGURE_DONE: {
-      DataTypeManager::ConfigureResult result =
-          *(Details<DataTypeManager::ConfigureResult>(details).ptr());
+      DataTypeManager::ConfigureResultWithErrorLocation* result_with_location =
+          Details<DataTypeManager::ConfigureResultWithErrorLocation>(
+              details).ptr();
+
+      DataTypeManager::ConfigureResult result = result_with_location->result;
       if (result == DataTypeManager::ABORTED &&
           expect_sync_configuration_aborted_) {
         expect_sync_configuration_aborted_ = false;
         return;
       }
       if (result != DataTypeManager::OK) {
-        OnUnrecoverableError(FROM_HERE, "Sync Configuration failed.");
+        std::string message = StringPrintf("Sync Configuration failed with %d",
+                                            result);
+        OnUnrecoverableError(*(result_with_location->location), message);
         return;
       }
 

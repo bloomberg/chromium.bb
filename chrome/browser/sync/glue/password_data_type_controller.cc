@@ -41,7 +41,7 @@ void PasswordDataTypeController::Start(StartCallback* start_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(start_callback);
   if (state_ != NOT_RUNNING) {
-    start_callback->Run(BUSY);
+    start_callback->Run(BUSY, FROM_HERE);
     delete start_callback;
     return;
   }
@@ -51,7 +51,7 @@ void PasswordDataTypeController::Start(StartCallback* start_callback) {
     LOG(ERROR) << "PasswordStore not initialized, password datatype controller"
                << " aborting.";
     state_ = NOT_RUNNING;
-    start_callback->Run(ABORTED);
+    start_callback->Run(ABORTED, FROM_HERE);
     delete start_callback;
     return;
   }
@@ -186,7 +186,7 @@ void PasswordDataTypeController::StartDoneImpl(
     DataTypeController::State new_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   set_state(new_state);
-  start_callback_->Run(result);
+  start_callback_->Run(result, FROM_HERE);
   start_callback_.reset();
 }
 

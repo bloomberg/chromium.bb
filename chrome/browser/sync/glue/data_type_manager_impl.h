@@ -53,11 +53,13 @@ class DataTypeManagerImpl : public DataTypeManager,
   void StartNextType();
 
   // Callback passed to each data type controller on startup.
-  void TypeStartCallback(DataTypeController::StartResult result);
+  void TypeStartCallback(DataTypeController::StartResult result,
+      const tracked_objects::Location& location);
 
   // Stops all data types.
   void FinishStop();
-  void FinishStopAndNotify(ConfigureResult result);
+  void FinishStopAndNotify(ConfigureResult result,
+      const tracked_objects::Location& location);
 
   // Returns true if any last_requested_types_ currently needs to start model
   // association.  If non-null, fills |needs_start| with all such controllers.
@@ -69,7 +71,8 @@ class DataTypeManagerImpl : public DataTypeManager,
   void AddObserver(NotificationType type);
   void RemoveObserver(NotificationType type);
   void NotifyStart();
-  void NotifyDone(ConfigureResult result);
+  void NotifyDone(ConfigureResult result,
+       const tracked_objects::Location& location);
   void ResumeSyncer();
   void PauseSyncer();
 

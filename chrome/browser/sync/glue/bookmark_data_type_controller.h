@@ -68,7 +68,8 @@ class BookmarkDataTypeController : public DataTypeController,
   void FinishStart(StartResult result);
 
   // Cleans up state and calls callback when star fails.
-  void StartFailed(StartResult result);
+  void StartFailed(StartResult result,
+      const tracked_objects::Location& location);
 
   ProfileSyncFactory* profile_sync_factory_;
   Profile* profile_;

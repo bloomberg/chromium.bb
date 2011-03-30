@@ -28,7 +28,8 @@ using testing::SetArgumentPointee;
 
 class StartCallback {
  public:
-  MOCK_METHOD1(Run, void(DataTypeController::StartResult result));
+  MOCK_METHOD2(Run, void(DataTypeController::StartResult result,
+    const tracked_objects::Location& location));
 };
 
 class ExtensionDataTypeControllerTest : public testing::Test {
@@ -87,7 +88,7 @@ TEST_F(ExtensionDataTypeControllerTest, Start) {
   SetAssociateExpectations();
   SetActivateExpectations();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, extension_dtc_->state());
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
   extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::RUNNING, extension_dtc_->state());
 }
@@ -98,7 +99,7 @@ TEST_F(ExtensionDataTypeControllerTest, StartFirstRun) {
   SetActivateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(true)));
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _));
   extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
 }
 
@@ -109,7 +110,7 @@ TEST_F(ExtensionDataTypeControllerTest, StartOk) {
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
   extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
 }
 
@@ -119,7 +120,7 @@ TEST_F(ExtensionDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(*model_associator_, AssociateModels()).
       WillRepeatedly(Return(false));
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED, _));
   extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, extension_dtc_->state());
 }
@@ -132,7 +133,7 @@ TEST_F(ExtensionDataTypeControllerTest,
       WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
-  EXPECT_CALL(start_callback_, Run(DataTypeController::UNRECOVERABLE_ERROR));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::UNRECOVERABLE_ERROR, _));
   extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, extension_dtc_->state());
 }
@@ -145,7 +146,7 @@ TEST_F(ExtensionDataTypeControllerTest, Stop) {
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, extension_dtc_->state());
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
   extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::RUNNING, extension_dtc_->state());
   extension_dtc_->Stop();
@@ -164,7 +165,7 @@ TEST_F(ExtensionDataTypeControllerTest, OnUnrecoverableError) {
                                  &ExtensionDataTypeController::Stop));
   SetStopExpectations();
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
   extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   // This should cause extension_dtc_->Stop() to be called.
   extension_dtc_->OnUnrecoverableError(FROM_HERE, "Test");

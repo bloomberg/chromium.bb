@@ -71,7 +71,7 @@ void TypedUrlDataTypeController::Start(StartCallback* start_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(start_callback);
   if (state_ != NOT_RUNNING || start_callback_.get()) {
-    start_callback->Run(BUSY);
+    start_callback->Run(BUSY, FROM_HERE);
     delete start_callback;
     return;
   }
@@ -231,7 +231,7 @@ void TypedUrlDataTypeController::StartDoneImpl(
   VLOG(1) << "TypedUrl data type controller StartDoneImpl called.";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   set_state(new_state);
-  start_callback_->Run(result);
+  start_callback_->Run(result, FROM_HERE);
   start_callback_.reset();
 
   if (result == UNRECOVERABLE_ERROR || result == ASSOCIATION_FAILED) {

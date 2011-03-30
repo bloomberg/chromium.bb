@@ -37,7 +37,7 @@ void PreferenceDataTypeController::Start(StartCallback* start_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(start_callback);
   if (state_ != NOT_RUNNING) {
-    start_callback->Run(BUSY);
+    start_callback->Run(BUSY, FROM_HERE);
     delete start_callback;
     return;
   }
@@ -53,13 +53,13 @@ void PreferenceDataTypeController::Start(StartCallback* start_callback) {
   change_processor_.reset(sync_components.change_processor);
 
   if (!model_associator_->CryptoReadyIfNecessary()) {
-    StartFailed(NEEDS_CRYPTO);
+    StartFailed(NEEDS_CRYPTO, FROM_HERE);
     return;
   }
 
   bool sync_has_nodes = false;
   if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
-    StartFailed(UNRECOVERABLE_ERROR);
+    StartFailed(UNRECOVERABLE_ERROR, FROM_HERE);
     return;
   }
 
@@ -68,20 +68,20 @@ void PreferenceDataTypeController::Start(StartCallback* start_callback) {
   UMA_HISTOGRAM_TIMES("Sync.PreferenceAssociationTime",
                       base::TimeTicks::Now() - start_time);
   if (!merge_success) {
-    StartFailed(ASSOCIATION_FAILED);
+    StartFailed(ASSOCIATION_FAILED, FROM_HERE);
     return;
   }
 
   sync_service_->ActivateDataType(this, change_processor_.get());
   state_ = RUNNING;
-  FinishStart(!sync_has_nodes ? OK_FIRST_RUN : OK);
+  FinishStart(!sync_has_nodes ? OK_FIRST_RUN : OK, FROM_HERE);
 }
 
 void PreferenceDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (state_ == MODEL_STARTING || state_ == ASSOCIATING)
-    FinishStart(ABORTED);
+    FinishStart(ABORTED, FROM_HERE);
   DCHECK(!start_callback_.get());
 
   if (change_processor_ != NULL)
@@ -125,17 +125,19 @@ void PreferenceDataTypeController::OnUnrecoverableError(
   sync_service_->OnUnrecoverableError(from_here, message);
 }
 
-void PreferenceDataTypeController::FinishStart(StartResult result) {
+void PreferenceDataTypeController::FinishStart(StartResult result,
+    const tracked_objects::Location& location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  start_callback_->Run(result);
+  start_callback_->Run(result, location);
   start_callback_.reset();
 }
 
-void PreferenceDataTypeController::StartFailed(StartResult result) {
+void PreferenceDataTypeController::StartFailed(StartResult result,
+    const tracked_objects::Location& location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   model_associator_.reset();
   change_processor_.reset();
-  start_callback_->Run(result);
+  start_callback_->Run(result, location);
   start_callback_.reset();
   UMA_HISTOGRAM_ENUMERATION("Sync.PreferenceStartFailures",
                             result,

@@ -38,11 +38,13 @@ class DataTypeManagerImpl2 : public DataTypeManager {
   void StartNextType();
 
   // Callback passed to each data type controller on startup.
-  void TypeStartCallback(DataTypeController::StartResult result);
+  void TypeStartCallback(DataTypeController::StartResult result,
+      const tracked_objects::Location& from_here);
 
   // Stops all data types.
   void FinishStop();
-  void FinishStopAndNotify(ConfigureResult result);
+  void FinishStopAndNotify(ConfigureResult result,
+       const tracked_objects::Location& location);
 
   // Returns true if any last_requested_types_ currently needs to start model
   // association.  If non-null, fills |needs_start| with all such controllers.
@@ -52,7 +54,8 @@ class DataTypeManagerImpl2 : public DataTypeManager {
   void Restart();
   void DownloadReady();
   void NotifyStart();
-  void NotifyDone(ConfigureResult result);
+  void NotifyDone(ConfigureResult result,
+      const tracked_objects::Location& location);
 
   SyncBackendHost* backend_;
   // Map of all data type controllers that are available for sync.
