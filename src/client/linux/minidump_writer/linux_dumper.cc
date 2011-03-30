@@ -204,10 +204,11 @@ LinuxDumper::BuildProcPath(char* path, pid_t pid, const char* node) const {
 
 bool
 LinuxDumper::ElfFileIdentifierForMapping(const MappingInfo& mapping,
-                                         int mapping_id,
+                                         bool member,
+                                         unsigned int mapping_id,
                                          uint8_t identifier[sizeof(MDGUID)])
 {
-  assert(mapping_id == -1 || mapping_id < mappings_.size());
+  assert(!member || mapping_id < mappings_.size());
   my_memset(identifier, 0, sizeof(MDGUID));
   if (IsMappedFileOpenUnsafe(mapping))
     return false;
@@ -239,7 +240,7 @@ LinuxDumper::ElfFileIdentifierForMapping(const MappingInfo& mapping,
 
   bool success = FileID::ElfFileIdentifierFromMappedFile(base, identifier);
   sys_munmap(base, st.st_size);
-  if (success && mapping_id != -1 && filename_modified) {
+  if (success && member && filename_modified) {
     mappings_[mapping_id]->name[filename_len -
                                 sizeof(kDeletedSuffix) + 1] = '\0';
   }

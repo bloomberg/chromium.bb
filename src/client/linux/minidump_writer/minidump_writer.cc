@@ -801,7 +801,7 @@ class MinidumpWriter {
         continue;
 
       MDRawModule mod;
-      if (!FillRawModule(mapping, i, mod, NULL))
+      if (!FillRawModule(mapping, true, i, mod, NULL))
         return false;
       list.CopyIndexAfterObject(j++, &mod, MD_MODULE_SIZE);
     }
@@ -810,7 +810,7 @@ class MinidumpWriter {
          iter != mapping_list_.end();
          ++iter) {
       MDRawModule mod;
-      if (!FillRawModule(iter->first, -1, mod, iter->second))
+      if (!FillRawModule(iter->first, false, 0, mod, iter->second))
         return false;
       list.CopyIndexAfterObject(j++, &mod, MD_MODULE_SIZE);
     }
@@ -820,9 +820,10 @@ class MinidumpWriter {
 
   // Fill the MDRawModule |mod| with information about the provided
   // |mapping|. If |identifier| is non-NULL, use it instead of calculating
-  // a file ID from the mapping. |mapping_id| can be -1.
+  // a file ID from the mapping.
   bool FillRawModule(const MappingInfo& mapping,
-                     int mapping_id,
+                     bool member,
+                     unsigned int mapping_id,
                      MDRawModule& mod,
                      const u_int8_t* identifier) {
     my_memset(&mod, 0, MD_MODULE_SIZE);
@@ -857,7 +858,8 @@ class MinidumpWriter {
       // GUID was provided by caller.
       memcpy(signature, identifier, sizeof(MDGUID));
     } else {
-      dumper_.ElfFileIdentifierForMapping(mapping, mapping_id, signature);
+      dumper_.ElfFileIdentifierForMapping(mapping, member,
+                                          mapping_id, signature);
     }
     my_memset(cv_ptr, 0, sizeof(uint32_t));  // Set age to 0 on Linux.
     cv_ptr += sizeof(uint32_t);
