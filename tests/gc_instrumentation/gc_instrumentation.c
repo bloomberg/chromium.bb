@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -9,6 +9,8 @@
  */
 
 #include "native_client/tests/gc_instrumentation/gc_instrumentation.h"
+/* TODO(bradchen): fix this include once it is moved to the right place */
+#include "native_client/src/untrusted/nacl/gc_hooks.h"
 
 #include <fcntl.h>
 #include <pthread.h>
@@ -31,12 +33,12 @@ int* main_thread_id = NULL;
 unsigned int nacl_pre_calls = 0;
 unsigned int nacl_post_calls = 0;
 
-void nacl_pre_syscall_hook() {
+void nacl_pre_gc_hook() {
   if (main_thread_id && (main_thread_id == &cheap_thread_id))
     nacl_pre_calls++;
 }
 
-void nacl_post_syscall_hook() {
+void nacl_post_gc_hook() {
   if (main_thread_id && (main_thread_id == &cheap_thread_id))
     nacl_post_calls++;
 }
@@ -207,8 +209,11 @@ void test_compiler_instrumentation() {
 int main(int argcc, char *argv[]) {
   main_thread_id = &cheap_thread_id;
 
+  nacl_register_gc_hooks(nacl_pre_gc_hook, nacl_post_gc_hook);
   test_syscall_wrappers();
   test_compiler_instrumentation();
+  /* test reregistering hooks */
+  nacl_register_gc_hooks(nacl_pre_gc_hook, nacl_post_gc_hook);
 
   if (0 == num_errors) {
     printf("All tests PASSED!\n");
@@ -220,4 +225,3 @@ int main(int argcc, char *argv[]) {
 
   return 0;
 }
-
