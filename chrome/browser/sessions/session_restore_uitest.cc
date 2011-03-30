@@ -335,8 +335,54 @@ TEST_F(SessionRestoreUITest, NormalAndPopup) {
 }
 
 #if !defined(OS_MACOSX)
-// This test doesn't apply to the Mac version; see
+// These tests don't apply to the Mac version; see
 // LaunchAnotherBrowserBlockUntilClosed for details.
+
+// Creates a browser, goes incognito, closes browser, launches and make sure
+// we don't restore.
+//
+TEST_F(SessionRestoreUITest, DontRestoreWhileIncognito) {
+  NavigateToURL(url1_);
+
+  // Make sure we have one window.
+  int initial_window_count;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&initial_window_count));
+  ASSERT_EQ(1, initial_window_count);
+
+  scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
+
+  // Create an incognito window.
+  ASSERT_TRUE(browser_proxy->RunCommand(IDC_NEW_INCOGNITO_WINDOW));
+  int window_count;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(2, window_count);
+
+  // Close the first window.
+  CloseWindow(0, 2);
+  browser_proxy = NULL;
+
+  // Launch the browser again. Note, this doesn't spawn a new process, instead
+  // it attaches to the current process.
+  include_testing_id_ = false;
+  clear_profile_ = false;
+  launch_arguments_.AppendSwitch(switches::kRestoreLastSession);
+  LaunchAnotherBrowserBlockUntilClosed(launch_arguments_);
+
+  // A new window should appear;
+  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));
+
+  // And it shouldn't have url1_ in it.
+  browser_proxy = automation()->GetBrowserWindow(1);
+  ASSERT_TRUE(browser_proxy.get());
+  scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(0));
+  ASSERT_TRUE(tab_proxy.get());
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(
+      TestTimeouts::action_max_timeout_ms()));
+  GURL url;
+  ASSERT_TRUE(tab_proxy->GetCurrentURL(&url));
+  ASSERT_TRUE(url != url1_);
+}
 
 // Launches an app window, closes tabbed browser, launches and makes sure
 // we restore the tabbed browser url.
