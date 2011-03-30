@@ -4914,12 +4914,12 @@ var keyboardOverlayData = {
           "position": "12"
         },
         "3E": {
-          "key": "glyph_overview",
+          "key": "glyph_fullscreen",
           "label": "glyph_fullscreen",
           "position": "13"
         },
         "3F": {
-          "key": "glyph_fullscreen",
+          "key": "glyph_overview",
           "label": "glyph_overview",
           "position": "14"
         },
@@ -5025,52 +5025,20 @@ var keyboardOverlayData = {
         },
         "0F": {
           "format": "left",
-          "key": "tab",
-          "label": "tab",
           "notes": "tab"
         },
-        "10": {
-          "key": "W",
-          "label": "W"
-        },
-        "11": {
-          "key": "i",
-          "label": "i"
-        },
-        "12": {
-          "key": "n",
-          "label": "n"
-        },
+        "10": {},
+        "11": {},
+        "12": {},
         "13": {},
-        "14": {
-          "key": "a",
-          "label": "a"
-        },
+        "14": {},
         "15": {},
-        "16": {
-          "key": "C",
-          "label": "C"
-        },
-        "17": {
-          "key": "r",
-          "label": "r"
-        },
-        "18": {
-          "key": "-",
-          "label": "-"
-        },
-        "19": {
-          "key": "\u0664",
-          "p5": "664"
-        },
-        "1A": {
-          "key": "\u0668",
-          "p5": "668"
-        },
-        "1B": {
-          "key": "!",
-          "label": "!"
-        },
+        "16": {},
+        "17": {},
+        "18": {},
+        "19": {},
+        "1A": {},
+        "1B": {},
         "1C": {
           "format": "right",
           "key": "enter",
@@ -5083,50 +5051,20 @@ var keyboardOverlayData = {
           "label": "ctrl",
           "notes": "left ctrl"
         },
-        "1E": {
-          "key": "\u096f",
-          "p5": "96F"
-        },
-        "1F": {
-          "key": "\u0966",
-          "p5": "966"
-        },
-        "20": {
-          "key": "\u0966",
-          "p5": "966"
-        },
+        "1E": {},
+        "1F": {},
+        "20": {},
         "21": {
           "key": ".",
           "label": "."
         },
-        "22": {
-          "key": "\u096f",
-          "p5": "96F"
-        },
-        "23": {
-          "key": "\u0967",
-          "p5": "967"
-        },
-        "24": {
-          "key": "/",
-          "label": "/"
-        },
-        "25": {
-          "key": "c",
-          "label": "c"
-        },
-        "26": {
-          "key": "l",
-          "label": "l"
-        },
-        "27": {
-          "key": "e",
-          "label": "e"
-        },
-        "28": {
-          "key": "v",
-          "label": "v"
-        },
+        "22": {},
+        "23": {},
+        "24": {},
+        "25": {},
+        "26": {},
+        "27": {},
+        "28": {},
         "29": {},
         "2A": {
           "format": "left",
@@ -5135,46 +5073,16 @@ var keyboardOverlayData = {
           "notes": "left shift"
         },
         "2B": {},
-        "2C": {
-          "key": "e",
-          "label": "e"
-        },
-        "2D": {
-          "key": "r",
-          "label": "r"
-        },
-        "2E": {
-          "key": "p",
-          "label": "p"
-        },
-        "2F": {
-          "key": "u",
-          "label": "u"
-        },
-        "30": {
-          "key": "zz",
-          "label": "zz"
-        },
-        "31": {
-          "key": "l",
-          "label": "l"
-        },
-        "32": {
-          "key": "e",
-          "label": "e"
-        },
-        "33": {
-          "key": "h",
-          "label": "h"
-        },
-        "34": {
-          "key": "e",
-          "label": "e"
-        },
-        "35": {
-          "key": "re",
-          "label": "re"
-        },
+        "2C": {},
+        "2D": {},
+        "2E": {},
+        "2F": {},
+        "30": {},
+        "31": {},
+        "32": {},
+        "33": {},
+        "34": {},
+        "35": {},
         "36": {
           "format": "right",
           "key": "shift",
@@ -5551,12 +5459,12 @@ var keyboardOverlayData = {
           "label": "glyph_reload"
         },
         "3E": {
-          "key": "glyph_overview",
-          "label": "glyph_overview"
-        },
-        "3F": {
           "key": "glyph_fullscreen",
           "label": "glyph_fullscreen"
+        },
+        "3F": {
+          "key": "glyph_overview",
+          "label": "glyph_overview"
         },
         "40": {
           "key": "glyph_brightness_down",
@@ -12757,8 +12665,8 @@ var keyboardOverlayData = {
           "position": "11"
         },
         "3D": {
-          "key": "glyph_overview",
-          "label": "glyph_overview",
+          "key": "glyph_reload",
+          "label": "glyph_reload",
           "position": "12"
         },
         "3E": {
@@ -12767,8 +12675,8 @@ var keyboardOverlayData = {
           "position": "13"
         },
         "3F": {
-          "key": "glyph_tools",
-          "label": "glyph_tools",
+          "key": "glyph_overview",
+          "label": "glyph_overview",
           "position": "14"
         },
         "40": {
@@ -14068,8 +13976,8 @@ var keyboardOverlayData = {
           "position": "11"
         },
         "3D": {
-          "key": "glyph_overview",
-          "label": "glyph_overview",
+          "key": "glyph_reload",
+          "label": "glyph_reload",
           "position": "12"
         },
         "3E": {
@@ -14078,8 +13986,8 @@ var keyboardOverlayData = {
           "position": "13"
         },
         "3F": {
-          "key": "glyph_tools",
-          "label": "glyph_tools",
+          "key": "glyph_overview",
+          "label": "glyph_overview",
           "position": "14"
         },
         "40": {
