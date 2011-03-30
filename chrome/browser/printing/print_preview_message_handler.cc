@@ -61,7 +61,6 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
   if (!print_preview_tab)
     return;
 
-#if defined(OS_POSIX)
   base::SharedMemory* shared_buf =
       new base::SharedMemory(params.metafile_data_handle, true);
   if (!shared_buf->Map(params.data_size)) {
@@ -77,7 +76,6 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
       std::make_pair(shared_buf, params.data_size));
   print_preview_ui->PreviewDataIsAvailable(params.expected_pages_count,
                                            tab_contents()->GetTitle());
-#endif  // defined(OS_POSIX)
 }
 
 void PrintPreviewMessageHandler::OnPrintPreviewNodeUnderContextMenu() {
