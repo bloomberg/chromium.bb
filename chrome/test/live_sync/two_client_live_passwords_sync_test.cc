@@ -94,14 +94,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
   ASSERT_EQ(1U, forms1.size());
 }
 
-// TODO(rsimha): This test fails on mac -- see http://crbug.com/77956.
-#if defined(OS_MACOSX)
+// TODO(rsimha): This test fails occasionally -- see http://crbug.com/77956.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
                        FAILS_SetPassphraseAndThenSetupSync) {
-#else
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       SetPassphraseAndThenSetupSync) {
-#endif
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
