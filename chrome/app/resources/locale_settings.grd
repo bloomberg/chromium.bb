@@ -514,7 +514,7 @@
           60
         </message>
         <message name="IDS_CAPTCHA_INPUT_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-          12
+          13
         </message>
 
         <!-- The width and height of the TPM setting dialog box in -->

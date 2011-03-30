@@ -103,7 +103,6 @@ void CaptchaView::SetCaptchaURL(const GURL& captcha_url) {
 }
 
 gfx::Size CaptchaView::GetPreferredSize() {
-  // TODO(nkostylev): Once UI is finalized, create locale settings.
   gfx::Size size = gfx::Size(views::Window::GetLocalizedContentsSize(
       IDS_CAPTCHA_INPUT_DIALOG_WIDTH_CHARS,
       IDS_CAPTCHA_INPUT_DIALOG_HEIGHT_LINES));
