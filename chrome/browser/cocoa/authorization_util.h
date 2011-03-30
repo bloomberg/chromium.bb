@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@
 // file must print its pid to stdout on a line by itself before doing anything
 // else.
 //
-// http://developer.apple.com/mac/library/samplecode/BetterAuthorizationSample/listing1.html
+// http://developer.apple.com/library/mac/#samplecode/BetterAuthorizationSample/Listings/BetterAuthorizationSampleLib_c.html
 // (Look for "What's This About Zombies?")
 
 #include <CoreFoundation/CoreFoundation.h>
