@@ -1146,10 +1146,19 @@ int32_t PluginInstance::Navigate(PPB_URLRequestInfo_Impl* request,
   web_request.setFirstPartyForCookies(document.firstPartyForCookies());
   web_request.setHasUserGesture(from_user_action);
 
-  if (GURL(web_request.url()).SchemeIs("javascript")) {
-    // TODO(vtl)
-    NOTIMPLEMENTED();
-    return PP_ERROR_FAILED;
+  GURL gurl(web_request.url());
+  if (gurl.SchemeIs("javascript")) {
+    // In imitation of the NPAPI implementation, only |target_frame == frame| is
+    // allowed for security reasons.
+    WebFrame* target_frame =
+        frame->view()->findFrameByName(WebString::fromUTF8(target), frame);
+    if (target_frame != frame)
+      return PP_ERROR_NOACCESS;
+
+    // TODO(viettrungluu): NPAPI sends the result back to the plugin -- do we
+    // need that?
+    WebString result = container_->executeScriptURL(gurl, from_user_action);
+    return result.isNull() ? PP_ERROR_FAILED : PP_OK;
   }
 
   // Only GETs and POSTs are supported.
