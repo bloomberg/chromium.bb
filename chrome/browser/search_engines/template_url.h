@@ -479,16 +479,16 @@ class TemplateURL {
       WebDataService* service,
       std::vector<TemplateURL*>* template_urls,
       const TemplateURL** default_search_provider);
+  friend class KeywordTable;
+  friend class KeywordTableTest;
   friend class SearchHostToURLsMap;
   friend class TemplateURLModel;
-  friend class WebDatabaseTest;
-  friend class WebDatabase;
 
   // Invalidates cached values on this object and its child TemplateURLRefs.
   void InvalidateCachedValues() const;
 
   // Unique identifier, used when archived to the database.
-  void set_id(TemplateURLID id) { id_ = id;}
+  void set_id(TemplateURLID id) { id_ = id; }
 
   string16 short_name_;
   string16 description_;

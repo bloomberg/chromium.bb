@@ -45,7 +45,8 @@ class GetAllAutofillEntries
 
   void Run() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    web_data_service_->GetDatabase()->GetAllAutofillEntries(&entries_);
+    web_data_service_->GetDatabase()->GetAutofillTable()->GetAllAutofillEntries(
+        &entries_);
     done_event_.Signal();
   }
 

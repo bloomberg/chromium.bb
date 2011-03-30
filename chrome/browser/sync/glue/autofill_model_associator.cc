@@ -121,12 +121,12 @@ bool AutofillModelAssociator::LoadAutofillData(
     std::vector<AutofillProfile*>* profiles) {
   if (IsAbortPending())
     return false;
-  if (!web_database_->GetAllAutofillEntries(entries))
+  if (!web_database_->GetAutofillTable()->GetAllAutofillEntries(entries))
     return false;
 
   if (IsAbortPending())
     return false;
-  if (!web_database_->GetAutofillProfiles(profiles))
+  if (!web_database_->GetAutofillTable()->GetAutofillProfiles(profiles))
     return false;
 
   return true;
@@ -206,21 +206,24 @@ bool AutofillModelAssociator::SaveChangesToWebData(const DataBundle& bundle) {
     return false;
 
   if (bundle.new_entries.size() &&
-      !web_database_->UpdateAutofillEntries(bundle.new_entries)) {
+      !web_database_->GetAutofillTable()->UpdateAutofillEntries(
+          bundle.new_entries)) {
     return false;
   }
 
   for (size_t i = 0; i < bundle.new_profiles.size(); i++) {
     if (IsAbortPending())
       return false;
-    if (!web_database_->AddAutofillProfile(*bundle.new_profiles[i]))
+    if (!web_database_->GetAutofillTable()->AddAutofillProfile(
+        *bundle.new_profiles[i]))
       return false;
   }
 
   for (size_t i = 0; i < bundle.updated_profiles.size(); i++) {
     if (IsAbortPending())
       return false;
-    if (!web_database_->UpdateAutofillProfile(*bundle.updated_profiles[i]))
+    if (!web_database_->GetAutofillTable()->UpdateAutofillProfile(
+        *bundle.updated_profiles[i]))
       return false;
   }
   return true;

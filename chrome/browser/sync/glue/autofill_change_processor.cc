@@ -108,7 +108,7 @@ void AutofillChangeProcessor::ObserveAutofillEntriesChanged(
           }
 
           std::vector<base::Time> timestamps;
-          if (!web_database_->GetAutofillTimestamps(
+          if (!web_database_->GetAutofillTable()->GetAutofillTimestamps(
                   change->key().name(),
                   change->key().value(),
                   &timestamps)) {
@@ -145,7 +145,7 @@ void AutofillChangeProcessor::ObserveAutofillEntriesChanged(
           }
 
           std::vector<base::Time> timestamps;
-          if (!web_database_->GetAutofillTimestamps(
+          if (!web_database_->GetAutofillTable()->GetAutofillTimestamps(
                    change->key().name(),
                    change->key().value(),
                    &timestamps)) {
@@ -290,7 +290,7 @@ void AutofillChangeProcessor::CommitChangesFromSyncModel() {
   autofill_changes_.clear();
 
   // Make changes
-  if (!web_database_->UpdateAutofillEntries(new_entries)) {
+  if (!web_database_->GetAutofillTable()->UpdateAutofillEntries(new_entries)) {
     error_handler()->OnUnrecoverableError(FROM_HERE,
                                           "Could not update autofill entries.");
     return;
@@ -303,7 +303,7 @@ void AutofillChangeProcessor::CommitChangesFromSyncModel() {
 
 void AutofillChangeProcessor::ApplySyncAutofillEntryDelete(
       const sync_pb::AutofillSpecifics& autofill) {
-  if (!web_database_->RemoveFormElement(
+  if (!web_database_->GetAutofillTable()->RemoveFormElement(
       UTF8ToUTF16(autofill.name()), UTF8ToUTF16(autofill.value()))) {
     error_handler()->OnUnrecoverableError(FROM_HERE,
         "Could not remove autofill node.");
@@ -350,7 +350,7 @@ void AutofillChangeProcessor::ApplySyncAutofillProfileChange(
       p->set_guid(guid);
       AutofillModelAssociator::FillProfileWithServerData(p.get(),
                                                               profile);
-      if (!web_database_->AddAutofillProfile(*p.get())) {
+      if (!web_database_->GetAutofillTable()->AddAutofillProfile(*p.get())) {
         NOTREACHED() << "Couldn't add autofill profile: " << guid;
         return;
       }
@@ -367,7 +367,8 @@ void AutofillChangeProcessor::ApplySyncAutofillProfileChange(
         return;
       }
       AutofillProfile *temp_ptr;
-      if (!web_database_->GetAutofillProfile(*guid, &temp_ptr)) {
+      if (!web_database_->GetAutofillTable()->GetAutofillProfile(
+          *guid, &temp_ptr)) {
         LOG(ERROR) << "Autofill profile not found for " << *guid;
         return;
       }
@@ -375,7 +376,8 @@ void AutofillChangeProcessor::ApplySyncAutofillProfileChange(
       scoped_ptr<AutofillProfile> p(temp_ptr);
 
       AutofillModelAssociator::FillProfileWithServerData(p.get(), profile);
-      if (!web_database_->UpdateAutofillProfile(*(p.get()))) {
+      if (!web_database_->GetAutofillTable()->UpdateAutofillProfile(
+          *(p.get()))) {
         LOG(ERROR) << "Couldn't update autofill profile: " << guid;
         return;
       }
@@ -395,7 +397,7 @@ void AutofillChangeProcessor::ApplySyncAutofillProfileDelete(
     return;
   }
 
-  if (!web_database_->RemoveAutofillProfile(*guid)) {
+  if (!web_database_->GetAutofillTable()->RemoveAutofillProfile(*guid)) {
     LOG(ERROR) << "Could not remove the profile";
     return;
   }

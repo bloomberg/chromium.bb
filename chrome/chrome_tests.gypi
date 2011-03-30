@@ -1724,6 +1724,8 @@
         'browser/user_style_sheet_watcher_unittest.cc',
         'browser/visitedlink/visitedlink_unittest.cc',
         'browser/web_applications/web_app_unittest.cc',
+        'browser/webdata/autofill_table_unittest.cc',
+        'browser/webdata/keyword_table_unittest.cc',
         'browser/webdata/web_data_service_test_util.h',
         'browser/webdata/web_data_service_unittest.cc',
         'browser/webdata/web_database_unittest.cc',

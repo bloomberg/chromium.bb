@@ -129,7 +129,7 @@ bool AutofillProfileModelAssociator::LoadAutofillData(
   if (IsAbortPending())
     return false;
 
-  if (!web_database_->GetAutofillProfiles(profiles))
+  if (!web_database_->GetAutofillTable()->GetAutofillProfiles(profiles))
     return false;
 
   return true;
@@ -426,21 +426,24 @@ bool AutofillProfileModelAssociator::SaveChangesToWebData(
   for (size_t i = 0; i < bundle.new_profiles.size(); i++) {
     if (IsAbortPending())
       return false;
-    if (!web_database_->AddAutofillProfile(*bundle.new_profiles[i]))
+    if (!web_database_->GetAutofillTable()->AddAutofillProfile(
+        *bundle.new_profiles[i]))
       return false;
   }
 
   for (size_t i = 0; i < bundle.updated_profiles.size(); i++) {
     if (IsAbortPending())
       return false;
-    if (!web_database_->UpdateAutofillProfile(*bundle.updated_profiles[i]))
+    if (!web_database_->GetAutofillTable()->UpdateAutofillProfile(
+        *bundle.updated_profiles[i]))
       return false;
   }
 
   for (size_t i = 0; i< bundle.profiles_to_delete.size(); ++i) {
     if (IsAbortPending())
       return false;
-    if (!web_database_->RemoveAutofillProfile(bundle.profiles_to_delete[i]))
+    if (!web_database_->GetAutofillTable()->RemoveAutofillProfile(
+        bundle.profiles_to_delete[i]))
       return false;
   }
   return true;

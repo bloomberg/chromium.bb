@@ -179,7 +179,7 @@ void AutofillProfileChangeProcessor::CommitChangesFromSyncModel() {
   for (unsigned int i = 0;i < autofill_changes_.size(); ++i) {
     if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
         autofill_changes_[i].action_) {
-      if (!web_database_->RemoveAutofillProfile(
+      if (!web_database_->GetAutofillTable()->RemoveAutofillProfile(
           autofill_changes_[i].profile_specifics_.guid())) {
         LOG(ERROR) << "could not delete the profile " <<
            autofill_changes_[i].profile_specifics_.guid();
@@ -221,7 +221,7 @@ void AutofillProfileChangeProcessor::ApplyAutofillProfileChange(
       AutofillProfile p(profile_specifics.guid());
       AutofillProfileModelAssociator::OverwriteProfileWithServerData(&p,
           profile_specifics);
-      if (!web_database_->AddAutofillProfile(p)) {
+      if (!web_database_->GetAutofillTable()->AddAutofillProfile(p)) {
         LOG(ERROR) << "could not add autofill profile for guid " << p.guid();
         break;
       }
@@ -233,7 +233,8 @@ void AutofillProfileChangeProcessor::ApplyAutofillProfileChange(
     }
     case sync_api::SyncManager::ChangeRecord::ACTION_UPDATE: {
       AutofillProfile *p;
-      if (!web_database_->GetAutofillProfile(profile_specifics.guid(), &p)) {
+      if (!web_database_->GetAutofillTable()->GetAutofillProfile(
+          profile_specifics.guid(), &p)) {
         LOG(ERROR) << "Could not find the autofill profile to update for " <<
             profile_specifics.guid();
         break;
@@ -243,7 +244,8 @@ void AutofillProfileChangeProcessor::ApplyAutofillProfileChange(
           autofill_pointer.get(),
           profile_specifics);
 
-      if (!web_database_->UpdateAutofillProfile(*(autofill_pointer.get()))) {
+      if (!web_database_->GetAutofillTable()->UpdateAutofillProfile(
+          *(autofill_pointer.get()))) {
         LOG(ERROR) << "Could not update autofill profile for " <<
             profile_specifics.guid();
         break;

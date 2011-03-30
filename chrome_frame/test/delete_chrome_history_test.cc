@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,7 +106,8 @@ ACTION_P2(ExpectFormValuesForElementNameMatch, element_name, matcher) {
 
   if (init_status == sql::INIT_OK) {
     std::vector<string16> values;
-    web_database.GetFormValuesForElementName(element_name, L"", &values, 9999);
+    web_database.GetAutofillTable()->GetFormValuesForElementName(
+        element_name, L"", &values, 9999);
     EXPECT_THAT(values, matcher);
   }
 }

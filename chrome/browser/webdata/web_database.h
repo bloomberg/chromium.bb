@@ -11,28 +11,21 @@
 #include "app/sql/connection.h"
 #include "app/sql/init_status.h"
 #include "app/sql/meta_table.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
-#include "chrome/browser/search_engines/template_url_id.h"
+#include "chrome/browser/webdata/autofill_table.h"
+#include "chrome/browser/webdata/keyword_table.h"
 
-class AutofillChange;
-class AutofillEntry;
-class AutofillProfile;
-class CreditCard;
+class AutofillTableTest;
 class FilePath;
 class GURL;
 class NotificationService;
 class SkBitmap;
-class TemplateURL;
-class WebDatabaseTest;
 
 namespace base {
 class Time;
 }
 
 namespace webkit_glue {
-struct FormField;
 struct PasswordForm;
 }
 
@@ -58,36 +51,8 @@ class WebDatabase {
   void BeginTransaction();
   void CommitTransaction();
 
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Keywords
-  //
-  //////////////////////////////////////////////////////////////////////////////
-
-  // Adds a new keyword, updating the id field on success.
-  // Returns true if successful.
-  bool AddKeyword(const TemplateURL& url);
-
-  // Removes the specified keyword.
-  // Returns true if successful.
-  bool RemoveKeyword(TemplateURLID id);
-
-  // Loads the keywords into the specified vector. It's up to the caller to
-  // delete the returned objects.
-  // Returns true on success.
-  bool GetKeywords(std::vector<TemplateURL*>* urls);
-
-  // Updates the database values for the specified url.
-  // Returns true on success.
-  bool UpdateKeyword(const TemplateURL& url);
-
-  // ID (TemplateURL->id) of the default search provider.
-  bool SetDefaultSearchProviderID(int64 id);
-  int64 GetDefaulSearchProviderID();
-
-  // Version of the builtin keywords.
-  bool SetBuitinKeywordVersion(int version);
-  int GetBuitinKeywordVersion();
+  virtual AutofillTable* GetAutofillTable();
+  virtual KeywordTable* GetKeywordTable();
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -136,144 +101,6 @@ class WebDatabase {
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // Autofill
-  //
-  //////////////////////////////////////////////////////////////////////////////
-
-  // Records the form elements in |elements| in the database in the
-  // autofill table.  A list of all added and updated autofill entries
-  // is returned in the changes out parameter.
-  bool AddFormFieldValues(const std::vector<webkit_glue::FormField>& elements,
-                          std::vector<AutofillChange>* changes);
-
-  // Records a single form element in the database in the autofill table. A list
-  // of all added and updated autofill entries is returned in the changes out
-  // parameter.
-  bool AddFormFieldValue(const webkit_glue::FormField& element,
-                         std::vector<AutofillChange>* changes);
-
-  // Retrieves a vector of all values which have been recorded in the autofill
-  // table as the value in a form element with name |name| and which start with
-  // |prefix|.  The comparison of the prefix is case insensitive.
-  bool GetFormValuesForElementName(const string16& name,
-                                   const string16& prefix,
-                                   std::vector<string16>* values,
-                                   int limit);
-
-  // Removes rows from autofill_dates if they were created on or after
-  // |delete_begin| and strictly before |delete_end|.  Decrements the
-  // count of the corresponding rows in the autofill table, and
-  // removes those rows if the count goes to 0.  A list of all changed
-  // keys and whether each was updater or removed is returned in the
-  // changes out parameter.
-  bool RemoveFormElementsAddedBetween(base::Time delete_begin,
-                                      base::Time delete_end,
-                                      std::vector<AutofillChange>* changes);
-
-  // Removes from autofill_dates rows with given pair_id where date_created lies
-  // between delte_begin and delte_end.
-  bool RemoveFormElementForTimeRange(int64 pair_id,
-                                     base::Time delete_begin,
-                                     base::Time delete_end,
-                                     int* how_many);
-
-  // Increments the count in the row corresponding to |pair_id| by
-  // |delta|.  Removes the row from the table and sets the
-  // |was_removed| out parameter to true if the count becomes 0.
-  bool AddToCountOfFormElement(int64 pair_id, int delta, bool* was_removed);
-
-  // Gets the pair_id and count entries from name and value specified in
-  // |element|.  Sets *pair_id and *count to 0 if there is no such row in
-  // the table.
-  bool GetIDAndCountOfFormElement(const webkit_glue::FormField& element,
-                                  int64* pair_id,
-                                  int* count);
-
-  // Gets the count only given the pair_id.
-  bool GetCountOfFormElement(int64 pair_id, int* count);
-
-  // Updates the count entry in the row corresponding to |pair_id| to |count|.
-  bool SetCountOfFormElement(int64 pair_id, int count);
-
-  // Adds a new row to the autofill table with name and value given in
-  // |element|.  Sets *pair_id to the pair_id of the new row.
-  bool InsertFormElement(const webkit_glue::FormField& element, int64* pair_id);
-
-  // Adds a new row to the autofill_dates table.
-  bool InsertPairIDAndDate(int64 pair_id, base::Time date_created);
-
-  // Removes row from the autofill tables given |pair_id|.
-  bool RemoveFormElementForID(int64 pair_id);
-
-  // Removes row from the autofill tables for the given |name| |value| pair.
-  virtual bool RemoveFormElement(const string16& name, const string16& value);
-
-  // Retrieves all of the entries in the autofill table.
-  virtual bool GetAllAutofillEntries(std::vector<AutofillEntry>* entries);
-
-  // Retrieves a single entry from the autofill table.
-  virtual bool GetAutofillTimestamps(const string16& name,
-                             const string16& value,
-                             std::vector<base::Time>* timestamps);
-
-  // Replaces existing autofill entries with the entries supplied in
-  // the argument.  If the entry does not already exist, it will be
-  // added.
-  virtual bool UpdateAutofillEntries(const std::vector<AutofillEntry>& entries);
-
-  // Records a single Autofill profile in the autofill_profiles table.
-  virtual bool AddAutofillProfile(const AutofillProfile& profile);
-
-  // Updates the database values for the specified profile.
-  // DEPRECATED: Use |UpdateAutofillProfileMulti| instead.
-  virtual bool UpdateAutofillProfile(const AutofillProfile& profile);
-
-  // Updates the database values for the specified profile.  Mulit-value aware.
-  virtual bool UpdateAutofillProfileMulti(const AutofillProfile& profile);
-
-  // Removes a row from the autofill_profiles table.  |guid| is the identifier
-  // of the profile to remove.
-  virtual bool RemoveAutofillProfile(const std::string& guid);
-
-  // Retrieves a profile with guid |guid|.  The caller owns |profile|.
-  bool GetAutofillProfile(const std::string& guid, AutofillProfile** profile);
-
-  // Retrieves all profiles in the database.  Caller owns the returned profiles.
-  virtual bool GetAutofillProfiles(std::vector<AutofillProfile*>* profiles);
-
-  // Records a single credit card in the credit_cards table.
-  bool AddCreditCard(const CreditCard& credit_card);
-
-  // Updates the database values for the specified credit card.
-  bool UpdateCreditCard(const CreditCard& credit_card);
-
-  // Removes a row from the credit_cards table.  |guid| is the identifer  of the
-  // credit card to remove.
-  bool RemoveCreditCard(const std::string& guid);
-
-  // Retrieves a credit card with guid |guid|.  The caller owns
-  // |credit_card_id|.
-  bool GetCreditCard(const std::string& guid, CreditCard** credit_card);
-
-  // Retrieves all credit cards in the database.  Caller owns the returned
-  // credit cards.
-  virtual bool GetCreditCards(std::vector<CreditCard*>* credit_cards);
-
-  // Removes rows from autofill_profiles and credit_cards if they were created
-  // on or after |delete_begin| and strictly before |delete_end|.
-  bool RemoveAutofillProfilesAndCreditCardsModifiedBetween(
-      base::Time delete_begin,
-      base::Time delete_end);
-
-  // Retrieves all profiles in the database that have been deleted since last
-  // "empty" of the trash.
-  bool GetAutofillProfilesInTrash(std::vector<std::string>* guids);
-
-  // Empties the Autofill profiles "trash can".
-  bool EmptyAutofillProfilesTrash();
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
   // Web Apps
   //
   //////////////////////////////////////////////////////////////////////////////
@@ -307,68 +134,23 @@ class WebDatabase {
                           const std::string& token);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill_AddChanges);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill_RemoveBetweenChanges);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest,
-                           Autofill_GetAllAutofillEntries_OneResult);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest,
-                           Autofill_GetAllAutofillEntries_TwoDistinct);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest,
-                           Autofill_GetAllAutofillEntries_TwoSame);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill_UpdateDontReplace);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill_AddFormFieldValues);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, AutofillProfile);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, CreditCard);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, UpdateAutofillProfile);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, UpdateCreditCard);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, AutofillProfileTrash);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, AutofillProfileTrashInteraction);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest,
+  // TODO(andybons): Remove this in the next refactor round.
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_AddChanges);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_RemoveBetweenChanges);
+
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_UpdateDontReplace);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_AddFormFieldValues);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, AutofillProfile);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, UpdateAutofillProfile);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, AutofillProfileTrash);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, AutofillProfileTrashInteraction);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
                            RemoveAutofillProfilesAndCreditCardsModifiedBetween);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, CreditCard);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, UpdateCreditCard);
 
-  // Methods for adding autofill entries at a specified time.  For
-  // testing only.
-  bool AddFormFieldValuesTime(
-      const std::vector<webkit_glue::FormField>& elements,
-      std::vector<AutofillChange>* changes,
-      base::Time time);
-  bool AddFormFieldValueTime(const webkit_glue::FormField& element,
-                             std::vector<AutofillChange>* changes,
-                             base::Time time);
-
-  // Removes empty values for autofill that were incorrectly stored in the DB
-  // (see bug http://crbug.com/6111).
-  // TODO(jcampan): http://crbug.com/7564 remove when we think all users have
-  //                run this code.
-  bool ClearAutofillEmptyValueElements();
-
-  // Insert a single AutofillEntry into the autofill/autofill_dates tables.
-  bool InsertAutofillEntry(const AutofillEntry& entry);
-
-  // Retrieves all profiles in the database that have been deleted since last
-  // "empty" of the trash.
-  bool AddAutofillGUIDToTrash(const std::string& guid);
-
-  // Checks if the trash is empty.
-  bool IsAutofillProfilesTrashEmpty();
-
-  // Checks if the guid is in the trash.
-  bool IsAutofillGUIDInTrash(const std::string& guid);
-
-  // Clear all profiles.
-  bool ClearAutofillProfiles();
-
-  bool InitKeywordsTable();
   bool InitLoginsTable();
-  bool InitAutofillTable();
-  bool InitAutofillDatesTable();
-  bool InitAutofillProfilesTable();
-  bool InitAutofillProfileNamesTable();
-  bool InitAutofillProfileEmailsTable();
-  bool InitAutofillProfilePhonesTable();
-  bool InitAutofillProfileTrashTable();
-  bool InitCreditCardsTable();
   bool InitTokenServiceTable();
   bool InitWebAppIconsTable();
   bool InitWebAppsTable();
@@ -379,6 +161,9 @@ class WebDatabase {
 
   sql::Connection db_;
   sql::MetaTable meta_table_;
+
+  scoped_ptr<AutofillTable> autofill_table_;
+  scoped_ptr<KeywordTable> keyword_table_;
 
   scoped_ptr<NotificationService> notification_service_;
 
