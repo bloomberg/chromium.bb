@@ -435,6 +435,9 @@ void ResourceDispatcherHost::BeginRequest(
   if (IsPrerenderingChildRoutePair(child_id, route_id))
     load_flags |= net::LOAD_PRERENDER;
 
+  if (sync_result)
+    load_flags |= net::LOAD_IGNORE_LIMITS;
+
   // Raw headers are sensitive, as they inclide Cookie/Set-Cookie, so only
   // allow requesting them if requestor has ReadRawCookies permission.
   if ((load_flags & net::LOAD_REPORT_RAW_HEADERS)

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,8 +23,9 @@ namespace net {
 
 TCPSocketParams::TCPSocketParams(const HostPortPair& host_port_pair,
                                  RequestPriority priority, const GURL& referrer,
-                                 bool disable_resolver_cache)
-    : destination_(host_port_pair) {
+                                 bool disable_resolver_cache,
+                                 bool ignore_limits)
+    : destination_(host_port_pair), ignore_limits_(ignore_limits) {
   Initialize(priority, referrer, disable_resolver_cache);
 }
 

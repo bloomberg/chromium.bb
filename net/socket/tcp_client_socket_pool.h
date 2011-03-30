@@ -26,9 +26,11 @@ class ClientSocketFactory;
 class TCPSocketParams : public base::RefCounted<TCPSocketParams> {
  public:
   TCPSocketParams(const HostPortPair& host_port_pair, RequestPriority priority,
-                  const GURL& referrer, bool disable_resolver_cache);
+                  const GURL& referrer, bool disable_resolver_cache,
+                  bool ignore_limits);
 
   const HostResolver::RequestInfo& destination() const { return destination_; }
+  bool ignore_limits() const { return ignore_limits_; }
 
  private:
   friend class base::RefCounted<TCPSocketParams>;
@@ -38,6 +40,7 @@ class TCPSocketParams : public base::RefCounted<TCPSocketParams> {
                   bool disable_resolver_cache);
 
   HostResolver::RequestInfo destination_;
+  bool ignore_limits_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPSocketParams);
 };

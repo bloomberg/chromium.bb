@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -290,9 +290,9 @@ class TCPClientSocketPoolTest : public testing::Test {
  protected:
   TCPClientSocketPoolTest()
       : params_(new TCPSocketParams(HostPortPair("www.google.com", 80),
-                                    kDefaultPriority, GURL(), false)),
+                                    kDefaultPriority, GURL(), false, false)),
         low_params_(new TCPSocketParams(HostPortPair("www.google.com", 80),
-                                        LOW, GURL(), false)),
+                                        LOW, GURL(), false, false)),
         histograms_(new ClientSocketPoolHistograms("TCPUnitTest")),
         host_resolver_(new MockHostResolver),
         pool_(kMaxSockets,
@@ -305,7 +305,7 @@ class TCPClientSocketPoolTest : public testing::Test {
 
   int StartRequest(const std::string& group_name, RequestPriority priority) {
     scoped_refptr<TCPSocketParams> params(new TCPSocketParams(
-        HostPortPair("www.google.com", 80), MEDIUM, GURL(), false));
+        HostPortPair("www.google.com", 80), MEDIUM, GURL(), false, false));
     return test_base_.StartRequestUsingPool(
         &pool_, group_name, priority, params);
   }
@@ -355,7 +355,7 @@ TEST_F(TCPClientSocketPoolTest, InitHostResolutionFailure) {
   ClientSocketHandle handle;
   HostPortPair host_port_pair("unresolvable.host.name", 80);
   scoped_refptr<TCPSocketParams> dest(new TCPSocketParams(
-          host_port_pair, kDefaultPriority, GURL(), false));
+          host_port_pair, kDefaultPriority, GURL(), false, false));
   EXPECT_EQ(ERR_IO_PENDING,
             handle.Init("a", dest, kDefaultPriority, &callback, &pool_,
                         BoundNetLog()));
@@ -614,7 +614,7 @@ class RequestSocketCallback : public CallbackRunner< Tuple1<int> > {
       }
       within_callback_ = true;
       scoped_refptr<TCPSocketParams> dest(new TCPSocketParams(
-          HostPortPair("www.google.com", 80), LOWEST, GURL(), false));
+          HostPortPair("www.google.com", 80), LOWEST, GURL(), false, false));
       int rv = handle_->Init("a", dest, LOWEST, this, pool_, BoundNetLog());
       EXPECT_EQ(OK, rv);
     }
@@ -635,7 +635,7 @@ TEST_F(TCPClientSocketPoolTest, RequestTwice) {
   ClientSocketHandle handle;
   RequestSocketCallback callback(&handle, &pool_);
   scoped_refptr<TCPSocketParams> dest(new TCPSocketParams(
-      HostPortPair("www.google.com", 80), LOWEST, GURL(), false));
+      HostPortPair("www.google.com", 80), LOWEST, GURL(), false, false));
   int rv = handle.Init("a", dest, LOWEST, &callback, &pool_,
                        BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, rv);
