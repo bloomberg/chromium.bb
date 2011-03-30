@@ -1203,7 +1203,7 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
   TabContents* contents = GetDisplayedTabContents();
   bool show_bar = false;
 
-  if (IsBookmarkBarSupported() && contents) {
+  if (contents) {
     bookmark_bar_->SetProfile(contents->profile());
     bookmark_bar_->SetPageNavigator(contents);
     show_bar = true;

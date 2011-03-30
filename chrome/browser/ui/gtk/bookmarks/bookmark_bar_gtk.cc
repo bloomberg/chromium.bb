@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -620,6 +621,10 @@ int BookmarkBarGtk::GetFirstHiddenBookmark(
 }
 
 bool BookmarkBarGtk::ShouldBeFloating() {
+  // NTP4 never floats the bookmark bar.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
+    return false;
+
   return (!IsAlwaysShown() || (window_ && window_->IsFullscreen())) &&
       window_ && window_->GetDisplayedTabContents() &&
       window_->GetDisplayedTabContents()->ShouldShowBookmarkBar();

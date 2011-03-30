@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -699,6 +700,9 @@ void BookmarkBarView::OnFullscreenToggled(bool fullscreen) {
 }
 
 bool BookmarkBarView::IsDetached() const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
+    return false;
+
   return OnNewTabPage() && (size_animation_->GetCurrentValue() != 1);
 }
 

@@ -289,7 +289,10 @@ NewTabUI::NewTabUI(TabContents* contents)
     : WebUI(contents) {
   // Override some options on the Web UI.
   hide_favicon_ = true;
-  force_bookmark_bar_visible_ = true;
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
+    force_bookmark_bar_visible_ = true;
+
   focus_location_bar_by_default_ = true;
   should_hide_url_ = true;
   overridden_title_ = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
