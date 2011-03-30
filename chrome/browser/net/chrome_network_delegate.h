@@ -28,11 +28,14 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
  private:
   // NetworkDelegate methods:
-  virtual bool OnBeforeURLRequest(net::URLRequest* request,
+  virtual int OnBeforeURLRequest(net::URLRequest* request,
+                                 net::CompletionCallback* callback);
+  virtual int OnBeforeSendHeaders(uint64 request_id,
+                                  net::HttpRequestHeaders* headers,
                                   net::CompletionCallback* callback);
-  virtual void OnSendHttpRequest(net::HttpRequestHeaders* headers);
   virtual void OnResponseStarted(net::URLRequest* request);
   virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
+  virtual void OnURLRequestDestroyed(net::URLRequest* request);
   virtual net::URLRequestJob* OnMaybeCreateURLRequestJob(
       net::URLRequest* request);
 

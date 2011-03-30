@@ -3594,6 +3594,21 @@
         ]
       },
       {
+        "name": "onBeforeSendHeaders",
+        "type": "function",
+        "description": "Fires before sending an HTTP request, once the request headers are available.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"}
+            }
+          }
+        ]
+      },
+      {
         "name": "onRequestSent",
         "type": "function",
         "description": "Fires when a request is sent to the server.",

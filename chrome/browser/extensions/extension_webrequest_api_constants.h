@@ -24,6 +24,7 @@ extern const char kUrlKey[];
 // Events.
 extern const char kOnBeforeRedirect[];
 extern const char kOnBeforeRequest[];
+extern const char kOnBeforeSendHeaders[];
 extern const char kOnCompleted[];
 extern const char kOnErrorOccurred[];
 extern const char kOnHeadersReceived[];

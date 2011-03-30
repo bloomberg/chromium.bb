@@ -18,6 +18,8 @@ const char kUrlKey[] = "url";
 
 const char kOnBeforeRedirect[] = "experimental.webRequest.onBeforeRedirect";
 const char kOnBeforeRequest[] = "experimental.webRequest.onBeforeRequest";
+const char kOnBeforeSendHeaders[] =
+    "experimental.webRequest.onBeforeSendHeaders";
 const char kOnCompleted[] = "experimental.webRequest.onCompleted";
 const char kOnErrorOccurred[] = "experimental.webRequest.onErrorOccurred";
 const char kOnHeadersReceived[] = "experimental.webRequest.onHeadersReceived";

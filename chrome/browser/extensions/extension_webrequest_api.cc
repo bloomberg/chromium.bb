@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -29,9 +30,10 @@ namespace keys = extension_webrequest_api_constants;
 namespace {
 
 // List of all the webRequest events.
-static const char *kWebRequestEvents[] = {
+static const char* const kWebRequestEvents[] = {
   keys::kOnBeforeRedirect,
   keys::kOnBeforeRequest,
+  keys::kOnBeforeSendHeaders,
   keys::kOnCompleted,
   keys::kOnErrorOccurred,
   keys::kOnHeadersReceived,
@@ -155,7 +157,7 @@ struct ExtensionWebRequestEventRouter::ExtraInfoSpec {
     RESPONSE_HEADERS = 1<<3,
     REDIRECT_REQUEST_LINE = 1<<4,
     REDIRECT_REQUEST_HEADERS = 1<<5,
-    BLOCKING = 1<<5,
+    BLOCKING = 1<<6,
   };
 
   static bool InitFromValue(const ListValue& value, int* extra_info_spec);
@@ -280,14 +282,14 @@ ExtensionWebRequestEventRouter::ExtensionWebRequestEventRouter() {
 ExtensionWebRequestEventRouter::~ExtensionWebRequestEventRouter() {
 }
 
-bool ExtensionWebRequestEventRouter::OnBeforeRequest(
+int ExtensionWebRequestEventRouter::OnBeforeRequest(
     ProfileId profile_id,
     ExtensionEventRouterForwarder* event_router,
     net::URLRequest* request,
     net::CompletionCallback* callback) {
   // TODO(jochen): Figure out what to do with events from the system context.
   if (profile_id == Profile::kInvalidProfileId)
-    return false;
+    return net::OK;
 
   int tab_id = -1;
   int window_id = -1;
@@ -298,7 +300,14 @@ bool ExtensionWebRequestEventRouter::OnBeforeRequest(
       GetMatchingListeners(profile_id, keys::kOnBeforeRequest, request->url(),
                            tab_id, window_id, resource_type);
   if (listeners.empty())
-    return false;
+    return net::OK;
+
+  // If this is an HTTP request, keep track of it. HTTP-specific events only
+  // have the request ID, so we'll need to look up the URLRequest from that.
+  if (request->url().SchemeIs(chrome::kHttpScheme) ||
+      request->url().SchemeIs(chrome::kHttpsScheme)) {
+    http_requests_[request->identifier()] = request;
+  }
 
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
@@ -310,18 +319,72 @@ bool ExtensionWebRequestEventRouter::OnBeforeRequest(
   dict->SetString(keys::kTypeKey, ResourceTypeToString(resource_type));
   args.Append(dict);
 
+  if (DispatchEvent(profile_id, event_router, request, callback, listeners,
+                    args))
+    return net::ERR_IO_PENDING;
+  return net::OK;
+}
+
+int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
+    ProfileId profile_id,
+    ExtensionEventRouterForwarder* event_router,
+    uint64 request_id,
+    net::HttpRequestHeaders* headers,
+    net::CompletionCallback* callback) {
+  // TODO(jochen): Figure out what to do with events from the system context.
+  if (profile_id == Profile::kInvalidProfileId)
+    return net::OK;
+
+  HttpRequestMap::iterator iter = http_requests_.find(request_id);
+  if (iter == http_requests_.end())
+    return net::OK;
+
+  net::URLRequest* request = iter->second;
+  http_requests_.erase(iter);
+
+  std::vector<const EventListener*> listeners =
+      GetMatchingListeners(profile_id, keys::kOnBeforeSendHeaders, request);
+  if (listeners.empty())
+    return net::OK;
+
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString(keys::kRequestIdKey,
+                  base::Uint64ToString(request->identifier()));
+  dict->SetString(keys::kUrlKey, request->url().spec());
+  // TODO(mpcomplete): request headers.
+  args.Append(dict);
+
+  if (DispatchEvent(profile_id, event_router, request, callback, listeners,
+                    args))
+    return net::ERR_IO_PENDING;
+  return net::OK;
+}
+
+void ExtensionWebRequestEventRouter::OnURLRequestDestroyed(
+    ProfileId profile_id, net::URLRequest* request) {
+  http_requests_.erase(request->identifier());
+}
+
+bool ExtensionWebRequestEventRouter::DispatchEvent(
+    ProfileId profile_id,
+    ExtensionEventRouterForwarder* event_router,
+    net::URLRequest* request,
+    net::CompletionCallback* callback,
+    const std::vector<const EventListener*>& listeners,
+    const ListValue& args) {
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
   // TODO(mpcomplete): Consider consolidating common (extension_id,json_args)
   // pairs into a single message sent to a list of sub_event_names.
   int num_handlers_blocking = 0;
-  for (std::vector<const EventListener*>::iterator it = listeners.begin();
+  for (std::vector<const EventListener*>::const_iterator it = listeners.begin();
        it != listeners.end(); ++it) {
     event_router->DispatchEventToExtension(
         (*it)->extension_id, (*it)->sub_event_name, json_args,
         profile_id, true, GURL());
-    if ((*it)->extra_info_spec & ExtraInfoSpec::BLOCKING) {
+    if (callback && (*it)->extra_info_spec & ExtraInfoSpec::BLOCKING) {
       (*it)->blocked_requests.insert(request->identifier());
       ++num_handlers_blocking;
     }
@@ -440,6 +503,20 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
     matching_listeners.push_back(&(*it));
   }
   return matching_listeners;
+}
+
+std::vector<const ExtensionWebRequestEventRouter::EventListener*>
+ExtensionWebRequestEventRouter::GetMatchingListeners(
+    ProfileId profile_id,
+    const std::string& event_name,
+    net::URLRequest* request) {
+  int tab_id = -1;
+  int window_id = -1;
+  ResourceType::Type resource_type = ResourceType::LAST_TYPE;
+  ExtractRequestInfo(request, &tab_id, &window_id, &resource_type);
+
+  return GetMatchingListeners(
+      profile_id, event_name, request->url(), tab_id, window_id, resource_type);
 }
 
 void ExtensionWebRequestEventRouter::DecrementBlockCount(uint64 request_id,

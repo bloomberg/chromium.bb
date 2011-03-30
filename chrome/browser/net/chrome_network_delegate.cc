@@ -45,15 +45,18 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
 
 ChromeNetworkDelegate::~ChromeNetworkDelegate() {}
 
-bool ChromeNetworkDelegate::OnBeforeURLRequest(
+int ChromeNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request, net::CompletionCallback* callback) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
       profile_id_, event_router_.get(), request, callback);
 }
 
-void ChromeNetworkDelegate::OnSendHttpRequest(
-    net::HttpRequestHeaders* headers) {
-  DCHECK(headers);
+int ChromeNetworkDelegate::OnBeforeSendHeaders(
+    uint64 request_id,
+    net::HttpRequestHeaders* headers,
+    net::CompletionCallback* callback) {
+  return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
+      profile_id_, event_router_.get(), request_id, headers, callback);
 }
 
 void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
@@ -63,6 +66,11 @@ void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
 void ChromeNetworkDelegate::OnReadCompleted(net::URLRequest* request,
                                             int bytes_read) {
   ForwardProxyErrors(request, event_router_.get(), profile_id_);
+}
+
+void ChromeNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
+  ExtensionWebRequestEventRouter::GetInstance()->OnURLRequestDestroyed(
+      profile_id_, request);
 }
 
 net::URLRequestJob* ChromeNetworkDelegate::OnMaybeCreateURLRequestJob(

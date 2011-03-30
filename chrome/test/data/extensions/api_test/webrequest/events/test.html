@@ -2,6 +2,25 @@
 var getURL = chrome.extension.getURL;
 var expectedEventData;
 var capturedEventData;
+var tabId;
+
+// PORT will be changed to the port of the test server.
+var URL_HTTP_SIMPLE_LOAD =
+    'http://www.a.com:PORT/files/extensions/api_test/webrequest/events/simpleLoad/a.html';
+
+function runTests(tests) {
+  chrome.tabs.getSelected(null, function(tab) {
+    tabId = tab.id;
+    chrome.test.getConfig(function(config) {
+      var fixPort = function(url) {
+        return url.replace(/PORT/, config.testServer.port);
+      };
+      URL_HTTP_SIMPLE_LOAD = fixPort(URL_HTTP_SIMPLE_LOAD);
+
+      chrome.test.runTests(tests);
+    });
+  });
+}
 
 function expect(data, filter, extraInfoSpec) {
   expectedEventData = data;
@@ -30,6 +49,11 @@ function initListeners(filter, extraInfoSpec) {
   chrome.experimental.webRequest.onBeforeRequest.addListener(
       function(details) {
     captureEvent("onBeforeRequest", details);
+    return {cancel: true};  // no effect unless event is blocking.
+  }, filter, extraInfoSpec);
+  chrome.experimental.webRequest.onBeforeSendHeaders.addListener(
+      function(details) {
+    captureEvent("onBeforeSendHeaders", details);
     return {cancel: true};  // no effect unless event is blocking.
   }, filter, extraInfoSpec);
   chrome.experimental.webRequest.onRequestSent.addListener(
@@ -70,6 +94,7 @@ function removeListeners() {
     chrome.test.assertEq(0, event.subEvents_.length);
   }
   helper(chrome.experimental.webRequest.onBeforeRequest);
+  helper(chrome.experimental.webRequest.onBeforeSendHeaders);
   helper(chrome.experimental.webRequest.onRequestSent);
   helper(chrome.experimental.webRequest.onHeadersReceived);
   helper(chrome.experimental.webRequest.onBeforeRedirect);
@@ -77,104 +102,121 @@ function removeListeners() {
   helper(chrome.experimental.webRequest.onErrorOccurred);
 }
 
-chrome.tabs.getSelected(null, function(tab) {
-  var tabId = tab.id;
+runTests([
+  // Navigates to a blank page.
+  function simpleLoad() {
+    expect([
+      [ "onBeforeRequest",
+        {
+          method: "GET",
+          tabId: tabId,
+          type: "main_frame",
+          url: getURL("simpleLoad/a.html")
+        }
+      ],
+    ]);
+    chrome.tabs.update(tabId, { url: getURL("simpleLoad/a.html") });
+  },
 
-  chrome.test.runTests([
-    // Navigates to a blank page.
-    function simpleLoad() {
-      expect([
-        [ "onBeforeRequest",
-          {
-            method: "GET",
-            tabId: tabId,
-            type: "main_frame",
-            url: getURL("simpleLoad/a.html")
-          }
-        ],
-      ]);
-      chrome.tabs.update(tabId, { url: getURL("simpleLoad/a.html") });
-    },
+  // Navigates to a blank page via HTTP. Only HTTP requests get the
+  // onBeforeSendHeaders event.
+  function simpleLoadHttp() {
+    expect([
+      [ "onBeforeRequest",
+        {
+          method: "GET",
+          tabId: tabId,
+          type: "main_frame",
+          url: URL_HTTP_SIMPLE_LOAD
+        }
+      ],
+      [ "onBeforeSendHeaders",
+        {
+          url: URL_HTTP_SIMPLE_LOAD
+        }
+      ],
+    ], {types: ["main_frame"]}, []);
+    chrome.tabs.update(tabId, { url: URL_HTTP_SIMPLE_LOAD });
+  },
 
-    // Navigates to a page with subresources.
-    // TODO(mpcomplete): add multiple subresources; requires support for
-    // recognizing partial ordering.
-    function complexLoad() {
-      expect([
-        [ "onBeforeRequest",
-          {
-            method: "GET",
-            tabId: tabId,
-            type: "main_frame",
-            url: getURL("complexLoad/a.html")
-          }
-        ],
-        [ "onBeforeRequest",
-          {
-            method: "GET",
-            tabId: tabId,
-            type: "sub_frame",
-            url: getURL("complexLoad/b.html")
-          }
-        ],
-        [ "onBeforeRequest",
-          {
-            method: "GET",
-            tabId: tabId,
-            type: "image",
-            url: getURL("complexLoad/b.jpg")
-          }
-        ],
-      ]);
-      chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });
-    },
+  // Navigates to a page with subresources.
+  // TODO(mpcomplete): add multiple subresources; requires support for
+  // recognizing partial ordering.
+  function complexLoad() {
+    expect([
+      [ "onBeforeRequest",
+        {
+          method: "GET",
+          tabId: tabId,
+          type: "main_frame",
+          url: getURL("complexLoad/a.html")
+        }
+      ],
+      [ "onBeforeRequest",
+        {
+          method: "GET",
+          tabId: tabId,
+          type: "sub_frame",
+          url: getURL("complexLoad/b.html")
+        }
+      ],
+      [ "onBeforeRequest",
+        {
+          method: "GET",
+          tabId: tabId,
+          type: "image",
+          url: getURL("complexLoad/b.jpg")
+        }
+      ],
+    ]);
+    chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });
+  },
 
-    // Navigates to a page with subresources, with a blocking handler that
-    // cancels the page request. The page will not load, and we should not
-    // see the subresources.
-    function complexLoadBlocking() {
-      expect([
-        [ "onBeforeRequest",
-          {
-            method: "GET",
-            tabId: tabId,
-            type: "main_frame",
-            url: getURL("complexLoad/a.html")
-          }
-        ]
-      ], {}, ["blocking"]);
-      chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });
-    },
+  // Navigates to a page with subresources, with a blocking handler that
+  // cancels the page request. The page will not load, and we should not
+  // see the subresources.
+  function complexLoadBlocking() {
+    expect([
+      [ "onBeforeRequest",
+        {
+          method: "GET",
+          tabId: tabId,
+          type: "main_frame",
+          url: getURL("complexLoad/a.html")
+        }
+      ]
+    ], {}, ["blocking"]);
+    chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });
+  },
 
-    // Loads several resources, but should only see the complexLoad main_frame
-    // and image due to the filter.
-    function complexLoadFiltered() {
-      expect([
-        [ "onBeforeRequest",
-          {
-            method: "GET",
-            tabId: tabId,
-            type: "main_frame",
-            url: getURL("complexLoad/a.html")
-          }
-        ],
-        [ "onBeforeRequest",
-          {
-            method: "GET",
-            tabId: tabId,
-            type: "image",
-            url: getURL("complexLoad/b.jpg")
-          }
-        ]
-      ], {urls: [getURL("complexLoad/*")],
-          types: ["main_frame", "image"],
-          tabId: tabId}, []);
-      chrome.tabs.create({ url: getURL("simpleLoad/a.html") },
-          function(newTab) {
-        chrome.tabs.remove(newTab.id);
+  // Loads several resources, but should only see the complexLoad main_frame
+  // and image due to the filter.
+  function complexLoadFiltered() {
+    expect([
+      [ "onBeforeRequest",
+        {
+          method: "GET",
+          tabId: tabId,
+          type: "main_frame",
+          url: getURL("complexLoad/a.html")
+        }
+      ],
+      [ "onBeforeRequest",
+        {
+          method: "GET",
+          tabId: tabId,
+          type: "image",
+          url: getURL("complexLoad/b.jpg")
+        }
+      ]
+    ], {urls: [getURL("complexLoad/*")],
+        types: ["main_frame", "image"],
+        tabId: tabId}, []);
+    chrome.tabs.create({ url: getURL("simpleLoad/a.html") },
+        function(newTab) {
+      chrome.tabs.remove(newTab.id);
         chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });
-      });
-    },
-  ]);
-});
+    });
+  },
+]);
 </script>

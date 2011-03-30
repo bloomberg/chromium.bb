@@ -22,6 +22,7 @@ class ExtensionEventRouterForwarder;
 class GURL;
 
 namespace net {
+class HttpRequestHeaders;
 class URLRequest;
 }
 
@@ -36,11 +37,24 @@ class ExtensionWebRequestEventRouter {
   static ExtensionWebRequestEventRouter* GetInstance();
 
   // Dispatches the OnBeforeRequest event to any extensions whose filters match
-  // the given request. Returns true if an extension wants to pause the request.
-  bool OnBeforeRequest(ProfileId profile_id,
-                       ExtensionEventRouterForwarder* event_router,
-                       net::URLRequest* request,
-                       net::CompletionCallback* callback);
+  // the given request. Returns net::ERR_IO_PENDING if an extension is
+  // intercepting the request, OK otherwise.
+  int OnBeforeRequest(ProfileId profile_id,
+                      ExtensionEventRouterForwarder* event_router,
+                      net::URLRequest* request,
+                      net::CompletionCallback* callback);
+
+  // Dispatches the onBeforeSendHeaders event. This is fired for HTTP(s)
+  // requests only, and allows modification of the outgoing request headers.
+  // Returns net::ERR_IO_PENDING if an extension is intercepting the request, OK
+  // otherwise.
+  int OnBeforeSendHeaders(ProfileId profile_id,
+                          ExtensionEventRouterForwarder* event_router,
+                          uint64 request_id,
+                          net::HttpRequestHeaders* headers,
+                          net::CompletionCallback* callback);
+
+  void OnURLRequestDestroyed(ProfileId profile_id, net::URLRequest* request);
 
   // Called when an event listener handles a blocking event and responds.
   // TODO(mpcomplete): modify request
@@ -77,9 +91,18 @@ class ExtensionWebRequestEventRouter {
   typedef std::map<std::string, std::set<EventListener> > ListenerMapForProfile;
   typedef std::map<ProfileId, ListenerMapForProfile> ListenerMap;
   typedef std::map<uint64, BlockedRequest> BlockedRequestMap;
+  typedef std::map<uint64, net::URLRequest*> HttpRequestMap;
 
   ExtensionWebRequestEventRouter();
   ~ExtensionWebRequestEventRouter();
+
+  bool DispatchEvent(
+      ProfileId profile_id,
+      ExtensionEventRouterForwarder* event_router,
+      net::URLRequest* request,
+      net::CompletionCallback* callback,
+      const std::vector<const EventListener*>& listeners,
+      const ListValue& args);
 
   // Returns a list of event listeners that care about the given event, based
   // on their filter parameters.
@@ -91,10 +114,17 @@ class ExtensionWebRequestEventRouter {
       int window_id,
       ResourceType::Type resource_type);
 
+  // Same as above, but retrieves the filter parameters from the request.
+  std::vector<const EventListener*> GetMatchingListeners(
+      ProfileId profile_id,
+      const std::string& event_name,
+      net::URLRequest* request);
   // Decrements the count of event handlers blocking the given request. When the
   // count reaches 0 (or immediately if the request is being cancelled), we
   // stop blocking the request and either resume or cancel it.
   void DecrementBlockCount(uint64 request_id, bool cancel);
+
+  void OnRequestDeleted(net::URLRequest* request);
 
   // A map for each profile that maps an event name to a set of extensions that
   // are listening to that event.
@@ -103,6 +133,10 @@ class ExtensionWebRequestEventRouter {
   // A map of network requests that are waiting for at least one event handler
   // to respond.
   BlockedRequestMap blocked_requests_;
+
+  // A map of HTTP(s) network requests. We use this to look up the URLRequest
+  // from the request ID given to us for HTTP-specific events.
+  HttpRequestMap http_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };
