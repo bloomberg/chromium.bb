@@ -136,7 +136,7 @@ def NaClSourceSubset(input_tree):
       "third_party/gles2_book",
       "third_party/npapi",
       "third_party/pylib",
-      "third_party/scons",
+      "third_party/scons-2.0.1",
       # Pulled in from SVN repos via DEPS
       "base",
       "build",
