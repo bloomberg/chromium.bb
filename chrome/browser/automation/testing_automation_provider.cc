@@ -2073,6 +2073,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["SignoutInScreenLocker"] =
       &TestingAutomationProvider::SignoutInScreenLocker;
 
+  handler_map["GetBatteryInfo"] = &TestingAutomationProvider::GetBatteryInfo;
+
   handler_map["GetNetworkInfo"] = &TestingAutomationProvider::GetNetworkInfo;
   handler_map["NetworkScan"] = &TestingAutomationProvider::NetworkScan;
   handler_map["ConnectToWifiNetwork"] =

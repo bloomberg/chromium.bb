@@ -1009,6 +1009,8 @@ class TestingAutomationProvider : public AutomationProvider,
   void SignoutInScreenLocker(DictionaryValue* args,
                              IPC::Message* reply_message);
 
+  void GetBatteryInfo(DictionaryValue* args, IPC::Message* reply_message);
+
   void GetNetworkInfo(DictionaryValue* args, IPC::Message* reply_message);
 
   void NetworkScan(DictionaryValue* args, IPC::Message* reply_message);

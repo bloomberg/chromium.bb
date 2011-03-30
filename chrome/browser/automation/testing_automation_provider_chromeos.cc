@@ -9,6 +9,7 @@
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -121,6 +122,40 @@ void TestingAutomationProvider::SignoutInScreenLocker(
   // session manager then we'll die when the session is stopped.
   reply.SendSuccess(NULL);
   screen_locker->Signout();
+}
+
+void TestingAutomationProvider::GetBatteryInfo(DictionaryValue* args,
+                                               IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+
+  if (!CrosLibrary::Get()->EnsureLoaded()) {
+    reply.SendError("Could not load cros library.");
+    return;
+  }
+
+  chromeos::PowerLibrary* power_library = CrosLibrary::Get()->GetPowerLibrary();
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+
+  return_value->SetBoolean("battery_is_present",
+                           power_library->battery_is_present());
+  return_value->SetBoolean("line_power_on", power_library->line_power_on());
+  if (power_library->battery_is_present()) {
+    return_value->SetBoolean("battery_fully_charged",
+                             power_library->battery_fully_charged());
+    return_value->SetDouble("battery_percentage",
+                            power_library->battery_percentage());
+    if (power_library->line_power_on()) {
+      int time = power_library->battery_time_to_full().InSeconds();
+      if (time > 0 || power_library->battery_fully_charged())
+        return_value->SetInteger("battery_time_to_full", time);
+    } else {
+      int time = power_library->battery_time_to_empty().InSeconds();
+      if (time > 0)
+        return_value->SetInteger("battery_time_to_empty", time);
+    }
+  }
+
+  reply.SendSuccess(return_value.get());
 }
 
 void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,

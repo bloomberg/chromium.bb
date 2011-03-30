@@ -2407,6 +2407,42 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = { 'command': 'SignoutInScreenLocker' }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
+  def GetBatteryInfo(self):
+    """Get details about battery state.
+
+    Returns:
+      A dictionary with the following keys:
+
+      'battery_is_present' : bool
+      'line_power_on' : bool
+      if 'battery_is_present':
+        'battery_percentage' : float (0 ~ 100)
+        'battery_fully_charged' : bool
+        if 'line_power_on':
+          'battery_time_to_full' : int (seconds)
+        else:
+          'battery_time_to_empty' : int (seconds)
+
+      If it is still calculating the time left, 'battery_time_to_full'
+      and 'battery_time_to_empty' will be absent.
+
+      Use 'battery_fully_charged' instead of 'battery_percentage'
+      or 'battery_time_to_full' to determine whether the battery
+      is fully charged, since the percentage is only approximate.
+
+      Sample:
+        { u'battery_is_present': True,
+          u'line_power_on': False,
+          u'battery_time_to_empty': 29617,
+          u'battery_percentage': 100.0,
+          u'battery_fully_charged': False }
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'GetBatteryInfo' }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
   def GetNetworkInfo(self):
     """Get details about ethernet, wifi, and cellular networks on chromeos.
 
