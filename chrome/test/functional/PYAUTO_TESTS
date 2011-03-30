@@ -29,6 +29,8 @@
       'autofill',
       # crbug.com/73439
       '-autofill.AutofillTest.testFilterMalformedEmailAddresses',
+      # crbug.com/77969
+      '-autofill.AutofillTest.testFillProfileCrazyCharacters',
       'bookmark_bar',
       'bookmarks',
       'browser',
@@ -92,6 +94,8 @@
     ],
 
     'win': [
+      # crbug.com/77969
+      '-autofill.AutofillTest.testComparePhoneNumbers',
       # testBookmarkBarVisible fails on windows. crbug.com/42823
       '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
       # crbug.com/64664
