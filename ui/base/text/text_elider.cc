@@ -56,7 +56,7 @@ string16 CutString(const string16& text,
 // than the available pixel width. For available pixel width = 0, a formatted,
 // but un-elided, string is returned.
 //
-// TODO(pkasting): http://b/119635 This whole function gets
+// TODO(pkasting): http://crbug.com/77883 This whole function gets
 // kerning/ligatures/etc. issues potentially wrong by assuming that the width of
 // a rendered string is always the sum of the widths of its substrings.  Also I
 // suspect it could be made simpler.
