@@ -66,6 +66,7 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
       num_login_attempts_(0),
       user_settings_(new UserCrosSettingsProvider),
       method_factory_(this) {
+  DCHECK(current_controller_ == NULL);
   current_controller_ = this;
 
   login_display_.reset(host_->CreateLoginDisplay(this));
@@ -138,8 +139,11 @@ void ExistingUserController::Observe(NotificationType type,
 // ExistingUserController, private:
 
 ExistingUserController::~ExistingUserController() {
-  DCHECK(current_controller_ != NULL);
-  current_controller_ = NULL;
+  if (current_controller_ == this) {
+    current_controller_ = NULL;
+  } else {
+    NOTREACHED() << "More than one controller are alive.";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

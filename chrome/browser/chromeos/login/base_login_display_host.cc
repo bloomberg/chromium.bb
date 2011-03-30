@@ -104,6 +104,7 @@ void BaseLoginDisplayHost::StartWizard(
     const GURL& start_url) {
   DVLOG(1) << "Starting wizard, first_screen_name: " << first_screen_name;
   // Create and show the wizard.
+  wizard_controller_.reset();  // Only one controller in a time.
   wizard_controller_.reset(new WizardController(this, background_bounds_));
   wizard_controller_->SetCustomization(manifest);
   wizard_controller_->set_start_url(start_url);
@@ -127,6 +128,7 @@ void BaseLoginDisplayHost::StartSignInScreen() {
     WizardController::MarkDeviceRegistered();
   }
 
+  sign_in_controller_.reset();  // Only one controller in a time.
   sign_in_controller_.reset(new chromeos::ExistingUserController(this));
   ShowBackground();
   SetShutdownButtonEnabled(true);

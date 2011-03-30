@@ -245,7 +245,12 @@ WizardController::~WizardController() {
     widget_ = NULL;
   }
 
-  default_controller_ = NULL;
+  if (default_controller_ == this) {
+    default_controller_ = NULL;
+  } else {
+    NOTREACHED() << "More than one controller are alive.";
+  }
+
   chromeos::WizardAccessibilityHelper::GetInstance()->
       UnregisterNotifications();
 }
@@ -353,8 +358,10 @@ void WizardController::ShowLoginScreen() {
   host_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
   host_->StartSignInScreen();
   smooth_show_timer_.Stop();
-  widget_->Close();
-  widget_ = NULL;
+  if (widget_) {
+    widget_->Close();
+    widget_ = NULL;
+  }
   is_active_ = false;
 }
 
