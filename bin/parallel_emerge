@@ -890,7 +890,8 @@ class DepGraphGenerator(object):
       # final_pkgs
       for pkg in deps_map:
         for match in final_db.match_pkgs(pkg):
-          final_pkgs.add(str(match.cpv))
+          if match.cpv in deps_info:
+            final_pkgs.add(str(match.cpv))
 
     def FindCycles():
       """Find cycles in the dependency tree.
@@ -1078,20 +1079,6 @@ class DepGraphGenerator(object):
       this_pkg = deps_map[pkg]
       if (this_pkg[merge_type] or pkg not in final_pkgs):
         return
-
-      if pkg not in deps_info:
-        emerge_cmd = "emerge"
-        if self.board:
-          emerge_cmd = "emerge-%s" % self.board
-        emerge_cmd += " -pe =%s %s" % (pkg, " ".join(emerge.cmdline_packages))
-        use_str = os.environ.get("USE")
-        if use_str:
-          emerge_cmd = 'USE="%s" %s' % (use_str, emerge_cmd)
-        print "ERROR: emerge has refused to update %s" % pkg
-        print "Are there impossible-to-satisfy constraints in the dependency"
-        print "graph? To debug the issue, try the following command:"
-        print "  %s" % emerge_cmd
-        sys.exit(1)
 
       # Mark this package as non-optional
       deps_info[pkg]["optional"] = False
