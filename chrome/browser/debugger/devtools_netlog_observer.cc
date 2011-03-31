@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/debugger/devtools_netlog_observer.h"
 
 #include "base/string_util.h"
+#include "base/values.h"
 #include "chrome/browser/io_thread.h"
 #include "content/common/resource_response.h"
 #include "net/base/load_flags.h"
@@ -45,36 +46,50 @@ void DevToolsNetLogObserver::OnAddEntry(net::NetLog::EventType type,
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO))
     return;
 
+  // The events that the Observer is interested in only occur on the IO thread.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO))
+    return;
+  if (source.type == net::NetLog::SOURCE_URL_REQUEST)
+    OnAddURLRequestEntry(type, time, source, phase, params);
+  else if (source.type == net::NetLog::SOURCE_HTTP_STREAM_JOB)
+    OnAddHTTPStreamJobEntry(type, time, source, phase, params);
+  else if (source.type == net::NetLog::SOURCE_SOCKET)
+    OnAddSocketEntry(type, time, source, phase, params);
+}
+
+void DevToolsNetLogObserver::OnAddURLRequestEntry(
+    net::NetLog::EventType type,
+    const base::TimeTicks& time,
+    const net::NetLog::Source& source,
+    net::NetLog::EventPhase phase,
+    net::NetLog::EventParameters* params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  bool is_begin = phase == net::NetLog::PHASE_BEGIN;
+  bool is_end = phase == net::NetLog::PHASE_END;
+
   if (type == net::NetLog::TYPE_URL_REQUEST_START_JOB) {
-    if (phase != net::NetLog::PHASE_BEGIN)
-      return;
-    int load_flags = static_cast<net::URLRequestStartEventParameters*>(params)->
-        load_flags();
-    if (!(load_flags & net::LOAD_REPORT_RAW_HEADERS))
-      return;
-    if (request_to_info_.size() > kMaxNumEntries) {
-      LOG(WARNING) << "The raw headers observer url request count has grown "
-                      "larger than expected, resetting";
-      request_to_info_.clear();
+    if (is_begin) {
+      int load_flags = static_cast<
+          net::URLRequestStartEventParameters*>(params)->load_flags();
+      if (!(load_flags & net::LOAD_REPORT_RAW_HEADERS))
+        return;
+
+      if (request_to_info_.size() > kMaxNumEntries) {
+        LOG(WARNING) << "The raw headers observer url request count has grown "
+                        "larger than expected, resetting";
+        request_to_info_.clear();
+      }
+
+      request_to_info_[source.id] = new ResourceInfo();
     }
-    scoped_refptr<ResourceInfo> new_record(new ResourceInfo());
-    // We may encounter multiple PHASE_BEGIN for same resource in case of
-    // redirect -- if so, replace the old record to avoid keeping headers
-    // from different requests.
-    std::pair<RequestToInfoMap::iterator, bool> inserted =
-        request_to_info_.insert(std::make_pair(source.id, new_record));
-    if (!inserted.second)
-      inserted.first->second = new_record;
+    return;
+  } else if (type == net::NetLog::TYPE_REQUEST_ALIVE) {
+    // Cleanup records based on the TYPE_REQUEST_ALIVE entry.
+    if (is_end)
+      request_to_info_.erase(source.id);
     return;
   }
-  if (type == net::NetLog::TYPE_REQUEST_ALIVE &&
-      phase == net::NetLog::PHASE_END) {
-    request_to_info_.erase(source.id);
-    return;
-  }
-  if (type != net::NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST_HEADERS &&
-      type != net::NetLog::TYPE_HTTP_TRANSACTION_READ_RESPONSE_HEADERS)
-    return;
 
   ResourceInfo* info = GetResourceInfo(source.id);
   if (!info)
@@ -103,9 +118,77 @@ void DevToolsNetLogObserver::OnAddEntry(net::NetLog::EventType type,
       }
       break;
     }
-    default:
-      NOTREACHED();
+    case net::NetLog::TYPE_HTTP_STREAM_REQUEST_BOUND_TO_JOB: {
+      uint32 http_stream_job_id = static_cast<net::NetLogSourceParameter*>(
+          params)->value().id;
+      HTTPStreamJobToSocketMap::iterator it =
+          http_stream_job_to_socket_.find(http_stream_job_id);
+      if (it == http_stream_job_to_socket_.end())
+        return;
+      uint32 socket_id = it->second;
+      socket_to_info_[socket_id] = info;
+      http_stream_job_to_socket_.erase(http_stream_job_id);
       break;
+    }
+    default:
+      break;
+  }
+}
+
+void DevToolsNetLogObserver::OnAddHTTPStreamJobEntry(
+    net::NetLog::EventType type,
+    const base::TimeTicks& time,
+    const net::NetLog::Source& source,
+    net::NetLog::EventPhase phase,
+    net::NetLog::EventParameters* params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (type == net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET) {
+    uint32 socket_id = static_cast<net::NetLogSourceParameter*>(
+      params)->value().id;
+
+    // Prevents us from passively growing the memory unbounded in
+    // case something went wrong. Should not happen.
+    if (http_stream_job_to_socket_.size() > kMaxNumEntries) {
+      LOG(WARNING) << "The load timing observer http stream job count "
+                      "has grown larger than expected, resetting";
+      http_stream_job_to_socket_.clear();
+    }
+    http_stream_job_to_socket_[source.id] = socket_id;
+  }
+}
+
+void DevToolsNetLogObserver::OnAddSocketEntry(
+    net::NetLog::EventType type,
+    const base::TimeTicks& time,
+    const net::NetLog::Source& source,
+    net::NetLog::EventPhase phase,
+    net::NetLog::EventParameters* params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  bool is_end = phase == net::NetLog::PHASE_END;
+
+  SocketToInfoMap::iterator it = socket_to_info_.find(source.id);
+  if (it == socket_to_info_.end())
+    return;
+
+  if (type == net::NetLog::TYPE_SOCKET_IN_USE) {
+    if (is_end)
+      socket_to_info_.erase(source.id);
+    return;
+  }
+
+  if (net::NetLog::TYPE_SOCKET_BYTES_RECEIVED == type) {
+    int byte_count = 0;
+    Value* value = params->ToValue();
+    if (!value->IsType(Value::TYPE_DICTIONARY))
+      return;
+
+    DictionaryValue* dValue = static_cast<DictionaryValue*>(value);
+    if (!dValue->GetInteger("byte_count", &byte_count))
+      return;
+
+    it->second->bytes_received += byte_count;
   }
 }
 
@@ -139,8 +222,31 @@ void DevToolsNetLogObserver::PopulateResponseInfo(net::URLRequest* request,
   uint32 source_id = request->net_log().source().id;
   DevToolsNetLogObserver* dev_tools_net_log_observer =
       DevToolsNetLogObserver::GetInstance();
-  if (!dev_tools_net_log_observer)
+  if (dev_tools_net_log_observer == NULL)
     return;
   response->response_head.devtools_info =
       dev_tools_net_log_observer->GetResourceInfo(source_id);
+}
+
+// static
+int DevToolsNetLogObserver::GetAndResetTransferSize(
+    net::URLRequest* request) {
+  if (!(request->load_flags() & net::LOAD_REPORT_RAW_HEADERS))
+    return -1;
+
+  uint32 source_id = request->net_log().source().id;
+  DevToolsNetLogObserver* dev_tools_net_log_observer =
+      DevToolsNetLogObserver::GetInstance();
+  if (dev_tools_net_log_observer == NULL)
+    return -1;
+
+  ResourceInfo* info =
+      dev_tools_net_log_observer->GetResourceInfo(source_id);
+
+  if (info != NULL) {
+    int bytes_received = info->bytes_received;
+    info->bytes_received = 0;
+    return bytes_received;
+  }
+  return -1;
 }

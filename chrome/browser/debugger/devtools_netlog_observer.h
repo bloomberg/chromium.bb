@@ -36,6 +36,24 @@ class DevToolsNetLogObserver: public ChromeNetLog::ThreadSafeObserver {
                           net::NetLog::EventPhase phase,
                           net::NetLog::EventParameters* params);
 
+  void OnAddURLRequestEntry(net::NetLog::EventType type,
+                            const base::TimeTicks& time,
+                            const net::NetLog::Source& source,
+                            net::NetLog::EventPhase phase,
+                            net::NetLog::EventParameters* params);
+
+  void OnAddHTTPStreamJobEntry(net::NetLog::EventType type,
+                               const base::TimeTicks& time,
+                               const net::NetLog::Source& source,
+                               net::NetLog::EventPhase phase,
+                               net::NetLog::EventParameters* params);
+
+  void OnAddSocketEntry(net::NetLog::EventType type,
+                        const base::TimeTicks& time,
+                        const net::NetLog::Source& source,
+                        net::NetLog::EventPhase phase,
+                        net::NetLog::EventParameters* params);
+
   static void Attach(IOThread* thread);
   static void Detach();
 
@@ -43,11 +61,9 @@ class DevToolsNetLogObserver: public ChromeNetLog::ThreadSafeObserver {
   // are active.
   static DevToolsNetLogObserver* GetInstance();
   static void PopulateResponseInfo(net::URLRequest*, ResourceResponse*);
+  static int GetAndResetTransferSize(net::URLRequest* request);
 
  private:
-  typedef base::hash_map<uint32, scoped_refptr<ResourceInfo> >
-      RequestToInfoMap;
-
   static DevToolsNetLogObserver* instance_;
 
   explicit DevToolsNetLogObserver(ChromeNetLog* chrome_net_log);
@@ -56,7 +72,12 @@ class DevToolsNetLogObserver: public ChromeNetLog::ThreadSafeObserver {
   ResourceInfo* GetResourceInfo(uint32 id);
 
   ChromeNetLog* chrome_net_log_;
+  typedef base::hash_map<uint32, scoped_refptr<ResourceInfo> > RequestToInfoMap;
+  typedef base::hash_map<uint32, uint32> HTTPStreamJobToSocketMap;
+  typedef base::hash_map<uint32, ResourceInfo*> SocketToInfoMap;
   RequestToInfoMap request_to_info_;
+  HTTPStreamJobToSocketMap http_stream_job_to_socket_;
+  SocketToInfoMap socket_to_info_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsNetLogObserver);
 };
