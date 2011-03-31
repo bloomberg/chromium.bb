@@ -33,17 +33,6 @@ class FormGroup {
   // type of that field.
   virtual string16 GetInfo(AutofillFieldType type) const = 0;
 
-  // Returns the text for preview.
-  virtual string16 GetPreviewText(AutofillFieldType type) const;
-
-  // Used to determine if the text being typed into a field matches the
-  // information in this FormGroup object. This is used by the preview
-  // functionality.  |matched_text| will be populated with all of the possible
-  // matches given the type.  This method is additive on |matched_text|.
-  virtual void FindInfoMatches(AutofillFieldType type,
-                               const string16& info,
-                               std::vector<string16>* matched_text) const = 0;
-
   // Used to populate this FormGroup object with data.
   virtual void SetInfo(AutofillFieldType type, const string16& value) = 0;
 

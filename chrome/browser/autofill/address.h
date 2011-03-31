@@ -27,9 +27,6 @@ class Address : public FormGroup {
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
-  virtual void FindInfoMatches(AutofillFieldType type,
-                               const string16& info,
-                               std::vector<string16>* matched_text) const;
   virtual string16 GetInfo(AutofillFieldType type) const;
   virtual void SetInfo(AutofillFieldType type, const string16& value);
 
@@ -63,12 +60,6 @@ class Address : public FormGroup {
   virtual bool IsState(const string16& text) const;
   virtual bool IsCountry(const string16& text) const;
   virtual bool IsZipCode(const string16& text) const;
-
-  // A helper function for FindInfoMatches that only handles matching |info|
-  // with the requested field subgroup.
-  bool FindInfoMatchesHelper(const FieldTypeSubGroup& subgroup,
-                             const string16& info,
-                             string16* match) const;
 
   // Returns true if all of the tokens in |text| match the tokens in
   // |line_tokens|.

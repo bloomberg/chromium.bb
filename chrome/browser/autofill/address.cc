@@ -103,23 +103,6 @@ void Address::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
     available_types->insert(ADDRESS_HOME_COUNTRY);
 }
 
-void Address::FindInfoMatches(AutofillFieldType type,
-                              const string16& info,
-                              std::vector<string16>* matched_text) const {
-  DCHECK(matched_text);
-
-  string16 match;
-  if (type == UNKNOWN_TYPE) {
-    for (int i = 0; i < kAutofillAddressLength; ++i) {
-      if (FindInfoMatchesHelper(kAutofillAddressTypes[i], info, &match))
-        matched_text->push_back(match);
-    }
-  } else {
-    if (FindInfoMatchesHelper(AutofillType(type).subgroup(), info, &match))
-      matched_text->push_back(match);
-  }
-}
-
 string16 Address::GetInfo(AutofillFieldType type) const {
   if (type == ADDRESS_HOME_LINE1)
     return line1_;
@@ -226,35 +209,6 @@ bool Address::IsCountry(const string16& text) const {
 
 bool Address::IsZipCode(const string16& text) const {
   return zip_code_ == text;
-}
-
-bool Address::FindInfoMatchesHelper(const FieldTypeSubGroup& subgroup,
-                                    const string16& info,
-                                    string16* match) const {
-  DCHECK(match);
-
-  match->clear();
-  if (subgroup == AutofillType::ADDRESS_LINE1 &&
-      StartsWith(line1_, info, false)) {
-    *match = line1_;
-  } else if (subgroup == AutofillType::ADDRESS_LINE2 &&
-             StartsWith(line2_, info, false)) {
-    *match = line2_;
-  } else if (subgroup == AutofillType::ADDRESS_CITY &&
-             StartsWith(city_, info, false)) {
-    *match = city_;
-  } else if (subgroup == AutofillType::ADDRESS_STATE &&
-             StartsWith(state_, info, false)) {
-    *match = state_;
-  } else if (subgroup == AutofillType::ADDRESS_COUNTRY &&
-             StartsWith(Country(), info, false)) {
-    *match = Country();
-  } else if (subgroup == AutofillType::ADDRESS_ZIP &&
-             StartsWith(zip_code_, info, true)) {
-    *match = zip_code_;
-  }
-
-  return !match->empty();
 }
 
 bool Address::IsLineMatch(const string16& text,

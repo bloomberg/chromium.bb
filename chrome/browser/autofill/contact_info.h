@@ -26,9 +26,6 @@ class NameInfo : public FormGroup {
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
-  virtual void FindInfoMatches(AutofillFieldType type,
-                               const string16& info,
-                               std::vector<string16>* matched_text) const;
   virtual string16 GetInfo(AutofillFieldType type) const;
   virtual void SetInfo(AutofillFieldType type, const string16& value);
 
@@ -46,12 +43,6 @@ class NameInfo : public FormGroup {
   const string16& first() const { return first_; }
   const string16& middle() const { return middle_; }
   const string16& last() const { return last_; }
-
-  // A helper function for FindInfoMatches that only handles matching the info
-  // with the requested field type.
-  bool FindInfoMatchesHelper(AutofillFieldType field_type,
-                             const string16& info,
-                             string16* matched_text) const;
 
   // Returns true if |text| is the first name.
   bool IsFirstName(const string16& text) const;
@@ -115,9 +106,6 @@ class EmailInfo : public FormGroup {
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
-  virtual void FindInfoMatches(AutofillFieldType type,
-                               const string16& info,
-                               std::vector<string16>* matched_text) const;
   virtual string16 GetInfo(AutofillFieldType type) const;
   virtual void SetInfo(AutofillFieldType type, const string16& value);
 
@@ -137,9 +125,6 @@ class CompanyInfo : public FormGroup {
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
-  virtual void FindInfoMatches(AutofillFieldType type,
-                               const string16& info,
-                               std::vector<string16>* matched_text) const;
   virtual string16 GetInfo(AutofillFieldType type) const;
   virtual void SetInfo(AutofillFieldType type, const string16& value);
 

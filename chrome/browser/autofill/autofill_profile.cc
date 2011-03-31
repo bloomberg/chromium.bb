@@ -188,30 +188,6 @@ void AutofillProfile::GetAvailableFieldTypes(
     (*it)->GetAvailableFieldTypes(available_types);
 }
 
-void AutofillProfile::FindInfoMatches(
-    AutofillFieldType type,
-    const string16& value,
-    std::vector<string16>* matched_text) const {
-  if (matched_text == NULL) {
-    DLOG(ERROR) << "NULL matched text passed in";
-    return;
-  }
-
-  string16 clean_info = StringToLowerASCII(CollapseWhitespace(value, false));
-
-  // If the field_type is unknown, then match against all field types.
-  if (type == UNKNOWN_TYPE) {
-    FormGroupList info = FormGroups();
-    for (FormGroupList::const_iterator it = info.begin();
-         it != info.end(); ++it)
-      (*it)->FindInfoMatches(type, clean_info, matched_text);
-  } else {
-    const FormGroup* form_group = FormGroupForType(type);
-    if (form_group)
-      form_group->FindInfoMatches(type, clean_info, matched_text);
-  }
-}
-
 string16 AutofillProfile::GetInfo(AutofillFieldType type) const {
   AutofillFieldType return_type = AutofillType::GetEquivalentFieldType(type);
   const FormGroup* form_group = FormGroupForType(return_type);

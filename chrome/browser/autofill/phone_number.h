@@ -26,9 +26,6 @@ class PhoneNumber : public FormGroup {
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
-  virtual void FindInfoMatches(AutofillFieldType type,
-                               const string16& info,
-                               std::vector<string16>* matched_text) const;
   virtual string16 GetInfo(AutofillFieldType type) const;
   virtual void SetInfo(AutofillFieldType type, const string16& value);
 
@@ -75,12 +72,6 @@ class PhoneNumber : public FormGroup {
   void set_number(const string16& number);
   void set_extension(const string16& extension) { extension_ = extension; }
   void set_whole_number(const string16& whole_number);
-
-  // A helper function for FindInfoMatches that only handles matching the info
-  // with the requested field type.
-  bool FindInfoMatchesHelper(const FieldTypeSubGroup& subgroup,
-                             const string16& info,
-                             string16* match) const;
 
   // The numbers will be digits only (no punctuation), so any call to the IsX()
   // functions should first call StripPunctuation on the text.

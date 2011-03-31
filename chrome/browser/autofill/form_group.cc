@@ -8,10 +8,6 @@
 
 #include <iterator>
 
-string16 FormGroup::GetPreviewText(AutofillFieldType type) const {
-  return GetInfo(type);
-}
-
 const string16 FormGroup::Label() const { return string16(); }
 
 bool FormGroup::operator!=(const FormGroup& form_group) const {

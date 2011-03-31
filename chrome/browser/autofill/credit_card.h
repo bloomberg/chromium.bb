@@ -28,10 +28,6 @@ class CreditCard : public FormGroup {
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
-  virtual void FindInfoMatches(AutofillFieldType type,
-                               const string16& info,
-                               std::vector<string16>* matched_text) const;
-  virtual string16 GetPreviewText(AutofillFieldType type) const;
   virtual string16 GetInfo(AutofillFieldType type) const;
   virtual void SetInfo(AutofillFieldType type, const string16& value);
   virtual const string16 Label() const;
@@ -109,12 +105,6 @@ class CreditCard : public FormGroup {
   // ranges.
   void set_expiration_month(int expiration_month);
   void set_expiration_year(int expiration_year);
-
-  // A helper function for FindInfoMatches that only handles matching the info
-  // with the requested field type.
-  bool FindInfoMatchesHelper(AutofillFieldType field_type,
-                             const string16& info,
-                             string16* match) const;
 
   // Returns true if |text| matches the name on the card.  The comparison is
   // case-insensitive.

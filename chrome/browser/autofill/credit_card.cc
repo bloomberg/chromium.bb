@@ -188,41 +188,6 @@ void CreditCard::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
     available_types->insert(CREDIT_CARD_NUMBER);
 }
 
-void CreditCard::FindInfoMatches(AutofillFieldType type,
-                                 const string16& info,
-                                 std::vector<string16>* matched_text) const {
-  DCHECK(matched_text);
-
-  string16 match;
-  switch (type) {
-    case CREDIT_CARD_NUMBER: {
-      // Because the credit card number is encrypted and we are not able to do
-      // comparisons with it we will say that any field that is known to be a
-      // credit card number field will match all credit card numbers.
-      string16 text = GetPreviewText(CREDIT_CARD_NUMBER);
-      if (!text.empty())
-        matched_text->push_back(text);
-      break;
-    }
-
-    case CREDIT_CARD_VERIFICATION_CODE:
-      NOTREACHED();
-      break;
-
-    case UNKNOWN_TYPE:
-      for (int i = 0; i < kAutofillCreditCardLength; ++i) {
-        if (FindInfoMatchesHelper(kAutofillCreditCardTypes[i], info, &match))
-          matched_text->push_back(match);
-      }
-      break;
-
-    default:
-      if (FindInfoMatchesHelper(type, info, &match))
-        matched_text->push_back(match);
-      break;
-  }
-}
-
 string16 CreditCard::GetInfo(AutofillFieldType type) const {
   switch (type) {
     case CREDIT_CARD_NAME:
@@ -267,20 +232,6 @@ string16 CreditCard::GetInfo(AutofillFieldType type) const {
     default:
       // ComputeDataPresentForArray will hit this repeatedly.
       return string16();
-  }
-}
-
-string16 CreditCard::GetPreviewText(AutofillFieldType type) const {
-  switch (type) {
-    case CREDIT_CARD_NUMBER:
-      return last_four_digits();
-
-    case CREDIT_CARD_VERIFICATION_CODE:
-      NOTREACHED();
-      return string16();
-
-    default:
-      return GetInfo(type);
   }
 }
 
@@ -529,70 +480,6 @@ void CreditCard::set_expiration_year(int expiration_year) {
   }
 
   expiration_year_ = expiration_year;
-}
-
-bool CreditCard::FindInfoMatchesHelper(AutofillFieldType field_type,
-                                       const string16& info,
-                                       string16* match) const {
-  DCHECK(match);
-
-  match->clear();
-  switch (field_type) {
-    case CREDIT_CARD_NAME: {
-      if (StartsWith(name_on_card(), info, false))
-        *match = name_on_card();
-      break;
-    }
-
-    case CREDIT_CARD_EXP_MONTH: {
-      string16 exp_month(ExpirationMonthAsString());
-      if (StartsWith(exp_month, info, true))
-        *match = exp_month;
-      break;
-    }
-
-    case CREDIT_CARD_EXP_2_DIGIT_YEAR: {
-      string16 exp_year(Expiration2DigitYearAsString());
-      if (StartsWith(exp_year, info, true))
-        *match = exp_year;
-      break;
-    }
-
-    case CREDIT_CARD_EXP_4_DIGIT_YEAR: {
-      string16 exp_year(Expiration4DigitYearAsString());
-      if (StartsWith(exp_year, info, true))
-        *match = exp_year;
-      break;
-    }
-
-    case CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR: {
-      string16 exp_date(ExpirationMonthAsString() + ASCIIToUTF16("/") +
-                        Expiration2DigitYearAsString());
-      if (StartsWith(exp_date, info, true))
-        *match = exp_date;
-      break;
-    }
-
-    case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR: {
-      string16 exp_date(ExpirationMonthAsString() + ASCIIToUTF16("/") +
-                        Expiration4DigitYearAsString());
-      if (StartsWith(exp_date, info, true))
-        *match = exp_date;
-      break;
-    }
-
-    case CREDIT_CARD_TYPE:
-      // We don't handle this case.
-      break;
-
-    case CREDIT_CARD_VERIFICATION_CODE:
-      NOTREACHED();
-      break;
-
-    default:
-      break;
-  }
-  return !match->empty();
 }
 
 bool CreditCard::IsNameOnCard(const string16& text) const {

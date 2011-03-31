@@ -111,31 +111,6 @@ string16 PhoneNumber::GetInfo(AutofillFieldType type) const {
   return string16();
 }
 
-void PhoneNumber::FindInfoMatches(AutofillFieldType type,
-                                  const string16& info,
-                                  std::vector<string16>* matched_text) const {
-  if (matched_text == NULL) {
-    DLOG(ERROR) << "NULL matched vector passed in";
-    return;
-  }
-
-  string16 number(info);
-  StripPunctuation(&number);
-  if (!Validate(number))
-    return;
-
-  string16 match;
-  if (type == UNKNOWN_TYPE) {
-    for (int i = 0; i < kAutofillPhoneLength; ++i) {
-      if (FindInfoMatchesHelper(kAutofillPhoneTypes[i], info, &match))
-        matched_text->push_back(match);
-    }
-  } else {
-    if (FindInfoMatchesHelper(AutofillType(type).subgroup(), info, &match))
-      matched_text->push_back(match);
-  }
-}
-
 void PhoneNumber::SetInfo(AutofillFieldType type, const string16& value) {
   string16 number(value);
   StripPunctuation(&number);
@@ -223,35 +198,6 @@ void PhoneNumber::set_whole_number(const string16& whole_number) {
   set_number(number);
   set_city_code(city_code);
   set_country_code(country_code);
-}
-
-bool PhoneNumber::FindInfoMatchesHelper(const FieldTypeSubGroup& subgroup,
-                                        const string16& info,
-                                        string16* match) const {
-  if (match == NULL) {
-    DLOG(ERROR) << "NULL match string passed in";
-    return false;
-  }
-
-  match->clear();
-  if (subgroup == AutofillType::PHONE_NUMBER &&
-      StartsWith(number(), info, true)) {
-    *match = number();
-  } else if (subgroup == AutofillType::PHONE_CITY_CODE &&
-             StartsWith(city_code(), info, true)) {
-    *match = city_code();
-  } else if (subgroup == AutofillType::PHONE_COUNTRY_CODE &&
-             StartsWith(country_code(), info, true)) {
-    *match = country_code();
-  } else if (subgroup == AutofillType::PHONE_CITY_AND_NUMBER &&
-             StartsWith(CityAndNumber(), info, true)) {
-    *match = CityAndNumber();
-  } else if (subgroup == AutofillType::PHONE_WHOLE_NUMBER &&
-             StartsWith(WholeNumber(), info, true)) {
-    *match = WholeNumber();
-  }
-
-  return !match->empty();
 }
 
 bool PhoneNumber::IsNumber(const string16& text) const {

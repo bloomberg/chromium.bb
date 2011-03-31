@@ -86,22 +86,6 @@ void NameInfo::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
     available_types->insert(NAME_FULL);
 }
 
-void NameInfo::FindInfoMatches(AutofillFieldType type,
-                               const string16& info,
-                               std::vector<string16>* matched_text) const {
-  DCHECK(matched_text);
-
-  string16 match;
-  if (type == UNKNOWN_TYPE) {
-    for (size_t i = 0; i < kAutofillNameInfoLength; i++) {
-      if (FindInfoMatchesHelper(kAutofillNameInfoTypes[i], info, &match))
-        matched_text->push_back(match);
-    }
-  } else if (FindInfoMatchesHelper(type, info, &match)) {
-      matched_text->push_back(match);
-  }
-}
-
 string16 NameInfo::GetInfo(AutofillFieldType type) const {
   if (type == NAME_FIRST)
     return first();
@@ -133,34 +117,6 @@ void NameInfo::SetInfo(AutofillFieldType type, const string16& value) {
     SetFullName(value);
   else
     NOTREACHED();
-}
-
-bool NameInfo::FindInfoMatchesHelper(AutofillFieldType field_type,
-                                     const string16& info,
-                                     string16* match) const {
-  if (match == NULL) {
-    DLOG(ERROR) << "NULL match string passed in";
-    return false;
-  }
-
-  match->clear();
-  if (field_type == NAME_FIRST &&
-      StartsWith(first(), info, false)) {
-    *match = first();
-  } else if (field_type == NAME_MIDDLE &&
-             StartsWith(middle(), info, false)) {
-    *match = middle();
-  } else if (field_type == NAME_LAST &&
-             StartsWith(last(), info, false)) {
-    *match = last();
-  } else if (field_type == NAME_MIDDLE_INITIAL && IsMiddleInitial(info)) {
-    *match = MiddleInitial();
-  } else if (field_type == NAME_FULL &&
-             StartsWith(FullName(), info, false)) {
-    *match = FullName();
-  }
-
-  return !match->empty();
 }
 
 string16 NameInfo::FullName() const {
@@ -399,18 +355,6 @@ void EmailInfo::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
     available_types->insert(EMAIL_ADDRESS);
 }
 
-void EmailInfo::FindInfoMatches(AutofillFieldType type,
-                                const string16& info,
-                                std::vector<string16>* matched_text) const {
-  DCHECK(matched_text);
-
-  string16 match;
-  if ((type == UNKNOWN_TYPE || type == EMAIL_ADDRESS) &&
-      StartsWith(email_, info, false)) {
-      matched_text->push_back(email_);
-  }
-}
-
 string16 EmailInfo::GetInfo(AutofillFieldType type) const {
   if (type == EMAIL_ADDRESS)
     return email_;
@@ -452,18 +396,6 @@ void CompanyInfo::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
 
   if (!company_name_.empty())
     available_types->insert(COMPANY_NAME);
-}
-
-void CompanyInfo::FindInfoMatches(AutofillFieldType type,
-                                  const string16& info,
-                                  std::vector<string16>* matched_text) const {
-  DCHECK(matched_text);
-
-  string16 match;
-  if ((type == UNKNOWN_TYPE || type == COMPANY_NAME) &&
-      StartsWith(company_name_, info, false)) {
-    matched_text->push_back(company_name_);
-  }
 }
 
 string16 CompanyInfo::GetInfo(AutofillFieldType type) const {
