@@ -1,0 +1,68 @@
+<!-- 
+This HTML file contains player div which is used for performance testing 
+(chrome/test/functional/media_perf.py).
+The query string should contain the following information 
+(delimited by "="):
+   tag (required) : HTML video/audio tag.
+   video file (required) : video file name 
+                           (should be in the same directory as this file).
+   t (optional): adding t parameter for disabling media cache.
+
+   Example: "player_for_perf.html?video=foo.webm=t"
+-->
+<html>
+<body>
+<div id="player_container"></div>
+<script>
+var player = null;
+function InstallEventHandler(event, action) {
+  player.addEventListener(event, function(e) {
+    eval(action);
+  }, false);
+}
+
+// Parse the location and load the media file accordingly.
+var url = window.location.href;
+var url_parts = url.split('?');
+
+// Make sure the URL is of the form "player_for_perf.html?query".
+var ok = false;
+if (url_parts.length > 1) {
+  var query = url_parts[1];
+  var query_parts = query.split('=');
+  if (query_parts.length >= 2) {
+    var tag = query_parts[0];
+    var media_url = query_parts[1];
+    if (query_parts.length == 3) {
+      // If there is another parameter at the end,
+      // append another parameter "t=" in url 
+      // that disables media cache.
+      var cold = query_parts[2];
+      if (cold != '') {
+        media_url += '?t=' + (new Date()).getTime();
+      } 
+    }
+    if (tag == 'audio' || tag == 'video') {
+      ok = true;
+      var container = document.getElementById('player_container');
+      container.innerHTML = '<' + tag + ' controls id="player"></' + tag + '>';
+      player = document.getElementById('player');
+
+      // Install event handlers.
+      InstallEventHandler('error',
+                          'document.title = "ERROR = " + player.error.code');
+      InstallEventHandler('playing', 'document.title = "PLAYING"');
+      InstallEventHandler('ended', 'document.title = "END"');
+
+      // Starts the player.
+      player.src = media_url;
+      player.play();
+    }
+  }
+}
+if (!ok) {
+  document.title = 'FAILED';
+}
+</script>
+</body>
+</html>
