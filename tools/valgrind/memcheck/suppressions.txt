@@ -3407,7 +3407,7 @@
    fun:_Z16DispatchToMethodI16ExtensionInfoMapMS0_FvPK9ExtensionES3_EvPT_T0_RK6Tuple1IT1_E
 }
 {
-   bug_67676
+   bug_67676_a
    Memcheck:Leak
    fun:_Znw*
    ...
@@ -3419,6 +3419,16 @@
    fun:_ZN9Extension6CreateERK8FilePathNS_8LocationERK15DictionaryValuebPSs
    fun:_ZN19extension_file_util13LoadExtensionERK8FilePathN9Extension8LocationEbPSs
    fun:_ZN23ExtensionServiceBackend19LoadSingleExtensionERK8FilePath13scoped_refptrI16ExtensionServiceE
+}
+{   
+   bug_67676_b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN10URLPattern5ParseERKSsNS_11ParseOptionE
+   fun:_ZN9Extension10LoadExtentEPK15DictionaryValuePKcP15ExtensionExtentS4_S4_N10URLPattern11ParseOptionEPSs
+   fun:_ZN9Extension13InitFromValueERK15DictionaryValueiPSs
+   fun:_ZN9Extension6CreateERK8FilePathNS_8LocationERK15DictionaryValueiPSs
 }
 {
    bug_68069a
