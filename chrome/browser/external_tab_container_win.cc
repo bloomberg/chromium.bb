@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
@@ -1087,7 +1088,7 @@ void ExternalTabContainer::SetupExternalTabView() {
   // widget is torn down.
   external_tab_view_ = new views::View();
 
-  InfoBarContainer* info_bar_container = new InfoBarContainer(this);
+  InfoBarContainerView* info_bar_container = new InfoBarContainerView(this);
   info_bar_container->ChangeTabContents(tab_contents());
 
   views::GridLayout* layout = new views::GridLayout(external_tab_view_);

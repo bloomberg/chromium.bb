@@ -48,7 +48,7 @@ class DownloadShelfView;
 class EncodingMenuModel;
 class FullscreenExitBubble;
 class HtmlDialogUIDelegate;
-class InfoBarContainer;
+class InfoBarContainerView;
 class LocationBarView;
 class SideTabStrip;
 class StatusBubbleViews;
@@ -592,8 +592,8 @@ class BrowserView : public BrowserBubbleHost,
   // The download shelf view (view at the bottom of the page).
   scoped_ptr<DownloadShelfView> download_shelf_;
 
-  // The InfoBarContainer that contains InfoBars for the current tab.
-  InfoBarContainer* infobar_container_;
+  // The InfoBarContainerView that contains InfoBars for the current tab.
+  InfoBarContainerView* infobar_container_;
 
   // The view that contains sidebar for the current tab.
   TabContentsContainer* sidebar_container_;

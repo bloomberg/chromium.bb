@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"
 #include "chrome/browser/ui/views/infobars/infobar_container.h"
@@ -52,11 +52,8 @@ const int InfoBarView::kTabWidth = (kCurveWidth + kTabIconPadding) * 2 +
 
 InfoBarView::InfoBarView(InfoBarDelegate* delegate)
     : InfoBar(delegate),
-      container_(NULL),
-      delegate_(delegate),
       icon_(NULL),
       close_button_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(animation_(new ui::SlideAnimation(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(delete_factory_(this)),
       target_height_(kDefaultTargetHeight),
       fill_path_(new SkPath),
@@ -65,36 +62,6 @@ InfoBarView::InfoBarView(InfoBarDelegate* delegate)
 
   InfoBarDelegate::Type infobar_type = delegate->GetInfoBarType();
   set_background(new InfoBarBackground(infobar_type));
-
-  animation_->SetTweenType(ui::Tween::LINEAR);
-}
-
-void InfoBarView::Show(bool animate) {
-  if (animate) {
-    animation_->Show();
-  } else {
-    animation_->Reset(1.0);
-    if (container_)
-      container_->OnInfoBarAnimated(true);
-  }
-}
-
-void InfoBarView::Hide(bool animate) {
-  if (animate) {
-    bool restore_focus = true;
-  #if defined(OS_WIN)
-    // Do not restore focus (and active state with it) on Windows if some other
-    // top-level window became active.
-    if (GetWidget() &&
-        !ui::DoesWindowBelongToActiveWindow(GetWidget()->GetNativeView()))
-      restore_focus = false;
-  #endif  // defined(OS_WIN)
-    DestroyFocusTracker(restore_focus);
-    animation_->Hide();
-  } else {
-    animation_->Reset(0.0);
-    Close();
-  }
 }
 
 InfoBarView::~InfoBarView() {
@@ -201,8 +168,8 @@ void InfoBarView::Layout() {
 
   gfx::Size button_size = close_button_->GetPreferredSize();
   close_button_->SetBounds(std::max(start_x + ContentMinimumWidth(),
-      width() - kHorizontalPadding - button_size.width()),
-      OffsetY(button_size), button_size.width(), button_size.height());
+      width() - kHorizontalPadding - button_size.width()), OffsetY(button_size),
+      button_size.width(), button_size.height());
 }
 
 void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
@@ -228,7 +195,7 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
       }
 
       if (close_button_ == NULL) {
-        SkBitmap* image = delegate_->GetIcon();
+        SkBitmap* image = delegate()->GetIcon();
         if (image) {
           icon_ = new views::ImageView;
           icon_->SetImage(image);
@@ -250,10 +217,7 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
       }
     } else {
       DestroyFocusTracker(false);
-      // NULL our container_ pointer so that if Animation::Stop results in
-      // AnimationEnded being called, we do not try and delete ourselves twice.
-      container_ = NULL;
-      animation_->Stop();
+      animation()->Stop();
       // Finally, clean ourselves up when we're removed from the view hierarchy
       // since no-one refers to us now.
       MessageLoop::current()->PostTask(FROM_HERE,
@@ -294,24 +258,14 @@ void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
 void InfoBarView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
   if (sender == close_button_) {
-    if (delegate_)
-      delegate_->InfoBarDismissed();
+    if (delegate())
+      delegate()->InfoBarDismissed();
     RemoveInfoBar();
   }
 }
 
-void InfoBarView::AnimationProgressed(const ui::Animation* animation) {
-  if (container_)
-    container_->OnInfoBarAnimated(false);
-}
-
 int InfoBarView::ContentMinimumWidth() const {
   return 0;
-}
-
-void InfoBarView::RemoveInfoBar() const {
-  if (container_)
-    container_->RemoveDelegate(delegate());
 }
 
 int InfoBarView::StartX() const {
@@ -336,21 +290,36 @@ int InfoBarView::OffsetY(const gfx::Size prefsize) const {
       (target_height_ - AnimatedBarHeight());
 }
 
+void InfoBarView::PlatformSpecificHide(bool animate) {
+  if (!animate)
+    return;
+
+  bool restore_focus = true;
+#if defined(OS_WIN)
+  // Do not restore focus (and active state with it) on Windows if some other
+  // top-level window became active.
+  if (GetWidget() &&
+      !ui::DoesWindowBelongToActiveWindow(GetWidget()->GetNativeView()))
+    restore_focus = false;
+#endif  // defined(OS_WIN)
+  DestroyFocusTracker(restore_focus);
+}
+
 void InfoBarView::GetAccessibleState(ui::AccessibleViewState* state) {
-  if (delegate_) {
+  if (delegate()) {
     state->name = l10n_util::GetStringUTF16(
-        (delegate_->GetInfoBarType() == InfoBarDelegate::WARNING_TYPE) ?
+        (delegate()->GetInfoBarType() == InfoBarDelegate::WARNING_TYPE) ?
         IDS_ACCNAME_INFOBAR_WARNING : IDS_ACCNAME_INFOBAR_PAGE_ACTION);
   }
   state->role = ui::AccessibilityTypes::ROLE_ALERT;
 }
 
 int InfoBarView::AnimatedTabHeight() const {
-  return static_cast<int>(kTabHeight * animation_->GetCurrentValue());
+  return static_cast<int>(kTabHeight * animation()->GetCurrentValue());
 }
 
 int InfoBarView::AnimatedBarHeight() const {
-  return static_cast<int>(target_height_ * animation_->GetCurrentValue());
+  return static_cast<int>(target_height_ * animation()->GetCurrentValue());
 }
 
 gfx::Size InfoBarView::GetPreferredSize() {
@@ -419,34 +388,12 @@ void InfoBarView::FocusWillChange(View* focused_before, View* focused_now) {
   }
 }
 
-void InfoBarView::AnimationEnded(const ui::Animation* animation) {
-  if (container_ && !animation_->IsShowing())
-    Close();
-}
-
 void InfoBarView::DestroyFocusTracker(bool restore_focus) {
   if (focus_tracker_ != NULL) {
     if (restore_focus)
       focus_tracker_->FocusLastFocusedExternalView();
     focus_tracker_->SetFocusManager(NULL);
     focus_tracker_.reset();
-  }
-}
-
-void InfoBarView::Close() {
-  DCHECK(container_);
-  // WARNING: RemoveInfoBar() will eventually call back to
-  // ViewHierarchyChanged(), which nulls |container_|!
-  InfoBarContainer* container = container_;
-  container->RemoveInfoBar(this);
-  container->OnInfoBarAnimated(true);
-
-  // Note that we only tell the delegate we're closed here, and not when we're
-  // simply destroyed (by virtue of a tab switch or being moved from window to
-  // window), since this action can cause the delegate to destroy itself.
-  if (delegate_) {
-    delegate_->InfoBarClosed();
-    delegate_ = NULL;
   }
 }
 

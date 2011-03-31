@@ -8,21 +8,22 @@
 
 #include <set>
 
-#include "chrome/browser/ui/views/accessible_pane_view.h"
+#include "base/compiler_specific.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "views/view.h"
 
-class BrowserView;
 class InfoBar;
 class InfoBarDelegate;
-class InfoBarView;
 class TabContents;
 
-// A views::View subclass that contains a collection of InfoBars associated with
-// a TabContents.
-class InfoBarContainer : public AccessiblePaneView,
-                         public NotificationObserver {
+// InfoBarContainer is a cross-platform base class to handle the visibility-
+// related aspects of InfoBars.  While InfoBars own themselves, the
+// InfoBarContainer is responsible for telling particular InfoBars that they
+// should be hidden or visible.
+//
+// Platforms need to subclass this to implement a few platform-specific
+// functions, which are pure virtual here.
+class InfoBarContainer : public NotificationObserver {
  public:
   // The delegate is notified each time InfoBarContainer::OnInfoBarAnimated() is
   // called.
@@ -36,11 +37,6 @@ class InfoBarContainer : public AccessiblePaneView,
 
   explicit InfoBarContainer(Delegate* delegate);
   virtual ~InfoBarContainer();
-
-  // Overlap the previous view by this amount, vertically, so that the
-  // first InfoBarView in this InfoBarContainer may draw its tab on
-  // top.
-  int VerticalOverlap();
 
   // Changes the TabContents for which this container is showing infobars.  This
   // will remove all current infobars from the container, add the infobars from
@@ -60,25 +56,21 @@ class InfoBarContainer : public AccessiblePaneView,
   // Called by |infobar| to request that it be removed from the container, as it
   // is about to delete itself.  At this point, |infobar| should already be
   // hidden.
-  void RemoveInfoBar(InfoBarView* infobar);
+  void RemoveInfoBar(InfoBar* infobar);
+
+ protected:
+  // These must be implemented on each platform to e.g. adjust the visible
+  // object hierarchy.
+  virtual void PlatformSpecificAddInfoBar(InfoBar* infobar) = 0;
+  virtual void PlatformSpecificRemoveInfoBar(InfoBar* infobar) = 0;
 
  private:
-  typedef std::set<InfoBarView*> InfoBars;
-
-  // AccessiblePaneView:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  typedef std::set<InfoBar*> InfoBars;
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
-
-  // Return the maximum vertical overlap of the InfoBarContainer's children,
-  // and, when |total_height| is non-NULL, set the |*total_height| of the
-  // InfoBarContainer.
-  int GetVerticalOverlap(int* total_height);
 
   // Removes an InfoBar for the specified delegate, in response to a
   // notification from the selected TabContents. The InfoBar's disappearance

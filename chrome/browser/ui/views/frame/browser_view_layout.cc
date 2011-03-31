@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
+#include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tabs/abstract_tab_strip_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
@@ -367,7 +368,7 @@ int BrowserViewLayout::LayoutInfoBar(int top) {
   int height = infobar_container_->GetPreferredSize().height();
   DCHECK(visible || !height) << "Invisible InfoBarContainer has height.";
   int overlapped_top = top -
-      static_cast<InfoBarContainer*>(infobar_container_)->VerticalOverlap();
+      static_cast<InfoBarContainerView*>(infobar_container_)->VerticalOverlap();
   infobar_container_->SetBounds(vertical_layout_rect_.x(),
                                 overlapped_top,
                                 vertical_layout_rect_.width(),

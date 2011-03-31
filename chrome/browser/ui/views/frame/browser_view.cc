@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble.h"
+#include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
@@ -1855,7 +1856,7 @@ void BrowserView::Init() {
 
   SetToolbar(CreateToolbar());
 
-  infobar_container_ = new InfoBarContainer(this);
+  infobar_container_ = new InfoBarContainerView(this);
   AddChildView(infobar_container_);
 
   contents_container_ = new TabContentsContainer;
