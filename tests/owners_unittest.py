@@ -109,8 +109,9 @@ class OwnersDatabaseTest(unittest.TestCase):
 
     # Check that we're passed in a sequence that isn't a string.
     self.assertRaises(AssertionError, db.files_not_covered_by, 'foo', [])
-    self.assertRaises(AssertionError, db.files_not_covered_by,
-                      (f for f in ['x', 'y']), [])
+    if hasattr(owners.collections, 'Iterable'):
+      self.assertRaises(AssertionError, db.files_not_covered_by,
+                        (f for f in ['x', 'y']), [])
 
     # Check that the files are under the root.
     db.root = '/checkout'
@@ -139,7 +140,9 @@ class OwnersDatabaseTest(unittest.TestCase):
 
     # Check that we're passed in a sequence that isn't a string.
     self.assertRaises(AssertionError, db.reviewers_for, 'foo')
-    self.assertRaises(AssertionError, db.reviewers_for, (f for f in ['x', 'y']))
+    if hasattr(owners.collections, 'Iterable'):
+      self.assertRaises(AssertionError, db.reviewers_for,
+                        (f for f in ['x', 'y']))
 
     # Check that the files are under the root.
     db.root = '/checkout'

@@ -17,9 +17,10 @@ BASIC_EMAIL_REGEXP = r'^[\w\-\+\%\.]+\@[\w\-\+\%\.]+$'
 
 
 def _assert_is_collection(obj):
-  assert (isinstance(obj, collections.Iterable) and
-          isinstance(obj, collections.Sized) and
-          not isinstance(obj, basestring))
+  assert not isinstance(obj, basestring)
+  if hasattr(collections, 'Iterable') and hasattr(collections, 'Sized'):
+    assert (isinstance(obj, collections.Iterable) and
+            isinstance(obj, collections.Sized))
 
 
 class SyntaxErrorInOwnersFile(Exception):
