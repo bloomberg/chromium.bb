@@ -1,13 +1,13 @@
-# Copyright 2008-2011 The Native Client Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 ##############################################################################
-# Helper script for NaCl toolchain development workflow
+# Helper script for NaCl toolchain development workflow.
 #
 # Buildbots:
 # - Sync needed sources at pinned revision and build newlib-based toolchain:
-#     make build SDKLOC=<where-to-install-the-toolchain>
+#     make build TOOLCHAINLOC=<where-to-install-the-toolchain>
 #
 # Development:
 # - Sync all sources at pinned revision:
@@ -15,14 +15,9 @@
 # - Sync all sources at most recent revision:
 #     make sync
 # - Build newlib-based toolchain from current sources:
-#     make dev-build SDKLOC=<where-to-install-the-toolchain>
+#     make dev-build TOOLCHAINLOC=<where-to-install-the-toolchain>
 # - Build glibc-based toolchain from current sources:
-#     make dev-build-with-glibc SDKLOC=<where-to-install-the-toolchain>
-#
-# Gotchas:
-# - Multilib glibc-based toolchain is not supported. Add
-#     MULTILIB=no
-#   to make command line when building glibc-based toolchain
+#     make dev-build-with-glibc TOOLCHAINLOC=<where-to-install-the-toolchain>
 #
 ##############################################################################
 
@@ -56,6 +51,11 @@ SDKNAME?=$(TOOLCHAINNAME)
 SDKROOT?=$(SDKLOC)/$(SDKNAME)
 DESTDIR?=
 BUILDNCCDIR=$(SDKROOT)/$(CROSSARCH)
+
+# By default all toolchain executables are x86-32 executables, use
+# HOST_TOOLCHAIN_BITS=64 to make them x86-64 executables.
+HOST_TOOLCHAIN_BITS=32
+
 include REVISIONS
 
 # Toplevel installation directory.
@@ -347,7 +347,7 @@ BUILD/stamp-$(CROSSARCH)-binutils: | SRC/binutils BUILD
 	# us from building with -Werror today.
 	cd BUILD/build-binutils-$(CROSSARCH) && \
 	  CC="gcc" \
-	  CFLAGS="-m32 -O2 -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
+	  CFLAGS="-m$(HOST_TOOLCHAIN_BITS) -O2 -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
 	  LDFLAGS="-s" \
 	  ../../SRC/binutils/configure \
 	    --prefix=$(SDKROOT) \
@@ -377,6 +377,7 @@ BUILD/stamp-$(CROSSARCH)-pregcc: | SRC/gcc BUILD
 	    target=$(CROSSARCH) \
 	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
+	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
 	    MULTILIB=$(MULTILIB) \
 	    configure-pregcc
 	PATH=$(BUILDPATH) $(MAKE) \
@@ -713,6 +714,7 @@ endif
 	    target=$(CROSSARCH) \
 	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
+	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
 	    MULTILIB=$(MULTILIB) \
 	    configure-gcc-with-glibc
 	PATH=$(BUILDPATH) $(MAKE) \
