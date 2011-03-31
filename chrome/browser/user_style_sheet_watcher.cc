@@ -150,8 +150,7 @@ void UserStyleSheetWatcher::Init() {
                                              .AppendASCII(kUserStyleSheetFile);
     if (!file_watcher_->Watch(
         style_sheet_file,
-        loader_.get(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI))) {
+        loader_.get())) {
       LOG(ERROR) << "Failed to setup watch for " << style_sheet_file.value();
     }
     loader_->LoadStyleSheet(style_sheet_file);

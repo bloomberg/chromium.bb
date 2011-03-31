@@ -97,8 +97,7 @@ void FileBasedPolicyLoader::InitOnFileThread() {
   if (!config_file_path().empty() &&
       !watcher_->Watch(
           config_file_path(),
-          new FileBasedPolicyWatcherDelegate(this),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI))) {
+          new FileBasedPolicyWatcherDelegate(this))) {
     OnError();
   }
 

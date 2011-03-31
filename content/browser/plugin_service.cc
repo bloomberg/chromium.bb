@@ -549,8 +549,7 @@ void PluginService::RegisterFilePathWatcher(
     FilePathWatcher *watcher,
     const FilePath& path,
     FilePathWatcher::Delegate* delegate) {
-  bool result = watcher->Watch(
-      path, delegate, base::MessageLoopProxy::CreateForCurrentThread());
+  bool result = watcher->Watch(path, delegate);
   DCHECK(result);
 }
 #endif
