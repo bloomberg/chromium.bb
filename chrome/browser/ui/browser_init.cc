@@ -80,7 +80,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/brightness_observer.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -92,7 +91,6 @@
 #include "chrome/browser/chromeos/network_message_observer.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/chromeos/sms_observer.h"
-#include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/update_observer.h"
 #include "chrome/browser/chromeos/usb_mount_observer.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
@@ -569,10 +567,6 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   // of what window has focus.
   chromeos::WmMessageListener::GetInstance();
 
-  // Create the SystemKeyEventListener so it can listen for system keyboard
-  // messages regardless of focus.
-  chromeos::SystemKeyEventListener::GetInstance();
-
   // Create the WmOverviewController so it can register with the listener.
   chromeos::WmOverviewController::GetInstance();
 
@@ -614,11 +608,6 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
         ->AddCellularDataPlanObserver(network_message_observer);
     chromeos::CrosLibrary::Get()->GetNetworkLibrary()
         ->AddUserActionObserver(network_message_observer);
-
-    static chromeos::BrightnessObserver* brightness_observer =
-        new chromeos::BrightnessObserver();
-    chromeos::CrosLibrary::Get()->GetBrightnessLibrary()
-        ->AddObserver(brightness_observer);
 
     static chromeos::SmsObserver* sms_observer =
         new chromeos::SmsObserver(profile);

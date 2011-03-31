@@ -9,6 +9,8 @@
 #include "base/timer.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/chromeos/login/background_view.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/setting_level_bubble_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -38,11 +40,14 @@ int LimitPercent(int percent) {
 
 namespace chromeos {
 
-// Temporary helper routine. Returns the widget from the most-recently-focused
-// normal browser window or NULL.
+// Temporary helper routine. Tries to first return the widget from the
+// most-recently-focused normal browser window, then from a login
+// background, and finally NULL if both of those fail.
 // TODO(glotov): remove this in favor of enabling InfoBubble class act
 // without |parent| specified. crosbug.com/4025
 static views::Widget* GetToplevelWidget() {
+  GtkWindow* window = NULL;
+
   // We just use the default profile here -- this gets overridden as needed
   // in Chrome OS depending on whether the user is logged in or not.
   Browser* browser =
@@ -50,12 +55,20 @@ static views::Widget* GetToplevelWidget() {
           ProfileManager::GetDefaultProfile(),
           Browser::TYPE_NORMAL,
           true);  // match_incognito
-  if (!browser)
+  if (browser) {
+    window = GTK_WINDOW(browser->window()->GetNativeHandle());
+  } else {
+    // Otherwise, see if there's a background window that we can use.
+    BackgroundView* background = LoginUtils::Get()->GetBackgroundView();
+    if (background)
+      window = GTK_WINDOW(background->GetNativeWindow());
+  }
+
+  if (!window)
     return NULL;
 
   views::NativeWidget* native_widget =
-      views::NativeWidget::GetNativeWidgetForNativeWindow(
-          GTK_WINDOW(browser->window()->GetNativeHandle()));
+      views::NativeWidget::GetNativeWidgetForNativeWindow(window);
   return native_widget->GetWidget();
 }
 

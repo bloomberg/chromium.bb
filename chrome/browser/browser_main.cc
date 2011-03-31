@@ -128,6 +128,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/brightness_observer.h"
+#include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/oom_priority_manager.h"
 #endif
 
@@ -1663,6 +1665,17 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_CHROMEOS)
   metrics->StartExternalMetrics();
+
+  // Initialize the brightness observer so that we'll display an onscreen
+  // indication of brightness changes during login.
+  static chromeos::BrightnessObserver* brightness_observer =
+      new chromeos::BrightnessObserver();
+  chromeos::CrosLibrary::Get()->GetBrightnessLibrary()->AddObserver(
+      brightness_observer);
+
+  // Listen for system key events so that the user will be able to adjust the
+  // volume on the login screen.
+  chromeos::SystemKeyEventListener::GetInstance();
 #endif
 
   // Initialize extension event routers. Note that on Chrome OS, this will
