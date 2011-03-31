@@ -152,9 +152,8 @@ Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
     // TODO(davemoore) Fix the tests so they allow OTR profiles.
     if (!command_line.HasSwitch(switches::kTestType) ||
         command_line.HasSwitch(switches::kLoginProfile)) {
-      // Init extensions for this profile to be able to use component extensions
-      // for this profile. HelpApp is as example of component extension.
-      profile = GetProfile(default_profile_dir, true);
+      // Don't init extensions for this profile
+      profile = GetProfile(default_profile_dir, false);
       profile = profile->GetOffTheRecordProfile();
     } else {
       profile = GetProfile(default_profile_dir, true);
