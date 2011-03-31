@@ -38,7 +38,10 @@ class PhishingClassifierDelegate : public RenderViewObserver {
   // Called by the RenderView once a page has finished loading.  Updates the
   // last-loaded URL and page id, then starts classification if all other
   // conditions are met (see MaybeStartClassification for details).
-  virtual void PageCaptured(const string16& page_text);
+  // We ignore preliminary captures, since these happen before the page has
+  // finished loading.
+  virtual void PageCaptured(const string16& page_text,
+                            bool preliminary_capture);
 
   // Called by the RenderView when a page has started loading in the given
   // WebFrame.  Typically, this will cause any pending classification to be

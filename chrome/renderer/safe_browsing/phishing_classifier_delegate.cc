@@ -132,7 +132,11 @@ void PhishingClassifierDelegate::DidCommitProvisionalLoad(
   }
 }
 
-void PhishingClassifierDelegate::PageCaptured(const string16& page_text) {
+void PhishingClassifierDelegate::PageCaptured(const string16& page_text,
+                                              bool preliminary_capture) {
+  if (preliminary_capture) {
+    return;
+  }
   last_finished_load_id_ = render_view()->page_id();
   last_finished_load_url_ = StripToplevelUrl();
   classifier_page_text_ = page_text;

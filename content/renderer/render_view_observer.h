@@ -45,7 +45,8 @@ class RenderViewObserver : public IPC::Channel::Listener,
   // These match the RenderView methods below.
   virtual void FrameTranslated(WebKit::WebFrame* frame) {}
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}
-  virtual void PageCaptured(const string16& page_text) {}
+  virtual void PageCaptured(const string16& page_text,
+                            bool preliminary_capture) {}
 
  protected:
   RenderViewObserver(RenderView* render_view);

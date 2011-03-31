@@ -1181,7 +1181,8 @@ void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
     OnCaptureThumbnail();
   }
 
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, PageCaptured(contents));
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
+                    PageCaptured(contents, preliminary_capture));
 }
 
 void RenderView::CaptureText(WebFrame* frame, string16* contents) {
