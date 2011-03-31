@@ -13,8 +13,18 @@ function updateNotificationsEnabledInfo(notificationsEnabled) {
       notificationsEnabledInfo);
 }
 
+function updateNotificationInfo(notification) {
+  var notificationInfo = document.getElementById('notificationInfo');
+    jstProcess(
+  new JsEvalContext({ 'notificationInfo':
+      JSON.stringify(notification, null, 2)
+  }),
+  notificationInfo);
+}
+
 function onLoad() {
   chrome.sync.getNotificationState(updateNotificationsEnabledInfo);
+  chrome.sync.getNotificationInfo(updateNotificationInfo);
   chrome.sync.onSyncNotificationStateChange.addListener(
       updateNotificationsEnabledInfo);
 
@@ -39,6 +49,7 @@ function onLoad() {
         document.getElementById('notificationsInfo');
     jstProcess(new JsEvalContext({ 'notifications': infos }),
                notificationsInfo);
+    chrome.sync.getNotificationInfo(updateNotificationInfo);
   });
 }
 
@@ -54,6 +65,9 @@ table#notificationsInfo tr:nth-child(odd) {
 
 <p id='notificationsEnabledInfo'>
   Enabled: <span jscontent='notificationsEnabled'></span>
+</p>
+<p id='notificationInfo'>
+  <span jscontent='notificationInfo'></span>
 </p>
 <table id='notificationsInfo'>
   <tr jsselect='notifications'>

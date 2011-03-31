@@ -119,6 +119,12 @@ chrome.sync.getNotificationState = function(callback) {
   chrome.sync.getNotificationState_.call(callback);
 }
 
+chrome.sync.getNotificationInfo_ =
+    new AsyncFunction('getNotificationInfo');
+chrome.sync.getNotificationInfo = function(callback) {
+  chrome.sync.getNotificationInfo_.call(callback);
+}
+
 // Node lookup functions.
 chrome.sync.getRootNode_ = new AsyncFunction('getRootNode');
 chrome.sync.getRootNode = function(callback) {
@@ -220,4 +226,8 @@ function onGetRootNodeFinished(rootNode) {
 
 function onGetNodeByIdFinished(node) {
   chrome.sync.getNodeById_.handleReply(node);
+}
+
+function onGetNotificationInfoFinished(notificationInfo) {
+  chrome.sync.getNotificationInfo_.handleReply(notificationInfo);
 }

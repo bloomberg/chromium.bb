@@ -1095,6 +1095,44 @@ const sync_pb::PasswordSpecificsData&
   return unencrypted_;
 }
 
+namespace {
+
+struct NotificationInfo {
+  int total_count;
+  std::string payload;
+
+  NotificationInfo() : total_count(0) {}
+
+  ~NotificationInfo() {}
+
+  // Returned pointer owned by the caller.
+  DictionaryValue* ToValue() const {
+    DictionaryValue* value = new DictionaryValue();
+    value->SetInteger("totalCount", total_count);
+    value->SetString("payload", payload);
+    return value;
+  }
+};
+
+typedef std::map<syncable::ModelType, NotificationInfo> NotificationInfoMap;
+
+// returned pointer is owned by the caller.
+DictionaryValue* NotificationInfoToValue(
+    const NotificationInfoMap& notification_info) {
+  DictionaryValue* value = new DictionaryValue();
+
+  for (NotificationInfoMap::const_iterator it = notification_info.begin();
+      it != notification_info.end(); ++it) {
+    const std::string& model_type_str =
+        syncable::ModelTypeToString(it->first);
+    value->Set(model_type_str, it->second.ToValue());
+  }
+
+  return value;
+}
+
+}  // namespace
+
 //////////////////////////////////////////////////////////////////////////
 // SyncManager's implementation: SyncManager::SyncInternal
 class SyncManager::SyncInternal
@@ -1408,6 +1446,11 @@ class SyncManager::SyncInternal
   // decryption.  Otherwise, the cryptographer is made ready (is_ready()).
   void BootstrapEncryption(const std::string& restored_key_for_bootstrapping);
 
+  // Called for every notification. This updates the notification statistics
+  // to be displayed in about:sync.
+  void UpdateNotificationInfo(
+      const syncable::ModelTypePayloadMap& type_payloads);
+
   // Helper for migration to new nigori proto to set
   // 'using_explicit_passphrase' in the NigoriSpecifics.
   // TODO(tim): Bug 62103.  Remove this after it has been pushed out to dev
@@ -1490,6 +1533,10 @@ class SyncManager::SyncInternal
   bool setup_for_test_mode_;
 
   ScopedRunnableMethodFactory<SyncManager::SyncInternal> method_factory_;
+
+  // Map used to store the notification info to be displayed in about:sync page.
+  // TODO(lipalani) - prefill the map with enabled data types.
+  NotificationInfoMap notification_info_map_;
 };
 const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
 const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
@@ -2517,6 +2564,16 @@ void SyncManager::SyncInternal::ProcessMessage(
     parent_router_->RouteJsEvent(
         "onGetNotificationStateFinished",
         browser_sync::JsArgList(return_args), sender);
+  } else if (name == "getNotificationInfo") {
+    if (!parent_router_) {
+      LogNoRouter(name, args);
+      return;
+    }
+
+    ListValue return_args;
+    return_args.Append(NotificationInfoToValue(notification_info_map_));
+    parent_router_->RouteJsEvent("onGetNotificationInfoFinished",
+        browser_sync::JsArgList(return_args), sender);
   } else if (name == "getRootNode") {
     if (!parent_router_) {
       LogNoRouter(name, args);
@@ -2586,6 +2643,16 @@ void SyncManager::SyncInternal::OnNotificationStateChange(
   }
 }
 
+void SyncManager::SyncInternal::UpdateNotificationInfo(
+    const syncable::ModelTypePayloadMap& type_payloads) {
+  for (syncable::ModelTypePayloadMap::const_iterator it = type_payloads.begin();
+       it != type_payloads.end(); ++it) {
+    NotificationInfo* info = &notification_info_map_[it->first];
+    info->total_count++;
+    info->payload = it->second;
+  }
+}
+
 void SyncManager::SyncInternal::OnIncomingNotification(
     const syncable::ModelTypePayloadMap& type_payloads) {
   if (!type_payloads.empty()) {
@@ -2596,6 +2663,7 @@ void SyncManager::SyncInternal::OnIncomingNotification(
           type_payloads);
     }
     allstatus_.IncrementNotificationsReceived();
+    UpdateNotificationInfo(type_payloads);
   } else {
     LOG(WARNING) << "Sync received notification without any type information.";
   }
