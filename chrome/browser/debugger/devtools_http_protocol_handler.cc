@@ -242,7 +242,7 @@ static PageList GeneratePageList(
                                       render_view_host());
     PageInfo page_info;
     page_info.id = controller.session_id().id();
-    page_info.attached = client_host;
+    page_info.attached = client_host != NULL;
     page_info.url = entry->url().spec();
     page_info.title = UTF16ToUTF8(entry->title());
     page_info.favicon_url = entry->favicon().url().spec();
