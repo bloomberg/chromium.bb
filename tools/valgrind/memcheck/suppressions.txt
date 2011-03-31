@@ -4215,6 +4215,32 @@
    fun:_ZN4base13AtExitManager19ProcessCallbacksNowEv
    fun:_ZN4base13AtExitManagerD1Ev
 }
+{
+   bug_78067
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN25ChromeRenderMessageFilterC1EiP7ProfileP23URLRequestContextGetter
+   fun:_ZN24BrowserRenderProcessHost20CreateMessageFiltersEv
+   fun:_ZN24BrowserRenderProcessHost4InitEbb
+   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
+   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
+   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
+   fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
+   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
+   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
+   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
+   fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
+   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
+   fun:_ZN11BrowserInit17LaunchWithProfile17OpenTabsInBrowserEP7BrowserbRKSt6vectorINS0_3TabESaIS4_EE
+   fun:_ZN11BrowserInit17LaunchWithProfile17OpenURLsInBrowserEP7BrowserbRKSt6vectorI4GURLSaIS4_EE
+   fun:_ZN11BrowserInit17LaunchWithProfile17ProcessLaunchURLsEbRKSt6vectorI4GURLSaIS2_EE
+   fun:_ZN11BrowserInit17LaunchWithProfile6LaunchEP7ProfileRKSt6vectorI4GURLSaIS4_EEb
+   fun:_ZN11BrowserInit13LaunchBrowserERK11CommandLineP7ProfileRK8FilePathbPi
+   fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRK8FilePathbP7ProfilePiPS_
+   fun:_ZN11BrowserInit5StartERK11CommandLineRK8FilePathP7ProfilePi
+   fun:_Z11BrowserMainRK18MainFunctionParams
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
