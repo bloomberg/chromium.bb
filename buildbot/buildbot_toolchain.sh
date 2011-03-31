@@ -4,9 +4,8 @@
 # found in the LICENSE file.
 
 # Script assumed to be run in native_client/
-# *native_client vs */native_client to be tolerant of cygwin's odd tendency
-# to return slashes in $(pwd) sometimes.
-if [[ $(pwd) != *native_client ]]; then
+cd "$(cygpath "${PWD}")"
+if [[ ${PWD} != */native_client ]]; then
   echo "ERROR: must be run in native_client!"
   exit 1
 fi
