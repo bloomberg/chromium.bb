@@ -137,6 +137,8 @@ class WebUI {
                               const std::vector<const Value*>& args);
 
   // May be overridden by WebUI's which do not have a tab contents.
+  // TODO(estade): removing this Profile dependency is predicated on reworking
+  // TabContents's Profile ownership.
   virtual Profile* GetProfile() const;
 
   // May be overridden by WebUI's which do not have a tab contents.

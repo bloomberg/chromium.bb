@@ -249,8 +249,9 @@ bool ChromeWebUIFactory::HasWebUIScheme(const GURL& url) const {
          url.SchemeIs(chrome::kExtensionScheme);
 }
 
-bool ChromeWebUIFactory::IsURLAcceptableForWebUI(Profile* profile,
-                                           const GURL& url) const {
+bool ChromeWebUIFactory::IsURLAcceptableForWebUI(
+    Profile* profile,
+    const GURL& url) const {
   return UseWebUIForURL(profile, url) ||
       // javacsript: URLs are allowed to run in Web UI pages
       url.SchemeIs(chrome::kJavaScriptScheme) ||
@@ -264,8 +265,9 @@ bool ChromeWebUIFactory::IsURLAcceptableForWebUI(Profile* profile,
       url.spec() == chrome::kAboutShorthangURL;
 }
 
-WebUI* ChromeWebUIFactory::CreateWebUIForURL(TabContents* tab_contents,
-                                       const GURL& url) const {
+WebUI* ChromeWebUIFactory::CreateWebUIForURL(
+    TabContents* tab_contents,
+    const GURL& url) const {
   WebUIFactoryFunction function = GetWebUIFactoryFunction(
       tab_contents->profile(), url);
   if (!function)
@@ -273,9 +275,10 @@ WebUI* ChromeWebUIFactory::CreateWebUIForURL(TabContents* tab_contents,
   return (*function)(tab_contents, url);
 }
 
-void ChromeWebUIFactory::GetFaviconForURL(Profile* profile,
-                                    FaviconService::GetFaviconRequest* request,
-                                    const GURL& page_url) const {
+void ChromeWebUIFactory::GetFaviconForURL(
+    Profile* profile,
+    FaviconService::GetFaviconRequest* request,
+    const GURL& page_url) const {
   // All extensions but the bookmark manager get their favicon from the icons
   // part of the manifest.
   if (page_url.SchemeIs(chrome::kExtensionScheme) &&
@@ -284,7 +287,7 @@ void ChromeWebUIFactory::GetFaviconForURL(Profile* profile,
   } else {
     history::FaviconData favicon;
     favicon.image_data = scoped_refptr<RefCountedMemory>(
-        GetFaviconResourceBytes(profile, page_url));
+        GetFaviconResourceBytes(page_url));
     favicon.known_icon = favicon.image_data.get() != NULL &&
                              favicon.image_data->size() > 0;
     request->ForwardResultAsync(
@@ -305,7 +308,6 @@ ChromeWebUIFactory::~ChromeWebUIFactory() {
 }
 
 RefCountedMemory* ChromeWebUIFactory::GetFaviconResourceBytes(
-    Profile* profile,
     const GURL& page_url) const  {
   // The bookmark manager is a chrome extension, so we have to check for it
   // before we check for extension scheme.
