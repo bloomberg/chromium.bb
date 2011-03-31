@@ -685,7 +685,10 @@ stubout:
 BUILD/stamp-$(CROSSARCH)-full-gcc: glibc-adhoc-files
 	rm -rf BUILD/build-full-gcc-$(CROSSARCH)
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)
-ifeq ($(CYGWIN17), 1)
+ifneq ($(CYGWIN17), 1)
+SYSINCLUDE_HACK_TARGET=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
+else
+SYSINCLUDE_HACK_TARGET=BUILD/build-full-gcc-$(CROSSARCH)/$(CROSSARCH)/sys-include
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)/gcc
 	cp -af $(DESTDIR)$(SDKROOT)/libexec/cyg*.dll \
 	    BUILD/build-full-gcc-$(CROSSARCH)/gcc
@@ -703,9 +706,9 @@ ifeq ($(CROSSARCH), nacl64)
 endif
 endif
 	# See http://code.google.com/p/nativeclient/issues/detail?id=854
-	rm -rf $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
-	mkdir $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
-	ln -s ../include/limits.h $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include/limits.h
+	rm -rf $(SYSINCLUDE_HACK_TARGET)
+	mkdir $(SYSINCLUDE_HACK_TARGET)
+	ln -s ../include/limits.h $(SYSINCLUDE_HACK_TARGET)/limits.h
 	PATH=$(BUILDPATH) $(MAKE) \
 	    -C BUILD/build-full-gcc-$(CROSSARCH) \
 	    -f ../../Makefile.gcc \
@@ -724,6 +727,8 @@ endif
 	    -C BUILD/build-full-gcc-$(CROSSARCH) \
 	    DESTDIR=$(DESTDIR) \
 	    install
+	# See http://code.google.com/p/nativeclient/issues/detail?id=854
+	rm -rf $(SYSINCLUDE_HACK_TARGET)
 	touch $@
 
 ##################################################################
