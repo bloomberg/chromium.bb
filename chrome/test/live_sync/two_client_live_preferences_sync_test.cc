@@ -769,7 +769,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kEnableScreenLock) {
       prefs::kEnableScreenLock);
   GetVerifierPrefs()->SetBoolean(prefs::kEnableScreenLock,
       new_kEnableScreenLock);
-  GetPrefs(0)->SetBoolean(prefs::kTapToClickEnabled, new_kEnableScreenLock);
+  GetPrefs(0)->SetBoolean(prefs::kEnableScreenLock, new_kEnableScreenLock);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
   ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kEnableScreenLock),
