@@ -26,7 +26,8 @@ except ImportError:
     import json
   except ImportError:
     # Fall back to the packaged version.
-    from third_party import simplejson as json
+    sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
+    import simplejson as json
 
 
 from third_party import upload
