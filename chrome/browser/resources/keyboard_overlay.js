@@ -221,9 +221,23 @@ function getKeyLabel(keyData, modifiers) {
 
 /**
  * Returns a normalized string used for a key of shortcutData.
+ *
+ * Examples:
+ *   keycode: 'd', modifiers: ['CTRL', 'SHIFT'] => 'd<>CTRL<>SHIFT'
+ *   keycode: 'alt', modifiers: ['ALT', 'SHIFT'] => 'ALT<>SHIFT'
  */
 function getAction(keycode, modifiers) {
   const SEPARATOR = '<>';
+  if (keycode.toUpperCase() in MODIFIER_TO_CLASS) {
+    keycode = keycode.toUpperCase();
+    if (keycode in modifiers) {
+      return modifiers.join(SEPARATOR);
+    } else {
+      var action = [keycode].concat(modifiers)
+      action.sort();
+      return action.join(SEPARATOR);
+    }
+  }
   return [keycode].concat(modifiers).join(SEPARATOR);
 }
 

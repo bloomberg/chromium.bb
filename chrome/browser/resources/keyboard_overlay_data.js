@@ -23545,7 +23545,7 @@ var keyboardOverlayData = {
     "7<>CTRL": "keyboardOverlayActivateTab7",
     "8<>CTRL": "keyboardOverlayActivateTab8",
     "9<>CTRL": "keyboardOverlayActivateLastTab",
-    "alt<>SHIFT": "keyboardOverlayCycleThroughInputMethods",
+    "ALT<>SHIFT": "keyboardOverlayCycleThroughInputMethods",
     "a<>CTRL": "keyboardOverlaySelectAll",
     "arrowkeys<>CTRL": "keyboardOverlayWordMove",
     "b<>CTRL<>SHIFT": "keyboardOverlayToggleBookmarkBar",
