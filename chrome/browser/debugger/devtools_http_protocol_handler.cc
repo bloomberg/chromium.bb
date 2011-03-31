@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,13 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -123,7 +125,19 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(
         BrowserThread::UI,
         FROM_HERE,
         NewRunnableMethod(this,
-                          &DevToolsHttpProtocolHandler::OnHttpRequestUI,
+                          &DevToolsHttpProtocolHandler::OnRootRequestUI,
+                          connection_id,
+                          info));
+    return;
+  }
+
+  if (info.path == "/json") {
+    // Pages discovery json request.
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &DevToolsHttpProtocolHandler::OnJsonRequestUI,
                           connection_id,
                           info));
     return;
@@ -195,53 +209,102 @@ void DevToolsHttpProtocolHandler::OnClose(int connection_id) {
           connection_id));
 }
 
-void DevToolsHttpProtocolHandler::OnHttpRequestUI(
+struct PageInfo
+{
+  int id;
+  std::string url;
+  bool attached;
+  std::string title;
+  std::string favicon_url;
+};
+typedef std::vector<PageInfo> PageList;
+
+static PageList GeneratePageList(
+    DevToolsHttpProtocolHandler::TabContentsProvider* tab_contents_provider,
     int connection_id,
     const HttpServerRequestInfo& info) {
-  std::string response = "<html><body><script>"
-      "function addTab(id, url, attached, frontendUrl) {"
-      "    if (!attached) {"
-      "        var a = document.createElement('a');"
-      "        a.textContent = url;"
-      "        a.href = frontendUrl + '?host=' + window.location.host +"
-      "            '&page=' + id;"
-      "        document.body.appendChild(a);"
-      "    } else {"
-      "        var span = document.createElement('span');"
-      "        span.textContent = url + ' (attached)';"
-      "        document.body.appendChild(span);"
-      "    }"
-      "    document.body.appendChild(document.createElement('br'));"
-      "}";
+  typedef DevToolsHttpProtocolHandler::InspectableTabs Tabs;
+  Tabs inspectable_tabs = tab_contents_provider->GetInspectableTabs();
 
-  InspectableTabs inspectable_tabs =
-      tab_contents_provider_->GetInspectableTabs();
-
-  for (InspectableTabs::iterator it = inspectable_tabs.begin();
+  PageList page_list;
+  for (Tabs::iterator it = inspectable_tabs.begin();
        it != inspectable_tabs.end(); ++it) {
 
     TabContentsWrapper* tab_contents = *it;
     NavigationController& controller = tab_contents->controller();
-    NavigationEntry* entry = controller.GetActiveEntry();
-    if (entry == NULL)
-      continue;
 
-    if (!entry->url().is_valid())
+    NavigationEntry* entry = controller.GetActiveEntry();
+    if (entry == NULL || !entry->url().is_valid())
       continue;
 
     DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
         GetDevToolsClientHostFor(tab_contents->tab_contents()->
                                       render_view_host());
+    PageInfo page_info;
+    page_info.id = controller.session_id().id();
+    page_info.attached = client_host;
+    page_info.url = entry->url().spec();
+    page_info.title = UTF16ToUTF8(entry->title());
+    page_info.favicon_url = entry->favicon().url().spec();
+    page_list.push_back(page_info);
+  }
+  return page_list;
+}
+
+void DevToolsHttpProtocolHandler::OnRootRequestUI(
+    int connection_id,
+    const HttpServerRequestInfo& info) {
+  std::string response = "<html><body><script>"
+        "function addTab(id, url, attached, frontendUrl) {"
+        "    if (!attached) {"
+        "        var a = document.createElement('a');"
+        "        a.textContent = url;"
+        "        a.href = frontendUrl + '?host=' + window.location.host +"
+        "            '&page=' + id;"
+        "        document.body.appendChild(a);"
+        "    } else {"
+        "        var span = document.createElement('span');"
+        "        span.textContent = url + ' (attached)';"
+        "        document.body.appendChild(span);"
+        "    }"
+        "    document.body.appendChild(document.createElement('br'));"
+        "}";
+
+  PageList page_list = GeneratePageList(tab_contents_provider_.get(),
+                                        connection_id, info);
+  for (PageList::iterator i = page_list.begin();
+       i != page_list.end(); ++i) {
     response += StringPrintf(
         "addTab(%d, '%s', %s, '%s');\n",
-        controller.session_id().id(),
-        entry->url().spec().c_str(),
-        client_host ? "true" : "false",
+        i->id,
+        i->url.c_str(),
+        i->attached ? "true" : "false",
         overriden_frontend_url_.c_str());
   }
-
   response += "</script></body></html>";
   Send200(connection_id, response, "text/html; charset=UTF-8");
+}
+
+void DevToolsHttpProtocolHandler::OnJsonRequestUI(
+    int connection_id,
+    const HttpServerRequestInfo& info) {
+  PageList page_list = GeneratePageList(tab_contents_provider_.get(),
+                                        connection_id, info);
+  ListValue json_pages_list;
+  for (PageList::iterator i = page_list.begin();
+       i != page_list.end(); ++i) {
+
+    DictionaryValue* page_info = new DictionaryValue;
+    json_pages_list.Append(page_info);
+    page_info->SetInteger("id", i->id);
+    page_info->SetBoolean("attached", i->attached);
+    page_info->SetString("title", i->title);
+    page_info->SetString("url", i->url);
+    page_info->SetString("faviconUrl", i->favicon_url);
+  }
+  std::string response;
+  base::JSONWriter::Write(&json_pages_list, true, &response);
+  Send200(connection_id, response, "application/json; charset=UTF-8");
 }
 
 void DevToolsHttpProtocolHandler::OnWebSocketRequestUI(
