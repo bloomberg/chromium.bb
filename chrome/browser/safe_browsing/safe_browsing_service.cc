@@ -243,10 +243,11 @@ bool SafeBrowsingService::CheckDownloadHash(const std::string& full_hash,
 
 bool SafeBrowsingService::MatchCsdWhitelistUrl(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(enable_csd_whitelist_);
   if (!enabled_ || !enable_csd_whitelist_ || !MakeDatabaseAvailable()) {
-    // There is something funky going on here.  Just to be safe we return
-    // true in this case.
+    // There is something funky going on here -- for example, perhaps the user
+    // has not restarted since enabling metrics reporting, so we haven't
+    // enabled the csd whitelist yet.  Just to be safe we return true in this
+    // case.
     return true;
   }
   return database_->ContainsCsdWhitelistedUrl(url);
@@ -882,7 +883,7 @@ void SafeBrowsingService::Start() {
   // cannot check whether the metrics_service() object is created because it
   // may be initialized after this method is called.
   enable_csd_whitelist_ =
-      (cmdline->HasSwitch(switches::kEnableClientSidePhishingDetection) &&
+      (!cmdline->HasSwitch(switches::kDisableClientSidePhishingDetection) &&
        local_state && local_state->GetBoolean(prefs::kMetricsReportingEnabled));
 
   BrowserThread::PostTask(
