@@ -663,6 +663,7 @@ void NativeTextfieldWin::OnKeyDown(TCHAR key, UINT repeat_count, UINT flags) {
       if (!(flags & KF_ALTDOWN) && (GetKeyState(VK_SHIFT) >= 0) &&
           (GetKeyState(VK_CONTROL) >= 0))
         return;
+      // Fall through to the next case (ie. Shift-Insert == Ctrl-V).
     case 'V':
       if ((flags & KF_ALTDOWN) ||
           (GetKeyState((key == 'V') ? VK_CONTROL : VK_SHIFT) >= 0))
