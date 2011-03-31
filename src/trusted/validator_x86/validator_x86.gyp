@@ -157,6 +157,25 @@
             ],
           },
           {
+            'action_name': 'ncdecode_tablegen_subregs',
+            'msvs_cygwin_shell': 0,
+            'inputs': [
+              '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
+            ],
+            'outputs': [
+              '<(validate_gen_out)/nc_subregs.h',
+            ],
+            'message': 'Running ncdecode_tablegen -naclsubregs',
+            'process_outputs_as_sources': 1,
+            'conditions': [
+              ['target_arch=="ia32"', {
+                'action': ['<@(_inputs)', '-m32', '-nacl_subregs', '<@(_outputs)'],
+              }, {
+                'action': ['<@(_inputs)', '-m64', '-nacl-subregs', '<@(_outputs)'],
+              }],
+            ],
+          },
+          {
             'action_name': 'ncop_expr_node_flag',
             'msvs_cygwin_shell': 0,
             'inputs': [ 'enum_gen.py', 'ncop_expr_node_flag.enum' ],
@@ -390,6 +409,7 @@
                   'ncdecode_OF.c',
                   'ncdecode_sse.c',
                   'ncdecodeX87.c',
+                  'nacl_regsgen.c',
                   'force_cpp.cc'
       ],
       'cflags!': [
@@ -532,9 +552,6 @@
               'msvs_cygwin_shell': 0,
               'inputs': [
                 '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
-                # TODO(bradnelson): make gyp support two separate actions using
-                # identical inputs.
-                'ncdecode_tablegen.c',
               ],
               'outputs': [
                 '<(validate_gen_out)/nc_opcode_table64.h',
@@ -545,6 +562,24 @@
                 '<@(_outputs)'
               ],
               'message': 'Running ncdecode_tablegen64',
+              'process_outputs_as_sources': 1,
+            },
+            {
+              'action_name': 'ncdecode_tablegen64_subregs',
+              'msvs_cygwin_shell': 0,
+              'inputs': [
+                '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
+              ],
+              'outputs': [
+                '<(validate_gen_out)/nc_subregs64.h',
+              ],
+              'action': [
+                '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
+                '-m64',
+                '-nacl_subregs',
+                '<@(_outputs)'
+              ],
+              'message': 'Running ncdecode_tablegen64 -naclsubregs',
               'process_outputs_as_sources': 1,
             },
           ],

@@ -1,4 +1,5 @@
-/* Copyright (c) 2009 The Native Client Authors. All rights reserved.
+/*
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -460,19 +461,19 @@ static void NaClCheckSubregChangeOfRspRbpOrBase(
   if (NaClIs64Subreg(inst_state, reg_name, state->base_register)) {
     NaClValidatorInstMessage(
         LOG_ERROR, state, inst_state,
-        "Changing %s changes the value of register %s\n",
+        "Changing %s changes the value of %s\n",
         NaClOpKindName(reg_name),
         NaClOpKindName(state->base_register));
   } else if (NaClIs64Subreg(inst_state, reg_name, RegRSP)) {
     NaClValidatorInstMessage(
         LOG_ERROR, state, inst_state,
-        "Changing %s changes the value of register %s\n",
+        "Changing %s changes the value of %s\n",
         NaClOpKindName(reg_name),
         NaClOpKindName(RegRSP));
   } else if (NaClIs64Subreg(inst_state, reg_name, RegRBP)) {
     NaClValidatorInstMessage(
         LOG_ERROR, state, inst_state,
-        "Changing %s changes the value of register %s\n",
+        "Changing %s changes the value of %s\n",
         NaClOpKindName(reg_name),
         NaClOpKindName(RegRBP));
   }

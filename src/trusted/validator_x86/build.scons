@@ -106,6 +106,7 @@ ncdecode_tablegen = env_decode_table.ComponentProgram(
      'ncdecode_OF.c',
      'ncdecode_sse.c',
      'ncdecodeX87.c',
+     'nacl_regsgen.c',
      force_cpp,
     ],
     EXTRA_LIBS=['utils',
@@ -169,8 +170,10 @@ env.Command(
 # TODO(gregoryd): use nc_opcode_table64.h on all 64-bit platforms.
 if env.Bit('target_x86_64') and env.Bit('windows'):
   ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table64.h')
+  ncv_subregs_h = env.File(ncv_gen_dir + '/nc_subregs64.h')
 else:
   ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table.h')
+  ncv_subregs_h = env.File(ncv_gen_dir + '/nc_subregs.h')
 
 env.Command(
     [ncv_opcode_table_h],
@@ -178,6 +181,13 @@ env.Command(
      '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}'],
     ['${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX} -m%s %s' %
      (env['TARGET_SUBARCH'], ncv_opcode_table_h)])
+
+env.Command(
+    [ncv_subregs_h],
+    [ncdecode_tablegen,
+     '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}'],
+    ['${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX} -m%s -nacl_subregs %s' %
+     (env['TARGET_SUBARCH'], ncv_subregs_h)])
 
 # ======================================================================
 # Decoder unittests

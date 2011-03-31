@@ -1,4 +1,5 @@
-/* Copyright (c) 2009 The Native Client Authors. All rights reserved.
+/*
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -35,6 +36,7 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/validator_x86/nacl_regsgen.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_st.h"
 
@@ -85,6 +87,11 @@ NaClRunMode NACL_FLAGS_run_mode = NaClRunModeSize;
  * be as a header file, or human readable (for documentation).
  */
 static Bool NACL_FLAGS_human_readable = FALSE;
+
+/* Defines whether the output should be instruction modeling tables,
+ * or hardware registers.
+ */
+static Bool NACL_FLAGS_nacl_subregs = FALSE;
 
 /* Holds the current instruction prefix. */
 static NaClInstPrefix current_opcode_prefix = NoPrefix;
@@ -2362,7 +2369,9 @@ static int NaClGrokFlags(int argc, const char* argv[]) {
     } else if (0 == strcmp("-m64", argv[i])) {
       NACL_FLAGS_run_mode = X86_64;
     } else if (GrokBoolFlag("-documentation", argv[i],
-                            &NACL_FLAGS_human_readable)) {
+                            &NACL_FLAGS_human_readable) |
+               GrokBoolFlag("-nacl_subregs", argv[i],
+                            &NACL_FLAGS_nacl_subregs)) {
       continue;
     } else {
       argv[new_argc++] = argv[i];
@@ -2378,7 +2387,11 @@ static void GenerateTables(struct Gio* f, const char* cmd,
   } else {
     /* Generate header file defining instruction set. */
     NaClPrintHeader(f, cmd, filename);
-    NaClPrintDecodeTables(f);
+    if (NACL_FLAGS_nacl_subregs) {
+      NaClPrintGpRegisterIndexes(f);
+    } else {
+      NaClPrintDecodeTables(f);
+    }
   }
 }
 
@@ -2418,10 +2431,11 @@ int main(const int argc, const char* argv[]) {
   struct Gio* g = (struct Gio*) &gfile;
   int new_argc = NaClGrokFlags(argc, argv);
   if ((new_argc < 1) || (new_argc > 2) ||
+      (NACL_FLAGS_human_readable && NACL_FLAGS_nacl_subregs) ||
       (NACL_FLAGS_run_mode == NaClRunModeSize)) {
     fprintf(stderr,
             "ERROR: usage: ncdecode_tablegen <architecture_flag> "
-            "[-documentation] [file]\n");
+            "[-documentation | -nacl_subregs] [file]\n");
     return -1;
   }
 

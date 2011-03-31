@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -18,6 +18,15 @@
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
+
+#include "native_client/src/trusted/validator_x86/nacl_regs.h"
+
+#ifdef _WIN64
+#include "gen/native_client/src/trusted/validator_x86/nc_subregs64.h"
+#else
+#include "gen/native_client/src/trusted/validator_x86/nc_subregs.h"
+#endif
+
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -175,318 +184,6 @@ static NaClExp* NaClAppendConst(uint64_t value, NaClExpFlags flags,
   }
 }
 
-/* Define the number of general purpose registers defined for the given
- * subarchitecture.
- */
-#if NACL_TARGET_SUBARCH == 64
-#define NACL_REG_TABLE_SIZE 16
-#else
-#define NACL_REG_TABLE_SIZE 8
-#endif
-
-/* Define the available 8-bit registers, for the given subarchitecture,
- * assuming the REX prefix is not present.
- * Note: The order is important, and is based on the indexing values used
- * in the ModRm and SIB bytes (and the REX prefix if appropriate).
- */
-static const NaClOpKind NaClRegTable8NoRex[NACL_REG_TABLE_SIZE] = {
-  RegAL,
-  RegCL,
-  RegDL,
-  RegBL,
-  RegAH,
-  RegCH,
-  RegDH,
-  RegBH,
-#if NACL_TARGET_SUBARCH == 64
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown
-#endif
-};
-
-/* Define a mapping from NaClRegTable8Rex indicies, to the corresponding
- * register index in NaClRegTable64, for which each register in
- * NaClRegTable8Rex is a subregister in NaClRegTable64, assuming the
- * REX prefix isn't defined for the instruction.
- * Note: this index will only be used if the corresponding index in
- * NaClRegTable8NoRex is not RegUnknown.
- */
-static const int NaClRegTable8NoRexTo64[NACL_REG_TABLE_SIZE] = {
-  0,
-  1,
-  2,
-  3,
-  0,
-  1,
-  2,
-  3,
-#if NACL_TARGET_SUBARCH == 64
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0
-#endif
-};
-
-/* Define the available 8-bit registers, for the given subarchitecture,
- * assuming the rex prefix is present.
- * Note: The order is important, and is based on the indexing values used
- * in the ModRm and SIB bytes (and the REX prefix if appropriate).
- */
-static const NaClOpKind NaClRegTable8Rex[NACL_REG_TABLE_SIZE] = {
-  RegAL,
-  RegCL,
-  RegDL,
-  RegBL,
-#if NACL_TARGET_SUBARCH == 64
-  RegSPL,
-  RegBPL,
-  RegSIL,
-  RegDIL,
-  RegR8B,
-  RegR9B,
-  RegR10B,
-  RegR11B,
-  RegR12B,
-  RegR13B,
-  RegR14B,
-  RegR15B
-#else
-  RegAH,
-  RegCH,
-  RegDH,
-  RegBH
-#endif
-};
-
-/* Define a mapping from NaClRegTable8Rex indicies, to the corresponding
- * register index in NaClRegTable64, for which each register in
- * NaClRegTable8Rex is a subregister in NaClRegTable64, assuming the
- * REX prefix is defined for the instruction.
- * Note: this index will only be used if the corresponding index in
- * NaClRegTable8Rex is not RegUnknown.
- */
-static const int NaClRegTable8RexTo64[NACL_REG_TABLE_SIZE] = {
-  0,
-  1,
-  2,
-  3,
-#if NACL_TARGET_SUBARCH == 64
-  4,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
-  13,
-  14,
-  15
-#else
-  0,
-  1,
-  2,
-  3
-#endif
-};
-
-/* Define the available 16-bit registers, for the given subarchitecture.
- * Note: The order is important, and is based on the indexing values used
- * in the ModRm and SIB bytes (and the REX prefix if appropriate).
- */
-static const NaClOpKind NaClRegTable16[NACL_REG_TABLE_SIZE] = {
-  RegAX,
-  RegCX,
-  RegDX,
-  RegBX,
-  RegSP,
-  RegBP,
-  RegSI,
-  RegDI,
-#if NACL_TARGET_SUBARCH == 64
-  RegR8W,
-  RegR9W,
-  RegR10W,
-  RegR11W,
-  RegR12W,
-  RegR13W,
-  RegR14W,
-  RegR15W,
-#endif
-};
-
-/* Define the available 32-bit registers, for the given subarchitecture.
- * Note: The order is important, and is based on the indexing values used
- * in the ModRm and SIB bytes (and the REX prefix if appropriate).
- */
-static const NaClOpKind NaClRegTable32[NACL_REG_TABLE_SIZE] = {
-  RegEAX,
-  RegECX,
-  RegEDX,
-  RegEBX,
-  RegESP,
-  RegEBP,
-  RegESI,
-  RegEDI,
-#if NACL_TARGET_SUBARCH == 64
-  RegR8D,
-  RegR9D,
-  RegR10D,
-  RegR11D,
-  RegR12D,
-  RegR13D,
-  RegR14D,
-  RegR15D
-#endif
-};
-
-/* Define the available 64-bit registers, for the given subarchitecture.
- * Note: The order is important, and is based on the indexing values used
- * in the ModRm and SIB bytes (and the REX prefix if appropriate).
- */
-static const NaClOpKind NaClRegTable64[NACL_REG_TABLE_SIZE] = {
-#if NACL_TARGET_SUBARCH == 64
-  RegRAX,
-  RegRCX,
-  RegRDX,
-  RegRBX,
-  RegRSP,
-  RegRBP,
-  RegRSI,
-  RegRDI,
-  RegR8,
-  RegR9,
-  RegR10,
-  RegR11,
-  RegR12,
-  RegR13,
-  RegR14,
-  RegR15
-#else
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown
-#endif
-};
-
-/* Define the available Mmx registers, for the given subarchitecture.
- * Note: The order is important, and is based on the indexing values
- * used in the ModRm and SIB bytes (and the REX prefix if appropriate).
- */
-static const NaClOpKind NaClRegTableMmx[NACL_REG_TABLE_SIZE] = {
-  RegMMX0,
-  RegMMX1,
-  RegMMX2,
-  RegMMX3,
-  RegMMX4,
-  RegMMX5,
-  RegMMX6,
-  RegMMX7,
-#if NACL_TARGET_SUBARCH == 64
-  /* Intentionally repeat values, since Rex.B/R has no effect. */
-  RegMMX0,
-  RegMMX1,
-  RegMMX2,
-  RegMMX3,
-  RegMMX4,
-  RegMMX5,
-  RegMMX6,
-  RegMMX7
-#endif
-};
-
-/* Define the available Xmm registers, for the given subarchitecture.
- * Note: The order is important, and is based on the indexing values
- * used in the ModRm and SIB bytes (and the REX prefix if appropriate).
- */
-static const NaClOpKind NaClRegTableXmm[NACL_REG_TABLE_SIZE] = {
-  RegXMM0,
-  RegXMM1,
-  RegXMM2,
-  RegXMM3,
-  RegXMM4,
-  RegXMM5,
-  RegXMM6,
-  RegXMM7,
-#if NACL_TARGET_SUBARCH == 64
-  RegXMM8,
-  RegXMM9,
-  RegXMM10,
-  RegXMM11,
-  RegXMM12,
-  RegXMM13,
-  RegXMM14,
-  RegXMM15
-#endif
-};
-
-/* Defines the available control registers, for the given subarchitecture.
- * Note: The order is important, and is based on the indexing values
- * used in the ModRm byte (and the REX prefix if appropriate).
- */
-static const NaClOpKind NaClRegTableC[NACL_REG_TABLE_SIZE] = {
-  RegCR0,
-  RegCR1,
-  RegCR2,
-  RegCR3,
-  RegCR4,
-  RegCR5,
-  RegCR6,
-  RegCR7,
-#if NACL_TARGET_SUBARCH == 64
-  RegCR8,
-  RegCR9,
-  RegCR10,
-  RegCR11,
-  RegCR12,
-  RegCR13,
-  RegCR14,
-  RegCR15,
-#endif
-};
-
-/* Defines the available debug registers, for the given subarchitecture.
- * Note: The order is important, and is based on the indexing values
- * used in the ModRm byte (and the REX prefix if appropriate).
- */
-static const NaClOpKind NaClRegTableD[NACL_REG_TABLE_SIZE] = {
-  RegDR0,
-  RegDR1,
-  RegDR2,
-  RegDR3,
-  RegDR4,
-  RegDR5,
-  RegDR6,
-  RegDR7,
-#if NACL_TARGET_SUBARCH == 64
-  RegDR8,
-  RegDR9,
-  RegDR10,
-  RegDR11,
-  RegDR12,
-  RegDR13,
-  RegDR14,
-  RegDR15,
-#endif
-};
-
 /* Define a type corresponding to the arrays NaClRegTable8,
  * NaClRegTable16, NaClRegTable32, and NaClRegTable64.
  */
@@ -505,133 +202,26 @@ NaClOpKind NaClGet64For32BitReg(NaClOpKind reg32) {
 }
 
 NaClOpKind NaClGet32For64BitReg(NaClOpKind reg64) {
-#if NACL_TARGET_SUBARCH == 64
-  int i;
-  for (i = 0; i < NACL_REG_TABLE_SIZE; ++i) {
-    if (reg64 == NaClRegTable64[i]) {
-      return NaClRegTable32[i];
-    }
-  }
-#endif
-  return RegUnknown;
-}
-
-/* Once initialized, contains mapping from registers of size <= 64 to the
- * corresponding 64 bit register (or RegUnknown if no such register), when
- * there is a rex prefix in the instruction.
- *
- * Note: Initialized by function NaClBuildSubreg64Reg.
- */
-static NaClOpKind* NaClSubreg64RegRex = NULL;
-
-/* Once initialized, contains mapping from registers of size <= 64 to the
- * corresponding 64 bit register (or RegUnknown if no such register), when
- * there isn't a rex prefix in the instruction.
- *
- * Note: Initialized by function NaClBuildSubreg64Reg.
- */
-static NaClOpKind* NaClSubreg64RegNoRex = NULL;
-
-/* Add the mapping from subregisters (in subtable) to the corresponding
- * registers (in table).
- *
- * Parameters:
- *    subreg_table - The subregister table to update.
- *    subtable - The subregister table
- *    table - The register table the subregister is being checked
- *            against.
- *    index_fold - Any index remapping (i.e. fold) to be applied.
- */
-static void NaClAddSubRegsFold(
-    NaClOpKind subreg_table[NaClOpKindEnumSize],
-    const NaClOpKind subtable[NACL_REG_TABLE_SIZE],
-    const NaClOpKind table[NACL_REG_TABLE_SIZE],
-    const int index_fold[NACL_REG_TABLE_SIZE]) {
-  int i;
-  for (i = 0; i < NACL_REG_TABLE_SIZE; ++i) {
-    NaClOpKind subreg = subtable[i];
-    if (subreg != RegUnknown) {
-      subreg_table[subreg] = table[index_fold[i]];
-    }
-  }
-}
-
-/* Add the mapping from subregisters (in subtable) to the corresponding
- * registers (in table).
- *
- * Parameters:
- *    subreg_table - The subregister table to update.
- *    subtable - The subregister table
- *    table - The register table the subregister is being checked
- *            against.
- */
-static void NaClAddSubRegs(NaClOpKind subreg_table[NaClOpKindEnumSize],
-                           const NaClOpKind subtable[NACL_REG_TABLE_SIZE],
-                           const NaClOpKind table[NACL_REG_TABLE_SIZE]) {
-  static const int kIdentityFold[NACL_REG_TABLE_SIZE] = {
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-#if NACL_TARGET_SUBARCH == 64
-    8,
-    9,
-    10,
-    11,
-    12,
-    13,
-    14,
-    15
-#endif
-  };
-  NaClAddSubRegsFold(subreg_table, subtable, table, kIdentityFold);
-}
-
-/* Build NaClSubreg64RegRex and NaClSubreg64RegNoRex using encoded register tables. */
-static void NaClBuildSubreg64Regs() {
-  if (NaClSubreg64RegRex == NULL) {
-    int i;
-    /* Create lookup vectors, and initialize to unknown. */
-    NaClSubreg64RegRex = (NaClOpKind*)
-        calloc(sizeof(NaClOpKind), NaClOpKindEnumSize);
-    NaClSubreg64RegNoRex = (NaClOpKind*)
-        calloc(sizeof(NaClOpKind), NaClOpKindEnumSize);
-    for (i = 0; i < NaClOpKindEnumSize; ++i) {
-      NaClSubreg64RegRex[i] =  RegUnknown;
-      NaClSubreg64RegNoRex[i] = RegUnknown;
-    }
-
-    /* Add register tables. */
-    NaClAddSubRegsFold(NaClSubreg64RegNoRex,
-                       NaClRegTable8NoRex,
-                       NaClRegTable64,
-                       NaClRegTable8NoRexTo64);
-    NaClAddSubRegsFold(NaClSubreg64RegRex,
-                       NaClRegTable8Rex,
-                       NaClRegTable64,
-                       NaClRegTable8RexTo64);
-
-    NaClAddSubRegs(NaClSubreg64RegNoRex, NaClRegTable16, NaClRegTable64);
-    NaClAddSubRegs(NaClSubreg64RegRex, NaClRegTable16, NaClRegTable64);
-
-    NaClAddSubRegs(NaClSubreg64RegNoRex, NaClRegTable32, NaClRegTable64);
-    NaClAddSubRegs(NaClSubreg64RegRex, NaClRegTable32, NaClRegTable64);
-
-    NaClAddSubRegs(NaClSubreg64RegNoRex, NaClRegTable64, NaClRegTable64);
-    NaClAddSubRegs(NaClSubreg64RegRex, NaClRegTable64, NaClRegTable64);
-  }
+  int index = NaClGpReg64Index[reg64];
+  return (index == NACL_REGISTER_UNDEFINED)
+      ? RegUnknown
+      : NaClRegTable32[index];
 }
 
 Bool NaClIs64Subreg(NaClInstState* state,
                     NaClOpKind subreg, NaClOpKind reg64) {
-  NaClBuildSubreg64Regs();
-  return (state->rexprefix
-          ? NaClSubreg64RegRex[subreg]
-          : NaClSubreg64RegNoRex[subreg]) == NaClRegTable64[reg64];
+  int index = NaClGpSubregIndex[subreg];
+  if (index == NACL_REGISTER_UNDEFINED) {
+    return FALSE;
+  } else {
+    int index64 = NaClGpReg64Index[reg64];
+    if (index64 == NACL_REGISTER_UNDEFINED) {
+      /* This shouldn't happen, so fail! */
+      return FALSE;
+    } else {
+      return index == index64;
+    }
+  }
 }
 
 Bool NaClIs32To64RegPair(NaClOpKind reg32, NaClOpKind reg64) {
