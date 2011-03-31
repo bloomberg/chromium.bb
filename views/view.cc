@@ -841,6 +841,15 @@ bool View::OnMouseWheel(const MouseWheelEvent& event) {
   return false;
 }
 
+TextInputClient* View::GetTextInputClient() {
+  return NULL;
+}
+
+InputMethod* View::GetInputMethod() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 // Accelerators ----------------------------------------------------------------
 
 void View::AddAccelerator(const Accelerator& accelerator) {

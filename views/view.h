@@ -52,9 +52,11 @@ class Background;
 class Border;
 class FocusManager;
 class FocusTraversable;
+class InputMethod;
 class LayoutManager;
 class RootView;
 class ScrollView;
+class TextInputClient;
 class Widget;
 class Window;
 
@@ -684,6 +686,15 @@ class View : public AcceleratorTarget {
   // if the view is focused. If the event has not been processed, the parent
   // will be given a chance.
   virtual bool OnMouseWheel(const MouseWheelEvent& event);
+
+  // Returns the View's TextInputClient instance or NULL if the View doesn't
+  // support text input.
+  virtual TextInputClient* GetTextInputClient();
+
+  // Convenience method to retrieve the InputMethod associated with the
+  // Widget that contains this view. Returns NULL if this view is not part of a
+  // view hierarchy with a Widget.
+  virtual InputMethod* GetInputMethod();
 
   // Accelerators --------------------------------------------------------------
 

@@ -1072,6 +1072,28 @@ void Widget::NotifyLocaleChanged() {
   NOTIMPLEMENTED();
 }
 
+bool Widget::ConvertRect(const Widget* source,
+                         const Widget* target,
+                         gfx::Rect* rect) {
+  DCHECK(source);
+  DCHECK(target);
+  DCHECK(rect);
+
+  HWND source_hwnd = source->GetNativeView();
+  HWND target_hwnd = target->GetNativeView();
+  if (source_hwnd == target_hwnd)
+    return true;
+
+  RECT win_rect = rect->ToRECT();
+  if (::MapWindowPoints(source_hwnd, target_hwnd,
+                        reinterpret_cast<LPPOINT>(&win_rect),
+                        sizeof(RECT)/sizeof(POINT))) {
+    *rect = win_rect;
+    return true;
+  }
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidget, public:
 

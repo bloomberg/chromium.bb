@@ -1561,6 +1561,32 @@ void Widget::NotifyLocaleChanged() {
   g_list_free(window_list);
 }
 
+// static
+bool Widget::ConvertRect(const Widget* source,
+                         const Widget* target,
+                         gfx::Rect* rect) {
+  DCHECK(source);
+  DCHECK(target);
+  DCHECK(rect);
+
+  GtkWidget* source_widget = source->GetNativeView();
+  GtkWidget* target_widget = target->GetNativeView();
+  if (source_widget == target_widget)
+    return true;
+
+  if (!source_widget || !target_widget)
+    return false;
+
+  GdkRectangle gdk_rect = rect->ToGdkRectangle();
+  if (gtk_widget_translate_coordinates(source_widget, target_widget,
+                                       gdk_rect.x, gdk_rect.y,
+                                       &gdk_rect.x, &gdk_rect.y)) {
+    *rect = gdk_rect;
+    return true;
+  }
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidget, public:
 

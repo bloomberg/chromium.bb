@@ -49,7 +49,6 @@
       ]}],
       ['touchui==0', {'sources/': [
         ['exclude', 'events/event_x.cc$'],
-        ['exclude', 'ime/'],
         ['exclude', 'native_menu_x.cc$'],
         ['exclude', 'native_menu_x.h$'],
         ['exclude', 'touchui/'],
@@ -289,6 +288,15 @@
         'ime/ibus_ime_context.cc',
         'ime/ime_context.cc',
         'ime/ime_context.h',
+        'ime/input_method.h',
+        'ime/input_method_delegate.h',
+        'ime/input_method_base.cc',
+        'ime/input_method_base.h',
+        'ime/input_method_gtk.cc',
+        'ime/input_method_gtk.h',
+        'ime/input_method_win.cc',
+        'ime/input_method_win.h',
+        'ime/text_input_client.h',
         'layout/box_layout.cc',
         'layout/box_layout.h',
         'layout/fill_layout.cc',
@@ -445,6 +453,12 @@
               'defines': ['USE_DUMMY_IME_CONTEXT'],
             }],
           ],
+        }, { # else: touchui != 1
+          'sources!': [
+            'ime/ibus_ime_context.cc',
+            'ime/ime_context.cc',
+            'ime/ime_context.h',
+          ],
         }],
         ['OS=="win"', {
           'sources!': [
@@ -488,6 +502,8 @@
         'events/event_unittest.cc',
         'focus/accelerator_handler_gtk_unittest.cc',
         'focus/focus_manager_unittest.cc',
+        'ime/mock_input_method.cc',
+        'ime/mock_input_method.h',
         'layout/grid_layout_unittest.cc',
         'layout/box_layout_unittest.cc',
         'test/views_test_base.cc',
