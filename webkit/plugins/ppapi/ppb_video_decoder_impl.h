@@ -60,7 +60,6 @@ class PPB_VideoDecoder_Impl : public Resource,
       media::VideoDecodeAccelerator::PictureBuffer* picture_buffer) OVERRIDE;
   virtual void PictureReady(
       media::VideoDecodeAccelerator::Picture* picture) OVERRIDE;
-  virtual void NotifyPictureReady() OVERRIDE;
   virtual void NotifyEndOfStream() OVERRIDE;
   virtual void NotifyError(
       media::VideoDecodeAccelerator::Error error) OVERRIDE;
