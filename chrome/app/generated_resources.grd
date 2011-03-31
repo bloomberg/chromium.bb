@@ -9450,7 +9450,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Sign In
       </message>
       <message name="IDS_LOGIN_PASSWORD_CHANGED_TITLE" desc="Title of the dialog shown when password change has been detected">
-        You password has changed
+        Your password has changed
       </message>
       <message name="IDS_LOGIN_PASSWORD_CHANGED_DESC" desc="Detailed description of the password changed dialog">
         Your Google Account password has changed since the last time you signed in on this computer.
