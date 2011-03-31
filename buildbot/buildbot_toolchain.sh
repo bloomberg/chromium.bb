@@ -58,5 +58,5 @@ fi
 echo @@@BUILD_STEP archive_build@@@
 GS_BASE=gs://nativeclient-archive2/toolchain
 /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    native_client/tools/naclsdk.tgz \
+    tools/naclsdk.tgz \
     ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_${PLATFORM}_x86.tgz
