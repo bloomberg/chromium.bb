@@ -441,12 +441,28 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   EXPECT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD,
             extensions->at(size_before)->location());
 
+  // Try to disable and unstall the extension which should fail.
+  service->DisableExtension(kExtensionId);
+  EXPECT_EQ(size_before + 1, service->extensions()->size());
+  EXPECT_EQ(0u, service->disabled_extensions()->size());
+  UninstallExtension(kExtensionId);
+  EXPECT_EQ(size_before + 1, service->extensions()->size());
+  EXPECT_EQ(0u, service->disabled_extensions()->size());
+
+  // Now try to disable it through the management api.
+  ExtensionTestMessageListener listener1("ready", false);
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("management/uninstall_extension")));
+  ASSERT_TRUE(listener1.WaitUntilSatisfied());
+  EXPECT_EQ(size_before + 2, service->extensions()->size());
+  EXPECT_EQ(0u, service->disabled_extensions()->size());
+
   // Check that emptying the list triggers uninstall.
   {
     ScopedUserPrefUpdate pref_update(prefs, prefs::kExtensionInstallForceList);
     prefs->ClearPref(prefs::kExtensionInstallForceList);
   }
-  EXPECT_EQ(size_before, extensions->size());
+  EXPECT_EQ(size_before + 1, extensions->size());
   ExtensionList::const_iterator i;
   for (i = extensions->begin(); i != extensions->end(); ++i)
     EXPECT_NE(kExtensionId, (*i)->id());

@@ -91,6 +91,9 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
       return false;
 
     return extension_action_->HasPopup(ExtensionTabUtil::GetTabId(contents));
+  } else if (command_id == DISABLE || command_id == UNINSTALL) {
+    // Some extension types can not be disabled or uninstalled.
+    return Extension::UserMayDisable(extension->location());
   }
   return true;
 }

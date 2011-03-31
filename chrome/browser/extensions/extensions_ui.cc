@@ -155,6 +155,8 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
   localized_strings.SetString("options",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS));
+  localized_strings.SetString("policyControlled",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_CONTROLLED));
   localized_strings.SetString("packDialogTitle",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_TITLE));
   localized_strings.SetString("packDialogHeading",
@@ -366,11 +368,18 @@ void ExtensionsDOMHandler::HandleEnableMessage(const ListValue* args) {
   std::string extension_id, enable_str;
   CHECK(args->GetString(0, &extension_id));
   CHECK(args->GetString(1, &enable_str));
+  const Extension* extension =
+      extensions_service_->GetExtensionById(extension_id, true);
+  DCHECK(extension);
+  if (!Extension::UserMayDisable(extension->location())) {
+    LOG(ERROR) << "Attempt to enable an extension that is non-usermanagable was"
+               << "made. Extension id: " << extension->id();
+    return;
+  }
+
   if (enable_str == "true") {
     ExtensionPrefs* prefs = extensions_service_->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
-      const Extension* extension =
-          extensions_service_->GetExtensionById(extension_id, true);
       ShowExtensionDisabledDialog(extensions_service_,
                                   web_ui_->GetProfile(), extension);
     } else {
@@ -414,6 +423,12 @@ void ExtensionsDOMHandler::HandleAllowFileAccessMessage(const ListValue* args) {
   const Extension* extension =
       extensions_service_->GetExtensionById(extension_id, true);
   DCHECK(extension);
+  if (!Extension::UserMayDisable(extension->location())) {
+    LOG(ERROR) << "Attempt to change allow file access of an extension that is "
+               << "non-usermanagable was made. Extension id : "
+               << extension->id();
+    return;
+  }
 
   extensions_service_->SetAllowFileAccess(extension, allow_str == "true");
 }
@@ -427,6 +442,12 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const ListValue* args) {
     extension = extensions_service_->GetTerminatedExtension(extension_id);
   if (!extension)
     return;
+
+  if (!Extension::UserMayDisable(extension->location())) {
+    LOG(ERROR) << "Attempt to uninstall an extension that is non-usermanagable "
+               << "was made. Extension id : " << extension->id();
+    return;
+  }
 
   if (!extension_id_prompting_.empty())
     return;  // Only one prompt at a time.
@@ -727,6 +748,8 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   extension_data->SetString("icon", icon.spec());
   extension_data->SetBoolean("isUnpacked",
                              extension->location() == Extension::LOAD);
+  extension_data->SetBoolean("mayDisable",
+                             Extension::UserMayDisable(extension->location()));
   extension_data->SetBoolean("enabled", enabled);
   extension_data->SetBoolean("terminated", terminated);
   extension_data->SetBoolean("enabledIncognito",

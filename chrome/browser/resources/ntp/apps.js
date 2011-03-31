@@ -293,8 +293,10 @@ var apps = (function() {
         e.canExecute = currentApp && currentApp['options_url'];
         break;
       case 'apps-launch-command':
-      case 'apps-uninstall-command':
         e.canExecute = true;
+        break;
+      case 'apps-uninstall-command':
+        e.canExecute = !currentApp['can_uninstall'];
         break;
     }
   });

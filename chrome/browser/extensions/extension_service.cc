@@ -355,16 +355,24 @@ bool ExtensionService::UninstallExtensionHelper(
     ExtensionService* extensions_service,
     const std::string& extension_id) {
 
-  // We can't call UninstallExtension with an invalid extension ID, so check it
-  // first.
-  if (extensions_service->GetExtensionById(extension_id, true) ||
-      extensions_service->GetTerminatedExtension(extension_id)) {
-    extensions_service->UninstallExtension(extension_id, false);
-  } else {
+  const Extension* extension =
+      extensions_service->GetExtensionById(extension_id, true);
+  if (!extension)
+    extension = extensions_service->GetTerminatedExtension(extension_id);
+
+  // We can't call UninstallExtension with an invalid extension ID. We should
+  // not allow an uninstall of a policy-controlled extension.
+  if (!extension) {
     LOG(WARNING) << "Attempted uninstallation of non-existent extension with "
-      << "id: " << extension_id;
+                 << "id: " << extension_id;
+    return false;
+  } else if (!Extension::UserMayDisable(extension->location())) {
+    LOG(WARNING) << "Attempted uninstallation of an extension that is non-"
+                 << "usermanagable with id: " << extension_id;
     return false;
   }
+
+  extensions_service->UninstallExtension(extension_id, false);
 
   return true;
 }
@@ -602,6 +610,13 @@ void ExtensionService::UninstallExtension(const std::string& extension_id,
   // pointer will be invalid then.
   GURL extension_url(extension->url());
   Extension::Location location(extension->location());
+
+  // Policy change which triggers an uninstall will always set
+  // |external_uninstall| to true so this is the only way to uninstall
+  // managed extensions.
+  if (!Extension::UserMayDisable(location) && !external_uninstall)
+    return;
+
   UninstalledExtensionInfo uninstalled_extension_info(*extension);
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallType",
@@ -681,6 +696,9 @@ void ExtensionService::DisableExtension(const std::string& extension_id) {
       GetExtensionByIdInternal(extension_id, true, false);
   // The extension may have been disabled already.
   if (!extension)
+    return;
+
+  if (!Extension::UserMayDisable(extension->location()))
     return;
 
   extension_prefs_->SetExtensionState(extension, Extension::DISABLED);

@@ -2965,70 +2965,79 @@ void ExtensionServiceTest::TestExternalProvider(
   service_->UninstallExtension(id, false);
   loop_.RunAllPending();
 
-  // The extension should also be gone from the install directory.
   FilePath install_path = extensions_install_dir_.AppendASCII(id);
-  ASSERT_FALSE(file_util::PathExists(install_path));
+  // It should not be possible to uninstall a policy controlled extension.
+  if (Extension::UserMayDisable(location)) {
+    // The extension should also be gone from the install directory.
+    ASSERT_FALSE(file_util::PathExists(install_path));
+    loaded_.clear();
+    service_->CheckForExternalUpdates();
+    loop_.RunAllPending();
+    ASSERT_EQ(0u, loaded_.size());
+    ValidatePrefKeyCount(1);
+    ValidateIntegerPref(good_crx, "state", Extension::KILLBIT);
+    ValidateIntegerPref(good_crx, "location", location);
 
-  loaded_.clear();
-  service_->CheckForExternalUpdates();
-  loop_.RunAllPending();
-  ASSERT_EQ(0u, loaded_.size());
-  ValidatePrefKeyCount(1);
-  ValidateIntegerPref(good_crx, "state", Extension::KILLBIT);
-  ValidateIntegerPref(good_crx, "location", location);
+    // Now clear the preference and reinstall.
+    SetPrefInteg(good_crx, "state", Extension::ENABLED);
+    profile_->GetPrefs()->ScheduleSavePersistentPrefs();
 
-  // Now clear the preference and reinstall.
-  SetPrefInteg(good_crx, "state", Extension::ENABLED);
-  profile_->GetPrefs()->ScheduleSavePersistentPrefs();
-
-  loaded_.clear();
-  service_->CheckForExternalUpdates();
-  loop_.RunAllPending();
-  ASSERT_EQ(1u, loaded_.size());
+    loaded_.clear();
+    service_->CheckForExternalUpdates();
+    loop_.RunAllPending();
+    ASSERT_EQ(1u, loaded_.size());
+  } else {
+    // Policy controlled extesions should not have been touched by uninstall.
+    ASSERT_TRUE(file_util::PathExists(install_path));
+  }
   ValidatePrefKeyCount(1);
   ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
   ValidateIntegerPref(good_crx, "location", location);
 
-  // Now test an externally triggered uninstall (deleting the registry key or
-  // the pref entry).
-  provider->RemoveExtension(good_crx);
+  if (Extension::UserMayDisable(location)) {
+    // Now test an externally triggered uninstall (deleting the registry key or
+    // the pref entry).
+    provider->RemoveExtension(good_crx);
 
-  loaded_.clear();
-  service_->OnExternalProviderReady();
-  loop_.RunAllPending();
-  ASSERT_EQ(0u, loaded_.size());
-  ValidatePrefKeyCount(0);
+    loaded_.clear();
+    service_->OnExternalProviderReady();
+    loop_.RunAllPending();
+    ASSERT_EQ(0u, loaded_.size());
+    ValidatePrefKeyCount(0);
 
-  // The extension should also be gone from the install directory.
-  ASSERT_FALSE(file_util::PathExists(install_path));
+    // The extension should also be gone from the install directory.
+    ASSERT_FALSE(file_util::PathExists(install_path));
 
-  // Now test the case where user uninstalls and then the extension is removed
-  // from the external provider.
+    // Now test the case where user uninstalls and then the extension is removed
+    // from the external provider.
 
   provider->UpdateOrAddExtension(good_crx, "1.0.0.1", source_path);
-  service_->CheckForExternalUpdates();
-  loop_.RunAllPending();
+    service_->CheckForExternalUpdates();
+    loop_.RunAllPending();
 
-  ASSERT_EQ(1u, loaded_.size());
-  ASSERT_EQ(0u, GetErrors().size());
+    ASSERT_EQ(1u, loaded_.size());
+    ASSERT_EQ(0u, GetErrors().size());
 
-  // User uninstalls.
-  loaded_.clear();
-  service_->UninstallExtension(id, false);
-  loop_.RunAllPending();
-  ASSERT_EQ(0u, loaded_.size());
+    // User uninstalls.
+    loaded_.clear();
+    service_->UninstallExtension(id, false);
+    loop_.RunAllPending();
+    ASSERT_EQ(0u, loaded_.size());
 
-  // Then remove the extension from the extension provider.
-  provider->RemoveExtension(good_crx);
+    // Then remove the extension from the extension provider.
+    provider->RemoveExtension(good_crx);
 
-  // Should still be at 0.
-  loaded_.clear();
-  service_->LoadAllExtensions();
-  loop_.RunAllPending();
-  ASSERT_EQ(0u, loaded_.size());
-  ValidatePrefKeyCount(1);
+    // Should still be at 0.
+    loaded_.clear();
+    service_->LoadAllExtensions();
+    loop_.RunAllPending();
+    ASSERT_EQ(0u, loaded_.size());
+    ValidatePrefKeyCount(1);
 
-  EXPECT_EQ(5, provider->visit_count());
+    EXPECT_EQ(5, provider->visit_count());
+  } else {
+    EXPECT_EQ(2, provider->visit_count());
+  }
 }
 
 // Tests the external installation feature
@@ -3074,6 +3083,25 @@ TEST_F(ExtensionServiceTest, ExternalInstallPrefUpdateUrl) {
                                 Extension::EXTERNAL_PREF_DOWNLOAD);
   AddMockExternalProvider(pref_provider);
   TestExternalProvider(pref_provider, Extension::EXTERNAL_PREF_DOWNLOAD);
+}
+
+TEST_F(ExtensionServiceTest, ExternalInstallPolicyUpdateUrl) {
+  // This should all work, even when normal extension installation is disabled.
+  InitializeEmptyExtensionService();
+  set_extensions_enabled(false);
+
+  // TODO(skerner): The mock provider is not a good model of a provider
+  // that works with update URLs, because it adds file and version info.
+  // Extend the mock to work with update URLs. This test checks the
+  // behavior that is common to all external extension visitors. The
+  // browser test ExtensionManagementTest.ExternalUrlUpdate tests that
+  // what the visitor does results in an extension being downloaded and
+  // installed.
+  MockExtensionProvider* pref_provider =
+      new MockExtensionProvider(service_.get(),
+                                Extension::EXTERNAL_POLICY_DOWNLOAD);
+  AddMockExternalProvider(pref_provider);
+  TestExternalProvider(pref_provider, Extension::EXTERNAL_POLICY_DOWNLOAD);
 }
 
 // Tests that external extensions get uninstalled when the external extension

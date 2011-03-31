@@ -3825,6 +3825,9 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       <message name="IDS_EXTENSION_ACTION_INSPECT_POPUP" desc="The text for the right-click menu of page and browser actions which shows the popup and opens the developer tools.">
         Inspect popup
       </message>
+      <message name="IDS_EXTENSIONS_POLICY_CONTROLLED" desc="The text informing the user that an extension is policy controlled">
+        (this extension is managed and can not be uninstalled or disabled)
+      </message>
       <message name="IDS_GET_MORE_EXTENSIONS" desc="The link for getting more extensions. Displayed at bottom of extension management page when there is at least one extension installed.">
         Get more extensions >>
       </message>

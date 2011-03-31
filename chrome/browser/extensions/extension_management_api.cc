@@ -42,12 +42,14 @@ const char kIsAppKey[] = "isApp";
 const char kNameKey[] = "name";
 const char kOptionsUrlKey[] = "optionsUrl";
 const char kPermissionsKey[] = "permissions";
+const char kMayDisableKey[] = "mayDisable";
 const char kSizeKey[] = "size";
 const char kUrlKey[] = "url";
 const char kVersionKey[] = "version";
 
 const char kNoExtensionError[] = "No extension with id *";
 const char kNotAnAppError[] = "Extension * is not an App";
+const char kUserCantDisableError[] = "Extension * can not be disabled by user";
 }
 
 ExtensionService* ExtensionManagementFunction::service() {
@@ -61,6 +63,8 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
   info->SetBoolean(kIsAppKey, extension.is_app());
   info->SetString(kNameKey, extension.name());
   info->SetBoolean(kEnabledKey, enabled);
+  info->SetBoolean(kMayDisableKey,
+                   Extension::UserMayDisable(extension.location()));
   info->SetString(kVersionKey, extension.VersionString());
   info->SetString(kDescriptionKey, extension.description());
   info->SetString(kOptionsUrlKey,
@@ -203,6 +207,13 @@ bool SetEnabledFunction::RunImpl() {
   ExtensionPrefs* prefs = service()->extension_prefs();
   Extension::State state = prefs->GetExtensionState(extension_id);
 
+  if (!Extension::UserMayDisable(
+      prefs->GetInstalledExtensionInfo(extension_id)->extension_location)) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        kUserCantDisableError, extension_id);
+    return false;
+  }
+
   if (state == Extension::DISABLED && enable) {
     service()->EnableExtension(extension_id);
   } else if (state == Extension::ENABLED && !enable) {
@@ -219,6 +230,15 @@ bool UninstallFunction::RunImpl() {
   if (!service()->GetExtensionById(extension_id, true)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         kNoExtensionError, extension_id);
+    return false;
+  }
+
+  ExtensionPrefs* prefs = service()->extension_prefs();
+
+  if (!Extension::UserMayDisable(
+      prefs->GetInstalledExtensionInfo(extension_id)->extension_location)) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        kUserCantDisableError, extension_id);
     return false;
   }
 

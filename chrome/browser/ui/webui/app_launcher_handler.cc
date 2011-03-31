@@ -93,6 +93,8 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetString("description", extension->description());
   value->SetString("launch_url", extension->GetFullLaunchURL().spec());
   value->SetString("options_url", extension->options_url().spec());
+  value->SetBoolean("can_uninstall",
+                    Extension::UserMayDisable(extension->location()));
   value->SetString("icon_big", icon_big.spec());
   value->SetString("icon_small", icon_small.spec());
   value->SetInteger("launch_container", extension->launch_container());
@@ -402,6 +404,11 @@ void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
   if (!extension)
     return;
 
+  if (!Extension::UserMayDisable(extension->location())) {
+    LOG(ERROR) << "Attempt to uninstall an extension that is non-usermanagable "
+               << "was made. Extension id : " << extension->id();
+    return;
+  }
   if (!extension_id_prompting_.empty())
     return;  // Only one prompt at a time.
 

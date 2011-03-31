@@ -331,6 +331,7 @@ var extensionDataFormat = {
       'name': 'Google Chrome',
       'description': 'Extension long format description',
       'version': '1.0.231',
+      'mayDisable': 'true',
       'enabled': 'true',
       'terminated': 'false',
       'enabledIncognito': 'false',
@@ -378,6 +379,7 @@ var extensionDataFormat = {
       'name': 'RSS Subscriber',
       'description': 'Extension long format description',
       'version': '1.0.231',
+      'mayDisable': 'true',
       'enabled': 'true',
       'terminated': 'false',
       'enabledIncognito': 'false',
@@ -885,7 +887,7 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                 <span jsdisplay="enabled && allow_reload">-</span>
                 <a
                   jsvalues=".extensionId:id"
-                  jsdisplay="enabled"
+                  jsdisplay="enabled && mayDisable"
                   onclick="handleEnableExtension(this, false)"
                   href="javascript:void 0;"
                   i18n-content="disable"
@@ -896,14 +898,16 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                   onclick="handleEnableExtension(this, true)"
                   href="javascript:void 0;"
                   i18n-content="enable"
-                  >ENABLE</a>-
+                  >ENABLE</a>
+                <span jsdisplay="mayDisable">-</span>
                 <a
                   jsvalues=".extensionId:id"
+                  jsdisplay="mayDisable"
                   onclick="handleUninstallExtension(this)"
                   href="javascript:void 0;"
                   i18n-content="uninstall"
                   >UNINSTALL</a>
-                <span jsdisplay="options_url && enabled">-</span>
+                <span jsdisplay="options_url && enabled">-</span>                
                 <a
                   jsdisplay="options_url && enabled"
                   jsvalues=".extensionId:id"
@@ -926,14 +930,16 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                   jseval="this.checked = enabledIncognito"
                   onchange="handleToggleExtensionIncognito(this)">
                 <span i18n-content="enableIncognito">ALLOW THIS EXTENSION TO RUN IN INCOGNITO</span></label>
-                <label
-                  jsdisplay="enabled && wantsFileAccess">
+                <label jsdisplay="enabled && wantsFileAccess">
                 <input type="checkbox"
                   jsvalues=".extensionId:id;.enabled:enabled;.wantsFileAccess:wantsFileAccess"
                   jsdisplay="enabled && wantsFileAccess"
                   jseval="this.checked = allowFileAccess"
                   onchange="handleToggleAllowFileAccess(this)">
                 <span i18n-content="allowFileAccess">ALLOW THIS EXTENSION ACCESS TO FILE URLS</span></label>
+                <span jsdisplay="!mayDisable">-</span>
+                <span jsdisplay="!mayDisable" 
+                  i18n-content="policyControlled">THIS EXTENSION CAN NOT BE DISABLED OR UNINSTALLED BY USER</span>
               </span>
             </div>
             <div class="incognitoWarning">

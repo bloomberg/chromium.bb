@@ -264,6 +264,14 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
            IsExternalLocation(location);
   }
 
+  // Whether extensions with |location| can be uninstalled or not. Policy
+  // controlled extensions are silently auto-installed and updated, and cannot
+  // be disabled by the user. The same applies for internal components.
+  static inline bool UserMayDisable(Location location) {
+    return location != Extension::EXTERNAL_POLICY_DOWNLOAD &&
+           location != Extension::COMPONENT;
+  }
+
   // Whether extensions with |location| should be loaded with strict
   // error checking.  Strict error checks may flag errors older versions
   // of chrome did not detect.  To avoid breaking installed extensions,

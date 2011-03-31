@@ -4308,6 +4308,10 @@
             "description": "The <a href='manifest.html#version'>version</a> of this extension or app.",
             "type": "string"
           },
+          "mayDisable": {
+            "description": "Whether this extension can be disabled or unistalled by user.",
+            "type": "boolean"
+          },
           "enabled": {
             "description": "Whether it is currently enabled or disabled.",
             "type": "boolean"
