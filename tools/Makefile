@@ -77,19 +77,23 @@ NACL_BITS_HEADERS= \
       "$(HPREFIX)/bits/nacl_syscalls.h"
 NACL_MACHINE_HEADERS="$(HPREFIX)/machine/_types.h"
 
+  # No 'uname -o' on OSX
 ifeq ($(shell uname -s), Darwin)
-  PLATFORM=osx
+  PLATFORM=mac
   # Ensure that the resulting toolchain works on Mac OS X 10.5, since that
   # is not the default in newer versions of Xcode.
   export MACOSX_DEPLOYMENT_TARGET=10.5
 else
-  # No 'uname -o' on OSX
-  PLATFORM:=$(shell uname -o)
+ifeq ($(shell uname -o), Cygwin)
+  PLATFORM=win
+else
+  PLATFORM=linux
+endif
 endif
 
 SRCDIR=../../../third_party
 
-ifeq ($(PLATFORM), Cygwin)
+ifeq ($(PLATFORM), win)
   # Ugh, Cygwin and spaces in paths don't work well.
   # I'm explicitly coding the path.
   BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:/usr/local/bin:/usr/bin:/bin
@@ -664,10 +668,10 @@ scons-libs-glibc: glibc-adhoc-files
 	  rm -f $(ARCH_DEST)/lib/libnacl.so; \
 	fi
 
-NCVAL_STUBOUT=$(abspath $(BUILD_EXTRA_SDK)/opt-linux-x86-$(LIB_BITS)/staging/ncval_stubout)
+NCVAL_STUBOUT=$(abspath $(BUILD_EXTRA_SDK)/opt-$(PLATFORM)-x86-$(LIB_BITS)/staging/ncval_stubout)
 .PHONY: stubout
 stubout:
-	cd .. && ./$(SCONS) --mode=opt-linux platform=x86-$(LIB_BITS) \
+	cd .. && ./$(SCONS) --mode=opt-$(PLATFORM) platform=x86-$(LIB_BITS) \
 	    $(SCONS_DESTINATIONS_NOLIB) ncval_stubout
 	set -e; find $(ARCH_DEST)/lib/ -name '*.so' | \
 	  while read library ; do \
@@ -773,7 +777,7 @@ endif
 
 .PHONY: gcc-redirector
 gcc-redirector:
-ifeq ($(PLATFORM), Cygwin)
+ifeq ($(PLATFORM), win)
 	for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
 	  echo "The next command can hang on FAT partiton; use NTFS!" ; \
 	  ln -fn redirector.exe \
@@ -903,7 +907,7 @@ gdb_minimal_test: BUILD/stamp-$(CROSSARCH)-gdb
 # Use redirector on other platforms to save space.
 
 redirector: ALWAYS
-ifeq ($(PLATFORM), Cygwin)
+ifeq ($(PLATFORM), win)
 	for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)"-*.exe ; do \
 	  if ! cmp redirector.exe "$$exe" > /dev/null ; then \
 	    mv -f "$$exe" "$(DESTDIR)$(SDKROOT)/libexec/`basename $$exe`" ; \

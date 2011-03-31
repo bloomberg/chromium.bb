@@ -10,6 +10,7 @@ echo @@@BUILD_STEP gclient_runhooks@@@
 call gclient runhooks --force
 
 setlocal
+call "%~dp0msvs_env.bat"
 call "%~dp0cygwin_env.bat"
 set CYGWIN=nodosfilewarning %CYGWIN%
 bash buildbot/buildbot_windows-glibc-makefile.sh
