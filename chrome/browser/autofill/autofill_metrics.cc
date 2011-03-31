@@ -20,11 +20,23 @@ void AutofillMetrics::Log(CreditCardInfoBarMetric metric) const {
                             NUM_CREDIT_CARD_INFO_BAR_METRICS);
 }
 
-void AutofillMetrics::Log(ServerQueryMetric metric) const {
-  DCHECK(metric < NUM_SERVER_QUERY_METRICS);
+void AutofillMetrics::Log(HeuristicTypeQualityMetric metric) const {
+  DCHECK(metric < NUM_HEURISTIC_TYPE_QUALITY_METRICS);
 
-  UMA_HISTOGRAM_ENUMERATION("Autofill.ServerQueryResponse", metric,
-                            NUM_SERVER_QUERY_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Autofill.Quality.HeuristicType", metric,
+                            NUM_HEURISTIC_TYPE_QUALITY_METRICS);
+}
+
+void AutofillMetrics::Log(PredictedTypeQualityMetric metric,
+                          const std::string& experiment_id) const {
+  DCHECK(metric < NUM_PREDICTED_TYPE_QUALITY_METRICS);
+
+  std::string histogram_name = "Autofill.Quality.PredictedType";
+  if (!experiment_id.empty())
+    histogram_name += "_" + experiment_id;
+
+  UMA_HISTOGRAM_ENUMERATION(histogram_name, metric,
+                            NUM_PREDICTED_TYPE_QUALITY_METRICS);
 }
 
 void AutofillMetrics::Log(QualityMetric metric,
@@ -36,6 +48,25 @@ void AutofillMetrics::Log(QualityMetric metric,
     histogram_name += "_" + experiment_id;
 
   UMA_HISTOGRAM_ENUMERATION(histogram_name, metric, NUM_QUALITY_METRICS);
+}
+
+void AutofillMetrics::Log(ServerQueryMetric metric) const {
+  DCHECK(metric < NUM_SERVER_QUERY_METRICS);
+
+  UMA_HISTOGRAM_ENUMERATION("Autofill.ServerQueryResponse", metric,
+                            NUM_SERVER_QUERY_METRICS);
+}
+
+void AutofillMetrics::Log(ServerTypeQualityMetric metric,
+                          const std::string& experiment_id) const {
+  DCHECK(metric < NUM_SERVER_TYPE_QUALITY_METRICS);
+
+  std::string histogram_name = "Autofill.Quality.ServerType";
+  if (!experiment_id.empty())
+    histogram_name += "_" + experiment_id;
+
+  UMA_HISTOGRAM_ENUMERATION(histogram_name, metric,
+                            NUM_SERVER_TYPE_QUALITY_METRICS);
 }
 
 void AutofillMetrics::LogStoredProfileCount(size_t num_profiles) const {
