@@ -41,6 +41,8 @@ class PPB_URLUtil_Proxy : public InterfaceProxy {
                                       PP_Bool* result);
   void OnMsgGetDocumentURL(PP_Instance instance,
                            SerializedVarReturnValue result);
+  void OnMsgGetPluginInstanceURL(PP_Instance instance,
+                                 SerializedVarReturnValue result);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_URLUtil_Proxy);
 };

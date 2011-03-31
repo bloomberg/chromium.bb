@@ -120,6 +120,18 @@ PP_Var GetDocumentURL(PP_Instance instance,
   return ConvertComponentsAndReturnURL(result.Return(dispatcher), components);
 }
 
+PP_Var GetPluginInstanceURL(PP_Instance instance,
+                            struct PP_URLComponents_Dev* components) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_MakeNull();
+
+  ReceiveSerializedVarReturnValue result;
+  dispatcher->Send(new PpapiHostMsg_PPBURLUtil_GetPluginInstanceURL(
+      INTERFACE_ID_PPB_URL_UTIL, instance, &result));
+  return ConvertComponentsAndReturnURL(result.Return(dispatcher), components);
+}
+
 const PPB_URLUtil_Dev url_util_interface = {
   &Canonicalize,
   &ResolveRelativeToURL,
@@ -127,7 +139,8 @@ const PPB_URLUtil_Dev url_util_interface = {
   &IsSameSecurityOrigin,
   &DocumentCanRequest,
   &DocumentCanAccessDocument,
-  &GetDocumentURL
+  &GetDocumentURL,
+  &GetPluginInstanceURL
 };
 
 InterfaceProxy* CreateURLUtilProxy(Dispatcher* dispatcher,
@@ -168,6 +181,8 @@ bool PPB_URLUtil_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgDocumentCanAccessDocument)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLUtil_GetDocumentURL,
                         OnMsgGetDocumentURL)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLUtil_GetPluginInstanceURL,
+                        OnMsgGetPluginInstanceURL)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -200,6 +215,12 @@ void PPB_URLUtil_Proxy::OnMsgGetDocumentURL(PP_Instance instance,
                                             SerializedVarReturnValue result) {
   result.Return(dispatcher(),
                 ppb_url_util_target()->GetDocumentURL(instance, NULL));
+}
+
+void PPB_URLUtil_Proxy::OnMsgGetPluginInstanceURL(
+    PP_Instance instance, SerializedVarReturnValue result) {
+  result.Return(dispatcher(),
+                ppb_url_util_target()->GetPluginInstanceURL(instance, NULL));
 }
 
 }  // namespace proxy

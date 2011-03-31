@@ -146,6 +146,18 @@ PP_Var GetDocumentURL(PP_Instance instance_id,
                                         frame->url(), components);
 }
 
+PP_Var GetPluginInstanceURL(PP_Instance instance_id,
+                            PP_URLComponents_Dev* components) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return PP_MakeNull();
+
+  const GURL& url = instance->plugin_url();
+  return URLUtilImpl::GenerateURLReturn(Var::GetInterface()->VarFromUtf8,
+                                        instance->module()->pp_module(),
+                                        url, components);
+}
+
 const PPB_URLUtil_Dev ppb_url_util = {
   &Canonicalize,
   &ResolveRelativeToURL,
@@ -153,7 +165,8 @@ const PPB_URLUtil_Dev ppb_url_util = {
   &IsSameSecurityOrigin,
   &DocumentCanRequest,
   &DocumentCanAccessDocument,
-  &GetDocumentURL
+  &GetDocumentURL,
+  &GetPluginInstanceURL
 };
 
 }  // namespace

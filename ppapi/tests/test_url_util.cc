@@ -27,6 +27,7 @@ void TestURLUtil::RunTest() {
   RUN_TEST(DocumentCanRequest);
   RUN_TEST(DocumentCanAccessDocument);
   RUN_TEST(GetDocumentURL);
+  RUN_TEST(GetPluginInstanceURL);
 }
 
 std::string TestURLUtil::TestCanonicalize() {
@@ -125,5 +126,13 @@ std::string TestURLUtil::TestGetDocumentURL() {
   ASSERT_TRUE(href.is_string());
   // In the test framework, they should be the same.
   ASSERT_EQ(url.AsString(), href.AsString());
+  PASS();
+}
+
+std::string TestURLUtil::TestGetPluginInstanceURL() {
+  pp::Var url = util_->GetPluginInstanceURL(*instance_);
+  ASSERT_TRUE(url.is_string());
+  // see test_case.html
+  ASSERT_EQ(url.AsString(), "http://a.b.c/test");
   PASS();
 }

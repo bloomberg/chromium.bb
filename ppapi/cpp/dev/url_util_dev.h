@@ -40,6 +40,9 @@ class URLUtil_Dev {
   Var GetDocumentURL(const Instance& instance,
                      PP_URLComponents_Dev* components = NULL) const;
 
+  Var GetPluginInstanceURL(const Instance& instance,
+                           PP_URLComponents_Dev* components = NULL) const;
+
  private:
   URLUtil_Dev() : interface_(NULL) {}
 

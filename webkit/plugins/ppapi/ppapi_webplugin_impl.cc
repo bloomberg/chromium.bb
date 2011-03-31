@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/message_loop.h"
+#include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_var.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
@@ -37,6 +38,7 @@ struct WebPluginImpl::InitData {
   base::WeakPtr<PluginDelegate> delegate;
   std::vector<std::string> arg_names;
   std::vector<std::string> arg_values;
+  GURL url;
 };
 
 WebPluginImpl::WebPluginImpl(
@@ -52,6 +54,7 @@ WebPluginImpl::WebPluginImpl(
     init_data_->arg_names.push_back(params.attributeNames[i].utf8());
     init_data_->arg_values.push_back(params.attributeValues[i].utf8());
   }
+  init_data_->url = params.url;
 }
 
 WebPluginImpl::~WebPluginImpl() {
@@ -69,6 +72,7 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   bool success = instance_->Initialize(container,
                                        init_data_->arg_names,
                                        init_data_->arg_values,
+                                       init_data_->url,
                                        full_frame_);
   if (!success) {
     instance_->Delete();

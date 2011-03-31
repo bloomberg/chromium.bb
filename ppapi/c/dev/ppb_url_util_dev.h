@@ -11,7 +11,7 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_URLUTIL_DEV_INTERFACE "PPB_URLUtil(Dev);0.5"
+#define PPB_URLUTIL_DEV_INTERFACE "PPB_URLUtil(Dev);0.6"
 
 // A component specifies the range of the part of the URL. The begin specifies
 // the index into the string of the first character of that component. The len
@@ -117,6 +117,17 @@ struct PPB_URLUtil_Dev {
   // to specify that no component information is necessary.
   struct PP_Var (*GetDocumentURL)(PP_Instance instance,
                                   struct PP_URLComponents_Dev* components);
+
+  // Returns the Source URL for the plugin. This returns the URL that would be
+  // streamed to the plugin if it were a NPAPI plugin. This is usually the src
+  // attribute on the <embed> element, but the rules are obscure and different
+  // based on whether the plugin is loaded from an <embed> element or an
+  // <object> element.
+  // The components pointer, if non-NULL and the canonicalized URL is valid,
+  // will identify the components of the resulting URL. Components may be NULL
+  // to specify that no component information is necessary.
+  struct PP_Var (*GetPluginInstanceURL)(
+      PP_Instance instance, struct PP_URLComponents_Dev* components);
 };
 
 #endif  /* PPAPI_C_DEV_PPB_URL_UTIL_DEV_H_ */

@@ -76,4 +76,11 @@ Var URLUtil_Dev::GetDocumentURL(const Instance& instance,
              interface_->GetDocumentURL(instance.pp_instance(), components));
 }
 
+Var URLUtil_Dev::GetPluginInstanceURL(const Instance& instance,
+                                      PP_URLComponents_Dev* components) const {
+  return Var(Var::PassRef(),
+             interface_->GetPluginInstanceURL(instance.pp_instance(),
+                                              components));
+}
+
 }  // namespace pp

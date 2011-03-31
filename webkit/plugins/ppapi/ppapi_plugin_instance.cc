@@ -687,8 +687,10 @@ void PluginInstance::Delete() {
 bool PluginInstance::Initialize(WebPluginContainer* container,
                                 const std::vector<std::string>& arg_names,
                                 const std::vector<std::string>& arg_values,
+                                const GURL& plugin_url,
                                 bool full_frame) {
   container_ = container;
+  plugin_url_ = plugin_url;
   full_frame_ = full_frame;
 
   size_t argc = 0;

@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_graphics_3d_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
@@ -135,6 +136,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   PP_Var GetWindowObject();
   PP_Var GetOwnerElementObject();
   bool BindGraphics(PP_Resource graphics_id);
+  const GURL& plugin_url() const { return plugin_url_; }
   bool full_frame() const { return full_frame_; }
   // If |type| is not PP_CURSORTYPE_CUSTOM, |custom_image| and |hot_spot| are
   // ignored.
@@ -148,6 +150,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   bool Initialize(WebKit::WebPluginContainer* container,
                   const std::vector<std::string>& arg_names,
                   const std::vector<std::string>& arg_values,
+                  const GURL& plugin_url,
                   bool full_frame);
   bool HandleDocumentLoad(PPB_URLLoader_Impl* loader);
   bool HandleInputEvent(const WebKit::WebInputEvent& event,
@@ -302,6 +305,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // NULL until we have been initialized.
   WebKit::WebPluginContainer* container_;
+
+  // Plugin URL.
+  GURL plugin_url_;
 
   // Indicates whether this is a full frame instance, which means it represents
   // an entire document rather than an embed tag.

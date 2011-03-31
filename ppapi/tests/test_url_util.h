@@ -23,6 +23,7 @@ class TestURLUtil : public TestCase {
   std::string TestDocumentCanRequest();
   std::string TestDocumentCanAccessDocument();
   std::string TestGetDocumentURL();
+  std::string TestGetPluginInstanceURL();
 
   const pp::URLUtil_Dev* util_;
 };

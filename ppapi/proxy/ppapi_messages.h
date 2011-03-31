@@ -689,6 +689,9 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLUtil_DocumentCanAccessDocument,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLUtil_GetDocumentURL,
                            PP_Instance /* active */,
                            pp::proxy::SerializedVar /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLUtil_GetPluginInstanceURL,
+                           PP_Instance /* active */,
+                           pp::proxy::SerializedVar /* result */)
 
 // PPB_Var.
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVar_AddRefObject,
