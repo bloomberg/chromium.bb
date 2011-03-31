@@ -40,6 +40,11 @@ function checkExpectations() {
 }
 
 function captureEvent(name, details) {
+  // Ignore system-level requests like safebrowsing updates since they are
+  // unpredictable.
+  if (details.tabId == -1)
+    return;
+
   delete details.requestId;
   capturedEventData.push([name, details]);
   checkExpectations();
@@ -135,7 +140,7 @@ runTests([
           url: URL_HTTP_SIMPLE_LOAD
         }
       ],
-    ], {types: ["main_frame"]}, []);
+    ]);
     chrome.tabs.update(tabId, { url: URL_HTTP_SIMPLE_LOAD });
   },
 
