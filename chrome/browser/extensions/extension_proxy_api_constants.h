@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Constants used for the Proxy API.
+// Constants for the Chrome Extensions Proxy Settings API.
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PROXY_API_CONSTANTS_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_PROXY_API_CONSTANTS_H_
@@ -11,16 +11,16 @@
 namespace extension_proxy_api_constants {
 
 // String literals in dictionaries used to communicate with extension.
-extern const char kProxyCfgMode[];
-extern const char kProxyCfgPacScript[];
-extern const char kProxyCfgPacScriptUrl[];
-extern const char kProxyCfgPacScriptData[];
-extern const char kProxyCfgRules[];
-extern const char kProxyCfgRuleHost[];
-extern const char kProxyCfgRulePort[];
-extern const char kProxyCfgBypassList[];
-extern const char kProxyCfgScheme[];
-extern const char kProxyCfgValue[];
+extern const char kProxyConfigMode[];
+extern const char kProxyConfigPacScript[];
+extern const char kProxyConfigPacScriptUrl[];
+extern const char kProxyConfigPacScriptData[];
+extern const char kProxyConfigRules[];
+extern const char kProxyConfigRuleHost[];
+extern const char kProxyConfigRulePort[];
+extern const char kProxyConfigRuleScheme[];
+extern const char kProxyConfigBypassList[];
+extern const char kProxyConfigValue[];
 
 extern const char kProxyEventFatal[];
 extern const char kProxyEventError[];

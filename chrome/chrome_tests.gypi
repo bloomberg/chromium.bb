@@ -1319,6 +1319,7 @@
         'browser/extensions/extension_pref_value_map_unittest.cc',
         'browser/extensions/extension_prefs_unittest.cc',
         'browser/extensions/extension_process_manager_unittest.cc',
+        'browser/extensions/extension_proxy_api_helpers_unittest.cc',
         'browser/extensions/extension_omnibox_unittest.cc',
         'browser/extensions/extension_service_unittest.cc',
         'browser/extensions/extension_service_unittest.h',

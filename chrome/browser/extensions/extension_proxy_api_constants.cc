@@ -2,22 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Constants for the Chrome Extensions Proxy Settings API.
+
 #include "chrome/browser/extensions/extension_proxy_api_constants.h"
 
 #include "base/basictypes.h"
 
 namespace extension_proxy_api_constants {
 
-const char kProxyCfgMode[] = "mode";
-const char kProxyCfgPacScript[] = "pacScript";
-const char kProxyCfgPacScriptUrl[] = "url";
-const char kProxyCfgPacScriptData[] = "data";
-const char kProxyCfgRules[] = "rules";
-const char kProxyCfgRuleHost[] = "host";
-const char kProxyCfgRulePort[] = "port";
-const char kProxyCfgBypassList[] = "bypassList";
-const char kProxyCfgScheme[] = "scheme";
-const char kProxyCfgValue[] = "value";
+const char kProxyConfigMode[] = "mode";
+const char kProxyConfigPacScript[] = "pacScript";
+const char kProxyConfigPacScriptUrl[] = "url";
+const char kProxyConfigPacScriptData[] = "data";
+const char kProxyConfigRules[] = "rules";
+const char kProxyConfigRuleHost[] = "host";
+const char kProxyConfigRulePort[] = "port";
+const char kProxyConfigRuleScheme[] = "scheme";
+const char kProxyConfigBypassList[] = "bypassList";
+const char kProxyConfigValue[] = "value";
 
 const char kProxyEventFatal[] = "fatal";
 const char kProxyEventError[] = "error";

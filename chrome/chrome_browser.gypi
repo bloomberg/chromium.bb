@@ -952,6 +952,8 @@
         'browser/extensions/extension_proxy_api.h',
         'browser/extensions/extension_proxy_api_constants.cc',
         'browser/extensions/extension_proxy_api_constants.h',
+        'browser/extensions/extension_proxy_api_helpers.cc',
+        'browser/extensions/extension_proxy_api_helpers.h',
         'browser/extensions/extension_rlz_module.cc',
         'browser/extensions/extension_rlz_module.h',
         'browser/extensions/extension_service.cc',
