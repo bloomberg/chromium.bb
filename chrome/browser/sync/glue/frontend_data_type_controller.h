@@ -49,7 +49,7 @@ class FrontendDataTypeController : public DataTypeController {
 
   virtual syncable::ModelType type() const = 0;
 
-  browser_sync::ModelSafeGroup model_safe_group() const;
+  virtual browser_sync::ModelSafeGroup model_safe_group() const;
 
   virtual std::string name() const;
 
