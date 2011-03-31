@@ -8,6 +8,6 @@ Import('env')
 node = env.PyAutoTester('pyautosanity.out', env.File('sanity.py'))
 
 env.AddNodeToTestSuite(node,
-                       ['chrome_browser_tests'],
+                       ['pyauto_tests'],
                        'run_pyauto_sanity_test',
                        is_broken=env.PyAutoTesterIsBroken())

@@ -51,4 +51,12 @@ call scons.bat ^
  chrome_browser_tests
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 
+echo @@@BUILD_STEP pyauto_tests@@@
+call scons.bat ^
+ DOXYGEN=..\third_party\doxygen\win\doxygen ^
+ built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 ^
+ -k --verbose --mode=%MODE%-win,nacl,doc SILENT=1 platform=x86-%BITS% ^
+ pyauto_tests
+if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
+
 exit /b %RETCODE%

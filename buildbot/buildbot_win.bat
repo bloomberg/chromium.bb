@@ -72,6 +72,14 @@ call vcvarsall.bat %VCBITS% && call scons.bat ^
  chrome_browser_tests
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 
+echo @@@BUILD_STEP pyauto_tests@@@
+call vcvarsall.bat %VCBITS% && call scons.bat ^
+ DOXYGEN=..\third_party\doxygen\win\doxygen ^
+ -k --verbose --mode=%MODE%-win,nacl,doc SILENT=1 platform=x86-%BITS% ^
+ pyauto_tests
+if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
+
+
 echo on
 echo @@@BUILD_STEP scons_compile@@@
 call vcvarsall.bat %VCBITS% && call scons.bat -j 8 ^

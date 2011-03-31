@@ -98,6 +98,15 @@ DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority ARM_CC=gcc \
     chrome_browser_tests ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
+echo @@@BUILD_STEP pyauto_tests@@@
+DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority ARM_CC=gcc \
+    ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
+    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl SILENT=1 platform=arm bitcode=1 sdl=none \
+    built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 \
+    pyauto_tests ||
+    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+
 echo @@@BUILD_STEP install_plugin@@@
 ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \

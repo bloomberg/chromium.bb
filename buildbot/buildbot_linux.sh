@@ -90,6 +90,13 @@ DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority \
     chrome_browser_tests ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
+echo @@@BUILD_STEP pyauto_tests@@@
+DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority \
+    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
+    pyauto_tests ||
+    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+
 echo @@@BUILD_STEP install_plugin@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} firefox_install

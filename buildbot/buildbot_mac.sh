@@ -85,6 +85,12 @@ echo @@@BUILD_STEP chrome_browser_tests@@@
     chrome_browser_tests ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
+echo @@@BUILD_STEP pyauto_tests@@@
+./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
+    --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-32 \
+    pyauto_tests ||
+    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+
 echo @@@BUILD_STEP install_plugin@@@
 ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
     --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-32 firefox_install
