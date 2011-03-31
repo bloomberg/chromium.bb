@@ -8,6 +8,7 @@
 
 import optparse
 import os.path
+import shutil
 import subprocess
 import sys
 
@@ -117,6 +118,10 @@ def BuildAndTest(options):
   if options.jobs > 1:
     scons.append('-j%d' % options.jobs)
 
+  # Clean the output of the previous build.
+  # Incremental builds can get wedged in wierd ways, so we're trading speed
+  # for reliability.
+  shutil.rmtree(os.path.join(nacl_dir, 'scons-out'), True)
 
   if options.partial_sdk:
     # Build the partial sdk
