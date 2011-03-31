@@ -163,7 +163,7 @@ void WidgetWin::SetCreateParams(const CreateParams& params) {
 
   // Set type-independent style attributes.
   if (params.child)
-    style |= WS_CHILD;
+    style |= WS_CHILD | WS_VISIBLE;
   if (!params.accept_events)
     ex_style |= WS_EX_TRANSPARENT;
   if (!params.can_activate)
