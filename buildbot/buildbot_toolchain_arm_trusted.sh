@@ -39,6 +39,6 @@ cd ../../..
 
 echo @@@BUILD_STEP archive_build@@@
 GS_BASE=gs://nativeclient-archive2/toolchain
-../../../scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
     native_client/arm-trusted.tgz \
    ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_linux_arm-trusted.tgz

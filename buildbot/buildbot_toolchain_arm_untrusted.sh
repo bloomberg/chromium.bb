@@ -69,7 +69,7 @@ else
   SUFFIX=-${BUILDBOT_BUILDERNAME}
 fi
 GS_BASE=gs://nativeclient-archive2/toolchain
-../../../scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
     native_client/arm-untrusted.tgz \
     ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_linux_arm-untrusted${SUFFIX}.tgz
 
