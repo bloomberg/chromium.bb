@@ -2055,8 +2055,6 @@
    Memcheck:Leak
    fun:malloc
    ...
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN3WTF13FastAllocBasenwEj
    fun:_NPN_RegisterObject
    fun:_ZN7WebCore16ScriptController20windowScriptNPObjectEv
    fun:_ZNK6WebKit12WebFrameImpl12windowObjectEv
@@ -2068,8 +2066,6 @@
    Memcheck:Leak
    fun:malloc
    ...
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN3WTF13FastAllocBasenwEj
    fun:_NPN_RegisterObject
    fun:_ZN7WebCore25createV8ObjectForNPObjectEP8NPObjectS1_
    fun:_ZN7WebCore16ScriptController18bindToWindowObjectEPNS_5FrameERKNS_6StringEP8NPObject
@@ -2081,23 +2077,10 @@
    Memcheck:Leak
    fun:malloc
    ...
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN3WTF13FastAllocBasenwEj
    fun:_NPN_RegisterObject
    fun:_ZN7WebCore25createV8ObjectForNPObjectEP8NPObjectS1_
    fun:_ZN7WebCore16ScriptController29createScriptInstanceForWidgetEPNS_6WidgetE
    fun:_ZNK7WebCore17HTMLPlugInElement11getInstanceEv
-}
-{
-   bug_42958_d
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN3WTF7HashSetIP8NPObjectNS_7PtrHashIS2_EENS_10HashTraitsIS2_EEEnwEj
-   fun:_NPN_RegisterObject
-   fun:_ZN7WebCore25createV8ObjectForNPObjectEP8NPObjectS1_
-   fun:_ZN7WebCore16ScriptController18bindToWindowObjectEPNS_5FrameERKN3WTF6StringEP8NPObject
-   fun:_ZN6WebKit12WebFrameImpl18bindToWindowObjectERKNS_9WebStringEP8NPObject
 }
 {
    bug_43471
