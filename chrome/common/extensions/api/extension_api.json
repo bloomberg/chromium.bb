@@ -4492,6 +4492,7 @@
       }
     ]
   },
+
   {
     "namespace":"fileBrowserPrivate",
     "nodoc": "true",
@@ -4512,60 +4513,10 @@
             ]
           }
         ]
-      },
-      {
-        "name": "selectFiles",
-        "type": "function",
-        "description": "Select multiple files.",
-        "parameters": [
-          {
-            "type": "array",
-            "description": "Array of selected paths",
-            "items": {"type": "string"}
-          }
-        ]
-      },
-      {
-        "name": "selectFile",
-        "type": "function",
-        "description": "Select a file.",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "A selected path"
-          },
-          {
-            "type": "integer",
-            "description": "Index of Filter"
-          }
-        ]
-      },
-      {
-        "name": "cancelDialog",
-        "type": "function",
-        "description": "Cancel file selection.",
-        "parameters": []
-      },
-      {
-        "name": "getStrings",
-        "type": "function",
-        "description": "Get Strings.",
-        "parameters": [
-          {
-            "type": "function",
-             "name": "callback",
-             "parameters": [
-              {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": {"type": "string"}
-              }
-            ]
-          }
-        ]
       }
     ]
   },
+
   {
     "namespace":"webstorePrivate",
     "nodoc": "true",

@@ -1324,15 +1324,6 @@ class NotificationType {
     // Sent when the applications in the NTP app launcher have been reordered.
     EXTENSION_LAUNCHER_REORDERED,
 
-    // Sent when a single file is selected.
-    FILE_BROWSE_SELECTED,
-
-    // Sent when multiple files are selected.
-    FILE_BROWSE_MULTI_SELECTED,
-
-    // Sent when file dialog is cancelled.
-    FILE_BROWSE_CANCEL_DIALOG,
-
     // Prerender notifications -------------------------------------------------
     // Sent when a prerender::PrerenderContents starts prerendering. Source is
     // the process/route id pair for the RenderViewHost. There are no details.
