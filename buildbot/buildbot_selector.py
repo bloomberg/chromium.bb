@@ -37,6 +37,7 @@ BOT_ASSIGNMENT = {
     'arm-marm-narm-test-opt': 'bash buildbot/buildbot_arm_hw.sh opt',
     'lucid64-pnacl1': 'bash buildbot/buildbot_linux.sh opt 64',
     'lucid64-pnacl2': 'bash buildbot/buildbot_linux.sh opt 64',
+    'karmic64-valgrind': 'bash buildbot/buildbot_valgrind.sh',
     # Coverage.
     'mac-m32-n32-coverage': 'bash buildbot/buildbot_coverage_mac.sh',
     'hardy64-m32-n32-coverage': 'bash buildbot/buildbot_coverage_linux.sh 32',
