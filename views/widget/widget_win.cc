@@ -1150,4 +1150,36 @@ void NativeWidget::GetAllNativeWidgets(gfx::NativeView native_view,
       reinterpret_cast<LPARAM>(children));
 }
 
+void NativeWidget::ReparentNativeView(gfx::NativeView native_view,
+                                      gfx::NativeView new_parent) {
+  if (!native_view)
+    return;
+
+  HWND previous_parent = ::GetParent(native_view);
+  if (previous_parent == new_parent)
+    return;
+
+  NativeWidgets widgets;
+  GetAllNativeWidgets(native_view, &widgets);
+
+  // First notify all the widgets that they are being disassociated
+  // from their previous parent.
+  for (NativeWidgets::iterator it = widgets.begin();
+       it != widgets.end(); ++it) {
+    // TODO(beng): Rename this notification to NotifyNativeViewChanging()
+    // and eliminate the bool parameter.
+    (*it)->GetWidget()->NotifyNativeViewHierarchyChanged(false,
+                                                         previous_parent);
+  }
+
+  ::SetParent(native_view, new_parent);
+
+  // And now, notify them that they have a brand new parent.
+  for (NativeWidgets::iterator it = widgets.begin();
+       it != widgets.end(); ++it) {
+    (*it)->GetWidget()->NotifyNativeViewHierarchyChanged(true,
+                                                         new_parent);
+  }
+}
+
 }  // namespace views

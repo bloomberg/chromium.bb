@@ -90,7 +90,7 @@ void TabContentsViewWin::Unparent() {
   focus_manager_ = views::WidgetWin::GetFocusManager();
   // Note that we do not DCHECK on focus_manager_ as it may be NULL when used
   // with an external tab container.
-  ::SetParent(GetNativeView(), GetHiddenTabHostWindow());
+  NativeWidget::ReparentNativeView(GetNativeView(), GetHiddenTabHostWindow());
 }
 
 void TabContentsViewWin::CreateView(const gfx::Size& initial_size) {

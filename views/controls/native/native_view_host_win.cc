@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,33 +35,15 @@ void NativeViewHostWin::NativeViewAttached() {
   // borders), when we change the parent below.
   ShowWindow(host_->native_view(), SW_HIDE);
 
-  // Need to set the HWND's parent before changing its size to avoid flashing.
-  SetParent(host_->native_view(), host_->GetWidget()->GetNativeView());
+  NativeWidget::ReparentNativeView(host_->native_view(),
+                                   host_->GetWidget()->GetNativeView());
   host_->Layout();
-  // Notify children that parent changed, so they can adjust focus.
-  NativeWidget::NativeWidgets widgets;
-  NativeWidget::GetAllNativeWidgets(host_->native_view(), &widgets);
-  for (NativeWidget::NativeWidgets::iterator it = widgets.begin();
-       it != widgets.end(); ++it) {
-    (*it)->GetWidget()->NotifyNativeViewHierarchyChanged(
-        true,
-        host_->GetWidget()->GetNativeView());
-  }
 }
 
 void NativeViewHostWin::NativeViewDetaching(bool destroyed) {
   if (!destroyed && installed_clip_)
     UninstallClip();
   installed_clip_ = false;
-  // Notify children that parent is removed.
-  NativeWidget::NativeWidgets widgets;
-  NativeWidget::GetAllNativeWidgets(host_->native_view(), &widgets);
-  for (NativeWidget::NativeWidgets::iterator it = widgets.begin();
-       it != widgets.end(); ++it) {
-    (*it)->GetWidget()->NotifyNativeViewHierarchyChanged(
-        false,
-        host_->GetWidget()->GetNativeView());
-  }
 }
 
 void NativeViewHostWin::AddedToWidget() {

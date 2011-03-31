@@ -52,6 +52,11 @@ class NativeWidget {
   static void GetAllNativeWidgets(gfx::NativeView native_view,
                                   NativeWidgets* children);
 
+  // Reparent a NativeView and notify all NativeWidgets in
+  // |native_view|'s hierarchy of the change.
+  static void ReparentNativeView(gfx::NativeView native_view,
+                                 gfx::NativeView new_parent);
+
   // Returns the Widget associated with this NativeWidget. This function is
   // guaranteed to return non-NULL for the lifetime of the NativeWidget.
   virtual Widget* GetWidget() = 0;
