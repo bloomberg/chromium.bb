@@ -4241,6 +4241,14 @@
    fun:_ZN11BrowserInit5StartERK11CommandLineRK8FilePathP7ProfilePi
    fun:_Z11BrowserMainRK18MainFunctionParams
 }
+{
+   bug_78069
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8remoting38ClientSessionTest_InputStubFilter_Test8TestBodyEv
+   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations

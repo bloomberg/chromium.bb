@@ -1249,3 +1249,11 @@
    fun:WebCore::CSSStyleSheet::parseString
    fun:WebCore::parseUASheet
 }
+{
+   bug_78069
+   Heapcheck:Leak
+   fun:remoting::ClientSessionTest_InputStubFilter_Test::TestBody
+   fun:testing::internal::HandleSehExceptionsInMethodIfSupported
+   fun:testing::internal::HandleExceptionsInMethodIfSupported
+   fun:testing::Test::Run
+}
