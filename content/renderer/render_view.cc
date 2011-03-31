@@ -639,8 +639,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
     p2p_socket_dispatcher_ = new P2PSocketDispatcher(this);
   }
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableClientSidePhishingDetection)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableClientSidePhishingDetection)) {
     new safe_browsing::PhishingClassifierDelegate(this, NULL);
   }
 

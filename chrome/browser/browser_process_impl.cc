@@ -935,8 +935,8 @@ void BrowserProcessImpl::CreateSafeBrowsingDetectionService() {
 bool BrowserProcessImpl::IsSafeBrowsingDetectionServiceEnabled() {
   // The safe browsing client-side detection is enabled only if the switch is
   // enabled and when safe browsing related stats is allowed to be collected.
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableClientSidePhishingDetection) &&
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableClientSidePhishingDetection) &&
       resource_dispatcher_host()->safe_browsing_service() &&
       resource_dispatcher_host()->safe_browsing_service()->CanReportStats();
 }
