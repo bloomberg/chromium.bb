@@ -148,20 +148,21 @@ bool TypedUrlDataTypeController::enabled() {
   return true;
 }
 
-syncable::ModelType TypedUrlDataTypeController::type() {
+syncable::ModelType TypedUrlDataTypeController::type() const {
   return syncable::TYPED_URLS;
 }
 
-browser_sync::ModelSafeGroup TypedUrlDataTypeController::model_safe_group() {
+browser_sync::ModelSafeGroup TypedUrlDataTypeController::model_safe_group()
+    const {
   return browser_sync::GROUP_HISTORY;
 }
 
-const char* TypedUrlDataTypeController::name() const {
+std::string TypedUrlDataTypeController::name() const {
   // For logging only.
   return "typed_url";
 }
 
-DataTypeController::State TypedUrlDataTypeController::state() {
+DataTypeController::State TypedUrlDataTypeController::state() const {
   return state_;
 }
 

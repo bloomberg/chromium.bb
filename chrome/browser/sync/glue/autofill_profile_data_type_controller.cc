@@ -19,11 +19,11 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
 
 AutofillProfileDataTypeController::~AutofillProfileDataTypeController() {}
 
-syncable::ModelType AutofillProfileDataTypeController::type() {
+syncable::ModelType AutofillProfileDataTypeController::type() const {
   return syncable::AUTOFILL_PROFILE;
 }
 
-const char* AutofillProfileDataTypeController::name() const {
+std::string AutofillProfileDataTypeController::name() const {
   // For logging only.
   return "autofill_profile";
 }
