@@ -5,11 +5,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "jingle/glue/stream_socket_adapter.h"
+#include "jingle/glue/jingle_glue_mock_objects.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
-#include "remoting/jingle_glue/stream_socket_adapter.h"
-#include "remoting/jingle_glue/jingle_glue_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/p2p/base/transportchannel.h"
@@ -20,7 +20,7 @@ using testing::_;
 using testing::Return;
 using testing::SetArgumentPointee;
 
-namespace remoting {
+namespace jingle_glue {
 
 namespace {
 const int kBufferSize = 4096;
@@ -148,4 +148,4 @@ TEST_F(StreamSocketAdapterTest, WriteClose) {
   EXPECT_EQ(kTestError, target_->Write(buffer, kTestError, &callback_));
 }
 
-}  // namespace remoting
+}  // namespace jingle_glue

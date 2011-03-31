@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/jingle_glue/channel_socket_adapter.h"
+#include "jingle/glue/channel_socket_adapter.h"
 
 #include <limits>
 
@@ -10,10 +10,9 @@
 #include "base/message_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "remoting/jingle_glue/utils.h"
 #include "third_party/libjingle/source/talk/p2p/base/transportchannel.h"
 
-namespace remoting {
+namespace jingle_glue {
 
 TransportChannelSocketAdapter::TransportChannelSocketAdapter(
     cricket::TransportChannel* channel)
@@ -67,7 +66,7 @@ int TransportChannelSocketAdapter::Write(
 
   int result = channel_->SendPacket(buffer->data(), buffer_size);
   if (result < 0) {
-    result = MapPosixToChromeError(channel_->GetError());
+    result = net::MapSystemError(channel_->GetError());
     if (result == net::ERR_IO_PENDING) {
       write_pending_ = true;
       write_callback_ = callback;
@@ -150,7 +149,7 @@ void TransportChannelSocketAdapter::OnWritableState(
     int result = channel_->SendPacket(write_buffer_->data(),
                                       write_buffer_size_);
     if (result < 0)
-      result = MapPosixToChromeError(channel_->GetError());
+      result = net::MapSystemError(channel_->GetError());
 
     if (result != net::ERR_IO_PENDING) {
       net::CompletionCallback* callback = write_callback_;
@@ -168,4 +167,4 @@ void TransportChannelSocketAdapter::OnChannelDestroyed(
   Close(net::ERR_CONNECTION_ABORTED);
 }
 
-}  // namespace remoting
+}  // namespace jingle_glue

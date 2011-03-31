@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/jingle_glue/jingle_glue_mock_objects.h"
+#include "jingle/glue/jingle_glue_mock_objects.h"
 
-namespace remoting {
+namespace jingle_glue {
 
 MockStream::MockStream() {}
 
 MockStream::~MockStream() {}
 
-}  // namespace remoting
+}  // namespace jingle_glue

@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/jingle_glue/stream_socket_adapter.h"
+#include "jingle/glue/stream_socket_adapter.h"
 
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "remoting/jingle_glue/utils.h"
 #include "third_party/libjingle/source/talk/base/stream.h"
 
-namespace remoting {
+namespace jingle_glue {
 
 StreamSocketAdapter::StreamSocketAdapter(talk_base::StreamInterface* stream)
     : stream_(stream),
@@ -80,7 +79,7 @@ int StreamSocketAdapter::Read(
   }
 
   int result = ReadStream(buffer, buffer_size);
-  if (result == net::ERR_CONNECTION_CLOSED &&
+  if (result == net::ERR_SOCKET_NOT_CONNECTED &&
       stream_->GetState() == talk_base::SS_OPENING)
     result = net::ERR_IO_PENDING;
   if (result == net::ERR_IO_PENDING) {
@@ -104,7 +103,7 @@ int StreamSocketAdapter::Write(
   }
 
   int result = WriteStream(buffer, buffer_size);
-  if (result == net::ERR_CONNECTION_CLOSED &&
+  if (result == net::ERR_SOCKET_NOT_CONNECTED &&
       stream_->GetState() == talk_base::SS_OPENING)
     result = net::ERR_IO_PENDING;
 
@@ -207,7 +206,7 @@ int StreamSocketAdapter::ReadStream(net::IOBuffer* buffer, int buffer_size) {
       return net::ERR_CONNECTION_CLOSED;
 
     case talk_base::SR_ERROR:
-      return MapPosixToChromeError(error);
+      return net::MapSystemError(error);
   }
   NOTREACHED();
   return net::ERR_FAILED;
@@ -229,10 +228,10 @@ int StreamSocketAdapter::WriteStream(net::IOBuffer* buffer, int buffer_size) {
       return net::ERR_CONNECTION_CLOSED;
 
     case talk_base::SR_ERROR:
-      return MapPosixToChromeError(error);
+      return net::MapSystemError(error);
   }
   NOTREACHED();
   return net::ERR_FAILED;
 }
 
-}  // namespace remoting
+}  // namespace jingle_glue

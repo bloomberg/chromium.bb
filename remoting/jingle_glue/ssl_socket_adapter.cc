@@ -15,7 +15,6 @@
 #include "net/base/sys_addrinfo.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/url_request/url_request_context.h"
-#include "remoting/jingle_glue/utils.h"
 
 namespace remoting {
 
@@ -306,7 +305,7 @@ int TransportSocket::Read(net::IOBuffer* buf, int buf_len,
   DCHECK(!read_buffer_.get());
   int result = socket_->Recv(buf->data(), buf_len);
   if (result < 0) {
-    result = MapPosixToChromeError(socket_->GetError());
+    result = net::MapSystemError(socket_->GetError());
     if (result == net::ERR_IO_PENDING) {
       read_callback_ = callback;
       read_buffer_ = buf;
@@ -325,7 +324,7 @@ int TransportSocket::Write(net::IOBuffer* buf, int buf_len,
   DCHECK(!write_buffer_.get());
   int result = socket_->Send(buf->data(), buf_len);
   if (result < 0) {
-    result = MapPosixToChromeError(socket_->GetError());
+    result = net::MapSystemError(socket_->GetError());
     if (result == net::ERR_IO_PENDING) {
       write_callback_ = callback;
       write_buffer_ = buf;
@@ -360,7 +359,7 @@ void TransportSocket::OnReadEvent(talk_base::AsyncSocket* socket) {
 
     int result = socket_->Recv(buffer->data(), buffer_len);
     if (result < 0) {
-      result = MapPosixToChromeError(socket_->GetError());
+      result = net::MapSystemError(socket_->GetError());
       if (result == net::ERR_IO_PENDING) {
         read_callback_ = callback;
         read_buffer_ = buffer;
@@ -386,7 +385,7 @@ void TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
 
     int result = socket_->Send(buffer->data(), buffer_len);
     if (result < 0) {
-      result = MapPosixToChromeError(socket_->GetError());
+      result = net::MapSystemError(socket_->GetError());
       if (result == net::ERR_IO_PENDING) {
         write_callback_ = callback;
         write_buffer_ = buffer;

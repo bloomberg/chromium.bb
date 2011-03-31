@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_JINGLE_GLUE_STREAM_SOCKET_ADAPTER_H_
-#define REMOTING_JINGLE_GLUE_STREAM_SOCKET_ADAPTER_H_
+#ifndef JINGLE_GLUE_STREAM_SOCKET_ADAPTER_H_
+#define JINGLE_GLUE_STREAM_SOCKET_ADAPTER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_log.h"
@@ -14,7 +14,7 @@ namespace talk_base {
 class StreamInterface;
 }  // namespace talk_base
 
-namespace remoting {
+namespace jingle_glue {
 
 // StreamSocketAdapter implements net::Socket interface on top of
 // libjingle's StreamInterface. It is used by JingleChromotocolConnection
@@ -80,6 +80,6 @@ class StreamSocketAdapter : public net::ClientSocket,
   DISALLOW_COPY_AND_ASSIGN(StreamSocketAdapter);
 };
 
-}  // namespace remoting
+}  // namespace jingle_glue
 
-#endif  // REMOTING_JINGLE_GLUE_STREAM_SOCKET_ADAPTER_H_
+#endif  // JINGLE_GLUE_STREAM_SOCKET_ADAPTER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_
-#define REMOTING_JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_
+#ifndef JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_
+#define JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_
 
 #include "net/socket/socket.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
@@ -13,7 +13,7 @@ namespace cricket {
 class TransportChannel;
 }  // namespace cricket
 
-namespace remoting {
+namespace jingle_glue {
 
 // TransportChannelSocketAdapter implements net::Socket interface on
 // top of libjingle's TransportChannel. It is used by
@@ -62,6 +62,6 @@ class TransportChannelSocketAdapter : public net::Socket,
   DISALLOW_COPY_AND_ASSIGN(TransportChannelSocketAdapter);
 };
 
-}  // namespace remoting
+}  // namespace jingle_glue
 
-#endif  // REMOTING_JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_
+#endif  // JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_

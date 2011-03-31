@@ -5,10 +5,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "jingle/glue/channel_socket_adapter.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
-#include "remoting/jingle_glue/channel_socket_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/p2p/base/transportchannel.h"
@@ -18,7 +18,7 @@ using net::IOBuffer;
 using testing::_;
 using testing::Return;
 
-namespace remoting {
+namespace jingle_glue {
 
 namespace {
 const int kBufferSize = 4096;
@@ -118,4 +118,4 @@ TEST_F(TransportChannelSocketAdapterTest, WritePending) {
   EXPECT_EQ(kTestDataSize, callback_result_);
 }
 
-}  // namespace remoting
+}  // namespace jingle_glue

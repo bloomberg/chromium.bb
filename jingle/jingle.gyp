@@ -12,6 +12,10 @@
       'target_name': 'jingle_glue',
       'type': '<(library)',
       'sources': [
+        'glue/channel_socket_adapter.cc',
+        'glue/channel_socket_adapter.h',
+        'glue/stream_socket_adapter.cc',
+        'glue/stream_socket_adapter.h',
         'glue/thread_wrapper.cc',
         'glue/thread_wrapper.h',
       ],
@@ -122,6 +126,10 @@
       'target_name': 'jingle_unittests',
       'type': 'executable',
       'sources': [
+        'glue/channel_socket_adapter_unittest.cc',
+        'glue/jingle_glue_mock_objects.cc',
+        'glue/jingle_glue_mock_objects.h',
+        'glue/stream_socket_adapter_unittest.cc',
         'glue/thread_wrapper_unittest.cc',
         'notifier/base/chrome_async_socket_unittest.cc',
         'notifier/base/fake_ssl_client_socket_unittest.cc',
