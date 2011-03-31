@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 
+#include "base/command_line.h"
 #import "base/memory/scoped_nsobject.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -20,6 +21,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -472,6 +474,10 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (BOOL)shouldShowDetachedBookmarkBar {
+  // NTP4 never detaches the bookmark bar.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
+    return NO;
+
   DCHECK(browser_.get());
   TabContents* contents = browser_->GetSelectedTabContents();
   return (contents &&
