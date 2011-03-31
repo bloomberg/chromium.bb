@@ -17,3 +17,4 @@ class NativeMenuHostDelegate {
 }  // namespace views
 
 #endif  // VIEWS_CONTROLS_MENU_NATIVE_MENU_HOST_DELEGATE_H_
+
