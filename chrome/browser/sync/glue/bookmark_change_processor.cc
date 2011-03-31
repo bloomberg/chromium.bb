@@ -163,8 +163,7 @@ int64 BookmarkChangeProcessor::CreateSyncNode(const BookmarkNode* parent,
   sync_api::WriteNode sync_child(trans);
 
   // Actually create the node with the appropriate initial position.
-  if (!PlaceSyncNode(CREATE, parent, index, trans, &sync_child, associator,
-                     error_handler)) {
+  if (!PlaceSyncNode(CREATE, parent, index, trans, &sync_child, associator)) {
     error_handler->OnUnrecoverableError(FROM_HERE,
         "Sync node creation failed; recovery unlikely");
     return sync_api::kInvalidId;
@@ -242,7 +241,7 @@ void BookmarkChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
   }
 
   if (!PlaceSyncNode(MOVE, new_parent, new_index, &trans, &sync_node,
-                     model_associator_, error_handler())) {
+                     model_associator_)) {
     error_handler()->OnUnrecoverableError(FROM_HERE, std::string());
     return;
   }
@@ -273,7 +272,7 @@ void BookmarkChangeProcessor::BookmarkNodeChildrenReordered(
               model_associator_->GetSyncIdFromChromeId(node->id()));
 
     if (!PlaceSyncNode(MOVE, node, i, &trans, &sync_child,
-                       model_associator_, error_handler())) {
+                       model_associator_)) {
       error_handler()->OnUnrecoverableError(FROM_HERE, std::string());
       return;
     }
@@ -283,12 +282,10 @@ void BookmarkChangeProcessor::BookmarkNodeChildrenReordered(
 // static
 bool BookmarkChangeProcessor::PlaceSyncNode(MoveOrCreate operation,
       const BookmarkNode* parent, int index, sync_api::WriteTransaction* trans,
-      sync_api::WriteNode* dst, BookmarkModelAssociator* associator,
-      UnrecoverableErrorHandler* error_handler) {
+      sync_api::WriteNode* dst, BookmarkModelAssociator* associator) {
   sync_api::ReadNode sync_parent(trans);
   if (!associator->InitSyncNodeFromChromeId(parent->id(), &sync_parent)) {
     LOG(WARNING) << "Parent lookup failed";
-    error_handler->OnUnrecoverableError(FROM_HERE, std::string());
     return false;
   }
 
@@ -474,7 +471,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
       model->SetURL(dst, src->GetURL());
     model->SetTitle(dst, WideToUTF16Hack(src->GetTitle()));
 
-    SetBookmarkFavicon(src, dst, model->profile());
+    SetBookmarkFavicon(src, dst, model);
   }
 
   return dst;
@@ -499,7 +496,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     node = model->AddURL(parent, index,
                          WideToUTF16Hack(sync_node->GetTitle()),
                          sync_node->GetURL());
-    SetBookmarkFavicon(sync_node, node, model->profile());
+    SetBookmarkFavicon(sync_node, node, model);
   }
   return node;
 }
@@ -509,13 +506,14 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
 bool BookmarkChangeProcessor::SetBookmarkFavicon(
     sync_api::BaseNode* sync_node,
     const BookmarkNode* bookmark_node,
-    Profile* profile) {
+    BookmarkModel* bookmark_model) {
   std::vector<unsigned char> icon_bytes_vector;
   sync_node->GetFaviconBytes(&icon_bytes_vector);
   if (icon_bytes_vector.empty())
     return false;
 
-  ApplyBookmarkFavicon(bookmark_node, profile, icon_bytes_vector);
+  ApplyBookmarkFavicon(bookmark_node, bookmark_model->profile(),
+                       icon_bytes_vector);
 
   return true;
 }

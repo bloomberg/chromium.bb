@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,11 +33,14 @@ enum AutofillMigrationState {
 struct AutofillMigrationDebugInfo {
   enum PropertyToSet {
     MIGRATION_TIME,
-    BOOKMARK_ADDED,
     ENTRIES_ADDED,
     PROFILES_ADDED
   };
   int64 autofill_migration_time;
+  // NOTE(akalin): We don't increment
+  // |bookmarks_added_during_migration| anymore, although it's not
+  // worth the effort to remove it from the code.  Eventually, this
+  // will go away once we remove all the autofill migration code.
   int bookmarks_added_during_migration;
   int autofill_entries_added_during_migration;
   int autofill_profile_added_during_migration;

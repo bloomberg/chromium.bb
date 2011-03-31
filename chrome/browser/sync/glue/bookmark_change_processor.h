@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,6 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-
-class ProfileSyncService;
 
 namespace browser_sync {
 
@@ -75,7 +73,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   // for the bookmark in question.
   static bool SetBookmarkFavicon(sync_api::BaseNode* sync_node,
                                  const BookmarkNode* bookmark_node,
-                                 Profile* profile);
+                                 BookmarkModel* model);
 
   // Applies the favicon data in |icon_bytes_vector| to |bookmark_node|.
   // |profile| is the profile that contains the HistoryService and BookmarkModel
@@ -140,8 +138,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
                             int index,
                             sync_api::WriteTransaction* trans,
                             sync_api::WriteNode* dst,
-                            BookmarkModelAssociator* associator,
-                            UnrecoverableErrorHandler* error_handler);
+                            BookmarkModelAssociator* associator);
 
   // Copy properties (but not position) from |src| to |dst|.
   static void UpdateSyncNodeProperties(const BookmarkNode* src,

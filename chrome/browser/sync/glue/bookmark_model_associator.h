@@ -15,15 +15,15 @@
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 
+class BookmarkModel;
 class BookmarkNode;
 
 namespace sync_api {
 class BaseNode;
 class BaseTransaction;
 class ReadNode;
+struct UserShare;
 }
-
-class ProfileSyncService;
 
 namespace browser_sync {
 
@@ -37,8 +37,10 @@ class BookmarkModelAssociator
     : public PerDataTypeAssociatorInterface<BookmarkNode, int64> {
  public:
   static syncable::ModelType model_type() { return syncable::BOOKMARKS; }
-  BookmarkModelAssociator(ProfileSyncService* sync_service,
-      UnrecoverableErrorHandler* persist_ids_error_handler);
+  BookmarkModelAssociator(
+      BookmarkModel* bookmark_model,
+      sync_api::UserShare* user_share,
+      UnrecoverableErrorHandler* unrecoverable_error_handler);
   virtual ~BookmarkModelAssociator();
 
   // AssociatorInterface implementation.
@@ -92,9 +94,6 @@ class BookmarkModelAssociator
   // Tests override this.
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
 
-  // Used by TestBookmarkModelAssociator.
-  ProfileSyncService* sync_service() { return sync_service_; }
-
  private:
   typedef std::map<int64, int64> BookmarkIdToSyncIdMap;
   typedef std::map<int64, const BookmarkNode*> SyncIdToBookmarkNodeMap;
@@ -126,8 +125,9 @@ class BookmarkModelAssociator
   bool NodesMatch(const BookmarkNode* bookmark,
                   const sync_api::BaseNode* sync_node) const;
 
-  ProfileSyncService* sync_service_;
-  UnrecoverableErrorHandler* persist_ids_error_handler_;
+  BookmarkModel* bookmark_model_;
+  sync_api::UserShare* user_share_;
+  UnrecoverableErrorHandler* unrecoverable_error_handler_;
   BookmarkIdToSyncIdMap id_map_;
   SyncIdToBookmarkNodeMap id_map_inverse_;
   // Stores sync ids for dirty associations.

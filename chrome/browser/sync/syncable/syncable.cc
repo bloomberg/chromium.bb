@@ -816,14 +816,6 @@ void Directory::set_autofill_migration_state_debug_info(
           &info.autofill_migration_time);
       break;
     }
-    case AutofillMigrationDebugInfo::BOOKMARK_ADDED: {
-      AutofillMigrationDebugInfo& debug_info =
-        kernel_->persisted_info.autofill_migration_debug_info;
-      TestAndSet<int>(
-          &debug_info.bookmarks_added_during_migration,
-          &info.bookmarks_added_during_migration);
-      break;
-    }
     case AutofillMigrationDebugInfo::ENTRIES_ADDED: {
       AutofillMigrationDebugInfo& debug_info =
         kernel_->persisted_info.autofill_migration_debug_info;

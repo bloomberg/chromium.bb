@@ -13,9 +13,11 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/syncable/autofill_migration.h"
+#include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/syncable/nigori_util.h"
+#include "chrome/browser/sync/util/cryptographer.h"
 #include "content/browser/browser_thread.h"
 
 namespace browser_sync {
@@ -156,15 +158,18 @@ const BookmarkNode* BookmarkNodeIdIndex::Find(int64 id) const {
 }
 
 BookmarkModelAssociator::BookmarkModelAssociator(
-    ProfileSyncService* sync_service,
-    UnrecoverableErrorHandler* persist_ids_error_handler)
-    : sync_service_(sync_service),
-      persist_ids_error_handler_(persist_ids_error_handler),
+    BookmarkModel* bookmark_model,
+    sync_api::UserShare* user_share,
+    UnrecoverableErrorHandler* unrecoverable_error_handler)
+    : bookmark_model_(bookmark_model),
+      user_share_(user_share),
+      unrecoverable_error_handler_(unrecoverable_error_handler),
       ALLOW_THIS_IN_INITIALIZER_LIST(persist_associations_(this)),
       number_of_new_sync_nodes_created_at_association_(0) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(sync_service_);
-  DCHECK(persist_ids_error_handler_);
+  DCHECK(bookmark_model_);
+  DCHECK(user_share_);
+  DCHECK(unrecoverable_error_handler_);
 }
 
 BookmarkModelAssociator::~BookmarkModelAssociator() {
@@ -237,7 +242,7 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
     return false;
   }
 
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  sync_api::ReadTransaction trans(user_share_);
 
   sync_api::ReadNode bookmark_bar_node(&trans);
   if (!bookmark_bar_node.InitByIdLookup(bookmark_bar_sync_id)) {
@@ -287,7 +292,7 @@ bool BookmarkModelAssociator::AssociateTaggedPermanentNode(
 
 bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
                                                      int64* sync_id) {
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  sync_api::ReadTransaction trans(user_share_);
   sync_api::ReadNode sync_node(&trans);
   if (!sync_node.InitByTagLookup(tag.c_str()))
     return false;
@@ -326,34 +331,34 @@ bool BookmarkModelAssociator::BuildAssociations() {
   // This algorithm will not do well if the folder name has changes but the
   // children under them are all the same.
 
-  BookmarkModel* model = sync_service_->profile()->GetBookmarkModel();
-  DCHECK(model->IsLoaded());
+  DCHECK(bookmark_model_->IsLoaded());
 
   // To prime our association, we associate the top-level nodes, Bookmark Bar
   // and Other Bookmarks.
-  if (!AssociateTaggedPermanentNode(model->other_node(), kOtherBookmarksTag)) {
+  if (!AssociateTaggedPermanentNode(bookmark_model_->other_node(),
+                                    kOtherBookmarksTag)) {
     LOG(ERROR) << "Server did not create top-level nodes.  Possibly we "
                << "are running against an out-of-date server?";
     return false;
   }
-  if (!AssociateTaggedPermanentNode(model->GetBookmarkBarNode(),
+  if (!AssociateTaggedPermanentNode(bookmark_model_->GetBookmarkBarNode(),
                                     kBookmarkBarTag)) {
     LOG(ERROR) << "Server did not create top-level nodes.  Possibly we "
                << "are running against an out-of-date server?";
     return false;
   }
   int64 bookmark_bar_sync_id = GetSyncIdFromChromeId(
-      model->GetBookmarkBarNode()->id());
+      bookmark_model_->GetBookmarkBarNode()->id());
   DCHECK(bookmark_bar_sync_id != sync_api::kInvalidId);
   int64 other_bookmarks_sync_id = GetSyncIdFromChromeId(
-      model->other_node()->id());
+      bookmark_model_->other_node()->id());
   DCHECK(other_bookmarks_sync_id != sync_api::kInvalidId);
 
   std::stack<int64> dfs_stack;
   dfs_stack.push(other_bookmarks_sync_id);
   dfs_stack.push(bookmark_bar_sync_id);
 
-  sync_api::WriteTransaction trans(sync_service_->GetUserShare());
+  sync_api::WriteTransaction trans(user_share_);
 
   while (!dfs_stack.empty()) {
     int64 sync_parent_id = dfs_stack.top();
@@ -382,17 +387,17 @@ bool BookmarkModelAssociator::BuildAssociations() {
       const BookmarkNode* child_node = NULL;
       child_node = node_finder.FindBookmarkNode(sync_child_node);
       if (child_node) {
-        model->Move(child_node, parent_node, index);
+        bookmark_model_->Move(child_node, parent_node, index);
         // Set the favicon for bookmark node from sync node or vice versa.
         if (BookmarkChangeProcessor::SetBookmarkFavicon(
-            &sync_child_node, child_node, sync_service_->profile())) {
-          BookmarkChangeProcessor::SetSyncNodeFavicon(child_node, model,
-                                                      &sync_child_node);
+            &sync_child_node, child_node, bookmark_model_)) {
+          BookmarkChangeProcessor::SetSyncNodeFavicon(
+              child_node, bookmark_model_, &sync_child_node);
         }
       } else {
         // Create a new bookmark node for the sync node.
         child_node = BookmarkChangeProcessor::CreateBookmarkNode(
-            &sync_child_node, parent_node, model, index);
+            &sync_child_node, parent_node, bookmark_model_, index);
       }
       Associate(child_node, sync_child_id);
       if (sync_child_node.GetIsFolder())
@@ -409,22 +414,14 @@ bool BookmarkModelAssociator::BuildAssociations() {
     // ones that are not present in the parent sync node. So create them.
     for (int i = index; i < parent_node->child_count(); ++i) {
       sync_child_id = BookmarkChangeProcessor::CreateSyncNode(
-          parent_node, model, i, &trans, this, sync_service_);
+          parent_node, bookmark_model_, i, &trans, this,
+          unrecoverable_error_handler_);
       if (parent_node->GetChild(i)->is_folder())
         dfs_stack.push(sync_child_id);
       number_of_new_sync_nodes_created_at_association_++;
     }
   }
 
-  if (sync_service_->GetAutofillMigrationState() !=
-      syncable::MIGRATED) {
-    syncable::AutofillMigrationDebugInfo debug_info;
-    debug_info.bookmarks_added_during_migration =
-        number_of_new_sync_nodes_created_at_association_;
-    sync_service_->SetAutofillMigrationDebugInfo(
-        syncable::AutofillMigrationDebugInfo::BOOKMARK_ADDED,
-        debug_info);
-  }
   return true;
 }
 
@@ -448,7 +445,7 @@ void BookmarkModelAssociator::PersistAssociations() {
     return;
   }
 
-  sync_api::WriteTransaction trans(sync_service_->GetUserShare());
+  sync_api::WriteTransaction trans(user_share_);
   DirtyAssociationsSyncIds::iterator iter;
   for (iter = dirty_associations_sync_ids_.begin();
        iter != dirty_associations_sync_ids_.end();
@@ -456,7 +453,7 @@ void BookmarkModelAssociator::PersistAssociations() {
     int64 sync_id = *iter;
     sync_api::WriteNode sync_node(&trans);
     if (!sync_node.InitByIdLookup(sync_id)) {
-      persist_ids_error_handler_->OnUnrecoverableError(FROM_HERE,
+      unrecoverable_error_handler_->OnUnrecoverableError(FROM_HERE,
           "Could not lookup bookmark node for ID persistence.");
       return;
     }
@@ -470,11 +467,10 @@ void BookmarkModelAssociator::PersistAssociations() {
 }
 
 bool BookmarkModelAssociator::LoadAssociations() {
-  BookmarkModel* model = sync_service_->profile()->GetBookmarkModel();
-  DCHECK(model->IsLoaded());
+  DCHECK(bookmark_model_->IsLoaded());
   // If the bookmarks changed externally, our previous associations may not be
   // valid; so return false.
-  if (model->file_changed())
+  if (bookmark_model_->file_changed())
     return false;
 
   // Our persisted associations should be valid. Try to populate id association
@@ -495,14 +491,14 @@ bool BookmarkModelAssociator::LoadAssociations() {
   // Build a bookmark node ID index since we are going to repeatedly search for
   // bookmark nodes by their IDs.
   BookmarkNodeIdIndex id_index;
-  id_index.AddAll(model->GetBookmarkBarNode());
-  id_index.AddAll(model->other_node());
+  id_index.AddAll(bookmark_model_->GetBookmarkBarNode());
+  id_index.AddAll(bookmark_model_->other_node());
 
   std::stack<int64> dfs_stack;
   dfs_stack.push(other_bookmarks_id);
   dfs_stack.push(bookmark_bar_id);
 
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  sync_api::ReadTransaction trans(user_share_);
 
   // Count total number of nodes in sync model so that we can compare that
   // with the total number of nodes in the bookmark model.
@@ -526,8 +522,8 @@ bool BookmarkModelAssociator::LoadAssociations() {
 
     // Don't try to call NodesMatch on permanent nodes like bookmark bar and
     // other bookmarks. They are not expected to match.
-    if (node != model->GetBookmarkBarNode() &&
-        node != model->other_node() &&
+    if (node != bookmark_model_->GetBookmarkBarNode() &&
+        node != bookmark_model_->other_node() &&
         !NodesMatch(node, &sync_parent))
       return false;
 
@@ -554,13 +550,30 @@ bool BookmarkModelAssociator::LoadAssociations() {
   return sync_node_count == id_index.count();
 }
 
+namespace {
+
+// TODO(akalin): Put this function somewhere where other data types
+// can use it.
+
+syncable::ModelTypeSet GetEncryptedTypes(sync_api::UserShare* user_share) {
+  sync_api::ReadTransaction trans(user_share);
+  sync_api::ReadNode node(&trans);
+  if (!node.InitByTagLookup(kNigoriTag)) {
+    // If we don't have a Nigori node, we don't have any encrypted types.
+    return syncable::ModelTypeSet();
+  }
+  return syncable::GetEncryptedDataTypesFromNigori(node.GetNigoriSpecifics());
+}
+
+}  // namespace
+
 bool BookmarkModelAssociator::CryptoReadyIfNecessary() {
+  const syncable::ModelTypeSet& encrypted_types =
+      GetEncryptedTypes(user_share_);
   // We only access the cryptographer while holding a transaction.
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
-  syncable::ModelTypeSet encrypted_types;
-  sync_service_->GetEncryptedDataTypes(&encrypted_types);
+  sync_api::ReadTransaction trans(user_share_);
   return encrypted_types.count(syncable::BOOKMARKS) == 0 ||
-         sync_service_->IsCryptographerReady(&trans);
+      user_share_->dir_manager->GetCryptographer(&trans)->is_ready();
 }
 
 }  // namespace browser_sync

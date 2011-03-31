@@ -55,8 +55,7 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
 
   EXPECT_CALL(*this, RequestPause()).Times(testing::AnyNumber());
   EXPECT_CALL(*this, RequestResume()).Times(testing::AnyNumber());
-  EXPECT_CALL(*this,
-              RequestNudge()).Times(set_initial_sync_ended_on_init ? 0 : 1);
+  EXPECT_CALL(*this, RequestNudge()).Times(testing::AnyNumber());
 }
 
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}

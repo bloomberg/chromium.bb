@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/values.h"
@@ -19,6 +20,10 @@
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// TODO(akalin): Add tests here that exercise the whole
+// ProfileSyncService/SyncBackendHost stack while mocking out as
+// little as possible.
 
 namespace browser_sync {
 
@@ -45,12 +50,17 @@ class ProfileSyncServiceTest : public testing::Test {
     MessageLoop::current()->RunAllPending();
   }
 
+  // TODO(akalin): Refactor the StartSyncService*() functions below.
+
   void StartSyncService() {
-    StartSyncServiceAndSetInitialSyncEnded(true, true);
+    StartSyncServiceAndSetInitialSyncEnded(true, true, false, true);
   }
+
   void StartSyncServiceAndSetInitialSyncEnded(
       bool set_initial_sync_ended,
-      bool issue_auth_token) {
+      bool issue_auth_token,
+      bool synchronous_sync_configuration,
+      bool sync_setup_completed) {
     if (!service_.get()) {
       // Set bootstrap to true and it will provide a logged in user for test
       service_.reset(new TestProfileSyncService(&factory_,
@@ -58,6 +68,10 @@ class ProfileSyncServiceTest : public testing::Test {
                                                 "test", true, NULL));
       if (!set_initial_sync_ended)
         service_->dont_set_initial_sync_ended_on_init();
+      if (synchronous_sync_configuration)
+        service_->set_synchronous_sync_configuration();
+      if (!sync_setup_completed)
+        profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
 
       // Register the bookmark data type.
       EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
@@ -85,6 +99,16 @@ class ProfileSyncServiceTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   ProfileSyncFactoryMock factory_;
 };
+
+TEST_F(ProfileSyncServiceTest, InitialState) {
+  service_.reset(new TestProfileSyncService(&factory_, profile_.get(),
+                                            "", true, NULL));
+  EXPECT_TRUE(
+      service_->sync_service_url().spec() ==
+        ProfileSyncService::kSyncServerUrl ||
+      service_->sync_service_url().spec() ==
+        ProfileSyncService::kDevServerUrl);
+}
 
 TEST_F(ProfileSyncServiceTest, DisabledByPolicy) {
   profile_->GetTestingPrefService()->SetManagedPref(
@@ -134,7 +158,7 @@ TEST_F(ProfileSyncServiceTest, JsFrontendHandlersBasic) {
 
 TEST_F(ProfileSyncServiceTest,
        JsFrontendHandlersDelayedBackendInitialization) {
-  StartSyncServiceAndSetInitialSyncEnded(true, false);
+  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true);
 
   StrictMock<MockJsEventHandler> event_handler;
   EXPECT_CALL(event_handler,
@@ -232,7 +256,7 @@ TEST_F(ProfileSyncServiceTest, JsFrontendProcessMessageBasic) {
 
 TEST_F(ProfileSyncServiceTest,
        JsFrontendProcessMessageBasicDelayedBackendInitialization) {
-  StartSyncServiceAndSetInitialSyncEnded(true, false);
+  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true);
 
   StrictMock<MockJsEventHandler> event_handler;
   // For some reason, these events may or may not fire.
@@ -292,6 +316,48 @@ TEST_F(ProfileSyncServiceTest,
   message_loop_.RunAllPending();
 
   js_backend->ProcessMessage("notRepliedTo", kNoArgs, &event_handler);
+}
+
+// Make sure that things still work if sync is not enabled, but some old sync
+// databases are lingering in the "Sync Data" folder.
+TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
+  const char* nonsense1 = "reginald";
+  const char* nonsense2 = "beartato";
+  const char* nonsense3 = "harrison";
+  FilePath temp_directory = profile_->GetPath().AppendASCII("Sync Data");
+  FilePath sync_file1 =
+      temp_directory.AppendASCII("BookmarkSyncSettings.sqlite3");
+  FilePath sync_file2 = temp_directory.AppendASCII("SyncData.sqlite3");
+  FilePath sync_file3 = temp_directory.AppendASCII("nonsense_file");
+  ASSERT_TRUE(file_util::CreateDirectory(temp_directory));
+  ASSERT_NE(-1,
+            file_util::WriteFile(sync_file1, nonsense1, strlen(nonsense1)));
+  ASSERT_NE(-1,
+            file_util::WriteFile(sync_file2, nonsense2, strlen(nonsense2)));
+  ASSERT_NE(-1,
+            file_util::WriteFile(sync_file3, nonsense3, strlen(nonsense3)));
+
+  StartSyncServiceAndSetInitialSyncEnded(false, false, true, false);
+  EXPECT_FALSE(service_->HasSyncSetupCompleted());
+
+  // Since we're doing synchronous initialization, backend should be
+  // initialized by this call.
+  profile_->GetTokenService()->IssueAuthTokenForTest(
+      GaiaConstants::kSyncService, "token");
+
+  // Stop the service so we can read the new Sync Data files that were
+  // created.
+  service_.reset();
+
+  // This file should have been deleted when the whole directory was nuked.
+  ASSERT_FALSE(file_util::PathExists(sync_file3));
+  ASSERT_FALSE(file_util::PathExists(sync_file1));
+
+  // This will still exist, but the text should have changed.
+  ASSERT_TRUE(file_util::PathExists(sync_file2));
+  std::string file2text;
+  ASSERT_TRUE(file_util::ReadFileToString(sync_file2, &file2text));
+  ASSERT_NE(file2text.compare(nonsense2), 0);
 }
 
 }  // namespace

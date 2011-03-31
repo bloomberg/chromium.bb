@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -223,8 +223,12 @@ ProfileSyncFactory::SyncComponents
 ProfileSyncFactoryImpl::CreateBookmarkSyncComponents(
     ProfileSyncService* profile_sync_service,
     UnrecoverableErrorHandler* error_handler) {
+  BookmarkModel* bookmark_model =
+      profile_sync_service->profile()->GetBookmarkModel();
+  sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
   BookmarkModelAssociator* model_associator =
-      new BookmarkModelAssociator(profile_sync_service,
+      new BookmarkModelAssociator(bookmark_model,
+                                  user_share,
                                   error_handler);
   BookmarkChangeProcessor* change_processor =
       new BookmarkChangeProcessor(model_associator,
