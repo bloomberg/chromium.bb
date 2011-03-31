@@ -468,6 +468,13 @@
 }
 
 {
+  fun:mktime
+  ThreadSanitizer:Race
+  ...
+  fun:mktime
+}
+
+{
   Benign race in nss (PR_EnterMonitor)
   ThreadSanitizer:Race
   fun:PR_EnterMonitor
