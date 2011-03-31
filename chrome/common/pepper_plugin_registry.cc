@@ -110,8 +110,12 @@ void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
 
 // Appends any plugins from the command line to the given vector.
 void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
+  // Flash being out of process is handled separately than general plugins
+  // for testing purposes.
   bool out_of_process =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kPpapiOutOfProcess);
+  bool flash_out_of_process = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPpapiFlashInProcess);
 
   // Handle any Pepper Flash first.
   const CommandLine::StringType flash_path =
@@ -119,7 +123,7 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
           switches::kPpapiFlashPath);
   if (!flash_path.empty()) {
     PepperPluginInfo plugin;
-    plugin.is_out_of_process = out_of_process;
+    plugin.is_out_of_process = flash_out_of_process;
     plugin.path = FilePath(flash_path);
     plugin.name = kFlashPluginName;
 

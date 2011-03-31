@@ -234,6 +234,7 @@ extern const char kPackExtension[];
 extern const char kPackExtensionKey[];
 extern const char kParentProfile[];
 extern const char kPlaybackMode[];
+extern const char kPpapiFlashInProcess[];
 extern const char kPrerender[];
 extern const char kPrerenderSwitchValueAuto[];
 extern const char kPrerenderSwitchValueDisabled[];

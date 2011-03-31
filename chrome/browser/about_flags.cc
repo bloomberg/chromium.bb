@@ -288,6 +288,13 @@ const Experiment kExperiments[] = {
     kOsWin,
     SINGLE_VALUE_TYPE(switches::kEnableTabGroupsContextMenu)
   },
+  {
+    "ppapi-flash-in-process",
+    IDS_FLAGS_PPAPI_FLASH_IN_PROCESS_NAME,
+    IDS_FLAGS_PPAPI_FLASH_IN_PROCESS_DESCRIPTION,
+    kOsLinux,
+    SINGLE_VALUE_TYPE(switches::kPpapiFlashInProcess)
+  },
 };
 
 const Experiment* experiments = kExperiments;

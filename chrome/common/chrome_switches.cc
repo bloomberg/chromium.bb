@@ -819,6 +819,10 @@ const char kParentProfile[]                 = "parent-profile";
 // See kRecordMode.
 const char kPlaybackMode[]                  = "playback-mode";
 
+// Forces the PPAPI version of Flash (if it's being used) to run in the
+// renderer process rather than in a separate plugin process.
+const char kPpapiFlashInProcess[]          = "ppapi-flash-in-process";
+
 // Controls speculative prerendering of pages, and content prefetching.  Both
 // are dispatched from <link rel=prefetch href=...> elements.
 const char kPrerender[]                     = "prerender";
@@ -1169,7 +1173,7 @@ const char kPasswordStore[]                 = "password-store";
 
 #if defined(OS_MACOSX)
 // Enables the tabs expose feature ( http://crbug.com/50307 ).
-const char kEnableExposeForTabs[] = "enable-expose-for-tabs";
+const char kEnableExposeForTabs[]           = "enable-expose-for-tabs";
 #endif
 
 #if !defined(OS_MACOSX)
