@@ -75,6 +75,13 @@ enum InstallStatus {
                                // command line.
 };
 
+
+// If the following compile assert fires it means that the InstallStatus
+// enumeration changed which will break the contract between the old
+// chrome installed and the new setup.exe that is trying to upgrade.
+COMPILE_ASSERT(installer::CONFLICTING_CHANNEL_EXISTS == 39,
+               dont_change_enum);
+
 // The type of an update archive.
 enum ArchiveType {
   UNKNOWN_ARCHIVE_TYPE,     // Unknown or uninitialized.

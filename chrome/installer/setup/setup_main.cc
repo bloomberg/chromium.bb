@@ -400,14 +400,15 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
       }
     }
 
-    // Check to avoid simultaneous per-user and per-machine installs.
+    // Check to avoid attempting to lay down a user-level installation on top
+    // of a system-level one.
     const ProductState* other_state =
         original_state.GetProductState(!system_level, browser_dist->GetType());
-    if (other_state != NULL) {
+    if (other_state != NULL && !system_level) {
       LOG(ERROR) << "Already installed version "
                  << other_state->version().GetString()
                  << " conflicts with the current install mode.";
-      if (!system_level && is_first_install && product->is_chrome()) {
+      if (is_first_install && product->is_chrome()) {
         // This is user-level install and there is a system-level chrome
         // installation. Instruct Google Update to launch the existing one.
         // There should be no error dialog.
@@ -417,8 +418,10 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
           // If we failed to construct install path. Give up.
           *status = installer::OS_ERROR;
           InstallUtil::WriteInstallerResult(system_level,
-              installer_state->state_key(), *status, IDS_INSTALL_OS_ERROR_BASE,
-              NULL);
+                                            installer_state->state_key(),
+                                            *status,
+                                            IDS_INSTALL_OS_ERROR_BASE,
+                                            NULL);
         } else {
           *status = installer::EXISTING_VERSION_LAUNCHED;
           chrome_exe = chrome_exe.Append(installer::kChromeExe);
@@ -432,20 +435,14 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
         return false;
       }
 
-      // If the following compile assert fires it means that the InstallStatus
-      // enumeration changed which will break the contract between the old
-      // chrome installed and the new setup.exe that is trying to upgrade.
-      COMPILE_ASSERT(installer::CONFLICTING_CHANNEL_EXISTS == 39,
-                     dont_change_enum);
-
       // This is an update, not an install. Omaha should know the difference
       // and not show a dialog.
-      *status = system_level ? installer::USER_LEVEL_INSTALL_EXISTS :
-                               installer::SYSTEM_LEVEL_INSTALL_EXISTS;
-      int str_id = system_level ? IDS_INSTALL_USER_LEVEL_EXISTS_BASE :
-                                  IDS_INSTALL_SYSTEM_LEVEL_EXISTS_BASE;
+      *status = installer::SYSTEM_LEVEL_INSTALL_EXISTS;
       InstallUtil::WriteInstallerResult(system_level,
-          installer_state->state_key(), *status, str_id, NULL);
+                                        installer_state->state_key(),
+                                        *status,
+                                        IDS_INSTALL_SYSTEM_LEVEL_EXISTS_BASE,
+                                        NULL);
       return false;
     }
   }
