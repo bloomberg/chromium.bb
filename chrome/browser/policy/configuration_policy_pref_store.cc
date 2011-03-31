@@ -269,6 +269,8 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
   { Value::TYPE_BOOLEAN, kPolicyCloudPrintProxyEnabled,
     prefs::kCloudPrintProxyEnabled },
   { Value::TYPE_BOOLEAN, kPolicyTranslateEnabled, prefs::kEnableTranslate },
+  { Value::TYPE_BOOLEAN, kPolicyAllowOutdatedPlugins,
+    prefs::kPluginsAllowOutdated },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
@@ -978,6 +980,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
     { kPolicyDownloadDirectory, Value::TYPE_STRING,
       key::kDownloadDirectory },
     { kPolicyTranslateEnabled, Value::TYPE_BOOLEAN, key::kTranslateEnabled },
+    { kPolicyAllowOutdatedPlugins, Value::TYPE_BOOLEAN,
+      key::kAllowOutdatedPlugins },
 
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,

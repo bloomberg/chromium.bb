@@ -2088,9 +2088,10 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kDevToolsSplitLocation, -1);
   prefs->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);
   prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement);
-  // We need to register the type of this preference in order to query
-  // it even though it's only typically controlled via policy.
+  // We need to register the type of these preferences in order to query
+  // them even though they're only typically controlled via policy.
   prefs->RegisterBooleanPref(prefs::kDisable3DAPIs, false);
+  prefs->RegisterBooleanPref(prefs::kPluginsAllowOutdated, false);
 }
 
 // static

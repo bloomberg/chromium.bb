@@ -39,7 +39,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const webkit::npapi::PluginGroup& group,
       int resource_id,
       int message_id,
-      bool is_blocked_for_prerendering);
+      bool is_blocked_for_prerendering,
+      bool allow_loading);
 };
 
 }  // namespace chrome

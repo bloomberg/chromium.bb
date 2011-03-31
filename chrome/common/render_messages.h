@@ -406,11 +406,19 @@ IPC_MESSAGE_CONTROL2(ViewHostMsg_V8HeapStats,
 // Request for a DNS prefetch of the names in the array.
 // NameList is typedef'ed std::vector<std::string>
 IPC_MESSAGE_CONTROL1(ViewHostMsg_DnsPrefetch,
-                    std::vector<std::string> /* hostnames */)
+                     std::vector<std::string> /* hostnames */)
 
 // Notifies when default plugin updates status of the missing plugin.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_MissingPluginStatus,
                     int /* status */)
+
+// Requests the outdated plugins policy.
+// |policy| is one of ALLOW, BLOCK or ASK. Anything else is an error.
+// ALLOW means that outdated plugins are allowed, and BLOCK that they should
+// be blocked. The default is ASK, which blocks the plugin initially but allows
+// the user to start them manually.
+IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_GetOutdatedPluginsPolicy,
+                           ContentSetting   /* policy */)
 
 // Notifies when a plugin couldn't be loaded because it's outdated.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_BlockedOutdatedPlugin,

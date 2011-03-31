@@ -12,11 +12,13 @@
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 
@@ -34,11 +36,17 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
       render_process_id_(render_process_id),
       profile_(profile),
       request_context_(request_context) {
+  allow_outdated_plugins_ = new BooleanPrefMember();
+  allow_outdated_plugins_->Init(prefs::kPluginsAllowOutdated,
+                                profile_->GetPrefs(), NULL);
+  allow_outdated_plugins_->MoveToThread(BrowserThread::IO);
 }
 
 ChromeRenderMessageFilter::~ChromeRenderMessageFilter() {
   // This function should be called on the IO thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
+                            allow_outdated_plugins_);
 }
 
 bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
@@ -58,6 +66,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
 #endif
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetOutdatedPluginsPolicy,
+                        OnGetOutdatedPluginsPolicy)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -228,3 +238,14 @@ void ChromeRenderMessageFilter::OnRendererTcmalloc(base::ProcessId pid,
   AboutTcmallocRendererCallback(pid, output);
 }
 #endif
+
+void ChromeRenderMessageFilter::OnGetOutdatedPluginsPolicy(
+    ContentSetting* policy) {
+  *policy = CONTENT_SETTING_ALLOW;
+  if (!allow_outdated_plugins_->GetValue()) {
+    // If this is false by policy, the plugin is blocked; otherwise, it is
+    // blocked initially but the user can load it manually.
+    *policy = allow_outdated_plugins_->IsManaged() ?
+        CONTENT_SETTING_BLOCK : CONTENT_SETTING_ASK;
+  }
+}

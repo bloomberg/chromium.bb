@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,8 @@ class BlockedPlugin : public RenderViewObserver,
                 const WebPreferences& settings,
                 int template_id,
                 const string16& message,
-                bool is_blocked_for_prerendering);
+                bool is_blocked_for_prerendering,
+                bool allow_loading);
 
   webkit::npapi::WebViewPlugin* plugin() { return plugin_; }
 
@@ -77,6 +78,7 @@ class BlockedPlugin : public RenderViewObserver,
   // Plugin will automatically be loaded when the page is displayed.
   bool is_blocked_for_prerendering_;
   bool hidden_;
+  bool allow_loading_;
 };
 
 #endif  // CHROME_RENDERER_BLOCKED_PLUGIN_H_

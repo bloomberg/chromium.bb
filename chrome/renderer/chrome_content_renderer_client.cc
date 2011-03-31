@@ -75,14 +75,27 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       webkit::npapi::PluginList::Singleton()->GetPluginGroup(info);
   DCHECK(group != NULL);
 
-  if (group->IsVulnerable() &&
-      !cmd->HasSwitch(switches::kAllowOutdatedPlugins)) {
-    render_view->Send(new ViewHostMsg_BlockedOutdatedPlugin(
-        render_view->routing_id(), group->GetGroupName(),
-        GURL(group->GetUpdateURL())));
-    return CreatePluginPlaceholder(
-        render_view, frame, params, *group, IDR_BLOCKED_PLUGIN_HTML,
-        IDS_PLUGIN_OUTDATED, false);
+  if (group->IsVulnerable()) {
+    // The outdated plugins policy isn't cached here because
+    // it's a dynamic policy that can be modified at runtime.
+    ContentSetting outdated_plugins_policy;
+    render_view->Send(new ViewHostMsg_GetOutdatedPluginsPolicy(
+        render_view->routing_id(), &outdated_plugins_policy));
+
+    if (outdated_plugins_policy == CONTENT_SETTING_ASK ||
+        outdated_plugins_policy == CONTENT_SETTING_BLOCK) {
+      if (outdated_plugins_policy == CONTENT_SETTING_ASK) {
+        render_view->Send(new ViewHostMsg_BlockedOutdatedPlugin(
+            render_view->routing_id(), group->GetGroupName(),
+            GURL(group->GetUpdateURL())));
+      }
+      return CreatePluginPlaceholder(
+          render_view, frame, params, *group, IDR_BLOCKED_PLUGIN_HTML,
+          IDS_PLUGIN_OUTDATED, false,
+          outdated_plugins_policy == CONTENT_SETTING_ASK);
+    } else {
+      DCHECK(outdated_plugins_policy == CONTENT_SETTING_ALLOW);
+    }
   }
 
   ContentSetting host_setting = render_view->current_content_settings_.
@@ -97,7 +110,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         render_view->routing_id(), group->GetGroupName(), GURL()));
     return CreatePluginPlaceholder(
         render_view, frame, params, *group, IDR_BLOCKED_PLUGIN_HTML,
-        IDS_PLUGIN_NOT_AUTHORIZED, false);
+        IDS_PLUGIN_NOT_AUTHORIZED, false, true);
   }
 
   if (info.path.value() == webkit::npapi::kDefaultPluginLibraryName ||
@@ -107,7 +120,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     if (render_view->is_prerendering_) {
       return CreatePluginPlaceholder(
           render_view, frame, params, *group, IDR_CLICK_TO_PLAY_PLUGIN_HTML,
-          IDS_PLUGIN_LOAD, true);
+          IDS_PLUGIN_LOAD, true, true);
     }
 
     scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
@@ -128,11 +141,11 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   if (plugin_setting == CONTENT_SETTING_ASK) {
     return CreatePluginPlaceholder(
         render_view, frame, params, *group, IDR_CLICK_TO_PLAY_PLUGIN_HTML,
-        IDS_PLUGIN_LOAD, false);
+        IDS_PLUGIN_LOAD, false, true);
   } else {
     return CreatePluginPlaceholder(
         render_view, frame, params, *group, IDR_BLOCKED_PLUGIN_HTML,
-        IDS_PLUGIN_BLOCKED, false);
+        IDS_PLUGIN_BLOCKED, false, true);
   }
 }
 
@@ -143,7 +156,8 @@ WebPlugin* ChromeContentRendererClient::CreatePluginPlaceholder(
     const webkit::npapi::PluginGroup& group,
     int resource_id,
     int message_id,
-    bool is_blocked_for_prerendering) {
+    bool is_blocked_for_prerendering,
+    bool allow_loading) {
   // |blocked_plugin| will delete itself when the WebViewPlugin
   // is destroyed.
   BlockedPlugin* blocked_plugin =
@@ -155,7 +169,8 @@ WebPlugin* ChromeContentRendererClient::CreatePluginPlaceholder(
                         resource_id,
                         l10n_util::GetStringFUTF16(message_id,
                                                    group.GetGroupName()),
-                        is_blocked_for_prerendering);
+                        is_blocked_for_prerendering,
+                        allow_loading);
   return blocked_plugin->plugin();
 }
 

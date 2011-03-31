@@ -44,13 +44,6 @@ void PrefMemberBase::Destroy() {
   }
 }
 
-bool PrefMemberBase::IsManaged() const {
-  VerifyValuePrefName();
-  const PrefService::Preference* pref =
-      prefs_->FindPreference(pref_name_.c_str());
-  return pref && pref->IsManaged();
-}
-
 void PrefMemberBase::MoveToThread(BrowserThread::ID thread_id) {
   VerifyValuePrefName();
   // Load the value from preferences if it hasn't been loaded so far.
@@ -80,7 +73,7 @@ void PrefMemberBase::UpdateValueFromPref() const {
   DCHECK(pref);
   if (!internal())
     CreateInternal();
-  internal()->UpdateValue(pref->GetValue()->DeepCopy());
+  internal()->UpdateValue(pref->GetValue()->DeepCopy(), pref->IsManaged());
 }
 
 PrefMemberBase::Internal::Internal() : thread_id_(BrowserThread::UI) { }
@@ -93,17 +86,18 @@ bool PrefMemberBase::Internal::IsOnCorrectThread() const {
            !BrowserThread::IsMessageLoopValid(BrowserThread::UI)));
 }
 
-void PrefMemberBase::Internal::UpdateValue(Value* v) const {
+void PrefMemberBase::Internal::UpdateValue(Value* v, bool is_managed) const {
   scoped_ptr<Value> value(v);
   if (IsOnCorrectThread()) {
     bool rv = UpdateValueInternal(*value);
     DCHECK(rv);
+    is_managed_ = is_managed;
   } else {
     bool rv = BrowserThread::PostTask(
         thread_id_, FROM_HERE,
         NewRunnableMethod(this,
                           &PrefMemberBase::Internal::UpdateValue,
-                          value.release()));
+                          value.release(), is_managed));
     DCHECK(rv);
   }
 }

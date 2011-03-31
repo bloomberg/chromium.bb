@@ -47,9 +47,14 @@ class PrefMemberBase : public NotificationObserver {
     // Update the value, either by calling |UpdateValueInternal| directly
     // or by dispatching to the right thread.
     // Takes ownership of |value|.
-    virtual void UpdateValue(Value* value) const;
+    virtual void UpdateValue(Value* value, bool is_managed) const;
 
     void MoveToThread(BrowserThread::ID thread_id);
+
+    // See PrefMember<> for description.
+    bool IsManaged() const {
+      return is_managed_;
+    }
 
    protected:
     friend class base::RefCountedThreadSafe<Internal>;
@@ -67,6 +72,7 @@ class PrefMemberBase : public NotificationObserver {
     bool IsOnCorrectThread() const;
 
     BrowserThread::ID thread_id_;
+    mutable bool is_managed_;
 
     DISALLOW_COPY_AND_ASSIGN(Internal);
   };
@@ -83,9 +89,6 @@ class PrefMemberBase : public NotificationObserver {
   // See PrefMember<> for description.
   void Destroy();
 
-  // See PrefMember<> for description.
-  bool IsManaged() const;
-
   void MoveToThread(BrowserThread::ID thread_id);
 
   // NotificationObserver
@@ -99,6 +102,14 @@ class PrefMemberBase : public NotificationObserver {
   // Note: it is logically const, because it doesn't modify the state
   // seen by the outside world. It is just doing a lazy load behind the scenes.
   virtual void UpdateValueFromPref() const;
+
+  // Verifies the preference name, and lazily loads the preference value if
+  // it hasn't been loaded yet.
+  void VerifyPref() const {
+    VerifyValuePrefName();
+    if (!internal())
+      UpdateValueFromPref();
+  }
 
   const std::string& pref_name() const { return pref_name_; }
   PrefService* prefs() { return prefs_; }
@@ -153,20 +164,18 @@ class PrefMember : public subtle::PrefMemberBase {
   // Check whether the pref is managed, i.e. controlled externally through
   // enterprise configuration management (e.g. windows group policy). Returns
   // false for unknown prefs.
-  // This method should only be called on the UI thread.
+  // This method should only be used from the thread the PrefMember is currently
+  // on, which is the UI thread unless changed by |MoveToThread|.
   bool IsManaged() const {
-    return subtle::PrefMemberBase::IsManaged();
+    VerifyPref();
+    return internal_->IsManaged();
   }
 
   // Retrieve the value of the member variable.
   // This method should only be used from the thread the PrefMember is currently
   // on, which is the UI thread unless changed by |MoveToThread|.
   ValueType GetValue() const {
-    VerifyValuePrefName();
-    // We lazily fetch the value from the pref service the first time GetValue
-    // is called.
-    if (!internal_.get())
-      UpdateValueFromPref();
+    VerifyPref();
     return internal_->value();
   }
 

@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 80
+#   For your editing convenience: highest ID currently used: 81
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1420,6 +1420,22 @@
       If you disable this setting, users will never see the translation bar.
 
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+    },
+    {
+      'name': 'AllowOutdatedPlugins',
+      'type': 'main',
+      'supported_on': ['chrome.*:12-', 'chrome_os:0.11-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
+      'id': 81,
+      'caption': '''Allow running plugins that are outdated''',
+      'desc': '''Allows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to run plugins that are outdated.
+
+      If you enable this setting, outdated plugins are used as normal plugins.
+
+      If you disable this setting, outdated plugins will not be used and users will not be asked for permission to run them.
+
+      If this setting is not set, users will be asked for permission to run outdated plugins.''',
     },
   ],
   'messages': {

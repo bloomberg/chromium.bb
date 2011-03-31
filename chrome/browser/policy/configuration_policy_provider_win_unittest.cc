@@ -482,6 +482,9 @@ INSTANTIATE_TEST_CASE_P(
             key::kCloudPrintProxyEnabled),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyTranslateEnabled,
-            key::kTranslateEnabled)));
+            key::kTranslateEnabled),
+        PolicyTestParams::ForBooleanPolicy(
+            kPolicyAllowOutdatedPlugins,
+            key::kAllowOutdatedPlugins)));
 
 }  // namespace policy

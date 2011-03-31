@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_MESSAGE_FILTER_H_
 #pragma once
 
+#include "chrome/common/content_settings.h"
 #include "content/browser/browser_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
+template<class T> class PrefMember;
+typedef PrefMember<bool> BooleanPrefMember;
 class FilePath;
 class Profile;
 class ResourceDispatcherHost;
@@ -34,7 +37,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   friend class DeleteTask<ChromeRenderMessageFilter>;
 
   virtual ~ChromeRenderMessageFilter();
-  
+
   void OnLaunchNaCl(const std::wstring& url,
                     int channel_descriptor,
                     IPC::Message* reply_msg);
@@ -60,7 +63,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                                   int receiver_port_id,
                                   int tab_id, const std::string& extension_id,
                                   const std::string& channel_name);
-  
+
   void OnGetExtensionMessageBundle(const std::string& extension_id,
                                    IPC::Message* reply_msg);
   void OnGetExtensionMessageBundleOnFileThread(
@@ -71,6 +74,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
 #if defined(USE_TCMALLOC)
   void OnRendererTcmalloc(base::ProcessId pid, const std::string& output);
 #endif
+  void OnGetOutdatedPluginsPolicy(ContentSetting* policy);
 
   ResourceDispatcherHost* resource_dispatcher_host_;
   int render_process_id_;
@@ -79,6 +83,11 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   // accessed on the UI thread!
   Profile* profile_;
   scoped_refptr<URLRequestContextGetter> request_context_;
+
+  // |allow_outdated_plugins_| is a weak pointer because it must be deleted on
+  // the UI thread, but the dtor is called on the IO thread. The dtor posts a
+  // DeleteTask on the UI thread to delete this pointer.
+  BooleanPrefMember* allow_outdated_plugins_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderMessageFilter);
 };

@@ -30,6 +30,7 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
       { switches::kDisable3DAPIs, prefs::kDisable3DAPIs, true },
       { switches::kEnableCloudPrintProxy, prefs::kCloudPrintProxyEnabled,
           true },
+      { switches::kAllowOutdatedPlugins, prefs::kPluginsAllowOutdated, true },
 };
 
 CommandLinePrefStore::CommandLinePrefStore(const CommandLine* command_line)

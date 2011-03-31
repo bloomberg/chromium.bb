@@ -205,7 +205,9 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyDisable3DAPIs,
                     prefs::kDisable3DAPIs),
         TypeAndName(kPolicyTranslateEnabled,
-                    prefs::kEnableTranslate)));
+                    prefs::kEnableTranslate),
+        TypeAndName(kPolicyAllowOutdatedPlugins,
+                    prefs::kPluginsAllowOutdated)));
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(
