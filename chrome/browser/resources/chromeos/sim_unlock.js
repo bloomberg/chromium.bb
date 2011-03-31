@@ -36,7 +36,7 @@ cr.define('mobile', function() {
         case SimUnlock.SIM_UNLOCK_LOADING:
           break;
         case SimUnlock.SIM_ABSENT_NOT_LOCKED:
-          // TODO(nkostylev): Update status info, probably close dialog.
+          SimUnlock.close();
           break;
         case SimUnlock.SIM_LOCKED_PIN:
           $('pin-input').value = '';
@@ -95,7 +95,7 @@ cr.define('mobile', function() {
   };
 
   SimUnlock.close = function() {
-    // TODO(nkostylev): Close dialog.
+    window.close();
   };
 
   SimUnlock.initialize = function() {

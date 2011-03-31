@@ -16,7 +16,7 @@ body {
 
 .dialog {
   background: white;
-  border: 1px solid rgb(188, 193, 208);
+  min-height: 225px;
   min-width: 350px;
   padding: 0;
   position: relative;

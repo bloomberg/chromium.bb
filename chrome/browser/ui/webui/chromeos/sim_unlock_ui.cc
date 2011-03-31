@@ -286,7 +286,7 @@ void SimUnlockHandler::GetSimInfo(chromeos::CellularNetwork* network,
                                   DictionaryValue* value) {
   if (network) {
     // TODO(nkostylev): Extract real tries left information.
-    // value.SetInteger(kTriesLeft, tries);
+    // value->SetInteger(kTriesLeft, tries);
   }
 }
 

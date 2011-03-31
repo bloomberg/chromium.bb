@@ -641,6 +641,8 @@
         'browser/chromeos/setting_level_bubble.h',
         'browser/chromeos/setting_level_bubble_view.cc',
         'browser/chromeos/setting_level_bubble_view.h',
+        'browser/chromeos/sim_unlock_dialog_delegate.cc',
+        'browser/chromeos/sim_unlock_dialog_delegate.h',
         'browser/chromeos/status/clock_menu_button.cc',
         'browser/chromeos/status/clock_menu_button.h',
         'browser/chromeos/status/input_method_menu.cc',

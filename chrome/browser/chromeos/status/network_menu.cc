@@ -9,10 +9,11 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/sim_unlock_dialog_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/browser/ui/views/window.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
@@ -306,6 +307,8 @@ void NetworkMenu::ActivatedAt(int index) {
     cros->EnableWifiNetworkDevice(!cros->wifi_enabled());
   } else if (flags & FLAG_TOGGLE_CELLULAR) {
     cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
+    // TODO(nkostylev): Integrate with SIM locked state. crosbug.com/12007.
+    // SimUnlockDialogDelegate::ShowDialog(GetNativeWindow());
   } else if (flags & FLAG_TOGGLE_OFFLINE) {
     cros->EnableOfflineMode(!cros->offline_mode());
   } else if (flags & FLAG_ETHERNET) {

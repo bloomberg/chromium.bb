@@ -3327,7 +3327,7 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual void RemoveObserverForAllNetworks(NetworkObserver* observer) {}
   virtual void Lock() {}
   virtual void Unlock() {}
-  virtual bool IsLocked() { return true; }
+  virtual bool IsLocked() { return false; }
   virtual void AddCellularDataPlanObserver(
       CellularDataPlanObserver* observer) {}
   virtual void RemoveCellularDataPlanObserver(
@@ -3412,7 +3412,7 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual void ForgetWifiNetwork(const std::string& service_path) {}
   virtual bool ethernet_available() const { return true; }
   virtual bool wifi_available() const { return false; }
-  virtual bool cellular_available() const { return false; }
+  virtual bool cellular_available() const { return true; }
   virtual bool ethernet_enabled() const { return true; }
   virtual bool wifi_enabled() const { return false; }
   virtual bool cellular_enabled() const { return false; }
