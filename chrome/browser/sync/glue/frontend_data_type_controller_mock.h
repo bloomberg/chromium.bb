@@ -31,9 +31,9 @@ class FrontendDataTypeControllerMock : public FrontendDataTypeController {
   MOCK_METHOD0(StartModels, bool());
   MOCK_METHOD0(Associate, bool());
   MOCK_METHOD0(CleanupState, void());
-  MOCK_METHOD2(FinishStart, void(StartCallback* start_callback,
+  MOCK_METHOD2(FinishStart, void(StartCallback start_callback,
                                  const tracked_objects::Location& from_here));
-  MOCK_METHOD2(StartFailed, void(StartCallback* start_callback,
+  MOCK_METHOD2(StartFailed, void(StartCallback start_callback,
                                  const tracked_objects::Location& from_here));
   MOCK_METHOD0(CreateSyncComponents, void());
   MOCK_METHOD2(RecordUnrecoverableError, void(const tracked_objects::Location&,
