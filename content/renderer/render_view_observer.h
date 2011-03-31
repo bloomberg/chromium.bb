@@ -12,6 +12,7 @@
 class RenderView;
 
 namespace WebKit {
+class WebDataSource;
 class WebFrame;
 class WebMouseEvent;
 struct WebURLError;
@@ -38,6 +39,8 @@ class RenderViewObserver : public IPC::Channel::Listener,
                                         bool is_new_navigation) {}
   virtual void FrameDetached(WebKit::WebFrame* frame) {}
   virtual void FrameWillClose(WebKit::WebFrame* frame) {}
+  virtual void DidCreateDataSource(WebKit::WebFrame* frame,
+                                   WebKit::WebDataSource* ds) {}
 
   // These match the RenderView methods below.
   virtual void FrameTranslated(WebKit::WebFrame* frame) {}

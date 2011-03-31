@@ -6,6 +6,8 @@
 #define CHROME_RENDERER_EXTENSIONS_EXTENSION_HELPER_H_
 #pragma once
 
+#include <set>
+
 #include "content/renderer/render_view_observer.h"
 
 class GURL;
@@ -20,6 +22,9 @@ class ExtensionHelper : public RenderViewObserver {
  private:
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void FrameDetached(WebKit::WebFrame* frame);
+  virtual void DidCreateDataSource(WebKit::WebFrame* frame,
+                                   WebKit::WebDataSource* ds);
 
   void OnExtensionResponse(int request_id, bool success,
                            const std::string& response,
@@ -29,6 +34,8 @@ class ExtensionHelper : public RenderViewObserver {
                                 const ListValue& args,
                                 const GURL& event_url);
 
+  // Keeps tracks of the frames that we created a scheduler for.
+  std::set<WebKit::WebFrame*> user_script_idle_schedulers_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHelper);
 };

@@ -80,7 +80,6 @@ class WebPluginDelegatePepper;
 class WebPluginDelegateProxy;
 class WebUIBindings;
 struct ContextMenuMediaParams;
-struct ExtensionMsg_ExecuteCode_Params;
 struct PP_Flash_NetAddress;
 struct ThumbnailScore;
 struct ViewHostMsg_RunFileChooser_Params;
@@ -304,13 +303,6 @@ class RenderView : public RenderWidget,
 
   // Sets whether  the renderer should report load progress to the browser.
   void SetReportLoadProgressEnabled(bool enabled);
-
-  // Extensions ----------------------------------------------------------------
-
-  // Called when the "idle" user script state has been reached. See
-  // UserScript::DOCUMENT_IDLE.
-  // TODO(jam): remove me
-  void OnUserScriptIdleTriggered(WebKit::WebFrame* frame);
 
   // Plugin-related functions --------------------------------------------------
   // (See also WebPluginPageDelegate implementation.)
@@ -822,7 +814,6 @@ class RenderView : public RenderWidget,
                             WebKit::WebDragOperationsMask operations_allowed);
   void OnEnablePreferredSizeChangedMode(int flags);
   void OnEnableViewSourceMode();
-  void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
   void OnFileChooserResponse(const std::vector<FilePath>& paths);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
@@ -964,15 +955,6 @@ class RenderView : public RenderWidget,
   // multiple frames, the frame whose size is image_size is returned. If the
   // image doesn't have a frame at the specified size, the first is returned.
   bool DownloadImage(int id, const GURL& image_url, int image_size);
-
-  // Backend for the IPC Message ExecuteCode in addition to being used
-  // internally by other RenderView functions.
-  void ExecuteCodeImpl(WebKit::WebFrame* frame,
-                       const ExtensionMsg_ExecuteCode_Params& params);
-
-  // Get all child frames of parent_frame, returned by frames_vector.
-  bool GetAllChildFrames(WebKit::WebFrame* parent_frame,
-                         std::vector<WebKit::WebFrame* >* frames_vector) const;
 
   GURL GetAlternateErrorPageURL(const GURL& failed_url,
                                 ErrorPageType error_type);
@@ -1303,9 +1285,6 @@ class RenderView : public RenderWidget,
   // still waiting to be run (in order).
   struct PendingFileChooser;
   std::deque< linked_ptr<PendingFileChooser> > file_chooser_completions_;
-
-  std::queue<linked_ptr<ExtensionMsg_ExecuteCode_Params> >
-      pending_code_execution_queue_;
 
   // ImageResourceFetchers schedule via DownloadImage.
   ImageResourceFetcherList image_fetchers_;

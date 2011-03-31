@@ -21,8 +21,6 @@ struct PasswordForm;
 class AltErrorPageResourceFetcher;
 }
 
-class UserScriptIdleScheduler;
-
 // The RenderView stores an instance of this class in the "extra data" of each
 // WebDataSource (see RenderView::DidCreateDataSource).
 class NavigationState : public WebKit::WebDataSource::ExtraData {
@@ -65,12 +63,6 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   static NavigationState* FromDataSource(WebKit::WebDataSource* ds) {
     return static_cast<NavigationState*>(ds->extraData());
   }
-
-  UserScriptIdleScheduler* user_script_idle_scheduler() {
-    return user_script_idle_scheduler_.get();
-  }
-  void set_user_script_idle_scheduler(UserScriptIdleScheduler* scheduler);
-  void swap_user_script_idle_scheduler(NavigationState* state);
 
   // Contains the page_id for this navigation or -1 if there is none yet.
   int32 pending_page_id() const { return pending_page_id_; }
@@ -318,7 +310,6 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   bool cache_policy_override_set_;
   WebKit::WebURLRequest::CachePolicy cache_policy_override_;
 
-  scoped_ptr<UserScriptIdleScheduler> user_script_idle_scheduler_;
   int http_status_code_;
 
   bool was_fetched_via_spdy_;

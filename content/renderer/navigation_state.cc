@@ -4,21 +4,10 @@
 
 #include "content/renderer/navigation_state.h"
 
-#include "chrome/renderer/user_script_idle_scheduler.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/password_form.h"
 
 NavigationState::~NavigationState() {}
-
-void NavigationState::set_user_script_idle_scheduler(
-    UserScriptIdleScheduler* scheduler) {
-  user_script_idle_scheduler_.reset(scheduler);
-}
-
-void NavigationState::swap_user_script_idle_scheduler(
-    NavigationState* state) {
-  user_script_idle_scheduler_.swap(state->user_script_idle_scheduler_);
-}
 
 const base::Time& NavigationState::prerendered_page_display_time() const {
   return prerendered_page_display_time_;
@@ -67,7 +56,6 @@ NavigationState::NavigationState(PageTransition::Type transition_type,
       was_started_as_prerender_(false),
       cache_policy_override_set_(false),
       cache_policy_override_(WebKit::WebURLRequest::UseProtocolCachePolicy),
-      user_script_idle_scheduler_(NULL),
       http_status_code_(0),
       was_fetched_via_spdy_(false),
       was_npn_negotiated_(false),

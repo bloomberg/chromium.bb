@@ -46,7 +46,6 @@
 #include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/devtools_client.h"
-#include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
@@ -66,7 +65,6 @@
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "chrome/renderer/translate_helper.h"
-#include "chrome/renderer/user_script_idle_scheduler.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "content/common/appcache/appcache_dispatcher.h"
@@ -1052,7 +1050,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_ExecuteCode, OnExecuteCode)
     IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableAccessibility, OnEnableAccessibility)
@@ -2632,11 +2629,7 @@ void RenderView::frameDetached(WebFrame* frame) {
 }
 
 void RenderView::willClose(WebFrame* frame) {
-  WebDataSource* ds = frame->dataSource();
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
-
   page_load_histograms_.Dump(frame);
-  navigation_state->user_script_idle_scheduler()->Cancel();
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameWillClose(frame));
 }
@@ -2656,7 +2649,6 @@ bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
 bool RenderView::allowPlugins(WebFrame* frame, bool enabled_per_settings) {
   return WebFrameClient::allowPlugins(frame, enabled_per_settings);
 }
-
 
 void RenderView::loadURLExternally(
     WebFrame* frame, const WebURLRequest& request,
@@ -2985,16 +2977,8 @@ void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
     }
   }
 
-  // If this datasource already has a UserScriptIdleScheduler, reuse that one.
-  // This is for navigations within a page (didNavigateWithinPage). See
-  // http://code.google.com/p/chromium/issues/detail?id=64093
-  NavigationState* old_state = NavigationState::FromDataSource(ds);
-  if (old_state && old_state->user_script_idle_scheduler()) {
-    state->swap_user_script_idle_scheduler(old_state);
-  } else {
-    state->set_user_script_idle_scheduler(
-        new UserScriptIdleScheduler(this, frame));
-  }
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_, DidCreateDataSource(frame, ds));
 
   state->set_was_started_as_prerender(is_prerendering_);
 
@@ -3258,28 +3242,6 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
     ExtensionDispatcher::Get()->user_script_slave()->InjectScripts(
         frame, UserScript::DOCUMENT_END);
   }
-
-  // InjectScripts() can end up creating a new NavigationState if it triggers a
-  // fragment navigation, so we need to re-fetch it here.
-  navigation_state = NavigationState::FromDataSource(ds);
-  navigation_state->user_script_idle_scheduler()->DidFinishDocumentLoad();
-}
-
-void RenderView::OnUserScriptIdleTriggered(WebFrame* frame) {
-  if (RenderThread::current()) {  // Will be NULL during unit tests.
-    ExtensionDispatcher::Get()->user_script_slave()->InjectScripts(
-        frame, UserScript::DOCUMENT_IDLE);
-  }
-
-  WebFrame* main_frame = webview()->mainFrame();
-  if (frame == main_frame) {
-    while (!pending_code_execution_queue_.empty()) {
-      linked_ptr<ExtensionMsg_ExecuteCode_Params>& params =
-          pending_code_execution_queue_.front();
-      ExecuteCodeImpl(main_frame, *params);
-      pending_code_execution_queue_.pop();
-    }
-  }
 }
 
 void RenderView::didHandleOnloadEvents(WebFrame* frame) {
@@ -3298,7 +3260,6 @@ void RenderView::didFinishLoad(WebFrame* frame) {
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
   DCHECK(navigation_state);
   navigation_state->set_finish_load_time(Time::Now());
-  navigation_state->user_script_idle_scheduler()->DidFinishLoad();
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidFinishLoad(frame));
 
@@ -4157,19 +4118,6 @@ void RenderView::OnResetPageEncodingToDefault() {
   webview()->setPageEncoding(no_encoding);
 }
 
-bool RenderView::GetAllChildFrames(
-    WebFrame* parent_frame,
-    std::vector<WebFrame*>* frames_vector) const {
-  if (!parent_frame)
-    return false;
-  for (WebFrame* child_frame = parent_frame->firstChild(); child_frame;
-       child_frame = child_frame->nextSibling()) {
-    frames_vector->push_back(child_frame);
-    GetAllChildFrames(child_frame, frames_vector);
-  }
-  return true;
-}
-
 WebFrame* RenderView::GetChildFrame(const std::wstring& xpath) const {
   if (xpath.empty())
     return webview()->mainFrame();
@@ -4864,65 +4812,6 @@ void RenderView::postAccessibilityNotification(
 void RenderView::OnSetEditCommandsForNextKeyEvent(
     const EditCommands& edit_commands) {
   edit_commands_ = edit_commands;
-}
-
-void RenderView::OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params) {
-  WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
-  if (!main_frame) {
-    Send(new ViewHostMsg_ExecuteCodeFinished(routing_id_, params.request_id,
-                                             false));
-    return;
-  }
-
-  WebDataSource* ds = main_frame->dataSource();
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
-  if (!navigation_state->user_script_idle_scheduler()->has_run()) {
-    pending_code_execution_queue_.push(
-        linked_ptr<ExtensionMsg_ExecuteCode_Params>(
-            new ExtensionMsg_ExecuteCode_Params(params)));
-    return;
-  }
-
-  ExecuteCodeImpl(main_frame, params);
-}
-
-void RenderView::ExecuteCodeImpl(
-    WebFrame* frame, const ExtensionMsg_ExecuteCode_Params& params) {
-  std::vector<WebFrame*> frame_vector;
-  frame_vector.push_back(frame);
-  if (params.all_frames)
-    GetAllChildFrames(frame, &frame_vector);
-
-  for (std::vector<WebFrame*>::iterator frame_it = frame_vector.begin();
-       frame_it != frame_vector.end(); ++frame_it) {
-    WebFrame* frame = *frame_it;
-    if (params.is_javascript) {
-      const Extension* extension =
-          ExtensionDispatcher::Get()->extensions()->GetByID(
-              params.extension_id);
-
-    // Since extension info is sent separately from user script info, they can
-    // be out of sync. We just ignore this situation.
-    if (!extension)
-      continue;
-
-      if (!extension->CanExecuteScriptOnPage(frame->url(), NULL, NULL))
-        continue;
-
-      std::vector<WebScriptSource> sources;
-      sources.push_back(
-          WebScriptSource(WebString::fromUTF8(params.code)));
-      UserScriptSlave::InsertInitExtensionCode(&sources, params.extension_id);
-      frame->executeScriptInIsolatedWorld(
-          UserScriptSlave::GetIsolatedWorldId(params.extension_id),
-          &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS);
-    } else {
-      frame->insertStyleText(WebString::fromUTF8(params.code), WebString());
-    }
-  }
-
-  Send(new ViewHostMsg_ExecuteCodeFinished(
-      routing_id_, params.request_id, true));
 }
 
 void RenderView::Close() {

@@ -7,12 +7,17 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
+#include "chrome/renderer/user_script_idle_scheduler.h"
+
+using WebKit::WebFrame;
+using WebKit::WebDataSource;
 
 ExtensionHelper::ExtensionHelper(RenderView* render_view)
     : RenderViewObserver(render_view) {
 }
 
 ExtensionHelper::~ExtensionHelper() {
+  DCHECK(user_script_idle_schedulers_.empty());
 }
 
 bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
@@ -23,6 +28,22 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void ExtensionHelper::FrameDetached(WebFrame* frame) {
+  // This could be called before DidCreateDataSource, in which case the frame
+  // won't be in the set.
+  user_script_idle_schedulers_.erase(frame);
+}
+
+void ExtensionHelper::DidCreateDataSource(WebFrame* frame, WebDataSource* ds) {
+  // Check first if we created a scheduler for the frame, since this function
+  // gets called for navigations within the document.
+  if (user_script_idle_schedulers_.count(frame))
+    return;
+
+  new UserScriptIdleScheduler(render_view(), frame);
+  user_script_idle_schedulers_.insert(frame);
 }
 
 void ExtensionHelper::OnExtensionResponse(int request_id,
