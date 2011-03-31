@@ -243,6 +243,7 @@
       '-ntp.NTPTest.testGetThumbnailModeInNewProfile',
       '-ntp.NTPTest.testSetMenuModeOn',
       '-ntp.NTPTest.testSetThumbnailModeOff',
+      '-ntp.NTPTest.testUninstallApp',
       '-omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
       '-omnibox.OmniboxTest.testContentHistory',
       '-omnibox.OmniboxTest.testDifferentTypesOfResults',
