@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,6 +6,7 @@ import errno
 import os
 import re
 import StringIO
+
 
 def _RaiseNotFound(path):
   raise IOError(errno.ENOENT, path, os.strerror(errno.ENOENT))

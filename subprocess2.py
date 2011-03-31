@@ -7,6 +7,7 @@
 In theory you shouldn't need anything else in subprocess, or this module failed.
 """
 
+from __future__ import with_statement
 import logging
 import os
 import subprocess

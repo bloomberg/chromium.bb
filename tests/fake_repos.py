@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -187,7 +187,7 @@ def wait_for_port_to_bind(host, port, process):
         sock.connect((host, port))
         logging.debug('%d is now bound' % port)
         return
-      except EnvironmentError:
+      except (socket.error, EnvironmentError):
         pass
       logging.debug('%d is still not bound' % port)
   finally:
@@ -206,7 +206,7 @@ def wait_for_port_to_free(host, port):
       sock = socket.socket()
       sock.connect((host, port))
       logging.debug('%d was bound, waiting to free' % port)
-    except EnvironmentError:
+    except (socket.error, EnvironmentError):
       logging.debug('%d now free' % port)
       return
     finally:
@@ -364,7 +364,8 @@ class FakeReposBase(object):
       return True
     try:
       check_call(['svnadmin', 'create', self.svn_repo])
-    except OSError:
+    except OSError, e:
+      logging.debug('Failed with : %s' % e)
       return False
     write(join(self.svn_repo, 'conf', 'svnserve.conf'),
         '[general]\n'
@@ -383,6 +384,7 @@ class FakeReposBase(object):
 
     # Start the daemon.
     self.svn_port = find_free_port(self.host, 10000)
+    logging.debug('Using port %d' % self.svn_port)
     cmd = ['svnserve', '-d', '--foreground', '-r', self.root_dir,
         '--listen-port=%d' % self.svn_port]
     if self.host == '127.0.0.1':
@@ -452,7 +454,7 @@ class FakeReposBase(object):
       sock.connect((self.host, port))
       # It worked, throw.
       assert False, '%d shouldn\'t be bound' % port
-    except EnvironmentError:
+    except (socket.error, EnvironmentError):
       pass
     finally:
       sock.close()

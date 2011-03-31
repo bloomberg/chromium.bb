@@ -1,11 +1,15 @@
-#!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Unit tests for scm.py."""
 
 # pylint: disable=E1101,W0403
+from __future__ import with_statement
+import logging
+import sys
+import unittest
 
 # Fixes include path.
 from super_mox import SuperMoxTestBase
@@ -325,7 +329,8 @@ class RealSvnTest(fake_repos.FakeReposTestBase):
 
 
 if __name__ == '__main__':
-  import unittest
+  if '-v' in sys.argv:
+    logging.basicConfig(level=logging.DEBUG)
   unittest.main()
 
 # vim: ts=2:sw=2:tw=80:et:
