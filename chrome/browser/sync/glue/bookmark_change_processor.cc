@@ -536,7 +536,7 @@ void BookmarkChangeProcessor::ApplyBookmarkFavicon(
   FaviconService* favicon_service =
       profile->GetFaviconService(Profile::EXPLICIT_ACCESS);
 
-  history->AddPage(bookmark_node->GetURL(), history::SOURCE_SYNCED);
+  history->AddPageNoVisitForBookmark(bookmark_node->GetURL());
   favicon_service->SetFavicon(bookmark_node->GetURL(),
                               fake_icon_url,
                               icon_bytes_vector,
