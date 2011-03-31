@@ -160,7 +160,7 @@ class NativeInputTest(unittest.TestCase):
   """Native input ChromeDriver tests."""
 
   def setUp(self):
-    self._launcher = ChromeDriverLauncher()
+    self._launcher = ChromeDriverLauncher(root_path=os.path.dirname(__file__))
     self._capabilities = DesiredCapabilities.CHROME
     self._capabilities["chrome"] = { "nativeEvents" : True }
 
@@ -183,16 +183,16 @@ class NativeInputTest(unittest.TestCase):
     self.assertEqual(q.value, "tokyo")
 
   #@unittest.skip("Need to run this on a machine with an IME installed.")
-  #def testSendKeysNativeProcessedByIME(self):
-    #driver = WebDriver(self._launcher.GetURL(), self.capabilities)
-    #driver.get(self._launcher.GetURL() + '/test_page.html')
-    #q = driver.find_element_by_name("key_input_test")
-    ## Send key combination to turn IME on.
-    #q.send_keys(Keys.F7)
-    #q.send_keys("toukyou")
-    ## Now turning it off.
-    #q.send_keys(Keys.F7)
-    #self.assertEqual(q.value, "\xe6\x9d\xb1\xe4\xba\xac")
+  def DISABLED_testSendKeysNativeProcessedByIME(self):
+    driver = WebDriver(self._launcher.GetURL(), self.capabilities)
+    driver.get(self._launcher.GetURL() + '/test_page.html')
+    q = driver.find_element_by_name("key_input_test")
+    # Send key combination to turn IME on.
+    q.send_keys(Keys.F7)
+    q.send_keys("toukyou")
+    # Now turning it off.
+    q.send_keys(Keys.F7)
+    self.assertEqual(q.value, "\xe6\x9d\xb1\xe4\xba\xac")
 
 
 class CookieTest(unittest.TestCase):
@@ -444,7 +444,7 @@ class AutofillTest(unittest.TestCase):
   def tearDown(self):
     self._launcher.Kill()
 
-  def testPostalCodeAndStateLabelsBasedOnCountry(self):
+  def DISABLED_testPostalCodeAndStateLabelsBasedOnCountry(self):
     """Verify postal code and state labels based on selected country."""
     import simplejson
     test_data = simplejson.loads(
