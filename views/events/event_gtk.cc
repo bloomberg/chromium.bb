@@ -77,6 +77,18 @@ unsigned int GetGdkStateFromNative(NativeEvent native_event) {
   return 0;
 }
 
+int GetFlagsFromGdkState(unsigned int state) {
+  int flags = 0;
+  flags |= (state & GDK_LOCK_MASK) ? ui::EF_CAPS_LOCK_DOWN : 0;
+  flags |= (state & GDK_CONTROL_MASK) ? ui::EF_CONTROL_DOWN : 0;
+  flags |= (state & GDK_SHIFT_MASK) ? ui::EF_SHIFT_DOWN : 0;
+  flags |= (state & GDK_MOD1_MASK) ? ui::EF_ALT_DOWN : 0;
+  flags |= (state & GDK_BUTTON1_MASK) ? ui::EF_LEFT_BUTTON_DOWN : 0;
+  flags |= (state & GDK_BUTTON2_MASK) ? ui::EF_MIDDLE_BUTTON_DOWN : 0;
+  flags |= (state & GDK_BUTTON3_MASK) ? ui::EF_RIGHT_BUTTON_DOWN : 0;
+  return flags;
+}
+
 #if !defined(TOUCH_UI)
 uint16 GetCharacterFromGdkKeyval(guint keyval) {
   guint32 ch = gdk_keyval_to_unicode(keyval);
@@ -92,22 +104,23 @@ uint16 GetCharacterFromGdkKeyval(guint keyval) {
 // Event, public:
 
 // static
-int Event::GetFlagsFromGdkState(unsigned int state) {
-  int flags = 0;
-  if (state & GDK_LOCK_MASK)
-    flags |= ui::EF_CAPS_LOCK_DOWN;
-  if (state & GDK_CONTROL_MASK)
-    flags |= ui::EF_CONTROL_DOWN;
-  if (state & GDK_SHIFT_MASK)
-    flags |= ui::EF_SHIFT_DOWN;
-  if (state & GDK_MOD1_MASK)
-    flags |= ui::EF_ALT_DOWN;
-  if (state & GDK_BUTTON1_MASK)
-    flags |= ui::EF_LEFT_BUTTON_DOWN;
-  if (state & GDK_BUTTON2_MASK)
-    flags |= ui::EF_MIDDLE_BUTTON_DOWN;
-  if (state & GDK_BUTTON3_MASK)
-    flags |= ui::EF_RIGHT_BUTTON_DOWN;
+int Event::GetFlagsFromGdkEvent(NativeEvent native_event) {
+  int flags = GetFlagsFromGdkState(GetGdkStateFromNative(native_event));
+  if (native_event->type == GDK_2BUTTON_PRESS)
+    flags |= ui::EF_IS_DOUBLE_CLICK;
+  if (native_event->type == GDK_BUTTON_PRESS ||
+      native_event->type == GDK_2BUTTON_PRESS ||
+      native_event->type == GDK_3BUTTON_PRESS ||
+      native_event->type == GDK_BUTTON_RELEASE) {
+    switch (native_event->button.button) {
+      case 1:
+        return flags | ui::EF_LEFT_BUTTON_DOWN;
+      case 2:
+        return flags | ui::EF_MIDDLE_BUTTON_DOWN;
+      case 3:
+        return flags | ui::EF_RIGHT_BUTTON_DOWN;
+    }
+  }
   return flags;
 }
 
@@ -140,7 +153,7 @@ void Event::InitWithNativeEvent2(NativeEvent2 native_event_2,
 
 LocatedEvent::LocatedEvent(NativeEvent native_event)
     : Event(native_event, EventTypeFromNative(native_event),
-            GetFlagsFromGdkState(GetGdkStateFromNative(native_event))),
+            GetFlagsFromGdkEvent(native_event)),
       location_(GetMouseEventLocation(native_event)) {
 }
 
@@ -176,7 +189,7 @@ MouseEvent::MouseEvent(NativeEvent2 native_event_2,
 
 KeyEvent::KeyEvent(NativeEvent native_event)
     : Event(native_event, EventTypeFromNative(native_event),
-            GetFlagsFromGdkState(GetGdkStateFromNative(native_event))),
+            GetFlagsFromGdkEvent(native_event)),
       key_code_(ui::KeyboardCodeFromGdkEventKey(
                 GetGdkEventKeyFromNative(native_event))) {
 }

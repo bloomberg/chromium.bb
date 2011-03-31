@@ -37,8 +37,8 @@ class MenuHostGtk : public WidgetGtk,
 
   // Overridden from WidgetGtk:
   virtual RootView* CreateRootView() OVERRIDE;
-  virtual bool ReleaseCaptureOnMouseReleased() OVERRIDE;
-  virtual void ReleaseNativeCapture() OVERRIDE;
+  virtual bool ShouldReleaseCaptureOnMouseReleased() const OVERRIDE;
+  virtual void ReleaseMouseCapture() OVERRIDE;
   virtual void OnDestroy(GtkWidget* object) OVERRIDE;
   virtual void HandleGtkGrabBroke() OVERRIDE;
   virtual void HandleXGrabBroke() OVERRIDE;

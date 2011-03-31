@@ -107,7 +107,7 @@ RootView* MenuHostWin::CreateRootView() {
   return new MenuHostRootView(this, submenu_);
 }
 
-bool MenuHostWin::ReleaseCaptureOnMouseReleased() {
+bool MenuHostWin::ShouldReleaseCaptureOnMouseReleased() const {
   return false;
 }
 
@@ -116,7 +116,7 @@ bool MenuHostWin::ReleaseCaptureOnMouseReleased() {
 
 void MenuHostWin::DoCapture() {
   owns_capture_ = true;
-  SetNativeCapture();
+  SetMouseCapture();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

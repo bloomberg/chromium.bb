@@ -274,6 +274,8 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual void OnSizeChanged(const gfx::Size& new_size) OVERRIDE;
   virtual bool HasFocusManager() const OVERRIDE;
   virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual bool OnMouseEvent(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseCaptureLost() OVERRIDE;
 
   // Overridden from FocusTraversable:
   virtual FocusSearch* GetFocusSearch() OVERRIDE;
@@ -300,6 +302,17 @@ class Widget : public internal::NativeWidgetDelegate,
   // Used for testing.
   void ReplaceFocusManager(FocusManager* focus_manager);
 
+  // TODO(msw): Make this mouse state member private.
+  // If true, the mouse is currently down.
+  bool is_mouse_button_pressed_;
+
+  // TODO(msw): Make these mouse state members private.
+  // The following are used to detect duplicate mouse move events and not
+  // deliver them. Displaying a window may result in the system generating
+  // duplicate move events even though the mouse hasn't moved.
+  bool last_mouse_event_was_move_;
+  gfx::Point last_mouse_event_position_;
+
  private:
   // Refresh the compositor tree. This is called by a View whenever its texture
   // is updated.
@@ -308,6 +321,9 @@ class Widget : public internal::NativeWidgetDelegate,
   // Try to create a compositor if one hasn't been created yet. Returns false if
   // a compositor couldn't be created.
   bool EnsureCompositor();
+
+  // Returns whether capture should be released on mouse release.
+  virtual bool ShouldReleaseCaptureOnMouseReleased() const { return true; }
 
   NativeWidget* native_widget_;
 

@@ -33,7 +33,6 @@ class AeroTooltipManager : public TooltipManagerWin {
   virtual ~AeroTooltipManager();
 
   virtual void OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param);
-  virtual void OnMouseLeave();
 
  private:
   void Init();

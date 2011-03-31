@@ -40,6 +40,10 @@ class NativeWidgetDelegate {
   // Paints the rootview in the canvas. This will also refresh the compositor
   // tree if necessary when accelerated painting is enabled.
   virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) = 0;
+
+  // MouseEvent handlers.
+  virtual bool OnMouseEvent(const MouseEvent& event) = 0;
+  virtual void OnMouseCaptureLost() = 0;
 };
 
 }  // namespace internal

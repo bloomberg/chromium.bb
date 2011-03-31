@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,8 +77,6 @@ class TooltipManagerWin : public TooltipManager {
   // Message handlers. These forward to the tooltip control.
   virtual void OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param);
   LRESULT OnNotify(int w_param, NMHDR* l_param, bool* handled);
-  // Not used directly by TooltipManager, but provided for AeroTooltipManager.
-  virtual void OnMouseLeave() {}
 
  protected:
   virtual void Init();

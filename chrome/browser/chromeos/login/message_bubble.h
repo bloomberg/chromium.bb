@@ -72,7 +72,7 @@ class MessageBubble : public InfoBubble,
 
   // Overridden from WidgetGtk.
   virtual void IsActiveChanged();
-  virtual void SetNativeCapture();
+  virtual void SetMouseCapture();
 
  private:
   MessageBubble(views::WidgetGtk::Type type,

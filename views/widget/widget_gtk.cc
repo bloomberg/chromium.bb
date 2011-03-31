@@ -267,8 +267,6 @@ WidgetGtk::WidgetGtk(Type type)
       type_(type),
       widget_(NULL),
       window_contents_(NULL),
-      is_mouse_down_(false),
-      last_mouse_event_was_move_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       delete_on_destroy_(true),
       transparent_(false),
@@ -314,9 +312,9 @@ void WidgetGtk::SetCreateParams(const CreateParams& params) {
   if (params.type == CreateParams::TYPE_MENU) {
     GdkEvent* event = gtk_get_current_event();
     if (event) {
-      is_mouse_down_ = event->type == GDK_BUTTON_PRESS ||
-                       event->type == GDK_2BUTTON_PRESS ||
-                       event->type == GDK_3BUTTON_PRESS;
+      is_mouse_button_pressed_ = event->type == GDK_BUTTON_PRESS ||
+                                 event->type == GDK_2BUTTON_PRESS ||
+                                 event->type == GDK_3BUTTON_PRESS;
       gdk_event_free(event);
     }
   }
@@ -701,28 +699,6 @@ bool WidgetGtk::HandleKeyboardEvent(GdkEventKey* event) {
 }
 
 // static
-int WidgetGtk::GetFlagsForEventButton(const GdkEventButton& event) {
-  int flags = Event::GetFlagsFromGdkState(event.state);
-  switch (event.button) {
-    case 1:
-      flags |= ui::EF_LEFT_BUTTON_DOWN;
-      break;
-    case 2:
-      flags |= ui::EF_MIDDLE_BUTTON_DOWN;
-      break;
-    case 3:
-      flags |= ui::EF_RIGHT_BUTTON_DOWN;
-      break;
-    default:
-      // We only deal with 1-3.
-      break;
-  }
-  if (event.type == GDK_2BUTTON_PRESS)
-    flags |= ui::EF_IS_DOUBLE_CLICK;
-  return flags;
-}
-
-// static
 void WidgetGtk::EnableDebugPaint() {
   debug_paint_enabled_ = true;
 }
@@ -776,17 +752,17 @@ bool WidgetGtk::IsScreenReaderActive() const {
   return false;
 }
 
-void WidgetGtk::SetNativeCapture() {
-  DCHECK(!HasNativeCapture());
+void WidgetGtk::SetMouseCapture() {
+  DCHECK(!HasMouseCapture());
   gtk_grab_add(window_contents_);
 }
 
-void WidgetGtk::ReleaseNativeCapture() {
-  if (HasNativeCapture())
+void WidgetGtk::ReleaseMouseCapture() {
+  if (HasMouseCapture())
     gtk_grab_remove(window_contents_);
 }
 
-bool WidgetGtk::HasNativeCapture() const {
+bool WidgetGtk::HasMouseCapture() const {
   // TODO(beng): Should be able to use gtk_widget_has_grab() here but the
   //             trybots don't have Gtk 2.18.
   return GTK_WIDGET_HAS_GRAB(window_contents_);
@@ -1110,38 +1086,29 @@ gboolean WidgetGtk::OnDragMotion(GtkWidget* widget,
 }
 
 gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
-  if (last_mouse_event_was_move_ && last_mouse_move_x_ == event->x_root &&
-      last_mouse_move_y_ == event->y_root) {
-    // Don't generate a mouse event for the same location as the last.
-    return false;
-  }
-
-  if (HasNativeCapture() && event->mode == GDK_CROSSING_GRAB) {
+  if (HasMouseCapture() && event->mode == GDK_CROSSING_GRAB) {
     // Doing a grab results an async enter event, regardless of where the mouse
     // is. We don't want to generate a mouse move in this case.
     return false;
   }
 
-  if (!last_mouse_event_was_move_ && !is_mouse_down_) {
+  if (!last_mouse_event_was_move_ && !is_mouse_button_pressed_) {
     // When a mouse button is pressed gtk generates a leave, enter, press.
     // RootView expects to get a mouse move before a press, otherwise enter is
     // not set. So we generate a move here.
-    last_mouse_move_x_ = event->x_root;
-    last_mouse_move_y_ = event->y_root;
-    last_mouse_event_was_move_ = true;
-
     int x = 0, y = 0;
     GetContainedWidgetEventCoordinates(event, &x, &y);
+    int flags = Event::GetFlagsFromGdkEvent(reinterpret_cast<GdkEvent*>(event));
 
     // If this event is the result of pressing a button then one of the button
     // modifiers is set. Unset it as we're compensating for the leave generated
     // when you press a button.
-    int flags = (Event::GetFlagsFromGdkState(event->state) &
-                 ~(ui::EF_LEFT_BUTTON_DOWN |
-                   ui::EF_MIDDLE_BUTTON_DOWN |
-                   ui::EF_RIGHT_BUTTON_DOWN));
+    flags &= ~(ui::EF_LEFT_BUTTON_DOWN |
+               ui::EF_MIDDLE_BUTTON_DOWN |
+               ui::EF_RIGHT_BUTTON_DOWN);
+
     MouseEvent mouse_move(ui::ET_MOUSE_MOVED, x, y, flags);
-    GetRootView()->OnMouseMoved(mouse_move);
+    delegate_->OnMouseEvent(mouse_move);
   }
 
   return false;
@@ -1149,9 +1116,9 @@ gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
 
 gboolean WidgetGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
   last_mouse_event_was_move_ = false;
-  if (!HasNativeCapture() && !is_mouse_down_) {
+  if (!HasMouseCapture() && !is_mouse_button_pressed_) {
     MouseEvent mouse_event(reinterpret_cast<GdkEvent*>(event));
-    GetRootView()->OnMouseExited(mouse_event);
+    delegate_->OnMouseEvent(mouse_event);
   }
   return false;
 }
@@ -1159,40 +1126,63 @@ gboolean WidgetGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
 gboolean WidgetGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
   int x = 0, y = 0;
   GetContainedWidgetEventCoordinates(event, &x, &y);
-
-  if (HasNativeCapture() && is_mouse_down_) {
-    last_mouse_event_was_move_ = false;
-    int flags = Event::GetFlagsFromGdkState(event->state);
-    MouseEvent mouse_drag(ui::ET_MOUSE_DRAGGED, x, y, flags);
-    GetRootView()->OnMouseDragged(mouse_drag);
-    return true;
-  }
-  gfx::Point screen_loc(event->x_root, event->y_root);
-  if (last_mouse_event_was_move_ && last_mouse_move_x_ == screen_loc.x() &&
-      last_mouse_move_y_ == screen_loc.y()) {
-    // Don't generate a mouse event for the same location as the last.
-    return true;
-  }
-  last_mouse_move_x_ = screen_loc.x();
-  last_mouse_move_y_ = screen_loc.y();
-  last_mouse_event_was_move_ = true;
-  int flags = Event::GetFlagsFromGdkState(event->state);
-  MouseEvent mouse_move(ui::ET_MOUSE_MOVED, x, y, flags);
-  GetRootView()->OnMouseMoved(mouse_move);
+  int flags = Event::GetFlagsFromGdkEvent(reinterpret_cast<GdkEvent*>(event));
+  MouseEvent mouse_event((HasMouseCapture() && is_mouse_button_pressed_) ?
+      ui::ET_MOUSE_DRAGGED : ui::ET_MOUSE_MOVED, x, y, flags);
+  delegate_->OnMouseEvent(mouse_event);
   return true;
 }
 
 gboolean WidgetGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
-  return ProcessMousePressed(event);
+  if (event->type == GDK_2BUTTON_PRESS || event->type == GDK_3BUTTON_PRESS) {
+    // The sequence for double clicks is press, release, press, 2press, release.
+    // This means that at the time we get the second 'press' we don't know
+    // whether it corresponds to a double click or not. For now we're completely
+    // ignoring the 2press/3press events as they are duplicate. To make this
+    // work right we need to write our own code that detects if the press is a
+    // double/triple. For now we're completely punting, which means we always
+    // get single clicks.
+    // TODO: fix this.
+    return true;
+  }
+
+  // An event may come from a contained widget which has its own gdk window.
+  // Translate it to the widget's coordinates.
+  int x = 0, y = 0;
+  GetContainedWidgetEventCoordinates(event, &x, &y);
+  int flags = Event::GetFlagsFromGdkEvent(reinterpret_cast<GdkEvent*>(event));
+  MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED, x, y, flags);
+
+  // Returns true to consume the event when widget is not transparent.
+  return delegate_->OnMouseEvent(mouse_pressed) || !transparent_;
 }
 
 gboolean WidgetGtk::OnButtonRelease(GtkWidget* widget, GdkEventButton* event) {
-  ProcessMouseReleased(event);
+  // GTK generates a mouse release at the end of dnd. We need to ignore it.
+  if (drag_data_)
+    return true;
+
+  // An event may come from a contained widget which has its own gdk window.
+  // Translate it to the widget's coordinates.
+  int x = 0, y = 0;
+  GetContainedWidgetEventCoordinates(event, &x, &y);
+  int flags = Event::GetFlagsFromGdkEvent(reinterpret_cast<GdkEvent*>(event));
+  MouseEvent mouse_up(ui::ET_MOUSE_RELEASED, x, y, flags);
+  delegate_->OnMouseEvent(mouse_up);
   return true;
 }
 
 gboolean WidgetGtk::OnScroll(GtkWidget* widget, GdkEventScroll* event) {
-  return ProcessScroll(event);
+  // An event may come from a contained widget which has its own gdk window.
+  // Translate it to the widget's coordinates.
+  int x = 0, y = 0;
+  GetContainedWidgetEventCoordinates(event, &x, &y);
+  GdkEventScroll translated_event = *event;
+  translated_event.x = x;
+  translated_event.y = y;
+
+  MouseWheelEvent wheel_event(reinterpret_cast<GdkEvent*>(&translated_event));
+  return GetRootView()->OnMouseWheel(wheel_event);
 }
 
 gboolean WidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
@@ -1325,17 +1315,11 @@ void WidgetGtk::OnMap(GtkWidget* widget) {
 void WidgetGtk::OnHide(GtkWidget* widget) {
 }
 
-bool WidgetGtk::ReleaseCaptureOnMouseReleased() {
-  return true;
-}
-
 void WidgetGtk::HandleXGrabBroke() {
 }
 
 void WidgetGtk::HandleGtkGrabBroke() {
-  if (is_mouse_down_)
-    GetRootView()->OnMouseCaptureLost();
-  is_mouse_down_ = false;
+  delegate_->OnMouseCaptureLost();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1356,69 +1340,6 @@ gboolean WidgetGtk::OnWindowPaint(GtkWidget* widget, GdkEventExpose* event) {
   DCHECK(transparent_);
   DrawTransparentBackground(widget, event);
   return false;
-}
-
-bool WidgetGtk::ProcessMousePressed(GdkEventButton* event) {
-  if (event->type == GDK_2BUTTON_PRESS || event->type == GDK_3BUTTON_PRESS) {
-    // The sequence for double clicks is press, release, press, 2press, release.
-    // This means that at the time we get the second 'press' we don't know
-    // whether it corresponds to a double click or not. For now we're completely
-    // ignoring the 2press/3press events as they are duplicate. To make this
-    // work right we need to write our own code that detects if the press is a
-    // double/triple. For now we're completely punting, which means we always
-    // get single clicks.
-    // TODO: fix this.
-    return true;
-  }
-
-  // An event may come from a contained widget which has its own gdk window.
-  // Translate it to the widget's coordinates.
-  int x = 0;
-  int y = 0;
-  GetContainedWidgetEventCoordinates(event, &x, &y);
-  last_mouse_event_was_move_ = false;
-  MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED, x, y,
-                           GetFlagsForEventButton(*event));
-
-  if (GetRootView()->OnMousePressed(mouse_pressed)) {
-    is_mouse_down_ = true;
-    if (!HasNativeCapture())
-      SetNativeCapture();
-    return true;
-  }
-
-  // Returns true to consume the event when widget is not transparent.
-  return !transparent_;
-}
-
-void WidgetGtk::ProcessMouseReleased(GdkEventButton* event) {
-  int x = 0, y = 0;
-  GetContainedWidgetEventCoordinates(event, &x, &y);
-
-  last_mouse_event_was_move_ = false;
-  MouseEvent mouse_up(ui::ET_MOUSE_RELEASED, x, y,
-                      GetFlagsForEventButton(*event));
-  // Release the capture first, that way we don't get confused if
-  // OnMouseReleased blocks.
-  if (HasNativeCapture() && ReleaseCaptureOnMouseReleased())
-    ReleaseNativeCapture();
-  is_mouse_down_ = false;
-  // GTK generates a mouse release at the end of dnd. We need to ignore it.
-  if (!drag_data_)
-    GetRootView()->OnMouseReleased(mouse_up);
-}
-
-bool WidgetGtk::ProcessScroll(GdkEventScroll* event) {
-  // An event may come from a contained widget which has its own gdk window.
-  // Translate it to the widget's coordinates.
-  int x = 0, y = 0;
-  GetContainedWidgetEventCoordinates(event, &x, &y);
-  GdkEventScroll translated_event = *event;
-  translated_event.x = x;
-  translated_event.y = y;
-
-  MouseWheelEvent wheel_event(reinterpret_cast<GdkEvent*>(&translated_event));
-  return GetRootView()->OnMouseWheel(wheel_event);
 }
 
 // static

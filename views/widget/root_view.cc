@@ -271,7 +271,7 @@ void RootView::OnMouseReleased(const MouseEvent& event) {
 
 void RootView::OnMouseCaptureLost() {
   if (mouse_pressed_handler_) {
-    // Synthesize a release event for UpdateCursor and OnMouseReleased.
+    // Synthesize a release event for UpdateCursor.
     MouseEvent release_event(ui::ET_MOUSE_RELEASED, last_mouse_event_x_,
                              last_mouse_event_y_, last_mouse_event_flags_);
     UpdateCursor(release_event);

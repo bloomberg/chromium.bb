@@ -159,9 +159,9 @@ void Widget::OnMouseCaptureLost() {
 }
 
 bool Widget::OnMouseEvent(const MouseEvent& event) {
-  last_mouse_event_was_move_ = false;
   switch (event.type()) {
     case ui::Event::ET_MOUSE_PRESSED:
+      last_mouse_event_was_move_ = false;
       if (root_view_->OnMousePressed(event)) {
         is_mouse_button_pressed_ = true;
         if (!native_widget_->HasMouseCapture())
@@ -178,6 +178,7 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
           native_widget_->ShouldReleaseCaptureOnMouseReleased()) {
         native_widget_->ReleaseMouseCapture();
       }
+      last_mouse_event_was_move_ = false;
       is_mouse_button_pressed_ = false;
       root_view_->OnMouseReleased(event);
       return true;
@@ -199,6 +200,7 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
       }
       break;
     case ui::Event::ET_MOUSE_EXITED:
+      last_mouse_event_was_move_ = false;
       root_view_->OnMouseExited(event);
       return true;
   }

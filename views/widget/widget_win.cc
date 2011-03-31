@@ -139,8 +139,6 @@ WidgetWin::WidgetWin()
       ALLOW_THIS_IN_INITIALIZER_LIST(paint_layered_window_factory_(this)),
       delete_on_destroy_(true),
       can_update_layered_window_(true),
-      last_mouse_event_was_move_(false),
-      is_mouse_down_(false),
       is_window_(false),
       restore_focus_when_enabled_(false),
       accessibility_view_events_index_(-1),
@@ -190,7 +188,7 @@ void WidgetWin::SetCreateParams(const CreateParams& params) {
       break;
     case CreateParams::TYPE_MENU:
       style |= WS_POPUP;
-      is_mouse_down_ =
+      is_mouse_button_pressed_ =
           ((GetKeyState(VK_LBUTTON) & 0x80) ||
           (GetKeyState(VK_RBUTTON) & 0x80) ||
           (GetKeyState(VK_MBUTTON) & 0x80) ||
@@ -322,16 +320,16 @@ bool WidgetWin::IsScreenReaderActive() const {
   return screen_reader_active_;
 }
 
-void WidgetWin::SetNativeCapture() {
-  DCHECK(!HasNativeCapture());
+void WidgetWin::SetMouseCapture() {
+  DCHECK(!HasMouseCapture());
   SetCapture(hwnd());
 }
 
-void WidgetWin::ReleaseNativeCapture() {
+void WidgetWin::ReleaseMouseCapture() {
   ReleaseCapture();
 }
 
-bool WidgetWin::HasNativeCapture() const {
+bool WidgetWin::HasMouseCapture() const {
   return GetCapture() == hwnd();
 }
 
@@ -566,9 +564,7 @@ void WidgetWin::OnCancelMode() {
 }
 
 void WidgetWin::OnCaptureChanged(HWND hwnd) {
-  if (is_mouse_down_)
-    GetRootView()->OnMouseCaptureLost();
-  is_mouse_down_ = false;
+  delegate_->OnMouseCaptureLost();
 }
 
 void WidgetWin::OnClose() {
@@ -718,8 +714,7 @@ LRESULT WidgetWin::OnKeyDown(UINT message, WPARAM w_param, LPARAM l_param) {
   if (!root_view)
     root_view = GetRootView();
 
-  MSG msg;
-  MakeMSG(&msg, message, w_param, l_param);
+  MSG msg = { hwnd(), message, w_param, l_param };
   SetMsgHandled(root_view->ProcessKeyEvent(KeyEvent(msg)));
   return 0;
 }
@@ -729,8 +724,7 @@ LRESULT WidgetWin::OnKeyUp(UINT message, WPARAM w_param, LPARAM l_param) {
   if (!root_view)
     root_view = GetRootView();
 
-  MSG msg;
-  MakeMSG(&msg, message, w_param, l_param);
+  MSG msg = { hwnd(), message, w_param, l_param };
   SetMsgHandled(root_view->ProcessKeyEvent(KeyEvent(msg)));
   return 0;
 }
@@ -749,42 +743,35 @@ LRESULT WidgetWin::OnMouseActivate(UINT message,
   return MA_ACTIVATE;
 }
 
-LRESULT WidgetWin::OnMouseLeave(UINT message, WPARAM w_param, LPARAM l_param) {
-  tooltip_manager_->OnMouseLeave();
-  ProcessMouseExited(message, w_param, l_param);
-  return 0;
-}
-
-LRESULT WidgetWin::OnMouseMove(UINT message, WPARAM w_param, LPARAM l_param) {
-  ProcessMouseMoved(message, w_param, l_param);
-  return 0;
-}
-
 LRESULT WidgetWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
-  tooltip_manager_->OnMouse(message, w_param, l_param);
+  if (message == WM_MOUSEWHEEL)
+    return 0;
 
-  switch (message) {
-    case WM_LBUTTONDBLCLK:
-    case WM_LBUTTONDOWN:
-    case WM_MBUTTONDBLCLK:
-    case WM_MBUTTONDOWN:
-    case WM_RBUTTONDBLCLK:
-    case WM_RBUTTONDOWN:
-      SetMsgHandled(ProcessMousePressed(message, w_param, l_param));
-      break;
-    case WM_LBUTTONUP:
-    case WM_MBUTTONUP:
-    case WM_RBUTTONUP:
-      SetMsgHandled(ProcessMouseReleased(message, w_param, l_param));
-      break;
-    default:
-      SetMsgHandled(FALSE);
+  MSG msg = { hwnd(), message, w_param, l_param, 0,
+              { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
+  MouseEvent event(msg);
+
+  if (!(event.flags() & ui::EF_IS_NON_CLIENT))
+    tooltip_manager_->OnMouse(message, w_param, l_param);
+
+  if (event.type() == ui::ET_MOUSE_MOVED && !HasMouseCapture()) {
+    // Windows only fires WM_MOUSELEAVE events if the application begins
+    // "tracking" mouse events for a given HWND during WM_MOUSEMOVE events.
+    // We need to call |TrackMouseEvents| to listen for WM_MOUSELEAVE.
+    TrackMouseEvents((message == WM_NCMOUSEMOVE) ?
+        TME_NONCLIENT | TME_LEAVE : TME_LEAVE);
+  } else if (event.type() == ui::ET_MOUSE_EXITED) {
+    // Reset our tracking flags so future mouse movement over this WidgetWin
+    // results in a new tracking session. Fall through for OnMouseEvent.
+    active_mouse_tracking_flags_ = 0;
   }
 
+  SetMsgHandled(delegate_->OnMouseEvent(event));
   return 0;
 }
 
 LRESULT WidgetWin::OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param) {
+  tooltip_manager_->OnMouse(message, w_param, l_param);
   // Reroute the mouse-wheel to the window under the mouse pointer if
   // applicable.
   if (message == WM_MOUSEWHEEL &&
@@ -792,9 +779,8 @@ LRESULT WidgetWin::OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param) {
     return 0;
   }
 
-  MSG msg;
-  MakeMSG(&msg, message, w_param, l_param, 0,
-          GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param));
+  MSG msg = { hwnd(), message, w_param, l_param, 0,
+              { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
   return GetRootView()->OnMouseWheel(MouseWheelEvent(msg)) ? 0 : 1;
 }
 
@@ -821,45 +807,6 @@ LRESULT WidgetWin::OnNCCalcSize(BOOL w_param, LPARAM l_param) {
 
 LRESULT WidgetWin::OnNCHitTest(const CPoint& pt) {
   SetMsgHandled(FALSE);
-  return 0;
-}
-
-LRESULT WidgetWin::OnNCMouseLeave(UINT message,
-                                  WPARAM w_param,
-                                  LPARAM l_param) {
-  ProcessMouseExited(message, w_param, l_param);
-  return 0;
-}
-
-LRESULT WidgetWin::OnNCMouseMove(UINT message, WPARAM w_param, LPARAM l_param) {
-  tooltip_manager_->OnMouse(message, w_param, l_param);
-  ProcessMouseMoved(message, w_param, l_param);
-
-  // We need to process this message to stop Windows from drawing the window
-  // controls as the mouse moves over the title bar area when the window is
-  // maximized.
-  return 0;
-}
-
-LRESULT WidgetWin::OnNCMouseRange(UINT message,
-                                  WPARAM w_param,
-                                  LPARAM l_param) {
-  switch (message) {
-    case WM_NCLBUTTONDBLCLK:
-    case WM_NCLBUTTONDOWN:
-    case WM_NCMBUTTONDBLCLK:
-    case WM_NCMBUTTONDOWN:
-    case WM_NCRBUTTONDBLCLK:
-    case WM_NCRBUTTONDOWN:
-      SetMsgHandled(ProcessMousePressed(message, w_param, l_param));
-      break;
-    case WM_NCLBUTTONUP:
-    case WM_NCMBUTTONUP:
-    case WM_NCRBUTTONUP:
-    default:
-      SetMsgHandled(FALSE);
-  }
-
   return 0;
 }
 
@@ -993,85 +940,8 @@ void WidgetWin::TrackMouseEvents(DWORD mouse_tracking_flags) {
   }
 }
 
-bool WidgetWin::ProcessMousePressed(UINT message,
-                                    WPARAM w_param,
-                                    LPARAM l_param) {
-  last_mouse_event_was_move_ = false;
-
-  MSG msg;
-  MakeMSG(&msg, message, w_param, l_param, 0, GET_X_LPARAM(l_param),
-          GET_Y_LPARAM(l_param));
-  if (GetRootView()->OnMousePressed(MouseEvent(msg))) {
-    is_mouse_down_ = true;
-    if (!HasNativeCapture())
-      SetNativeCapture();
-    return true;
-  }
-  return false;
-}
-
-bool WidgetWin::ProcessMouseReleased(UINT message,
-                                     WPARAM w_param,
-                                     LPARAM l_param) {
-  last_mouse_event_was_move_ = false;
-  is_mouse_down_ = false;
-
-  // Release the capture first, that way we don't get confused if
-  // OnMouseReleased blocks.
-  if (HasNativeCapture() && ReleaseCaptureOnMouseReleased())
-    ReleaseNativeCapture();
-
-  MSG msg;
-  MakeMSG(&msg, message, w_param, l_param, 0, GET_X_LPARAM(l_param),
-          GET_Y_LPARAM(l_param));
-  GetRootView()->OnMouseReleased(MouseEvent(msg));
-  return true;
-}
-
-bool WidgetWin::ProcessMouseMoved(UINT message,
-                                  WPARAM w_param,
-                                  LPARAM l_param) {
-  // Windows only fires WM_MOUSELEAVE events if the application begins
-  // "tracking" mouse events for a given HWND during WM_MOUSEMOVE events.
-  // We need to call |TrackMouseEvents| to listen for WM_MOUSELEAVE.
-  if (!HasNativeCapture())
-    TrackMouseEvents((message == WM_NCMOUSEMOVE) ?
-        TME_NONCLIENT | TME_LEAVE : TME_LEAVE);
-  MSG msg;
-  MakeMSG(&msg, message, w_param, l_param, 0, GET_X_LPARAM(l_param),
-          GET_Y_LPARAM(l_param));
-  if (HasNativeCapture() && is_mouse_down_)
-    GetRootView()->OnMouseDragged(MouseEvent(msg));
-  else if (!last_mouse_event_was_move_ ||
-      (last_mouse_move_x_ != GET_X_LPARAM(l_param) ||
-       last_mouse_move_y_ != GET_Y_LPARAM(l_param))) {
-    last_mouse_move_x_ = GET_X_LPARAM(l_param);
-    last_mouse_move_y_ = GET_Y_LPARAM(l_param);
-    last_mouse_event_was_move_ = true;
-    GetRootView()->OnMouseMoved(MouseEvent(msg));
-  }
-  return true;
-}
-
-void WidgetWin::ProcessMouseExited(UINT message,
-                                   WPARAM w_param,
-                                   LPARAM l_param) {
-  last_mouse_event_was_move_ = false;
-  MSG msg;
-  MakeMSG(&msg, message, w_param, l_param, 0, GET_X_LPARAM(l_param),
-          GET_Y_LPARAM(l_param));
-  GetRootView()->OnMouseExited(MouseEvent(msg));
-  // Reset our tracking flag so that future mouse movement over this WidgetWin
-  // results in a new tracking session.
-  active_mouse_tracking_flags_ = 0;
-}
-
 void WidgetWin::OnScreenReaderDetected() {
   screen_reader_active_ = true;
-}
-
-bool WidgetWin::ReleaseCaptureOnMouseReleased() {
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1134,17 +1004,6 @@ void WidgetWin::PostProcessActivateMessage(WidgetWin* widget,
     }
     focus_manager->RestoreFocusedView();
   }
-}
-
-void WidgetWin::MakeMSG(MSG* msg, UINT message, WPARAM w_param, LPARAM l_param,
-                        DWORD time, LONG x, LONG y) const {
-  msg->hwnd = hwnd();
-  msg->message = message;
-  msg->wParam = w_param;
-  msg->lParam = l_param;
-  msg->time = time;
-  msg->pt.x = x;
-  msg->pt.y = y;
 }
 
 void WidgetWin::RedrawInvalidRect() {

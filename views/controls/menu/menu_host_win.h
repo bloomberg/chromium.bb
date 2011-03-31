@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef VIEWS_CONTROLS_MENU_MENU_HOST_WIN_H_
 #define VIEWS_CONTROLS_MENU_MENU_HOST_WIN_H_
 #pragma once
@@ -40,7 +39,7 @@ class MenuHostWin : public WidgetWin,
   virtual void OnCaptureChanged(HWND hwnd) OVERRIDE;
   virtual void OnCancelMode() OVERRIDE;
   virtual RootView* CreateRootView() OVERRIDE;
-  virtual bool ReleaseCaptureOnMouseReleased() OVERRIDE;
+  virtual bool ShouldReleaseCaptureOnMouseReleased() const OVERRIDE;
 
   void DoCapture();
 

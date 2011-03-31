@@ -47,7 +47,9 @@ Widget::CreateParams::CreateParams(Type type)
 // Widget, public:
 
 Widget::Widget()
-    : native_widget_(NULL),
+    : is_mouse_button_pressed_(false),
+      last_mouse_event_was_move_(false),
+      native_widget_(NULL),
       widget_delegate_(NULL),
       dragged_view_(NULL) {
 }
@@ -302,6 +304,56 @@ void Widget::OnNativeWidgetPaint(gfx::Canvas* canvas) {
   GetRootView()->Paint(canvas);
   RefreshCompositeTree();
 }
+
+bool Widget::OnMouseEvent(const MouseEvent& event) {
+  switch (event.type()) {
+    case ui::ET_MOUSE_PRESSED:
+      last_mouse_event_was_move_ = false;
+      if (GetRootView()->OnMousePressed(event)) {
+        is_mouse_button_pressed_ = true;
+        if (!native_widget_->HasMouseCapture())
+          native_widget_->SetMouseCapture();
+        return true;
+      }
+      return false;
+    case ui::ET_MOUSE_RELEASED:
+      last_mouse_event_was_move_ = false;
+      is_mouse_button_pressed_ = false;
+      // Release capture first, to avoid confusion if OnMouseReleased blocks.
+      if (native_widget_->HasMouseCapture() &&
+          ShouldReleaseCaptureOnMouseReleased()) {
+        native_widget_->ReleaseMouseCapture();
+      }
+      GetRootView()->OnMouseReleased(event);
+      return (event.flags() & ui::EF_IS_NON_CLIENT) ? false : true;
+    case ui::ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_DRAGGED:
+      if (native_widget_->HasMouseCapture() && is_mouse_button_pressed_) {
+        last_mouse_event_was_move_ = false;
+        GetRootView()->OnMouseDragged(event);
+      } else if (!last_mouse_event_was_move_ ||
+                 last_mouse_event_position_ != event.location()) {
+        last_mouse_event_position_ = event.location();
+        last_mouse_event_was_move_ = true;
+        GetRootView()->OnMouseMoved(event);
+      }
+      return false;
+    case ui::ET_MOUSE_EXITED:
+      last_mouse_event_was_move_ = false;
+      GetRootView()->OnMouseExited(event);
+      return false;
+    default:
+      return false;
+  }
+  return true;
+}
+
+void Widget::OnMouseCaptureLost() {
+  if (is_mouse_button_pressed_)
+    GetRootView()->OnMouseCaptureLost();
+  is_mouse_button_pressed_ = false;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, FocusTraversable implementation:

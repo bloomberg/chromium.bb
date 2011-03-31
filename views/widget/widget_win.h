@@ -206,9 +206,9 @@ class WidgetWin : public ui::WindowImpl,
   virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
   virtual TooltipManager* GetTooltipManager() const OVERRIDE;
   virtual bool IsScreenReaderActive() const OVERRIDE;
-  virtual void SetNativeCapture() OVERRIDE;
-  virtual void ReleaseNativeCapture() OVERRIDE;
-  virtual bool HasNativeCapture() const OVERRIDE;
+  virtual void SetMouseCapture() OVERRIDE;
+  virtual void ReleaseMouseCapture() OVERRIDE;
+  virtual bool HasMouseCapture() const OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
@@ -246,7 +246,7 @@ class WidgetWin : public ui::WindowImpl,
   BEGIN_MSG_MAP_EX(WidgetWin)
     // Range handlers must go first!
     MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
-    MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnNCMouseRange)
+    MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnMouseRange)
 
     // Reflected message handler
     MESSAGE_HANDLER_EX(kReflectedMessage, OnReflectedMessage)
@@ -263,11 +263,9 @@ class WidgetWin : public ui::WindowImpl,
 
     // Mouse events.
     MESSAGE_HANDLER_EX(WM_MOUSEACTIVATE, OnMouseActivate)
-    MESSAGE_HANDLER_EX(WM_MOUSELEAVE, OnMouseLeave)
-    MESSAGE_HANDLER_EX(WM_MOUSEMOVE, OnMouseMove)
+    MESSAGE_HANDLER_EX(WM_MOUSELEAVE, OnMouseRange)
     MESSAGE_HANDLER_EX(WM_MOUSEWHEEL, OnMouseWheel)
-    MESSAGE_HANDLER_EX(WM_NCMOUSELEAVE, OnNCMouseLeave)
-    MESSAGE_HANDLER_EX(WM_NCMOUSEMOVE, OnNCMouseMove)
+    MESSAGE_HANDLER_EX(WM_NCMOUSELEAVE, OnMouseRange)
 
     // Key events.
     MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyDown)
@@ -355,8 +353,6 @@ class WidgetWin : public ui::WindowImpl,
   virtual LRESULT OnKeyUp(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnKillFocus(HWND focused_window);
   virtual LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnMouseLeave(UINT message, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnMouseMove(UINT message, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnMove(const CPoint& point);
@@ -364,9 +360,6 @@ class WidgetWin : public ui::WindowImpl,
   virtual LRESULT OnNCActivate(BOOL active);
   virtual LRESULT OnNCCalcSize(BOOL w_param, LPARAM l_param);
   virtual LRESULT OnNCHitTest(const CPoint& pt);
-  virtual LRESULT OnNCMouseLeave(UINT message, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnNCMouseMove(UINT message, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnNCMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnNCPaint(HRGN rgn);
   virtual LRESULT OnNCUAHDrawCaption(UINT msg,
                                      WPARAM w_param,
@@ -395,20 +388,8 @@ class WidgetWin : public ui::WindowImpl,
   // messages too.
   void TrackMouseEvents(DWORD mouse_tracking_flags);
 
-  // Actually handle mouse events. These functions are called by subclasses who
-  // override the message handlers above to do the actual real work of handling
-  // the event in the View system.
-  bool ProcessMousePressed(UINT message, WPARAM w_param, LPARAM l_param);
-  bool ProcessMouseReleased(UINT message, WPARAM w_param, LPARAM l_param);
-  bool ProcessMouseMoved(UINT message, WPARAM w_param, LPARAM l_param);
-  void ProcessMouseExited(UINT message, WPARAM w_param, LPARAM l_param);
-
   // Called when a MSAA screen reader client is detected.
   virtual void OnScreenReaderDetected();
-
-  // Returns whether capture should be released on mouse release. The default
-  // is true.
-  virtual bool ReleaseCaptureOnMouseReleased();
 
   // The TooltipManager.
   // WARNING: RootView's destructor calls into the TooltipManager. As such, this
@@ -416,9 +397,6 @@ class WidgetWin : public ui::WindowImpl,
   scoped_ptr<TooltipManagerWin> tooltip_manager_;
 
   scoped_refptr<DropTargetWin> drop_target_;
-
-  // If true, the mouse is currently down.
-  bool is_mouse_down_;
 
   // Are a subclass of WindowWin?
   bool is_window_;
@@ -438,10 +416,6 @@ class WidgetWin : public ui::WindowImpl,
   // windows procedure.
   static void PostProcessActivateMessage(WidgetWin* widget,
                                          int activation_state);
-
-  // Fills out a MSG struct with the supplied values.
-  void MakeMSG(MSG* msg, UINT message, WPARAM w_param, LPARAM l_param,
-               DWORD time = 0, LONG x = 0, LONG y = 0) const;
 
   // Synchronously paints the invalid contents of the Widget.
   void RedrawInvalidRect();
@@ -503,17 +477,6 @@ class WidgetWin : public ui::WindowImpl,
   // True if we are allowed to update the layered window from the DIB backing
   // store if necessary.
   bool can_update_layered_window_;
-
-  // The following are used to detect duplicate mouse move events and not
-  // deliver them. Displaying a window may result in the system generating
-  // duplicate move events even though the mouse hasn't moved.
-
-  // If true, the last event was a mouse move event.
-  bool last_mouse_event_was_move_;
-
-  // Coordinates of the last mouse move event.
-  int last_mouse_move_x_;
-  int last_mouse_move_y_;
 
   // Whether the focus should be restored next time we get enabled.  Needed to
   // restore focus correctly when Windows modal dialogs are displayed.

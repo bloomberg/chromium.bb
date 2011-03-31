@@ -84,8 +84,8 @@ class Event {
   // Returns the EventFlags in terms of windows flags.
   int GetWindowsFlags() const;
 #elif defined(OS_LINUX)
-  // Convert the state member on a GdkEvent to views::Event flags
-  static int GetFlagsFromGdkState(unsigned int state);
+  // Get the views::Event flags from a native GdkEvent.
+  static int GetFlagsFromGdkEvent(NativeEvent native_event);
 #endif
 
  protected:

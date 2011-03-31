@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,12 @@ AeroTooltipManager::~AeroTooltipManager() {
 }
 
 void AeroTooltipManager::OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param) {
+  if (u_msg == WM_MOUSELEAVE) {
+    last_mouse_pos_.SetPoint(-1, -1);
+    UpdateTooltip();
+    return;
+  }
+
   if (initial_timer_)
     initial_timer_->Disown();
 
@@ -60,11 +66,6 @@ void AeroTooltipManager::OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param) {
     ::SendMessage(tooltip_hwnd_, TTM_TRACKACTIVATE, false, (LPARAM)&toolinfo_);
     return;
   }
-}
-
-void AeroTooltipManager::OnMouseLeave() {
-  last_mouse_pos_.SetPoint(-1, -1);
-  UpdateTooltip();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

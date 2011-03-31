@@ -124,7 +124,7 @@ gboolean WindowGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
   switch (hittest_code) {
     case HTCAPTION: {
       MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED, event->x, event->y,
-                               WidgetGtk::GetFlagsForEventButton(*event));
+          Event::GetFlagsFromGdkEvent(reinterpret_cast<GdkEvent*>(event)));
       // Start dragging if the mouse event is a single click and *not* a right
       // click. If it is a right click, then pass it through to
       // WidgetGtk::OnButtonPress so that View class can show ContextMenu upon a

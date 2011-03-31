@@ -118,9 +118,6 @@ class WindowWin : public WidgetWin,
   LRESULT OnNCCalcSize(BOOL mode, LPARAM l_param);  // Don't override.
   virtual LRESULT OnNCHitTest(const CPoint& point) OVERRIDE;
   virtual void OnNCPaint(HRGN rgn) OVERRIDE;
-  virtual LRESULT OnNCMouseRange(UINT message,
-                                 WPARAM w_param,
-                                 LPARAM l_param) OVERRIDE;
   virtual LRESULT OnNCUAHDrawCaption(UINT msg,
                                      WPARAM w_param,
                                      LPARAM l_param) OVERRIDE;

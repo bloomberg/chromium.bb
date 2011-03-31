@@ -173,9 +173,6 @@ class WidgetGtk : public Widget,
   // Returns true if it's handled by the focus manager.
   bool HandleKeyboardEvent(GdkEventKey* event);
 
-  // Returns the view::Event::flags for a GdkEventButton.
-  static int GetFlagsForEventButton(const GdkEventButton& event);
-
   // Enables debug painting. See |debug_paint_enabled_| for details.
   static void EnableDebugPaint();
 
@@ -196,9 +193,9 @@ class WidgetGtk : public Widget,
   virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
   virtual TooltipManager* GetTooltipManager() const OVERRIDE;
   virtual bool IsScreenReaderActive() const OVERRIDE;
-  virtual void SetNativeCapture() OVERRIDE;
-  virtual void ReleaseNativeCapture() OVERRIDE;
-  virtual bool HasNativeCapture() const OVERRIDE;
+  virtual void SetMouseCapture() OVERRIDE;
+  virtual void ReleaseMouseCapture() OVERRIDE;
+  virtual bool HasMouseCapture() const OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
@@ -279,12 +276,6 @@ class WidgetGtk : public Widget,
   CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnMap);
   CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnHide);
 
-  void set_mouse_down(bool mouse_down) { is_mouse_down_ = mouse_down; }
-
-  // Returns whether capture should be released on mouse release. The default
-  // is true.
-  virtual bool ReleaseCaptureOnMouseReleased();
-
   // Invoked when gtk grab is stolen by other GtkWidget in the same
   // application.
   virtual void HandleGtkGrabBroke();
@@ -307,12 +298,6 @@ class WidgetGtk : public Widget,
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
 
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnWindowPaint, GdkEventExpose*);
-
-  // Process a mouse click.
-  bool ProcessMousePressed(GdkEventButton* event);
-  void ProcessMouseReleased(GdkEventButton* event);
-  // Process scroll event.
-  bool ProcessScroll(GdkEventScroll* event);
 
   // Returns the first ancestor of |widget| that is a window.
   static Window* GetWindowImpl(GtkWidget* widget);
@@ -356,20 +341,6 @@ class WidgetGtk : public Widget,
   scoped_ptr<TooltipManagerGtk> tooltip_manager_;
 
   scoped_ptr<DropTargetGtk> drop_target_;
-
-  // If true, the mouse is currently down.
-  bool is_mouse_down_;
-
-  // The following are used to detect duplicate mouse move events and not
-  // deliver them. Displaying a window may result in the system generating
-  // duplicate move events even though the mouse hasn't moved.
-
-  // If true, the last event was a mouse move event.
-  bool last_mouse_event_was_move_;
-
-  // Coordinates of the last mouse move event, in screen coordinates.
-  int last_mouse_move_x_;
-  int last_mouse_move_y_;
 
   // The following factory is used to delay destruction.
   ScopedRunnableMethodFactory<WidgetGtk> close_widget_factory_;
