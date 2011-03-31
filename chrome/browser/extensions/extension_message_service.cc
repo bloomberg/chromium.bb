@@ -335,7 +335,7 @@ void ExtensionMessageService::Observe(NotificationType type,
       break;
     }
     case NotificationType::RENDER_VIEW_HOST_DELETED:
-      OnSenderClosed(Details<RenderViewHost>(details).ptr());
+      OnSenderClosed(Source<RenderViewHost>(source).ptr());
       break;
     default:
       NOTREACHED();

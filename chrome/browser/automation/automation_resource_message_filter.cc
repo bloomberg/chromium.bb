@@ -318,7 +318,8 @@ void AutomationResourceMessageFilter::UnRegisterRenderViewInIOThread(
                                                    renderer_id)));
 
   if (automation_details_iter == filtered_render_views_.Get().end()) {
-    VLOG(1) << "UnRegisterRenderViewInIOThread: already unregistered";
+    // This is called for all RenderViewHosts, so it's fine if we don't find a
+    // match.
     return;
   }
 

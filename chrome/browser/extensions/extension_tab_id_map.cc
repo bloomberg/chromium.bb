@@ -84,7 +84,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
       break;
     }
     case NotificationType::RENDER_VIEW_HOST_DELETED: {
-      RenderViewHost* host = Details<RenderViewHost>(details).ptr();
+      RenderViewHost* host = Source<RenderViewHost>(source).ptr();
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(

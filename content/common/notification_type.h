@@ -483,7 +483,8 @@ class NotificationType {
     // Used only in testing.
     RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
 
-    // Sent from ~RenderViewHost. The source is the TabContents.
+    // Sent from ~RenderViewHost. The source is the RenderViewHost, the details
+    // unused.
     RENDER_VIEW_HOST_DELETED,
 
     // Sent from RenderViewHost::ClosePage.  The hosted RenderView has

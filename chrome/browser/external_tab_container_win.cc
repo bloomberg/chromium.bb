@@ -175,7 +175,7 @@ bool ExternalTabContainer::Init(Profile* profile,
   registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
                  Source<TabContents>(tab_contents_->tab_contents()));
   registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_DELETED,
-                 Source<TabContents>(tab_contents_->tab_contents()));
+                 NotificationService::AllSources());
 
   NotificationService::current()->Notify(
       NotificationType::EXTERNAL_TAB_CREATED,
@@ -792,7 +792,7 @@ void ExternalTabContainer::Observe(NotificationType type,
     }
     case NotificationType::RENDER_VIEW_HOST_DELETED: {
       if (load_requests_via_automation_) {
-        RenderViewHost* rvh = Details<RenderViewHost>(details).ptr();
+        RenderViewHost* rvh = Source<RenderViewHost>(source).ptr();
         UnregisterRenderViewHost(rvh);
       }
       break;

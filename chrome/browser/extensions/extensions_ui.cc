@@ -637,7 +637,7 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
     // Doing it this way gets everything but causes the page to be rendered
     // more than we need. It doesn't seem to result in any noticeable flicker.
     case NotificationType::RENDER_VIEW_HOST_DELETED:
-      deleting_rvh_ = Details<RenderViewHost>(details).ptr();
+      deleting_rvh_ = Source<RenderViewHost>(source).ptr();
       MaybeUpdateAfterNotification();
       break;
     case NotificationType::BACKGROUND_CONTENTS_DELETED:

@@ -120,6 +120,11 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
 }
 
 RenderViewHost::~RenderViewHost() {
+  NotificationService::current()->Notify(
+      NotificationType::RENDER_VIEW_HOST_DELETED,
+      Source<RenderViewHost>(this),
+      NotificationService::NoDetails());
+
   delegate()->RenderViewDeleted(this);
 
   // Be sure to clean up any leftover state from cross-site requests.

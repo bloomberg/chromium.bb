@@ -199,7 +199,7 @@ void DevToolsManager::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   DCHECK(type == NotificationType::RENDER_VIEW_HOST_DELETED);
-  UnregisterDevToolsClientHostFor(Details<RenderViewHost>(details).ptr());
+  UnregisterDevToolsClientHostFor(Source<RenderViewHost>(source).ptr());
 }
 
 RenderViewHost* DevToolsManager::GetInspectedRenderViewHost(
