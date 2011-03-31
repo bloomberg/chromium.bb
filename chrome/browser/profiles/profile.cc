@@ -27,6 +27,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
+#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/ssl/ssl_host_state.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -188,6 +189,9 @@ class OffTheRecordProfileImpl : public Profile,
     NotificationService::current()->Notify(NotificationType::PROFILE_DESTROYED,
                                            Source<Profile>(this),
                                            NotificationService::NoDetails());
+
+    ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
+
     // Clean up all DB files/directories
     if (db_tracker_)
       BrowserThread::PostTask(

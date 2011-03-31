@@ -327,7 +327,7 @@ bool GtkThemeService::HasCustomImage(int id) const {
 
 void GtkThemeService::InitThemesFor(NotificationObserver* observer) {
   observer->Observe(NotificationType::BROWSER_THEME_CHANGED,
-                    Source<ui::ThemeProvider>(this),
+                    Source<ThemeService>(this),
                     NotificationService::NoDetails());
 }
 
@@ -358,8 +358,11 @@ void GtkThemeService::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   if ((type == NotificationType::PREF_CHANGED) &&
-      (*Details<std::string>(details).ptr() == prefs::kUsesSystemTheme))
+      (*Details<std::string>(details).ptr() == prefs::kUsesSystemTheme)) {
     use_gtk_ = profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
+  } else {
+    ThemeService::Observe(type, source, details);
+  }
 }
 
 GtkWidget* GtkThemeService::BuildChromeButton() {

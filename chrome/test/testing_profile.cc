@@ -30,6 +30,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -146,7 +147,8 @@ TestingProfile::TestingProfile()
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
       incognito_(false),
-      last_session_exited_cleanly_(true) {
+      last_session_exited_cleanly_(true),
+      profile_dependency_manager_(ProfileDependencyManager::GetInstance()) {
   if (!temp_dir_.CreateUniqueTempDir()) {
     LOG(ERROR) << "Failed to create unique temporary directory.";
 
@@ -175,8 +177,11 @@ TestingProfile::TestingProfile()
 TestingProfile::~TestingProfile() {
   NotificationService::current()->Notify(
       NotificationType::PROFILE_DESTROYED,
-      Source<Profile>(this),
+      Source<Profile>(static_cast<Profile*>(this)),
       NotificationService::NoDetails());
+
+  profile_dependency_manager_->DestroyProfileServices(this);
+
   DestroyTopSites();
   DestroyHistoryService();
   // FaviconService depends on HistoryServce so destroying it later.
@@ -355,6 +360,11 @@ TestingPrefService* TestingProfile::GetTestingPrefService() {
     CreateTestingPrefService();
   DCHECK(testing_prefs_);
   return testing_prefs_;
+}
+
+void TestingProfile::SetProfileDependencyManager(
+    ProfileDependencyManager* manager) {
+  profile_dependency_manager_ = manager;
 }
 
 ProfileId TestingProfile::GetRuntimeId() {

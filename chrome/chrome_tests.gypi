@@ -1469,6 +1469,7 @@
         'browser/process_info_snapshot_mac_unittest.cc',
         'browser/process_singleton_mac_unittest.cc',
         'browser/profiles/profile_manager_unittest.cc',
+        'browser/profiles/profile_dependency_manager_unittest.cc',
         'browser/remoting/directory_add_request_unittest.cc',
         'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
         'browser/renderer_host/render_widget_host_view_mac_unittest.mm',

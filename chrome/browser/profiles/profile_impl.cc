@@ -56,6 +56,7 @@
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
+#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -528,6 +529,8 @@ ProfileImpl::~ProfileImpl() {
       NotificationService::NoDetails());
 
   GetPolicyConnector()->Shutdown();
+
+  ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
   tab_restore_service_ = NULL;
 

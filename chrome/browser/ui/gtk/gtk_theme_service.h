@@ -33,8 +33,7 @@ typedef struct _GtkStyle GtkStyle;
 typedef struct _GtkWidget GtkWidget;
 
 // Specialization of ThemeService which supplies system colors.
-class GtkThemeService : public ThemeService,
-                        public NotificationObserver {
+class GtkThemeService : public ThemeService {
  public:
   // Returns GtkThemeService, casted from our superclass.
   static GtkThemeService* GetFrom(Profile* profile);
@@ -59,7 +58,7 @@ class GtkThemeService : public ThemeService,
   virtual void SetNativeTheme();
   virtual bool UsingDefaultTheme();
 
-  // Overridden from NotificationObserver:
+  // Overridden from ThemeService, NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);

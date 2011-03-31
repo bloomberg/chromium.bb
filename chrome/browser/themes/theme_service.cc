@@ -209,6 +209,10 @@ void ThemeService::Init(Profile* profile) {
   DCHECK(CalledOnValidThread());
   profile_ = profile;
 
+  registrar_.Add(this,
+                 NotificationType::THEME_INSTALLED,
+                 Source<Profile>(profile_));
+
   LoadThemePrefs();
 }
 
@@ -603,6 +607,14 @@ void ThemeService::FreePlatformCaches() {
   // Views (Skia) has no platform image cache to clear.
 }
 #endif
+
+void ThemeService::Observe(NotificationType type,
+                           const NotificationSource& source,
+                           const NotificationDetails& details) {
+  DCHECK(type == NotificationType::THEME_INSTALLED);
+  const Extension* extension = Details<const Extension>(details).ptr();
+  SetTheme(extension);
+}
 
 void ThemeService::SavePackName(const FilePath& pack_path) {
   profile_->GetPrefs()->SetFilePath(

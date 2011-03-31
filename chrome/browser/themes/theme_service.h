@@ -12,6 +12,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "ui/base/theme_provider.h"
 
 class BrowserThemePack;
@@ -37,6 +40,8 @@ extern "C" NSString* const kBrowserThemeDidChangeNotification;
 #endif  // __OBJC__
 
 class ThemeService : public base::NonThreadSafe,
+                     public NotificationObserver,
+                     public ProfileKeyedService,
                      public ui::ThemeProvider {
  public:
   // Public constants used in ThemeService and its subclasses:
@@ -241,6 +246,11 @@ class ThemeService : public base::NonThreadSafe,
 
   Profile* profile() { return profile_; }
 
+  // NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   friend class ThemeServiceTest;
 
@@ -281,6 +291,8 @@ class ThemeService : public base::NonThreadSafe,
 
   // The number of infobars currently displayed.
   int number_of_infobars_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeService);
 };

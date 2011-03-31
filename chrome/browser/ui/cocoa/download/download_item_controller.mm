@@ -324,7 +324,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 // Called after the current theme has changed.
 - (void)themeDidChangeNotification:(NSNotification*)aNotification {
   ui::ThemeProvider* themeProvider =
-      static_cast<ui::ThemeProvider*>([[aNotification object] pointerValue]);
+      static_cast<ThemeService*>([[aNotification object] pointerValue]);
   [self updateTheme:themeProvider];
 }
 

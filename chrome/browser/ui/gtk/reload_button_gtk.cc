@@ -61,7 +61,7 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
     theme_service_->InitThemesFor(this);
     registrar_.Add(this,
                    NotificationType::BROWSER_THEME_CHANGED,
-                   Source<GtkThemeService>(theme_service_));
+                   Source<ThemeService>(theme_service_));
   }
 
   // Set the default double-click timer delay to the system double-click time.
@@ -132,7 +132,7 @@ void ReloadButtonGtk::Observe(NotificationType type,
   DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
 
   GtkThemeService* provider = static_cast<GtkThemeService*>(
-      Source<GtkThemeService>(source).ptr());
+      Source<ThemeService>(source).ptr());
   DCHECK_EQ(provider, theme_service_);
   GtkButtonWidth = 0;
   UpdateThemeButtons();

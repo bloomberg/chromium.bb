@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
@@ -18,7 +19,7 @@ class Profile;
 // Singleton that owns all ThemeServices and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated ThemeService.
-class ThemeServiceFactory : public NotificationObserver {
+class ThemeServiceFactory : public ProfileKeyedServiceFactory {
  public:
   // Returns the ThemeService that provides theming resources for
   // |profile|. Note that even if a Profile doesn't have a theme installed, it
@@ -41,19 +42,11 @@ class ThemeServiceFactory : public NotificationObserver {
   friend struct DefaultSingletonTraits<ThemeServiceFactory>;
 
   ThemeServiceFactory();
-  ~ThemeServiceFactory();
+  virtual ~ThemeServiceFactory();
 
-  // Maps |profile| to |provider| and listens for notifications relating to
-  // either.
-  void Associate(Profile* profile, ThemeService* provider);
-
-  // NotificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  NotificationRegistrar registrar_;
-  std::map<Profile*, ThemeService*> mapping_;
+  // ProfileKeyedServiceFactory:
+  virtual ProfileKeyedService* BuildServiceInstanceFor(Profile* profile) const;
+  virtual bool ServiceRedirectedInIncognito();
 };
 
 #endif  // CHROME_BROWSER_THEMES_THEME_SERVICE_FACTORY_H_

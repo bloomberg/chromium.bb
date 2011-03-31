@@ -35,6 +35,7 @@ class GeolocationPermissionContext;
 class HistoryService;
 class HostContentSettingsMap;
 class PrefService;
+class ProfileDependencyManager;
 class ProfileSyncService;
 class SessionService;
 class TemplateURLModel;
@@ -124,6 +125,8 @@ class TestingProfile : public Profile {
                                            const FilePath& install_directory);
 
   TestingPrefService* GetTestingPrefService();
+
+  void SetProfileDependencyManager(ProfileDependencyManager* manager);
 
   virtual ProfileId GetRuntimeId();
 
@@ -389,6 +392,11 @@ class TestingProfile : public Profile {
   scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
 
   scoped_refptr<prerender::PrerenderManager> prerender_manager_;
+
+  // We keep a weak pointer to the dependency manager we want to notify on our
+  // death. Defaults to the Singleton implementation but overridable for
+  // testing.
+  ProfileDependencyManager* profile_dependency_manager_;
 };
 
 // A profile that derives from another profile.  This does not actually
