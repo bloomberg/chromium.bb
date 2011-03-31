@@ -1,0 +1,6 @@
+{
+  "name": "webnavigation",
+  "version": "1.0",
+  "description": "Tests the webNavigation API",
+  "permissions": ["experimental", "tabs"]
+}
