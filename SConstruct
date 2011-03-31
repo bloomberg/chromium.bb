@@ -1825,6 +1825,7 @@ windows_env = base_env.Clone(
     # Strict doesnt't currently work for windows since some of the system
     # libraries like wsock32 are magical.
     LIBS_STRICT = False,
+    TARGET_ARCH='x86_64' if base_env.Bit('build_x86_64') else 'x86',
 )
 
 windows_env.Append(
@@ -1844,10 +1845,6 @@ windows_env.Append(
 # Chromium, which uses it.
 if windows_env.Bit('build_x86_32'):
   windows_env.Append(LINKFLAGS = "/safeseh")
-
-windows_env['ENV']['PATH'] = os.environ.get('PATH', '[]')
-windows_env['ENV']['INCLUDE'] = os.environ.get('INCLUDE', '[]')
-windows_env['ENV']['LIB'] = os.environ.get('LIB', '[]')
 
 # We use the GNU assembler (gas) on Windows so that we can use the
 # same .S assembly files on all platforms.  Microsoft's assembler uses
