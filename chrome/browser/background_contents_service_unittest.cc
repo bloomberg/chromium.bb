@@ -11,6 +11,7 @@
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_browser_process.h"
@@ -28,14 +29,18 @@ class BackgroundContentsServiceTest : public TestingBrowserProcessTest {
     command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   }
 
-  DictionaryValue* GetPrefs(Profile* profile) {
-    return profile->GetPrefs()->GetMutableDictionary(
+  const DictionaryValue* GetPrefs(Profile* profile) {
+    return profile->GetPrefs()->GetDictionary(
         prefs::kRegisteredBackgroundContents);
+  }
+
+  void ClearPrefs(Profile* profile) {
+    profile->GetPrefs()->ClearPref(prefs::kRegisteredBackgroundContents);
   }
 
   // Returns the stored pref URL for the passed app id.
   std::string GetPrefURLForApp(Profile* profile, const string16& appid) {
-    DictionaryValue* pref = GetPrefs(profile);
+    const DictionaryValue* pref = GetPrefs(profile);
     EXPECT_TRUE(pref->HasKey(UTF16ToUTF8(appid)));
     DictionaryValue* value;
     pref->GetDictionaryWithoutPathExpansion(UTF16ToUTF8(appid), &value);
@@ -120,7 +125,7 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsCreateDestroy) {
 
 TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAdded) {
   TestingProfile profile;
-  GetPrefs(&profile)->Clear();
+  ClearPrefs(&profile);
   BackgroundContentsService service(&profile, command_line_.get());
   GURL orig_url;
   GURL url("http://a/");
@@ -146,7 +151,7 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAdded) {
 
 TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAddedAndClosed) {
   TestingProfile profile;
-  GetPrefs(&profile)->Clear();
+  ClearPrefs(&profile);
   BackgroundContentsService service(&profile, command_line_.get());
   GURL url("http://a/");
   MockBackgroundContents* contents = new MockBackgroundContents(&profile);
@@ -165,7 +170,7 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAddedAndClosed) {
 // crash) then is restarted. Should not persist URL twice.
 TEST_F(BackgroundContentsServiceTest, RestartBackgroundContents) {
   TestingProfile profile;
-  GetPrefs(&profile)->Clear();
+  ClearPrefs(&profile);
   BackgroundContentsService service(&profile, command_line_.get());
   GURL url("http://a/");
   {
@@ -196,7 +201,7 @@ TEST_F(BackgroundContentsServiceTest, RestartBackgroundContents) {
 TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
   TestingProfile profile;
   BackgroundContentsService service(&profile, command_line_.get());
-  GetPrefs(&profile)->Clear();
+  ClearPrefs(&profile);
 
   EXPECT_EQ(NULL, service.GetAppBackgroundContents(ASCIIToUTF16("appid")));
   MockBackgroundContents* contents = new MockBackgroundContents(&profile,

@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -236,8 +237,8 @@ void BackgroundContentsService::RegisterBackgroundContents(
   // already an entry for this application, no need to do anything.
   // TODO(atwilson): Verify that this is the desired behavior based on developer
   // feedback (http://crbug.com/47118).
-  DictionaryValue* pref = prefs_->GetMutableDictionary(
-      prefs::kRegisteredBackgroundContents);
+  DictionaryPrefUpdate update(prefs_, prefs::kRegisteredBackgroundContents);
+  DictionaryValue* pref = update.Get();
   const string16& appid = GetParentApplicationId(background_contents);
   DictionaryValue* current;
   if (pref->GetDictionaryWithoutPathExpansion(UTF16ToUTF8(appid), &current))
@@ -257,9 +258,8 @@ void BackgroundContentsService::UnregisterBackgroundContents(
     return;
   DCHECK(IsTracked(background_contents));
   const string16 appid = GetParentApplicationId(background_contents);
-  DictionaryValue* pref = prefs_->GetMutableDictionary(
-      prefs::kRegisteredBackgroundContents);
-  pref->RemoveWithoutPathExpansion(UTF16ToUTF8(appid), NULL);
+  DictionaryPrefUpdate update(prefs_, prefs::kRegisteredBackgroundContents);
+  update.Get()->RemoveWithoutPathExpansion(UTF16ToUTF8(appid), NULL);
   prefs_->ScheduleSavePersistentPrefs();
 }
 

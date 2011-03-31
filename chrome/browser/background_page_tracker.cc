@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/extension.h"
@@ -84,10 +85,8 @@ void BackgroundPageTracker::AcknowledgeBackgroundPages() {
   if (!IsEnabled())
     return;
   PrefService* prefs = GetPrefService();
-  DictionaryValue* contents =
-      prefs->GetMutableDictionary(prefs::kKnownBackgroundPages);
-  if (!contents)
-    return;
+  DictionaryPrefUpdate update(prefs, prefs::kKnownBackgroundPages);
+  DictionaryValue* contents = update.Get();
   bool prefs_modified = false;
   for (DictionaryValue::key_iterator it = contents->begin_keys();
        it != contents->end_keys(); ++it) {
@@ -194,8 +193,8 @@ bool BackgroundPageTracker::UpdateExtensionList() {
   // want to automatically mark all existing extensions as acknowledged.
   bool first_launch =
       prefs->GetDictionary(prefs::kKnownBackgroundPages) == NULL;
-  DictionaryValue* contents =
-      prefs->GetMutableDictionary(prefs::kKnownBackgroundPages);
+  DictionaryPrefUpdate update(prefs, prefs::kKnownBackgroundPages);
+  DictionaryValue* contents = update.Get();
   for (DictionaryValue::key_iterator it = contents->begin_keys();
        it != contents->end_keys(); ++it) {
     // Check to make sure that the parent extension is still enabled.
@@ -266,10 +265,10 @@ bool BackgroundPageTracker::UpdateExtensionList() {
 void BackgroundPageTracker::OnBackgroundPageLoaded(const std::string& id) {
   DCHECK(IsEnabled());
   PrefService* prefs = GetPrefService();
-  DictionaryValue* contents =
-      prefs->GetMutableDictionary(prefs::kKnownBackgroundPages);
+  DictionaryPrefUpdate update(prefs, prefs::kKnownBackgroundPages);
+  DictionaryValue* contents = update.Get();
   // No need to update our list if this extension was already known.
-  if (!contents || contents->HasKey(id))
+  if (contents->HasKey(id))
     return;
 
   // Update our list with this new as-yet-unacknowledged page.
@@ -281,10 +280,10 @@ void BackgroundPageTracker::OnBackgroundPageLoaded(const std::string& id) {
 void BackgroundPageTracker::OnExtensionUnloaded(const std::string& id) {
   DCHECK(IsEnabled());
   PrefService* prefs = GetPrefService();
-  DictionaryValue* contents =
-      prefs->GetMutableDictionary(prefs::kKnownBackgroundPages);
+  DictionaryPrefUpdate update(prefs, prefs::kKnownBackgroundPages);
+  DictionaryValue* contents = update.Get();
 
-  if (!contents || !contents->HasKey(id))
+  if (!contents->HasKey(id))
     return;
 
   contents->RemoveWithoutPathExpansion(id, NULL);
