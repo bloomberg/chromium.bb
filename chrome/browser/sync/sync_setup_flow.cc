@@ -454,6 +454,8 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
     case SyncSetupWizard::CONFIGURE:
     case SyncSetupWizard::ENTER_PASSPHRASE:
     case SyncSetupWizard::SETTING_UP:
+      // TODO(atwilson): Treat a close during ENTER_PASSPHRASE like a
+      // Cancel + Skip (i.e. call OnPassphraseCancel()). http://crbug.com/74645
       ProfileSyncService::SyncEvent(
           ProfileSyncService::CANCEL_DURING_CONFIGURE);
       break;

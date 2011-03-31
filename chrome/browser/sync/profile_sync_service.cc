@@ -627,10 +627,12 @@ void ProfileSyncService::OnPassphraseAccepted() {
   // this time.
   syncable::ModelTypeSet types;
   GetPreferredDataTypes(&types);
+  // Reset "passphrase_required" flag before configuring the DataTypeManager
+  // since we know we no longer require the passphrase.
+  observed_passphrase_required_ = false;
   data_type_manager_->Configure(types);
 
   NotifyObservers();
-  observed_passphrase_required_ = false;
 
   wizard_.Step(SyncSetupWizard::DONE);
 }
@@ -962,6 +964,20 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   encrypted_types_.clear();
   if (types.count(syncable::PASSWORDS) > 0)
     encrypted_types_.insert(syncable::PASSWORDS);
+  if (observed_passphrase_required_ && passphrase_required_for_decryption_) {
+    if (IsEncryptedDatatypeEnabled()) {
+      // We need a passphrase still. Prompt the user for a passphrase, and
+      // DataTypeManager::Configure() will get called once the passphrase is
+      // accepted.
+      OnPassphraseRequired(true);
+      return;
+    } else {
+      // We've been informed that a passphrase is required for decryption, but
+      // now there are no encrypted data types enabled, so clear the flag
+      // (NotifyObservers() will be called when configuration completes).
+      observed_passphrase_required_ = false;
+    }
+  }
   data_type_manager_->Configure(types);
 }
 
@@ -1114,10 +1130,13 @@ void ProfileSyncService::Observe(NotificationType type,
         cached_passphrase_ = CachedPassphrase();
       }
 
+      // We should never get in a state where we have no encrypted datatypes
+      // enabled, and yet we still think we require a passphrase.
+      DCHECK(!(observed_passphrase_required_ &&
+               passphrase_required_for_decryption_ &&
+               !IsEncryptedDatatypeEnabled()));
+
       // TODO(sync): Less wizard, more toast.
-      // It's possible to have observed_passphrase_required_ be true here and
-      // still want to go to done. This is the case when the datatype requiring
-      // the passphrase was disabled after we attempted to start it.
       wizard_.Step(SyncSetupWizard::DONE);
       NotifyObservers();
 

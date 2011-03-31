@@ -426,20 +426,25 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
     }
   }
 
-  if (core_->syncapi()->InitialSyncEndedForAllEnabledTypes()) {
+  if (pending_config_mode_state_->added_types.none() &&
+      !core_->syncapi()->InitialSyncEndedForAllEnabledTypes()) {
+    LOG(WARNING) << "No new types, but initial sync not finished."
+                 << "Possible sync db corruption / removal.";
+    // TODO(tim): Log / UMA / count this somehow?
+    // TODO(tim): If no added types, we could (should?) config only for
+    // types that are needed... but this is a rare corruption edge case or
+    // implies the user mucked around with their syncdb, so for now do all.
+    pending_config_mode_state_->added_types =
+        syncable::ModelTypeBitSetFromSet(
+            pending_config_mode_state_->initial_types);
+  }
+
+  // If we've added types, we always want to request a nudge/config (even if
+  // the initial sync is ended), in case we could not decrypt the data.
+  if (pending_config_mode_state_->added_types.none()) {
+    // No new types - just notify the caller that the types are available.
     pending_config_mode_state_->ready_task->Run();
   } else {
-    if (!pending_config_mode_state_->added_types.any()) {
-      LOG(WARNING) << "No new types, but initial sync not finished."
-                   << "Possible sync db corruption / removal.";
-      // TODO(tim): Log / UMA / count this somehow?
-      // TODO(tim): If no added types, we could (should?) config only for
-      // types that are needed... but this is a rare corruption edge case or
-      // implies the user mucked around with their syncdb, so for now do all.
-      pending_config_mode_state_->added_types =
-          syncable::ModelTypeBitSetFromSet(
-              pending_config_mode_state_->initial_types);
-    }
     pending_download_state_.reset(pending_config_mode_state_.release());
     if (using_new_syncer_thread_) {
       RequestConfig(pending_download_state_->added_types);
@@ -448,8 +453,11 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
     }
   }
 
-  if (request_nudge)
+  // TODO(tim): Remove this when we get rid of the old syncer thread.
+  if (request_nudge) {
+    CHECK(!using_new_syncer_thread_);
     RequestNudge();
+  }
 
   pending_config_mode_state_.reset();
 

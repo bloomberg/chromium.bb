@@ -138,19 +138,11 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
             needs_stop_.end(),
             SortComparator(&start_order_));
 
-  // If nothing changed, we're done.
-  if (needs_start_.empty() && needs_stop_.empty()) {
-    NotifyStart();
-    if (syncer_paused_) {
-      state_ = RESUME_PENDING;
-      ResumeSyncer();
-    } else {
-      state_ = CONFIGURED;
-      NotifyDone(OK, FROM_HERE);
-    }
-    return;
-  }
-
+  // Restart to start/stop data types and notify the backend that the
+  // desired types have changed (need to do this even if there aren't any
+  // types to start/stop, because it could be that some types haven't
+  // started due to crypto errors but the backend host needs to know that we're
+  // disabling them anyway).
   Restart();
 }
 
