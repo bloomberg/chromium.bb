@@ -410,9 +410,76 @@ def CheckTreeIsOpen(input_api, output_api,
   return []
 
 
+def RunUnitTestsInDirectory(
+    input_api, output_api, directory, whitelist=None, blacklist=None,
+    verbose=False):
+  """Lists all files in a directory and runs them. Doesn't recurse.
+
+  It's mainly a wrapper for RunUnitTests. USe whitelist and blacklist to filter
+  tests accordingly.
+  """
+  unit_tests = []
+  test_path = input_api.os_path.abspath(
+      input_api.os_path.join(input_api.PresubmitLocalPath(), directory))
+
+  def check(filename, filters):
+    return any(True for i in filters if input_api.re.match(i, filename))
+
+  for filename in input_api.os_listdir(test_path):
+    fullpath = input_api.os_path.join(test_path, filename)
+    if not input_api.os_path.isfile(fullpath):
+      continue
+    if whitelist and not check(filename, whitelist):
+      continue
+    if blacklist and check(filename, blacklist):
+      continue
+    unit_tests.append(input_api.os_path.join(directory, filename))
+  return RunUnitTests(input_api, output_api, unit_tests, verbose)
+
+
+def RunUnitTests(input_api, output_api, unit_tests, verbose=False):
+  """Runs all unit tests in a directory.
+
+  On Windows, sys.executable is used for unit tests ending with ".py".
+  """
+  # We don't want to hinder users from uploading incomplete patches.
+  if input_api.is_committing:
+    message_type = output_api.PresubmitError
+  else:
+    message_type = output_api.PresubmitPromptWarning
+
+  if verbose:
+    pipe = None
+  else:
+    pipe = input_api.subprocess.PIPE
+
+  results = []
+  for unit_test in unit_tests:
+    cmd = []
+    if input_api.platform == 'win32' and unit_test.endswith('.py'):
+      # Windows needs some help.
+      cmd = [input_api.python_executable]
+    cmd.append(unit_test)
+    if verbose:
+      print('Running %s' % unit_test)
+    try:
+      proc = input_api.subprocess.Popen(
+          cmd, cwd=input_api.PresubmitLocalPath(), stdout=pipe, stderr=pipe)
+      out = '\n'.join(filter(None, proc.communicate()))
+      if proc.returncode:
+        results.append(message_type(
+          '%s failed with return code %d\n%s' % (
+            unit_test, proc.returncode, out)))
+    except (OSError, input_api.subprocess.CalledProcessError):
+      results.append(message_type('%s failed' % unit_test))
+  return results
+
+
 def RunPythonUnitTests(input_api, output_api, unit_tests):
   """Run the unit tests out of process, capture the output and use the result
   code to determine success.
+
+  DEPRECATED.
   """
   # We don't want to hinder users from uploading incomplete patches.
   if input_api.is_committing:
@@ -477,10 +544,10 @@ def _FetchAllFiles(input_api, white_list, black_list):
         return True
     return False
 
-  import os
   files = []
   path_len = len(input_api.PresubmitLocalPath())
-  for dirpath, dirnames, filenames in os.walk(input_api.PresubmitLocalPath()):
+  for dirpath, dirnames, filenames in input_api.os_walk(
+      input_api.PresubmitLocalPath()):
     # Passes dirnames in black list to speed up search.
     for item in dirnames[:]:
       filepath = input_api.os_path.join(dirpath, item)[path_len + 1:]

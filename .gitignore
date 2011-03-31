@@ -1,6 +1,7 @@
 *.pyc
 /git_cl_repo
 /tests/pymox
+/tests/rietveld
 /tests/_trial
 /python
 /python.bat

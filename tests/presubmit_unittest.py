@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python2.5
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 # pylint: disable=E1101,E1103,W0212,W0403
 
 import StringIO
+import sys
 
 # Fixes include path.
 from super_mox import mox, SuperMoxTestBase
@@ -726,8 +727,8 @@ class InputApiUnittest(PresubmitTestsBase):
       'LocalToDepotPath',
       'PresubmitLocalPath', 'ReadFile', 'RightHandSideLines', 'ServerPaths',
       'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change', 'environ',
-      'host_url', 'is_committing', 'json', 'marshal', 'os_path',
-      'owners_db', 'pickle', 'platform', 'python_executable', 're',
+      'host_url', 'is_committing', 'json', 'marshal', 'os_listdir', 'os_walk',
+      'os_path', 'owners_db', 'pickle', 'platform', 'python_executable', 're',
       'subprocess', 'tbr', 'tempfile', 'time', 'traceback', 'unittest',
       'urllib2', 'version',
     ]
@@ -1237,6 +1238,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def MockInputApi(self, change, committing):
     input_api = self.mox.CreateMock(presubmit.InputApi)
     input_api.cStringIO = presubmit.cStringIO
+    input_api.os_listdir = self.mox.CreateMockAnything()
+    input_api.os_walk = self.mox.CreateMockAnything()
     input_api.os_path = presubmit.os.path
     input_api.re = presubmit.re
     input_api.traceback = presubmit.traceback
@@ -1249,6 +1252,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.is_committing = committing
     input_api.tbr = False
     input_api.python_executable = 'pyyyyython'
+    input_api.platform = sys.platform
     return input_api
 
   def testMembersChanged(self):
@@ -1273,6 +1277,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckSvnModifiedDirectories',
       'CheckSvnForCommonMimeTypes', 'CheckSvnProperty',
       'RunPythonUnitTests', 'RunPylint',
+      'RunUnitTests', 'RunUnitTestsInDirectory',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)
@@ -2010,6 +2015,60 @@ mac|success|blew
     self.AssertOwnersWorks(approvers=set(['ben@example.com']),
                            uncovered_files=set())
 
+  def testCannedRunUnitTests(self):
+    change = presubmit.Change(
+        'foo1', 'description1', self.fake_root_dir, None, 0, 0)
+    input_api = self.MockInputApi(change, False)
+    unit_tests = ['allo', 'bar.py']
+    input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
+    input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
+    proc1 = self.mox.CreateMockAnything()
+    input_api.subprocess.Popen(['allo'], cwd=self.fake_root_dir,
+        stderr=None, stdout=None).AndReturn(proc1)
+    proc1.returncode = 0
+    proc1.communicate().AndReturn(['baz', None])
+    proc2 = self.mox.CreateMockAnything()
+    input_api.subprocess.Popen(['bar.py'], cwd=self.fake_root_dir,
+        stderr=None, stdout=None).AndReturn(proc2)
+    proc2.returncode = 1
+    proc2.communicate().AndReturn(['bouz', None])
+
+    self.mox.ReplayAll()
+    results = presubmit_canned_checks.RunUnitTests(
+        input_api,
+        presubmit.OutputApi,
+        unit_tests,
+        verbose=True)
+    self.assertEqual(1, len(results))
+    self.assertEqual(
+        presubmit.OutputApi.PresubmitPromptWarning, results[0].__class__)
+    self.checkstdout('Running allo\nRunning bar.py\n')
+
+  def testCannedRunUnitTestsInDirectory(self):
+    change = presubmit.Change(
+        'foo1', 'description1', self.fake_root_dir, None, 0, 0)
+    input_api = self.MockInputApi(change, False)
+    input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
+    input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
+    path = presubmit.os.path.join(self.fake_root_dir, 'random_directory')
+    input_api.os_listdir(path).AndReturn(['.', '..', 'a', 'b', 'c'])
+    input_api.os_path.isfile = lambda x: not x.endswith('.')
+    proc1 = self.mox.CreateMockAnything()
+    input_api.subprocess.Popen(['random_directory/b'], cwd=self.fake_root_dir,
+        stderr=None, stdout=None).AndReturn(proc1)
+    proc1.returncode = 0
+    proc1.communicate().AndReturn(['baz', None])
+
+    self.mox.ReplayAll()
+    results = presubmit_canned_checks.RunUnitTestsInDirectory(
+        input_api,
+        presubmit.OutputApi,
+        'random_directory',
+        whitelist=['^a$', '^b$'],
+        blacklist=['a'],
+        verbose=True)
+    self.assertEqual(results, [])
+    self.checkstdout('Running random_directory/b\n')
 
 
 if __name__ == '__main__':

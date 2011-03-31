@@ -6,7 +6,7 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.4'
+__version__ = '1.5'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
@@ -251,6 +251,8 @@ class InputApi(object):
     self.cPickle = cPickle
     self.cStringIO = cStringIO
     self.json = json
+    self.os_listdir = os.listdir
+    self.os_walk = os.walk
     self.os_path = os.path
     self.pickle = pickle
     self.marshal = marshal
