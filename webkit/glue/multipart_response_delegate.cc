@@ -138,9 +138,10 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
       }
       if (data_length > 0) {
         // Send the last data chunk.
-        client_->didReceiveData(loader_,
-                                data_.data(),
-                                static_cast<int>(data_length));
+        // FIXME(vsevik): rename once renamed in webkit
+        client_->didReceiveData2(loader_,
+                                 data_.data(),
+                                 static_cast<int>(data_length), -1);
       }
     }
     size_t boundary_end_pos = boundary_pos + boundary_.length();
@@ -170,8 +171,9 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
     int send_length = data_.length() - boundary_.length();
     if (data_[data_.length() - 1] == '\n')
       send_length = data_.length();
+    // FIXME(vsevik): rename didReceiveData2 once renamed in webkit
     if (client_)
-      client_->didReceiveData(loader_, data_.data(), send_length);
+      client_->didReceiveData2(loader_, data_.data(), send_length, -1);
     data_ = data_.substr(send_length);
   }
 }
@@ -180,9 +182,10 @@ void MultipartResponseDelegate::OnCompletedRequest() {
   // If we have any pending data and we're not in a header, go ahead and send
   // it to WebCore.
   if (!processing_headers_ && !data_.empty() && !stop_sending_ && client_) {
-    client_->didReceiveData(loader_,
-                            data_.data(),
-                            static_cast<int>(data_.length()));
+    // FIXME(vsevik): rename didReceiveData2 once renamed in webkit
+    client_->didReceiveData2(loader_,
+                             data_.data(),
+                             static_cast<int>(data_.length()), -1);
   }
 }
 

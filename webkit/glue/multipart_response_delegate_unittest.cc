@@ -66,12 +66,23 @@ class MockWebURLLoaderClient : public WebURLLoaderClient {
     response_ = response;
     data_.clear();
   }
-  virtual void didReceiveData(WebURLLoader* loader,
-                              const char* data, int data_length) {
+  // FIXME(vsevik): rename once renamed in webkit
+  virtual void didReceiveData2(
+      WebKit::WebURLLoader* loader,
+      const char* data,
+      int data_length,
+      int length_received) {
     ++received_data_;
     data_.append(data, data_length);
   }
 
+  // FIXME(vsevik): remove once removed in webkit
+  virtual void didReceiveData(
+      WebKit::WebURLLoader* loader,
+      const char* data,
+      int data_length) {
+    didReceiveData2(loader, data, data_length, -1);
+  }
   virtual void didFinishLoading(WebURLLoader*, double finishTime) {}
   virtual void didFail(WebURLLoader*, const WebURLError&) {}
 

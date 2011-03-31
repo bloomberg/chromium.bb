@@ -110,14 +110,21 @@ class MultiPartResponseClient : public WebURLLoaderClient {
   }
 
   // Receives individual part data from a multipart response.
-  virtual void didReceiveData(
-      WebURLLoader*, const char* data, int data_size) {
+  // FIXME(vsevik): rename once renamed in webkit
+  virtual void didReceiveData2(
+      WebURLLoader*, const char* data, int data_length, int length_received) {
     // TODO(ananta)
     // We should defer further loads on multipart resources on the same lines
     // as regular resources requested by plugins to prevent reentrancy.
     resource_client_->DidReceiveData(
-        data, data_size, byte_range_lower_bound_);
-    byte_range_lower_bound_ += data_size;
+        data, data_length, byte_range_lower_bound_);
+    byte_range_lower_bound_ += data_length;
+  }
+
+  // FIXME(vsevik): remove once removed in webkit
+  virtual void didReceiveData(
+      WebURLLoader* webURLLoader, const char* data, int data_length) {
+    didReceiveData2(webURLLoader, data, data_length, -1);
   }
 
   virtual void didFinishLoading(WebURLLoader*, double finishTime) {}
@@ -949,9 +956,18 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
   }
 }
 
+// FIXME(vsevik): remove once removed in webkit
 void WebPluginImpl::didReceiveData(WebURLLoader* loader,
                                    const char *buffer,
-                                   int length) {
+                                   int data_length) {
+  didReceiveData2(loader, buffer, data_length, -1);
+}
+
+// FIXME(vsevik): rename once renamed in webkit
+void WebPluginImpl::didReceiveData2(WebURLLoader* loader,
+                                    const char *buffer,
+                                    int data_length,
+                                    int length_received) {
   WebPluginResourceClient* client = GetClientFromLoader(loader);
   if (!client)
     return;
@@ -961,10 +977,10 @@ void WebPluginImpl::didReceiveData(WebURLLoader* loader,
   if (index != multi_part_response_map_.end()) {
     MultipartResponseDelegate* multi_part_handler = (*index).second;
     DCHECK(multi_part_handler != NULL);
-    multi_part_handler->OnReceivedData(buffer, length);
+    multi_part_handler->OnReceivedData(buffer, data_length);
   } else {
     loader->setDefersLoading(true);
-    client->DidReceiveData(buffer, length, 0);
+    client->DidReceiveData(buffer, data_length, 0);
   }
 }
 

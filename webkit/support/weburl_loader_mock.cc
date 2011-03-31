@@ -29,7 +29,8 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
     return;
 
   client_->didReceiveResponse(this, response);
-  client_->didReceiveData(this, data.data(), data.size());
+  // FIXME(vsevik): rename didReceiveData2 once renamed in webkit
+  client_->didReceiveData2(this, data.data(), data.size(), data.size());
   client_->didFinishLoading(this, 0);
 }
 

@@ -76,9 +76,17 @@ class PPB_URLLoader_Impl : public Resource, public WebKit::WebURLLoaderClient {
                                   const WebKit::WebURLResponse& response);
   virtual void didDownloadData(WebKit::WebURLLoader* loader,
                                int data_length);
+
+  // FIXME(vsevik): remove once removed in webkit
   virtual void didReceiveData(WebKit::WebURLLoader* loader,
                               const char* data,
                               int data_length);
+
+  // FIXME(vsevik): rename didReceiveData2 once renamed in webkit
+  virtual void didReceiveData2(WebKit::WebURLLoader* loader,
+                               const char* data,
+                               int data_length,
+                               int length_received);
   virtual void didFinishLoading(WebKit::WebURLLoader* loader,
                                 double finish_time);
   virtual void didFail(WebKit::WebURLLoader* loader,

@@ -318,10 +318,20 @@ void BufferedResourceLoader::didReceiveResponse(
   DoneStart(net::OK);
 }
 
+// FIXME(vsevik): remove once removed in webkit
 void BufferedResourceLoader::didReceiveData(
     WebURLLoader* loader,
     const char* data,
     int data_length) {
+  didReceiveData2(loader, data, data_length, -1);
+}
+
+// FIXME(vsevik): rename once renamed in webkit
+void BufferedResourceLoader::didReceiveData2(
+    WebURLLoader* loader,
+    const char* data,
+    int data_length,
+    int length_received) {
   DCHECK(!completed_);
   DCHECK_GT(data_length, 0);
 

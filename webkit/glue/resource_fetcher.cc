@@ -84,8 +84,16 @@ void ResourceFetcher::didReceiveResponse(
   response_ = response;
 }
 
+// FIXME(vsevik): remove once removed in webkit
 void ResourceFetcher::didReceiveData(
     WebURLLoader* loader, const char* data, int data_length) {
+  didReceiveData2(loader, data, data_length, -1);
+}
+
+// FIXME(vsevik): rename once renamed in webkit
+void ResourceFetcher::didReceiveData2(
+    WebURLLoader* loader, const char* data, int data_length,
+    int length_received) {
   DCHECK(!completed_);
   DCHECK(data_length > 0);
 

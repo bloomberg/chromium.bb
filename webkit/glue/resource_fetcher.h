@@ -63,8 +63,14 @@ class ResourceFetcher : public WebKit::WebURLLoaderClient {
       WebKit::WebURLLoader* loader, const WebKit::WebURLResponse& response);
   virtual void didReceiveCachedMetadata(
       WebKit::WebURLLoader* loader, const char* data, int data_length);
+
+  // FIXME(vsevik): remove once removed in webkit
   virtual void didReceiveData(
       WebKit::WebURLLoader* loader, const char* data, int data_length);
+  // FIXME(vsevik): rename once renamed in webkit
+  virtual void didReceiveData2(
+      WebKit::WebURLLoader* loader, const char* data, int data_length,
+      int length_received);
   virtual void didFinishLoading(
       WebKit::WebURLLoader* loader, double finishTime);
   virtual void didFail(
