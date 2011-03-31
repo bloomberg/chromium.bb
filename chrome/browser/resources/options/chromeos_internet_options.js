@@ -189,7 +189,7 @@ cr.define('options', function() {
     } else {
       $('enable-cellular').hidden = true;
       $('disable-cellular').hidden = true;
-      $('enable-data-roaming').hidden = true;
+      $('data-roaming').hidden = true;
     }
 
     InternetOptions.useSettingsUI = data.networkUseSettingsUI;
