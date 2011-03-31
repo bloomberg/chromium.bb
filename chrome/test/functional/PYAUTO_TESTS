@@ -95,6 +95,7 @@
 
     'win': [
       'enterprise',
+      '-enterprise.EnterpriseTest.testDisableDevTools',
       # crbug.com/77969
       '-autofill.AutofillTest.testComparePhoneNumbers',
       # testBookmarkBarVisible fails on windows. crbug.com/42823
