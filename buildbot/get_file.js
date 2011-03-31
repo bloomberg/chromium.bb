@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,14 +9,14 @@ function Download(url, path, verbose) {
   try {
     xml_http = new ActiveXObject("MSXML2.ServerXMLHTTP");
   } catch (e) {
-    WScript.StdOut.WriteLine("[-] XMLHTTP " + new Number(e.number).toHex() + 
+    WScript.StdOut.WriteLine("[-] XMLHTTP " + new Number(e.number).toHex() +
         ": Cannot create Active-X object (" + e.description) + ").";
     WScript.Quit(1);
   }
   try {
     xml_http.open("GET", url, false);
   } catch (e) {
-    WScript.StdOut.WriteLine("[-] XMLHTTP " + new Number(e.number).toHex() + 
+    WScript.StdOut.WriteLine("[-] XMLHTTP " + new Number(e.number).toHex() +
         ": invalid URL.");
     WScript.Quit(1);
   }
@@ -27,7 +27,7 @@ function Download(url, path, verbose) {
   try {
     xml_http.send(null);
     if (xml_http.status != 200) {
-      WScript.StdOut.WriteLine("[-] HTTP " + xml_http.status + " " + 
+      WScript.StdOut.WriteLine("[-] HTTP " + xml_http.status + " " +
           xml_http.statusText);
       WScript.Quit(1);
     }
@@ -45,7 +45,7 @@ function Download(url, path, verbose) {
       }
     }
   } catch (e) {
-    WScript.StdOut.WriteLine("[-] XMLHTTP " + new Number(e.number).toHex() + 
+    WScript.StdOut.WriteLine("[-] XMLHTTP " + new Number(e.number).toHex() +
         ": Cannot make HTTP request (" + e.description) + ")";
     WScript.Quit(1);
   }
@@ -83,13 +83,13 @@ function Download(url, path, verbose) {
 
 // Utilities
 Number.prototype.isInt = function NumberIsInt() {
-  return this % 1 == 0; 
+  return this % 1 == 0;
 };
 Number.prototype.toBytes = function NumberToBytes() {
   // Returns a "pretty" string representation of a number of bytes:
   var units = ["KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-  var unit = "bytes";
-  var limit = 1; 
+  var unit = "bytes"
+  var limit = 1;
   while(this > limit * 1100 && units.length > 0) {
     limit *= 1024;
     unit = units.shift();
@@ -99,11 +99,11 @@ Number.prototype.toBytes = function NumberToBytes() {
 Number.prototype.toHex = function NumberToHex(length) {
   if (arguments.length == 0) length = 1;
   if (typeof(length) != "number" && !(length instanceof Number)) {
-    throw Exception("Length must be a positive integer larger than 0.", 
+    throw Exception("Length must be a positive integer larger than 0.",
         TypeError, 0);
   }
   if (length < 1 || !length.isInt()) {
-    throw Exception("Length must be a positive integer larger than 0.", 
+    throw Exception("Length must be a positive integer larger than 0.",
         "RangeError", 0);
   }
   var result = (this + (this < 0 ? 0x100000000 : 0)).toString(16);

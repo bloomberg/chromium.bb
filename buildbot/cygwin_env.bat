@@ -1,3 +1,7 @@
+rem Copyright (c) 2011 The Native Client Authors. All rights reserved.
+rem Use of this source code is governed by a BSD-style license that can be
+rem found in the LICENSE file.
+
 @echo off
 setlocal
 set HERMETIC_CYGWIN=hermetic_cygwin_1_7_9-0_1
