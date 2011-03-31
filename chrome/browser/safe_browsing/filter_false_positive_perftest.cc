@@ -56,6 +56,7 @@
 #include <fstream>
 #include <vector>
 
+#include "app/sql/statement.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -70,8 +71,6 @@
 #include "chrome/browser/safe_browsing/bloom_filter.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/sqlite_compiled_statement.h"
-#include "chrome/common/sqlite_utils.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -79,20 +78,6 @@ using base::Time;
 using base::TimeDelta;
 
 namespace {
-
-// Ensures the SafeBrowsing database is closed properly.
-class ScopedPerfDatabase {
- public:
-  explicit ScopedPerfDatabase(sqlite3* db) : db_(db) {}
-  ~ScopedPerfDatabase() {
-    sqlite3_close(db_);
-  }
-
- private:
-  sqlite3* db_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedPerfDatabase);
-};
 
 // Command line flags.
 const char kFilterVerbose[] = "filter-verbose";
@@ -102,7 +87,7 @@ const char kFilterCsv[] = "filter-csv";
 const char kFilterNumChecks[] = "filter-num-checks";
 
 // Number of hash checks to make during performance testing.
-static const int kNumHashChecks = 10000000;
+const int kNumHashChecks = 10000000;
 
 // Returns the path to the data used in this test, relative to the top of the
 // source directory.
@@ -140,35 +125,30 @@ void BuildBloomFilter(int size_multiplier,
 // to look up a given prefix than performing SQL queries.
 bool ReadDatabase(const FilePath& path, std::vector<SBPrefix>* prefixes) {
   FilePath database_file = path.Append(FILE_PATH_LITERAL("database"));
-  sqlite3* db = NULL;
-  if (sqlite_utils::OpenSqliteDb(database_file, &db) != SQLITE_OK) {
-    sqlite3_close(db);
+  sql::Connection db;
+  if (!db.Open(database_file))
     return false;
-  }
-
-  ScopedPerfDatabase database(db);
-  scoped_ptr<SqliteStatementCache> sql_cache(new SqliteStatementCache(db));
 
   // Get the number of items in the add_prefix table.
-  std::string sql = "SELECT COUNT(*) FROM add_prefix";
-  SQLITE_UNIQUE_STATEMENT(count_statement, *sql_cache, sql.c_str());
-  if (!count_statement.is_valid())
+  const char* query = "SELECT COUNT(*) FROM add_prefix";
+  sql::Statement count_statement(db.GetCachedStatement(SQL_FROM_HERE, query));
+  if (!count_statement)
     return false;
 
-  if (count_statement->step() != SQLITE_ROW)
+  if (!count_statement.Step())
     return false;
 
-  const int count = count_statement->column_int(0);
+  const int count = count_statement.ColumnInt(0);
 
-  // Load them into a prefix vector and sort
+  // Load them into a prefix vector and sort.
   prefixes->reserve(count);
-  sql = "SELECT prefix FROM add_prefix";
-  SQLITE_UNIQUE_STATEMENT(prefix_statement, *sql_cache, sql.c_str());
-  if (!prefix_statement.is_valid())
+  query = "SELECT prefix FROM add_prefix";
+  sql::Statement prefix_statement(db.GetCachedStatement(SQL_FROM_HERE, query));
+  if (!prefix_statement)
     return false;
 
-  while (prefix_statement->step() == SQLITE_ROW)
-    prefixes->push_back(prefix_statement->column_int(0));
+  while (prefix_statement.Step())
+    prefixes->push_back(prefix_statement.ColumnInt(0));
 
   DCHECK(static_cast<int>(prefixes->size()) == count);
   sort(prefixes->begin(), prefixes->end());
