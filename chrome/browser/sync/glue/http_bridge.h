@@ -8,8 +8,11 @@
 
 #include <string>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -188,18 +191,22 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   DISALLOW_COPY_AND_ASSIGN(HttpBridge);
 };
 
-class HttpBridgeFactory
-  : public sync_api::HttpPostProviderFactory {
+class HttpBridgeFactory : public sync_api::HttpPostProviderFactory {
  public:
   explicit HttpBridgeFactory(URLRequestContextGetter* baseline_context_getter);
   virtual ~HttpBridgeFactory();
-  virtual sync_api::HttpPostProviderInterface* Create();
-  virtual void Destroy(sync_api::HttpPostProviderInterface* http);
+
+  // sync_api::HttpPostProviderFactory:
+  virtual sync_api::HttpPostProviderInterface* Create() OVERRIDE;
+  virtual void Destroy(sync_api::HttpPostProviderInterface* http) OVERRIDE;
+
  private:
   // This request context is built on top of the baseline context and shares
   // common components.
   HttpBridge::RequestContextGetter* GetRequestContextGetter();
+
   scoped_refptr<HttpBridge::RequestContextGetter> request_context_getter_;
+
   DISALLOW_COPY_AND_ASSIGN(HttpBridgeFactory);
 };
 

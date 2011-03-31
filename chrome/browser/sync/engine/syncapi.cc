@@ -34,6 +34,7 @@
 #include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/engine/syncer_thread2.h"
 #include "chrome/browser/sync/engine/syncer_thread_adapter.h"
+#include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_backend.h"
 #include "chrome/browser/sync/js_event_router.h"

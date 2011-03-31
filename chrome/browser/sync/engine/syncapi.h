@@ -101,7 +101,6 @@ class TypedUrlSpecifics;
 
 namespace sync_api {
 
-// Forward declarations of classes to be defined later in this file.
 class BaseTransaction;
 class HttpPostProviderFactory;
 class SyncManager;
@@ -1082,24 +1081,6 @@ class HttpPostProviderInterface {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HttpPostProviderInterface);
-};
-
-// A factory to create HttpPostProviders to hide details about the
-// implementations and dependencies.
-// A factory instance itself should be owned by whomever uses it to create
-// HttpPostProviders.
-class HttpPostProviderFactory {
- public:
-  // Obtain a new HttpPostProviderInterface instance, owned by caller.
-  virtual HttpPostProviderInterface* Create() = 0;
-
-  // When the interface is no longer needed (ready to be cleaned up), clients
-  // must call Destroy().
-  // This allows actual HttpPostProvider subclass implementations to be
-  // reference counted, which is useful if a particular implementation uses
-  // multiple threads to serve network requests.
-  virtual void Destroy(HttpPostProviderInterface* http) = 0;
-  virtual ~HttpPostProviderFactory() { }
 };
 
 }  // namespace sync_api

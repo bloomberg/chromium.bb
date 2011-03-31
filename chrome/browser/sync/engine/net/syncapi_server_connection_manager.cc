@@ -1,14 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/engine/net/syncapi_server_connection_manager.h"
 
+#include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/common/net/http_return.h"
 
 using browser_sync::HttpResponse;
-using std::string;
 
 namespace sync_api {
 
@@ -20,10 +20,11 @@ SyncAPIBridgedPost::SyncAPIBridgedPost(
 
 SyncAPIBridgedPost::~SyncAPIBridgedPost() {}
 
-
-bool SyncAPIBridgedPost::Init(const char* path, const string& auth_token,
-    const string& payload, HttpResponse* response) {
-  string sync_server;
+bool SyncAPIBridgedPost::Init(const char* path,
+                              const std::string& auth_token,
+                              const std::string& payload,
+                              HttpResponse* response) {
+  std::string sync_server;
   int sync_server_port = 0;
   bool use_ssl = false;
   GetServerParams(&sync_server, &sync_server_port, &use_ssl);
@@ -34,7 +35,7 @@ bool SyncAPIBridgedPost::Init(const char* path, const string& auth_token,
   http->SetURL(connection_url.c_str(), sync_server_port);
 
   if (!auth_token.empty()) {
-    string headers = "Authorization: GoogleLogin auth=" + auth_token;
+    std::string headers = "Authorization: GoogleLogin auth=" + auth_token;
     http->SetExtraRequestHeaders(headers.c_str());
   }
 
@@ -93,6 +94,5 @@ browser_sync::ServerConnectionManager::Post*
 SyncAPIServerConnectionManager::MakePost() {
   return new SyncAPIBridgedPost(this, post_provider_factory_.get());
 }
-
 
 }  // namespace sync_api

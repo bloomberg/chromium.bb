@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_TEST_SYNC_TEST_HTTP_BRIDGE_FACTORY_H_
 #pragma once
 
+#include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 
 namespace browser_sync {
@@ -47,13 +48,12 @@ class TestHttpBridge : public sync_api::HttpPostProviderInterface {
 
 class TestHttpBridgeFactory : public sync_api::HttpPostProviderFactory {
  public:
-  // Override everything to do nothing.
   TestHttpBridgeFactory();
   virtual ~TestHttpBridgeFactory();
 
   // sync_api::HttpPostProviderFactory:
-  virtual sync_api::HttpPostProviderInterface* Create();
-  virtual void Destroy(sync_api::HttpPostProviderInterface* http);
+  virtual sync_api::HttpPostProviderInterface* Create() OVERRIDE;
+  virtual void Destroy(sync_api::HttpPostProviderInterface* http) OVERRIDE;
 };
 
 }  // namespace browser_sync
