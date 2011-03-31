@@ -2361,7 +2361,7 @@
         '../content/browser/speech/speech_input_browsertest.cc',
         '../content/browser/webui/web_ui_browsertest.cc',
         '../content/browser/webui/web_ui_browsertest.h',
-        '../content/browser/webui/web_ui_handler_browsertest.cc',
+        '../content/browser/webui/web_ui_test_handler.cc',
         '../content/browser/webui/web_ui_handler_browsertest.h',
         '../content/common/file_path_watcher/file_path_watcher_browsertest.cc',
         '../content/renderer/render_view_browsertest.cc',

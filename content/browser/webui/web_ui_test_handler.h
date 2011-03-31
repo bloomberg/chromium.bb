@@ -11,7 +11,7 @@
 #include "content/browser/webui/web_ui.h"
 
 // This class registers test framework specific handlers on WebUI objects.
-class WebUIHandlerBrowserTest : public WebUIMessageHandler {
+class WebUITestHandler : public WebUIMessageHandler {
  public:
   // Runs a string of javascript. Returns pass fail.
   bool RunJavascript(const std::string& js_test, bool is_test);

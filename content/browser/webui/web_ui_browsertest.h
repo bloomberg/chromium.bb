@@ -10,7 +10,7 @@
 
 #include "base/file_path.h"
 #include "chrome/test/in_process_browser_test.h"
-#include "content/browser/webui/web_ui_handler_browsertest.h"
+#include "content/browser/webui/web_ui_test_handler.h"
 
 class WebUIMessageHandler;
 
@@ -56,7 +56,7 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   void SetupHandlers();
 
   // Handles test framework messages.
-  scoped_ptr<WebUIHandlerBrowserTest> test_handler_;
+  scoped_ptr<WebUITestHandler> test_handler_;
 
   // Location of test data (currently test/data/webui).
   FilePath test_data_directory_;

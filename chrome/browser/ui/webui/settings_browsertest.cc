@@ -68,8 +68,7 @@ class SettingsWebUITest : public WebUIBrowserTest {
  protected:
   virtual void SetUpInProcessBrowserTestFixture() {
     WebUIBrowserTest::SetUpInProcessBrowserTestFixture();
-    // TODO(dtseng): change the filename of the js file.
-    AddLibrary(FILE_PATH_LITERAL("settings_set_boolean_pref_triggers.js"));
+    AddLibrary(FILE_PATH_LITERAL("settings.js"));
   }
 
   virtual WebUIMessageHandler* GetMockMessageHandler() {

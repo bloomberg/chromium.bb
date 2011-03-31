@@ -27,7 +27,7 @@ bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name) {
 }
 
 WebUIBrowserTest::WebUIBrowserTest()
-    : test_handler_(new WebUIHandlerBrowserTest()) {}
+    : test_handler_(new WebUITestHandler()) {}
 
 void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_));
