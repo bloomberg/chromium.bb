@@ -67,15 +67,15 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   // Creates the GL context for compositing.
   void CreateContext();
 
-  // Destroys the GL context for compositing.
-  void DestroyContext();
-
   // Initialize the GL states and resources for compositing.
   bool InitContext();
 
   // Checks (and returns) whether accelerated compositing should be on or off,
   // and notify the browser.
   bool CheckCompositing();
+
+  // Called when the compositing context gets lost.
+  void OnLostContext();
 
   // URL that is responsible for this widget, passed to ggl::CreateViewContext.
   GURL active_url_;

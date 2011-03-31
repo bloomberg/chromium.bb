@@ -4,6 +4,7 @@
 
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 
+#include "base/message_loop.h"
 #include "chrome/renderer/render_thread.h"
 #include "content/renderer/ggl.h"
 #include "content/renderer/gpu_channel_host.h"
@@ -134,6 +135,16 @@ class PepperWidget : public WebWidget {
   DISALLOW_COPY_AND_ASSIGN(PepperWidget);
 };
 
+void DestroyContext(ggl::Context* context, GLuint program, GLuint buffer) {
+  DCHECK(context);
+  gpu::gles2::GLES2Implementation* gl = ggl::GetImplementation(context);
+  if (program)
+    gl->DeleteProgram(program);
+  if (buffer)
+    gl->DeleteBuffers(1, &buffer);
+  ggl::DestroyContext(context);
+}
+
 }  // anonymous namespace
 
 // static
@@ -161,7 +172,8 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
 }
 
 RenderWidgetFullscreenPepper::~RenderWidgetFullscreenPepper() {
-  DestroyContext();
+  if (context_)
+    DestroyContext(context_, program_, buffer_);
 }
 
 void RenderWidgetFullscreenPepper::Invalidate() {
@@ -271,29 +283,21 @@ void RenderWidgetFullscreenPepper::CreateContext() {
       "GL_OES_packed_depth_stencil GL_OES_depth24",
       attribs,
       active_url_);
-  if (!context_ || !InitContext()) {
-    DestroyContext();
+  if (!context_)
+    return;
+
+  if (!InitContext()) {
+    DestroyContext(context_, program_, buffer_);
+    context_ = NULL;
     return;
   }
+
   ggl::SetSwapBuffersCallback(
       context_,
       NewCallback(this, &RenderWidgetFullscreenPepper::DidFlushPaint));
-}
-
-void RenderWidgetFullscreenPepper::DestroyContext() {
-  if (context_) {
-    gpu::gles2::GLES2Implementation* gl = ggl::GetImplementation(context_);
-    if (program_) {
-      gl->DeleteProgram(program_);
-      program_ = 0;
-    }
-    if (buffer_) {
-      gl->DeleteBuffers(1, &buffer_);
-      buffer_ = 0;
-    }
-    ggl::DestroyContext(context_);
-    context_ = NULL;
-  }
+  ggl::SetContextLostCallback(
+      context_,
+      NewCallback(this, &RenderWidgetFullscreenPepper::OnLostContext));
 }
 
 namespace {
@@ -396,4 +400,18 @@ bool RenderWidgetFullscreenPepper::CheckCompositing() {
     didActivateAcceleratedCompositing(compositing);
   }
   return compositing;
+}
+
+void RenderWidgetFullscreenPepper::OnLostContext() {
+  if (!context_)
+    return;
+  // Destroy the context later, in case we got called from InitContext for
+  // example. We still need to reset context_ now so that a new context gets
+  // created when the plugin recreates its own.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      NewRunnableFunction(DestroyContext, context_, program_, buffer_));
+  context_ = NULL;
+  program_ = 0;
+  buffer_ = 0;
 }
