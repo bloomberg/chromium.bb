@@ -47,10 +47,9 @@ class ConnectionToClient :
   // Constructs a ConnectionToClient object. |message_loop| is the message loop
   // that this object runs on. A viewer object receives events and messages from
   // a libjingle channel, these events are delegated to |handler|.
-  // It is guranteed that |handler| is called only on the |message_loop|.
+  // It is guaranteed that |handler| is called only on the |message_loop|.
   ConnectionToClient(MessageLoop* message_loop,
-                     EventHandler* handler,
-                     InputStub* input_stub);
+                     EventHandler* handler);
 
   virtual void Init(Session* session);
 
@@ -69,14 +68,9 @@ class ConnectionToClient :
   // Return pointer to ClientStub.
   virtual ClientStub* client_stub();
 
-  virtual HostStub* host_stub();
+  // These two setters should be called before Init().
   virtual void set_host_stub(HostStub* host_stub);
-
-  // Called when the host accepts the client authentication.
-  void OnClientAuthenticated();
-
-  // Whether the client has been authenticated.
-  bool client_authenticated();
+  virtual void set_input_stub(InputStub* input_stub);
 
  protected:
   friend class base::RefCountedThreadSafe<ConnectionToClient>;
@@ -90,11 +84,6 @@ class ConnectionToClient :
   void StateChangeTask(Session::State state);
 
   void OnClosed();
-
-  // Initially false, this is set to true once the client has authenticated
-  // properly. When this is false, many client messages (like input events)
-  // will be ignored.
-  bool client_authenticated_;
 
   // The libjingle channel used to send and receive data from the remote client.
   scoped_refptr<Session> session_;

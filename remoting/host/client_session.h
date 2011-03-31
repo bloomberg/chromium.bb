@@ -7,12 +7,16 @@
 
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/host_stub.h"
+#include "remoting/protocol/input_stub.h"
 
 namespace remoting {
+
+class UserAuthenticator;
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
 class ClientSession : public protocol::HostStub,
+                      public protocol::InputStub,
                       public base::RefCountedThreadSafe<ClientSession> {
  public:
   // Callback interface for passing events to the ChromotingHost.
@@ -30,8 +34,12 @@ class ClientSession : public protocol::HostStub,
         scoped_refptr<protocol::ConnectionToClient> client) = 0;
   };
 
+  typedef UserAuthenticator* UserAuthenticatorFactory();
+
   ClientSession(EventHandler* event_handler,
-                scoped_refptr<protocol::ConnectionToClient> connection);
+                const base::Callback<UserAuthenticatorFactory>& auth_factory,
+                scoped_refptr<protocol::ConnectionToClient> connection,
+                protocol::InputStub* input_stub);
 
   // protocol::HostStub interface.
   virtual void SuggestResolution(
@@ -39,18 +47,38 @@ class ClientSession : public protocol::HostStub,
   virtual void BeginSessionRequest(
       const protocol::LocalLoginCredentials* credentials, Task* done);
 
+  // protocol::InputStub interface.
+  virtual void InjectKeyEvent(const protocol::KeyEvent* event, Task* done);
+  virtual void InjectMouseEvent(const protocol::MouseEvent* event, Task* done);
+
   // Disconnect this client session.
   void Disconnect();
 
-  protocol::ConnectionToClient* connection() const;
+  protocol::ConnectionToClient* connection() const {
+    return connection_.get();
+  }
 
- protected:
-  friend class base::RefCountedThreadSafe<ClientSession>;
-  ~ClientSession();
+  bool authenticated() const {
+    return authenticated_;
+  }
 
  private:
+  friend class base::RefCountedThreadSafe<ClientSession>;
+  virtual ~ClientSession();
+
   EventHandler* event_handler_;
+
+  // A factory for user authenticators.
+  base::Callback<UserAuthenticatorFactory> auth_factory_;
+
+  // The connection to the client.
   scoped_refptr<protocol::ConnectionToClient> connection_;
+
+  // The input stub to which this object delegates.
+  protocol::InputStub* input_stub_;
+
+  // Whether this client is authenticated.
+  bool authenticated_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

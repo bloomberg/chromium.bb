@@ -4,6 +4,7 @@
 
 #include "remoting/host/chromoting_host.h"
 
+#include "base/bind.h"
 #include "base/stl_util-inl.h"
 #include "base/task.h"
 #include "build/build_config.h"
@@ -19,6 +20,7 @@
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/screen_recorder.h"
+#include "remoting/host/user_authenticator.h"
 #include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/client_stub.h"
@@ -180,13 +182,22 @@ void ChromotingHost::OnClientConnected(ConnectionToClient* connection) {
 void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
+  // Find the client session corresponding to the given connection.
+  std::vector<scoped_refptr<ClientSession> >::iterator client;
+  for (client = clients_.begin(); client != clients_.end(); ++client) {
+    if (client->get()->connection() == connection)
+      break;
+  }
+  if (client == clients_.end())
+    return;
+
   // Remove the connection from the session manager and stop the session.
   // TODO(hclam): Stop only if the last connection disconnected.
   if (recorder_.get()) {
     recorder_->RemoveConnection(connection);
     // The recorder only exists to serve the unique authenticated client.
     // If that client has disconnected, then we can kill the recorder.
-    if (connection->client_authenticated()) {
+    if (client->get()->authenticated()) {
       recorder_->Stop(NULL);
       recorder_ = NULL;
     }
@@ -196,13 +207,8 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
   connection->Disconnect();
 
   // Also remove reference to ConnectionToClient from this object.
-  std::vector<scoped_refptr<ClientSession> >::iterator it;
-  for (it = clients_.begin(); it != clients_.end(); ++it) {
-    if (it->get()->connection() == connection) {
-      clients_.erase(it);
-      break;
-    }
-  }
+  clients_.erase(client);
+
   if (!HasAuthenticatedClients())
     EnableCurtainMode(false);
 }
@@ -321,13 +327,16 @@ void ChromotingHost::OnNewClientSession(
 
   // We accept the connection, so create a connection object.
   ConnectionToClient* connection = new ConnectionToClient(
-      context_->network_message_loop(),
-      this,
-      desktop_environment_->input_stub());
+      context_->network_message_loop(), this);
 
   // Create a client object.
-  ClientSession* client = new ClientSession(this, connection);
+  ClientSession* client = new ClientSession(
+      this,
+      base::Bind(UserAuthenticator::Create),
+      connection,
+      desktop_environment_->input_stub());
   connection->set_host_stub(client);
+  connection->set_input_stub(client);
 
   connection->Init(session);
 
@@ -377,7 +386,7 @@ std::string ChromotingHost::GenerateHostAuthToken(
 bool ChromotingHost::HasAuthenticatedClients() const {
   std::vector<scoped_refptr<ClientSession> >::const_iterator it;
   for (it = clients_.begin(); it != clients_.end(); ++it) {
-    if (it->get()->connection()->client_authenticated())
+    if (it->get()->authenticated())
       return true;
   }
   return false;
@@ -407,8 +416,6 @@ void ChromotingHost::LocalLoginSucceeded(
   status->set_success(true);
   connection->client_stub()->BeginSessionResponse(
       status, new DeleteTask<protocol::LocalLoginStatus>(status));
-
-  connection->OnClientAuthenticated();
 
   // Disconnect all other clients.
   // Iterate over a copy of the list of clients, to avoid mutating the list

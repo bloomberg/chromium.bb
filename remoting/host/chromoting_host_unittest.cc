@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "remoting/host/capturer_fake.h"
@@ -9,6 +10,7 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/in_memory_host_config.h"
+#include "remoting/host/user_authenticator_fake.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/session_config.h"
@@ -41,6 +43,10 @@ namespace remoting {
 
 namespace {
 
+UserAuthenticator* MakeUserAuthenticator() {
+  return new UserAuthenticatorFake();
+}
+
 void PostQuitTask(MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
@@ -54,6 +60,9 @@ ACTION(RunDoneTask) {
 
 ACTION_P(QuitMainMessageLoop, message_loop) {
   PostQuitTask(message_loop);
+}
+
+void DummyDoneTask() {
 }
 
 }  // namespace
@@ -87,6 +96,12 @@ class ChromotingHostTest : public testing::Test {
     DesktopEnvironment* desktop =
         new DesktopEnvironment(capturer, input_stub_, curtain_);
     host_ = ChromotingHost::Create(&context_, config_, desktop);
+    credentials_good_.set_type(protocol::PASSWORD);
+    credentials_good_.set_username("user");
+    credentials_good_.set_credential("password");
+    credentials_bad_.set_type(protocol::PASSWORD);
+    credentials_bad_.set_username(UserAuthenticatorFake::fail_username());
+    credentials_bad_.set_credential(UserAuthenticatorFake::fail_password());
     connection_ = new MockConnectionToClient(
         &message_loop_, &handler_, host_stub_, input_stub_);
     connection2_ = new MockConnectionToClient(
@@ -143,8 +158,13 @@ class ChromotingHostTest : public testing::Test {
   void SimulateClientConnection(int connection_index, bool authenticate) {
     scoped_refptr<MockConnectionToClient> connection =
         (connection_index == 0) ? connection_ : connection2_;
-    scoped_refptr<ClientSession> client = new ClientSession(host_.get(),
-                                                            connection);
+    protocol::LocalLoginCredentials& credentials =
+        authenticate ? credentials_good_ : credentials_bad_;
+    scoped_refptr<ClientSession> client = new ClientSession(
+        host_.get(),
+        base::Bind(MakeUserAuthenticator),
+        connection,
+        input_stub_);
     connection->set_host_stub(client.get());
 
     context_.network_message_loop()->PostTask(
@@ -157,19 +177,12 @@ class ChromotingHostTest : public testing::Test {
         NewRunnableMethod(host_.get(),
                           &ChromotingHost::OnClientConnected,
                           connection));
-    if (authenticate) {
-      context_.network_message_loop()->PostTask(
-          FROM_HERE,
-          NewRunnableMethod(host_.get(),
-                            &ChromotingHost::LocalLoginSucceeded,
-                            connection));
-    } else {
-      context_.network_message_loop()->PostTask(
-          FROM_HERE,
-          NewRunnableMethod(host_.get(),
-                            &ChromotingHost::LocalLoginFailed,
-                            connection));
-    }
+    context_.network_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(client.get(),
+                          &ClientSession::BeginSessionRequest,
+                          &credentials,
+                          NewRunnableFunction(&DummyDoneTask)));
   }
 
   // Helper method to remove a client connection from ChromotingHost.
@@ -187,6 +200,8 @@ class ChromotingHostTest : public testing::Test {
   scoped_refptr<ChromotingHost> host_;
   scoped_refptr<InMemoryHostConfig> config_;
   MockChromotingHostContext context_;
+  protocol::LocalLoginCredentials credentials_good_;
+  protocol::LocalLoginCredentials credentials_bad_;
   scoped_refptr<MockConnectionToClient> connection_;
   scoped_refptr<MockSession> session_;
   scoped_ptr<SessionConfig> session_config_;

@@ -12,10 +12,7 @@
 
 namespace remoting {
 
-// Temporary stub for platforms where this hasn't been implemented yet.
-
-// TODO(lambroslambrou): Implement properly on those platforms, then
-// delete this stub when it's no longer needed.
+// A fake UserAuthenticator, which accepts all but one user/password pair.
 class UserAuthenticatorFake : public UserAuthenticator {
  public:
   UserAuthenticatorFake();
@@ -23,6 +20,10 @@ class UserAuthenticatorFake : public UserAuthenticator {
 
   virtual bool Authenticate(const std::string& username,
                             const std::string& password);
+
+  // Get the user/password pair that a UserAuthenticatorFake rejects.
+  static const char* fail_username();
+  static const char* fail_password();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserAuthenticatorFake);

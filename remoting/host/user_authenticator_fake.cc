@@ -13,7 +13,16 @@ UserAuthenticatorFake::~UserAuthenticatorFake() {}
 
 bool UserAuthenticatorFake::Authenticate(const std::string& username,
                                          const std::string& password) {
-  return true;
+  return (username.compare(fail_username()) ||
+      password.compare(fail_password()));
+}
+
+const char* UserAuthenticatorFake::fail_username() {
+  return "userfail";
+}
+
+const char* UserAuthenticatorFake::fail_password() {
+  return "passwordfail";
 }
 
 }  // namespace remoting

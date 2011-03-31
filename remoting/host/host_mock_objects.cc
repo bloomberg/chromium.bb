@@ -23,4 +23,8 @@ MockChromotingHostContext::MockChromotingHostContext()
 
 MockChromotingHostContext::~MockChromotingHostContext() {}
 
+MockClientSessionEventHandler::MockClientSessionEventHandler() {}
+
+MockClientSessionEventHandler::~MockClientSessionEventHandler() {}
+
 }  // namespace remoting

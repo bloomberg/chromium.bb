@@ -238,13 +238,6 @@ void ConnectionToHost::OnClientAuthenticated() {
 
   // Create and enable the input stub now that we're authenticated.
   input_stub_.reset(new InputSender(session_->event_channel()));
-  input_stub_->OnAuthenticated();
-
-  // Enable control channel stubs.
-  if (host_stub_.get())
-    host_stub_->OnAuthenticated();
-  if (client_stub_)
-    client_stub_->OnAuthenticated();
 }
 
 ConnectionToHost::State ConnectionToHost::state() const {

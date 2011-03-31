@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,35 +22,15 @@ class NotifyResolutionRequest;
 
 class ClientStub {
  public:
-  ClientStub();
-  virtual ~ClientStub();
+  ClientStub() {}
+  virtual ~ClientStub() {}
 
   virtual void NotifyResolution(const NotifyResolutionRequest* msg,
                                 Task* done) = 0;
   virtual void BeginSessionResponse(const LocalLoginStatus* msg,
                                     Task* done) = 0;
 
-  // TODO(lambroslambrou): Remove OnAuthenticated() and OnClosed() when stubs
-  // are refactored not to store authentication state.
-
-  // Called when the client has authenticated with the host to enable the
-  // host->client control channel.
-  // Before this is called, only a limited set of control messages will be
-  // processed.
-  void OnAuthenticated();
-
-  // Called when the client is no longer connected.
-  void OnClosed();
-
-  // Has the client successfully authenticated with the host?
-  // I.e., should we be processing control events?
-  bool authenticated();
-
  private:
-  // Initially false, this records whether the client has authenticated with
-  // the host.
-  bool authenticated_;
-
   DISALLOW_COPY_AND_ASSIGN(ClientStub);
 };
 

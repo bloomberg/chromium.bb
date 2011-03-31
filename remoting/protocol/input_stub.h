@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,32 +20,13 @@ class MouseEvent;
 
 class InputStub {
  public:
-  InputStub();
-  virtual ~InputStub();
+  InputStub() {};
+  virtual ~InputStub() {};
 
   virtual void InjectKeyEvent(const KeyEvent* event, Task* done) = 0;
   virtual void InjectMouseEvent(const MouseEvent* event, Task* done) = 0;
 
-  // TODO(lambroslambrou): Remove OnAuthenticated() and OnClosed() when stubs
-  // are refactored not to store authentication state.
-
-  // Called when the client has authenticated with the host to enable the
-  // input event channel.
-  // Before this is called, all input event will be ignored.
-  void OnAuthenticated();
-
-  // Called when the client is no longer connected.
-  void OnClosed();
-
-  // Has the client successfully authenticated with the host?
-  // I.e., should we be processing input events?
-  bool authenticated();
-
  private:
-  // Initially false, this records whether the client has authenticated with
-  // the host.
-  bool authenticated_;
-
   DISALLOW_COPY_AND_ASSIGN(InputStub);
 };
 

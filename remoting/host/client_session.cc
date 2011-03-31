@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
+#include "media/base/callback.h"
 #include "remoting/host/user_authenticator.h"
 #include "remoting/proto/auth.pb.h"
 
@@ -13,9 +14,14 @@ namespace remoting {
 
 ClientSession::ClientSession(
     EventHandler* event_handler,
-    scoped_refptr<protocol::ConnectionToClient> connection)
+    const base::Callback<UserAuthenticatorFactory>& auth_factory,
+    scoped_refptr<protocol::ConnectionToClient> connection,
+    protocol::InputStub* input_stub)
     : event_handler_(event_handler),
-      connection_(connection) {
+      auth_factory_(auth_factory),
+      connection_(connection),
+      input_stub_(input_stub),
+      authenticated_(false) {
 }
 
 ClientSession::~ClientSession() {
@@ -23,16 +29,23 @@ ClientSession::~ClientSession() {
 
 void ClientSession::SuggestResolution(
     const protocol::SuggestResolutionRequest* msg, Task* done) {
-  done->Run();
-  delete done;
+  media::AutoTaskRunner done_runner(done);
+
+  if (!authenticated_) {
+    LOG(WARNING) << "Invalid control message received "
+                 << "(client not authenticated).";
+    return;
+  }
 }
 
 void ClientSession::BeginSessionRequest(
     const protocol::LocalLoginCredentials* credentials, Task* done) {
   DCHECK(event_handler_);
 
+  media::AutoTaskRunner done_runner(done);
+
   bool success = false;
-  scoped_ptr<UserAuthenticator> authenticator(UserAuthenticator::Create());
+  scoped_ptr<UserAuthenticator> authenticator(auth_factory_.Run());
   switch (credentials->type()) {
     case protocol::PASSWORD:
       success = authenticator->Authenticate(credentials->username(),
@@ -45,22 +58,35 @@ void ClientSession::BeginSessionRequest(
   }
 
   if (success) {
+    authenticated_ = true;
     event_handler_->LocalLoginSucceeded(connection_.get());
   } else {
     LOG(WARNING) << "Login failed for user " << credentials->username();
     event_handler_->LocalLoginFailed(connection_.get());
   }
+}
 
-  done->Run();
-  delete done;
+void ClientSession::InjectKeyEvent(const protocol::KeyEvent* event,
+                                   Task* done) {
+  media::AutoTaskRunner done_runner(done);
+  if (authenticated_) {
+    done_runner.release();
+    input_stub_->InjectKeyEvent(event, done);
+  }
+}
+
+void ClientSession::InjectMouseEvent(const protocol::MouseEvent* event,
+                                     Task* done) {
+  media::AutoTaskRunner done_runner(done);
+  if (authenticated_) {
+    done_runner.release();
+    input_stub_->InjectMouseEvent(event, done);
+  }
 }
 
 void ClientSession::Disconnect() {
   connection_->Disconnect();
-}
-
-protocol::ConnectionToClient* ClientSession::connection() const {
-  return connection_.get();
+  authenticated_ = false;
 }
 
 }  // namespace remoting

@@ -8,6 +8,7 @@
 #include "remoting/host/capturer.h"
 #include "remoting/host/curtain.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/client_session.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace remoting {
@@ -52,6 +53,20 @@ class MockChromotingHostContext : public ChromotingHostContext {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockChromotingHostContext);
+};
+
+class MockClientSessionEventHandler : public ClientSession::EventHandler {
+ public:
+  MockClientSessionEventHandler();
+  virtual ~MockClientSessionEventHandler();
+
+  MOCK_METHOD1(LocalLoginSucceeded,
+               void(scoped_refptr<protocol::ConnectionToClient>));
+  MOCK_METHOD1(LocalLoginFailed,
+               void(scoped_refptr<protocol::ConnectionToClient>));
+
+ private:
+   DISALLOW_COPY_AND_ASSIGN(MockClientSessionEventHandler);
 };
 
 }  // namespace remoting
