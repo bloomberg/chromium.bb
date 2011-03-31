@@ -211,7 +211,7 @@ def RunSmokeSuite(buildroot, results_dir):
                           '--no_graphics',
                           '--results_dir_root=%s' % results_dir,
                           'suite_Smoke',
-                         ], cwd=cwd, error_ok=False, enter_chroot=True)
+                         ], cwd=cwd, error_ok=False, enter_chroot=False)
 
 
 def RunChromeSuite(buildroot, results_dir):
@@ -229,7 +229,7 @@ def RunChromeSuite(buildroot, results_dir):
                           'desktopui_BrowserTest.control.one',
                           'desktopui_BrowserTest.control.two',
                           'desktopui_BrowserTest.control.three',
-                         ], cwd=cwd, error_ok=True, enter_chroot=True)
+                         ], cwd=cwd, error_ok=True, enter_chroot=False)
 
 
 def RunAUTestSuite(buildroot, board, results_dir, full=True):
