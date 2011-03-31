@@ -87,8 +87,7 @@ bool ResultsHaveURL(const std::vector<TextDatabase::Match>& results,
 
 class TextDatabaseTest : public PlatformTest {
  public:
-  TextDatabaseTest() : db_(NULL) {
-  }
+  TextDatabaseTest() {}
 
  protected:
   void SetUp() {
@@ -131,7 +130,6 @@ class TextDatabaseTest : public PlatformTest {
 
   // Name of the main database file.
   FilePath file_name_;
-  sqlite3* db_;
 
   std::vector<FilePath> opened_files_;
 };
