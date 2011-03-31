@@ -715,88 +715,21 @@ class DepGraphGenerator(object):
       print "%s %s (%s)" % (depth, entry, action)
       self.PrintTree(deps[entry]["deps"], depth=depth + "  ")
 
-  def RemotePackageDatabase(self, binhost_url, settings):
+  def RemotePackageDatabase(self):
     """Grab the latest binary package database from the prebuilt server.
 
     We need to know the modification times of the prebuilt packages so that we
     know when it is OK to use these packages and when we should rebuild them
     instead.
 
-    Args:
-      binhost_url: Base URL of remote packages (PORTAGE_BINHOST).
-
     Returns:
       A dict mapping package identifiers to modification times.
     """
-
-    if not binhost_url:
-      return {}
-
-    def retry_urlopen(url, tries=3):
-      """Open the specified url, retrying if we run into temporary errors.
-
-      We retry for both network errors and 5xx Server Errors. We do not retry
-      for HTTP errors with a non-5xx code.
-
-      Args:
-        url: The specified url.
-        tries: The number of times to try.
-
-      Returns:
-        The result of urllib2.urlopen(url).
-      """
-      for i in range(tries):
-        try:
-          return urllib2.urlopen(url)
-        except urllib2.HTTPError as e:
-          print "Cannot GET %s: %s" % (url, str(e))
-          if i + 1 >= tries or e.code < 500:
-            raise
-        except urllib2.URLError as e:
-          print "Cannot GET %s: %s" % (url, str(e))
-          if i + 1 >= tries:
-            raise
-        print "Sleeping for 10 seconds before retrying..."
-        time.sleep(10)
-
-    url = os.path.join(binhost_url, "Packages")
-    tmp_filename = None
-    if url.startswith("http://"):
-      try:
-        f = retry_urlopen(url)
-      except urllib2.HTTPError as e:
-        if e.code == 404:
-          return {}
-        else:
-          raise
-    else:
-      parsed_url = urlparse.urlparse(url)
-      setting = 'FETCHCOMMAND_' + parsed_url.scheme.upper()
-      fcmd = settings.get(setting)
-      if not fcmd:
-        print >>sys.stderr, "Unrecognized URL:", url
-        sys.exit(1)
-      fd, tmp_filename = tempfile.mkstemp()
-      tmp_dirname, tmp_basename = os.path.split(tmp_filename)
-      os.close(fd)
-      success = portage.getbinpkg.file_get(url, tmp_dirname, fcmd=fcmd,
-                                           filename=tmp_basename)
-      if not success:
-        os.unlink(tmp_filename)
-        return {}
-      f = open(tmp_filename)
-
+    root = self.emerge.settings["ROOT"]
+    bindb = self.emerge.trees[root]["bintree"].dbapi
     prebuilt_pkgs = {}
-    for line in f:
-      if line.startswith("CPV: "):
-        pkg = line.replace("CPV: ", "").rstrip()
-      elif line.startswith("MTIME: "):
-        prebuilt_pkgs[pkg] = int(line[:-1].replace("MTIME: ", ""))
-    f.close()
-
-    if tmp_filename:
-      os.unlink(tmp_filename)
-
+    for pkg in bindb.cpv_all():
+      prebuilt_pkgs[pkg] = bindb.aux_get(pkg, ["BUILD_TIME"])[0]
     return prebuilt_pkgs
 
   def GenDependencyGraph(self, deps_tree, deps_info, remote_pkgs):
@@ -1098,17 +1031,10 @@ class DepGraphGenerator(object):
       Returns:
         A dict mapping package identifiers to modification times.
       """
-      if self.board:
-        path = "/build/%s/packages/Packages" % self.board
-      else:
-        path = "/var/lib/portage/pkgs/Packages"
+      vardb = emerge.trees[root]["vartree"].dbapi
       local_pkgs = {}
-      for line in file(path):
-        if line.startswith("CPV: "):
-          pkg = line.replace("CPV: ", "").rstrip()
-        elif line.startswith("MTIME: "):
-          local_pkgs[pkg] = int(line[:-1].replace("MTIME: ", ""))
-
+      for pkg in vardb.cpv_all():
+        local_pkgs[pkg] = vardb.aux_get(pkg, ["BUILD_TIME"])[0]
       return local_pkgs
 
     def AutoRebuildDeps(local_pkgs, remote_pkgs, cycles):
@@ -1842,15 +1768,7 @@ def main():
 
   remote_pkgs = {}
   if "--getbinpkg" in emerge.opts:
-    binhosts = emerge.settings["PORTAGE_BINHOST"]
-    for binhost in binhosts.split():
-      try:
-        remote_pkgs.update(deps.RemotePackageDatabase(binhost, emerge.settings))
-      except (urllib2.HTTPError, urllib2.URLError):
-        pass
-    if not remote_pkgs:
-      print "Can't find any binary packages. Building from source..."
-      del emerge.opts["--getbinpkg"]
+    remote_pkgs = deps.RemotePackageDatabase()
 
   deps_tree, deps_info = deps.GenDependencyTree(remote_pkgs)
 
