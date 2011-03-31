@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -121,6 +121,31 @@ class ExtensionsTest(pyauto.PyUITest):
 
     self.assertFalse(failed_extensions,
                      'Extension(s) in failing group: %s' % failed_extensions)
+
+  def testGetExtensionPermissions(self):
+    """Ensures we can retrieve the host/api permissions for an extension.
+
+    This test assumes that the 'Bookmark Manager' extension exists in a fresh
+    profile.
+    """
+    extensions_info = self.GetExtensionsInfo()
+    bm_exts = [x for x in extensions_info if x['name'] == 'Bookmark Manager']
+    self.assertTrue(bm_exts, msg='Could not find info for the Bookmark '
+                                 'Manager extension.')
+    ext = bm_exts[0]
+
+    permissions_host = ext['host_permissions']
+    self.assertTrue(len(permissions_host) == 2 and
+                    'chrome://favicon/*' in permissions_host and
+                    'chrome://resources/*' in permissions_host,
+                    msg='Unexpected host permissions information.')
+
+    permissions_api = ext['api_permissions']
+    self.assertTrue(len(permissions_api) == 3 and
+                    'bookmarks' in permissions_api and
+                    'experimental' in permissions_api and
+                    'tabs' in permissions_api,
+                    msg='Unexpected host permissions information.')
 
 
 if __name__ == '__main__':

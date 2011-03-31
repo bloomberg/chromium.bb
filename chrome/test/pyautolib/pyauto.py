@@ -1190,20 +1190,30 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Returns:
       A list of dictionaries representing each of the installed extensions.
       Example:
-      [ { u'background_url': u'',
+      [ { u'api_permissions': [u'bookmarks', u'experimental', u'tabs'],
+          u'background_url': u'',
           u'description': u'Bookmark Manager',
+          u'host_permissions': [u'chrome://favicon/*', u'chrome://resources/*'],
           u'id': u'eemcgdkfndhakfknompkggombfjjjeno',
           u'name': u'Bookmark Manager',
           u'options_url': u'',
+          u'public_key': u'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDQcByy+eN9jza\
+                           zWF/DPn7NW47sW7lgmpk6eKc0BQM18q8hvEM3zNm2n7HkJv/R6f\
+                           U+X5mtqkDuKvq5skF6qqUF4oEyaleWDFhd1xFwV7JV+/DU7bZ00\
+                           w2+6gzqsabkerFpoP33ZRIw7OviJenP0c0uWqDWF8EGSyMhB3tx\
+                           qhOtiQIDAQAB',
           u'version': u'0.1' },
-        { u'background_url': u'chrome-extension://\
+        { u'api_permissions': [...],
+          u'background_url': u'chrome-extension://\
                                lkdedmbpkaiahjjibfdmpoefffnbdkli/\
                                background.html',
           u'description': u'Extension which lets you read your Facebook news \
                             feed and wall. You can also post status updates.',
+          u'host_permissions': [...],
           u'id': u'lkdedmbpkaiahjjibfdmpoefffnbdkli',
           u'name': u'Facebook for Google Chrome',
           u'options_url': u'',
+          u'public_key': u'...',
           u'version': u'2.0.9' } ]
     """
     cmd_dict = {  # Prepare command for the json interface

@@ -79,6 +79,9 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_extent.h"
+#include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -3814,6 +3817,31 @@ void TestingAutomationProvider::GetThemeInfo(
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
+namespace {
+
+ListValue* GetHostPermissions(const Extension* ext) {
+  ListValue* permissions = new ListValue;
+  const URLPatternList pattern_list =
+      ext->GetEffectiveHostPermissions().patterns();
+  for (URLPatternList::const_iterator perm = pattern_list.begin();
+       perm != pattern_list.end(); ++perm) {
+    permissions->Append(new StringValue(perm->GetAsString()));
+  }
+  return permissions;
+}
+
+ListValue* GetAPIPermissions(const Extension* ext) {
+  ListValue* permissions = new ListValue;
+  std::set<std::string> perm_list = ext->api_permissions();
+  for (std::set<std::string>::const_iterator perm = perm_list.begin();
+       perm != perm_list.end(); ++perm) {
+    permissions->Append(new StringValue(perm->c_str()));
+  }
+  return permissions;
+}
+
+}  // namespace
+
 // Sample json input: { "command": "GetExtensionsInfo" }
 // See GetExtensionsInfo() in chrome/test/pyautolib/pyauto.py for sample json
 // output.
@@ -3842,6 +3870,8 @@ void TestingAutomationProvider::GetExtensionsInfo(
                                extension->background_url().spec());
     extension_value->SetString("options_url",
                                extension->options_url().spec());
+    extension_value->Set("host_permissions", GetHostPermissions(extension));
+    extension_value->Set("api_permissions", GetAPIPermissions(extension));
     extensions_values->Append(extension_value);
   }
   return_value->Set("extensions", extensions_values);
