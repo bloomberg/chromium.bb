@@ -239,14 +239,6 @@
 }
 
 {
-  bug_77792
-  ThreadSanitizer:UnlockNonLocked
-  fun:pthread_mutex_unlock
-  ...
-  fun:*WorkerFileSystemCallbacksBridge::mayPostTaskToWorker*
-}
-
-{
   Nvidia GL driver destroys an invalid lock
   ThreadSanitizer:InvalidLock
   fun:pthread_mutex_destroy
