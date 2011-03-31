@@ -65,8 +65,6 @@ using base::TimeDelta;
 using base::TimeTicks;
 
 static const int kMinutesInTenYears = 10 * 365 * 24 * 60;
-static const int kMonsterAlive = 0xBBEEEEFF;
-static const int kMonsterDead = 0xFFEEEEDD;
 
 namespace net {
 
@@ -395,8 +393,7 @@ CookieMonster::CookieMonster(PersistentCookieStore* store, Delegate* delegate)
           TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)),
       delegate_(delegate),
       last_statistic_record_time_(Time::Now()),
-      keep_expired_cookies_(false),
-      monster_alive_(kMonsterAlive) {
+      keep_expired_cookies_(false) {
   InitializeHistograms();
   SetDefaultCookieableSchemes();
 }
@@ -411,8 +408,7 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
           last_access_threshold_milliseconds)),
       delegate_(delegate),
       last_statistic_record_time_(base::Time::Now()),
-      keep_expired_cookies_(false),
-      monster_alive_(kMonsterAlive) {
+      keep_expired_cookies_(false) {
   InitializeHistograms();
   SetDefaultCookieableSchemes();
 }
@@ -544,7 +540,6 @@ bool CookieMonster::SetCookieWithDetails(
     const std::string& domain, const std::string& path,
     const base::Time& expiration_time, bool secure, bool http_only) {
   base::AutoLock autolock(lock_);
-  ValidateMapWhileLockHeld(0);
 
   if (!HasCookieableScheme(url))
     return false;
@@ -571,7 +566,6 @@ bool CookieMonster::SetCookieWithDetails(
 
 CookieList CookieMonster::GetAllCookies() {
   base::AutoLock autolock(lock_);
-  ValidateMapWhileLockHeld(0);
   InitIfNecessary();
 
   // This function is being called to scrape the cookie list for management UI
@@ -600,7 +594,6 @@ CookieList CookieMonster::GetAllCookies() {
        it != cookie_ptrs.end(); ++it)
     cookie_list.push_back(**it);
 
-  ValidateMapWhileLockHeld(0);
   return cookie_list;
 }
 
@@ -608,7 +601,6 @@ CookieList CookieMonster::GetAllCookiesForURLWithOptions(
     const GURL& url,
     const CookieOptions& options) {
   base::AutoLock autolock(lock_);
-  ValidateMapWhileLockHeld(0);
   InitIfNecessary();
 
   std::vector<CanonicalCookie*> cookie_ptrs;
@@ -632,7 +624,6 @@ CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
 
 int CookieMonster::DeleteAll(bool sync_to_store) {
   base::AutoLock autolock(lock_);
-  ValidateMapWhileLockHeld(0);
   if (sync_to_store)
     InitIfNecessary();
 
@@ -653,7 +644,6 @@ int CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
                                            const Time& delete_end,
                                            bool sync_to_store) {
   base::AutoLock autolock(lock_);
-  ValidateMapWhileLockHeld(0);
   InitIfNecessary();
 
   int num_deleted = 0;
@@ -679,7 +669,6 @@ int CookieMonster::DeleteAllCreatedAfter(const Time& delete_begin,
 
 int CookieMonster::DeleteAllForHost(const GURL& url) {
   base::AutoLock autolock(lock_);
-  ValidateMapWhileLockHeld(0);
   InitIfNecessary();
 
   if (!HasCookieableScheme(url))
@@ -711,7 +700,6 @@ int CookieMonster::DeleteAllForHost(const GURL& url) {
 
 bool CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie) {
   base::AutoLock autolock(lock_);
-  ValidateMapWhileLockHeld(0);
   InitIfNecessary();
 
   for (CookieMapItPair its = cookies_.equal_range(GetKey(cookie.Domain()));
@@ -851,106 +839,14 @@ CookieMonster* CookieMonster::GetCookieMonster() {
   return this;
 }
 
-void CookieMonster::ValidateMap(int arg) {
-  base::AutoLock autolock(lock_);
-  ValidateMapWhileLockHeld(arg);
-}
-
-// TODO(eroman): Get rid of this once 74585 is fixed.
-void AskUserToReportIssue() {
-#if defined(OS_WIN)
-  MessageBox(
-      NULL,
-      L"Chrome has crashed due to issue 74585.\n"
-      L"Please help us fix the problem by adding a comment on:\n\n"
-      L"    http://crbug.com/74585\n\n"
-      L"(which explains how you triggered this.) Thanks!",
-      L"OOPS!",
-      MB_ICONERROR | MB_SETFOREGROUND | MB_TOPMOST);
-#endif  // defined(OS_WIN)
-}
-
-
-void CookieMonster::ValidateMapWhileLockHeld(int arg) {
-  lock_.AssertAcquired();
-
-  // Skipping InitIfNecessary() to allow validation before first use.
-  CHECK_EQ(kMonsterAlive, monster_alive_);
-
-  // Check if any of the pointers in the map are NULL (they shouldn't be).
-  CookieMap::iterator it = cookies_.begin();
-  int i = 0;
-
-  for (; it != cookies_.end(); ++it, ++i) {
-    if (!it->second) {
-      // The map is invalid!
-      AskUserToReportIssue();
-      CrashBecauseCookieMapIsInvalid(cookies_, it, i);
-    }
-  }
-}
-
-// Disable optimizations so that our variables will be stack-resident in the
-// minidumps.
-#if defined(OS_WIN)
-#pragma warning (disable: 4748)
-#pragma optimize( "", off )
-#endif
-
-// TODO(eroman): Get rid of this once 74585 is fixed.
-void CookieMonster::CrashBecauseCookieMapIsInvalid(
-    const CookieMap& cookies,
-    const CookieMap::iterator& null_value_it,
-    int null_value_pos) {
-  int num_null_values = 0;
-
-  // Check how many other NULL values the map contains (in case there is more
-  // than one).
-  for (CookieMap::const_iterator it = cookies.begin(); it != cookies.end();
-       ++it) {
-    if (!it->second) {
-      num_null_values += 1;
-    }
-  }
-
-  // Keep track of how big the map was.
-  int size = cookies.size();
-
-  // Check that the non-NULL pointers are not garbage memory. If they are,
-  // the following loop will likely crash when calling IsEquivalent()
-  CanonicalCookie cc(
-      GURL("http://bogus-cc/"), "bogus name", "bogus value", "bogus domain",
-      "path", true, true, base::Time(), base::Time(), false, base::Time());
-  for (CookieMap::const_iterator it = cookies.begin(); it != cookies.end();
-       ++it) {
-    if (it->second) {
-      CHECK(!cc.IsEquivalent(*it->second));
-    }
-  }
-
-  // Crash!
-  CHECK(false);
-
-  // The following shouldn't be necessary since we disabled optimizations, but
-  // it can't hurt ;)
-  LOG(INFO) << num_null_values << " " << size << " " << null_value_pos;
-}
-
-#if defined(OS_WIN)
-#pragma optimize( "", on )
-#pragma warning (default: 4748)
-#endif
-
 CookieMonster::~CookieMonster() {
   DeleteAll(false);
-  monster_alive_ = kMonsterDead;
 }
 
 bool CookieMonster::SetCookieWithCreationTime(const GURL& url,
                                               const std::string& cookie_line,
                                               const base::Time& creation_time) {
   base::AutoLock autolock(lock_);
-  CHECK_EQ(kMonsterAlive, monster_alive_);
 
   if (!HasCookieableScheme(url)) {
     return false;
@@ -1018,7 +914,6 @@ void CookieMonster::InitStore() {
 
 void CookieMonster::EnsureCookiesMapIsValid() {
   lock_.AssertAcquired();
-  ValidateMapWhileLockHeld(0);
 
   int num_duplicates_trimmed = 0;
 
@@ -1045,7 +940,6 @@ int CookieMonster::TrimDuplicateCookiesForKey(
     CookieMap::iterator begin,
     CookieMap::iterator end) {
   lock_.AssertAcquired();
-  ValidateMapWhileLockHeld(0);
 
   // Set of cookies ordered by creation time.
   typedef std::set<CookieMap::iterator, OrderByCreationTimeDesc> CookieSet;
@@ -1144,7 +1038,6 @@ void CookieMonster::FindCookiesForHostAndDomain(
     bool update_access_time,
     std::vector<CanonicalCookie*>* cookies) {
   lock_.AssertAcquired();
-  ValidateMapWhileLockHeld(0);
 
   const Time current_time(CurrentTime());
 
@@ -1244,7 +1137,6 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
                                               bool skip_httponly,
                                               bool already_expired) {
   lock_.AssertAcquired();
-  ValidateMapWhileLockHeld(0);
 
   bool found_equivalent_cookie = false;
   bool skipped_httponly = false;
@@ -1275,7 +1167,6 @@ void CookieMonster::InternalInsertCookie(const std::string& key,
                                          CanonicalCookie* cc,
                                          bool sync_to_store) {
   lock_.AssertAcquired();
-  ValidateMapWhileLockHeld(0);
 
   if (cc->IsPersistent() && store_ && sync_to_store)
     store_->AddCookie(*cc);
@@ -1292,7 +1183,6 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
     const Time& creation_time_or_null,
     const CookieOptions& options) {
   lock_.AssertAcquired();
-  ValidateMapWhileLockHeld(0);
 
   VLOG(kVlogSetCookies) << "SetCookie() line: " << cookie_line;
 
@@ -1377,7 +1267,6 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
 void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc,
                                                    const Time& current) {
   lock_.AssertAcquired();
-  ValidateMapWhileLockHeld(0);
 
   // Based off the Mozilla code.  When a cookie has been accessed recently,
   // don't bother updating its access time again.  This reduces the number of
@@ -1423,8 +1312,6 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
   }
   cookies_.erase(it);
   delete cc;
-
-  ValidateMapWhileLockHeld(0);
 }
 
 // Domain expiry behavior is unchanged by key/expiry scheme (the
@@ -1435,7 +1322,6 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
 int CookieMonster::GarbageCollect(const Time& current,
                                   const std::string& key) {
   lock_.AssertAcquired();
-  ValidateMapWhileLockHeld(0);
 
   int num_deleted = 0;
 
@@ -1508,8 +1394,6 @@ int CookieMonster::GarbageCollect(const Time& current,
       num_deleted += num_evicted;
     }
   }
-
-  ValidateMapWhileLockHeld(0);
 
   return num_deleted;
 }

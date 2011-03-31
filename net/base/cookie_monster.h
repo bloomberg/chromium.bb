@@ -300,14 +300,6 @@ class CookieMonster : public CookieStore {
     DELETE_COOKIE_LAST_ENTRY
   };
 
-  // Debugging methods
-  // TODO(eroman): Delete these when 74585 is sorted out.
-  void ValidateMapWhileLockHeld(int arg);
-  static void CrashBecauseCookieMapIsInvalid(
-      const CookieMap& cookies,
-      const CookieMap::iterator& null_value_it,
-      int null_value_pos);
-
   // Cookie garbage collection thresholds.  Based off of the Mozilla defaults.
   // When the number of cookies gets to k{Domain,}MaxCookies
   // purge down to k{Domain,}MaxCookies - k{Domain,}PurgeCookies.
@@ -530,10 +522,6 @@ class CookieMonster : public CookieStore {
   bool keep_expired_cookies_;
 
   static bool enable_file_scheme_;
-
-  // For temporary debugging; allows for an assert in ValidateMap()
-  // if that function is called post-destruction.
-  int monster_alive_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieMonster);
 };
