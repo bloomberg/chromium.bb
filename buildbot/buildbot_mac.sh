@@ -32,7 +32,7 @@ fi
 # Skip over hooks, clobber, and partial_sdk when run inside the toolchain build
 # as the toolchain takes care or the clobber, hooks aren't needed, and
 # partial_sdk really shouldn't be needed.
-if [[ "${INSIDE_TOOLCHAIN:-}" != "" ]]; then
+if [[ "${INSIDE_TOOLCHAIN:-}" == "" ]]; then
 
 echo @@@BUILD_STEP gclient_runhooks@@@
 gclient runhooks --force
@@ -72,7 +72,7 @@ echo @@@BUILD_STEP large_tests@@@
     --mode=${MODE}-mac,nacl,doc large_tests platform=x86-32 || \
     (RETCODE=$? && echo @@@BUILD_FAILED@@@)
 
-if [[ "${INSIDE_TOOLCHAIN:-}" != "" ]]; then
+if [[ "${INSIDE_TOOLCHAIN:-}" == "" ]]; then
 
 echo @@@BUILD_STEP begin_browser_testing@@@
 ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
