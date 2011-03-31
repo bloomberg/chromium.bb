@@ -66,6 +66,6 @@ echo @@@BUILD_STEP untar_toolchain@@@
 
 RETCODE=0
 
-# TODO(khim): add small_tests, medium_tests, large_tests, {chrome_}browser_tests.
+# TODO(khim): add small_tests, medium_tests, large_tests, chrome_browser_tests.
 
 [[ ${RETCODE} == 0 ]] || exit ${RETCODE}

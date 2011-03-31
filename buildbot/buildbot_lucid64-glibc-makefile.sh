@@ -83,7 +83,7 @@ echo @@@BUILD_STEP small_tests64@@@
   --nacl_glibc --verbose small_tests ||
   (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
-# TODO(pasko): add medium_tests, large_tests, {chrome_}browser_tests.
+# TODO(pasko): add medium_tests, large_tests, chrome_browser_tests.
 
 [[ ${RETCODE} == 0 ]] || exit ${RETCODE}
 
