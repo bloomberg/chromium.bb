@@ -34,6 +34,10 @@ static const VersionRangeDefinition kFlashVersionRange[] = {
 static const VersionRangeDefinition kShockwaveVersionRange[] = {
     { "",  "", "11.5.9.620", true }
 };
+static const VersionRangeDefinition kSilverlightVersionRange[] = {
+    { "0", "4", "3.0.50611.0", false },
+    { "4", "5", "", false }
+};
 
 // Similarly, try and share the group definition for plug-ins that are
 // very consistent across OS'es.
@@ -46,6 +50,11 @@ static const PluginGroupDefinition kShockwaveDefinition = {
     kShockwaveVersionRange, arraysize(kShockwaveVersionRange),
     "http://www.adobe.com/shockwave/download/" };
 
+static const PluginGroupDefinition kSilverlightDefinition = {
+    "silverlight", PluginGroup::kSilverlightGroupName, "Silverlight",
+    kSilverlightVersionRange, arraysize(kSilverlightVersionRange),
+    "http://www.microsoft.com/getsilverlight/" };
+
 #if defined(OS_MACOSX)
 // Plugin Groups for Mac.
 // Plugins are listed here as soon as vulnerabilities and solutions
@@ -55,10 +64,6 @@ static const VersionRangeDefinition kQuicktimeVersionRange[] = {
 };
 static const VersionRangeDefinition kJavaVersionRange[] = {
     { "13.0", "14.0", "13.3.0", true }  // Snow Leopard
-};
-static const VersionRangeDefinition kSilverlightVersionRange[] = {
-    { "0", "4", "3.0.50106.0", false },
-    { "4", "5", "", false }
 };
 static const VersionRangeDefinition kFlip4MacVersionRange[] = {
     { "", "", "2.2.1", false }
@@ -73,9 +78,7 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
   { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java",
     kJavaVersionRange, arraysize(kJavaVersionRange),
     "http://support.apple.com/kb/HT1338" },
-  { "silverlight", "Silverlight", "Silverlight", kSilverlightVersionRange,
-    arraysize(kSilverlightVersionRange),
-    "http://www.microsoft.com/getsilverlight/" },
+  kSilverlightDefinition,
   { "flip4mac", "Flip4Mac", "Flip4Mac", kFlip4MacVersionRange,
     arraysize(kFlip4MacVersionRange),
     "http://www.telestream.net/flip4mac-wmv/overview.htm" },
@@ -96,10 +99,6 @@ static const VersionRangeDefinition kAdobeReaderVersionRange[] = {
     { "9", "10", "9.4.3", false },
     { "0", "9", "8.2.6", false }
 };
-static const VersionRangeDefinition kSilverlightVersionRange[] = {
-    { "0", "4", "3.0.50106.0", false },
-    { "4", "5", "", false }
-};
 static const VersionRangeDefinition kDivXVersionRange[] = {
     { "", "", "1.4.3.4", false }
 };
@@ -117,9 +116,7 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
   { "adobe-reader", PluginGroup::kAdobeReaderGroupName, "Adobe Acrobat",
     kAdobeReaderVersionRange, arraysize(kAdobeReaderVersionRange),
     "http://get.adobe.com/reader/" },
-  { "silverlight", PluginGroup::kSilverlightGroupName, "Silverlight",
-    kSilverlightVersionRange, arraysize(kSilverlightVersionRange),
-    "http://www.microsoft.com/getsilverlight/" },
+  kSilverlightDefinition,
   kShockwaveDefinition,
   { "divx-player", "DivX Player", "DivX Web Player", kDivXVersionRange,
     arraysize(kDivXVersionRange),
