@@ -185,7 +185,8 @@ JingleClient::JingleClient(JingleThread* thread,
                            talk_base::PacketSocketFactory* socket_factory,
                            PortAllocatorSessionFactory* session_factory,
                            Callback* callback)
-    : thread_(thread),
+    : enable_nat_traversing_(false),
+      thread_(thread),
       state_(START),
       initialized_(false),
       closed_(false),
@@ -230,6 +231,11 @@ void JingleClient::DoInitialize() {
       new remoting::HttpPortAllocator(
           network_manager_.get(), socket_factory_.get(),
           port_allocator_session_factory_.get(), "transp2"));
+  if (!enable_nat_traversing_) {
+    port_allocator_->set_flags(cricket::PORTALLOCATOR_DISABLE_STUN |
+                               cricket::PORTALLOCATOR_DISABLE_RELAY |
+                               cricket::PORTALLOCATOR_DISABLE_TCP);
+  }
 
   // TODO(ajwong): The strategy needs a "start" command or something.  Right
   // now, Init() implicitly starts processing events.  Thus, we must have the
@@ -237,12 +243,14 @@ void JingleClient::DoInitialize() {
   // may occur and callback into class before we're done initializing.
   signal_strategy_->Init(this);
 
-  jingle_info_request_.reset(
-      new JingleInfoRequest(signal_strategy_->CreateIqRequest()));
-  jingle_info_request_->SetCallback(
-      NewCallback(this, &JingleClient::OnJingleInfo));
-  jingle_info_request_->Run(
-      NewRunnableMethod(this, &JingleClient::DoStartSession));
+  if (enable_nat_traversing_) {
+    jingle_info_request_.reset(
+        new JingleInfoRequest(signal_strategy_->CreateIqRequest()));
+    jingle_info_request_->SetCallback(
+        NewCallback(this, &JingleClient::OnJingleInfo));
+    jingle_info_request_->Run(
+        NewRunnableMethod(this, &JingleClient::DoStartSession));
+  }
 }
 
 void JingleClient::DoStartSession() {
