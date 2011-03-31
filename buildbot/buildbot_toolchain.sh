@@ -45,7 +45,7 @@ mv sdk/nacl-sdk/* ../
 cd ../../..
 
 if [[ ${PLATFORM} == win ]]; then
-  cmd /c "call buildbot\\buildbot_win.bat opt 32"
+  cmd /c "call buildbot\\buildbot_win.bat opt 64"
 elif [[ ${PLATFORM} == mac ]]; then
   buildbot/buildbot_${PLATFORM}.sh opt
 elif [[ ${PLATFORM} == linux ]]; then
