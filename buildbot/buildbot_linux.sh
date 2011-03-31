@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 # Script assumed to be run in native_client/
 if [[ $(pwd) != */native_client ]]; then
@@ -28,6 +31,11 @@ else
   GYPMODE=Release
 fi
 
+# Skip over hooks, clobber, and partial_sdk when run inside the toolchain build
+# as the toolchain takes care or the clobber, hooks aren't needed, and
+# partial_sdk really shouldn't be needed.
+if [[ "${INSIDE_TOOLCHAIN}" != "" ]]; then
+
 echo @@@BUILD_STEP gclient_runhooks@@@
 gclient runhooks --force
 
@@ -38,6 +46,8 @@ rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
 echo @@@BUILD_STEP partial_sdk@@@
 ./scons --verbose --mode=nacl_extra_sdk platform=x86-${BITS} --download \
 extra_sdk_update_header install_libpthread extra_sdk_update
+
+fi
 
 echo @@@BUILD_STEP gyp_compile@@@
 cd .. && make -k -j12 V=1 BUILDTYPE=${GYPMODE} && cd native_client
@@ -63,6 +73,8 @@ echo @@@BUILD_STEP large_tests@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl,doc large_tests platform=x86-${BITS} || \
     (RETCODE=$? && echo @@@BUILD_FAILED@@@)
+
+if [[ "${INSIDE_TOOLCHAIN}" != "" ]]; then
 
 echo @@@BUILD_STEP begin_browser_testing@@@
 vncserver -kill :20 || true
@@ -94,5 +106,7 @@ vncserver -kill :20
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
     firefox_remove
+
+fi
 
 exit ${RETCODE}

@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import os
 import subprocess
@@ -17,6 +17,8 @@ BOT_ASSIGNMENT = {
     'win7-bare-m32-n32-opt': 'buildbot\\buildbot_win.bat opt 32',
     'win7-bare-m64-n64-dbg': 'buildbot\\buildbot_win.bat dbg 64',
     'win7-bare-m64-n64-opt': 'buildbot\\buildbot_win.bat opt 64',
+    'win7atom64-m64-n64-test-dbg', 'buildbot\\buildbot_win_atom.bat opt 64',
+    'win7atom64-m64-n64-test-opt', 'buildbot\\buildbot_win_atom.bat dbg 64',
     'mac10.5-m32-n32-opt': 'bash buildbot/buildbot_mac.sh opt',
     'mac10.6-m32-n32-opt': 'bash buildbot/buildbot_mac.sh opt',
     'hardy32-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32',
@@ -35,6 +37,12 @@ BOT_ASSIGNMENT = {
     'arm-marm-narm-test-opt': 'bash buildbot/buildbot_arm_hw.sh opt',
     'lucid64-pnacl1': 'bash buildbot/buildbot_linux.sh opt 64',
     'lucid64-pnacl2': 'bash buildbot/buildbot_linux.sh opt 64',
+    # Coverage.
+    'mac-m32-n32-coverage': 'bash buildbot/buildbot_coverage_mac.sh',
+    'hardy64-m32-n32-coverage': 'bash buildbot/buildbot_coverage_linux.sh 32',
+    'hardy64-m64-n64-coverage': 'bash buildbot/buildbot_coverage_linux.sh 64',
+    'hardy64-marm-narm-coverage': 'bash buildbot/buildbot_coverage_arm.sh',
+    'xp-m32-n32-coverage': 'buildbot\\buildbot_coverage_win.bat',
 
     # Trybots.
     'nacl-arm_hw_opt': 'bash buildbot/buildbot_arm_hw.sh opt',
@@ -55,10 +63,21 @@ BOT_ASSIGNMENT = {
     'nacl-lucid64-pnacl1': 'bash buildbot/buildbot_pnacl1.sh',
     'nacl-lucid64-pnacl2': 'bash buildbot/buildbot_pnacl2.sh',
 
-    # Toolchain.
+    # Toolchain glibc.
     'lucid64-glibc': 'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
     'mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
     'win7-glibc': 'buildbot\\buildbot_windows-glibc-makefile.bat',
+    # Toolchain gnu.
+    'win7-toolchain_x86': 'buildbot\\buildbot_toolchain_win.bat',
+    'mac-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh mac',
+    'hardy32-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh linux',
+    # Toolchain pnacl.
+    'hardy32-toolchain_arm-trusted':
+        'bash buildbot/buildbot_toolchain_arm_trusted.sh'
+    'hardy64-toolchain_arm-untrusted':
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh'
+    'lucid32-toolchain_arm-untrusted':
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh'
 
     # Toolchain trybots.
     'nacl-lucid64-glibc': 'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
