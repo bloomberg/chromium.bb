@@ -49,6 +49,10 @@ namespace {
 // it's not necessary.
 const size_t kRequiredAutofillFields = 3;
 
+// The maximum number of form fields we are willing to parse, due to
+// computational costs.  This is a very conservative upper bound.
+const size_t kMaxParseableFields = 1000;
+
 // The maximum length allowed for form data.
 const size_t kMaxDataLength = 1024;
 
@@ -567,6 +571,7 @@ void FormManager::GetFormsInFrame(const WebFrame* frame,
   DCHECK(frame);
   DCHECK(forms);
 
+  size_t num_fields_seen = 0;
   for (FormElementList::const_iterator form_iter = form_elements_.begin();
        form_iter != form_elements_.end(); ++form_iter) {
     FormElement* form_element = *form_iter;
@@ -574,9 +579,10 @@ void FormManager::GetFormsInFrame(const WebFrame* frame,
     if (form_element->form_element.document().frame() != frame)
       continue;
 
-    // We need at least |kRequiredAutofillFields| fields before appending this
-    // form to |forms|.
-    if (form_element->control_elements.size() < kRequiredAutofillFields)
+    // To avoid overly expensive computation, we impose both a minimum and a
+    // maximum number of allowable fields.
+    if (form_element->control_elements.size() < kRequiredAutofillFields ||
+        form_element->control_elements.size() > kMaxParseableFields)
       continue;
 
     if (requirements & REQUIRE_AUTOCOMPLETE &&
@@ -586,6 +592,11 @@ void FormManager::GetFormsInFrame(const WebFrame* frame,
     FormData form;
     WebFormElementToFormData(
         form_element->form_element, requirements, EXTRACT_VALUE, &form);
+
+    num_fields_seen += form.fields.size();
+    if (num_fields_seen > kMaxParseableFields)
+      break;
+
     if (form.fields.size() >= kRequiredAutofillFields)
       forms->push_back(form);
   }
