@@ -83,9 +83,6 @@ for suffix in ['valid', 'invalid']:
       filter_inverse='true',
       )
 
-  # http://code.google.com/p/nativeclient/issues/detail?id=1590
-  is_broken = True
   env.AddNodeToTestSuite(node,
                          ['small_tests', 'sel_ldr_tests'],
-                         'run_' + basename + '_test',
-                         is_broken)
+                         'run_' + basename + '_test')

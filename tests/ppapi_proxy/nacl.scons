@@ -92,9 +92,6 @@ node = env.SelUniversalTest(
     stdout_golden=env.File('event_example.stdout'),
     )
 
-# http://code.google.com/p/nativeclient/issues/detail?id=1590
-is_broken = True
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
-                       'run_ppapi_event_test',
-                       is_broken)
+                       'run_ppapi_event_test')

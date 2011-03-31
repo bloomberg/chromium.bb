@@ -27,7 +27,7 @@ set_variable NULL R(8,8:0)
 
 echo
 echo "*** INIT MODULE"
-replay 99 PPB_GetInterface:s:i  s("PPB_Core;0.3") * i(1)
+replay 99 PPB_GetInterface:s:i  s("PPB_Core;0.4") * i(1)
 replay 99 PPB_GetInterface:s:i  s("PPB_Instance;0.4") * i(1)
 replay 99 PPB_GetInterface:s:i  s("PPB_Var(Deprecated);0.3") * i(1)
 # the results contain a process id which is non-determinisitic

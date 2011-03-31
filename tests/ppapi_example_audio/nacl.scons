@@ -45,9 +45,7 @@ test = env.SelUniversalTest(
 
 # Note: we use the sysv shm feature in sel_universal which is only available
 # on linux.
-# is_broken = not env.Bit('host_linux')
-# http://code.google.com/p/nativeclient/issues/detail?id=1590
-is_broken = True
+is_broken = not env.Bit('host_linux')
 env.AddNodeToTestSuite(test,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_ppapi_example_audio_test',
