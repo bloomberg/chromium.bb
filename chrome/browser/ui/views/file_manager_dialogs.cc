@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_file_browser_private_api.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -14,6 +15,8 @@
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_service.h"
 #include "third_party/libjingle/source/talk/base/urlencode.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -21,7 +24,8 @@
 // Shows a dialog box for selecting a file or a folder.
 class FileManagerDialog
     : public SelectFileDialog,
-      public HtmlDialogUIDelegate {
+      public HtmlDialogUIDelegate,
+      public NotificationObserver {
 
  public:
   explicit FileManagerDialog(Listener* listener);
@@ -121,6 +125,11 @@ class FileManagerDialog
     return true;
   }
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   virtual ~FileManagerDialog() {}
 
@@ -138,6 +147,9 @@ class FileManagerDialog
 
   // The base url for the file manager extension.
   static std::string s_extension_base_url_;
+
+  // Listen for notifications from fileBrowserPrivate.
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(FileManagerDialog);
 };
@@ -177,6 +189,13 @@ void FileManagerDialog::SelectFile(
     LOG(ERROR) << "File dialog already in use!";
     return;
   }
+
+  registrar_.Add(this, NotificationType::FILE_BROWSE_SELECTED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::FILE_BROWSE_MULTI_SELECTED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::FILE_BROWSE_CANCEL_DIALOG,
+                 NotificationService::AllSources());
 
   title_ = UTF16ToWide(title);
   owner_window_ = owner_window;
@@ -272,4 +291,33 @@ std::string FileManagerDialog::GetArgumentsJson(
   base::JSONWriter::Write(&arg_value, false, &rv);
 
   return rv;
+}
+
+void FileManagerDialog::Observe(NotificationType type,
+                     const NotificationSource& source,
+                     const NotificationDetails& details) {
+  if (!listener_)
+    return;
+
+  switch (type.value) {
+    case NotificationType::FILE_BROWSE_SELECTED: {
+      SelectFileFunction* func = Source<SelectFileFunction>(source).ptr();
+      listener_->FileSelected(func->selected_file(), func->index(), NULL);
+      break;
+    }
+
+    case NotificationType::FILE_BROWSE_MULTI_SELECTED: {
+      SelectFilesFunction* func = Source<SelectFilesFunction>(source).ptr();
+      listener_->MultiFilesSelected(func->selected_files(), NULL);
+      break;
+    }
+
+    case NotificationType::FILE_BROWSE_CANCEL_DIALOG: {
+      listener_->FileSelectionCanceled(NULL);
+      break;
+    }
+
+    default:
+      break;
+  }
 }

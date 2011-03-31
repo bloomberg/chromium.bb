@@ -8121,6 +8121,100 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_MULTI_DOWNLOAD_WARNING_DENY" desc="Text on the deny button in the IDS_MULTI_DOWNLOAD_WARNING dialog">
         Deny
       </message>
+      
+      <!-- File Browser -->
+      <message name="IDS_FILE_BROWSER_DATE_ABBR" desc="Date abbr.">
+        %b %d, %Y
+      </message>
+      <message name="IDS_FILE_BROWSER_MONTH_ABBRS" desc="Month abbrs.">
+        Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
+      </message>
+      <message name="IDS_FILE_BROWSER_DAY_ABBRS" desc="Day abbrs.">
+        Sun Mon Tue Wed Thu Fri Sat
+      </message>
+      <message name="IDS_FILE_BROWSER_SHORT_DATE_FORMAT" desc="Short date format.">
+        %b %d, %Y
+      </message>
+      <message name="IDS_FILE_BROWSER_FILES_DISPLAYED_SUMMARY" desc="Files displayed summary.">
+        %1 Files Displayed
+      </message>
+      <message name="IDS_FILE_BROWSER_FILES_SELECTED_SUMMARY" desc="Files selected summary.">
+        %1 Files Selected
+      </message>
+      <message name="IDS_FILE_BROWSER_FILE_IS_DIRECTORY" desc="File is directory.">
+        Folder
+      </message>
+      <message name="IDS_FILE_BROWSER_PARENT_DIRECTORY" desc="Parent directory.">
+        Parent Directory
+      </message>
+
+      <message name="IDS_FILE_BROWSER_ROOT_DIRECTORY_LABEL" desc="Root directory label.">
+        Files
+      </message>
+      <message name="IDS_FILE_BROWSER_NAME_COLUMN_LABEL" desc="Name column label.">
+        Name
+      </message>
+      <message name="IDS_FILE_BROWSER_SIZE_COLUMN_LABEL" desc="Size column label.">
+        Size
+      </message>
+      <message name="IDS_FILE_BROWSER_DATE_COLUMN_LABEL" desc="Date column label.">
+        Date
+      </message>
+
+      <message name="IDS_FILE_BROWSER_CANCEL_LABEL" desc="Cancel label.">
+        Cancel
+      </message>
+      <message name="IDS_FILE_BROWSER_OPEN_LABEL" desc="Open label.">
+        Open
+      </message>
+      <message name="IDS_FILE_BROWSER_SAVE_LABEL" desc="Save label.">
+        Save
+      </message>
+
+      <message name="IDS_FILE_BROWSER_SELECT_FOLDER_TITLE" desc="Select folder title.">
+        Select a folder to open
+      </message>
+      <message name="IDS_FILE_BROWSER_SELECT_OPEN_FILE_TITLE" desc="Select open file title.">
+        Select a file to open
+      </message>
+      <message name="IDS_FILE_BROWSER_SELECT_OPEN_MULTI_FILE_TITLE" desc="Select open multi file title.">
+        Select one or more files
+      </message>
+      <message name="IDS_FILE_BROWSER_SELECT_SAVEAS_FILE" desc="Select saveas file.">
+        Select a file to save as
+      </message>
+
+      <message name="IDS_FILE_BROWSER_COMPUTING_SELECTION" desc="Computing selection...">
+        Computing selection...
+      </message>
+      <message name="IDS_FILE_BROWSER_NOTHING_SELECTED" desc="Nothing selected.">
+        No files selected
+      </message>
+      <message name="IDS_FILE_BROWSER_ONE_FILE_SELECTED" desc="One file selected.">
+        One file selected, $1
+      </message>
+      <message name="IDS_FILE_BROWSER_MANY_FILES_SELECTED" desc="Many files selected.">
+        $1 files selected, $2
+      </message>
+
+      <message name="IDS_FILE_BROWSER_FILE_TYPE_UNKNOWN" desc="File type unknown.">
+        file
+      </message>
+      <message name="IDS_FILE_BROWSER_FILE_TYPE_UNKNOWNS" desc="File tyhpe unknowns.">
+        files
+      </message>
+      <message name="IDS_FILE_BROWSER_FILE_TYPE_FOLDER" desc="File type folder.">
+        folder
+      </message>
+      <message name="IDS_FILE_BROWSER_FILE_TYPE_FOLDERS" desc="File type folders.">
+        folders
+      </message>
+      <message name="IDS_FILE_BROWSER_FILE_TYPE_IMAGE" desc="File type image.">
+        image
+      </message>
+      <message name="IDS_FILE_BROWSER_FILE_TYPE_IMAGES" desc="File type images.">
+        images
+      </message>
 
       <!-- Bookmark manager -->
       <message name="IDS_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
