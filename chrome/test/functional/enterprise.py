@@ -117,6 +117,12 @@ class EnterpriseTest(pyauto.PyUITest):
       return
     self._CheckIfPrefCanBeModified(pyauto.kShowHomeButton, True, False)
 
+  def testInstant(self):
+    """Verify that Instant option cannot be modified."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    self._CheckIfPrefCanBeModified(pyauto.kInstantEnabled, True, False)
+
   # Tests for options in Personal Stuff
   def testPasswordManager(self):
     """Verify that password manager preference cannot be modified."""
@@ -142,7 +148,30 @@ class EnterpriseTest(pyauto.PyUITest):
       logging.info('Checking pref %s', key)
       self._CheckIfPrefCanBeModified(key, defaultval, newval)
 
+  def testClearSiteDataOnExit(self):
+    """Verify that clear data on exit preference cannot be modified."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    self._CheckIfPrefCanBeModified(pyauto.kClearSiteDataOnExit, True, False)
+
+  def testBlockThirdPartyCookies(self):
+    """Verify that clear data on exit preference cannot be modified."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    self._CheckIfPrefCanBeModified(pyauto.kBlockThirdPartyCookies, True, False)
+
   # Tests for general options
+  def testDisableSPDY(self):
+    """Verify that SPDY is disabled."""
+    self.NavigateToURL('chrome://net-internals/#spdy')
+    self.assertEquals(0,
+                      self.FindInPage('encrypted.google.com')['match_count'])
+    self.AppendTab(pyauto.GURL('https://encrypted.google.com'))
+    self.assertEquals('Google', self.GetActiveTabTitle())
+    self.GetBrowserWindow(0).GetTab(0).Reload()
+    self.assertEquals(0,
+        self.FindInPage('encrypted.google.com', tab_index=0)['match_count'])
+
   def testDisableDevTools(self):
     """Verify that we cannot launch dev tools."""
     if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
@@ -152,6 +181,13 @@ class EnterpriseTest(pyauto.PyUITest):
     self.ApplyAccelerator(pyauto.IDC_DEV_TOOLS)
     self.assertEquals(1, len(self.GetBrowserInfo()['windows']),
                       msg='Devtools window launched.')
+
+  def testIncognitoEnabled(self):
+    """Verify that incognito window can be launched."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.assertEquals(2, self.GetBrowserWindowCount())
 
   def testDisableBrowsingHistory(self):
     """Verify that browsing history is not being saved."""
