@@ -41,14 +41,26 @@
       </if>
       <include name="IDR_BALLOON_CLOSE" file="balloon_close.png" type="BINDATA" />
       <include name="IDR_BALLOON_CLOSE_HOVER" file="balloon_close_hover.png" type="BINDATA" />
-      <include name="IDR_BALLOON_WRENCH" file="notification_wrench.png" type="BINDATA" />
-      <include name="IDR_BALLOON_WRENCH_H" file="notification_wrench_h.png" type="BINDATA" />
-      <include name="IDR_BALLOON_WRENCH_P" file="notification_wrench_p.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_COOKIES" file="blocked_cookies.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_IMAGES" file="blocked_images.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_JAVASCRIPT" file="blocked_script.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_PLUGINS" file="blocked_plugins.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_POPUPS" file="blocked_popups.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_BALLOON_WRENCH" file="notification_wrench.png" type="BINDATA" />
+        <include name="IDR_BALLOON_WRENCH_H" file="notification_wrench_h.png" type="BINDATA" />
+        <include name="IDR_BALLOON_WRENCH_P" file="notification_wrench_p.png" type="BINDATA" />
+        <include name="IDR_BLOCKED_COOKIES" file="blocked_cookies.png" type="BINDATA" />
+        <include name="IDR_BLOCKED_IMAGES" file="blocked_images.png" type="BINDATA" />
+        <include name="IDR_BLOCKED_JAVASCRIPT" file="blocked_script.png" type="BINDATA" />
+        <include name="IDR_BLOCKED_PLUGINS" file="blocked_plugins.png" type="BINDATA" />
+        <include name="IDR_BLOCKED_POPUPS" file="blocked_popups.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_BALLOON_WRENCH" file="large_notification_wrench.png" type="BINDATA" />
+        <include name="IDR_BALLOON_WRENCH_H" file="large_notification_wrench_h.png" type="BINDATA" />
+        <include name="IDR_BALLOON_WRENCH_P" file="large_notification_wrench_p.png" type="BINDATA" />
+        <include name="IDR_BLOCKED_COOKIES" file="large_blocked_cookies.png" type="BINDATA" />
+        <include name="IDR_BLOCKED_IMAGES" file="large_blocked_images.png" type="BINDATA" />
+        <include name="IDR_BLOCKED_JAVASCRIPT" file="large_blocked_script.png" type="BINDATA" />
+        <include name="IDR_BLOCKED_PLUGINS" file="large_blocked_plugins.png" type="BINDATA" />
+        <include name="IDR_BLOCKED_POPUPS" file="large_blocked_popups.png" type="BINDATA" />
+      </if>
       <include name="IDR_BOOKMARKS_FAVICON" file="bookmarks_favicon.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_BAR_CHEVRONS" file="chevron.png" type="BINDATA" />
       <if expr="os != 'darwin'">
@@ -57,31 +69,59 @@
       <if expr="os == 'darwin'">
         <include name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder_mac.png" type="BINDATA" />
       </if>
-      <include name="IDR_BROWSER_ACTION" file="browser_action.png" type="BINDATA" />
-      <include name="IDR_BROWSER_ACTION_H" file="browser_action_h.png" type="BINDATA" />
-      <include name="IDR_BROWSER_ACTION_P" file="browser_action_p.png" type="BINDATA" />
-      <if expr="os.find('win') == -1">
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_BROWSER_ACTION" file="browser_action.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTION_H" file="browser_action_h.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTION_P" file="browser_action_p.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_BROWSER_ACTION" file="large_browser_action.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTION_H" file="large_browser_action_h.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTION_P" file="large_browser_action_p.png" type="BINDATA" />
+      </if>
+      <if expr="os.find('win') == -1 and not pp_ifdef('touchui')">
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="browser_actions_overflow.png" type="BINDATA" />
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="browser_actions_overflow_h.png" type="BINDATA" />
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="browser_actions_overflow_p.png" type="BINDATA" />
+      </if>
+      <if expr="os.find('win') == -1 and pp_ifdef('touchui')">
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="large_browser_actions_overflow.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="large_browser_actions_overflow_h.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="large_browser_actions_overflow_p.png" type="BINDATA" />
       </if>
       <if expr="os.find('win') != -1">
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="browser_actions_overflow_win.png" type="BINDATA" />
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="browser_actions_overflow_win_h.png" type="BINDATA" />
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="browser_actions_overflow_win_p.png" type="BINDATA" />
       </if>
-      <include name="IDR_BUBBLE_B" file="bubble_b.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_BL" file="bubble_bl.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_BR" file="bubble_br.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_B_ARROW" file="bubble_pointer_b.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_L" file="bubble_l.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_L_ARROW" file="bubble_pointer_l.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_R" file="bubble_r.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_R_ARROW" file="bubble_pointer_r.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_T" file="bubble_t.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_TL" file="bubble_tl.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_TR" file="bubble_tr.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_T_ARROW" file="bubble_pointer_t.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_BUBBLE_B" file="bubble_b.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_BL" file="bubble_bl.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_BR" file="bubble_br.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_B_ARROW" file="bubble_pointer_b.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_L" file="bubble_l.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_L_ARROW" file="bubble_pointer_l.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_R" file="bubble_r.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_R_ARROW" file="bubble_pointer_r.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_T" file="bubble_t.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_TL" file="bubble_tl.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_TR" file="bubble_tr.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_T_ARROW" file="bubble_pointer_t.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_BUBBLE_B" file="large_bubble_b.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_BL" file="large_bubble_bl.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_BR" file="large_bubble_br.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_B_ARROW" file="large_bubble_pointer_b.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_L" file="large_bubble_l.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_L_ARROW" file="large_bubble_pointer_l.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_R" file="large_bubble_r.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_R_ARROW" file="large_bubble_pointer_r.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_T" file="large_bubble_t.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_TL" file="large_bubble_tl.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_TR" file="large_bubble_tr.png" type="BINDATA" />
+        <include name="IDR_BUBBLE_T_ARROW" file="large_bubble_pointer_t.png" type="BINDATA" />
+      </if>
       <include name="IDR_CLOSE_BAR" file="close_bar.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_H" file="close_bar_h.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_MASK" file="close_bar_mask.png" type="BINDATA" />
@@ -250,25 +290,53 @@
       </if>
       <include name="IDR_INFO_BUBBLE_CLOSE" file="bubble_close.png" type="BINDATA" />
       <include name="IDR_INPUT_ALERT" file="input_alert.png" type="BINDATA" />
-      <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="keyword_search_magnifier.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="keyword_search_magnifier.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="large_keyword_search_magnifier.png" type="BINDATA" />
+      </if>
       <include name="IDR_KILLED_TAB" file="killtab.png" type="BINDATA" />
-      <include name="IDR_LOCATIONBG_C" file="omnibox_c.png" type="BINDATA" />
-      <include name="IDR_LOCATIONBG_L" file="omnibox_l.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_LOCATIONBG_C" file="omnibox_c.png" type="BINDATA" />
+        <include name="IDR_LOCATIONBG_L" file="omnibox_l.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_LOCATIONBG_C" file="large_omnibox_c.png" type="BINDATA" />
+        <include name="IDR_LOCATIONBG_L" file="large_omnibox_l.png" type="BINDATA" />
+      </if>
       <include name="IDR_LOCATIONBG_POPUPMODE_CENTER" file="omnibox_popup_c.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_POPUPMODE_EDGE" file="omnibox_popup_edge.png" type="BINDATA" />
-      <include name="IDR_LOCATIONBG_R" file="omnibox_r.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_LOCATIONBG_R" file="omnibox_r.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_LOCATIONBG_R" file="large_omnibox_r.png" type="BINDATA" />
+      </if>
       <if expr="os != 'darwin'">
         <include name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="keyword_hint_tab.png" type="BINDATA" />
       </if>
       <if expr="os == 'darwin'">
         <include name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="keyword_hint_tab_mac.png" type="BINDATA" />
       </if>
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="keyword_search_bubble_c.png" type="BINDATA" />
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="keyword_search_bubble_l.png" type="BINDATA" />
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="keyword_search_bubble_r.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="keyword_search_bubble_c.png" type="BINDATA" />
+        <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="keyword_search_bubble_l.png" type="BINDATA" />
+        <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="keyword_search_bubble_r.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="large_keyword_search_bubble_c.png" type="BINDATA" />
+        <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="large_keyword_search_bubble_l.png" type="BINDATA" />
+        <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="large_keyword_search_bubble_r.png" type="BINDATA" />
+      </if>
       <include name="IDR_MAXIMIZE_BUTTON_MASK" file="maximize_button_mask.png" type="BINDATA" />
       <include name="IDR_MINIMIZE_BUTTON_MASK" file="minimize_button_mask.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_BUTTON" file="newtab.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_NEWTAB_BUTTON" file="newtab.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_NEWTAB_BUTTON" file="large_newtab.png" type="BINDATA" />
+      </if>
       <include name="IDR_NEWTAB_BUTTON_H" file="newtab_h.png" type="BINDATA" />
       <include name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask.png" type="BINDATA" />
       <include name="IDR_NEWTAB_BUTTON_P" file="newtab_p.png" type="BINDATA" />
@@ -282,9 +350,16 @@
       <include name="IDR_NEWTAB_OPTION_P" file="ntp_option_p.png" type="BINDATA" />
       <include name="IDR_NEWTAB_THEMES_GALLERY_FAVICON" file="ntp_themes_gallery_favicon.png" type="BINDATA" />
       <include name="IDR_NEWTAB_THEMES_GALLERY_THUMBNAIL" file="ntp_themes_gallery_thumb.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="ev_bubble_c.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="ev_bubble_l.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="ev_bubble_r.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="ev_bubble_c.png" type="BINDATA" />
+        <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="ev_bubble_l.png" type="BINDATA" />
+        <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="ev_bubble_r.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="large_ev_bubble_c.png" type="BINDATA" />
+        <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="large_ev_bubble_l.png" type="BINDATA" />
+        <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="large_ev_bubble_r.png" type="BINDATA" />
+      </if>
       <include name="IDR_OMNIBOX_HISTORY" file="omnibox_history.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HISTORY_DARK" file="omnibox_history_dark.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HISTORY_SELECTED" file="omnibox_history_selected.png" type="BINDATA" />
@@ -478,8 +553,13 @@
       <include name="IDR_TAB_INACTIVE_LEFT" file="tab_inactive_left.png" type="BINDATA" />
       <include name="IDR_TAB_INACTIVE_RIGHT" file="tab_inactive_right.png" type="BINDATA" />
       <include name="IDR_THEME_BUTTON_BACKGROUND" file="notused.png" type="BINDATA" />
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="pp_ifdef('chromeos') and not pp_ifdef('touchui')">
         <include name="IDR_THEME_FRAME" file="theme_frame_default2.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('chromeos') and pp_ifdef('touchui')">
+        <include name="IDR_THEME_FRAME" file="large_theme_frame_default2.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('chromeos')">
         <include name="IDR_THEME_FRAME_INACTIVE" file="theme_frame_default_inactive2.png" type="BINDATA" />
         <include name="IDR_THEME_FRAME_INCOGNITO" file="theme_frame_default_incognito2.png" type="BINDATA" />
         <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="theme_frame_default_incognito_inactive2.png" type="BINDATA" />
@@ -494,16 +574,22 @@
       <include name="IDR_THEME_FRAME_OVERLAY_INACTIVE" file="notused.png" type="BINDATA" />
       <include name="IDR_THEME_NTP_ATTRIBUTION" file="notused.png" type="BINDATA" />
       <include name="IDR_THEME_NTP_BACKGROUND" file="ntp_background.png" type="BINDATA" />
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="pp_ifdef('chromeos') and not pp_ifdef('touchui')">
         <include name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background2.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('chromeos') and pp_ifdef('touchui')">
+        <include name="IDR_THEME_TAB_BACKGROUND" file="large_theme_tab_background2.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('chromeos')">
         <include name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background.png" type="BINDATA" />
       </if>
       <include name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="theme_tab_background_incognito.png" type="BINDATA" />
       <include name="IDR_THEME_TAB_BACKGROUND_V" file="theme_tab_background_glass.png" type="BINDATA" />
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="pp_ifdef('chromeos') and not pp_ifdef('touchui')">
         <include name="IDR_THEME_TOOLBAR" file="theme_toolbar_default2.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('chromeos') and pp_ifdef('touchui')">
+        <include name="IDR_THEME_TOOLBAR" file="large_theme_toolbar_default2.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('chromeos')">
         <include name="IDR_THEME_TOOLBAR" file="theme_toolbar_default.png" type="BINDATA" />
