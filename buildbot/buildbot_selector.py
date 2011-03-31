@@ -17,8 +17,8 @@ BOT_ASSIGNMENT = {
     'win7-bare-m32-n32-opt': 'buildbot\\buildbot_win.bat opt 32',
     'win7-bare-m64-n64-dbg': 'buildbot\\buildbot_win.bat dbg 64',
     'win7-bare-m64-n64-opt': 'buildbot\\buildbot_win.bat opt 64',
-    'win7atom64-m64-n64-test-dbg', 'buildbot\\buildbot_win_atom.bat opt 64',
-    'win7atom64-m64-n64-test-opt', 'buildbot\\buildbot_win_atom.bat dbg 64',
+    'win7atom64-m64-n64-test-dbg': 'buildbot\\buildbot_win_atom.bat opt 64',
+    'win7atom64-m64-n64-test-opt': 'buildbot\\buildbot_win_atom.bat dbg 64',
     'mac10.5-m32-n32-opt': 'bash buildbot/buildbot_mac.sh opt',
     'mac10.6-m32-n32-opt': 'bash buildbot/buildbot_mac.sh opt',
     'hardy32-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32',
@@ -73,11 +73,11 @@ BOT_ASSIGNMENT = {
     'hardy32-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh linux',
     # Toolchain pnacl.
     'hardy32-toolchain_arm-trusted':
-        'bash buildbot/buildbot_toolchain_arm_trusted.sh'
+        'bash buildbot/buildbot_toolchain_arm_trusted.sh',
     'hardy64-toolchain_arm-untrusted':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh'
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
     'lucid32-toolchain_arm-untrusted':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh'
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
 
     # Toolchain trybots.
     'nacl-lucid64-glibc': 'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
