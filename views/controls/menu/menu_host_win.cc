@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,8 @@
 
 namespace views {
 
-// static
-MenuHost* MenuHost::Create(SubmenuView* submenu_view) {
-  return new MenuHostWin(submenu_view);
-}
+////////////////////////////////////////////////////////////////////////////////
+// MenuHostWin, public:
 
 MenuHostWin::MenuHostWin(SubmenuView* submenu)
     : destroying_(false),
@@ -29,6 +27,9 @@ MenuHostWin::MenuHostWin(SubmenuView* submenu)
 
 MenuHostWin::~MenuHostWin() {
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// MenuHostWin, NativeMenuHost implementation:
 
 void MenuHostWin::InitMenuHost(HWND parent,
                                const gfx::Rect& bounds,
@@ -79,6 +80,9 @@ gfx::NativeWindow MenuHostWin::GetMenuHostWindow() {
   return GetNativeView();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// MenuHostWin, WidgetWin overrides:
+
 void MenuHostWin::OnDestroy() {
   if (!destroying_) {
     // We weren't explicitly told to destroy ourselves, which means the menu was
@@ -107,9 +111,20 @@ bool MenuHostWin::ReleaseCaptureOnMouseReleased() {
   return false;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// MenuHostWin, private:
+
 void MenuHostWin::DoCapture() {
   owns_capture_ = true;
   SetNativeCapture();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeMenuHost, public:
+
+// static
+NativeMenuHost* NativeMenuHost::CreateNativeMenuHost(SubmenuView* submenu) {
+  return new MenuHostWin(submenu);
 }
 
 }  // namespace views

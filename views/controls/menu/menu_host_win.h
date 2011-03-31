@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #define VIEWS_CONTROLS_MENU_MENU_HOST_WIN_H_
 #pragma once
 
-#include "views/controls/menu/menu_host.h"
+#include "views/controls/menu/native_menu_host.h"
 #include "views/widget/widget_win.h"
 
 namespace views {
@@ -15,37 +15,33 @@ namespace views {
 class SubmenuView;
 
 // MenuHost implementation for windows.
-class MenuHostWin : public WidgetWin, public MenuHost {
+class MenuHostWin : public WidgetWin,
+                    public NativeMenuHost {
  public:
   explicit MenuHostWin(SubmenuView* submenu);
   virtual ~MenuHostWin();
 
-  // MenuHost overrides:
-  virtual void InitMenuHost(HWND parent,
+ private:
+  // Overridden from NativeMenuHost:
+  virtual void InitMenuHost(gfx::NativeWindow parent,
                             const gfx::Rect& bounds,
                             View* contents_view,
-                            bool do_capture);
-  virtual bool IsMenuHostVisible();
-  virtual void ShowMenuHost(bool do_capture);
-  virtual void HideMenuHost();
-  virtual void DestroyMenuHost();
-  virtual void SetMenuHostBounds(const gfx::Rect& bounds);
-  virtual void ReleaseMenuHostCapture();
-  virtual gfx::NativeWindow GetMenuHostWindow();
+                            bool do_capture) OVERRIDE;
+  virtual bool IsMenuHostVisible() OVERRIDE;
+  virtual void ShowMenuHost(bool do_capture) OVERRIDE;
+  virtual void HideMenuHost() OVERRIDE;
+  virtual void DestroyMenuHost() OVERRIDE;
+  virtual void SetMenuHostBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void ReleaseMenuHostCapture() OVERRIDE;
+  virtual gfx::NativeWindow GetMenuHostWindow() OVERRIDE;
 
-  // WidgetWin overrides:
-  virtual void OnDestroy();
-  virtual void OnCaptureChanged(HWND hwnd);
-  virtual void OnCancelMode();
+  // Overridden from WidgetWin:
+  virtual void OnDestroy() OVERRIDE;
+  virtual void OnCaptureChanged(HWND hwnd) OVERRIDE;
+  virtual void OnCancelMode() OVERRIDE;
+  virtual RootView* CreateRootView() OVERRIDE;
+  virtual bool ReleaseCaptureOnMouseReleased() OVERRIDE;
 
- protected:
-  virtual RootView* CreateRootView();
-
-  // Overriden to return false, we do NOT want to release capture on mouse
-  // release.
-  virtual bool ReleaseCaptureOnMouseReleased();
-
- private:
   void DoCapture();
 
   // If true, DestroyMenuHost has been invoked.

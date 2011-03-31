@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -241,7 +241,7 @@ void SubmenuView::ShowAt(gfx::NativeWindow parent,
     return;
   }
 
-  host_ = MenuHost::Create(this);
+  host_ = new MenuHost(this);
   // Force construction of the scroll view container.
   GetScrollViewContainer();
   // Make sure the first row is visible.

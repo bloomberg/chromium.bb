@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 
 namespace views {
 
+class NativeMenuHost;
 class SubmenuView;
 class View;
 
@@ -25,39 +26,41 @@ class View;
 // to the MenuHost.
 class MenuHost {
  public:
-  // Creates the platform specific MenuHost. Ownership passes to the caller.
-  static MenuHost* Create(SubmenuView* submenu_view);
+  explicit MenuHost(SubmenuView* submenu);
+  virtual ~MenuHost();
 
   // Initializes and shows the MenuHost.
-  virtual void InitMenuHost(gfx::NativeWindow parent,
-                            const gfx::Rect& bounds,
-                            View* contents_view,
-                            bool do_capture) = 0;
+  void InitMenuHost(gfx::NativeWindow parent,
+                    const gfx::Rect& bounds,
+                    View* contents_view,
+                    bool do_capture);
 
   // Returns true if the menu host is visible.
-  virtual bool IsMenuHostVisible() = 0;
+  bool IsMenuHostVisible();
 
   // Shows the menu host. If |do_capture| is true the menu host should do a
   // mouse grab.
-  virtual void ShowMenuHost(bool do_capture) = 0;
+  void ShowMenuHost(bool do_capture);
 
   // Hides the menu host.
-  virtual void HideMenuHost() = 0;
+  void HideMenuHost();
 
   // Destroys and deletes the menu host.
-  virtual void DestroyMenuHost() = 0;
+  void DestroyMenuHost();
 
   // Sets the bounds of the menu host.
-  virtual void SetMenuHostBounds(const gfx::Rect& bounds) = 0;
+  void SetMenuHostBounds(const gfx::Rect& bounds);
 
   // Releases a mouse grab installed by |ShowMenuHost|.
-  virtual void ReleaseMenuHostCapture() = 0;
+  void ReleaseMenuHostCapture();
 
   // Returns the native window of the MenuHost.
-  virtual gfx::NativeWindow GetMenuHostWindow() = 0;
+  gfx::NativeWindow GetMenuHostWindow();
 
- protected:
-  virtual ~MenuHost() {}
+ private:
+  NativeMenuHost* native_menu_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(MenuHost);
 };
 
 }  // namespace views

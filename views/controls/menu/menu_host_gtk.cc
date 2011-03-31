@@ -22,24 +22,14 @@
 
 namespace views {
 
-// static
-MenuHost* MenuHost::Create(SubmenuView* submenu_view) {
-  return new MenuHostGtk(submenu_view);
-}
+////////////////////////////////////////////////////////////////////////////////
+// MenuHostGtk, public:
 
 MenuHostGtk::MenuHostGtk(SubmenuView* submenu)
     : WidgetGtk(WidgetGtk::TYPE_POPUP),
       destroying_(false),
       submenu_(submenu),
       did_input_grab_(false) {
-  GdkEvent* event = gtk_get_current_event();
-  if (event) {
-    if (event->type == GDK_BUTTON_PRESS || event->type == GDK_2BUTTON_PRESS ||
-        event->type == GDK_3BUTTON_PRESS) {
-      set_mouse_down(true);
-    }
-    gdk_event_free(event);
-  }
   CreateParams params;
   params.type = CreateParams::TYPE_MENU;
   params.has_dropshadow = true;
@@ -48,6 +38,9 @@ MenuHostGtk::MenuHostGtk(SubmenuView* submenu)
 
 MenuHostGtk::~MenuHostGtk() {
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// MenuHostGtk, NativeMenuHost implementation:
 
 void MenuHostGtk::InitMenuHost(gfx::NativeWindow parent,
                                const gfx::Rect& bounds,
@@ -103,6 +96,9 @@ gfx::NativeWindow MenuHostGtk::GetMenuHostWindow() {
   return GTK_WINDOW(GetNativeView());
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// MenuHostGtk, WidgetGtk overrides:
+
 RootView* MenuHostGtk::CreateRootView() {
   return new MenuHostRootView(this, submenu_);
 }
@@ -152,6 +148,9 @@ void MenuHostGtk::HandleGtkGrabBroke() {
   WidgetGtk::HandleGtkGrabBroke();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// MenuHostGtk, private:
+
 void MenuHostGtk::DoCapture() {
   DCHECK(!did_input_grab_);
 
@@ -199,6 +198,14 @@ void MenuHostGtk::CancelAllIfNoDrag() {
   if (menu_controller &&
       !menu_controller->drag_in_progress())
     menu_controller->CancelAll();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeMenuHost, public:
+
+// static
+NativeMenuHost* NativeMenuHost::CreateNativeMenuHost(SubmenuView* submenu) {
+  return new MenuHostGtk(submenu);
 }
 
 }  // namespace views

@@ -307,6 +307,16 @@ void WidgetGtk::SetCreateParams(const CreateParams& params) {
     MakeTransparent();
   if (!params.accept_events)
     MakeIgnoreEvents();
+
+  if (params.type == CreateParams::TYPE_MENU) {
+    GdkEvent* event = gtk_get_current_event();
+    if (event) {
+      is_mouse_down_ = event->type == GDK_BUTTON_PRESS ||
+                       event->type == GDK_2BUTTON_PRESS ||
+                       event->type == GDK_3BUTTON_PRESS;
+      gdk_event_free(event);
+    }
+  }
 }
 
 GtkWindow* WidgetGtk::GetTransientParent() const {
