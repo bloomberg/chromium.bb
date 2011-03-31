@@ -838,7 +838,8 @@ def _CheckSingletonInHeaders(input_api, output_api, source_file_filter):
 
 def PanProjectChecks(input_api, output_api,
                      excluded_paths=None, text_files=None,
-                     license_header=None, project_name=None):
+                     license_header=None, project_name=None,
+                     owners_check=True):
   """Checks that ALL chromium orbit projects should use.
 
   These are checks to be run on all Chromium orbit project, including:
@@ -884,8 +885,9 @@ def PanProjectChecks(input_api, output_api,
   text_files = lambda x: input_api.FilterSourceFile(x, black_list=black_list,
                                                     white_list=white_list)
 
-  results.extend(input_api.canned_checks.CheckOwners(
-      input_api, output_api, source_file_filter=sources))
+  if owners_check:
+    results.extend(input_api.canned_checks.CheckOwners(
+        input_api, output_api, source_file_filter=sources))
 
   results.extend(input_api.canned_checks.CheckLongLines(
       input_api, output_api, source_file_filter=sources))
