@@ -115,9 +115,7 @@ class ProfileSyncServiceSessionTest
     EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
         WillOnce(ReturnNewDataTypeManager());
     sync_service_->RegisterDataTypeController(
-        new SessionDataTypeController(&factory_,
-                                      profile(),
-                                      sync_service_.get()));
+        new SessionDataTypeController(&factory_, sync_service_.get()));
     profile()->GetTokenService()->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token");
     sync_service_->Initialize();

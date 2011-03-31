@@ -14,7 +14,6 @@
 #include "chrome/browser/sync/glue/model_associator_mock.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/test/profile_mock.h"
 #include "content/browser/browser_thread.h"
 
 using browser_sync::PreferenceDataTypeController;
@@ -42,7 +41,6 @@ class PreferenceDataTypeControllerTest : public testing::Test {
     profile_sync_factory_.reset(new ProfileSyncFactoryMock());
     preference_dtc_ =
         new PreferenceDataTypeController(profile_sync_factory_.get(),
-                                         &profile_,
                                          &service_);
   }
 
@@ -77,7 +75,6 @@ class PreferenceDataTypeControllerTest : public testing::Test {
   BrowserThread ui_thread_;
   scoped_refptr<PreferenceDataTypeController> preference_dtc_;
   scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
-  ProfileMock profile_;
   ProfileSyncServiceMock service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;

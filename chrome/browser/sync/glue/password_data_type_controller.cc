@@ -107,21 +107,20 @@ bool PasswordDataTypeController::enabled() {
   return true;
 }
 
-syncable::ModelType PasswordDataTypeController::type() const {
+syncable::ModelType PasswordDataTypeController::type() {
   return syncable::PASSWORDS;
 }
 
-browser_sync::ModelSafeGroup PasswordDataTypeController::model_safe_group()
-    const {
+browser_sync::ModelSafeGroup PasswordDataTypeController::model_safe_group() {
   return browser_sync::GROUP_PASSWORD;
 }
 
-std::string PasswordDataTypeController::name() const {
+const char* PasswordDataTypeController::name() const {
   // For logging only.
   return "password";
 }
 
-DataTypeController::State PasswordDataTypeController::state() const {
+DataTypeController::State PasswordDataTypeController::state() {
   return state_;
 }
 

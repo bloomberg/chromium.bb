@@ -1874,8 +1874,6 @@
         'browser/sync/glue/extension_util.h',
         'browser/sync/glue/foreign_session_tracker.cc',
         'browser/sync/glue/foreign_session_tracker.h',
-        'browser/sync/glue/frontend_data_type_controller.cc',
-        'browser/sync/glue/frontend_data_type_controller.h',
         'browser/sync/glue/history_model_worker.cc',
         'browser/sync/glue/history_model_worker.h',
         'browser/sync/glue/http_bridge.cc',

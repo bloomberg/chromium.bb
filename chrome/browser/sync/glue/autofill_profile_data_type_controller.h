@@ -19,9 +19,9 @@ class AutofillProfileDataTypeController : public AutofillDataTypeController {
       ProfileSyncService* sync_service);
   virtual ~AutofillProfileDataTypeController();
 
-  virtual syncable::ModelType type() const;
+  virtual syncable::ModelType type();
 
-  virtual std::string name() const;
+  virtual const char* name() const;
 
  protected:
   virtual ProfileSyncFactory::SyncComponents CreateSyncComponents(

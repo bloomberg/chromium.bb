@@ -127,7 +127,7 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService(
   // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncPreferences)) {
     pss->RegisterDataTypeController(
-        new PreferenceDataTypeController(this, profile_, pss));
+        new PreferenceDataTypeController(this, pss));
   }
 
   // Theme sync is enabled by default.  Register unless explicitly disabled.
@@ -147,7 +147,7 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService(
   // enabled.
   if (command_line_->HasSwitch(switches::kEnableSyncSessions)) {
     pss->RegisterDataTypeController(
-        new SessionDataTypeController(this, profile_, pss));
+        new SessionDataTypeController(this, pss));
   }
 
   if (!command_line_->HasSwitch(switches::kDisableSyncAutofillProfile)) {

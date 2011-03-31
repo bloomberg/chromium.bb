@@ -84,7 +84,6 @@ class ProfileSyncServicePreferenceTest
 
     service_->RegisterDataTypeController(
         new PreferenceDataTypeController(&factory_,
-                                         profile_.get(),
                                          service_.get()));
     profile_->GetTokenService()->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token");
@@ -117,12 +116,12 @@ class ProfileSyncServicePreferenceTest
     return reader.JsonToValue(specifics.value(), false, false);
   }
 
-  int64 WriteSyncedValue(const std::string& name,
-                         const Value& value,
-                         sync_api::WriteNode* node) {
-    if (!PreferenceModelAssociator::WritePreferenceToNode(name, value, node))
+  int64 WriteSyncedValue(sync_api::WriteNode& node,
+                         const std::string& name,
+                         const Value& value) {
+    if (!PreferenceModelAssociator::WritePreferenceToNode(name, value, &node))
       return sync_api::kInvalidId;
-    return node->GetId();
+    return node.GetId();
   }
 
   int64 SetSyncedValue(const std::string& name, const Value& value) {
@@ -137,11 +136,11 @@ class ProfileSyncServicePreferenceTest
     int64 node_id = model_associator_->GetSyncIdFromChromeId(name);
     if (node_id == sync_api::kInvalidId) {
       if (tag_node.InitByClientTagLookup(syncable::PREFERENCES, name))
-        return WriteSyncedValue(name, value, &tag_node);
+        return WriteSyncedValue(tag_node, name, value);
       if (node.InitUniqueByCreation(syncable::PREFERENCES, root, name))
-        return WriteSyncedValue(name, value, &node);
+        return WriteSyncedValue(node, name, value);
     } else if (node.InitByIdLookup(node_id)) {
-      return WriteSyncedValue(name, value, &node);
+      return WriteSyncedValue(node, name, value);
     }
     return sync_api::kInvalidId;
   }

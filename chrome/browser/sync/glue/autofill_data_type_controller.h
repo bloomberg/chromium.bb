@@ -43,13 +43,13 @@ class AutofillDataTypeController : public DataTypeController,
 
   virtual bool enabled();
 
-  virtual syncable::ModelType type() const;
+  virtual syncable::ModelType type();
 
-  virtual browser_sync::ModelSafeGroup model_safe_group() const;
+  virtual browser_sync::ModelSafeGroup model_safe_group();
 
-  virtual std::string name() const;
+  virtual const char* name() const;
 
-  virtual State state() const;
+  virtual State state();
 
   // UnrecoverableHandler implementation
   virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,

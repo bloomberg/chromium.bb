@@ -8,37 +8,65 @@
 
 #include <string>
 
-#include "chrome/browser/sync/glue/frontend_data_type_controller.h"
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/glue/session_model_associator.h"
+
+class ProfileSyncFactory;
+class ProfileSyncService;
 
 namespace browser_sync {
 
-class SessionModelAssociator;
+class AssociatorInterface;
+class ChangeProcessor;
 
-class SessionDataTypeController : public FrontendDataTypeController {
+class SessionDataTypeController : public DataTypeController {
  public:
   SessionDataTypeController(
       ProfileSyncFactory* profile_sync_factory,
-      Profile* profile,
       ProfileSyncService* sync_service);
   virtual ~SessionDataTypeController();
 
-  SessionModelAssociator* GetModelAssociator();
+  // DataTypeController implementation.
+  virtual void Start(StartCallback* start_callback);
 
-  // FrontendDataTypeController implementation.
-  virtual syncable::ModelType type() const;
+  virtual void Stop();
 
- private:
-  // FrontendDataTypeController implementations.
-  // Datatype specific creation of sync components.
-  virtual void CreateSyncComponents();
-  // Record unrecoverable errors.
-  virtual void RecordUnrecoverableError(
+  virtual bool enabled();
+
+  virtual syncable::ModelType type();
+
+  virtual browser_sync::ModelSafeGroup model_safe_group();
+
+  virtual const char* name() const;
+
+  virtual State state();
+
+  // UnrecoverableErrorHandler interface.
+  virtual void OnUnrecoverableError(
       const tracked_objects::Location& from_here,
       const std::string& message);
-  // Record association time.
-  virtual void RecordAssociationTime(base::TimeDelta time);
-  // Record causes of start failure.
-  virtual void RecordStartFailure(StartResult result);
+
+  SessionModelAssociator* GetModelAssociator();
+
+ private:
+  // Helper method to run the stashed start callback with a given result.
+  void FinishStart(StartResult result,
+      const tracked_objects::Location& location);
+
+  // Cleans up state and calls callback when start fails.
+  void StartFailed(StartResult result,
+      const tracked_objects::Location& location);
+
+  ProfileSyncFactory* profile_sync_factory_;
+  ProfileSyncService* sync_service_;
+
+  State state_;
+
+  scoped_ptr<StartCallback> start_callback_;
+  scoped_ptr<AssociatorInterface> model_associator_;
+  scoped_ptr<ChangeProcessor> change_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionDataTypeController);
 };

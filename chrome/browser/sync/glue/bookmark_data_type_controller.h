@@ -8,18 +8,26 @@
 
 #include <string>
 
-#include "chrome/browser/sync/glue/frontend_data_type_controller.h"
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/sync/glue/data_type_controller.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
 class NotificationDetails;
 class NotificationType;
 class NotificationSource;
+class Profile;
+class ProfileSyncService;
+class ProfileSyncFactory;
 
 namespace browser_sync {
 
+class AssociatorInterface;
+class ChangeProcessor;
+
 // A class that manages the startup and shutdown of bookmark sync.
-class BookmarkDataTypeController : public FrontendDataTypeController,
+class BookmarkDataTypeController : public DataTypeController,
                                    public NotificationObserver {
  public:
   BookmarkDataTypeController(
@@ -28,8 +36,24 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
       ProfileSyncService* sync_service);
   virtual ~BookmarkDataTypeController();
 
-  // FrontendDataTypeController interface.
-  virtual syncable::ModelType type() const;
+  // DataTypeController interface.
+  virtual void Start(StartCallback* start_callback);
+
+  virtual void Stop();
+
+  virtual bool enabled();
+
+  virtual syncable::ModelType type();
+
+  virtual browser_sync::ModelSafeGroup model_safe_group();
+
+  virtual const char* name() const;
+
+  virtual State state();
+
+  // UnrecoverableErrorHandler interface.
+  virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
+                                    const std::string& message);
 
   // NotificationObserver interface.
   virtual void Observe(NotificationType type,
@@ -37,16 +61,25 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
                        const NotificationDetails& details);
 
  private:
-  // FrontendDataTypeController interface.
-  virtual bool StartModels();
-  virtual void CleanupState();
-  virtual void CreateSyncComponents();
-  virtual void RecordUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message);
-  virtual void RecordAssociationTime(base::TimeDelta time);
-  virtual void RecordStartFailure(StartResult result);
+  // Runs model association and change processor registration.
+  void Associate();
 
+  // Helper method to run the stashed start callback with a given result.
+  void FinishStart(StartResult result);
+
+  // Cleans up state and calls callback when star fails.
+  void StartFailed(StartResult result,
+      const tracked_objects::Location& location);
+
+  ProfileSyncFactory* profile_sync_factory_;
+  Profile* profile_;
+  ProfileSyncService* sync_service_;
+
+  State state_;
+
+  scoped_ptr<StartCallback> start_callback_;
+  scoped_ptr<AssociatorInterface> model_associator_;
+  scoped_ptr<ChangeProcessor> change_processor_;
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkDataTypeController);

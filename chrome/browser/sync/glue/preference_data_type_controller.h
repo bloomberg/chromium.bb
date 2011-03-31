@@ -6,31 +6,60 @@
 #define CHROME_BROWSER_SYNC_GLUE_PREFERENCE_DATA_TYPE_CONTROLLER_H__
 #pragma once
 
-#include <string>
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/sync/glue/data_type_controller.h"
 
-#include "chrome/browser/sync/glue/frontend_data_type_controller.h"
+class ProfileSyncFactory;
+class ProfileSyncService;
 
 namespace browser_sync {
 
-class PreferenceDataTypeController : public FrontendDataTypeController {
+class AssociatorInterface;
+class ChangeProcessor;
+
+class PreferenceDataTypeController : public DataTypeController {
  public:
   PreferenceDataTypeController(
       ProfileSyncFactory* profile_sync_factory,
-      Profile* profile,
       ProfileSyncService* sync_service);
   virtual ~PreferenceDataTypeController();
 
-  // FrontendDataTypeController implementation.
-  virtual syncable::ModelType type() const;
+  virtual void Start(StartCallback* start_callback);
+
+  virtual void Stop();
+
+  virtual bool enabled();
+
+  virtual syncable::ModelType type();
+
+  virtual browser_sync::ModelSafeGroup model_safe_group();
+
+  virtual const char* name() const;
+
+  virtual State state();
+
+  // UnrecoverableErrorHandler interface.
+  virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
+                                    const std::string& message);
 
  private:
-  // FrontendDataTypeController implementations.
-  virtual void CreateSyncComponents();
-  virtual void RecordUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message);
-  virtual void RecordAssociationTime(base::TimeDelta time);
-  virtual void RecordStartFailure(StartResult result);
+  // Helper method to run the stashed start callback with a given result.
+  void FinishStart(StartResult result,
+      const tracked_objects::Location& location);
+
+  // Cleans up state and calls callback when start fails.
+  void StartFailed(StartResult result,
+      const tracked_objects::Location& location);
+
+  ProfileSyncFactory* profile_sync_factory_;
+  ProfileSyncService* sync_service_;
+
+  State state_;
+
+  scoped_ptr<StartCallback> start_callback_;
+  scoped_ptr<AssociatorInterface> model_associator_;
+  scoped_ptr<ChangeProcessor> change_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(PreferenceDataTypeController);
 };
