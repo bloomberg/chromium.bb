@@ -226,6 +226,7 @@ void InstantController::DestroyPreviewContentsAndLeaveActive() {
   // TODO(sky): this shouldn't nuke the loader. It should just nuke non-instant
   // loaders and hide instant loaders.
   loader_manager_.reset(new InstantLoaderManager(this));
+  show_timer_.Stop();
   update_timer_.Stop();
 }
 
@@ -564,10 +565,11 @@ void InstantController::ProcessInstantStatusChanged(InstantLoader* loader) {
 }
 
 void InstantController::ShowTimerFired() {
-  DCHECK(loader_manager_.get());
+  if (!loader_manager_.get())
+    return;
 
   InstantLoader* loader = loader_manager_->active_loader();
-  if (loader->ready())
+  if (loader && loader->ready())
     ProcessInstantStatusChanged(loader);
 }
 
