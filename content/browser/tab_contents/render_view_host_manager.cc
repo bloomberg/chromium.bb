@@ -62,10 +62,6 @@ void RenderViewHostManager::Init(Profile* profile,
   render_view_host_ = RenderViewHostFactory::Create(
       site_instance, render_view_delegate_, routing_id, delegate_->
       GetControllerForRenderManager().session_storage_namespace());
-  NotificationService::current()->Notify(
-      NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
-      Source<RenderViewHostManager>(this),
-      Details<RenderViewHost>(render_view_host_));
 }
 
 RenderWidgetHostView* RenderViewHostManager::GetRenderWidgetHostView() const {
@@ -466,10 +462,6 @@ bool RenderViewHostManager::CreatePendingRenderView(
   pending_render_view_host_ = RenderViewHostFactory::Create(
       instance, render_view_delegate_, MSG_ROUTING_NONE, delegate_->
       GetControllerForRenderManager().session_storage_namespace());
-  NotificationService::current()->Notify(
-      NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
-      Source<RenderViewHostManager>(this),
-      Details<RenderViewHost>(pending_render_view_host_));
 
   bool success = InitRenderView(pending_render_view_host_, entry);
   if (success) {
