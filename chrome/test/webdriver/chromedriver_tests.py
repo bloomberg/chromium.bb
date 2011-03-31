@@ -376,6 +376,49 @@ class ElementEqualityTest(unittest.TestCase):
     self.assertTrue(result['value'])
 
 
+"""Chrome functional test section. All implementation tests of ChromeDriver
+should go above.
+
+TODO(dyu): Move these tests out of here when pyauto has these capabilities.
+"""
+
+
+class AutofillTest(unittest.TestCase):
+  AUTOFILL_EDIT_ADDRESS = 'chrome://settings/autoFillEditAddress'
+
+  def setUp(self):
+    self._launcher = ChromeDriverLauncher()
+
+  def tearDown(self):
+    self._launcher.Kill()
+
+  def testPostalCodeAndStateLabelsBasedOnCountry(self):
+    """Verify postal code and state labels based on selected country."""
+    file_path = os.path.join('state_zip_labels.txt')
+    import simplejson
+    test_data = simplejson.loads(open(file_path).read())
+
+    driver = WebDriver(self._launcher.GetURL(), {})
+    driver.get(self.AUTOFILL_EDIT_ADDRESS)
+    state_label = driver.find_element_by_id('state-label').text
+    self.assertEqual('State', state_label)
+    for country_code in test_data:
+      query = '//option[@value="%s"]' % country_code
+      driver.find_element_by_id('country').find_element_by_xpath(query).select()
+      # Compare postal labels.
+      actual_postal_label = driver.find_element_by_id(
+          'postal-code-label').text
+      expected_postal_label = test_data[country_code]['postalCodeLabel']
+      self.assertEqual(
+          actual_postal_label, expected_postal_label,
+          'Postal code label does not match Country "%s"' % country_code)
+      # Compare state labels.
+      actual_state_label = driver.find_element_by_id('state-label').text
+      expected_state_label = test_data[country_code]['stateLabel']
+      self.assertEqual(
+          actual_state_label, expected_state_label,
+          'State label does not match Country "%s"' % country_code)
+
 if __name__ == '__main__':
   unittest.main(module='chromedriver_tests',
                 testRunner=GTestTextTestRunner(verbosity=1))
