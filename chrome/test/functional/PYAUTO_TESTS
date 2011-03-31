@@ -47,7 +47,6 @@
       'downloads',
       # crbug.com/67233
       '-downloads.DownloadsTest.testDownloadIncognitoAndRegular',
-      'enterprise',
       'find_in_page',
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
@@ -95,6 +94,7 @@
     ],
 
     'win': [
+      'enterprise',
       # crbug.com/77969
       '-autofill.AutofillTest.testComparePhoneNumbers',
       # testBookmarkBarVisible fails on windows. crbug.com/42823
