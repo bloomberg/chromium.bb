@@ -618,6 +618,7 @@
         <include name="IDR_NOTIFICATION_LOW_BATTERY" file="notification_battery_low.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_MENU" file="notification_menu.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_NETWORK_FAILED" file="notification_network_failed.png" type="BINDATA" />
+        <include name="IDR_NOTIFICATION_SMS" file="notification_sms.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_UPDATE" file="notification_update.png" type="BINDATA" />
         <include name="IDR_OOBE_PROGRESS_DOT_CURRENT" file="oobe_progress_dot_current.png" type="BINDATA" />
         <include name="IDR_OOBE_PROGRESS_DOT_EMPTY" file="oobe_progress_dot_empty.png" type="BINDATA" />

@@ -91,6 +91,7 @@
 #include "chrome/browser/chromeos/low_battery_observer.h"
 #include "chrome/browser/chromeos/network_message_observer.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
+#include "chrome/browser/chromeos/sms_observer.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/update_observer.h"
 #include "chrome/browser/chromeos/usb_mount_observer.h"
@@ -618,6 +619,11 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
         new chromeos::BrightnessObserver();
     chromeos::CrosLibrary::Get()->GetBrightnessLibrary()
         ->AddObserver(brightness_observer);
+
+    static chromeos::SmsObserver* sms_observer =
+        new chromeos::SmsObserver(profile);
+    chromeos::CrosLibrary::Get()->GetNetworkLibrary()
+        ->AddNetworkManagerObserver(sms_observer);
 
     profile->SetupChromeOSEnterpriseExtensionObserver();
   }

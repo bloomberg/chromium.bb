@@ -4333,6 +4333,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <!-- SMS Notifications -->
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_SMS_NOTIFICATION_TITLE" desc="Title of SMS message notification.">
+          SMS from <ph name="PHONE_NUMBER">$1<ex>08700 776655</ex></ph>
+        </message>
+      </if>
+
       <if expr="pp_ifdef('chromeos')">
         <!-- about:system strings -->
         <message name="IDS_ABOUT_SYS_TITLE" desc="about:system page title">
