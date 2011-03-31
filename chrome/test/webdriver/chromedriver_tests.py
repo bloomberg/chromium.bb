@@ -383,6 +383,11 @@ TODO(dyu): Move these tests out of here when pyauto has these capabilities.
 """
 
 
+def GetPathForDataFile(relative_path):
+  """Returns the path for a test data file residing in this directory."""
+  return os.path.join(os.path.dirname(__file__), relative_path)
+
+
 class AutofillTest(unittest.TestCase):
   AUTOFILL_EDIT_ADDRESS = 'chrome://settings/autoFillEditAddress'
 
@@ -394,9 +399,9 @@ class AutofillTest(unittest.TestCase):
 
   def testPostalCodeAndStateLabelsBasedOnCountry(self):
     """Verify postal code and state labels based on selected country."""
-    file_path = os.path.join('state_zip_labels.txt')
     import simplejson
-    test_data = simplejson.loads(open(file_path).read())
+    test_data = simplejson.loads(
+        open(GetPathForDataFile('state_zip_labels.txt')).read())
 
     driver = WebDriver(self._launcher.GetURL(), {})
     driver.get(self.AUTOFILL_EDIT_ADDRESS)
