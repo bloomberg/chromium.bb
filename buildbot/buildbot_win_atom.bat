@@ -4,8 +4,6 @@ rem found in the LICENSE file.
 
 echo on
 
-call buildbot\msvs_env.bat
-
 set MODE=%1
 set BITS=%2
 
@@ -25,28 +23,28 @@ if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 set PATH=%OLD_PATH%
 
 echo @@@BUILD_STEP small_tests@@@
-call vcvarsall.bat %VCBITS% && call scons.bat ^
+call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 ^
  -k --verbose --mode=%MODE%-win,nacl,doc small_tests platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP medium_tests@@@
-call vcvarsall.bat %VCBITS% && call scons.bat ^
+call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 ^
  -k --verbose --mode=%MODE%-win,nacl,doc medium_tests platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP large_tests@@@
-call vcvarsall.bat %VCBITS% && call scons.bat ^
+call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 ^
  -k --verbose --mode=%MODE%-win,nacl,doc large_tests platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP chrome_browser_tests@@@
-call vcvarsall.bat %VCBITS% && call scons.bat ^
+call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 ^
  -k --verbose --mode=%MODE%-win,nacl,doc SILENT=1 platform=x86-%BITS% ^
