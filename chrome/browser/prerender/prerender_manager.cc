@@ -341,6 +341,10 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
   bool within_window = WithinWindow();
   PrerenderManager* prerender_manager =
       tab_contents->profile()->GetPrerenderManager();
+  if (!prerender_manager)
+    return;
+  if (!prerender_manager->is_enabled())
+    return;
   UMA_HISTOGRAM_MEDIUM_TIMES(
       base::FieldTrial::MakeName("Prerender.PerceivedPLT", "Prefetch"),
       perceived_page_load_time);
