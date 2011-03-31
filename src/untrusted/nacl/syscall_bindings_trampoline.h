@@ -34,8 +34,8 @@ union NaClMultimediaEvent;
  * parking instrumentation (tls related calls).
  */
 
-extern void IRT_pre_irtcall_hook();
-extern void IRT_post_irtcall_hook();
+extern void IRT_pre_irtcall_hook(void);
+extern void IRT_post_irtcall_hook(void);
 
 #define NACL_GC_WRAP_SYSCALL(_expr) \
   ({                                \
@@ -120,7 +120,7 @@ typedef int (*TYPE_nacl_thread_nice) (const int nice);
 /* mutex */
 /* ============================================================ */
 
-typedef int (*TYPE_nacl_mutex_create) ();
+typedef int (*TYPE_nacl_mutex_create) (void);
 typedef int (*TYPE_nacl_mutex_lock) (int mutex);
 typedef int (*TYPE_nacl_mutex_unlock) (int mutex);
 typedef int (*TYPE_nacl_mutex_trylock) (int mutex);
@@ -129,13 +129,13 @@ typedef int (*TYPE_nacl_mutex_trylock) (int mutex);
 /* condvar */
 /* ============================================================ */
 
-typedef int (*TYPE_nacl_cond_create) ();
+typedef int (*TYPE_nacl_cond_create) (void);
 typedef int (*TYPE_nacl_cond_wait) (int cv, int mutex);
 typedef int (*TYPE_nacl_cond_signal) (int cv);
 typedef int (*TYPE_nacl_cond_broadcast) (int cv);
 typedef int (*TYPE_nacl_cond_timed_wait_abs) (int condvar,
                                               int mutex,
-                                              struct timespec *abstime);
+                                              const struct timespec *abstime);
 
 /* ============================================================ */
 /* semaphore */
@@ -150,16 +150,16 @@ typedef int (*TYPE_nacl_sem_post) (int sem);
 /* ============================================================ */
 
 typedef int (*TYPE_nacl_multimedia_init)(int subsystems);
-typedef int (*TYPE_nacl_multimedia_shutdown)();
+typedef int (*TYPE_nacl_multimedia_shutdown)(void);
 typedef int (*TYPE_nacl_video_init)(int width, int height);
-typedef int (*TYPE_nacl_video_shutdown)();
+typedef int (*TYPE_nacl_video_shutdown)(void);
 typedef int (*TYPE_nacl_video_update)(const void* data);
 typedef int (*TYPE_nacl_video_poll_event)(union NaClMultimediaEvent *event);
 /* NOTE: we cannot forward declare enums in C */
 typedef int (*TYPE_nacl_audio_init)(/*enum NaClAudioFormat*/ int format,
                                     int desired_samples,
                                     int *obtained_samples);
-typedef int (*TYPE_nacl_audio_shutdown)();
+typedef int (*TYPE_nacl_audio_shutdown)(void);
 typedef int (*TYPE_nacl_audio_stream)(const void *data, size_t *size);
 
 /* ============================================================ */
@@ -170,7 +170,7 @@ typedef int (*TYPE_nacl_getdents) (int desc, void *dirp, size_t count);
 
 typedef int (*TYPE_nacl_gettimeofday) (struct timeval *tv, void *tz);
 
-typedef int (*TYPE_nacl_sched_yield) ();
+typedef int (*TYPE_nacl_sched_yield) (void);
 
 typedef int (*TYPE_nacl_sysconf) (int name, int *res);
 
@@ -193,7 +193,7 @@ typedef void (*TYPE_nacl_null) (void);
 
 typedef int (*TYPE_nacl_tls_init) (void *tdb, int size);
 
-typedef void *(*TYPE_nacl_tls_get) ();
+typedef void *(*TYPE_nacl_tls_get) (void);
 
 typedef int (*TYPE_nacl_dyncode_copy) (void *dest, const void *src,
                                        size_t size);
