@@ -730,7 +730,7 @@ LogFunctionMap g_log_function_mapping;
 
 #define IPC_MESSAGE_FORWARD_DELAY_REPLY(msg_class, obj, member_func) \
     case msg_class::ID: \
-    msg_class::DispatchDelayReply(&ipc_message__, obj, &member_func); \
+    msg_is_ok__ = msg_class::DispatchDelayReply(&ipc_message__, obj, &member_func); \
     break;
 
 #define IPC_MESSAGE_HANDLER_DELAY_REPLY(msg_class, member_func) \

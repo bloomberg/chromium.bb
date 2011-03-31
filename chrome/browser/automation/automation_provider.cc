@@ -339,7 +339,8 @@ void AutomationProvider::OnChannelConnected(int pid) {
 
 bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AutomationProvider, message)
+  bool deserialize_success = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(AutomationProvider, message, deserialize_success)
 #if !defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WindowDrag,
                                     WindowSimulateDrag)
@@ -407,8 +408,10 @@ bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                                     OnRunUnloadHandlers)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetZoomLevel, OnSetZoomLevel)
 #endif  // defined(OS_WIN)
-    IPC_MESSAGE_UNHANDLED(handled = false;OnUnhandledMessage())
-  IPC_END_MESSAGE_MAP()
+    IPC_MESSAGE_UNHANDLED(handled = false; OnUnhandledMessage())
+  IPC_END_MESSAGE_MAP_EX()
+  if (!deserialize_success)
+    OnMessageDeserializationFailure();
   return handled;
 }
 
@@ -422,6 +425,12 @@ void AutomationProvider::OnUnhandledMessage() {
              << "for test code (TestingAutomationProvider), and "
              << "switches::kAutomationClientChannelID for everything else "
              << "(like ChromeFrame). Closing the automation channel.";
+  channel_->Close();
+}
+
+void AutomationProvider::OnMessageDeserializationFailure() {
+  LOG(ERROR) << "Failed to deserialize IPC message. "
+             << "Closing the automation channel.";
   channel_->Close();
 }
 

@@ -179,6 +179,10 @@ class AutomationProvider
   // Returns NULL on failure.
   RenderViewHost* GetViewForTab(int tab_handle);
 
+  // Called on IPC message deserialization failure. Prints an error message
+  // and closes the IPC channel.
+  void OnMessageDeserializationFailure();
+
   scoped_ptr<AutomationAutocompleteEditTracker> autocomplete_edit_tracker_;
   scoped_ptr<AutomationBrowserTracker> browser_tracker_;
   scoped_ptr<InitialLoadObserver> initial_load_observer_;

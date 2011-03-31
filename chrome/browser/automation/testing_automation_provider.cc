@@ -193,7 +193,10 @@ void TestingAutomationProvider::Observe(NotificationType type,
 bool TestingAutomationProvider::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(TestingAutomationProvider, message)
+  bool deserialize_success = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(TestingAutomationProvider,
+                           message,
+                           deserialize_success)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CloseBrowser, CloseBrowser)
     IPC_MESSAGE_HANDLER(AutomationMsg_CloseBrowserRequestAsync,
                         CloseBrowserAsync)
@@ -382,7 +385,9 @@ bool TestingAutomationProvider::OnMessageReceived(
 
     IPC_MESSAGE_UNHANDLED(
         handled = AutomationProvider::OnMessageReceived(message))
-  IPC_END_MESSAGE_MAP()
+  IPC_END_MESSAGE_MAP_EX()
+  if (!deserialize_success)
+    OnMessageDeserializationFailure();
   return handled;
 }
 
