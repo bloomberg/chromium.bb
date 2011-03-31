@@ -12,6 +12,9 @@ const char kSettingColor[] = "color";
 // Page orientation: true for landscape, false for portrait.
 const char kSettingLandscape[] = "landscape";
 
+// Print to PDF option: true if selected, false if not.
+const char kSettingPrintToPDF[] = "printToPDF";
+
 // Printer name.
 const char kSettingPrinterName[] = "printerName";
 

@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/shell_dialogs.h"
 #include "content/browser/webui/web_ui.h"
 
 class EnumeratePrintersTaskProxy;
@@ -18,13 +19,20 @@ class PrintBackend;
 
 // The handler for Javascript messages related to the "print preview" dialog.
 class PrintPreviewHandler : public WebUIMessageHandler,
-                            public base::SupportsWeakPtr<PrintPreviewHandler> {
+                            public base::SupportsWeakPtr<PrintPreviewHandler>,
+                            public SelectFileDialog::Listener {
  public:
   PrintPreviewHandler();
   virtual ~PrintPreviewHandler();
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
+
+  // SelectFileDialog::Listener implementation.
+  virtual void FileSelected(const FilePath& path, int index, void* params);
+
+  // Displays a modal dialog, prompting the user to select a file.
+  void SelectFile();
 
  private:
   friend class EnumeratePrintersTaskProxy;
@@ -60,6 +68,9 @@ class PrintPreviewHandler : public WebUIMessageHandler,
 
   // Set to true if the preview should be landscape.
   bool landscape_;
+
+  // The underlying dialog object.
+  scoped_refptr<SelectFileDialog> select_file_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandler);
 };

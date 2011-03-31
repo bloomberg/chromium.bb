@@ -9,12 +9,17 @@
 #include "base/json/json_reader.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
+#include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/print_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "printing/backend/print_backend.h"
+#include "printing/native_metafile_factory.h"
+#include "printing/native_metafile.h"
 #include "printing/print_job_constants.h"
 
 namespace {
@@ -105,6 +110,29 @@ class EnumeratePrintersTaskProxy
   DISALLOW_COPY_AND_ASSIGN(EnumeratePrintersTaskProxy);
 };
 
+// A Task implementation that stores a PDF file on disk.
+class PrintToPdfTask : public Task {
+ public:
+  // Takes ownership of |metafile|.
+  PrintToPdfTask(printing::NativeMetafile* metafile, const FilePath& path)
+      : metafile_(metafile), path_(path) {
+  }
+
+  ~PrintToPdfTask() {}
+
+  // Task implementation
+  virtual void Run() {
+    metafile_->SaveTo(path_);
+  }
+
+ private:
+  // The metafile holding the PDF data.
+  scoped_ptr<printing::NativeMetafile> metafile_;
+
+  // The absolute path where the file will be saved.
+  FilePath path_;
+};
+
 PrintPreviewHandler::PrintPreviewHandler()
     : print_backend_(printing::PrintBackend::CreateInstance(NULL)),
       need_to_generate_preview_(true),
@@ -113,6 +141,8 @@ PrintPreviewHandler::PrintPreviewHandler()
 }
 
 PrintPreviewHandler::~PrintPreviewHandler() {
+  if (select_file_dialog_.get())
+    select_file_dialog_->ListenerDestroyed();
 }
 
 void PrintPreviewHandler::RegisterMessages() {
@@ -163,7 +193,14 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
   if (!settings.get())
     return;
-  web_ui_->GetRenderViewHost()->PrintForPrintPreview(*settings);
+
+  bool print_to_pdf;
+  settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
+
+  if (print_to_pdf)
+    SelectFile();
+  else
+    web_ui_->GetRenderViewHost()->PrintForPrintPreview(*settings);
 }
 
 void PrintPreviewHandler::SendPrinterList(const ListValue& printers) {
@@ -188,4 +225,45 @@ void PrintPreviewHandler::ProcessLandscapeSetting(
     landscape_ = landscape;
     need_to_generate_preview_ = true;
   }
+}
+
+void PrintPreviewHandler::SelectFile() {
+  SelectFileDialog::FileTypeInfo file_type_info;
+  file_type_info.extensions.resize(1);
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pdf"));
+
+  if (!select_file_dialog_.get())
+    select_file_dialog_ = SelectFileDialog::Create(this);
+
+  select_file_dialog_->SelectFile(
+      SelectFileDialog::SELECT_SAVEAS_FILE,
+      string16(),
+      FilePath(),
+      &file_type_info,
+      0,
+      FILE_PATH_LITERAL(""),
+      platform_util::GetTopLevel(
+          web_ui_->tab_contents()->GetNativeView()),
+      NULL);
+}
+
+void PrintPreviewHandler::FileSelected(const FilePath& path,
+                                       int index, void* params) {
+#if defined(OS_POSIX)
+  PrintPreviewUIHTMLSource::PrintPreviewData data;
+  PrintPreviewUI* pp_ui = reinterpret_cast<PrintPreviewUI*>(web_ui_);
+  pp_ui->html_source()->GetPrintPreviewData(&data);
+  DCHECK(data.first != NULL);
+  DCHECK(data.second > 0);
+
+  printing::NativeMetafile* metafile =
+      printing::NativeMetafileFactory::CreateFromData(data.first->memory(),
+                                                      data.second);
+  metafile->FinishDocument();
+
+  PrintToPdfTask* task = new PrintToPdfTask(metafile, path);
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, task);
+#else
+  NOTIMPLEMENTED();
+#endif
 }

@@ -9,6 +9,7 @@ namespace printing {
 
 extern const char kSettingColor[];
 extern const char kSettingLandscape[];
+extern const char kSettingPrintToPDF[];
 extern const char kSettingPrinterName[];
 
 }  // namespace printing

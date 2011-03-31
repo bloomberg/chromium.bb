@@ -195,6 +195,7 @@ function getSettingsJSON() {
   var collate = $('collate').checked;
   var landscape = isLandscape();
   var color = isColor();
+  var printToPDF = (printerName == localStrings.getString('printToPDF'));
 
   return JSON.stringify({'printerName': printerName,
                          'pageRange': pageRangesInfo,
@@ -203,7 +204,8 @@ function getSettingsJSON() {
                          'copies': copies,
                          'collate': collate,
                          'landscape': landscape,
-                         'color': color});
+                         'color': color,
+                         'printToPDF': printToPDF});
 }
 
 /**
