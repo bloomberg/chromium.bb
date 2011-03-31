@@ -39,8 +39,8 @@ ExtendedContentSettings::ExtendedContentSettings(
 
 ExtendedContentSettings::~ExtendedContentSettings() {}
 
-BaseProvider::BaseProvider(bool is_otr)
-    : is_off_the_record_(is_otr) {
+BaseProvider::BaseProvider(bool is_incognito)
+    : is_incognito_(is_incognito) {
 }
 
 BaseProvider::~BaseProvider() {}
@@ -79,7 +79,7 @@ ContentSetting BaseProvider::GetContentSetting(
   // Resolve content settings with resource identifier.
   // 1. Check for pattern that exactly match the url/host
   //     1.1 In the content-settings-map
-  //     1.2 In the off_the_record content-settings-map
+  //     1.2 In the incognito content-settings-map
   // 3. Shorten the url subdomain by subdomain and try to find a pattern in
   //     3.1 OTR content-settings-map
   //     3.2 content-settings-map
@@ -100,8 +100,8 @@ ContentSetting BaseProvider::GetContentSetting(
   // If this map is not for an incognito profile, these searches will never
   // match. The additional incognito exceptions always overwrite the
   // regular ones.
-  i = off_the_record_settings_.find(host);
-  if (i != off_the_record_settings_.end() &&
+  i = incognito_settings_.find(host);
+  if (i != incognito_settings_.end() &&
       i->second.content_settings_for_resources.find(requested_setting) !=
       i->second.content_settings_for_resources.end()) {
     return i->second.content_settings_for_resources.find(
@@ -111,8 +111,8 @@ ContentSetting BaseProvider::GetContentSetting(
   // Match patterns starting with the most concrete pattern match.
   for (std::string key =
        std::string(ContentSettingsPattern::kDomainWildcard) + host; ; ) {
-    HostContentSettings::const_iterator i(off_the_record_settings_.find(key));
-    if (i != off_the_record_settings_.end() &&
+    HostContentSettings::const_iterator i(incognito_settings_.find(key));
+    if (i != incognito_settings_.end() &&
         i->second.content_settings_for_resources.find(requested_setting) !=
         i->second.content_settings_for_resources.end()) {
       return i->second.content_settings_for_resources.find(
@@ -146,7 +146,7 @@ void BaseProvider::GetAllContentSettingsRules(
   content_setting_rules->clear();
 
   const HostContentSettings* map_to_return =
-      is_off_the_record_ ? &off_the_record_settings_ : &host_content_settings_;
+      is_incognito_ ? &incognito_settings_ : &host_content_settings_;
   ContentSettingsTypeResourceIdentifierPair requested_setting(
       content_type, resource_identifier);
 
@@ -192,8 +192,8 @@ ContentSettings BaseProvider::GetNonDefaultContentSettings(
   // If this map is not for an incognito profile, these searches will never
   // match. The additional incognito exceptions always overwrite the
   // regular ones.
-  i = off_the_record_settings_.find(host);
-  if (i != off_the_record_settings_.end()) {
+  i = incognito_settings_.find(host);
+  if (i != incognito_settings_.end()) {
     for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j)
       if (i->second.content_settings.settings[j] != CONTENT_SETTING_DEFAULT)
         output.settings[j] = i->second.content_settings.settings[j];
@@ -202,8 +202,8 @@ ContentSettings BaseProvider::GetNonDefaultContentSettings(
   // Match patterns starting with the most concrete pattern match.
   for (std::string key =
        std::string(ContentSettingsPattern::kDomainWildcard) + host; ; ) {
-    HostContentSettings::const_iterator i(off_the_record_settings_.find(key));
-    if (i != off_the_record_settings_.end()) {
+    HostContentSettings::const_iterator i(incognito_settings_.find(key));
+    if (i != incognito_settings_.end()) {
       for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
         if (output.settings[j] == CONTENT_SETTING_DEFAULT)
           output.settings[j] = i->second.content_settings.settings[j];

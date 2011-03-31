@@ -26,7 +26,7 @@ class ProxySettingsHTMLSource : public ChromeURLDataManager::DataSource {
   // Called when the network layer has requested a resource underneath
   // the path we registered.
   virtual void StartDataRequest(const std::string& path,
-                                bool is_off_the_record,
+                                bool is_incognito,
                                 int request_id);
   virtual std::string GetMimeType(const std::string&) const {
     return "text/html";
@@ -45,7 +45,7 @@ ProxySettingsHTMLSource::ProxySettingsHTMLSource(
 }
 
 void ProxySettingsHTMLSource::StartDataRequest(const std::string& path,
-                                               bool is_off_the_record,
+                                               bool is_incognito,
                                                int request_id) {
   SetFontAndTextDirection(localized_strings_.get());
 

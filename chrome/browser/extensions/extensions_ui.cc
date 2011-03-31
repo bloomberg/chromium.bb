@@ -90,7 +90,7 @@ ExtensionsUIHTMLSource::ExtensionsUIHTMLSource()
 }
 
 void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
-    bool is_off_the_record, int request_id) {
+    bool is_incognito, int request_id) {
   DictionaryValue localized_strings;
   localized_strings.SetString("title",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_TITLE));

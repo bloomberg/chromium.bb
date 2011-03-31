@@ -22,7 +22,7 @@ ThumbnailSource::~ThumbnailSource() {
 }
 
 void ThumbnailSource::StartDataRequest(const std::string& path,
-                                       bool is_off_the_record,
+                                       bool is_incognito,
                                        int request_id) {
   scoped_refptr<RefCountedBytes> data;
   if (top_sites_->GetPageThumbnail(GURL(path), &data)) {

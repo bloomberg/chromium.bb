@@ -76,8 +76,8 @@ class PrefDefaultProvider : public DefaultProviderInterface,
 
   Profile* profile_;
 
-  // Whether this settings map is for an OTR session.
-  bool is_off_the_record_;
+  // Whether this settings map is for an Incognito session.
+  bool is_incognito_;
 
   // Used around accesses to the default_content_settings_ object to guarantee
   // thread safety.

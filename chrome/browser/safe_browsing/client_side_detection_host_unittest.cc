@@ -159,7 +159,7 @@ class ClientSideDetectionHostTest : public RenderViewHostTestHarness {
 
   void ExpectPreClassificationChecks(const GURL& url,
                                      const bool* is_private,
-                                     const bool* is_off_the_record,
+                                     const bool* is_incognito,
                                      const bool* match_csd_whitelist,
                                      const bool* get_valid_cached_result,
                                      const bool* is_in_cache,
@@ -168,9 +168,9 @@ class ClientSideDetectionHostTest : public RenderViewHostTestHarness {
       EXPECT_CALL(*csd_service_, IsPrivateIPAddress(_))
           .WillOnce(Return(*is_private));
     }
-    if (is_off_the_record) {
+    if (is_incognito) {
       EXPECT_CALL(*mock_profile_, IsOffTheRecord())
-          .WillRepeatedly(Return(*is_off_the_record));
+          .WillRepeatedly(Return(*is_incognito));
     }
     if (match_csd_whitelist) {
       EXPECT_CALL(*sb_service_, MatchCsdWhitelistUrl(url))

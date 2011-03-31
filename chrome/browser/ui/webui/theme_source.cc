@@ -41,7 +41,7 @@ ThemeSource::~ThemeSource() {
 }
 
 void ThemeSource::StartDataRequest(const std::string& path,
-                                   bool is_off_the_record,
+                                   bool is_incognito,
                                    int request_id) {
   // Our path may include cachebuster arguments, so trim them off.
   std::string uncached_path = StripQueryParams(path);
@@ -49,8 +49,8 @@ void ThemeSource::StartDataRequest(const std::string& path,
   if (uncached_path == kNewTabCSSPath ||
       uncached_path == kNewIncognitoTabCSSPath) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    DCHECK((uncached_path == kNewTabCSSPath && !is_off_the_record) ||
-           (uncached_path == kNewIncognitoTabCSSPath && is_off_the_record));
+    DCHECK((uncached_path == kNewTabCSSPath && !is_incognito) ||
+           (uncached_path == kNewIncognitoTabCSSPath && is_incognito));
 
     SendResponse(request_id, css_bytes_);
     return;

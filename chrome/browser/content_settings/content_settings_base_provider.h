@@ -100,16 +100,16 @@ class BaseProvider : public ProviderInterface {
     return &host_content_settings_;
   }
 
-  HostContentSettings* off_the_record_settings() {
-    return &off_the_record_settings_;
+  HostContentSettings* incognito_settings() {
+    return &incognito_settings_;
   }
 
   base::Lock& lock() const {
     return lock_;
   }
 
-  bool is_off_the_record() const {
-    return is_off_the_record_;
+  bool is_incognito() const {
+    return is_incognito_;
   }
 
  private:
@@ -118,11 +118,11 @@ class BaseProvider : public ProviderInterface {
   HostContentSettings host_content_settings_;
 
   // Whether this settings map is for an OTR session.
-  bool is_off_the_record_;
+  bool is_incognito_;
 
   // Differences to the preference-stored host content settings for
   // incognito settings.
-  HostContentSettings off_the_record_settings_;
+  HostContentSettings incognito_settings_;
 
   // Used around accesses to the content_settings_ object to guarantee
   // thread safety.

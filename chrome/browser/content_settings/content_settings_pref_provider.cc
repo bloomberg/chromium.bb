@@ -77,7 +77,7 @@ namespace content_settings {
 
 PrefDefaultProvider::PrefDefaultProvider(Profile* profile)
     : profile_(profile),
-      is_off_the_record_(profile_->IsOffTheRecord()),
+      is_incognito_(profile_->IsOffTheRecord()),
       updating_preferences_(false) {
   initializing_ = true;
   PrefService* prefs = profile->GetPrefs();
@@ -118,7 +118,7 @@ void PrefDefaultProvider::UpdateDefaultSetting(
 
   // The default settings may not be directly modified for OTR sessions.
   // Instead, they are synced to the main profile's setting.
-  if (is_off_the_record_)
+  if (is_incognito_)
     return;
 
   PrefService* prefs = profile_->GetPrefs();
@@ -159,7 +159,7 @@ void PrefDefaultProvider::ResetToDefaults() {
   default_content_settings_ = ContentSettings();
   ForceDefaultsToBeExplicit();
 
-  if (!is_off_the_record_) {
+  if (!is_incognito_) {
     PrefService* prefs = profile_->GetPrefs();
     updating_preferences_ = true;
     prefs->ClearPref(prefs::kDefaultContentSettings);
@@ -185,7 +185,7 @@ void PrefDefaultProvider::Observe(NotificationType type,
       return;
     }
 
-    if (!is_off_the_record_) {
+    if (!is_incognito_) {
       NotifyObservers(ContentSettingsDetails(
             ContentSettingsPattern(), CONTENT_SETTINGS_TYPE_DEFAULT, ""));
     }
@@ -377,8 +377,8 @@ void PrefProvider::SetContentSetting(
   DictionaryValue* all_settings_dictionary = NULL;
 
   // Select content-settings-map to write to.
-  HostContentSettings* map_to_modify = off_the_record_settings();
-  if (!is_off_the_record()) {
+  HostContentSettings* map_to_modify = incognito_settings();
+  if (!is_incognito()) {
     prefs = profile_->GetPrefs();
     all_settings_dictionary =
         prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
@@ -459,7 +459,7 @@ void PrefProvider::SetContentSetting(
   }
 
   updating_preferences_ = true;
-  if (!is_off_the_record())
+  if (!is_incognito())
     ScopedUserPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
   updating_preferences_ = false;
 
@@ -472,10 +472,10 @@ void PrefProvider::ResetToDefaults() {
   {
     base::AutoLock auto_lock(lock());
     host_content_settings()->clear();
-    off_the_record_settings()->clear();
+    incognito_settings()->clear();
   }
 
-  if (!is_off_the_record()) {
+  if (!is_incognito()) {
     PrefService* prefs = profile_->GetPrefs();
     updating_preferences_ = true;
     prefs->ClearPref(prefs::kContentSettingsPatterns);
@@ -489,9 +489,9 @@ void PrefProvider::ClearAllContentSettingsRules(
 
   PrefService* prefs = NULL;
   DictionaryValue* all_settings_dictionary = NULL;
-  HostContentSettings* map_to_modify = off_the_record_settings();
+  HostContentSettings* map_to_modify = incognito_settings();
 
-  if (!is_off_the_record()) {
+  if (!is_incognito()) {
     prefs = profile_->GetPrefs();
     all_settings_dictionary =
         prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
@@ -531,7 +531,7 @@ void PrefProvider::ClearAllContentSettingsRules(
   }
 
   updating_preferences_ = true;
-  if (!is_off_the_record())
+  if (!is_incognito())
     ScopedUserPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
   updating_preferences_ = false;
 
@@ -558,7 +558,7 @@ void PrefProvider::Observe(
       return;
     }
 
-    if (!is_off_the_record()) {
+    if (!is_incognito()) {
       NotifyObservers(ContentSettingsDetails(ContentSettingsPattern(),
                                              CONTENT_SETTINGS_TYPE_DEFAULT,
                                              ""));
@@ -593,7 +593,7 @@ void PrefProvider::ReadExceptions(bool overwrite) {
     DictionaryValue* mutable_settings;
     scoped_ptr<DictionaryValue> mutable_settings_scope;
 
-    if (!is_off_the_record()) {
+    if (!is_incognito()) {
       mutable_settings =
           prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
     } else {
