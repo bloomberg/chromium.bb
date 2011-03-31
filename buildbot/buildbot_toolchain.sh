@@ -41,6 +41,8 @@ cd ../toolchain/${PLATFORM}_x86/.tmp
 tar xfz ../../../tools/naclsdk.tgz
 mv sdk/nacl-sdk/* ../
 
+cd ../../..
+
 if [[ ${PLATFORM} == win ]]; then
   cmd /c "call buildbot\\buildbot_win.bat opt 32"
 elif [[ ${PLATFORM} == mac ]]; then
