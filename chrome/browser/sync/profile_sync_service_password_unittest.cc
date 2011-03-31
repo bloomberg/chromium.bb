@@ -6,7 +6,9 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/synchronization/waitable_event.h"
 #include "base/task.h"
+#include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store.h"
@@ -28,6 +30,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "chrome/test/profile_mock.h"
+#include "content/browser/browser_thread.h"
 #include "content/common/notification_observer_mock.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
@@ -64,6 +67,7 @@ using testing::DoDefault;
 using testing::ElementsAre;
 using testing::Eq;
 using testing::Invoke;
+using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::SaveArg;
 using testing::SetArgumentPointee;
@@ -77,6 +81,10 @@ ACTION_P3(MakePasswordSyncComponents, service, ps, dtc) {
       new PasswordChangeProcessor(model_associator, ps, dtc);
   return ProfileSyncFactory::SyncComponents(model_associator,
                                             change_processor);
+}
+
+static void QuitMessageLoop() {
+  MessageLoop::current()->Quit();
 }
 
 class MockPasswordStore : public PasswordStore {
@@ -143,6 +151,9 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     registrar_.Add(&observer_,
         NotificationType::SYNC_CONFIGURE_DONE,
         NotificationService::AllSources());
+    registrar_.Add(&observer_,
+        NotificationType::SYNC_PAUSED,
+        NotificationService::AllSources());
   }
 
   virtual void TearDown() {
@@ -150,6 +161,19 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     notification_service_->TearDown();
     db_thread_.Stop();
     MessageLoop::current()->RunAllPending();
+  }
+
+  static void SignalEvent(base::WaitableEvent* done) {
+    done->Signal();
+  }
+
+  void FlushLastDBTask() {
+    base::WaitableEvent done(false, false);
+    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+       NewRunnableFunction(&ProfileSyncServicePasswordTest::SignalEvent,
+                           &done));
+    done.TimedWait(base::TimeDelta::FromMilliseconds(
+        TestTimeouts::action_timeout_ms()));
   }
 
   void StartSyncService(Task* root_task, Task* node_task) {
@@ -185,11 +209,17 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
       EXPECT_CALL(observer_,
           Observe(
               NotificationType(NotificationType::SYNC_CONFIGURE_DONE),_,_));
+      EXPECT_CALL(observer_,
+          Observe(
+              NotificationType(NotificationType::SYNC_PAUSED),_,_))
+          .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
 
       service_->RegisterDataTypeController(data_type_controller);
-      service_->SetPassphrase("foo", false, true);
       service_->Initialize();
+      MessageLoop::current()->Run();
+      FlushLastDBTask();
 
+      service_->SetPassphrase("foo", false, true);
       MessageLoop::current()->Run();
     }
   }
@@ -380,8 +410,7 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeEntriesEmptySyncSameUsername) {
   EXPECT_TRUE(ComparePasswords(expected_forms[1], sync_forms[0]));
 }
 
-// Flaky until http://crbug.com/77686 is resolved.
-TEST_F(ProfileSyncServicePasswordTest, FLAKY_HasNativeHasSyncNoMerge) {
+TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncNoMerge) {
   std::vector<PasswordForm*> native_forms;
   std::vector<PasswordForm> sync_forms;
   std::vector<PasswordForm> expected_forms;
@@ -439,8 +468,7 @@ TEST_F(ProfileSyncServicePasswordTest, FLAKY_HasNativeHasSyncNoMerge) {
   EXPECT_TRUE(ComparePasswords(expected_forms[1], new_sync_forms[1]));
 }
 
-// Flaky until http://crbug.com/77686 is resolved.
-TEST_F(ProfileSyncServicePasswordTest, FLAKY_HasNativeHasSyncMergeEntry) {
+TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncMergeEntry) {
   std::vector<PasswordForm*> native_forms;
   std::vector<PasswordForm> sync_forms;
   std::vector<PasswordForm> expected_forms;
