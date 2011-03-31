@@ -109,9 +109,6 @@ static const char* kSynchronizedPreferences[] = {
   prefs::kDesktopNotificationAllowedOrigins,
   prefs::kDesktopNotificationDeniedOrigins,
 
-  // Cookie prompt dialog.
-  prefs::kCookiePromptExpanded,
-
   // (Mac) Application menu.
   prefs::kConfirmToQuitEnabled,
 

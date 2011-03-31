@@ -255,9 +255,6 @@ const char kDnsPrefetchingHostReferralList[] =
 // Disables the SPDY protocol.
 const char kDisableSpdy[] = "spdy.disabled";
 
-// Is the cookie prompt expanded?
-const char kCookiePromptExpanded[] = "cookieprompt.expanded";
-
 // Boolean pref indicating whether the instant confirm dialog has been shown.
 const char kInstantConfirmDialogShown[] = "instant.confirm_dialog_shown";
 

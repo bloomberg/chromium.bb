@@ -613,29 +613,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
 #endif  // OS_MACOSX
 }
 
-// TestScribe ID - 433564.
-// TODO(annapop): Enable after crbug.com/71510 is fixed.
-IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
-                       DISABLED_kCookiePromptExpanded) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kCookiePromptExpanded),
-            GetPrefs(1)->GetBoolean(prefs::kCookiePromptExpanded));
-
-  bool new_kCookiePromptExpanded = !GetPrefs(0)->GetBoolean(
-      prefs::kCookiePromptExpanded);
-  GetVerifierPrefs()->SetBoolean(prefs::kCookiePromptExpanded,
-      new_kCookiePromptExpanded);
-  GetPrefs(0)->SetBoolean(prefs::kCookiePromptExpanded,
-      new_kCookiePromptExpanded);
-
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
-  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kCookiePromptExpanded),
-            GetPrefs(0)->GetBoolean(prefs::kCookiePromptExpanded));
-  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kCookiePromptExpanded),
-            GetPrefs(1)->GetBoolean(prefs::kCookiePromptExpanded));
-}
-
 // TestScribe ID - 425642.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kPromptForDownload) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
