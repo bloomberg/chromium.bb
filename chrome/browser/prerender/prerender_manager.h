@@ -97,9 +97,19 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   unsigned int max_elements() const { return max_elements_; }
   void set_max_elements(unsigned int num) { max_elements_ = num; }
 
+  // Returns whether prerendering is currently enabled for this manager.
+  // Must be called on the UI thread.
+  bool is_enabled() const;
+
+  // Set whether prerendering is currently enabled for this manager.
+  // Must be called on the UI thread.
+  // If |enabled| is false, existing prerendered pages will still persist until
+  // they time out, but new ones will not be generated.
+  void set_enabled(bool enabled);
+
   static PrerenderManagerMode GetMode();
   static void SetMode(PrerenderManagerMode mode);
-  static bool IsPrerenderingEnabled();
+  static bool IsPrerenderingPossible();
   static bool IsControlGroup();
 
   // The following static method can be called from any thread, but will result
@@ -165,6 +175,11 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   void RemovePendingPreload(PrerenderContents* entry);
 
   bool DoesRateLimitAllowPrerender() const;
+
+  // Specifies whether prerendering is currently enabled for this
+  // manager. The value can change dynamically during the lifetime
+  // of the PrerenderManager.
+  bool enabled_;
 
   Profile* profile_;
 

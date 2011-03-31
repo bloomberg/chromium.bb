@@ -771,7 +771,8 @@ PrefService* ProfileImpl::GetPrefs() {
         GetExtensionPrefValueMap()));
 
     DCHECK(!net_pref_observer_.get());
-    net_pref_observer_.reset(new NetPrefObserver(prefs_.get()));
+    net_pref_observer_.reset(
+        new NetPrefObserver(prefs_.get(), GetPrerenderManager()));
   }
 
   return prefs_.get();
@@ -1492,7 +1493,7 @@ PrefProxyConfigTracker* ProfileImpl::GetProxyConfigTracker() {
 }
 
 prerender::PrerenderManager* ProfileImpl::GetPrerenderManager() {
-  if (!prerender::PrerenderManager::IsPrerenderingEnabled())
+  if (!prerender::PrerenderManager::IsPrerenderingPossible())
     return NULL;
   if (!prerender_manager_)
     prerender_manager_ = new prerender::PrerenderManager(this);

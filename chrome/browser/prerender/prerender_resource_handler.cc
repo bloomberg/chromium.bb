@@ -202,6 +202,8 @@ void PrerenderResourceHandler::StartPrerender(
     const GURL& referrer,
     bool make_pending) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!prerender_manager_->is_enabled())
+    return;
   if (make_pending) {
     prerender_manager_->AddPendingPreload(child_route_id_pair,
                                           url, alias_urls, referrer);

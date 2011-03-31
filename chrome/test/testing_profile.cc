@@ -770,7 +770,7 @@ ChromeURLDataManager* TestingProfile::GetChromeURLDataManager() {
 }
 
 prerender::PrerenderManager* TestingProfile::GetPrerenderManager() {
-  if (!prerender::PrerenderManager::IsPrerenderingEnabled())
+  if (!prerender::PrerenderManager::IsPrerenderingPossible())
     return NULL;
   if (!prerender_manager_)
     prerender_manager_ = new prerender::PrerenderManager(this);

@@ -7,6 +7,8 @@
 #include "base/task.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_type.h"
@@ -25,9 +27,11 @@ void SetEnforceThrottlingOnThrottlerManager(bool enforce) {
 
 }
 
-NetPrefObserver::NetPrefObserver(PrefService* prefs) {
+NetPrefObserver::NetPrefObserver(PrefService* prefs,
+                                 prerender::PrerenderManager* prerender_manager)
+    : prerender_manager_(prerender_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
+  DCHECK(prefs);
   dns_prefetching_enabled_.Init(prefs::kDnsPrefetchingEnabled, prefs, this);
   spdy_disabled_.Init(prefs::kDisableSpdy, prefs, this);
   http_throttling_enabled_.Init(prefs::kHttpThrottlingEnabled, prefs, this);
@@ -52,6 +56,8 @@ void NetPrefObserver::ApplySettings(const std::string* pref_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   chrome_browser_net::EnablePredictor(*dns_prefetching_enabled_);
+  if (prerender_manager_)
+    prerender_manager_->set_enabled(*dns_prefetching_enabled_);
   net::HttpStreamFactory::set_spdy_enabled(!*spdy_disabled_);
 
   if (!pref_name || *pref_name == prefs::kHttpThrottlingEnabled) {

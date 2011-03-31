@@ -41,14 +41,6 @@ const char kMediaPlayerExperimentName[] = "media-player";
 const char kAdvancedFileSystemExperimentName[] = "advanced-file-system";
 const char kVerticalTabsExperimentName[] = "vertical-tabs";
 
-const Experiment::Choice kPagePrerenderChoices[] = {
-  { IDS_FLAGS_PAGE_PRERENDER_AUTOMATIC, "", "" },
-  { IDS_FLAGS_PAGE_PRERENDER_ENABLED,
-    switches::kPrerender, switches::kPrerenderSwitchValueEnabled },
-  { IDS_FLAGS_PAGE_PRERENDER_DISABLED,
-    switches::kPrerender, switches::kPrerenderSwitchValueDisabled },
-};
-
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -211,13 +203,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DNS_SERVER_DESCRIPTION,
     kOsLinux,
     SINGLE_VALUE_TYPE(switches::kDnsServer)
-  },
-  {
-    "page-prerender",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_PAGE_PRERENDER_NAME,
-    IDS_FLAGS_PAGE_PRERENDER_DESCRIPTION,
-    kOsAll,
-    MULTI_VALUE_TYPE(kPagePrerenderChoices)
   },
   {
     "extension-apis",  // FLAGS:RECORD_UMA

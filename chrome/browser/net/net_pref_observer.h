@@ -12,12 +12,21 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/common/notification_observer.h"
 
+class Profile;
+
+namespace prerender {
+class PrerenderManager;
+}
+
 // Monitors network-related preferences for changes and applies them.
 // The supplied PrefService must outlive this NetPrefObserver.
 // Must be used only on the UI thread.
 class NetPrefObserver : public NotificationObserver {
  public:
-  explicit NetPrefObserver(PrefService* prefs);
+  // |prefs| must outlive this NetPrefObserver. A reference is
+  // held to |prerender_manager| if it is non-NULL.
+  NetPrefObserver(PrefService* prefs,
+                  prerender::PrerenderManager* prerender_manager);
   ~NetPrefObserver();
 
   // NotificationObserver
@@ -34,6 +43,7 @@ class NetPrefObserver : public NotificationObserver {
   BooleanPrefMember dns_prefetching_enabled_;
   BooleanPrefMember spdy_disabled_;
   BooleanPrefMember http_throttling_enabled_;
+  scoped_refptr<prerender::PrerenderManager> prerender_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NetPrefObserver);
 };

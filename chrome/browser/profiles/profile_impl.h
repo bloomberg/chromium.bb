@@ -208,6 +208,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<TransportSecurityPersister>
       transport_security_persister_;
   scoped_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;
+  scoped_refptr<prerender::PrerenderManager> prerender_manager_;
   scoped_ptr<NetPrefObserver> net_pref_observer_;
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
   scoped_ptr<TemplateURLModel> template_url_model_;
@@ -306,8 +307,6 @@ class ProfileImpl : public Profile,
 #endif
 
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
-
-  scoped_refptr<prerender::PrerenderManager> prerender_manager_;
 
   scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
 

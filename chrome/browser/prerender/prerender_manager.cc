@@ -44,7 +44,7 @@ void PrerenderManager::SetMode(PrerenderManagerMode mode) {
 }
 
 // static
-bool PrerenderManager::IsPrerenderingEnabled() {
+bool PrerenderManager::IsPrerenderingPossible() {
   return
       GetMode() == PRERENDER_MODE_ENABLED ||
       GetMode() == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP ||
@@ -78,6 +78,7 @@ struct PrerenderManager::PendingContentsData {
 
 PrerenderManager::PrerenderManager(Profile* profile)
     : rate_limit_enabled_(true),
+      enabled_(true),
       profile_(profile),
       max_prerender_age_(base::TimeDelta::FromSeconds(
           kDefaultMaxPrerenderAgeSeconds)),
@@ -380,6 +381,16 @@ void PrerenderManager::RecordTimeUntilUsed(base::TimeDelta time_until_used) {
       base::TimeDelta::FromMilliseconds(10),
       base::TimeDelta::FromSeconds(kDefaultMaxPrerenderAgeSeconds),
       50);
+}
+
+bool PrerenderManager::is_enabled() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return enabled_;
+}
+
+void PrerenderManager::set_enabled(bool enabled) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  enabled_ = enabled;
 }
 
 PrerenderContents* PrerenderManager::FindEntry(const GURL& url) {
