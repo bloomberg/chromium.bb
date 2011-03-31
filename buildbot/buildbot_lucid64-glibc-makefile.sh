@@ -63,16 +63,22 @@ echo @@@BUILD_STEP gyp_tests@@@
 python trusted_test.py --config Release || \
   (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
+echo @@@BUILD_STEP scons_compile32@@@
+./scons -k -j 8 DOXYGEN=../third_party/doxygen/linux/doxygen \
+  --nacl_glibc --verbose --mode=opt-linux,nacl,doc platform=x86-32
+
+echo @@@BUILD_STEP scons_compile64@@@
+./scons -k -j 8 DOXYGEN=../third_party/doxygen/linux/doxygen \
+  --nacl_glibc --verbose --mode=opt-linux,nacl,doc platform=x86-64
+
 echo @@@BUILD_STEP small_tests32@@@
 ./scons -k -j 8 \
-  naclsdk_mode=custom:"${PWD}"/toolchain/linux_x86 \
   --mode=dbg-host,nacl platform=x86-32 \
   --nacl_glibc --verbose small_tests || \
   (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP small_tests64@@@
 ./scons -k -j 8 \
-  naclsdk_mode=custom:"${PWD}"/toolchain/linux_x86 \
   --mode=dbg-host,nacl platform=x86-64 \
   --nacl_glibc --verbose small_tests || \
   (RETCODE=$? && echo @@@STEP_FAILURE@@@)
