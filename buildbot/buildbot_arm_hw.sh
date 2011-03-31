@@ -62,21 +62,21 @@ echo @@@BUILD_STEP small_tests@@@
 ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl small_tests platform=arm bitcode=1 \
-    sdl=none built_elsewhere=1 || \
+    sdl=none built_elsewhere=1 ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP medium_tests@@@
 ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl medium_tests platform=arm bitcode=1 \
-    sdl=none built_elsewhere=1 || \
+    sdl=none built_elsewhere=1 ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP large_tests@@@
 ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl large_tests platform=arm bitcode=1 \
-    sdl=none built_elsewhere=1 || \
+    sdl=none built_elsewhere=1 ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP begin_browser_testing@@@
@@ -86,7 +86,7 @@ ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl SILENT=1 platform=arm bitcode=1 sdl=none \
     built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 \
-    firefox_remove || \
+    firefox_remove ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP chrome_browser_tests@@@
@@ -95,7 +95,7 @@ DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority ARM_CC=gcc \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl SILENT=1 platform=arm bitcode=1 sdl=none \
     built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 \
-    chrome_browser_tests || \
+    chrome_browser_tests ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP install_plugin@@@
@@ -103,7 +103,7 @@ ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl SILENT=1 platform=arm bitcode=1 sdl=none \
     built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 \
-    firefox_install || \
+    firefox_install ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP selenium@@@
@@ -111,7 +111,7 @@ DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority ARM_CC=gcc \
     ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl SILENT=1 platform=arm bitcode=1 sdl=none \
-    built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 browser_tests || \
+    built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 browser_tests ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP end_browser_testing@@@
@@ -120,7 +120,7 @@ ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl SILENT=1 platform=arm bitcode=1 sdl=none \
     built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 \
-    firefox_remove || \
+    firefox_remove ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 

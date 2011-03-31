@@ -71,19 +71,19 @@ echo @@@BUILD_STEP scons_compile@@@
 echo @@@BUILD_STEP small_tests@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl,doc small_tests platform=arm bitcode=1 \
-    sdl=none || \
+    sdl=none ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP medium_tests@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl,doc medium_tests platform=arm bitcode=1 \
-    sdl=none || \
+    sdl=none ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP large_tests@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl,doc large_tests platform=arm bitcode=1 \
-    sdl=none || \
+    sdl=none ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP archive_build@@@

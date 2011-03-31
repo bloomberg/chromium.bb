@@ -39,27 +39,27 @@ tar xfz ../../arm-untrusted.tgz
 cd ../..
 
 echo @@@BUILD_STEP test-arm@@@
-UTMAN_DEBUG=true tools/llvm/utman.sh test-arm \
+UTMAN_DEBUG=true tools/llvm/utman.sh test-arm ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP test-arm-pic@@@
-UTMAN_DEBUG=true tools/llvm/utman.sh test-arm-pic \
+UTMAN_DEBUG=true tools/llvm/utman.sh test-arm-pic ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP test-x86-32@@@
-UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-32 \
+UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-32 ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP test-x86-32-pic@@@
-UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-32-pic \
+UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-32-pic ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP test-x86-64@@@
-UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-64 \
+UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-64 ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP test-x86-64-pic@@@
-UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-64-pic \
+UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-64-pic ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP archive_build@@@

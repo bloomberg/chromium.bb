@@ -682,13 +682,16 @@ stubout:
 # gcc:
 #   Builds GCC with glibc as a C library.
 ##################################################################
+ifeq ($(CYGWIN17), 1)
+SYSINCLUDE_HACK_TARGET=BUILD/build-full-gcc-$(CROSSARCH)/$(CROSSARCH)/sys-include
+else
+SYSINCLUDE_HACK_TARGET=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
+endif
+
 BUILD/stamp-$(CROSSARCH)-full-gcc: glibc-adhoc-files
 	rm -rf BUILD/build-full-gcc-$(CROSSARCH)
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)
-ifneq ($(CYGWIN17), 1)
-SYSINCLUDE_HACK_TARGET=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
-else
-SYSINCLUDE_HACK_TARGET=BUILD/build-full-gcc-$(CROSSARCH)/$(CROSSARCH)/sys-include
+ifeq ($(CYGWIN17), 1)
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)/gcc
 	cp -af $(DESTDIR)$(SDKROOT)/libexec/cyg*.dll \
 	    BUILD/build-full-gcc-$(CROSSARCH)/gcc

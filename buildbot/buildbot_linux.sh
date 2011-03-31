@@ -61,17 +61,17 @@ echo @@@BUILD_STEP scons_compile@@@
 
 echo @@@BUILD_STEP small_tests@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    --mode=${MODE}-linux,nacl,doc small_tests platform=x86-${BITS} || \
+    --mode=${MODE}-linux,nacl,doc small_tests platform=x86-${BITS} ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP medium_tests@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    --mode=${MODE}-linux,nacl,doc medium_tests platform=x86-${BITS} || \
+    --mode=${MODE}-linux,nacl,doc medium_tests platform=x86-${BITS} ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP large_tests@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    --mode=${MODE}-linux,nacl,doc large_tests platform=x86-${BITS} || \
+    --mode=${MODE}-linux,nacl,doc large_tests platform=x86-${BITS} ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 if [[ "${INSIDE_TOOLCHAIN:-}" == "" ]]; then
@@ -87,7 +87,7 @@ echo @@@BUILD_STEP chrome_browser_tests@@@
 DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
-    chrome_browser_tests || \
+    chrome_browser_tests ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP install_plugin@@@
@@ -98,7 +98,7 @@ echo @@@BUILD_STEP selenium@@@
 DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
-    browser_tests || \
+    browser_tests ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP end_browser_testing@@@
