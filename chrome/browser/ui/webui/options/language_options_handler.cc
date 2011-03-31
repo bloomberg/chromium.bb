@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
@@ -64,11 +65,14 @@ ListValue* LanguageOptionsHandler::GetLanguageList() {
 
   // Build the list of display names, and build the language map.
   for (size_t i = 0; i < language_codes.size(); ++i) {
-    const string16 display_name =
-        l10n_util::GetDisplayNameForLocale(language_codes[i], app_locale, true);
-    const string16 native_display_name =
+    string16 display_name =
+        l10n_util::GetDisplayNameForLocale(language_codes[i], app_locale,
+                                           false);
+    base::i18n::AdjustStringForLocaleDirection(&display_name);
+    string16 native_display_name =
         l10n_util::GetDisplayNameForLocale(language_codes[i], language_codes[i],
-                                           true);
+                                           false);
+    base::i18n::AdjustStringForLocaleDirection(&native_display_name);
     display_names.push_back(display_name);
     language_map[display_name] =
         std::make_pair(language_codes[i], native_display_name);
