@@ -268,10 +268,6 @@ void PPB_VideoDecoder_Impl::DismissPictureBuffer(
   NOTIMPLEMENTED();
 }
 
-void PPB_VideoDecoder_Impl::NotifyPictureReady() {
-  // No need to react here as we are already reacting to PictureReady.
-}
-
 void PPB_VideoDecoder_Impl::NotifyEndOfStream() {
   // TODO(vmr): Implement.
   NOTIMPLEMENTED();
