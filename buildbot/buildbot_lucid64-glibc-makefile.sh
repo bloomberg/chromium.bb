@@ -61,21 +61,21 @@ RETCODE=0
 
 echo @@@BUILD_STEP gyp_tests@@@
 python trusted_test.py --config Release || \
-  (RETCODE=$? && echo @@@BUILD_FAILED@@@)
+  (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP small_tests32@@@
 ./scons -k -j 8 \
   naclsdk_mode=custom:"${PWD}"/toolchain/linux_x86 \
   --mode=dbg-host,nacl platform=x86-32 \
   --nacl_glibc --verbose small_tests || \
-  (RETCODE=$? && echo @@@BUILD_FAILED@@@)
+  (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP small_tests64@@@
 ./scons -k -j 8 \
   naclsdk_mode=custom:"${PWD}"/toolchain/linux_x86 \
   --mode=dbg-host,nacl platform=x86-64 \
   --nacl_glibc --verbose small_tests || \
-  (RETCODE=$? && echo @@@BUILD_FAILED@@@)
+  (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 # TODO(pasko): add medium_tests, large_tests, {chrome_}browser_tests.
 

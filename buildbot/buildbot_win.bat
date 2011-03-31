@@ -49,19 +49,19 @@ echo @@@BUILD_STEP small_tests@@@
 call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  -k --verbose --mode=%MODE%-win,nacl,doc small_tests platform=x86-%BITS%
-if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@BUILD_FAILED@@@)
+if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP medium_tests@@@
 call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  -k --verbose --mode=%MODE%-win,nacl,doc medium_tests platform=x86-%BITS%
-if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@BUILD_FAILED@@@)
+if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP large_tests@@@
 call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  -k --verbose --mode=%MODE%-win,nacl,doc large_tests platform=x86-%BITS%
-if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@BUILD_FAILED@@@)
+if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 
 if "%INSIDE_TOOLCHAIN%" neq "" goto SkipArchive
 
@@ -70,7 +70,7 @@ call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  -k --verbose --mode=%MODE%-win,nacl,doc SILENT=1 platform=x86-%BITS% ^
  chrome_browser_tests
-if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@BUILD_FAILED@@@)
+if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 
 echo on
 echo @@@BUILD_STEP scons_compile@@@

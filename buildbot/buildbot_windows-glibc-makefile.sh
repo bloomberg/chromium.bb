@@ -39,7 +39,7 @@ echo "Try to download glibc revision $(tools/glibc_revision.sh)"
 if tools/glibc_download.sh tools/toolchain/win_x86 1; then
   INST_GLIBC_PROGRAM=true
 elif (($?>1)); then
-  echo @@@BUILD_FAILED@@@
+  echo @@@STEP_FAILURE@@@
   exit 100
 fi
 

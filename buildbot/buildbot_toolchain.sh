@@ -24,18 +24,18 @@ cd tools
 export INSIDE_TOOLCHAIN=1
 
 
-echo @@@clobber_toolchain@@@
+echo @@@BUILD_STEP clobber_toolchain@@@
 rm -rf ../scons-out sdk-out sdk ../toolchain SRC BUILD
 
-echo @@@compile_toolchain@@@
+echo @@@BUILD_STEP compile_toolchain@@@
 mkdir -p ../toolchain/${PLATFORM}_x86
 make clean build SDKLOC=`pwd`/sdk GCC_VERSION=4.4.3 CROSSARCH=nacl64
 
-echo @@@tar_toolchain@@@
+echo @@@BUILD_STEP tar_toolchain@@@
 tar cvfz naclsdk.tgz sdk/
 chmod a+r naclsdk.tgz
 
-echo @@@untar_toolchain@@@
+echo @@@BUILD_STEP untar_toolchain@@@
 mkdir -p ../toolchain/${PLATFORM}_x86/.tmp
 cd ../toolchain/${PLATFORM}_x86/.tmp
 tar xfz ../../../tools/naclsdk.tgz
@@ -52,7 +52,7 @@ else
   exit 1
 fi
 
-echo @@@archive_build@@@
+echo @@@BUILD_STEP archive_build@@@
 GS_BASE=gs://nativeclient-archive2/toolchain
 ../../../scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
     native_client/tools/naclsdk.tgz \
