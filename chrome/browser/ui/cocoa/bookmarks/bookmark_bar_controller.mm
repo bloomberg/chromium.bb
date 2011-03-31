@@ -533,14 +533,87 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 #pragma mark Actions
 
-- (IBAction)openBookmark:(id)sender {
+// Helper methods called on the main thread by runMenuFlashThread.
+
+- (void)setButtonFlashStateOn:(id)sender {
+  [sender highlight:YES];
+}
+
+- (void)setButtonFlashStateOff:(id)sender {
+  [sender highlight:NO];
+}
+
+-(void)cleanupAfterMenuFlashThread:(id)sender {
   [self closeFolderAndStopTrackingMenus];
+
+  // Items retained by doMenuFlashOnSeparateThread below.
+  [sender release];
+  [self release];
+}
+
+// End runMenuFlashThread helper methods.
+
+// This call is invoked only by doMenuFlashOnSeparateThread below.
+// It makes the selected BookmarkButton (which is masquerading as a menu item)
+// flash a few times to give confirmation feedback, then it closes the menu.
+// It spends all its time sleeping or scheduling UI work on the main thread.
+- (void)runMenuFlashThread:(id)sender {
+
+  // Check this is not running on the main thread, as it sleeps.
+  DCHECK(![NSThread isMainThread]);
+
+  // Duration of flash phases and number of flashes designed to evoke a
+  // slightly retro "more mac-like than the Mac" feel.
+  // Current Cocoa UI has a barely perceptible flash,probably because Apple
+  // doesn't fire the action til after the animation and so there's a hurry.
+  // As this code is fully asynchronous, it can take its time.
+  const float kBBOnFlashTime = 0.08;
+  const float kBBOffFlashTime = 0.08;
+  const int kBookmarkButtonMenuFlashes = 3;
+
+  for (int count = 0 ; count < kBookmarkButtonMenuFlashes ; count++) {
+    [self performSelectorOnMainThread:@selector(setButtonFlashStateOn:)
+                           withObject:sender
+                        waitUntilDone:NO];
+    [NSThread sleepForTimeInterval:kBBOnFlashTime];
+    [self performSelectorOnMainThread:@selector(setButtonFlashStateOff:)
+                           withObject:sender
+                        waitUntilDone:NO];
+    [NSThread sleepForTimeInterval:kBBOffFlashTime];
+  }
+  [self performSelectorOnMainThread:@selector(cleanupAfterMenuFlashThread:)
+                         withObject:sender
+                      waitUntilDone:NO];
+}
+
+// Non-blocking call which starts the process to make the selected menu item
+// flash a few times to give confirmation feedback, after which it closes the
+// menu. The item is of course actually a BookmarkButton masquerading as a menu
+// item).
+- (void)doMenuFlashOnSeparateThread:(id)sender {
+
+  // Ensure that self and sender don't go away before the animation completes.
+  // These retains are balanced in cleanupAfterMenuFlashThread above.
+  [self retain];
+  [sender retain];
+  [NSThread detachNewThreadSelector:@selector(runMenuFlashThread:)
+                           toTarget:self
+                         withObject:sender];
+}
+
+- (IBAction)openBookmark:(id)sender {
+  BOOL isMenuItem = ([sender delegate] == folderController_);
+  if (isMenuItem)
+    [self doMenuFlashOnSeparateThread:sender];
   DCHECK([sender respondsToSelector:@selector(bookmarkNode)]);
   const BookmarkNode* node = [sender bookmarkNode];
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   RecordAppLaunch(browser_->profile(), node->GetURL());
   [self openURL:node->GetURL() disposition:disposition];
+
+  if (!isMenuItem)
+    [self closeFolderAndStopTrackingMenus];
 }
 
 // Common function to open a bookmark folder of any type.

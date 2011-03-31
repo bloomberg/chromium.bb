@@ -1371,14 +1371,6 @@ TEST_F(BookmarkBarControllerTest, TestFolderButtons) {
   BookmarkBarFolderController* newBBFC = [bar_ folderController];
   EXPECT_TRUE(newBBFC);
   EXPECT_NE(oldBBFC, newBBFC);
-
-  // A click on a real bookmark should close and stop tracking the folder menus.
-  BookmarkButton* bookmarkButton = [newBBFC buttonWithTitleEqualTo:@"CLICK ME"];
-  EXPECT_TRUE(bookmarkButton);
-  [newBBFC openBookmark:bookmarkButton];
-  EXPECT_FALSE([bar_ folderController]);
-  [bar_ mouseEnteredButton:button event:event];
-  EXPECT_FALSE([bar_ folderController]);
 }
 
 // Make sure the "off the side" folder looks like a bookmark folder

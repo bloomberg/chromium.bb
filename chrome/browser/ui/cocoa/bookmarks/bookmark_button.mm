@@ -296,15 +296,18 @@ BookmarkButton* gDraggedButton = nil; // Weak
         break;
       }
       case NSLeftMouseUp: {
-        if (!isInside && insideBtn && insideBtn != self) {
-          // Has tracked onto another DraggableButton menu item, and released,
-          // so click it.
-          [insideBtn performClick:self];
-        }
         self.durationMouseWasDown = [theEvent timestamp] - self.whenMouseDown;
-        [self secondaryMouseUpAction:isInside];
-        [[self cell] mouseExited:theEvent];
-        [[insideBtn cell] mouseExited:theEvent];
+        if (!isInside && insideBtn && insideBtn != self) {
+          // Has tracked onto another BookmarkButton menu item, and released,
+          // so fire its action.
+          [[insideBtn target] performSelector:[insideBtn action]
+                                   withObject:insideBtn];
+
+        } else {
+          [self secondaryMouseUpAction:isInside];
+          [[self cell] mouseExited:theEvent];
+          [[insideBtn cell] mouseExited:theEvent];
+        }
         keepGoing = NO;
         break;
       }
