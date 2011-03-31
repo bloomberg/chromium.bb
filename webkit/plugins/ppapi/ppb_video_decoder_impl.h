@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_var.h"
@@ -52,14 +53,17 @@ class PPB_VideoDecoder_Impl : public Resource,
   bool Abort(PP_CompletionCallback callback);
 
   // media::VideoDecodeAccelerator::Client implementation.
-  void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
-                             const std::vector<uint32_t>& buffer_properties);
-  void DismissPictureBuffer(
-      media::VideoDecodeAccelerator::PictureBuffer* picture_buffer);
-  void PictureReady(media::VideoDecodeAccelerator::Picture* picture);
-  void NotifyPictureReady();
-  void NotifyEndOfStream();
-  void NotifyError(media::VideoDecodeAccelerator::Error error);
+  virtual void ProvidePictureBuffers(
+      uint32_t requested_num_of_buffers,
+      const std::vector<uint32_t>& buffer_properties) OVERRIDE;
+  virtual void DismissPictureBuffer(
+      media::VideoDecodeAccelerator::PictureBuffer* picture_buffer) OVERRIDE;
+  virtual void PictureReady(
+      media::VideoDecodeAccelerator::Picture* picture) OVERRIDE;
+  virtual void NotifyPictureReady() OVERRIDE;
+  virtual void NotifyEndOfStream() OVERRIDE;
+  virtual void NotifyError(
+      media::VideoDecodeAccelerator::Error error) OVERRIDE;
 
  private:
   void OnAbortComplete();
