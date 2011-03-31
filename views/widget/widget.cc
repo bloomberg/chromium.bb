@@ -427,4 +427,8 @@ bool Widget::EnsureCompositor() {
   return compositor_.get() != NULL;
 }
 
+bool Widget::ShouldReleaseCaptureOnMouseReleased() const {
+  return true;
+}
+
 }  // namespace views

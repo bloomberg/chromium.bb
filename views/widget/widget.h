@@ -323,7 +323,7 @@ class Widget : public internal::NativeWidgetDelegate,
   bool EnsureCompositor();
 
   // Returns whether capture should be released on mouse release.
-  virtual bool ShouldReleaseCaptureOnMouseReleased() const { return true; }
+  virtual bool ShouldReleaseCaptureOnMouseReleased() const;
 
   NativeWidget* native_widget_;
 
