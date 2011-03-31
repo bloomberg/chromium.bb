@@ -17,4 +17,8 @@ LoginDisplay::LoginDisplay(Delegate* delegate,
 
 LoginDisplay::~LoginDisplay() {}
 
+void LoginDisplay::Destroy() {
+  delete this;
+}
+
 }  // namespace chromeos

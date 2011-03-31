@@ -60,6 +60,10 @@ class LoginDisplay : public RemoveUserDelegate {
   LoginDisplay(Delegate* delegate, const gfx::Rect& background_bounds);
   virtual ~LoginDisplay();
 
+  // Call for destroying a pointer of type LoginDisplay, since some subclasses
+  // are Singletons
+  virtual void Destroy();
+
   // Initializes login UI with the user pods based on list of known users and
   // guest, new user pods if those are enabled.
   virtual void Init(const std::vector<UserManager::User>& users,
@@ -86,6 +90,9 @@ class LoginDisplay : public RemoveUserDelegate {
                          HelpAppLauncher::HelpTopic help_topic_id) = 0;
 
   gfx::Rect background_bounds() const { return background_bounds_; }
+  void set_background_bounds(const gfx::Rect background_bounds){
+    background_bounds_ = background_bounds;
+  }
 
   Delegate* delegate() { return delegate_; }
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
@@ -103,7 +110,7 @@ class LoginDisplay : public RemoveUserDelegate {
   gfx::NativeWindow parent_window_;
 
   // Bounds of the login UI background.
-  const gfx::Rect background_bounds_;
+  gfx::Rect background_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplay);
 };

@@ -24,7 +24,8 @@ class ViewsLoginDisplayHost : public chromeos::BaseLoginDisplayHost {
   virtual ~ViewsLoginDisplayHost();
 
   // LoginDisplayHost implementation:
-  virtual LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate);
+  virtual LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate)
+      const;
   virtual gfx::NativeWindow GetNativeWindow() const;
   virtual void SetOobeProgress(BackgroundView::LoginStep step);
   virtual void SetOobeProgressBarVisible(bool visible);

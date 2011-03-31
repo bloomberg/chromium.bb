@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/webui/chromeos/login/login_ui.h"
+
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/login/dom_login_display.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chromeos/login/authenticator_facade.h"
-#include "chrome/browser/ui/webui/chromeos/login/authenticator_facade_cros.h"
-#include "chrome/browser/ui/webui/chromeos/login/login_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/login_ui_helpers.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
+namespace {
+const char* kResetPrompt = "resetPrompt";
+}  // namespace
+
 namespace chromeos {
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// LoginUIHTMLSource
-//
-////////////////////////////////////////////////////////////////////////////////
+// LoginUIHTMLSource, public: --------------------------------------------------
 
 LoginUIHTMLSource::LoginUIHTMLSource(MessageLoop* message_loop)
     : DataSource(chrome::kChromeUILoginHost, message_loop),
@@ -48,17 +48,19 @@ void LoginUIHTMLSource::StartDataRequest(const std::string& path,
                (html_bytes.get()));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// LoginUIHandler
-//
-////////////////////////////////////////////////////////////////////////////////
+std::string LoginUIHTMLSource::GetMimeType(const std::string&) const {
+  return "text/html";
+}
 
-LoginUIHandler::LoginUIHandler()
-    : facade_(new chromeos::AuthenticatorFacadeCros(this)),
-      profile_operations_(new ProfileOperationsInterface()),
-      browser_operations_(new BrowserOperationsInterface()) {
-  facade_->Setup();
+// LoginUIHandlerDelegate, protected: ------------------------------------------
+
+LoginUIHandlerDelegate::~LoginUIHandlerDelegate() {}
+
+// LoginUIHandler, public: -----------------------------------------------------
+
+LoginUIHandler::LoginUIHandler() {
+  delegate_ = DOMLoginDisplay::GetInstance();
+  delegate_->set_login_handler(this);
 }
 
 WebUIMessageHandler* LoginUIHandler::Attach(WebUI* web_ui) {
@@ -87,69 +89,25 @@ void LoginUIHandler::HandleAuthenticateUser(const ListValue* args) {
   CHECK_EQ(args->GetSize(), expected_size);
   args->GetString(0, &username);
   args->GetString(1, &password);
-
-  Profile* profile = profile_operations_->GetDefaultProfile();
-  // For AuthenticateToLogin we are currently not using/supporting tokens and
-  // captchas, but the function signature that we inherit from
-  // LoginStatusConsumer has two fields for them. We are currently passing in an
-  // empty string for these fields by calling the default constructor for the
-  // string class.
-  facade_->AuthenticateToLogin(profile,
-                               username,
-                               password,
-                               std::string(),
-                               std::string());
+  delegate_->Login(username, password);
 }
 
 void LoginUIHandler::HandleLaunchIncognito(const ListValue* args) {
-  Profile* profile = profile_operations_->GetDefaultProfileByPath();
-  Browser* login_browser = browser_operations_->GetLoginBrowser(profile);
-  Browser* logged_in = browser_operations_->CreateBrowser(profile);
-  logged_in->NewTab();
-  logged_in->window()->Show();
-  login_browser->CloseWindow();
+  delegate_->LoginAsGuest();
 }
 
 void LoginUIHandler::HandleShutdownSystem(const ListValue* args) {
-#if defined(OS_CHROMEOS)
   DCHECK(CrosLibrary::Get()->EnsureLoaded());
   CrosLibrary::Get()->GetPowerLibrary()->RequestShutdown();
-#else
-  // When were are not running in cros we are just shutting the browser instead
-  // of trying to shutdown the system
-  Profile* profile = profile_operations_->GetDefaultProfileByPath();
-  Browser* browser = browser_operations_->GetLoginBrowser(profile);
-  browser->CloseWindow();
-#endif
 }
 
-void LoginUIHandler::OnLoginFailure(const LoginFailure& failure) {
-  Profile* profile = profile_operations_->GetDefaultProfileByPath();
-  Browser* login_browser = browser_operations_->GetLoginBrowser(profile);
-  login_browser->OpenCurrentURL();
+void LoginUIHandler::ClearAndEnablePassword() {
+  web_ui_->CallJavascriptFunction(kResetPrompt);
 }
 
-void LoginUIHandler::OnLoginSuccess(
-    const std::string& username,
-    const std::string& password,
-    const GaiaAuthConsumer::ClientLoginResult& credentials,
-    bool pending_requests) {
-  Profile* profile = profile_operations_->GetDefaultProfileByPath();
-  Browser* login_browser = browser_operations_->GetLoginBrowser(profile);
-  Browser* logged_in = browser_operations_->CreateBrowser(profile);
-  logged_in->NewTab();
-  logged_in->window()->Show();
-  login_browser->CloseWindow();
-}
 
-void LoginUIHandler::OnOffTheRecordLoginSuccess() {
-}
+// LoginUI, public: ------------------------------------------------------------
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// LoginUI
-//
-////////////////////////////////////////////////////////////////////////////////
 LoginUI::LoginUI(TabContents* contents)
     : WebUI(contents) {
   LoginUIHandler* handler = new LoginUIHandler();

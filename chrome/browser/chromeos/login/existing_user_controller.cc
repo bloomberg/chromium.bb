@@ -69,7 +69,7 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
   DCHECK(current_controller_ == NULL);
   current_controller_ = this;
 
-  login_display_.reset(host_->CreateLoginDisplay(this));
+  login_display_ = host_->CreateLoginDisplay(this);
 
   registrar_.Add(this,
                  NotificationType::LOGIN_USER_IMAGE_CHANGED,
@@ -144,6 +144,9 @@ ExistingUserController::~ExistingUserController() {
   } else {
     NOTREACHED() << "More than one controller are alive.";
   }
+  DCHECK(login_display_ != NULL);
+  login_display_->Destroy();
+  login_display_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

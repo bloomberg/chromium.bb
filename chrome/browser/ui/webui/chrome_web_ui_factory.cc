@@ -54,7 +54,6 @@
 #endif
 
 #if defined(TOUCH_UI) && defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/chromeos/login/login_container_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/login_ui.h"
 #endif
 
@@ -219,8 +218,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
 #if defined(TOUCH_UI) && defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUILoginHost)
     return &NewWebUI<chromeos::LoginUI>;
-  if (url.host() == chrome::kChromeUILoginContainerHost)
-    return &NewWebUI<chromeos::LoginContainerUI>;
 #endif
 
   if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)

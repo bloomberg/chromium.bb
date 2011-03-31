@@ -117,7 +117,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   scoped_ptr<LoginPerformer> login_performer_;
 
   // Login UI implementation instance.
-  scoped_ptr<LoginDisplay> login_display_;
+  LoginDisplay* login_display_;
 
   // Delegate for login performer to be overridden by tests.
   // |this| is used if |login_performer_delegate_| is NULL.

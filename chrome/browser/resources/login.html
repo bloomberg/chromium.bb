@@ -39,19 +39,28 @@
 function callLogin() {
   var user = document.getElementById('user-text').value;
   var pass = document.getElementById('pass-text').value;
-  loginStarted();
+  disableScreen();
   chrome.send('AuthenticateUser', [user, pass]);
 }
 
-function loginStarted() {
-  setLock(true);
+function disableScreen() {
+  setDisabled(true);
 }
 
-function loginFinished(result) {
-  setLock(false);
+function enableScreen() {
+  setDisabled(false);
 }
 
-function setLock(on) {
+function clearPassword() {
+  document.getElementById('pass-text').value = '';
+}
+
+function resetPrompt() {
+  clearPassword();
+  enableScreen();
+}
+
+function setDisabled(on) {
   document.getElementById('login-button').disabled = on;
   document.getElementById('login-incognito').disabled = on;
   document.getElementById('shutdown-system').disabled = on;
@@ -60,11 +69,12 @@ function setLock(on) {
 }
 
 function callLoginIncognito() {
-  loginStarted();
+  disableScreen();
   chrome.send('LaunchIncognito', []);
 }
 
 function callShutdownSystem() {
+  disableScreen();
   chrome.send('ShutdownSystem', []);
 }
 

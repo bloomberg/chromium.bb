@@ -24,7 +24,7 @@ ViewsLoginDisplayHost::~ViewsLoginDisplayHost() {
 // LoginDisplayHost implementation -----------------------------------------
 
 LoginDisplay* ViewsLoginDisplayHost::CreateLoginDisplay(
-    LoginDisplay::Delegate* delegate) {
+    LoginDisplay::Delegate* delegate) const {
   return new ViewsLoginDisplay(delegate, background_bounds());
 }
 

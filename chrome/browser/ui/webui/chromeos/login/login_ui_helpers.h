@@ -10,47 +10,11 @@
 
 #include "base/string_piece.h"
 
-class Browser;
 class DictionaryValue;
 class FilePath;
-class Profile;
 class RefCountedBytes;
 
 namespace chromeos {
-
-// This class is used for encapsulating the statics and other other messy
-// external calls that are required for getting the needed profile objects. This
-// allows for easier mocking of this code and allows for modularity.
-class ProfileOperationsInterface {
- public:
-  ProfileOperationsInterface() {}
-  virtual ~ProfileOperationsInterface() {}
-
-  virtual Profile* GetDefaultProfile();
-  virtual Profile* GetDefaultProfileByPath();
-
- private:
-  Profile* GetDefaultProfile(FilePath user_data_dir);
-  FilePath GetUserDataPath();
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileOperationsInterface);
-};
-
-// This class is used for encapsulating the statics and other other messy
-// external calls that are required for creating and getting the needed browser
-// objects. This allows for easier mocking of this code and allows for
-// modularity.
-class BrowserOperationsInterface {
- public:
-  BrowserOperationsInterface() {}
-  virtual ~BrowserOperationsInterface() {}
-
-  virtual Browser* CreateBrowser(Profile* profile);
-  virtual Browser* GetLoginBrowser(Profile* profile);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserOperationsInterface);
-};
 
 // This class is used for encapsulating the statics and other other messy
 // external calls that are required for creating and getting the needed HTML
@@ -63,7 +27,6 @@ class HTMLOperationsInterface {
   virtual ~HTMLOperationsInterface() {}
 
   virtual base::StringPiece GetLoginHTML();
-  virtual base::StringPiece GetLoginContainerHTML();
   virtual std::string GetFullHTML(base::StringPiece login_html,
                                   DictionaryValue* localized_strings);
   virtual RefCountedBytes* CreateHTMLBytes(std::string full_html);

@@ -32,6 +32,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "unicode/timezone.h"
 
+#if defined(TOUCH_UI)
+#include "base/command_line.h"
+#include "chrome/browser/chromeos/login/dom_login_display_host.h"
+#endif
 
 namespace {
 
@@ -193,9 +197,17 @@ void ShowLoginWizard(const std::string& first_screen_name,
       first_screen_name == WizardController::kLoginScreenName;
 
   // TODO(nkostylev) Create LoginDisplayHost instance based on flag.
+#if defined(TOUCH_UI)
+  chromeos::LoginDisplayHost* display_host;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDOMLogin)) {
+    display_host = new chromeos::DOMLoginDisplayHost(screen_bounds);
+  } else {
+    display_host = new chromeos::ViewsLoginDisplayHost(screen_bounds);
+  }
+#else
   chromeos::LoginDisplayHost* display_host =
       new chromeos::ViewsLoginDisplayHost(screen_bounds);
-
+#endif
   if (show_login_screen && chromeos::CrosLibrary::Get()->EnsureLoaded()) {
     display_host->StartSignInScreen();
     return;

@@ -3,80 +3,22 @@
 // found in the LICENSE file.
 // #include <algorithm>
 
+#include "chrome/browser/ui/webui/chromeos/login/login_ui_helpers.h"
+
 #include <algorithm>
 
-#include "base/file_path.h"
-#include "base/path_service.h"
 #include "base/values.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/webui/chromeos/login/login_ui_helpers.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// ProfileOperationsInterface
-//
-////////////////////////////////////////////////////////////////////////////////
-Profile* ProfileOperationsInterface::GetDefaultProfile() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profile_manager->GetDefaultProfile();
-}
-
-Profile* ProfileOperationsInterface::GetDefaultProfileByPath() {
-  return GetDefaultProfile(GetUserDataPath());
-}
-
-Profile* ProfileOperationsInterface::GetDefaultProfile(FilePath user_data_dir) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profile_manager->GetDefaultProfile(user_data_dir);
-}
-
-FilePath ProfileOperationsInterface::GetUserDataPath() {
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  return user_data_dir;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// BrowserOperationsInterface
-//
-////////////////////////////////////////////////////////////////////////////////
-Browser* BrowserOperationsInterface::CreateBrowser(Profile* profile) {
-  return Browser::Create(profile);
-}
-
-Browser* BrowserOperationsInterface::GetLoginBrowser(Profile* profile) {
-  return BrowserList::FindBrowserWithType(profile,
-                                          Browser::TYPE_ANY,
-                                          true);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// HTMLOperationsInterface
-//
-////////////////////////////////////////////////////////////////////////////////
+// HTMLOperationsInterface, public:---------------------------------------------
 base::StringPiece HTMLOperationsInterface::GetLoginHTML() {
   base::StringPiece login_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_LOGIN_HTML));
-  return login_html;
-}
-
-base::StringPiece HTMLOperationsInterface::GetLoginContainerHTML() {
-  base::StringPiece login_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_LOGIN_CONTAINER_HTML));
   return login_html;
 }
 

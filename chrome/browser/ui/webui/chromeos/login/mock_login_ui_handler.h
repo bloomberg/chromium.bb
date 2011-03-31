@@ -20,15 +20,6 @@ class MockLoginUIHandler : public chromeos::LoginUIHandler {
       WebUIMessageHandler*(WebUI* web_ui));
   MOCK_METHOD0(RegisterMessages,
       void());
-  MOCK_METHOD1(OnLoginFailure,
-      void(const chromeos::LoginFailure& failure));
-  MOCK_METHOD4(OnLoginSuccess,
-      void(const std::string& username,
-           const std::string& password,
-           const GaiaAuthConsumer::ClientLoginResult& credentials,
-           bool pending_requests));
-  MOCK_METHOD0(OnOffTheRecordLoginSuccess,
-      void());
 };
 
 }  // namespace chromeos

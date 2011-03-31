@@ -29,5 +29,4 @@ BrowserWindow* DOMBrowser::CreateBrowserWindow() {
   return DOMBrowserView::CreateDOMWindow(this);
 }
 
-
 }  // namespace chromeos
