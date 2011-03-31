@@ -3291,6 +3291,7 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>hoverCloseButton_</string>
 							<string>image_</string>
 							<string>itemContainerView_</string>
 							<string>resizeDelegate_</string>
@@ -3298,6 +3299,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>HoverButton</string>
 							<string>NSImageView</string>
 							<string>NSView</string>
 							<string>id</string>
@@ -3308,6 +3310,7 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>hoverCloseButton_</string>
 							<string>image_</string>
 							<string>itemContainerView_</string>
 							<string>resizeDelegate_</string>
@@ -3315,6 +3318,10 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBToOneOutletInfo">
+								<string key="name">hoverCloseButton_</string>
+								<string key="candidateClassName">HoverButton</string>
+							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">image_</string>
 								<string key="candidateClassName">NSImageView</string>
@@ -3426,6 +3433,14 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">HoverButton</string>
+					<string key="superclassName">NSButton</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/ui/cocoa/hover_button.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">HyperlinkButtonCell</string>
 					<string key="superclassName">NSButtonCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -3490,6 +3505,17 @@
 					</object>
 				</object>
 			</object>
+			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+				<object class="IBPartialClassDescription">
+					<string key="className">CrApplication</string>
+					<string key="superclassName">NSApplication</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBDocumentRelativeSource</string>
+						<string key="minorKey">../../../content/common/chrome_application_mac.h</string>
+					</object>
+				</object>
+			</object>
 			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.2+">
 				<bool key="EncodedWithXMLCoder">YES</bool>
 				<object class="IBPartialClassDescription">
@@ -3542,6 +3568,14 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="810351443">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSBrowser.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSButton</string>
+					<string key="superclassName">NSControl</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">AppKit.framework/Headers/NSButton.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
