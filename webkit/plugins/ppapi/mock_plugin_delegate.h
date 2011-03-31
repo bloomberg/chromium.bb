@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual PlatformImage2D* CreateImage2D(int width, int height);
   virtual PlatformContext3D* CreateContext3D();
   virtual PlatformVideoDecoder* CreateVideoDecoder(
-      const PP_VideoDecoderConfig_Dev& decoder_config);
+      PP_VideoDecoderConfig_Dev* decoder_config);
   virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
                                      uint32_t sample_count,
                                      PlatformAudio::Client* client);

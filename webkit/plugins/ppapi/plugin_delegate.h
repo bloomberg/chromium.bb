@@ -13,6 +13,7 @@
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "googleurl/src/gurl.h"
+#include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
@@ -54,9 +55,7 @@ struct WebFileChooserParams;
 }
 
 struct PP_Flash_NetAddress;
-struct PP_VideoCompressedDataBuffer_Dev;
 struct PP_VideoDecoderConfig_Dev;
-struct PP_VideoUncompressedDataBuffer_Dev;
 
 class TransportDIB;
 
@@ -198,15 +197,11 @@ class PluginDelegate {
     virtual ~PlatformAudio() {}
   };
 
-  class PlatformVideoDecoder {
+  // Interface for PlatformVideoDecoder is directly inherited from general media
+  // VideoDecodeAccelerator interface.
+  class PlatformVideoDecoder : public media::VideoDecodeAccelerator {
    public:
     virtual ~PlatformVideoDecoder() {}
-
-    // Returns false on failure.
-    virtual bool Decode(PP_VideoCompressedDataBuffer_Dev& input_buffer) = 0;
-    virtual int32_t Flush(PP_CompletionCallback& callback) = 0;
-    virtual bool ReturnUncompressedDataBuffer(
-        PP_VideoUncompressedDataBuffer_Dev& buffer) = 0;
   };
 
   // Notification that the given plugin has crashed. When a plugin crashes, all
@@ -234,7 +229,7 @@ class PluginDelegate {
 
   // The caller will own the pointer returned from this.
   virtual PlatformVideoDecoder* CreateVideoDecoder(
-      const PP_VideoDecoderConfig_Dev& decoder_config) = 0;
+      PP_VideoDecoderConfig_Dev* decoder_config) = 0;
 
   // The caller is responsible for calling Shutdown() on the returned pointer
   // to clean up the corresponding resources allocated during this call.

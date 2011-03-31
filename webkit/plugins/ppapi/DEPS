@@ -3,6 +3,7 @@ include_rules = [
   "+ppapi/c",
   "+ppapi/shared_impl",
   "+printing",
+  "+media/video",
   "+skia",
   "+ui/base",
 ]

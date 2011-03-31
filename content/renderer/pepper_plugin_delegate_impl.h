@@ -89,7 +89,7 @@ class PepperPluginDelegateImpl
   virtual PlatformImage2D* CreateImage2D(int width, int height);
   virtual PlatformContext3D* CreateContext3D();
   virtual PlatformVideoDecoder* CreateVideoDecoder(
-      const PP_VideoDecoderConfig_Dev& decoder_config);
+      PP_VideoDecoderConfig_Dev* decoder_config);
   virtual void NumberOfFindResultsChanged(int identifier,
                                           int total,
                                           bool final_result);

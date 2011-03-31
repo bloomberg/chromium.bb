@@ -80,6 +80,7 @@
         'c/dev/ppp_scrollbar_dev.h',
         'c/dev/ppp_selection_dev.h',
         'c/dev/ppp_printing_dev.h',
+        'c/dev/ppp_video_decoder_dev.h',
         'c/dev/ppp_widget_dev.h',
         'c/dev/ppp_zoom_dev.h',
 
