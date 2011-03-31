@@ -159,7 +159,7 @@ SBTC_BUILD_WITH_NNACL="x8664"
 
 # Current milestones in each repo
 # hg-update-stable  uses these
-readonly LLVM_REV=5fc7321392be
+readonly LLVM_REV=8a09fe87b3a6
 readonly LLVM_GCC_REV=91c7363e1296
 readonly NEWLIB_REV=eb9c4bb9ccd7
 readonly BINUTILS_REV=499ffe65010c
