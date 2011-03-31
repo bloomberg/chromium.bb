@@ -1669,7 +1669,7 @@ enum {
 - (void)magnifyWithEvent:(NSEvent*)event {
   // The deltaZ difference necessary to trigger a zoom action. Derived from
   // experimentation to find a value that feels reasonable.
-  const float kZoomStepValue = 150;
+  const float kZoomStepValue = 300;
 
   // Find the (absolute) thresholds on either side of the current zoom factor,
   // then convert those to actual numbers to trigger a zoom in or out.
