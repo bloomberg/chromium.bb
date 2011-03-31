@@ -56,24 +56,12 @@ echo @@@BUILD_STEP tar_toolchain@@@
   tar cSvfz toolchain.tgz toolchain/ && chmod a+r toolchain.tgz
 )
 
-echo @@@BUILD_STEP tar_glibc@@@
-(
-  cd tools/glibc
-  tar cSvfz ../glibc.tgz * && chmod a+r ../glibc.tgz
-)
-
 echo @@@BUILD_STEP untar_toolchain@@@
 (
   mkdir -p .tmp
   cd .tmp
   tar zxf ../tools/toolchain.tgz
   mv toolchain ..
-)
-
-echo @@@BUILD_STEP gyp_compile@@@
-(
-  cd ..
-  make -k -j8 V=1 BUILDTYPE=Release
 )
 
 RETCODE=0

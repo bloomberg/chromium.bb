@@ -683,7 +683,7 @@ stubout:
 #   Builds GCC with glibc as a C library.
 ##################################################################
 ifeq ($(CYGWIN17), 1)
-SYSINCLUDE_HACK_TARGET=BUILD/build-full-gcc-$(CROSSARCH)/$(CROSSARCH)/sys-include
+SYSINCLUDE_HACK_TARGET=/$(CROSSARCH)/sys-include
 else
 SYSINCLUDE_HACK_TARGET=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
 endif
@@ -691,7 +691,13 @@ endif
 BUILD/stamp-$(CROSSARCH)-full-gcc: glibc-adhoc-files
 	rm -rf BUILD/build-full-gcc-$(CROSSARCH)
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)
+	# See http://code.google.com/p/nativeclient/issues/detail?id=854
+	rm -rf $(SYSINCLUDE_HACK_TARGET)
+	mkdir -p $(SYSINCLUDE_HACK_TARGET)
+	ln -s ../include/limits.h $(SYSINCLUDE_HACK_TARGET)/limits.h
 ifeq ($(CYGWIN17), 1)
+	mkdir -p /$(CROSSARCH)/include
+	touch /$(CROSSARCH)/include/limits.h
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)/gcc
 	cp -af $(DESTDIR)$(SDKROOT)/libexec/cyg*.dll \
 	    BUILD/build-full-gcc-$(CROSSARCH)/gcc
@@ -708,10 +714,6 @@ ifeq ($(CROSSARCH), nacl64)
 	    BUILD/build-full-gcc-$(CROSSARCH)/nacl/include
 endif
 endif
-	# See http://code.google.com/p/nativeclient/issues/detail?id=854
-	rm -rf $(SYSINCLUDE_HACK_TARGET)
-	mkdir $(SYSINCLUDE_HACK_TARGET)
-	ln -s ../include/limits.h $(SYSINCLUDE_HACK_TARGET)/limits.h
 	PATH=$(BUILDPATH) $(MAKE) \
 	    -C BUILD/build-full-gcc-$(CROSSARCH) \
 	    -f ../../Makefile.gcc \
