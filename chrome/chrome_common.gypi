@@ -224,8 +224,6 @@
         'common/spellcheck_common.cc',
         'common/spellcheck_common.h',
         'common/spellcheck_messages.h',
-        'common/sqlite_compiled_statement.cc',
-        'common/sqlite_compiled_statement.h',
         'common/sqlite_utils.cc',
         'common/sqlite_utils.h',
         'common/thumbnail_score.cc',
