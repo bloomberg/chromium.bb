@@ -230,6 +230,15 @@ bool SendWebKeyEventJSONRequest(
     int tab_index,
     const WebKeyEvent& key_event) WARN_UNUSED_RESULT;
 
+// Requests to send the key event for the given keycode+modifiers to a
+// browser window containing the specified tab. Returns true on success.
+bool SendNativeKeyEventJSONRequest(
+    AutomationMessageSender* sender,
+    int browser_index,
+    int tab_index,
+    ui::KeyboardCode key_code,
+    int modifiers) WARN_UNUSED_RESULT;
+
 // Requests to wait for all tabs to stop loading. Returns true on success.
 bool SendWaitForAllTabsToStopLoadingJSONRequest(
     AutomationMessageSender* sender) WARN_UNUSED_RESULT;

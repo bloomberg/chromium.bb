@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_AUTOMATION_TESTING_AUTOMATION_PROVIDER_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/automation/automation_provider.h"
+#include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/importer/importer_list.h"
@@ -749,12 +752,12 @@ class TestingAutomationProvider : public AutomationProvider,
                            DictionaryValue* args,
                            IPC::Message* reply_message);
 
-  // Sends a web keyboard event to the active tab. This should not trigger any
-  // browser hotkeys.
-  // Uses the JSON interface for input/output.
-  void SendKeyEventToActiveTab(Browser* browser,
-                               DictionaryValue* args,
-                               IPC::Message* reply_message);
+  // Populates the fields of the event parameters with what is found
+  // on the args one. If fails return false and puts the error message in
+  // the error parameter, else returns true.
+  bool BuildWebKeyEventFromArgs(DictionaryValue* args,
+                                std::string* error,
+                                NativeWebKeyboardEvent* event);
 
   // Determines whether each relevant section of the NTP is in thumbnail mode.
   void GetNTPThumbnailMode(Browser* browser,
@@ -986,6 +989,22 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: none
   void SendWebkitKeyEvent(DictionaryValue* args,
                           IPC::Message* message);
+
+  // Sends the key event from the OS level to the browser window,
+  // allowing it to be preprocessed by some external application (ie. IME).
+  // Will switch to the tab specified by tab_index before sending the event.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "keyCode": ui::VKEY_X,
+  //            "modifiers": automation::kShiftKeyMask,
+  //          }
+  //   output: none
+  void SendOSLevelKeyEventToTab(DictionaryValue* args,
+                                IPC::Message* message);
+
+  // Method used as a Task that sends a success AutomationJSONReply.
+  void SendSuccessReply(IPC::Message* reply_message);
 
   // Activates the given tab.
   // Example:

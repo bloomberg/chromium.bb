@@ -26,10 +26,15 @@ from gtest_text_test_runner import GTestTextTestRunner
 sys.path += [chromedriver_paths.SRC_THIRD_PARTY]
 sys.path += [chromedriver_paths.PYTHON_BINDINGS]
 
-import simplejson as json
+try:
+  import simplejson as json
+except ImportError:
+  import json
 
 from selenium.webdriver.remote.command import Command
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 def DataDir():
@@ -146,9 +151,48 @@ class BasicTest(unittest.TestCase):
   def testCanStartChromeDriverOnSpecificPort(self):
     launcher = ChromeDriverLauncher(port=9520)
     self.assertEquals(9520, launcher.GetPort())
-    driver = WebDriver(launcher.GetURL(), {})
+    driver = WebDriver(launcher.GetURL(), DesiredCapabilities.CHROME)
     driver.quit()
     launcher.Kill()
+
+
+class NativeInputTest(unittest.TestCase):
+  """Native input ChromeDriver tests."""
+
+  def setUp(self):
+    self._launcher = ChromeDriverLauncher()
+    self._capabilities = DesiredCapabilities.CHROME
+    self._capabilities["chrome"] = { "nativeEvents" : True }
+
+  def tearDown(self):
+    self._launcher.Kill()
+
+  def testCanStartsWithNativeEvents(self):
+    driver = WebDriver(self._launcher.GetURL(), self._capabilities)
+    self.assertTrue(driver.capabilities["chrome"].has_key("nativeEvents"))
+    self.assertTrue(driver.capabilities["chrome"]["nativeEvents"])
+
+  def testSendKeysNative(self):
+    driver = WebDriver(self._launcher.GetURL(), self._capabilities)
+    driver.get(self._launcher.GetURL() + '/test_page.html')
+    # Find the text input.
+    q = driver.find_element_by_name("key_input_test")
+    # Send some keys.
+    q.send_keys("tokyo")
+    #TODO(timothe): change to .text when beta 4 wrappers are out.
+    self.assertEqual(q.value, "tokyo")
+
+  #@unittest.skip("Need to run this on a machine with an IME installed.")
+  #def testSendKeysNativeProcessedByIME(self):
+    #driver = WebDriver(self._launcher.GetURL(), self.capabilities)
+    #driver.get(self._launcher.GetURL() + '/test_page.html')
+    #q = driver.find_element_by_name("key_input_test")
+    ## Send key combination to turn IME on.
+    #q.send_keys(Keys.F7)
+    #q.send_keys("toukyou")
+    ## Now turning it off.
+    #q.send_keys(Keys.F7)
+    #self.assertEqual(q.value, "\xe6\x9d\xb1\xe4\xba\xac")
 
 
 class CookieTest(unittest.TestCase):
@@ -156,7 +200,8 @@ class CookieTest(unittest.TestCase):
 
   def setUp(self):
     self._launcher = ChromeDriverLauncher()
-    self._driver = WebDriver(self._launcher.GetURL(), {})
+    self._driver = WebDriver(self._launcher.GetURL(),
+                             DesiredCapabilities.CHROME)
 
   def tearDown(self):
     self._driver.quit()
@@ -260,16 +305,16 @@ class SessionTest(unittest.TestCase):
     driver.quit()
 
   def testSessionCreationDeletion(self):
-    driver = WebDriver(self._launcher.GetURL(), {})
+    driver = WebDriver(self._launcher.GetURL(), DesiredCapabilities.CHROME)
     driver.quit()
 
   def testMultipleSessionCreationDeletion(self):
     for i in range(10):
-      driver = WebDriver(self._launcher.GetURL(), {})
+      driver = WebDriver(self._launcher.GetURL(), DesiredCapabilities.CHROME)
       driver.quit()
 
   def testSessionCommandsAfterSessionDeletionReturn404(self):
-    driver = WebDriver(self._launcher.GetURL(), {})
+    driver = WebDriver(self._launcher.GetURL(), DesiredCapabilities.CHROME)
     session_id = driver.session_id
     driver.quit()
     try:
@@ -282,7 +327,8 @@ class SessionTest(unittest.TestCase):
   def testMultipleConcurrentSessions(self):
     drivers = []
     for i in range(10):
-      drivers += [WebDriver(self._launcher.GetURL(), {})]
+      drivers += [WebDriver(self._launcher.GetURL(),
+                            DesiredCapabilities.CHROME)]
     for driver in drivers:
       driver.quit()
 
@@ -292,7 +338,8 @@ class MouseTest(unittest.TestCase):
 
   def setUp(self):
     self._launcher = ChromeDriverLauncher(root_path=os.path.dirname(__file__))
-    self._driver = WebDriver(self._launcher.GetURL(), {})
+    self._driver = WebDriver(self._launcher.GetURL(),
+                             DesiredCapabilities.CHROME)
 
   def tearDown(self):
     self._driver.quit()

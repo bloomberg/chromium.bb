@@ -54,6 +54,7 @@ void SessionWithID::ExecuteGet(Response* const response) {
   // Custom non-standard session info.
   temp_value->SetString("chrome.chromedriverVersion", "1.0");
   temp_value->SetString("chrome.automationVersion", chrome::kChromeVersion);
+  temp_value->SetBoolean("chrome.nativeEvents", session_->use_native_events());
 
   response->SetStatus(kSuccess);
   response->SetValue(temp_value);

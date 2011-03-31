@@ -56,9 +56,18 @@ class Automation {
                      std::string* result,
                      bool* success);
 
-  // Sends a key event to the current browser. Waits until the key has
+  // Sends a webkit key event to the current browser. Waits until the key has
   // been processed by the web page.
-  void SendWebKeyEvent(int tab_id, const WebKeyEvent& key_event, bool* success);
+  void SendWebKeyEvent(int tab_id,
+                       const WebKeyEvent& key_event,
+                       bool* success);
+
+  // Sends an OS level key event to the current browser. Waits until the key
+  // has been processed by the browser.
+  void SendNativeKeyEvent(int tab_id,
+                          ui::KeyboardCode key_code,
+                          int modifiers,
+                          bool* success);
 
   // Captures a snapshot of the tab to the specified path.  The  PNG will
   // contain the entire page, including what is not in the current view

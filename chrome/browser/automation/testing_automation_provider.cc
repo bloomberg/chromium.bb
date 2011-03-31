@@ -2066,6 +2066,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::WebkitMouseDrag;
   handler_map["SendWebkitKeyEvent"] =
       &TestingAutomationProvider::SendWebkitKeyEvent;
+  handler_map["SendOSLevelKeyEventToTab"] =
+      &TestingAutomationProvider::SendOSLevelKeyEventToTab;
   handler_map["ActivateTab"] =
       &TestingAutomationProvider::ActivateTabJSON;
 #if defined(OS_CHROMEOS)
@@ -4540,102 +4542,165 @@ void TestingAutomationProvider::KillRendererProcess(
   base::CloseProcessHandle(process);
 }
 
-void TestingAutomationProvider::SendWebkitKeyEvent(
+bool TestingAutomationProvider::BuildWebKeyEventFromArgs(
     DictionaryValue* args,
-    IPC::Message* reply_message) {
-  TabContents* tab_contents;
-  std::string error;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
-    AutomationJSONReply(this, reply_message).SendError(error);
-    return;
-  }
-
+    std::string* error,
+    NativeWebKeyboardEvent* event) {
   int type, modifiers;
   bool is_system_key;
   string16 unmodified_text, text;
   std::string key_identifier;
-  NativeWebKeyboardEvent event;
   if (!args->GetInteger("type", &type)) {
-    AutomationJSONReply reply(this, reply_message);
-    reply.SendError("'type' missing or invalid.");
-    return;
+    *error = "'type' missing or invalid.";
+    return false;
   }
   if (!args->GetBoolean("isSystemKey", &is_system_key)) {
-    AutomationJSONReply reply(this, reply_message);
-    reply.SendError("'isSystemKey' missing or invalid.");
-    return;
+    *error = "'isSystemKey' missing or invalid.";
+    return false;
   }
   if (!args->GetString("unmodifiedText", &unmodified_text)) {
-    AutomationJSONReply reply(this, reply_message);
-    reply.SendError("'unmodifiedText' missing or invalid.");
-    return;
+    *error = "'unmodifiedText' missing or invalid.";
+    return false;
   }
   if (!args->GetString("text", &text)) {
-    AutomationJSONReply reply(this, reply_message);
-    reply.SendError("'text' missing or invalid.");
-    return;
+    *error = "'text' missing or invalid.";
+    return false;
   }
-  if (!args->GetInteger("nativeKeyCode", &event.nativeKeyCode)) {
-    AutomationJSONReply reply(this, reply_message);
-    reply.SendError("'nativeKeyCode' missing or invalid.");
-    return;
+  if (!args->GetInteger("nativeKeyCode", &event->nativeKeyCode)) {
+    *error = "'nativeKeyCode' missing or invalid.";
+    return false;
   }
-  if (!args->GetInteger("windowsKeyCode", &event.windowsKeyCode)) {
-    AutomationJSONReply reply(this, reply_message);
-    reply.SendError("'windowsKeyCode' missing or invalid.");
-    return;
+  if (!args->GetInteger("windowsKeyCode", &event->windowsKeyCode)) {
+    *error = "'windowsKeyCode' missing or invalid.";
+    return false;
   }
   if (!args->GetInteger("modifiers", &modifiers)) {
-    AutomationJSONReply reply(this, reply_message);
-    reply.SendError("'modifiers' missing or invalid.");
-    return;
+    *error = "'modifiers' missing or invalid.";
+    return false;
   }
   if (args->GetString("keyIdentifier", &key_identifier)) {
-    base::strlcpy(event.keyIdentifier,
+    base::strlcpy(event->keyIdentifier,
                   key_identifier.c_str(),
                   WebKit::WebKeyboardEvent::keyIdentifierLengthCap);
   } else {
-    event.setKeyIdentifierFromWindowsKeyCode();
+    event->setKeyIdentifierFromWindowsKeyCode();
   }
 
   if (type == automation::kRawKeyDownType) {
-    event.type = WebKit::WebInputEvent::RawKeyDown;
+    event->type = WebKit::WebInputEvent::RawKeyDown;
   } else if (type == automation::kKeyDownType) {
-    event.type = WebKit::WebInputEvent::KeyDown;
+    event->type = WebKit::WebInputEvent::KeyDown;
   } else if (type == automation::kKeyUpType) {
-    event.type = WebKit::WebInputEvent::KeyUp;
+    event->type = WebKit::WebInputEvent::KeyUp;
   } else if (type == automation::kCharType) {
-    event.type = WebKit::WebInputEvent::Char;
+    event->type = WebKit::WebInputEvent::Char;
   } else {
-    AutomationJSONReply reply(this, reply_message);
-    reply.SendError("'type' refers to an unrecognized keyboard event type");
-    return;
+    *error = "'type' refers to an unrecognized keyboard event type";
+    return false;
   }
 
   string16 unmodified_text_truncated = unmodified_text.substr(
       0, WebKit::WebKeyboardEvent::textLengthCap - 1);
-  memcpy(event.unmodifiedText,
+  memcpy(event->unmodifiedText,
          unmodified_text_truncated.c_str(),
          unmodified_text_truncated.length() + 1);
   string16 text_truncated = text.substr(
       0, WebKit::WebKeyboardEvent::textLengthCap - 1);
-  memcpy(event.text, text_truncated.c_str(), text_truncated.length() + 1);
+  memcpy(event->text, text_truncated.c_str(), text_truncated.length() + 1);
 
-  event.modifiers = 0;
+  event->modifiers = 0;
   if (modifiers & automation::kShiftKeyMask)
-    event.modifiers |= WebKit::WebInputEvent::ShiftKey;
+    event->modifiers |= WebKit::WebInputEvent::ShiftKey;
   if (modifiers & automation::kControlKeyMask)
-    event.modifiers |= WebKit::WebInputEvent::ControlKey;
+    event->modifiers |= WebKit::WebInputEvent::ControlKey;
   if (modifiers & automation::kAltKeyMask)
-    event.modifiers |= WebKit::WebInputEvent::AltKey;
+    event->modifiers |= WebKit::WebInputEvent::AltKey;
   if (modifiers & automation::kMetaKeyMask)
-    event.modifiers |= WebKit::WebInputEvent::MetaKey;
+    event->modifiers |= WebKit::WebInputEvent::MetaKey;
 
-  event.isSystemKey = is_system_key;
-  event.timeStampSeconds = base::Time::Now().ToDoubleT();
-  event.skip_in_browser = true;
+  event->isSystemKey = is_system_key;
+  event->timeStampSeconds = base::Time::Now().ToDoubleT();
+  event->skip_in_browser = true;
+  return true;
+}
+
+void TestingAutomationProvider::SendWebkitKeyEvent(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  NativeWebKeyboardEvent event;
+  // BuildWebKeyEventFromArgs handles telling what when wrong and sending
+  // the reply message, if it failed we just have to stop here.
+  std::string error;
+  if (!BuildWebKeyEventFromArgs(args, &error, &event)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+
+  TabContents* tab_contents;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
   new InputEventAckNotificationObserver(this, reply_message, event.type);
   tab_contents->render_view_host()->ForwardKeyboardEvent(event);
+}
+
+void TestingAutomationProvider::SendOSLevelKeyEventToTab(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  int modifiers, keycode;
+  if (!args->GetInteger("keyCode", &keycode)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'keyCode' missing or invalid.");
+    return;
+  }
+  if (!args->GetInteger("modifiers", &modifiers)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'modifiers' missing or invalid.");
+    return;
+  }
+
+  std::string error;
+  Browser* browser;
+  TabContents* tab_contents;
+  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+  // The key events will be sent to the browser window, we need the current tab
+  // containing the element we send the text in to be shown.
+  browser->SelectTabContentsAt(
+      browser->GetIndexOfController(&tab_contents->controller()), true);
+
+  BrowserWindow* browser_window = browser->window();
+  if (!browser_window) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Could not get the browser window");
+    return;
+  }
+  gfx::NativeWindow window = browser_window->GetNativeHandle();
+  if (!window) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Could not get the browser window handle");
+    return;
+  }
+
+  bool control = !!(modifiers & automation::kControlKeyMask);
+  bool shift = !!(modifiers & automation::kShiftKeyMask);
+  bool alt = !!(modifiers & automation::kAltKeyMask);
+  bool meta = !!(modifiers & automation::kMetaKeyMask);
+  if (!ui_controls::SendKeyPressNotifyWhenDone(
+          window, static_cast<ui::KeyboardCode>(keycode),
+          control, shift, alt, meta,
+          NewRunnableMethod(this,
+              &TestingAutomationProvider::SendSuccessReply, reply_message))) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Could not send the native key event");
+  }
+}
+
+void TestingAutomationProvider::SendSuccessReply(IPC::Message* reply_message) {
+  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
 // Sample JSON input: { "command": "GetNTPThumbnailMode" }

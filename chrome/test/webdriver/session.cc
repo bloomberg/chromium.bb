@@ -61,7 +61,8 @@ Session::Session()
       thread_(id_.c_str()),
       implicit_wait_(0),
       screenshot_on_error_(false),
-      current_target_(FrameId(0, FramePath())) {
+      current_target_(FrameId(0, FramePath())),
+      use_native_events_(false) {
   SessionManager::GetInstance()->Add(this);
 }
 
@@ -182,18 +183,22 @@ ErrorCode Session::SendKeys(const WebElementId& element, const string16& keys) {
   if (!is_displayed)
     return kElementNotVisible;
 
+  // This method will first check if the element we want to send the keys to is
+  // already focused, if not it will try to focus on it first.
   ListValue args;
   args.Append(element.ToValue());
   // TODO(jleyba): Update this to use the correct atom.
-  std::string script = "document.activeElement.blur();arguments[0].focus();";
+  std::string script = "if(document.activeElement!=arguments[0]){"
+                       "  if(document.activeElement)"
+                       "    document.activeElement.blur();"
+                       "  arguments[0].focus();"
+                       "}";
   Value* unscoped_result = NULL;
   code = ExecuteScript(script, &args, &unscoped_result);
-  scoped_ptr<Value> result(unscoped_result);
   if (code != kSuccess) {
-    LOG(ERROR) << "Failed to focus element before sending keys";
+    LOG(ERROR) << "Failed to get or set focus element before sending keys";
     return code;
   }
-
   bool success = false;
   RunSessionTask(NewRunnableMethod(
       this,
@@ -829,8 +834,21 @@ void Session::SendKeysOnSessionThread(const string16& keys, bool* success) {
   }
   for (size_t i = 0; i < key_events.size(); ++i) {
     bool key_success = false;
-    automation_->SendWebKeyEvent(
-        current_target_.window_id, key_events[i], &key_success);
+    if (use_native_events_) {
+      // The automation provider will generate up/down events for us, we
+      // only need to call it once as compared to the WebKeyEvent method.
+      // Hence we filter events by their types, keeping only rawkeydown.
+      if (key_events[i].type != automation::kRawKeyDownType)
+        continue;
+      automation_->SendNativeKeyEvent(
+          current_target_.window_id,
+          key_events[i].key_code,
+          key_events[i].modifiers,
+          &key_success);
+    } else {
+      automation_->SendWebKeyEvent(
+          current_target_.window_id, key_events[i], &key_success);
+    }
     if (!key_success) {
       LOG(ERROR) << "Failed to send key event. Event details:\n"
                  << "Type: " << key_events[i].type << "\n"

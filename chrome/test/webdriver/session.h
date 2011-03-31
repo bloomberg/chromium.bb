@@ -212,6 +212,12 @@ class Session {
 
   const FrameId& current_target() const;
 
+  inline bool use_native_events() const { return use_native_events_; }
+
+  inline void set_use_native_events(bool use_native_events) {
+    use_native_events_ = use_native_events;
+  }
+
  private:
   void RunSessionTask(Task* task);
   void RunSessionTaskOnSessionThread(
@@ -244,6 +250,8 @@ class Session {
   Speed speed_;
 
   FrameId current_target_;
+
+  bool use_native_events_;
 
   DISALLOW_COPY_AND_ASSIGN(Session);
 };
