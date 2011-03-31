@@ -624,17 +624,17 @@ void RenderWidgetHostViewMac::InitAsPopup(
   [cocoa_view_ setCanBeKeyView:activatable ? YES : NO];
   [parent_host_view->GetNativeView() addSubview:cocoa_view_];
 
-  NSPoint global_origin = NSPointFromCGPoint(pos.origin().ToCGPoint());
+  NSPoint origin_global = NSPointFromCGPoint(pos.origin().ToCGPoint());
   if ([[NSScreen screens] count] > 0) {
-    global_origin.y = [[[NSScreen screens] objectAtIndex:0] frame].size.height -
-        pos.height() - global_origin.y;
+    origin_global.y = [[[NSScreen screens] objectAtIndex:0] frame].size.height -
+        pos.height() - origin_global.y;
   }
-  NSPoint window_origin =
-      [[cocoa_view_ window] convertScreenToBase:global_origin];
-  NSPoint view_origin =
-      [cocoa_view_ convertPoint:window_origin fromView:nil];
-  NSRect initial_frame = NSMakeRect(view_origin.x,
-                                    view_origin.y,
+  NSPoint origin_window =
+      [[cocoa_view_ window] convertScreenToBase:origin_global];
+  NSPoint origin_view =
+      [cocoa_view_ convertPoint:origin_window fromView:nil];
+  NSRect initial_frame = NSMakeRect(origin_view.x,
+                                    origin_view.y,
                                     pos.width(),
                                     pos.height());
   [cocoa_view_ setFrame:initial_frame];
@@ -694,23 +694,39 @@ void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
   if (rect.size().IsEmpty())
     return;
 
-  // The position of |rect| is screen coordnate system and we have to consider
-  // Cocoa coordinate system is upside-down and also muti screen.
-  NSPoint global_origin = NSPointFromCGPoint(rect.origin().ToCGPoint());
-  if ([[NSScreen screens] count] > 0) {
-    NSSize size = NSMakeSize(rect.width(), rect.height());
-    size = [cocoa_view_ convertSize:size toView:nil];
-    NSScreen* screen =
-        static_cast<NSScreen*>([[NSScreen screens] objectAtIndex:0]);
-    global_origin.y = NSHeight([screen frame]) - size.height - global_origin.y;
-  }
+  // Ignore the position of |rect| for non-popup rwhvs. This is because
+  // background tabs do not have a window, but the window is required for the
+  // coordinate conversions. Popups are always for a visible tab.
+  if (IsPopup()) {
+    // The position of |rect| is screen coordinate system and we have to
+    // consider Cocoa coordinate system is upside-down and also multi-screen.
+    NSPoint origin_global = NSPointFromCGPoint(rect.origin().ToCGPoint());
+    if ([[NSScreen screens] count] > 0) {
+      NSSize size = NSMakeSize(rect.width(), rect.height());
+      size = [cocoa_view_ convertSize:size toView:nil];
+      NSScreen* screen =
+          static_cast<NSScreen*>([[NSScreen screens] objectAtIndex:0]);
+      origin_global.y =
+          NSHeight([screen frame]) - size.height - origin_global.y;
+    }
 
-  // Then |global_origin| is converted to client coordinate system.
-  NSPoint window_origin =
-      [[cocoa_view_ window] convertScreenToBase:global_origin];
-  NSRect frame = NSMakeRect(window_origin.x, window_origin.y,
-                            rect.width(), rect.height());
-  [cocoa_view_ setFrame:frame];
+    // Then |origin_global| is converted to client coordinate system.
+    DCHECK([cocoa_view_ window]);
+    NSPoint origin_window =
+        [[cocoa_view_ window] convertScreenToBase:origin_global];
+    NSPoint origin_view =
+        [[cocoa_view_ superview] convertPoint:origin_window fromView:nil];
+    NSRect frame = NSMakeRect(origin_view.x, origin_view.y,
+                              rect.width(), rect.height());
+    [cocoa_view_ setFrame:frame];
+  } else {
+    DCHECK([[cocoa_view_ superview] isKindOfClass:[BaseView class]]);
+    BaseView* superview = static_cast<BaseView*>([cocoa_view_ superview]);
+    gfx::Rect rect = [superview flipNSRectToRect:[cocoa_view_ frame]];
+    rect.set_width(rect.width());
+    rect.set_height(rect.height());
+    [cocoa_view_ setFrame:[superview flipRectToNSRect:rect]];
+  }
 }
 
 gfx::NativeView RenderWidgetHostViewMac::GetNativeView() {
@@ -974,6 +990,10 @@ void RenderWidgetHostViewMac::SetTooltipText(const std::wstring& tooltip_text) {
 //
 void RenderWidgetHostViewMac::SelectionChanged(const std::string& text) {
   selected_text_ = text;
+}
+
+bool RenderWidgetHostViewMac::IsPopup() const {
+  return popup_type_ != WebKit::WebPopupTypeNone;
 }
 
 BackingStore* RenderWidgetHostViewMac::AllocBackingStore(

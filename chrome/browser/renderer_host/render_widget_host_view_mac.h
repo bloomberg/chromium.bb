@@ -347,6 +347,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   AcceleratedSurfaceContainerManagerMac plugin_container_manager_;
 
  private:
+  // Returns whether this render view is a popup (autocomplete window).
+  bool IsPopup() const;
+
   // Updates the display cursor to the current cursor if the cursor is over this
   // render view.
   void UpdateCursorIfOverSelf();
