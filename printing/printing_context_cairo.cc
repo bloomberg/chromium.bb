@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_gtk.h"
 #include "printing/units.h"
 
@@ -154,10 +153,10 @@ PrintingContext::Result PrintingContextCairo::UpdatePrintSettings(
   DCHECK(!in_print_job_);
 
   bool landscape;
-  if (!job_settings.GetBoolean(kSettingLandscape, &landscape))
+  if (!GetSettingsFromDict(job_settings, &landscape, NULL))
     return OnError();
-  settings_.SetOrientation(landscape);
 
+  settings_.SetOrientation(landscape);
   settings_.ranges = ranges;
 
   // TODO(kmadhusu): Update other print settings such as number of copies,

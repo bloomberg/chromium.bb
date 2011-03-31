@@ -104,6 +104,13 @@ class PrintingContext {
   // Reinitializes the settings for object reuse.
   void ResetSettings();
 
+  // Extracts print job settings from |settings|. Out parameters can be NULL.
+  // Returns true if all non-NULL out parameters are successfully extracted
+  // from |settings| else returns false.
+  bool GetSettingsFromDict(const DictionaryValue& settings,
+                           bool* landscape,
+                           std::string* printerName);
+
   // Does bookkeeping when an error occurs.
   PrintingContext::Result OnError();
 
