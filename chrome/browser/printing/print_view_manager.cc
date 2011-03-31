@@ -329,7 +329,10 @@ void PrintViewManager::DisconnectFromCurrentPrintJob() {
 void PrintViewManager::PrintingDone(bool success) {
   if (!print_job_.get() || !tab_contents())
     return;
-  tab_contents()->PrintingDone(print_job_->cookie(), success);
+  RenderViewHost* rvh = tab_contents()->render_view_host();
+  rvh->Send(new PrintMsg_PrintingDone(rvh->routing_id(),
+                                      print_job_->cookie(),
+                                      success));
 }
 
 void PrintViewManager::TerminatePrintJob(bool cancel) {

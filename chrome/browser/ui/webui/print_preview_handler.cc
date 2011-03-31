@@ -178,7 +178,8 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   ProcessLandscapeSetting(*settings);
 
   if (need_to_generate_preview_) {
-    initiator_tab->render_view_host()->PrintPreview(*settings);
+    RenderViewHost* rvh = initiator_tab->render_view_host();
+    rvh->Send(new PrintMsg_PrintPreview(rvh->routing_id(), *settings));
     need_to_generate_preview_ = false;
   }
 }
@@ -197,10 +198,12 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   bool print_to_pdf;
   settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
 
-  if (print_to_pdf)
+  if (print_to_pdf) {
     SelectFile();
-  else
-    web_ui_->GetRenderViewHost()->PrintForPrintPreview(*settings);
+  } else {
+    RenderViewHost* rvh = web_ui_->GetRenderViewHost();
+    rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
+  }
 }
 
 void PrintPreviewHandler::SendPrinterList(const ListValue& printers) {

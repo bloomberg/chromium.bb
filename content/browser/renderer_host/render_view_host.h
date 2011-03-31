@@ -28,7 +28,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class ChildProcessSecurityPolicy;
-class DictionaryValue;
 class FilePath;
 class GURL;
 class ListValue;
@@ -216,12 +215,6 @@ class RenderViewHost : public RenderWidgetHost {
   // behalf.
   bool PrintPages();
 
-  // Asks the renderer to render pages for print preview with |settings|.
-  bool PrintPreview(const DictionaryValue& settings);
-
-  // Notify renderer of success/failure of print job.
-  void PrintingDone(int document_cookie, bool success);
-
   // Start looking for a string within the content of the page, with the
   // specified options.
   void StartFinding(int request_id,
@@ -317,10 +310,6 @@ class RenderViewHost : public RenderWidgetHost {
   // Notifies the renderer that the context menu has closed.
   void ContextMenuClosed(
       const webkit_glue::CustomContextMenuContext& custom_context);
-
-  // Triggers printing of the preview PDF. |job_settings| dictionary contains
-  // new print job settings information.
-  void PrintForPrintPreview(const DictionaryValue& job_settings);
 
   // Copies the image at the specified point.
   void CopyImageAt(int x, int y);

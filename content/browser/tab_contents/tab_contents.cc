@@ -1158,10 +1158,6 @@ bool TabContents::PrintNow() {
   return render_view_host()->PrintPages();
 }
 
-void TabContents::PrintingDone(int document_cookie, bool success) {
-  render_view_host()->PrintingDone(document_cookie, success);
-}
-
 bool TabContents::IsActiveEntry(int32 page_id) {
   NavigationEntry* active_entry = controller_.GetActiveEntry();
   return (active_entry != NULL &&

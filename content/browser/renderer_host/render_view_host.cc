@@ -24,8 +24,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/print_messages.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/safebrowsing_messages.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/translate_errors.h"
@@ -379,14 +379,6 @@ void RenderViewHost::ReloadFrame() {
 
 bool RenderViewHost::PrintPages() {
   return Send(new PrintMsg_PrintPages(routing_id()));
-}
-
-bool RenderViewHost::PrintPreview(const DictionaryValue& settings) {
-  return Send(new PrintMsg_PrintPreview(routing_id(), settings));
-}
-
-void RenderViewHost::PrintingDone(int document_cookie, bool success) {
-  Send(new PrintMsg_PrintingDone(routing_id(), document_cookie, success));
 }
 
 void RenderViewHost::StartFinding(int request_id,
@@ -1215,10 +1207,6 @@ void RenderViewHost::MediaPlayerActionAt(const gfx::Point& location,
 void RenderViewHost::ContextMenuClosed(
     const webkit_glue::CustomContextMenuContext& custom_context) {
   Send(new ViewMsg_ContextMenuClosed(routing_id(), custom_context));
-}
-
-void RenderViewHost::PrintForPrintPreview(const DictionaryValue& job_settings) {
-  Send(new PrintMsg_PrintForPrintPreview(routing_id(), job_settings));
 }
 
 void RenderViewHost::OnMsgStartDragging(
