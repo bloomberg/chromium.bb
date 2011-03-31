@@ -56,9 +56,11 @@ echo "@@@BUILD_STEP tsan(trusted)@@@"
     run_under_extra_args= tsan_bot_tests
 
 echo "@@@BUILD_STEP tsan(trusted, hybrid, RV)@@@"
+# The first RaceVerifier invocation may fail.
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=dbg-linux,nacl platform=x86-64 sdl=none buildbot=tsan-trusted \
-    run_under_extra_args=--hybrid,--log-file=race.log tsan_bot_tests
+    run_under_extra_args=--hybrid,--log-file=race.log tsan_bot_tests || \
+    true
 
 echo "== RaceVerifier 2nd run =="
 
