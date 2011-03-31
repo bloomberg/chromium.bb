@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_TRANSLATE_BEFORE_TRANSLATE_INFOBAR_GTK_H_
-#define CHROME_BROWSER_UI_GTK_TRANSLATE_BEFORE_TRANSLATE_INFOBAR_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_INFOBARS_BEFORE_TRANSLATE_INFOBAR_GTK_H_
+#define CHROME_BROWSER_UI_GTK_INFOBARS_BEFORE_TRANSLATE_INFOBAR_GTK_H_
 #pragma once
 
-#include "chrome/browser/ui/gtk/translate/translate_infobar_base_gtk.h"
+#include "chrome/browser/ui/gtk/infobars/translate_infobar_base_gtk.h"
 
 class TranslateInfoBarDelegate;
 
@@ -31,4 +31,4 @@ class BeforeTranslateInfoBar : public TranslateInfoBarBase {
   DISALLOW_COPY_AND_ASSIGN(BeforeTranslateInfoBar);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_TRANSLATE_BEFORE_TRANSLATE_INFOBAR_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_INFOBARS_BEFORE_TRANSLATE_INFOBAR_GTK_H_

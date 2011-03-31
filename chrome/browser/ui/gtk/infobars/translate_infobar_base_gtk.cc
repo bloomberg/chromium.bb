@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/translate/translate_infobar_base_gtk.h"
+#include "chrome/browser/ui/gtk/infobars/translate_infobar_base_gtk.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/infobars/after_translate_infobar_gtk.h"
+#include "chrome/browser/ui/gtk/infobars/before_translate_infobar_gtk.h"
+#include "chrome/browser/ui/gtk/infobars/translate_message_infobar_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
-#include "chrome/browser/ui/gtk/translate/after_translate_infobar_gtk.h"
-#include "chrome/browser/ui/gtk/translate/before_translate_infobar_gtk.h"
-#include "chrome/browser/ui/gtk/translate/translate_message_infobar_gtk.h"
 #include "grit/generated_resources.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
