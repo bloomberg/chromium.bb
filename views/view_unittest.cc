@@ -1090,10 +1090,10 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
 ////////////////////////////////////////////////////////////////////////////////
 // Mouse-wheel message rerouting
 ////////////////////////////////////////////////////////////////////////////////
-class ButtonTest : public NativeButton {
+class ButtonTest : public NativeButtonBase {
  public:
   ButtonTest(ButtonListener* listener, const std::wstring& label)
-      : NativeButton(listener, label) {
+      : NativeButtonBase(listener, label) {
   }
 
   HWND GetHWND() {
@@ -1268,8 +1268,8 @@ class TestDialog : public DialogDelegate, public ButtonListener {
   virtual View* GetContentsView() {
     if (!contents_) {
       contents_ = new View();
-      button1_ = new NativeButton(this, L"Button1");
-      button2_ = new NativeButton(this, L"Button2");
+      button1_ = new NativeButtonBase(this, L"Button1");
+      button2_ = new NativeButtonBase(this, L"Button2");
       checkbox_ = new Checkbox(L"My checkbox");
       button_drop_ = new ButtonDropDown(this, mock_menu_model_);
       contents_->AddChildView(button1_);
@@ -1314,9 +1314,9 @@ class TestDialog : public DialogDelegate, public ButtonListener {
   }
 
   View* contents_;
-  NativeButton* button1_;
-  NativeButton* button2_;
-  NativeButton* checkbox_;
+  NativeButtonBase* button1_;
+  NativeButtonBase* button2_;
+  NativeButtonBase* checkbox_;
   ButtonDropDown* button_drop_;
   Button* last_pressed_button_;
   ui::MockMenuModel* mock_menu_model_;
@@ -1389,8 +1389,8 @@ class DefaultButtonTest : public ViewTest {
   views::FocusManager* focus_manager_;
   TestDialog* test_dialog_;
   DialogClientView* client_view_;
-  views::NativeButton* ok_button_;
-  views::NativeButton* cancel_button_;
+  views::NativeButtonBase* ok_button_;
+  views::NativeButtonBase* cancel_button_;
 };
 
 TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {
@@ -1508,7 +1508,7 @@ TEST_F(ViewTest, ChangeVisibility) {
   scoped_ptr<views::Widget> window(CreateWidget());
   window->Init(NULL, gfx::Rect(0, 0, 500, 300));
   views::RootView* root_view = window->GetRootView();
-  NativeButton* native = new NativeButton(NULL, L"Native");
+  NativeButtonBase* native = new NativeButtonBase(NULL, L"Native");
 
   root_view->SetContentsView(native);
   native->SetVisible(true);

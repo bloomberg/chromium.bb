@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ namespace views {
 class NativeButtonWin : public NativeControlWin,
                         public NativeButtonWrapper {
  public:
-  explicit NativeButtonWin(NativeButton* native_button);
+  explicit NativeButtonWin(NativeButtonBase* native_button);
   virtual ~NativeButtonWin();
 
   // Overridden from NativeButtonWrapper:
@@ -49,7 +49,7 @@ class NativeButtonWin : public NativeControlWin,
 
  private:
   // The NativeButton we are bound to.
-  NativeButton* native_button_;
+  NativeButtonBase* native_button_;
 
   // It's expensive to find the size of a button on windows, so we cache it.
   mutable gfx::Size button_size_;
