@@ -7,6 +7,8 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <X11/extensions/shape.h>
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
 
 #include <set>
 #include <vector>
@@ -281,7 +283,8 @@ WidgetGtk::WidgetGtk(Type type)
       always_on_top_(false),
       is_double_buffered_(false),
       should_handle_menu_key_release_(false),
-      dragged_view_(NULL) {
+      dragged_view_(NULL),
+      painted_(false) {
   set_native_widget(this);
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {
@@ -724,6 +727,32 @@ void WidgetGtk::EnableDebugPaint() {
   debug_paint_enabled_ = true;
 }
 
+// static
+void WidgetGtk::UpdateFreezeUpdatesProperty(GtkWindow* window, bool enable) {
+  if (!GTK_WIDGET_REALIZED(GTK_WIDGET(window)))
+    gtk_widget_realize(GTK_WIDGET(window));
+  GdkWindow* gdk_window = GTK_WIDGET(window)->window;
+
+  static GdkAtom freeze_atom_ =
+      gdk_atom_intern("_CHROME_FREEZE_UPDATES", FALSE);
+  if (enable) {
+    VLOG(1) << "setting FREEZE UPDATES property. xid=" <<
+        GDK_WINDOW_XID(gdk_window);
+    int32 val = 1;
+    gdk_property_change(gdk_window,
+                        freeze_atom_,
+                        freeze_atom_,
+                        32,
+                        GDK_PROP_MODE_REPLACE,
+                        reinterpret_cast<const guchar*>(&val),
+                        1);
+  } else {
+    VLOG(1) << "deleting FREEZE UPDATES property. xid=" <<
+        GDK_WINDOW_XID(gdk_window);
+    gdk_property_delete(gdk_window, freeze_atom_);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, NativeWidget implementation:
 
@@ -915,7 +944,13 @@ void WidgetGtk::RunShellDrag(View* view,
 }
 
 void WidgetGtk::SchedulePaintInRect(const gfx::Rect& rect) {
-  if (widget_ && GTK_WIDGET_DRAWABLE(widget_)) {
+  // No need to schedule paint if
+  // 1) widget_ is NULL. This may happen because this instance may
+  // be deleted after the gtk widget has been destroyed (See OnDestroy()).
+  // 2) widget_ is not drawable (mapped and visible)
+  // 3) If it's never painted before. The first expose event will
+  // paint the area that has to be painted.
+  if (widget_ && GTK_WIDGET_DRAWABLE(widget_) && painted_) {
     gtk_widget_queue_draw_area(widget_, rect.x(), rect.y(), rect.width(),
                                rect.height());
   }
@@ -990,6 +1025,12 @@ gboolean WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
   if (!canvas.is_empty()) {
     canvas.set_composite_alpha(is_transparent());
     delegate_->OnNativeWidgetPaint(&canvas);
+  }
+
+  if (!painted_) {
+    painted_ = true;
+    if (type_ != TYPE_CHILD)
+      UpdateFreezeUpdatesProperty(GTK_WINDOW(widget_), false /* remove */);
   }
   return false;  // False indicates other widgets should get the event as well.
 }
@@ -1269,12 +1310,16 @@ void WidgetGtk::OnShow(GtkWidget* widget) {
 }
 
 void WidgetGtk::OnMap(GtkWidget* widget) {
-  // Force an expose event to trigger OnPaint. This is necessary because earlier
-  // SchedulePaintInRect calls for the widget will have happened before the
-  // widget was drawable. This means that gtk_widget_queue_draw_area wasn't
-  // called, and so the widget will not get any expose events. Consequently, the
-  // widget won't paint itself until something else triggers a paint call.
+#if defined(TOUCH_UI)
+  // Force an expose event to trigger OnPaint for touch. This is
+  // a workaround for a bug that X Expose event does not trigger
+  // Gdk's expose signal. This happens when you try to open views menu
+  // while a virtual keyboard gets kicked in or out. This seems to be
+  // a bug in message_pump_glib_x.cc as we do get X Expose event but
+  // it doesn't trigger gtk's expose signal. We're not going to fix this
+  // as we're removing gtk and migrating to new compositor.
   gdk_window_process_updates(widget_->window, true);
+#endif
 }
 
 void WidgetGtk::OnHide(GtkWidget* widget) {
@@ -1487,9 +1532,9 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
       ConfigureWidgetForIgnoreEvents();
 
     SetAlwaysOnTop(always_on_top_);
-    // The widget needs to be realized before handlers like size-allocate can
-    // function properly.
-    gtk_widget_realize(widget_);
+    // UpdateFreezeUpdatesProperty will realize the widget and handlers like
+    // size-allocate will function properly.
+    UpdateFreezeUpdatesProperty(GTK_WINDOW(widget_), true /* add */);
   }
   SetNativeWindowProperty(kNativeWidgetKey, this);
 }

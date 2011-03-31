@@ -179,6 +179,17 @@ class WidgetGtk : public Widget,
   // Enables debug painting. See |debug_paint_enabled_| for details.
   static void EnableDebugPaint();
 
+  // Sets and deletes FREEZE_UPDATES property on given |window|.
+  // It adds the property when |enable| is true and remove if false.
+  // Calling this method will realize the window if it's not realized yet.
+  // This property is used to help WindowManager know when the window
+  // is fully painted so that WM can map the fully painted window.
+  // The property is based on Owen Taylor's proposal at
+  // http://mail.gnome.org/archives/wm-spec-list/2009-June/msg00002.html.
+  // This is just a hint to WM, and won't change the behavior for WM
+  // which does not support this property.
+  static void UpdateFreezeUpdatesProperty(GtkWindow* window, bool enable);
+
   // Overridden from NativeWidget:
   virtual Widget* GetWidget() OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
@@ -427,6 +438,10 @@ class WidgetGtk : public Widget,
   // Valid for the lifetime of StartDragForViewFromMouseEvent, indicates the
   // view the drag started from.
   View* dragged_view_;
+
+  // If the widget has ever been painted. This is used to guarantee
+  // that window manager shows the window only after the window is painted.
+  bool painted_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetGtk);
 };

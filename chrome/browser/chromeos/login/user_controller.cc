@@ -66,9 +66,20 @@ class ControlsWindow : public WidgetGtk {
 
  private:
   // WidgetGtk overrides:
-  virtual void SetInitialFocus() {
+  virtual void SetInitialFocus() OVERRIDE {
     if (initial_focus_view_)
       initial_focus_view_->RequestFocus();
+  }
+
+  virtual void OnMap(GtkWidget* widget) OVERRIDE {
+    // For some reason, Controls window never gets first expose event,
+    // which makes WM believe that the login screen is not ready.
+    // This is a workaround to let WM show the login screen. While
+    // this may allow WM to show unpainted window, we haven't seen any
+    // issue (yet). We will not investigate this further because we're
+    // migrating to different implemention (WebUI).
+    UpdateFreezeUpdatesProperty(GTK_WINDOW(GetNativeView()),
+                                false /* remove */);
   }
 
   views::View* initial_focus_view_;
@@ -190,15 +201,6 @@ void UserController::Init(int index,
   label_window_ = CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_LABEL);
   unselected_label_window_ =
       CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_UNSELECTED_LABEL);
-
-  // Flush updates to all the windows so their appearance will be synchronized
-  // when being displayed.
-  gdk_window_process_updates(controls_window_->GetNativeView()->window, false);
-  gdk_window_process_updates(image_window_->GetNativeView()->window, false);
-  gdk_window_process_updates(border_window_->GetNativeView()->window, false);
-  gdk_window_process_updates(label_window_->GetNativeView()->window, false);
-  gdk_window_process_updates(
-      unselected_label_window_->GetNativeView()->window, false);
 }
 
 void UserController::ClearAndEnableFields() {

@@ -22,6 +22,7 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/nested_dispatcher_gtk.h"
 #include "views/views_delegate.h"
+#include "views/widget/widget_gtk.h"
 
 namespace {
 
@@ -71,6 +72,8 @@ NativeMenuGtk::NativeMenuGtk(Menu2* menu)
       activated_index_(-1),
       activate_factory_(this),
       host_menu_(menu),
+      destroy_handler_id_(0),
+      expose_handler_id_(0),
       menu_action_(MENU_ACTION_NONE),
       nested_dispatcher_(NULL),
       ignore_button_release_(true) {
@@ -83,6 +86,7 @@ NativeMenuGtk::~NativeMenuGtk() {
     nested_dispatcher_->CreatorDestroyed();
   }
   if (menu_) {
+    DCHECK(destroy_handler_id_);
     // Don't call MenuDestroyed because menu2 has already been destroyed.
     g_signal_handler_disconnect(menu_, destroy_handler_id_);
     gtk_widget_destroy(menu_);
@@ -100,6 +104,15 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
   ignore_button_release_ = true;
 
   UpdateStates();
+  // Set the FREEZE UPDATE property to the menu's window so that WM maps
+  // the menu after the menu painted itself.
+  GtkWidget* popup_window = gtk_widget_get_ancestor(menu_, GTK_TYPE_WINDOW);
+  CHECK(popup_window);
+  WidgetGtk::UpdateFreezeUpdatesProperty(GTK_WINDOW(popup_window),
+                                         true /* add */);
+  expose_handler_id_ = g_signal_connect_after(G_OBJECT(menu_), "expose_event",
+                                              G_CALLBACK(&OnExposeThunk), this);
+
   Position position = { point, static_cast<Menu2::Alignment>(alignment) };
   // TODO(beng): value of '1' will not work for context menus!
   gtk_menu_popup(GTK_MENU(menu_), NULL, NULL, MenuPositionFunc, &position, 1,
@@ -318,6 +331,17 @@ void NativeMenuGtk::OnMenuMoveCurrent(GtkWidget* menu_widget,
 void NativeMenuGtk::AfterMenuMoveCurrent(GtkWidget* menu_widget,
                                          GtkMenuDirectionType focus_direction) {
   SendAccessibilityEvent();
+}
+
+gboolean NativeMenuGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
+  GtkWidget* popup_window = gtk_widget_get_ancestor(menu_, GTK_TYPE_WINDOW);
+  CHECK(popup_window);
+  CHECK(expose_handler_id_);
+  WidgetGtk::UpdateFreezeUpdatesProperty(GTK_WINDOW(popup_window),
+                                         false /* remove */);
+  g_signal_handler_disconnect(menu_, expose_handler_id_);
+  expose_handler_id_ = 0;
+  return false;
 }
 
 void NativeMenuGtk::AddSeparatorAt(int index) {

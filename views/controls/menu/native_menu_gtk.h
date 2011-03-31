@@ -57,6 +57,7 @@ class NativeMenuGtk : public MenuWrapper,
                        GtkMenuDirectionType);
   CHROMEGTK_CALLBACK_1(NativeMenuGtk, void, AfterMenuMoveCurrent,
                        GtkMenuDirectionType);
+  CHROMEGTK_CALLBACK_1(NativeMenuGtk, gboolean, OnExpose, GdkEventExpose*);
 
   void AddSeparatorAt(int index);
   GtkWidget* AddMenuItemAt(int index, GtkRadioMenuItem* radio_group,
@@ -134,6 +135,7 @@ class NativeMenuGtk : public MenuWrapper,
   // used to delete the menu2 when its native menu gtk is destroyed first.
   Menu2* host_menu_;
   gulong destroy_handler_id_;
+  gulong expose_handler_id_;
 
   // The action that took place during the call to RunMenuAt.
   MenuAction menu_action_;
