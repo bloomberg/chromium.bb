@@ -3469,6 +3469,15 @@
           'sources': [
             'test/selenium/selenium_test.cc',
           ],
+          'configurations': {
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
           'conditions': [
             ['OS=="win" and win_use_allocator_shim==1', {
               'dependencies': [
