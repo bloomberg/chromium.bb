@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,7 +125,7 @@ TEST_F(AboutFlagsTest, AddTwoFlagsRemoveOne) {
   SetExperimentEnabled(&prefs_, kFlags1, true);
   SetExperimentEnabled(&prefs_, kFlags2, true);
 
-  ListValue* experiments_list = prefs_.GetMutableList(
+  const ListValue* experiments_list = prefs_.GetList(
       prefs::kEnabledLabsExperiments);
   ASSERT_TRUE(experiments_list != NULL);
 
@@ -142,7 +142,7 @@ TEST_F(AboutFlagsTest, AddTwoFlagsRemoveOne) {
   // Remove one experiment, check the other's still around.
   SetExperimentEnabled(&prefs_, kFlags2, false);
 
-  experiments_list = prefs_.GetMutableList(prefs::kEnabledLabsExperiments);
+  experiments_list = prefs_.GetList(prefs::kEnabledLabsExperiments);
   ASSERT_TRUE(experiments_list != NULL);
   ASSERT_EQ(1u, experiments_list->GetSize());
   ASSERT_TRUE(experiments_list->GetString(0, &s0));
@@ -153,14 +153,14 @@ TEST_F(AboutFlagsTest, AddTwoFlagsRemoveBoth) {
   // Add two experiments, check the pref exists.
   SetExperimentEnabled(&prefs_, kFlags1, true);
   SetExperimentEnabled(&prefs_, kFlags2, true);
-  ListValue* experiments_list = prefs_.GetMutableList(
+  const ListValue* experiments_list = prefs_.GetList(
       prefs::kEnabledLabsExperiments);
   ASSERT_TRUE(experiments_list != NULL);
 
   // Remove both, the pref should have been removed completely.
   SetExperimentEnabled(&prefs_, kFlags1, false);
   SetExperimentEnabled(&prefs_, kFlags2, false);
-  experiments_list = prefs_.GetMutableList(prefs::kEnabledLabsExperiments);
+  experiments_list = prefs_.GetList(prefs::kEnabledLabsExperiments);
   EXPECT_TRUE(experiments_list == NULL || experiments_list->GetSize() == 0);
 }
 

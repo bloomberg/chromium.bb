@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
@@ -354,10 +355,8 @@ void GetEnabledFlags(const PrefService* prefs, std::set<std::string>* result) {
 // Takes a set of enabled lab experiments
 void SetEnabledFlags(
     PrefService* prefs, const std::set<std::string>& enabled_experiments) {
-  ListValue* experiments_list = prefs->GetMutableList(
-      prefs::kEnabledLabsExperiments);
-  if (!experiments_list)
-    return;
+  ListPrefUpdate update(prefs, prefs::kEnabledLabsExperiments);
+  ListValue* experiments_list = update.Get();
 
   experiments_list->Clear();
   for (std::set<std::string>::const_iterator it = enabled_experiments.begin();
