@@ -493,11 +493,11 @@
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 65,
-      'caption': '''Clear site date on browser shutdown''',
+      'caption': '''Clear site data on browser shutdown''',
       'desc': '''This policy is an override for the "Clear cookies and other site data when I close my browser" content settings option.
 
       When set to true <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will delete all locally stored data from the browser when it is shut down.''',
-      'label': '''Clear site date on browser shutdown''',
+      'label': '''Clear site data on browser shutdown''',
     },
     {
       'name': 'Proxy',
