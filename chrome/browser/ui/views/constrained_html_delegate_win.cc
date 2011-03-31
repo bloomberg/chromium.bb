@@ -100,7 +100,7 @@ void ConstrainedHtmlDelegateWin::OnDialogClose() {
 }
 
 // static
-ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
+void ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
     TabContents* container) {
@@ -109,5 +109,4 @@ ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
   ConstrainedWindow* constrained_window =
       container->CreateConstrainedDialog(constrained_delegate);
   constrained_delegate->set_window(constrained_window);
-  return constrained_window;
 }

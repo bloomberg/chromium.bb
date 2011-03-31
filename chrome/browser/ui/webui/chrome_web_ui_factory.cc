@@ -178,8 +178,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
 #endif
 
 #if defined(OS_CHROMEOS)
-  if (url.host() == chrome::kChromeUICollectedCookiesHost ||
-      url.host() == chrome::kChromeUIHttpAuthHost) {
+  if (url.host() == chrome::kChromeUICollectedCookiesHost) {
     return &NewWebUI<ConstrainedHtmlUI>;
   }
   if (url.host() == chrome::kChromeUIFileBrowseHost)

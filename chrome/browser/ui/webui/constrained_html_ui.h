@@ -41,10 +41,9 @@ class ConstrainedHtmlUI : public WebUI {
   // Create a constrained HTML dialog. The actual object that gets created
   // is a ConstrainedHtmlUIDelegate, which later triggers construction of a
   // ConstrainedHtmlUI object.
-  static ConstrainedWindow* CreateConstrainedHtmlDialog(
-      Profile* profile,
-      HtmlDialogUIDelegate* delegate,
-      TabContents* overshadowed);
+  static void CreateConstrainedHtmlDialog(Profile* profile,
+                                          HtmlDialogUIDelegate* delegate,
+                                          TabContents* overshadowed);
 
   // Returns a property accessor that can be used to set the
   // ConstrainedHtmlUIDelegate property on a TabContents.
