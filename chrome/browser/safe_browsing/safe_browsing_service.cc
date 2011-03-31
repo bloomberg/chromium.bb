@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,12 +23,12 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "net/base/registry_controlled_domain.h"
+#include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/browser_distribution.h"
@@ -533,7 +533,7 @@ SafeBrowsingService::~SafeBrowsingService() {
 void SafeBrowsingService::OnIOInitialize(
     const std::string& client_key,
     const std::string& wrapped_key,
-    URLRequestContextGetter* request_context_getter) {
+    net::URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   enabled_ = true;
 
@@ -870,7 +870,7 @@ void SafeBrowsingService::Start() {
   }
 
   // We will issue network fetches using the default profile's request context.
-  scoped_refptr<URLRequestContextGetter> request_context_getter(
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter(
       GetDefaultProfile()->GetRequestContext());
 
   CommandLine* cmdline = CommandLine::ForCurrentProcess();

@@ -82,7 +82,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service();
 
-  virtual URLRequestContextGetter* system_request_context();
+  virtual net::URLRequestContextGetter* system_request_context();
 
 #if defined(OS_CHROMEOS)
   virtual chromeos::ProxyConfigServiceImpl*

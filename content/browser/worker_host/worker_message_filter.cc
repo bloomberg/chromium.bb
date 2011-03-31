@@ -1,19 +1,19 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/worker_host/worker_message_filter.h"
 
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/worker_host/message_port_service.h"
 #include "content/browser/worker_host/worker_service.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
+#include "net/url_request/url_request_context_getter.h"
 
 WorkerMessageFilter::WorkerMessageFilter(
     int render_process_id,
-    URLRequestContextGetter* request_context,
+    net::URLRequestContextGetter* request_context,
     ResourceDispatcherHost* resource_dispatcher_host,
     CallbackWithReturnValue<int>::Type* next_routing_id)
     : render_process_id_(render_process_id),

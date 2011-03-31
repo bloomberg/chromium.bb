@@ -23,10 +23,10 @@ class HostContentSettingsMap;
 class Profile;
 class Receiver;
 class RenderMessageFilter;
-class URLRequestContextGetter;
 
 namespace net {
 class URLRequestContext;
+class URLRequestContextGetter;
 }  // namespace net
 
 namespace fileapi {
@@ -95,7 +95,7 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
 
   // This holds the URLRequestContextGetter until Init() can be called from the
   // IO thread, which will extract the net::URLRequestContext from it.
-  scoped_refptr<URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<net::URLRequestContext> request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcherHost);

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,12 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "cros/chromeos_libcros_service.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace chromeos {
 
@@ -208,7 +208,7 @@ void LibCrosServiceLibraryImpl::NetworkProxyLibrary::ResolveProxy(
       &NetworkProxyLibrary::NotifyProxyResolved, request);
 
   // Retrieve ProxyService from profile's request context.
-  URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
+  net::URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
   net::ProxyService* proxy_service = NULL;
   if (getter)
     proxy_service = getter->GetURLRequestContext()->proxy_service();

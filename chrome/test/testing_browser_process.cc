@@ -13,7 +13,7 @@
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/net/url_request_context_getter.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
 
 TestingBrowserProcess::TestingBrowserProcess()
@@ -118,7 +118,7 @@ TestingBrowserProcess::safe_browsing_detection_service() {
   return NULL;
 }
 
-URLRequestContextGetter* TestingBrowserProcess::system_request_context() {
+net::URLRequestContextGetter* TestingBrowserProcess::system_request_context() {
   return NULL;
 }
 

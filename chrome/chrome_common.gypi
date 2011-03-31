@@ -350,8 +350,6 @@
         'common/net/raw_host_resolver_proc.h',
         'common/net/url_fetcher.cc',
         'common/net/url_fetcher.h',
-        'common/net/url_request_context_getter.cc',
-        'common/net/url_request_context_getter.h',
         'common/net/gaia/gaia_auth_consumer.cc',
         'common/net/gaia/gaia_auth_consumer.h',
         'common/net/gaia/gaia_auth_fetcher.cc',

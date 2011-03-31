@@ -64,7 +64,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual DevToolsManager* devtools_manager();
   virtual SidebarManager* sidebar_manager();
   virtual ui::Clipboard* clipboard();
-  virtual URLRequestContextGetter* system_request_context();
+  virtual net::URLRequestContextGetter* system_request_context();
 #if defined(OS_CHROMEOS)
   virtual chromeos::ProxyConfigServiceImpl*
       chromeos_proxy_config_service_impl();

@@ -9,9 +9,9 @@
 #include "base/values.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 const char kAccessTokenValue[] = "access_token";
@@ -26,7 +26,7 @@ class GaiaOAuthClient::Core
       public URLFetcher::Delegate {
  public:
   Core(const std::string& gaia_url,
-       URLRequestContextGetter* request_context_getter)
+       net::URLRequestContextGetter* request_context_getter)
            : gaia_url_(gaia_url),
              num_retries_(0),
              request_context_getter_(request_context_getter),
@@ -65,7 +65,7 @@ class GaiaOAuthClient::Core
 
   GURL gaia_url_;
   int num_retries_;
-  scoped_refptr<URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   GaiaOAuthClient::Delegate* delegate_;
   scoped_ptr<URLFetcher> request_;
 };
@@ -186,7 +186,7 @@ void GaiaOAuthClient::Core::HandleResponse(
 }
 
 GaiaOAuthClient::GaiaOAuthClient(const std::string& gaia_url,
-                                 URLRequestContextGetter* context_getter) {
+                                 net::URLRequestContextGetter* context_getter) {
   core_ = new Core(gaia_url, context_getter);
 }
 

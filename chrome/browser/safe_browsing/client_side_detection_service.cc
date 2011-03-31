@@ -18,10 +18,10 @@
 #include "chrome/browser/safe_browsing/csd.pb.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
 namespace safe_browsing {
@@ -51,7 +51,7 @@ ClientSideDetectionService::CacheState::CacheState(bool phish, base::Time time)
 
 ClientSideDetectionService::ClientSideDetectionService(
     const FilePath& model_path,
-    URLRequestContextGetter* request_context_getter)
+    net::URLRequestContextGetter* request_context_getter)
     : model_path_(model_path),
       model_status_(UNKNOWN_STATUS),
       model_file_(base::kInvalidPlatformFileValue),
@@ -71,7 +71,7 @@ ClientSideDetectionService::~ClientSideDetectionService() {
 /* static */
 ClientSideDetectionService* ClientSideDetectionService::Create(
     const FilePath& model_path,
-    URLRequestContextGetter* request_context_getter) {
+    net::URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<ClientSideDetectionService> service(
       new ClientSideDetectionService(model_path, request_context_getter));

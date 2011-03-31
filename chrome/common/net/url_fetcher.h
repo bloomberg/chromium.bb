@@ -24,10 +24,10 @@
 
 class GURL;
 typedef std::vector<std::string> ResponseCookies;
-class URLRequestContextGetter;
 
 namespace net {
 class HttpResponseHeaders;
+class URLRequestContextGetter;
 class URLRequestStatus;
 }  // namespace net
 
@@ -160,7 +160,7 @@ class URLFetcher {
   // Set the net::URLRequestContext on the request.  Must be called before the
   // request is started.
   void set_request_context(
-      URLRequestContextGetter* request_context_getter);
+      net::URLRequestContextGetter* request_context_getter);
 
   // If |retry| is false, 5xx responses will be propagated to the observer,
   // if it is true URLFetcher will automatically re-execute the request,

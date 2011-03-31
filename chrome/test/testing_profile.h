@@ -40,8 +40,11 @@ class SessionService;
 class TemplateURLModel;
 class TestingPrefService;
 class ThemeService;
-class URLRequestContextGetter;
 class WebKitContext;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 class TestingProfile : public Profile {
  public:
@@ -187,17 +190,17 @@ class TestingProfile : public Profile {
   // leaking if they called this method without the necessary IO thread. This
   // getter is currently only capable of returning a Context that helps test
   // the CookieMonster. See implementation comments for more details.
-  virtual URLRequestContextGetter* GetRequestContext();
-  virtual URLRequestContextGetter* GetRequestContextForPossibleApp(
+  virtual net::URLRequestContextGetter* GetRequestContext();
+  virtual net::URLRequestContextGetter* GetRequestContextForPossibleApp(
       const Extension* installed_app);
   void CreateRequestContext();
   // Clears out the created request context (which must be done before shutting
   // down the IO thread to avoid leaks).
   void ResetRequestContext();
 
-  virtual URLRequestContextGetter* GetRequestContextForMedia();
-  virtual URLRequestContextGetter* GetRequestContextForExtensions();
-  virtual URLRequestContextGetter* GetRequestContextForIsolatedApp(
+  virtual net::URLRequestContextGetter* GetRequestContextForMedia();
+  virtual net::URLRequestContextGetter* GetRequestContextForExtensions();
+  virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
       const std::string& app_id);
 
   virtual net::SSLConfigService* GetSSLConfigService();
@@ -334,8 +337,8 @@ class TestingProfile : public Profile {
 
   // Internally, this is a TestURLRequestContextGetter that creates a dummy
   // request context. Currently, only the CookieMonster is hooked up.
-  scoped_refptr<URLRequestContextGetter> request_context_;
-  scoped_refptr<URLRequestContextGetter> extensions_request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<net::URLRequestContextGetter> extensions_request_context_;
 
   std::wstring id_;
 

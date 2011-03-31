@@ -19,10 +19,10 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
 using base::Time;
@@ -47,7 +47,7 @@ class SBProtocolManagerFactoryImpl : public SBProtocolManagerFactory {
       const std::string& client_name,
       const std::string& client_key,
       const std::string& wrapped_key,
-      URLRequestContextGetter* request_context_getter,
+      net::URLRequestContextGetter* request_context_getter,
       const std::string& info_url_prefix,
       const std::string& mackey_url_prefix,
       bool disable_auto_update) {
@@ -71,7 +71,7 @@ SafeBrowsingProtocolManager* SafeBrowsingProtocolManager::Create(
     const std::string& client_name,
     const std::string& client_key,
     const std::string& wrapped_key,
-    URLRequestContextGetter* request_context_getter,
+    net::URLRequestContextGetter* request_context_getter,
     const std::string& info_url_prefix,
     const std::string& mackey_url_prefix,
     bool disable_auto_update) {
@@ -89,7 +89,7 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
     const std::string& client_name,
     const std::string& client_key,
     const std::string& wrapped_key,
-    URLRequestContextGetter* request_context_getter,
+    net::URLRequestContextGetter* request_context_getter,
     const std::string& http_url_prefix,
     const std::string& https_url_prefix,
     bool disable_auto_update)

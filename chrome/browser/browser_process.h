@@ -41,7 +41,6 @@ class ResourceDispatcherHost;
 class SidebarManager;
 class TabCloseableStateWatcher;
 class ThumbnailGenerator;
-class URLRequestContextGetter;
 class WatchDogThread;
 
 namespace base {
@@ -54,6 +53,10 @@ namespace chromeos {
 class ProxyConfigServiceImpl;
 }
 #endif  // defined(OS_CHROMEOS)
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace printing {
 class PrintJobManager;
@@ -90,7 +93,7 @@ class BrowserProcess {
   virtual DevToolsManager* devtools_manager() = 0;
   virtual SidebarManager* sidebar_manager() = 0;
   virtual ui::Clipboard* clipboard() = 0;
-  virtual URLRequestContextGetter* system_request_context() = 0;
+  virtual net::URLRequestContextGetter* system_request_context() = 0;
 
 #if defined(OS_CHROMEOS)
   // Returns ChromeOS's ProxyConfigServiceImpl, creating if not yet created.

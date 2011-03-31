@@ -7,9 +7,9 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/test_server.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/url_request/url_request_throttler_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,7 +44,7 @@ class CurriedTask : public Task {
   DISALLOW_COPY_AND_ASSIGN(CurriedTask);
 };
 
-class TestURLRequestContextGetter : public URLRequestContextGetter {
+class TestURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   explicit TestURLRequestContextGetter(
       base::MessageLoopProxy* io_message_loop_proxy)
@@ -247,7 +247,7 @@ class CancelTestURLRequestContext : public TestURLRequestContext {
   }
 };
 
-class CancelTestURLRequestContextGetter : public URLRequestContextGetter {
+class CancelTestURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   explicit CancelTestURLRequestContextGetter(
       base::MessageLoopProxy* io_message_loop_proxy)

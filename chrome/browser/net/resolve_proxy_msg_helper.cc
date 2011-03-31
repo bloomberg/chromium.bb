@@ -6,10 +6,10 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/common/child_process_messages.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 ResolveProxyMsgHelper::ResolveProxyMsgHelper(net::ProxyService* proxy_service)
     : proxy_service_(NULL),
@@ -91,7 +91,7 @@ bool ResolveProxyMsgHelper::GetProxyService(
   }
 
   // If there is no default request context (say during shut down).
-  URLRequestContextGetter* context_getter =
+  net::URLRequestContextGetter* context_getter =
       Profile::GetDefaultRequestContext();
   if (!context_getter)
     return false;

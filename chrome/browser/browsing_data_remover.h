@@ -20,10 +20,13 @@ class ExtensionSpecialStoragePolicy;
 class IOThread;
 class PluginDataRemover;
 class Profile;
-class URLRequestContextGetter;
 
 namespace disk_cache {
 class Backend;
+}
+
+namespace net {
+class URLRequestContextGetter;
 }
 
 namespace webkit_database {
@@ -200,8 +203,8 @@ class BrowsingDataRemover : public NotificationObserver,
   disk_cache::Backend* cache_;
 
   // Used to delete data from HTTP cache and appcache.
-  scoped_refptr<URLRequestContextGetter> main_context_getter_;
-  scoped_refptr<URLRequestContextGetter> media_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> main_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> media_context_getter_;
 
   // Used to delete plugin data.
   scoped_refptr<PluginDataRemover> plugin_data_remover_;

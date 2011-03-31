@@ -150,7 +150,7 @@ void BrowserPolicyConnector::Observe(NotificationType type,
 
 void BrowserPolicyConnector::Initialize(
     PrefService* local_state,
-    URLRequestContextGetter* request_context) {
+    net::URLRequestContextGetter* request_context) {
   // TODO(jkummerow, mnissler): Move this out of the browser startup path.
   DCHECK(local_state);
   DCHECK(request_context);

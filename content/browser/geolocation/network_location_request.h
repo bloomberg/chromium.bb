@@ -15,8 +15,12 @@
 #include "content/browser/geolocation/device_data_provider.h"
 #include "googleurl/src/gurl.h"
 
-class URLRequestContextGetter;
 class URLFetcher;
+
+namespace net {
+class URLRequestContextGetter;
+}
+
 struct Geoposition;
 struct Position;
 
@@ -44,7 +48,7 @@ class NetworkLocationRequest : private URLFetcher::Delegate {
   };
 
   // |url| is the server address to which the request wil be sent.
-  NetworkLocationRequest(URLRequestContextGetter* context,
+  NetworkLocationRequest(net::URLRequestContextGetter* context,
                          const GURL& url,
                          ListenerInterface* listener);
   virtual ~NetworkLocationRequest();
@@ -70,7 +74,7 @@ class NetworkLocationRequest : private URLFetcher::Delegate {
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
-  scoped_refptr<URLRequestContextGetter> url_context_;
+  scoped_refptr<net::URLRequestContextGetter> url_context_;
   ListenerInterface* listener_;
   const GURL url_;
   scoped_ptr<URLFetcher> url_fetcher_;

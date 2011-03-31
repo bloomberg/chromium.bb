@@ -31,7 +31,7 @@ ChromeURLDataManager::DataSources* ChromeURLDataManager::data_sources_ = NULL;
 
 // Invoked on the IO thread to do the actual adding of the DataSource.
 static void AddDataSourceOnIOThread(
-    scoped_refptr<URLRequestContextGetter> context_getter,
+    scoped_refptr<net::URLRequestContextGetter> context_getter,
     scoped_refptr<ChromeURLDataManager::DataSource> data_source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   static_cast<ChromeURLRequestContext*>(

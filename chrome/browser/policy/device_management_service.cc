@@ -7,7 +7,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/policy/device_management_backend_impl.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
@@ -17,6 +16,7 @@
 #include "net/http/http_network_layer.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -70,19 +70,20 @@ const std::string& DeviceManagementRequestContext::GetUserAgent(
 }
 
 // Request context holder.
-class DeviceManagementRequestContextGetter : public URLRequestContextGetter {
+class DeviceManagementRequestContextGetter
+    : public net::URLRequestContextGetter {
  public:
   DeviceManagementRequestContextGetter(
-      URLRequestContextGetter* base_context_getter)
+      net::URLRequestContextGetter* base_context_getter)
       : base_context_getter_(base_context_getter) {}
 
-  // Overridden from URLRequestContextGetter:
+  // Overridden from net::URLRequestContextGetter:
   virtual net::URLRequestContext* GetURLRequestContext();
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
 
  private:
   scoped_refptr<net::URLRequestContext> context_;
-  scoped_refptr<URLRequestContextGetter> base_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> base_context_getter_;
 };
 
 
@@ -116,7 +117,7 @@ DeviceManagementBackend* DeviceManagementService::CreateBackend() {
 }
 
 void DeviceManagementService::Initialize(
-    URLRequestContextGetter* request_context_getter) {
+    net::URLRequestContextGetter* request_context_getter) {
   DCHECK(!request_context_getter_);
   request_context_getter_ =
       new DeviceManagementRequestContextGetter(request_context_getter);

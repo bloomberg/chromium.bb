@@ -18,11 +18,14 @@
 #include "ui/gfx/surface/transport_dib.h"
 
 class Profile;
-class URLRequestContextGetter;
 struct ViewMsg_ClosePage_Params;
 
 namespace base {
 class SharedMemory;
+}
+
+namespace net {
+class URLRequestContextGetter;
 }
 
 // Virtual interface that represents the browser side of the browser <->

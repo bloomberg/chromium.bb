@@ -87,7 +87,7 @@ void SyncBackendHostForProfileSyncTest::
 
 sync_api::HttpPostProviderFactory*
     SyncBackendHostForProfileSyncTest::MakeHttpBridgeFactory(
-        URLRequestContextGetter* getter) {
+        net::URLRequestContextGetter* getter) {
   return new browser_sync::TestHttpBridgeFactory;
 }
 

@@ -55,7 +55,7 @@ class SBProtocolManagerFactory {
       const std::string& client_name,
       const std::string& client_key,
       const std::string& wrapped_key,
-      URLRequestContextGetter* request_context_getter,
+      net::URLRequestContextGetter* request_context_getter,
       const std::string& info_url_prefix,
       const std::string& mackey_url_prefix,
       bool disable_auto_update) = 0;
@@ -93,7 +93,7 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
       const std::string& client_name,
       const std::string& client_key,
       const std::string& wrapped_key,
-      URLRequestContextGetter* request_context_getter,
+      net::URLRequestContextGetter* request_context_getter,
       const std::string& info_url_prefix,
       const std::string& mackey_url_prefix,
       bool disable_auto_update);
@@ -198,14 +198,15 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   // network requests using |request_context_getter|. When |disable_auto_update|
   // is true, protocol manager won't schedule next update until
   // ForceScheduleNextUpdate is called.
-  SafeBrowsingProtocolManager(SafeBrowsingService* sb_service,
-                              const std::string& client_name,
-                              const std::string& client_key,
-                              const std::string& wrapped_key,
-                              URLRequestContextGetter* request_context_getter,
-                              const std::string& http_url_prefix,
-                              const std::string& https_url_prefix,
-                              bool disable_auto_update);
+  SafeBrowsingProtocolManager(
+      SafeBrowsingService* sb_service,
+      const std::string& client_name,
+      const std::string& client_key,
+      const std::string& wrapped_key,
+      net::URLRequestContextGetter* request_context_getter,
+      const std::string& http_url_prefix,
+      const std::string& https_url_prefix,
+      bool disable_auto_update);
  private:
   friend class SBProtocolManagerFactoryImpl;
 
@@ -394,7 +395,7 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   std::string additional_query_;
 
   // The context we use to issue network requests.
-  scoped_refptr<URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // URL prefix where browser fetches safebrowsing chunk updates, hashes, and
   // reports hits to the safebrowsing list for UMA users.

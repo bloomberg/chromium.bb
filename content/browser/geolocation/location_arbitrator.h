@@ -9,18 +9,22 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/time.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/geolocation/access_token_store.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/geolocation_observer.h"
 #include "content/common/geoposition.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_request_context_getter.h"
 
 class AccessTokenStore;
 class GeolocationArbitratorDependencyFactory;
 class GURL;
 class LocationProviderBase;
+
+namespace net {
 class URLRequestContextGetter;
+}
+
 struct Geoposition;
 
 // This class is responsible for handling updates from multiple underlying
@@ -82,7 +86,7 @@ class GeolocationArbitrator : public LocationProviderBase::ListenerInterface {
 
   scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;
   scoped_refptr<AccessTokenStore> access_token_store_;
-  scoped_refptr<URLRequestContextGetter> context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> context_getter_;
   GetTimeNow get_time_now_;
   GeolocationObserver* observer_;
   ScopedVector<LocationProviderBase> providers_;

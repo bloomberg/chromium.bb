@@ -7,11 +7,11 @@
 #include "base/hash_tables.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/websockets/websocket.h"
 
 using base::Histogram;
@@ -34,7 +34,7 @@ static std::string GetProtocolVersionName(
 
 URLFetcher* WebSocketExperimentTask::Context::CreateURLFetcher(
     const Config& config, URLFetcher::Delegate* delegate) {
-  URLRequestContextGetter* getter =
+  net::URLRequestContextGetter* getter =
       Profile::GetDefaultRequestContext();
   // Profile::GetDefaultRequestContext() is initialized lazily, on the UI
   // thread. So here, where we access it from the IO thread, if the task runs
@@ -53,7 +53,7 @@ URLFetcher* WebSocketExperimentTask::Context::CreateURLFetcher(
 
 net::WebSocket* WebSocketExperimentTask::Context::CreateWebSocket(
     const Config& config, net::WebSocketDelegate* delegate) {
-  URLRequestContextGetter* getter =
+  net::URLRequestContextGetter* getter =
       Profile::GetDefaultRequestContext();
   // Profile::GetDefaultRequestContext() is initialized lazily, on the UI
   // thread. So here, where we access it from the IO thread, if the task runs

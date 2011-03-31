@@ -102,7 +102,7 @@ class CloudPrintURLFetcher
   virtual ~CloudPrintURLFetcher();
 
   // Virtual for testing.
-  virtual URLRequestContextGetter* GetRequestContextGetter();
+  virtual net::URLRequestContextGetter* GetRequestContextGetter();
 
  private:
   void StartRequestHelper(const GURL& url,

@@ -26,8 +26,8 @@
 #include "chrome/browser/sync/js_event_router.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_request_context_getter.h"
 
 class CancelableTask;
 class Profile;
@@ -121,7 +121,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   void Initialize(SyncFrontend* frontend,
                   const GURL& service_url,
                   const syncable::ModelTypeSet& types,
-                  URLRequestContextGetter* baseline_context_getter,
+                  net::URLRequestContextGetter* baseline_context_getter,
                   const sync_api::SyncCredentials& credentials,
                   bool delete_sync_data_folder);
 
@@ -537,7 +537,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // Factory method for HttpPostProviderFactories.
   virtual sync_api::HttpPostProviderFactory* MakeHttpBridgeFactory(
-      URLRequestContextGetter* getter);
+      net::URLRequestContextGetter* getter);
 
   MessageLoop* core_loop() { return core_thread_.message_loop(); }
 

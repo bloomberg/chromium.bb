@@ -13,12 +13,12 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #include <queue>

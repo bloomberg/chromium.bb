@@ -22,7 +22,6 @@ class ListValue;
 class PrefProxyConfigTracker;
 class PrefService;
 class SystemURLRequestContextGetter;
-class URLRequestContextGetter;
 
 namespace chrome_browser_net {
 class ConnectInterceptor;
@@ -41,6 +40,7 @@ class ProxyScriptFetcher;
 class ProxyService;
 class SSLConfigService;
 class URLRequestContext;
+class URLRequestContextGetter;
 class URLSecurityManager;
 }  // namespace net
 
@@ -115,7 +115,7 @@ class IOThread : public BrowserProcessSubThread {
   void ChangedToOnTheRecord();
 
   // Returns a getter for the URLRequestContext.  Only called on the UI thread.
-  URLRequestContextGetter* system_url_request_context_getter();
+  net::URLRequestContextGetter* system_url_request_context_getter();
 
   // Clear all network stack history, including the host cache, as well as
   // speculative data about subresources of visited sites, and startup-time
@@ -199,7 +199,8 @@ class IOThread : public BrowserProcessSubThread {
 
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
-  scoped_refptr<URLRequestContextGetter> system_url_request_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter>
+      system_url_request_context_getter_;
 
   // Keeps track of all live ChromeURLRequestContextGetters, so the
   // ChromeURLRequestContexts can be released during

@@ -20,7 +20,7 @@ AppCacheDispatcherHost::AppCacheDispatcherHost(
 }
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(
-    URLRequestContextGetter* request_context_getter,
+    net::URLRequestContextGetter* request_context_getter,
     int process_id)
     : ALLOW_THIS_IN_INITIALIZER_LIST(frontend_proxy_(this)),
       request_context_getter_(request_context_getter),

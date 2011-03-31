@@ -32,10 +32,13 @@ class GURL;
 class Profile;
 class ResourceDispatcherHost;
 class SkBitmap;
-class URLRequestContextGetter;
 
 struct DownloadCreateInfo;
 struct DownloadSaveInfo;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace download_util {
 
@@ -187,7 +190,7 @@ void DownloadUrl(const GURL& url,
                  ResourceDispatcherHost* rdh,
                  int render_process_host_id,
                  int render_view_id,
-                 URLRequestContextGetter* request_context_getter);
+                 net::URLRequestContextGetter* request_context_getter);
 
 // Tells the resource dispatcher host to cancel a download request.
 // Must be called on the IO thread.

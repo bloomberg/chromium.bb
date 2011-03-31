@@ -737,7 +737,7 @@ void DownloadUrl(
     ResourceDispatcherHost* rdh,
     int render_process_host_id,
     int render_view_id,
-    URLRequestContextGetter* request_context_getter) {
+    net::URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   net::URLRequestContext* context =

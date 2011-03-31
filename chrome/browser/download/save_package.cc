@@ -35,7 +35,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -54,6 +53,7 @@
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "net/url_request/url_request_context_getter.h"
 
 using base::Time;
 using WebKit::WebPageSerializerClient;

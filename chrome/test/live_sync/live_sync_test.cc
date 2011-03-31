@@ -23,7 +23,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/ui_test_utils.h"
@@ -36,6 +35,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
 namespace switches {
@@ -80,7 +80,7 @@ class SyncServerStatusChecker : public URLFetcher::Delegate {
 class SetProxyConfigTask : public Task {
  public:
   SetProxyConfigTask(base::WaitableEvent* done,
-                     URLRequestContextGetter* url_request_context_getter,
+                     net::URLRequestContextGetter* url_request_context_getter,
                      const net::ProxyConfig& proxy_config)
       : done_(done),
         url_request_context_getter_(url_request_context_getter),
@@ -97,7 +97,7 @@ class SetProxyConfigTask : public Task {
 
  private:
   base::WaitableEvent* done_;
-  URLRequestContextGetter* url_request_context_getter_;
+  net::URLRequestContextGetter* url_request_context_getter_;
   net::ProxyConfig proxy_config_;
 };
 
@@ -466,7 +466,7 @@ bool LiveSyncTest::AwaitQuiescence() {
   return ProfileSyncServiceHarness::AwaitQuiescence(clients());
 }
 
-void LiveSyncTest::SetProxyConfig(URLRequestContextGetter* context_getter,
+void LiveSyncTest::SetProxyConfig(net::URLRequestContextGetter* context_getter,
                                   const net::ProxyConfig& proxy_config) {
   base::WaitableEvent done(false, false);
   BrowserThread::PostTask(

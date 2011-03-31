@@ -34,7 +34,6 @@ class HostZoomMap;
 class NotificationsPrefsCache;
 class Profile;
 class RenderWidgetHelper;
-class URLRequestContextGetter;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_CreateWorker_Params;
 
@@ -50,6 +49,7 @@ class SharedMemory;
 
 namespace net {
 class CookieStore;
+class URLRequestContextGetter;
 }
 
 // This class filters out incoming IPC messages for the renderer process on the
@@ -60,7 +60,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   RenderMessageFilter(int render_process_id,
                       PluginService* plugin_service,
                       Profile* profile,
-                      URLRequestContextGetter* request_context,
+                      net::URLRequestContextGetter* request_context,
                       RenderWidgetHelper* render_widget_helper);
 
   // BrowserMessageFilter methods:
@@ -240,10 +240,10 @@ class RenderMessageFilter : public BrowserMessageFilter {
   HostContentSettingsMap* content_settings_;
 
   // Contextual information to be used for requests created here.
-  scoped_refptr<URLRequestContextGetter> request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // A request context that holds a cookie store for chrome-extension URLs.
-  scoped_refptr<URLRequestContextGetter> extensions_request_context_;
+  scoped_refptr<net::URLRequestContextGetter> extensions_request_context_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
 

@@ -17,10 +17,10 @@
 #include "webkit/appcache/appcache_backend_impl.h"
 
 class ChromeAppCacheService;
-class URLRequestContextGetter;
 
 namespace net {
 class URLRequestContext;
+class URLRequestContextGetter;
 }  // namespace net
 
 // Handles appcache related messages sent to the main browser process from
@@ -34,7 +34,7 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
                          int process_id);
 
   // Constructor for use on the UI thread.
-  AppCacheDispatcherHost(URLRequestContextGetter* request_context_getter,
+  AppCacheDispatcherHost(net::URLRequestContextGetter* request_context_getter,
                          int process_id);
 
   ~AppCacheDispatcherHost();
@@ -81,7 +81,7 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
   // Temporary until OnChannelConnected() can be called from the IO thread,
   // which will extract the AppCacheService from the net::URLRequestContext.
   scoped_refptr<net::URLRequestContext> request_context_;
-  scoped_refptr<URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   scoped_ptr<appcache::GetStatusCallback> get_status_callback_;
   scoped_ptr<appcache::StartUpdateCallback> start_update_callback_;

@@ -16,7 +16,10 @@
 #include "googleurl/src/gurl.h"
 
 class URLFetcher;
+
+namespace net {
 class URLRequestContextGetter;
+}
 
 namespace speech_input {
 
@@ -38,7 +41,7 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
   };
 
   // |url| is the server address to which the request wil be sent.
-  SpeechRecognitionRequest(URLRequestContextGetter* context,
+  SpeechRecognitionRequest(net::URLRequestContextGetter* context,
                            Delegate* delegate);
 
   virtual ~SpeechRecognitionRequest();
@@ -66,7 +69,7 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
                                   const std::string& data);
 
  private:
-  scoped_refptr<URLRequestContextGetter> url_context_;
+  scoped_refptr<net::URLRequestContextGetter> url_context_;
   Delegate* delegate_;
   scoped_ptr<URLFetcher> url_fetcher_;
 

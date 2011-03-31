@@ -97,7 +97,7 @@ class DummyURLFetcher : public TestURLFetcher {
 // back with dummy response info.
 class ShuntedHttpBridge : public HttpBridge {
  public:
-  ShuntedHttpBridge(URLRequestContextGetter* baseline_context_getter,
+  ShuntedHttpBridge(net::URLRequestContextGetter* baseline_context_getter,
                     HttpBridgeTest* test)
       : HttpBridge(new HttpBridge::RequestContextGetter(
                        baseline_context_getter)),
@@ -139,7 +139,7 @@ TEST_F(HttpBridgeTest, TestUsesSameHttpNetworkSession) {
 
 // Test the HttpBridge without actually making any network requests.
 TEST_F(HttpBridgeTest, TestMakeSynchronousPostShunted) {
-  scoped_refptr<URLRequestContextGetter> ctx_getter(
+  scoped_refptr<net::URLRequestContextGetter> ctx_getter(
       new TestURLRequestContextGetter());
   scoped_refptr<HttpBridge> http_bridge(new ShuntedHttpBridge(
       ctx_getter, this));

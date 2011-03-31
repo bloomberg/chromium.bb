@@ -47,8 +47,11 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
-class URLRequestContextGetter;
 class Profile;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 // The TokenService is a Profile member, so all calls are expected
 // from the UI thread.
@@ -163,7 +166,7 @@ class TokenService : public GaiaAuthConsumer,
   // Web data service to access tokens from.
   scoped_refptr<WebDataService> web_data_service_;
   // Getter to use for fetchers.
-  scoped_refptr<URLRequestContextGetter> getter_;
+  scoped_refptr<net::URLRequestContextGetter> getter_;
   // Request handle to load Gaia tokens from DB.
   WebDataService::Handle token_loading_query_;
 

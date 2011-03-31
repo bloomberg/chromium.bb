@@ -15,7 +15,10 @@
 
 class Profile;
 class SpellCheckHostObserver;
+
+namespace net {
 class URLRequestContextGetter;
+}
 
 // An abstract interface that provides operations that controls the spellchecker
 // attached to the browser. This class provides the operations listed below:
@@ -48,7 +51,7 @@ class SpellCheckHost
   static scoped_refptr<SpellCheckHost> Create(
       SpellCheckHostObserver* observer,
       const std::string& language,
-      URLRequestContextGetter* request_context_getter);
+      net::URLRequestContextGetter* request_context_getter);
 
   // Clears an observer which is set on creation.
   // Used to prevent calling back to a deleted object.

@@ -9,9 +9,9 @@
 
 #include "base/string_split.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_store.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 const char kGoogleDomainUrl[] = "http://.google.com/";

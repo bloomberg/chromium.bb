@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,7 +106,7 @@ bool NetworkLocationProvider::PositionCache::MakeKey(
 // NetworkLocationProvider factory function
 LocationProviderBase* NewNetworkLocationProvider(
     AccessTokenStore* access_token_store,
-    URLRequestContextGetter* context,
+    net::URLRequestContextGetter* context,
     const GURL& url,
     const string16& access_token) {
   return new NetworkLocationProvider(
@@ -116,7 +116,7 @@ LocationProviderBase* NewNetworkLocationProvider(
 // NetworkLocationProvider
 NetworkLocationProvider::NetworkLocationProvider(
     AccessTokenStore* access_token_store,
-    URLRequestContextGetter* url_context_getter,
+    net::URLRequestContextGetter* url_context_getter,
     const GURL& url,
     const string16& access_token)
     : access_token_store_(access_token_store),

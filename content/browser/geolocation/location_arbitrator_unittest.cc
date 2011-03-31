@@ -68,7 +68,7 @@ class MockDependencyFactory : public GeolocationArbitratorDependencyFactory {
   virtual GeolocationArbitrator::GetTimeNow GetTimeFunction() {
     return GetTimeNowForTest;
   }
-  virtual URLRequestContextGetter* GetContextGetter() {
+  virtual net::URLRequestContextGetter* GetContextGetter() {
     return NULL;
   }
   virtual AccessTokenStore* NewAccessTokenStore() {
@@ -76,7 +76,7 @@ class MockDependencyFactory : public GeolocationArbitratorDependencyFactory {
   }
   virtual LocationProviderBase* NewNetworkLocationProvider(
       AccessTokenStore* access_token_store,
-      URLRequestContextGetter* context,
+      net::URLRequestContextGetter* context,
       const GURL& url,
       const string16& access_token) {
     return new MockLocationProvider(&cell_);

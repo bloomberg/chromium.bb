@@ -56,7 +56,6 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/json_pref_store.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/url_constants.h"
@@ -68,6 +67,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/notification_service.h"
 #include "ipc/ipc_logging.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/database/database_tracker.h"
@@ -461,7 +461,7 @@ ui::Clipboard* BrowserProcessImpl::clipboard() {
   return clipboard_.get();
 }
 
-URLRequestContextGetter* BrowserProcessImpl::system_request_context() {
+net::URLRequestContextGetter* BrowserProcessImpl::system_request_context() {
   DCHECK(CalledOnValidThread());
   return io_thread()->system_url_request_context_getter();
 }

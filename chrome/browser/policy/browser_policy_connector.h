@@ -14,7 +14,10 @@
 class PrefService;
 class TestingBrowserProcess;
 class TokenService;
+
+namespace net {
 class URLRequestContextGetter;
+}
 
 namespace policy {
 
@@ -59,7 +62,7 @@ class BrowserPolicyConnector : public NotificationObserver {
   // Activates the cloud policy subsystem. Called when the default request
   // context is available.
   void Initialize(PrefService* local_state,
-                  URLRequestContextGetter* request_context);
+                  net::URLRequestContextGetter* request_context);
 
   scoped_ptr<ConfigurationPolicyProvider> managed_platform_provider_;
   scoped_ptr<ConfigurationPolicyProvider> recommended_platform_provider_;

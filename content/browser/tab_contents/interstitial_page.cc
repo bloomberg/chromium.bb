@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/common/bindings_policy.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -34,6 +33,7 @@
 #include "content/common/page_transition_types.h"
 #include "content/common/view_messages.h"
 #include "net/base/escape.h"
+#include "net/url_request/url_request_context_getter.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;

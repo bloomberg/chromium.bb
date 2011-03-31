@@ -90,7 +90,6 @@ class TemplateURLFetcher;
 class TemplateURLModel;
 class TokenService;
 class TransportSecurityPersister;
-class URLRequestContextGetter;
 class UserScriptMaster;
 class UserStyleSheetWatcher;
 class VisitedLinkEventListener;
@@ -98,6 +97,10 @@ class VisitedLinkMaster;
 class WebDataService;
 class WebKitContext;
 class PromoResourceService;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 typedef intptr_t ProfileId;
 
@@ -148,7 +151,7 @@ class Profile {
   // from any thread.  This CAN return NULL if a first request context has not
   // yet been created.  If necessary, listen on the UI thread for
   // NOTIFY_DEFAULT_REQUEST_CONTEXT_AVAILABLE.
-  static URLRequestContextGetter* GetDefaultRequestContext();
+  static net::URLRequestContextGetter* GetDefaultRequestContext();
 
   // Returns a unique Id that can be used to identify this profile at runtime.
   // This Id is not persistent and will not survive a restart of the browser.
@@ -317,27 +320,27 @@ class Profile {
   // Returns the request context information associated with this profile.  Call
   // this only on the UI thread, since it can send notifications that should
   // happen on the UI thread.
-  virtual URLRequestContextGetter* GetRequestContext() = 0;
+  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
   // Returns the request context appropriate for the given app. If installed_app
   // is null or installed_app->is_storage_isolated() returns false, this is
   // equivalent to calling GetRequestContext().
   // TODO(creis): After isolated app storage is no longer an experimental
   // feature, consider making this the default contract for GetRequestContext.
-  virtual URLRequestContextGetter* GetRequestContextForPossibleApp(
+  virtual net::URLRequestContextGetter* GetRequestContextForPossibleApp(
       const Extension* installed_app) = 0;
 
   // Returns the request context for media resources asociated with this
   // profile.
-  virtual URLRequestContextGetter* GetRequestContextForMedia() = 0;
+  virtual net::URLRequestContextGetter* GetRequestContextForMedia() = 0;
 
   // Returns the request context used for extension-related requests.  This
   // is only used for a separate cookie store currently.
-  virtual URLRequestContextGetter* GetRequestContextForExtensions() = 0;
+  virtual net::URLRequestContextGetter* GetRequestContextForExtensions() = 0;
 
   // Returns the request context used within an installed app that has
   // requested isolated storage.
-  virtual URLRequestContextGetter* GetRequestContextForIsolatedApp(
+  virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
       const std::string& app_id) = 0;
 
   // Called by the ExtensionService that lives in this profile. Gives the
@@ -536,7 +539,7 @@ class Profile {
 
 #ifdef UNIT_TEST
   // Use with caution.  GetDefaultRequestContext may be called on any thread!
-  static void set_default_request_context(URLRequestContextGetter* c) {
+  static void set_default_request_context(net::URLRequestContextGetter* c) {
     default_request_context_ = c;
   }
 #endif
@@ -575,7 +578,7 @@ class Profile {
  protected:
   friend class OffTheRecordProfileImpl;
 
-  static URLRequestContextGetter* default_request_context_;
+  static net::URLRequestContextGetter* default_request_context_;
 
  private:
   bool restored_last_session_;

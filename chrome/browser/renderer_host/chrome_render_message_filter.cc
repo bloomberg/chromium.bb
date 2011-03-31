@@ -31,7 +31,7 @@ using WebKit::WebCache;
 ChromeRenderMessageFilter::ChromeRenderMessageFilter(
     int render_process_id,
     Profile* profile,
-    URLRequestContextGetter* request_context)
+    net::URLRequestContextGetter* request_context)
     : resource_dispatcher_host_(g_browser_process->resource_dispatcher_host()),
       render_process_id_(render_process_id),
       profile_(profile),

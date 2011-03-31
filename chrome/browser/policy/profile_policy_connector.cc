@@ -14,8 +14,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 

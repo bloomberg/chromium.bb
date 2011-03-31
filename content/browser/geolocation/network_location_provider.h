@@ -69,7 +69,7 @@ class NetworkLocationProvider
   };
 
   NetworkLocationProvider(AccessTokenStore* access_token_store,
-                          URLRequestContextGetter* context,
+                          net::URLRequestContextGetter* context,
                           const GURL& url,
                           const string16& access_token);
   virtual ~NetworkLocationProvider();

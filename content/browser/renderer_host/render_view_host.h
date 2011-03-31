@@ -63,7 +63,9 @@ namespace WebKit {
 struct WebMediaPlayerAction;
 }  // namespace WebKit
 
+namespace net {
 class URLRequestContextGetter;
+}
 
 //
 // RenderViewHost

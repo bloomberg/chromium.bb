@@ -11,12 +11,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domain.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
 const size_t IntranetRedirectDetector::kNumCharsInHostnames = 10;

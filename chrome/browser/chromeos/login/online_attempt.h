@@ -18,7 +18,10 @@
 class CancelableTask;
 class GaiaAuthFetcher;
 class Profile;
+
+namespace net {
 class URLRequestContextGetter;
+}
 
 namespace chromeos {
 class AuthAttemptState;

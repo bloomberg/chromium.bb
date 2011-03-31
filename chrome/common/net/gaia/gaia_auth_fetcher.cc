@@ -14,8 +14,8 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/http_return.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/libjingle/source/talk/base/urlencode.h"
 
@@ -95,7 +95,7 @@ const char GaiaAuthFetcher::kGetUserInfoUrl[] =
 
 GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
                                        const std::string& source,
-                                       URLRequestContextGetter* getter)
+                                       net::URLRequestContextGetter* getter)
     : consumer_(consumer),
       getter_(getter),
       source_(source),
@@ -117,7 +117,7 @@ void GaiaAuthFetcher::CancelRequest() {
 
 // static
 URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
-    URLRequestContextGetter* getter,
+    net::URLRequestContextGetter* getter,
     const std::string& body,
     const GURL& gaia_gurl,
     URLFetcher::Delegate* delegate) {

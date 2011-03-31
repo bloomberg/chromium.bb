@@ -17,7 +17,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -25,7 +24,7 @@
 #include "net/base/net_util.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context.h"
-
+#include "net/url_request/url_request_context_getter.h"
 
 SaveFileManager::SaveFileManager(ResourceDispatcherHost* rdh)
     : next_id_(0),
@@ -115,14 +114,15 @@ SavePackage* SaveFileManager::LookupPackage(int save_id) {
 }
 
 // Call from SavePackage for starting a saving job
-void SaveFileManager::SaveURL(const GURL& url,
-                              const GURL& referrer,
-                              int render_process_host_id,
-                              int render_view_id,
-                              SaveFileCreateInfo::SaveFileSource save_source,
-                              const FilePath& file_full_path,
-                              URLRequestContextGetter* request_context_getter,
-                              SavePackage* save_package) {
+void SaveFileManager::SaveURL(
+    const GURL& url,
+    const GURL& referrer,
+    int render_process_host_id,
+    int render_view_id,
+    SaveFileCreateInfo::SaveFileSource save_source,
+    const FilePath& file_full_path,
+    net::URLRequestContextGetter* request_context_getter,
+    SavePackage* save_package) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Register a saving job.
@@ -359,7 +359,7 @@ void SaveFileManager::OnSaveURL(
     const GURL& referrer,
     int render_process_host_id,
     int render_view_id,
-    URLRequestContextGetter* request_context_getter) {
+    net::URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::URLRequestContext* context =
       request_context_getter->GetURLRequestContext();

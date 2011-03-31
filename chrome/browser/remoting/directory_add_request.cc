@@ -10,8 +10,8 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/common/net/http_return.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "net/http/http_request_headers.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
 namespace remoting {
@@ -19,7 +19,7 @@ namespace remoting {
 static const char kRemotingDirectoryUrl[] =
     "https://www.googleapis.com/chromoting/v1/@me/hosts";
 
-DirectoryAddRequest::DirectoryAddRequest(URLRequestContextGetter* getter)
+DirectoryAddRequest::DirectoryAddRequest(net::URLRequestContextGetter* getter)
     : getter_(getter) {
 }
 

@@ -178,7 +178,7 @@ void AutofillDownloadManager::SetNegativeUploadRate(double rate) {
 bool AutofillDownloadManager::StartRequest(
     const std::string& form_xml,
     const FormRequestData& request_data) {
-  URLRequestContextGetter* request_context =
+  net::URLRequestContextGetter* request_context =
       Profile::GetDefaultRequestContext();
   // Check if default request context is NULL: this very rarely happens,
   // I think, this could happen only if user opens chrome with some pages

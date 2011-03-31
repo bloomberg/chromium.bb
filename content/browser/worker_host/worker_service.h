@@ -11,7 +11,10 @@
 #include "content/browser/worker_host/worker_process_host.h"
 #include "googleurl/src/gurl.h"
 
+namespace net {
 class URLRequestContextGetter;
+}
+
 struct ViewHostMsg_CreateWorker_Params;
 
 // A singelton for managing HTML5 web workers.
@@ -24,7 +27,7 @@ class WorkerService {
   void CreateWorker(const ViewHostMsg_CreateWorker_Params& params,
                     int route_id,
                     WorkerMessageFilter* filter,
-                    URLRequestContextGetter* request_context);
+                    net::URLRequestContextGetter* request_context);
   void LookupSharedWorker(const ViewHostMsg_CreateWorker_Params& params,
                           int route_id,
                           WorkerMessageFilter* filter,

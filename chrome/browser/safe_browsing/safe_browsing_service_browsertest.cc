@@ -169,7 +169,7 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
                       const std::string& client_name,
                       const std::string& client_key,
                       const std::string& wrapped_key,
-                      URLRequestContextGetter* request_context_getter,
+                      net::URLRequestContextGetter* request_context_getter,
                       const std::string& info_url_prefix,
                       const std::string& mackey_url_prefix,
                       bool disable_auto_update)
@@ -225,7 +225,7 @@ class TestSBProtocolManagerFactory : public SBProtocolManagerFactory {
       const std::string& client_name,
       const std::string& client_key,
       const std::string& wrapped_key,
-      URLRequestContextGetter* request_context_getter,
+      net::URLRequestContextGetter* request_context_getter,
       const std::string& info_url_prefix,
       const std::string& mackey_url_prefix,
       bool disable_auto_update) {

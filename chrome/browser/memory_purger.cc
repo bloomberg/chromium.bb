@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
@@ -22,6 +21,7 @@
 #include "content/common/notification_service.h"
 #include "net/proxy/proxy_resolver.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 #include "v8/include/v8.h"
 
@@ -38,12 +38,12 @@ class PurgeMemoryIOHelper
   }
 
   void AddRequestContextGetter(
-      scoped_refptr<URLRequestContextGetter> request_context_getter);
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter);
 
   void PurgeMemoryOnIOThread();
 
  private:
-  typedef scoped_refptr<URLRequestContextGetter> RequestContextGetter;
+  typedef scoped_refptr<net::URLRequestContextGetter> RequestContextGetter;
   typedef std::set<RequestContextGetter> RequestContextGetters;
 
   RequestContextGetters request_context_getters_;
@@ -53,7 +53,7 @@ class PurgeMemoryIOHelper
 };
 
 void PurgeMemoryIOHelper::AddRequestContextGetter(
-    scoped_refptr<URLRequestContextGetter> request_context_getter) {
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
   request_context_getters_.insert(request_context_getter);
 }
 

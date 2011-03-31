@@ -144,7 +144,7 @@ void CloudPrintURLFetcher::StartRequestHelper(
 
 CloudPrintURLFetcher::~CloudPrintURLFetcher() {}
 
-URLRequestContextGetter* CloudPrintURLFetcher::GetRequestContextGetter() {
+net::URLRequestContextGetter* CloudPrintURLFetcher::GetRequestContextGetter() {
   ServiceURLRequestContextGetter* getter =
       g_service_process->GetServiceURLRequestContextGetter();
   // Now set up the user agent for cloudprint.

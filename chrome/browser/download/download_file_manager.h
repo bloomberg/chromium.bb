@@ -57,7 +57,10 @@ class DownloadManager;
 class FilePath;
 class GURL;
 class ResourceDispatcherHost;
+
+namespace net {
 class URLRequestContextGetter;
+}
 
 // Manages all in progress downloads.
 class DownloadFileManager

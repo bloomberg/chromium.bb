@@ -10,9 +10,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
+#include "net/url_request/url_request_context_getter.h"
 
 // Unfortunately kNumServices must be defined in the .h.
 // TODO(chron): Sync doesn't use the TalkToken anymore so we can stop

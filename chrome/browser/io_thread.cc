@@ -236,12 +236,12 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
 
 }  // namespace
 
-class SystemURLRequestContextGetter : public URLRequestContextGetter {
+class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   explicit SystemURLRequestContextGetter(IOThread* io_thread);
   virtual ~SystemURLRequestContextGetter();
 
-  // Implementation for UrlRequestContextGetter.
+  // Implementation for net::UrlRequestContextGetter.
   virtual net::URLRequestContext* GetURLRequestContext();
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
 
@@ -378,7 +378,7 @@ void IOThread::ChangedToOnTheRecord() {
           &IOThread::ChangedToOnTheRecordOnIOThread));
 }
 
-URLRequestContextGetter* IOThread::system_url_request_context_getter() {
+net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!system_url_request_context_getter_) {
     system_proxy_config_service_.reset(

@@ -14,7 +14,7 @@ GeolocationArbitratorDependencyFactory::
 }
 
 // DefaultGeolocationArbitratorDependencyFactory
-URLRequestContextGetter*
+net::URLRequestContextGetter*
 DefaultGeolocationArbitratorDependencyFactory::GetContextGetter() {
   return Profile::GetDefaultRequestContext();
 }
@@ -32,7 +32,7 @@ DefaultGeolocationArbitratorDependencyFactory::NewAccessTokenStore() {
 LocationProviderBase*
 DefaultGeolocationArbitratorDependencyFactory::NewNetworkLocationProvider(
     AccessTokenStore* access_token_store,
-    URLRequestContextGetter* context,
+    net::URLRequestContextGetter* context,
     const GURL& url,
     const string16& access_token) {
   return ::NewNetworkLocationProvider(access_token_store, context,

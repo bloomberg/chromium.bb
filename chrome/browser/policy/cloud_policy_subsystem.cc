@@ -63,7 +63,7 @@ CloudPolicySubsystem::~CloudPolicySubsystem() {
 void CloudPolicySubsystem::Initialize(
     PrefService* prefs,
     const char* refresh_rate_pref_name,
-    URLRequestContextGetter* request_context) {
+    net::URLRequestContextGetter* request_context) {
   DCHECK(!prefs_);
   prefs_ = prefs;
 

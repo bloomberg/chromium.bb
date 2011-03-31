@@ -22,7 +22,7 @@
 namespace browser_sync {
 
 HttpBridge::RequestContextGetter::RequestContextGetter(
-    URLRequestContextGetter* baseline_context_getter)
+    net::URLRequestContextGetter* baseline_context_getter)
     : baseline_context_getter_(baseline_context_getter) {
 }
 
@@ -49,7 +49,7 @@ HttpBridge::RequestContextGetter::GetIOMessageLoopProxy() const {
 }
 
 HttpBridgeFactory::HttpBridgeFactory(
-    URLRequestContextGetter* baseline_context_getter) {
+    net::URLRequestContextGetter* baseline_context_getter) {
   DCHECK(baseline_context_getter != NULL);
   request_context_getter_ =
       new HttpBridge::RequestContextGetter(baseline_context_getter);

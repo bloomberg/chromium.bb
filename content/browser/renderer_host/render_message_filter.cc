@@ -265,7 +265,7 @@ RenderMessageFilter::RenderMessageFilter(
     int render_process_id,
     PluginService* plugin_service,
     Profile* profile,
-    URLRequestContextGetter* request_context,
+    net::URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper)
     : resource_dispatcher_host_(g_browser_process->resource_dispatcher_host()),
       plugin_service_(plugin_service),
@@ -779,7 +779,7 @@ void RenderMessageFilter::UpdateHostZoomLevelsOnUIThread(
 ChromeURLRequestContext* RenderMessageFilter::GetRequestContextForURL(
     const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  URLRequestContextGetter* context_getter =
+  net::URLRequestContextGetter* context_getter =
       url.SchemeIs(chrome::kExtensionScheme) ?
           extensions_request_context_ : request_context_;
   return static_cast<ChromeURLRequestContext*>(

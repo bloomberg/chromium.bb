@@ -30,12 +30,15 @@ class MessageLoop;
 class PrefService;
 class Profile;
 class TabContents;
-class URLRequestContextGetter;
 class TabContents;
 
 namespace base {
 class Thread;
 class Time;
+}
+
+namespace net {
+class URLRequestContextGetter;
 }
 
 struct SaveFileCreateInfo;
@@ -264,7 +267,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
 
   // The request context which provides application-specific context for
   // net::URLRequest instances.
-  scoped_refptr<URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // Non-owning pointer for handling file writing on the file thread.
   SaveFileManager* file_manager_;

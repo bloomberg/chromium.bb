@@ -11,7 +11,10 @@
 #include "content/common/notification_observer.h"
 
 class PrefService;
+
+namespace net {
 class URLRequestContextGetter;
+}
 
 namespace policy {
 
@@ -34,7 +37,7 @@ class CloudPolicySubsystem : public NotificationObserver {
   // Initializes the subsystem.
   void Initialize(PrefService* prefs,
                   const char* refresh_rate_pref_name,
-                  URLRequestContextGetter* request_context);
+                  net::URLRequestContextGetter* request_context);
 
   // Shuts the subsystem down. This must be called before threading and network
   // infrastructure goes away.

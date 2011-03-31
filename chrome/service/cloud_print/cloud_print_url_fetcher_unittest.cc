@@ -7,11 +7,11 @@
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/service_process.h"
 #include "googleurl/src/gurl.h"
 #include "net/test/test_server.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/url_request/url_request_throttler_manager.h"
@@ -25,7 +25,7 @@ namespace {
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
 int g_request_context_getter_instances = 0;
-class TestURLRequestContextGetter : public URLRequestContextGetter {
+class TestURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   explicit TestURLRequestContextGetter(
       base::MessageLoopProxy* io_message_loop_proxy)
@@ -59,7 +59,7 @@ class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {
           : io_message_loop_proxy_(io_message_loop_proxy) {
   }
 
-  virtual URLRequestContextGetter* GetRequestContextGetter() {
+  virtual net::URLRequestContextGetter* GetRequestContextGetter() {
     return new TestURLRequestContextGetter(io_message_loop_proxy_.get());
   }
  private:

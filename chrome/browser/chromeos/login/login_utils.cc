@@ -48,7 +48,6 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -56,6 +55,7 @@
 #include "net/base/cookie_store.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "views/widget/widget_gtk.h"
 #include "ui/gfx/gl/gl_switches.h"
 
@@ -87,7 +87,7 @@ class ResetDefaultProxyConfigServiceTask : public Task {
   // Task override.
   virtual void Run() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
+    net::URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
     DCHECK(getter);
     if (getter) {
       getter->GetURLRequestContext()->proxy_service()->ResetConfigService(

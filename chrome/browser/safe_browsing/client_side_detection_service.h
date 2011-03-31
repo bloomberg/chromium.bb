@@ -38,9 +38,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
-class URLRequestContextGetter;
-
 namespace net {
+class URLRequestContextGetter;
 class URLRequestStatus;
 }  // namespace net
 
@@ -60,7 +59,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
   // The caller takes ownership of the object.  This function may return NULL.
   static ClientSideDetectionService* Create(
       const FilePath& model_path,
-      URLRequestContextGetter* request_context_getter);
+      net::URLRequestContextGetter* request_context_getter);
 
   // From the URLFetcher::Delegate interface.
   virtual void OnURLFetchComplete(const URLFetcher* source,
@@ -112,8 +111,9 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
 
  protected:
   // Use Create() method to create an instance of this object.
-  ClientSideDetectionService(const FilePath& model_path,
-                             URLRequestContextGetter* request_context_getter);
+  ClientSideDetectionService(
+      const FilePath& model_path,
+      net::URLRequestContextGetter* request_context_getter);
 
  private:
   friend class ClientSideDetectionServiceTest;
@@ -252,7 +252,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
   base::ScopedCallbackFactory<ClientSideDetectionService> callback_factory_;
 
   // The context we use to issue network requests.
-  scoped_refptr<URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // The network blocks that we consider private IP address ranges.
   std::vector<AddressRange> private_networks_;

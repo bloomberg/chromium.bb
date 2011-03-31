@@ -15,7 +15,6 @@
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -23,12 +22,13 @@
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 
 void GetCookiesOnIOThread(
     const GURL& url,
-    const scoped_refptr<URLRequestContextGetter>& context_getter,
+    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event,
     std::string* cookies) {
   *cookies =
@@ -38,7 +38,7 @@ void GetCookiesOnIOThread(
 
 void GetCanonicalCookiesOnIOThread(
     const GURL& url,
-    const scoped_refptr<URLRequestContextGetter>& context_getter,
+    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event,
     net::CookieList* cookie_list) {
   *cookie_list =
@@ -50,7 +50,7 @@ void GetCanonicalCookiesOnIOThread(
 void SetCookieOnIOThread(
     const GURL& url,
     const std::string& value,
-    const scoped_refptr<URLRequestContextGetter>& context_getter,
+    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event,
     bool* success) {
   *success =
@@ -63,7 +63,7 @@ void SetCookieWithDetailsOnIOThread(
     const GURL& url,
     const net::CookieMonster::CanonicalCookie& cookie,
     const std::string& original_domain,
-    const scoped_refptr<URLRequestContextGetter>& context_getter,
+    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event,
     bool* success) {
   net::CookieMonster* cookie_monster =
@@ -79,7 +79,7 @@ void SetCookieWithDetailsOnIOThread(
 void DeleteCookieOnIOThread(
     const GURL& url,
     const std::string& name,
-    const scoped_refptr<URLRequestContextGetter>& context_getter,
+    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event) {
   context_getter->GetURLRequestContext()->cookie_store()->
       DeleteCookie(url, name);
@@ -115,7 +115,7 @@ void GetCookies(const GURL& url,
     // Get the request context specific to the current TabContents and app.
     const Extension* installed_app = static_cast<BrowserRenderProcessHost*>(
         contents->render_view_host()->process())->installed_app();
-    scoped_refptr<URLRequestContextGetter> context_getter =
+    scoped_refptr<net::URLRequestContextGetter> context_getter =
         contents->profile()->GetRequestContextForPossibleApp(installed_app);
 
     base::WaitableEvent event(true /* manual reset */,
@@ -141,7 +141,7 @@ void SetCookie(const GURL& url,
     // Get the request context specific to the current TabContents and app.
     const Extension* installed_app = static_cast<BrowserRenderProcessHost*>(
         contents->render_view_host()->process())->installed_app();
-    scoped_refptr<URLRequestContextGetter> context_getter =
+    scoped_refptr<net::URLRequestContextGetter> context_getter =
         contents->profile()->GetRequestContextForPossibleApp(installed_app);
 
     base::WaitableEvent event(true /* manual reset */,
@@ -168,7 +168,7 @@ void DeleteCookie(const GURL& url,
     // Get the request context specific to the current TabContents and app.
     const Extension* installed_app = static_cast<BrowserRenderProcessHost*>(
         contents->render_view_host()->process())->installed_app();
-    scoped_refptr<URLRequestContextGetter> context_getter =
+    scoped_refptr<net::URLRequestContextGetter> context_getter =
         contents->profile()->GetRequestContextForPossibleApp(installed_app);
 
     base::WaitableEvent event(true /* manual reset */,
@@ -193,7 +193,7 @@ void GetCookiesJSON(AutomationProvider* provider,
   }
 
   // Since we may be on the UI thread don't call GetURLRequestContext().
-  scoped_refptr<URLRequestContextGetter> context_getter =
+  scoped_refptr<net::URLRequestContextGetter> context_getter =
       provider->profile()->GetRequestContext();
 
   net::CookieList cookie_list;
@@ -242,7 +242,7 @@ void DeleteCookieJSON(AutomationProvider* provider,
   }
 
   // Since we may be on the UI thread don't call GetURLRequestContext().
-  scoped_refptr<URLRequestContextGetter> context_getter =
+  scoped_refptr<net::URLRequestContextGetter> context_getter =
       provider->profile()->GetRequestContext();
 
   base::WaitableEvent event(true /* manual reset */,
@@ -326,7 +326,7 @@ void SetCookieJSON(AutomationProvider* provider,
   }
 
   // Since we may be on the UI thread don't call GetURLRequestContext().
-  scoped_refptr<URLRequestContextGetter> context_getter =
+  scoped_refptr<net::URLRequestContextGetter> context_getter =
       provider->profile()->GetRequestContext();
 
   base::WaitableEvent event(true /* manual reset */,

@@ -80,12 +80,12 @@ class ProfileImpl : public Profile,
   virtual PersonalDataManager* GetPersonalDataManager();
   virtual fileapi::FileSystemContext* GetFileSystemContext();
   virtual bool HasCreatedDownloadManager() const;
-  virtual URLRequestContextGetter* GetRequestContext();
-  virtual URLRequestContextGetter* GetRequestContextForPossibleApp(
+  virtual net::URLRequestContextGetter* GetRequestContext();
+  virtual net::URLRequestContextGetter* GetRequestContextForPossibleApp(
       const Extension* installed_app);
-  virtual URLRequestContextGetter* GetRequestContextForMedia();
-  virtual URLRequestContextGetter* GetRequestContextForExtensions();
-  virtual URLRequestContextGetter* GetRequestContextForIsolatedApp(
+  virtual net::URLRequestContextGetter* GetRequestContextForMedia();
+  virtual net::URLRequestContextGetter* GetRequestContextForExtensions();
+  virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
       const std::string& app_id);
   virtual void RegisterExtensionWithRequestContexts(const Extension* extension);
   virtual void UnregisterExtensionWithRequestContexts(

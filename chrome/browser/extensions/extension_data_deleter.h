@@ -20,8 +20,11 @@ class FileSystemContext;
 }
 
 class Profile;
-class URLRequestContextGetter;
 class WebKitContext;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 // A helper class that takes care of removing local storage, databases and
 // cookies for a given extension. This is used by
@@ -68,7 +71,7 @@ class ExtensionDataDeleter
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
 
   // Provides access to the extension request context.
-  scoped_refptr<URLRequestContextGetter> extension_request_context_;
+  scoped_refptr<net::URLRequestContextGetter> extension_request_context_;
 
   // The URL of the extension we're removing data for.
   GURL extension_url_;

@@ -13,7 +13,6 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/base/io_buffer.h"
@@ -22,6 +21,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_throttler_manager.h"
 
 static const int kBufferSize = 4096;
@@ -127,7 +127,7 @@ class URLFetcher::Core
   std::string data_;                 // Results of the request
   scoped_refptr<net::IOBuffer> buffer_;
                                      // Read buffer
-  scoped_refptr<URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
                                      // Cookie/cache info for the request
   ResponseCookies cookies_;          // Response cookies
   net::HttpRequestHeaders extra_request_headers_;
@@ -551,7 +551,7 @@ void URLFetcher::set_extra_request_headers(
 }
 
 void URLFetcher::set_request_context(
-    URLRequestContextGetter* request_context_getter) {
+    net::URLRequestContextGetter* request_context_getter) {
   core_->request_context_getter_ = request_context_getter;
 }
 

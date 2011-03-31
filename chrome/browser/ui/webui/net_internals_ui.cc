@@ -33,7 +33,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/jstemplate_builder.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -55,6 +54,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -241,7 +241,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   IOThreadImpl(
       const base::WeakPtr<NetInternalsMessageHandler>& handler,
       IOThread* io_thread,
-      URLRequestContextGetter* context_getter);
+      net::URLRequestContextGetter* context_getter);
 
   // Creates a callback that will run |method| on the IO thread.
   //
@@ -339,7 +339,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   // The global IOThread, which contains the global NetLog to observer.
   IOThread* io_thread_;
 
-  scoped_refptr<URLRequestContextGetter> context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> context_getter_;
 
   // Helper that runs the suite of connection tests.
   scoped_ptr<ConnectionTester> connection_tester_;
@@ -658,7 +658,7 @@ void NetInternalsMessageHandler::ReadLogFileTask::Run() {
 NetInternalsMessageHandler::IOThreadImpl::IOThreadImpl(
     const base::WeakPtr<NetInternalsMessageHandler>& handler,
     IOThread* io_thread,
-    URLRequestContextGetter* context_getter)
+    net::URLRequestContextGetter* context_getter)
     : ThreadSafeObserver(net::NetLog::LOG_ALL_BUT_BYTES),
       handler_(handler),
       io_thread_(io_thread),

@@ -794,8 +794,8 @@ FilePath ProfileImpl::GetPrefFilePath() {
   return pref_file_path;
 }
 
-URLRequestContextGetter* ProfileImpl::GetRequestContext() {
-  URLRequestContextGetter* request_context =
+net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
+  net::URLRequestContextGetter* request_context =
       io_data_.GetMainRequestContextGetter();
   // The first request context is always a normal (non-OTR) request context.
   // Even when Chromium is started in OTR mode, a normal profile is always
@@ -813,7 +813,7 @@ URLRequestContextGetter* ProfileImpl::GetRequestContext() {
   return request_context;
 }
 
-URLRequestContextGetter* ProfileImpl::GetRequestContextForPossibleApp(
+net::URLRequestContextGetter* ProfileImpl::GetRequestContextForPossibleApp(
     const Extension* installed_app) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalAppManifests) &&
@@ -824,7 +824,7 @@ URLRequestContextGetter* ProfileImpl::GetRequestContextForPossibleApp(
   return GetRequestContext();
 }
 
-URLRequestContextGetter* ProfileImpl::GetRequestContextForMedia() {
+net::URLRequestContextGetter* ProfileImpl::GetRequestContextForMedia() {
   return io_data_.GetMediaRequestContextGetter();
 }
 
@@ -837,11 +837,11 @@ FaviconService* ProfileImpl::GetFaviconService(ServiceAccessType sat) {
   return favicon_service_.get();
 }
 
-URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
+net::URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
   return io_data_.GetExtensionsRequestContextGetter();
 }
 
-URLRequestContextGetter* ProfileImpl::GetRequestContextForIsolatedApp(
+net::URLRequestContextGetter* ProfileImpl::GetRequestContextForIsolatedApp(
     const std::string& app_id) {
   return io_data_.GetIsolatedAppRequestContextGetter(app_id);
 }

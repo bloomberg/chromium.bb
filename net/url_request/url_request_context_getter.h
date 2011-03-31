@@ -16,7 +16,6 @@ class MessageLoopProxy;
 namespace net {
 class CookieStore;
 class URLRequestContext;
-}
 
 struct URLRequestContextGetterTraits;
 
@@ -25,11 +24,11 @@ class URLRequestContextGetter
     : public base::RefCountedThreadSafe<URLRequestContextGetter,
                                         URLRequestContextGetterTraits> {
  public:
-  virtual net::URLRequestContext* GetURLRequestContext() = 0;
+  virtual URLRequestContext* GetURLRequestContext() = 0;
 
   // See http://crbug.com/77835 for why this shouldn't be used. Instead use
   // GetURLRequestContext()->cookie_store();
-  virtual net::CookieStore* DONTUSEME_GetCookieStore();
+  virtual CookieStore* DONTUSEME_GetCookieStore();
 
   // Returns a MessageLoopProxy corresponding to the thread on which the
   // request IO happens (the thread on which the returned net::URLRequestContext
@@ -69,5 +68,7 @@ struct URLRequestContextGetterTraits {
     context_getter->OnDestruct();
   }
 };
+
+}  // namespace net
 
 #endif  // CHROME_COMMON_NET_URL_REQUEST_CONTEXT_GETTER_H_

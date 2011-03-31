@@ -29,10 +29,13 @@ class PrefService;
 class SafeBrowsingDatabase;
 class SafeBrowsingProtocolManager;
 class SafeBrowsingServiceFactory;
-class URLRequestContextGetter;
 
 namespace base {
 class Thread;
+}
+
+namespace net {
+class URLRequestContextGetter;
 }
 
 // Construction needs to happen on the main thread.
@@ -277,7 +280,7 @@ class SafeBrowsingService
   // Called to initialize objects that are used on the io_thread.
   void OnIOInitialize(const std::string& client_key,
                       const std::string& wrapped_key,
-                      URLRequestContextGetter* request_context_getter);
+                      net::URLRequestContextGetter* request_context_getter);
 
   // Called to shutdown operations on the io_thread.
   void OnIOShutdown();

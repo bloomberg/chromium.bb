@@ -42,7 +42,7 @@ ChromeURLRequestContext* ResourceMessageFilter::GetURLRequestContext(
     rv = url_request_context_override_->GetRequestContext(type);
 
   if (!rv) {
-    URLRequestContextGetter* context_getter =
+    net::URLRequestContextGetter* context_getter =
         Profile::GetDefaultRequestContext();
     if (context_getter)
       rv = context_getter->GetURLRequestContext();

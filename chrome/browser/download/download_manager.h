@@ -52,10 +52,13 @@ class DownloadStatusUpdater;
 class GURL;
 class Profile;
 class ResourceDispatcherHost;
-class URLRequestContextGetter;
 class TabContents;
 struct DownloadCreateInfo;
 struct DownloadSaveInfo;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 // Browser's download manager: manages all downloads and destination view.
 class DownloadManager
@@ -360,7 +363,7 @@ class DownloadManager
 
   // The current active profile.
   Profile* profile_;
-  scoped_refptr<URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   scoped_ptr<DownloadHistory> download_history_;
 

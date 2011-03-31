@@ -40,7 +40,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
  public:
   SpellCheckHostImpl(SpellCheckHostObserver* observer,
                      const std::string& language,
-                     URLRequestContextGetter* request_context_getter);
+                     net::URLRequestContextGetter* request_context_getter);
 
   void Initialize();
 
@@ -132,7 +132,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   // Used for downloading the dictionary file. We don't hold a reference, and
   // it is only valid to use it on the UI thread.
-  URLRequestContextGetter* request_context_getter_;
+  net::URLRequestContextGetter* request_context_getter_;
 
   // Used for downloading the dictionary file.
   scoped_ptr<URLFetcher> fetcher_;

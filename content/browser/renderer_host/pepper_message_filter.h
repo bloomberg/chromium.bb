@@ -14,10 +14,10 @@
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 
 class Profile;
-class URLRequestContextGetter;
 
 namespace net {
 class AddressList;
+class URLRequestContextGetter;
 }
 
 class PepperMessageFilter : public BrowserMessageFilter {
@@ -63,7 +63,7 @@ class PepperMessageFilter : public BrowserMessageFilter {
 #endif  // ENABLE_FLAPPER_HACKS
 
   Profile* profile_;
-  scoped_refptr<URLRequestContextGetter> request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_MESSAGE_FILTER_H_

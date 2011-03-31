@@ -19,7 +19,7 @@ class GeolocationArbitratorDependencyFactoryWithLocationProvider
 
   virtual LocationProviderBase* NewNetworkLocationProvider(
       AccessTokenStore* access_token_store,
-      URLRequestContextGetter* context,
+      net::URLRequestContextGetter* context,
       const GURL& url,
       const string16& access_token);
 

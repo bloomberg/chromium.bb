@@ -6,11 +6,11 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/renderer_host/socket_stream_host.h"
 #include "content/common/socket_stream.h"
 #include "content/common/socket_stream_messages.h"
 #include "content/common/resource_messages.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/websockets/websocket_job.h"
 #include "net/websockets/websocket_throttle.h"
 
@@ -154,7 +154,7 @@ net::URLRequestContext* SocketStreamDispatcherHost::GetURLRequestContext() {
         ResourceType::SUB_RESOURCE);
   }
   if (!rv) {
-    URLRequestContextGetter* context_getter =
+    net::URLRequestContextGetter* context_getter =
         Profile::GetDefaultRequestContext();
     if (context_getter)
       rv = context_getter->GetURLRequestContext();

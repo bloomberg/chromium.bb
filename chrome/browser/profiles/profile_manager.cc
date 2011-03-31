@@ -17,13 +17,13 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_tracker.h"
 
@@ -42,7 +42,8 @@ void SuspendURLRequestJobs() {
     (*i)->Kill();
 }
 
-void SuspendRequestContext(URLRequestContextGetter* request_context_getter) {
+void SuspendRequestContext(
+    net::URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   scoped_refptr<net::URLRequestContext> request_context =
@@ -51,7 +52,8 @@ void SuspendRequestContext(URLRequestContextGetter* request_context_getter) {
   request_context->http_transaction_factory()->Suspend(true);
 }
 
-void ResumeRequestContext(URLRequestContextGetter* request_context_getter) {
+void ResumeRequestContext(
+    net::URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   scoped_refptr<net::URLRequestContext> request_context =
@@ -258,7 +260,7 @@ void ProfileManager::OnSuspend() {
       NewRunnableFunction(&SuspendURLRequestJobs));
   DCHECK(posted);
 
-  scoped_refptr<URLRequestContextGetter> request_context;
+  scoped_refptr<net::URLRequestContextGetter> request_context;
   for (const_iterator i(begin()); i != end(); ++i) {
     request_context = (*i)->GetRequestContext();
     posted = BrowserThread::PostTask(
@@ -276,7 +278,7 @@ void ProfileManager::OnSuspend() {
 void ProfileManager::OnResume() {
   DCHECK(CalledOnValidThread());
 
-  scoped_refptr<URLRequestContextGetter> request_context;
+  scoped_refptr<net::URLRequestContextGetter> request_context;
   for (const_iterator i(begin()); i != end(); ++i) {
     request_context = (*i)->GetRequestContext();
     bool posted = BrowserThread::PostTask(

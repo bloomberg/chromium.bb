@@ -16,7 +16,10 @@
 #include "googleurl/src/gurl.h"
 
 class Profile;
+
+namespace net {
 class URLRequestContextGetter;
+}
 
 namespace policy {
 
@@ -56,7 +59,7 @@ class DeviceManagementService : public URLFetcher::Delegate {
 
   // Provides the backend with a request context so it can make actual network
   // requests. This will also fire any requests queued earlier.
-  void Initialize(URLRequestContextGetter* request_context_getter);
+  void Initialize(net::URLRequestContextGetter* request_context_getter);
 
   // Makes the service stop all requests and drop the reference to the request
   // context.
@@ -89,7 +92,7 @@ class DeviceManagementService : public URLFetcher::Delegate {
   const std::string server_url_;
 
   // The request context we use.
-  scoped_refptr<URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // The jobs we currently have in flight.
   JobFetcherMap pending_jobs_;

@@ -111,7 +111,7 @@ class AutofillDownloadTestHelper : public AutofillDownloadManager::Observer {
 
   TestingProfile profile;
   AutofillDownloadManager download_manager;
-  scoped_refptr<URLRequestContextGetter> request_context_getter;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter;
 };
 
 typedef TestingBrowserProcessTest AutofillDownloadTest;

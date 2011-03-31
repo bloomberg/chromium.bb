@@ -54,7 +54,6 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/safebrowsing_messages.h"
@@ -104,6 +103,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/gl/gl_switches.h"
 #include "webkit/fileapi/file_system_path_manager.h"
@@ -258,7 +258,7 @@ class RendererURLRequestContextOverride
 
   virtual net::URLRequestContext* GetRequestContext(
       ResourceType::Type resource_type) {
-    URLRequestContextGetter* request_context = request_context_;
+    net::URLRequestContextGetter* request_context = request_context_;
     // If the request has resource type of ResourceType::MEDIA, we use a request
     // context specific to media for handling it because these resources have
     // specific needs for caching.
@@ -270,8 +270,8 @@ class RendererURLRequestContextOverride
  private:
   virtual ~RendererURLRequestContextOverride() {}
 
-  scoped_refptr<URLRequestContextGetter> request_context_;
-  scoped_refptr<URLRequestContextGetter> media_request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<net::URLRequestContextGetter> media_request_context_;
 };
 
 }  // namespace

@@ -15,7 +15,9 @@
 #include "content/browser/worker_host/worker_document_set.h"
 #include "googleurl/src/gurl.h"
 
+namespace net {
 class URLRequestContextGetter;
+}
 
 // The WorkerProcessHost is the interface that represents the browser side of
 // the browser <-> worker communication channel. There will be one
@@ -37,7 +39,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
                    int parent_process_id,
                    int parent_appcache_host_id,
                    int64 main_resource_appcache_id,
-                   URLRequestContextGetter* request_context);
+                   net::URLRequestContextGetter* request_context);
     ~WorkerInstance();
 
     // Unique identifier for a worker client.
@@ -85,7 +87,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
     WorkerDocumentSet* worker_document_set() const {
       return worker_document_set_;
     }
-    URLRequestContextGetter* request_context() const {
+    net::URLRequestContextGetter* request_context() const {
       return request_context_;
     }
 
@@ -100,14 +102,14 @@ class WorkerProcessHost : public BrowserChildProcessHost {
     int parent_process_id_;
     int parent_appcache_host_id_;
     int64 main_resource_appcache_id_;
-    scoped_refptr<URLRequestContextGetter> request_context_;
+    scoped_refptr<net::URLRequestContextGetter> request_context_;
     FilterList filters_;
     scoped_refptr<WorkerDocumentSet> worker_document_set_;
   };
 
   WorkerProcessHost(
       ResourceDispatcherHost* resource_dispatcher_host,
-      URLRequestContextGetter* request_context);
+      net::URLRequestContextGetter* request_context);
   ~WorkerProcessHost();
 
   // Starts the process.  Returns true iff it succeeded.
@@ -129,7 +131,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   void DocumentDetached(WorkerMessageFilter* filter,
                         unsigned long long document_id);
 
-  URLRequestContextGetter* request_context() const {
+  net::URLRequestContextGetter* request_context() const {
     return request_context_;
   }
 
@@ -174,7 +176,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
 
   Instances instances_;
 
-  scoped_refptr<URLRequestContextGetter> request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // A reference to the filter associated with this worker process.  We need to
   // keep this around since we'll use it when forward messages to the worker

@@ -6,11 +6,11 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
 #include "webkit/fileapi/file_system_context.h"

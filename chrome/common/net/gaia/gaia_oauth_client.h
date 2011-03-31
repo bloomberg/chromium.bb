@@ -11,7 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 
+namespace net {
 class URLRequestContextGetter;
+}
 
 // A helper class to get and refresh OAuth tokens given an authorization code.
 namespace gaia {
@@ -45,7 +47,7 @@ class GaiaOAuthClient {
     virtual void OnNetworkError(int response_code) = 0;
   };
   GaiaOAuthClient(const std::string& gaia_url,
-                  URLRequestContextGetter* context_getter);
+                  net::URLRequestContextGetter* context_getter);
   ~GaiaOAuthClient();
 
   // In the below methods, |max_retries| specifies the maximum number of times

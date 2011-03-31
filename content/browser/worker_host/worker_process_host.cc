@@ -87,7 +87,7 @@ class WorkerCrashTask : public Task {
 
 WorkerProcessHost::WorkerProcessHost(
     ResourceDispatcherHost* resource_dispatcher_host,
-    URLRequestContextGetter* request_context)
+    net::URLRequestContextGetter* request_context)
     : BrowserChildProcessHost(WORKER_PROCESS, resource_dispatcher_host),
       request_context_(request_context) {
 }
@@ -506,7 +506,7 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
     int parent_process_id,
     int parent_appcache_host_id,
     int64 main_resource_appcache_id,
-    URLRequestContextGetter* request_context)
+    net::URLRequestContextGetter* request_context)
     : url_(url),
       shared_(shared),
       incognito_(incognito),

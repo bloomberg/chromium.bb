@@ -75,7 +75,7 @@ using base::TimeDelta;
 
 // A pointer to the request context for the default profile.  See comments on
 // Profile::GetDefaultRequestContext.
-URLRequestContextGetter* Profile::default_request_context_;
+net::URLRequestContextGetter* Profile::default_request_context_;
 
 namespace {
 
@@ -129,7 +129,7 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
 }
 
 // static
-URLRequestContextGetter* Profile::GetDefaultRequestContext() {
+net::URLRequestContextGetter* Profile::GetDefaultRequestContext() {
   return default_request_context_;
 }
 
@@ -403,11 +403,11 @@ class OffTheRecordProfileImpl : public Profile,
     return file_system_context_.get();
   }
 
-  virtual URLRequestContextGetter* GetRequestContext() {
+  virtual net::URLRequestContextGetter* GetRequestContext() {
     return io_data_.GetMainRequestContextGetter();
   }
 
-  virtual URLRequestContextGetter* GetRequestContextForPossibleApp(
+  virtual net::URLRequestContextGetter* GetRequestContextForPossibleApp(
       const Extension* installed_app) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableExperimentalAppManifests) &&
@@ -418,16 +418,16 @@ class OffTheRecordProfileImpl : public Profile,
     return GetRequestContext();
   }
 
-  virtual URLRequestContextGetter* GetRequestContextForMedia() {
+  virtual net::URLRequestContextGetter* GetRequestContextForMedia() {
     // In OTR mode, media request context is the same as the original one.
     return io_data_.GetMainRequestContextGetter();
   }
 
-  URLRequestContextGetter* GetRequestContextForExtensions() {
+  net::URLRequestContextGetter* GetRequestContextForExtensions() {
     return io_data_.GetExtensionsRequestContextGetter();
   }
 
-  URLRequestContextGetter* GetRequestContextForIsolatedApp(
+  net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
       const std::string& app_id) {
     return io_data_.GetIsolatedAppRequestContextGetter(app_id);
   }

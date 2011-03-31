@@ -62,7 +62,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -81,6 +80,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
 using base::Time;
@@ -205,7 +205,8 @@ class ChromeFrameUploadRequestContext : public net::URLRequestContext {
 
 // This class provides an interface to retrieve the URL request context for
 // metrics HTTP upload requests initiated by ChromeFrame.
-class ChromeFrameUploadRequestContextGetter : public URLRequestContextGetter {
+class ChromeFrameUploadRequestContextGetter
+    : public net::URLRequestContextGetter {
  public:
   explicit ChromeFrameUploadRequestContextGetter(MessageLoop* io_loop)
       : io_loop_(io_loop) {}

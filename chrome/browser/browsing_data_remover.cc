@@ -26,7 +26,6 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
@@ -37,6 +36,7 @@
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
 
@@ -386,7 +386,7 @@ void BrowsingDataRemover::DoClearCache(int rv) {
       case STATE_CREATE_MAIN:
       case STATE_CREATE_MEDIA: {
         // Get a pointer to the cache.
-        URLRequestContextGetter* getter =
+        net::URLRequestContextGetter* getter =
             (next_cache_state_ == STATE_CREATE_MAIN) ?
                 main_context_getter_ : media_context_getter_;
         net::HttpTransactionFactory* factory =

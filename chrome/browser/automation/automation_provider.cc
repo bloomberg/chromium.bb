@@ -84,7 +84,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/json_value_serializer.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -97,6 +96,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "webkit/glue/password_form.h"
 
 #if defined(OS_WIN)
@@ -546,7 +546,7 @@ void AutomationProvider::SendFindRequest(
 
 class SetProxyConfigTask : public Task {
  public:
-  SetProxyConfigTask(URLRequestContextGetter* request_context_getter,
+  SetProxyConfigTask(net::URLRequestContextGetter* request_context_getter,
                      const std::string& new_proxy_config)
       : request_context_getter_(request_context_getter),
         proxy_config_(new_proxy_config) {}
@@ -601,13 +601,14 @@ class SetProxyConfigTask : public Task {
   }
 
  private:
-  scoped_refptr<URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   std::string proxy_config_;
 };
 
 
 void AutomationProvider::SetProxyConfig(const std::string& new_proxy_config) {
-  URLRequestContextGetter* context_getter = Profile::GetDefaultRequestContext();
+  net::URLRequestContextGetter* context_getter =
+      Profile::GetDefaultRequestContext();
   if (!context_getter) {
     FilePath user_data_dir;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);

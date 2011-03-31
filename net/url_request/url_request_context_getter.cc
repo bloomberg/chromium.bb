@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/url_request/url_request_context_getter.h"
+
 #include "base/message_loop_proxy.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "net/url_request/url_request_context.h"
 
-net::CookieStore* URLRequestContextGetter::DONTUSEME_GetCookieStore() {
+namespace net {
+CookieStore* URLRequestContextGetter::DONTUSEME_GetCookieStore() {
   return NULL;
 }
 
@@ -28,3 +30,5 @@ void URLRequestContextGetter::OnDestruct() const {
   // If no IO message loop proxy was available, we will just leak memory.
   // This is also true if the IO thread is gone.
 }
+
+}  // namespace net

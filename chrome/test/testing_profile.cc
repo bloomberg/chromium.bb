@@ -38,7 +38,6 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/ntp_resource_cache.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/test_url_request_context_getter.h"
 #include "chrome/test/testing_pref_service.h"
@@ -49,6 +48,7 @@
 #include "content/common/notification_service.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/database/database_tracker.h"
@@ -124,7 +124,8 @@ class TestExtensionURLRequestContext : public net::URLRequestContext {
   }
 };
 
-class TestExtensionURLRequestContextGetter : public URLRequestContextGetter {
+class TestExtensionURLRequestContextGetter
+    : public net::URLRequestContextGetter {
  public:
   virtual net::URLRequestContext* GetURLRequestContext() {
     if (!context_)
@@ -526,11 +527,11 @@ bool TestingProfile::HasCreatedDownloadManager() const {
   return false;
 }
 
-URLRequestContextGetter* TestingProfile::GetRequestContext() {
+net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
   return request_context_.get();
 }
 
-URLRequestContextGetter* TestingProfile::GetRequestContextForPossibleApp(
+net::URLRequestContextGetter* TestingProfile::GetRequestContextForPossibleApp(
     const Extension* installed_app) {
   if (installed_app != NULL && installed_app->is_storage_isolated())
     return GetRequestContextForIsolatedApp(installed_app->id());
@@ -547,11 +548,11 @@ void TestingProfile::ResetRequestContext() {
   request_context_ = NULL;
 }
 
-URLRequestContextGetter* TestingProfile::GetRequestContextForMedia() {
+net::URLRequestContextGetter* TestingProfile::GetRequestContextForMedia() {
   return NULL;
 }
 
-URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
+net::URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
   if (!extensions_request_context_)
       extensions_request_context_ = new TestExtensionURLRequestContextGetter();
   return extensions_request_context_.get();
@@ -565,7 +566,7 @@ UserStyleSheetWatcher* TestingProfile::GetUserStyleSheetWatcher() {
   return NULL;
 }
 
-URLRequestContextGetter* TestingProfile::GetRequestContextForIsolatedApp(
+net::URLRequestContextGetter* TestingProfile::GetRequestContextForIsolatedApp(
     const std::string& app_id) {
   // We don't test isolated app storage here yet, so returning the same dummy
   // context is sufficient for now.

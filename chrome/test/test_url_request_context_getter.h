@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "chrome/common/net/url_request_context_getter.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -18,12 +18,12 @@ class MessageLoopProxy;
 // a leak if your test does not have a BrowserThread::IO in it because
 // URLRequestContextGetter is defined as a ReferenceCounted object with a
 // special trait that deletes it on the IO thread.
-class TestURLRequestContextGetter : public URLRequestContextGetter {
+class TestURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   TestURLRequestContextGetter();
   virtual ~TestURLRequestContextGetter();
 
-  // URLRequestContextGetter:
+  // net::URLRequestContextGetter:
   virtual net::URLRequestContext* GetURLRequestContext();
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
 

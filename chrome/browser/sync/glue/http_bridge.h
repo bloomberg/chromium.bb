@@ -15,9 +15,9 @@
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class MessageLoop;
@@ -74,15 +74,15 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   };
 
   // Lazy-getter for RequestContext objects.
-  class RequestContextGetter : public URLRequestContextGetter {
+  class RequestContextGetter : public net::URLRequestContextGetter {
    public:
     explicit RequestContextGetter(
-        URLRequestContextGetter* baseline_context_getter);
+        net::URLRequestContextGetter* baseline_context_getter);
 
     void set_user_agent(const std::string& ua) { user_agent_ = ua; }
     bool is_user_agent_set() const { return !user_agent_.empty(); }
 
-    // URLRequestContextGetter implementation.
+    // net::URLRequestContextGetter implementation.
     virtual net::URLRequestContext* GetURLRequestContext();
     virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
 
@@ -92,7 +92,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     // User agent to apply to the net::URLRequestContext.
     std::string user_agent_;
 
-    scoped_refptr<URLRequestContextGetter> baseline_context_getter_;
+    scoped_refptr<net::URLRequestContextGetter> baseline_context_getter_;
 
     // Lazily initialized by GetURLRequestContext().
     scoped_refptr<RequestContext> context_;
@@ -128,7 +128,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
                                   const std::string& data);
 
 #if defined(UNIT_TEST)
-  URLRequestContextGetter* GetRequestContextGetter() const {
+  net::URLRequestContextGetter* GetRequestContextGetter() const {
     return context_getter_for_request_;
   }
 #endif
@@ -193,7 +193,8 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 
 class HttpBridgeFactory : public sync_api::HttpPostProviderFactory {
  public:
-  explicit HttpBridgeFactory(URLRequestContextGetter* baseline_context_getter);
+  explicit HttpBridgeFactory(
+      net::URLRequestContextGetter* baseline_context_getter);
   virtual ~HttpBridgeFactory();
 
   // sync_api::HttpPostProviderFactory:

@@ -15,7 +15,10 @@ typedef PrefMember<bool> BooleanPrefMember;
 class FilePath;
 class Profile;
 class ResourceDispatcherHost;
+
+namespace net {
 class URLRequestContextGetter;
+}
 
 // This class filters out incoming Chrome-specific IPC messages for the renderer
 // process on the IPC thread.
@@ -23,7 +26,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
  public:
   ChromeRenderMessageFilter(int render_process_id,
                             Profile* profile,
-                            URLRequestContextGetter* request_context);
+                            net::URLRequestContextGetter* request_context);
 
   // BrowserMessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -82,7 +85,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   // The Profile associated with our renderer process.  This should only be
   // accessed on the UI thread!
   Profile* profile_;
-  scoped_refptr<URLRequestContextGetter> request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // |allow_outdated_plugins_| is a weak pointer because it must be deleted on
   // the UI thread, but the dtor is called on the IO thread. The dtor posts a

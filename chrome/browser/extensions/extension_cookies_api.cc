@@ -16,12 +16,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace keys = extension_cookies_api_constants;
 
@@ -134,7 +134,7 @@ bool CookiesFunction::ParseUrl(const DictionaryValue* details, GURL* url,
 }
 
 bool CookiesFunction::ParseStoreContext(const DictionaryValue* details,
-                                        URLRequestContextGetter** context,
+                                        net::URLRequestContextGetter** context,
                                         std::string* store_id) {
   DCHECK(details && (context || store_id));
   Profile* store_profile = NULL;
@@ -190,7 +190,7 @@ bool GetCookieFunction::RunImpl() {
   // Get the cookie name string or return false.
   EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kNameKey, &name_));
 
-  URLRequestContextGetter* store_context = NULL;
+  net::URLRequestContextGetter* store_context = NULL;
   if (!ParseStoreContext(details, &store_context, &store_id_))
     return false;
 
@@ -252,7 +252,7 @@ bool GetAllCookiesFunction::RunImpl() {
   if (details_->HasKey(keys::kUrlKey) && !ParseUrl(details_, &url_, false))
     return false;
 
-  URLRequestContextGetter* store_context = NULL;
+  net::URLRequestContextGetter* store_context = NULL;
   if (!ParseStoreContext(details_, &store_context, &store_id_))
     return false;
   DCHECK(store_context);
@@ -349,7 +349,7 @@ bool SetCookieFunction::RunImpl() {
         base::Time::UnixEpoch() : base::Time::FromDoubleT(expiration_date);
   }
 
-  URLRequestContextGetter* store_context = NULL;
+  net::URLRequestContextGetter* store_context = NULL;
   if (!ParseStoreContext(details, &store_context, NULL))
     return false;
   DCHECK(store_context);
@@ -422,7 +422,7 @@ bool RemoveCookieFunction::RunImpl() {
   // Get the cookie name string or return false.
   EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kNameKey, &name_));
 
-  URLRequestContextGetter* store_context = NULL;
+  net::URLRequestContextGetter* store_context = NULL;
   if (!ParseStoreContext(details, &store_context, &store_id_))
     return false;
   DCHECK(store_context);

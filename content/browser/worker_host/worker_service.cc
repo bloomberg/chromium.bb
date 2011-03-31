@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,10 +67,11 @@ void WorkerService::OnWorkerMessageFilterClosing(WorkerMessageFilter* filter) {
   TryStartingQueuedWorker();
 }
 
-void WorkerService::CreateWorker(const ViewHostMsg_CreateWorker_Params& params,
-                                 int route_id,
-                                 WorkerMessageFilter* filter,
-                                 URLRequestContextGetter* request_context) {
+void WorkerService::CreateWorker(
+    const ViewHostMsg_CreateWorker_Params& params,
+    int route_id,
+    WorkerMessageFilter* filter,
+    net::URLRequestContextGetter* request_context) {
 
   ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
       request_context->GetURLRequestContext());

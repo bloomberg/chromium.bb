@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_policy.h"
 #include "net/base/host_resolver.h"
@@ -20,6 +19,7 @@
 #include "net/http/http_network_layer.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -44,7 +44,7 @@ class ServiceURLRequestContext : public net::URLRequestContext {
   std::string user_agent_;
 };
 
-class ServiceURLRequestContextGetter : public URLRequestContextGetter {
+class ServiceURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   virtual net::URLRequestContext* GetURLRequestContext();
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;

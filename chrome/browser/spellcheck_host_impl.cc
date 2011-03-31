@@ -16,10 +16,10 @@
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/spellcheck_common.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "third_party/hunspell/google/bdict.h"
 #include "ui/base/l10n/l10n_util.h"
 #if defined(OS_MACOSX)
@@ -76,7 +76,7 @@ FilePath GetFallbackFilePath(const FilePath& first_choice) {
 SpellCheckHostImpl::SpellCheckHostImpl(
     SpellCheckHostObserver* observer,
     const std::string& language,
-    URLRequestContextGetter* request_context_getter)
+    net::URLRequestContextGetter* request_context_getter)
     : observer_(observer),
       language_(language),
       file_(base::kInvalidPlatformFileValue),

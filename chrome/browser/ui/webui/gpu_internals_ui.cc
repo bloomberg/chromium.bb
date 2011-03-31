@@ -31,7 +31,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/jstemplate_builder.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu_process_host.h"
@@ -41,6 +40,7 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

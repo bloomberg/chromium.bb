@@ -91,7 +91,7 @@ void SyncBackendHost::Initialize(
     SyncFrontend* frontend,
     const GURL& sync_service_url,
     const syncable::ModelTypeSet& types,
-    URLRequestContextGetter* baseline_context_getter,
+    net::URLRequestContextGetter* baseline_context_getter,
     const SyncCredentials& credentials,
     bool delete_sync_data_folder) {
   if (!core_thread_.Start())
@@ -194,7 +194,7 @@ JsBackend* SyncBackendHost::GetJsBackend() {
 }
 
 sync_api::HttpPostProviderFactory* SyncBackendHost::MakeHttpBridgeFactory(
-    URLRequestContextGetter* getter) {
+    net::URLRequestContextGetter* getter) {
   return new HttpBridgeFactory(getter);
 }
 

@@ -17,12 +17,12 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/host_zoom_map.h"
 #include "net/base/cookie_policy.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/fileapi/file_system_context.h"
 
@@ -174,13 +174,13 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContext);
 };
 
-// A URLRequestContextGetter subclass used by the browser. This returns a
+// A net::URLRequestContextGetter subclass used by the browser. This returns a
 // subclass of net::URLRequestContext which can be used to store extra
 // information about requests.
 //
 // Most methods are expected to be called on the UI thread, except for
 // the destructor and GetURLRequestContext().
-class ChromeURLRequestContextGetter : public URLRequestContextGetter,
+class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
                                       public NotificationObserver {
  public:
   // Constructs a ChromeURLRequestContextGetter that will use |factory| to
@@ -195,7 +195,7 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   // thread (it will assert otherwise). DONTUSEME_GetCookieStore() and
   // GetIOMessageLoopProxy however can be called from any thread.
   //
-  // URLRequestContextGetter implementation.
+  // net::URLRequestContextGetter implementation.
   virtual net::URLRequestContext* GetURLRequestContext();
   virtual net::CookieStore* DONTUSEME_GetCookieStore();
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;

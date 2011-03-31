@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,9 @@
 #include "base/basictypes.h"
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
 
+namespace net {
 class URLRequestContextGetter;
+}
 
 namespace chromeos {
 
@@ -22,7 +24,7 @@ namespace chromeos {
 // associated with |getter_|.
 class IssueResponseHandler : public AuthResponseHandler {
  public:
-  explicit IssueResponseHandler(URLRequestContextGetter* getter)
+  explicit IssueResponseHandler(net::URLRequestContextGetter* getter)
       : getter_(getter) {}
   virtual ~IssueResponseHandler() {}
 
@@ -42,7 +44,7 @@ class IssueResponseHandler : public AuthResponseHandler {
 
  private:
   std::string token_url_;
-  URLRequestContextGetter* getter_;
+  net::URLRequestContextGetter* getter_;
   DISALLOW_COPY_AND_ASSIGN(IssueResponseHandler);
 };
 
