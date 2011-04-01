@@ -868,7 +868,11 @@ class TestNativeButton : public NativeButton {
       : NativeButton(NULL, text) {
   };
   virtual gfx::NativeView TestGetNativeControlView() {
+#if defined(TOUCH_UI)
+    return GetWidget()->GetNativeView();
+#else
     return native_wrapper_->GetTestingHandle();
+#endif
   }
 };
 

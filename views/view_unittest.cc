@@ -1389,8 +1389,8 @@ class DefaultButtonTest : public ViewTest {
   views::FocusManager* focus_manager_;
   TestDialog* test_dialog_;
   DialogClientView* client_view_;
-  views::NativeButtonBase* ok_button_;
-  views::NativeButtonBase* cancel_button_;
+  views::NativeButton* ok_button_;
+  views::NativeButton* cancel_button_;
 };
 
 TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {
