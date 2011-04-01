@@ -8,5 +8,5 @@
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int nacl_mutex_unlock(int mutex_handle) {
-  return -NACL_SYSCALL(mutex_create)();
+  return -NACL_SYSCALL(mutex_unlock)(mutex_handle);
 }
