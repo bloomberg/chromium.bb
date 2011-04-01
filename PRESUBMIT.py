@@ -8,50 +8,31 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts for
 details on the presubmit API built into depot_tools.
 """
 
-UNIT_TESTS = [
-  'tests.fix_encoding_test',
-  'tests.gcl_unittest',
-  'tests.gclient_scm_test',
-  'tests.gclient_smoketest',
-  'tests.gclient_utils_test',
-  'tests.owners_unittest',
-  'tests.presubmit_unittest',
-  'tests.scm_unittest',
-  'tests.trychange_unittest',
-  'tests.watchlists_unittest',
-]
-
 
 def CommonChecks(input_api, output_api):
-  output = []
-  # Verify that LocalPath() is local, e.g.:
-  #   os.path.join(PresubmitLocalPath(), LocalPath()) == AbsoluteLocalPath()
-  for i in input_api.AffectedFiles():
-    if (input_api.os_path.join(input_api.PresubmitLocalPath(), i.LocalPath()) !=
-        i.AbsoluteLocalPath()):
-      output.append(output_api.PresubmitError('Path inconsistency'))
-      # Return right away because it needs to be fixed first.
-      return output
+  results = []
 
-  output.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
-
-  output.extend(input_api.canned_checks.RunPythonUnitTests(
-      input_api,
-      output_api,
-      UNIT_TESTS))
-
-  white_list = [r'.*\.py$', r'^git-try$']
+  results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
   black_list = list(input_api.DEFAULT_BLACK_LIST) + [
       r'^cpplint\.py$',
-      r'^tests[\/\\]\w+?[\/\\].+',
-      ]
-  output.extend(input_api.canned_checks.RunPylint(
+      r'^tests[\/\\]\w+?[\/\\].+']
+  results.extend(input_api.canned_checks.RunPylint(
       input_api,
       output_api,
-      white_list=white_list,
+      white_list=[r'.*\.py$', r'^git-try$'],
       black_list=black_list))
-  output.extend(RunGitClTests(input_api, output_api))
-  return output
+
+  # TODO(maruel): Make sure at least one file is modified first.
+  # TODO(maruel): If only tests are modified, only run them.
+  verbose = False
+  results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
+      input_api,
+      output_api,
+      'tests',
+      whitelist=[r'.*test\.py$'],
+      verbose=verbose))
+  results.extend(RunGitClTests(input_api, output_api))
+  return results
 
 
 def RunGitClTests(input_api, output_api):
