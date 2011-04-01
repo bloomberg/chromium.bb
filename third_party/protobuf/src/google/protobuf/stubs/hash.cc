@@ -28,36 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: qrczak@google.com (Marcin Kowalczyk)
+// Author: kenton@google.com (Kenton Varda)
 
-#include <google/protobuf/pyext/python_protobuf.h>
+#include <google/protobuf/stubs/hash.h>
 
 namespace google {
 namespace protobuf {
-namespace python {
 
-static const Message* GetCProtoInsidePyProtoStub(PyObject* msg) {
-  return NULL;
-}
-static Message* MutableCProtoInsidePyProtoStub(PyObject* msg) {
-  return NULL;
-}
+// Nothing needed here right now.
 
-// This is initialized with a default, stub implementation.
-// If python-google.protobuf.cc is loaded, the function pointer is overridden
-// with a full implementation.
-const Message* (*GetCProtoInsidePyProtoPtr)(PyObject* msg) =
-    GetCProtoInsidePyProtoStub;
-Message* (*MutableCProtoInsidePyProtoPtr)(PyObject* msg) =
-    MutableCProtoInsidePyProtoStub;
-
-const Message* GetCProtoInsidePyProto(PyObject* msg) {
-  return GetCProtoInsidePyProtoPtr(msg);
-}
-Message* MutableCProtoInsidePyProto(PyObject* msg) {
-  return MutableCProtoInsidePyProtoPtr(msg);
-}
-
-}  // namespace python
 }  // namespace protobuf
 }  // namespace google
