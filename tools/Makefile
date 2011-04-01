@@ -129,12 +129,14 @@ ifeq ($(PLATFORM), win)
       /cygdrive/c/cygwin/bin/cygintl*.dll \
       /cygdrive/c/cygwin/bin/cygz*.dll \
       $(DESTDIR)$(SDKROOT)/libexec
- endif
+  endif
+  WINPATH=cygpath -w
 else
   BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:$(PATH)
   SCONS?=scons
   SDKLOC_NATIVE=$(DESTDIR)$(SDKLOC)/$(SDKNAME)
   CYGWIN_DLL_COPY=echo "Cygwin not used on this platform"
+  WINPATH=echo
 endif
 
 ##################################################################
@@ -678,7 +680,10 @@ stubout:
 	cd .. && ./$(SCONS) --mode=opt-$(PLATFORM) platform=x86-$(LIB_BITS) \
 	    $(SCONS_DESTINATIONS_NOLIB) ncval_stubout
 	set -e; find $(ARCH_DEST)/lib/ -name '*.so' | \
-	  while read library ; do \
+	  while read library; do \
+	    $(WINPATH) library; \
+	  done | \
+	  while read library; do \
 	    if [ "$$(head -c 4 "$$library" | tail -c 3)" = 'ELF' ] ; then \
 	      echo $(NCVAL_STUBOUT) "$$library" -o "$$library"; \
 	      $(NCVAL_STUBOUT) "$$library" -o "$$library"; \
