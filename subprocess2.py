@@ -41,6 +41,47 @@ class CalledProcessError(subprocess.CalledProcessError):
     return '\n'.join(filter(None, (out, self.stdout, self.stderr)))
 
 
+## Utility functions
+
+
+def kill_pid(pid):
+  """Kills a process by its process id."""
+  try:
+    # Unable to import 'module'
+    # pylint: disable=F0401
+    import signal
+    return os.kill(pid, signal.SIGKILL)
+  except ImportError:
+    pass
+
+
+def kill_win(process):
+  """Kills a process with its windows handle.
+
+  Has no effect on other platforms.
+  """
+  try:
+    # Unable to import 'module'
+    # pylint: disable=F0401
+    import win32process
+    # Access to a protected member _handle of a client class
+    # pylint: disable=W0212
+    return win32process.TerminateProcess(process._handle, -1)
+  except ImportError:
+    pass
+
+
+def add_kill():
+  """Adds kill() method to subprocess.Popen for python <2.6"""
+  if hasattr(subprocess.Popen, 'kill'):
+    return
+
+  if sys.platform == 'win32':
+    subprocess.Popen.kill = kill_win
+  else:
+    subprocess.Popen.kill = lambda process: kill_pid(process.pid)
+
+
 def hack_subprocess():
   """subprocess functions may throw exceptions when used in multiple threads.
 
@@ -92,6 +133,7 @@ def Popen(args, **kwargs):
   """
   # Make sure we hack subprocess if necessary.
   hack_subprocess()
+  add_kill()
 
   env = get_english_env(kwargs.get('env'))
   if env:

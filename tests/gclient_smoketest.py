@@ -21,7 +21,8 @@ import unittest
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(ROOT_DIR))
-from tests.fake_repos import check_call, join, write, FakeReposTestBase
+from tests.fake_repos import join, write, FakeReposTestBase
+import subprocess2
 
 GCLIENT_PATH = os.path.join(os.path.dirname(ROOT_DIR), 'gclient')
 COVERAGE = False
@@ -1082,7 +1083,7 @@ class GClientSmokeFromCheckout(GClientSmokeBase):
     os.rmdir(self.root_dir)
     if self.enabled:
       usr, pwd = self.FAKE_REPOS.USERS[0]
-      check_call(
+      subprocess2.check_call(
           ['svn', 'checkout', self.svn_base + '/trunk/webkit',
            self.root_dir, '-q',
            '--non-interactive', '--no-auth-cache',

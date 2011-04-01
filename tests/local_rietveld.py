@@ -13,8 +13,11 @@ if necessary and starts the server on a free inbound TCP port.
 import optparse
 import os
 import socket
-import subprocess
+import sys
 import time
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+import subprocess2
 
 
 class Failure(Exception):
@@ -55,9 +58,6 @@ class LocalRietveld(object):
     self.rietveld = os.path.join(self.base_dir, 'tests', 'rietveld')
     self.test_server = None
     self.port = None
-    # Generate a friendly environment.
-    self.env = os.environ.copy()
-    self.env['LANGUAGE'] = 'en'
     self.out = None
     self.err = None
 
@@ -66,23 +66,21 @@ class LocalRietveld(object):
     if not os.path.isfile(self.dev_app):
       raise Failure('Install google_appengine sdk in %s' % self.sdk_path)
 
-    def call(*args, **kwargs):
-      kwargs['env'] = self.env
-      x = subprocess.Popen(*args, **kwargs)
-      x.communicate()
-      return x.returncode == 0
-
     # Second, checkout rietveld if not available.
     if not os.path.isdir(self.rietveld):
       print('Checking out rietveld...')
-      if not call(
-          ['svn', 'co', '-q',
-              'http://rietveld.googlecode.com/svn/trunk@681',
-              self.rietveld]):
+      try:
+        subprocess2.check_call(
+            ['svn', 'co', '-q', 'http://rietveld.googlecode.com/svn/trunk@681',
+             self.rietveld])
+      except subprocess2.CalledProcessError:
         raise Failure('Failed to checkout rietveld')
     else:
       print('Syncing rietveld...')
-      if not call(['svn', 'up', '-q', '-r', '681'], cwd=self.rietveld):
+      try:
+        subprocess2.check_call(
+            ['svn', 'up', '-q', '-r', '681'], cwd=self.rietveld)
+      except subprocess2.CalledProcessError:
         raise Failure('Failed to checkout rietveld')
 
   def start_server(self, verbose=False):
@@ -101,9 +99,8 @@ class LocalRietveld(object):
         '--port=%d' % self.port,
         '--datastore_path=' + os.path.join(self.rietveld, 'tmp.db'),
         '-c']
-    self.test_server = subprocess.Popen(
-        cmd, stdout=self.out, stderr=self.err, env=self.env,
-        cwd=self.rietveld)
+    self.test_server = subprocess2.Popen(
+        cmd, stdout=self.out, stderr=self.err, cwd=self.rietveld)
     # Loop until port 127.0.0.1:port opens or the process dies.
     while not test_port(self.port):
       self.test_server.poll()
@@ -111,11 +108,12 @@ class LocalRietveld(object):
         raise Failure(
             'Test rietveld instance failed early on port %s' %
             self.port)
-      time.sleep(0.001)
+      time.sleep(0.01)
 
   def stop_server(self):
     if self.test_server:
       self.test_server.kill()
+      self.test_server.wait()
       self.test_server = None
       self.port = None
     if self.out:

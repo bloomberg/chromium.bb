@@ -13,7 +13,6 @@ import os
 import pprint
 import re
 import socket
-import subprocess
 import sys
 import tempfile
 import time
@@ -22,48 +21,7 @@ import time
 from tests import trial_dir
 import gclient_utils
 import scm
-
-## Utility functions
-
-
-def kill_pid(pid):
-  """Kills a process by its process id."""
-  try:
-    # Unable to import 'module'
-    # pylint: disable=F0401
-    import signal
-    return os.kill(pid, signal.SIGKILL)
-  except ImportError:
-    pass
-
-
-def kill_win(process):
-  """Kills a process with its windows handle.
-
-  Has no effect on other platforms.
-  """
-  try:
-    # Unable to import 'module'
-    # pylint: disable=F0401
-    import win32process
-    # Access to a protected member _handle of a client class
-    # pylint: disable=W0212
-    return win32process.TerminateProcess(process._handle, -1)
-  except ImportError:
-    pass
-
-
-def add_kill():
-  """Adds kill() method to subprocess.Popen for python <2.6"""
-  if hasattr(subprocess.Popen, 'kill'):
-    return
-
-  if sys.platform == 'win32':
-    subprocess.Popen.kill = kill_win
-  else:
-    def kill_nix(process):
-      return kill_pid(process.pid)
-    subprocess.Popen.kill = kill_nix
+import subprocess2
 
 
 def write(path, content):
@@ -73,18 +31,6 @@ def write(path, content):
 
 
 join = os.path.join
-
-
-def check_call(*args, **kwargs):
-  logging.debug(args[0])
-  subprocess.check_call(*args, **kwargs)
-
-
-def Popen(*args, **kwargs):
-  kwargs.setdefault('stdout', subprocess.PIPE)
-  kwargs.setdefault('stderr', subprocess.STDOUT)
-  logging.debug(args[0])
-  return subprocess.Popen(*args, **kwargs)
 
 
 def read_tree(tree_root):
@@ -123,31 +69,32 @@ def commit_svn(repo, usr, pwd):
     elif status[0] == '!':
       to_remove.append(filepath)
   if to_add:
-    check_call(['svn', 'add', '--no-auto-props', '-q'] + to_add, cwd=repo)
+    subprocess2.check_output(
+        ['svn', 'add', '--no-auto-props', '-q'] + to_add, cwd=repo)
   if to_remove:
-    check_call(['svn', 'remove', '-q'] + to_remove, cwd=repo)
-  proc = Popen(
+    subprocess2.check_output(['svn', 'remove', '-q'] + to_remove, cwd=repo)
+
+  out = subprocess2.check_output(
       ['svn', 'commit', repo, '-m', 'foo', '--non-interactive',
         '--no-auth-cache',
         '--username', usr, '--password', pwd],
       cwd=repo)
-  out, err = proc.communicate()
   match = re.search(r'(\d+)', out)
   if not match:
-    raise Exception('Commit failed', out, err, proc.returncode)
+    raise Exception('Commit failed', out)
   rev = match.group(1)
-  st = Popen(['svn', 'status'], cwd=repo).communicate()[0]
-  assert len(st) == 0, st
+  status = subprocess2.check_output(['svn', 'status'], cwd=repo)
+  assert len(status) == 0, status
   logging.debug('At revision %s' % rev)
   return rev
 
 
 def commit_git(repo):
   """Commits the changes and returns the new hash."""
-  check_call(['git', 'add', '-A', '-f'], cwd=repo)
-  check_call(['git', 'commit', '-q', '--message', 'foo'], cwd=repo)
-  rev = Popen(['git', 'show-ref', '--head', 'HEAD'],
-              cwd=repo).communicate()[0].split(' ', 1)[0]
+  subprocess2.check_call(['git', 'add', '-A', '-f'], cwd=repo)
+  subprocess2.check_call(['git', 'commit', '-q', '--message', 'foo'], cwd=repo)
+  rev = subprocess2.check_output(
+      ['git', 'show-ref', '--head', 'HEAD'], cwd=repo).split(' ', 1)[0]
   logging.debug('At revision %s' % rev)
   return rev
 
@@ -271,7 +218,6 @@ class FakeReposBase(object):
     self.cleanup_dirt()
     if not self.root_dir:
       try:
-        add_kill()
         # self.root_dir is not set before this call.
         self.trial.set_up()
         self.git_root = join(self.root_dir, 'git')
@@ -328,7 +274,7 @@ class FakeReposBase(object):
         pid = int(self.git_pid_file.read())
         self.git_pid_file.close()
         logging.debug('Killing git daemon pid %s' % pid)
-        kill_pid(pid)
+        subprocess2.kill_pid(pid)
         self.git_pid_file = None
       wait_for_port_to_free(self.host, self.git_port)
       self.git_port = None
@@ -363,8 +309,8 @@ class FakeReposBase(object):
     if self.svnserve:
       return True
     try:
-      check_call(['svnadmin', 'create', self.svn_repo])
-    except OSError, e:
+      subprocess2.check_call(['svnadmin', 'create', self.svn_repo])
+    except subprocess2.CalledProcessError, e:
       logging.debug('Failed with : %s' % e)
       return False
     write(join(self.svn_repo, 'conf', 'svnserve.conf'),
@@ -390,7 +336,11 @@ class FakeReposBase(object):
     if self.host == '127.0.0.1':
       cmd.append('--listen-host=' + self.host)
     self.check_port_is_free(self.svn_port)
-    self.svnserve = Popen(cmd, cwd=self.svn_repo)
+    self.svnserve = subprocess2.Popen(
+        cmd,
+        cwd=self.svn_repo,
+        stdout=subprocess2.PIPE,
+        stderr=subprocess2.PIPE)
     wait_for_port_to_bind(self.host, self.svn_port, self.svnserve)
     self.svn_base = 'svn://%s:%d/svn/' % (self.host, self.svn_port)
     self.populateSvn()
@@ -406,7 +356,7 @@ class FakeReposBase(object):
       return False
     assert self.git_pid_file == None
     for repo in ['repo_%d' % r for r in range(1, self.NB_GIT_REPOS + 1)]:
-      check_call(['git', 'init', '-q', join(self.git_root, repo)])
+      subprocess2.check_call(['git', 'init', '-q', join(self.git_root, repo)])
       self.git_hashes[repo] = [None]
     self.git_port = find_free_port(self.host, 20000)
     self.git_base = 'git://%s:%d/git/' % (self.host, self.git_port)
@@ -421,7 +371,11 @@ class FakeReposBase(object):
     if self.host == '127.0.0.1':
       cmd.append('--listen=' + self.host)
     self.check_port_is_free(self.git_port)
-    self.gitdaemon = Popen(cmd, cwd=self.root_dir)
+    self.gitdaemon = subprocess2.Popen(
+        cmd,
+        cwd=self.root_dir,
+        stdout=subprocess2.PIPE,
+        stderr=subprocess2.PIPE)
     wait_for_port_to_bind(self.host, self.git_port, self.gitdaemon)
     self.populateGit()
     self.git_dirty = False
@@ -473,9 +427,10 @@ class FakeRepos(FakeReposBase):
   def populateSvn(self):
     """Creates a few revisions of changes including DEPS files."""
     # Repos
-    check_call(['svn', 'checkout', self.svn_base, self.svn_checkout,
-                '-q', '--non-interactive', '--no-auth-cache',
-                '--username', self.USERS[0][0], '--password', self.USERS[0][1]])
+    subprocess2.check_call(
+        ['svn', 'checkout', self.svn_base, self.svn_checkout,
+         '-q', '--non-interactive', '--no-auth-cache',
+         '--username', self.USERS[0][0], '--password', self.USERS[0][1]])
     assert os.path.isdir(join(self.svn_checkout, '.svn'))
     def file_system(rev, DEPS):
       fs = {
