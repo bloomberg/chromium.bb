@@ -32,6 +32,7 @@ except ImportError:
 
 from third_party import upload
 import breakpad  # pylint: disable=W0611
+import fix_encoding
 import presubmit_support
 import scm
 import watchlists
@@ -1412,4 +1413,5 @@ def main(argv):
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   sys.exit(main(sys.argv[1:]))
