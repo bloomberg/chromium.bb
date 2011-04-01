@@ -19,6 +19,9 @@ import threading
 # Constants forwarded from subprocess.
 PIPE = subprocess.PIPE
 STDOUT = subprocess.STDOUT
+# Sends stdout or stderr to os.devnull.
+VOID = '/dev/null'
+
 
 # Globals.
 # Set to True if you somehow need to disable this hack.
@@ -123,13 +126,15 @@ def get_english_env(env):
 def Popen(args, **kwargs):
   """Wraps subprocess.Popen().
 
-  Forces English output since it's easier to parse the stdout if it is always in
-  English.
+  Returns a subprocess.Popen object.
 
-  Sets shell=True on windows by default. You can override this by forcing shell
-  parameter to a value.
+  - Forces English output since it's easier to parse the stdout if it is always
+    in English.
+  - Sets shell=True on windows by default. You can override this by forcing
+    shell parameter to a value.
+  - Adds support for VOID to not buffer when not needed.
 
-  Popen() can throw OSError when cwd or args[0] doesn't exist.
+  Note: Popen() can throw OSError when cwd or args[0] doesn't exist.
   """
   # Make sure we hack subprocess if necessary.
   hack_subprocess()
@@ -149,17 +154,22 @@ def Popen(args, **kwargs):
   if kwargs.get('cwd', None):
     tmp_str += ';  cwd=%s' % kwargs['cwd']
   logging.debug(tmp_str)
+
+  # Replaces VOID with handle to /dev/null.
+  if kwargs.get('stdout') in (VOID, os.devnull):
+    kwargs['stdout'] = open(os.devnull, 'w')
+  if kwargs.get('stderr') in (VOID, os.devnull):
+    kwargs['stderr'] = open(os.devnull, 'w')
   return subprocess.Popen(args, **kwargs)
 
 
 def call(args, timeout=None, **kwargs):
   """Wraps subprocess.Popen().communicate().
 
-  The process will be kill with error code -9 after |timeout| seconds if set.
+  Returns ((stdout, stderr), returncode).
 
-  Automatically passes stdin content as input so do not specify stdin=PIPE.
-
-  Returns both communicate() tuple and return code wrapped in a tuple.
+  - The process will be kill with error code -9 after |timeout| seconds if set.
+  - Automatically passes stdin content as input so do not specify stdin=PIPE.
   """
   stdin = kwargs.pop('stdin', None)
   if stdin is not None:
@@ -204,13 +214,9 @@ def call(args, timeout=None, **kwargs):
 
 
 def check_call(args, **kwargs):
-  """Similar to subprocess.check_call() but use call() instead.
+  """Improved version of subprocess.check_call().
 
-  This permits to include more details in CalledProcessError().
-
-  Runs a command and throws an exception if the command failed.
-
-  Returns communicate() tuple.
+  Returns (stdout, stderr), unlike subprocess.check_call().
   """
   out, returncode = call(args, **kwargs)
   if returncode:
@@ -222,9 +228,10 @@ def check_call(args, **kwargs):
 def capture(args, **kwargs):
   """Captures stdout of a process call and returns it.
 
-  Similar to check_output() excepts that it discards return code.
+  Returns stdout.
 
-  Discards communicate()[1]. By default sets stderr=STDOUT.
+  - Discards returncode.
+  - Discards stderr. By default sets stderr=STDOUT.
   """
   if kwargs.get('stderr') is None:
     kwargs['stderr'] = STDOUT
@@ -234,11 +241,11 @@ def capture(args, **kwargs):
 def check_output(args, **kwargs):
   """Captures stdout of a process call and returns it.
 
-  Discards communicate()[1]. By default sets stderr=STDOUT.
+  Returns stdout.
 
-  Throws if return code is not 0.
-
-  Works even prior to python 2.7.
+  - Discards stderr. By default sets stderr=STDOUT.
+  - Throws if return code is not 0.
+  - Works even prior to python 2.7.
   """
   if kwargs.get('stderr') is None:
     kwargs['stderr'] = STDOUT

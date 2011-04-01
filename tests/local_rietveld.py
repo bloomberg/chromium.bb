@@ -58,8 +58,6 @@ class LocalRietveld(object):
     self.rietveld = os.path.join(self.base_dir, 'tests', 'rietveld')
     self.test_server = None
     self.port = None
-    self.out = None
-    self.err = None
 
   def install_prerequisites(self):
     # First, verify the Google AppEngine SDK is available.
@@ -87,11 +85,9 @@ class LocalRietveld(object):
     self.install_prerequisites()
     self.port = find_free_port()
     if verbose:
-      self.out = None
-      self.err = None
+      pipe = None
     else:
-      self.out = open(os.devnull, 'w')
-      self.err = open(os.devnull, 'w')
+      pipe = subprocess2.VOID
     cmd = [
         self.dev_app,
         '--skip_sdk_update_check',
@@ -100,7 +96,7 @@ class LocalRietveld(object):
         '--datastore_path=' + os.path.join(self.rietveld, 'tmp.db'),
         '-c']
     self.test_server = subprocess2.Popen(
-        cmd, stdout=self.out, stderr=self.err, cwd=self.rietveld)
+        cmd, stdout=pipe, stderr=pipe, cwd=self.rietveld)
     # Loop until port 127.0.0.1:port opens or the process dies.
     while not test_port(self.port):
       self.test_server.poll()
@@ -116,12 +112,6 @@ class LocalRietveld(object):
       self.test_server.wait()
       self.test_server = None
       self.port = None
-    if self.out:
-      self.out.close()
-      self.out = None
-    if self.err:
-      self.err.close()
-      self.err = None
 
 
 def main():
