@@ -5,9 +5,11 @@
 #include "chrome/renderer/extensions/extension_helper.h"
 
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/user_script_idle_scheduler.h"
+#include "chrome/renderer/user_script_slave.h"
 
 using WebKit::WebFrame;
 using WebKit::WebDataSource;
@@ -28,6 +30,16 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void ExtensionHelper::DidFinishDocumentLoad(WebFrame* frame) {
+  ExtensionDispatcher::Get()->user_script_slave()->InjectScripts(
+      frame, UserScript::DOCUMENT_END);
+}
+
+void ExtensionHelper::DidCreateDocumentElement(WebFrame* frame) {
+  ExtensionDispatcher::Get()->user_script_slave()->InjectScripts(
+      frame, UserScript::DOCUMENT_START);
 }
 
 void ExtensionHelper::FrameDetached(WebFrame* frame) {

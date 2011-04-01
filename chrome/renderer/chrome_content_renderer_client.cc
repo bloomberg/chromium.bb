@@ -5,15 +5,24 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
+#include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/extension_helper.h"
+#include "chrome/renderer/extensions/extension_process_bindings.h"
+#include "chrome/renderer/extensions/extension_resource_request_policy.h"
+#include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/localized_error.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
@@ -40,7 +49,36 @@ using WebKit::WebURLError;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 
+namespace {
+
+// Returns true if the frame is navigating to an URL either into or out of an
+// extension app's extent.
+// TODO(creis): Temporary workaround for crbug.com/65953: Only return true if
+// we would enter an extension app's extent from a non-app, or if we leave an
+// extension with no web extent.  We avoid swapping processes to exit a hosted
+// app with a web extent for now, since we do not yet restore context (such
+// as window.opener) if the window navigates back.
+static bool CrossesExtensionExtents(WebFrame* frame, const GURL& new_url) {
+  const ExtensionSet* extensions = ExtensionDispatcher::Get()->extensions();
+  // If the URL is still empty, this is a window.open navigation. Check the
+  // opener's URL.
+  GURL old_url(frame->url());
+  if (old_url.is_empty() && frame->opener())
+    old_url = frame->opener()->url();
+
+  bool old_url_is_hosted_app = extensions->GetByURL(old_url) &&
+      !extensions->GetByURL(old_url)->web_extent().is_empty();
+  return !extensions->InSameExtent(old_url, new_url) &&
+         !old_url_is_hosted_app;
+}
+
+}  // namespcae
+
 namespace chrome {
+
+void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
+  new ExtensionHelper(render_view);
+}
 
 SkBitmap* ChromeContentRendererClient::GetSadPluginBitmap() {
   return ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_SAD_PLUGIN);
@@ -253,6 +291,69 @@ bool ChromeContentRendererClient::AllowPopup(const GURL& creator) {
   // check is necessary to include content scripts.
   return ExtensionDispatcher::Get()->extensions()->GetByURL(creator) ||
       bindings_utils::GetInfoForCurrentContext();
+}
+
+bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
+                                             const GURL& url,
+                                             bool is_content_initiated,
+                                             bool* send_referrer) {
+  // If the navigation would cross an app extent boundary, we also need
+  // to defer to the browser to ensure process isolation.
+  // TODO(erikkay) This is happening inside of a check to is_content_initiated
+  // which means that things like the back button won't trigger it.  Is that
+  // OK?
+  // TODO(creis): For hosted apps, we currently only swap processes to enter
+  // the app and not exit it, since we currently lose context (e.g.,
+  // window.opener) if the window navigates back.  See crbug.com/65953.
+  if (!CrossesExtensionExtents(frame, url))
+    return false;
+
+  // Include the referrer in this case since we're going from a hosted web
+  // page. (the packaged case is handled previously by the extension
+  // navigation test)
+  *send_referrer = true;
+
+  if (is_content_initiated) {
+    const Extension* extension =
+        ExtensionDispatcher::Get()->extensions()->GetByURL(url);
+    if (extension && extension->is_app()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          extension_misc::kAppLaunchHistogram,
+          extension_misc::APP_LAUNCH_CONTENT_NAVIGATION,
+          extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+    }
+  }
+
+  return true;
+}
+
+bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
+                                                  const GURL& url,
+                                                  GURL* new_url) {
+  // If the request is for an extension resource, check whether it should be
+  // allowed. If not allowed, we reset the URL to something invalid to prevent
+  // the request and cause an error.
+  if (url.SchemeIs(chrome::kExtensionScheme) &&
+      !ExtensionResourceRequestPolicy::CanRequestResource(
+          url, GURL(frame->url()), ExtensionDispatcher::Get()->extensions())) {
+    *new_url = GURL("chrome-extension://invalid/");
+    return true;
+  }
+
+  return false;
+}
+
+void ChromeContentRendererClient::DidCreateScriptContext(WebFrame* frame) {
+  EventBindings::HandleContextCreated(frame, false);
+}
+
+void ChromeContentRendererClient::DidDestroyScriptContext(WebFrame* frame) {
+  EventBindings::HandleContextDestroyed(frame);
+}
+
+void ChromeContentRendererClient::DidCreateIsolatedScriptContext(
+  WebFrame* frame) {
+  EventBindings::HandleContextCreated(frame, true);
 }
 
 }  // namespace chrome

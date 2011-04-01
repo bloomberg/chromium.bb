@@ -37,6 +37,7 @@ class RenderViewObserver : public IPC::Channel::Listener,
                                       const WebKit::WebURLError& error) {}
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation) {}
+  virtual void DidCreateDocumentElement(WebKit::WebFrame* frame) {}
   virtual void FrameDetached(WebKit::WebFrame* frame) {}
   virtual void FrameWillClose(WebKit::WebFrame* frame) {}
   virtual void DidCreateDataSource(WebKit::WebFrame* frame,

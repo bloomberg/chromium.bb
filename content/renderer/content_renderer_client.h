@@ -28,8 +28,13 @@ namespace content {
 // Embedder API for participating in renderer logic.
 class ContentRendererClient {
  public:
+  // Notifies that a new RenderView has been created.
+  virtual void RenderViewCreated(RenderView* render_view);
+
+  // Returns the bitmap to show when a plugin crashed, or NULL for none.
   virtual SkBitmap* GetSadPluginBitmap();
 
+  // Returns the default text encoding.
   virtual std::string GetDefaultEncoding();
 
   // Create a plugin in the given frame.  Can return NULL, in which case
@@ -54,6 +59,23 @@ class ContentRendererClient {
 
   // Returns true if the given url can create popup windows.
   virtual bool AllowPopup(const GURL& creator);
+
+  // Returns true if we should fork a new process for the given navigation.
+  virtual bool ShouldFork(WebKit::WebFrame* frame,
+                          const GURL& url,
+                          bool is_content_initiated,
+                          bool* send_referrer);
+
+  // Notifies the embedder that the given frame is requesting the resource at
+  // |url|.  If the function returns true, the url is changed to |new_url|.
+  virtual bool WillSendRequest(WebKit::WebFrame* frame,
+                               const GURL& url,
+                               GURL* new_url);
+
+  // See the corresponding functions in WebKit::WebFrameClient.
+  virtual void DidCreateScriptContext(WebKit::WebFrame* frame);
+  virtual void DidDestroyScriptContext(WebKit::WebFrame* frame);
+  virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* frame);
 };
 
 }  // namespace content

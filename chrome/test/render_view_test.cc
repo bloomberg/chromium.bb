@@ -100,7 +100,7 @@ void RenderViewTest::SetUp() {
   // Configure modules that need access to resources.
   gfx::GfxModule::SetResourceProvider(chrome::GfxResourceProvider);
 
-  content::GetContentClient()->set_renderer(&content_renderer_client_);
+  content::GetContentClient()->set_renderer(&chrome_content_renderer_client_);
   extension_dispatcher_ = new ExtensionDispatcher();
   sandbox_init_wrapper_.reset(new SandboxInitWrapper());
   command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));

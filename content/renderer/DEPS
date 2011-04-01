@@ -1,3 +1,7 @@
 include_rules = [
+  # The following directories have been refactored, so no new dependencies
+  # should be added from these directories.
+  "-chrome/renderer/extensions",
+
   "+content/plugin",  # For shared npruntime proxying code.
 ]

@@ -22,6 +22,8 @@ class ExtensionHelper : public RenderViewObserver {
  private:
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame);
+  virtual void DidCreateDocumentElement(WebKit::WebFrame* frame);
   virtual void FrameDetached(WebKit::WebFrame* frame);
   virtual void DidCreateDataSource(WebKit::WebFrame* frame,
                                    WebKit::WebDataSource* ds);

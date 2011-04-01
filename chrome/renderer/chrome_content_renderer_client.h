@@ -18,6 +18,7 @@ namespace chrome {
 
 class ChromeContentRendererClient : public content::ContentRendererClient {
  public:
+  virtual void RenderViewCreated(RenderView* render_view);
   virtual SkBitmap* GetSadPluginBitmap();
   virtual std::string GetDefaultEncoding();
   virtual WebKit::WebPlugin* CreatePlugin(
@@ -30,6 +31,16 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual std::string DetermineTextLanguage(const string16& text);
   virtual bool RunIdleHandlerWhenWidgetsHidden();
   virtual bool AllowPopup(const GURL& creator);
+  virtual bool ShouldFork(WebKit::WebFrame* frame,
+                          const GURL& url,
+                          bool is_content_initiated,
+                          bool* send_referrer);
+  virtual bool WillSendRequest(WebKit::WebFrame* frame,
+                               const GURL& url,
+                               GURL* new_url);
+  virtual void DidCreateScriptContext(WebKit::WebFrame* frame);
+  virtual void DidDestroyScriptContext(WebKit::WebFrame* frame);
+  virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* frame);
 
  private:
   WebKit::WebPlugin* CreatePluginPlaceholder(

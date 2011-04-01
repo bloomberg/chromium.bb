@@ -28,10 +28,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/devtools_messages.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
@@ -46,12 +43,6 @@
 #include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/devtools_client.h"
-#include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
-#include "chrome/renderer/extensions/extension_helper.h"
-#include "chrome/renderer/extensions/extension_process_bindings.h"
-#include "chrome/renderer/extensions/extension_resource_request_policy.h"
-#include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/page_click_tracker.h"
@@ -65,7 +56,6 @@
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "chrome/renderer/translate_helper.h"
-#include "chrome/renderer/user_script_slave.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/clipboard_messages.h"
@@ -391,28 +381,6 @@ static bool IsWhitelistedForContentSettings(WebFrame* frame) {
   return false;
 }
 
-// Returns true if the frame is navigating to an URL either into or out of an
-// extension app's extent.
-// TODO(creis): Temporary workaround for crbug.com/65953: Only return true if
-// we would enter an extension app's extent from a non-app, or if we leave an
-// extension with no web extent.  We avoid swapping processes to exit a hosted
-// app with a web extent for now, since we do not yet restore context (such
-// as window.opener) if the window navigates back.
-static bool CrossesExtensionExtents(const ExtensionSet* extensions,
-                                    WebFrame* frame,
-                                    const GURL& new_url) {
-  // If the URL is still empty, this is a window.open navigation. Check the
-  // opener's URL.
-  GURL old_url(frame->url());
-  if (old_url.is_empty() && frame->opener())
-    old_url = frame->opener()->url();
-
-  bool old_url_is_hosted_app = extensions->GetByURL(old_url) &&
-      !extensions->GetByURL(old_url)->web_extent().is_empty();
-  return !extensions->InSameExtent(old_url, new_url) &&
-         !old_url_is_hosted_app;
-}
-
 // Returns true if the parameter node is a textfield, text area or a content
 // editable div.
 static bool IsEditableNode(const WebNode& node) {
@@ -647,7 +615,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   // Observer for Malware DOM details messages.
   new safe_browsing::MalwareDOMDetails(this);
 
-  new ExtensionHelper(this);
+  content::GetContentClient()->renderer()->RenderViewCreated(this);
 }
 
 RenderView::~RenderView() {
@@ -2722,33 +2690,10 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
         frame->isViewSourceModeEnabled() ||
         url.SchemeIs(chrome::kViewSourceScheme);
 
-    // If the navigation would cross an app extent boundary, we also need
-    // to defer to the browser to ensure process isolation.
-    // TODO(erikkay) This is happening inside of a check to is_content_initiated
-    // which means that things like the back button won't trigger it.  Is that
-    // OK?
-    // TODO(creis): For hosted apps, we currently only swap processes to enter
-    // the app and not exit it, since we currently lose context (e.g.,
-    // window.opener) if the window navigates back.  See crbug.com/65953.
-    if (!should_fork &&
-        CrossesExtensionExtents(
-            ExtensionDispatcher::Get()->extensions(), frame, url)) {
-      // Include the referrer in this case since we're going from a hosted web
-      // page. (the packaged case is handled previously by the extension
-      // navigation test)
-      should_fork = true;
-      send_referrer = true;
-
-      if (is_content_initiated) {
-        const Extension* extension =
-            ExtensionDispatcher::Get()->extensions()->GetByURL(url);
-        if (extension && extension->is_app()) {
-          UMA_HISTOGRAM_ENUMERATION(
-              extension_misc::kAppLaunchHistogram,
-              extension_misc::APP_LAUNCH_CONTENT_NAVIGATION,
-              extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
-        }
-      }
+    if (!should_fork) {
+      // Give the embedder a chance.
+      should_fork = content::GetContentClient()->renderer()->ShouldFork(
+          frame, url, is_content_initiated, &send_referrer);
     }
 
     if (should_fork) {
@@ -3198,17 +3143,15 @@ void RenderView::didClearWindowObject(WebFrame* frame) {
 }
 
 void RenderView::didCreateDocumentElement(WebFrame* frame) {
-  if (RenderThread::current()) {  // Will be NULL during unit tests.
-    ExtensionDispatcher::Get()->user_script_slave()->InjectScripts(
-        frame, UserScript::DOCUMENT_START);
-  }
-
   // Notify the browser about non-blank documents loading in the top frame.
   GURL url = frame->url();
   if (url.is_valid() && url.spec() != chrome::kAboutBlankURL) {
     if (frame == webview()->mainFrame())
       Send(new ViewHostMsg_DocumentAvailableInMainFrame(routing_id_));
   }
+
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
+                    DidCreateDocumentElement(frame));
 }
 
 void RenderView::didReceiveTitle(WebFrame* frame, const WebString& title) {
@@ -3240,11 +3183,6 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
-
-  if (RenderThread::current()) {  // Will be NULL during unit tests.
-    ExtensionDispatcher::Get()->user_script_slave()->InjectScripts(
-        frame, UserScript::DOCUMENT_END);
-  }
 }
 
 void RenderView::didHandleOnloadEvents(WebFrame* frame) {
@@ -3309,16 +3247,12 @@ void RenderView::willSendRequest(
   WebDataSource* data_source =
       provisional_data_source ? provisional_data_source : top_data_source;
 
-  // If the request is for an extension resource, check whether it should be
-  // allowed. If not allowed, we reset the URL to something invalid to prevent
-  // the request and cause an error.
+
   GURL request_url(request.url());
-  if (request_url.SchemeIs(chrome::kExtensionScheme) &&
-      !ExtensionResourceRequestPolicy::CanRequestResource(
-          request_url,
-          GURL(frame->url()),
-          ExtensionDispatcher::Get()->extensions())) {
-    request.setURL(WebURL(GURL("chrome-extension://invalid/")));
+  GURL new_url;
+  if (content::GetContentClient()->renderer()->WillSendRequest(
+          frame, request_url, &new_url)) {
+    request.setURL(WebURL(new_url));
   }
 
   if (data_source) {
@@ -3491,15 +3425,16 @@ void RenderView::didExhaustMemoryAvailableForScript(WebFrame* frame) {
 }
 
 void RenderView::didCreateScriptContext(WebFrame* frame) {
-  EventBindings::HandleContextCreated(frame, false);
+  content::GetContentClient()->renderer()->DidCreateScriptContext(frame);
 }
 
 void RenderView::didDestroyScriptContext(WebFrame* frame) {
-  EventBindings::HandleContextDestroyed(frame);
+  content::GetContentClient()->renderer()->DidDestroyScriptContext(frame);
 }
 
 void RenderView::didCreateIsolatedScriptContext(WebFrame* frame) {
-  EventBindings::HandleContextCreated(frame, true);
+  content::GetContentClient()->renderer()->DidCreateIsolatedScriptContext(
+      frame);
 }
 
 bool RenderView::allowScriptExtension(WebFrame* frame,
