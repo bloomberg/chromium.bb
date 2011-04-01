@@ -48,13 +48,6 @@ struct NaClAppThread {
    */
   struct NaClApp            *nap;
 
-  /*
-   * The effector interface object used to manipulate NaCl apps by the
-   * objects in the NaClDesc class hierarchy.  Used by this thread when
-   * making NaClDesc method calls from syscall handlers.
-   */
-  struct NaClDescEffector   *effp;
-
   int                       thread_num;  /* index into nap->threads */
   uintptr_t                 sys_tdb;  /* saved tdb ptr */
 

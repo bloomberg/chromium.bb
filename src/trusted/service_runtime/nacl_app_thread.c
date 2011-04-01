@@ -62,7 +62,6 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       uintptr_t             sys_tdb) {
   int                         rv;
   uint64_t                    thread_idx;
-  struct NaClDescEffectorLdr  *effp;
 
   NaClLog(4, "         natp = 0x%016"NACL_PRIxPTR"\n", (uintptr_t) natp);
   NaClLog(4, "          nap = 0x%016"NACL_PRIxPTR"\n", (uintptr_t) nap);
@@ -70,7 +69,6 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
 
   NaClThreadContextCtor(&natp->user, nap, usr_entry, usr_stack_ptr, tls_idx);
 
-  effp = NULL;
   natp->signal_stack = NULL;
 
   if (!NaClMutexCtor(&natp->mu)) {
@@ -85,17 +83,6 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   }
   natp->sysret = 0;
   natp->nap = nap;
-
-  effp = (struct NaClDescEffectorLdr *) malloc(sizeof *effp);
-  if (NULL == effp) {
-    goto cleanup_cv;
-  }
-
-  if (!NaClDescEffectorLdrCtor(effp, nap)) {
-    goto cleanup_cv;
-  }
-  natp->effp = (struct NaClDescEffector *) effp;
-  effp = NULL;
 
   if (!NaClSignalStackAllocate(&natp->signal_stack)) {
     goto cleanup_cv;
@@ -127,8 +114,6 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   NaClCondVarDtor(&natp->cv);
  cleanup_mutex:
   NaClMutexDtor(&natp->mu);
-  free(effp);
-  natp->effp = NULL;
   if (NULL != natp->signal_stack) {
     NaClSignalStackFree(&natp->signal_stack);
     natp->signal_stack = NULL;
@@ -152,9 +137,6 @@ void NaClAppThreadDtor(struct NaClAppThread *natp) {
   NaClSignalStackFree(natp->signal_stack);
   natp->signal_stack = NULL;
   NaClClosureResultDtor(&natp->result);
-  (*natp->effp->vtbl->Dtor)(natp->effp);
-  free(natp->effp);
-  natp->effp = NULL;
   NaClTlsFree(natp);
   NaClCondVarDtor(&natp->cv);
   NaClMutexDtor(&natp->mu);

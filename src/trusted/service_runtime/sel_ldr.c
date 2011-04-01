@@ -32,6 +32,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_simple_service.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
@@ -53,6 +54,7 @@ static int ShouldEnableDynamicLoading() {
 }
 
 int NaClAppCtor(struct NaClApp  *nap) {
+  struct NaClDescEffectorLdr  *effp;
 
   nap->addr_bits = NACL_MAX_ADDR_BITS;
 
@@ -81,10 +83,19 @@ int NaClAppCtor(struct NaClApp  *nap) {
     goto cleanup_desc_tbl;
   }
 
+  effp = (struct NaClDescEffectorLdr *) malloc(sizeof *effp);
+  if (NULL == effp) {
+    goto cleanup_mem_map;
+  }
+  if (!NaClDescEffectorLdrCtor(effp, nap)) {
+    goto cleanup_effp_free;
+  }
+  nap->effp = (struct NaClDescEffector *) effp;
+
   nap->use_shm_for_dynamic_text = ShouldEnableDynamicLoading();
   nap->text_shm = NULL;
   if (!NaClMutexCtor(&nap->dynamic_load_mutex)) {
-    goto cleanup_mem_map;
+    goto cleanup_effp_dtor;
   }
 
   nap->dynamic_regions = NULL;
@@ -189,6 +200,10 @@ int NaClAppCtor(struct NaClApp  *nap) {
   NaClRefCountUnref((struct NaClRefCount *) nap->name_service);
  cleanup_dynamic_load_mutex:
   NaClMutexDtor(&nap->dynamic_load_mutex);
+ cleanup_effp_dtor:
+  (*nap->effp->vtbl->Dtor)(nap->effp);
+ cleanup_effp_free:
+  free(nap->effp);
  cleanup_mem_map:
   NaClVmmapDtor(&nap->mem_map);
  cleanup_desc_tbl:

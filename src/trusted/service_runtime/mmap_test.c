@@ -17,14 +17,11 @@
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 /* Based on NaClAppThreadCtor() */
 static void InitThread(struct NaClApp *nap, struct NaClAppThread *natp) {
-  struct NaClDescEffectorLdr *effp;
-
   memset(natp, 0xff, sizeof(*natp));
 
   natp->nap = nap;
@@ -35,14 +32,6 @@ static void InitThread(struct NaClApp *nap, struct NaClAppThread *natp) {
   if (!NaClCondVarCtor(&natp->cv)) {
     ASSERT(0);
   }
-
-  effp = (struct NaClDescEffectorLdr *) malloc(sizeof *effp);
-  ASSERT_NE(effp, NULL);
-
-  if (!NaClDescEffectorLdrCtor(effp, nap)) {
-    ASSERT(0);
-  }
-  natp->effp = (struct NaClDescEffector *) effp;
 }
 
 void CheckLowerMappings(struct NaClVmmap *mem_map) {

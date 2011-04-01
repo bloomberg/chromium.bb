@@ -299,7 +299,7 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
        */
       retval = (*((struct NaClDescVtbl const *) entry->nmop->ndp->base.vtbl)->
                 Unmap)(entry->nmop->ndp,
-                       natp->effp,
+                       natp->nap->effp,
                        (void*) addr,
                        NACL_MAP_PAGESIZE);
       if (0 != retval) {

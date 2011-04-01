@@ -199,6 +199,14 @@ struct NaClApp {
   struct NaClVmmap          mem_map;
 
   /*
+   * This is the effector interface object that is used to manipulate
+   * NaCl apps by the objects in the NaClDesc class hierarchy.  This
+   * is used by this NaClApp when making NaClDesc method calls from
+   * syscall handlers.
+   */
+  struct NaClDescEffector   *effp;
+
+  /*
    * may reject nexes that are incompatible w/ dynamic-text in the near future
    */
   int                       use_shm_for_dynamic_text;

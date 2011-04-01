@@ -1455,7 +1455,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
               ("NaClSysMmap: NaClDescIoDescMap(,,0x%08"NACL_PRIxPTR","
                "0x%08"NACL_PRIxS",0x%x,0x%x,0x%08"NACL_PRIxPTR")\n"),
               sysaddr, length, prot, flags, (uintptr_t) offset);
-      map_result = NaClDescIoDescMapAnon(natp->effp,
+      map_result = NaClDescIoDescMapAnon(natp->nap->effp,
                                          (void *) sysaddr,
                                          length,
                                          prot,
@@ -1475,7 +1475,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
 
       map_result = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
                     Map)(ndp,
-                         natp->effp,
+                         natp->nap->effp,
                          (void *) sysaddr,
                          length_to_map,
                          prot,
