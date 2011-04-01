@@ -20,8 +20,11 @@
  */
 function dispatchTestResults(testResults) {
   var naclTestModule = document.getElementById('test_results_element');
-  if (naclTestModule) {
+  if (naclTestModule && naclTestModule.onclick) {
     naclTestModule.onclick(testResults);
+  } else {
+    // Retry, the extension may have spun up before the main page.
+    setTimeout(function() { dispatchTestResults(testResults)}, 50);
   }
 }
 
