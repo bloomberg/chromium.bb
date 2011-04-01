@@ -225,13 +225,16 @@ function getPreview() {
 /**
  * Fill the printer list drop down.
  * @param {array} printers Array of printer names.
+ * @param {int} defaultPrinterIndex The index of the default printer.
  */
-function setPrinters(printers) {
+function setPrinters(printers, defaultPrinterIndex) {
   if (printers.length > 0) {
     for (var i = 0; i < printers.length; ++i) {
       var option = document.createElement('option');
       option.textContent = printers[i];
       $('printer-list').add(option);
+      if (i == defaultPrinterIndex)
+        option.selected = true;
     }
   } else {
     var option = document.createElement('option');

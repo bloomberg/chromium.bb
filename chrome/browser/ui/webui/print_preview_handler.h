@@ -12,6 +12,7 @@
 #include "content/browser/webui/web_ui.h"
 
 class EnumeratePrintersTaskProxy;
+class FundamentalValue;
 
 namespace printing {
 class PrintBackend;
@@ -49,7 +50,8 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   void HandlePrint(const ListValue* args);
 
   // Send the list of printers to the Web UI.
-  void SendPrinterList(const ListValue& printers);
+  void SendPrinterList(const ListValue& printers,
+                       const FundamentalValue& default_printer_index);
 
   // Helper function to process the color setting in the dictionary.
   void ProcessColorSetting(const DictionaryValue& settings);

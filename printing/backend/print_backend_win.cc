@@ -67,11 +67,19 @@ bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
   if (!ret)
     return false;
 
+  // Getting the name of the default printer.
+  DWORD size = MAX_PATH;
+  TCHAR default_printer_name[MAX_PATH];
+  BOOL default_printer_exists = ::GetDefaultPrinter(
+      default_printer_name, &size);
+
   PRINTER_INFO_2* printer_info =
       reinterpret_cast<PRINTER_INFO_2*>(printer_info_buffer.get());
   for (DWORD index = 0; index < count_returned; index++) {
     PrinterBasicInfo info;
     info.printer_name = WideToUTF8(printer_info[index].pPrinterName);
+    if (default_printer_exists)
+      info.is_default = (info.printer_name == WideToUTF8(default_printer_name));
     if (printer_info[index].pComment)
       info.printer_description = WideToUTF8(printer_info[index].pComment);
     info.printer_status = printer_info[index].Status;

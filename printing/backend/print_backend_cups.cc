@@ -126,6 +126,7 @@ bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
 
     PrinterBasicInfo printer_info;
     printer_info.printer_name = printer.name;
+    printer_info.is_default = printer.is_default;
 
     const char* info = cupsGetOption(kCUPSPrinterInfoOpt,
         printer.num_options, printer.options);

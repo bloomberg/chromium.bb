@@ -76,25 +76,32 @@ class EnumeratePrintersTaskProxy
 
   void EnumeratePrinters() {
     ListValue* printers = new ListValue;
+    int default_printer_index = -1;
 
     printing::PrinterList printer_list;
     print_backend_->EnumeratePrinters(&printer_list);
+    int i = 0;
     for (printing::PrinterList::iterator index = printer_list.begin();
-         index != printer_list.end(); ++index) {
+         index != printer_list.end(); ++index, ++i) {
       printers->Append(new StringValue(index->printer_name));
+      if (index->is_default)
+        default_printer_index = i;
     }
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &EnumeratePrintersTaskProxy::SendPrinterList,
-                          printers));
+                          printers,
+                          new FundamentalValue(default_printer_index)));
   }
 
-  void SendPrinterList(ListValue* printers) {
+  void SendPrinterList(ListValue* printers,
+                       FundamentalValue* default_printer_index) {
     if (handler_)
-      handler_->SendPrinterList(*printers);
+      handler_->SendPrinterList(*printers, *default_printer_index);
     delete printers;
+    delete default_printer_index;
   }
 
  private:
@@ -206,8 +213,11 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   }
 }
 
-void PrintPreviewHandler::SendPrinterList(const ListValue& printers) {
-  web_ui_->CallJavascriptFunction("setPrinters", printers);
+void PrintPreviewHandler::SendPrinterList(
+    const ListValue& printers,
+    const FundamentalValue& default_printer_index) {
+  web_ui_->CallJavascriptFunction("setPrinters", printers,
+                                  default_printer_index);
 }
 
 void PrintPreviewHandler::ProcessColorSetting(const DictionaryValue& settings) {

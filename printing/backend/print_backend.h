@@ -24,6 +24,7 @@ struct PrinterBasicInfo {
   std::string printer_name;
   std::string printer_description;
   int printer_status;
+  int is_default;
   std::map<std::string, std::string> options;
 };
 
