@@ -98,8 +98,7 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   // Start watching |path| for changes and notify |delegate| on each change.
   // Returns true if watch for |path| has been added successfully.
   virtual bool Watch(const FilePath& path,
-                     FilePathWatcher::Delegate* delegate,
-                     base::MessageLoopProxy* loop) OVERRIDE;
+                     FilePathWatcher::Delegate* delegate) OVERRIDE;
 
   // Cancel the watch. This unregisters the instance with InotifyReader.
   virtual void Cancel() OVERRIDE;
@@ -345,7 +344,7 @@ void FilePathWatcherImpl::OnFilePathChanged(
 
   // Update watches if a directory component of the |target_| path (dis)appears.
   if (is_directory && change_on_target_path && !UpdateWatches()) {
-    delegate_->OnError();
+    delegate_->OnFilePathError(target_);
     return;
   }
 
@@ -364,8 +363,7 @@ void FilePathWatcherImpl::OnFilePathChanged(
 }
 
 bool FilePathWatcherImpl::Watch(const FilePath& path,
-                                FilePathWatcher::Delegate* delegate,
-                                base::MessageLoopProxy*) {
+                                FilePathWatcher::Delegate* delegate) {
   DCHECK(target_.empty());
   DCHECK(MessageLoopForIO::current());
 

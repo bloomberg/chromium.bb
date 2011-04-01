@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/file_based_policy_loader.h"
 
+#include "base/compiler_specific.h"
 #include "content/browser/browser_thread.h"
 
 namespace {
@@ -39,12 +40,12 @@ class FileBasedPolicyWatcherDelegate : public FilePathWatcher::Delegate {
   virtual ~FileBasedPolicyWatcherDelegate() {}
 
   // FilePathWatcher::Delegate implementation:
-  void OnFilePathChanged(const FilePath& path) {
+  virtual void OnFilePathChanged(const FilePath& path) OVERRIDE {
     loader_->OnFilePathChanged(path);
   }
 
-  void OnError() {
-    loader_->OnError();
+  virtual void OnFilePathError(const FilePath& path) OVERRIDE {
+    loader_->OnFilePathError(path);
   }
 
  private:
@@ -58,8 +59,8 @@ void FileBasedPolicyLoader::OnFilePathChanged(
   Reload();
 }
 
-void FileBasedPolicyLoader::OnError() {
-  LOG(ERROR) << "FilePathWatcher on " << config_file_path().value()
+void FileBasedPolicyLoader::OnFilePathError(const FilePath& path) {
+  LOG(ERROR) << "FilePathWatcher on " << path.value()
              << " failed.";
 }
 
@@ -94,12 +95,10 @@ void FileBasedPolicyLoader::Reload() {
 void FileBasedPolicyLoader::InitOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   watcher_.reset(new FilePathWatcher);
-  if (!config_file_path().empty() &&
-      !watcher_->Watch(
-          config_file_path(),
-          new FileBasedPolicyWatcherDelegate(this),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI))) {
-    OnError();
+  const FilePath& path = config_file_path();
+  if (!path.empty() &&
+      !watcher_->Watch(path, new FileBasedPolicyWatcherDelegate(this))) {
+    OnFilePathError(path);
   }
 
   // There might have been changes to the directory in the time between

@@ -179,7 +179,6 @@ bool ServiceProcessState::Initialize() {
     return false;
   }
   state_->launchd_conf_.reset(dict);
-  state_->ui_message_loop_= base::MessageLoopProxy::CreateForCurrentThread();
   return true;
 }
 
@@ -323,9 +322,7 @@ bool ServiceProcessState::StateData::WatchExecutable() {
     LOG(ERROR) << "executable_watcher_.Init " << executable_path.value();
     return false;
   }
-  if (!executable_watcher_.Watch(executable_path,
-                                 delegate.release(),
-                                 ui_message_loop_)) {
+  if (!executable_watcher_.Watch(executable_path, delegate.release())) {
     LOG(ERROR) << "executable_watcher_.watch " << executable_path.value();
     return false;
   }

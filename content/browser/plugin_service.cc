@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -61,12 +62,12 @@ static void PurgePluginListCache(bool reload_pages) {
 #if defined(OS_LINUX)
 // Delegate class for monitoring directories.
 class PluginDirWatcherDelegate : public FilePathWatcher::Delegate {
-  virtual void OnFilePathChanged(const FilePath& path) {
+  virtual void OnFilePathChanged(const FilePath& path) OVERRIDE {
     VLOG(1) << "Watched path changed: " << path.value();
     // Make the plugin list update itself
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();
   }
-  virtual void OnError() {
+  virtual void OnFilePathError(const FilePath& path) OVERRIDE {
     // TODO(pastarmovj): Add some sensible error handling. Maybe silently
     // stopping the watcher would be enough. Or possibly restart it.
     NOTREACHED();
@@ -549,8 +550,7 @@ void PluginService::RegisterFilePathWatcher(
     FilePathWatcher *watcher,
     const FilePath& path,
     FilePathWatcher::Delegate* delegate) {
-  bool result = watcher->Watch(
-      path, delegate, base::MessageLoopProxy::CreateForCurrentThread());
+  bool result = watcher->Watch(path, delegate);
   DCHECK(result);
 }
 #endif

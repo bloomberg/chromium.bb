@@ -25,7 +25,7 @@ class FileBasedPolicyLoader : public AsynchronousPolicyLoader {
   virtual void Reload();
 
   void OnFilePathChanged(const FilePath& path);
-  void OnError();
+  void OnFilePathError(const FilePath& path);
 
  protected:
   // FileBasedPolicyLoader objects should only be deleted by
