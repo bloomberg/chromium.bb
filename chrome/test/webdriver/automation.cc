@@ -305,40 +305,6 @@ void Automation::Reload(int tab_id, bool* success) {
   *success = SendReloadJSONRequest(automation(), windex, tab_index);
 }
 
-void Automation::GetURL(int tab_id,
-                        std::string* url,
-                        bool* success) {
-  int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
-    return;
-  }
-
-  *success = SendGetTabURLJSONRequest(automation(), windex, tab_index, url);
-}
-
-void Automation::GetGURL(int tab_id,
-                         GURL* gurl,
-                         bool* success) {
-  std::string url;
-  GetURL(tab_id, &url, success);
-  if (*success)
-    *gurl = GURL(url);
-}
-
-void Automation::GetTabTitle(int tab_id,
-                             std::string* tab_title,
-                             bool* success) {
-  int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
-    return;
-  }
-
-  *success = SendGetTabTitleJSONRequest(
-      automation(), windex, tab_index, tab_title);
-}
-
 void Automation::GetCookies(const std::string& url,
                             ListValue** cookies,
                             bool* success) {

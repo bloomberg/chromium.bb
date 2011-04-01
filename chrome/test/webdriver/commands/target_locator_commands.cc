@@ -128,11 +128,13 @@ void SwitchFrameCommand::ExecutePost(Response* const response) {
       SET_WEBDRIVER_ERROR(response, "Could not switch to frame", code);
       return;
     }
-  } else if (IsNullParameter("id")) {
+  } else if (IsNullParameter("id") || !HasParameter("id")) {
+    // Treat null 'id' and no 'id' as the same.
+    // See http://code.google.com/p/selenium/issues/detail?id=1479.
     session_->SwitchToTopFrame();
   } else {
     SET_WEBDRIVER_ERROR(
-        response, "Missing or invalid 'id' parameter", kBadRequest);
+        response, "Invalid 'id' parameter", kBadRequest);
     return;
   }
   response->SetStatus(kSuccess);

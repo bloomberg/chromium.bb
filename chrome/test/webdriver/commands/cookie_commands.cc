@@ -39,9 +39,10 @@ bool CookieCommand::Init(Response* const response) {
                         kUnknownError);
     return false;
   }
-  if (!session_->GetURL(&current_url_)) {
+  ErrorCode code = session_->GetURL(&current_url_);
+  if (code != kSuccess) {
     SET_WEBDRIVER_ERROR(response, "Failed to query current page URL",
-                        kInternalServerError);
+                        code);
     return false;
   }
   return true;
@@ -234,9 +235,10 @@ bool NamedCookieCommand::Init(Response* const response) {
     return false;
   }
 
-  if (!session_->GetURL(&current_url_)) {
+  ErrorCode code = session_->GetURL(&current_url_);
+  if (code != kSuccess) {
     SET_WEBDRIVER_ERROR(response, "Failed to query current page URL",
-                        kInternalServerError);
+                        code);
     return false;
   }
 

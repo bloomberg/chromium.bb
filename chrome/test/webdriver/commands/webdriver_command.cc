@@ -33,6 +33,7 @@ bool WebDriverCommand::Init(Response* const response) {
   if (!session_->WaitForAllTabsToStopLoading()) {
     LOG(WARNING) << "Failed to wait for all tabs to stop loading";
   }
+  session_->SwitchToTopFrameIfCurrentFrameInvalid();
 
   response->SetField("sessionId", Value::CreateStringValue(session_id));
   return true;

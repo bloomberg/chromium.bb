@@ -78,9 +78,6 @@ class Automation {
   void GoForward(int tab_id, bool* success);
   void GoBack(int tab_id, bool* success);
   void Reload(int tab_id, bool* success);
-  void GetURL(int tab_id, std::string* url, bool* success);
-  void GetGURL(int tab_id, GURL* gurl, bool* success);
-  void GetTabTitle(int tab_id, std::string* tab_title, bool* success);
 
   void GetCookies(const std::string& url, ListValue** cookies, bool* success);
   void GetCookiesDeprecated(

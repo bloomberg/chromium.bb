@@ -37,6 +37,8 @@
     # This test is flaky, probably because of form submission race.
     '-form_handling_tests.FormHandlingTests.testShouldClickOnSubmitInputElements',
     'frame_switching_tests',
+    # Test is asserting the wrong thing.
+    '-frame_switching_tests.FrameSwitchingTest.testShouldReturnFrameTitleNotWindowTitle',
     'implicit_waits_tests',
     'page_loading_tests',
     # Flaky. crbug.com/77495.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,13 +22,10 @@ bool TitleCommand::DoesGet() {
 
 void TitleCommand::ExecuteGet(Response* const response) {
   std::string title;
-  if (!session_->GetTabTitle(&title)) {
-    SET_WEBDRIVER_ERROR(response, "GetTabTitle failed", kInternalServerError);
-    return;
-  }
-
-  response->SetValue(new StringValue(title));
-  response->SetStatus(kSuccess);
+  ErrorCode code = session_->GetTitle(&title);
+  if (code == kSuccess)
+    response->SetValue(new StringValue(title));
+  response->SetStatus(code);
 }
 
 bool TitleCommand::RequiresValidTab() {

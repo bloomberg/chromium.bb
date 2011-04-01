@@ -4,6 +4,8 @@
 
 #include "chrome/test/webdriver/frame_path.h"
 
+#include "base/string_split.h"
+
 namespace webdriver {
 
 FramePath::FramePath() : path_("") {}
@@ -51,6 +53,11 @@ FramePath FramePath::BaseName() const {
   if (i != std::string::npos)
     return FramePath(path_.substr(i + 1));
   return *this;
+}
+
+void FramePath::GetComponents(std::vector<std::string>* components) const {
+  if (IsSubframe())
+    base::SplitString(path_, '\n', components);
 }
 
 bool FramePath::IsRootFrame() const {

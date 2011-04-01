@@ -16,6 +16,7 @@
 #include "chrome/test/webdriver/automation.h"
 #include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/frame_path.h"
+#include "chrome/test/webdriver/web_element_id.h"
 
 class DictionaryValue;
 class FilePath;
@@ -35,8 +36,6 @@ class Size;
 
 namespace webdriver {
 
-class WebElementId;
-
 // A window ID and frame path combination that uniquely identifies a specific
 // frame within a session.
 struct FrameId {
@@ -52,6 +51,8 @@ struct FrameId {
 // A session manages its own lifetime.
 class Session {
  public:
+  enum Speed { kSlow, kMedium, kFast, kUnknown };
+
   // Adds this |Session| to the |SessionManager|. The session manages its own
   // lifetime. Do not call delete.
   Session();
@@ -95,9 +96,9 @@ class Session {
   bool GoForward();
   bool GoBack();
   bool Reload();
-  bool GetURL(GURL* url);
-  bool GetURL(std::string* url);
-  bool GetTabTitle(std::string* tab_title);
+  ErrorCode GetURL(std::string* url);
+  ErrorCode GetURL(GURL* url);
+  ErrorCode GetTitle(std::string* tab_title);
   bool GetScreenShot(std::string* png);
 
   bool GetCookies(const std::string& url, ListValue** cookies);
@@ -128,8 +129,12 @@ class Session {
   // be either an IFRAME or FRAME element.
   ErrorCode SwitchToFrameWithElement(const WebElementId& element);
 
-  // Switches the frame used by default to the topmost frame.
+  // Switches the target frame to the topmost frame.
   void SwitchToTopFrame();
+
+  // Switches the target frame to the topmost frame if the current frame is
+  // invalid.
+  void SwitchToTopFrameIfCurrentFrameInvalid();
 
   // Closes the current window. Returns true on success.
   // Note: The session will be deleted if this closes the last window in the
@@ -192,31 +197,29 @@ class Session {
                                const WebElementId& element,
                                bool* is_visible);
 
+  // Gets whether the element is currently enabled.
+  ErrorCode IsElementEnabled(const FrameId& frame_id,
+                             const WebElementId& element,
+                             bool* is_enabled);
+
   // Waits for all tabs to stop loading. Returns true on success.
   bool WaitForAllTabsToStopLoading();
 
   const std::string& id() const;
 
-  int implicit_wait() const;
-  void set_implicit_wait(const int& timeout);
-
-  enum Speed { kSlow, kMedium, kFast, kUnknown };
-  Speed speed() const;
-  void set_speed(Speed speed);
-
-  // Since screenshots can be very large when in base64 PNG format; the
-  // client is allowed to dyamically enable/disable screenshots on error
-  // during the lifetime of the session.
-  bool screenshot_on_error() const;
-  void set_screenshot_on_error(bool error);
-
   const FrameId& current_target() const;
 
-  inline bool use_native_events() const { return use_native_events_; }
+  void set_implicit_wait(const int& timeout);
+  int implicit_wait() const;
 
-  inline void set_use_native_events(bool use_native_events) {
-    use_native_events_ = use_native_events;
-  }
+  void set_speed(Speed speed);
+  Speed speed() const;
+
+  void set_screenshot_on_error(bool error);
+  bool screenshot_on_error() const;
+
+  void set_use_native_events(bool use_native_events);
+  bool use_native_events() const;
 
  private:
   void RunSessionTask(Task* task);
@@ -241,17 +244,29 @@ class Session {
                                     gfx::Point* location);
 
   const std::string id_;
+  FrameId current_target_;
 
   scoped_ptr<Automation> automation_;
   base::Thread thread_;
 
+  // Time (in ms) of how long to wait while searching for a single element.
   int implicit_wait_;
-  bool screenshot_on_error_;
+
   Speed speed_;
 
-  FrameId current_target_;
+  // Since screenshots can be very large when in base64 PNG format; the
+  // client is allowed to dyamically enable/disable screenshots on error
+  // during the lifetime of the session.
+  bool screenshot_on_error_;
 
+  // True if the session should simulate OS-level input. Currently only applies
+  // to keyboard input.
   bool use_native_events_;
+
+  // Vector of the |WebElementId|s for each frame of the current target frame
+  // path. The first refers to the first frame element in the root document.
+  // If the target frame is window.top, this will be empty.
+  std::vector<WebElementId> frame_elements_;
 
   DISALLOW_COPY_AND_ASSIGN(Session);
 };

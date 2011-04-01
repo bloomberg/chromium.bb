@@ -36,7 +36,6 @@
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/webdriver_key_converter.h"
-#include "chrome/test/webdriver/web_element_id.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/webdriver/atoms.h"
 #include "ui/gfx/point.h"
@@ -58,10 +57,10 @@ FrameId& FrameId::operator=(const FrameId& other) {
 
 Session::Session()
     : id_(GenerateRandomID()),
+      current_target_(FrameId(0, FramePath())),
       thread_(id_.c_str()),
       implicit_wait_(0),
       screenshot_on_error_(false),
-      current_target_(FrameId(0, FramePath())),
       use_native_events_(false) {
   SessionManager::GetInstance()->Add(this);
 }
@@ -183,10 +182,19 @@ ErrorCode Session::SendKeys(const WebElementId& element, const string16& keys) {
   if (!is_displayed)
     return kElementNotVisible;
 
-  // This method will first check if the element we want to send the keys to is
-  // already focused, if not it will try to focus on it first.
+  bool is_enabled = false;
+  code = IsElementEnabled(current_target_, element, &is_enabled);
+  if (code != kSuccess) {
+    LOG(ERROR) << "Failed to determine if element is enabled";
+    return code;
+  }
+  if (!is_enabled)
+    return kInvalidElementState;
+
   ListValue args;
   args.Append(element.ToValue());
+  // This method will first check if the element we want to send the keys to is
+  // already focused, if not it will try to focus on it first.
   // TODO(jleyba): Update this to use the correct atom.
   std::string script = "if(document.activeElement!=arguments[0]){"
                        "  if(document.activeElement)"
@@ -218,8 +226,6 @@ bool Session::NavigateToURL(const std::string& url) {
       current_target_.window_id,
       url,
       &success));
-  if (success)
-    current_target_.frame_path = FramePath();
   return success;
 }
 
@@ -230,8 +236,6 @@ bool Session::GoForward() {
       &Automation::GoForward,
       current_target_.window_id,
       &success));
-  if (success)
-    current_target_.frame_path = FramePath();
   return success;
 }
 
@@ -242,8 +246,6 @@ bool Session::GoBack() {
       &Automation::GoBack,
       current_target_.window_id,
       &success));
-  if (success)
-    current_target_.frame_path = FramePath();
   return success;
 }
 
@@ -254,42 +256,56 @@ bool Session::Reload() {
       &Automation::Reload,
       current_target_.window_id,
       &success));
-  if (success)
-    current_target_.frame_path = FramePath();
   return success;
 }
 
-bool Session::GetURL(std::string* url) {
-  bool success = false;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
-      &Automation::GetURL,
-      current_target_.window_id,
-      url,
-      &success));
-  return success;
+ErrorCode Session::GetURL(std::string* url) {
+  ListValue no_args;
+  Value* unscoped_value = NULL;
+  ErrorCode code = ExecuteScript(current_target_,
+                                 "return document.URL;",
+                                 &no_args,
+                                 &unscoped_value);
+  scoped_ptr<Value> value(unscoped_value);
+  if (code != kSuccess)
+    return code;
+  if (!value->GetAsString(url)) {
+    LOG(ERROR) << "Script returned non-string type";
+    return kUnknownError;
+  }
+  return kSuccess;
 }
 
-bool Session::GetURL(GURL* gurl) {
-  bool success = false;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
-      &Automation::GetGURL,
-      current_target_.window_id,
-      gurl,
-      &success));
-  return success;
+ErrorCode Session::GetURL(GURL* url) {
+  std::string url_spec;
+  ErrorCode code = GetURL(&url_spec);
+  if (code == kSuccess) {
+    *url = GURL(url_spec);
+  }
+  return code;
 }
 
-bool Session::GetTabTitle(std::string* tab_title) {
-  bool success = false;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
-      &Automation::GetTabTitle,
-      current_target_.window_id,
-      tab_title,
-      &success));
-  return success;
+ErrorCode Session::GetTitle(std::string* tab_title) {
+  std::string script =
+      "if (document.title)"
+      "  return document.title;"
+      "else"
+      "  return document.URL;";
+
+  ListValue no_args;
+  Value* unscoped_value = NULL;
+  ErrorCode code = ExecuteScript(current_target_,
+                                 script,
+                                 &no_args,
+                                 &unscoped_value);
+  scoped_ptr<Value> value(unscoped_value);
+  if (code != kSuccess)
+    return code;
+  if (!value->GetAsString(tab_title)) {
+    LOG(ERROR) << "Script returned non-string type";
+    return kUnknownError;
+  }
+  return kSuccess;
 }
 
 bool Session::MouseClick(const gfx::Point& click,
@@ -488,8 +504,9 @@ ErrorCode Session::SwitchToFrameWithNameOrId(const std::string& name_or_id) {
       "if (!frame) { return null; }"
       "xpath = frame.tagName == 'IFRAME' ? '/html/body//iframe'"
       "                                  : '/html/frameset/frame';"
-      "return xpath + sub('[@' + (frame.id == arg ? 'id' : 'name')"
-      "                   + '=\"$\"]');";
+      "frame_xpath = xpath + "
+      "              sub('[@' + (frame.id == arg ? 'id' : 'name') + '=\"$\"]');"
+      "return [frame, frame_xpath];";
   ListValue args;
   args.Append(new StringValue(name_or_id));
   return SwitchToFrameWithJavaScriptLocatedFrame(script, &args);
@@ -511,8 +528,10 @@ ErrorCode Session::SwitchToFrameWithIndex(int index) {
       "var frame = document.evaluate(xpath, document, null, "
       "XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
       "console.info(frame == null ? 'found nothing' : frame);"
-      "return frame == null ? null : ((frame.tagName == 'IFRAME' ? "
-      "    '/html/body//iframe' : '/html/frameset/frame') + index);";
+      "if (!frame) { return null; }"
+      "frame_xpath = ((frame.tagName == 'IFRAME' ? "
+      "    '/html/body//iframe' : '/html/frameset/frame') + index);"
+      "return [frame, frame_xpath];";
   ListValue args;
   args.Append(Value::CreateIntegerValue(index));
   return SwitchToFrameWithJavaScriptLocatedFrame(script, &args);
@@ -530,7 +549,7 @@ ErrorCode Session::SwitchToFrameWithElement(const WebElementId& element) {
       "}"
       "for (var i = 0; i < window.frames.length; i++) {"
       "  if (element.contentWindow == window.frames[i]) {"
-      "    return '(//iframe|//frame)[' + (i + 1) + ']';"
+      "    return [element, '(//iframe|//frame)[' + (i + 1) + ']'];"
       "  }"
       "}"
       "console.info('Frame is not connected to this DOM tree');"
@@ -542,7 +561,39 @@ ErrorCode Session::SwitchToFrameWithElement(const WebElementId& element) {
 }
 
 void Session::SwitchToTopFrame() {
+  frame_elements_.clear();
   current_target_.frame_path = FramePath();
+}
+
+void Session::SwitchToTopFrameIfCurrentFrameInvalid() {
+  std::vector<std::string> components;
+  current_target_.frame_path.GetComponents(&components);
+  if (frame_elements_.size() != components.size()) {
+    LOG(ERROR) << "Frame element vector out of sync with frame path";
+    return;
+  }
+  FramePath frame_path;
+  Value* unscoped_value;
+  // Start from the root path and check that each frame element that makes
+  // up the current frame target is valid by executing an empty script.
+  // This code should not execute script in any frame before making sure the
+  // frame element is valid, otherwise the automation hangs until a timeout.
+  for (size_t i = 0; i < frame_elements_.size(); ++i) {
+    FrameId frame_id(current_target_.window_id, frame_path);
+    ListValue args;
+    args.Append(frame_elements_[i].ToValue());
+    ErrorCode code = ExecuteScript(
+        frame_id, "", &args, &unscoped_value);
+
+    scoped_ptr<Value> value(unscoped_value);
+    if (code == kStaleElementReference) {
+      SwitchToTopFrame();
+    } else if (code != kSuccess) {
+      LOG(WARNING) << "Unable to determine if target frame should be reset";
+      return;
+    }
+    frame_path = frame_path.Append(components[i]);
+  }
 }
 
 bool Session::CloseWindow() {
@@ -764,6 +815,26 @@ ErrorCode Session::IsElementDisplayed(const FrameId& frame_id,
   return kSuccess;
 }
 
+ErrorCode Session::IsElementEnabled(const FrameId& frame_id,
+                                    const WebElementId& element,
+                                    bool* is_enabled) {
+  std::string script = base::StringPrintf(
+      "return (%s).apply(null, arguments);", atoms::IS_ENABLED);
+  ListValue args;
+  args.Append(element.ToValue());
+
+  Value* unscoped_result = NULL;
+  ErrorCode code = ExecuteScript(frame_id, script, &args, &unscoped_result);
+  scoped_ptr<Value> result(unscoped_result);
+  if (code != kSuccess)
+    return code;
+  if (!result->GetAsBoolean(is_enabled)) {
+    LOG(ERROR) << "IsEnabled atom returned non boolean";
+    return kUnknownError;
+  }
+  return kSuccess;
+}
+
 bool Session::WaitForAllTabsToStopLoading() {
   if (!automation_.get())
     return true;
@@ -775,8 +846,44 @@ bool Session::WaitForAllTabsToStopLoading() {
   return success;
 }
 
+const std::string& Session::id() const {
+  return id_;
+}
+
 const FrameId& Session::current_target() const {
   return current_target_;
+}
+
+void Session::set_implicit_wait(const int& timeout) {
+  implicit_wait_ = timeout > 0 ? timeout : 0;
+}
+
+int Session::implicit_wait() const {
+  return implicit_wait_;
+}
+
+void Session::set_speed(Speed speed) {
+  speed_ = speed;
+}
+
+Session::Speed Session::speed() const {
+  return speed_;
+}
+
+void Session::set_screenshot_on_error(bool error) {
+  screenshot_on_error_ = error;
+}
+
+bool Session::screenshot_on_error() const {
+  return screenshot_on_error_;
+}
+
+void Session::set_use_native_events(bool use_native_events) {
+  use_native_events_ = use_native_events;
+}
+
+bool Session::use_native_events() const {
+  return use_native_events_;
 }
 
 void Session::RunSessionTask(Task* task) {
@@ -869,12 +976,26 @@ ErrorCode Session::SwitchToFrameWithJavaScriptLocatedFrame(
   scoped_ptr<Value> result(unscoped_result);
   if (code != kSuccess)
     return code;
+
+  ListValue* frame_and_xpath_list;
+  if (!result->GetAsList(&frame_and_xpath_list))
+    return kNoSuchFrame;
+  DictionaryValue* element_dict;
   std::string xpath;
-  if (result->GetAsString(&xpath)) {
-    current_target_.frame_path = current_target_.frame_path.Append(xpath);
-    return kSuccess;
+  if (!frame_and_xpath_list->GetDictionary(0, &element_dict) ||
+      !frame_and_xpath_list->GetString(1, &xpath)) {
+    LOG(ERROR) << "Frame finding script did not return correct type";
+    return kUnknownError;
   }
-  return kNoSuchFrame;
+  WebElementId new_frame_element(element_dict);
+  if (!new_frame_element.is_valid()) {
+    LOG(ERROR) << "Frame finding script did not return a frame element";
+    return kUnknownError;
+  }
+
+  frame_elements_.push_back(new_frame_element);
+  current_target_.frame_path = current_target_.frame_path.Append(xpath);
+  return kSuccess;
 }
 
 ErrorCode Session::FindElementsHelper(const FrameId& frame_id,
@@ -929,7 +1050,8 @@ ErrorCode Session::FindElementsHelper(const FrameId& frame_id,
     }
     int64 elapsed_time = (base::Time::Now() - start_time).InMilliseconds();
     done = done || elapsed_time > implicit_wait_;
-    base::PlatformThread::Sleep(50);  // Prevent a busy loop that eats the cpu.
+    if (!done)
+      base::PlatformThread::Sleep(50);  // Prevent a busy loop.
   }
 
   // Parse the results.
@@ -1023,34 +1145,6 @@ bool Session::GetScreenShot(std::string* png) {
     success = file_util::ReadFileToString(path, png);
   }
   return success;
-}
-
-void Session::set_screenshot_on_error(bool error) {
-  screenshot_on_error_ = error;
-}
-
-bool Session::screenshot_on_error() const {
-  return screenshot_on_error_;
-}
-
-const std::string& Session::id() const {
-  return id_;
-}
-
-int Session::implicit_wait() const {
-  return implicit_wait_;
-}
-
-void Session::set_implicit_wait(const int& timeout) {
-  implicit_wait_ = timeout > 0 ? timeout : 0;
-}
-
-Session::Speed Session::speed() const {
-  return speed_;
-}
-
-void Session::set_speed(Speed speed) {
-  speed_ = speed;
 }
 
 }  // namespace webdriver

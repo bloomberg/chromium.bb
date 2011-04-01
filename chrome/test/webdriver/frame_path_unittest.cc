@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <vector>
+
 #include "chrome/test/webdriver/frame_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,6 +33,24 @@ TEST(FramePathTest, BaseName) {
   EXPECT_EQ("frame2", path.BaseName().value());
   EXPECT_EQ("frame1", path.Parent().BaseName().value());
   EXPECT_EQ("", path.Parent().Parent().BaseName().value());
+}
+
+TEST(FramePathTest, GetComponents) {
+  FramePath path = FramePath("frame1").Append("frame2");
+  std::vector<std::string> components;
+  path.GetComponents(&components);
+  ASSERT_EQ(2u, components.size());
+  EXPECT_EQ("frame1", components[0]);
+  EXPECT_EQ("frame2", components[1]);
+
+  components.clear();
+  path.Parent().GetComponents(&components);
+  ASSERT_EQ(1u, components.size());
+  EXPECT_EQ("frame1", components[0]);
+
+  components.clear();
+  path.Parent().Parent().GetComponents(&components);
+  EXPECT_EQ(0u, components.size());
 }
 
 TEST(FramePathTest, IsRootFrame) {

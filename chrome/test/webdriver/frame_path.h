@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace webdriver {
 
@@ -34,6 +35,9 @@ class FramePath {
 
   // Gets the last path component.
   FramePath BaseName() const;
+
+  // Gets a vector of all the components of the frame path.
+  void GetComponents(std::vector<std::string>* components) const;
 
   // Returns whether the path refers to the root frame.
   bool IsRootFrame() const;
