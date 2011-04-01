@@ -20,12 +20,16 @@ node = env.PPAPIBrowserTester(
            env.File('multiarch.js'),
            env.File('multiarch.nmf'),
           ],
+    # The prebuilt nexes should NOT be wrapped in env.File, otherwise they will
+    # become dependancies.  When they become dependancies, this will trigger
+    # AddPrebuiltBinaryToRepository and cause the nexe to be built and installed
+    # into the prebuilt directory.
     map_files=[('x86/srpc_hw.nexe',
-                 env.File('${SCONSTRUCT_DIR}/tests/prebuilt/x86/srpc_hw.nexe')),
+                 '${SCONSTRUCT_DIR}/tests/prebuilt/x86/srpc_hw.nexe'),
                ('x64/srpc_hw.nexe',
-                 env.File('${SCONSTRUCT_DIR}/tests/prebuilt/x64/srpc_hw.nexe')),
+                 '${SCONSTRUCT_DIR}/tests/prebuilt/x64/srpc_hw.nexe'),
                ('arm/srpc_hw.nexe',
-                 env.File('${SCONSTRUCT_DIR}/tests/prebuilt/arm/srpc_hw.nexe')),
+                 '${SCONSTRUCT_DIR}/tests/prebuilt/arm/srpc_hw.nexe'),
               ],
     )
 
