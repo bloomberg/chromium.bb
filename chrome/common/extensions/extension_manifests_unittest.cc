@@ -364,6 +364,8 @@ TEST_F(ExtensionManifestTest, DevToolsExtensions) {
   extension = LoadAndExpectSuccess("devtools_extension.json");
   EXPECT_EQ(extension->url().spec() + "devtools.html",
             extension->devtools_url().spec());
+  EXPECT_TRUE(extension->HasEffectiveAccessToAllHosts());
+
   *CommandLine::ForCurrentProcess() = old_command_line;
 }
 

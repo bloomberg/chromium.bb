@@ -2372,6 +2372,16 @@ bool Extension::HasHostPermission(const GURL& url) const {
 }
 
 void Extension::InitEffectiveHostPermissions() {
+  // Some APIs effectively grant access to every site.  New ones should be
+  // added here.  (I'm looking at you, network API)
+  if (HasApiPermission(api_permissions_, kProxyPermission) ||
+      !devtools_url_.is_empty()) {
+    URLPattern all_urls(URLPattern::SCHEME_ALL);
+    all_urls.set_match_all_urls(true);
+    effective_host_permissions_.AddPattern(all_urls);
+    return;
+  }
+
   for (URLPatternList::const_iterator host = host_permissions().begin();
        host != host_permissions().end(); ++host)
     effective_host_permissions_.AddPattern(*host);
@@ -2441,15 +2451,11 @@ bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
 bool Extension::HasEffectiveAccessToAllHosts(
     const ExtensionExtent& effective_host_permissions,
     const std::set<std::string>& api_permissions) {
-  // Some APIs effectively grant access to every site.  New ones should be
-  // added here.  (I'm looking at you, network API)
-  if (HasApiPermission(api_permissions, kProxyPermission))
-    return true;
-
   const URLPatternList patterns = effective_host_permissions.patterns();
   for (URLPatternList::const_iterator host = patterns.begin();
        host != patterns.end(); ++host) {
-    if (host->match_subdomains() && host->host().empty())
+    if (host->match_all_urls() ||
+        (host->match_subdomains() && host->host().empty()))
       return true;
   }
 
