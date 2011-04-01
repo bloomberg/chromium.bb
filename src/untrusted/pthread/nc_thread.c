@@ -1,9 +1,8 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
-
 
 /*
  * Native Client threads library
@@ -698,10 +697,6 @@ int pthread_detach(pthread_t thread_id) {
 ret:
   pthread_mutex_unlock(&__nc_thread_management_lock);
   return retval;
-}
-
-int nacl_thread_nice(const int nice) {
-  return NACL_SYSCALL(thread_nice)(nice);
 }
 
 int pthread_kill(pthread_t thread_id,

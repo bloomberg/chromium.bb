@@ -1,9 +1,8 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
-
 
 /** @file
  * Defines the API in the
@@ -469,22 +468,6 @@ extern int pthread_join(pthread_t th, void **thread_return);
 * @return 0 on success, non-zero error code otherwise.
 */
 extern int pthread_detach(pthread_t th);
-
-/** @nqPosix
-* Indicates that the calling thread is to receive special consideration
-* by the scheduler as indicated by parameter nice. Suggested values are
-* NICE_REALTIME, NICE_NORMAL, NICE_BACKGROUND, defined above. The
-* implementation of this subroutine is platform-specific. Implementations
-* should respect the sign of the nice parameter, and may respect the
-* magnitude.
-*
-* @linkPthread
-*
-* @param nice Nice value
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int nacl_thread_nice(const int nice);
 
 /** @nqPosix
 * Sends a signal to a thread.  (Currently only a stub implementation.)

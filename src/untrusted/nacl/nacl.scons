@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
+# Copyright 2011 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -49,6 +49,21 @@ sources_for_nacl_extensions = [
     'imc_recvmsg.c',
     'imc_sendmsg.c',
     'imc_socketpair.c',
+    'nacl_cond_create.c',
+    'nacl_cond_signal.c',
+    'nacl_cond_broadcast.c',
+    'nacl_cond_wait.c',
+    'nacl_cond_timed_wait_abs.c',
+    'nacl_mutex_create.c',
+    'nacl_mutex_lock.c',
+    'nacl_mutex_trylock.c',
+    'nacl_mutex_unlock.c',
+    'nacl_sem_create.c',
+    'nacl_sem_wait.c',
+    'nacl_sem_post.c',
+    'nacl_thread_create.c',
+    'nacl_thread_exit.c',
+    'nacl_thread_nice.c',
     'nameservice.c',
     'null.c',
     'srpc_init.c',
@@ -70,3 +85,5 @@ else:
 env.ComponentLibrary('libnacl', sources)
 
 env.AddLibraryToSdk(['libnacl'])
+header_install = env.AddHeaderToSdk(['nacl_thread.h'])
+env.Requires('libnacl', header_install)
