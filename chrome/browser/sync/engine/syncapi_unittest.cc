@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
+#include "chrome/browser/sync/engine/http_post_provider_interface.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/js_arg_list.h"

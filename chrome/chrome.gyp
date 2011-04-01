@@ -445,6 +445,7 @@
       'type': '<(library)',
       'sources': [
 	'browser/sync/engine/http_post_provider_factory.h',
+	'browser/sync/engine/http_post_provider_interface.h',
         'browser/sync/engine/syncapi.cc',
         'browser/sync/engine/syncapi.h',
       ],
