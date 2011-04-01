@@ -9,15 +9,21 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/system_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "content/browser/browser_thread.h"
+
+using chromeos::CrosLibrary;
+using chromeos::NetworkLibrary;
 
 namespace {
 
 // Key which corresponds to the HWID setting.
 const char kPropertyHWID[] = "hwid";
+
+// Key which corresponds to the home provider property.
+const char kPropertyHomeProvider[] = "homeProvider";
 
 // Path to OEM partner startup customization manifest.
 const char kStartupCustomizationManifestPath[] =
@@ -97,6 +103,21 @@ bool CustomizationData::GetValue(const std::string& property_name,
   DCHECK(CalledOnValidThread());
   if (property_name == kPropertyHWID) {
     (*value) = document_.GetHWID();
+  } else if (property_name == kPropertyHomeProvider) {
+    (*value) = "";
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
+      const chromeos::NetworkDevice* device = netlib->FindCellularDevice();
+      if (device) {
+        DLOG(INFO) << "Taking the home provider of  " << device->name()
+                   << " (" << device->device_path() << ")";
+        (*value) = device->home_provider();
+      } else {
+        LOG(WARNING) << "Can't find cellular device.";
+      }
+    } else {
+      LOG(ERROR) << "CrosLibrary can't be loaded.";
+    }
   } else {
     LOG(ERROR) << "Unknown property request: " << property_name;
     return false;

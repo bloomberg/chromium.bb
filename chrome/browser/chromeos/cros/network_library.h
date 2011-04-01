@@ -165,6 +165,7 @@ class NetworkDevice {
   const std::string& hardware_revision() const { return hardware_revision_; }
   const std::string& last_update() const { return last_update_; }
   const unsigned int prl_version() const { return PRL_version_; }
+  const std::string& home_provider() const { return home_provider_; }
 
  private:
   bool ParseValue(int index, const Value* value);
@@ -177,6 +178,7 @@ class NetworkDevice {
   bool scanning_;
   // Cellular specific device info.
   std::string carrier_;
+  std::string home_provider_;
   std::string MEID_;
   std::string IMEI_;
   std::string IMSI_;
@@ -778,6 +780,10 @@ class NetworkLibrary {
   // Return a pointer to the device, if it exists, or NULL.
   virtual const NetworkDevice* FindNetworkDeviceByPath(
       const std::string& path) const = 0;
+
+  // Returns device with TYPE_CELLULAR. Returns NULL if such a device doesn't
+  // exist.
+  virtual const NetworkDevice* FindCellularDevice() const = 0;
 
   // Return a pointer to the network, if it exists, or NULL.
   // NOTE: Never store these results, store service paths instead.

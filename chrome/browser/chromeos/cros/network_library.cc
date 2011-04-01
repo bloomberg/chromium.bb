@@ -128,6 +128,7 @@ const char* kPasswordProperty = "password";
 // Flimflam device info property names.
 const char* kScanningProperty = "Scanning";
 const char* kCarrierProperty = "Cellular.Carrier";
+const char* kHomeProviderProperty = "Cellular.HomeProvider";
 const char* kMeidProperty = "Cellular.MEID";
 const char* kImeiProperty = "Cellular.IMEI";
 const char* kImsiProperty = "Cellular.IMSI";
@@ -360,6 +361,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_FAVORITE,
   PROPERTY_INDEX_FIRMWARE_REVISION,
   PROPERTY_INDEX_HARDWARE_REVISION,
+  PROPERTY_INDEX_HOME_PROVIDER,
   PROPERTY_INDEX_IDENTITY,
   PROPERTY_INDEX_IMEI,
   PROPERTY_INDEX_IMSI,
@@ -429,6 +431,7 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kFavoriteProperty, PROPERTY_INDEX_FAVORITE },
   { kFirmwareRevisionProperty, PROPERTY_INDEX_FIRMWARE_REVISION },
   { kHardwareRevisionProperty, PROPERTY_INDEX_HARDWARE_REVISION },
+  { kHomeProviderProperty, PROPERTY_INDEX_HOME_PROVIDER },
   { kIdentityProperty, PROPERTY_INDEX_IDENTITY },
   { kImeiProperty, PROPERTY_INDEX_IMEI },
   { kImsiProperty, PROPERTY_INDEX_IMSI },
@@ -733,6 +736,8 @@ bool NetworkDevice::ParseValue(int index, const Value* value) {
       return value->GetAsBoolean(&scanning_);
     case PROPERTY_INDEX_CARRIER:
       return value->GetAsString(&carrier_);
+    case PROPERTY_INDEX_HOME_PROVIDER:
+      return value->GetAsString(&home_provider_);
     case PROPERTY_INDEX_MEID:
       return value->GetAsString(&MEID_);
     case PROPERTY_INDEX_IMEI:
@@ -1358,7 +1363,6 @@ std::string CellularNetwork::GetRoamingStateString() const {
   }
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // WifiNetwork
 
@@ -1812,6 +1816,15 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (iter != device_map_.end())
       return iter->second;
     LOG(WARNING) << "Device path not found: " << path;
+    return NULL;
+  }
+
+  virtual const NetworkDevice* FindCellularDevice() const {
+    for (NetworkDeviceMap::const_iterator iter = device_map_.begin();
+         iter != device_map_.end(); ++iter) {
+      if (iter->second->type() == TYPE_CELLULAR)
+        return iter->second;
+    }
     return NULL;
   }
 
@@ -3381,6 +3394,9 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
 
   virtual const NetworkDevice* FindNetworkDeviceByPath(
       const std::string& path) const { return NULL; }
+  virtual const NetworkDevice* FindCellularDevice() const {
+    return NULL;
+  }
   virtual Network* FindNetworkByPath(
       const std::string& path) const { return NULL; }
   virtual WifiNetwork* FindWifiNetworkByPath(
