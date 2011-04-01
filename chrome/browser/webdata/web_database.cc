@@ -17,60 +17,11 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
-#include "chrome/browser/history/history_database.h"
-#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/webdata/autofill_util.h"
-#include "chrome/browser/webdata/keyword_table.h"
 #include "chrome/common/guid.h"
 #include "content/common/notification_service.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/codec/png_codec.h"
-#include "webkit/glue/password_form.h"
-
-// Encryptor is now in place for Windows and Mac.  The Linux implementation
-// currently obfuscates only.  Mac Encryptor implementation can block the
-// active thread while presenting UI to the user.  See |encryptor_mac.mm| for
-// details.
-// For details on the Linux work see:
-//   http://crbug.com/25404
-//
-////////////////////////////////////////////////////////////////////////////////
-//
-// Schema
-//   Note: The database stores time in seconds, UTC.
-//
-// logins
-//   origin_url
-//   action_url
-//   username_element
-//   username_value
-//   password_element
-//   password_value
-//   submit_element
-//   signon_realm        The authority (scheme, host, port).
-//   ssl_valid           SSL status of page containing the form at first
-//                       impression.
-//   preferred           MRU bit.
-//   date_created        This column was added after logins support. "Legacy"
-//                       entries have a value of 0.
-//   blacklisted_by_user Tracks whether or not the user opted to 'never
-//                       remember'
-//                       passwords for this site.
-//
-// web_app_icons
-//   url         URL of the web app.
-//   width       Width of the image.
-//   height      Height of the image.
-//   image       PNG encoded image data.
-//
-// web_apps
-//   url                 URL of the web app.
-//   has_all_images      Do we have all the images?
-//
-////////////////////////////////////////////////////////////////////////////////
 
 using base::Time;
-using webkit_glue::PasswordForm;
 
 namespace {
 
@@ -80,38 +31,6 @@ namespace {
 const int kCurrentVersionNumber = 36;
 const int kCompatibleVersionNumber = 36;
 
-void InitPasswordFormFromStatement(PasswordForm* form, sql::Statement* s) {
-  std::string tmp;
-  string16 decrypted_password;
-  tmp = s->ColumnString(0);
-  form->origin = GURL(tmp);
-  tmp = s->ColumnString(1);
-  form->action = GURL(tmp);
-  form->username_element = s->ColumnString16(2);
-  form->username_value = s->ColumnString16(3);
-  form->password_element = s->ColumnString16(4);
-
-  int encrypted_password_len = s->ColumnByteLength(5);
-  std::string encrypted_password;
-  if (encrypted_password_len) {
-    encrypted_password.resize(encrypted_password_len);
-    memcpy(&encrypted_password[0], s->ColumnBlob(5), encrypted_password_len);
-    Encryptor::DecryptString16(encrypted_password, &decrypted_password);
-  }
-
-  form->password_value = decrypted_password;
-  form->submit_element = s->ColumnString16(6);
-  tmp = s->ColumnString(7);
-  form->signon_realm = tmp;
-  form->ssl_valid = (s->ColumnInt(8) > 0);
-  form->preferred = (s->ColumnInt(9) > 0);
-  form->date_created = Time::FromTimeT(s->ColumnInt64(10));
-  form->blacklisted_by_user = (s->ColumnInt(11) > 0);
-  int scheme_int = s->ColumnInt(12);
-  DCHECK((scheme_int >= 0) && (scheme_int <= PasswordForm::SCHEME_OTHER));
-  form->scheme = static_cast<PasswordForm::Scheme>(scheme_int);
-}
-
 // TODO(dhollowa): Find a common place for this.  It is duplicated in
 // personal_data_manager.cc.
 template<typename T>
@@ -119,7 +38,7 @@ T* address_of(T& v) {
   return &v;
 }
 
-}  // namespace
+}  // anonymous namespace
 
 WebDatabase::WebDatabase() {}
 
@@ -139,6 +58,22 @@ AutofillTable* WebDatabase::GetAutofillTable() {
 
 KeywordTable* WebDatabase::GetKeywordTable() {
   return keyword_table_.get();
+}
+
+LoginsTable* WebDatabase::GetLoginsTable() {
+  return logins_table_.get();
+}
+
+TokenServiceTable* WebDatabase::GetTokenServiceTable() {
+  return token_service_table_.get();
+}
+
+WebAppsTable* WebDatabase::GetWebAppsTable() {
+  return web_apps_table_.get();
+}
+
+sql::Connection* WebDatabase::GetSQLConnection() {
+  return &db_;
 }
 
 sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
@@ -182,11 +117,14 @@ sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
   // Create the tables.
   autofill_table_.reset(new AutofillTable(&db_, &meta_table_));
   keyword_table_.reset(new KeywordTable(&db_, &meta_table_));
+  logins_table_.reset(new LoginsTable(&db_, &meta_table_));
+  token_service_table_.reset(new TokenServiceTable(&db_, &meta_table_));
+  web_apps_table_.reset(new WebAppsTable(&db_, &meta_table_));
 
   // Initialize the tables.
   if (!keyword_table_->Init() || !autofill_table_->Init() ||
-      !InitLoginsTable() || !InitWebAppIconsTable() || !InitWebAppsTable() ||
-      !InitTokenServiceTable()) {
+      !logins_table_->Init() || !web_apps_table_->Init() ||
+      !token_service_table_->Init()) {
     LOG(WARNING) << "Unable to initialize the web database.";
     return sql::INIT_FAILURE;
   }
@@ -199,441 +137,6 @@ sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
     return migration_status;
 
   return transaction.Commit() ? sql::INIT_OK : sql::INIT_FAILURE;
-}
-
-bool WebDatabase::SetWebAppImage(const GURL& url, const SkBitmap& image) {
-  // Don't bother with a cached statement since this will be a relatively
-  // infrequent operation.
-  sql::Statement s(db_.GetUniqueStatement(
-      "INSERT OR REPLACE INTO web_app_icons "
-      "(url, width, height, image) VALUES (?, ?, ?, ?)"));
-  if (!s)
-    return false;
-
-  std::vector<unsigned char> image_data;
-  gfx::PNGCodec::EncodeBGRASkBitmap(image, false, &image_data);
-
-  s.BindString(0, history::HistoryDatabase::GURLToDatabaseURL(url));
-  s.BindInt(1, image.width());
-  s.BindInt(2, image.height());
-  s.BindBlob(3, &image_data.front(), static_cast<int>(image_data.size()));
-  return s.Run();
-}
-
-bool WebDatabase::GetWebAppImages(const GURL& url,
-                                  std::vector<SkBitmap>* images) {
-  sql::Statement s(db_.GetUniqueStatement(
-      "SELECT image FROM web_app_icons WHERE url=?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-  s.BindString(0, history::HistoryDatabase::GURLToDatabaseURL(url));
-  while (s.Step()) {
-    SkBitmap image;
-    int col_bytes = s.ColumnByteLength(0);
-    if (col_bytes > 0) {
-      if (gfx::PNGCodec::Decode(
-              reinterpret_cast<const unsigned char*>(s.ColumnBlob(0)),
-              col_bytes, &image)) {
-        images->push_back(image);
-      } else {
-        // Should only have valid image data in the db.
-        NOTREACHED();
-      }
-    }
-  }
-  return true;
-}
-
-bool WebDatabase::SetWebAppHasAllImages(const GURL& url,
-                                        bool has_all_images) {
-  sql::Statement s(db_.GetUniqueStatement(
-      "INSERT OR REPLACE INTO web_apps (url, has_all_images) VALUES (?, ?)"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-  s.BindString(0, history::HistoryDatabase::GURLToDatabaseURL(url));
-  s.BindInt(1, has_all_images ? 1 : 0);
-  return s.Run();
-}
-
-bool WebDatabase::GetWebAppHasAllImages(const GURL& url) {
-  sql::Statement s(db_.GetUniqueStatement(
-      "SELECT has_all_images FROM web_apps WHERE url=?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-  s.BindString(0, history::HistoryDatabase::GURLToDatabaseURL(url));
-  return (s.Step() && s.ColumnInt(0) == 1);
-}
-
-bool WebDatabase::RemoveWebApp(const GURL& url) {
-  sql::Statement delete_s(db_.GetUniqueStatement(
-      "DELETE FROM web_app_icons WHERE url = ?"));
-  if (!delete_s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-  delete_s.BindString(0, history::HistoryDatabase::GURLToDatabaseURL(url));
-  if (!delete_s.Run())
-    return false;
-
-  sql::Statement delete_s2(db_.GetUniqueStatement(
-      "DELETE FROM web_apps WHERE url = ?"));
-  if (!delete_s2) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-  delete_s2.BindString(0, history::HistoryDatabase::GURLToDatabaseURL(url));
-  return delete_s2.Run();
-}
-
-bool WebDatabase::RemoveAllTokens() {
-  sql::Statement s(db_.GetUniqueStatement(
-      "DELETE FROM token_service"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
-  return s.Run();
-}
-
-bool WebDatabase::SetTokenForService(const std::string& service,
-                                     const std::string& token) {
-  // Don't bother with a cached statement since this will be a relatively
-  // infrequent operation.
-  sql::Statement s(db_.GetUniqueStatement(
-      "INSERT OR REPLACE INTO token_service "
-      "(service, encrypted_token) VALUES (?, ?)"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
-  std::string encrypted_token;
-
-  bool encrypted = Encryptor::EncryptString(token, &encrypted_token);
-  if (!encrypted) {
-    return false;
-  }
-
-  s.BindString(0, service);
-  s.BindBlob(1, encrypted_token.data(),
-             static_cast<int>(encrypted_token.length()));
-  return s.Run();
-}
-
-bool WebDatabase::GetAllTokens(std::map<std::string, std::string>* tokens) {
-  sql::Statement s(db_.GetUniqueStatement(
-      "SELECT service, encrypted_token FROM token_service"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
-  while (s.Step()) {
-    std::string encrypted_token;
-    std::string decrypted_token;
-    std::string service;
-    service = s.ColumnString(0);
-    bool entry_ok = !service.empty() &&
-                    s.ColumnBlobAsString(1, &encrypted_token);
-    if (entry_ok) {
-      Encryptor::DecryptString(encrypted_token, &decrypted_token);
-      (*tokens)[service] = decrypted_token;
-    } else {
-      NOTREACHED();
-      return false;
-    }
-  }
-  return true;
-}
-
-bool WebDatabase::InitLoginsTable() {
-  if (!db_.DoesTableExist("logins")) {
-    if (!db_.Execute("CREATE TABLE logins ("
-                     "origin_url VARCHAR NOT NULL, "
-                     "action_url VARCHAR, "
-                     "username_element VARCHAR, "
-                     "username_value VARCHAR, "
-                     "password_element VARCHAR, "
-                     "password_value BLOB, "
-                     "submit_element VARCHAR, "
-                     "signon_realm VARCHAR NOT NULL,"
-                     "ssl_valid INTEGER NOT NULL,"
-                     "preferred INTEGER NOT NULL,"
-                     "date_created INTEGER NOT NULL,"
-                     "blacklisted_by_user INTEGER NOT NULL,"
-                     "scheme INTEGER NOT NULL,"
-                     "UNIQUE "
-                     "(origin_url, username_element, "
-                     "username_value, password_element, "
-                     "submit_element, signon_realm))")) {
-      NOTREACHED();
-      return false;
-    }
-    if (!db_.Execute("CREATE INDEX logins_signon ON logins (signon_realm)")) {
-      NOTREACHED();
-      return false;
-    }
-  }
-
-#if defined(OS_WIN)
-  if (!db_.DoesTableExist("ie7_logins")) {
-    if (!db_.Execute("CREATE TABLE ie7_logins ("
-                     "url_hash VARCHAR NOT NULL, "
-                     "password_value BLOB, "
-                     "date_created INTEGER NOT NULL,"
-                     "UNIQUE "
-                     "(url_hash))")) {
-      NOTREACHED();
-      return false;
-    }
-    if (!db_.Execute("CREATE INDEX ie7_logins_hash ON "
-                     "ie7_logins (url_hash)")) {
-      NOTREACHED();
-      return false;
-    }
-  }
-#endif
-
-  return true;
-}
-
-bool WebDatabase::InitWebAppIconsTable() {
-  if (!db_.DoesTableExist("web_app_icons")) {
-    if (!db_.Execute("CREATE TABLE web_app_icons ("
-                     "url LONGVARCHAR,"
-                     "width int,"
-                     "height int,"
-                     "image BLOB, UNIQUE (url, width, height))")) {
-      NOTREACHED();
-      return false;
-    }
-  }
-  return true;
-}
-
-bool WebDatabase::InitWebAppsTable() {
-  if (!db_.DoesTableExist("web_apps")) {
-    if (!db_.Execute("CREATE TABLE web_apps ("
-                     "url LONGVARCHAR UNIQUE,"
-                     "has_all_images INTEGER NOT NULL)")) {
-      NOTREACHED();
-      return false;
-    }
-    if (!db_.Execute("CREATE INDEX web_apps_url_index ON web_apps (url)")) {
-      NOTREACHED();
-      return false;
-    }
-  }
-  return true;
-}
-
-bool WebDatabase::InitTokenServiceTable() {
-  if (!db_.DoesTableExist("token_service")) {
-    if (!db_.Execute("CREATE TABLE token_service ("
-                     "service VARCHAR PRIMARY KEY NOT NULL,"
-                     "encrypted_token BLOB)")) {
-      NOTREACHED();
-      return false;
-    }
-  }
-  return true;
-}
-
-bool WebDatabase::AddLogin(const PasswordForm& form) {
-  sql::Statement s(db_.GetUniqueStatement(
-      "INSERT OR REPLACE INTO logins "
-      "(origin_url, action_url, username_element, username_value, "
-      " password_element, password_value, submit_element, "
-      " signon_realm, ssl_valid, preferred, date_created, "
-      " blacklisted_by_user, scheme) "
-      "VALUES "
-      "(?,?,?,?,?,?,?,?,?,?,?,?,?)"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
-  std::string encrypted_password;
-  s.BindString(0, form.origin.spec());
-  s.BindString(1, form.action.spec());
-  s.BindString16(2, form.username_element);
-  s.BindString16(3, form.username_value);
-  s.BindString16(4, form.password_element);
-  Encryptor::EncryptString16(form.password_value, &encrypted_password);
-  s.BindBlob(5, encrypted_password.data(),
-             static_cast<int>(encrypted_password.length()));
-  s.BindString16(6, form.submit_element);
-  s.BindString(7, form.signon_realm);
-  s.BindInt(8, form.ssl_valid);
-  s.BindInt(9, form.preferred);
-  s.BindInt64(10, form.date_created.ToTimeT());
-  s.BindInt(11, form.blacklisted_by_user);
-  s.BindInt(12, form.scheme);
-  if (!s.Run()) {
-    NOTREACHED();
-    return false;
-  }
-  return true;
-}
-
-bool WebDatabase::UpdateLogin(const PasswordForm& form) {
-  sql::Statement s(db_.GetUniqueStatement(
-      "UPDATE logins SET "
-      "action_url = ?, "
-      "password_value = ?, "
-      "ssl_valid = ?, "
-      "preferred = ? "
-      "WHERE origin_url = ? AND "
-      "username_element = ? AND "
-      "username_value = ? AND "
-      "password_element = ? AND "
-      "signon_realm = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
-  s.BindString(0, form.action.spec());
-  std::string encrypted_password;
-  Encryptor::EncryptString16(form.password_value, &encrypted_password);
-  s.BindBlob(1, encrypted_password.data(),
-             static_cast<int>(encrypted_password.length()));
-  s.BindInt(2, form.ssl_valid);
-  s.BindInt(3, form.preferred);
-  s.BindString(4, form.origin.spec());
-  s.BindString16(5, form.username_element);
-  s.BindString16(6, form.username_value);
-  s.BindString16(7, form.password_element);
-  s.BindString(8, form.signon_realm);
-
-  if (!s.Run()) {
-    NOTREACHED();
-    return false;
-  }
-  return true;
-}
-
-bool WebDatabase::RemoveLogin(const PasswordForm& form) {
-  // Remove a login by UNIQUE-constrained fields.
-  sql::Statement s(db_.GetUniqueStatement(
-      "DELETE FROM logins WHERE "
-      "origin_url = ? AND "
-      "username_element = ? AND "
-      "username_value = ? AND "
-      "password_element = ? AND "
-      "submit_element = ? AND "
-      "signon_realm = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-  s.BindString(0, form.origin.spec());
-  s.BindString16(1, form.username_element);
-  s.BindString16(2, form.username_value);
-  s.BindString16(3, form.password_element);
-  s.BindString16(4, form.submit_element);
-  s.BindString(5, form.signon_realm);
-
-  if (!s.Run()) {
-    NOTREACHED();
-    return false;
-  }
-  return true;
-}
-
-bool WebDatabase::RemoveLoginsCreatedBetween(base::Time delete_begin,
-                                             base::Time delete_end) {
-  sql::Statement s1(db_.GetUniqueStatement(
-      "DELETE FROM logins WHERE "
-      "date_created >= ? AND date_created < ?"));
-  if (!s1) {
-    NOTREACHED() << "Statement 1 prepare failed";
-    return false;
-  }
-  s1.BindInt64(0, delete_begin.ToTimeT());
-  s1.BindInt64(1,
-               delete_end.is_null() ?
-                   std::numeric_limits<int64>::max() :
-                   delete_end.ToTimeT());
-  bool success = s1.Run();
-
-#if defined(OS_WIN)
-  sql::Statement s2(db_.GetUniqueStatement(
-      "DELETE FROM ie7_logins WHERE date_created >= ? AND date_created < ?"));
-  if (!s2) {
-    NOTREACHED() << "Statement 2 prepare failed";
-    return false;
-  }
-  s2.BindInt64(0, delete_begin.ToTimeT());
-  s2.BindInt64(1,
-               delete_end.is_null() ?
-                   std::numeric_limits<int64>::max() :
-                   delete_end.ToTimeT());
-  success = success && s2.Run();
-#endif
-
-  return success;
-}
-
-bool WebDatabase::GetLogins(const PasswordForm& form,
-                            std::vector<PasswordForm*>* forms) {
-  DCHECK(forms);
-  sql::Statement s(db_.GetUniqueStatement(
-                "SELECT origin_url, action_url, "
-                "username_element, username_value, "
-                "password_element, password_value, "
-                "submit_element, signon_realm, "
-                "ssl_valid, preferred, "
-                "date_created, blacklisted_by_user, scheme FROM logins "
-                "WHERE signon_realm == ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
-  s.BindString(0, form.signon_realm);
-
-  while (s.Step()) {
-    PasswordForm* new_form = new PasswordForm();
-    InitPasswordFormFromStatement(new_form, &s);
-
-    forms->push_back(new_form);
-  }
-  return s.Succeeded();
-}
-
-bool WebDatabase::GetAllLogins(std::vector<PasswordForm*>* forms,
-                               bool include_blacklisted) {
-  DCHECK(forms);
-  std::string stmt = "SELECT origin_url, action_url, "
-                     "username_element, username_value, "
-                     "password_element, password_value, "
-                     "submit_element, signon_realm, ssl_valid, preferred, "
-                     "date_created, blacklisted_by_user, scheme FROM logins ";
-  if (!include_blacklisted)
-    stmt.append("WHERE blacklisted_by_user == 0 ");
-  stmt.append("ORDER BY origin_url");
-
-  sql::Statement s(db_.GetUniqueStatement(stmt.c_str()));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
-  while (s.Step()) {
-    PasswordForm* new_form = new PasswordForm();
-    InitPasswordFormFromStatement(new_form, &s);
-
-    forms->push_back(new_form);
-  }
-  return s.Succeeded();
 }
 
 sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {

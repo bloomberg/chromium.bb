@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webdata/web_database.h"
+#include "chrome/browser/webdata/logins_table.h"
 
 #include "app/sql/statement.h"
 #include "base/logging.h"
@@ -10,13 +10,13 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 
-bool WebDatabase::AddIE7Login(const IE7PasswordInfo& info) {
-  sql::Statement s(db_.GetUniqueStatement(
+bool LoginsTable::AddIE7Login(const IE7PasswordInfo& info) {
+  sql::Statement s(db_->GetUniqueStatement(
       "INSERT OR REPLACE INTO ie7_logins "
       "(url_hash, password_value, date_created) "
       "VALUES (?,?,?)"));
   if (!s) {
-    NOTREACHED() << db_.GetErrorMessage();
+    NOTREACHED() << db_->GetErrorMessage();
     return false;
   }
 
@@ -31,12 +31,12 @@ bool WebDatabase::AddIE7Login(const IE7PasswordInfo& info) {
   return true;
 }
 
-bool WebDatabase::RemoveIE7Login(const IE7PasswordInfo& info) {
+bool LoginsTable::RemoveIE7Login(const IE7PasswordInfo& info) {
   // Remove a login by UNIQUE-constrained fields.
-  sql::Statement s(db_.GetUniqueStatement(
+  sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM ie7_logins WHERE url_hash = ?"));
   if (!s) {
-    NOTREACHED() << db_.GetErrorMessage();
+    NOTREACHED() << db_->GetErrorMessage();
     return false;
   }
   s.BindString(0, WideToUTF8(info.url_hash));
@@ -48,14 +48,14 @@ bool WebDatabase::RemoveIE7Login(const IE7PasswordInfo& info) {
   return true;
 }
 
-bool WebDatabase::GetIE7Login(const IE7PasswordInfo& info,
+bool LoginsTable::GetIE7Login(const IE7PasswordInfo& info,
                               IE7PasswordInfo* result) {
   DCHECK(result);
-  sql::Statement s(db_.GetUniqueStatement(
+  sql::Statement s(db_->GetUniqueStatement(
       "SELECT password_value, date_created FROM ie7_logins "
       "WHERE url_hash == ? "));
   if (!s) {
-    NOTREACHED() << db_.GetErrorMessage();
+    NOTREACHED() << db_->GetErrorMessage();
     return false;
   }
 

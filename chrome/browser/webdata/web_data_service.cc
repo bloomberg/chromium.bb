@@ -743,7 +743,8 @@ void WebDataService::SetWebAppImageImpl(
     GenericRequest2<GURL, SkBitmap>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
-    db_->SetWebAppImage(request->GetArgument1(), request->GetArgument2());
+    db_->GetWebAppsTable()->SetWebAppImage(
+        request->GetArgument1(), request->GetArgument2());
     ScheduleCommit();
   }
   request->RequestComplete();
@@ -753,8 +754,8 @@ void WebDataService::SetWebAppHasAllImagesImpl(
     GenericRequest2<GURL, bool>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
-    db_->SetWebAppHasAllImages(request->GetArgument1(),
-                               request->GetArgument2());
+    db_->GetWebAppsTable()->SetWebAppHasAllImages(request->GetArgument1(),
+                                                  request->GetArgument2());
     ScheduleCommit();
   }
   request->RequestComplete();
@@ -763,7 +764,7 @@ void WebDataService::SetWebAppHasAllImagesImpl(
 void WebDataService::RemoveWebAppImpl(GenericRequest<GURL>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
-    db_->RemoveWebApp(request->GetArgument());
+    db_->GetWebAppsTable()->RemoveWebApp(request->GetArgument());
     ScheduleCommit();
   }
   request->RequestComplete();
@@ -773,8 +774,10 @@ void WebDataService::GetWebAppImagesImpl(GenericRequest<GURL>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     WDAppImagesResult result;
-    result.has_all_images = db_->GetWebAppHasAllImages(request->GetArgument());
-    db_->GetWebAppImages(request->GetArgument(), &result.images);
+    result.has_all_images =
+        db_->GetWebAppsTable()->GetWebAppHasAllImages(request->GetArgument());
+    db_->GetWebAppsTable()->GetWebAppImages(
+        request->GetArgument(), &result.images);
     request->SetResult(
         new WDResult<WDAppImagesResult>(WEB_APP_IMAGES, result));
   }
@@ -792,7 +795,7 @@ void WebDataService::RemoveAllTokensImpl(
     GenericRequest<std::string>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
-    if (db_->RemoveAllTokens()) {
+    if (db_->GetTokenServiceTable()->RemoveAllTokens()) {
       ScheduleCommit();
     }
   }
@@ -803,8 +806,8 @@ void WebDataService::SetTokenForServiceImpl(
     GenericRequest2<std::string, std::string>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
-    if (db_->SetTokenForService(request->GetArgument1(),
-                                request->GetArgument2())) {
+    if (db_->GetTokenServiceTable()->SetTokenForService(
+            request->GetArgument1(), request->GetArgument2())) {
       ScheduleCommit();
     }
   }
@@ -817,7 +820,7 @@ void WebDataService::GetAllTokensImpl(
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     std::map<std::string, std::string> map;
-    db_->GetAllTokens(&map);
+    db_->GetTokenServiceTable()->GetAllTokens(&map);
     request->SetResult(
         new WDResult<std::map<std::string, std::string> >(TOKEN_RESULT, map));
   }
@@ -833,7 +836,7 @@ void WebDataService::GetAllTokensImpl(
 void WebDataService::AddLoginImpl(GenericRequest<PasswordForm>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
-    if (db_->AddLogin(request->GetArgument()))
+    if (db_->GetLoginsTable()->AddLogin(request->GetArgument()))
       ScheduleCommit();
   }
   request->RequestComplete();
@@ -842,7 +845,7 @@ void WebDataService::AddLoginImpl(GenericRequest<PasswordForm>* request) {
 void WebDataService::UpdateLoginImpl(GenericRequest<PasswordForm>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
-    if (db_->UpdateLogin(request->GetArgument()))
+    if (db_->GetLoginsTable()->UpdateLogin(request->GetArgument()))
       ScheduleCommit();
   }
   request->RequestComplete();
@@ -851,7 +854,7 @@ void WebDataService::UpdateLoginImpl(GenericRequest<PasswordForm>* request) {
 void WebDataService::RemoveLoginImpl(GenericRequest<PasswordForm>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
-    if (db_->RemoveLogin(request->GetArgument()))
+    if (db_->GetLoginsTable()->RemoveLogin(request->GetArgument()))
       ScheduleCommit();
   }
   request->RequestComplete();
@@ -861,9 +864,10 @@ void WebDataService::RemoveLoginsCreatedBetweenImpl(
     GenericRequest2<Time, Time>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
-    if (db_->RemoveLoginsCreatedBetween(request->GetArgument1(),
-                                        request->GetArgument2()))
+    if (db_->GetLoginsTable()->RemoveLoginsCreatedBetween(
+            request->GetArgument1(), request->GetArgument2())) {
       ScheduleCommit();
+    }
   }
   request->RequestComplete();
 }
@@ -872,7 +876,7 @@ void WebDataService::GetLoginsImpl(GenericRequest<PasswordForm>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     std::vector<PasswordForm*> forms;
-    db_->GetLogins(request->GetArgument(), &forms);
+    db_->GetLoginsTable()->GetLogins(request->GetArgument(), &forms);
     request->SetResult(
         new WDResult<std::vector<PasswordForm*> >(PASSWORD_RESULT, forms));
   }
@@ -883,7 +887,7 @@ void WebDataService::GetAutofillableLoginsImpl(WebDataRequest* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     std::vector<PasswordForm*> forms;
-    db_->GetAllLogins(&forms, false);
+    db_->GetLoginsTable()->GetAllLogins(&forms, false);
     request->SetResult(
         new WDResult<std::vector<PasswordForm*> >(PASSWORD_RESULT, forms));
   }
@@ -894,7 +898,7 @@ void WebDataService::GetBlacklistLoginsImpl(WebDataRequest* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     std::vector<PasswordForm*> all_forms;
-    db_->GetAllLogins(&all_forms, true);
+    db_->GetLoginsTable()->GetAllLogins(&all_forms, true);
     std::vector<PasswordForm*> blacklist_forms;
     for (std::vector<PasswordForm*>::iterator i = all_forms.begin();
          i != all_forms.end(); ++i) {

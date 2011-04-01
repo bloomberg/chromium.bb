@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ WebDataService::Handle WebDataService::GetIE7Login(
 
 void WebDataService::AddIE7LoginImpl(GenericRequest<IE7PasswordInfo>* request) {
   if (db_ && !request->IsCancelled()) {
-    if (db_->AddIE7Login(request->GetArgument()))
+    if (db_->GetLoginsTable()->AddIE7Login(request->GetArgument()))
       ScheduleCommit();
   }
   request->RequestComplete();
@@ -49,7 +49,7 @@ void WebDataService::AddIE7LoginImpl(GenericRequest<IE7PasswordInfo>* request) {
 void WebDataService::RemoveIE7LoginImpl(
     GenericRequest<IE7PasswordInfo>* request) {
   if (db_ && !request->IsCancelled()) {
-    if (db_->RemoveIE7Login(request->GetArgument()))
+    if (db_->GetLoginsTable()->RemoveIE7Login(request->GetArgument()))
       ScheduleCommit();
   }
   request->RequestComplete();
@@ -59,7 +59,7 @@ void WebDataService::GetIE7LoginImpl(
     GenericRequest<IE7PasswordInfo>* request) {
   if (db_ && !request->IsCancelled()) {
     IE7PasswordInfo result;
-    db_->GetIE7Login(request->GetArgument(), &result);
+    db_->GetLoginsTable()->GetIE7Login(request->GetArgument(), &result);
     request->SetResult(
         new WDResult<IE7PasswordInfo>(PASSWORD_IE7_RESULT, result));
   }
