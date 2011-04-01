@@ -744,8 +744,16 @@ bool ConfigurationPolicyPrefKeeper::HasProxyPolicy(
     ConfigurationPolicyType policy) const {
   std::map<ConfigurationPolicyType, Value*>::const_iterator iter;
   iter = proxy_policies_.find(policy);
-  return iter != proxy_policies_.end() &&
-         iter->second && !iter->second->IsType(Value::TYPE_NULL);
+  std::string tmp;
+  if (iter == proxy_policies_.end() ||
+      !iter->second ||
+      iter->second->IsType(Value::TYPE_NULL) ||
+      (iter->second->IsType(Value::TYPE_STRING) &&
+       iter->second->GetAsString(&tmp) &&
+       tmp.empty())) {
+    return false;
+  }
+  return true;
 }
 
 ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(

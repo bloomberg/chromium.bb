@@ -377,6 +377,24 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyMode) {
                    ProxyPrefs::MODE_PAC_SCRIPT);
 }
 
+// Regression test for http://crbug.com/78016, CPanel returns empty strings
+// for unset properties.
+TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyModeBug78016) {
+  MockConfigurationPolicyProvider provider;
+  provider.AddPolicy(kPolicyProxyServer,
+                     Value::CreateStringValue(""));
+  provider.AddPolicy(kPolicyProxyPacUrl,
+                     Value::CreateStringValue("http://short.org/proxy.pac"));
+  provider.AddPolicy(
+      kPolicyProxyMode,
+      Value::CreateStringValue(ProxyPrefs::kPacScriptProxyModeName));
+
+  scoped_refptr<ConfigurationPolicyPrefStore> store(
+      new ConfigurationPolicyPrefStore(&provider));
+  VerifyProxyPrefs(*store, "", "http://short.org/proxy.pac", "",
+                   ProxyPrefs::MODE_PAC_SCRIPT);
+}
+
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, UseSystemProxyServerMode) {
   MockConfigurationPolicyProvider provider;
   provider.AddPolicy(
