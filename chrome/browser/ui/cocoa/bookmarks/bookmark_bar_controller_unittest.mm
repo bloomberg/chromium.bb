@@ -32,7 +32,7 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/base/theme_provider.h"
 
-// Unit tests don't need time-consuming a
+// Unit tests don't need time-consuming asynchronous animations.
 @interface BookmarkBarControllerTestable : BookmarkBarController {
 }
 @end
