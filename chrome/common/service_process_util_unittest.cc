@@ -368,7 +368,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
         NULL));
     loop_.PostDelayedTask(FROM_HERE,
                           new MessageLoop::QuitTask,
-                          TestTimeouts::large_test_timeout_ms());
+                          TestTimeouts::action_max_timeout_ms());
   }
 
   bool MakeABundle(const FilePath& dst,
@@ -484,8 +484,7 @@ void TrashFunc(const FilePath& src) {
   EXPECT_EQ(status, noErr)  << "FSMoveObjectToTrashSync " << status;
 }
 
-// Disabled because of race in FilePathWatcher.  http://crbug.com/77326
-TEST_F(ServiceProcessStateFileManipulationTest, DISABLED_DeleteFile) {
+TEST_F(ServiceProcessStateFileManipulationTest, DeleteFile) {
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,
       NewRunnableFunction(&DeleteFunc, executable_path()));
@@ -494,8 +493,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, DISABLED_DeleteFile) {
   ASSERT_TRUE(mock_launchd()->delete_called());
 }
 
-// Disabled because of race in FilePathWatcher.  http://crbug.com/77326
-TEST_F(ServiceProcessStateFileManipulationTest, DISABLED_DeleteBundle) {
+TEST_F(ServiceProcessStateFileManipulationTest, DeleteBundle) {
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,
       NewRunnableFunction(&DeleteFunc, bundle_path()));
@@ -538,8 +536,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, TrashBundle) {
   ASSERT_TRUE(file_util::Delete(file_path, true));
 }
 
-// http://crbug.com/77391
-TEST_F(ServiceProcessStateFileManipulationTest, FLAKY_ChangeAttr) {
+TEST_F(ServiceProcessStateFileManipulationTest, ChangeAttr) {
   ScopedAttributesRestorer restorer(bundle_path(), 0777);
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,

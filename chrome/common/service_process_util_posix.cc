@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/eintr_wrapper.h"
 #include "base/message_loop_proxy.h"
+#include "base/synchronization/waitable_event.h"
 
 namespace {
 int g_signal_socket = -1;
@@ -58,11 +59,18 @@ ServiceProcessState::StateData::StateData() : set_action_(false) {
   memset(&old_action_, 0, sizeof(old_action_));
 }
 
-void ServiceProcessState::StateData::SignalReady() {
+void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
+                                                 bool* success) {
   CHECK_EQ(g_signal_socket, -1);
-  CHECK(MessageLoopForIO::current()->WatchFileDescriptor(
+  CHECK(!signal->IsSignaled());
+   *success = MessageLoopForIO::current()->WatchFileDescriptor(
       sockets_[0], true, MessageLoopForIO::WATCH_READ,
-      &watcher_, shut_down_monitor_.get()));
+      &watcher_, shut_down_monitor_.get());
+  if (!*success) {
+    LOG(ERROR) << "WatchFileDescriptor";
+    signal->Signal();
+    return;
+  }
   g_signal_socket = sockets_[1];
 
   // Set up signal handler for SIGTERM.
@@ -70,23 +78,31 @@ void ServiceProcessState::StateData::SignalReady() {
   action.sa_sigaction = SigTermHandler;
   sigemptyset(&action.sa_mask);
   action.sa_flags = SA_SIGINFO;
-  if (sigaction(SIGTERM, &action, &old_action_) == 0) {
-    // If the old_action is not default, somebody else has installed a
-    // a competing handler. Our handler is going to override it so it
-    // won't be called. If this occurs it needs to be fixed.
-    DCHECK_EQ(old_action_.sa_handler, SIG_DFL);
-    set_action_ = true;
+  *success = sigaction(SIGTERM, &action, &old_action_) == 0;
+  if (!*success) {
+    PLOG(ERROR) << "sigaction";
+    signal->Signal();
+    return;
+  }
+
+  // If the old_action is not default, somebody else has installed a
+  // a competing handler. Our handler is going to override it so it
+  // won't be called. If this occurs it needs to be fixed.
+  DCHECK_EQ(old_action_.sa_handler, SIG_DFL);
+  set_action_ = true;
+
 #if defined(OS_LINUX)
-    initializing_lock_.reset();
+  initializing_lock_.reset();
 #endif  // OS_LINUX
 #if defined(OS_MACOSX)
-    if (!WatchExecutable()) {
-      LOG(ERROR) << "WatchExecutable";
-    }
-#endif  // OS_MACOSX
-  } else {
-    PLOG(ERROR) << "sigaction";
+  *success = WatchExecutable();
+  if (!*success) {
+    LOG(ERROR) << "WatchExecutable";
+    signal->Signal();
+    return;
   }
+#endif  // OS_MACOSX
+  signal->Signal();
 }
 
 ServiceProcessState::StateData::~StateData() {
@@ -136,9 +152,15 @@ bool ServiceProcessState::SignalReady(
     PLOG(ERROR) << "pipe";
     return false;
   }
+  base::WaitableEvent signal_ready(true, false);
+  bool success = false;
+
   message_loop_proxy->PostTask(FROM_HERE,
-      NewRunnableMethod(state_, &ServiceProcessState::StateData::SignalReady));
-  return true;
+      NewRunnableMethod(state_, &ServiceProcessState::StateData::SignalReady,
+                        &signal_ready,
+                        &success));
+  signal_ready.Wait();
+  return success;
 }
 
 void ServiceProcessState::TearDownState() {
