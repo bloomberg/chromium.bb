@@ -124,11 +124,10 @@ void ImportDataHandler::SourceProfilesLoaded() {
   for (int i = 0; i < profiles_count; i++) {
     const importer::ProfileInfo& source_profile =
         importer_list_->GetSourceProfileInfoAt(i);
-    string16 browser_name = WideToUTF16Hack(source_profile.description);
     uint16 browser_services = source_profile.services_supported;
 
     DictionaryValue* browser_profile = new DictionaryValue();
-    browser_profile->SetString("name", browser_name);
+    browser_profile->SetString("name", source_profile.description);
     browser_profile->SetInteger("index", i);
     browser_profile->SetBoolean("history",
         (browser_services & importer::HISTORY) != 0);

@@ -45,7 +45,7 @@ void ImportProgressDialogGtk::StartImport(
       items,
       importer_host,
       importer_observer,
-      WideToUTF16(browser_profile.description),
+      browser_profile.description,
       browser_profile.browser_type == importer::BOOKMARKS_HTML);
 
   // In headless mode it means that we don't show the progress window, but it

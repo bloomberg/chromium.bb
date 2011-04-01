@@ -4,10 +4,6 @@
 
 #include "chrome/browser/importer/importer_list.h"
 
-#include "base/file_util.h"
-#include "base/stl_util-inl.h"
-#include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/browser/importer/firefox3_importer.h"
@@ -34,7 +30,7 @@ namespace {
 void DetectIEProfiles(std::vector<importer::ProfileInfo*>* profiles) {
     // IE always exists and doesn't have multiple profiles.
   importer::ProfileInfo* ie = new importer::ProfileInfo();
-  ie->description = UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_FROM_IE));
+  ie->description = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_IE);
   ie->browser_type = importer::MS_IE;
   ie->source_path.clear();
   ie->app_path.clear();
@@ -52,8 +48,7 @@ void DetectSafariProfiles(std::vector<importer::ProfileInfo*>* profiles) {
 
   importer::ProfileInfo* safari = new importer::ProfileInfo();
   safari->browser_type = importer::SAFARI;
-  safari->description =
-      UTF16ToWideHack(l10n_util::GetStringUTF16(IDS_IMPORT_FROM_SAFARI));
+  safari->description = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_SAFARI);
   safari->source_path.clear();
   safari->app_path.clear();
   safari->services_supported = items;
@@ -86,8 +81,7 @@ void DetectFirefoxProfiles(std::vector<importer::ProfileInfo*>* profiles) {
   }
 
   importer::ProfileInfo* firefox = new importer::ProfileInfo();
-  firefox->description =
-      UTF16ToWideHack(l10n_util::GetStringUTF16(IDS_IMPORT_FROM_FIREFOX));
+  firefox->description = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_FIREFOX);
   firefox->browser_type = firefox_type;
   firefox->source_path = profile_path;
 #if defined(OS_WIN)
@@ -108,8 +102,8 @@ void DetectGoogleToolbarProfiles(
 
   importer::ProfileInfo* google_toolbar = new importer::ProfileInfo();
   google_toolbar->browser_type = importer::GOOGLE_TOOLBAR5;
-  google_toolbar->description = UTF16ToWideHack(l10n_util::GetStringUTF16(
-      IDS_IMPORT_FROM_GOOGLE_TOOLBAR));
+  google_toolbar->description =
+      l10n_util::GetStringUTF16(IDS_IMPORT_FROM_GOOGLE_TOOLBAR);
   google_toolbar->source_path.clear();
   google_toolbar->app_path.clear();
   google_toolbar->services_supported = importer::FAVORITES;
@@ -180,7 +174,7 @@ int ImporterList::GetAvailableProfileCount() const {
   return static_cast<int>(source_profiles_.size());
 }
 
-std::wstring ImporterList::GetSourceProfileNameAt(int index) const {
+string16 ImporterList::GetSourceProfileNameAt(int index) const {
   DCHECK(source_profiles_loaded_);
   DCHECK(index >=0 && index < GetAvailableProfileCount());
   return source_profiles_[index]->description;

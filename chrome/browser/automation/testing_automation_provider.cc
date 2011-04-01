@@ -157,7 +157,7 @@ void TestingAutomationProvider::SourceProfilesLoaded() {
   int num_browsers = importer_list_->GetAvailableProfileCount();
   int i = 0;
   for ( ; i < num_browsers; i++) {
-    string16 name = WideToUTF16Hack(importer_list_->GetSourceProfileNameAt(i));
+    string16 name = importer_list_->GetSourceProfileNameAt(i);
     if (name == import_settings_data_.browser_name) {
       profile_info = importer_list_->GetSourceProfileInfoAt(i);
       break;

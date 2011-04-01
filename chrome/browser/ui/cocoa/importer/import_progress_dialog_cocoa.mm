@@ -188,15 +188,11 @@ void ShowImportProgressDialog(gfx::NativeWindow parent_window,
                               bool first_run) {
   DCHECK(items != 0);
 
-  // Retrieve name of browser we're importing from and do a little dance to
-  // convert wstring -> string16.
-  string16 import_browser_name = WideToUTF16Hack(source_profile.description);
-
-  // progress_dialog_ is responsible for deleting itself.
-  ImportProgressDialogController* progress_dialog_ =
+  // |progress_dialog| is responsible for deleting itself.
+  ImportProgressDialogController* progress_dialog =
       [[ImportProgressDialogController alloc]
           initWithImporterHost:importer_host
-                  browserName:import_browser_name
+                   browserName:source_profile.description
                       observer:importer_observer
                   itemsEnabled:items];
    // Call is async.
@@ -206,9 +202,9 @@ void ShowImportProgressDialog(gfx::NativeWindow parent_window,
 
   // Display the window while spinning a message loop.
   // For details on why we need a modal message loop see http://crbug.com/19169
-  NSWindow* progress_window = [progress_dialog_ window];
+  NSWindow* progress_window = [progress_dialog window];
   NSModalSession session = [NSApp beginModalSessionForWindow:progress_window];
-  [progress_dialog_ showWindow:nil];
+  [progress_dialog showWindow:nil];
   while (true) {
     if ([NSApp runModalSession:session] != NSRunContinuesResponse)
         break;

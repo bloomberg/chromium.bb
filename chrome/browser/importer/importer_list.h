@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_IMPORTER_IMPORTER_LIST_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
@@ -55,7 +55,7 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
 
   // Returns the name of the profile at the 'index' slot. The profiles are
   // ordered such that the profile at index 0 is the likely default browser.
-  std::wstring GetSourceProfileNameAt(int index) const;
+  string16 GetSourceProfileNameAt(int index) const;
 
   // Returns the ProfileInfo at the specified index.  The ProfileInfo should be
   // passed to StartImportSettings().

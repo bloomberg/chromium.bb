@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/string16.h"
 
 // Types needed for importing data from other browsers and the Google
 // Toolbar.
@@ -50,7 +51,7 @@ struct ProfileInfo {
   ProfileInfo();
   ~ProfileInfo();
 
-  std::wstring description;
+  string16 description;
   ProfileType browser_type;
   FilePath source_path;
   FilePath app_path;

@@ -34,7 +34,7 @@ class ImportProgressDialogView : public views::View,
                            uint16 items,
                            ImporterHost* importer_host,
                            ImporterObserver* importer_observer,
-                           const std::wstring& source_name,
+                           const string16& source_profile,
                            bool bookmarks_import);
   virtual ~ImportProgressDialogView();
 

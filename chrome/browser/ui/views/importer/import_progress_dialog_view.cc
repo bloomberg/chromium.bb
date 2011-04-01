@@ -23,7 +23,7 @@ ImportProgressDialogView::ImportProgressDialogView(
     uint16 items,
     ImporterHost* importer_host,
     ImporterObserver* importer_observer,
-    const std::wstring& source_name,
+    const string16& source_profile,
     bool bookmarks_import)
     : state_bookmarks_(new views::CheckmarkThrobber),
       state_searches_(new views::CheckmarkThrobber),
@@ -49,8 +49,7 @@ ImportProgressDialogView::ImportProgressDialogView(
   std::wstring info_text = bookmarks_import ?
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_BOOKMARKS)) :
       UTF16ToWide(l10n_util::GetStringFUTF16(
-          IDS_IMPORT_PROGRESS_INFO,
-          WideToUTF16(source_name)));
+          IDS_IMPORT_PROGRESS_INFO, source_profile));
   label_info_ = new views::Label(info_text);
   importer_host_->SetObserver(this);
   label_info_->SetMultiLine(true);
