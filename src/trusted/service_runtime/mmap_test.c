@@ -39,7 +39,7 @@ static void InitThread(struct NaClApp *nap, struct NaClAppThread *natp) {
   effp = (struct NaClDescEffectorLdr *) malloc(sizeof *effp);
   ASSERT_NE(effp, NULL);
 
-  if (!NaClDescEffectorLdrCtor(effp, natp)) {
+  if (!NaClDescEffectorLdrCtor(effp, nap)) {
     ASSERT(0);
   }
   natp->effp = (struct NaClDescEffector *) effp;

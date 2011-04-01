@@ -25,12 +25,12 @@ struct NaClAppThread;
 
 struct NaClDescEffectorLdr {
   struct NaClDescEffector     base;
-  struct NaClAppThread        *natp;
+  struct NaClApp              *nap;
 };
 
 /* placement new style ctor */
 extern int NaClDescEffectorLdrCtor(struct NaClDescEffectorLdr *self,
-                                   struct NaClAppThread       *natp);
+                                   struct NaClApp             *nap);
 
 EXTERN_C_END
 

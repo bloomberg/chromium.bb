@@ -91,7 +91,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
     goto cleanup_cv;
   }
 
-  if (!NaClDescEffectorLdrCtor(effp, natp)) {
+  if (!NaClDescEffectorLdrCtor(effp, nap)) {
     goto cleanup_cv;
   }
   natp->effp = (struct NaClDescEffector *) effp;

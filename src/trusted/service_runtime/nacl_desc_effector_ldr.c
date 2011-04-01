@@ -21,17 +21,17 @@
 static struct NaClDescEffectorVtbl const NaClDescEffectorLdrVtbl;  /* fwd */
 
 int NaClDescEffectorLdrCtor(struct NaClDescEffectorLdr *self,
-                            struct NaClAppThread       *natp) {
+                            struct NaClApp             *nap) {
   self->base.vtbl = &NaClDescEffectorLdrVtbl;
-  self->natp = natp;
+  self->nap = nap;
   return 1;
 }
 
 static void NaClDescEffLdrDtor(struct NaClDescEffector *vself) {
   struct NaClDescEffectorLdr *self = (struct NaClDescEffectorLdr *) vself;
 
-  self->natp = NULL;
-  /* we did not take ownership of natp */
+  self->nap = NULL;
+  /* we did not take ownership of nap */
   vself->vtbl = (struct NaClDescEffectorVtbl const *) NULL;
 }
 
@@ -48,9 +48,9 @@ static int NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
   for (addr = sysaddr, endaddr = sysaddr + nbytes;
        addr < endaddr;
        addr += NACL_MAP_PAGESIZE) {
-    usraddr = NaClSysToUser(self->natp->nap, addr);
+    usraddr = NaClSysToUser(self->nap, addr);
 
-    map_region = NaClVmmapFindPage(&self->natp->nap->mem_map,
+    map_region = NaClVmmapFindPage(&self->nap->mem_map,
                                    usraddr >> NACL_PAGESHIFT);
     if (NULL == map_region || NULL == map_region->nmop) {
       /*
@@ -82,7 +82,7 @@ static int NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
                 ("NaClMMap: UnmapUnsafe failed at user addr 0x%08"NACL_PRIxPTR
                  " (sys 0x%08"NACL_PRIxPTR") failed: syscall return %d\n"),
                 addr,
-                NaClUserToSys(self->natp->nap, addr),
+                NaClUserToSys(self->nap, addr),
                 retval);
       }
     }
