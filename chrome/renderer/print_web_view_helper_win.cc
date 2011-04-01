@@ -233,6 +233,10 @@ void PrintWebViewHelper::RenderPage(
   skia::VectorPlatformDevice* platform_device =
       static_cast<skia::VectorPlatformDevice*>(device);
   if (platform_device->alpha_blend_used() && !params.supports_alpha_blend) {
+    // Currently, we handle alpha blend transparency for a single page.
+    // Therefore, expecting a metafile with page count 1.
+    DCHECK((*metafile)->GetPageCount() == 1);
+
     // Close the device context to retrieve the compiled metafile.
     if (!(*metafile)->FinishDocument())
       NOTREACHED();

@@ -49,7 +49,7 @@ bool DIBFormatNativelySupported(HDC dc, uint32 escape, const BYTE* bits,
   return !!supported;
 }
 
-Emf::Emf() : emf_(NULL), hdc_(NULL) {
+Emf::Emf() : emf_(NULL), hdc_(NULL), page_count_(0) {
 }
 
 Emf::~Emf() {
@@ -421,6 +421,7 @@ bool Emf::StartPage(const gfx::Size& /*page_size*/,
   DCHECK(hdc_);
   if (!hdc_)
     return false;
+  page_count_++;
   PageBreakRecord record(PageBreakRecord::START_PAGE);
   return !!GdiComment(hdc_, sizeof(record),
                       reinterpret_cast<const BYTE *>(&record));

@@ -141,6 +141,7 @@ TEST_F(EmfPrintingTest, PageBreak) {
       EXPECT_TRUE(emf.FinishPage());
       --pages;
     }
+    EXPECT_EQ(3U, emf.GetPageCount());
     EXPECT_TRUE(emf.FinishDocument());
     size = emf.GetDataSize();
     EXPECT_TRUE(emf.GetDataAsVector(&data));

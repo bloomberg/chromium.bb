@@ -70,8 +70,7 @@ class Emf : public NativeMetafile {
   virtual gfx::Rect GetPageBounds(unsigned int page_number) const;
 
   virtual unsigned int GetPageCount() const {
-    // TODO(dpapad): count the number of times StartPage() is called
-    return 1;
+    return page_count_;
   }
 
   virtual HDC context() const {
@@ -105,6 +104,8 @@ class Emf : public NativeMetafile {
 
   // Valid when generating EMF data through a virtual HDC.
   HDC hdc_;
+
+  int page_count_;
 
   DISALLOW_COPY_AND_ASSIGN(Emf);
 };
