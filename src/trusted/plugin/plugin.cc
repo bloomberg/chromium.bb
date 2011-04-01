@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/plugin/plugin.h"
@@ -266,11 +266,23 @@ bool Plugin::StartSrpcServicesWrapper(void* obj, SrpcParams* params) {
   return true;
 }
 
+bool Plugin::ExperimentalJavaScriptApisAreEnabled() {
+  return getenv("NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS") != NULL;
+}
+
 static int const kAbiHeaderBuffer = 256;  // must be at least EI_ABIVERSION + 1
 
 void Plugin::LoadMethods() {
   PLUGIN_PRINTF(("Plugin::LoadMethods ()\n"));
-  // Methods supported by Plugin.
+  // Properties implemented by Plugin.
+  AddPropertyGet(GetModuleReadyProperty, "__moduleReady", "i");
+  AddPropertySet(SetModuleReadyProperty, "__moduleReady", "i");
+
+  if (!ExperimentalJavaScriptApisAreEnabled()) {
+    return;
+  }
+  // Experimental methods supported by Plugin.
+  // These methods are explicitly not included in shipping versions of Chrome.
   AddMethodCall(ShmFactory, "__shmFactory", "i", "h");
   AddMethodCall(DefaultSocketAddress, "__defaultSocketAddress", "", "h");
   AddMethodCall(GetSandboxISAProperty, "__getSandboxISA", "", "s");
@@ -279,9 +291,6 @@ void Plugin::LoadMethods() {
   AddMethodCall(SendAsyncMessage0, "__sendAsyncMessage0", "s", "");
   AddMethodCall(SendAsyncMessage1, "__sendAsyncMessage1", "sh", "");
   AddMethodCall(StartSrpcServicesWrapper, "__startSrpcServices", "", "");
-  // Properties implemented by Plugin.
-  AddPropertyGet(GetModuleReadyProperty, "__moduleReady", "i");
-  AddPropertySet(SetModuleReadyProperty, "__moduleReady", "i");
   // With PPAPI plugin, we make sure all predeclared plugin properties start
   // with __ to avoid conflicts with the properties of the underlying object
   // (e.g. height).
@@ -316,6 +325,9 @@ bool Plugin::HasMethodEx(uintptr_t method_id, CallType call_type) {
   if (NULL == socket_) {
     return false;
   }
+  if (!ExperimentalJavaScriptApisAreEnabled()) {
+    return false;
+  }
   return socket_->handle()->HasMethod(method_id, call_type);
 }
 
@@ -325,6 +337,9 @@ bool Plugin::InvokeEx(uintptr_t method_id,
   if (NULL == socket_) {
     return false;
   }
+  if (!ExperimentalJavaScriptApisAreEnabled()) {
+    return false;
+  }
   return socket_->handle()->Invoke(method_id, call_type, params);
 }
 
@@ -332,6 +347,9 @@ bool Plugin::InitParamsEx(uintptr_t method_id,
                           CallType call_type,
                           SrpcParams* params) {
   if (NULL == socket_) {
+    return false;
+  }
+  if (!ExperimentalJavaScriptApisAreEnabled()) {
     return false;
   }
   return socket_->handle()->InitParams(method_id, call_type, params);

@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 // The portable representation of an instance and root scriptable object.
@@ -144,6 +144,9 @@ class Plugin : public PortableHandle {
 
   // Start up proxied execution of the browser API.
   virtual void StartProxiedExecution(NaClSrpcChannel* srpc_channel) = 0;
+
+  // Determines whether experimental APIs are usable.
+  static bool ExperimentalJavaScriptApisAreEnabled();
 
  protected:
   Plugin();

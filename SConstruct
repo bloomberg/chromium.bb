@@ -1138,6 +1138,12 @@ def PPAPIBrowserTester(env,
   if not env.Bit('disable_dynamic_plugin_loading'):
     command.extend(['--ppapi_plugin', GetPPAPIPluginPath(env['TRUSTED_ENV'])])
     command.extend(['--sel_ldr', GetSelLdr(env)])
+  # Enable experimental JavaScript APIs by default in browser tester for now.
+  # TODO(sehr): Move enable to only those browser tests that target the
+  # experimental APIs.
+  # TODO(sehr): Conditionalize the build to exclude the code implementing
+  # the experimental APIs.
+  command.extend(['--enable_experimental_js'])
   for dep_file in files:
     command.extend(['--file', dep_file])
   for extension in extensions:

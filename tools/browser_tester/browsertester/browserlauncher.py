@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import os.path
 import re
@@ -146,6 +146,8 @@ class BrowserLauncher(object):
                           'NFS volume?)' % browser_path)
     if self.options.sel_ldr:
       env['NACL_SEL_LDR'] = self.options.sel_ldr
+    if self.options.enable_experimental_js:
+      env['NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS'] = '1'
     print 'ENV:', ' '.join(['='.join(pair) for pair in env.iteritems()])
     print 'LAUNCHING: %s' % ' '.join(cmd)
     sys.stdout.flush()

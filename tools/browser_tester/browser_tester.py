@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import optparse
 import os.path
@@ -31,6 +31,9 @@ def BuildArgParser():
                     metavar='DEST SRC',
                     help='Add file SRC to be served from the HTTP server, '
                     'to be made visible under the path DEST.')
+  parser.add_option('--enable_experimental_js', dest='enable_experimental_js',
+                    action='store_true', default=False,
+                    help='Allow use of experimental JavaScript APIs')
   parser.add_option('-f', '--file', dest='files', action='append',
                     type='string', default=[],
                     metavar='FILENAME',
@@ -136,4 +139,3 @@ def RunFromCommandLine():
 
 if __name__ == '__main__':
   sys.exit(RunFromCommandLine())
-

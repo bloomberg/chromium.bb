@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -106,8 +106,10 @@ PluginNpapi* PluginNpapi::New(NPP npp,
     return NULL;
   }
   // Add methods only implemented by the NPAPI plugin.
-  plugin->AddMethodCall(UrlAsNaClDesc, "__urlAsNaClDesc", "so", "");
-  plugin->AddMethodCall(SetAsyncCallback, "__setAsyncCallback", "o", "");
+  if (ExperimentalJavaScriptApisAreEnabled()) {
+    plugin->AddMethodCall(UrlAsNaClDesc, "__urlAsNaClDesc", "so", "");
+    plugin->AddMethodCall(SetAsyncCallback, "__setAsyncCallback", "o", "");
+  }
   // Set up the multimedia video support.
   plugin->video_ = new(std::nothrow) VideoMap(plugin);
   if (NULL == plugin->video_) {
