@@ -322,7 +322,7 @@ DictionaryValue* CreateProxyConfigDict(ProxyPrefs::ProxyMode mode_enum,
 DictionaryValue* CreateProxyRulesDict(
     const ProxyConfigDictionary& proxy_config) {
   ProxyPrefs::ProxyMode mode;
-  DCHECK(proxy_config.GetMode(&mode) && mode == ProxyPrefs::MODE_FIXED_SERVERS);
+  CHECK(proxy_config.GetMode(&mode) && mode == ProxyPrefs::MODE_FIXED_SERVERS);
 
   scoped_ptr<DictionaryValue> extension_proxy_rules(new DictionaryValue);
 
@@ -407,7 +407,7 @@ DictionaryValue* CreateProxyServerDict(const net::ProxyServer& proxy) {
 DictionaryValue* CreatePacScriptDict(
     const ProxyConfigDictionary& proxy_config) {
   ProxyPrefs::ProxyMode mode;
-  DCHECK(proxy_config.GetMode(&mode) && mode == ProxyPrefs::MODE_PAC_SCRIPT);
+  CHECK(proxy_config.GetMode(&mode) && mode == ProxyPrefs::MODE_PAC_SCRIPT);
 
   scoped_ptr<DictionaryValue> pac_script_dict(new DictionaryValue);
   std::string pac_url;
