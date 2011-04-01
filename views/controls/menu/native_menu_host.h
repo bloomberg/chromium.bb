@@ -12,43 +12,26 @@ class Rect;
 }
 
 namespace views {
-
-class SubmenuView;
-class View;
+class NativeWidget;
+namespace internal {
+class NativeMenuHostDelegate;
+}
 
 class NativeMenuHost {
  public:
   virtual ~NativeMenuHost() {}
 
-  static NativeMenuHost* CreateNativeMenuHost(SubmenuView* submenu);
+  static NativeMenuHost* CreateNativeMenuHost(
+      internal::NativeMenuHostDelegate* delegate);
 
   // Initializes and shows the MenuHost.
   virtual void InitMenuHost(gfx::NativeWindow parent,
-                            const gfx::Rect& bounds,
-                            View* contents_view,
-                            bool do_capture) = 0;
+                            const gfx::Rect& bounds) = 0;
 
-  // Returns true if the menu host is visible.
-  virtual bool IsMenuHostVisible() = 0;
+  // Starts capturing input events.
+  virtual void StartCapturing() = 0;
 
-  // Shows the menu host. If |do_capture| is true the menu host should do a
-  // mouse grab.
-  virtual void ShowMenuHost(bool do_capture) = 0;
-
-  // Hides the menu host.
-  virtual void HideMenuHost() = 0;
-
-  // Destroys and deletes the menu host.
-  virtual void DestroyMenuHost() = 0;
-
-  // Sets the bounds of the menu host.
-  virtual void SetMenuHostBounds(const gfx::Rect& bounds) = 0;
-
-  // Releases a mouse grab installed by |ShowMenuHost|.
-  virtual void ReleaseMenuHostCapture() = 0;
-
-  // Returns the native window of the MenuHost.
-  virtual gfx::NativeWindow GetMenuHostWindow() = 0;
+  virtual NativeWidget* AsNativeWidget() = 0;
 };
 
 }  // namespace views

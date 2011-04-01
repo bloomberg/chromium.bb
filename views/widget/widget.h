@@ -104,6 +104,9 @@ class Widget : public internal::NativeWidgetDelegate,
                           const Widget* target,
                           gfx::Rect* rect);
 
+  // Sets the creation params for the Widget.
+  void SetCreateParams(const CreateParams& params);
+
   // Unconverted methods -------------------------------------------------------
 
   // TODO(beng):

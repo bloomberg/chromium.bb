@@ -121,9 +121,6 @@ class SubmenuView : public View {
   // Returns the container for the SubmenuView.
   MenuScrollViewContainer* GetScrollViewContainer();
 
-  // Returns the NativeWindow host of the menu, or NULL if not showing.
-  gfx::NativeWindow native_window() const;
-
   // Invoked if the menu is prematurely destroyed. This can happen if the window
   // closes while the menu is shown. If invoked the SubmenuView must drop all
   // references to the MenuHost as the MenuHost is about to be deleted.

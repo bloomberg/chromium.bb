@@ -67,9 +67,6 @@ class WidgetGtk : public Widget,
   explicit WidgetGtk(Type type);
   virtual ~WidgetGtk();
 
-  // Initializes native widget properties based on |params|.
-  void SetCreateParams(const CreateParams& params);
-
   // Marks this window as transient to its parent. A window that is transient
   // to its parent results in the parent rendering active when the child is
   // active.
@@ -191,6 +188,7 @@ class WidgetGtk : public Widget,
   static void UpdateFreezeUpdatesProperty(GtkWindow* window, bool enable);
 
   // Overridden from NativeWidget:
+  virtual void SetCreateParams(const CreateParams& params) OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;

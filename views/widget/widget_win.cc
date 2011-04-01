@@ -157,59 +157,6 @@ WidgetWin::~WidgetWin() {
   DestroyRootView();
 }
 
-void WidgetWin::SetCreateParams(const CreateParams& params) {
-  // Set non-style attributes.
-  set_delete_on_destroy(params.delete_on_destroy);
-
-  DWORD style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-  DWORD ex_style = 0;
-  DWORD class_style = CS_DBLCLKS;
-
-  // Set type-independent style attributes.
-  if (params.child)
-    style |= WS_CHILD | WS_VISIBLE;
-  if (!params.accept_events)
-    ex_style |= WS_EX_TRANSPARENT;
-  if (!params.can_activate)
-    ex_style |= WS_EX_NOACTIVATE;
-  if (params.keep_on_top)
-    ex_style |= WS_EX_TOPMOST;
-  if (params.mirror_origin_in_rtl)
-    ex_style |= l10n_util::GetExtendedTooltipStyles();
-  if (params.transparent)
-    ex_style |= WS_EX_LAYERED;
-  if (params.has_dropshadow) {
-    class_style |= (base::win::GetVersion() < base::win::VERSION_XP) ?
-        0 : CS_DROPSHADOW;
-  }
-
-  // Set type-dependent style attributes.
-  switch (params.type) {
-    case CreateParams::TYPE_WINDOW:
-    case CreateParams::TYPE_CONTROL:
-      break;
-    case CreateParams::TYPE_POPUP:
-      style |= WS_POPUP;
-      ex_style |= WS_EX_TOOLWINDOW;
-      break;
-    case CreateParams::TYPE_MENU:
-      style |= WS_POPUP;
-      is_mouse_button_pressed_ =
-          ((GetKeyState(VK_LBUTTON) & 0x80) ||
-          (GetKeyState(VK_RBUTTON) & 0x80) ||
-          (GetKeyState(VK_MBUTTON) & 0x80) ||
-          (GetKeyState(VK_XBUTTON1) & 0x80) ||
-          (GetKeyState(VK_XBUTTON2) & 0x80));
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  set_initial_class_style(class_style);
-  set_window_style(style);
-  set_window_ex_style(ex_style);
-}
-
 // static
 WidgetWin* WidgetWin::GetWidget(HWND hwnd) {
   // TODO(jcivelli): http://crbug.com/44499 We need a way to test that hwnd is
@@ -296,6 +243,61 @@ void WidgetWin::ViewHierarchyChanged(bool is_add, View* parent,
 
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetWin, NativeWidget implementation:
+
+void WidgetWin::SetCreateParams(const CreateParams& params) {
+  DCHECK(!GetNativeView());
+
+  // Set non-style attributes.
+  set_delete_on_destroy(params.delete_on_destroy);
+
+  DWORD style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+  DWORD ex_style = 0;
+  DWORD class_style = CS_DBLCLKS;
+
+  // Set type-independent style attributes.
+  if (params.child)
+    style |= WS_CHILD | WS_VISIBLE;
+  if (!params.accept_events)
+    ex_style |= WS_EX_TRANSPARENT;
+  if (!params.can_activate)
+    ex_style |= WS_EX_NOACTIVATE;
+  if (params.keep_on_top)
+    ex_style |= WS_EX_TOPMOST;
+  if (params.mirror_origin_in_rtl)
+    ex_style |= l10n_util::GetExtendedTooltipStyles();
+  if (params.transparent)
+    ex_style |= WS_EX_LAYERED;
+  if (params.has_dropshadow) {
+    class_style |= (base::win::GetVersion() < base::win::VERSION_XP) ?
+        0 : CS_DROPSHADOW;
+  }
+
+  // Set type-dependent style attributes.
+  switch (params.type) {
+    case CreateParams::TYPE_WINDOW:
+    case CreateParams::TYPE_CONTROL:
+      break;
+    case CreateParams::TYPE_POPUP:
+      style |= WS_POPUP;
+      ex_style |= WS_EX_TOOLWINDOW;
+      break;
+    case CreateParams::TYPE_MENU:
+      style |= WS_POPUP;
+      is_mouse_button_pressed_ =
+          ((GetKeyState(VK_LBUTTON) & 0x80) ||
+          (GetKeyState(VK_RBUTTON) & 0x80) ||
+          (GetKeyState(VK_MBUTTON) & 0x80) ||
+          (GetKeyState(VK_XBUTTON1) & 0x80) ||
+          (GetKeyState(VK_XBUTTON2) & 0x80));
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  set_initial_class_style(class_style);
+  set_window_style(style);
+  set_window_ex_style(ex_style);
+}
 
 Widget* WidgetWin::GetWidget() {
   return this;

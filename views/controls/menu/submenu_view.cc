@@ -321,10 +321,6 @@ MenuScrollViewContainer* SubmenuView::GetScrollViewContainer() {
   return scroll_view_container_;
 }
 
-gfx::NativeWindow SubmenuView::native_window() const {
-  return host_ ? host_->GetMenuHostWindow() : NULL;
-}
-
 void SubmenuView::MenuHostDestroyed() {
   host_ = NULL;
   GetMenuItem()->GetMenuController()->Cancel(MenuController::EXIT_DESTROYED);

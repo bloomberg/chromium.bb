@@ -304,26 +304,6 @@ WidgetGtk::~WidgetGtk() {
     ActiveWindowWatcherX::RemoveObserver(this);
 }
 
-void WidgetGtk::SetCreateParams(const CreateParams& params) {
-  // Set non-style attributes.
-  set_delete_on_destroy(params.delete_on_destroy);
-
-  if (params.transparent)
-    MakeTransparent();
-  if (!params.accept_events)
-    MakeIgnoreEvents();
-
-  if (params.type == CreateParams::TYPE_MENU) {
-    GdkEvent* event = gtk_get_current_event();
-    if (event) {
-      is_mouse_button_pressed_ = event->type == GDK_BUTTON_PRESS ||
-                                 event->type == GDK_2BUTTON_PRESS ||
-                                 event->type == GDK_3BUTTON_PRESS;
-      gdk_event_free(event);
-    }
-  }
-}
-
 GtkWindow* WidgetGtk::GetTransientParent() const {
   return (type_ != TYPE_CHILD && widget_) ?
       gtk_window_get_transient_for(GTK_WINDOW(widget_)) : NULL;
@@ -748,6 +728,28 @@ void WidgetGtk::UpdateFreezeUpdatesProperty(GtkWindow* window, bool enable) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, NativeWidget implementation:
+
+void WidgetGtk::SetCreateParams(const CreateParams& params) {
+  DCHECK(!GetNativeView());
+
+  // Set non-style attributes.
+  set_delete_on_destroy(params.delete_on_destroy);
+
+  if (params.transparent)
+    MakeTransparent();
+  if (!params.accept_events)
+    MakeIgnoreEvents();
+
+  if (params.type == CreateParams::TYPE_MENU) {
+    GdkEvent* event = gtk_get_current_event();
+    if (event) {
+      is_mouse_button_pressed_ = event->type == GDK_BUTTON_PRESS ||
+        event->type == GDK_2BUTTON_PRESS ||
+        event->type == GDK_3BUTTON_PRESS;
+      gdk_event_free(event);
+    }
+  }
+}
 
 Widget* WidgetGtk::GetWidget() {
   return this;

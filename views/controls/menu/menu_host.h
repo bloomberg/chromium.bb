@@ -6,14 +6,18 @@
 #define VIEWS_CONTROLS_MENU_MENU_HOST_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+#include "views/controls/menu/native_menu_host_delegate.h"
 
 namespace views {
 
 class NativeMenuHost;
+class NativeWidget;
 class SubmenuView;
 class View;
+class Widget;
 
 // SubmenuView uses a MenuHost to house the SubmenuView. MenuHost typically
 // extends the native Widget type, but is defined here for clarity of what
@@ -24,7 +28,7 @@ class View;
 // OS destroys the widget out from under us, in which case |MenuHostDestroyed|
 // is invoked back on the SubmenuView and the SubmenuView then drops references
 // to the MenuHost.
-class MenuHost {
+class MenuHost : public internal::NativeMenuHostDelegate {
  public:
   explicit MenuHost(SubmenuView* submenu);
   virtual ~MenuHost();
@@ -57,8 +61,23 @@ class MenuHost {
   // Returns the native window of the MenuHost.
   gfx::NativeWindow GetMenuHostWindow();
 
+  Widget* GetWidget();
+  NativeWidget* GetNativeWidget();
+
  private:
+  // Overridden from NativeMenuHostDelegate:
+  virtual void OnNativeMenuHostDestroy() OVERRIDE;
+  virtual void OnNativeMenuHostCancelCapture() OVERRIDE;
+  virtual RootView* CreateRootView() OVERRIDE;
+  virtual bool ShouldReleaseCaptureOnMouseRelease() const OVERRIDE;
+
   NativeMenuHost* native_menu_host_;
+
+  // The view we contain.
+  SubmenuView* submenu_;
+
+  // If true, DestroyMenuHost has been invoked.
+  bool destroying_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuHost);
 };

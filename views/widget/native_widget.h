@@ -9,6 +9,7 @@
 #include <set>
 
 #include "ui/gfx/native_widget_types.h"
+#include "views/widget/widget.h"
 
 namespace gfx {
 class Rect;
@@ -22,7 +23,6 @@ namespace views {
 
 class InputMethod;
 class TooltipManager;
-class Widget;
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidget interface
@@ -57,6 +57,9 @@ class NativeWidget {
   // |native_view|'s hierarchy of the change.
   static void ReparentNativeView(gfx::NativeView native_view,
                                  gfx::NativeView new_parent);
+
+  // Sets the create params for the NativeWidget.
+  virtual void SetCreateParams(const Widget::CreateParams& params) = 0;
 
   // Returns the Widget associated with this NativeWidget. This function is
   // guaranteed to return non-NULL for the lifetime of the NativeWidget.

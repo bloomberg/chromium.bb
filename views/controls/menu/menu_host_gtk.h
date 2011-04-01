@@ -11,29 +11,23 @@
 #include "views/widget/widget_gtk.h"
 
 namespace views {
-
-class SubmenuView;
+namespace internal {
+class NativeMenuHostDelegate;
+}
 
 // NativeMenuHost implementation for Gtk.
 class MenuHostGtk : public WidgetGtk,
                     public NativeMenuHost {
  public:
-  explicit MenuHostGtk(SubmenuView* submenu);
+  explicit MenuHostGtk(internal::NativeMenuHostDelegate* delegate);
   virtual ~MenuHostGtk();
 
  private:
   // Overridden from NativeMenuHost:
   virtual void InitMenuHost(gfx::NativeWindow parent,
-                            const gfx::Rect& bounds,
-                            View* contents_view,
-                            bool do_capture) OVERRIDE;
-  virtual bool IsMenuHostVisible() OVERRIDE;
-  virtual void ShowMenuHost(bool do_capture) OVERRIDE;
-  virtual void HideMenuHost() OVERRIDE;
-  virtual void DestroyMenuHost() OVERRIDE;
-  virtual void SetMenuHostBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void ReleaseMenuHostCapture() OVERRIDE;
-  virtual gfx::NativeWindow GetMenuHostWindow() OVERRIDE;
+                            const gfx::Rect& bounds) OVERRIDE;
+  virtual void StartCapturing() OVERRIDE;
+  virtual NativeWidget* AsNativeWidget() OVERRIDE;
 
   // Overridden from WidgetGtk:
   virtual RootView* CreateRootView() OVERRIDE;
@@ -43,19 +37,10 @@ class MenuHostGtk : public WidgetGtk,
   virtual void HandleGtkGrabBroke() OVERRIDE;
   virtual void HandleXGrabBroke() OVERRIDE;
 
-  void DoCapture();
-
-  // Cancel all menus unless drag is in progress.
-  void CancelAllIfNoDrag();
-
-  // If true, DestroyMenuHost has been invoked.
-  bool destroying_;
-
-  // The view we contain.
-  SubmenuView* submenu_;
-
   // Have we done input grab?
   bool did_input_grab_;
+
+  scoped_ptr<internal::NativeMenuHostDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuHostGtk);
 };

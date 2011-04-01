@@ -88,9 +88,6 @@ class WidgetWin : public ui::WindowImpl,
   WidgetWin();
   virtual ~WidgetWin();
 
-  // Initializes native widget properties based on |params|.
-  void SetCreateParams(const CreateParams& params);
-
   // Returns the Widget associated with the specified HWND (if any).
   static WidgetWin* GetWidget(HWND hwnd);
 
@@ -203,6 +200,7 @@ class WidgetWin : public ui::WindowImpl,
   }
 
   // Overridden from NativeWidget:
+  virtual void SetCreateParams(const Widget::CreateParams& params) OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;

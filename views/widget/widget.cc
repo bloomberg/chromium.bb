@@ -58,6 +58,10 @@ Widget::Widget()
 Widget::~Widget() {
 }
 
+void Widget::SetCreateParams(const CreateParams& params) {
+  native_widget_->SetCreateParams(params);
+}
+
 // Unconverted methods (see header) --------------------------------------------
 
 void Widget::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
