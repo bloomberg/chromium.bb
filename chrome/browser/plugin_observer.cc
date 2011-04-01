@@ -141,22 +141,21 @@ string16 BlockedPluginInfoBarDelegate::GetMessageText() const {
 string16 BlockedPluginInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_PLUGIN_ENABLE_ALWAYS : IDS_PLUGIN_ENABLE_TEMPORARILY);
+      IDS_PLUGIN_ENABLE_TEMPORARILY : IDS_PLUGIN_ENABLE_ALWAYS);
 }
 
 bool BlockedPluginInfoBarDelegate::Accept() {
+  UserMetrics::RecordAction(
+      UserMetricsAction("BlockedPluginInfobar.AllowThisTime"));
+  return PluginInfoBarDelegate::Cancel();
+}
+
+bool BlockedPluginInfoBarDelegate::Cancel() {
   UserMetrics::RecordAction(
       UserMetricsAction("BlockedPluginInfobar.AlwaysAllow"));
   tab_contents_->profile()->GetHostContentSettingsMap()->AddExceptionForURL(
       tab_contents_->GetURL(), CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
       CONTENT_SETTING_ALLOW);
-  tab_contents_->render_view_host()->LoadBlockedPlugins();
-  return true;
-}
-
-bool BlockedPluginInfoBarDelegate::Cancel() {
-  UserMetrics::RecordAction(
-      UserMetricsAction("BlockedPluginInfobar.AllowThisTime"));
   return PluginInfoBarDelegate::Cancel();
 }
 
