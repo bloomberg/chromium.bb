@@ -8,6 +8,7 @@ import logging
 import os
 import posixpath
 import re
+import sys
 import time
 
 import scm
@@ -47,6 +48,14 @@ class DiffFilterer(object):
           line.startswith(self.working_prefix)):
         line = self._Replace(line)
     print(line)
+
+
+def ask_for_data(prompt):
+  try:
+    return raw_input(prompt)
+  except KeyboardInterrupt:
+    # Hide the exception.
+    sys.exit(1)
 
 
 ### SCM abstraction layer
@@ -353,11 +362,11 @@ class GitWrapper(SCMWrapper):
           while True:
             try:
               # TODO(maruel): That can't work with --jobs.
-              action = str(raw_input("Cannot fast-forward merge, attempt to "
-                                     "rebase? (y)es / (q)uit / (s)kip : "))
+              action = ask_for_data(
+                  'Cannot fast-forward merge, attempt to rebase? '
+                  '(y)es / (q)uit / (s)kip : ')
             except ValueError:
-              gclient_utils.Error('Invalid Character')
-              continue
+              raise gclient_utils.Error('Invalid Character')
             if re.match(r'yes|y', action, re.I):
               self._AttemptRebase(upstream_branch, files, options,
                                   printed_path=printed_path)
@@ -540,11 +549,11 @@ class GitWrapper(SCMWrapper):
           re.match(r'cannot rebase: your index contains uncommitted changes',
                    e.stderr)):
         while True:
-          rebase_action = str(raw_input("Cannot rebase because of unstaged "
-                                        "changes.\n'git reset --hard HEAD' ?\n"
-                                        "WARNING: destroys any uncommitted "
-                                        "work in your current branch!"
-                                        " (y)es / (q)uit / (s)how : "))
+          rebase_action = ask_for_data(
+              'Cannot rebase because of unstaged changes.\n'
+              '\'git reset --hard HEAD\' ?\n'
+              'WARNING: destroys any uncommitted work in your current branch!'
+              ' (y)es / (q)uit / (s)how : ')
           if re.match(r'yes|y', rebase_action, re.I):
             self._Run(['reset', '--hard', 'HEAD'], options)
             # Should this be recursive?

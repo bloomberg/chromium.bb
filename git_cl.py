@@ -43,6 +43,7 @@ DEFAULT_SERVER = 'http://codereview.appspot.com'
 POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
 
+
 def DieWithError(message):
   print >> sys.stderr, message
   sys.exit(1)
@@ -96,6 +97,14 @@ def usage(more):
     fn.usage_more = more
     return fn
   return hook
+
+
+def ask_for_data(prompt):
+  try:
+    return raw_input(prompt)
+  except KeyboardInterrupt:
+    # Hide the exception.
+    sys.exit(1)
 
 
 def FixUrl(server):
@@ -526,7 +535,7 @@ def GetCodereviewSettingsInteractively():
   server = settings.GetDefaultServerUrl(error_ok=True)
   prompt = 'Rietveld server (host[:port])'
   prompt += ' [%s]' % (server or DEFAULT_SERVER)
-  newserver = raw_input(prompt + ': ')
+  newserver = ask_for_data(prompt + ':')
   if not server and not newserver:
     newserver = DEFAULT_SERVER
   if newserver and newserver != server:
@@ -536,7 +545,7 @@ def GetCodereviewSettingsInteractively():
     prompt = caption
     if initial:
       prompt += ' ("x" to clear) [%s]' % initial
-    new_val = raw_input(prompt + ': ')
+    new_val = ask_for_data(prompt + ':')
     if new_val == 'x':
       RunGit(['config', '--unset-all', 'rietveld.' + name], error_ok=True)
     elif new_val and new_val != initial:
@@ -1113,7 +1122,7 @@ def SendUpstream(parser, args, cmd):
   branches = [base_branch, cl.GetBranchRef()]
   if not options.force:
     subprocess.call(['git', 'diff', '--stat'] + branches)
-    raw_input("About to commit; enter to confirm.")
+    ask_for_data('About to commit; enter to confirm.')
 
   # We want to squash all this branch's commits into one commit with the
   # proper description.
@@ -1198,7 +1207,7 @@ to run 'git cl push' instead.
 Choose wisely, if you get this wrong, your commit might appear to succeed but
 will instead be silently ignored."""
     print(message)
-    raw_input('[Press enter to dcommit or ctrl-C to quit]')
+    ask_for_data('[Press enter to dcommit or ctrl-C to quit]')
   return SendUpstream(parser, args, 'dcommit')
 
 
@@ -1208,7 +1217,7 @@ def CMDpush(parser, args):
   if settings.GetIsGitSvn():
     print('This appears to be an SVN repository.')
     print('Are you sure you didn\'t mean \'git cl dcommit\'?')
-    raw_input('[Press enter to push or ctrl-C to quit]')
+    ask_for_data('[Press enter to push or ctrl-C to quit]')
   return SendUpstream(parser, args, 'push')
 
 
