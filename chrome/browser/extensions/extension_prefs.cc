@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
@@ -563,6 +564,7 @@ bool ExtensionPrefs::GetGrantedPermissions(
   std::set<std::string> host_permissions;
   ReadExtensionPrefStringSet(
       extension_id, kPrefGrantedPermissionsHost, &host_permissions);
+  bool allow_file_access = AllowFileAccess(extension_id);
 
   // The granted host permissions contain hosts from the manifest's
   // "permissions" array and from the content script "matches" arrays,
@@ -579,6 +581,10 @@ bool ExtensionPrefs::GetGrantedPermissions(
             *i, URLPattern::PARSE_LENIENT)) {
       NOTREACHED();  // Corrupt prefs?  Hand editing?
     } else {
+      if (!allow_file_access && pattern.MatchesScheme(chrome::kFileScheme)) {
+        pattern.set_valid_schemes(
+            pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
+      }
       host_extent->AddPattern(pattern);
     }
   }
@@ -632,6 +638,12 @@ void ExtensionPrefs::SetAllowFileAccess(const std::string& extension_id,
   UpdateExtensionPref(extension_id, kPrefAllowFileAccess,
                       Value::CreateBooleanValue(allow));
   SavePrefsAndNotify();
+}
+
+bool ExtensionPrefs::HasAllowFileAccessSetting(
+    const std::string& extension_id) const {
+  DictionaryValue* ext = GetExtensionPref(extension_id);
+  return ext && ext->HasKey(kPrefAllowFileAccess);
 }
 
 ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(

@@ -1,0 +1,10 @@
+{
+   "name": "http:// scheme in content script matches list",
+   "content_scripts": [
+     {
+       "matches": [ "http://*/*" ],
+       "js": [ "content_script.js" ]
+     }
+   ],
+   "version": "1"
+}

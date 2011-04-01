@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,8 +61,7 @@ UserScript::File::~File() {}
 
 UserScript::UserScript()
     : run_location_(DOCUMENT_IDLE), emulate_greasemonkey_(false),
-      match_all_frames_(false), incognito_enabled_(false),
-      allow_file_access_(false) {
+      match_all_frames_(false), incognito_enabled_(false) {
 }
 
 UserScript::~UserScript() {
@@ -71,8 +70,6 @@ UserScript::~UserScript() {
 void UserScript::add_url_pattern(const URLPattern& pattern) {
   url_patterns_.push_back(pattern);
 }
-
-void UserScript::clear_url_patterns() { url_patterns_.clear(); }
 
 bool UserScript::MatchesUrl(const GURL& url) const {
   if (!url_patterns_.empty()) {
@@ -113,7 +110,6 @@ void UserScript::Pickle(::Pickle* pickle) const {
   pickle->WriteBool(emulate_greasemonkey());
   pickle->WriteBool(match_all_frames());
   pickle->WriteBool(is_incognito_enabled());
-  pickle->WriteBool(allow_file_access());
 
   // Write globs.
   std::vector<std::string>::const_iterator glob;
@@ -160,7 +156,6 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
   CHECK(pickle.ReadBool(iter, &emulate_greasemonkey_));
   CHECK(pickle.ReadBool(iter, &match_all_frames_));
   CHECK(pickle.ReadBool(iter, &incognito_enabled_));
-  CHECK(pickle.ReadBool(iter, &allow_file_access_));
 
   // Read globs.
   size_t num_globs = 0;
@@ -191,8 +186,18 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
     std::string pattern_str;
     URLPattern pattern(valid_schemes);
     CHECK(pickle.ReadString(iter, &pattern_str));
+
+    // We remove the file scheme if it's not actually allowed (see Extension::
+    // LoadUserScriptHelper), but we need it temporarily while loading the
+    // pattern so that it's valid.
+    bool had_file_scheme = (valid_schemes & URLPattern::SCHEME_FILE) != 0;
+    if (!had_file_scheme)
+      pattern.set_valid_schemes(valid_schemes | URLPattern::SCHEME_FILE);
     CHECK(URLPattern::PARSE_SUCCESS ==
           pattern.Parse(pattern_str, URLPattern::PARSE_LENIENT));
+    if (!had_file_scheme)
+      pattern.set_valid_schemes(valid_schemes);
+
     url_patterns_.push_back(pattern);
   }
 

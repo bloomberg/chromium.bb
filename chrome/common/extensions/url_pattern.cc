@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -230,10 +230,10 @@ bool URLPattern::MatchesUrl(const GURL &test) const {
 }
 
 bool URLPattern::MatchesScheme(const std::string& test) const {
-  if (scheme_ == "*")
-    return IsValidScheme(test);
+  if (!IsValidScheme(test))
+    return false;
 
-  return test == scheme_;
+  return scheme_ == "*" || test == scheme_;
 }
 
 bool URLPattern::MatchesHost(const std::string& host) const {
@@ -333,7 +333,7 @@ bool URLPattern::OverlapsWith(const URLPattern& other) const {
 std::vector<URLPattern> URLPattern::ConvertToExplicitSchemes() const {
   std::vector<URLPattern> result;
 
-  if (scheme_ != "*" && !match_all_urls_) {
+  if (scheme_ != "*" && !match_all_urls_ && IsValidScheme(scheme_)) {
     result.push_back(*this);
     return result;
   }

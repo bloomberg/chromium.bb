@@ -1,0 +1,5 @@
+{
+   "name": "<all_urls> in permissions list",
+   "permissions": [ "<all_urls>" ],
+   "version": "1"
+}

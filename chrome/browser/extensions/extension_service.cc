@@ -199,7 +199,8 @@ void ExtensionServiceBackend::LoadSingleExtension(
   FilePath extension_path = path_in;
   file_util::AbsolutePath(&extension_path);
 
-  int flags = Extension::NO_FLAGS;
+  int flags = Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD) ?
+      Extension::ALLOW_FILE_ACCESS : Extension::NO_FLAGS;
   if (Extension::ShouldDoStrictErrorChecking(Extension::LOAD))
     flags |= Extension::STRICT_ERROR_CHECKS;
   std::string error;
@@ -816,6 +817,8 @@ void ExtensionService::LoadAllExtensions() {
       int flags = Extension::NO_FLAGS;
       if (Extension::ShouldDoStrictErrorChecking(info->extension_location))
         flags |= Extension::STRICT_ERROR_CHECKS;
+      if (extension_prefs_->AllowFileAccess(info->extension_id))
+        flags |= Extension::ALLOW_FILE_ACCESS;
       std::string error;
       scoped_refptr<const Extension> extension(
           extension_file_util::LoadExtension(
@@ -940,6 +943,8 @@ void ExtensionService::LoadInstalledExtension(const ExtensionInfo& info,
       flags |= Extension::REQUIRE_KEY;
     if (Extension::ShouldDoStrictErrorChecking(info.extension_location))
       flags |= Extension::STRICT_ERROR_CHECKS;
+    if (extension_prefs_->AllowFileAccess(info.extension_id))
+      flags |= Extension::ALLOW_FILE_ACCESS;
     extension = Extension::Create(
         info.extension_path,
         info.extension_location,
@@ -1107,12 +1112,19 @@ bool ExtensionService::AllowFileAccess(const Extension* extension) {
 }
 
 void ExtensionService::SetAllowFileAccess(const Extension* extension,
-                                           bool allow) {
+                                          bool allow) {
+  // Reload to update browser state. Only bother if the value changed and the
+  // extension is actually enabled, since there is no UI otherwise.
+  bool old_allow = AllowFileAccess(extension);
+  if (allow == old_allow)
+    return;
+
   extension_prefs_->SetAllowFileAccess(extension->id(), allow);
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_USER_SCRIPTS_UPDATED,
-      Source<Profile>(profile_),
-      Details<const Extension>(extension));
+
+  bool extension_is_enabled = std::find(extensions_.begin(), extensions_.end(),
+                                        extension) != extensions_.end();
+  if (extension_is_enabled)
+    ReloadExtension(extension->id());
 }
 
 bool ExtensionService::GetBrowserActionVisibility(const Extension* extension) {
@@ -1512,10 +1524,12 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
   extension_prefs_->OnExtensionInstalled(
       extension, initial_state, initial_enable_incognito);
 
-  // Unpacked extensions start off with file access since they are a developer
-  // feature.
-  if (extension->location() == Extension::LOAD)
+  // Unpacked extensions default to allowing file access, but if that has been
+  // overridden, don't reset the value.
+  if (Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD) &&
+      !extension_prefs_->HasAllowFileAccessSetting(extension->id())) {
     extension_prefs_->SetAllowFileAccess(extension->id(), true);
+  }
 
   // If the extension is a theme, tell the profile (and therefore ThemeProvider)
   // to apply it.

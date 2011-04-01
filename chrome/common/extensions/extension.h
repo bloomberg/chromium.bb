@@ -133,6 +133,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // extension).  Most callers will set the |STRICT_ERROR_CHECKS| bit when
     // Extension::ShouldDoStrictErrorChecking(location) returns true.
     STRICT_ERROR_CHECKS = 1 << 1,
+
+    // |ALLOW_FILE_ACCESS| indicates that the user is allowing this extension
+    // to have file access. If it's not present, then permissions and content
+    // scripts that match file:/// URLs will be filtered out.
+    ALLOW_FILE_ACCESS = 1 << 2,
   };
 
   static scoped_refptr<Extension> Create(const FilePath& path,
@@ -281,6 +286,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static inline bool ShouldDoStrictErrorChecking(Location location) {
     return location == Extension::LOAD ||
            location == Extension::COMPONENT;
+  }
+
+  // Unpacked extensions start off with file access since they are a developer
+  // feature.
+  static inline bool ShouldAlwaysAllowFileAccess(Location location) {
+    return location == Extension::LOAD;
   }
 
   // See Type definition above.
@@ -440,7 +451,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // This method is also aware of certain special pages that extensions are
   // usually not allowed to run script on.
   bool CanExecuteScriptOnPage(const GURL& page_url,
-                              UserScript* script,
+                              const UserScript* script,
                               std::string* error) const;
 
   // Returns true if this extension is a COMPONENT extension, or if it is
@@ -501,6 +512,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const std::string omnibox_keyword() const { return omnibox_keyword_; }
   bool incognito_split_mode() const { return incognito_split_mode_; }
   const std::vector<TtsVoice>& tts_voices() const { return tts_voices_; }
+
+  bool wants_file_access() const { return wants_file_access_; }
 
   // App-related.
   bool is_app() const { return is_app_; }
@@ -571,7 +584,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // dictionary in the content_script list of the manifest.
   bool LoadUserScriptHelper(const DictionaryValue* content_script,
                             int definition_index,
-                            URLPattern::ParseOption parse_strictness,
+                            int flags,
                             std::string* error,
                             UserScript* result);
 
@@ -785,6 +798,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // List of text-to-speech voices that this extension provides, if any.
   std::vector<TtsVoice> tts_voices_;
+
+  // Whether the extension has host permissions or user script patterns that
+  // imply access to file:/// scheme URLs (the user may not have actually
+  // granted it that access).
+  bool wants_file_access_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            UpdateExtensionPreservesLocation);

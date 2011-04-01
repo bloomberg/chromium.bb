@@ -164,6 +164,8 @@ class ExtensionService
 
   // Whether this extension can inject scripts into pages with file URLs.
   bool AllowFileAccess(const Extension* extension);
+  // Will reload the extension since this permission is applied at loading time
+  // only.
   void SetAllowFileAccess(const Extension* extension, bool allow);
 
   // Getter and setter for the Browser Action visibility in the toolbar.

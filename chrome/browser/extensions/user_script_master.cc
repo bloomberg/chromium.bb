@@ -345,14 +345,11 @@ void UserScriptMaster::Observe(NotificationType type,
       const Extension* extension = Details<const Extension>(details).ptr();
       bool incognito_enabled = profile_->GetExtensionService()->
           IsIncognitoEnabled(extension);
-      bool allow_file_access = profile_->GetExtensionService()->
-          AllowFileAccess(extension);
       const UserScriptList& scripts = extension->content_scripts();
       for (UserScriptList::const_iterator iter = scripts.begin();
            iter != scripts.end(); ++iter) {
         lone_scripts_.push_back(*iter);
         lone_scripts_.back().set_incognito_enabled(incognito_enabled);
-        lone_scripts_.back().set_allow_file_access(allow_file_access);
       }
       if (extensions_service_ready_)
         StartScan();
@@ -381,13 +378,10 @@ void UserScriptMaster::Observe(NotificationType type,
       UserScriptList new_lone_scripts;
       bool incognito_enabled = profile_->GetExtensionService()->
           IsIncognitoEnabled(extension);
-      bool allow_file_access = profile_->GetExtensionService()->
-          AllowFileAccess(extension);
       for (UserScriptList::iterator iter = lone_scripts_.begin();
            iter != lone_scripts_.end(); ++iter) {
         if (iter->extension_id() == extension->id()) {
           iter->set_incognito_enabled(incognito_enabled);
-          iter->set_allow_file_access(allow_file_access);
         }
       }
       StartScan();

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,12 +151,8 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
       std::vector<URLPattern> explicit_patterns =
           script->url_patterns()[k].ConvertToExplicitSchemes();
       for (size_t m = 0; m < explicit_patterns.size(); ++m) {
-        // Only include file schemes if the user has opted into that.
-        if (!explicit_patterns[m].MatchesScheme(chrome::kFileScheme) ||
-            script->allow_file_access()) {
-          temp_patterns.push_back(WebString::fromUTF8(
-              explicit_patterns[m].GetAsString()));
-        }
+        temp_patterns.push_back(WebString::fromUTF8(
+            explicit_patterns[m].GetAsString()));
       }
     }
     patterns.assign(temp_patterns);
@@ -213,9 +209,6 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
 
     if (!extension->CanExecuteScriptOnPage(frame_url, script, NULL))
       continue;
-
-    if (frame_url.SchemeIsFile() && !script->allow_file_access())
-      continue;  // This script isn't allowed to run on file URLs.
 
     // We rely on WebCore for CSS injection, but it's still useful to know how
     // many css files there are.

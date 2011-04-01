@@ -264,8 +264,7 @@ const int Extension::kValidWebExtentSchemes =
     URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS;
 
 const int Extension::kValidHostPermissionSchemes =
-    (UserScript::kValidUserScriptSchemes |
-     URLPattern::SCHEME_CHROMEUI) & ~URLPattern::SCHEME_FILE;
+    UserScript::kValidUserScriptSchemes | URLPattern::SCHEME_CHROMEUI;
 
 //
 // Extension
@@ -556,9 +555,14 @@ bool Extension::GenerateId(const std::string& input, std::string* output) {
 // content_script list of the manifest.
 bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
                                      int definition_index,
-                                     URLPattern::ParseOption parse_strictness,
+                                     int flags,
                                      std::string* error,
                                      UserScript* result) {
+  // When strict error checks are enabled, make URL pattern parsing strict.
+  URLPattern::ParseOption parse_strictness =
+      (flags & STRICT_ERROR_CHECKS ? URLPattern::PARSE_STRICT
+                                   : URLPattern::PARSE_LENIENT);
+
   // run_at
   if (content_script->HasKey(keys::kRunAt)) {
     std::string run_location;
@@ -629,6 +633,14 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
           base::IntToString(j),
           URLPattern::GetParseResultString(parse_result));
       return false;
+    }
+
+    if (pattern.MatchesScheme(chrome::kFileScheme) &&
+        !CanExecuteScriptEverywhere()) {
+      wants_file_access_ = true;
+      if (!(flags & ALLOW_FILE_ACCESS))
+        pattern.set_valid_schemes(
+            pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
     }
 
     result->add_url_pattern(pattern);
@@ -1212,7 +1224,8 @@ Extension::Extension(const FilePath& path, Location location)
       is_storage_isolated_(false),
       launch_container_(extension_misc::LAUNCH_TAB),
       launch_width_(0),
-      launch_height_(0) {
+      launch_height_(0),
+      wants_file_access_(false) {
   DCHECK(path.IsAbsolute());
   path_ = MaybeNormalizePath(path);
 }
@@ -1774,8 +1787,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       }
 
       UserScript script;
-      if (!LoadUserScriptHelper(content_script, i, parse_strictness, error,
-                                &script))
+      if (!LoadUserScriptHelper(content_script, i, flags, error, &script))
         return false;  // Failed to parse script context definition.
       script.set_extension_id(id());
       if (converted_from_user_script_) {
@@ -1960,6 +1972,14 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
         // The path component is not used for host permissions, so we force it
         // to match all paths.
         pattern.SetPath("/*");
+
+        if (pattern.MatchesScheme(chrome::kFileScheme) &&
+            !CanExecuteScriptEverywhere()) {
+          wants_file_access_ = true;
+          if (!(flags & ALLOW_FILE_ACCESS))
+            pattern.set_valid_schemes(
+                pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
+        }
 
         host_permissions_.push_back(pattern);
       }
@@ -2412,7 +2432,7 @@ bool Extension::HasMultipleUISurfaces() const {
 }
 
 bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
-                                       UserScript* script,
+                                       const UserScript* script,
                                        std::string* error) const {
   // The gallery is special-cased as a restricted URL for scripting to prevent
   // access to special JS bindings we expose to the gallery (and avoid things

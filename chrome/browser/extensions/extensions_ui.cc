@@ -715,20 +715,6 @@ DictionaryValue* ExtensionsDOMHandler::CreateContentScriptDetailValue(
   return script_data;
 }
 
-static bool ExtensionWantsFileAccess(const Extension* extension) {
-  for (UserScriptList::const_iterator it = extension->content_scripts().begin();
-       it != extension->content_scripts().end(); ++it) {
-    for (UserScript::PatternList::const_iterator pattern =
-             it->url_patterns().begin();
-         pattern != it->url_patterns().end(); ++pattern) {
-      if (pattern->MatchesScheme(chrome::kFileScheme))
-        return true;
-    }
-  }
-
-  return false;
-}
-
 // Static
 DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
     ExtensionService* service, const Extension* extension,
@@ -754,8 +740,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("terminated", terminated);
   extension_data->SetBoolean("enabledIncognito",
       service ? service->IsIncognitoEnabled(extension) : false);
-  extension_data->SetBoolean("wantsFileAccess",
-      ExtensionWantsFileAccess(extension));
+  extension_data->SetBoolean("wantsFileAccess", extension->wants_file_access());
   extension_data->SetBoolean("allowFileAccess",
       service ? service->AllowFileAccess(extension) : false);
   extension_data->SetBoolean("allow_reload",
