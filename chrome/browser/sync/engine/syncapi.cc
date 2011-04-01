@@ -1561,17 +1561,20 @@ bool SyncManager::Init(const FilePath& database_location,
   DCHECK(post_factory);
   VLOG(1) << "SyncManager starting Init...";
   string server_string(sync_server_and_path);
-  return data_->Init(database_location,
-                     server_string,
-                     sync_server_port,
-                     use_ssl,
-                     post_factory,
-                     registrar,
-                     user_agent,
-                     credentials,
-                     sync_notifier,
-                     restored_key_for_bootstrapping,
-                     setup_for_test_mode);
+  bool signed_in = data_->Init(database_location,
+                               server_string,
+                               sync_server_port,
+                               use_ssl,
+                               post_factory,
+                               registrar,
+                               user_agent,
+                               credentials,
+                               sync_notifier,
+                               restored_key_for_bootstrapping,
+                               setup_for_test_mode);
+  if (signed_in)
+    StartConfigurationMode(NULL);
+  return signed_in;
 }
 
 void SyncManager::UpdateCredentials(const SyncCredentials& credentials) {
@@ -1659,7 +1662,8 @@ void SyncManager::RequestConfig(const syncable::ModelTypeBitSet& types) {
 void SyncManager::StartConfigurationMode(ModeChangeCallback* callback) {
   if (!data_->syncer_thread())
     return;
-  // It is an error for this to be called if new_impl is null.
+  if (!data_->syncer_thread()->new_impl())
+    return;
   data_->syncer_thread()->new_impl()->Start(
       browser_sync::s3::SyncerThread::CONFIGURATION_MODE, callback);
 }
