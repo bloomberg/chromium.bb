@@ -65,7 +65,7 @@ echo @@@BUILD_STEP archive_build@@@
     export PATH=${PATH//:\/usr*([^:])/}
     export PATH=${PATH/#*([^:])cygwin*([^:])/}
     export PATH=${PATH//:*([^:])cygwin*([^:])/}
-    gsutil="${SCRIPT_DIR_ABS}/../../../../scripts/slave/gsutil.bat"
+    gsutil="${SCRIPT_DIR_ABS}/../../../../../scripts/slave/gsutil.bat"
   else
     gsutil=/b/build/scripts/slave/gsutil
   fi
