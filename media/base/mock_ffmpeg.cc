@@ -176,7 +176,9 @@ int64 av_rescale_q(int64 a, AVRational bq, AVRational cq) {
   // implement a cheap version that's capable of overflowing.
   int64 num = bq.num * cq.den;
   int64 den = cq.num * bq.den;
-  return a * num / den;
+
+  // Rescale a by num/den. The den / 2 is for rounding.
+  return (a * num + den / 2) / den;
 }
 
 int av_read_frame(AVFormatContext* format, AVPacket* packet) {

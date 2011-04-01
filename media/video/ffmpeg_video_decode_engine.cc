@@ -295,7 +295,7 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   base::TimeDelta timestamp =
       base::TimeDelta::FromMicroseconds(av_frame_->reordered_opaque);
   base::TimeDelta duration =
-      ConvertTimestamp(doubled_time_base, 2 + av_frame_->repeat_pict);
+      ConvertFromTimeBase(doubled_time_base, 2 + av_frame_->repeat_pict);
 
   if (!direct_rendering_) {
     // Available frame is guaranteed, because we issue as much reads as
