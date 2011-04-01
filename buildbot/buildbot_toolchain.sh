@@ -44,6 +44,20 @@ mv sdk/nacl-sdk/* ../
 
 cd ../../..
 
+echo @@@BUILD_STEP archive_build@@@
+# Upload the toolchain before running the tests, in case the tests
+# fail.  We do not want a flaky test or a non-toolchain-related bug to
+# cause us to lose the toolchain snapshot, especially since this takes
+# so long to build on Windows.  We can always re-test a toolchain
+# snapshot on the trybots.
+GS_BASE=gs://nativeclient-archive2/toolchain
+/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+    tools/naclsdk.tgz \
+    ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_${PLATFORM}_x86.tgz
+/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+    tools/naclsdk.tgz \
+    ${GS_BASE}/latest/naclsdk_${PLATFORM}_x86.tgz
+
 if [[ ${PLATFORM} == win ]]; then
   cmd /c "call buildbot\\buildbot_win.bat opt 64"
 elif [[ ${PLATFORM} == mac ]]; then
@@ -54,9 +68,3 @@ else
   echo "ERROR, bad platform."
   exit 1
 fi
-
-echo @@@BUILD_STEP archive_build@@@
-GS_BASE=gs://nativeclient-archive2/toolchain
-/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    tools/naclsdk.tgz \
-    ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_${PLATFORM}_x86.tgz

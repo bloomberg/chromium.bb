@@ -38,6 +38,20 @@ cd toolchain/linux_arm-untrusted
 tar xfz ../../arm-untrusted.tgz
 cd ../..
 
+echo @@@BUILD_STEP archive_build@@@
+if [[ ${BUILDBOT_BUILDERNAME} == lucid32-toolchain_arm-untrusted ]]; then
+  SUFFIX=
+else
+  SUFFIX=-${BUILDBOT_BUILDERNAME}
+fi
+GS_BASE=gs://nativeclient-archive2/toolchain
+/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+    arm-untrusted.tgz \
+    ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_linux_arm-untrusted${SUFFIX}.tgz
+/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+    arm-untrusted.tgz \
+    ${GS_BASE}/latest/naclsdk_linux_arm-untrusted${SUFFIX}.tgz
+
 echo @@@BUILD_STEP test-x86-32@@@
 UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-32 ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
@@ -66,16 +80,5 @@ echo @@@BUILD_STEP test-x86-64-pic@@@
 UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-64-pic ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 fi
-
-echo @@@BUILD_STEP archive_build@@@
-if [[ ${BUILDBOT_BUILDERNAME} == lucid32-toolchain_arm-untrusted ]]; then
-  SUFFIX=
-else
-  SUFFIX=-${BUILDBOT_BUILDERNAME}
-fi
-GS_BASE=gs://nativeclient-archive2/toolchain
-/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    arm-untrusted.tgz \
-    ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_linux_arm-untrusted${SUFFIX}.tgz
 
 exit ${RETCODE}
