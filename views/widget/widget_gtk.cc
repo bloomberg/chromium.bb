@@ -44,6 +44,12 @@
 #endif
 #endif
 
+#if defined(TOUCH_UI) && defined(HAVE_IBUS)
+#include "views/ime/input_method_ibus.h"
+#else
+#include "views/ime/input_method_gtk.h"
+#endif
+
 using ui::OSExchangeData;
 using ui::OSExchangeDataProviderGtk;
 using ui::ActiveWindowWatcherX;
@@ -505,12 +511,13 @@ void WidgetGtk::Init(GtkWidget* parent,
   // already created at this point.
   // TODO(suzhe): Always enable input method when we start to use
   // RenderWidgetHostViewViews in normal ChromeOS.
-#if !defined(TOUCH_UI)
-  if (type_ != TYPE_CHILD && NativeTextfieldViews::IsTextfieldViewsEnabled()) {
-#else
+#if defined(TOUCH_UI) && defined(HAVE_IBUS)
   if (type_ != TYPE_CHILD) {
-#endif
+    input_method_.reset(new InputMethodIBus(this));
+#else
+  if (type_ != TYPE_CHILD && NativeTextfieldViews::IsTextfieldViewsEnabled()) {
     input_method_.reset(new InputMethodGtk(this));
+#endif
     input_method_->Init(GetWidget());
   }
 

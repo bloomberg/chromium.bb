@@ -220,6 +220,11 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
+        ['toolkit_views==1', {
+          'sources': [
+            'common/native_web_keyboard_event_views.cc',
+          ],
+        }],
       ],
     },
   ],

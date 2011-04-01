@@ -422,9 +422,9 @@ void AutocompleteEditViewViews::UpdatePopup() {
   // the text, or in the middle of composition.
   ui::Range sel;
   textfield_->GetSelectedRange(&sel);
-  bool no_inline_autocomplete = sel.GetMax() < GetTextLength();
+  bool no_inline_autocomplete =
+      sel.GetMax() < GetTextLength() || textfield_->IsIMEComposing();
 
-  // TODO(oshima): Support IME. Don't show autocomplete if IME has some text.
   model_->StartAutocomplete(!sel.is_empty(), no_inline_autocomplete);
 }
 

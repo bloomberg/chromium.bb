@@ -213,6 +213,11 @@ void InputMethodGtk::FocusedViewWillChange() {
 
 void InputMethodGtk::FocusedViewDidChange() {
   UpdateContextFocusState();
+
+  // Force to update caret bounds, in case the View thinks that the caret
+  // bounds has not changed.
+  if (context_focused_)
+    OnCaretBoundsChanged(focused_view());
 }
 
 void InputMethodGtk::ConfirmCompositionText() {

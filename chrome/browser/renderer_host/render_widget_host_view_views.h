@@ -17,10 +17,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/events/event.h"
+#include "views/ime/text_input_client.h"
 #include "views/view.h"
 #include "webkit/glue/webcursor.h"
 
-class IMEContextHandler;
 class RenderWidgetHost;
 struct NativeWebKeyboardEvent;
 
@@ -28,7 +28,8 @@ struct NativeWebKeyboardEvent;
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
 class RenderWidgetHostViewViews : public RenderWidgetHostView,
-                                  public views::View {
+                                  public views::View,
+                                  public views::TextInputClient {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -88,12 +89,6 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   // inner view. This can return NULL when it's not attached to a view.
   gfx::NativeView GetInnerNativeView() const;
 
-  // Forwards a keyboard event to renderer.
-  void ForwardKeyEvent(const views::KeyEvent& event);
-
-  // Forwards a web keyboard event to renderer.
-  void ForwardWebKeyboardEvent(const NativeWebKeyboardEvent& event);
-
   // Overridden from views::View.
   virtual std::string GetClassName() const OVERRIDE;
   virtual gfx::NativeCursor GetCursorForPoint(ui::EventType type,
@@ -109,6 +104,30 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
+  virtual views::TextInputClient* GetTextInputClient() OVERRIDE;
+
+  // Overridden from TextInputClient:
+  virtual void SetCompositionText(
+      const ui::CompositionText& composition) OVERRIDE;
+  virtual void ConfirmCompositionText() OVERRIDE;
+  virtual void ClearCompositionText() OVERRIDE;
+  virtual void InsertText(const string16& text) OVERRIDE;
+  virtual void InsertChar(char16 ch, int flags) OVERRIDE;
+  virtual ui::TextInputType GetTextInputType() OVERRIDE;
+  virtual gfx::Rect GetCaretBounds() OVERRIDE;
+  virtual bool HasCompositionText() OVERRIDE;
+  virtual bool GetTextRange(ui::Range* range) OVERRIDE;
+  virtual bool GetCompositionTextRange(ui::Range* range) OVERRIDE;
+  virtual bool GetSelectionRange(ui::Range* range) OVERRIDE;
+  virtual bool SetSelectionRange(const ui::Range& range) OVERRIDE;
+  virtual bool DeleteRange(const ui::Range& range) OVERRIDE;
+  virtual bool GetTextFromRange(
+      const ui::Range& range,
+      const base::Callback<void(const string16&)>& callback) OVERRIDE;
+  virtual void OnInputMethodChanged() OVERRIDE;
+  virtual bool ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection direction) OVERRIDE;
+  virtual views::View* GetOwnerViewOfTextInputClient() OVERRIDE;
 
  protected:
   // Overridden from RenderWidgetHostView / views::View.
@@ -135,6 +154,10 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   // Translate a views::MouseEvent into a WebKit::WebMouseEvent.
   WebKit::WebMouseEvent WebMouseEventFromViewsEvent(
       const views::MouseEvent& event);
+
+  // Confirm existing composition text in the webpage and ask the input method
+  // to cancel its ongoing composition sesstion.
+  void FinishImeCompositionSession();
 
   // The model object.
   RenderWidgetHost* host_;
@@ -181,9 +204,14 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   // removed from the list on an ET_TOUCH_RELEASED event.
   WebKit::WebTouchEvent touch_event_;
 
-  // Input method context used to translating sequence of key events into other
-  // languages.
-  scoped_ptr<IMEContextHandler> ime_context_;
+  // The current text input type.
+  ui::TextInputType text_input_type_;
+
+  // The current caret bounds.
+  gfx::Rect caret_bounds_;
+
+  // Indicates if there is onging composition text.
+  bool has_composition_text_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewViews);
 };

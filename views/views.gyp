@@ -285,15 +285,14 @@
         'focus/focus_util_win.h',
         'focus/view_storage.cc',
         'focus/view_storage.h',
-        'ime/ibus_ime_context.cc',
-        'ime/ime_context.cc',
-        'ime/ime_context.h',
         'ime/input_method.h',
         'ime/input_method_delegate.h',
         'ime/input_method_base.cc',
         'ime/input_method_base.h',
         'ime/input_method_gtk.cc',
         'ime/input_method_gtk.h',
+        'ime/input_method_ibus.cc',
+        'ime/input_method_ibus.h',
         'ime/input_method_win.cc',
         'ime/input_method_win.h',
         'ime/text_input_client.h',
@@ -446,18 +445,25 @@
                 ['exclude', 'touchui/touch_factory.h'],
               ],
             }],
-            ['"<!@(<(pkg-config) --atleast-version=1.3.99 ibus-1.0 || echo $?)"!=""', {
+            # TODO(suzhe): We should not check ibus version here. Instead, we
+            # should use a variable to control whether or not to use ibus.
+            ['"<!@(<(pkg-config) --atleast-version=1.3.99 ibus-1.0 || echo $?)"==""', {
+              'defines': ['HAVE_IBUS=1'],
               'sources/': [
-                ['exclude', 'ime/ibus_ime_context.cc'],
+                ['exclude', 'ime/input_method_gtk.cc'],
+                ['exclude', 'ime/input_method_gtk.h'],
               ],
-              'defines': ['USE_DUMMY_IME_CONTEXT'],
+            }, { # else: no ibus
+              'sources/': [
+                ['exclude', 'ime/input_method_ibus.cc'],
+                ['exclude', 'ime/input_method_ibus.h'],
+              ],
             }],
           ],
         }, { # else: touchui != 1
           'sources!': [
-            'ime/ibus_ime_context.cc',
-            'ime/ime_context.cc',
-            'ime/ime_context.h',
+            'ime/input_method_ibus.cc',
+            'ime/input_method_ibus.h',
           ],
         }],
         ['OS=="win"', {

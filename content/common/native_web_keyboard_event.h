@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "build/build_config.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 #if defined(OS_WIN)
@@ -19,6 +20,12 @@ class NSEvent;
 #endif  // __OBJC__
 #elif defined(OS_POSIX)
 typedef struct _GdkEventKey GdkEventKey;
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+namespace views {
+class KeyEvent;
+}
 #endif
 
 // Owns a platform specific event; used to pass own and pass event through
@@ -34,10 +41,29 @@ struct NativeWebKeyboardEvent : public WebKit::WebKeyboardEvent {
                          int state,
                          double time_stamp_seconds);
 #elif defined(TOOLKIT_USES_GTK)
+  // TODO(suzhe): Limit these constructors to Linux native Gtk port.
+  // For Linux Views port, after using RenderWidgetHostViewViews to replace
+  // RenderWidgetHostViewGtk, we can use constructors for TOOLKIT_VIEWS defined
+  // below.
   explicit NativeWebKeyboardEvent(const GdkEventKey* event);
   NativeWebKeyboardEvent(wchar_t character,
                          int state,
                          double time_stamp_seconds);
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+  // TODO(suzhe): remove once we get rid of Gtk from Views.
+  struct FromViewsEvent {};
+  // These two constructors are shared between Windows and Linux Views ports.
+  explicit NativeWebKeyboardEvent(const views::KeyEvent& event);
+  // TODO(suzhe): Sadly, we need to add a meanless FromViewsEvent parameter to
+  // distinguish between this contructor and above Gtk one, because they use
+  // different modifier flags. We can remove this extra parameter as soon as we
+  // disable above Gtk constructor in Linux Views port.
+  NativeWebKeyboardEvent(uint16 character,
+                         int flags,
+                         double time_stamp_seconds,
+                         FromViewsEvent);
 #endif
 
   NativeWebKeyboardEvent(const NativeWebKeyboardEvent& event);

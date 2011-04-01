@@ -14,7 +14,6 @@
 #include "ui/gfx/size.h"
 #include "views/focus/focus_manager.h"
 #include "views/ime/input_method_delegate.h"
-#include "views/ime/input_method_gtk.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
 
@@ -32,6 +31,7 @@ using ui::OSExchangeDataProviderGtk;
 namespace views {
 
 class DropTargetGtk;
+class InputMethod;
 class TooltipManagerGtk;
 class View;
 class WindowGtk;
