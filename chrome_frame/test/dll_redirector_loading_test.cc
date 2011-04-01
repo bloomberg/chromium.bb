@@ -123,7 +123,8 @@ scoped_ptr<Version> DllRedirectorLoadingTest::original_version_;
 scoped_ptr<Version> DllRedirectorLoadingTest::new_version_;
 ScopedTempDir DllRedirectorLoadingTest::temp_dir_;
 
-TEST_F(DllRedirectorLoadingTest, TestDllRedirection) {
+// bug: http://crbug.com/78209
+TEST_F(DllRedirectorLoadingTest, DISABLED_TestDllRedirection) {
   struct TestData {
     FilePath first_dll;
     FilePath second_dll;
