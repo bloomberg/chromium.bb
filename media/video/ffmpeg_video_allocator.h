@@ -85,13 +85,15 @@ class FFmpegVideoAllocator {
   // This map is used to map from AVCodecContext* to index to
   // |available_frames_|, because ffmpeg-mt maintain multiple
   // AVCodecContext (per thread).
-  std::map<void*, int> codec_index_map_;
+  std::map<AVCodecContext*, int> codec_index_map_;
 
-  // These function pointer store original ffmpeg AVCodecContext's
-  // get_buffer()/release_buffer() function pointer. We use these function
+  // These function pointers store the original AVCodecContext's
+  // get_buffer()/release_buffer() function pointers. We use these functions
   // to delegate the allocation request.
-  int (*get_buffer_)(struct AVCodecContext *c, AVFrame *pic);
-  void (*release_buffer_)(struct AVCodecContext *c, AVFrame *pic);
+  int (*get_buffer_)(AVCodecContext* c, AVFrame* pic);
+  void (*release_buffer_)(AVCodecContext* c, AVFrame* pic);
+
+  DISALLOW_COPY_AND_ASSIGN(FFmpegVideoAllocator);
 };
 
 }  // namespace media

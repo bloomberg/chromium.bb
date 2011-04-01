@@ -26,7 +26,7 @@ FFmpegVideoAllocator::~FFmpegVideoAllocator() {}
 
 void FFmpegVideoAllocator::Initialize(AVCodecContext* codec_context,
                                       VideoFrame::Format surface_format) {
-#ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.
+#if defined(FF_THREAD_FRAME)  // Only defined in FFMPEG-MT.
   surface_format_ = surface_format;
   get_buffer_ = codec_context->get_buffer;
   release_buffer_ = codec_context->release_buffer;
@@ -37,7 +37,7 @@ void FFmpegVideoAllocator::Initialize(AVCodecContext* codec_context,
 }
 
 void FFmpegVideoAllocator::Stop(AVCodecContext* codec_context) {
-#ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.
+#if defined(FF_THREAD_FRAME)  // Only defined in FFMPEG-MT.
   // Restore default buffer allocator functions.
   // This does not work actually, because in ffmpeg-mt, there are
   // multiple codec_context copies per threads. each context maintain
@@ -64,7 +64,7 @@ void FFmpegVideoAllocator::Stop(AVCodecContext* codec_context) {
 void FFmpegVideoAllocator::DisplayDone(
     AVCodecContext* codec_context,
     scoped_refptr<VideoFrame> video_frame) {
-#ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.
+#if defined(FF_THREAD_FRAME)  // Only defined in FFMPEG-MT.
   RefCountedAVFrame* ffmpeg_video_frame =
       reinterpret_cast<RefCountedAVFrame*>(video_frame->private_buffer());
   if (ffmpeg_video_frame->Release() == 0) {
@@ -78,7 +78,7 @@ scoped_refptr<VideoFrame> FFmpegVideoAllocator::DecodeDone(
     AVCodecContext* codec_context,
     AVFrame* av_frame) {
   scoped_refptr<VideoFrame> frame;
-#ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.
+#if defined(FF_THREAD_FRAME)  // Only defined in FFMPEG-MT.
   RefCountedAVFrame* ffmpeg_video_frame =
       reinterpret_cast<RefCountedAVFrame*>(av_frame->opaque);
   ffmpeg_video_frame->av_frame_ = *av_frame;
@@ -98,14 +98,14 @@ scoped_refptr<VideoFrame> FFmpegVideoAllocator::DecodeDone(
 }
 
 int FFmpegVideoAllocator::AllocateBuffer(AVCodecContext* codec_context,
-                                            AVFrame* av_frame) {
+                                         AVFrame* av_frame) {
   FFmpegVideoAllocator* context =
       reinterpret_cast<FFmpegVideoAllocator*>(codec_context->opaque);
   return context->InternalAllocateBuffer(codec_context, av_frame);
 }
 
 void FFmpegVideoAllocator::ReleaseBuffer(AVCodecContext* codec_context,
-                                            AVFrame* av_frame) {
+                                         AVFrame* av_frame) {
   FFmpegVideoAllocator* context =
       reinterpret_cast<FFmpegVideoAllocator*>(codec_context->opaque);
   context->InternalReleaseBuffer(codec_context, av_frame);
@@ -113,7 +113,7 @@ void FFmpegVideoAllocator::ReleaseBuffer(AVCodecContext* codec_context,
 
 int FFmpegVideoAllocator::InternalAllocateBuffer(
     AVCodecContext* codec_context, AVFrame* av_frame) {
-#ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.
+#if defined(FF_THREAD_FRAME)  // Only defined in FFMPEG-MT.
   // If |codec_context| is not yet known to us, we add it to our map.
   if (codec_index_map_.find(codec_context) == codec_index_map_.end()) {
     int next_index = codec_index_map_.size();
@@ -149,7 +149,7 @@ int FFmpegVideoAllocator::InternalAllocateBuffer(
 
 void FFmpegVideoAllocator::InternalReleaseBuffer(
     AVCodecContext* codec_context, AVFrame* av_frame) {
-#ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.
+#if defined(FF_THREAD_FRAME)  // Only defined in FFMPEG-MT.
   if (av_frame->opaque == NULL) {
     // This could happened in two scenario:
     // 1. FFMPEG-MT H264 codec seems to allocate one frame during
@@ -174,7 +174,7 @@ void FFmpegVideoAllocator::InternalReleaseBuffer(
     available_frames_[index].push_back(ffmpeg_video_frame);
 
   for (int k = 0; k < 4; ++k)
-    av_frame->data[k]=NULL;
+    av_frame->data[k] = NULL;
 #endif
 }
 
