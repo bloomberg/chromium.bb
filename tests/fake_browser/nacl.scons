@@ -5,13 +5,6 @@
 
 Import('env')
 
-# This is built by tests/srpc_hw/nacl.scons.
-srpc_hello_world_prog = env.File('${STAGING_DIR}/srpc_hw.nexe')
-# This is built by tests/npapi_hw/nacl.scons.
-npapi_hello_world_prog = env.File('${STAGING_DIR}/npapi_hw.nexe')
-# This is built by tests/hello_world/nacl.scons.
-simplest_hello_world_prog = env.File('${STAGING_DIR}/hello_world.nexe')
-
 async_message_prog = env.ComponentProgram(
     'async_message_test.nexe', 'async_message_test.c')
 
@@ -22,61 +15,3 @@ deferred_srpc_init_prog = env.ComponentProgram(
     EXTRA_LIBS=['srpc', 'pthread'])
 
 
-if 'TRUSTED_ENV' not in env:
-  Return()
-
-if env.Bit('target_arm'):
-  # The test fails in our ARM cross-compile/QEMU environment, but only
-  # because the environment lacks libraries, which causes the dlopen()
-  # to fail.
-  Return()
-
-if env.Bit('disable_hardy64_vmware_failures'):
-  # Platform qualification check is unreliable on vmware test bots.
-  # Ideally, this test would accept the sel_ldr -Q option, but for now,
-  # we skip this test on hardy64 bots.
-  Return()
-
-trusted_env = env['TRUSTED_ENV'].Clone()
-
-if trusted_env.Bit('windows'):
-  # This is necessary to get npupp.h to correctly define OSCALL to be
-  # WINAPI.  Without this, we use the wrong function calling
-  # conventions for NP_Initialize() etc.
-  trusted_env.Append(CPPDEFINES=['_WINDOWS'])
-
-if trusted_env.Bit('linux'):
-  # We do not depend on libpthread ourselves, but poor old gdb has
-  # some trouble coping with loading libpthread after startup.
-  trusted_env.Replace(LIBS=['dl', 'pthread', '$OPTIONAL_COVERAGE_LIBS'])
-
-trusted_env.Append(LIBS=['platform', 'gio'])
-
-fake_browser = trusted_env.ComponentProgram(
-    'fake_browser_test',
-    ['fake_browser_test.cc'])
-
-if trusted_env.Bit('mac'):
-  plugin = trusted_env.File('${STAGING_DIR}/npGoogleNaClPlugin')
-else:
-  plugin = trusted_env.File('${STAGING_DIR}/${SHLIBPREFIX}'
-                            'npGoogleNaClPlugin${SHLIBSUFFIX}')
-sel_ldr = trusted_env.File(
-    '${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
-# TODO(mseaborn): Setting NACLLOG is a workaround for
-# http://code.google.com/p/nativeclient/issues/detail?id=669
-log_file = env.File('fake_browser_log_file.out').abspath
-if not trusted_env.Bit('coverage_enabled') or not trusted_env.Bit('windows'):
-  node = env.CommandTest('fake_browser_test.out',
-                         [fake_browser, plugin,
-                          'srpc_hw.nexe', srpc_hello_world_prog,
-                          'async_message_test.nexe', async_message_prog,
-                          'hello_world.nexe', simplest_hello_world_prog,
-                          'spin.nexe', spin_prog,
-                          'deferred_srpc_init.nexe', deferred_srpc_init_prog],
-                         'medium',
-                         osenv=('NACL_SEL_LDR=%s,NACLLOG=%s'
-                                % (sel_ldr, log_file)),
-                         extra_deps=[sel_ldr])
-
-  env.AddNodeToTestSuite(node, ['medium_tests'], 'run_fake_browser_test')
