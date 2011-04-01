@@ -173,6 +173,7 @@ class PrefProviderTest : public TestingBrowserProcessTest {
 
 TEST_F(PrefProviderTest, Observer) {
   TestingProfile profile;
+  profile.GetHostContentSettingsMap();
   Profile* p = &profile;
   PrefProvider pref_content_settings_provider(p);
   StubSettingsObserver observer;
@@ -188,7 +189,8 @@ TEST_F(PrefProviderTest, Observer) {
   EXPECT_EQ(pattern, observer.last_pattern);
   EXPECT_FALSE(observer.last_update_all);
   EXPECT_FALSE(observer.last_update_all_types);
-  EXPECT_EQ(1, observer.counter);
+  // Expect 2 calls: One from the update and one from canonicalization.
+  EXPECT_EQ(2, observer.counter);
 }
 
 // Test for regression in which the PrefProvider modified the user pref store
@@ -228,6 +230,7 @@ TEST_F(PrefProviderTest, Incognito) {
   profile.SetPrefService(regular_prefs);
   otr_profile->set_incognito(true);
   otr_profile->SetPrefService(otr_prefs);
+  profile.GetHostContentSettingsMap();
 
   PrefProvider pref_content_settings_provider(&profile);
   PrefProvider pref_content_settings_provider_incognito(otr_profile);
@@ -254,6 +257,7 @@ TEST_F(PrefProviderTest, Incognito) {
 
 TEST_F(PrefProviderTest, Patterns) {
   TestingProfile testing_profile;
+  testing_profile.GetHostContentSettingsMap();
   PrefProvider pref_content_settings_provider(
       testing_profile.GetOriginalProfile());
 
@@ -315,6 +319,7 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
   cmd->AppendSwitch(switches::kEnableResourceContentSettings);
 
   TestingProfile testing_profile;
+  testing_profile.GetHostContentSettingsMap();
   PrefProvider pref_content_settings_provider(
       testing_profile.GetOriginalProfile());
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/stub_settings_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -547,17 +548,20 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
   PrefService* prefs = profile.GetPrefs();
 
   // Set utf-8 data.
-  DictionaryValue* all_settings_dictionary =
-      prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
-  ASSERT_TRUE(NULL != all_settings_dictionary);
+  {
+    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
+    DictionaryValue* all_settings_dictionary = update.Get();
+    ASSERT_TRUE(NULL != all_settings_dictionary);
 
-  DictionaryValue* dummy_payload = new DictionaryValue;
-  dummy_payload->SetInteger("images", CONTENT_SETTING_ALLOW);
-  all_settings_dictionary->SetWithoutPathExpansion("[*.]\xC4\x87ira.com",
-                                                   dummy_payload);
-
+    DictionaryValue* dummy_payload = new DictionaryValue;
+    dummy_payload->SetInteger("images", CONTENT_SETTING_ALLOW);
+    all_settings_dictionary->SetWithoutPathExpansion("[*.]\xC4\x87ira.com",
+                                                     dummy_payload);
+  }
   profile.GetHostContentSettingsMap();
 
+  const DictionaryValue* all_settings_dictionary =
+      prefs->GetDictionary(prefs::kContentSettingsPatterns);
   DictionaryValue* result = NULL;
   EXPECT_FALSE(all_settings_dictionary->GetDictionaryWithoutPathExpansion(
       "[*.]\xC4\x87ira.com", &result));

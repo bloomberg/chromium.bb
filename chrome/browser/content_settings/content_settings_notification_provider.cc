@@ -285,11 +285,13 @@ void NotificationProvider::PersistPermissionChange(
   bool allowed_changed = false;
   bool denied_changed = false;
 
-  ListValue* allowed_sites =
-      prefs->GetMutableList(prefs::kDesktopNotificationAllowedOrigins);
-  ListValue* denied_sites =
-      prefs->GetMutableList(prefs::kDesktopNotificationDeniedOrigins);
   {
+    ListPrefUpdate update_allowed_sites(
+        prefs, prefs::kDesktopNotificationAllowedOrigins);
+    ListPrefUpdate update_denied_sites(
+        prefs, prefs::kDesktopNotificationDeniedOrigins);
+    ListValue* allowed_sites = update_allowed_sites.Get();
+    ListValue* denied_sites = update_denied_sites.Get();
     // |value| is passed to the preferences list, or deleted.
     StringValue* value = new StringValue(origin.spec());
 
@@ -315,17 +317,8 @@ void NotificationProvider::PersistPermissionChange(
 
   // Persist the pref if anthing changed, but only send updates for the
   // list that changed.
-  if (allowed_changed || denied_changed) {
-    if (allowed_changed) {
-      ScopedUserPrefUpdate update_allowed(
-          prefs, prefs::kDesktopNotificationAllowedOrigins);
-    }
-    if (denied_changed) {
-      ScopedUserPrefUpdate updateDenied(
-          prefs, prefs::kDesktopNotificationDeniedOrigins);
-    }
+  if (allowed_changed || denied_changed)
     prefs->ScheduleSavePersistentPrefs();
-  }
   StartObserving();
 }
 
@@ -356,14 +349,12 @@ void NotificationProvider::ResetAllowedOrigin(const GURL& origin) {
   // Since this isn't called often, let the normal observer behavior update the
   // cache in this case.
   PrefService* prefs = profile_->GetPrefs();
-  ListValue* allowed_sites =
-      prefs->GetMutableList(prefs::kDesktopNotificationAllowedOrigins);
   {
+    ListPrefUpdate update(prefs, prefs::kDesktopNotificationAllowedOrigins);
+    ListValue* allowed_sites = update.Get();
     StringValue value(origin.spec());
     int removed_index = allowed_sites->Remove(value);
     DCHECK_NE(-1, removed_index) << origin << " was not allowed";
-    ScopedUserPrefUpdate update_allowed(
-        prefs, prefs::kDesktopNotificationAllowedOrigins);
   }
   prefs->ScheduleSavePersistentPrefs();
 }
@@ -375,14 +366,12 @@ void NotificationProvider::ResetBlockedOrigin(const GURL& origin) {
   // Since this isn't called often, let the normal observer behavior update the
   // cache in this case.
   PrefService* prefs = profile_->GetPrefs();
-  ListValue* denied_sites =
-      prefs->GetMutableList(prefs::kDesktopNotificationDeniedOrigins);
   {
+    ListPrefUpdate update(prefs, prefs::kDesktopNotificationDeniedOrigins);
+    ListValue* denied_sites = update.Get();
     StringValue value(origin.spec());
     int removed_index = denied_sites->Remove(value);
     DCHECK_NE(-1, removed_index) << origin << " was not blocked";
-    ScopedUserPrefUpdate update_allowed(
-        prefs, prefs::kDesktopNotificationDeniedOrigins);
   }
   prefs->ScheduleSavePersistentPrefs();
 }

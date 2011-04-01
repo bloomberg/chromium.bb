@@ -27,6 +27,8 @@ class Profile;
 
 namespace content_settings {
 
+// Content settings provider that provides default content settings based on
+// user prefs.
 class PrefDefaultProvider : public DefaultProviderInterface,
                             public NotificationObserver {
  public:
