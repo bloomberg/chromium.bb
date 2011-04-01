@@ -12,6 +12,10 @@
 #include "media/base/buffers.h"
 #include "media/base/video_frame.h"
 
+namespace media {
+class VideoDecodeAccelerator;
+}  // namespace media
+
 // GpuVideoServiceHost lives on IO thread and is used to dispatch IPC messages
 // to GpuVideoDecoderHost objects.
 class GpuVideoServiceHost : public IPC::ChannelProxy::MessageFilter {
@@ -37,6 +41,7 @@ class GpuVideoServiceHost : public IPC::ChannelProxy::MessageFilter {
   //
   // Returns a GpuVideoDecoderHost as a handle to control the video decoder.
   GpuVideoDecoderHost* CreateVideoDecoder(int context_route_id);
+  media::VideoDecodeAccelerator* CreateVideoAccelerator();
 
  private:
   IPC::Channel* channel_;
