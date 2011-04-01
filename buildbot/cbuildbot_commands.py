@@ -53,7 +53,7 @@ def _RepoSync(buildroot, retries=_DEFAULT_RETRIES):
   """
   while retries > 0:
     try:
-      cros_lib.OldRunCommand(['repo', 'sync', '-q'], cwd=buildroot)
+      cros_lib.OldRunCommand(['repo', 'sync', '-q', '--jobs=4'], cwd=buildroot)
       cros_lib.OldRunCommand(
           ['repo',
            'forall',

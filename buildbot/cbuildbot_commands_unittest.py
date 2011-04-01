@@ -109,6 +109,54 @@ class CBuildBotTest(mox.MoxTestBase):
                              binhosts, 'chrome', 'tot')
     self.mox.VerifyAll()
 
+  def testRepoSyncRetriesFail(self):
+    """Case where we exceed default retry attempts."""
+    cros_lib.OldRunCommand(mox.In('sync'),
+                           cwd=self._buildroot).AndRaise(Exception("failed"))
+    cros_lib.OldRunCommand(mox.In('sync'),
+                            cwd=self._buildroot).AndRaise(Exception("failed"))
+    cros_lib.OldRunCommand(mox.In('sync'),
+                           cwd=self._buildroot).AndRaise(Exception("failed"))
+    self.mox.ReplayAll()
+    self.assertRaises(Exception, lambda: commands._RepoSync(self._buildroot))
+    self.mox.VerifyAll()
+
+  def testRepoSyncRetriesPass(self):
+    """Case where we fail twice and pass on the third try."""
+    cros_lib.OldRunCommand(mox.In('sync'),
+                           cwd=self._buildroot).AndRaise(Exception("failed"))
+    cros_lib.OldRunCommand(mox.In('sync'),
+                           cwd=self._buildroot).AndRaise(Exception("failed"))
+    cros_lib.OldRunCommand(mox.In('sync'), cwd=self._buildroot)
+    cros_lib.OldRunCommand(mox.In('forall'), cwd=self._buildroot)
+    cros_lib.OldRunCommand(mox.In('manifest'), cwd=self._buildroot)
+    self.mox.ReplayAll()
+    commands._RepoSync(self._buildroot)
+    self.mox.VerifyAll()
+
+  def testRepoSyncCustomRetriesFail(self):
+    """Case where _RepoSync is called with a custom retry value of 1.  Should
+    throw exception after first failure."""
+    cros_lib.OldRunCommand(mox.In('sync'),
+                           cwd=self._buildroot).AndRaise(Exception("failed"))
+    self.mox.ReplayAll()
+    self.assertRaises(
+        Exception,
+        lambda: commands._RepoSync(self._buildroot, retries=1))
+    self.mox.VerifyAll()
+
+  def testRepoSyncCustomRetriesPass(self):
+    """Case where _RepoSync is called with a custom retry value of 2 and passes
+    the second time."""
+    cros_lib.OldRunCommand(mox.In('sync'),
+                           cwd=self._buildroot).AndRaise(Exception("failed"))
+    cros_lib.OldRunCommand(mox.In('sync'), cwd=self._buildroot)
+    cros_lib.OldRunCommand(mox.In('forall'), cwd=self._buildroot)
+    cros_lib.OldRunCommand(mox.In('manifest'), cwd=self._buildroot)
+    self.mox.ReplayAll()
+    commands._RepoSync(self._buildroot, retries=2)
+    self.mox.VerifyAll()
+
 
 if __name__ == '__main__':
   unittest.main()
