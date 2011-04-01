@@ -4027,12 +4027,20 @@
    obj:*
 }
 {
-   bug_76644
+   bug_76644a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN40UserStyleSheetWatcherTest_StyleLoad_Test8TestBodyEv
    fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
    fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+}
+{
+   bug_76644b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
+   fun:_ZN12_GLOBAL__N_119FilePathWatcherImpl5WatchERK8FilePathPN15FilePathWatcher8DelegateE
+   fun:_ZN15FilePathWatcher5WatchERK8FilePathPNS_8DelegateE
 }
 {
    bug_76647
