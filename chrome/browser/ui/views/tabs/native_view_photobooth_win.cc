@@ -156,6 +156,7 @@ void NativeViewPhotoboothWin::CreateCaptureWindow(HWND initial_hwnd) {
   capture_window_ = views::Widget::CreateWidget(params);
   // If the capture window isn't visible, blitting from the TabContents'
   // HWND's DC to the capture bitmap produces blankness.
+  capture_window_->Init(NULL, capture_bounds);
   capture_window_->Show();
   SetLayeredWindowAttributes(
       capture_window_->GetNativeView(), RGB(0xFF, 0xFF, 0xFF), 0xFF, LWA_ALPHA);
