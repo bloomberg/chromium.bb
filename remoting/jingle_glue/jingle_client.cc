@@ -169,7 +169,8 @@ JingleClient::JingleClient(JingleThread* thread,
                            SignalStrategy* signal_strategy,
                            PortAllocatorSessionFactory* session_factory,
                            Callback* callback)
-    : thread_(thread),
+    : enable_nat_traversing_(false),
+      thread_(thread),
       state_(START),
       initialized_(false),
       closed_(false),
@@ -233,8 +234,7 @@ void JingleClient::DoInitialize() {
           port_allocator_session_factory_.get(), "transp2"));
   if (!enable_nat_traversing_) {
     port_allocator_->set_flags(cricket::PORTALLOCATOR_DISABLE_STUN |
-                               cricket::PORTALLOCATOR_DISABLE_RELAY |
-                               cricket::PORTALLOCATOR_DISABLE_TCP);
+                               cricket::PORTALLOCATOR_DISABLE_RELAY);
   }
 
   // TODO(ajwong): The strategy needs a "start" command or something.  Right
@@ -250,6 +250,8 @@ void JingleClient::DoInitialize() {
         NewCallback(this, &JingleClient::OnJingleInfo));
     jingle_info_request_->Run(
         NewRunnableMethod(this, &JingleClient::DoStartSession));
+  } else {
+    DoStartSession();
   }
 }
 
