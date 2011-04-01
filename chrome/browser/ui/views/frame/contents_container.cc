@@ -56,6 +56,7 @@ ContentsContainer::~ContentsContainer() {
 }
 
 void ContentsContainer::MakePreviewContentsActiveContents() {
+  DCHECK(preview_);
   RemoveFade();
 
   active_ = preview_;

@@ -278,3 +278,31 @@ TEST_F(InstantLoaderManagerTest, WillUpateChangeActiveLoader) {
   EXPECT_FALSE(manager.WillUpateChangeActiveLoader(1));
 }
 
+// Makes sure UpdateLoader doesn't schedule a loader for deletion when asked
+// to update and the pending loader is ready.
+TEST_F(InstantLoaderManagerTest, UpdateWithReadyPending) {
+  InstantLoaderDelegateImpl delegate;
+  InstantLoaderManager manager(&delegate);
+
+  {
+    scoped_ptr<InstantLoader> loader;
+    manager.UpdateLoader(1, &loader);
+  }
+  InstantLoader* instant_loader = manager.current_loader();
+  ASSERT_TRUE(instant_loader);
+  MarkReady(instant_loader);
+
+  {
+    scoped_ptr<InstantLoader> loader;
+    manager.UpdateLoader(0, &loader);
+  }
+  InstantLoader* non_instant_loader = manager.active_loader();
+  ASSERT_TRUE(non_instant_loader);
+  ASSERT_NE(instant_loader, non_instant_loader);
+  MarkReady(non_instant_loader);
+
+  // This makes the non_instant_loader the current loader since it was ready.
+  scoped_ptr<InstantLoader> loader;
+  manager.UpdateLoader(0, &loader);
+  ASSERT_NE(loader.get(), non_instant_loader);
+}

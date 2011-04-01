@@ -238,6 +238,13 @@ bool InstantController::IsCurrent() {
 }
 
 void InstantController::CommitCurrentPreview(InstantCommitType type) {
+  if (type == INSTANT_COMMIT_PRESSED_ENTER && show_timer_.IsRunning()) {
+    // The user pressed enter and the show timer is running. This means the
+    // pending_loader returned an error code and we're not showing it. Force it
+    // to be shown.
+    show_timer_.Stop();
+    ShowTimerFired();
+  }
   DCHECK(loader_manager_.get());
   DCHECK(loader_manager_->current_loader());
   bool showing_instant =
@@ -344,6 +351,18 @@ TabContentsWrapper* InstantController::ReleasePreviewContents(
     InstantCommitType type) {
   if (!loader_manager_.get())
     return NULL;
+
+  // Make sure the pending loader is active. Ideally we would call
+  // ShowTimerFired, but if Release is invoked from the browser we don't want to
+  // attempt to show the tab contents (since its being added to a new tab).
+  if (type == INSTANT_COMMIT_PRESSED_ENTER && show_timer_.IsRunning()) {
+    InstantLoader* loader = loader_manager_->active_loader();
+    if (loader && loader->ready() &&
+        loader == loader_manager_->pending_loader()) {
+      scoped_ptr<InstantLoader> old_loader;
+      loader_manager_->MakePendingCurrent(&old_loader);
+    }
+  }
 
   // Loader may be null if the url blacklisted instant.
   scoped_ptr<InstantLoader> loader;

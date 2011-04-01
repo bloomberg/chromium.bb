@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,10 +28,8 @@ InstantLoaderManager::~InstantLoaderManager() {
   }
   instant_loaders_.clear();
 
-  if (current_loader_)
-    delete current_loader_;
-  if (pending_loader_)
-    delete pending_loader_;
+  delete current_loader_;
+  delete pending_loader_;
 }
 
 InstantLoader* InstantLoaderManager::UpdateLoader(
@@ -79,7 +77,8 @@ InstantLoader* InstantLoaderManager::UpdateLoader(
     old_loader->reset(old_current_loader);
   }
   if (pending_loader_ != old_pending_loader && old_pending_loader &&
-      !old_pending_loader->template_url_id()) {
+      !old_pending_loader->template_url_id() &&
+      old_pending_loader != current_loader_) {
     DCHECK(!old_loader->get());
     old_loader->reset(old_pending_loader);
   }
