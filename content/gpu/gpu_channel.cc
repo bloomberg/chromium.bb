@@ -27,8 +27,8 @@ GpuChannel::GpuChannel(GpuRenderThread* gpu_render_thread,
                        int renderer_id)
     : gpu_render_thread_(gpu_render_thread),
       renderer_id_(renderer_id),
-      renderer_process_(NULL),
-      renderer_pid_(NULL),
+      renderer_process_(base::kNullProcessHandle),
+      renderer_pid_(base::kNullProcessId),
       watchdog_thread_(gpu_watchdog_thread) {
   DCHECK(gpu_render_thread);
   DCHECK(renderer_id);
@@ -271,4 +271,3 @@ int GpuChannel::GetRendererFileDescriptor() {
   return fd;
 }
 #endif  // defined(OS_POSIX)
-
