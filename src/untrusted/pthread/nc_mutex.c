@@ -1,9 +1,8 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
-
 
 /*
  * Native Client mutex implementation
@@ -12,8 +11,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
-
+#include "native_client/src/untrusted/nacl/nacl_thread.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
@@ -22,10 +20,7 @@
 static int nc_thread_mutex_init(pthread_mutex_t *mutex) {
   mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
   mutex->recursion_counter = 0;
-  mutex->mutex_handle = NACL_SYSCALL(mutex_create)();
-
-  /* 0 for success, 1 for failure */
-  return (mutex->mutex_handle < 0);
+  return nacl_mutex_create(&mutex->mutex_handle);
 }
 
 int pthread_mutex_validate(pthread_mutex_t *mutex) {
@@ -93,11 +88,9 @@ static int nc_thread_mutex_lock(pthread_mutex_t *mutex, int try_only) {
     }
   }
   if (try_only) {
-    rv = -NACL_GC_WRAP_SYSCALL(
-        NACL_SYSCALL(mutex_trylock)(mutex->mutex_handle));
+    rv = nacl_mutex_trylock(mutex->mutex_handle);
   } else {
-    rv = -NACL_GC_WRAP_SYSCALL(
-        NACL_SYSCALL(mutex_lock)(mutex->mutex_handle));
+    rv = nacl_mutex_lock(mutex->mutex_handle);
   }
   if (rv) {
     return rv;
@@ -137,7 +130,7 @@ int pthread_mutex_unlock (pthread_mutex_t *mutex) {
   }
   mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
   mutex->recursion_counter = 0;
-  return -NACL_SYSCALL(mutex_unlock)(mutex->mutex_handle);
+  return nacl_mutex_unlock(mutex->mutex_handle);
 }
 
 /*

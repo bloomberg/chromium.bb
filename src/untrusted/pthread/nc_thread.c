@@ -18,6 +18,7 @@
 
 #include "native_client/src/include/nacl_base.h"
 
+#include "native_client/src/untrusted/nacl/nacl_thread.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
@@ -100,7 +101,7 @@ static int nc_allocate_thread_id_mu(nc_basic_thread_data_t *basic_data) {
     }
     if (!found) {
       /* all the IDs are in use?! */
-      return -EAGAIN;
+      return EAGAIN;
     }
   }
 
@@ -375,7 +376,7 @@ int pthread_create(pthread_t *thread_id,
                    pthread_attr_t *attr,
                    void *(*start_routine) (void *),
                    void *arg) {
-  int retval = -EAGAIN;
+  int retval = EAGAIN;
   void *esp;
   /* declare the variables outside of the while scope */
   nc_thread_memory_block_t *stack_node = NULL;
@@ -431,7 +432,7 @@ int pthread_create(pthread_t *thread_id,
     /* Allocate the stack for the thread */
     stack_node = nc_allocate_memory_block_mu(THREAD_STACK_MEMORY, stacksize);
     if (NULL == stack_node) {
-      retval = -EAGAIN;
+      retval = EAGAIN;
       break;
     }
     thread_stack = align((uint32_t) NODE_TO_PAYLOAD(stack_node),
@@ -471,10 +472,10 @@ int pthread_create(pthread_t *thread_id,
   memset(esp, 0, return_addr_size);  /* NULL/0x00 pun is not strictly legal. */
 
   /* start the thread */
-  retval = NACL_SYSCALL(thread_create)(FUN_TO_VOID_PTR(nc_thread_starter),
-                                       esp,
-                                       new_tdb,
-                                       sizeof(nc_thread_descriptor_t));
+  retval = nacl_thread_create(FUN_TO_VOID_PTR(nc_thread_starter),
+                              esp,
+                              new_tdb,
+                              sizeof(nc_thread_descriptor_t));
   if (0 != retval) {
     pthread_mutex_lock(&__nc_thread_management_lock);
     /* TODO(gregoryd) : replace with atomic decrement? */
@@ -503,8 +504,7 @@ ret:
     *thread_id = -1;
   }
 
-  /* pthread_create returns errno, not syscall ABI convention */
-  return -retval;
+  return retval;
 }
 
 int __pthread_shutdown() {
@@ -613,7 +613,7 @@ void pthread_exit (void* retval) {
   }
 
   pthread_mutex_unlock(&__nc_thread_management_lock);
-  NACL_SYSCALL(thread_exit)(is_used);
+  nacl_thread_exit(is_used);
 }
 
 int pthread_join(pthread_t thread_id, void **thread_return) {

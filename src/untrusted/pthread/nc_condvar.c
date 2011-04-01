@@ -1,9 +1,8 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
-
 
 /*
  * Native Client condition variable API
@@ -12,17 +11,13 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
-
+#include "native_client/src/untrusted/nacl/nacl_thread.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
 static int nc_thread_cond_init(pthread_cond_t *cond,
                                pthread_condattr_t *cond_attr) {
-  cond->handle = NACL_SYSCALL(cond_create)();
-
-  /* 0 for success, 1 for failure */
-  return (cond->handle < 0);
+  return nacl_cond_create(&cond->handle);
 }
 
 /* TODO(gregoryd): make this static?  */
@@ -65,19 +60,18 @@ int pthread_cond_destroy (pthread_cond_t *cond) {
  */
 int pthread_cond_signal (pthread_cond_t *cond) {
   pthread_cond_validate(cond);
-  return -NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(cond_signal)(cond->handle));
+  return nacl_cond_signal(cond->handle);
 }
 
 int pthread_cond_broadcast (pthread_cond_t *cond) {
   pthread_cond_validate(cond);
-  return -NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(cond_broadcast)(cond->handle));
+  return nacl_cond_broadcast(cond->handle);
 }
 
 int pthread_cond_wait (pthread_cond_t *cond,
                        pthread_mutex_t *mutex) {
   pthread_cond_validate(cond);
-  int retval = -NACL_GC_WRAP_SYSCALL(
-          NACL_SYSCALL(cond_wait)(cond->handle, mutex->mutex_handle));
+  int retval = nacl_cond_wait(cond->handle, mutex->mutex_handle);
   if (retval == 0) {
     mutex->owner_thread_id = pthread_self();
     mutex->recursion_counter = 1;
@@ -89,10 +83,8 @@ int pthread_cond_timedwait_abs(pthread_cond_t *cond,
                                pthread_mutex_t *mutex,
                                struct timespec *abstime) {
   pthread_cond_validate(cond);
-  int retval = -NACL_GC_WRAP_SYSCALL(
-            NACL_SYSCALL(cond_timed_wait_abs)(cond->handle,
-                                              mutex->mutex_handle,
-                                              abstime));
+  int retval = nacl_cond_timed_wait_abs(cond->handle, mutex->mutex_handle,
+                                        abstime);
   if (retval == 0) {
     mutex->owner_thread_id = pthread_self();
     mutex->recursion_counter = 1;

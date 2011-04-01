@@ -1,9 +1,8 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
-
 
 /*
  * NativeClient pthread library semaphores API
@@ -17,7 +16,7 @@
 
 /* A handle to a semaphore object */
 typedef struct {
-  int32_t handle;
+  int handle;
 } sem_t;
 
 /*
@@ -33,29 +32,29 @@ extern "C" {
 
 /* Initialize semaphore object SEM to VALUE.  If PSHARED then share it
    with other processes.  */
-extern int sem_init (sem_t *sem, int pshared, unsigned int value);
+extern int sem_init(sem_t *sem, int pshared, unsigned int value);
 
 /* Free resources associated with semaphore object SEM.  */
-extern int sem_destroy (sem_t *sem);
+extern int sem_destroy(sem_t *sem);
 
 /* Wait for SEM being posted.  */
-extern int sem_wait (sem_t *sem);
+extern int sem_wait(sem_t *sem);
 
 /* TODO(gregoryd) - add support for sem_timedwait later */
 #if 0
 /* Similar to `sem_wait' but wait only until ABSTIME.  */
-extern int sem_timedwait (sem_t *sem,
-                          const struct timespec *abstime);
+extern int sem_timedwait(sem_t *sem,
+                         const struct timespec *abstime);
 #endif
 
 /* Test whether SEM is posted.  */
-extern int sem_trywait (sem_t *sem);
+extern int sem_trywait(sem_t *sem);
 
 /* Post SEM.  */
-extern int sem_post (sem_t *sem);
+extern int sem_post(sem_t *sem);
 
 /* Get current value of SEM and store it in *SVAL.  */
-extern int sem_getvalue (sem_t *sem, int *sval);
+extern int sem_getvalue(sem_t *sem, int *sval);
 
 #ifdef __cplusplus
 }
