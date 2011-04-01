@@ -187,7 +187,8 @@ class WinUnicodeConsoleOutput(WinUnicodeOutputBase):
 
     # Loads the necessary function.
     from ctypes import byref, GetLastError, POINTER, windll, WINFUNCTYPE
-    from ctypes.wintypes import BOOL, DWORD, HANDLE, LPVOID, LPWSTR
+    from ctypes.wintypes import BOOL, DWORD, HANDLE, LPWSTR
+    from ctypes.wintypes import LPVOID  # pylint: disable=E0611
 
     self._DWORD = DWORD
     self._byref = byref

@@ -1,6 +1,11 @@
-#!/usr/bin/python
-# git-cl -- a git-command for integrating reviews on Rietveld
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # Copyright (C) 2008 Evan Martin <martine@danga.com>
+
+"""A git-command for integrating reviews on Rietveld."""
 
 import errno
 import logging
@@ -23,7 +28,7 @@ try:
   import simplejson as json  # pylint: disable=F0401
 except ImportError:
   try:
-    import json
+    import json  # pylint: disable=F0401
   except ImportError:
     # Fall back to the packaged version.
     sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))

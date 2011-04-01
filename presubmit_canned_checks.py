@@ -598,6 +598,7 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
       return [output_api.PresubmitError(
           'Please install pylint with "sudo apt-get install python-setuptools; '
           'sudo easy_install pylint"\n'
+          'or visit http://pypi.python.org/pypi/setuptools.\n'
           'Cannot do static analysis of python files.')]
     if result:
       if input_api.is_committing:

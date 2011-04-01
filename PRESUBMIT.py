@@ -11,6 +11,17 @@ details on the presubmit API built into depot_tools.
 
 def CommonChecks(input_api, output_api):
   results = []
+  import sys
+  if not sys.version.startswith('2.5'):
+    # Depot_tools has the particularity that it needs to be tested on python
+    # 2.5. But we don't want the presubmit check to fail if it is not installed.
+    results.append(output_api.PresubmitNotifyResult(
+        'You should install python 2.5 and run ln -s $(which python2.5) python.'
+        '\n'
+        'A great place to put this symlink is in depot_tools.\n'
+        'Otherwise, you break depot_tools on python 2.5, you get to keep the '
+        'pieces.'))
+
 
   results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
   black_list = list(input_api.DEFAULT_BLACK_LIST) + [

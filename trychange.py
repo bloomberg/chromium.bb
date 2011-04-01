@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,20 +25,15 @@ try:
   import simplejson as json  # pylint: disable=F0401
 except ImportError:
   try:
-    import json
+    import json  # pylint: disable=F0401
   except ImportError:
-    json = None
+    # Import the one included in depot_tools.
+    sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
+    import simplejson as json  # pylint: disable=F0401
 
-try:
-  import breakpad  # pylint: disable=W0611
-except ImportError:
-  pass
+import breakpad  # pylint: disable=W0611
 
-try:
-  import gcl
-except ImportError:
-  gcl = None
-
+import gcl
 import fix_encoding
 import gclient_utils
 import scm

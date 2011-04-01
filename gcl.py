@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,12 +25,8 @@ try:
   import simplejson as json  # pylint: disable=F0401
 except ImportError:
   try:
-    import json
-    # Some versions of python2.5 have an incomplete json module.  Check to make
-    # sure loads exists.
-    # pylint: disable=W0104
-    json.loads
-  except (ImportError, AttributeError):
+    import json  # pylint: disable=F0401
+  except ImportError:
     # Import the one included in depot_tools.
     sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
     import simplejson as json  # pylint: disable=F0401
