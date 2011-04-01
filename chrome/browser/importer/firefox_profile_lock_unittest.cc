@@ -1,8 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -12,15 +11,17 @@
 #include "chrome/browser/importer/firefox_profile_lock.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/file_test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 class FirefoxProfileLockTest : public testing::Test {
  public:
  protected:
   virtual void SetUp() {
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_path_));
-    std::wstring dir_name(L"FirefoxProfileLockTest");
-    dir_name.append(StringPrintf(L"-%d", base::GetCurrentProcId()));
-    test_path_ = test_path_.Append(FilePath::FromWStringHack(dir_name));
+    FilePath::StringType dir_name = FILE_PATH_LITERAL("FirefoxProfileLockTest");
+    dir_name.append(StringPrintf(
+        FILE_PATH_LITERAL("-%d"), base::GetCurrentProcId()));
+    test_path_ = test_path_.Append(dir_name);
     file_util::Delete(test_path_, true);
     file_util::CreateDirectory(test_path_);
   }
