@@ -171,7 +171,7 @@
               ['target_arch=="ia32"', {
                 'action': ['<@(_inputs)', '-m32', '-nacl_subregs', '<@(_outputs)'],
               }, {
-                'action': ['<@(_inputs)', '-m64', '-nacl-subregs', '<@(_outputs)'],
+                'action': ['<@(_inputs)', '-m64', '-nacl_subregs', '<@(_outputs)'],
               }],
             ],
           },
