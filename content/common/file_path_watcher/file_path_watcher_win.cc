@@ -22,7 +22,8 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
 
   // FilePathWatcher::PlatformDelegate overrides.
   virtual bool Watch(const FilePath& path,
-                     FilePathWatcher::Delegate* delegate) OVERRIDE;
+                     FilePathWatcher::Delegate* delegate,
+                     base::MessageLoopProxy* loop) OVERRIDE;
   virtual void Cancel() OVERRIDE;
 
   // Deletion of the FilePathWatcher will call Cancel() to dispose of this
@@ -75,7 +76,8 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
 };
 
 bool FilePathWatcherImpl::Watch(const FilePath& path,
-                                FilePathWatcher::Delegate* delegate) {
+                                FilePathWatcher::Delegate* delegate,
+                                base::MessageLoopProxy*) {
   DCHECK(target_.value().empty());  // Can only watch one path.
 
   set_message_loop(base::MessageLoopProxy::CreateForCurrentThread());

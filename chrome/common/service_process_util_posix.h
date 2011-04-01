@@ -21,6 +21,7 @@ MultiProcessLock* TakeServiceRunningLock(bool waiting);
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_cftyperef.h"
+#include "base/message_loop_proxy.h"
 #include "content/common/file_path_watcher/file_path_watcher.h"
 
 class CommandLine;
@@ -67,6 +68,7 @@ struct ServiceProcessState::StateData
 
   base::mac::ScopedCFTypeRef<CFDictionaryRef> launchd_conf_;
   FilePathWatcher executable_watcher_;
+  scoped_refptr<base::MessageLoopProxy> ui_message_loop_;
 #endif  // OS_MACOSX
 #if defined(OS_LINUX)
   scoped_ptr<MultiProcessLock> initializing_lock_;

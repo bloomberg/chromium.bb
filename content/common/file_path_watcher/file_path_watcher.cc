@@ -14,9 +14,11 @@ FilePathWatcher::~FilePathWatcher() {
   impl_->Cancel();
 }
 
-bool FilePathWatcher::Watch(const FilePath& path, Delegate* delegate) {
+bool FilePathWatcher::Watch(const FilePath& path,
+                            Delegate* delegate,
+                            base::MessageLoopProxy* loop) {
   DCHECK(path.IsAbsolute());
-  return impl_->Watch(path, delegate);
+  return impl_->Watch(path, delegate, loop);
 }
 
 FilePathWatcher::PlatformDelegate::PlatformDelegate(): cancelled_(false) {

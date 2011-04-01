@@ -6,13 +6,6 @@
 
 #include <set>
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <aclapi.h>
-#elif defined(OS_POSIX)
-#include <sys/stat.h>
-#endif
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
@@ -27,6 +20,14 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_MACOSX)
+// TODO(mnissler): There are flakes on Mac (http://crbug.com/54822) at least for
+// FilePathWatcherTest.MultipleWatchersSingleFile.
+#define MAYBE(name) FLAKY_ ## name
+#else
+#define MAYBE(name) name
+#endif
 
 namespace {
 
@@ -112,15 +113,17 @@ class SetupWatchTask : public Task {
                  FilePathWatcher* watcher,
                  FilePathWatcher::Delegate* delegate,
                  bool* result,
-                 base::WaitableEvent* completion)
+                 base::WaitableEvent* completion,
+                 base::MessageLoopProxy* mac_run_loop)
       : target_(target),
         watcher_(watcher),
         delegate_(delegate),
         result_(result),
-        completion_(completion) {}
+        completion_(completion),
+        mac_run_loop_(mac_run_loop) {}
 
   void Run() {
-    *result_ = watcher_->Watch(target_, delegate_);
+    *result_ = watcher_->Watch(target_, delegate_, mac_run_loop_);
     completion_->Signal();
   }
 
@@ -130,6 +133,7 @@ class SetupWatchTask : public Task {
   FilePathWatcher::Delegate* delegate_;
   bool* result_;
   base::WaitableEvent* completion_;
+  scoped_refptr<base::MessageLoopProxy> mac_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(SetupWatchTask);
 };
@@ -137,7 +141,8 @@ class SetupWatchTask : public Task {
 class FilePathWatcherTest : public testing::Test {
  public:
   FilePathWatcherTest()
-      : file_thread_("FilePathWatcherTest") { }
+      : loop_(MessageLoop::TYPE_UI),
+        file_thread_("FilePathWatcherTest") { }
 
   virtual ~FilePathWatcherTest() { }
 
@@ -175,7 +180,8 @@ class FilePathWatcherTest : public testing::Test {
                             watcher,
                             delegate,
                             &result,
-                            &completion));
+                            &completion,
+                            base::MessageLoopProxy::CreateForCurrentThread()));
     completion.Wait();
     return result;
   }
@@ -195,7 +201,7 @@ class FilePathWatcherTest : public testing::Test {
 };
 
 // Basic test: Create the file and verify that we notice.
-TEST_F(FilePathWatcherTest, NewFile) {
+TEST_F(FilePathWatcherTest, MAYBE(NewFile)) {
   FilePathWatcher watcher;
   scoped_refptr<TestDelegate> delegate(new TestDelegate(collector()));
   ASSERT_TRUE(SetupWatch(test_file(), &watcher, delegate.get()));
@@ -205,7 +211,7 @@ TEST_F(FilePathWatcherTest, NewFile) {
 }
 
 // Verify that modifying the file is caught.
-TEST_F(FilePathWatcherTest, ModifiedFile) {
+TEST_F(FilePathWatcherTest, MAYBE(ModifiedFile)) {
   ASSERT_TRUE(WriteFile(test_file(), "content"));
 
   FilePathWatcher watcher;
@@ -218,7 +224,7 @@ TEST_F(FilePathWatcherTest, ModifiedFile) {
 }
 
 // Verify that moving the file into place is caught.
-TEST_F(FilePathWatcherTest, MovedFile) {
+TEST_F(FilePathWatcherTest, MAYBE(MovedFile)) {
   FilePath source_file(temp_dir_.path().AppendASCII("source"));
   ASSERT_TRUE(WriteFile(source_file, "content"));
 
@@ -231,7 +237,7 @@ TEST_F(FilePathWatcherTest, MovedFile) {
   ASSERT_TRUE(WaitForEvents());
 }
 
-TEST_F(FilePathWatcherTest, DeletedFile) {
+TEST_F(FilePathWatcherTest, MAYBE(DeletedFile)) {
   ASSERT_TRUE(WriteFile(test_file(), "content"));
 
   FilePathWatcher watcher;
@@ -286,7 +292,7 @@ TEST_F(FilePathWatcherTest, DestroyWithPendingNotification) {
   file_thread_.message_loop_proxy()->DeleteSoon(FROM_HERE, watcher);
 }
 
-TEST_F(FilePathWatcherTest, MultipleWatchersSingleFile) {
+TEST_F(FilePathWatcherTest, MAYBE(MultipleWatchersSingleFile)) {
   FilePathWatcher watcher1, watcher2;
   scoped_refptr<TestDelegate> delegate1(new TestDelegate(collector()));
   scoped_refptr<TestDelegate> delegate2(new TestDelegate(collector()));
@@ -399,12 +405,9 @@ TEST_F(FilePathWatcherTest, WatchDirectory) {
   VLOG(1) << "Waiting for file1 creation";
   ASSERT_TRUE(WaitForEvents());
 
-#if !defined(OS_MACOSX)
-  // Mac implementation does not detect files modified in a directory.
   ASSERT_TRUE(WriteFile(file1, "content v2"));
   VLOG(1) << "Waiting for file1 modification";
   ASSERT_TRUE(WaitForEvents());
-#endif  // !OS_MACOSX
 
   ASSERT_TRUE(file_util::Delete(file1, false));
   VLOG(1) << "Waiting for file1 deletion";
@@ -463,150 +466,4 @@ TEST_F(FilePathWatcherTest, MoveChild) {
   ASSERT_TRUE(WaitForEvents());
 }
 
-#if !defined(OS_LINUX)
-// Linux implementation of FilePathWatcher doesn't catch attribute changes.
-// http://crbug.com/78043
-
-// Verify that changing attributes on a file is caught
-TEST_F(FilePathWatcherTest, FileAttributesChanged) {
-  ASSERT_TRUE(WriteFile(test_file(), "content"));
-  FilePathWatcher watcher;
-  scoped_refptr<TestDelegate> delegate(new TestDelegate(collector()));
-  ASSERT_TRUE(SetupWatch(test_file(), &watcher, delegate.get()));
-
-  // Now make sure we get notified if the file is modified.
-  ASSERT_TRUE(file_util::MakeFileUnreadable(test_file()));
-  ASSERT_TRUE(WaitForEvents());
-}
-
-#endif  // !OS_LINUX
-
-enum Permission {
-  Read,
-  Write,
-  Execute
-};
-
-bool ChangeFilePermissions(const FilePath& path, Permission perm, bool allow) {
-#if defined(OS_POSIX)
-  struct stat stat_buf;
-
-  if (stat(path.value().c_str(), &stat_buf) != 0)
-    return false;
-
-  mode_t mode = 0;
-  switch (perm) {
-    case Read:
-      mode = S_IRUSR | S_IRGRP | S_IROTH;
-      break;
-    case Write:
-      mode = S_IWUSR | S_IWGRP | S_IWOTH;
-      break;
-    case Execute:
-      mode = S_IXUSR | S_IXGRP | S_IXOTH;
-      break;
-    default:
-      ADD_FAILURE() << "unknown perm " << perm;
-      return false;
-  }
-  if (allow) {
-    stat_buf.st_mode |= mode;
-  } else {
-    stat_buf.st_mode &= ~mode;
-  }
-  return chmod(path.value().c_str(), stat_buf.st_mode) == 0;
-
-#elif defined(OS_WIN)
-  PACL old_dacl;
-  PSECURITY_DESCRIPTOR security_descriptor;
-  if (GetNamedSecurityInfo(const_cast<wchar_t*>(path.value().c_str()),
-                           SE_FILE_OBJECT,
-                           DACL_SECURITY_INFORMATION, NULL, NULL, &old_dacl,
-                           NULL, &security_descriptor) != ERROR_SUCCESS)
-    return false;
-
-  DWORD mode = 0;
-  switch (perm) {
-    case Read:
-      mode = GENERIC_READ;
-      break;
-    case Write:
-      mode = GENERIC_WRITE;
-      break;
-    case Execute:
-      mode = GENERIC_EXECUTE;
-      break;
-    default:
-      ADD_FAILURE() << "unknown perm " << perm;
-      return false;
-  }
-
-  // Deny Read access for the current user.
-  EXPLICIT_ACCESS change;
-  change.grfAccessPermissions = mode;
-  change.grfAccessMode = allow ? GRANT_ACCESS : DENY_ACCESS;
-  change.grfInheritance = 0;
-  change.Trustee.pMultipleTrustee = NULL;
-  change.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
-  change.Trustee.TrusteeForm = TRUSTEE_IS_NAME;
-  change.Trustee.TrusteeType = TRUSTEE_IS_USER;
-  change.Trustee.ptstrName = L"CURRENT_USER";
-
-  PACL new_dacl;
-  if (SetEntriesInAcl(1, &change, old_dacl, &new_dacl) != ERROR_SUCCESS) {
-    LocalFree(security_descriptor);
-    return false;
-  }
-
-  DWORD rc = SetNamedSecurityInfo(const_cast<wchar_t*>(path.value().c_str()),
-                                  SE_FILE_OBJECT, DACL_SECURITY_INFORMATION,
-                                  NULL, NULL, new_dacl, NULL);
-  LocalFree(security_descriptor);
-  LocalFree(new_dacl);
-
-  return rc == ERROR_SUCCESS;
-#else
-  NOTIMPLEMENTED();
-  return false;
-#endif
-}
-
-#if defined(OS_MACOSX)
-// Linux implementation of FilePathWatcher doesn't catch attribute changes.
-// http://crbug.com/78043
-// Windows implementation of FilePathWatcher catches attribute changes that
-// don't affect the path being watched.
-// http://crbug.com/78045
-
-// Verify that changing attributes on a directory works.
-TEST_F(FilePathWatcherTest, DirAttributesChanged) {
-  FilePath test_dir1(temp_dir_.path().AppendASCII("DirAttributesChangedDir1"));
-  FilePath test_dir2(test_dir1.AppendASCII("DirAttributesChangedDir2"));
-  FilePath test_file(test_dir2.AppendASCII("DirAttributesChangedFile"));
-  // Setup a directory hierarchy.
-  ASSERT_TRUE(file_util::CreateDirectory(test_dir1));
-  ASSERT_TRUE(file_util::CreateDirectory(test_dir2));
-  ASSERT_TRUE(WriteFile(test_file, "content"));
-
-  FilePathWatcher watcher;
-  scoped_refptr<TestDelegate> delegate(new TestDelegate(collector()));
-  ASSERT_TRUE(SetupWatch(test_file, &watcher, delegate.get()));
-
-  // We should not get notified in this case as it hasn't affected our ability
-  // to access the file.
-  ASSERT_TRUE(ChangeFilePermissions(test_dir1, Read, false));
-  loop_.PostDelayedTask(FROM_HERE,
-                        new MessageLoop::QuitTask,
-                        TestTimeouts::tiny_timeout_ms());
-  ASSERT_FALSE(WaitForEvents());
-  ASSERT_TRUE(ChangeFilePermissions(test_dir1, Read, true));
-
-  // We should get notified in this case because filepathwatcher can no
-  // longer access the file
-  ASSERT_TRUE(ChangeFilePermissions(test_dir1, Execute, false));
-  ASSERT_TRUE(WaitForEvents());
-  ASSERT_TRUE(ChangeFilePermissions(test_dir1, Execute, true));
-}
-
-#endif  // OS_MACOSX
 }  // namespace

@@ -4,478 +4,293 @@
 
 #include "content/common/file_path_watcher/file_path_watcher.h"
 
-#include <fcntl.h>
-#include <sys/event.h>
-#include <sys/param.h>
+#include <CoreServices/CoreServices.h>
+#include <set>
 
-#include <vector>
-
+#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/logging.h"
+#include "base/mac/scoped_cftyperef.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
-#include "base/stringprintf.h"
+#include "base/time.h"
+
+// Note to future well meaning engineers. Unless kqueue semantics have changed
+// considerably, do NOT try to reimplement this class using kqueue. The main
+// problem is that this class requires the ability to watch a directory
+// and notice changes to any files within it. A kqueue on a directory can watch
+// for creation and deletion of files, but not for modifications to files within
+// the directory. To do this with the current kqueue semantics would require
+// kqueueing every file in the directory, and file descriptors are a limited
+// resource. If you have a good idea on how to get around this, the source for a
+// reasonable implementation of this class using kqueues is attached here:
+// http://code.google.com/p/chromium/issues/detail?id=54822#c13
 
 namespace {
 
-// Mac-specific file watcher implementation based on kqueue.
-// Originally it was based on FSEvents so that the semantics were equivalent
-// on Linux, OSX and Windows where it was able to detect:
-// - file creation/deletion/modification in a watched directory
-// - file creation/deletion/modification for a watched file
-// - modifications to the paths to a watched object that would affect the
-//   object such as renaming/attibute changes etc.
-// The FSEvents version did all of the above except handling attribute changes
-// to path components. Unfortunately FSEvents appears to have an issue where the
-// current implementation (Mac OS X 10.6.7) sometimes drops events and doesn't
-// send notifications. See
-// http://code.google.com/p/chromium/issues/detail?id=54822#c31 for source that
-// will reproduce the problem. FSEvents also required having a CFRunLoop
-// backing the thread that it was running on, that caused added complexity
-// in the interfaces.
-// The kqueue implementation will handle all of the items in the list above
-// except for detecting modifications to files in a watched directory. It will
-// detect the creation and deletion of files, just not the modification of
-// files. It does however detect the attribute changes that the FSEvents impl
-// would miss.
+// The latency parameter passed to FSEventsStreamCreate().
+const CFAbsoluteTime kEventLatencySeconds = 0.3;
+
+// Mac-specific file watcher implementation based on the FSEvents API.
 class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
-                            public MessageLoopForIO::Watcher,
                             public MessageLoop::DestructionObserver {
  public:
-  FilePathWatcherImpl() : kqueue_(-1) {}
-  virtual ~FilePathWatcherImpl() {}
+  FilePathWatcherImpl();
 
-  // MessageLoopForIO::Watcher overrides.
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+  // Called from the FSEvents callback whenever there is a change to the paths
+  void OnFilePathChanged();
 
-  // MessageLoop::DestructionObserver overrides.
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+  // (Re-)Initialize the event stream to start reporting events from
+  // |start_event|.
+  void UpdateEventStream(FSEventStreamEventId start_event);
 
   // FilePathWatcher::PlatformDelegate overrides.
   virtual bool Watch(const FilePath& path,
-                     FilePathWatcher::Delegate* delegate) OVERRIDE;
+                     FilePathWatcher::Delegate* delegate,
+                     base::MessageLoopProxy* loop) OVERRIDE;
   virtual void Cancel() OVERRIDE;
 
+  // Deletion of the FilePathWatcher will call Cancel() to dispose of this
+  // object in the right thread. This also observes destruction of the required
+  // cleanup thread, in case it quits before Cancel() is called.
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+
+  scoped_refptr<base::MessageLoopProxy> run_loop_message_loop() {
+    return run_loop_message_loop_;
+  }
+
  private:
-  class EventData {
-   public:
-    EventData(const FilePath& path, const FilePath::StringType& subdir)
-        : path_(path), subdir_(subdir) { }
-    FilePath path_;  // Full path to this item.
-    FilePath::StringType subdir_;  // Path to any sub item.
-  };
-  typedef std::vector<struct kevent> EventVector;
+  virtual ~FilePathWatcherImpl() {}
 
-  // Can only be called on |io_message_loop_|'s thread.
-  virtual void CancelOnMessageLoopThread() OVERRIDE;
+  // Destroy the event stream.
+  void DestroyEventStream();
 
-  // Returns true if the kevent values are error free.
-  bool AreKeventValuesValid(struct kevent* kevents, int count);
+  // Start observing the destruction of the |run_loop_message_loop_| thread,
+  // and watching the FSEventStream.
+  void StartObserverAndEventStream(FSEventStreamEventId start_event);
 
-  // Respond to a change of attributes of the path component represented by
-  // |event|. Sets |target_file_affected| to true if |target_| is affected.
-  // Sets |update_watches| to true if |events_| need to be updated.
-  void HandleAttributesChange(const EventVector::iterator& event,
-                              bool* target_file_affected,
-                              bool* update_watches);
+  // Cleans up and stops observing the |run_loop_message_loop_| thread.
+  void CancelOnMessageLoopThread() OVERRIDE;
 
-  // Respond to a move of deletion of the path component represented by
-  // |event|. Sets |target_file_affected| to true if |target_| is affected.
-  // Sets |update_watches| to true if |events_| need to be updated.
-  void HandleDeleteOrMoveChange(const EventVector::iterator& event,
-                                bool* target_file_affected,
-                                bool* update_watches);
-
-  // Respond to a creation of an item in the path component represented by
-  // |event|. Sets |target_file_affected| to true if |target_| is affected.
-  // Sets |update_watches| to true if |events_| need to be updated.
-  void HandleCreateItemChange(const EventVector::iterator& event,
-                              bool* target_file_affected,
-                              bool* update_watches);
-
-  // Update |events_| with the current status of the system.
-  // Sets |target_file_affected| to true if |target_| is affected.
-  // Returns false if an error occurs.
-  bool UpdateWatches(bool* target_file_affected);
-
-  // Fills |events| with one kevent per component in |path|.
-  // Returns the number of valid events created where a valid event is
-  // defined as one that has a ident (file descriptor) field != -1.
-  static int EventsForPath(FilePath path, EventVector *events);
-
-  // Release a kevent generated by EventsForPath.
-  static void ReleaseEvent(struct kevent& event);
-
-  // Returns a file descriptor that will not block the system from deleting
-  // the file it references.
-  static int FileDescriptorForPath(const FilePath& path);
-
-  // Closes |*fd| and sets |*fd| to -1.
-  static void CloseFileDescriptor(int* fd);
-
-  // Returns true if kevent has open file descriptor.
-  static bool IsKeventFileDescriptorOpen(const struct kevent& event) {
-    return event.ident != static_cast<uintptr_t>(-1);
-  }
-
-  static EventData* EventDataForKevent(const struct kevent& event) {
-    return reinterpret_cast<EventData*>(event.udata);
-  }
-
-  EventVector events_;
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
-  MessageLoopForIO::FileDescriptorWatcher kqueue_watcher_;
+  // Delegate to notify upon changes.
   scoped_refptr<FilePathWatcher::Delegate> delegate_;
+
+  // Target path to watch (passed to delegate).
   FilePath target_;
-  int kqueue_;
+
+  // Keep track of the last modified time of the file.  We use nulltime
+  // to represent the file not existing.
+  base::Time last_modified_;
+
+  // The time at which we processed the first notification with the
+  // |last_modified_| time stamp.
+  base::Time first_notification_;
+
+  // Backend stream we receive event callbacks from (strong reference).
+  FSEventStreamRef fsevent_stream_;
+
+  // Run loop for FSEventStream to run on.
+  scoped_refptr<base::MessageLoopProxy> run_loop_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(FilePathWatcherImpl);
 };
 
-void FilePathWatcherImpl::ReleaseEvent(struct kevent& event) {
-  CloseFileDescriptor(reinterpret_cast<int*>(&event.ident));
-  EventData* entry = EventDataForKevent(event);
-  delete entry;
-  event.udata = NULL;
-}
+// The callback passed to FSEventStreamCreate().
+void FSEventsCallback(ConstFSEventStreamRef stream,
+                      void* event_watcher, size_t num_events,
+                      void* event_paths, const FSEventStreamEventFlags flags[],
+                      const FSEventStreamEventId event_ids[]) {
+  FilePathWatcherImpl* watcher =
+      reinterpret_cast<FilePathWatcherImpl*>(event_watcher);
+  DCHECK(watcher->run_loop_message_loop()->BelongsToCurrentThread());
 
-int FilePathWatcherImpl::EventsForPath(FilePath path, EventVector* events) {
-  DCHECK(MessageLoopForIO::current());
-  // Make sure that we are working with a clean slate.
-  DCHECK(events->empty());
-
-  std::vector<FilePath::StringType> components;
-  path.GetComponents(&components);
-
-  if (components.size() < 1) {
-    return -1;
+  bool root_changed = false;
+  FSEventStreamEventId root_change_at = FSEventStreamGetLatestEventId(stream);
+  for (size_t i = 0; i < num_events; i++) {
+    if (flags[i] & kFSEventStreamEventFlagRootChanged)
+      root_changed = true;
+    if (event_ids[i])
+      root_change_at = std::min(root_change_at, event_ids[i]);
   }
 
-  int last_existing_entry = 0;
-  FilePath built_path;
-  bool path_still_exists = true;
-  for(std::vector<FilePath::StringType>::iterator i = components.begin();
-      i != components.end(); ++i) {
-    if (i == components.begin()) {
-      built_path = FilePath(*i);
-    } else {
-      built_path = built_path.Append(*i);
-    }
-    int fd = -1;
-    if (path_still_exists) {
-      fd = FileDescriptorForPath(built_path);
-      if (fd == -1) {
-        path_still_exists = false;
-      } else {
-        ++last_existing_entry;
-      }
-    }
-    FilePath::StringType subdir = (i != (components.end() - 1)) ? *(i + 1) : "";
-    EventData* data = new EventData(built_path, subdir);
-    struct kevent event;
-    EV_SET(&event, fd, EVFILT_VNODE, (EV_ADD | EV_CLEAR | EV_RECEIPT),
-           (NOTE_DELETE | NOTE_WRITE | NOTE_ATTRIB |
-            NOTE_RENAME | NOTE_REVOKE | NOTE_EXTEND), 0, data);
-    events->push_back(event);
+  // Reinitialize the event stream if we find changes to the root. This is
+  // necessary since FSEvents doesn't report any events for the subtree after
+  // the directory to be watched gets created.
+  if (root_changed) {
+    // Resetting the event stream from within the callback fails (FSEvents spews
+    // bad file descriptor errors), so post a task to do the reset.
+    watcher->run_loop_message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(watcher, &FilePathWatcherImpl::UpdateEventStream,
+                          root_change_at));
   }
-  return last_existing_entry;
+
+  watcher->OnFilePathChanged();
 }
 
-int FilePathWatcherImpl::FileDescriptorForPath(const FilePath& path) {
-  return HANDLE_EINTR(open(path.value().c_str(), O_EVTONLY | O_NONBLOCK));
+// FilePathWatcherImpl implementation:
+
+FilePathWatcherImpl::FilePathWatcherImpl()
+    : fsevent_stream_(NULL) {
 }
 
-void FilePathWatcherImpl::CloseFileDescriptor(int *fd) {
-  if (*fd == -1) {
+void FilePathWatcherImpl::OnFilePathChanged() {
+  // Switch to the CFRunLoop based thread if necessary, so we can tear down
+  // the event stream.
+  if (!message_loop()->BelongsToCurrentThread()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &FilePathWatcherImpl::OnFilePathChanged));
     return;
   }
 
-  if (HANDLE_EINTR(close(*fd)) != 0) {
-    PLOG(ERROR) << "close";
-  }
-  *fd = -1;
-}
+  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(!target_.empty());
 
-bool FilePathWatcherImpl::AreKeventValuesValid(struct kevent* kevents,
-                                               int count) {
-  if (count < 0) {
-    PLOG(ERROR) << "kevent";
-    return false;
-  }
-  bool valid = true;
-  for (int i = 0; i < count; ++i) {
-    if (kevents[i].flags & EV_ERROR && kevents[i].data) {
-      // Find the kevent in |events_| that matches the kevent with the error.
-      EventVector::iterator event = events_.begin();
-      for (; event != events_.end(); ++event) {
-        if (event->ident == kevents[i].ident) {
-          break;
-        }
-      }
-      std::string path_name;
-      if (event != events_.end()) {
-        EventData* event_data = EventDataForKevent(*event);
-        if (event_data != NULL) {
-          path_name = event_data->path_.value();
-        }
-      }
-      if (path_name.empty()) {
-        path_name = base::StringPrintf(
-            "fd %d", *reinterpret_cast<int*>(&kevents[i].ident));
-      }
-      LOG(ERROR) << "Error: " << kevents[i].data << " for " << path_name;
-      valid = false;
+  base::PlatformFileInfo file_info;
+  bool file_exists = file_util::GetFileInfo(target_, &file_info);
+  if (file_exists && (last_modified_.is_null() ||
+      last_modified_ != file_info.last_modified)) {
+    last_modified_ = file_info.last_modified;
+    first_notification_ = base::Time::Now();
+    delegate_->OnFilePathChanged(target_);
+  } else if (file_exists && !first_notification_.is_null()) {
+    // The target's last modification time is equal to what's on record. This
+    // means that either an unrelated event occurred, or the target changed
+    // again (file modification times only have a resolution of 1s). Comparing
+    // file modification times against the wall clock is not reliable to find
+    // out whether the change is recent, since this code might just run too
+    // late. Moreover, there's no guarantee that file modification time and wall
+    // clock times come from the same source.
+    //
+    // Instead, the time at which the first notification carrying the current
+    // |last_notified_| time stamp is recorded. Later notifications that find
+    // the same file modification time only need to be forwarded until wall
+    // clock has advanced one second from the initial notification. After that
+    // interval, client code is guaranteed to having seen the current revision
+    // of the file.
+    if (base::Time::Now() - first_notification_ >
+        base::TimeDelta::FromSeconds(1)) {
+      // Stop further notifications for this |last_modification_| time stamp.
+      first_notification_ = base::Time();
     }
-  }
-  return valid;
-}
-
-void FilePathWatcherImpl::HandleAttributesChange(
-    const EventVector::iterator& event,
-    bool* target_file_affected,
-    bool* update_watches) {
-  EventVector::iterator next_event = event + 1;
-  EventData* next_event_data = EventDataForKevent(*next_event);
-  // Check to see if the next item in path is still accessible.
-  int have_access = FileDescriptorForPath(next_event_data->path_);
-  if (have_access == -1) {
-    *target_file_affected = true;
-    *update_watches = true;
-    EventVector::iterator local_event(event);
-    for (; local_event != events_.end(); ++local_event) {
-      // Close all nodes from the event down. This has the side effect of
-      // potentially rendering other events in |updates| invalid.
-      // There is no need to remove the events from |kqueue_| because this
-      // happens as a side effect of closing the file descriptor.
-      CloseFileDescriptor(reinterpret_cast<int*>(&local_event->ident));
-    }
-  } else {
-    CloseFileDescriptor(&have_access);
-  }
-}
-
-void FilePathWatcherImpl::HandleDeleteOrMoveChange(
-    const EventVector::iterator& event,
-    bool* target_file_affected,
-    bool* update_watches) {
-  *target_file_affected = true;
-  *update_watches = true;
-  EventVector::iterator local_event(event);
-  for (; local_event != events_.end(); ++local_event) {
-    // Close all nodes from the event down. This has the side effect of
-    // potentially rendering other events in |updates| invalid.
-    // There is no need to remove the events from |kqueue_| because this
-    // happens as a side effect of closing the file descriptor.
-    CloseFileDescriptor(reinterpret_cast<int*>(&local_event->ident));
-  }
-}
-
-void FilePathWatcherImpl::HandleCreateItemChange(
-    const EventVector::iterator& event,
-    bool* target_file_affected,
-    bool* update_watches) {
-  // Get the next item in the path.
-  EventVector::iterator next_event = event + 1;
-  EventData* next_event_data = EventDataForKevent(*next_event);
-
-  // Check to see if it already has a valid file descriptor.
-  if (!IsKeventFileDescriptorOpen(*next_event)) {
-    // If not, attempt to open a file descriptor for it.
-    next_event->ident = FileDescriptorForPath(next_event_data->path_);
-    if (IsKeventFileDescriptorOpen(*next_event)) {
-      *update_watches = true;
-      if (next_event_data->subdir_.empty()) {
-        *target_file_affected = true;
-      }
-    }
-  }
-}
-
-bool FilePathWatcherImpl::UpdateWatches(bool* target_file_affected) {
-  // Iterate over events adding kevents for items that exist to the kqueue.
-  // Then check to see if new components in the path have been created.
-  // Repeat until no new components in the path are detected.
-  // This is to get around races in directory creation in a watched path.
-  bool update_watches = true;
-  while (update_watches) {
-    size_t valid;
-    for (valid = 0; valid < events_.size(); ++valid) {
-      if (!IsKeventFileDescriptorOpen(events_[valid])) {
-        break;
-      }
-    }
-    if (valid == 0) {
-      // The root of the file path is inaccessible?
-      return false;
-    }
-
-    EventVector updates(valid);
-    int count = HANDLE_EINTR(kevent(kqueue_, &events_[0], valid, &updates[0],
-                                    valid, NULL));
-    if (!AreKeventValuesValid(&updates[0], count)) {
-      return false;
-    }
-    update_watches = false;
-    for (; valid < events_.size(); ++valid) {
-      EventData* event_data = EventDataForKevent(events_[valid]);
-      events_[valid].ident = FileDescriptorForPath(event_data->path_);
-      if (IsKeventFileDescriptorOpen(events_[valid])) {
-        update_watches = true;
-        if (event_data->subdir_.empty()) {
-          *target_file_affected = true;
-        }
-      } else {
-        break;
-      }
-    }
-  }
-  return true;
-}
-
-void FilePathWatcherImpl::OnFileCanReadWithoutBlocking(int fd) {
-  DCHECK(MessageLoopForIO::current());
-  CHECK_EQ(fd, kqueue_);
-  CHECK(events_.size());
-
-  // Request the file system update notifications that have occurred and return
-  // them in |updates|. |count| will contain the number of updates that have
-  // occurred.
-  EventVector updates(events_.size());
-  struct timespec timeout = {0, 0};
-  int count = HANDLE_EINTR(kevent(kqueue_, NULL, 0, &updates[0], updates.size(),
-                                  &timeout));
-
-  // Error values are stored within updates, so check to make sure that no
-  // errors occurred.
-  if (!AreKeventValuesValid(&updates[0], count)) {
-    delegate_->OnError();
-    Cancel();
-    return;
-  }
-
-  bool update_watches = false;
-  bool send_notification = false;
-
-  // Iterate through each of the updates and react to them.
-  for (int i = 0; i < count; ++i) {
-    // Find our kevent record that matches the update notification.
-    EventVector::iterator event = events_.begin();
-    for (; event != events_.end(); ++event) {
-      if (!IsKeventFileDescriptorOpen(*event) ||
-          event->ident == updates[i].ident) {
-        break;
-      }
-    }
-    if (!IsKeventFileDescriptorOpen(*event) || event == events_.end()) {
-      // The event may no longer exist in |events_| because another event
-      // modified |events_| in such a way to make it invalid. For example if
-      // the path is /foo/bar/bam and foo is deleted, NOTE_DELETE events for
-      // foo, bar and bam will be sent. If foo is processed first, then
-      // the file descriptors for bar and bam will already be closed and set
-      // to -1 before they get a chance to be processed.
-      continue;
-    }
-
-    EventData* event_data = EventDataForKevent(*event);
-
-    // If the subdir is empty, this is the last item on the path and is the
-    // target file.
-    bool target_file_affected = event_data->subdir_.empty();
-    if ((updates[i].fflags & NOTE_ATTRIB) && !target_file_affected) {
-      HandleAttributesChange(event, &target_file_affected, &update_watches);
-    } else if (updates[i].fflags & (NOTE_DELETE | NOTE_REVOKE | NOTE_RENAME)) {
-      HandleDeleteOrMoveChange(event, &target_file_affected, &update_watches);
-    } else if (updates[i].fflags & NOTE_WRITE && !target_file_affected) {
-      HandleCreateItemChange(event, &target_file_affected, &update_watches);
-    }
-    send_notification |= target_file_affected;
-  }
-
-  if (update_watches) {
-    if (!UpdateWatches(&send_notification)) {
-      delegate_->OnError();
-      Cancel();
-    }
-  }
-
-  if (send_notification) {
+    delegate_->OnFilePathChanged(target_);
+  } else if (!file_exists && !last_modified_.is_null()) {
+    last_modified_ = base::Time();
     delegate_->OnFilePathChanged(target_);
   }
 }
 
-void FilePathWatcherImpl::OnFileCanWriteWithoutBlocking(int fd) {
-  NOTREACHED();
+bool FilePathWatcherImpl::Watch(const FilePath& path,
+                                FilePathWatcher::Delegate* delegate,
+                                base::MessageLoopProxy* loop) {
+  DCHECK(target_.value().empty());
+  DCHECK(MessageLoopForIO::current());
+
+  set_message_loop(base::MessageLoopProxy::CreateForCurrentThread());
+  run_loop_message_loop_ = loop;
+  target_ = path;
+  delegate_ = delegate;
+
+  FSEventStreamEventId start_event = FSEventsGetCurrentEventId();
+
+  base::PlatformFileInfo file_info;
+  if (file_util::GetFileInfo(target_, &file_info)) {
+    last_modified_ = file_info.last_modified;
+    first_notification_ = base::Time::Now();
+  }
+
+  run_loop_message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &FilePathWatcherImpl::StartObserverAndEventStream,
+                        start_event));
+
+  return true;
+}
+
+void FilePathWatcherImpl::StartObserverAndEventStream(
+    FSEventStreamEventId start_event) {
+  DCHECK(run_loop_message_loop()->BelongsToCurrentThread());
+  MessageLoop::current()->AddDestructionObserver(this);
+  UpdateEventStream(start_event);
+}
+
+void FilePathWatcherImpl::Cancel() {
+  if (!run_loop_message_loop().get()) {
+    // Watch was never called, so exit.
+    set_cancelled();
+    return;
+  }
+
+  // Switch to the CFRunLoop based thread if necessary, so we can tear down
+  // the event stream.
+  if (!run_loop_message_loop()->BelongsToCurrentThread()) {
+    run_loop_message_loop()->PostTask(FROM_HERE,
+                                      new FilePathWatcher::CancelTask(this));
+  } else {
+    CancelOnMessageLoopThread();
+  }
+}
+
+void FilePathWatcherImpl::CancelOnMessageLoopThread() {
+  set_cancelled();
+  if (fsevent_stream_) {
+    DestroyEventStream();
+    MessageLoop::current()->RemoveDestructionObserver(this);
+    delegate_ = NULL;
+  }
 }
 
 void FilePathWatcherImpl::WillDestroyCurrentMessageLoop() {
   CancelOnMessageLoopThread();
 }
 
-bool FilePathWatcherImpl::Watch(const FilePath& path,
-                                FilePathWatcher::Delegate* delegate) {
-  DCHECK(MessageLoopForIO::current());
-  DCHECK(target_.value().empty());  // Can only watch one path.
-  DCHECK(delegate);
-  DCHECK_EQ(kqueue_, -1);
+void FilePathWatcherImpl::UpdateEventStream(FSEventStreamEventId start_event) {
+  DCHECK(run_loop_message_loop()->BelongsToCurrentThread());
+  DCHECK(MessageLoopForUI::current());
 
-  delegate_ = delegate;
-  target_ = path;
+  // It can happen that the watcher gets canceled while tasks that call this
+  // function are still in flight, so abort if this situation is detected.
+  if (is_cancelled())
+    return;
 
-  MessageLoop::current()->AddDestructionObserver(this);
-  io_message_loop_ = base::MessageLoopProxy::CreateForCurrentThread();
+  if (fsevent_stream_)
+    DestroyEventStream();
 
-  kqueue_ = kqueue();
-  if (kqueue_ == -1) {
-    PLOG(ERROR) << "kqueue";
-    return false;
+  base::mac::ScopedCFTypeRef<CFStringRef> cf_path(CFStringCreateWithCString(
+      NULL, target_.value().c_str(), kCFStringEncodingMacHFS));
+  base::mac::ScopedCFTypeRef<CFStringRef> cf_dir_path(CFStringCreateWithCString(
+      NULL, target_.DirName().value().c_str(), kCFStringEncodingMacHFS));
+  CFStringRef paths_array[] = { cf_path.get(), cf_dir_path.get() };
+  base::mac::ScopedCFTypeRef<CFArrayRef> watched_paths(CFArrayCreate(
+      NULL, reinterpret_cast<const void**>(paths_array), arraysize(paths_array),
+      &kCFTypeArrayCallBacks));
+
+  FSEventStreamContext context;
+  context.version = 0;
+  context.info = this;
+  context.retain = NULL;
+  context.release = NULL;
+  context.copyDescription = NULL;
+
+  fsevent_stream_ = FSEventStreamCreate(NULL, &FSEventsCallback, &context,
+                                        watched_paths,
+                                        start_event,
+                                        kEventLatencySeconds,
+                                        kFSEventStreamCreateFlagWatchRoot);
+  FSEventStreamScheduleWithRunLoop(fsevent_stream_, CFRunLoopGetCurrent(),
+                                   kCFRunLoopDefaultMode);
+  if (!FSEventStreamStart(fsevent_stream_)) {
+    message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(delegate_.get(),
+                          &FilePathWatcher::Delegate::OnError));
   }
-
-  int last_entry = EventsForPath(target_, &events_);
-  CHECK_NE(last_entry, 0);
-
-  EventVector responses(last_entry);
-
-  int count = HANDLE_EINTR(kevent(kqueue_, &events_[0], last_entry,
-                                  &responses[0], last_entry, NULL));
-  if (!AreKeventValuesValid(&responses[0], count)) {
-    // Calling Cancel() here to close any file descriptors that were opened.
-    // This would happen in the destructor anyways, but FilePathWatchers tend to
-    // be long lived, and if an error has occurred, there is no reason to waste
-    // the file descriptors.
-    Cancel();
-    return false;
-  }
-
-  return MessageLoopForIO::current()->WatchFileDescriptor(
-      kqueue_, true, MessageLoopForIO::WATCH_READ, &kqueue_watcher_, this);
 }
 
-void FilePathWatcherImpl::Cancel() {
-  base::MessageLoopProxy* proxy = io_message_loop_.get();
-  if (!proxy) {
-    set_cancelled();
-    return;
-  }
-  if (!proxy->BelongsToCurrentThread()) {
-    proxy->PostTask(FROM_HERE,
-                    NewRunnableMethod(this, &FilePathWatcherImpl::Cancel));
-    return;
-  }
-  CancelOnMessageLoopThread();
-}
-
-void FilePathWatcherImpl::CancelOnMessageLoopThread() {
-  DCHECK(MessageLoopForIO::current());
-  if (!is_cancelled()) {
-    set_cancelled();
-    kqueue_watcher_.StopWatchingFileDescriptor();
-    CloseFileDescriptor(&kqueue_);
-    std::for_each(events_.begin(), events_.end(), ReleaseEvent);
-    events_.clear();
-    io_message_loop_.release();
-    MessageLoop::current()->RemoveDestructionObserver(this);
-    delegate_ = NULL;
-  }
+void FilePathWatcherImpl::DestroyEventStream() {
+  FSEventStreamStop(fsevent_stream_);
+  FSEventStreamUnscheduleFromRunLoop(fsevent_stream_, CFRunLoopGetCurrent(),
+                                     kCFRunLoopDefaultMode);
+  FSEventStreamRelease(fsevent_stream_);
+  fsevent_stream_ = NULL;
 }
 
 }  // namespace
