@@ -396,6 +396,16 @@
    fun:_ZN7history14HistoryBackend8InitImplEv
    fun:_ZN7history14HistoryBackend4InitEb
 }
+# Note: bug 31634 happens very sporatically.
+{
+   bug_31634
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFDictionaryInit
+   fun:CFDictionaryCreate
+   fun:classDescription
+}
 {
    bug_35164
    Memcheck:Cond
