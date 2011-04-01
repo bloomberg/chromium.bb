@@ -1,10 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/database/database_connections.h"
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 
 namespace webkit_database {
 
@@ -82,6 +85,55 @@ void DatabaseConnections::RemoveConnectionsHelper(
     if (db_connections.empty())
       connections_.erase(origin_iterator);
   }
+}
+
+DatabaseConnectionsWrapper::DatabaseConnectionsWrapper()
+    : waiting_for_dbs_to_close_(false),
+      main_thread_(base::MessageLoopProxy::CreateForCurrentThread()) {
+}
+
+DatabaseConnectionsWrapper::~DatabaseConnectionsWrapper() {
+}
+
+void DatabaseConnectionsWrapper::WaitForAllDatabasesToClose() {
+  // We assume that new databases won't be open while we're waiting.
+  DCHECK(main_thread_->BelongsToCurrentThread());
+  if (HasOpenConnections()) {
+    AutoReset<bool> auto_reset(&waiting_for_dbs_to_close_, true);
+    MessageLoop::ScopedNestableTaskAllower nestable(MessageLoop::current());
+    MessageLoop::current()->Run();
+  }
+}
+
+bool DatabaseConnectionsWrapper::HasOpenConnections() {
+  DCHECK(main_thread_->BelongsToCurrentThread());
+  base::AutoLock auto_lock(open_connections_lock_);
+  return !open_connections_.IsEmpty();
+}
+
+void DatabaseConnectionsWrapper::AddOpenConnection(
+    const string16& origin_identifier,
+    const string16& database_name) {
+  // We add to the collection immediately on any thread.
+  base::AutoLock auto_lock(open_connections_lock_);
+  open_connections_.AddConnection(origin_identifier, database_name);
+}
+
+void DatabaseConnectionsWrapper::RemoveOpenConnection(
+    const string16& origin_identifier,
+    const string16& database_name) {
+  // But only remove from the collection on the main thread
+  // so we can handle the waiting_for_dbs_to_close_ case.
+  if (!main_thread_->BelongsToCurrentThread()) {
+    main_thread_->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &DatabaseConnectionsWrapper::RemoveOpenConnection,
+        origin_identifier, database_name));
+    return;
+  }
+  base::AutoLock auto_lock(open_connections_lock_);
+  open_connections_.RemoveConnection(origin_identifier, database_name);
+  if (waiting_for_dbs_to_close_ && open_connections_.IsEmpty())
+    MessageLoop::current()->Quit();
 }
 
 }  // namespace webkit_database

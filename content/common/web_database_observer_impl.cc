@@ -4,8 +4,6 @@
 
 #include "content/common/web_database_observer_impl.h"
 
-#include "base/auto_reset.h"
-#include "base/message_loop.h"
 #include "base/string16.h"
 #include "content/common/database_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
@@ -14,17 +12,20 @@
 WebDatabaseObserverImpl::WebDatabaseObserverImpl(
     IPC::Message::Sender* sender)
     : sender_(sender),
-      waiting_for_dbs_to_close_(false) {
+      open_connections_(new webkit_database::DatabaseConnectionsWrapper) {
+}
+
+WebDatabaseObserverImpl::~WebDatabaseObserverImpl() {
 }
 
 void WebDatabaseObserverImpl::databaseOpened(
     const WebKit::WebDatabase& database) {
   string16 origin_identifier = database.securityOrigin().databaseIdentifier();
   string16 database_name = database.name();
+  open_connections_->AddOpenConnection(origin_identifier, database_name);
   sender_->Send(new DatabaseHostMsg_Opened(
       origin_identifier, database_name,
       database.displayName(), database.estimatedSize()));
-  database_connections_.AddConnection(origin_identifier, database_name);
 }
 
 void WebDatabaseObserverImpl::databaseModified(
@@ -39,15 +40,9 @@ void WebDatabaseObserverImpl::databaseClosed(
   string16 database_name = database.name();
   sender_->Send(new DatabaseHostMsg_Closed(
       origin_identifier, database_name));
-  database_connections_.RemoveConnection(origin_identifier, database_name);
-  if (waiting_for_dbs_to_close_ && database_connections_.IsEmpty())
-    MessageLoop::current()->Quit();
+  open_connections_->RemoveOpenConnection(origin_identifier, database_name);
 }
 
 void WebDatabaseObserverImpl::WaitForAllDatabasesToClose() {
-  if (!database_connections_.IsEmpty()) {
-    AutoReset<bool> waiting_for_dbs_auto_reset(&waiting_for_dbs_to_close_, true);
-    MessageLoop::ScopedNestableTaskAllower nestable(MessageLoop::current());
-    MessageLoop::current()->Run();
-  }
+  open_connections_->WaitForAllDatabasesToClose();
 }

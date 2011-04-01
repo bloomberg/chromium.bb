@@ -12,24 +12,45 @@
 #include "base/platform_file.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
+#include "base/task.h"
+#include "base/threading/thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabaseObserver.h"
 #include "webkit/database/database_connections.h"
 #include "webkit/database/database_tracker.h"
+
+namespace base {
+class MessageLoopProxy;
+class WaitableEvent;
+}
 
 class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
                              public WebKit::WebDatabaseObserver {
  public:
   static SimpleDatabaseSystem* GetInstance();
+
   SimpleDatabaseSystem();
   ~SimpleDatabaseSystem();
 
-  // VFS functions
+  // WebDatabaseObserver implementation, these are called on the script
+  // execution context thread on which the database is opened. This may be
+  // the main thread or background WebWorker threads.
+  virtual void databaseOpened(const WebKit::WebDatabase& database);
+  virtual void databaseModified(const WebKit::WebDatabase& database);
+  virtual void databaseClosed(const WebKit::WebDatabase& database);
+
+  // SQLite VFS related methods, these are called on webcore's
+  // background database threads via the WebKitClient impl.
   base::PlatformFile OpenFile(const string16& vfs_file_name, int desired_flags);
   int DeleteFile(const string16& vfs_file_name, bool sync_dir);
-  long GetFileAttributes(const string16& vfs_file_name);
-  long long GetFileSize(const string16& vfs_file_name);
+  uint32 GetFileAttributes(const string16& vfs_file_name);
+  int64 GetFileSize(const string16& vfs_file_name);
 
-  // database tracker functions
+  // For use by LayoutTestController, called on the main thread.
+  void ClearAllDatabases();
+  void SetDatabaseQuota(int64 quota);
+
+ private:
+  // Used by our WebDatabaseObserver impl, only called on the db_thread
   void DatabaseOpened(const string16& origin_identifier,
                       const string16& database_name,
                       const string16& description,
@@ -47,38 +68,36 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
   virtual void OnDatabaseScheduledForDeletion(const string16& origin_identifier,
                                               const string16& database_name);
 
-  // WebDatabaseObserver implementation
-  virtual void databaseOpened(const WebKit::WebDatabase& database);
-  virtual void databaseModified(const WebKit::WebDatabase& database);
-  virtual void databaseClosed(const WebKit::WebDatabase& database);
+  // Used by our public SQLite VFS methods, only called on the db_thread.
+  void VfsOpenFile(const string16& vfs_file_name, int desired_flags,
+                   base::PlatformFile* result, base::WaitableEvent* done_event);
+  void VfsDeleteFile(const string16& vfs_file_name, bool sync_dir,
+                     int* result, base::WaitableEvent* done_event);
+  void VfsGetFileAttributes(const string16& vfs_file_name,
+                            uint32* result, base::WaitableEvent* done_event);
+  void VfsGetFileSize(const string16& vfs_file_name,
+                      int64* result, base::WaitableEvent* done_event);
 
-  void ClearAllDatabases();
-  void SetDatabaseQuota(int64 quota);
-
- private:
-  // The calls that come from the database tracker run on the main thread.
-  // Therefore, we can only call DatabaseUtil::GetFullFilePathForVfsFile()
-  // on the main thread. However, the VFS calls run on the DB thread and
-  // they need to crack VFS file paths. To resolve this problem, we store
-  // a map of vfs_file_names to file_paths. The map is updated on the main
-  // thread on each DatabaseOpened() call that comes from the database
-  // tracker, and is read on the DB thread by each VFS call.
-  void SetFullFilePathsForVfsFile(const string16& origin_identifier,
-                                  const string16& database_name);
   FilePath GetFullFilePathForVfsFile(const string16& vfs_file_name);
 
-  static SimpleDatabaseSystem* instance_;
+  void ResetTracker();
+  void ThreadCleanup(base::WaitableEvent* done_event);
 
-  bool waiting_for_dbs_to_close_;
-
+  // Where the tracker database file and per origin database files reside.
   ScopedTempDir temp_dir_;
 
+  // All access to the db_tracker (except for its construction) and
+  // vfs operations are serialized on a background thread.
+  base::Thread db_thread_;
+  scoped_refptr<base::MessageLoopProxy> db_thread_proxy_;
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
 
-  base::Lock file_names_lock_;
-  base::hash_map<string16, FilePath> file_names_;
+  // Data members to support waiting for all connections to be closed.
+  scoped_refptr<webkit_database::DatabaseConnectionsWrapper> open_connections_;
 
-  webkit_database::DatabaseConnections database_connections_;
+  static SimpleDatabaseSystem* instance_;
 };
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(SimpleDatabaseSystem);
 
 #endif  // WEBKIT_SUPPORT_SIMPLE_DATABASE_SYSTEM_H_

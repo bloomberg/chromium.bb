@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -329,12 +329,14 @@ class RenderThread : public RenderThreadBase,
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
   scoped_ptr<RendererWebKitClientImpl> webkit_client_;
   scoped_ptr<WebKit::WebStorageEventDispatcher> dom_storage_event_dispatcher_;
-  scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
   scoped_ptr<SpellCheck> spellchecker_;
 
   // Used on the renderer and IPC threads.
   scoped_refptr<DBMessageFilter> db_message_filter_;
   scoped_refptr<CookieMessageFilter> cookie_message_filter_;
+
+  // Used on multiple script execution context threads.
+  scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
 
 #if defined(OS_POSIX)
   scoped_refptr<IPC::ChannelProxy::MessageFilter>
