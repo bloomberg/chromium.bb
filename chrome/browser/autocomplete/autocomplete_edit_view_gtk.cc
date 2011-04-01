@@ -699,17 +699,18 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
     return false;
   }
 
-  CharRange new_sel = GetSelection();
-  int length = GetTextLength();
-  bool selection_differs =
+  const CharRange new_sel = GetSelection();
+  const int length = GetTextLength();
+  const bool selection_differs =
       ((new_sel.cp_min != new_sel.cp_max) ||
        (sel_before_change_.cp_min != sel_before_change_.cp_max)) &&
       ((new_sel.cp_min != sel_before_change_.cp_min) ||
        (new_sel.cp_max != sel_before_change_.cp_max));
-  bool at_end_of_edit = (new_sel.cp_min == length && new_sel.cp_max == length);
+  const bool at_end_of_edit =
+      (new_sel.cp_min == length && new_sel.cp_max == length);
 
   // See if the text or selection have changed since OnBeforePossibleChange().
-  string16 new_text(GetText());
+  const string16 new_text(GetText());
   text_changed_ = (new_text != text_before_change_);
 #if GTK_CHECK_VERSION(2, 20, 0)
   text_changed_ =
@@ -724,17 +725,17 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
   // (or typing) the prefix of that selection.  (We detect these by making
   // sure the caret, which should be after any insertion, hasn't moved
   // forward of the old selection start.)
-  bool just_deleted_text =
+  const bool just_deleted_text =
       (text_before_change_.length() > new_text.length()) &&
       (new_sel.cp_min <= std::min(sel_before_change_.cp_min,
                                  sel_before_change_.cp_max));
 
   delete_at_end_pressed_ = false;
 
-  bool allow_keyword_ui_change = at_end_of_edit && !IsImeComposing();
-  bool something_changed = model_->OnAfterPossibleChange(new_text,
+  const bool something_changed = model_->OnAfterPossibleChange(
+      new_text, new_sel.selection_min(), new_sel.selection_max(),
       selection_differs, text_changed_, just_deleted_text,
-      allow_keyword_ui_change);
+      !IsImeComposing());
 
   // If only selection was changed, we don't need to call |controller_|'s
   // OnChanged() method, which is called in TextChanged().

@@ -323,10 +323,10 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // popup if necessary, and returns true if any significant changes occurred.
   // If |allow_keyword_ui_change| is false then the change should not affect
   // keyword ui state, even if the text matches a keyword exactly. This value
-  // may be false when:
-  // 1) The insert caret is not at the end of the edit box
-  // 2) The user is composing a text with an IME
+  // may be false when the user is composing a text with an IME.
   bool OnAfterPossibleChange(const string16& new_text,
+                             size_t selection_start,
+                             size_t selection_end,
                              bool selection_differs,
                              bool text_differs,
                              bool just_deleted_text,
@@ -423,6 +423,15 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // Returns true if the current keyword is accepted.
   bool MaybeAcceptKeywordBySpace(const string16& old_user_text,
                                  const string16& new_user_text);
+
+  // Checks if |allow_exact_keyword_match_| should be set to true according to
+  // the old and new user text and the current caret position. It does not take
+  // other factors into account, e.g. if the view is ready to change the keyword
+  // ui or not. This is only for the case of inserting a space character in the
+  // middle of the text. See the comment of |allow_exact_keyword_match_| below.
+  bool ShouldAllowExactKeywordMatch(const string16& old_user_text,
+                                    const string16& new_user_text,
+                                    size_t caret_position);
 
   // Checks if a given character is a valid space character for accepting
   // keyword.
@@ -530,6 +539,21 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // to update instant in this case, so we use the flag to determine if this is
   // happening.
   bool update_instant_;
+
+  // Indicates if the upcoming autocomplete search is allowed to be treated as
+  // an exact keyword match. If it's true then keyword mode will be triggered
+  // automatically if the input is "<keyword> <search string>". We only allow
+  // such trigger when:
+  // 1.A single space character is added at the end of a keyword, such as:
+  //   (assume "foo" is a keyword, | is the input caret)
+  //   foo| -> foo |
+  //   foo[bar] -> foo |  ([bar] indicates a selected text "bar")
+  // 2.A single space character is inserted after a keyword when the caret is
+  //   not at the end of the line, such as:
+  //   foo|bar -> foo |bar
+  //
+  // It has no effect if a keyword is already selected.
+  bool allow_exact_keyword_match_;
 
   // Last value of InstantCompleteBehavior supplied to |SetSuggestedText|.
   InstantCompleteBehavior instant_complete_behavior_;

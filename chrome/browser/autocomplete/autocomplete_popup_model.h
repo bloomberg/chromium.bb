@@ -70,13 +70,18 @@ class AutocompletePopupModel {
   // will change the selected line back to the default match and redraw.
   void ResetToDefaultMatch();
 
-  // Gets the selected keyword or keyword hint for the given match.  Returns
-  // true if |keyword| represents a keyword hint, or false if |keyword|
-  // represents a selected keyword.  (|keyword| will always be set [though
-  // possibly to the empty string], and you cannot have both a selected keyword
-  // and a keyword hint simultaneously.)
+  // Gets the selected keyword or keyword hint for the given match. If the match
+  // is already keyword, then the keyword will be returned directly. Otherwise,
+  // it returns GetKeywordForText(match.fill_into_edit, keyword).
   bool GetKeywordForMatch(const AutocompleteMatch& match,
                           string16* keyword) const;
+
+  // Gets the selected keyword or keyword hint for the given text. Returns
+  // true if |keyword| represents a keyword hint, or false if |keyword|
+  // represents a selected keyword. (|keyword| will always be set [though
+  // possibly to the empty string], and you cannot have both a selected keyword
+  // and a keyword hint simultaneously.)
+  bool GetKeywordForText(const string16& text, string16* keyword) const;
 
   // Immediately updates and opens the popup if necessary, then moves the
   // current selection down (|count| > 0) or up (|count| < 0), clamping to the

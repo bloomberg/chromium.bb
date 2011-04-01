@@ -769,13 +769,22 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_EQ(text, edit_view->model()->keyword());
     ASSERT_EQ(text + char16(' '), edit_view->GetText());
 
-    // Keyword shouldn't be accepted by pressing space in the middle
-    // of content.
+    // Keyword shouldn't be accepted by pressing space before a trailing space.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
     ASSERT_TRUE(edit_view->model()->is_keyword_hint());
     ASSERT_EQ(text, edit_view->model()->keyword());
     ASSERT_EQ(text + ASCIIToUTF16("  "), edit_view->GetText());
+
+    // Keyword should be accepted by pressing space in the middle of context and
+    // just after the keyword.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_A, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
+    ASSERT_FALSE(edit_view->model()->is_keyword_hint());
+    ASSERT_EQ(text, edit_view->model()->keyword());
+    ASSERT_EQ(ASCIIToUTF16("a "), edit_view->GetText());
 
     // Keyword shouldn't be accepted by pasting "foo bar".
     edit_view->SetUserText(string16());
@@ -790,6 +799,14 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_FALSE(edit_view->model()->is_keyword_hint());
     ASSERT_TRUE(edit_view->model()->keyword().empty());
     ASSERT_EQ(text + ASCIIToUTF16(" bar"), edit_view->GetText());
+
+    // Keyword shouldn't be accepted for case like: "foo b|ar" -> "foo b |ar".
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
+    ASSERT_FALSE(edit_view->model()->is_keyword_hint());
+    ASSERT_TRUE(edit_view->model()->keyword().empty());
+    ASSERT_EQ(text + ASCIIToUTF16(" b ar"), edit_view->GetText());
 
     // Keyword could be accepted by pressing space with a selected range at the
     // end of text.

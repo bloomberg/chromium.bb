@@ -877,8 +877,6 @@ bool AutocompleteEditViewWin::OnAfterPossibleChangeInternal(
        (sel_before_change_.cpMin != sel_before_change_.cpMax)) &&
       ((new_sel.cpMin != sel_before_change_.cpMin) ||
        (new_sel.cpMax != sel_before_change_.cpMax));
-  const bool at_end_of_edit =
-      (new_sel.cpMin == length) && (new_sel.cpMax == length);
 
   // See if the text or selection have changed since OnBeforePossibleChange().
   const string16 new_text(GetText());
@@ -895,10 +893,9 @@ bool AutocompleteEditViewWin::OnAfterPossibleChangeInternal(
       (new_sel.cpMin <= std::min(sel_before_change_.cpMin,
                                  sel_before_change_.cpMax));
 
-  const bool allow_keyword_ui_change = at_end_of_edit && !IsImeComposing();
-  const bool something_changed = model_->OnAfterPossibleChange(new_text,
-      selection_differs, text_differs, just_deleted_text,
-      allow_keyword_ui_change);
+  const bool something_changed = model_->OnAfterPossibleChange(
+      new_text, new_sel.cpMin, new_sel.cpMax, selection_differs,
+      text_differs, just_deleted_text, !IsImeComposing());
 
   if (selection_differs)
     controller_->OnSelectionBoundsChanged();

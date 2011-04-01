@@ -80,6 +80,7 @@ AutocompleteEditModel::AutocompleteEditModel(
       paste_and_go_transition_(PageTransition::TYPED),
       profile_(profile),
       update_instant_(true),
+      allow_exact_keyword_match_(false),
       instant_complete_behavior_(INSTANT_COMPLETE_DELAYED) {
 }
 
@@ -390,7 +391,8 @@ void AutocompleteEditModel::StartAutocomplete(
       user_text_, GetDesiredTLD(),
       prevent_inline_autocomplete || just_deleted_text_ ||
       (has_selected_text && inline_autocomplete_text_.empty()) ||
-      (paste_state_ != NONE), keyword_is_selected, keyword_is_selected, false);
+      (paste_state_ != NONE), keyword_is_selected,
+      keyword_is_selected || allow_exact_keyword_match_, false);
 }
 
 void AutocompleteEditModel::StopAutocomplete() {
@@ -734,6 +736,8 @@ void AutocompleteEditModel::OnPopupDataChanged(
 
 bool AutocompleteEditModel::OnAfterPossibleChange(
     const string16& new_text,
+    size_t selection_start,
+    size_t selection_end,
     bool selection_differs,
     bool text_differs,
     bool just_deleted_text,
@@ -775,12 +779,25 @@ bool AutocompleteEditModel::OnAfterPossibleChange(
     just_deleted_text_ = just_deleted_text;
   }
 
+  const bool no_selection = selection_start == selection_end;
+
+  // Update the popup for the change, in the process changing to keyword mode
+  // if the user hit space in mid-string after a keyword.
+  // |allow_exact_keyword_match_| will be used by StartAutocomplete() method,
+  // which will be called by |view_->UpdatePopup()|. So we can safely clear
+  // this flag afterwards.
+  allow_exact_keyword_match_ =
+      text_differs && allow_keyword_ui_change &&
+      !just_deleted_text && no_selection &&
+      ShouldAllowExactKeywordMatch(old_user_text, user_text_, selection_start);
   view_->UpdatePopup();
+  allow_exact_keyword_match_ = false;
 
   // Change to keyword mode if the user has typed a keyword name and is now
   // pressing space after the name. Accepting the keyword will update our
   // state, so in that case there's no need to also return true here.
   return !(text_differs && allow_keyword_ui_change && !just_deleted_text &&
+           no_selection && selection_start == user_text_.length() &&
            MaybeAcceptKeywordBySpace(old_user_text, user_text_));
 }
 
@@ -953,6 +970,34 @@ bool AutocompleteEditModel::MaybeAcceptKeywordBySpace(
       !new_user_text.compare(0, new_user_text.length() - 1, old_user_text,
                              0, new_user_text.length() - 1) &&
       AcceptKeyword();
+}
+
+bool AutocompleteEditModel::ShouldAllowExactKeywordMatch(
+    const string16& old_user_text,
+    const string16& new_user_text,
+    size_t caret_position) {
+  // Check simple conditions first.
+  if (paste_state_ != NONE || caret_position < 2 ||
+      new_user_text.length() <= caret_position ||
+      old_user_text.length() < caret_position ||
+      !IsSpaceCharForAcceptingKeyword(new_user_text[caret_position - 1]) ||
+      IsSpaceCharForAcceptingKeyword(new_user_text[caret_position - 2]) ||
+      new_user_text.compare(0, caret_position - 1, old_user_text,
+                            0, caret_position - 1) ||
+      !new_user_text.compare(caret_position - 1,
+                             new_user_text.length() - caret_position + 1,
+                             old_user_text, caret_position - 1,
+                             old_user_text.length() - caret_position + 1)) {
+    return false;
+  }
+
+  // Then check if the text before the inserted space matches a keyword.
+  string16 keyword;
+  TrimWhitespace(new_user_text.substr(0, caret_position - 1),
+                 TRIM_LEADING, &keyword);
+
+  // Only allow exact keyword match if |keyword| represents a keyword hint.
+  return keyword.length() && popup_->GetKeywordForText(keyword, &keyword);
 }
 
 //  static

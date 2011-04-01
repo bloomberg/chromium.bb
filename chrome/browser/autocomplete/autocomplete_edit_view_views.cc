@@ -475,14 +475,11 @@ bool AutocompleteEditViewViews::OnAfterPossibleChange() {
   ui::Range new_sel;
   textfield_->GetSelectedRange(&new_sel);
 
-  size_t length = GetTextLength();
-  bool at_end_of_edit = (new_sel.start() == length && new_sel.end() == length);
-
   // See if the text or selection have changed since OnBeforePossibleChange().
-  string16 new_text = GetText();
-  bool text_changed = (new_text != text_before_change_) ||
+  const string16 new_text = GetText();
+  const bool text_changed = (new_text != text_before_change_) ||
       (ime_composing_before_change_ != textfield_->IsIMEComposing());
-  bool selection_differs =
+  const bool selection_differs =
       !((sel_before_change_.is_empty() && new_sel.is_empty()) ||
         sel_before_change_.EqualsIgnoringDirection(new_sel));
 
@@ -491,12 +488,13 @@ bool AutocompleteEditViewViews::OnAfterPossibleChange() {
   // (or typing) the prefix of that selection.  (We detect these by making
   // sure the caret, which should be after any insertion, hasn't moved
   // forward of the old selection start.)
-  bool just_deleted_text =
+  const bool just_deleted_text =
       (text_before_change_.length() > new_text.length()) &&
       (new_sel.start() <= sel_before_change_.GetMin());
 
-  bool something_changed = model_->OnAfterPossibleChange(new_text,
-      selection_differs, text_changed, just_deleted_text, at_end_of_edit);
+  const bool something_changed = model_->OnAfterPossibleChange(
+      new_text, new_sel.start(), new_sel.end(), selection_differs,
+      text_changed, just_deleted_text, !textfield_->IsIMEComposing());
 
   // If only selection was changed, we don't need to call |model_|'s
   // OnChanged() method, which is called in TextChanged().

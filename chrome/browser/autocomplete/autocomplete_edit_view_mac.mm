@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -673,10 +673,10 @@ bool AutocompleteEditViewMac::OnAfterPossibleChange() {
 
   delete_at_end_pressed_ = false;
 
-  const bool allow_keyword_ui_change = at_end_of_edit && !IsImeComposing();
-  const bool something_changed = model_->OnAfterPossibleChange(new_text,
+  const bool something_changed = model_->OnAfterPossibleChange(
+      new_text, new_selection.location, NSMaxRange(new_selection),
       selection_differs, text_differs, just_deleted_text,
-      allow_keyword_ui_change);
+      !IsImeComposing());
 
   if (delete_was_pressed_ && at_end_of_edit)
     delete_at_end_pressed_ = true;
