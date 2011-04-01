@@ -1071,7 +1071,7 @@ cleanup:
   return retval;
 }
 
-void NaClCommonUtilUpdateAddrMap(struct NaClAppThread *natp,
+void NaClCommonUtilUpdateAddrMap(struct NaClApp       *nap,
                                  uintptr_t            sysaddr,
                                  size_t               nbytes,
                                  int                  sysprot,
@@ -1087,11 +1087,11 @@ void NaClCommonUtilUpdateAddrMap(struct NaClAppThread *natp,
            "0x%08"NACL_PRIxPTR", "
            "0x%"NACL_PRIxS", 0x%x, 0x%08"NACL_PRIxPTR", 0x%"NACL_PRIx64", "
            "0x%"NACL_PRIx64", %d)\n"),
-          (uintptr_t) natp, sysaddr, nbytes,
+          (uintptr_t) nap, sysaddr, nbytes,
           sysprot, (uintptr_t) backing_desc, backing_bytes,
           offset_bytes,
           delete_mem);
-  usraddr = NaClSysToUser(natp->nap, sysaddr);
+  usraddr = NaClSysToUser(nap, sysaddr);
   nmop = NULL;
   /* delete_mem -> NULL == backing_desc */
   if (NULL != backing_desc) {
@@ -1103,7 +1103,7 @@ void NaClCommonUtilUpdateAddrMap(struct NaClAppThread *natp,
     nmop = NaClMemObjMake(backing_desc, backing_bytes, offset_bytes);
   }
 
-  NaClVmmapUpdate(&natp->nap->mem_map,
+  NaClVmmapUpdate(&nap->mem_map,
                   usraddr >> NACL_PAGESHIFT,
                   nbytes >> NACL_PAGESHIFT,
                   sysprot,
@@ -1136,7 +1136,7 @@ int NaClSysCommonAddrRangeContainsExecutablePages_mu(struct NaClApp *nap,
 
 
 /* Warning: sizeof(nacl_abi_off_t)!=sizeof(off_t) on OSX */
-int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
+int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
                                 void                  *start,
                                 size_t                length,
                                 int                   prot,
@@ -1183,7 +1183,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
      */
     ndp = NULL;
   } else {
-    ndp = NaClGetDesc(natp->nap, d);
+    ndp = NaClGetDesc(nap, d);
     if (NULL == ndp) {
       map_result = -NACL_ABI_EBADF;
       goto cleanup;
@@ -1327,7 +1327,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
   /*
    * Lock the addr space.
    */
-  NaClXMutexLock(&natp->nap->mu);
+  NaClXMutexLock(&nap->mu);
   holding_app_lock = 1;
 
   if (0 == (flags & NACL_ABI_MAP_FIXED)) {
@@ -1339,7 +1339,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
        * Pick a hole in addr space of appropriate size, anywhere.
        * We pick one that's best for the system.
        */
-      usrpage = NaClVmmapFindMapSpace(&natp->nap->mem_map,
+      usrpage = NaClVmmapFindMapSpace(&nap->mem_map,
                                       alloc_rounded_length >> NACL_PAGESHIFT);
       NaClLog(4, "NaClSysMmap: FindMapSpace: page 0x%05"NACL_PRIxPTR"\n",
               usrpage);
@@ -1356,7 +1356,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
        * find a hole of the right size in the app's address space,
        * according to the usual mmap semantics.
        */
-      usrpage = NaClVmmapFindMapSpaceAboveHint(&natp->nap->mem_map,
+      usrpage = NaClVmmapFindMapSpaceAboveHint(&nap->mem_map,
                                                usraddr,
                                                (alloc_rounded_length
                                                 >> NACL_PAGESHIFT));
@@ -1364,7 +1364,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
               usrpage);
       if (0 == usrpage) {
         NaClLog(4, "NaClSysMmap: hint failed, doing generic allocation\n");
-        usrpage = NaClVmmapFindMapSpace(&natp->nap->mem_map,
+        usrpage = NaClVmmapFindMapSpace(&nap->mem_map,
                                         alloc_rounded_length >> NACL_PAGESHIFT);
       }
       if (0 == usrpage) {
@@ -1380,7 +1380,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
   /*
    * Validate [usraddr, endaddr) is okay.
    */
-  if (usraddr >= ((uintptr_t) 1 << natp->nap->addr_bits)) {
+  if (usraddr >= ((uintptr_t) 1 << nap->addr_bits)) {
     NaClLog(2,
             ("NaClSysMmap: start address (0x%08"NACL_PRIxPTR") outside address"
              " space\n"),
@@ -1405,7 +1405,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
    * and it can equal the address space limit.  (of course, normally
    * the main thread's stack is there.)
    */
-  if (endaddr > ((uintptr_t) 1 << natp->nap->addr_bits)) {
+  if (endaddr > ((uintptr_t) 1 << nap->addr_bits)) {
     NaClLog(2,
             ("NaClSysMmap: end address (0x%08"NACL_PRIxPTR") is beyond"
              " the end of the address space\n"),
@@ -1414,7 +1414,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
-  if (NaClSysCommonAddrRangeContainsExecutablePages_mu(natp->nap,
+  if (NaClSysCommonAddrRangeContainsExecutablePages_mu(nap,
                                                        usraddr,
                                                        length)) {
     NaClLog(2, "NaClSysMmap: region contains executable pages\n");
@@ -1446,7 +1446,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
-  sysaddr = NaClUserToSys(natp->nap, usraddr);
+  sysaddr = NaClUserToSys(nap, usraddr);
 
   /* [0, length) */
   if (length > 0) {
@@ -1455,7 +1455,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
               ("NaClSysMmap: NaClDescIoDescMap(,,0x%08"NACL_PRIxPTR","
                "0x%08"NACL_PRIxS",0x%x,0x%x,0x%08"NACL_PRIxPTR")\n"),
               sysaddr, length, prot, flags, (uintptr_t) offset);
-      map_result = NaClDescIoDescMapAnon(natp->nap->effp,
+      map_result = NaClDescIoDescMapAnon(nap->effp,
                                          (void *) sysaddr,
                                          length,
                                          prot,
@@ -1475,7 +1475,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
 
       map_result = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
                     Map)(ndp,
-                         natp->nap->effp,
+                         nap->effp,
                          (void *) sysaddr,
                          length_to_map,
                          prot,
@@ -1501,11 +1501,11 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
        * memory be freed using VirtualFree rather than
        * UnmapViewOfFile.  TODO(bsy): remove this ugliness.
        */
-      NaClCommonUtilUpdateAddrMap(natp, sysaddr, length, PROT_NONE,
+      NaClCommonUtilUpdateAddrMap(nap, sysaddr, length, PROT_NONE,
                                   NULL, file_size, offset, 0);
     } else {
       /* record change for file-backed memory */
-      NaClCommonUtilUpdateAddrMap(natp, sysaddr, length, NaClProtMap(prot),
+      NaClCommonUtilUpdateAddrMap(nap, sysaddr, length, NaClProtMap(prot),
                                   ndp, file_size, offset, 0);
     }
   } else {
@@ -1533,7 +1533,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
               sysaddr + length, sysaddr + start_of_inaccessible);
       goto cleanup;
     }
-    NaClCommonUtilUpdateAddrMap(natp, sysaddr + length, map_len,
+    NaClCommonUtilUpdateAddrMap(nap, sysaddr + length, map_len,
                                 NaClProtMap(prot),
                                 (struct NaClDesc *) NULL, 0, (off_t) 0, 0);
   }
@@ -1563,7 +1563,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
             sysaddr + alloc_rounded_length,
             map_len);
     }
-    NaClCommonUtilUpdateAddrMap(natp, sysaddr + start_of_inaccessible,
+    NaClCommonUtilUpdateAddrMap(nap, sysaddr + start_of_inaccessible,
                                 map_len, PROT_NONE,
                                 (struct NaClDesc *) NULL, 0,
                                 (off_t) 0, 0);
@@ -1574,7 +1574,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
   map_result = usraddr;
 cleanup:
   if (holding_app_lock) {
-    NaClXMutexUnlock(&natp->nap->mu);
+    NaClXMutexUnlock(&nap->mu);
   }
   if (NULL != ndp) {
     NaClDescUnref(ndp);
@@ -1643,7 +1643,7 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
 
   NaClLog(4, " offset = 0x%08"NACL_PRIxNACL_OFF"\n", offset);
 
-  retval = NaClCommonSysMmapIntern(natp,
+  retval = NaClCommonSysMmapIntern(natp->nap,
                                    start, length,
                                    prot,
                                    flags,

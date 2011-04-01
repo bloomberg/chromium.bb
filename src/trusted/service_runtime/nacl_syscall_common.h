@@ -118,7 +118,7 @@ int32_t NaClCommonSysStat(struct NaClAppThread *natp,
                           const char           *path,
                           struct nacl_abi_stat *nasp);
 
-void NaClCommonUtilUpdateAddrMap(struct NaClAppThread *natp,
+void NaClCommonUtilUpdateAddrMap(struct NaClApp       *nap,
                                  uintptr_t            sysaddr,
                                  size_t               nbytes,
                                  int                  sysprot,
@@ -140,7 +140,7 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
                           int                   d,
                           nacl_abi_off_t        *offp);
 
-int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
+int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
                                 void                  *start,
                                 size_t                length,
                                 int                   prot,

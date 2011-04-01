@@ -52,6 +52,7 @@ int main(int argc, char **argv) {
   char *nacl_file;
   struct GioMemoryFileSnapshot gf;
   struct NaClApp state;
+  struct NaClApp *nap = &state;
   struct NaClAppThread nat, *natp = &nat;
   int errcode;
   uint32_t initial_addr;
@@ -96,7 +97,7 @@ int main(int argc, char **argv) {
   CheckLowerMappings(mem_map);
 
   /* Allocate range */
-  addr = NaClCommonSysMmapIntern(natp, 0, 3 * NACL_MAP_PAGESIZE,
+  addr = NaClCommonSysMmapIntern(nap, 0, 3 * NACL_MAP_PAGESIZE,
                                  NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                                  NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
                                  -1, 0);
@@ -113,7 +114,7 @@ int main(int argc, char **argv) {
    */
 
   /* Map to overwrite the start of the previously allocated range */
-  addr = NaClCommonSysMmapIntern(natp, (void *) (uintptr_t) initial_addr,
+  addr = NaClCommonSysMmapIntern(nap, (void *) (uintptr_t) initial_addr,
                                  2 * NACL_MAP_PAGESIZE,
                                  NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                                  NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE
@@ -133,7 +134,7 @@ int main(int argc, char **argv) {
    */
 
   /* Allocate new page */
-  addr = NaClCommonSysMmapIntern(natp, 0, NACL_MAP_PAGESIZE,
+  addr = NaClCommonSysMmapIntern(nap, 0, NACL_MAP_PAGESIZE,
                                  NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                                  NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
                                  -1, 0);
@@ -199,7 +200,7 @@ int main(int argc, char **argv) {
 
 
   /* Allocate range */
-  addr = NaClCommonSysMmapIntern(natp, 0, 9 * NACL_MAP_PAGESIZE,
+  addr = NaClCommonSysMmapIntern(nap, 0, 9 * NACL_MAP_PAGESIZE,
                                  NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                                  NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
                                  -1, 0);
@@ -216,7 +217,7 @@ int main(int argc, char **argv) {
    */
 
   /* Map into middle of previously allocated range */
-  addr = NaClCommonSysMmapIntern(natp,
+  addr = NaClCommonSysMmapIntern(nap,
                                  (void *) (uintptr_t) (initial_addr
                                                        + 2 * NACL_MAP_PAGESIZE),
                                  3 * NACL_MAP_PAGESIZE,
@@ -277,7 +278,7 @@ int main(int argc, char **argv) {
   /*
    * Check use of hint.
    */
-  addr = NaClCommonSysMmapIntern(natp, (void *) (uintptr_t) initial_addr,
+  addr = NaClCommonSysMmapIntern(nap, (void *) (uintptr_t) initial_addr,
                                  NACL_MAP_PAGESIZE,
                                  NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                                  NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
@@ -289,7 +290,7 @@ int main(int argc, char **argv) {
   ASSERT_EQ(errcode, 0);
 
   /* Check handling of zero-sized mappings. */
-  addr = NaClCommonSysMmapIntern(natp, 0, 0,
+  addr = NaClCommonSysMmapIntern(nap, 0, 0,
                                  NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                                  NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
                                  -1, 0);
