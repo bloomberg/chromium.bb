@@ -10,6 +10,8 @@
 
 class DevToolsUI : public WebUI {
  public:
+  static void RegisterDevToolsDataSource();
+
   explicit DevToolsUI(TabContents* contents);
 
   // WebUI

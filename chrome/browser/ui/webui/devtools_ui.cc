@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/webui/devtools_ui.h"
 
 #include "base/string_util.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/devtools_resources_map.h"
@@ -81,6 +83,18 @@ std::string DevToolsDataSource::GetMimeType(const std::string& path) const {
   return "text/plain";
 }
 
+// static
+void DevToolsUI::RegisterDevToolsDataSource() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  static bool registered = false;
+  if (!registered) {
+    DevToolsDataSource* data_source = new DevToolsDataSource();
+    ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
+        Profile::GetDefaultRequestContext()->GetURLRequestContext());
+    context->GetChromeURLDataManagerBackend()->AddDataSource(data_source);
+    registered = true;
+  }
+}
 
 DevToolsUI::DevToolsUI(TabContents* contents) : WebUI(contents) {
   DevToolsDataSource* data_source = new DevToolsDataSource();

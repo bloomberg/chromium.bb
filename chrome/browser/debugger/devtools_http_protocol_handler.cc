@@ -18,6 +18,7 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/common/devtools_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -150,6 +151,14 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(
   }
 
   // Proxy static files from chrome-devtools://devtools/*.
+  if (!Profile::GetDefaultRequestContext()) {
+    server_->Send404(connection_id);
+    return;
+  }
+
+  // Make sure DevTools data source is registered.
+  DevToolsUI::RegisterDevToolsDataSource();
+
   net::URLRequest* request = new net::URLRequest(
       GURL("chrome-devtools:/" + info.path), this);
   Bind(request, connection_id);
@@ -383,18 +392,15 @@ void DevToolsHttpProtocolHandler::OnResponseStarted(net::URLRequest* request) {
 
   int connection_id = it->second;
 
-  int expected_size = static_cast<int>(request->GetExpectedContentSize());
-
   std::string content_type;
   request->GetMimeType(&content_type);
 
   if (request->status().is_success()) {
     server_->Send(connection_id, StringPrintf("HTTP/1.1 200 OK\r\n"
                                               "Content-Type:%s\r\n"
-                                              "Content-Length:%d\r\n"
+                                              "Transfer-Encoding: chunked\r\n"
                                               "\r\n",
-                                              content_type.c_str(),
-                                              expected_size));
+                                              content_type.c_str()));
   } else {
     server_->Send404(connection_id);
   }
@@ -422,12 +428,18 @@ void DevToolsHttpProtocolHandler::OnReadCompleted(net::URLRequest* request,
   do {
     if (!request->status().is_success() || bytes_read <= 0)
       break;
+    std::string chunk_size = StringPrintf("%X\r\n", bytes_read);
+    server_->Send(connection_id, chunk_size);
     server_->Send(connection_id, buffer->data(), bytes_read);
+    server_->Send(connection_id, "\r\n");
   } while (request->Read(buffer, kBufferSize, &bytes_read));
 
+
   // See comments re: HEAD requests in OnResponseStarted().
-  if (!request->status().is_io_pending())
+  if (!request->status().is_io_pending()) {
+    server_->Send(connection_id, "0\r\n\r\n");
     RequestCompleted(request);
+  }
 }
 
 DevToolsHttpProtocolHandler::DevToolsHttpProtocolHandler(
