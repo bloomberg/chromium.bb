@@ -20,6 +20,9 @@
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
+#include "googleurl/src/url_parse.h"
+#include "googleurl/src/url_canon.h"
+#include "googleurl/src/url_util.h"
 
 namespace prerender {
 
@@ -54,6 +57,35 @@ bool PrerenderManager::IsPrerenderingPossible() {
 // static
 bool PrerenderManager::IsControlGroup() {
   return GetMode() == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP;
+}
+
+// static
+bool PrerenderManager::MaybeGetQueryStringBasedAliasURL(
+    const GURL& url, GURL* alias_url) {
+  DCHECK(alias_url);
+  url_parse::Parsed parsed;
+  url_parse::ParseStandardURL(url.spec().c_str(), url.spec().length(),
+                              &parsed);
+  url_parse::Component query = parsed.query;
+  url_parse::Component key, value;
+  while (url_parse::ExtractQueryKeyValue(url.spec().c_str(), &query, &key,
+                                         &value)) {
+    if (key.len != 3 || strncmp(url.spec().c_str() + key.begin, "url", key.len))
+      continue;
+    // We found a url= query string component.
+    if (value.len < 1)
+      continue;
+    url_canon::RawCanonOutputW<1024> decoded_url;
+    url_util::DecodeURLEscapeSequences(url.spec().c_str() + value.begin,
+                                       value.len, &decoded_url);
+    GURL new_url(string16(decoded_url.data(), decoded_url.length()));
+    if (!new_url.is_empty() && new_url.is_valid()) {
+      *alias_url = new_url;
+      return true;
+    }
+    return false;
+  }
+  return false;
 }
 
 struct PrerenderManager::PrerenderContentsData {
@@ -110,6 +142,15 @@ bool PrerenderManager::AddPreload(const GURL& url,
   if (FindEntry(url))
     return false;
 
+  // Local copy, since we may have to add an additional entry to it.
+  std::vector<GURL> all_alias_urls = alias_urls;
+
+  GURL additional_alias_url;
+  if (IsControlGroup() &&
+      PrerenderManager::MaybeGetQueryStringBasedAliasURL(
+          url, &additional_alias_url))
+    all_alias_urls.push_back(additional_alias_url);
+
   // Do not prerender if there are too many render processes, and we would
   // have to use an existing one.  We do not want prerendering to happen in
   // a shared process, so that we can always reliably lower the CPU
@@ -134,7 +175,8 @@ bool PrerenderManager::AddPreload(const GURL& url,
   }
 
   // TODO(cbentzel): Move invalid checks here instead of PrerenderContents?
-  PrerenderContentsData data(CreatePrerenderContents(url, alias_urls, referrer),
+  PrerenderContentsData data(CreatePrerenderContents(url, all_alias_urls,
+                                                     referrer),
                              GetCurrentTime());
 
   prerender_list_.push_back(data);

@@ -124,6 +124,12 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   bool IsTabContentsPrerendered(TabContents* tc) const;
   bool WouldTabContentsBePrerendered(TabContents* tc) const;
 
+  // Extracts a urlencoded URL stored in a url= query parameter from a URL
+  // supplied, if available, and stores it in alias_url.  Returns whether or not
+  // the operation succeeded (i.e. a valid URL was found).
+  static bool MaybeGetQueryStringBasedAliasURL(const GURL& url,
+                                               GURL* alias_url);
+
  protected:
   struct PendingContentsData;
 
