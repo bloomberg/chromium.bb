@@ -59,7 +59,7 @@ int GetDPI(const PrintMsg_Print_Params* print_params) {
 
 bool PrintMsg_Print_Params_IsEmpty(const PrintMsg_Print_Params& params) {
   return !params.document_cookie && !params.desired_dpi && !params.max_shrink &&
-         !params.min_shrink && !params.dpi && params.printable_size.IsEmpty() && 
+         !params.min_shrink && !params.dpi && params.printable_size.IsEmpty() &&
          !params.selection_only && params.page_size.IsEmpty() &&
          !params.margin_top && !params.margin_left &&
          !params.supports_alpha_blend;
@@ -626,6 +626,8 @@ void PrintWebViewHelper::RenderPagesForPrint(WebKit::WebFrame* frame,
 void PrintWebViewHelper::RenderPagesForPreview(WebKit::WebFrame* frame,
                                                WebKit::WebNode* node) {
   PrintMsg_PrintPages_Params print_settings = *print_pages_params_;
+  // PDF printer device supports alpha blending.
+  print_settings.params.supports_alpha_blend = true;
   // TODO(kmadhusu): Handle print selection.
   CreatePreviewDocument(print_settings, frame, node);
 }
