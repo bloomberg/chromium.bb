@@ -109,7 +109,7 @@ const char kConflictsPath[] = "conflicts";
 #endif
 const char kDnsPath[] = "dns";
 const char kFlagsPath[] = "flags";
-const char kGpuPath[] = "gpu";
+const char kGpuPath[] = "gpu-internals";
 const char kHistogramsPath[] = "histograms";
 const char kMemoryRedirectPath[] = "memory-redirect";
 const char kMemoryPath[] = "memory";
