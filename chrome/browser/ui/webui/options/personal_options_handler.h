@@ -64,6 +64,7 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
 #if defined(OS_CHROMEOS)
   void LoadAccountPicture(const ListValue* args);
   void ChangeAccountPicture(const ListValue* args);
+  void TakePhoto(const ListValue* args);
 
   // SelectFileDialog::Delegate implementation.
   virtual void FileSelected(const FilePath& path, int index, void* params);

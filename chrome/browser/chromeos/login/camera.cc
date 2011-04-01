@@ -339,7 +339,7 @@ int Camera::OpenDevice(const char* device_name) const {
     return -1;
   }
   if (!S_ISCHR(st.st_mode)) {
-    LOG(ERROR) << device_name << "is not adevice";
+    LOG(ERROR) << device_name << "is not a device";
     return -1;
   }
   int fd = open(device_name, O_RDWR | O_NONBLOCK, 0);

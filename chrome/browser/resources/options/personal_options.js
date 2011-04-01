@@ -77,6 +77,9 @@ cr.define('options', function() {
         $('change-picture').onclick = function(event) {
           chrome.send('changeAccountPicture');
         };
+        $('take-photo').onclick = function(event) {
+          chrome.send('takePhoto');
+        };
         chrome.send('loadAccountPicture');
       }
 

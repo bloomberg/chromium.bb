@@ -4,25 +4,15 @@
 
 #include "chrome/browser/chromeos/login/user_image_view.h"
 
-#include <algorithm>
-
-#include "base/callback.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
-#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "views/controls/button/image_button.h"
 #include "views/controls/button/native_button.h"
-#include "views/controls/image_view.h"
-#include "views/controls/label.h"
-#include "views/controls/throbber.h"
 #include "views/layout/grid_layout.h"
 
 namespace {
@@ -38,125 +28,19 @@ const int kVerticalPadding = 10;
 
 // IDs of column sets for grid layout manager.
 enum ColumnSets {
-  kTitleRow,    // Column set for screen title.
-  kImageRow,    // Column set for image from camera and snapshot button.
-  kButtonsRow,  // Column set for Skip and OK buttons.
+  kTakePhotoRow, // Column set for image from camera and snapshot button.
+  kButtonsRow,   // Column set for Skip and OK buttons.
 };
 
 }  // namespace
 
 namespace chromeos {
 
-// Image view that can show center throbber above itself or a message at its
-// bottom.
-class CameraImageView : public views::ImageView {
- public:
-  CameraImageView()
-      : throbber_(NULL),
-        message_(NULL) {}
-
-  ~CameraImageView() {}
-
-  void Init() {
-    DCHECK(NULL == throbber_);
-    DCHECK(NULL == message_);
-
-    throbber_ = CreateDefaultSmoothedThrobber();
-    throbber_->SetVisible(false);
-    AddChildView(throbber_);
-
-    message_ = new views::Label();
-    message_->SetMultiLine(true);
-    message_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    message_->SetVisible(false);
-    CorrectLabelFontSize(message_);
-    AddChildView(message_);
-  }
-
-  void SetInitializingState() {
-    ShowThrobber();
-    SetMessage(std::wstring());
-    SetImage(
-        ResourceBundle::GetSharedInstance().GetBitmapNamed(
-            IDR_USER_IMAGE_INITIALIZING));
-  }
-
-  void SetNormalState() {
-    HideThrobber();
-    SetMessage(std::wstring());
-  }
-
-  void SetErrorState() {
-    HideThrobber();
-    SetMessage(UTF16ToWide(l10n_util::GetStringUTF16(IDS_USER_IMAGE_NO_VIDEO)));
-    SetImage(
-        ResourceBundle::GetSharedInstance().GetBitmapNamed(
-            IDR_USER_IMAGE_NO_VIDEO));
-  }
-
- private:
-  void ShowThrobber() {
-    DCHECK(throbber_);
-    throbber_->SetVisible(true);
-    throbber_->Start();
-  }
-
-  void HideThrobber() {
-    DCHECK(throbber_);
-    throbber_->Stop();
-    throbber_->SetVisible(false);
-  }
-
-  void SetMessage(const std::wstring& message) {
-    DCHECK(message_);
-    message_->SetText(message);
-    message_->SetVisible(!message.empty());
-    Layout();
-  }
-
-  // views::View override:
-  virtual void Layout() {
-    gfx::Size size = GetPreferredSize();
-    if (throbber_->IsVisible()) {
-      gfx::Size throbber_size = throbber_->GetPreferredSize();
-      int throbber_x = (size.width() - throbber_size.width()) / 2;
-      int throbber_y = (size.height() - throbber_size.height()) / 2;
-      throbber_->SetBounds(throbber_x,
-                           throbber_y,
-                           throbber_size.width(),
-                           throbber_size.height());
-    }
-    if (message_->IsVisible()) {
-      message_->SizeToFit(size.width() - kHorizontalMargin * 2);
-      gfx::Size message_size = message_->GetPreferredSize();
-      int message_y = size.height() - kVerticalMargin - message_size.height();
-      message_->SetBounds(kHorizontalMargin,
-                          message_y,
-                          message_size.width(),
-                          message_size.height());
-    }
-  }
-
-  // Throbber centered within the view.
-  views::Throbber* throbber_;
-
-  // Message, multiline, aligned to the bottom of the view.
-  views::Label* message_;
-
-  DISALLOW_COPY_AND_ASSIGN(CameraImageView);
-};
-
-
-using login::kUserImageSize;
-
 UserImageView::UserImageView(Delegate* delegate)
-    : title_label_(NULL),
+    : take_photo_view_(NULL),
       ok_button_(NULL),
       skip_button_(NULL),
-      snapshot_button_(NULL),
-      user_image_(NULL),
-      delegate_(delegate),
-      is_capturing_(true) {
+      delegate_(delegate) {
 }
 
 UserImageView::~UserImageView() {
@@ -169,40 +53,19 @@ void UserImageView::Init() {
       &BorderDefinition::kScreenBorder);
   set_background(views::Background::CreateBackgroundPainter(true, painter));
 
-  title_label_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_USER_IMAGE_SCREEN_TITLE)));
-  title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  title_label_->SetMultiLine(true);
-  CorrectLabelFontSize(title_label_);
-
-  user_image_ = new CameraImageView();
-  user_image_->SetImageSize(
-      gfx::Size(kUserImageSize, kUserImageSize));
-  user_image_->Init();
-
-  snapshot_button_ = new views::ImageButton(this);
-  snapshot_button_->SetFocusable(true);
-  snapshot_button_->SetImage(views::CustomButton::BS_NORMAL,
-                             ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                                 IDR_USER_IMAGE_CAPTURE));
-  snapshot_button_->SetImage(views::CustomButton::BS_DISABLED,
-                             ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                                 IDR_USER_IMAGE_CAPTURE_DISABLED));
-  snapshot_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_CHROMEOS_ACC_ACCOUNT_PICTURE));
+  take_photo_view_ = new TakePhotoView(this);
 
   ok_button_ = new login::WideButton(
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK)));
-  ok_button_->SetEnabled(!is_capturing_);
+  ok_button_->SetEnabled(false);
 
   skip_button_ = new login::WideButton(
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_SKIP)));
   skip_button_->SetEnabled(true);
 
   InitLayout();
-  // Request focus only after the button is added to views hierarchy.
-  snapshot_button_->RequestFocus();
-  user_image_->SetInitializingState();
+
+  take_photo_view_->Init();
 }
 
 void UserImageView::InitLayout() {
@@ -210,19 +73,10 @@ void UserImageView::InitLayout() {
   layout->SetInsets(GetInsets());
   SetLayoutManager(layout);
 
-  // The title is left-top aligned.
-  views::ColumnSet* column_set = layout->AddColumnSet(kTitleRow);
+  // The view with image from camera and label.
+  views::ColumnSet* column_set = layout->AddColumnSet(kTakePhotoRow);
   column_set->AddPaddingColumn(0, kHorizontalMargin);
   column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::LEADING,
-                        1,
-                        views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kHorizontalMargin);
-
-  // User image and snapshot button are centered horizontally.
-  column_set = layout->AddColumnSet(kImageRow);
-  column_set->AddPaddingColumn(0, kHorizontalMargin);
-  column_set->AddColumn(views::GridLayout::CENTER,
                         views::GridLayout::LEADING,
                         1,
                         views::GridLayout::USE_PREF, 0, 0);
@@ -245,12 +99,8 @@ void UserImageView::InitLayout() {
   column_set->AddPaddingColumn(0, kHorizontalMargin);
 
   // Fill the layout with rows and views now.
-  layout->StartRowWithPadding(0, kTitleRow, 0, kVerticalMargin);
-  layout->AddView(title_label_);
-  layout->StartRowWithPadding(0, kImageRow, 0, kVerticalPadding);
-  layout->AddView(user_image_);
-  layout->StartRowWithPadding(1, kImageRow, 0, kVerticalPadding);
-  layout->AddView(snapshot_button_);
+  layout->StartRowWithPadding(0, kTakePhotoRow, 0, kVerticalMargin);
+  layout->AddView(take_photo_view_);
   layout->StartRowWithPadding(0, kButtonsRow, 0, kVerticalPadding);
   layout->AddView(skip_button_);
   layout->AddView(ok_button_);
@@ -258,36 +108,18 @@ void UserImageView::InitLayout() {
 }
 
 void UserImageView::UpdateVideoFrame(const SkBitmap& frame) {
-  if (!is_capturing_)
-    return;
-
-  if (!snapshot_button_->IsEnabled()) {
-    user_image_->SetNormalState();
-    snapshot_button_->SetEnabled(true);
-    snapshot_button_->RequestFocus();
-  }
-  SkBitmap user_image =
-      skia::ImageOperations::Resize(
-          frame,
-          skia::ImageOperations::RESIZE_BOX,
-          kUserImageSize,
-          kUserImageSize);
-
-  user_image_->SetImage(&user_image);
+  DCHECK(take_photo_view_);
+  take_photo_view_->UpdateVideoFrame(frame);
 }
 
 void UserImageView::ShowCameraInitializing() {
-  if (!is_capturing_)
-    return;
-  snapshot_button_->SetEnabled(false);
-  user_image_->SetInitializingState();
+  DCHECK(take_photo_view_);
+  take_photo_view_->ShowCameraInitializing();
 }
 
 void UserImageView::ShowCameraError() {
-  if (!is_capturing_)
-    return;
-  snapshot_button_->SetEnabled(false);
-  user_image_->SetErrorState();
+  DCHECK(take_photo_view_);
+  take_photo_view_->ShowCameraError();
 }
 
 gfx::Size UserImageView::GetPreferredSize() {
@@ -297,30 +129,22 @@ gfx::Size UserImageView::GetPreferredSize() {
 void UserImageView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   DCHECK(delegate_);
-  if (sender == snapshot_button_) {
-    if (is_capturing_) {
-      ok_button_->SetEnabled(true);
-      ok_button_->RequestFocus();
-      snapshot_button_->SetImage(
-          views::CustomButton::BS_NORMAL,
-          ResourceBundle::GetSharedInstance().GetBitmapNamed(
-              IDR_USER_IMAGE_RECYCLE));
-    } else {
-      ok_button_->SetEnabled(false);
-      snapshot_button_->SetImage(
-          views::CustomButton::BS_NORMAL,
-          ResourceBundle::GetSharedInstance().GetBitmapNamed(
-              IDR_USER_IMAGE_CAPTURE));
-    }
-    snapshot_button_->SchedulePaint();
-    is_capturing_ = !is_capturing_;
-  } else if (sender == ok_button_) {
-    delegate_->OnOK(user_image_->GetImage());
+  if (sender == ok_button_) {
+    delegate_->OnOK(take_photo_view_->GetImage());
   } else if (sender == skip_button_) {
     delegate_->OnSkip();
   } else {
     NOTREACHED();
   }
+}
+
+void UserImageView::OnCapturingStarted() {
+  ok_button_->SetEnabled(false);
+}
+
+void UserImageView::OnCapturingStopped() {
+  ok_button_->SetEnabled(true);
+  ok_button_->RequestFocus();
 }
 
 }  // namespace chromeos

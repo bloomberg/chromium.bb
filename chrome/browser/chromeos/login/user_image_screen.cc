@@ -5,11 +5,8 @@
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 
 #include "base/compiler_specific.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/time.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
-#include "chrome/browser/chromeos/login/user_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_image_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "content/common/notification_service.h"
@@ -25,23 +22,13 @@ namespace {
 const int kFrameWidth = 480;
 const int kFrameHeight = 480;
 
-// Maximum number of capture failures we ignore before we try to initialize
-// the camera again.
-const int kMaxCaptureFailureCounter = 5;
-
-// Maximum number of camera initialization retries.
-const int kMaxCameraInitFailureCounter = 3;
-
-// Name for camera thread.
-const char kCameraThreadName[] = "Chrome_CameraThread";
-
 }  // namespace
 
 UserImageScreen::UserImageScreen(WizardScreenDelegate* delegate)
     : ViewScreen<UserImageView>(delegate),
-      capture_failure_counter_(0),
-      camera_init_failure_counter_(0) {
-  camera_thread_.reset(new base::Thread(kCameraThreadName));
+      camera_controller_(this) {
+  camera_controller_.set_frame_width(kFrameWidth);
+  camera_controller_.set_frame_height(kFrameHeight);
   registrar_.Add(
       this,
       NotificationType::SCREEN_LOCK_STATE_CHANGED,
@@ -49,25 +36,14 @@ UserImageScreen::UserImageScreen(WizardScreenDelegate* delegate)
 }
 
 UserImageScreen::~UserImageScreen() {
-  if (camera_.get())
-    camera_->set_delegate(NULL);
-  {
-    // A ScopedAllowIO object is required to join the thread when calling Stop.
-    // See http://crosbug.com/11392.
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
-    camera_thread_.reset();
-  }
 }
 
 void UserImageScreen::Refresh() {
-  camera_thread_->Start();
-  camera_ = new Camera(this, camera_thread_.get(), true);
   InitCamera();
 }
 
 void UserImageScreen::Hide() {
-  if (camera_.get())
-    camera_->StopCapturing();
+  camera_controller_.Stop();
   ViewScreen<UserImageView>::Hide();
 }
 
@@ -75,56 +51,23 @@ UserImageView* UserImageScreen::AllocateView() {
   return new UserImageView(this);
 }
 
-void UserImageScreen::OnInitializeSuccess() {
-  if (camera_.get())
-    camera_->StartCapturing();
-}
-
-void UserImageScreen::OnInitializeFailure() {
-  ++camera_init_failure_counter_;
-  if (camera_init_failure_counter_ > kMaxCameraInitFailureCounter) {
-    if (view())
-      view()->ShowCameraError();
-    return;
-  }
-  // Retry initializing the camera.
-  if (camera_.get()) {
-    camera_->Uninitialize();
-    InitCamera();
-  }
-}
-
-void UserImageScreen::OnStartCapturingSuccess() {
-}
-
-void UserImageScreen::OnStartCapturingFailure() {
-  // Try to reinitialize camera.
-  OnInitializeFailure();
-}
-
 void UserImageScreen::OnCaptureSuccess() {
-  capture_failure_counter_ = 0;
-  camera_init_failure_counter_ = 0;
-  if (view() && camera_.get()) {
+  if (view()) {
     SkBitmap frame;
-    camera_->GetFrame(&frame);
+    camera_controller_.GetFrame(&frame);
     if (!frame.isNull())
       view()->UpdateVideoFrame(frame);
   }
 }
 
 void UserImageScreen::OnCaptureFailure() {
-  ++capture_failure_counter_;
-  if (capture_failure_counter_ < kMaxCaptureFailureCounter)
-    return;
-
-  capture_failure_counter_ = 0;
-  OnInitializeFailure();
+  if (view())
+    view()->ShowCameraError();
 }
 
 void UserImageScreen::OnOK(const SkBitmap& image) {
-  if (camera_.get())
-    camera_->Uninitialize();
+  camera_controller_.Stop();
+
   UserManager* user_manager = UserManager::Get();
   DCHECK(user_manager);
 
@@ -138,8 +81,7 @@ void UserImageScreen::OnOK(const SkBitmap& image) {
 }
 
 void UserImageScreen::OnSkip() {
-  if (camera_.get())
-    camera_->Uninitialize();
+  camera_controller_.Stop();
   if (delegate())
     delegate()->GetObserver(this)->OnExit(ScreenObserver::USER_IMAGE_SKIPPED);
 }
@@ -147,13 +89,12 @@ void UserImageScreen::OnSkip() {
 void UserImageScreen::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type != NotificationType::SCREEN_LOCK_STATE_CHANGED ||
-      !camera_.get())
+  if (type != NotificationType::SCREEN_LOCK_STATE_CHANGED)
     return;
 
   bool is_screen_locked = *Details<bool>(details).ptr();
   if (is_screen_locked)
-    camera_->Uninitialize();
+    camera_controller_.Stop();
   else
     InitCamera();
 }
@@ -161,7 +102,7 @@ void UserImageScreen::Observe(NotificationType type,
 void UserImageScreen::InitCamera() {
   if (view())
     view()->ShowCameraInitializing();
-  camera_->Initialize(kFrameWidth, kFrameHeight);
+  camera_controller_.Start();
 }
 
 }  // namespace chromeos

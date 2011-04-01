@@ -39,8 +39,12 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/options/take_photo_dialog.h"
+#include "chrome/browser/ui/views/window.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "views/window/window.h"
 #endif  // defined(OS_CHROMEOS)
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -183,6 +187,8 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX));
   localized_strings->SetString("changePicture",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE));
+  localized_strings->SetString("takePhoto",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_TAKE_PHOTO));
 #endif
 }
 
@@ -214,6 +220,9 @@ void PersonalOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "changeAccountPicture",
       NewCallback(this, &PersonalOptionsHandler::ChangeAccountPicture));
+  web_ui_->RegisterMessageCallback(
+      "takePhoto",
+      NewCallback(this, &PersonalOptionsHandler::TakePhoto));
 #endif
 }
 
@@ -481,6 +490,16 @@ void PersonalOptionsHandler::ChangeAccountPicture(const ListValue* args) {
       FILE_PATH_LITERAL(""),
       NULL,
       NULL);
+}
+
+void PersonalOptionsHandler::TakePhoto(const ListValue* args) {
+  Browser* browser = BrowserList::FindBrowserWithProfile(web_ui_->GetProfile());
+  views::Window* window = browser::CreateViewsWindow(
+      browser->window()->GetNativeHandle(),
+      gfx::Rect(),
+      new chromeos::TakePhotoDialog());
+  window->SetIsAlwaysOnTop(true);
+  window->Show();
 }
 
 void PersonalOptionsHandler::FileSelected(const FilePath& path,

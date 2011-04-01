@@ -2,42 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_VIEW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_TAKE_PHOTO_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_TAKE_PHOTO_VIEW_H_
 #pragma once
 
-#include "chrome/browser/chromeos/login/take_photo_view.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
 
 class SkBitmap;
 
 namespace views {
-class NativeButton;
+class ImageButton;
+class Label;
 }  // namespace views
 
 namespace chromeos {
 
-// View used for selecting user image on OOBE screen.
-class UserImageView : public views::View,
-                      public views::ButtonListener,
-                      public TakePhotoView::Delegate {
+class CameraImageView;
+
+// View used for showing video from camera and taking a snapshot from it.
+class TakePhotoView : public views::View,
+                      public views::ButtonListener {
  public:
-  // Delegate class to get notifications from the view.
   class Delegate {
-  public:
+   public:
     virtual ~Delegate() {}
 
-    // Called if user accepts the selected image. The image is passed as a
-    // parameter.
-    virtual void OnOK(const SkBitmap& image) = 0;
+    // Called when the view has switched to capturing state.
+    virtual void OnCapturingStarted() = 0;
 
-    // Called if user decides to skip image selection screen.
-    virtual void OnSkip() = 0;
+    // Called when the view has switched from capturing state.
+    virtual void OnCapturingStopped() = 0;
   };
 
-  explicit UserImageView(Delegate* delegate);
-  virtual ~UserImageView();
+  explicit TakePhotoView(Delegate* delegate);
+  virtual ~TakePhotoView();
 
   // Initializes this view, its children and layout.
   void Init();
@@ -54,30 +53,34 @@ class UserImageView : public views::View,
   // frame and disables snapshot button until new frame is received.
   void ShowCameraError();
 
+  // Returns the currentily selected image.
+  const SkBitmap& GetImage() const;
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // Overridden from TakePhotoView::Delegate.
-  virtual void OnCapturingStarted();
-  virtual void OnCapturingStopped();
+  bool is_capturing() const { return is_capturing_; }
 
  private:
   // Initializes layout manager for this view.
   void InitLayout();
 
-  TakePhotoView* take_photo_view_;
-  views::NativeButton* ok_button_;
-  views::NativeButton* skip_button_;
+  views::Label* title_label_;
+  views::ImageButton* snapshot_button_;
+  CameraImageView* user_image_;
 
-  // Notifications receiver.
+  // Indicates that we're in capturing mode. When |false|, new video frames
+  // are not shown to user if received.
+  bool is_capturing_;
+
   Delegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(UserImageView);
+  DISALLOW_COPY_AND_ASSIGN(TakePhotoView);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_VIEW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_TAKE_PHOTO_VIEW_H_
