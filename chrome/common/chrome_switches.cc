@@ -192,6 +192,13 @@ const char kDisableBackgroundNetworking[] = "disable-background-networking";
 const char kDisableBlockContentAnimation[]  =
     "disable-blocked-content-animation";
 
+// This switch is used to disable the client-side phishing detection feature.
+// Note that even if client-side phishing detection is enabled, it will only
+// be active if the user has opted in to UMA stats and SafeBrowsing is enabled
+// in the preferences.
+const char kDisableClientSidePhishingDetection[] =
+    "disable-client-side-phishing-detection";
+
 // Disables establishing a backup TCP connection if a specified timeout is
 // exceeded.
 const char kDisableConnectBackupJobs[]      = "disable-connect-backup-jobs";
@@ -401,13 +408,6 @@ const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
 // in response to a Negotiate challenge. See HttpAuthHandlerNegotiate::CreateSPN
 // for more background.
 const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
-
-// In the browser process this switch is used to enable or disable the
-// client-side phishing detection.  In the renderer this switch is only enabled
-// if this switch is enabled in the browser and the user has opted in to UMA
-// stats and SafeBrowsing is enabled in the preferences.
-const char kEnableClientSidePhishingDetection[] =
-    "enable-client-side-phishing-detection";
 
 // At this point, even if client-side phishing detection is enabled we will not,
 // by default, display an interstitial if we detected a phishing site.  Once

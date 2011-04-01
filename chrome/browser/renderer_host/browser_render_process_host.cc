@@ -785,10 +785,10 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     renderer_cmd->AppendSwitch(switches::kDisableDatabases);
   }
 
-  // Only enable client-side phishing detection in the renderer if it is enabled
+  // Disable client-side phishing detection in the renderer if it is disabled
   // in the browser process.
-  if (g_browser_process->safe_browsing_detection_service()) {
-    renderer_cmd->AppendSwitch(switches::kEnableClientSidePhishingDetection);
+  if (!g_browser_process->safe_browsing_detection_service()) {
+    renderer_cmd->AppendSwitch(switches::kDisableClientSidePhishingDetection);
   }
 }
 

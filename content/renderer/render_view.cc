@@ -637,10 +637,12 @@ RenderView::RenderView(RenderThreadBase* render_thread,
     p2p_socket_dispatcher_ = new P2PSocketDispatcher(this);
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableClientSidePhishingDetection)) {
+#ifndef OS_CHROMEOS
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableClientSidePhishingDetection)) {
     new safe_browsing::PhishingClassifierDelegate(this, NULL);
   }
+#endif
 
   // Observer for Malware DOM details messages.
   new safe_browsing::MalwareDOMDetails(this);
