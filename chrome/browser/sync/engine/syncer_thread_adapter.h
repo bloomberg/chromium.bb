@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/tracked.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/engine/syncer_thread2.h"
@@ -30,18 +29,15 @@ class SyncerThreadAdapter {
   bool RequestPause();
   bool RequestResume();
   void NudgeSyncer(int milliseconds_from_now,
-                   SyncerThread::NudgeSource source,
-                   const tracked_objects::Location& nudge_location);
+                   SyncerThread::NudgeSource source);
   void NudgeSyncerWithDataTypes(
       int milliseconds_from_now,
       SyncerThread::NudgeSource source,
-      const syncable::ModelTypeBitSet& model_types,
-      const tracked_objects::Location& nudge_location);
+      const syncable::ModelTypeBitSet& model_types);
   void NudgeSyncerWithPayloads(
       int milliseconds_from_now,
       SyncerThread::NudgeSource source,
-      const syncable::ModelTypePayloadMap& model_types_with_payloads,
-      const tracked_objects::Location& nudge_location);
+      const syncable::ModelTypePayloadMap& model_types_with_payloads);
   void SetNotificationsEnabled(bool enabled);
   void CreateSyncer(const std::string& dirname);
 

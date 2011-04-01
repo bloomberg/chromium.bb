@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/time.h"
-#include "base/tracked.h"
 #include "chrome/browser/sync/engine/syncer_thread_adapter.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
@@ -78,8 +77,7 @@ s3::NudgeSource LegacyToNewSyncerThreadSource(SyncerThread::NudgeSource s) {
 }
 
 void SyncerThreadAdapter::NudgeSyncer(int milliseconds_from_now,
-    SyncerThread::NudgeSource source,
-    const tracked_objects::Location& nudge_location) {
+                                      SyncerThread::NudgeSource source) {
   if (using_new_impl_) {
     if (source == SyncerThread::kClearPrivateData) {
       new_impl_->ScheduleClearUserData();
@@ -87,8 +85,7 @@ void SyncerThreadAdapter::NudgeSyncer(int milliseconds_from_now,
     }
     new_impl_->ScheduleNudge(
         TimeDelta::FromMilliseconds(milliseconds_from_now),
-        LegacyToNewSyncerThreadSource(source), ModelTypeBitSet(),
-        nudge_location);
+        LegacyToNewSyncerThreadSource(source), ModelTypeBitSet());
   } else {
     legacy_->NudgeSyncer(milliseconds_from_now, source);
   }
@@ -97,14 +94,12 @@ void SyncerThreadAdapter::NudgeSyncer(int milliseconds_from_now,
 void SyncerThreadAdapter::NudgeSyncerWithDataTypes(
       int milliseconds_from_now,
       SyncerThread::NudgeSource source,
-      const syncable::ModelTypeBitSet& model_types,
-      const tracked_objects::Location& nudge_location) {
+      const syncable::ModelTypeBitSet& model_types) {
   DCHECK_NE(SyncerThread::kClearPrivateData, source);
   if (using_new_impl_) {
     new_impl_->ScheduleNudge(
         TimeDelta::FromMilliseconds(milliseconds_from_now),
-        LegacyToNewSyncerThreadSource(source), model_types,
-        nudge_location);
+        LegacyToNewSyncerThreadSource(source), model_types);
   } else {
     legacy_->NudgeSyncerWithDataTypes(milliseconds_from_now, source,
         model_types);
@@ -114,14 +109,12 @@ void SyncerThreadAdapter::NudgeSyncerWithDataTypes(
 void SyncerThreadAdapter::NudgeSyncerWithPayloads(
       int milliseconds_from_now,
       SyncerThread::NudgeSource source,
-      const syncable::ModelTypePayloadMap& model_types_with_payloads,
-      const tracked_objects::Location& nudge_location) {
+      const syncable::ModelTypePayloadMap& model_types_with_payloads) {
   DCHECK_NE(SyncerThread::kClearPrivateData, source);
   if (using_new_impl_) {
     new_impl_->ScheduleNudgeWithPayloads(
         TimeDelta::FromMilliseconds(milliseconds_from_now),
-        LegacyToNewSyncerThreadSource(source), model_types_with_payloads,
-        nudge_location);
+        LegacyToNewSyncerThreadSource(source), model_types_with_payloads);
   } else {
     legacy_->NudgeSyncerWithPayloads(milliseconds_from_now, source,
         model_types_with_payloads);

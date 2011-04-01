@@ -46,7 +46,6 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/tracked_objects.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/syncable/autofill_migration.h"
@@ -941,7 +940,7 @@ class SyncManager {
 
   // Request a nudge of the syncer, which will cause the syncer thread
   // to run at the next available opportunity.
-  void RequestNudge(const tracked_objects::Location& nudge_location);
+  void RequestNudge();
 
   // Request a clearing of all data on the server
   void RequestClearServerData();
