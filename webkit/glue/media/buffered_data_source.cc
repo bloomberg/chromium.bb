@@ -200,15 +200,6 @@ bool BufferedDataSource::HasSingleOrigin() {
 void BufferedDataSource::Abort() {
   DCHECK(MessageLoop::current() == render_loop_);
 
-  {
-    base::AutoLock auto_lock(lock_);
-
-    // If we are told to abort, immediately return from any pending read
-    // with an error.
-    if (read_callback_.get())
-      DoneRead_Locked(net::ERR_FAILED);
-  }
-
   CleanupTask();
   frame_ = NULL;
 }
@@ -282,7 +273,13 @@ void BufferedDataSource::CleanupTask() {
     if (stopped_on_render_loop_)
       return;
 
-    read_callback_.reset();
+    // Signal that stop task has finished execution.
+    // NOTE: it's vital that this be set under lock, as that's how Read() tests
+    // before registering a new |read_callback_| (which is cleared below).
+    stopped_on_render_loop_ = true;
+
+    if (read_callback_.get())
+      DoneRead_Locked(net::ERR_FAILED);
   }
 
   // Stop the watch dog.
@@ -298,9 +295,6 @@ void BufferedDataSource::CleanupTask() {
   read_buffer_ = 0;
   read_submitted_time_ = base::Time();
   read_attempts_ = 0;
-
-  // Signal that stop task has finished execution.
-  stopped_on_render_loop_ = true;
 }
 
 void BufferedDataSource::RestartLoadingTask() {
