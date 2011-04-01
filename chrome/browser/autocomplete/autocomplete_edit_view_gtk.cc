@@ -1549,6 +1549,16 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
 void AutocompleteEditViewGtk::HandleMarkSetAfter(GtkTextBuffer* buffer,
                                                  GtkTextIter* location,
                                                  GtkTextMark* mark) {
+  if (!text_buffer_ || buffer != text_buffer_)
+    return;
+
+  // We should only update primary selection when the user changes the selection
+  // range.
+  if (mark != gtk_text_buffer_get_insert(text_buffer_) &&
+      mark != gtk_text_buffer_get_selection_bound(text_buffer_)) {
+    return;
+  }
+
   UpdatePrimarySelectionIfValidURL();
 }
 
