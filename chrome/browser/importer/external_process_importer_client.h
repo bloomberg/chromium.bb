@@ -11,11 +11,15 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
-#include "chrome/browser/profile_import_process_host.h"
+#include "chrome/browser/importer/profile_import_process_client.h"
+#include "content/browser/browser_thread.h"
 
 class ExternalProcessImporterHost;
 class InProcessImporterBridge;
+class ProfileImportProcessHost;
+class ResourceDispatcherHost;
 
 namespace history {
 class URLRow;
@@ -29,8 +33,7 @@ struct ProfileInfo;
 // This class is the client for the ProfileImportProcessHost.  It collects
 // notifications from this process host and feeds data back to the importer
 // host, who actually does the writing.
-class ExternalProcessImporterClient
-    : public ProfileImportProcessHost::ImportProcessClient {
+class ExternalProcessImporterClient : public ProfileImportProcessClient {
  public:
   ExternalProcessImporterClient(ExternalProcessImporterHost* importer_host,
                                 const importer::ProfileInfo& profile_info,
@@ -52,13 +55,14 @@ class ExternalProcessImporterClient
   // Creates a new ProfileImportProcessHost, which launches the import process.
   void StartImportProcessOnIOThread(ResourceDispatcherHost* rdh,
                                     BrowserThread::ID thread_id);
+
   // Cancel import process on IO thread.
   void CancelImportProcessOnIOThread();
 
   // Report item completely downloaded on IO thread.
   void NotifyItemFinishedOnIOThread(importer::ImportItem import_item);
 
-  // Begin ProfileImportProcessHost::ImportProcessClient implementation.
+  // Begin ProfileImportProcessClient implementation.
   virtual void OnProcessCrashed(int exit_status) OVERRIDE;
   virtual void OnImportStart() OVERRIDE;
   virtual void OnImportFinished(bool succeeded,
@@ -71,9 +75,8 @@ class ExternalProcessImporterClient
   virtual void OnHistoryImportStart(size_t total_history_rows_count) OVERRIDE;
 
   // Called when a group of URLRows has been received.
-  // The source is passed with history::VisitSource type.
   virtual void OnHistoryImportGroup(
-      const std::vector<history::URLRow> &history_rows_group,
+      const std::vector<history::URLRow>& history_rows_group,
       int visit_source) OVERRIDE;
 
   // Called when the home page has been received.
@@ -111,7 +114,7 @@ class ExternalProcessImporterClient
       int default_keyword_index,
       bool unique_on_host_and_path) OVERRIDE;
 
-  // End ProfileImportProcessHost::ImportProcessClient implementation.
+  // End ProfileImportProcessClient implementation.
 
   // These variables store data being collected from the importer until the
   // entire group has been collected and is ready to be written to the profile.

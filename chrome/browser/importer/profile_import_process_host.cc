@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/profile_import_process_host.h"
+#include "chrome/browser/importer/profile_import_process_host.h"
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_messages.h"
+#include "chrome/browser/importer/profile_import_process_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_switches.h"
@@ -17,7 +18,7 @@
 
 ProfileImportProcessHost::ProfileImportProcessHost(
     ResourceDispatcherHost* resource_dispatcher,
-    ImportProcessClient* import_process_client,
+    ProfileImportProcessClient* import_process_client,
     BrowserThread::ID thread_id)
     : BrowserChildProcessHost(PROFILE_IMPORT_PROCESS, resource_dispatcher),
       import_process_client_(import_process_client),
@@ -123,7 +124,7 @@ bool ProfileImportProcessHost::OnMessageReceived(const IPC::Message& message) {
   BrowserThread::PostTask(
       thread_id_, FROM_HERE,
       NewRunnableMethod(import_process_client_.get(),
-                        &ImportProcessClient::OnMessageReceived,
+                        &ProfileImportProcessClient::OnMessageReceived,
                         message));
   return true;
 }
@@ -133,52 +134,10 @@ void ProfileImportProcessHost::OnProcessCrashed(int exit_code) {
   BrowserThread::PostTask(
       thread_id_, FROM_HERE,
       NewRunnableMethod(import_process_client_.get(),
-                        &ImportProcessClient::OnProcessCrashed,
+                        &ProfileImportProcessClient::OnProcessCrashed,
                         exit_code));
 }
 
 bool ProfileImportProcessHost::CanShutdown() {
   return true;
-}
-
-ProfileImportProcessHost::ImportProcessClient::ImportProcessClient() {}
-
-ProfileImportProcessHost::ImportProcessClient::~ImportProcessClient() {}
-
-bool ProfileImportProcessHost::ImportProcessClient::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ProfileImportProcessHost, message)
-    // Notification messages about the state of the import process.
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_Import_Started,
-                        ImportProcessClient::OnImportStart)
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_Import_Finished,
-                        ImportProcessClient::OnImportFinished)
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_ImportItem_Started,
-                        ImportProcessClient::OnImportItemStart)
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_ImportItem_Finished,
-                        ImportProcessClient::OnImportItemFinished)
-
-    // Data messages containing items to be written to the user profile.
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyHistoryImportStart,
-                        ImportProcessClient::OnHistoryImportStart)
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyHistoryImportGroup,
-                        ImportProcessClient::OnHistoryImportGroup)
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyHomePageImportReady,
-                        ImportProcessClient::OnHomePageImportReady)
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyBookmarksImportStart,
-                        ImportProcessClient::OnBookmarksImportStart)
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyBookmarksImportGroup,
-                        ImportProcessClient::OnBookmarksImportGroup)
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyFaviconsImportStart,
-                        ImportProcessClient::OnFaviconsImportStart)
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyFaviconsImportGroup,
-                        ImportProcessClient::OnFaviconsImportGroup)
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyPasswordFormReady,
-                        ImportProcessClient::OnPasswordFormImportReady)
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyKeywordsReady,
-                        ImportProcessClient::OnKeywordsImportReady)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
-  return handled;
 }
