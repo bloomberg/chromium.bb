@@ -17,9 +17,9 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/input_method/candidate_window.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"
@@ -567,8 +567,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       current_input_method_ = new_input_method;
 
       // Change the keyboard layout to a preferred layout for the input method.
-      if (!CrosLibrary::Get()->GetKeyboardLibrary()->
-          SetCurrentKeyboardLayoutByName(
+      if (!input_method::SetCurrentKeyboardLayoutByName(
               current_input_method_.keyboard_layout)) {
         LOG(ERROR) << "Failed to change keyboard layout to "
                    << current_input_method_.keyboard_layout;

@@ -9,7 +9,6 @@
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_input_method_library.h"
-#include "chrome/browser/chromeos/cros/mock_keyboard_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/cros/mock_power_library.h"
@@ -39,7 +38,6 @@ using ::testing::_;
 CrosMock::CrosMock()
     : loader_(NULL),
       mock_cryptohome_library_(NULL),
-      mock_keyboard_library_(NULL),
       mock_input_method_library_(NULL),
       mock_network_library_(NULL),
       mock_power_library_(NULL),
@@ -61,7 +59,6 @@ chromeos::CrosLibrary::TestApi* CrosMock::test_api() {
 }
 
 void CrosMock::InitStatusAreaMocks() {
-  InitMockKeyboardLibrary();
   InitMockInputMethodLibrary();
   InitMockNetworkLibrary();
   InitMockPowerLibrary();
@@ -85,14 +82,6 @@ void CrosMock::InitMockCryptohomeLibrary() {
     return;
   mock_cryptohome_library_ = new StrictMock<MockCryptohomeLibrary>();
   test_api()->SetCryptohomeLibrary(mock_cryptohome_library_, true);
-}
-
-void CrosMock::InitMockKeyboardLibrary() {
-  InitMockLibraryLoader();
-  if (mock_keyboard_library_)
-    return;
-  mock_keyboard_library_ = new StrictMock<MockKeyboardLibrary>();
-  test_api()->SetKeyboardLibrary(mock_keyboard_library_, true);
 }
 
 void CrosMock::InitMockInputMethodLibrary() {
@@ -157,10 +146,6 @@ MockCryptohomeLibrary* CrosMock::mock_cryptohome_library() {
   return mock_cryptohome_library_;
 }
 
-MockKeyboardLibrary* CrosMock::mock_keyboard_library() {
-  return mock_keyboard_library_;
-}
-
 MockInputMethodLibrary* CrosMock::mock_input_method_library() {
   return mock_input_method_library_;
 }
@@ -190,32 +175,12 @@ MockTouchpadLibrary* CrosMock::mock_touchpad_library() {
 }
 
 void CrosMock::SetStatusAreaMocksExpectations() {
-  SetKeyboardLibraryStatusAreaExpectations();
   SetInputMethodLibraryStatusAreaExpectations();
   SetNetworkLibraryStatusAreaExpectations();
   SetPowerLibraryStatusAreaExpectations();
   SetPowerLibraryExpectations();
   SetTouchpadLibraryExpectations();
   SetSystemLibraryStatusAreaExpectations();
-}
-
-void CrosMock::SetKeyboardLibraryStatusAreaExpectations() {
-  EXPECT_CALL(*mock_keyboard_library_, SetCurrentKeyboardLayoutByName(_))
-      .Times(AnyNumber())
-      .WillRepeatedly((Return(true)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_keyboard_library_, RemapModifierKeys(_))
-      .Times(AnyNumber())
-      .WillRepeatedly((Return(true)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_keyboard_library_, SetAutoRepeatEnabled(_))
-      .Times(AnyNumber())
-      .WillRepeatedly((Return(true)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_keyboard_library_, SetAutoRepeatRate(_))
-      .Times(AnyNumber())
-      .WillRepeatedly((Return(true)))
-      .RetiresOnSaturation();
 }
 
 void CrosMock::SetInputMethodLibraryStatusAreaExpectations() {
@@ -436,8 +401,6 @@ void CrosMock::TearDownMocks() {
     test_api()->SetLibraryLoader(NULL, false);
   if (mock_cryptohome_library_)
     test_api()->SetCryptohomeLibrary(NULL, false);
-  if (mock_keyboard_library_)
-    test_api()->SetKeyboardLibrary(NULL, false);
   if (mock_input_method_library_)
     test_api()->SetInputMethodLibrary(NULL, false);
   if (mock_network_library_)
