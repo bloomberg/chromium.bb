@@ -102,6 +102,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
     switches::kVModule,
     switches::kUserDataDir,  // Make logs go to the right file.
     // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.
+    switches::kPpapiFlashInProcess,
     switches::kPpapiFlashPath,
     switches::kPpapiFlashVersion,
     switches::kRegisterPepperPlugins,

@@ -292,7 +292,7 @@ const Experiment kExperiments[] = {
     "ppapi-flash-in-process",
     IDS_FLAGS_PPAPI_FLASH_IN_PROCESS_NAME,
     IDS_FLAGS_PPAPI_FLASH_IN_PROCESS_DESCRIPTION,
-    kOsLinux,
+    kOsAll,
     SINGLE_VALUE_TYPE(switches::kPpapiFlashInProcess)
   },
 };
