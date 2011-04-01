@@ -14,11 +14,10 @@
 #include "content/common/notification_service.h"
 #include "net/url_request/url_request.h"
 
-UserScriptListener::UserScriptListener(ResourceQueue* resource_queue)
-    : resource_queue_(resource_queue),
+UserScriptListener::UserScriptListener()
+    : resource_queue_(NULL),
       user_scripts_ready_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(resource_queue_);
 
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                  NotificationService::AllSources());
@@ -26,11 +25,11 @@ UserScriptListener::UserScriptListener(ResourceQueue* resource_queue)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
                  NotificationService::AllSources());
+  AddRef();  // Will be balanced in Cleanup().
 }
 
-void UserScriptListener::ShutdownMainThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  registrar_.RemoveAll();
+void UserScriptListener::Initialize(ResourceQueue* resource_queue) {
+  resource_queue_ = resource_queue;
 }
 
 bool UserScriptListener::ShouldDelayRequest(
@@ -65,6 +64,10 @@ bool UserScriptListener::ShouldDelayRequest(
 void UserScriptListener::WillShutdownResourceQueue() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   resource_queue_ = NULL;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &UserScriptListener::Cleanup));
 }
 
 UserScriptListener::~UserScriptListener() {
@@ -96,6 +99,12 @@ void UserScriptListener::AppendNewURLPatterns(const URLPatterns& new_patterns) {
 void UserScriptListener::ReplaceURLPatterns(const URLPatterns& patterns) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   url_patterns_ = patterns;
+}
+
+void UserScriptListener::Cleanup() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  registrar_.RemoveAll();
+  Release();
 }
 
 void UserScriptListener::CollectURLPatterns(const Extension* extension,

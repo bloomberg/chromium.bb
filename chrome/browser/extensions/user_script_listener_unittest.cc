@@ -121,7 +121,7 @@ class UserScriptListenerTest
     service_->Init();
     MessageLoop::current()->RunAllPending();
 
-    listener_ = new UserScriptListener(&resource_queue_);
+    listener_ = new UserScriptListener();
 
     ResourceQueue::DelegateSet delegates;
     delegates.insert(listener_.get());

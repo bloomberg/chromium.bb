@@ -155,6 +155,7 @@ class ResourceDispatcherHostTest : public testing::Test,
       : ALLOW_THIS_IN_INITIALIZER_LIST(filter_(new ForwardingFilter(this))),
         ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
+        host_(ResourceQueue::DelegateSet()),
         old_factory_(NULL),
         resource_type_(ResourceType::SUB_RESOURCE) {
   }

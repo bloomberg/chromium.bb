@@ -41,7 +41,6 @@ class ResourceMessageFilter;
 class SafeBrowsingService;
 class SaveFileManager;
 class SSLClientAuthHandler;
-class UserScriptListener;
 class WebKitThread;
 struct DownloadSaveInfo;
 struct GlobalRequestID;
@@ -71,7 +70,8 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
                                     const GURL& new_url) = 0;
   };
 
-  ResourceDispatcherHost();
+  explicit ResourceDispatcherHost(
+      const ResourceQueue::DelegateSet& resource_queue_delegates);
   ~ResourceDispatcherHost();
 
   void Initialize();
@@ -460,8 +460,6 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   // We own the save file manager.
   scoped_refptr<SaveFileManager> save_file_manager_;
-
-  scoped_refptr<UserScriptListener> user_script_listener_;
 
   scoped_refptr<SafeBrowsingService> safe_browsing_;
 

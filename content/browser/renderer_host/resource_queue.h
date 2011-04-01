@@ -16,12 +16,16 @@ class URLRequest;
 }  // namespace net
 
 class ResourceDispatcherHostRequestInfo;
+class ResourceQueue;
 struct GlobalRequestID;
 
 // Makes decisions about delaying or not each net::URLRequest in the queue.
 // All methods are called on the IO thread.
 class ResourceQueueDelegate {
  public:
+  // Gives the delegate a pointer to the queue object.
+  virtual void Initialize(ResourceQueue* resource_queue) = 0;
+
   // Should return true if it wants the |request| to not be started at this
   // point. To start the delayed request, ResourceQueue::StartDelayedRequest
   // should be used.

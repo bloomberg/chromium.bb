@@ -24,6 +24,9 @@ void ResourceQueue::Initialize(const DelegateSet& delegates) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(delegates_.empty());
   delegates_ = delegates;
+
+  for (DelegateSet::iterator i = delegates_.begin(); i != delegates_.end(); ++i)
+    (*i)->Initialize(this);
 }
 
 void ResourceQueue::Shutdown() {

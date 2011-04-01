@@ -26,6 +26,7 @@
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
+#include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
@@ -682,7 +683,12 @@ void BrowserProcessImpl::CreateResourceDispatcherHost() {
          resource_dispatcher_host_.get() == NULL);
   created_resource_dispatcher_host_ = true;
 
-  resource_dispatcher_host_.reset(new ResourceDispatcherHost());
+  // UserScriptListener will delete itself.
+  ResourceQueue::DelegateSet resource_queue_delegates;
+  resource_queue_delegates.insert(new UserScriptListener());
+
+  resource_dispatcher_host_.reset(
+      new ResourceDispatcherHost(resource_queue_delegates));
   resource_dispatcher_host_->Initialize();
 }
 

@@ -27,19 +27,17 @@ struct GlobalRequestID;
 // request.
 //
 // This class lives mostly on the IO thread. It listens on the UI thread for
-// updates to loaded extensions.
+// updates to loaded extensions.  It will delete itself on the UI thread after
+// WillShutdownResourceQueue is called (on the IO thread).
 class UserScriptListener
     : public base::RefCountedThreadSafe<UserScriptListener>,
       public ResourceQueueDelegate,
       public NotificationObserver {
  public:
-  explicit UserScriptListener(ResourceQueue* resource_queue);
-
-  // Call this to do necessary cleanup on the main thread before the object
-  // is deleted.
-  void ShutdownMainThread();
+  UserScriptListener();
 
   // ResourceQueueDelegate:
+  virtual void Initialize(ResourceQueue* resource_queue);
   virtual bool ShouldDelayRequest(
       net::URLRequest* request,
       const ResourceDispatcherHostRequestInfo& request_info,
@@ -63,6 +61,9 @@ class UserScriptListener
   // Replaces our url pattern list. This is only used when patterns have been
   // deleted, so user_scripts_ready_ remains unchanged.
   void ReplaceURLPatterns(const URLPatterns& patterns);
+
+  // Cleanup on UI thread.
+  void Cleanup();
 
   ResourceQueue* resource_queue_;
 

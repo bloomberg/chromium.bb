@@ -22,7 +22,6 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_file_manager.h"
-#include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/url_request_tracking.h"
@@ -208,13 +207,13 @@ std::vector<int> GetAllNetErrorCodes() {
 
 }  // namespace
 
-ResourceDispatcherHost::ResourceDispatcherHost()
+ResourceDispatcherHost::ResourceDispatcherHost(
+    const ResourceQueue::DelegateSet& resource_queue_delegates)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           download_file_manager_(new DownloadFileManager(this))),
       download_request_limiter_(new DownloadRequestLimiter()),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           save_file_manager_(new SaveFileManager(this))),
-      user_script_listener_(new UserScriptListener(&resource_queue_)),
       safe_browsing_(SafeBrowsingService::CreateSafeBrowsingService()),
       webkit_thread_(new WebKitThread),
       request_id_(-1),
@@ -223,16 +222,12 @@ ResourceDispatcherHost::ResourceDispatcherHost()
       max_outstanding_requests_cost_per_process_(
           kMaxOutstandingRequestsCostPerProcess),
       filter_(NULL) {
-  ResourceQueue::DelegateSet resource_queue_delegates;
-  resource_queue_delegates.insert(user_script_listener_.get());
   resource_queue_.Initialize(resource_queue_delegates);
 }
 
 ResourceDispatcherHost::~ResourceDispatcherHost() {
   AsyncResourceHandler::GlobalCleanup();
   STLDeleteValues(&pending_requests_);
-
-  user_script_listener_->ShutdownMainThread();
 }
 
 void ResourceDispatcherHost::Initialize() {
