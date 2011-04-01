@@ -152,9 +152,17 @@ def _SetEnvForX86Sdk(env, sdk_path):
   # does not run under Cygwin and does not follow Cygwin symlinks.
   if env['TARGET_SUBARCH'] == default_subarch:
     libsuffix = 'lib'
+    cc_mode_flag = ''
+    as_mode_flag = ''
+    ld_mode_flag = ''
   else:
     libsuffix = 'lib/%s' % env['TARGET_SUBARCH']
-  extraflag = '-m%s' % env['TARGET_SUBARCH']
+    cc_mode_flag = ' -m%s' % env['TARGET_SUBARCH']
+    as_mode_flag = ' --%s' % env['TARGET_SUBARCH']
+    if env['TARGET_SUBARCH'] == '64':
+      ld_mode_flag = ' -melf64_nacl'
+    else:
+      ld_mode_flag = ' -melf_nacl'
 
   env.Replace(# Replace header and lib paths.
               # where to put nacl extra sdk headers
@@ -164,15 +172,15 @@ def _SetEnvForX86Sdk(env, sdk_path):
               # where to find/put nacl generic extra sdk libraries
               NACL_SDK_LIB='%s/%s/%s' % (sdk_path, arch, libsuffix),
               # Replace the normal unix tools with the NaCl ones.
-              CC=os.path.join(bin_path, '%s-gcc' % arch),
-              CXX=os.path.join(bin_path, '%s-g++' % arch),
+              CC=os.path.join(bin_path, '%s-gcc%s' % (arch, cc_mode_flag)),
+              CXX=os.path.join(bin_path, '%s-g++%s' % (arch, cc_mode_flag)),
               AR=os.path.join(bin_path, '%s-ar' % arch),
-              AS=os.path.join(bin_path, '%s-as' % arch),
+              AS=os.path.join(bin_path, '%s-as%s' % (arch, as_mode_flag)),
               GDB=os.path.join(bin_path, 'nacl-gdb'),
               # NOTE: use g++ for linking so we can handle C AND C++.
-              LINK=os.path.join(bin_path, '%s-g++' % arch),
+              LINK=os.path.join(bin_path, '%s-g++%s' % (arch, cc_mode_flag)),
               # Grrr... and sometimes we really need ld.
-              LD=os.path.join(bin_path, '%s-ld' % arch),
+              LD=os.path.join(bin_path, '%s-ld%s' % (arch, ld_mode_flag)),
               RANLIB=os.path.join(bin_path, '%s-ranlib' % arch),
               CFLAGS = ['-std=gnu99'],
               CCFLAGS=['-O3',
@@ -185,9 +193,8 @@ def _SetEnvForX86Sdk(env, sdk_path):
                        '-fdiagnostics-show-option',
                        '-pedantic',
                        '-D__linux__',
-                       extraflag,
                        ],
-              ASFLAGS=[extraflag],
+              ASFLAGS=[],
               )
 
 def _SetEnvForPnacl(env, arch):
