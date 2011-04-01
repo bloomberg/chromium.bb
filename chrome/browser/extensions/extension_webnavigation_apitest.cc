@@ -14,8 +14,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigation) {
 
   ExtensionWebNavigationEventRouter::GetInstance()->EnableExtensionScheme();
 
-  ASSERT_TRUE(RunExtensionSubtest("webnavigation",
-                                  "api/test.html")) << message_;
+  ASSERT_TRUE(RunExtensionTest("webnavigation/api")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationClientRedirect) {
@@ -24,8 +23,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationClientRedirect) {
 
   ExtensionWebNavigationEventRouter::GetInstance()->EnableExtensionScheme();
 
-  ASSERT_TRUE(RunExtensionSubtest("webnavigation",
-                                  "clientRedirect/test.html")) << message_;
+  ASSERT_TRUE(RunExtensionTest("webnavigation/clientRedirect")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationForwardBack) {
@@ -34,8 +32,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationForwardBack) {
 
   ExtensionWebNavigationEventRouter::GetInstance()->EnableExtensionScheme();
 
-  ASSERT_TRUE(RunExtensionSubtest("webnavigation",
-                                  "forwardBack/test.html")) << message_;
+  ASSERT_TRUE(RunExtensionTest("webnavigation/forwardBack")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationIFrame) {
@@ -44,8 +41,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationIFrame) {
 
   ExtensionWebNavigationEventRouter::GetInstance()->EnableExtensionScheme();
 
-  ASSERT_TRUE(RunExtensionSubtest("webnavigation",
-                                  "iframe/test.html")) << message_;
+  ASSERT_TRUE(RunExtensionTest("webnavigation/iframe")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationOpenTab) {
@@ -54,8 +50,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationOpenTab) {
 
   ExtensionWebNavigationEventRouter::GetInstance()->EnableExtensionScheme();
 
-  ASSERT_TRUE(RunExtensionSubtest("webnavigation",
-                                  "openTab/test.html")) << message_;
+  ASSERT_TRUE(RunExtensionTest("webnavigation/openTab")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationReferenceFragment) {
@@ -64,8 +59,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationReferenceFragment) {
 
   ExtensionWebNavigationEventRouter::GetInstance()->EnableExtensionScheme();
 
-  ASSERT_TRUE(RunExtensionSubtest("webnavigation",
-                                  "referenceFragment/test.html")) << message_;
+  ASSERT_TRUE(RunExtensionTest("webnavigation/referenceFragment")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationSimpleLoad) {
@@ -74,8 +68,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationSimpleLoad) {
 
   ExtensionWebNavigationEventRouter::GetInstance()->EnableExtensionScheme();
 
-  ASSERT_TRUE(RunExtensionSubtest("webnavigation",
-                                  "simpleLoad/test.html")) << message_;
+  ASSERT_TRUE(RunExtensionTest("webnavigation/simpleLoad")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationFailures) {
@@ -84,6 +77,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationFailures) {
 
   ExtensionWebNavigationEventRouter::GetInstance()->EnableExtensionScheme();
 
-  ASSERT_TRUE(RunExtensionSubtest("webnavigation",
-                                  "failures/test.html")) << message_;
+  ASSERT_TRUE(RunExtensionTest("webnavigation/failures")) << message_;
 }
