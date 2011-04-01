@@ -120,24 +120,25 @@ void PluginResourceTracker::ReleasePluginResourceRef(
     return;
   found->second.ref_count--;
   if (found->second.ref_count == 0) {
-    PluginResource* plugin_resource = found->second.resource.get();
-    if (notify_browser_on_release)
-      SendReleaseResourceToHost(resource, plugin_resource);
-    host_resource_map_.erase(plugin_resource->host_resource());
+    // Keep a reference while removing in case the destructor ends up
+    // re-entering. That way, when the destructor is called, it's out of the
+    // maps.
+    linked_ptr<PluginResource> plugin_resource = found->second.resource;
+    PluginDispatcher* dispatcher =
+        PluginDispatcher::GetForInstance(plugin_resource->instance());
+    HostResource host_resource = plugin_resource->host_resource();
+    host_resource_map_.erase(host_resource);
     resource_map_.erase(found);
-  }
-}
+    plugin_resource.reset();
 
-void PluginResourceTracker::SendReleaseResourceToHost(
-    PP_Resource resource_id,
-    PluginResource* resource) {
-  PluginDispatcher* dispatcher =
-      PluginDispatcher::GetForInstance(resource->instance());
-  if (dispatcher) {
-    dispatcher->Send(new PpapiHostMsg_PPBCore_ReleaseResource(
-        INTERFACE_ID_PPB_CORE, resource->host_resource()));
-  } else {
-    NOTREACHED();
+    if (notify_browser_on_release) {
+      if (dispatcher) {
+        dispatcher->Send(new PpapiHostMsg_PPBCore_ReleaseResource(
+            INTERFACE_ID_PPB_CORE, host_resource));
+      } else {
+        NOTREACHED();
+      }
+    }
   }
 }
 

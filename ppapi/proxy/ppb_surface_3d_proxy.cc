@@ -16,6 +16,11 @@
 namespace pp {
 namespace proxy {
 
+Surface3D::~Surface3D() {
+  if (context_)
+    context_->BindSurfaces(NULL, NULL);
+}
+
 namespace {
 
 PP_Resource Create(PP_Instance instance,

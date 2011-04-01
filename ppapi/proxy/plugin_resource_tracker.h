@@ -75,11 +75,6 @@ class PluginResourceTracker {
   void ReleasePluginResourceRef(const PP_Resource& var,
                                 bool notify_browser_on_release);
 
-  // Sends a ReleaseResource message to the host corresponding to the given
-  // resource.
-  void SendReleaseResourceToHost(PP_Resource resource_id,
-                                 PluginResource* resource);
-
   // Map of plugin resource IDs to the information tracking that resource.
   typedef std::map<PP_Resource, ResourceInfo> ResourceMap;
   ResourceMap resource_map_;
