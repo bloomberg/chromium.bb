@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
+#include "views/events/event.h"
 #include "views/widget/widget_gtk.h"
 
 namespace chromeos {
@@ -83,8 +84,10 @@ void HTMLPageScreen::NavigationStateChanged(const TabContents* source,
 
 void HTMLPageScreen::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   views::Widget* widget = view()->GetWidget();
-  if (widget && event.os_event && !event.skip_in_browser)
-    static_cast<views::WidgetGtk*>(widget)->HandleKeyboardEvent(event.os_event);
+  if (widget && event.os_event && !event.skip_in_browser) {
+    views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
+    static_cast<views::WidgetGtk*>(widget)->HandleKeyboardEvent(views_event);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

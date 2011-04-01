@@ -33,6 +33,7 @@ using ui::ThemeProvider;
 namespace views {
 
 class DefaultThemeProvider;
+class InputMethod;
 class NativeWidget;
 class RootView;
 class TooltipManager;
@@ -223,6 +224,10 @@ class Widget : public internal::NativeWidgetDelegate,
   // Note that all widgets in a widget hierarchy share the same focus manager.
   // TODO(beng): remove virtual.
   virtual FocusManager* GetFocusManager();
+
+  // Returns the InputMethod for this widget.
+  // Note that all widgets in a widget hierarchy share the same input method.
+  InputMethod* GetInputMethod();
 
   // Returns true if the native view |native_view| is contained in the
   // views::View hierarchy rooted at this widget.

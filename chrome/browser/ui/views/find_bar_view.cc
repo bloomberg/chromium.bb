@@ -88,9 +88,6 @@ static const int kDefaultCharWidth = 43;
 
 FindBarView::FindBarView(FindBarHost* host)
     : DropdownBarView(host),
-#if defined(OS_LINUX)
-      ignore_contents_changed_(false),
-#endif
       find_text_(NULL),
       match_count_text_(NULL),
       focus_forwarder_view_(NULL),
@@ -179,13 +176,7 @@ FindBarView::~FindBarView() {
 }
 
 void FindBarView::SetFindText(const string16& find_text) {
-#if defined(OS_LINUX)
-  ignore_contents_changed_ = true;
-#endif
   find_text_->SetText(find_text);
-#if defined(OS_LINUX)
-  ignore_contents_changed_ = false;
-#endif
 }
 
 string16 FindBarView::GetFindText() const {
@@ -469,12 +460,6 @@ void FindBarView::ButtonPressed(
 
 void FindBarView::ContentsChanged(views::Textfield* sender,
                                   const string16& new_contents) {
-#if defined(OS_LINUX)
-  // On gtk setting the text in the find view causes a notification.
-  if (ignore_contents_changed_)
-    return;
-#endif
-
   FindBarController* controller = find_bar_host()->GetFindBarController();
   DCHECK(controller);
   // We must guard against a NULL tab_contents, which can happen if the text

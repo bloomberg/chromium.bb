@@ -21,6 +21,7 @@ namespace views {
 
 class KeyEvent;
 class Textfield;
+class TextInputClient;
 class View;
 
 // An interface implemented by an object that provides a platform-native
@@ -119,6 +120,10 @@ class NativeTextfieldWrapper {
   // See also View::OnFocus/OnBlur.
   virtual void HandleFocus() = 0;
   virtual void HandleBlur() = 0;
+
+  // Returns the View's TextInputClient instance or NULL if the View doesn't
+  // support text input.
+  virtual TextInputClient* GetTextInputClient() = 0;
 
   // Creates an appropriate NativeTextfieldWrapper for the platform.
   static NativeTextfieldWrapper* CreateWrapper(Textfield* field);

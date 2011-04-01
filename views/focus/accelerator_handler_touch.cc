@@ -15,6 +15,7 @@
 #include "views/accelerator.h"
 #include "views/events/event.h"
 #include "views/focus/focus_manager.h"
+#include "views/ime/input_method.h"
 #include "views/touchui/touch_factory.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
@@ -23,7 +24,7 @@ namespace views {
 
 namespace {
 
-RootView* FindRootViewForGdkWindow(GdkWindow* gdk_window) {
+Widget* FindWidgetForGdkWindow(GdkWindow* gdk_window) {
   gpointer data = NULL;
   gdk_window_get_user_data(gdk_window, &data);
   GtkWidget* gtk_widget = reinterpret_cast<GtkWidget*>(data);
@@ -37,7 +38,7 @@ RootView* FindRootViewForGdkWindow(GdkWindow* gdk_window) {
     DLOG(WARNING) << "no WidgetGtk found for that GtkWidget";
     return NULL;
   }
-  return widget->GetWidget()->GetRootView();
+  return widget->GetWidget();
 }
 
 #if defined(HAVE_XINPUT2)
@@ -162,13 +163,21 @@ bool DispatchXEvent(XEvent* xev) {
 #endif
 
   GdkWindow* gwind = gdk_window_lookup_for_display(gdisp, xwindow);
-
-  if (RootView* root = FindRootViewForGdkWindow(gwind)) {
+  Widget* widget = FindWidgetForGdkWindow(gwind);
+  if (widget) {
+    RootView* root = widget->GetRootView();
     switch (xev->type) {
       case KeyPress:
       case KeyRelease: {
         Event::FromNativeEvent2 from_native;
         KeyEvent keyev(xev, from_native);
+        InputMethod* ime = widget->GetInputMethod();
+        // Always dispatch key events to the input method first, to make sure
+        // that the input method's hotkeys work all time.
+        if (ime) {
+          ime->DispatchKeyEvent(keyev);
+          return true;
+        }
         return root->ProcessKeyEvent(keyev);
       }
 

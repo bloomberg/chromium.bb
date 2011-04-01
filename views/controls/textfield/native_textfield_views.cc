@@ -23,6 +23,7 @@
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/events/event.h"
+#include "views/ime/input_method.h"
 #include "views/metrics.h"
 #include "views/views_delegate.h"
 
@@ -61,11 +62,12 @@ const char NativeTextfieldViews::kViewClassName[] =
 
 NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
     : textfield_(parent),
-      model_(new TextfieldViewsModel()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(model_(new TextfieldViewsModel(this))),
       text_border_(new TextfieldBorder()),
       text_offset_(0),
       insert_(true),
       is_cursor_visible_(false),
+      skip_input_method_cancel_composition_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cursor_timer_(this)),
       last_mouse_press_time_(base::Time::FromInternalValue(0)),
       click_state_(NONE) {
@@ -160,14 +162,9 @@ string16 NativeTextfieldViews::GetText() const {
 }
 
 void NativeTextfieldViews::UpdateText() {
-  bool changed = model_->SetText(textfield_->text());
+  model_->SetText(textfield_->text());
   UpdateCursorBoundsAndTextOffset();
   SchedulePaint();
-  if (changed) {
-    TextfieldController* controller = textfield_->GetController();
-    if (controller)
-      controller->ContentsChanged(textfield_, GetText());
-  }
 }
 
 void NativeTextfieldViews::AppendText(const string16& text) {
@@ -176,10 +173,6 @@ void NativeTextfieldViews::AppendText(const string16& text) {
   model_->Append(text);
   UpdateCursorBoundsAndTextOffset();
   SchedulePaint();
-
-  TextfieldController* controller = textfield_->GetController();
-  if (controller)
-    controller->ContentsChanged(textfield_, GetText());
 }
 
 string16 NativeTextfieldViews::GetSelectedText() const {
@@ -220,6 +213,7 @@ void NativeTextfieldViews::UpdateBackgroundColor() {
 
 void NativeTextfieldViews::UpdateReadOnly() {
   SchedulePaint();
+  OnTextInputTypeChanged();
 }
 
 void NativeTextfieldViews::UpdateFont() {
@@ -230,11 +224,13 @@ void NativeTextfieldViews::UpdateIsPassword() {
   model_->set_is_password(textfield_->IsPassword());
   UpdateCursorBoundsAndTextOffset();
   SchedulePaint();
+  OnTextInputTypeChanged();
 }
 
 void NativeTextfieldViews::UpdateEnabled() {
   SetEnabled(textfield_->IsEnabled());
   SchedulePaint();
+  OnTextInputTypeChanged();
 }
 
 gfx::Insets NativeTextfieldViews::CalculateInsets() {
@@ -275,7 +271,7 @@ gfx::NativeView NativeTextfieldViews::GetTestingHandle() const {
 }
 
 bool NativeTextfieldViews::IsIMEComposing() const {
-  return false;
+  return model_->HasCompositionText();
 }
 
 void NativeTextfieldViews::GetSelectedRange(ui::Range* range) const {
@@ -307,6 +303,7 @@ bool NativeTextfieldViews::HandleKeyReleased(const views::KeyEvent& e) {
 void NativeTextfieldViews::HandleFocus() {
   is_cursor_visible_ = true;
   SchedulePaint();
+  OnCaretBoundsChanged();
   // Start blinking cursor.
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
@@ -321,6 +318,10 @@ void NativeTextfieldViews::HandleBlur() {
     is_cursor_visible_ = false;
     RepaintCursor();
   }
+}
+
+TextInputClient* NativeTextfieldViews::GetTextInputClient() {
+  return textfield_->read_only() ? NULL : this;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -412,7 +413,174 @@ void NativeTextfieldViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// NativeTextfieldViews private:
+// NativeTextfieldViews, TextInputClient implementation, private:
+
+void NativeTextfieldViews::SetCompositionText(
+    const ui::CompositionText& composition) {
+  if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
+    return;
+
+  OnBeforeUserAction();
+  skip_input_method_cancel_composition_ = true;
+  model_->SetCompositionText(composition);
+  skip_input_method_cancel_composition_ = false;
+  UpdateAfterChange(true, true);
+  OnAfterUserAction();
+}
+
+void NativeTextfieldViews::ConfirmCompositionText() {
+  if (!model_->HasCompositionText())
+    return;
+
+  OnBeforeUserAction();
+  skip_input_method_cancel_composition_ = true;
+  model_->ConfirmCompositionText();
+  skip_input_method_cancel_composition_ = false;
+  UpdateAfterChange(true, true);
+  OnAfterUserAction();
+}
+
+void NativeTextfieldViews::ClearCompositionText() {
+  if (!model_->HasCompositionText())
+    return;
+
+  OnBeforeUserAction();
+  skip_input_method_cancel_composition_ = true;
+  model_->ClearCompositionText();
+  skip_input_method_cancel_composition_ = false;
+  UpdateAfterChange(true, true);
+  OnAfterUserAction();
+}
+
+void NativeTextfieldViews::InsertText(const string16& text) {
+  // TODO(suzhe): Filter invalid characters.
+  if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE || text.empty())
+    return;
+
+  OnBeforeUserAction();
+  skip_input_method_cancel_composition_ = true;
+  if (insert_)
+    model_->InsertText(text);
+  else
+    model_->ReplaceText(text);
+  skip_input_method_cancel_composition_ = false;
+  UpdateAfterChange(true, true);
+  OnAfterUserAction();
+}
+
+void NativeTextfieldViews::InsertChar(char16 ch, int flags) {
+  if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE ||
+      !ShouldInsertChar(ch, flags)) {
+    return;
+  }
+
+  OnBeforeUserAction();
+  skip_input_method_cancel_composition_ = true;
+  if (insert_)
+    model_->InsertChar(ch);
+  else
+    model_->ReplaceChar(ch);
+  skip_input_method_cancel_composition_ = false;
+  UpdateAfterChange(true, true);
+  OnAfterUserAction();
+}
+
+ui::TextInputType NativeTextfieldViews::GetTextInputType() {
+  if (textfield_->read_only() || !textfield_->IsEnabled())
+    return ui::TEXT_INPUT_TYPE_NONE;
+  else if (textfield_->IsPassword())
+    return ui::TEXT_INPUT_TYPE_PASSWORD;
+  return ui::TEXT_INPUT_TYPE_TEXT;
+}
+
+gfx::Rect NativeTextfieldViews::GetCaretBounds() {
+  return cursor_bounds_;
+}
+
+bool NativeTextfieldViews::HasCompositionText() {
+  return model_->HasCompositionText();
+}
+
+bool NativeTextfieldViews::GetTextRange(ui::Range* range) {
+  // We don't allow the input method to retrieve or delete content from a
+  // password box.
+  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT)
+    return false;
+
+  model_->GetTextRange(range);
+  return true;
+}
+
+bool NativeTextfieldViews::GetCompositionTextRange(ui::Range* range) {
+  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT)
+    return false;
+
+  model_->GetCompositionTextRange(range);
+  return true;
+}
+
+bool NativeTextfieldViews::GetSelectionRange(ui::Range* range) {
+  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT)
+    return false;
+
+  model_->GetSelectedRange(range);
+  return true;
+}
+
+bool NativeTextfieldViews::SetSelectionRange(const ui::Range& range) {
+  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT || !range.IsValid())
+    return false;
+
+  OnBeforeUserAction();
+  SelectRange(range);
+  OnAfterUserAction();
+  return true;
+}
+
+bool NativeTextfieldViews::DeleteRange(const ui::Range& range) {
+  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT || range.is_empty())
+    return false;
+
+  OnBeforeUserAction();
+  model_->SelectRange(range);
+  if (model_->HasSelection()) {
+    model_->DeleteSelection();
+    UpdateAfterChange(true, true);
+  }
+  OnAfterUserAction();
+  return true;
+}
+
+bool NativeTextfieldViews::GetTextFromRange(
+    const ui::Range& range,
+    const base::Callback<void(const string16&)>& callback) {
+  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT || range.is_empty())
+    return false;
+
+  callback.Run(model_->GetTextFromRange(range));
+  return true;
+}
+
+void NativeTextfieldViews::OnInputMethodChanged() {
+  NOTIMPLEMENTED();
+}
+
+bool NativeTextfieldViews::ChangeTextDirectionAndLayoutAlignment(
+    base::i18n::TextDirection direction) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+View* NativeTextfieldViews::GetOwnerViewOfTextInputClient() {
+  return textfield_;
+}
+
+void NativeTextfieldViews::OnCompositionTextConfirmedOrCleared() {
+  if (skip_input_method_cancel_composition_)
+    return;
+  DCHECK(textfield_->GetInputMethod());
+  textfield_->GetInputMethod()->CancelComposition(textfield_);
+}
 
 const gfx::Font& NativeTextfieldViews::GetFont() const {
   return textfield_->font();
@@ -475,6 +643,8 @@ void NativeTextfieldViews::UpdateCursorBoundsAndTextOffset() {
   }
   // shift cursor bounds to fit insets.
   cursor_bounds_.set_x(cursor_bounds_.x() + text_offset_ + insets.left());
+
+  OnCaretBoundsChanged();
 }
 
 void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
@@ -501,17 +671,22 @@ void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
            fragments.begin();
        iter != fragments.end();
        iter++) {
-    string16 text = model_->GetVisibleText((*iter).begin, (*iter).end);
+    string16 text = model_->GetVisibleText(iter->start, iter->end);
+
+    gfx::Font font = GetFont();
+    if (iter->underline)
+      font = font.DeriveFont(0, font.GetStyle() | gfx::Font::UNDERLINED);
+
     // TODO(oshima): This does not give the accurate position due to
     // kerning. Figure out how webkit does this with skia.
-    int width = GetFont().GetStringWidth(text);
+    int width = font.GetStringWidth(text);
 
-    if ((*iter).selected) {
+    if (iter->selected) {
       canvas->FillRectInt(selection_color, x_offset, y, width, text_height);
-      canvas->DrawStringInt(text, GetFont(), kSelectedTextColor,
+      canvas->DrawStringInt(text, font, kSelectedTextColor,
                             x_offset, y, width, text_height);
     } else {
-      canvas->DrawStringInt(text, GetFont(), text_color,
+      canvas->DrawStringInt(text, font, text_color,
                             x_offset, y, width, text_height);
     }
     x_offset += width;
@@ -577,7 +752,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         cursor_changed = true;
         break;
       case ui::VKEY_HOME:
-        model_->MoveCursorToStart(selection);
+        model_->MoveCursorToHome(selection);
         cursor_changed = true;
         break;
       case ui::VKEY_BACK:
@@ -590,7 +765,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
 #if defined(OS_WIN)
             break;
 #else
-            model_->MoveCursorToStart(true);
+            model_->MoveCursorToHome(true);
 #endif
           } else if (control) {
             // If only control is pressed, then erase the previous word.
@@ -626,14 +801,9 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
       default:
         break;
     }
-    char16 ch = key_event.GetCharacter();
-    if (editable && ShouldInsertChar(ch, key_event.flags())) {
-      if (insert_)
-        model_->Insert(ch);
-      else
-        model_->Replace(ch);
-      text_changed = true;
-    }
+
+    // We must have input method in order to support text input.
+    DCHECK(textfield_->GetInputMethod());
 
     UpdateAfterChange(text_changed, cursor_changed);
     OnAfterUserAction();
@@ -717,9 +887,6 @@ void NativeTextfieldViews::SetCursorForMouseClick(const views::MouseEvent& e) {
 
 void NativeTextfieldViews::PropagateTextChange() {
   textfield_->SyncText();
-  TextfieldController* controller = textfield_->GetController();
-  if (controller)
-    controller->ContentsChanged(textfield_, GetText());
 }
 
 void NativeTextfieldViews::UpdateAfterChange(bool text_changed,
@@ -748,6 +915,16 @@ void NativeTextfieldViews::InitContextMenuIfRequired() {
   context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
                                               IDS_APP_SELECT_ALL);
   context_menu_menu_.reset(new Menu2(context_menu_contents_.get()));
+}
+
+void NativeTextfieldViews::OnTextInputTypeChanged() {
+  DCHECK(textfield_->GetInputMethod());
+  textfield_->GetInputMethod()->OnTextInputTypeChanged(textfield_);
+}
+
+void NativeTextfieldViews::OnCaretBoundsChanged() {
+  DCHECK(textfield_->GetInputMethod());
+  textfield_->GetInputMethod()->OnCaretBoundsChanged(textfield_);
 }
 
 void NativeTextfieldViews::OnBeforeUserAction() {

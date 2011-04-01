@@ -846,8 +846,8 @@ TextInputClient* View::GetTextInputClient() {
 }
 
 InputMethod* View::GetInputMethod() {
-  NOTIMPLEMENTED();
-  return NULL;
+  Widget* widget = GetWidget();
+  return widget ? widget->GetInputMethod() : NULL;
 }
 
 // Accelerators ----------------------------------------------------------------

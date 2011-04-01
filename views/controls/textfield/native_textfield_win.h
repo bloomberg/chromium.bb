@@ -85,6 +85,7 @@ class NativeTextfieldWin
   virtual bool HandleKeyReleased(const views::KeyEvent& event) OVERRIDE;
   virtual void HandleFocus() OVERRIDE;
   virtual void HandleBlur() OVERRIDE;
+  virtual TextInputClient* GetTextInputClient() OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

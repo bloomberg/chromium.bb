@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,8 +123,10 @@ void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
 void RegistrationScreen::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   views::Widget* widget = view()->GetWidget();
-  if (widget && event.os_event && !event.skip_in_browser)
-    static_cast<views::WidgetGtk*>(widget)->HandleKeyboardEvent(event.os_event);
+  if (widget && event.os_event && !event.skip_in_browser) {
+    views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
+    static_cast<views::WidgetGtk*>(widget)->HandleKeyboardEvent(views_event);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

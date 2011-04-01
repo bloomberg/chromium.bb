@@ -13,6 +13,8 @@
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/gfx/size.h"
 #include "views/focus/focus_manager.h"
+#include "views/ime/input_method_delegate.h"
+#include "views/ime/input_method_gtk.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
 
@@ -41,7 +43,8 @@ class NativeWidgetDelegate;
 // Widget implementation for GTK.
 class WidgetGtk : public Widget,
                   public NativeWidget,
-                  public ui::ActiveWindowWatcherX::Observer {
+                  public ui::ActiveWindowWatcherX::Observer,
+                  public internal::InputMethodDelegate {
  public:
   // Type of widget.
   enum Type {
@@ -171,7 +174,7 @@ class WidgetGtk : public Widget,
 
   // Handles a keyboard event by sending it to our focus manager.
   // Returns true if it's handled by the focus manager.
-  bool HandleKeyboardEvent(GdkEventKey* event);
+  bool HandleKeyboardEvent(const KeyEvent& key);
 
   // Enables debug painting. See |debug_paint_enabled_| for details.
   static void EnableDebugPaint();
@@ -196,6 +199,8 @@ class WidgetGtk : public Widget,
   virtual void SetMouseCapture() OVERRIDE;
   virtual void ReleaseMouseCapture() OVERRIDE;
   virtual bool HasMouseCapture() const OVERRIDE;
+  virtual InputMethod* GetInputMethodNative() OVERRIDE;
+  virtual void ReplaceInputMethod(InputMethod* input_method) OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
@@ -296,6 +301,9 @@ class WidgetGtk : public Widget,
 
   // Overridden from NativeWidget
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
+
+  // Overridden from internal::InputMethodDelegate
+  virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
 
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnWindowPaint, GdkEventExpose*);
 
@@ -413,6 +421,8 @@ class WidgetGtk : public Widget,
   // If the widget has ever been painted. This is used to guarantee
   // that window manager shows the window only after the window is painted.
   bool painted_;
+
+  scoped_ptr<InputMethod> input_method_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetGtk);
 };

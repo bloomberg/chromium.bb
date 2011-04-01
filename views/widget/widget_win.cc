@@ -23,9 +23,11 @@
 #include "ui/gfx/path.h"
 #include "views/accessibility/native_view_accessibility_win.h"
 #include "views/controls/native_control_win.h"
+#include "views/controls/textfield/native_textfield_views.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/focus/focus_util_win.h"
 #include "views/focus/view_storage.h"
+#include "views/ime/input_method_win.h"
 #include "views/views_delegate.h"
 #include "views/widget/aero_tooltip_manager.h"
 #include "views/widget/child_window_message_processor.h"
@@ -143,11 +145,15 @@ WidgetWin::WidgetWin()
       restore_focus_when_enabled_(false),
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents),
-      previous_cursor_(NULL) {
+      previous_cursor_(NULL),
+      is_input_method_win_(false) {
   set_native_widget(this);
 }
 
 WidgetWin::~WidgetWin() {
+  // We need to delete the input method before calling DestroyRootView(),
+  // because it'll set focus_manager_ to NULL.
+  input_method_.reset();
   DestroyRootView();
 }
 
@@ -333,6 +339,19 @@ bool WidgetWin::HasMouseCapture() const {
   return GetCapture() == hwnd();
 }
 
+InputMethod* WidgetWin::GetInputMethodNative() {
+  return input_method_.get();
+}
+
+void WidgetWin::ReplaceInputMethod(InputMethod* input_method) {
+  input_method_.reset(input_method);
+  if (input_method) {
+    input_method->set_delegate(this);
+    input_method->Init(GetWidget());
+  }
+  is_input_method_win_ = false;
+}
+
 gfx::Rect WidgetWin::GetWindowScreenBounds() const {
   RECT r;
   GetWindowRect(&r);
@@ -383,6 +402,11 @@ void WidgetWin::Close() {
 }
 
 void WidgetWin::CloseNow() {
+  // Destroys the input method before closing the window so that it can be
+  // detached from the widget correctly.
+  input_method_.reset();
+  is_input_method_win_ = false;
+
   // We may already have been destroyed if the selection resulted in a tab
   // switch which will have reactivated the browser window and closed us, so
   // we need to check to see if we're still a window before trying to destroy
@@ -620,6 +644,15 @@ LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   ClientAreaSizeChanged();
 
   delegate_->OnNativeWidgetCreated();
+
+  // delegate_->OnNativeWidgetCreated() creates the focus manager for top-level
+  // widget. Only top-level widget should have an input method.
+  if (delegate_->HasFocusManager() &&
+      NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+    input_method_.reset(new InputMethodWin(this));
+    input_method_->Init(GetWidget());
+    is_input_method_win_ = true;
+  }
   return 0;
 }
 
@@ -699,6 +732,45 @@ void WidgetWin::OnHScroll(int scroll_type, short position, HWND scrollbar) {
   SetMsgHandled(FALSE);
 }
 
+LRESULT WidgetWin::OnImeMessages(UINT message, WPARAM w_param, LPARAM l_param) {
+  if (!is_input_method_win_) {
+    SetMsgHandled(FALSE);
+    return 0;
+  }
+
+  InputMethodWin* ime = static_cast<InputMethodWin*>(input_method_.get());
+  BOOL handled = FALSE;
+  LRESULT result = 0;
+  switch (message) {
+    case WM_IME_SETCONTEXT:
+      result = ime->OnImeSetContext(message, w_param, l_param, &handled);
+      break;
+    case WM_IME_STARTCOMPOSITION:
+      result = ime->OnImeStartComposition(message, w_param, l_param, &handled);
+      break;
+    case WM_IME_COMPOSITION:
+      result = ime->OnImeComposition(message, w_param, l_param, &handled);
+      break;
+    case WM_IME_ENDCOMPOSITION:
+      result = ime->OnImeEndComposition(message, w_param, l_param, &handled);
+      break;
+    case WM_CHAR:
+    case WM_SYSCHAR:
+      result = ime->OnChar(message, w_param, l_param, &handled);
+      break;
+    case WM_DEADCHAR:
+    case WM_SYSDEADCHAR:
+      result = ime->OnDeadChar(message, w_param, l_param, &handled);
+      break;
+    default:
+      NOTREACHED() << "Unknown IME message:" << message;
+      break;
+  }
+
+  SetMsgHandled(handled);
+  return result;
+}
+
 void WidgetWin::OnInitMenu(HMENU menu) {
   SetMsgHandled(FALSE);
 }
@@ -709,28 +781,37 @@ void WidgetWin::OnInitMenuPopup(HMENU menu,
   SetMsgHandled(FALSE);
 }
 
-LRESULT WidgetWin::OnKeyDown(UINT message, WPARAM w_param, LPARAM l_param) {
-  RootView* root_view = GetFocusedViewRootView();
-  if (!root_view)
-    root_view = GetRootView();
+void WidgetWin::OnInputLangChange(DWORD character_set, HKL input_language_id) {
+  if (is_input_method_win_) {
+    static_cast<InputMethodWin*>(input_method_.get())->OnInputLangChange(
+        character_set, input_language_id);
+  }
+}
 
+LRESULT WidgetWin::OnKeyDown(UINT message, WPARAM w_param, LPARAM l_param) {
   MSG msg = { hwnd(), message, w_param, l_param };
-  SetMsgHandled(root_view->ProcessKeyEvent(KeyEvent(msg)));
+  KeyEvent key(msg);
+  if (input_method_.get())
+    input_method_->DispatchKeyEvent(key);
+  else
+    DispatchKeyEventPostIME(key);
   return 0;
 }
 
 LRESULT WidgetWin::OnKeyUp(UINT message, WPARAM w_param, LPARAM l_param) {
-  RootView* root_view = GetFocusedViewRootView();
-  if (!root_view)
-    root_view = GetRootView();
-
   MSG msg = { hwnd(), message, w_param, l_param };
-  SetMsgHandled(root_view->ProcessKeyEvent(KeyEvent(msg)));
+  KeyEvent key(msg);
+  if (input_method_.get())
+    input_method_->DispatchKeyEvent(key);
+  else
+    DispatchKeyEventPostIME(key);
   return 0;
 }
 
 void WidgetWin::OnKillFocus(HWND focused_window) {
   delegate_->OnNativeBlur(focused_window);
+  if (input_method_.get())
+    input_method_->OnBlur();
   SetMsgHandled(FALSE);
 }
 
@@ -863,6 +944,8 @@ LRESULT WidgetWin::OnReflectedMessage(UINT msg,
 
 void WidgetWin::OnSetFocus(HWND focused_window) {
   delegate_->OnNativeFocus(focused_window);
+  if (input_method_.get())
+    input_method_->OnFocus();
   SetMsgHandled(FALSE);
 }
 
@@ -1055,6 +1138,14 @@ void WidgetWin::ClientAreaSizeChanged() {
 gfx::AcceleratedWidget WidgetWin::GetAcceleratedWidget() {
   // TODO(beng):
   return gfx::kNullAcceleratedWidget;
+}
+
+void WidgetWin::DispatchKeyEventPostIME(const KeyEvent& key) {
+  RootView* root_view = GetFocusedViewRootView();
+  if (!root_view)
+    root_view = GetRootView();
+
+  SetMsgHandled(root_view->ProcessKeyEvent(key));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

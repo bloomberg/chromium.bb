@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "views/focus/view_storage.h"
+#include "views/ime/input_method.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/root_view.h"
 #include "views/widget/native_widget.h"
@@ -217,6 +218,12 @@ FocusManager* Widget::GetFocusManager() {
     return toplevel_widget->focus_manager_.get();
 
   return focus_manager_.get();
+}
+
+InputMethod* Widget::GetInputMethod() {
+  Widget* toplevel_widget = GetTopLevelWidget();
+  return toplevel_widget ?
+      toplevel_widget->native_widget()->GetInputMethodNative() : NULL;
 }
 
 bool Widget::ContainsNativeView(gfx::NativeView native_view) {

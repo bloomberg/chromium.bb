@@ -244,8 +244,14 @@ void Textfield::UpdateAllProperties() {
 }
 
 void Textfield::SyncText() {
-  if (native_wrapper_)
-    text_ = native_wrapper_->GetText();
+  if (native_wrapper_) {
+    string16 new_text = native_wrapper_->GetText();
+    if (new_text != text_) {
+      text_ = new_text;
+      if (controller_)
+        controller_->ContentsChanged(this, text_);
+    }
+  }
 }
 
 bool Textfield::IsIMEComposing() const {
@@ -365,6 +371,10 @@ void Textfield::GetAccessibleState(ui::AccessibleViewState* state) {
   native_wrapper_->GetSelectedRange(&range);
   state->selection_start = range.start();
   state->selection_end = range.end();
+}
+
+TextInputClient* Textfield::GetTextInputClient() {
+  return native_wrapper_ ? native_wrapper_->GetTextInputClient() : NULL;
 }
 
 void Textfield::SetEnabled(bool enabled) {

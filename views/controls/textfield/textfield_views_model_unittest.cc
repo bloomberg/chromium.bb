@@ -20,9 +20,20 @@ namespace views {
 
 #include "views/test/views_test_base.h"
 
-class TextfieldViewsModelTest : public ViewsTestBase {
+class TextfieldViewsModelTest : public ViewsTestBase,
+                                public TextfieldViewsModel::Delegate {
  public:
-  TextfieldViewsModelTest() : ViewsTestBase() {}
+  TextfieldViewsModelTest()
+      : ViewsTestBase(),
+        composition_text_confirmed_or_cleared_(false) {
+  }
+
+  virtual void OnCompositionTextConfirmedOrCleared() {
+    composition_text_confirmed_or_cleared_ = true;
+  }
+
+ protected:
+  bool composition_text_confirmed_or_cleared_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TextfieldViewsModelTest);
@@ -32,7 +43,7 @@ class TextfieldViewsModelTest : public ViewsTestBase {
   EXPECT_EQ(ASCIIToWide(ascii), UTF16ToWide(utf16))
 
 TEST_F(TextfieldViewsModelTest, EditString) {
-  TextfieldViewsModel model;
+  TextfieldViewsModel model(NULL);
   // append two strings
   model.Append(ASCIIToUTF16("HILL"));
   EXPECT_STR_EQ("HILL", model.text());
@@ -41,13 +52,13 @@ TEST_F(TextfieldViewsModelTest, EditString) {
 
   // Insert "E" to make hello
   model.MoveCursorRight(false);
-  model.Insert('E');
+  model.InsertChar('E');
   EXPECT_STR_EQ("HEILLWORLD", model.text());
   // Replace "I" with "L"
-  model.Replace('L');
+  model.ReplaceChar('L');
   EXPECT_STR_EQ("HELLLWORLD", model.text());
-  model.Replace('L');
-  model.Replace('O');
+  model.ReplaceChar('L');
+  model.ReplaceChar('O');
   EXPECT_STR_EQ("HELLOWORLD", model.text());
 
   // Delete 6th char "W", then delete 5th char O"
@@ -59,7 +70,7 @@ TEST_F(TextfieldViewsModelTest, EditString) {
   EXPECT_STR_EQ("HELLORLD", model.text());
 
   // Move the cursor to start. backspace should fail.
-  model.MoveCursorToStart(false);
+  model.MoveCursorToHome(false);
   EXPECT_FALSE(model.Backspace());
   EXPECT_STR_EQ("HELLORLD", model.text());
   // Move the cursor to the end. delete should fail.
@@ -72,7 +83,7 @@ TEST_F(TextfieldViewsModelTest, EditString) {
 }
 
 TEST_F(TextfieldViewsModelTest, EmptyString) {
-  TextfieldViewsModel model;
+  TextfieldViewsModel model(NULL);
   EXPECT_EQ(string16(), model.text());
   EXPECT_EQ(string16(), model.GetSelectedText());
   EXPECT_EQ(string16(), model.GetVisibleText());
@@ -89,7 +100,7 @@ TEST_F(TextfieldViewsModelTest, EmptyString) {
 }
 
 TEST_F(TextfieldViewsModelTest, Selection) {
-  TextfieldViewsModel model;
+  TextfieldViewsModel model(NULL);
   model.Append(ASCIIToUTF16("HELLO"));
   model.MoveCursorRight(false);
   model.MoveCursorRight(true);
@@ -97,7 +108,7 @@ TEST_F(TextfieldViewsModelTest, Selection) {
   model.MoveCursorRight(true);
   EXPECT_STR_EQ("EL", model.GetSelectedText());
 
-  model.MoveCursorToStart(true);
+  model.MoveCursorToHome(true);
   EXPECT_STR_EQ("H", model.GetSelectedText());
   model.MoveCursorToEnd(true);
   EXPECT_STR_EQ("ELLO", model.GetSelectedText());
@@ -132,7 +143,7 @@ TEST_F(TextfieldViewsModelTest, Selection) {
 }
 
 TEST_F(TextfieldViewsModelTest, SelectionAndEdit) {
-  TextfieldViewsModel model;
+  TextfieldViewsModel model(NULL);
   model.Append(ASCIIToUTF16("HELLO"));
   model.MoveCursorRight(false);
   model.MoveCursorRight(true);
@@ -147,21 +158,21 @@ TEST_F(TextfieldViewsModelTest, SelectionAndEdit) {
   EXPECT_STR_EQ("HILL", model.text());
   EXPECT_EQ(1U, model.cursor_pos());
   model.MoveCursorRight(true);  // select "I"
-  model.Insert('E');
+  model.InsertChar('E');
   EXPECT_STR_EQ("HELL", model.text());
-  model.MoveCursorToStart(false);
+  model.MoveCursorToHome(false);
   model.MoveCursorRight(true);  // select "H"
-  model.Replace('B');
+  model.ReplaceChar('B');
   EXPECT_STR_EQ("BELL", model.text());
   model.MoveCursorToEnd(false);
   model.MoveCursorLeft(true);
   model.MoveCursorLeft(true);  // select ">LL"
-  model.Replace('E');
+  model.ReplaceChar('E');
   EXPECT_STR_EQ("BEE", model.text());
 }
 
 TEST_F(TextfieldViewsModelTest, Password) {
-  TextfieldViewsModel model;
+  TextfieldViewsModel model(NULL);
   model.set_is_password(true);
   model.Append(ASCIIToUTF16("HELLO"));
   EXPECT_STR_EQ("*****", model.GetVisibleText());
@@ -176,13 +187,13 @@ TEST_F(TextfieldViewsModelTest, Password) {
   EXPECT_STR_EQ("ELLO", model.GetSelectedText());
   EXPECT_EQ(4U, model.cursor_pos());
 
-  model.Insert('X');
+  model.InsertChar('X');
   EXPECT_STR_EQ("*", model.GetVisibleText());
   EXPECT_STR_EQ("X", model.text());
 }
 
 TEST_F(TextfieldViewsModelTest, Word) {
-  TextfieldViewsModel model;
+  TextfieldViewsModel model(NULL);
   model.Append(
       ASCIIToUTF16("The answer to Life, the Universe, and Everything"));
   model.MoveCursorToNextWord(false);
@@ -206,7 +217,7 @@ TEST_F(TextfieldViewsModelTest, Word) {
   // Should be safe to go next word at the end.
   model.MoveCursorToNextWord(true);
   EXPECT_STR_EQ(", the Universe, and Everything", model.GetSelectedText());
-  model.Insert('2');
+  model.InsertChar('2');
   EXPECT_EQ(19U, model.cursor_pos());
 
   // Now backwards.
@@ -223,18 +234,18 @@ TEST_F(TextfieldViewsModelTest, Word) {
   // Should be safe to go pervious word at the begining.
   model.MoveCursorToPreviousWord(true);
   EXPECT_STR_EQ("The answer to Life", model.GetSelectedText());
-  model.Replace('4');
+  model.ReplaceChar('4');
   EXPECT_EQ(string16(), model.GetSelectedText());
   EXPECT_STR_EQ("42", model.GetVisibleText());
 }
 
 TEST_F(TextfieldViewsModelTest, TextFragment) {
-  TextfieldViewsModel model;
+  TextfieldViewsModel model(NULL);
   TextfieldViewsModel::TextFragments fragments;
   // Empty string
   model.GetFragments(&fragments);
   EXPECT_EQ(1U, fragments.size());
-  EXPECT_EQ(0U, fragments[0].begin);
+  EXPECT_EQ(0U, fragments[0].start);
   EXPECT_EQ(0U, fragments[0].end);
   EXPECT_FALSE(fragments[0].selected);
 
@@ -242,7 +253,7 @@ TEST_F(TextfieldViewsModelTest, TextFragment) {
   model.Append(ASCIIToUTF16("Hello world"));
   model.GetFragments(&fragments);
   EXPECT_EQ(1U, fragments.size());
-  EXPECT_EQ(0U, fragments[0].begin);
+  EXPECT_EQ(0U, fragments[0].start);
   EXPECT_EQ(11U, fragments[0].end);
   EXPECT_FALSE(fragments[0].selected);
 
@@ -250,10 +261,10 @@ TEST_F(TextfieldViewsModelTest, TextFragment) {
   model.MoveCursorToNextWord(true);
   model.GetFragments(&fragments);
   EXPECT_EQ(2U, fragments.size());
-  EXPECT_EQ(0U, fragments[0].begin);
+  EXPECT_EQ(0U, fragments[0].start);
   EXPECT_EQ(5U, fragments[0].end);
   EXPECT_TRUE(fragments[0].selected);
-  EXPECT_EQ(5U, fragments[1].begin);
+  EXPECT_EQ(5U, fragments[1].start);
   EXPECT_EQ(11U, fragments[1].end);
   EXPECT_FALSE(fragments[1].selected);
 
@@ -262,14 +273,14 @@ TEST_F(TextfieldViewsModelTest, TextFragment) {
   model.MoveCursorRight(true);
   model.GetFragments(&fragments);
   EXPECT_EQ(3U, fragments.size());
-  EXPECT_EQ(0U, fragments[0].begin);
+  EXPECT_EQ(0U, fragments[0].start);
   EXPECT_EQ(5U, fragments[0].end);
   EXPECT_FALSE(fragments[0].selected);
-  EXPECT_EQ(5U, fragments[1].begin);
+  EXPECT_EQ(5U, fragments[1].start);
   EXPECT_EQ(6U, fragments[1].end);
   EXPECT_TRUE(fragments[1].selected);
 
-  EXPECT_EQ(6U, fragments[2].begin);
+  EXPECT_EQ(6U, fragments[2].start);
   EXPECT_EQ(11U, fragments[2].end);
   EXPECT_FALSE(fragments[2].selected);
 
@@ -277,16 +288,16 @@ TEST_F(TextfieldViewsModelTest, TextFragment) {
   model.MoveCursorToEnd(true);
   model.GetFragments(&fragments);
   EXPECT_EQ(2U, fragments.size());
-  EXPECT_EQ(0U, fragments[0].begin);
+  EXPECT_EQ(0U, fragments[0].start);
   EXPECT_EQ(5U, fragments[0].end);
   EXPECT_FALSE(fragments[0].selected);
-  EXPECT_EQ(5U, fragments[1].begin);
+  EXPECT_EQ(5U, fragments[1].start);
   EXPECT_EQ(11U, fragments[1].end);
   EXPECT_TRUE(fragments[1].selected);
 }
 
 TEST_F(TextfieldViewsModelTest, SetText) {
-  TextfieldViewsModel model;
+  TextfieldViewsModel model(NULL);
   model.Append(ASCIIToUTF16("HELLO"));
   model.MoveCursorToEnd(false);
   model.SetText(ASCIIToUTF16("GOODBYE"));
@@ -296,7 +307,7 @@ TEST_F(TextfieldViewsModelTest, SetText) {
   EXPECT_STR_EQ("GOODBYE", model.GetSelectedText());
   // Selection move the current pos to the end.
   EXPECT_EQ(7U, model.cursor_pos());
-  model.MoveCursorToStart(false);
+  model.MoveCursorToHome(false);
   EXPECT_EQ(0U, model.cursor_pos());
   model.MoveCursorToEnd(false);
 
@@ -316,7 +327,7 @@ TEST_F(TextfieldViewsModelTest, Clipboard) {
   string16 initial_clipboard_text;
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &initial_clipboard_text);
   string16 clipboard_text;
-  TextfieldViewsModel model;
+  TextfieldViewsModel model(NULL);
   model.Append(ASCIIToUTF16("HELLO WORLD"));
   model.MoveCursorToEnd(false);
 
@@ -369,11 +380,11 @@ void SelectWordTestVerifier(TextfieldViewsModel &model,
 }
 
 TEST_F(TextfieldViewsModelTest, SelectWordTest) {
-  TextfieldViewsModel model;
+  TextfieldViewsModel model(NULL);
   model.Append(ASCIIToUTF16("  HELLO  !!  WO     RLD "));
 
   // Test when cursor is at the beginning.
-  model.MoveCursorToStart(false);
+  model.MoveCursorToHome(false);
   model.SelectWord();
   SelectWordTestVerifier(model, "  ", 2U);
 
@@ -406,9 +417,9 @@ TEST_F(TextfieldViewsModelTest, SelectWordTest) {
 }
 
 TEST_F(TextfieldViewsModelTest, RangeTest) {
-  TextfieldViewsModel model;
+  TextfieldViewsModel model(NULL);
   model.Append(ASCIIToUTF16("HELLO WORLD"));
-  model.MoveCursorToStart(false);
+  model.MoveCursorToHome(false);
   ui::Range range;
   model.GetSelectedRange(&range);
   EXPECT_TRUE(range.is_empty());
@@ -462,7 +473,7 @@ TEST_F(TextfieldViewsModelTest, RangeTest) {
   EXPECT_EQ(11U, range.end());
 
   // Select All
-  model.MoveCursorToStart(true);
+  model.MoveCursorToHome(true);
   model.GetSelectedRange(&range);
   EXPECT_FALSE(range.is_empty());
   EXPECT_TRUE(range.is_reversed());
@@ -471,7 +482,7 @@ TEST_F(TextfieldViewsModelTest, RangeTest) {
 }
 
 TEST_F(TextfieldViewsModelTest, SelectRangeTest) {
-  TextfieldViewsModel model;
+  TextfieldViewsModel model(NULL);
   model.Append(ASCIIToUTF16("HELLO WORLD"));
   ui::Range range(0, 6);
   EXPECT_FALSE(range.is_reversed());
@@ -512,6 +523,189 @@ TEST_F(TextfieldViewsModelTest, SelectRangeTest) {
   EXPECT_TRUE(range.is_empty());
   model.SelectRange(range);
   EXPECT_TRUE(model.GetSelectedText().empty());
+}
+
+TEST_F(TextfieldViewsModelTest, CompositionTextTest) {
+  TextfieldViewsModel model(this);
+  model.Append(ASCIIToUTF16("1234590"));
+  model.SelectRange(ui::Range(5, 5));
+  EXPECT_FALSE(model.HasSelection());
+  EXPECT_EQ(5U, model.cursor_pos());
+
+  ui::Range range;
+  model.GetTextRange(&range);
+  EXPECT_EQ(0U, range.start());
+  EXPECT_EQ(7U, range.end());
+
+  ui::CompositionText composition;
+  composition.text = ASCIIToUTF16("678");
+  composition.underlines.push_back(ui::CompositionUnderline(0, 3, 0, false));
+  composition.selection = ui::Range(2, 3);
+  model.SetCompositionText(composition);
+  EXPECT_TRUE(model.HasCompositionText());
+  EXPECT_TRUE(model.HasSelection());
+
+  model.GetTextRange(&range);
+  EXPECT_EQ(10U, range.end());
+
+  model.GetCompositionTextRange(&range);
+  EXPECT_EQ(5U, range.start());
+  EXPECT_EQ(8U, range.end());
+
+  model.GetSelectedRange(&range);
+  EXPECT_EQ(7U, range.start());
+  EXPECT_EQ(8U, range.end());
+
+  EXPECT_STR_EQ("1234567890", model.text());
+  EXPECT_STR_EQ("8", model.GetSelectedText());
+  EXPECT_STR_EQ("456", model.GetTextFromRange(ui::Range(3, 6)));
+
+  TextfieldViewsModel::TextFragments fragments;
+  model.GetFragments(&fragments);
+  EXPECT_EQ(4U, fragments.size());
+  EXPECT_EQ(0U, fragments[0].start);
+  EXPECT_EQ(5U, fragments[0].end);
+  EXPECT_FALSE(fragments[0].selected);
+  EXPECT_FALSE(fragments[0].underline);
+  EXPECT_EQ(5U, fragments[1].start);
+  EXPECT_EQ(7U, fragments[1].end);
+  EXPECT_FALSE(fragments[1].selected);
+  EXPECT_TRUE(fragments[1].underline);
+  EXPECT_EQ(7U, fragments[2].start);
+  EXPECT_EQ(8U, fragments[2].end);
+  EXPECT_TRUE(fragments[2].selected);
+  EXPECT_TRUE(fragments[2].underline);
+  EXPECT_EQ(8U, fragments[3].start);
+  EXPECT_EQ(10U, fragments[3].end);
+  EXPECT_FALSE(fragments[3].selected);
+  EXPECT_FALSE(fragments[3].underline);
+
+  EXPECT_FALSE(composition_text_confirmed_or_cleared_);
+  model.ClearCompositionText();
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_FALSE(model.HasCompositionText());
+  EXPECT_FALSE(model.HasSelection());
+  EXPECT_EQ(5U, model.cursor_pos());
+
+  model.SetCompositionText(composition);
+  EXPECT_STR_EQ("1234567890", model.text());
+  EXPECT_TRUE(model.SetText(ASCIIToUTF16("1234567890")));
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  model.MoveCursorToEnd(false);
+
+  model.SetCompositionText(composition);
+  EXPECT_STR_EQ("1234567890678", model.text());
+
+  model.InsertText(UTF8ToUTF16("-"));
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_STR_EQ("1234567890-", model.text());
+  EXPECT_FALSE(model.HasCompositionText());
+  EXPECT_FALSE(model.HasSelection());
+
+  model.MoveCursorLeft(true);
+  EXPECT_STR_EQ("-", model.GetSelectedText());
+  model.SetCompositionText(composition);
+  EXPECT_STR_EQ("1234567890678", model.text());
+
+  model.ReplaceText(UTF8ToUTF16("-"));
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_STR_EQ("1234567890-", model.text());
+  EXPECT_FALSE(model.HasCompositionText());
+  EXPECT_FALSE(model.HasSelection());
+
+  model.SetCompositionText(composition);
+  model.Append(UTF8ToUTF16("-"));
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_STR_EQ("1234567890-678-", model.text());
+
+  model.SetCompositionText(composition);
+  model.Delete();
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_STR_EQ("1234567890-678-", model.text());
+
+  model.SetCompositionText(composition);
+  model.Backspace();
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_STR_EQ("1234567890-678-", model.text());
+
+  model.SetText(string16());
+  model.SetCompositionText(composition);
+  model.MoveCursorLeft(false);
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_STR_EQ("678", model.text());
+  EXPECT_EQ(2U, model.cursor_pos());
+
+  model.SetCompositionText(composition);
+  model.MoveCursorRight(false);
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_STR_EQ("676788", model.text());
+  EXPECT_EQ(6U, model.cursor_pos());
+
+  model.SetCompositionText(composition);
+  model.MoveCursorToPreviousWord(false);
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_STR_EQ("676788678", model.text());
+
+  model.SetText(string16());
+  model.SetCompositionText(composition);
+  model.MoveCursorToNextWord(false);
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+
+  model.SetCompositionText(composition);
+  model.MoveCursorToHome(true);
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_STR_EQ("678678", model.text());
+
+  model.SetCompositionText(composition);
+  model.MoveCursorToEnd(false);
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_STR_EQ("678", model.text());
+
+  model.SetCompositionText(composition);
+  model.MoveCursorTo(0, true);
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_STR_EQ("678678", model.text());
+
+  model.SetCompositionText(composition);
+  model.SelectRange(ui::Range(0, 3));
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_STR_EQ("678", model.text());
+
+  model.SetCompositionText(composition);
+  model.SelectAll();
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_STR_EQ("678", model.text());
+
+  model.SetCompositionText(composition);
+  model.SelectWord();
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+  EXPECT_STR_EQ("678", model.text());
+
+  model.SetCompositionText(composition);
+  model.ClearSelection();
+  EXPECT_TRUE(composition_text_confirmed_or_cleared_);
+  composition_text_confirmed_or_cleared_ = false;
+
+  model.SetCompositionText(composition);
+  EXPECT_FALSE(model.Cut());
+  EXPECT_FALSE(composition_text_confirmed_or_cleared_);
 }
 
 }  // namespace views

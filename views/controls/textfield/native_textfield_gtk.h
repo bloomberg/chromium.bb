@@ -55,6 +55,7 @@ class NativeTextfieldGtk : public NativeControlGtk,
   virtual bool HandleKeyReleased(const views::KeyEvent& e) OVERRIDE;
   virtual void HandleFocus() OVERRIDE;
   virtual void HandleBlur() OVERRIDE;
+  virtual TextInputClient* GetTextInputClient() OVERRIDE;
 
   // Overridden from NativeControlGtk:
   virtual void CreateNativeControl() OVERRIDE;

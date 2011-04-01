@@ -11,6 +11,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "views/events/event.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
@@ -190,8 +191,10 @@ void HtmlDialogView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
                   event.os_event.wParam, event.os_event.lParam);
 #elif defined(OS_LINUX)
   views::WindowGtk* window_gtk = static_cast<views::WindowGtk*>(window());
-  if (event.os_event && !event.skip_in_browser)
-    window_gtk->HandleKeyboardEvent(event.os_event);
+  if (event.os_event && !event.skip_in_browser) {
+    views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
+    window_gtk->HandleKeyboardEvent(views_event);
+  }
 #endif
 }
 

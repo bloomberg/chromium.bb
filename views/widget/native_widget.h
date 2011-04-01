@@ -20,6 +20,7 @@ class OSExchangeData;
 
 namespace views {
 
+class InputMethod;
 class TooltipManager;
 class Widget;
 
@@ -80,6 +81,17 @@ class NativeWidget {
 
   // Returns true if this native widget is capturing all events.
   virtual bool HasMouseCapture() const = 0;
+
+  // Returns the InputMethod for this native widget.
+  // Note that all widgets in a widget hierarchy share the same input method.
+  // TODO(suzhe): rename to GetInputMethod() when NativeWidget implementation
+  // class doesn't inherit Widget anymore.
+  virtual InputMethod* GetInputMethodNative() = 0;
+
+  // Sets a different InputMethod instance to this native widget. The instance
+  // must not be initialized, the ownership will be assumed by the native
+  // widget. It's only for testing purpose.
+  virtual void ReplaceInputMethod(InputMethod* input_method) = 0;
 
  protected:
   friend class Widget;

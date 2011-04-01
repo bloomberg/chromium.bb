@@ -25,6 +25,7 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/path.h"
 #include "views/views_delegate.h"
+#include "views/controls/textfield/native_textfield_views.h"
 #include "views/focus/view_storage.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
@@ -294,6 +295,9 @@ WidgetGtk::WidgetGtk(Type type)
 }
 
 WidgetGtk::~WidgetGtk() {
+  // We need to delete the input method before calling DestroyRootView(),
+  // because it'll set focus_manager_ to NULL.
+  input_method_.reset();
   DestroyRootView();
   DCHECK(delete_on_destroy_ || widget_ == NULL);
   if (type_ != TYPE_CHILD)
@@ -516,6 +520,20 @@ void WidgetGtk::Init(GtkWidget* parent,
   CreateGtkWidget(parent, bounds);
   delegate_->OnNativeWidgetCreated();
 
+  // Creates input method for toplevel widget after calling
+  // delegate_->OnNativeWidgetCreated(), to make sure that focus manager is
+  // already created at this point.
+  // TODO(suzhe): Always enable input method when we start to use
+  // RenderWidgetHostViewViews in normal ChromeOS.
+#if !defined(TOUCH_UI)
+  if (type_ != TYPE_CHILD && NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+#else
+  if (type_ != TYPE_CHILD) {
+#endif
+    input_method_.reset(new InputMethodGtk(this));
+    input_method_->Init(GetWidget());
+  }
+
   if (opacity_ != 255)
     SetOpacity(opacity_);
 
@@ -665,22 +683,21 @@ void WidgetGtk::ClearNativeFocus() {
   gtk_window_set_focus(GTK_WINDOW(GetNativeView()), NULL);
 }
 
-bool WidgetGtk::HandleKeyboardEvent(GdkEventKey* event) {
+bool WidgetGtk::HandleKeyboardEvent(const KeyEvent& key) {
   if (!GetFocusManager())
     return false;
 
-  KeyEvent key(reinterpret_cast<NativeEvent>(event));
-  int key_code = key.key_code();
+  const int key_code = key.key_code();
   bool handled = false;
 
   // Always reset |should_handle_menu_key_release_| unless we are handling a
   // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
   // be activated when handling a VKEY_MENU key release event which is preceded
   // by an un-handled VKEY_MENU key press event.
-  if (key_code != ui::VKEY_MENU || event->type != GDK_KEY_RELEASE)
+  if (key_code != ui::VKEY_MENU || key.type() != ui::ET_KEY_RELEASED)
     should_handle_menu_key_release_ = false;
 
-  if (event->type == GDK_KEY_PRESS) {
+  if (key.type() == ui::ET_KEY_PRESSED) {
     // VKEY_MENU is triggered by key release event.
     // FocusManager::OnKeyEvent() returns false when the key has been consumed.
     if (key_code != ui::VKEY_MENU)
@@ -766,6 +783,18 @@ bool WidgetGtk::HasMouseCapture() const {
   // TODO(beng): Should be able to use gtk_widget_has_grab() here but the
   //             trybots don't have Gtk 2.18.
   return GTK_WIDGET_HAS_GRAB(window_contents_);
+}
+
+InputMethod* WidgetGtk::GetInputMethodNative() {
+  return input_method_.get();
+}
+
+void WidgetGtk::ReplaceInputMethod(InputMethod* input_method) {
+  input_method_.reset(input_method);
+  if (input_method) {
+    input_method->set_delegate(this);
+    input_method->Init(GetWidget());
+  }
 }
 
 gfx::Rect WidgetGtk::GetWindowScreenBounds() const {
@@ -858,6 +887,7 @@ void WidgetGtk::Close() {
 
 void WidgetGtk::CloseNow() {
   if (widget_) {
+    input_method_.reset();
     gtk_widget_destroy(widget_);  // Triggers OnDestroy().
   }
 }
@@ -1195,6 +1225,10 @@ gboolean WidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
   if (type_ == TYPE_CHILD)
     return false;
 
+  // Only top-level Widget should have an InputMethod instance.
+  if (input_method_.get())
+    input_method_->OnFocus();
+
   // See description of got_initial_focus_in_ for details on this.
   if (!got_initial_focus_in_) {
     got_initial_focus_in_ = true;
@@ -1213,6 +1247,10 @@ gboolean WidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
   if (type_ == TYPE_CHILD)
     return false;
 
+  // Only top-level Widget should have an InputMethod instance.
+  if (input_method_.get())
+    input_method_->OnBlur();
+
   // The top-level window lost focus, store the focused view.
   GetFocusManager()->StoreFocusedView();
   return false;
@@ -1220,43 +1258,13 @@ gboolean WidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
 
 gboolean WidgetGtk::OnKeyEvent(GtkWidget* widget, GdkEventKey* event) {
   KeyEvent key(reinterpret_cast<NativeEvent>(event));
+  if (input_method_.get())
+    input_method_->DispatchKeyEvent(key);
+  else
+    DispatchKeyEventPostIME(key);
 
-  // Always reset |should_handle_menu_key_release_| unless we are handling a
-  // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
-  // be activated when handling a VKEY_MENU key release event which is preceded
-  // by an unhandled VKEY_MENU key press event. See also HandleKeyboardEvent().
-  if (key.key_code() != ui::VKEY_MENU || event->type != GDK_KEY_RELEASE)
-    should_handle_menu_key_release_ = false;
-
-  bool handled = false;
-
-  // Dispatch the key event to View hierarchy first.
-  handled = GetRootView()->ProcessKeyEvent(key);
-
-  // Dispatch the key event to native GtkWidget hierarchy.
-  // To prevent GtkWindow from handling the key event as a keybinding, we need
-  // to bypass GtkWindow's default key event handler and dispatch the event
-  // here.
-  if (!handled && GTK_IS_WINDOW(widget))
-    handled = gtk_window_propagate_key_event(GTK_WINDOW(widget), event);
-
-  // On Linux, in order to handle VKEY_MENU (Alt) accelerator key correctly and
-  // avoid issues like: http://crbug.com/40966 and http://crbug.com/49701, we
-  // should only send the key event to the focus manager if it's not handled by
-  // any View or native GtkWidget.
-  // The flow is different when the focus is in a RenderWidgetHostViewGtk, which
-  // always consumes the key event and send it back to us later by calling
-  // HandleKeyboardEvent() directly, if it's not handled by webkit.
-  if (!handled)
-    handled = HandleKeyboardEvent(event);
-
-  // Dispatch the key event for bindings processing.
-  if (!handled && GTK_IS_WINDOW(widget))
-    handled = gtk_bindings_activate_event(GTK_OBJECT(widget), event);
-
-  // Always return true for toplevel window to prevents GtkWindow's default key
-  // event handler.
-  return GTK_IS_WINDOW(widget) ? true : handled;
+  // Returns true to prevent GtkWindow's default key event handler.
+  return true;
 }
 
 gboolean WidgetGtk::OnQueryTooltip(GtkWidget* widget,
@@ -1332,6 +1340,45 @@ RootView* WidgetGtk::CreateRootView() {
 gfx::AcceleratedWidget WidgetGtk::GetAcceleratedWidget() {
   DCHECK(window_contents_ && window_contents_->window);
   return GDK_WINDOW_XID(window_contents_->window);
+}
+
+void WidgetGtk::DispatchKeyEventPostIME(const KeyEvent& key) {
+  // Always reset |should_handle_menu_key_release_| unless we are handling a
+  // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
+  // be activated when handling a VKEY_MENU key release event which is preceded
+  // by an unhandled VKEY_MENU key press event. See also HandleKeyboardEvent().
+  if (key.key_code() != ui::VKEY_MENU || key.type() != ui::ET_KEY_RELEASED)
+    should_handle_menu_key_release_ = false;
+
+  bool handled = false;
+
+  // Dispatch the key event to View hierarchy first.
+  handled = GetRootView()->ProcessKeyEvent(key);
+
+  if (key.key_code() == ui::VKEY_PROCESSKEY || handled)
+    return;
+
+  // Dispatch the key event to native GtkWidget hierarchy.
+  // To prevent GtkWindow from handling the key event as a keybinding, we need
+  // to bypass GtkWindow's default key event handler and dispatch the event
+  // here.
+  GdkEventKey* event = reinterpret_cast<GdkEventKey*>(key.native_event());
+  if (!handled && event && GTK_IS_WINDOW(widget_))
+    handled = gtk_window_propagate_key_event(GTK_WINDOW(widget_), event);
+
+  // On Linux, in order to handle VKEY_MENU (Alt) accelerator key correctly and
+  // avoid issues like: http://crbug.com/40966 and http://crbug.com/49701, we
+  // should only send the key event to the focus manager if it's not handled by
+  // any View or native GtkWidget.
+  // The flow is different when the focus is in a RenderWidgetHostViewGtk, which
+  // always consumes the key event and send it back to us later by calling
+  // HandleKeyboardEvent() directly, if it's not handled by webkit.
+  if (!handled)
+    handled = HandleKeyboardEvent(key);
+
+  // Dispatch the key event for bindings processing.
+  if (!handled && event && GTK_IS_WINDOW(widget_))
+    gtk_bindings_activate_event(GTK_OBJECT(widget_), event);
 }
 
 gboolean WidgetGtk::OnWindowPaint(GtkWidget* widget, GdkEventExpose* event) {

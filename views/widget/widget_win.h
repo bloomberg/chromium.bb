@@ -20,6 +20,7 @@
 #include "base/win/scoped_comptr.h"
 #include "ui/base/win/window_impl.h"
 #include "views/focus/focus_manager.h"
+#include "views/ime/input_method_delegate.h"
 #include "views/layout/layout_manager.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
@@ -81,7 +82,8 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 class WidgetWin : public ui::WindowImpl,
                   public Widget,
                   public NativeWidget,
-                  public MessageLoopForUI::Observer {
+                  public MessageLoopForUI::Observer,
+                  public internal::InputMethodDelegate {
  public:
   WidgetWin();
   virtual ~WidgetWin();
@@ -209,6 +211,8 @@ class WidgetWin : public ui::WindowImpl,
   virtual void SetMouseCapture() OVERRIDE;
   virtual void ReleaseMouseCapture() OVERRIDE;
   virtual bool HasMouseCapture() const OVERRIDE;
+  virtual InputMethod* GetInputMethodNative() OVERRIDE;
+  virtual void ReplaceInputMethod(InputMethod* input_method) OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
@@ -270,8 +274,18 @@ class WidgetWin : public ui::WindowImpl,
     // Key events.
     MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyDown)
     MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyUp)
-    MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyDown);
-    MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyUp);
+    MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyDown)
+    MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyUp)
+
+    // IME Events.
+    MESSAGE_HANDLER_EX(WM_IME_SETCONTEXT, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_IME_STARTCOMPOSITION, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_IME_COMPOSITION, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_IME_ENDCOMPOSITION, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_CHAR, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_SYSCHAR, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_DEADCHAR, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_SYSDEADCHAR, OnImeMessages)
 
     // This list is in _ALPHABETICAL_ order! OR I WILL HURT YOU.
     MSG_WM_ACTIVATE(OnActivate)
@@ -293,6 +307,7 @@ class WidgetWin : public ui::WindowImpl,
     MSG_WM_HSCROLL(OnHScroll)
     MSG_WM_INITMENU(OnInitMenu)
     MSG_WM_INITMENUPOPUP(OnInitMenuPopup)
+    MSG_WM_INPUTLANGCHANGE(OnInputLangChange)
     MSG_WM_KILLFOCUS(OnKillFocus)
     MSG_WM_MOVE(OnMove)
     MSG_WM_MOVING(OnMoving)
@@ -347,8 +362,10 @@ class WidgetWin : public ui::WindowImpl,
   virtual LRESULT OnGetObject(UINT uMsg, WPARAM w_param, LPARAM l_param);
   virtual void OnGetMinMaxInfo(MINMAXINFO* minmax_info);
   virtual void OnHScroll(int scroll_type, short position, HWND scrollbar);
+  virtual LRESULT OnImeMessages(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnInitMenu(HMENU menu);
   virtual void OnInitMenuPopup(HMENU menu, UINT position, BOOL is_system_menu);
+  virtual void OnInputLangChange(DWORD character_set, HKL input_language_id);
   virtual LRESULT OnKeyDown(UINT message, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnKeyUp(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnKillFocus(HWND focused_window);
@@ -431,6 +448,9 @@ class WidgetWin : public ui::WindowImpl,
   // Overridden from NativeWidget.
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
 
+  // Overridden from internal::InputMethodDelegate
+  virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
+
   // A delegate implementation that handles events received here.
   internal::NativeWidgetDelegate* delegate_;
 
@@ -504,6 +524,11 @@ class WidgetWin : public ui::WindowImpl,
   gfx::NativeCursor previous_cursor_;
 
   ViewProps props_;
+
+  scoped_ptr<InputMethod> input_method_;
+
+  // Indicates if the |input_method_| is an InputMethodWin instance.
+  bool is_input_method_win_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetWin);
 };

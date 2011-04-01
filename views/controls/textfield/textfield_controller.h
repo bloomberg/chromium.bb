@@ -17,7 +17,9 @@ class Textfield;
 // in the state of a text field.
 class TextfieldController {
  public:
-  // This method is called whenever the text in the field changes.
+  // This method is called whenever the text in the field is changed by the
+  // user. It won't be called if the text is changed by calling
+  // Textfield::SetText() or Textfield::AppendText().
   virtual void ContentsChanged(Textfield* sender,
                                const string16& new_contents) = 0;
 

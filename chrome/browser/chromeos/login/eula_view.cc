@@ -41,6 +41,7 @@
 #include "views/controls/button/native_button_gtk.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
+#include "views/events/event.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/layout/layout_manager.h"
@@ -533,8 +534,10 @@ void EulaView::NavigationStateChanged(const TabContents* contents,
 
 void EulaView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   views::Widget* widget = GetWidget();
-  if (widget && event.os_event && !event.skip_in_browser)
-    static_cast<views::WidgetGtk*>(widget)->HandleKeyboardEvent(event.os_event);
+  if (widget && event.os_event && !event.skip_in_browser) {
+    views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
+    static_cast<views::WidgetGtk*>(widget)->HandleKeyboardEvent(views_event);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

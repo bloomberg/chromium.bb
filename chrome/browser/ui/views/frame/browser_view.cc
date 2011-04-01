@@ -80,6 +80,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/single_split_view.h"
+#include "views/events/event.h"
 #include "views/focus/external_focus_tracker.h"
 #include "views/focus/view_storage.h"
 #include "views/layout/grid_layout.h"
@@ -1259,8 +1260,10 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 #if defined(OS_LINUX) && !defined(TOUCH_UI)
   views::Window* window = GetWidget()->GetWindow();
-  if (window && event.os_event && !event.skip_in_browser)
-    static_cast<views::WindowGtk*>(window)->HandleKeyboardEvent(event.os_event);
+  if (window && event.os_event && !event.skip_in_browser) {
+    views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
+    static_cast<views::WindowGtk*>(window)->HandleKeyboardEvent(views_event);
+  }
 #else
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
                                                         GetFocusManager());

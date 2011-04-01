@@ -17,6 +17,8 @@
 #include "content/common/native_web_keyboard_event.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "views/events/event.h"
+#include "views/ime/input_method.h"
+#include "views/widget/widget.h"
 #include "views/widget/root_view.h"
 
 namespace {
@@ -120,7 +122,10 @@ bool SendKeyboardEventInputFunction::RunImpl() {
   }
 
   views::KeyEvent event(type, prototype_event.key_code(), flags);
-  if (!root_view->ProcessKeyEvent(event)) {
+  views::InputMethod* ime = root_view->GetWidget()->GetInputMethod();
+  if (ime) {
+    ime->DispatchKeyEvent(event);
+  } else if (!root_view->ProcessKeyEvent(event)) {
     error_ = kKeyEventUnprocessedError;
     return false;
   }

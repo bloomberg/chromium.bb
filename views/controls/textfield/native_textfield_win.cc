@@ -366,6 +366,10 @@ void NativeTextfieldWin::HandleFocus() {
 void NativeTextfieldWin::HandleBlur() {
 }
 
+TextInputClient* NativeTextfieldWin::GetTextInputClient() {
+  return NULL;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldWin, ui::SimpleMenuModel::Delegate implementation:
 
@@ -602,8 +606,6 @@ LRESULT NativeTextfieldWin::OnImeEndComposition(UINT message,
   // this case, we need to update the find results when a composition is
   // finished or canceled.
   textfield_->SyncText();
-  if (textfield_->GetController())
-    textfield_->GetController()->ContentsChanged(textfield_, GetText());
   return DefWindowProc(message, wparam, lparam);
 }
 
@@ -1016,8 +1018,6 @@ void NativeTextfieldWin::OnAfterPossibleChange(bool should_redraw_text) {
     }
     textfield_->SyncText();
     UpdateAccessibleValue(textfield_->text());
-    if (textfield_->GetController())
-      textfield_->GetController()->ContentsChanged(textfield_, new_text);
 
     if (should_redraw_text) {
       CHARRANGE original_sel;

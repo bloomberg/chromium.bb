@@ -376,6 +376,10 @@ void NativeTextfieldGtk::HandleFocus() {
 void NativeTextfieldGtk::HandleBlur() {
 }
 
+TextInputClient* NativeTextfieldGtk::GetTextInputClient() {
+  return NULL;
+}
+
 // static
 gboolean NativeTextfieldGtk::OnKeyPressEventHandler(
     GtkWidget* widget,
@@ -405,18 +409,16 @@ gboolean NativeTextfieldGtk::OnActivate() {
   if (!event || event->type != GDK_KEY_PRESS)
     return false;
 
-  GdkEventKey* key_event = reinterpret_cast<GdkEventKey*>(event);
+  KeyEvent views_key_event(event);
   gboolean handled = false;
 
   TextfieldController* controller = textfield_->GetController();
-  if (controller) {
-    KeyEvent views_key_event(event);
+  if (controller)
     handled = controller->HandleKeyEvent(textfield_, views_key_event);
-  }
 
   WidgetGtk* widget = static_cast<WidgetGtk*>(GetWidget());
   if (!handled && widget)
-    handled = widget->HandleKeyboardEvent(key_event);
+    handled = widget->HandleKeyboardEvent(views_key_event);
 
   return handled;
 }
@@ -430,9 +432,6 @@ gboolean NativeTextfieldGtk::OnChangedHandler(
 
 gboolean NativeTextfieldGtk::OnChanged() {
   textfield_->SyncText();
-  TextfieldController* controller = textfield_->GetController();
-  if (controller)
-    controller->ContentsChanged(textfield_, GetText());
   textfield_->GetWidget()->NotifyAccessibilityEvent(
       textfield_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
   return false;
