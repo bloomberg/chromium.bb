@@ -165,20 +165,21 @@ bool AutofillDataTypeController::enabled() {
   return true;
 }
 
-syncable::ModelType AutofillDataTypeController::type() {
+syncable::ModelType AutofillDataTypeController::type() const {
   return syncable::AUTOFILL;
 }
 
-browser_sync::ModelSafeGroup AutofillDataTypeController::model_safe_group() {
+browser_sync::ModelSafeGroup AutofillDataTypeController::model_safe_group()
+    const {
   return browser_sync::GROUP_DB;
 }
 
-const char* AutofillDataTypeController::name() const {
+std::string AutofillDataTypeController::name() const {
   // For logging only.
   return "autofill";
 }
 
-DataTypeController::State AutofillDataTypeController::state() {
+DataTypeController::State AutofillDataTypeController::state() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return state_;
 }

@@ -41,13 +41,13 @@ class PasswordDataTypeController : public DataTypeController {
 
   virtual bool enabled();
 
-  virtual syncable::ModelType type();
+  virtual syncable::ModelType type() const;
 
-  virtual browser_sync::ModelSafeGroup model_safe_group();
+  virtual browser_sync::ModelSafeGroup model_safe_group() const;
 
-  virtual const char* name() const;
+  virtual std::string name() const;
 
-  virtual State state();
+  virtual State state() const;
 
   // UnrecoverableHandler implementation
   virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
