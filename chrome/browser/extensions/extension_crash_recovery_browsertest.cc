@@ -134,7 +134,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, Basic) {
             GetExtensionService()->terminated_extensions()->size());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CloseAndReload) {
+// Crahes on windows. http://crbug.com/78126
+#if defined(OS_WIN)
+#define MAYBE_CloseAndReload DISABLED_CloseAndReload
+#else
+#define MAYBE_CloseAndReload CloseAndReload
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, MAYBE_CloseAndReload) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   const size_t crash_size_before =
       GetExtensionService()->terminated_extensions()->size();
