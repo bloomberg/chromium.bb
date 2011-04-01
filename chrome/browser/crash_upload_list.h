@@ -32,6 +32,10 @@ class CrashUploadList : public base::RefCountedThreadSafe<CrashUploadList> {
     virtual ~Delegate() {}
   };
 
+  // Static factory method that creates the platform-specific implementation
+  // of the crash upload list with the given callback delegate.
+  static CrashUploadList* Create(Delegate* delegate);
+
   // Creates a new crash upload list with the given callback delegate.
   explicit CrashUploadList(Delegate* delegate);
 
@@ -49,17 +53,28 @@ class CrashUploadList : public base::RefCountedThreadSafe<CrashUploadList> {
   void GetUploadedCrashes(unsigned int max_count,
                           std::vector<CrashInfo>* crashes);
 
- private:
-  friend class base::RefCountedThreadSafe<CrashUploadList>;
+ protected:
   virtual ~CrashUploadList();
 
-  // Reads the upload log and stores the lines in log_entries_.
-  void LoadUploadLog();
+  // Reads the upload log and stores the entries in crashes_.
+  virtual void LoadCrashList();
+
+  // Returns a reference to the list of crashes.
+  std::vector<CrashInfo>& crashes();
+
+ private:
+  friend class base::RefCountedThreadSafe<CrashUploadList>;
+
+  // Manages the background thread work for LoadCrashListAsynchronously().
+  void LoadCrashListAndInformDelegateOfCompletion();
 
   // Calls the delegate's callback method, if there is a delegate.
   void InformDelegateOfCompletion();
 
-  std::vector<std::string> log_entries_;
+  // Parses crash log lines, converting them to CrashInfo entries.
+  void ParseLogEntries(const std::vector<std::string>& log_entries);
+
+  std::vector<CrashInfo> crashes_;
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashUploadList);

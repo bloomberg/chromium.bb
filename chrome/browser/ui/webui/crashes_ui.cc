@@ -127,7 +127,7 @@ class CrashesDOMHandler : public WebUIMessageHandler,
 
 CrashesDOMHandler::CrashesDOMHandler()
     : list_available_(false), js_request_pending_(false) {
-  upload_list_ = new CrashUploadList(this);
+  upload_list_ = CrashUploadList::Create(this);
 }
 
 CrashesDOMHandler::~CrashesDOMHandler() {

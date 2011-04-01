@@ -746,6 +746,8 @@
         'browser/cookies_tree_model.h',
         'browser/crash_upload_list.cc',
         'browser/crash_upload_list.h',
+        'browser/crash_upload_list_win.cc',
+        'browser/crash_upload_list_win.h',
         'browser/custom_home_pages_table_model.cc',
         'browser/custom_home_pages_table_model.h',
         'browser/custom_handlers/protocol_handler.cc',

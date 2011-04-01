@@ -9,6 +9,9 @@
 #include "base/file_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
+#if defined(OS_WIN)
+#include "chrome/browser/crash_upload_list_win.h"
+#endif
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
 
@@ -17,20 +20,37 @@ CrashUploadList::CrashInfo::CrashInfo(const std::string& c, const base::Time& t)
 
 CrashUploadList::CrashInfo::~CrashInfo() {}
 
+// static
+CrashUploadList* CrashUploadList::Create(Delegate* delegate) {
+#if defined(OS_WIN)
+  return new CrashUploadListWin(delegate);
+#else
+  return new CrashUploadList(delegate);
+#endif
+}
+
 CrashUploadList::CrashUploadList(Delegate* delegate) : delegate_(delegate) {}
 
 CrashUploadList::~CrashUploadList() {}
 
 void CrashUploadList::LoadCrashListAsynchronously() {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &CrashUploadList::LoadUploadLog));
+      NewRunnableMethod(this,
+        &CrashUploadList::LoadCrashListAndInformDelegateOfCompletion));
 }
 
 void CrashUploadList::ClearDelegate() {
   delegate_ = NULL;
 }
 
-void CrashUploadList::LoadUploadLog() {
+
+void CrashUploadList::LoadCrashListAndInformDelegateOfCompletion() {
+  LoadCrashList();
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &CrashUploadList::InformDelegateOfCompletion));
+}
+
+void CrashUploadList::LoadCrashList() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   FilePath crash_dir_path;
   PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir_path);
@@ -38,10 +58,27 @@ void CrashUploadList::LoadUploadLog() {
   if (file_util::PathExists(upload_log_path)) {
     std::string contents;
     file_util::ReadFileToString(upload_log_path, &contents);
-    base::SplitStringAlongWhitespace(contents, &log_entries_);
+    std::vector<std::string> log_entries;
+    base::SplitStringAlongWhitespace(contents, &log_entries);
+    ParseLogEntries(log_entries);
   }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &CrashUploadList::InformDelegateOfCompletion));
+}
+
+void CrashUploadList::ParseLogEntries(
+    const std::vector<std::string>& log_entries) {
+  std::vector<std::string>::const_reverse_iterator i;
+  for (i = log_entries.rbegin(); i != log_entries.rend(); ++i) {
+    std::vector<std::string> components;
+    base::SplitString(*i, ',', &components);
+    // Skip any blank (or corrupted) lines.
+    if (components.size() != 2)
+      continue;
+    double seconds_since_epoch;
+    if (!base::StringToDouble(components[0], &seconds_since_epoch))
+      continue;
+    CrashInfo info(components[1], base::Time::FromDoubleT(seconds_since_epoch));
+    crashes_.push_back(info);
+  }
 }
 
 void CrashUploadList::InformDelegateOfCompletion() {
@@ -52,17 +89,11 @@ void CrashUploadList::InformDelegateOfCompletion() {
 
 void CrashUploadList::GetUploadedCrashes(unsigned int max_count,
                                          std::vector<CrashInfo>* crashes) {
-  std::vector<std::string>::reverse_iterator i;
-  for (i = log_entries_.rbegin(); i != log_entries_.rend(); ++i) {
-    std::vector<std::string> components;
-    base::SplitString(*i, ',', &components);
-    // Skip any blank (or corrupted) lines.
-    if (components.size() != 2)
-      continue;
-    double seconds_since_epoch;
-    if (!base::StringToDouble(components[0], &seconds_since_epoch))
-      continue;
-    CrashInfo info(components[1], base::Time::FromDoubleT(seconds_since_epoch));
-    crashes->push_back(info);
-  }
+  std::copy(crashes_.begin(),
+            crashes_.begin() + std::min<size_t>(crashes_.size(), max_count),
+            std::back_inserter(*crashes));
+}
+
+std::vector<CrashUploadList::CrashInfo>& CrashUploadList::crashes() {
+  return crashes_;
 }
