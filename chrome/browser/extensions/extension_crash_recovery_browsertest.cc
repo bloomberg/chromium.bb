@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/process_util.h"
-#include "chrome/browser/extensions/crashed_extension_infobar.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/notifications/balloon_host.h"
+#include "chrome/browser/notifications/notification_delegate.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/ui_test_utils.h"
@@ -28,23 +30,33 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
     return browser()->profile()->GetExtensionProcessManager();
   }
 
-  ConfirmInfoBarDelegate* GetInfoBarDelegate(size_t index) {
-    TabContents* current_tab = browser()->GetSelectedTabContents();
-    EXPECT_LT(index, current_tab->infobar_count());
-    return current_tab->GetInfoBarDelegateAt(index)->AsConfirmInfoBarDelegate();
+  Balloon* GetNotificationDelegate(size_t index) {
+    NotificationUIManager* manager =
+        g_browser_process->notification_ui_manager();
+    BalloonCollection::Balloons balloons =
+        manager->balloon_collection()->GetActiveBalloons();
+    return balloons.at(index);
   }
 
-  void AcceptInfoBar(size_t index) {
-    ConfirmInfoBarDelegate* infobar = GetInfoBarDelegate(index);
-    ASSERT_TRUE(infobar);
-    infobar->Accept();
+  void AcceptNotification(size_t index) {
+    Balloon* balloon = GetNotificationDelegate(index);
+    ASSERT_TRUE(balloon);
+    balloon->OnClick();
     WaitForExtensionLoad();
   }
 
-  void CancelInfoBar(size_t index) {
-    ConfirmInfoBarDelegate* infobar = GetInfoBarDelegate(index);
-    ASSERT_TRUE(infobar);
-    infobar->Cancel();
+  void CancelNotification(size_t index) {
+    Balloon* balloon = GetNotificationDelegate(index);
+    ASSERT_TRUE(balloon);
+    balloon->view()->GetHost()->Shutdown();
+  }
+
+  size_t CountBalloons() {
+    NotificationUIManager* manager =
+        g_browser_process->notification_ui_manager();
+    BalloonCollection::Balloons balloons =
+        manager->balloon_collection()->GetActiveBalloons();
+    return balloons.size();
   }
 
   void CrashExtension(size_t index) {
@@ -114,9 +126,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, Basic) {
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
   ASSERT_EQ(crash_size_before + 1,
             GetExtensionService()->terminated_extensions()->size());
-  AcceptInfoBar(0);
+  AcceptNotification(0);
 
-  SCOPED_TRACE("after clicking the infobar");
+  SCOPED_TRACE("after clicking the balloon");
   CheckExtensionConsistency(size_before);
   ASSERT_EQ(crash_size_before,
             GetExtensionService()->terminated_extensions()->size());
@@ -128,11 +140,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CloseAndReload) {
       GetExtensionService()->terminated_extensions()->size();
   LoadTestExtension();
   CrashExtension(size_before);
+
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
   ASSERT_EQ(crash_size_before + 1,
             GetExtensionService()->terminated_extensions()->size());
 
-  CancelInfoBar(0);
+  CancelNotification(0);
   ReloadExtension(first_extension_id_);
 
   SCOPED_TRACE("after reloading");
@@ -155,9 +168,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ReloadIndependently) {
   TabContents* current_tab = browser()->GetSelectedTabContents();
   ASSERT_TRUE(current_tab);
 
-  // The infobar should automatically hide after the extension is successfully
+  // The balloon should automatically hide after the extension is successfully
   // reloaded.
-  ASSERT_EQ(0U, current_tab->infobar_count());
+  ASSERT_EQ(0U, CountBalloons());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
@@ -169,23 +182,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   TabContents* original_tab = browser()->GetSelectedTabContents();
   ASSERT_TRUE(original_tab);
-  ASSERT_EQ(1U, original_tab->infobar_count());
+  ASSERT_EQ(1U, CountBalloons());
 
-  // Open a new tab so the info bar will not be in the current tab.
+  // Open a new tab, but the balloon will still be there.
   browser()->NewTab();
   TabContents* new_current_tab = browser()->GetSelectedTabContents();
   ASSERT_TRUE(new_current_tab);
   ASSERT_NE(new_current_tab, original_tab);
-  ASSERT_EQ(0U, new_current_tab->infobar_count());
+  ASSERT_EQ(1U, CountBalloons());
 
   ReloadExtension(first_extension_id_);
 
   SCOPED_TRACE("after reloading");
   CheckExtensionConsistency(size_before);
 
-  // The infobar should automatically hide after the extension is successfully
+  // The balloon should automatically hide after the extension is successfully
   // reloaded.
-  ASSERT_EQ(0U, original_tab->infobar_count());
+  ASSERT_EQ(0U, CountBalloons());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
@@ -197,13 +210,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   TabContents* current_tab = browser()->GetSelectedTabContents();
   ASSERT_TRUE(current_tab);
-  ASSERT_EQ(1U, current_tab->infobar_count());
+  ASSERT_EQ(1U, CountBalloons());
 
   // Navigate to another page.
   ui_test_utils::NavigateToURL(browser(),
       ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                 FilePath(FILE_PATH_LITERAL("title1.html"))));
-  ASSERT_EQ(1U, current_tab->infobar_count());
+  ASSERT_EQ(1U, CountBalloons());
 
   ReloadExtension(first_extension_id_);
 
@@ -212,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   // The infobar should automatically hide after the extension is successfully
   // reloaded.
-  ASSERT_EQ(0U, current_tab->infobar_count());
+  ASSERT_EQ(0U, CountBalloons());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
@@ -228,11 +241,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   TabContents* current_tab = browser()->GetSelectedTabContents();
   ASSERT_TRUE(current_tab);
-  ASSERT_EQ(1U, current_tab->infobar_count());
+  ASSERT_EQ(1U, CountBalloons());
 
   TabContents* current_tab2 = browser2->GetSelectedTabContents();
   ASSERT_TRUE(current_tab2);
-  ASSERT_EQ(1U, current_tab2->infobar_count());
+  ASSERT_EQ(1U, CountBalloons());
 
   ReloadExtension(first_extension_id_);
 
@@ -241,8 +254,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   // Both infobars should automatically hide after the extension is successfully
   // reloaded.
-  ASSERT_EQ(0U, current_tab->infobar_count());
-  ASSERT_EQ(0U, current_tab2->infobar_count());
+  ASSERT_EQ(0U, CountBalloons());
+  ASSERT_EQ(0U, CountBalloons());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
@@ -258,11 +271,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   TabContents* current_tab = browser()->GetSelectedTabContents();
   ASSERT_TRUE(current_tab);
-  ASSERT_EQ(1U, current_tab->infobar_count());
+  ASSERT_EQ(1U, CountBalloons());
 
   TabContents* current_tab2 = browser2->GetSelectedTabContents();
   ASSERT_TRUE(current_tab2);
-  ASSERT_EQ(1U, current_tab2->infobar_count());
+  ASSERT_EQ(1U, CountBalloons());
 
   // Move second window into first browser so there will be multiple tabs
   // with the info bar for the same extension in one browser.
@@ -270,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
       browser2->tabstrip_model()->DetachTabContentsAt(0);
   browser()->tabstrip_model()->AppendTabContents(contents, true);
   current_tab2 = browser()->GetSelectedTabContents();
-  ASSERT_EQ(1U, current_tab2->infobar_count());
+  ASSERT_EQ(1U, CountBalloons());
   ASSERT_NE(current_tab2, current_tab);
 
   ReloadExtension(first_extension_id_);
@@ -280,10 +293,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   // Both infobars should automatically hide after the extension is successfully
   // reloaded.
-  ASSERT_EQ(0U, current_tab2->infobar_count());
+  ASSERT_EQ(0U, CountBalloons());
   browser()->SelectPreviousTab();
   ASSERT_EQ(current_tab, browser()->GetSelectedTabContents());
-  ASSERT_EQ(0U, current_tab->infobar_count());
+  ASSERT_EQ(0U, CountBalloons());
 }
 
 // Make sure that when we don't do anything about the crashed extension
@@ -302,9 +315,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsCrashFirst) {
   LoadSecondExtension();
   CrashExtension(size_before);
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
-  AcceptInfoBar(0);
+  AcceptNotification(0);
 
-  SCOPED_TRACE("after clicking the infobar");
+  SCOPED_TRACE("after clicking the balloon");
   CheckExtensionConsistency(size_before);
   CheckExtensionConsistency(size_before + 1);
 }
@@ -315,9 +328,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsCrashSecond) {
   LoadSecondExtension();
   CrashExtension(size_before + 1);
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
-  AcceptInfoBar(0);
+  AcceptNotification(0);
 
-  SCOPED_TRACE("after clicking the infobar");
+  SCOPED_TRACE("after clicking the balloon");
   CheckExtensionConsistency(size_before);
   CheckExtensionConsistency(size_before + 1);
 }
@@ -339,14 +352,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
             GetExtensionService()->terminated_extensions()->size());
 
   {
-    SCOPED_TRACE("first infobar");
-    AcceptInfoBar(0);
+    SCOPED_TRACE("first balloon");
+    AcceptNotification(0);
     CheckExtensionConsistency(size_before);
   }
 
   {
-    SCOPED_TRACE("second infobar");
-    AcceptInfoBar(0);
+    SCOPED_TRACE("second balloon");
+    AcceptNotification(0);
     CheckExtensionConsistency(size_before);
     CheckExtensionConsistency(size_before + 1);
   }
@@ -364,14 +377,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 
   {
-    SCOPED_TRACE("first infobar");
-    AcceptInfoBar(0);
+    SCOPED_TRACE("first balloon");
+    AcceptNotification(0);
     CheckExtensionConsistency(size_before);
   }
 
   {
-    SCOPED_TRACE("second infobar");
-    AcceptInfoBar(0);
+    SCOPED_TRACE("second balloon");
+    AcceptNotification(0);
     CheckExtensionConsistency(size_before);
     CheckExtensionConsistency(size_before + 1);
   }
@@ -400,10 +413,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsIgnoreFirst) {
   CrashExtension(size_before);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 
-  CancelInfoBar(0);
-  AcceptInfoBar(1);
+  CancelNotification(0);
+  // Cancelling the balloon at 0 will close the balloon, and the balloon in
+  // index 1 will move into index 0.
+  AcceptNotification(0);
 
-  SCOPED_TRACE("infobars done");
+  SCOPED_TRACE("balloons done");
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
   CheckExtensionConsistency(size_before);
 }
@@ -423,16 +438,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
     TabContents* current_tab = browser()->GetSelectedTabContents();
     ASSERT_TRUE(current_tab);
     // At the beginning we should have one infobar displayed for each extension.
-    ASSERT_EQ(2U, current_tab->infobar_count());
+    ASSERT_EQ(2U, CountBalloons());
     ReloadExtension(first_extension_id_);
     // One of the infobars should hide after the extension is reloaded.
-    ASSERT_EQ(1U, current_tab->infobar_count());
+    ASSERT_EQ(1U, CountBalloons());
     CheckExtensionConsistency(size_before);
   }
 
   {
-    SCOPED_TRACE("second: infobar");
-    AcceptInfoBar(0);
+    SCOPED_TRACE("second: balloon");
+    AcceptNotification(0);
     CheckExtensionConsistency(size_before);
     CheckExtensionConsistency(size_before + 1);
   }
@@ -449,13 +464,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUninstall) {
   ASSERT_EQ(crash_size_before + 1,
             GetExtensionService()->terminated_extensions()->size());
 
+  ASSERT_EQ(1U, CountBalloons());
   UninstallExtension(first_extension_id_);
+  MessageLoop::current()->RunAllPending();
 
   SCOPED_TRACE("after uninstalling");
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
   ASSERT_EQ(crash_size_before,
             GetExtensionService()->terminated_extensions()->size());
-  ASSERT_EQ(0U, browser()->GetSelectedTabContents()->infobar_count());
+  ASSERT_EQ(0U, CountBalloons());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUnloadAll) {
