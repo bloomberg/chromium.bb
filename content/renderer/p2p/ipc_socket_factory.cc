@@ -8,36 +8,10 @@
 #include "base/message_loop_proxy.h"
 #include "content/renderer/p2p/socket_client.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
+#include "jingle/glue/utils.h"
 #include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 
 namespace {
-
-const size_t kIPv4AddressSize = 4;
-
-// Chromium and libjingle represent socket addresses differently. The
-// following two functions are used to convert addresses from one
-// representation to another.
-bool ChromeToLibjingleSocketAddress(const net::IPEndPoint& address_chrome,
-                                    talk_base::SocketAddress* address_lj) {
-  if (address_chrome.GetFamily() != AF_INET) {
-    LOG(ERROR) << "Only IPv4 addresses are supported.";
-    return false;
-  }
-  uint32 ip_as_int = ntohl(*reinterpret_cast<const uint32*>(
-      &address_chrome.address()[0]));
-  *address_lj =  talk_base::SocketAddress(ip_as_int, address_chrome.port());
-  return true;
-}
-
-bool LibjingleToIPEndPoint(const talk_base::SocketAddress& address_lj,
-                           net::IPEndPoint* address_chrome) {
-  uint32 ip = htonl(address_lj.ip());
-  net::IPAddressNumber address;
-  address.resize(kIPv4AddressSize);
-  memcpy(&address[0], &ip, kIPv4AddressSize);
-  *address_chrome = net::IPEndPoint(address, address_lj.port());
-  return true;
-}
 
 // IpcPacketSocket implements talk_base::AsyncPacketSocket interface
 // using P2PSocketClient that works over IPC-channel. It must be used
@@ -126,7 +100,7 @@ bool IpcPacketSocket::Init(P2PSocketType type, P2PSocketClient* client,
   state_ = STATE_OPENING;
 
   net::IPEndPoint address_chrome;
-  if (!LibjingleToIPEndPoint(address, &address_chrome)) {
+  if (!jingle_glue::SocketAddressToIPEndPoint(address, &address_chrome)) {
     return false;
   }
 
@@ -179,7 +153,7 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
   std::vector<char> data_vector(data_char, data_char + data_size);
 
   net::IPEndPoint address_chrome;
-  if (!LibjingleToIPEndPoint(address, &address_chrome)) {
+  if (!jingle_glue::SocketAddressToIPEndPoint(address, &address_chrome)) {
     // Just drop the packet if we failed to convert the address.
     return 0;
   }
@@ -248,7 +222,7 @@ void IpcPacketSocket::SetError(int error) {
 void IpcPacketSocket::OnOpen(const net::IPEndPoint& address) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 
-  if (!ChromeToLibjingleSocketAddress(address, &local_address_)) {
+  if (!jingle_glue::IPEndPointToSocketAddress(address, &local_address_)) {
     // Always expect correct IPv4 address to be allocated.
     NOTREACHED();
   }
@@ -268,7 +242,7 @@ void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 
   talk_base::SocketAddress address_lj;
-  if (!ChromeToLibjingleSocketAddress(address, &address_lj)) {
+  if (!jingle_glue::IPEndPointToSocketAddress(address, &address_lj)) {
     // We should always be able to convert address here because we
     // don't expect IPv6 address on IPv4 connections.
     NOTREACHED();
@@ -307,7 +281,7 @@ talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateUdpSocket(
 talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateServerTcpSocket(
     const talk_base::SocketAddress& local_address, int min_port, int max_port,
     bool listen, bool ssl) {
-  // TODO(sergeyu): Implement this;
+  // TODO(sergeyu): Implement this.
   NOTIMPLEMENTED();
   return NULL;
 }

@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -18,6 +18,8 @@
         'glue/stream_socket_adapter.h',
         'glue/thread_wrapper.cc',
         'glue/thread_wrapper.h',
+        'glue/utils.cc',
+        'glue/utils.h',
       ],
       'dependencies': [
         '../base/base.gyp:base',
@@ -123,6 +125,18 @@
       ],
     },
     {
+      'target_name': 'jingle_glue_test_util',
+      'type': '<(library)',
+      'sources': [
+        'glue/fake_socket_factory.cc',
+        'glue/fake_socket_factory.h',
+      ],
+      'dependencies': [
+        'jingle_glue',
+        '../base/base.gyp:base',
+      ],
+    },
+    {
       'target_name': 'jingle_unittests',
       'type': 'executable',
       'sources': [
@@ -149,6 +163,7 @@
       ],
       'dependencies': [
         'jingle_glue',
+        'jingle_glue_test_util',
         'notifier',
         'notifier_test_util',
         '../base/base.gyp:base',
