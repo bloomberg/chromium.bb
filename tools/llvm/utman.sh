@@ -1,7 +1,7 @@
 #!/bin/bash
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
 #@                 Untrusted Toolchain Manager
 #@-------------------------------------------------------------------
@@ -155,11 +155,11 @@ SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
 
 # Which toolchain to use for each arch.
 SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
-SBTC_BUILD_WITH_NNACL="x8664"
+SBTC_BUILD_WITH_NNACL=""
 
 # Current milestones in each repo
 # hg-update-stable  uses these
-readonly LLVM_REV=8a09fe87b3a6
+readonly LLVM_REV=eda43d7b2ccb
 readonly LLVM_GCC_REV=91c7363e1296
 readonly NEWLIB_REV=eb9c4bb9ccd7
 readonly BINUTILS_REV=499ffe65010c
