@@ -863,7 +863,6 @@ class RenderView : public RenderWidget,
   void OnScrollFocusedEditableNodeIntoView();
   void OnSetPageEncoding(const std::string& encoding_name);
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
-  void OnSetupDevToolsClient();
 #if defined(OS_MACOSX)
   void OnSetWindowVisibility(bool visible);
 #endif
@@ -908,10 +907,6 @@ class RenderView : public RenderWidget,
 
   // Resets the |content_blocked_| array.
   void ClearBlockedContentSettings();
-
-  // Creates DevToolsClient and sets up JavaScript bindings for developer tools
-  // UI that is going to be hosted by this RenderView.
-  void CreateDevToolsClient();
 
   // Create a new NPAPI plugin.
   WebKit::WebPlugin* CreateNPAPIPlugin(WebKit::WebFrame* frame,
@@ -1229,13 +1224,6 @@ class RenderView : public RenderWidget,
   // The next group of objects all implement RenderViewObserver, so are deleted
   // along with the RenderView automatically.  This is why we just store weak
   // references.
-
-  // Provides access to this renderer from the remote Inspector UI.
-  DevToolsAgent* devtools_agent_;
-
-  // DevToolsClient for renderer hosting developer tools UI. It's NULL for other
-  // render views.
-  DevToolsClient* devtools_client_;
 
   // Holds a reference to the service which provides desktop notifications.
   NotificationProvider* notification_provider_;

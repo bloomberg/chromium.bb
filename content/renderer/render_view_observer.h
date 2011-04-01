@@ -14,6 +14,7 @@ class RenderView;
 namespace WebKit {
 class WebDataSource;
 class WebFrame;
+class WebFormElement;
 class WebMouseEvent;
 struct WebURLError;
 }
@@ -40,6 +41,8 @@ class RenderViewObserver : public IPC::Channel::Listener,
   virtual void DidCreateDocumentElement(WebKit::WebFrame* frame) {}
   virtual void FrameDetached(WebKit::WebFrame* frame) {}
   virtual void FrameWillClose(WebKit::WebFrame* frame) {}
+  virtual void WillSubmitForm(WebKit::WebFrame* frame,
+                              const WebKit::WebFormElement& form) {}
   virtual void DidCreateDataSource(WebKit::WebFrame* frame,
                                    WebKit::WebDataSource* ds) {}
 

@@ -29,6 +29,7 @@ using WebKit::WebInputElement;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebNode;
 using WebKit::WebString;
+using webkit_glue::FormData;
 
 namespace {
 
@@ -52,6 +53,7 @@ AutofillAgent::AutofillAgent(
       suggestions_clear_index_(-1),
       suggestions_options_index_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  render_view->webview()->setAutoFillClient(this);
 }
 
 AutofillAgent::~AutofillAgent() {}
@@ -79,6 +81,19 @@ void AutofillAgent::FrameDetached(WebKit::WebFrame* frame) {
 
 void AutofillAgent::FrameWillClose(WebKit::WebFrame* frame) {
   form_manager_.ResetFrame(frame);
+}
+
+void AutofillAgent::WillSubmitForm(WebFrame* frame,
+                                   const WebFormElement& form) {
+  FormData form_data;
+  if (FormManager::WebFormElementToFormData(
+          form,
+          FormManager::REQUIRE_AUTOCOMPLETE,
+          static_cast<FormManager::ExtractMask>(
+              FormManager::EXTRACT_VALUE | FormManager::EXTRACT_OPTION_TEXT),
+          &form_data)) {
+    Send(new AutofillHostMsg_FormSubmitted(routing_id(), form_data));
+  }
 }
 
 void AutofillAgent::FrameTranslated(WebKit::WebFrame* frame) {

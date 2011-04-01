@@ -69,6 +69,8 @@ class AutofillAgent : public RenderViewObserver,
   virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame);
   virtual void FrameDetached(WebKit::WebFrame* frame);
   virtual void FrameWillClose(WebKit::WebFrame* frame);
+  virtual void WillSubmitForm(WebKit::WebFrame* frame,
+                              const WebKit::WebFormElement& form);
   virtual void FrameTranslated(WebKit::WebFrame* frame);
 
   // PageClickListener implementation:

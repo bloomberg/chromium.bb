@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,7 @@ class DevToolsAgent : public RenderViewObserver,
   void OnInspectElement(int x, int y);
   void OnSetApuAgentEnabled(bool enabled);
   void OnNavigate();
+  void OnSetupDevToolsClient();
 
   static std::map<int, DevToolsAgent*> agent_for_routing_id_;
 

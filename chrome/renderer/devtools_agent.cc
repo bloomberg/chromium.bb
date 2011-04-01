@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/renderer/devtools_agent_filter.h"
+#include "chrome/renderer/devtools_client.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
@@ -58,6 +59,8 @@ DevToolsAgent::DevToolsAgent(RenderView* render_view)
 
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   expose_v8_debugger_protocol_ = cmd->HasSwitch(switches::kRemoteShellPort);
+
+  render_view->webview()->setDevToolsAgentClient(this);
 }
 
 DevToolsAgent::~DevToolsAgent() {
@@ -74,6 +77,7 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
                         OnDispatchOnInspectorBackend)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_InspectElement, OnInspectElement)
+    IPC_MESSAGE_HANDLER(DevToolsMsg_SetupDevToolsClient, OnSetupDevToolsClient)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -183,6 +187,10 @@ void DevToolsAgent::OnNavigate() {
   if (web_agent) {
     web_agent->didNavigate();
   }
+}
+
+void DevToolsAgent::OnSetupDevToolsClient() {
+  new DevToolsClient(render_view());
 }
 
 WebDevToolsAgent* DevToolsAgent::GetWebAgent() {

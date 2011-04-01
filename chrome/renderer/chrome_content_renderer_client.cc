@@ -15,7 +15,11 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/renderer/autofill/autofill_agent.h"
+#include "chrome/renderer/autofill/form_manager.h"
+#include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/blocked_plugin.h"
+#include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
@@ -24,6 +28,10 @@
 #include "chrome/renderer/extensions/extension_resource_request_policy.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/localized_error.h"
+#include "chrome/renderer/page_click_tracker.h"
+#include "chrome/renderer/safe_browsing/malware_dom_details.h"
+#include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
+#include "chrome/renderer/translate_helper.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
@@ -41,6 +49,9 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 
+using autofill::AutofillAgent;
+using autofill::FormManager;
+using autofill::PasswordAutofillManager;
 using WebKit::WebFrame;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
@@ -77,6 +88,31 @@ static bool CrossesExtensionExtents(WebFrame* frame, const GURL& new_url) {
 namespace chrome {
 
 void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
+  new DevToolsAgent(render_view);
+
+  PasswordAutofillManager* password_autofill_manager =
+      new PasswordAutofillManager(render_view);
+  AutofillAgent* autofill_agent = new AutofillAgent(render_view,
+                                                    password_autofill_manager);
+  PageClickTracker* page_click_tracker = new PageClickTracker(render_view);
+  // Note that the order of insertion of the listeners is important.
+  // The password_autocomplete_manager takes the first shot at processing the
+  // notification and can stop the propagation.
+  page_click_tracker->AddListener(password_autofill_manager);
+  page_click_tracker->AddListener(autofill_agent);
+
+  new TranslateHelper(render_view);
+
+#ifndef OS_CHROMEOS
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableClientSidePhishingDetection)) {
+    new safe_browsing::PhishingClassifierDelegate(render_view, NULL);
+  }
+#endif
+
+  // Observer for Malware DOM details messages.
+  new safe_browsing::MalwareDOMDetails(render_view);
+
   new ExtensionHelper(render_view);
 }
 

@@ -27,7 +27,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/devtools_messages.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pepper_plugin_registry.h"
@@ -37,21 +36,13 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
 #include "chrome/renderer/about_handler.h"
-#include "chrome/renderer/autofill/autofill_agent.h"
-#include "chrome/renderer/autofill/form_manager.h"
-#include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
-#include "chrome/renderer/devtools_agent.h"
-#include "chrome/renderer/devtools_client.h"
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/localized_error.h"
-#include "chrome/renderer/page_click_tracker.h"
 #include "chrome/renderer/page_load_histograms.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
-#include "chrome/renderer/safe_browsing/malware_dom_details.h"
-#include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/searchbox.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
@@ -107,7 +98,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
@@ -206,7 +196,6 @@ using WebKit::WebContextMenuData;
 using WebKit::WebCookieJar;
 using WebKit::WebData;
 using WebKit::WebDataSource;
-using WebKit::WebDevToolsAgent;
 using WebKit::WebDocument;
 using WebKit::WebDragData;
 using WebKit::WebDragOperation;
@@ -263,13 +252,9 @@ using WebKit::WebWindowFeatures;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
 using appcache::WebApplicationCacheHostImpl;
-using autofill::AutofillAgent;
-using autofill::FormManager;
-using autofill::PasswordAutofillManager;
 using base::Time;
 using base::TimeDelta;
 using webkit_glue::AltErrorPageResourceFetcher;
-using webkit_glue::FormData;
 using webkit_glue::FormField;
 using webkit_glue::ImageResourceFetcher;
 using webkit_glue::PasswordForm;
@@ -511,7 +496,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       ALLOW_THIS_IN_INITIALIZER_LIST(page_info_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(accessibility_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
-      devtools_client_(NULL),
       geolocation_dispatcher_(NULL),
       speech_input_dispatcher_(NULL),
       device_orientation_dispatcher_(NULL),
@@ -541,15 +525,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   }
 
   notification_provider_ = new NotificationProvider(this);
-
-  devtools_agent_ = new DevToolsAgent(this);
-  webview()->setDevToolsAgentClient(devtools_agent_);
-
-  PasswordAutofillManager* password_autofill_manager =
-      new PasswordAutofillManager(this);
-  AutofillAgent* autofill_agent = new AutofillAgent(this,
-                                                    password_autofill_manager);
-  webview()->setAutoFillClient(autofill_agent);
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
   webkit_preferences_.Apply(webview());
@@ -585,13 +560,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   audio_message_filter_ = new AudioMessageFilter(routing_id_);
   render_thread_->AddFilter(audio_message_filter_);
 
-  PageClickTracker* page_click_tracker = new PageClickTracker(this);
-  // Note that the order of insertion of the listeners is important.
-  // The password_autocomplete_manager takes the first shot at processing the
-  // notification and can stop the propagation.
-  page_click_tracker->AddListener(password_autofill_manager);
-  page_click_tracker->AddListener(autofill_agent);
-  new TranslateHelper(this);
   print_helper_ = new PrintWebViewHelper(this);
   searchbox_ = new SearchBox(this);
 
@@ -604,16 +572,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
           switches::kEnableP2PApi)) {
     p2p_socket_dispatcher_ = new P2PSocketDispatcher(this);
   }
-
-#ifndef OS_CHROMEOS
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableClientSidePhishingDetection)) {
-    new safe_browsing::PhishingClassifierDelegate(this, NULL);
-  }
-#endif
-
-  // Observer for Malware DOM details messages.
-  new safe_browsing::MalwareDOMDetails(this);
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
 }
@@ -958,7 +916,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
     IPC_MESSAGE_HANDLER(ViewMsg_ResetPageEncodingToDefault,
                         OnResetPageEncodingToDefault)
-    IPC_MESSAGE_HANDLER(DevToolsMsg_SetupDevToolsClient, OnSetupDevToolsClient)
     IPC_MESSAGE_HANDLER(ViewMsg_DownloadFavicon, OnDownloadFavicon)
     IPC_MESSAGE_HANDLER(ViewMsg_ScriptEvalRequest, OnScriptEvalRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_CSSInsertRequest, OnCSSInsertRequest)
@@ -1404,11 +1361,6 @@ void RenderView::OnExecuteEditCommand(const std::string& name,
 
   webview()->focusedFrame()->executeCommand(
       WebString::fromUTF8(name), WebString::fromUTF8(value));
-}
-
-void RenderView::OnSetupDevToolsClient() {
-  DCHECK(!devtools_client_);
-  devtools_client_ = new DevToolsClient(this);
 }
 
 void RenderView::OnUpdateTargetURLAck() {
@@ -2839,15 +2791,8 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
     }
   }
 
-  FormData form_data;
-  if (FormManager::WebFormElementToFormData(
-          form,
-          FormManager::REQUIRE_AUTOCOMPLETE,
-          static_cast<FormManager::ExtractMask>(
-              FormManager::EXTRACT_VALUE | FormManager::EXTRACT_OPTION_TEXT),
-          &form_data)) {
-    Send(new AutofillHostMsg_FormSubmitted(routing_id_, form_data));
-  }
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_, WillSubmitForm(frame, form));
 }
 
 void RenderView::willPerformClientRedirect(

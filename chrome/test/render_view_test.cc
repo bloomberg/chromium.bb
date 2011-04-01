@@ -9,7 +9,6 @@
 #include "chrome/common/gfx_resource_provider.h"
 #include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/autofill/autofill_agent.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
