@@ -44,7 +44,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   void SendMessageToBackend(SendCommandDebuggerFunction* function,
                             const std::string& domain,
                             const std::string& command,
-                            const Value& body);
+                            Value* body);
 
   // DevToolsClientHost interface
   virtual void InspectedTabClosing();
@@ -179,14 +179,15 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
     SendCommandDebuggerFunction* function,
     const std::string& domain,
     const std::string& command,
-    const Value& body) {
+    Value* body) {
   DictionaryValue protocol_command;
   int request_id = ++last_request_id_;
   pending_requests_[request_id] = function;
   protocol_command.SetInteger("id", request_id);
   protocol_command.SetString("domain", domain);
   protocol_command.SetString("command", command);
-  protocol_command.Set("arguments", body.DeepCopy());
+  if (body)
+    protocol_command.Set("arguments", body->DeepCopy());
 
   std::string json_args;
   base::JSONWriter::Write(&protocol_command, false, &json_args);
@@ -216,9 +217,26 @@ void ExtensionDevToolsClientHost::OnDispatchOnInspectorFrontend(
 
   std::string type;
   if (dictionary->GetString("type", &type) && type == "event") {
-    std::string message = StringPrintf("[%d,%s]", tab_id_, data.c_str());
+    std::string domain;
+    std::string event_name;
+    std::string data;
+    Value* data_value;
+    if (!dictionary->GetString("domain", &domain) ||
+        !dictionary->GetString("event", &event_name) ||
+        !dictionary->Get("data", &data_value))
+      return;
+
+    ListValue args;
+    args.Append(Value::CreateIntegerValue(tab_id_));
+    args.Append(Value::CreateStringValue(domain));
+    args.Append(Value::CreateStringValue(event_name));
+    args.Append(data_value->DeepCopy());
+
+    std::string json_args;
+    base::JSONWriter::Write(&args, false, &json_args);
+
     profile->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, keys::kOnEvent, message, profile, GURL());
+        extension_id_, keys::kOnEvent, json_args, profile, GURL());
     return;
   }
 
@@ -352,7 +370,7 @@ bool SendCommandDebuggerFunction::RunImpl() {
   Value *body;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(3, &body));
 
-  client_host_->SendMessageToBackend(this, domain, command, *body);
+  client_host_->SendMessageToBackend(this, domain, command, body);
   return true;
 }
 

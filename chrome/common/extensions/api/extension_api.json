@@ -4874,6 +4874,7 @@
               {
                 "type": "object",
                 "name": "result",
+                "optional": true,
                 "properties": {},
                 "additionalProperties": { "type": "any" },
                 "description": "JSON object with the command response."
@@ -4896,11 +4897,22 @@
             "description": "The id of the tab that generated debug evet."
           },
           {
+            "type": "string",
+            "name": "domain",
+            "description": "Event domain."
+          },
+          {
+            "type": "string",
+            "name": "event",
+            "description": "Event name."
+          },
+          {
             "type": "object",
-            "name": "message",
+            "name": "data",
+            "optional": true,
             "properties": {},
             "additionalProperties": { "type": "any" },
-            "description": "JSON object matching Developer Tools / Web Inspector Protocol event scheme."
+            "description": "JSON object matching Developer Tools / Web Inspector Protocol event data scheme."
           }
         ]
       },
