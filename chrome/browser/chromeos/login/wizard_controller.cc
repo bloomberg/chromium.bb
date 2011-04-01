@@ -35,6 +35,7 @@
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
+#include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -234,7 +235,8 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
 #endif
       is_out_of_box_(false),
       host_(host),
-      observer_(NULL) {
+      observer_(NULL),
+      usage_statistics_reporting_(true) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
 }
@@ -502,6 +504,8 @@ void WizardController::OnUpdateCompleted() {
 
 void WizardController::OnEulaAccepted() {
   MarkEulaAccepted();
+  chromeos::MetricsCrosSettingsProvider::SetMetricsStatus(
+      usage_statistics_reporting_);
   if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
     // TPM password could be seen on EULA screen, now it's safe to clear it.
     chromeos::CrosLibrary::Get()->

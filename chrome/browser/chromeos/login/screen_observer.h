@@ -48,6 +48,10 @@ class ScreenObserver {
   virtual void OnSetUserNamePassword(const std::string& username,
                                      const std::string& password) = 0;
 
+  // Set/get usage statistics reporting checkbox status on EULA screen.
+  virtual void set_usage_statistics_reporting(bool val) = 0;
+  virtual bool usage_statistics_reporting() const = 0;
+
  protected:
   virtual ~ScreenObserver() {}
 };

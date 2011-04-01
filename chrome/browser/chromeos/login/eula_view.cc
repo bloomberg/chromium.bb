@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/views/window.h"
@@ -379,7 +378,8 @@ void EulaView::Init() {
   layout->StartRow(0, SINGLE_CONTROL_WITH_SHIFT_ROW);
   usage_statistics_checkbox_ = new EULACheckbox();
   usage_statistics_checkbox_->SetMultiLine(true);
-  usage_statistics_checkbox_->SetChecked(true);
+  usage_statistics_checkbox_->SetChecked(
+      observer_->usage_statistics_reporting());
   layout->AddView(usage_statistics_checkbox_);
 
   layout->StartRow(0, SINGLE_LINK_WITH_SHIFT_ROW);
@@ -474,11 +474,11 @@ void EulaView::OnLocaleChanged() {
 // views::ButtonListener implementation:
 
 void EulaView::ButtonPressed(views::Button* sender, const views::Event& event) {
+  if (usage_statistics_checkbox_) {
+    observer_->set_usage_statistics_reporting(
+        usage_statistics_checkbox_->checked());
+  }
   if (sender == continue_button_) {
-    if (usage_statistics_checkbox_) {
-      MetricsCrosSettingsProvider::SetMetricsStatus(
-          usage_statistics_checkbox_->checked());
-    }
     observer_->OnExit(ScreenObserver::EULA_ACCEPTED);
   } else if (sender == back_button_) {
     observer_->OnExit(ScreenObserver::EULA_BACK);

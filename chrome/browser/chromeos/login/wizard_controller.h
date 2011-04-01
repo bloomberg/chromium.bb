@@ -176,6 +176,12 @@ class WizardController : public chromeos::ScreenObserver,
   virtual void OnExit(ExitCodes exit_code);
   virtual void OnSetUserNamePassword(const std::string& username,
                                      const std::string& password);
+  virtual void set_usage_statistics_reporting(bool val) {
+    usage_statistics_reporting_ = val;
+  }
+  virtual bool usage_statistics_reporting() const {
+    return usage_statistics_reporting_;
+  }
 
   // Creates wizard screen window with the specified |bounds|.
   // If |initial_show| initial animation (window & background) is shown.
@@ -269,6 +275,10 @@ class WizardController : public chromeos::ScreenObserver,
   GURL start_url_;
 
   base::OneShotTimer<WizardController> smooth_show_timer_;
+
+  // State of Usage stat/error reporting checkbox on EULA screen
+  // during wizard lifetime.
+  bool usage_statistics_reporting_;
 
   FRIEND_TEST_ALL_PREFIXES(WizardControllerTest, SwitchLanguage);
   friend class WizardControllerFlowTest;
