@@ -22,7 +22,6 @@ namespace {
 
 DictionaryValue* GetNetworkInfoDict(const chromeos::Network* network) {
   DictionaryValue* item = new DictionaryValue;
-  item->SetString("service_path", network->service_path());
   item->SetString("name", network->name());
   item->SetString("device_path", network->device_path());
   item->SetString("ip_address", network->ip_address());
@@ -173,15 +172,31 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
   // IP address.
   return_value->SetString("ip_address", network_library->IPAddress());
 
+  // Currently connected networks.
+  if (network_library->ethernet_network())
+    return_value->SetString(
+        "connected_ethernet",
+        network_library->ethernet_network()->service_path());
+  if (network_library->wifi_network())
+    return_value->SetString("connected_wifi",
+                            network_library->wifi_network()->service_path());
+  if (network_library->cellular_network())
+    return_value->SetString(
+        "connected_cellular",
+        network_library->cellular_network()->service_path());
+
   // Ethernet network.
   bool ethernet_available = network_library->ethernet_available();
   bool ethernet_enabled = network_library->ethernet_enabled();
   if (ethernet_available && ethernet_enabled) {
     const chromeos::EthernetNetwork* ethernet_network =
         network_library->ethernet_network();
-    if (ethernet_network)
-      return_value->Set("ethernet_network",
-                        GetNetworkInfoDict(ethernet_network));
+    if (ethernet_network) {
+      DictionaryValue* items = new DictionaryValue;
+      DictionaryValue* item = GetNetworkInfoDict(ethernet_network);
+      items->Set(ethernet_network->service_path(), item);
+      return_value->Set("ethernet_networks", items);
+    }
   }
 
   // Wi-fi networks.
@@ -190,13 +205,13 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
   if (wifi_available && wifi_enabled) {
     const chromeos::WifiNetworkVector& wifi_networks =
         network_library->wifi_networks();
-    ListValue* items = new ListValue;
+    DictionaryValue* items = new DictionaryValue;
     for (size_t i = 0; i < wifi_networks.size(); ++i) {
       DictionaryValue* item = GetNetworkInfoDict(wifi_networks[i]);
       item->SetInteger("strength", wifi_networks[i]->strength());
       item->SetBoolean("encrypted", wifi_networks[i]->encrypted());
       item->SetString("encryption", wifi_networks[i]->GetEncryptionString());
-      items->Append(item);
+      items->Set(wifi_networks[i]->service_path(), item);
     }
     return_value->Set("wifi_networks", items);
   }
@@ -207,7 +222,7 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
   if (cellular_available && cellular_enabled) {
     const chromeos::CellularNetworkVector& cellular_networks =
         network_library->cellular_networks();
-    ListValue* items = new ListValue;
+    DictionaryValue* items = new DictionaryValue;
     for (size_t i = 0; i < cellular_networks.size(); ++i) {
       DictionaryValue* item = GetNetworkInfoDict(cellular_networks[i]);
       item->SetInteger("strength", cellular_networks[i]->strength());
@@ -223,7 +238,7 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
                       cellular_networks[i]->GetActivationStateString());
       item->SetString("roaming_state",
                       cellular_networks[i]->GetRoamingStateString());
-      items->Append(item);
+      items->Set(cellular_networks[i]->service_path(), item);
     }
     return_value->Set("cellular_networks", items);
   }
@@ -288,22 +303,15 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
 void TestingAutomationProvider::DisconnectFromWifiNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-  std::string service_path;
-  if (!args->GetString("service_path", &service_path)) {
-    reply.SendError("Invalid or missing args.");
-    return;
-  }
-
   if (!CrosLibrary::Get()->EnsureLoaded()) {
     reply.SendError("Could not load cros library.");
     return;
   }
 
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
-  chromeos::WifiNetwork* wifi =
-      network_library->FindWifiNetworkByPath(service_path);
+  const chromeos::WifiNetwork* wifi = network_library->wifi_network();
   if (!wifi) {
-    reply.SendError("No network found with specified service path.");
+    reply.SendError("Not connected to any wifi network.");
     return;
   }
 

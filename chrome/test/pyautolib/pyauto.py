@@ -2456,6 +2456,39 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def GetNetworkInfo(self):
     """Get details about ethernet, wifi, and cellular networks on chromeos.
 
+    Returns:
+      A dictionary.
+      Sample:
+      { u'connected_ethernet': u'/profile/default/ethernet_abcd',
+        u'connected_wifi': u'/profile/default/wifi_abcd_1234_managed_none',
+        u'ethernet_networks':
+            { u'/profile/default/ethernet_abcd':
+                { u'device_path': u'/device/abcdeth',
+                  u'ip_address': u'11.22.33.44',
+                  u'name': u'',
+                  u'service_path':
+                  u'/profile/default/ethernet_abcd',
+                  u'status': u'Connected'}},
+        u'ip_address': u'11.22.33.44',
+        u'wifi_networks':
+            { u'/profile/default/wifi_abcd_1234_managed_none':
+                { u'device_path': u'/device/abcdwifi',
+                  u'encrypted': False,
+                  u'encryption': u'',
+                  u'ip_address': u'123.123.123.123',
+                  u'name': u'WifiNetworkName1',
+                  u'status': u'Connected',
+                  u'strength': 76},
+              u'/profile/default/wifi_abcd_1234_managed_802_1x':
+                  { u'device_path': u'/device/abcdwifi',
+                    u'encrypted': True,
+                    u'encryption': u'8021X',
+                    u'ip_address': u'',
+                    u'name': u'WifiNetworkName2',
+                    u'service_path':
+                    u'status': u'Idle',
+                    u'strength': 79}}}
+
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
@@ -2500,8 +2533,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     else:
       return (True, None)
 
-  def DisconnectFromWifiNetwork(self, service_path,
-                                password='', identity='', certpath=''):
+  def DisconnectFromWifiNetwork(self):
     """Disconnect from a wifi network by its service path.
 
     Blocks until disconnect is complete.
@@ -2511,7 +2543,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     cmd_dict = {
         'command': 'DisconnectFromWifiNetwork',
-        'service_path': service_path,
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
