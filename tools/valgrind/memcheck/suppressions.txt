@@ -4158,28 +4158,6 @@
    fun:_ZN7WebCore11RenderTheme5paintEPNS_12RenderObjectERKNS_9PaintInfoERKNS_7IntRectE
 }
 {
-   bug_77768_a
-   Memcheck:Cond
-   ...
-   fun:_ZN8remoting14CompressorZlib7ProcessEPKhiPhiNS_10Compressor15CompressorFlushEPiS6_
-   fun:_ZN8remoting15EncoderRowBased10EncodeRectERKN3gfx4RectEb
-   fun:_ZN8remoting15EncoderRowBased6EncodeE13scoped_refptrINS_11CaptureDataEEbP14CallbackRunnerI6Tuple1IPNS_11VideoPacketEEE
-   fun:_ZN8remoting14ScreenRecorder8DoEncodeE13scoped_refptrINS_11CaptureDataEE
-   fun:_Z16DispatchToMethodIN8remoting14ScreenRecorderEMS1_Fv13scoped_refptrINS0_11CaptureDataEEES4_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN8remoting14ScreenRecorderEMS1_Fv13scoped_refptrINS0_11CaptureDataEEE6Tuple1IS4_EE3RunEv
-}
-{
-   bug_77768_b
-   Memcheck:Value4
-   ...
-   fun:_ZN8remoting14CompressorZlib7ProcessEPKhiPhiNS_10Compressor15CompressorFlushEPiS6_
-   fun:_ZN8remoting15EncoderRowBased10EncodeRectERKN3gfx4RectEb
-   fun:_ZN8remoting15EncoderRowBased6EncodeE13scoped_refptrINS_11CaptureDataEEbP14CallbackRunnerI6Tuple1IPNS_11VideoPacketEEE
-   fun:_ZN8remoting14ScreenRecorder8DoEncodeE13scoped_refptrINS_11CaptureDataEE
-   fun:_Z16DispatchToMethodIN8remoting14ScreenRecorderEMS1_Fv13scoped_refptrINS0_11CaptureDataEEES4_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN8remoting14ScreenRecorderEMS1_Fv13scoped_refptrINS0_11CaptureDataEEE6Tuple1IS4_EE3RunEv
-}
-{
    bug_77885
    Memcheck:Leak
    fun:malloc

@@ -68,13 +68,12 @@ void CapturerFake::InvalidateScreen(const gfx::Size& size) {
 
 void CapturerFake::InvalidateFullScreen() {
   helper.InvalidateFullScreen();
-
-  GenerateImage();
 }
 
 void CapturerFake::CaptureInvalidRects(CaptureCompletedCallback* callback) {
   scoped_ptr<CaptureCompletedCallback> callback_deleter(callback);
 
+  GenerateImage();
   InvalidateScreen(size_);
 
   InvalidRects inval_rects;
