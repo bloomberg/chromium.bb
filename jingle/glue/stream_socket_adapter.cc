@@ -14,11 +14,11 @@
 namespace jingle_glue {
 
 StreamSocketAdapter::StreamSocketAdapter(talk_base::StreamInterface* stream)
-    : stream_(stream),
+    : message_loop_(MessageLoop::current()),
+      stream_(stream),
       read_pending_(false),
       write_pending_(false),
       closed_error_code_(net::OK) {
-  DCHECK_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
   DCHECK(stream);
   stream_->SignalEvent.connect(this, &StreamSocketAdapter::OnStreamEvent);
 }
@@ -27,21 +27,27 @@ StreamSocketAdapter::~StreamSocketAdapter() {
 }
 
 int StreamSocketAdapter::Connect(net::CompletionCallback* callback) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   return net::OK;
 }
 
 void StreamSocketAdapter::Disconnect() {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
 }
 
 bool StreamSocketAdapter::IsConnected() const {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   return true;
 }
 
 bool StreamSocketAdapter::IsConnectedAndIdle() const {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   return true;
 }
 
 int StreamSocketAdapter::GetPeerAddress(net::AddressList* address) const {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+
   // We actually don't know the peer address. Returning so the upper layers
   // won't complain.
   net::IPAddressNumber ip_address(4);
@@ -50,26 +56,31 @@ int StreamSocketAdapter::GetPeerAddress(net::AddressList* address) const {
 }
 
 const net::BoundNetLog& StreamSocketAdapter::NetLog() const {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   return net_log_;
 }
 
 void StreamSocketAdapter::SetSubresourceSpeculation() {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
 }
 
 void StreamSocketAdapter::SetOmniboxSpeculation() {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
 }
 
 bool StreamSocketAdapter::WasEverUsed() const {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   return true;
 }
 
 bool StreamSocketAdapter::UsingTCPFastOpen() const {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   return false;
 }
 
 int StreamSocketAdapter::Read(
     net::IOBuffer* buffer, int buffer_size, net::CompletionCallback* callback) {
-  DCHECK_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(buffer);
   CHECK(!read_pending_);
 
@@ -93,7 +104,7 @@ int StreamSocketAdapter::Read(
 
 int StreamSocketAdapter::Write(
     net::IOBuffer* buffer, int buffer_size, net::CompletionCallback* callback) {
-  DCHECK_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(buffer);
   CHECK(!write_pending_);
 
@@ -127,7 +138,7 @@ bool StreamSocketAdapter::SetSendBufferSize(int32 size) {
 }
 
 void StreamSocketAdapter::Close(int error_code) {
-  DCHECK_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
 
   if (!stream_.get())  // Already closed.
     return;
@@ -155,7 +166,7 @@ void StreamSocketAdapter::Close(int error_code) {
 
 void StreamSocketAdapter::OnStreamEvent(
     talk_base::StreamInterface* stream, int events, int error) {
-  DCHECK_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
 
   if (events & talk_base::SE_WRITE)
     DoWrite();
@@ -165,6 +176,8 @@ void StreamSocketAdapter::OnStreamEvent(
 }
 
 void StreamSocketAdapter::DoWrite() {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+
   // Write if there is a pending read.
   if (write_buffer_) {
     int result = WriteStream(write_buffer_, write_buffer_size_);
@@ -178,6 +191,8 @@ void StreamSocketAdapter::DoWrite() {
 }
 
 void StreamSocketAdapter::DoRead() {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+
   // Read if there is a pending read.
   if (read_pending_) {
     int result = ReadStream(read_buffer_, read_buffer_size_);
@@ -191,6 +206,8 @@ void StreamSocketAdapter::DoRead() {
 }
 
 int StreamSocketAdapter::ReadStream(net::IOBuffer* buffer, int buffer_size) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+
   size_t bytes_read;
   int error;
   talk_base::StreamResult result = stream_->Read(
@@ -213,6 +230,8 @@ int StreamSocketAdapter::ReadStream(net::IOBuffer* buffer, int buffer_size) {
 }
 
 int StreamSocketAdapter::WriteStream(net::IOBuffer* buffer, int buffer_size) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+
   size_t bytes_written;
   int error;
   talk_base::StreamResult result = stream_->Write(

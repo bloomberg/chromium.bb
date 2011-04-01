@@ -10,6 +10,8 @@
 #include "net/socket/client_socket.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 
+class MessageLoop;
+
 namespace talk_base {
 class StreamInterface;
 }  // namespace talk_base
@@ -60,6 +62,8 @@ class StreamSocketAdapter : public net::ClientSocket,
 
   int ReadStream(net::IOBuffer* buffer, int buffer_size);
   int WriteStream(net::IOBuffer* buffer, int buffer_size);
+
+  MessageLoop* message_loop_;
 
   scoped_ptr<talk_base::StreamInterface> stream_;
 
