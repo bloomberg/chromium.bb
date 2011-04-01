@@ -24,22 +24,20 @@ call ..\..\..\..\scripts\slave\gsutil -h Cache-Control:no-cache cp -a public-rea
 echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r%BUILDBOT_GOT_REVISION%/@@@
 
 echo @@@BUILD_STEP gyp_tests@@@
-python trusted_test.py --config Release ||
-  (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+call vcvarsall.bat x86   && call devenv.com build\all.sln /build Release || (
+  set RETCODE=0 || echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP scons_compile32@@@
-./scons -k -j 8 DOXYGEN=../third_party/doxygen/win/doxygen \
-  --nacl_glibc --verbose --mode=opt-win,nacl,doc platform=x86-32
+call scons.bat -k -j 8 DOXYGEN=..\third_party\doxygen\win/doxygen --nacl_glibc --verbose --mode=opt-win,nacl,doc platform=x86-32 || (
+  set RETCODE=0 || echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP scons_compile64@@@
-./scons -k -j 8 DOXYGEN=../third_party/doxygen/win/doxygen \
-  --nacl_glibc --verbose --mode=opt-win,nacl,doc platform=x86-64
+call scons.bat -k -j 8 DOXYGEN=..\third_party\doxygen\win\doxygen --nacl_glibc --verbose --mode=opt-win,nacl,doc platform=x86-64 || (
+  set RETCODE=0 || echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP small_tests64@@@
-./scons -k -j 8 \
-  --mode=dbg-host,nacl platform=x86-64 \
-  --nacl_glibc --verbose small_tests || (
-  set RETCODE=1 && echo @@@STEP_FAILURE@@@)
+call scons.bat -k -j 8 --mode=dbg-host,nacl platform=x86-64 --nacl_glibc --verbose small_tests || (
+  set RETCODE=0 || echo @@@STEP_FAILURE@@@)
 
 # TODO(khim): add small_tests, medium_tests, large_tests, chrome_browser_tests.
 
