@@ -1,6 +1,6 @@
 #!/bin/bash
-# Copyright 2011 The Native Client Authors.  All rights reserved.  Use
-# of this source code is governed by a BSD-style license that can be
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 # This file polls the appspot directory for a fixed time.
@@ -32,6 +32,7 @@ for ((i=1;i<=retry_count;i+=i)); do
   curl --fail --location --url \
       "$glibc_url_prefix$glibc_revision"/glibc_x86.tar.gz -o "$1/.glibc.tar" &&
   tar xSvpf "$1/.glibc.tar" -C "$1" &&
+  ( rm "$1/.glibc.tar" || ( sleep 30 && rm "$1/.glibc.tar" ) ) &&
   exit 0
   for ((j=glibc_revision+1;j<glibc_revision+revisions_count;j++)); do
     echo "Check if revision \"$j\" is available..."
