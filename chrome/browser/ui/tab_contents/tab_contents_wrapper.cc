@@ -136,6 +136,7 @@ void TabContentsWrapper::RegisterUserPrefs(PrefService* prefs) {
                                       IDS_USES_UNIVERSAL_DETECTOR);
   prefs->RegisterLocalizedStringPref(prefs::kStaticEncodings,
                                      IDS_STATIC_ENCODING_LIST);
+  prefs->RegisterStringPref(prefs::kRecentlySelectedEncoding, "");
 }
 
 string16 TabContentsWrapper::GetDefaultTitle() {

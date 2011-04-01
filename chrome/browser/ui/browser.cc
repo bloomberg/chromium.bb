@@ -2052,7 +2052,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kHomePage,
                             chrome::kChromeUINewTabURL);
   prefs->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, true);
-  prefs->RegisterBooleanPref(prefs::kClearSiteDataOnExit, false);
   prefs->RegisterBooleanPref(prefs::kShowHomeButton, false);
 #if defined(OS_MACOSX)
   // This really belongs in platform code, but there's no good place to
@@ -2066,7 +2065,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kConfirmToQuitEnabled, false);
   prefs->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar, true);
 #endif
-  prefs->RegisterStringPref(prefs::kRecentlySelectedEncoding, "");
   prefs->RegisterBooleanPref(prefs::kDeleteBrowsingHistory, true);
   prefs->RegisterBooleanPref(prefs::kDeleteDownloadHistory, true);
   prefs->RegisterBooleanPref(prefs::kDeleteCache, true);
@@ -2086,7 +2084,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kCloudPrintProxyEnabled, true);
   prefs->RegisterBooleanPref(prefs::kDevToolsDisabled, false);
   prefs->RegisterBooleanPref(prefs::kIncognitoEnabled, true);
-  prefs->RegisterDoublePref(prefs::kDefaultZoomLevel, 0.0);
   prefs->RegisterIntegerPref(prefs::kDevToolsSplitLocation, -1);
   prefs->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);
   prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement);

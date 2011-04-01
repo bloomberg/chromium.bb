@@ -237,6 +237,7 @@ Profile* Profile::CreateProfile(const FilePath& path) {
 // static
 void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled, false);
+  prefs->RegisterBooleanPref(prefs::kClearSiteDataOnExit, false);
   DefaultApps::RegisterUserPrefs(prefs);
 }
 

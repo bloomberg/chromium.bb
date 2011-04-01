@@ -90,6 +90,7 @@ void HostZoomMap::Load() {
 
 // static
 void HostZoomMap::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterDoublePref(prefs::kDefaultZoomLevel, 0.0);
   prefs->RegisterDictionaryPref(prefs::kPerHostZoomLevels);
 }
 
