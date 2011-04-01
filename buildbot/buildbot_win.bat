@@ -1,6 +1,6 @@
-rem Copyright (c) 2011 The Native Client Authors. All rights reserved.
-rem Use of this source code is governed by a BSD-style license that can be
-rem found in the LICENSE file.
+:: Copyright (c) 2011 The Native Client Authors. All rights reserved.
+:: Use of this source code is governed by a BSD-style license that can be
+:: found in the LICENSE file.
 
 echo on
 
@@ -14,9 +14,9 @@ set RETCODE=0
 if %MODE% equ "dbg" (set GYPMODE=Debug) else (set GYPMODE=Release)
 if %BITS% equ 32 (set VCBITS=x86) else (set VCBITS=x64)
 
-rem Skip over hooks, clobber, and partial_sdk when run inside the toolchain
-rem build as the toolchain takes care or the clobber, hooks aren't needed, and
-rem partial_sdk really shouldn't be needed.
+:: Skip over hooks, clobber, and partial_sdk when run inside the toolchain
+:: build as the toolchain takes care or the clobber, hooks aren't needed, and
+:: partial_sdk really shouldn't be needed.
 if "%INSIDE_TOOLCHAIN%" neq "" goto SkipSync
 
 echo @@@BUILD_STEP gclient_runhooks@@@

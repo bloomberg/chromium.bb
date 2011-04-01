@@ -1,12 +1,12 @@
-rem Copyright (c) 2011 The Native Client Authors. All rights reserved.
-rem Use of this source code is governed by a BSD-style license that can be
-rem found in the LICENSE file.
+:: Copyright (c) 2011 The Native Client Authors. All rights reserved.
+:: Use of this source code is governed by a BSD-style license that can be
+:: found in the LICENSE file.
 
 echo on
 
 set GYP_MSVS_VERSION=2008
 
-REM Blow away path for now if on the bots (to be more hermetic).
+:: Blow away path for now if on the bots (to be more hermetic).
 if %BUILDBOT_SLAVENAME% equ "" goto SkipPathReset
 set PATH=
 set PATH=%PATH%;c:\b\depot_tools;c:\b\depot_tools\python_bin
@@ -16,8 +16,8 @@ set PATH=%PATH%;e:\b\build_internal\tools
 set PATH=%PATH%;C:\WINDOWS\system32;C:\WINDOWS\system32\WBEM
 :SkipPathReset
 
-rem Adding in both the 32-bit on 64-bit program files install location for both
-rem MSVS2008 and MSVS2005 including the team tools.
+:: Adding in both the 32-bit on 64-bit program files install location for both
+:: MSVS2008 and MSVS2005 including the team tools.
 
 set MSVS8=c:\Program Files\Microsoft Visual Studio 8.0
 set MSVS8_X86=c:\Program Files (x86)\Microsoft Visual Studio 8.0
