@@ -41,7 +41,7 @@ class DevToolsDataSource : public ChromeURLDataManager::DataSource {
 
 
 DevToolsDataSource::DevToolsDataSource()
-    : DataSource(chrome::kChromeUIDevToolsHost, MessageLoop::current()) {
+    : DataSource(chrome::kChromeUIDevToolsHost, NULL) {
 }
 
 void DevToolsDataSource::StartDataRequest(const std::string& path,
