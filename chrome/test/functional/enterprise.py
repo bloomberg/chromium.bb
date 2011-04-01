@@ -6,7 +6,7 @@
 import logging
 import os
 import subprocess
-
+import re
 
 import pyauto_functional  # must be imported before pyauto
 import pyauto
@@ -161,6 +161,25 @@ class EnterpriseTest(pyauto.PyUITest):
     self._CheckIfPrefCanBeModified(pyauto.kBlockThirdPartyCookies, True, False)
 
   # Tests for general options
+  def testApplicationLocale(self):
+    """Verify that Chrome can be launched only in a specific locale."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    self.assertTrue(re.search('hi',
+                    self.GetPrefsInfo().Prefs()['intl']['accept_languages']),
+                    msg='Chrome locale is not Hindi.')
+    # TODO(sunandt): Try changing the application locale to another language.
+
+  def testDisableDevTools(self):
+    """Verify that devtools window cannot be launched."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    # DevTools process can be seen by PyAuto only when it's undocked.
+    self.SetPrefs(pyauto.kDevToolsOpenDocked, False)
+    self.ApplyAccelerator(pyauto.IDC_DEV_TOOLS)
+    self.assertEquals(1, len(self.GetBrowserInfo()['windows']),
+                      msg='Devtools window launched.')
+
   def testDisableSPDY(self):
     """Verify that SPDY is disabled."""
     self.NavigateToURL('chrome://net-internals/#spdy')
@@ -172,15 +191,26 @@ class EnterpriseTest(pyauto.PyUITest):
     self.assertEquals(0,
         self.FindInPage('encrypted.google.com', tab_index=0)['match_count'])
 
-  def testDisableDevTools(self):
-    """Verify that we cannot launch dev tools."""
+  def testDisabledPlugins(self):
+    """Verify that disabled plugins cannot be enabled."""
     if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
       return
-    # DevTools process can be seen by PyAuto only when it's undocked.
-    self.SetPrefs(pyauto.kDevToolsOpenDocked, False)
-    self.ApplyAccelerator(pyauto.IDC_DEV_TOOLS)
-    self.assertEquals(1, len(self.GetBrowserInfo()['windows']),
-                      msg='Devtools window launched.')
+    for plugin in self.GetPluginsInfo().Plugins():
+      if re.search('Flash', plugin['name']):
+        self.assertRaises(pyauto.JSONInterfaceError,
+                          lambda: self.EnablePlugin(plugin['path']))
+
+  def testDisabledPluginsException(self):
+    """Verify that plugins given exceptions can be managed by users.
+    Chrome PDF Viewer is disabled using DisabledPlugins policy.
+    User can still toggle the plugin setting when an exception is given for a
+    plugin. So we are trying to enable Chrome PDF Viewer.
+    """
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    for plugin in self.GetPluginsInfo().Plugins():
+      if re.search('Chrome PDF Viewer', plugin['name']):
+        self.EnablePlugin(plugin['path'])
 
   def testIncognitoEnabled(self):
     """Verify that incognito window can be launched."""
