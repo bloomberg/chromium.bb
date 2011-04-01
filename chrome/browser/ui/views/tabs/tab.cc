@@ -99,7 +99,7 @@ Tab::Tab(TabController* controller)
     : BaseTab(controller),
       showing_icon_(false),
       showing_close_button_(false),
-      close_button_color_(NULL) {
+      close_button_color_(0) {
   InitTabResources();
 }
 
