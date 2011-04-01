@@ -4,7 +4,9 @@
 # found in the LICENSE file.
 
 # Script assumed to be run in native_client/
-cd "$(cygpath "${PWD}")"
+if [ "x${OSTYPE}" = "xcygwin" ]; then
+  cd "$(cygpath "${PWD}")"
+fi
 if [[ ${PWD} != */native_client ]]; then
   echo "ERROR: must be run in native_client!"
   exit 1
@@ -15,6 +17,9 @@ if [ $# -ne 1 ]; then
   exit 2
 fi
 
+readonly SCRIPT_DIR="$(dirname "$0")"
+readonly SCRIPT_DIR_ABS="$(cd "${SCRIPT_DIR}" ; pwd)"
+
 set -x
 set -e
 set -u
@@ -23,7 +28,6 @@ PLATFORM=$1
 
 cd tools
 export INSIDE_TOOLCHAIN=1
-
 
 echo @@@BUILD_STEP clobber_toolchain@@@
 rm -rf ../scons-out sdk-out sdk ../toolchain SRC BUILD
@@ -44,19 +48,35 @@ mv sdk/nacl-sdk/* ../
 
 cd ../../..
 
-echo @@@BUILD_STEP archive_build@@@
 # Upload the toolchain before running the tests, in case the tests
 # fail.  We do not want a flaky test or a non-toolchain-related bug to
 # cause us to lose the toolchain snapshot, especially since this takes
 # so long to build on Windows.  We can always re-test a toolchain
 # snapshot on the trybots.
-GS_BASE=gs://nativeclient-archive2/toolchain
-/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+echo @@@BUILD_STEP archive_build@@@
+( # Use the batch file as an entry point if on cygwin.
+  if [ "x${OSTYPE}" = "xcygwin" ]; then
+    # Use extended globbing (cygwin should always have it).
+    shopt -s extglob
+    # Filter out cygwin python (everything under /usr or /bin, or *cygwin*).
+    export PATH=${PATH/#\/bin*([^:])/}
+    export PATH=${PATH//:\/bin*([^:])/}
+    export PATH=${PATH/#\/usr*([^:])/}
+    export PATH=${PATH//:\/usr*([^:])/}
+    export PATH=${PATH/#*([^:])cygwin*([^:])/}
+    export PATH=${PATH//:*([^:])cygwin*([^:])/}
+    gsutil="${SCRIPT_DIR_ABS}/../../../../gsutil.bat"
+  else
+    gsutil=/b/build/scripts/slave/gsutil
+  fi
+  GS_BASE=gs://nativeclient-archive2/toolchain
+  "$gsutil" -h Cache-Control:no-cache cp -a public-read \
     tools/naclsdk.tgz \
     ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_${PLATFORM}_x86.tgz
-/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+  "$gsutil" -h Cache-Control:no-cache cp -a public-read \
     tools/naclsdk.tgz \
     ${GS_BASE}/latest/naclsdk_${PLATFORM}_x86.tgz
+)
 
 if [[ ${PLATFORM} == win ]]; then
   cmd /c "call buildbot\\buildbot_win.bat opt 64"
