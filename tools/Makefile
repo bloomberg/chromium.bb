@@ -606,6 +606,10 @@ install-glibc: BUILD/stamp-glibc32 BUILD/stamp-glibc64
 	  install_root=$(INST_GLIBC_PREFIX) install
 	$(MAKE) -f $(THISMAKEFILE) -C BUILD/build-glibc64 \
 	  install_root=$(INST_GLIBC_PREFIX) install
+	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=32 \
+	  DESTDIR="" SDKROOT="$(INST_GLIBC_PREFIX)/glibc"
+	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=64 \
+	  DESTDIR="" SDKROOT="$(INST_GLIBC_PREFIX)/glibc"
 
 .PHONY: export-headers
 export-headers:
@@ -951,6 +955,8 @@ ifeq ($(INST_GLIBC_PROGRAM), none)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-pregcc-standalone
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc32
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc64
+	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=32
+	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=64
 else
 	$(INST_GLIBC_PROGRAM) "$(DESTDIR)$(SDKROOT)"
 endif
@@ -962,8 +968,6 @@ endif
 	$(MAKE) -f $(THISMAKEFILE) gcc-redirector
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=32
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=64
-	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=32
-	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=64
 
 .PHONY: dev-build
 dev-build:
