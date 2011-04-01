@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
+#include "base/process_util.h"
 #include "base/string_piece.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
@@ -174,6 +175,10 @@ void GpuProcessHost::OnChildDied() {
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
                             DIED_FIRST_TIME + g_gpu_crash_count,
                             GPU_PROCESS_LIFETIME_EVENT_MAX);
+  base::TerminationStatus status = GetChildTerminationStatus(NULL);
+  UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus",
+                            status,
+                            base::TERMINATION_STATUS_MAX_ENUM);
   BrowserChildProcessHost::OnChildDied();
 }
 
