@@ -188,4 +188,4 @@ PREFIX: webcore::implicitanimation::~implicitanimation___webcore::implicitanimat
 REGEX : ^deletetask.*::run___messageloop::runtask___messageloop::dowork
 
 # 78172
-PREFIX: `anonymous namespace'::purecall____purecall___infobarcontainer::changetabcontents___infobarcontainer::~infobarcontainer___infobarcontainerview::`scalar deleting destructor'___views::view::~view___views::menuscrollviewcontainer::menuscrollview::`scalar deleting destructor'___views::view::doremovechildview___views::view::removeallchildviews___externaltabcontainer::uninitialize___externaltabcontainer::~externaltabcontainer___externaltabcontainer::`scalar deleting destructor'___views::widgetwin::onwndproc___ui::windowimpl::wndproc___base::win::wrappedwindowproc<&ui::windowimpl::wndproc>___base::messagepumpforui::dorunloop___base::messagepumpwin::runwithdispatcher___messageloop::runinternal___messageloopforui::run___`anonymous namespace'::runuimessageloop___browsermain___`anonymous namespace'::runnamedprocesstypemain___chromemain___maindllloader::launch___wwinmain_____tmaincrtstartup
+SUBSTRING : purecall___infobarcontainer::changetabcontents___infobarcontainer::~infobarcontainer
