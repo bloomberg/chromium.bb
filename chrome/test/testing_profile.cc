@@ -674,8 +674,12 @@ void TestingProfile::set_session_service(SessionService* session_service) {
 }
 
 WebKitContext* TestingProfile::GetWebKitContext() {
-  if (webkit_context_ == NULL)
-    webkit_context_ = new WebKitContext(this, false);
+  if (webkit_context_ == NULL) {
+    webkit_context_ = new WebKitContext(
+          IsOffTheRecord(), GetPath(),
+          GetExtensionSpecialStoragePolicy(),
+          false);
+  }
   return webkit_context_;
 }
 

@@ -15,7 +15,9 @@
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/indexed_db_context.h"
 
-class Profile;
+namespace quota {
+class SpecialStoragePolicy;
+}
 
 // There's one WebKitContext per profile.  Various DispatcherHost classes
 // have a pointer to the Context to store shared state.  Unfortunately, this
@@ -24,10 +26,11 @@ class Profile;
 //
 // This class is created on the UI thread and accessed on the UI, IO, and WebKit
 // threads.
-class WebKitContext
-    : public base::RefCountedThreadSafe<WebKitContext> {
+class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
  public:
-  explicit WebKitContext(Profile* profile, bool clear_local_state_on_exit);
+  WebKitContext(bool is_incognito, const FilePath& data_path,
+                quota::SpecialStoragePolicy* special_storage_policy,
+                bool clear_local_state_on_exit);
 
   const FilePath& data_path() const { return data_path_; }
   bool is_incognito() const { return is_incognito_; }
@@ -75,7 +78,6 @@ class WebKitContext
   bool clear_local_state_on_exit_;
 
   scoped_ptr<DOMStorageContext> dom_storage_context_;
-
   scoped_ptr<IndexedDBContext> indexed_db_context_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebKitContext);

@@ -5,8 +5,8 @@
 #include "content/browser/in_process_webkit/webkit_thread.h"
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/browser/in_process_webkit/browser_webkitclient_impl.h"
+#include "content/common/content_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "webkit/glue/webkit_glue.h"
 

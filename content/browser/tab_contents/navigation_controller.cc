@@ -128,8 +128,10 @@ NavigationController::NavigationController(
       session_storage_namespace_(session_storage_namespace),
       pending_reload_(NO_RELOAD) {
   DCHECK(profile_);
-  if (!session_storage_namespace_)
-    session_storage_namespace_ = new SessionStorageNamespace(profile_);
+  if (!session_storage_namespace_) {
+    session_storage_namespace_ = new SessionStorageNamespace(
+        profile_->GetWebKitContext());
+  }
 }
 
 NavigationController::~NavigationController() {

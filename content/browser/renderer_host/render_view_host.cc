@@ -112,7 +112,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
   if (!session_storage_namespace_) {
     session_storage_namespace_ =
-        new SessionStorageNamespace(process()->profile());
+        new SessionStorageNamespace(process()->profile()->GetWebKitContext());
   }
 
   DCHECK(instance_);

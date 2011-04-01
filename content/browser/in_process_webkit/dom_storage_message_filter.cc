@@ -1,14 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/in_process_webkit/dom_storage_message_filter.h"
 
 #include "base/nullable_string16.h"
-#include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/dom_storage_area.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
@@ -44,11 +40,12 @@ ScopedStorageEventContext::~ScopedStorageEventContext() {
   storage_event_url_ = NULL;
 }
 
-DOMStorageMessageFilter::DOMStorageMessageFilter(int process_id,
-                                                 Profile* profile)
-    : webkit_context_(profile->GetWebKitContext()),
+DOMStorageMessageFilter::DOMStorageMessageFilter(
+    int process_id, WebKitContext* webkit_context,
+    HostContentSettingsMap* host_content_settings_map)
+    : webkit_context_(webkit_context),
       process_id_(process_id),
-      host_content_settings_map_(profile->GetHostContentSettingsMap()) {
+      host_content_settings_map_(host_content_settings_map) {
 }
 
 DOMStorageMessageFilter::~DOMStorageMessageFilter() {

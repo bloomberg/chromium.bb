@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/extensions/extension_special_storage_policy.h"
-#include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/dom_storage_area.h"
 #include "content/browser/in_process_webkit/dom_storage_namespace.h"
@@ -25,20 +23,17 @@ using WebKit::WebSecurityOrigin;
 
 namespace {
 
-void ClearLocalState(const FilePath& domstorage_path) {
+void ClearLocalState(const FilePath& domstorage_path,
+                     quota::SpecialStoragePolicy* special_storage_policy) {
   file_util::FileEnumerator file_enumerator(
       domstorage_path, false, file_util::FileEnumerator::FILES);
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
     if (file_path.Extension() == DOMStorageContext::kLocalStorageExtension) {
-      WebSecurityOrigin web_security_origin =
-          WebSecurityOrigin::createFromDatabaseIdentifier(
-              webkit_glue::FilePathToWebString(file_path.BaseName()));
-      // TODO(michaeln): how is protected status provided to apps at this time?
-      if (!EqualsASCII(web_security_origin.protocol(),
-                        chrome::kExtensionScheme)) {
+      GURL origin(WebSecurityOrigin::createFromDatabaseIdentifier(
+          webkit_glue::FilePathToWebString(file_path.BaseName())).toString());
+      if (!special_storage_policy->IsStorageProtected(origin))
         file_util::Delete(file_path, false);
-      }
     }
   }
 }
@@ -76,7 +71,8 @@ DOMStorageContext::~DOMStorageContext() {
   // where no clean up is needed.
   if (clear_local_state_on_exit_ &&
       BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
-    ClearLocalState(data_path_.Append(kLocalStorageDirectory));
+    ClearLocalState(data_path_.Append(kLocalStorageDirectory),
+                    special_storage_policy_);
   }
 }
 

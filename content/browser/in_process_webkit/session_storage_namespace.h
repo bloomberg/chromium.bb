@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 
-class Profile;
 class WebKitContext;
 
 // This is a ref-counted class that represents a SessionStorageNamespace.
@@ -19,7 +18,7 @@ class WebKitContext;
 class SessionStorageNamespace
     : public base::RefCountedThreadSafe<SessionStorageNamespace> {
  public:
-  explicit SessionStorageNamespace(Profile* profile);
+  explicit SessionStorageNamespace(WebKitContext* context);
 
   int64 id() const { return id_; }
 

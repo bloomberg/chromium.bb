@@ -1227,9 +1227,11 @@ ExtensionPrefValueMap* ProfileImpl::GetExtensionPrefValueMap() {
 }
 
 WebKitContext* ProfileImpl::GetWebKitContext() {
-  if (!webkit_context_.get())
-    webkit_context_ = new WebKitContext(this, clear_local_state_on_exit_);
-  DCHECK(webkit_context_.get());
+  if (!webkit_context_.get()) {
+    webkit_context_ = new WebKitContext(
+        IsOffTheRecord(), GetPath(), GetExtensionSpecialStoragePolicy(),
+        clear_local_state_on_exit_);
+  }
   return webkit_context_.get();
 }
 

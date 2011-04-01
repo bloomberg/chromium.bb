@@ -1,24 +1,25 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/in_process_webkit/webkit_context.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/extensions/extension_special_storage_policy.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_thread.h"
 
-WebKitContext::WebKitContext(Profile* profile, bool clear_local_state_on_exit)
-    : data_path_(profile->IsOffTheRecord() ? FilePath() : profile->GetPath()),
-      is_incognito_(profile->IsOffTheRecord()),
+WebKitContext::WebKitContext(
+    bool is_incognito, const FilePath& data_path,
+    quota::SpecialStoragePolicy* special_storage_policy,
+    bool clear_local_state_on_exit)
+    : data_path_(is_incognito ? FilePath() : data_path),
+      is_incognito_(is_incognito),
       clear_local_state_on_exit_(clear_local_state_on_exit),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           dom_storage_context_(new DOMStorageContext(
-              this, profile->GetExtensionSpecialStoragePolicy()))),
+              this, special_storage_policy))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           indexed_db_context_(new IndexedDBContext(
-              this, profile->GetExtensionSpecialStoragePolicy()))) {
+              this, special_storage_policy))) {
 }
 
 WebKitContext::~WebKitContext() {

@@ -17,7 +17,6 @@
 
 class DOMStorageContext;
 class GURL;
-class Profile;
 struct DOMStorageMsg_Event_Params;
 
 // This class handles the logistics of DOM Storage within the browser process.
@@ -26,7 +25,8 @@ struct DOMStorageMsg_Event_Params;
 class DOMStorageMessageFilter : public BrowserMessageFilter {
  public:
   // Only call the constructor from the UI thread.
-  DOMStorageMessageFilter(int process_id, Profile* profile);
+  DOMStorageMessageFilter(int process_id, WebKitContext* webkit_context,
+                          HostContentSettingsMap* host_content_settings_map);
 
   // BrowserMessageFilter implementation
   virtual void OnChannelConnected(int32 peer_pid);

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,12 +30,17 @@ class MockDOMStorageContext : public DOMStorageContext {
 
 TEST(WebKitContextTest, Basic) {
   TestingProfile profile;
-
-  scoped_refptr<WebKitContext> context1(new WebKitContext(&profile, false));
+  scoped_refptr<WebKitContext> context1(new WebKitContext(
+          profile.IsOffTheRecord(), profile.GetPath(),
+          profile.GetExtensionSpecialStoragePolicy(),
+          false));
   EXPECT_TRUE(profile.GetPath() == context1->data_path());
   EXPECT_TRUE(profile.IsOffTheRecord() == context1->is_incognito());
 
-  scoped_refptr<WebKitContext> context2(new WebKitContext(&profile, false));
+  scoped_refptr<WebKitContext> context2(new WebKitContext(
+          profile.IsOffTheRecord(), profile.GetPath(),
+          profile.GetExtensionSpecialStoragePolicy(),
+          false));
   EXPECT_TRUE(context1->data_path() == context2->data_path());
   EXPECT_TRUE(context1->is_incognito() == context2->is_incognito());
 }
@@ -48,7 +53,10 @@ TEST(WebKitContextTest, PurgeMemory) {
 
   // Create the contexts.
   TestingProfile profile;
-  scoped_refptr<WebKitContext> context(new WebKitContext(&profile, false));
+  scoped_refptr<WebKitContext> context(new WebKitContext(
+          profile.IsOffTheRecord(), profile.GetPath(),
+          profile.GetExtensionSpecialStoragePolicy(),
+          false));
   MockDOMStorageContext* mock_context =
       new MockDOMStorageContext(context.get());
   context->set_dom_storage_context(mock_context);  // Takes ownership.
