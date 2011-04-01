@@ -27,7 +27,7 @@ except ImportError:
   except ImportError:
     # Fall back to the packaged version.
     sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
-    import simplejson as json
+    import simplejson as json  # pylint: disable=F0401
 
 
 from third_party import upload
