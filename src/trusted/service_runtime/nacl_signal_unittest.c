@@ -121,7 +121,6 @@ void WINAPI ReadWriteUnmapped(void *ptr) {
     g_SigFound = 1;
   SIG_TRY_END
 
-  Free1Page(page);
   printf("Done.\n");
 }
 

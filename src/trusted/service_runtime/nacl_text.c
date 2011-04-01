@@ -48,14 +48,8 @@ int NaClDescEffectorShmUnmapMemory(struct NaClDescEffector  *vself,
                                    uintptr_t                sysaddr,
                                    size_t                   nbytes) {
   UNREFERENCED_PARAMETER(vself);
-  /*
-   * Existing memory is anonymous paging file backed.
-   */
-  NaClLog(4, "NaClDescEffectorShmUnmapMemory called\n");
-  NaClLog(4, " sysaddr 0x%08"NACL_PRIxPTR", "
-          "0x%08"NACL_PRIxS" (%"NACL_PRIdS")\n",
-          sysaddr, nbytes, nbytes);
-  NaCl_page_free((void *) sysaddr, nbytes);
+  UNREFERENCED_PARAMETER(sysaddr);
+  UNREFERENCED_PARAMETER(nbytes);
   return 0;
 }
 
@@ -179,6 +173,9 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
        shm_offset += NACL_MAP_PAGESIZE) {
     uintptr_t text_vaddr = shm_vaddr_base + shm_offset;
     uintptr_t text_sysaddr = NaClUserToSys(nap, text_vaddr);
+
+    /* Existing memory is anonymous paging file backed. */
+    NaCl_page_free((void *) text_sysaddr, NACL_MAP_PAGESIZE);
 
     NaClLog(4,
             "NaClMakeDynamicTextShared: Map(,,0x%"NACL_PRIxPTR",size = 0x%x,"

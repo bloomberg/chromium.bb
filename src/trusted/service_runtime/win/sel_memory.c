@@ -36,7 +36,7 @@ void  NaCl_page_free(void     *p,
   while (p < end_addr) {
     if (!VirtualFree(p, 0, MEM_RELEASE)) {
       DWORD err = GetLastError();
-      NaClLog(0,
+      NaClLog(LOG_FATAL,
               "NaCl_page_free: VirtualFree(0x%016"NACL_PRIxPTR
               ", 0, MEM_RELEASE) failed "
               "with error 0x%X\n",

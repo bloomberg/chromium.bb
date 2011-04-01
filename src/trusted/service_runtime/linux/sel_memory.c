@@ -31,7 +31,9 @@ void NaCl_page_free(void     *p,
                     size_t   size) {
   if (p == 0 || size == 0)
     return;
-  (void) munmap(p, size);
+  if (munmap(p, size) != 0) {
+    NaClLog(LOG_FATAL, "NaCl_page_free: munmap() failed");
+  }
 }
 
 
