@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,25 +70,29 @@ class EstablishChannelCallback
   }
 
   void Send(const IPC::ChannelHandle& channel,
-            base::ProcessHandle gou_process_for_browser,
+            base::ProcessHandle gpu_process_for_browser,
             const GPUInfo& gpu_info) {
     if (!filter_)
       return;
 
     base::ProcessHandle renderer_process_for_gpu;
+    if (gpu_process_for_browser != 0) {
 #if defined(OS_WIN)
-    // Create a process handle that the renderer process can give to the GPU
-    // process to give it access to its handles.
-    DuplicateHandle(base::GetCurrentProcessHandle(),
-                    filter_->peer_handle(),
-                    gou_process_for_browser,
-                    &renderer_process_for_gpu,
-                    PROCESS_DUP_HANDLE,
-                    FALSE,
-                    0);
+      // Create a process handle that the renderer process can give to the GPU
+      // process to give it access to its handles.
+      DuplicateHandle(base::GetCurrentProcessHandle(),
+                      filter_->peer_handle(),
+                      gpu_process_for_browser,
+                      &renderer_process_for_gpu,
+                      PROCESS_DUP_HANDLE,
+                      FALSE,
+                      0);
 #else
-    renderer_process_for_gpu = filter_->peer_handle();
+      renderer_process_for_gpu = filter_->peer_handle();
 #endif
+    } else {
+      renderer_process_for_gpu = 0;
+    }
 
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     IPC::Message* reply = new GpuMsg_GpuChannelEstablished(

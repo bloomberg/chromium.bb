@@ -48,7 +48,6 @@ class GpuProcessHost : public BrowserChildProcessHost,
   virtual void OnChildDied();
   virtual void OnProcessCrashed(int exit_code);
 
-  bool CanLaunchGpuProcess() const;
   bool LaunchGpuProcess();
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.

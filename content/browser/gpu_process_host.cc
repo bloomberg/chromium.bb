@@ -98,9 +98,6 @@ bool GpuProcessHost::Init() {
   if (!CreateChannel())
     return false;
 
-  if (!CanLaunchGpuProcess())
-    return false;
-
   if (!LaunchGpuProcess())
     return false;
 
@@ -189,13 +186,14 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
   BrowserChildProcessHost::OnProcessCrashed(exit_code);
 }
 
-bool GpuProcessHost::CanLaunchGpuProcess() const {
-  return RenderViewHostDelegateHelper::gpu_enabled();
-}
-
 bool GpuProcessHost::LaunchGpuProcess() {
-  if (g_gpu_crash_count >= kGpuMaxCrashCount)
+  if (!RenderViewHostDelegateHelper::gpu_enabled() ||
+      g_gpu_crash_count >= kGpuMaxCrashCount)
+  {
+    SendOutstandingReplies(host_id_);
+    RenderViewHostDelegateHelper::set_gpu_enabled(false);
     return false;
+  }
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
 
