@@ -2782,6 +2782,70 @@ verify() {
   #done
 }
 
+#@ verify-triple-build <arch> - Verify that the sandboxed translator produces
+#@                              an identical translation of itself (llc.pexe)
+#@                              as the unsandboxed translator.
+verify-triple-build() {
+  if [ $# -eq 0 ]; then
+    local arch
+    for arch in ${SBTC_BUILD_WITH_PNACL} ; do
+      verify-triple-build ${arch}
+    done
+    return
+  fi
+
+  local arch=${1/-/}  # Get rid of dashes
+  local mode=srpc
+
+  check-sb-arch ${arch}
+  check-sb-mode ${mode}
+
+  StepBanner "VERIFY" "Verifying triple build for ${arch}"
+
+  local archdir="${PNACL_SB_ROOT}/${arch}/${mode}"
+  local archllc="${archdir}/bin/llc"
+  local pexe
+
+  if ${SBTC_PRODUCTION} ; then
+    pexe="${archdir}/bin/llc.pexe"
+  else
+    pexe="${PNACL_SB_ROOT}/universal/${mode}/bin/llc.pexe"
+  fi
+  assert-file "${archllc}" "sandboxed llc for ${arch} does not exist"
+  assert-file "${pexe}"    "llc.pexe does not exist"
+
+  local flags="--pnacl-sb --pnacl-driver-verbose"
+  if [ ${mode} == "srpc" ] ; then
+    flags+=" --pnacl-driver-set-SRPC=1"
+  else
+    flags+=" --pnacl-driver-set-SRPC=0"
+  fi
+
+  if [ ${arch} == "arm" ] ; then
+    # Use emulator if we are not on ARM
+    local hostarch=$(uname -m)
+    if ! [[ "${hostarch}" =~ arm ]]; then
+      flags+=" --pnacl-use-emulator"
+    fi
+  fi
+
+  local objdir="${TC_BUILD}/triple-build"
+  local newllc="${objdir}/llc.${arch}.rebuild.nexe"
+  mkdir -p "${objdir}"
+
+  StepBanner "VERIFY" "Translating llc.pexe to ${arch} using sandboxed tools"
+  RunWithLog "verify.triple.build" \
+    "${PNACL_TRANSLATE}" ${flags} -arch ${arch} "${pexe}" -o "${newllc}"
+
+  if ! cmp --silent "${archllc}" "${newllc}" ; then
+    Banner "TRIPLE BUILD VERIFY FAILED"
+    echo "Expected these files to be identical, but they are not:"
+    echo "  ${archllc}"
+    echo "  ${newllc}"
+    exit -1
+  fi
+  StepBanner "VERIFY" "Verified ${arch} OK"
+}
 ######################################################################
 ######################################################################
 #
