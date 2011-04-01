@@ -827,6 +827,8 @@
         'browser/extensions/convert_user_script.h',
         'browser/extensions/convert_web_app.cc',
         'browser/extensions/convert_web_app.h',
+        'browser/extensions/crashed_extension_infobar.cc',
+        'browser/extensions/crashed_extension_infobar.h',
         'browser/extensions/crx_installer.cc',
         'browser/extensions/crx_installer.h',
         'browser/extensions/default_apps.cc',

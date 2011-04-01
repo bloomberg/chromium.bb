@@ -21,7 +21,6 @@
 
 class IOThread;
 class GoogleURLTracker;
-class NotificationUIManager;
 class PrefService;
 class WatchDogThread;
 
@@ -155,7 +154,6 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
   scoped_ptr<ProfileManager> profile_manager_;
-  scoped_ptr<NotificationUIManager> notification_ui_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };

@@ -2291,7 +2291,8 @@ ListValue* TestingAutomationProvider::GetInfobarsInfo(TabContents* tc) {
     DictionaryValue* infobar_item = new DictionaryValue;
     InfoBarDelegate* infobar = tc->GetInfoBarDelegateAt(i);
     if (infobar->AsConfirmInfoBarDelegate()) {
-      // Also covers ThemeInstalledInfoBarDelegate.
+      // Also covers ThemeInstalledInfoBarDelegate and
+      // CrashedExtensionInfoBarDelegate.
       infobar_item->SetString("type", "confirm_infobar");
       ConfirmInfoBarDelegate* confirm_infobar =
         infobar->AsConfirmInfoBarDelegate();

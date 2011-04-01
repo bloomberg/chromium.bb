@@ -183,12 +183,6 @@ void BackgroundContents::Close(RenderViewHost* render_view_host) {
 void BackgroundContents::RenderViewGone(RenderViewHost* rvh,
                                         base::TerminationStatus status,
                                         int error_code) {
-  Profile* profile = rvh->process()->profile();
-  NotificationService::current()->Notify(
-      NotificationType::BACKGROUND_CONTENTS_TERMINATED,
-      Source<Profile>(profile),
-      Details<BackgroundContents>(this));
-
   // Our RenderView went away, so we should go away also, so killing the process
   // via the TaskManager doesn't permanently leave a BackgroundContents hanging
   // around the system, blocking future instances from being created

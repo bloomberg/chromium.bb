@@ -108,11 +108,6 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
 }
 
 BalloonViewImpl::~BalloonViewImpl() {
-  if (frame_container_) {
-    GtkWidget* widget = frame_container_;
-    frame_container_ = NULL;
-    gtk_widget_hide(widget);
-  }
 }
 
 void BalloonViewImpl::Close(bool by_user) {

@@ -7,7 +7,6 @@
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
@@ -144,10 +143,7 @@ TestingBrowserProcess::extension_event_router_forwarder() {
 }
 
 NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
-  if (!notification_ui_manager_.get())
-    notification_ui_manager_.reset(
-        NotificationUIManager::Create(local_state()));
-  return notification_ui_manager_.get();
+  return NULL;
 }
 
 GoogleURLTracker* TestingBrowserProcess::google_url_tracker() {

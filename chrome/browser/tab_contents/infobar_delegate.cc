@@ -44,6 +44,11 @@ ConfirmInfoBarDelegate* InfoBarDelegate::AsConfirmInfoBarDelegate() {
   return NULL;
 }
 
+CrashedExtensionInfoBarDelegate*
+    InfoBarDelegate::AsCrashedExtensionInfoBarDelegate() {
+  return NULL;
+}
+
 ExtensionInfoBarDelegate* InfoBarDelegate::AsExtensionInfoBarDelegate() {
   return NULL;
 }
