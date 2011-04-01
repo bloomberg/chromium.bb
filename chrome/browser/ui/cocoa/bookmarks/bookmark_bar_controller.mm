@@ -1986,6 +1986,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self addButtonsToView];
   [self configureOffTheSideButtonContentsAndVisibility];
   [self setNodeForBarMenu];
+  [self reconfigureBookmarkBar];
 }
 
 - (void)beingDeleted:(BookmarkModel*)model {
