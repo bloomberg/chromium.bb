@@ -456,7 +456,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   // TODO(tim): Remove this when we get rid of the old syncer thread.
   if (request_nudge) {
     CHECK(!using_new_syncer_thread_);
-    RequestNudge();
+    RequestNudge(FROM_HERE);
   }
 
   pending_config_mode_state_.reset();
@@ -475,9 +475,10 @@ void SyncBackendHost::EncryptDataTypes(
                        encrypted_types));
 }
 
-void SyncBackendHost::RequestNudge() {
+void SyncBackendHost::RequestNudge(const tracked_objects::Location& location) {
   core_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoRequestNudge));
+      NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoRequestNudge,
+                        location));
 }
 
 void SyncBackendHost::RequestConfig(
@@ -780,7 +781,7 @@ void SyncBackendHost::Core::DoStartSyncing() {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
   syncapi_->StartSyncing();
   if (deferred_nudge_for_cleanup_requested_)
-    syncapi_->RequestNudge();
+    syncapi_->RequestNudge(FROM_HERE);
   deferred_nudge_for_cleanup_requested_ = false;
 }
 
@@ -1095,8 +1096,9 @@ void SyncBackendHost::Core::StartSavingChanges() {
       this, &Core::SaveChanges);
 }
 
-void SyncBackendHost::Core::DoRequestNudge() {
-  syncapi_->RequestNudge();
+void SyncBackendHost::Core::DoRequestNudge(
+    const tracked_objects::Location& nudge_location) {
+  syncapi_->RequestNudge(nudge_location);
 }
 
 void SyncBackendHost::Core::DoRequestClearServerData() {

@@ -47,6 +47,11 @@ struct SyncerThread::SyncSessionJob {
   SyncSessionJobPurpose purpose;
   base::TimeTicks scheduled_start;
   linked_ptr<sessions::SyncSession> session;
+
+  // This is the location the nudge came from. used for debugging purpose.
+  // In case of multiple nudges getting coalesced this stores the first nudge
+  // that came in.
+  tracked_objects::Location nudge_location;
 };
 
 SyncerThread::DelayProvider::DelayProvider() {}
@@ -225,7 +230,8 @@ void SyncerThread::ScheduleClearUserData() {
 }
 
 void SyncerThread::ScheduleNudge(const TimeDelta& delay,
-    NudgeSource source, const ModelTypeBitSet& types) {
+    NudgeSource source, const ModelTypeBitSet& types,
+    const tracked_objects::Location& nudge_location) {
   if (!thread_.IsRunning()) {
     NOTREACHED();
     return;
@@ -235,11 +241,12 @@ void SyncerThread::ScheduleNudge(const TimeDelta& delay,
       syncable::ModelTypePayloadMapFromBitSet(types, std::string());
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &SyncerThread::ScheduleNudgeImpl, delay, source,
-      types_with_payloads));
+      types_with_payloads, nudge_location));
 }
 
 void SyncerThread::ScheduleNudgeWithPayloads(const TimeDelta& delay,
-    NudgeSource source, const ModelTypePayloadMap& types_with_payloads) {
+    NudgeSource source, const ModelTypePayloadMap& types_with_payloads,
+    const tracked_objects::Location& nudge_location) {
   if (!thread_.IsRunning()) {
     NOTREACHED();
     return;
@@ -247,7 +254,7 @@ void SyncerThread::ScheduleNudgeWithPayloads(const TimeDelta& delay,
 
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &SyncerThread::ScheduleNudgeImpl, delay, source,
-      types_with_payloads));
+      types_with_payloads, nudge_location));
 }
 
 void SyncerThread::ScheduleClearUserDataImpl() {
@@ -255,11 +262,13 @@ void SyncerThread::ScheduleClearUserDataImpl() {
   SyncSession* session = new SyncSession(session_context_.get(), this,
       SyncSourceInfo(), ModelSafeRoutingInfo(),
       std::vector<ModelSafeWorker*>());
-  ScheduleSyncSessionJob(TimeDelta::FromSeconds(0), CLEAR_USER_DATA, session);
+  ScheduleSyncSessionJob(TimeDelta::FromSeconds(0), CLEAR_USER_DATA, session,
+                         FROM_HERE);
 }
 
 void SyncerThread::ScheduleNudgeImpl(const TimeDelta& delay,
-    NudgeSource source, const ModelTypePayloadMap& types_with_payloads) {
+    NudgeSource source, const ModelTypePayloadMap& types_with_payloads,
+    const tracked_objects::Location& nudge_location) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
   TimeTicks rough_start = TimeTicks::Now() + delay;
   if (!ShouldRunJob(NUDGE, rough_start)) {
@@ -286,6 +295,7 @@ void SyncerThread::ScheduleNudgeImpl(const TimeDelta& delay,
       return;
 
     pending_nudge_->session->Coalesce(*session.get());
+
     if (!IsBackingOff()) {
       return;
     } else {
@@ -296,7 +306,7 @@ void SyncerThread::ScheduleNudgeImpl(const TimeDelta& delay,
       pending_nudge_.reset();
     }
   }
-  ScheduleSyncSessionJob(delay, NUDGE, session.release());
+  ScheduleSyncSessionJob(delay, NUDGE, session.release(), nudge_location);
 }
 
 // Helper to extract the routing info and workers corresponding to types in
@@ -357,20 +367,24 @@ void SyncerThread::ScheduleConfigImpl(const ModelSafeRoutingInfo& routing_info,
           syncable::ModelTypePayloadMapFromRoutingInfo(
               routing_info, std::string())),
       routing_info, workers);
-  ScheduleSyncSessionJob(TimeDelta::FromSeconds(0), CONFIGURATION, session);
+  ScheduleSyncSessionJob(TimeDelta::FromSeconds(0), CONFIGURATION, session,
+                         FROM_HERE);
 }
 
 void SyncerThread::ScheduleSyncSessionJob(const base::TimeDelta& delay,
-    SyncSessionJobPurpose purpose, sessions::SyncSession* session) {
+    SyncSessionJobPurpose purpose, sessions::SyncSession* session,
+    const tracked_objects::Location& nudge_location) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
+
   SyncSessionJob job = {purpose, TimeTicks::Now() + delay,
-                        make_linked_ptr(session)};
+                        make_linked_ptr(session), nudge_location};
   if (purpose == NUDGE) {
     DCHECK(!pending_nudge_.get() || pending_nudge_->session.get() == session);
     pending_nudge_.reset(new SyncSessionJob(job));
   }
   MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(this,
-      &SyncerThread::DoSyncSessionJob, job), delay.InMilliseconds());
+      &SyncerThread::DoSyncSessionJob, job),
+      delay.InMilliseconds());
 }
 
 void SyncerThread::SetSyncerStepsForPurpose(SyncSessionJobPurpose purpose,
@@ -506,7 +520,7 @@ void SyncerThread::ScheduleNextSync(const SyncSessionJob& old_job) {
     // We weren't continuing and we aren't in backoff.  Schedule a normal
     // continuation.
     ScheduleNudgeImpl(TimeDelta::FromSeconds(0), NUDGE_SOURCE_CONTINUATION,
-                      old_job.session->source().types);
+                      old_job.session->source().types, FROM_HERE);
   }
 }
 
@@ -543,7 +557,7 @@ void SyncerThread::HandleConsecutiveContinuationError(
   wait_interval_.reset(new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF,
                                         length));
   SyncSessionJob job = {NUDGE, TimeTicks::Now() + length,
-                        make_linked_ptr(s)};
+                        make_linked_ptr(s), FROM_HERE};
   pending_nudge_.reset(new SyncSessionJob(job));
   wait_interval_->timer.Start(length, this, &SyncerThread::DoCanaryJob);
 }
@@ -581,9 +595,7 @@ void SyncerThread::Stop() {
 void SyncerThread::DoCanaryJob() {
   DCHECK(pending_nudge_.get());
   wait_interval_->had_nudge = false;
-  SyncSessionJob copy = {pending_nudge_->purpose,
-                         pending_nudge_->scheduled_start,
-                         pending_nudge_->session};
+  SyncSessionJob copy = *pending_nudge_;
   DoSyncSessionJob(copy);
 }
 
@@ -597,7 +609,7 @@ void SyncerThread::PollTimerCallback() {
       syncable::ModelTypePayloadMapFromRoutingInfo(r, std::string());
   SyncSourceInfo info(GetUpdatesCallerInfo::PERIODIC, types_with_payloads);
   SyncSession* s = new SyncSession(session_context_.get(), this, info, r, w);
-  ScheduleSyncSessionJob(TimeDelta::FromSeconds(0), POLL, s);
+  ScheduleSyncSessionJob(TimeDelta::FromSeconds(0), POLL, s, FROM_HERE);
 }
 
 void SyncerThread::Unthrottle() {
