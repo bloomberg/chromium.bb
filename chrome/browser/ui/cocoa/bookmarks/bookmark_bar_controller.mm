@@ -211,6 +211,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (void)setNodeForBarMenu;
 - (void)watchForExitEvent:(BOOL)watch;
 - (void)resetAllButtonPositionsWithAnimation:(BOOL)animate;
+- (BOOL)animationEnabled;
 
 @end
 
@@ -260,6 +261,12 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [[self animatableView] setResizeDelegate:resizeDelegate];
   }
   return self;
+}
+
+// Can be overridden in a test subclass if a simplistic test is being confused
+// by asynchronous animation or is running needlessly slow.
+- (BOOL)animationEnabled {
+  return YES;
 }
 
 - (void)pulseBookmarkNotification:(NSNotification*)notification {
@@ -603,7 +610,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 - (IBAction)openBookmark:(id)sender {
   BOOL isMenuItem = ([sender delegate] == folderController_);
-  if (isMenuItem)
+  BOOL animate = isMenuItem && [self animationEnabled];
+  if (animate)
     [self doMenuFlashOnSeparateThread:sender];
   DCHECK([sender respondsToSelector:@selector(bookmarkNode)]);
   const BookmarkNode* node = [sender bookmarkNode];
@@ -612,7 +620,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   RecordAppLaunch(browser_->profile(), node->GetURL());
   [self openURL:node->GetURL() disposition:disposition];
 
-  if (!isMenuItem)
+  if (!animate)
     [self closeFolderAndStopTrackingMenus];
 }
 
@@ -1888,6 +1896,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // hypothetical drop with the new button having a left edge of |where|.
 // Gets called only by our view.
 - (void)setDropInsertionPos:(CGFloat)where {
+  BOOL animate = [self animationEnabled];
   if (!hasInsertionPos_ || where != insertionPos_) {
     insertionPos_ = where;
     hasInsertionPos_ = YES;
@@ -1911,7 +1920,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       if (left > insertionPos_)
         buttonFrame.origin.x += paddingWidth;
       left += bookmarks::kBookmarkHorizontalPadding;
-      [[button animator] setFrame:buttonFrame];
+      if (animate)
+        [[button animator] setFrame:buttonFrame];
+      else
+        [button setFrame:buttonFrame];
     }
   }
 }
@@ -1921,6 +1933,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // This is generally useful, so is called from various places internally.
 - (void)resetAllButtonPositionsWithAnimation:(BOOL)animate {
   CGFloat left = bookmarks::kBookmarkHorizontalPadding;
+  animate &= [self animationEnabled];
 
   for (NSButton* button in buttons_.get()) {
     // Hidden buttons get no space.

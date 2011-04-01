@@ -32,8 +32,18 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/base/theme_provider.h"
 
+// Unit tests don't need time-consuming a
+@interface BookmarkBarControllerTestable : BookmarkBarController {
+}
+@end
+@implementation BookmarkBarControllerTestable
+- (BOOL)animationEnabled {
+  return NO;
+}
+@end
+
 // Just like a BookmarkBarController but openURL: is stubbed out.
-@interface BookmarkBarControllerNoOpen : BookmarkBarController {
+@interface BookmarkBarControllerNoOpen : BookmarkBarControllerTestable {
  @public
   std::vector<GURL> urls_;
   std::vector<WindowOpenDisposition> dispositions_;
@@ -136,7 +146,7 @@
 
 // Just like a BookmarkBarController but intercedes when providing
 // pasteboard drag data.
-@interface BookmarkBarControllerDragData : BookmarkBarController {
+@interface BookmarkBarControllerDragData : BookmarkBarControllerTestable {
   const BookmarkNode* dragDataNode_;  // Weak
 }
 - (void)setDragDataNode:(const BookmarkNode*)node;
