@@ -174,9 +174,7 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiMsg_PPPInstance_DidCreate,
                            PP_Bool /* result */)
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPPInstance_DidDestroy,
                     PP_Instance /* instance */)
-// TODO(piman): DidChangeView should be async, but doing so causes an issue with
-// webkit and accelerated compositing. Turn back to async once this is fixed.
-IPC_SYNC_MESSAGE_ROUTED3_0(PpapiMsg_PPPInstance_DidChangeView,
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPInstance_DidChangeView,
                     PP_Instance /* instance */,
                     PP_Rect /* position */,
                     PP_Rect /* clip */)
