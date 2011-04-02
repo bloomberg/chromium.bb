@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 # See http://code.google.com/closure/compiler/ and
 # http://code.google.com/closure/utilities/ for details on these tools.
 
-SOURCES="event_tracker.js touch_handler.js card_slider.js new_tab.js grabber.js "
+SOURCES="event_tracker.js touch_handler.js card_slider.js new_tab.js grabber.js apps_page.js"
 
 # First run the closure compiler looking for syntactic issues.
 # Note that we throw away the output from jscompiler since it's use

@@ -20,18 +20,6 @@ var ntp = (function() {
   var cardSlider;
 
   /**
-   * Template to use for creating new 'apps-page' elements
-   * @type {!Element|undefined}
-   */
-  var appsPageTemplate;
-
-  /**
-   * Template to use for creating new 'app-container' elements
-   * @type {!Element|undefined}
-   */
-  var appTemplate;
-
-  /**
    * Template to use for creating new 'dot' elements
    * @type {!Element|undefined}
    */
@@ -116,20 +104,13 @@ var ntp = (function() {
     // Get the template elements and remove them from the DOM.  Things are
     // simpler if we start with 0 pages and 0 apps and don't leave hidden
     // template elements behind in the DOM.
-    appTemplate = getRequiredElement('app-template');
-    appTemplate.id = null;
-
-    appsPages = appsPageList.getElementsByClassName('apps-page');
-    assert(appsPages.length == 1,
-           'Expected exactly one apps-page in the apps-page-list.');
-    appsPageTemplate = appsPages[0];
-    appsPageList.removeChild(appsPages[0]);
-
     dots = dotList.getElementsByClassName('dot');
     assert(dots.length == 1,
            'Expected exactly one dot in the dots-list.');
     dotTemplate = dots[0];
     dotList.removeChild(dots[0]);
+
+    appsPages = appsPageList.getElementsByClassName('apps-page');
 
     // Initialize the cardSlider without any cards at the moment
     var appsFrame = getRequiredElement('apps-frame');
@@ -237,8 +218,7 @@ var ntp = (function() {
    * @param {Object} data An object with all the data on available
    *        applications.
    */
-  function getAppsCallback(data)
-  {
+  function getAppsCallback(data) {
     // Clean up any existing grabber objects - cancelling any outstanding drag.
     // Ideally an async app update wouldn't disrupt an active drag but
     // that would require us to re-use existing elements and detect how the apps
@@ -266,7 +246,6 @@ var ntp = (function() {
 
     // Get the array of apps and add any special synthesized entries
     var apps = data.apps;
-    apps.push(makeWebstoreApp());
 
     // Sort by launch index
     apps.sort(function(a, b) {
@@ -284,7 +263,8 @@ var ntp = (function() {
         // added (otherwise we'd have an infinite loop)
         assert(appsPages.length == origPageCount + 1, 'expected new page');
       }
-      appendApp(appsPages[pageIndex], app);
+
+      appsPages[pageIndex].appendApp(app);
     }
 
     // Add a couple blank apps pages for testing. TODO(estade): remove this.
@@ -351,91 +331,15 @@ var ntp = (function() {
   }
 
   /**
-   * Create a new app element and attach it to the end of the specified app
-   * page.
-   * @param {!Element} parent The element where the app should be inserted.
-   * @param {!Object} app The application object to create an app for.
-   */
-  function appendApp(parent, app) {
-    // Make a deep copy of the template and clear its ID
-    var containerElement = appTemplate.cloneNode(true);
-    var appElement = containerElement.getElementsByClassName('app')[0];
-    assert(appElement, 'Expected app-template to have an app child');
-    assert(typeof(app.id) == 'string',
-           'Expected every app to have an ID or empty string');
-    appElement.setAttribute('app-id', app.id);
-
-    // Find the span element (if any) and fill it in with the app name
-    var span = appElement.querySelector('span');
-    if (span)
-      span.textContent = app.name;
-
-    // Fill in the image
-    // We use a mask of the same image so CSS rules can highlight just the image
-    // when it's touched.
-    var appImg = appElement.querySelector('img');
-    if (appImg) {
-      appImg.src = app.icon_big;
-      appImg.style.webkitMaskImage = url(app.icon_big);
-      // We put a click handler just on the app image - so clicking on the
-      // margins between apps doesn't do anything
-      if (app.id) {
-        appEvents.add(appImg, 'click', appClick, false);
-      } else {
-        // Special case of synthesized apps - can't launch directly so just
-        // change the URL as if we clicked a link.  We may want to eventually
-        // support tracking clicks with ping messages, but really it seems it
-        // would be better for the back-end to just create virtual apps for such
-        // cases.
-        appEvents.add(appImg, 'click', function(e) {
-          window.location = app.launch_url;
-        }, false);
-      }
-    }
-
-    // Only real apps with back-end storage (for their launch index, etc.) can
-    // be rearranged.
-    if (app.id) {
-      // Create a grabber to support moving apps around
-      // Note that we move the app rather than the container. This is so that an
-      // element remains in the original position so we can detect when an app
-      // is dropped in its starting location.
-      var grabber = new Grabber(appElement);
-      grabbers.push(grabber);
-
-      // Register to be made aware of when we are dragged
-      appEvents.add(appElement, Grabber.EventType.DRAG_START, appDragStart,
-                    false);
-      appEvents.add(appElement, Grabber.EventType.DRAG_END, appDragEnd,
-                    false);
-
-      // Register to be made aware of any app drags on top of our container
-      appEvents.add(containerElement, Grabber.EventType.DRAG_ENTER,
-          appDragEnter, false);
-    } else {
-      // Prevent any built-in drag-and-drop support from activating for the
-      // element.
-      appEvents.add(appElement, 'dragstart', function(e) {
-        e.preventDefault();
-      }, true);
-    }
-
-    // Insert at the end of the provided page
-    parent.appendChild(containerElement);
-  }
-
-  /**
    * Creates a new page for apps
    *
    * @return {!Element} The apps-page element created.
    * @param {boolean=} opt_animate If true, add the class 'new' to the created
    *        dot.
    */
-  function createAppPage(opt_animate)
-  {
-    // Make a shallow copy of the app page template.
-    var newPage = appsPageTemplate.cloneNode(false);
-    appsPageList.appendChild(newPage);
+  function createAppPage(opt_animate) {
+    var appsPage = new ntp4.AppsPage();
+    appsPageList.appendChild(appsPage);
 
     // Make a deep copy of the dot template to add a new one.
     var dotCount = dots.length;
@@ -459,30 +363,7 @@ var ntp = (function() {
 
     // Change pages whenever an app is dragged over a dot.
     appEvents.add(newDot, Grabber.EventType.DRAG_ENTER, switchPage, false);
-
-    return newPage;
   }
-
-  /**
-   * Invoked when an app is clicked
-   * @param {Event} e The click event.
-   */
-  function appClick(e) {
-    var target = e.currentTarget;
-    var app = getParentByClassName(target, 'app');
-    assert(app, 'appClick should have been on a descendant of an app');
-
-    var appId = app.getAttribute('app-id');
-    assert(appId, 'unexpected app without appId');
-
-    // Tell chrome to launch the app.
-    var NTP_APPS_MAXIMIZED = 0;
-    chrome.send('launchApp', [appId, NTP_APPS_MAXIMIZED]);
-
-    // Don't allow the click to trigger a link or anything
-    e.preventDefault();
-  }
-
   /**
    * Search an elements ancestor chain for the nearest element that is a member
    * of the specified class.
@@ -773,10 +654,7 @@ var ntp = (function() {
    */
   function removePage(pageNo)
   {
-    var page = appsPages[pageNo];
-
-    // Remove the page from the DOM
-    page.parentNode.removeChild(page);
+    appsPageList.removeChild(appsPages[pageNo]);
 
     // Remove the corresponding dot
     // Need to give it a chance to animate though

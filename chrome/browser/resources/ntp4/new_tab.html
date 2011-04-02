@@ -15,31 +15,20 @@
 <link rel="stylesheet" href="new_tab.css">
 <link id="themecss" rel="stylesheet">
 
+<script src="../shared/js/cr.js"></script>
 <script src="../shared/js/util.js"></script>
-<script src="event_tracker.js"></script>
-<script src="touch_handler.js"></script>
+<script src="apps_page.js"></script>
 <script src="card_slider.js"></script>
+<script src="event_tracker.js"></script>
 <script src="grabber.js"></script>
 <script src="new_tab.js"></script>
+<script src="touch_handler.js"></script>
 </head>
 
 <body>
   <div id="apps-frame">
     <div id="apps-page-list">
-      <div class="apps-page">
-        <!-- This is used as a template which JS copies and fills in.  The
-             template itself is never actually displayed.
-             An app-container is always a direct child of an apps-page, and is
-             expected to have a single 'app' child element holding the visible
-             content, and 'img' and 'span' tags as descendants somewhere.
-        -->
-        <div class="app-container" id="app-template">
-          <div class="app">
-            <img>
-            <span>App name</span>
-          </div>
-        </div>
-      </div>
+      <!-- apps pages go here -->
     </div>
   </div>
   <div id="footer">

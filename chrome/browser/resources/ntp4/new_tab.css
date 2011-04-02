@@ -15,7 +15,6 @@ body {
   background-size: auto 100%;
   font-family: segoe ui, arial, helvetica, sans-serif;
   font-size: 14px;
-  color: white;
   margin: 0;
   /* Don't highlight links when they're tapped.  Safari has bugs here that
      show up as flicker when dragging in some situations */
@@ -48,29 +47,20 @@ body {
 /* The apps-page is the slider card that is moved.
  */
 .apps-page {
-  -webkit-box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1100px;
   padding: 29px;
-  /* TODO(rbyers): Don't want the final row centered, but would like all rows
-   * centered.  Really I want the page-content width determined by the boxes
-   * inside of it, but perhaps webkit-box doesn't support that.
-   * Note that instead of display:inline-block for the apps, I could use
-   * float:left and have a .app-container:first-child { clear:both; } rule,
-   * but I'd have to figure out some way to get the vertical position reset.
-  text-align:center; */
-}
-
-.app-container {
-  width: 128px;
-  height: 128px;
-  padding: 16px;
-  display: inline-block;
-  vertical-align: top;
+  position: relative;
+  width: 960px;
+  -webkit-box-sizing: border-box;
 }
 
 .app {
+  display: inline-block;
+  height: 128px;
   text-align: center;
   width: 128px;
-  height: 128px;
   /* Animate effects to/from the grabbed state, and the position when drop
      is cancelled.  I'd like to also animate movement when an app is
      re-positioned, but since chrome is doing the layout there is no property
@@ -83,8 +73,6 @@ body {
   -webkit-transition-duration: 200ms;
   /* Don't offer the context menu on long-press. */
   -webkit-touch-callout: none;
-  /* Work-around regression bug 74802 */
-  -webkit-transform: scale3d(1, 1, 1);
 }
 
 .app span {
@@ -93,10 +81,11 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
-  color: white;
 }
 
+/* TODO(estade): hover effect? press effect? */
 .app img {
+  cursor: pointer;
   display: block;
   width: 96px;
   height: 96px;
@@ -157,6 +146,7 @@ body {
   margin: 0 9px;
 }
 
+/* TODO(estade): theme this color. */
 #footer-content > span {
   color: #888;
 }
@@ -175,10 +165,14 @@ body {
   height: 40%;
 }
 
+/* TODO(estade): handle overflow better? I tried overflow-x: hidden and
+   overflow-y: visible (for the new dot animation), but this makes a scroll
+   bar appear */
 #dot-list {
   list-style-type: none;
   margin: 0;
   padding: 0;
+  white-space: nowrap;
   -webkit-box-flex: 1;
 }
 
@@ -192,16 +186,8 @@ body {
   width: 60px;
   -webkit-border-radius: 2px;
   -webkit-box-sizing: border-box;
-  /* Work-around regression bug 74802 */
-  -webkit-transform: translate3d(0, 0, 0);
   -webkit-transition-duration: 500ms;
-  -webkit-transition-property: width, height, margin, -webkit-transform;
-}
-
-#footer.rearrange-mode .dot {
-  margin: 0 20px;
-  width: 30px;
-  height: 30px;
+  -webkit-transition-property: -webkit-transform;
 }
 
 .dot.selected {
@@ -209,7 +195,7 @@ body {
 }
 
 .dot.new {
-  -webkit-transform: translate3d(0, 40px, 0);
+  -webkit-transform: translate(0, 40px);
 }
 
 #trash {
