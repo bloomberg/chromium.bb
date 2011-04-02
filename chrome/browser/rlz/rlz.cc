@@ -67,7 +67,9 @@ bool SendFinancialPing(const std::wstring& brand, const std::wstring& lang,
 // the user first interacted with the omnibox and set a global accordingly.
 class OmniBoxUsageObserver : public NotificationObserver {
  public:
-  OmniBoxUsageObserver() {
+  OmniBoxUsageObserver(bool first_run, bool send_ping_immediately)
+    : first_run_(first_run),
+      send_ping_immediately_(send_ping_immediately) {
     registrar_.Add(this, NotificationType::OMNIBOX_OPENED_URL,
                    NotificationService::AllSources());
     // If instant is enabled we'll start searching as soon as the user starts
@@ -81,18 +83,7 @@ class OmniBoxUsageObserver : public NotificationObserver {
 
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) {
-    // Needs to be evaluated. See http://crbug.com/62328.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-
-    // Try to record event now, else set the flag to try later when we
-    // attempt the ping.
-    if (!RLZTracker::RecordProductEvent(rlz_lib::CHROME,
-                                        rlz_lib::CHROME_OMNIBOX,
-                                        rlz_lib::FIRST_SEARCH))
-      omnibox_used_ = true;
-    delete this;
-  }
+                       const NotificationDetails& details);
 
   static bool used() {
     return omnibox_used_;
@@ -118,6 +109,8 @@ class OmniBoxUsageObserver : public NotificationObserver {
   static OmniBoxUsageObserver* instance_;
 
   NotificationRegistrar registrar_;
+  bool first_run_;
+  bool send_ping_immediately_;
 };
 
 bool OmniBoxUsageObserver::omnibox_used_ = false;
@@ -190,7 +183,9 @@ class DelayedInitTask : public Task {
     std::wstring omnibox_rlz;
     RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &omnibox_rlz);
 
-    if (first_run_ || omnibox_rlz.empty()) {
+    if ((first_run_ || omnibox_rlz.empty()) && !already_ran_) {
+      already_ran_ = true;
+
       // Record the installation of chrome.
       RLZTracker::RecordProductEvent(rlz_lib::CHROME,
                                      rlz_lib::CHROME_OMNIBOX,
@@ -237,13 +232,50 @@ class DelayedInitTask : public Task {
     return urlref->HasGoogleBaseURLs();
   }
 
+  // Flag that remembers if the delayed task already ran or not.  This is
+  // needed only in the first_run case, since we don't want to record the
+  // set-to-google event more than once.  We need to worry about this event
+  // (and not the others) because it is not a stateful RLZ event.
+  static bool already_ran_;
+
   bool first_run_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(DelayedInitTask);
 };
 
+bool DelayedInitTask::already_ran_ = false;
+
+void OmniBoxUsageObserver::Observe(NotificationType type,
+                                   const NotificationSource& source,
+                                   const NotificationDetails& details) {
+  // Needs to be evaluated. See http://crbug.com/62328.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
+  // Try to record event now, else set the flag to try later when we
+  // attempt the ping.
+  if (!RLZTracker::RecordProductEvent(rlz_lib::CHROME,
+                                      rlz_lib::CHROME_OMNIBOX,
+                                      rlz_lib::FIRST_SEARCH))
+    omnibox_used_ = true;
+  else if (send_ping_immediately_) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE, new DelayedInitTask(first_run_));
+  }
+
+  delete this;
+}
+
 }  // namespace
 
 bool RLZTracker::InitRlzDelayed(bool first_run, int delay) {
+  // A negative delay means that a financial ping should be sent immediately
+  // after a first search is recorded, without waiting for the next restart
+  // of chrome.  However, we only want this behaviour on first run.
+  bool send_ping_immediately = false;
+  if (delay < 0) {
+    send_ping_immediately = true;
+    delay = -delay;
+  }
+
   // Maximum and minimum delay we would allow to be set through master
   // preferences. Somewhat arbitrary, may need to be adjusted in future.
   const int kMaxDelay = 200 * 1000;
@@ -254,7 +286,7 @@ bool RLZTracker::InitRlzDelayed(bool first_run, int delay) {
   delay = (delay > kMaxDelay) ? kMaxDelay : delay;
 
   if (!OmniBoxUsageObserver::used())
-    new OmniBoxUsageObserver();
+    new OmniBoxUsageObserver(first_run, send_ping_immediately);
 
   // Schedule the delayed init items.
   BrowserThread::PostDelayedTask(
