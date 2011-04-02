@@ -367,8 +367,8 @@ int BrowserViewLayout::LayoutInfoBar(int top) {
   infobar_container_->SetVisible(visible);
   int height = infobar_container_->GetPreferredSize().height();
   DCHECK(visible || !height) << "Invisible InfoBarContainer has height.";
-  int overlapped_top = top -
-      static_cast<InfoBarContainerView*>(infobar_container_)->VerticalOverlap();
+  int overlapped_top = top - static_cast<InfoBarContainerView*>(
+      infobar_container_)->GetVerticalOverlap();
   infobar_container_->SetBounds(vertical_layout_rect_.x(),
                                 overlapped_top,
                                 vertical_layout_rect_.width(),

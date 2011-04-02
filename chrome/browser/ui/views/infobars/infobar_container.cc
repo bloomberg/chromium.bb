@@ -20,9 +20,10 @@ InfoBarContainer::InfoBarContainer(Delegate* delegate)
 
 InfoBarContainer::~InfoBarContainer() {
   // Before we remove any children, we reset |delegate_|, so that no removals
-  // will result in us trying to call delegate_->InfoBarContainerSizeChanged().
-  // This is important because at this point |delegate_| may be shutting down,
-  // and it's at best unimportant and at worst disastrous to call that.
+  // will result in us trying to call
+  // delegate_->InfoBarContainerHeightChanged().  This is important because at
+  // this point |delegate_| may be shutting down, and it's at best unimportant
+  // and at worst disastrous to call that.
   delegate_ = NULL;
   ChangeTabContents(NULL);
 }
@@ -60,12 +61,12 @@ void InfoBarContainer::ChangeTabContents(TabContents* contents) {
   }
 
   // Now that everything is up to date, signal the delegate to re-layout.
-  OnInfoBarAnimated(true);
+  OnInfoBarHeightChanged(true);
 }
 
-void InfoBarContainer::OnInfoBarAnimated(bool done) {
+void InfoBarContainer::OnInfoBarHeightChanged(bool is_animating) {
   if (delegate_)
-    delegate_->InfoBarContainerSizeChanged(!done);
+    delegate_->InfoBarContainerHeightChanged(is_animating);
 }
 
 void InfoBarContainer::RemoveDelegate(InfoBarDelegate* delegate) {

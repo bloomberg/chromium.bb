@@ -56,6 +56,8 @@ InfoBarView::InfoBarView(InfoBarDelegate* delegate)
       close_button_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(delete_factory_(this)),
       target_height_(kDefaultTargetHeight),
+      tab_height_(0),
+      bar_height_(0),
       fill_path_(new SkPath),
       stroke_path_(new SkPath) {
   set_parent_owned(false);  // InfoBar deletes itself at the appropriate time.
@@ -149,6 +151,53 @@ views::TextButton* InfoBarView::CreateTextButton(
 }
 
 void InfoBarView::Layout() {
+  // Calculate the fill and stroke paths.  We do this here, rather than in
+  // PlatformSpecificRecalculateHeight(), because this is also reached when our
+  // width is changed, which affects both paths.
+  stroke_path_->rewind();
+  fill_path_->rewind();
+  if (tab_height_) {
+    int divider_y = tab_height_ - 1;
+    stroke_path_->moveTo(
+        SkIntToScalar(GetMirroredXWithWidthInView(0, kTabWidth)),
+        SkIntToScalar(divider_y));
+    stroke_path_->rCubicTo(
+        SkScalarDiv(kCurveWidth, 2), 0.0,
+        SkScalarDiv(kCurveWidth, 2),
+        SkIntToScalar(-divider_y),
+        SkIntToScalar(kCurveWidth),
+        SkIntToScalar(-divider_y));
+    stroke_path_->rLineTo(SkScalarMulAdd(kTabIconPadding, 2, kMaxIconWidth),
+                          0.0);
+    stroke_path_->rCubicTo(
+        SkScalarDiv(kCurveWidth, 2), 0.0,
+        SkScalarDiv(kCurveWidth, 2),
+        SkIntToScalar(divider_y),
+        SkIntToScalar(kCurveWidth),
+        SkIntToScalar(divider_y));
+
+    // Create the fill portion of the tab.  Because the fill is inside the
+    // bounds and will not cover the separator, we need to extend downward by a
+    // pixel before closing.
+    *fill_path_ = *stroke_path_;
+    fill_path_->rLineTo(0.0, 1.0);
+    fill_path_->rLineTo(-SkIntToScalar(kTabWidth), 0.0);
+    fill_path_->close();
+
+    // Fill and stroke have different opinions about how to treat paths.
+    // Because in Skia integral coordinates represent pixel boundaries,
+    // offsetting the path makes it go exactly through pixel centers; this
+    // results in lines that are exactly where we expect, instead of having odd
+    // "off by one" issues.  Were we to do this for |fill_path|, however, which
+    // tries to fill "inside" the path (using some questionable math), we'd get
+    // a fill at a very different place than we'd want.
+    stroke_path_->offset(SK_ScalarHalf, SK_ScalarHalf);
+  }
+  if (bar_height_) {
+    fill_path_->addRect(0.0, SkIntToScalar(tab_height_), SkIntToScalar(width()),
+                        SkIntToScalar(height()));
+  }
+
   int start_x = kHorizontalPadding;
   if (icon_ != NULL) {
     // Center the icon horizontally within the tab, and vertically between the
@@ -245,12 +294,9 @@ void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
   //
   // gfx::CanvasSkia* canvas_skia = canvas->AsCanvasSkia();
   // canvas_skia->clipPath(*fill_path_);
-  int tab_height = AnimatedTabHeight();
-  int bar_height = AnimatedBarHeight();
-  DCHECK_EQ(tab_height + bar_height, height())
-      << "Animation progressed between OnBoundsChanged & PaintChildren.";
-  canvas->ClipRectInt(0, tab_height, width(), bar_height);
-
+  DCHECK_EQ(tab_height_ + bar_height_, height())
+      << "Infobar piecewise heights do not match overall height";
+  canvas->ClipRectInt(0, tab_height_, width(), bar_height_);
   views::View::PaintChildren(canvas);
   canvas->Restore();
 }
@@ -266,6 +312,13 @@ void InfoBarView::ButtonPressed(views::Button* sender,
 
 int InfoBarView::ContentMinimumWidth() const {
   return 0;
+}
+
+void InfoBarView::SetTargetHeight(int height) {
+  if (target_height_ != height) {
+    target_height_ = height;
+    RecalculateHeight();
+  }
 }
 
 int InfoBarView::StartX() const {
@@ -286,8 +339,7 @@ int InfoBarView::CenterY(const gfx::Size prefsize) const {
 }
 
 int InfoBarView::OffsetY(const gfx::Size prefsize) const {
-  return CenterY(prefsize) + AnimatedTabHeight() -
-      (target_height_ - AnimatedBarHeight());
+  return CenterY(prefsize) + tab_height_ - (target_height_ - bar_height_);
 }
 
 void InfoBarView::PlatformSpecificHide(bool animate) {
@@ -305,6 +357,22 @@ void InfoBarView::PlatformSpecificHide(bool animate) {
   DestroyFocusTracker(restore_focus);
 }
 
+void InfoBarView::PlatformSpecificRecalculateHeight() {
+  int old_tab_height = tab_height_;
+  int old_bar_height = bar_height_;
+  tab_height_ = static_cast<int>(kTabHeight * animation()->GetCurrentValue());
+  bar_height_ =
+      static_cast<int>(target_height_ * animation()->GetCurrentValue());
+
+  // Don't re-layout if nothing has changed, e.g. because the animation step was
+  // not large enough to actually change the heights by at least a pixel.
+  if ((old_tab_height != tab_height_) || (old_bar_height != bar_height_)) {
+    // Ensure that notifying our container of our size change will result in a
+    // re-layout.
+    InvalidateLayout();
+  }
+}
+
 void InfoBarView::GetAccessibleState(ui::AccessibleViewState* state) {
   if (delegate()) {
     state->name = l10n_util::GetStringUTF16(
@@ -314,68 +382,8 @@ void InfoBarView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_ALERT;
 }
 
-int InfoBarView::AnimatedTabHeight() const {
-  return static_cast<int>(kTabHeight * animation()->GetCurrentValue());
-}
-
-int InfoBarView::AnimatedBarHeight() const {
-  return static_cast<int>(target_height_ * animation()->GetCurrentValue());
-}
-
 gfx::Size InfoBarView::GetPreferredSize() {
-  return gfx::Size(0, AnimatedTabHeight() + AnimatedBarHeight());
-}
-
-void InfoBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  int tab_height = AnimatedTabHeight();
-  int bar_height = AnimatedBarHeight();
-  int divider_y = tab_height - 1;
-  DCHECK_EQ(tab_height + bar_height, height())
-      << "Animation progressed between Layout & OnBoundsChanged.";
-
-  int mirrored_x = GetMirroredXWithWidthInView(0, kTabWidth);
-  stroke_path_->rewind();
-  fill_path_->rewind();
-
-  if (tab_height) {
-    stroke_path_->moveTo(SkIntToScalar(mirrored_x),
-                         SkIntToScalar(divider_y));
-    stroke_path_->rCubicTo(
-        SkScalarDiv(kCurveWidth, 2), 0.0,
-        SkScalarDiv(kCurveWidth, 2),
-        SkIntToScalar(-divider_y),
-        SkIntToScalar(kCurveWidth),
-        SkIntToScalar(-divider_y));
-    stroke_path_->rLineTo(SkScalarMulAdd(kTabIconPadding, 2, kMaxIconWidth),
-                          0.0);
-    stroke_path_->rCubicTo(
-        SkScalarDiv(kCurveWidth, 2), 0.0,
-        SkScalarDiv(kCurveWidth, 2),
-        SkIntToScalar(divider_y),
-        SkIntToScalar(kCurveWidth),
-        SkIntToScalar(divider_y));
-
-    // Create the fill portion of the tab.  Because the fill is inside the
-    // bounds and will not cover the separator, we need to extend downward by a
-    // pixel before closing.
-    *fill_path_ = *stroke_path_;
-    fill_path_->rLineTo(0.0, 1.0);
-    fill_path_->rLineTo(-SkIntToScalar(kTabWidth), 0.0);
-    fill_path_->close();
-
-    // Fill and stroke have different opinions about how to treat paths.
-    // Because in Skia integral coordinates represent pixel boundaries,
-    // offsetting the path makes it go exactly through pixel centers; this
-    // results in lines that are exactly where we expect, instead of having odd
-    // "off by one" issues.  Were we to do this for |fill_path|, however, which
-    // tries to fill "inside" the path (using some questionable math), we'd get
-    // a fill at a very different place than we'd want.
-    stroke_path_->offset(SK_ScalarHalf, SK_ScalarHalf);
-  }
-  if (bar_height) {
-    fill_path_->addRect(0.0, SkIntToScalar(tab_height),
-                        SkIntToScalar(width()), SkIntToScalar(height()));
-  }
+  return gfx::Size(0, tab_height_ + bar_height_);
 }
 
 void InfoBarView::FocusWillChange(View* focused_before, View* focused_now) {

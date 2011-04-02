@@ -367,9 +367,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   }
 }
 
-// Occassional crashes. See http://crbug.com75450
-IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
-                       DISABLED_TwoExtensionsOneByOne) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsOneByOne) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   CrashExtension(size_before);

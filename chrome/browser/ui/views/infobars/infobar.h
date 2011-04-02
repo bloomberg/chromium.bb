@@ -45,8 +45,14 @@ class InfoBar : public ui::AnimationDelegate {
   ui::SlideAnimation* animation() { return animation_.get(); }
   const ui::SlideAnimation* animation() const { return animation_.get(); }
 
-  // Subclasses may optionally override this.
-  virtual void PlatformSpecificHide(bool animate);
+  // Calls PlatformSpecificRecalculateHeight(), then informs our container our
+  // height has changed.
+  void RecalculateHeight();
+
+  // Platforms may optionally override these if they need to do work during
+  // processing of the given calls.
+  virtual void PlatformSpecificHide(bool animate) {}
+  virtual void PlatformSpecificRecalculateHeight() {}
 
  private:
   // ui::AnimationDelegate:

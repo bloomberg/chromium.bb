@@ -1672,7 +1672,7 @@ void BrowserView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_CLIENT;
 }
 
-void BrowserView::InfoBarContainerSizeChanged(bool is_animating) {
+void BrowserView::InfoBarContainerHeightChanged(bool is_animating) {
   SelectedTabToolbarSizeChanged(is_animating);
 }
 

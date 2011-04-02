@@ -18,7 +18,7 @@ InfoBarContainerView::InfoBarContainerView(Delegate* delegate)
 InfoBarContainerView::~InfoBarContainerView() {
 }
 
-int InfoBarContainerView::VerticalOverlap() {
+int InfoBarContainerView::GetVerticalOverlap() {
   return GetVerticalOverlap(NULL);
 }
 
@@ -31,14 +31,14 @@ gfx::Size InfoBarContainerView::GetPreferredSize() {
 }
 
 void InfoBarContainerView::Layout() {
-  int top = GetVerticalOverlap(NULL);
+  int top = GetVerticalOverlap();
 
   for (int i = 0; i < child_count(); ++i) {
     View* child = GetChildViewAt(i);
-    gfx::Size ps = child->GetPreferredSize();
-    top -= static_cast<InfoBarView*>(child)->AnimatedTabHeight();
-    child->SetBounds(0, top, width(), ps.height());
-    top += ps.height();
+    top -= static_cast<InfoBarView*>(child)->tab_height();
+    int child_height = child->GetPreferredSize().height();
+    child->SetBounds(0, top, width(), child_height);
+    top += child_height;
   }
 }
 
@@ -63,8 +63,7 @@ int InfoBarContainerView::GetVerticalOverlap(int* total_height) {
 
   for (int i = 0; i < child_count(); ++i) {
     View* child = GetChildViewAt(i);
-    gfx::Size ps = child->GetPreferredSize();
-    next_child_y -= static_cast<InfoBarView*>(child)->AnimatedTabHeight();
+    next_child_y -= static_cast<InfoBarView*>(child)->tab_height();
     vertical_overlap = std::max(vertical_overlap, -next_child_y);
     next_child_y += child->GetPreferredSize().height();
   }

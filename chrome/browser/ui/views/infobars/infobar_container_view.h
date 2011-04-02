@@ -16,10 +16,7 @@ class InfoBarContainerView : public AccessiblePaneView,
   explicit InfoBarContainerView(Delegate* delegate);
   virtual ~InfoBarContainerView();
 
-  // Overlap the previous view by this amount, vertically, so that the
-  // first InfoBarView in this InfoBarContainer may draw its tab on
-  // top.
-  int VerticalOverlap();
+  virtual int GetVerticalOverlap() OVERRIDE;
 
  private:
   // AccessiblePaneView:
@@ -31,9 +28,9 @@ class InfoBarContainerView : public AccessiblePaneView,
   virtual void PlatformSpecificAddInfoBar(InfoBar* infobar) OVERRIDE;
   virtual void PlatformSpecificRemoveInfoBar(InfoBar* infobar) OVERRIDE;
 
-  // Return the maximum vertical overlap of the InfoBarContainer's children,
-  // and, when |total_height| is non-NULL, set the |*total_height| of the
-  // InfoBarContainer.
+  // Return the amount by which to overlap the toolbar above, and, when
+  // |total_height| is non-NULL, set it to the height of the InfoBarContainer
+  // (including overlap).
   int GetVerticalOverlap(int* total_height);
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainerView);

@@ -939,7 +939,7 @@ void ExternalTabContainer::SetEnableExtensionAutomation(
   }
 }
 
-void ExternalTabContainer::InfoBarContainerSizeChanged(bool is_animating) {
+void ExternalTabContainer::InfoBarContainerHeightChanged(bool is_animating) {
   if (external_tab_view_)
     external_tab_view_->Layout();
 }

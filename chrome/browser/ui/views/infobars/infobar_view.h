@@ -35,7 +35,7 @@ class InfoBarView : public InfoBar,
   SkPath* fill_path() const { return fill_path_.get(); }
   SkPath* stroke_path() const { return stroke_path_.get(); }
 
-  int AnimatedTabHeight() const;
+  int tab_height() const { return tab_height_; }
 
  protected:
   // The target height of the InfoBar, regardless of what its current height
@@ -80,7 +80,8 @@ class InfoBarView : public InfoBar,
   // button from overlapping views that cannot be shrunk any further.
   virtual int ContentMinimumWidth() const;
 
-  void set_target_height(int height) { target_height_ = height; }
+  // Changes the target height of the main ("bar") portion of the infobar.
+  void SetTargetHeight(int height);
 
   // These return x coordinates delimiting the usable area for subclasses to lay
   // out their controls.
@@ -102,11 +103,11 @@ class InfoBarView : public InfoBar,
 
   // InfoBar:
   virtual void PlatformSpecificHide(bool animate) OVERRIDE;
+  virtual void PlatformSpecificRecalculateHeight() OVERRIDE;
 
   // views::View:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
   // views::FocusChangeListener:
@@ -116,8 +117,6 @@ class InfoBarView : public InfoBar,
   // Returns a centered y-position of a control of height specified in
   // |prefsize| within the standard InfoBar height. Stable during an animation.
   int CenterY(const gfx::Size prefsize) const;
-
-  int AnimatedBarHeight() const;
 
   // Destroys the external focus tracker, if present. If |restore_focus| is
   // true, restores focus to the view tracked by the focus tracker before doing
@@ -144,6 +143,12 @@ class InfoBarView : public InfoBar,
   // The target height for the bar portion of the InfoBarView.
   int target_height_;
 
+  // The current heights of the tab and bar portions.
+  int tab_height_;
+  int bar_height_;
+
+  // The paths for the InfoBarBackground to draw, sized according to the heights
+  // above.
   scoped_ptr<SkPath> fill_path_;
   scoped_ptr<SkPath> stroke_path_;
 

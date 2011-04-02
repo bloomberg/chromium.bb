@@ -25,11 +25,10 @@ class TabContents;
 // functions, which are pure virtual here.
 class InfoBarContainer : public NotificationObserver {
  public:
-  // The delegate is notified each time InfoBarContainer::OnInfoBarAnimated() is
-  // called.
+  // The delegate is notified each time the infobar container changes height.
   class Delegate {
    public:
-    virtual void InfoBarContainerSizeChanged(bool is_animating) = 0;
+    virtual void InfoBarContainerHeightChanged(bool is_animating) = 0;
 
    protected:
     virtual ~Delegate();
@@ -43,10 +42,10 @@ class InfoBarContainer : public NotificationObserver {
   // |contents|, and show them all.  |contents| may be NULL.
   void ChangeTabContents(TabContents* contents);
 
-  // Called when a contained infobar has animated.  The container is expected to
-  // do anything necessary to respond to the infobar's possible size change,
+  // Called when a contained infobar has animated or by some other means changed
+  // its height.  The container is expected to do anything necessary to respond,
   // e.g. re-layout.
-  void OnInfoBarAnimated(bool done);
+  void OnInfoBarHeightChanged(bool is_animating);
 
   // Remove the specified InfoBarDelegate from the selected TabContents. This
   // will notify us back and cause us to close the InfoBar.  This is called from
@@ -57,6 +56,10 @@ class InfoBarContainer : public NotificationObserver {
   // is about to delete itself.  At this point, |infobar| should already be
   // hidden.
   void RemoveInfoBar(InfoBar* infobar);
+
+  // Return the amount by which to overlap the toolbar above, so that the
+  // InfoBars inside may draw anti-spoof arrows atop it.
+  virtual int GetVerticalOverlap() = 0;
 
  protected:
   // These must be implemented on each platform to e.g. adjust the visible

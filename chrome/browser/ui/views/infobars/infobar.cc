@@ -39,8 +39,7 @@ void InfoBar::Hide(bool animate) {
 }
 
 void InfoBar::AnimationProgressed(const ui::Animation* animation) {
-  if (container_)
-    container_->OnInfoBarAnimated(false);
+  RecalculateHeight();
 }
 
 void InfoBar::RemoveInfoBar() {
@@ -48,12 +47,14 @@ void InfoBar::RemoveInfoBar() {
     container_->RemoveDelegate(delegate_);
 }
 
-void InfoBar::PlatformSpecificHide(bool animate) {
+void InfoBar::RecalculateHeight() {
+  PlatformSpecificRecalculateHeight();
+  if (container_)
+    container_->OnInfoBarHeightChanged(animation_->is_animating());
 }
 
 void InfoBar::AnimationEnded(const ui::Animation* animation) {
-  if (container_)
-    container_->OnInfoBarAnimated(true);
+  RecalculateHeight();
   MaybeDelete();
 }
 
