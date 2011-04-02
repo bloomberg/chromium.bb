@@ -856,7 +856,8 @@ TEST_F(FullTabDownloadTest, CF_DownloadFileFromPost) {
             testing::InvokeWithoutArgs(
                 testing::CreateFunctor(CloseWindow, &owner_window)),
             CloseBrowserMock(&ie_mock_)));
-  LaunchIENavigateAndLoop(src_url, kChromeFrameLongNavigationTimeoutInSeconds);
+  LaunchIENavigateAndLoop(src_url,
+                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
 
   std::string data;
   EXPECT_TRUE(file_util::ReadFileToString(temp_file_path, &data));

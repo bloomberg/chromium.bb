@@ -705,6 +705,7 @@ TEST_F(ContextMenuTest, CFOpenLinkInNewWindow) {
 
   // Invoke 'Open link in new window' context menu item.
   EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .Times(testing::AtMost(2))
       .WillOnce(AccRightClick(AccObjectMatcher(L"", L"link")))
       .WillOnce(testing::Return());
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
