@@ -110,7 +110,7 @@ class WhitelistOpContext : public SignedSettings::Delegate<bool>,
   WhitelistOpContext(Type type,
                      const std::string& email,
                      SignedSettingsHelper::Callback* callback,
-                     Delegate* delegate)
+                     OpContext::Delegate* delegate)
       : OpContext(callback, delegate),
         type_(type),
         email_(email) {
@@ -170,7 +170,7 @@ class StorePropertyOpContext : public SignedSettings::Delegate<bool>,
   StorePropertyOpContext(const std::string& name,
                          const std::string& value,
                          SignedSettingsHelper::Callback* callback,
-                         Delegate* delegate)
+                         OpContext::Delegate* delegate)
       : OpContext(callback, delegate),
         name_(name),
         value_(value) {
@@ -204,7 +204,7 @@ class RetrievePropertyOpContext
  public:
   RetrievePropertyOpContext(const std::string& name,
                             SignedSettingsHelper::Callback* callback,
-                            Delegate* delegate)
+                            OpContext::Delegate* delegate)
       : OpContext(callback, delegate),
         name_(name) {
   }
@@ -235,7 +235,7 @@ class StorePolicyOpContext : public SignedSettings::Delegate<bool>,
  public:
   StorePolicyOpContext(const em::PolicyFetchResponse& policy,
                        SignedSettingsHelper::Callback* callback,
-                       Delegate* delegate)
+                       OpContext::Delegate* delegate)
       : OpContext(callback, delegate),
         policy_(policy) {
   }
@@ -265,7 +265,7 @@ class RetrievePolicyOpContext
       public OpContext {
  public:
   RetrievePolicyOpContext(SignedSettingsHelper::Callback* callback,
-                          Delegate* delegate)
+                          OpContext::Delegate* delegate)
       : OpContext(callback, delegate) {
   }
 
