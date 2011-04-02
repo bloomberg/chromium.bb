@@ -33,27 +33,27 @@ call "%~dp0msvs_env.bat"
 setlocal
 echo @@@BUILD_STEP gyp_compile@@@
 call vcvarsall.bat x86 && call devenv.com build\all.sln /build Release
-:: if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 echo @@@BUILD_STEP gyp_tests@@@
 python_slave.exe trusted_test.py --config Release
-:: if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 endlocal
 
 setlocal
 echo @@@BUILD_STEP scons_compile32@@@
 call vcvarsall.bat x86 && call scons.bat -j 8 ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
- --nacl_glibc -k --verbose --mode=opt-win,nacl,doc platform=x86-64
-:: if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+ --nacl_glibc -k --verbose --mode=opt-win,nacl,doc platform=x86-32
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 endlocal
 
 setlocal
 echo @@@BUILD_STEP scons_compile64@@@
 call vcvarsall.bat x64 && call scons.bat -j 8 ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
- --nacl_glibc -k --verbose --mode=opt-win,nacl,doc platform=x86-32
-:: if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+ --nacl_glibc -k --verbose --mode=opt-win,nacl,doc platform=x86-64
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 endlocal
 
 setlocal
