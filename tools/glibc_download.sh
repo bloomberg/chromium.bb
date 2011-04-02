@@ -19,7 +19,12 @@ END
   exit 10
 fi
 declare -r glibc_url_prefix=http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r
-glibc_revision="$("$(dirname "$0")/glibc_revision.sh")"
+declare -r glibc_revision="$("$(dirname "$0")/glibc_revision.sh")"
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  declare -r tar=gnutar
+else
+  declare -r tar=tar
+fi
 retry_count=10000
 if ((${#@}>1)); then
   retry_count="$2"
@@ -31,7 +36,7 @@ fi
 for ((i=1;i<=retry_count;i+=i)); do
   curl --fail --location --url \
       "$glibc_url_prefix$glibc_revision"/glibc_x86.tar.gz -o "$1/.glibc.tar" &&
-  tar xSvpf "$1/.glibc.tar" -C "$1" &&
+  $tar xSvpf "$1/.glibc.tar" -C "$1" &&
   ( rm "$1/.glibc.tar" || ( sleep 30 && rm "$1/.glibc.tar" ) ) &&
   exit 0
   for ((j=glibc_revision+1;j<glibc_revision+revisions_count;j++)); do

@@ -49,14 +49,14 @@ echo @@@BUILD_STEP compile_toolchain@@@
 echo @@@BUILD_STEP tar_toolchain@@@
 (
   cd tools
-  tar cSvfz toolchain.tgz toolchain/ && chmod a+r toolchain.tgz
+  tar zScf toolchain.tgz toolchain/ && chmod a+r toolchain.tgz
 )
 
 echo @@@BUILD_STEP untar_toolchain@@@
 (
   mkdir -p .tmp
   cd .tmp
-  tar zxf ../tools/toolchain.tgz
+  tar zSxf ../tools/toolchain.tgz
   mv toolchain ..
 )
 

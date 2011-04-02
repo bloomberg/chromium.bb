@@ -44,7 +44,7 @@ setlocal
 echo @@@BUILD_STEP scons_compile32@@@
 call vcvarsall.bat x86 && call scons.bat -j 8 ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
- -k --verbose --mode=opt-win,nacl,doc platform=x86-64
+ --nacl_glibc -k --verbose --mode=opt-win,nacl,doc platform=x86-64
 :: if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 endlocal
 
@@ -52,7 +52,7 @@ setlocal
 echo @@@BUILD_STEP scons_compile64@@@
 call vcvarsall.bat x64 && call scons.bat -j 8 ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
- -k --verbose --mode=opt-win,nacl,doc platform=x86-32
+ --nacl_glibc -k --verbose --mode=opt-win,nacl,doc platform=x86-32
 :: if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 endlocal
 
@@ -62,7 +62,7 @@ set RETCODE=0
 echo @@@BUILD_STEP small_tests64@@@
 call vcvarsall.bat x64 && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
- -k --verbose --mode=dbg-win,nacl,doc small_tests platform=x86-64
+ --nacl_glibc -k --verbose --mode=dbg-win,nacl,doc small_tests platform=x86-64
 :: if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 
 # TODO(khim): add medium_tests, large_tests, chrome_browser_tests.
