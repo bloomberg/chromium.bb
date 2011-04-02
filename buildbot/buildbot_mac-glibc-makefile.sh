@@ -33,7 +33,7 @@ rm -rf scons-out tools/SRC tools/BUILD tools/out tools/toolchain \
 # If the error result is 2 or more we are stopping the build
 echo @@@BUILD_STEP check_glibc_revision_sanity@@@
 echo "Try to download glibc revision $(tools/glibc_revision.sh)"
-if tools/glibc_download.sh tools/toolchain/win_x86 1; then
+if tools/glibc_download.sh tools/toolchain/mac_x86 1; then
   INST_GLIBC_PROGRAM=true
 elif (($?>1)); then
   echo @@@STEP_FAILURE@@@
@@ -56,7 +56,7 @@ echo @@@BUILD_STEP untar_toolchain@@@
 (
   mkdir -p .tmp
   cd .tmp
-  tar zSxf ../tools/toolchain.tgz
+  gnutar zSxf ../tools/toolchain.tgz
   mv toolchain ..
 )
 
