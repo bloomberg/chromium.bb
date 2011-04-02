@@ -161,7 +161,7 @@ RenderWidgetHostView* GpuProcessHostUIShim::ViewSurface::
 
 GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id)
     : host_id_(host_id),
-      gpu_process_(NULL),
+      gpu_process_(base::kNullProcessHandle),
       gpu_render_thread_(NULL),
       ui_thread_sender_(NULL) {
   g_hosts_by_id.AddWithID(this, host_id_);
@@ -355,7 +355,7 @@ void GpuProcessHostUIShim::SendOutstandingReplies() {
     channel_requests_.pop();
     EstablishChannelError(callback.release(),
                           IPC::ChannelHandle(),
-                          NULL,
+                          base::kNullProcessHandle,
                           GPUInfo());
   }
 
@@ -386,7 +386,8 @@ void GpuProcessHostUIShim::EstablishGpuChannel(
   // If GPU features are already blacklisted, no need to establish the channel.
   if (!gpu_data_manager_->GpuAccessAllowed()) {
     EstablishChannelError(
-        wrapped_callback.release(), IPC::ChannelHandle(), NULL, GPUInfo());
+        wrapped_callback.release(), IPC::ChannelHandle(),
+        base::kNullProcessHandle, GPUInfo());
     return;
   }
 
@@ -394,7 +395,8 @@ void GpuProcessHostUIShim::EstablishGpuChannel(
     channel_requests_.push(wrapped_callback);
   } else {
     EstablishChannelError(
-        wrapped_callback.release(), IPC::ChannelHandle(), NULL, GPUInfo());
+        wrapped_callback.release(), IPC::ChannelHandle(),
+        base::kNullProcessHandle, GPUInfo());
   }
 }
 
@@ -552,7 +554,7 @@ void GpuProcessHostUIShim::OnChannelEstablished(
     Send(new GpuMsg_CloseChannel(channel_handle));
     EstablishChannelError(callback.release(),
                           IPC::ChannelHandle(),
-                          NULL,
+                          base::kNullProcessHandle,
                           GPUInfo());
     AddCustomLogMessage(logging::LOG_WARNING, "WARNING",
         "Hardware acceleration is unavailable.");
