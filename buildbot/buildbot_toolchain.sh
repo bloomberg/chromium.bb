@@ -40,14 +40,6 @@ echo @@@BUILD_STEP tar_toolchain@@@
 tar cvfz naclsdk.tgz sdk/
 chmod a+r naclsdk.tgz
 
-echo @@@BUILD_STEP untar_toolchain@@@
-mkdir -p ../toolchain/${PLATFORM}_x86/.tmp
-cd ../toolchain/${PLATFORM}_x86/.tmp
-tar xfz ../../../tools/naclsdk.tgz
-mv sdk/nacl-sdk/* ../
-
-cd ../../..
-
 # Upload the toolchain before running the tests, in case the tests
 # fail.  We do not want a flaky test or a non-toolchain-related bug to
 # cause us to lose the toolchain snapshot, especially since this takes
@@ -71,19 +63,29 @@ echo @@@BUILD_STEP archive_build@@@
   fi
   GS_BASE=gs://nativeclient-archive2/toolchain
   "$gsutil" -h Cache-Control:no-cache cp -a public-read \
-    tools/naclsdk.tgz \
+    naclsdk.tgz \
     ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_${PLATFORM}_x86.tgz
   "$gsutil" -h Cache-Control:no-cache cp -a public-read \
-    tools/naclsdk.tgz \
+    naclsdk.tgz \
     ${GS_BASE}/latest/naclsdk_${PLATFORM}_x86.tgz
 )
+echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/toolchain/r${BUILDBOT_GOT_REVISION}/@@@
+
+echo @@@BUILD_STEP untar_toolchain@@@
+mkdir -p ../toolchain/${PLATFORM}_x86/.tmp
+cd ../toolchain/${PLATFORM}_x86/.tmp
+tar xfz ../../../tools/naclsdk.tgz
+mv sdk/nacl-sdk/* ../
+
+cd ../../..
+
 
 if [[ ${PLATFORM} == win ]]; then
   cmd /c "call buildbot\\buildbot_win.bat opt 64"
 elif [[ ${PLATFORM} == mac ]]; then
-  buildbot/buildbot_${PLATFORM}.sh opt
+  buildbot/buildbot_mac.sh opt
 elif [[ ${PLATFORM} == linux ]]; then
-  buildbot/buildbot_${PLATFORM}.sh opt 32
+  buildbot/buildbot_linux.sh opt 32
 else
   echo "ERROR, bad platform."
   exit 1

@@ -24,6 +24,7 @@ echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out tools/SRC tools/BUILD tools/out tools/toolchain \
   tools/glibc tools/glibc.tar tools/toolchain.tgz toolchain .tmp ||
   echo already_clean
+mkdir -p tools/toolchain/mac_x86
 
 # glibc_download.sh can return three return codes:
 #  0 - glibc is successfully downloaded and installed
@@ -52,19 +53,24 @@ echo @@@BUILD_STEP tar_toolchain@@@
   tar zScf toolchain.tgz toolchain/ && chmod a+r toolchain.tgz
 )
 
+echo @@@BUILD_STEP archive_build@@@
+/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+  tools/toolchain.tgz \
+  gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_mac_x86.tar.gz
+echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
+
 echo @@@BUILD_STEP untar_toolchain@@@
 (
   mkdir -p .tmp
   cd .tmp
-  gnutar zSxf ../tools/toolchain.tgz
+  # GNU tar does not like some headers, regular tar can not create sparse files.
+  # Use regular tar with non-sparse files for now.
+  tar zxf ../tools/toolchain.tgz
   mv toolchain ..
 )
 
 echo @@@BUILD_STEP gyp_compile@@@
-(
-  cd ..
-  make -k -j8 V=1 BUILDTYPE=Release
-)
+xcodebuild -project build/all.xcodeproj -configuration Release
 
 RETCODE=0
 
@@ -76,28 +82,12 @@ echo @@@BUILD_STEP scons_compile32@@@
 ./scons -k -j 8 DOXYGEN=../third_party/doxygen/osx/doxygen \
   --nacl_glibc --verbose --mode=opt-mac,nacl,doc platform=x86-32
 
-echo @@@BUILD_STEP scons_compile64@@@
-./scons -k -j 8 DOXYGEN=../third_party/doxygen/osx/doxygen \
-  --nacl_glibc --verbose --mode=opt-mac,nacl,doc platform=x86-64
-
 echo @@@BUILD_STEP small_tests32@@@
 ./scons -k -j 8 \
   --mode=dbg-host,nacl platform=x86-32 \
   --nacl_glibc --verbose small_tests ||
   (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
-echo @@@BUILD_STEP small_tests64@@@
-./scons -k -j 8 \
-  --mode=dbg-host,nacl platform=x86-64 \
-  --nacl_glibc --verbose small_tests ||
-  (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+# TODO(khim): add medium_tests, large_tests, chrome_browser_tests.
 
-# TODO(pasko): add medium_tests, large_tests, chrome_browser_tests.
-
-[[ ${RETCODE} == 0 ]] || exit ${RETCODE}
-
-echo @@@BUILD_STEP archive_build@@@
-/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-  tools/toolchain.tgz \
-  gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_mac_x86.tar.gz
-echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
+exit ${RETCODE}
