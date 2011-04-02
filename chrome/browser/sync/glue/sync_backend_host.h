@@ -336,7 +336,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     // Called on the SyncBackendHost core_thread_ to nudge/pause/resume the
     // syncer.
-    void DoRequestNudge(const tracked_objects::Location& location);
+    void DoRequestNudge();
     void DoRequestPause();
     void DoRequestResume();
     void DoRequestClearServerData();
@@ -522,7 +522,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   virtual void HandleInitializationCompletedOnFrontendLoop();
 
   // Posts a nudge request on the core thread.
-  virtual void RequestNudge(const tracked_objects::Location& location);
+  virtual void RequestNudge();
 
   // Posts a config request on the core thread.
   virtual void RequestConfig(const syncable::ModelTypeBitSet& added_types);

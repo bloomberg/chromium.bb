@@ -1641,15 +1641,14 @@ bool SyncManager::RequestResume() {
   return false;
 }
 
-void SyncManager::RequestNudge(const tracked_objects::Location& location) {
+void SyncManager::RequestNudge() {
   if (data_->syncer_thread())
-    data_->syncer_thread()->NudgeSyncer(0, SyncerThread::kLocal, location);
+    data_->syncer_thread()->NudgeSyncer(0, SyncerThread::kLocal);
 }
 
 void SyncManager::RequestClearServerData() {
   if (data_->syncer_thread())
-    data_->syncer_thread()->NudgeSyncer(0, SyncerThread::kClearPrivateData,
-        FROM_HERE);
+    data_->syncer_thread()->NudgeSyncer(0, SyncerThread::kClearPrivateData);
 }
 
 void SyncManager::RequestConfig(const syncable::ModelTypeBitSet& types) {
@@ -1953,7 +1952,7 @@ void SyncManager::SyncInternal::SetPassphrase(
 
     // Nudge the syncer so that encrypted datatype updates that were waiting for
     // this passphrase get applied as soon as possible.
-    sync_manager_->RequestNudge(FROM_HERE);
+    sync_manager_->RequestNudge();
   } else {
     VLOG(1) << "No pending keys, adding provided passphrase.";
     WriteNode node(&trans);
@@ -2192,7 +2191,7 @@ void SyncManager::SyncInternal::OnIPAddressChangedImpl() {
   // TODO(akalin): CheckServerReachable() can block, which may cause
   // jank if we try to shut down sync.  Fix this.
   connection_manager()->CheckServerReachable();
-  sync_manager_->RequestNudge(FROM_HERE);
+  sync_manager_->RequestNudge();
 }
 
 // Listen to model changes, filter out ones initiated by the sync API, and
@@ -2338,8 +2337,7 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
     syncer_thread()->NudgeSyncerWithDataTypes(
         nudge_delay,
         SyncerThread::kLocal,
-        model_types,
-        FROM_HERE);
+        model_types);
   }
 }
 
@@ -2666,7 +2664,7 @@ void SyncManager::SyncInternal::OnIncomingNotification(
       syncer_thread()->NudgeSyncerWithPayloads(
           kSyncerThreadDelayMsec,
           SyncerThread::kNotification,
-          type_payloads, FROM_HERE);
+          type_payloads);
     }
     allstatus_.IncrementNotificationsReceived();
     UpdateNotificationInfo(type_payloads);
