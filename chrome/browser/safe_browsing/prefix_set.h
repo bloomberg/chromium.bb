@@ -90,6 +90,10 @@ class PrefixSet {
   // |target_index|.  Only call if |IsDeltaAt()| returned |true|.
   uint16 DeltaAt(size_t target_index) const;
 
+  // Check whether |index_| and |deltas_| still match the CRC
+  // generated during construction.
+  bool CheckChecksum() const;
+
  private:
   // Maximum number of consecutive deltas to encode before generating
   // a new index entry.  This helps keep the worst-case performance
@@ -111,6 +115,11 @@ class PrefixSet {
   // prefixes.  Deltas are only valid between consecutive items from
   // |index_|, or the end of |deltas_| for the last |index_| pair.
   std::vector<uint16> deltas_;
+
+  // For debugging, used to verify that |index_| and |deltas| were not
+  // changed after generation during construction.  |checksum_| is
+  // calculated from the data used to construct those vectors.
+  uint32 checksum_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefixSet);
 };

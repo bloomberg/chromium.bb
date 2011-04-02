@@ -223,6 +223,7 @@ enum PrefixSetEvent {
   PREFIX_SET_GETPREFIXES_BROKEN_DUPLICATION,
   PREFIX_SET_GETPREFIX_UNSORTED_IS_DELTA,
   PREFIX_SET_GETPREFIX_UNSORTED_IS_INDEX,
+  PREFIX_SET_GETPREFIX_CHECKSUM_MISMATCH,
 
   // Memory space for histograms is determined by the max.  ALWAYS ADD
   // NEW VALUES BEFORE THIS ONE.
@@ -284,6 +285,10 @@ safe_browsing::PrefixSet* PrefixSetFromAddPrefixes(
   // it could explain why GetPrefixes() seemed broken.
   if (sizeof(int) != sizeof(int32))
     RecordPrefixSetInfo(PREFIX_SET_SBPREFIX_WAS_BROKEN);
+
+  // Check if memory was corrupted during construction.
+  if (!prefix_set->CheckChecksum())
+    RecordPrefixSetInfo(PREFIX_SET_GETPREFIX_CHECKSUM_MISMATCH);
 
   // Check whether |restored| is unsorted, or has duplication.
   if (restored.size()) {

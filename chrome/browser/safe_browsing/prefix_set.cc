@@ -46,6 +46,13 @@ PrefixSet::PrefixSet(const std::vector<SBPrefix>& sorted_prefixes) {
     size_t run_length = 0;
     index_.push_back(std::make_pair(prev_prefix, deltas_.size()));
 
+    // Used to build a checksum from the data used to construct the
+    // structures.  Since the data is a bunch of uniform hashes, it
+    // seems reasonable to just xor most of it in, rather than trying
+    // to use a more complicated algorithm.
+    uint32 checksum = static_cast<uint32>(sorted_prefixes[0]);
+    checksum ^= static_cast<uint32>(deltas_.size());
+
     for (size_t i = 1; i < sorted_prefixes.size(); ++i) {
       // Skip duplicates.
       if (sorted_prefixes[i] == prev_prefix)
@@ -60,9 +67,12 @@ PrefixSet::PrefixSet(const std::vector<SBPrefix>& sorted_prefixes) {
       // New index ref if the delta doesn't fit, or if too many
       // consecutive deltas have been encoded.
       if (delta != static_cast<unsigned>(delta16) || run_length >= kMaxRun) {
+        checksum ^= static_cast<uint32>(sorted_prefixes[i]);
+        checksum ^= static_cast<uint32>(deltas_.size());
         index_.push_back(std::make_pair(sorted_prefixes[i], deltas_.size()));
         run_length = 0;
       } else {
+        checksum ^= static_cast<uint32>(delta16);
         // Continue the run of deltas.
         deltas_.push_back(delta16);
         DCHECK_EQ(static_cast<unsigned>(deltas_.back()), delta);
@@ -71,6 +81,8 @@ PrefixSet::PrefixSet(const std::vector<SBPrefix>& sorted_prefixes) {
 
       prev_prefix = sorted_prefixes[i];
     }
+    checksum_ = checksum;
+    DCHECK(CheckChecksum());
 
     // Send up some memory-usage stats.  Bits because fractional bytes
     // are weird.
@@ -314,6 +326,21 @@ uint16 PrefixSet::DeltaAt(size_t target_index) const {
   // the value at |target_index|.
   CHECK_LT(target_index - i - 1, deltas_.size());
   return deltas_[target_index - i - 1];
+}
+
+bool PrefixSet::CheckChecksum() const {
+  uint32 checksum = 0;
+
+  for (size_t ii = 0; ii < index_.size(); ++ii) {
+    checksum ^= static_cast<uint32>(index_[ii].first);
+    checksum ^= static_cast<uint32>(index_[ii].second);
+  }
+
+  for (size_t di = 0; di < deltas_.size(); ++di) {
+    checksum ^= static_cast<uint32>(deltas_[di]);
+  }
+
+  return checksum == checksum_;
 }
 
 }  // namespace safe_browsing
