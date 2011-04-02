@@ -192,7 +192,7 @@ TEST(FirefoxImporterTest, Firefox2BookmarkFileImport) {
   // Import all bookmarks from a file which include an empty folder entry.
   FilePath empty_folder_path = path.AppendASCII("empty_folder.html");
   std::set<GURL> default_urls;
-  std::wstring first_folder_name;
+  string16 first_folder_name;
   Firefox2Importer* importer = new Firefox2Importer();
   importer->AddRef();
   std::vector<ProfileWriter::BookmarkEntry> bookmarks;

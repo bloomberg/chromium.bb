@@ -62,13 +62,13 @@ void ProfileWriter::AddHomepage(const GURL& home_page) {
 
 void ProfileWriter::AddBookmarkEntry(
     const std::vector<BookmarkEntry>& bookmark,
-    const std::wstring& first_folder_name,
+    const string16& first_folder_name,
     int options) {
   BookmarkModel* model = profile_->GetBookmarkModel();
   DCHECK(model->IsLoaded());
 
   bool import_to_bookmark_bar = ((options & IMPORT_TO_BOOKMARK_BAR) != 0);
-  std::wstring real_first_folder = import_to_bookmark_bar ? first_folder_name :
+  string16 real_first_folder = import_to_bookmark_bar ? first_folder_name :
       GenerateUniqueFolderName(model, first_folder_name);
 
   bool show_bookmark_toolbar = false;
@@ -101,8 +101,7 @@ void ProfileWriter::AddBookmarkEntry(
          i != it->path.end(); ++i) {
       const BookmarkNode* child = NULL;
       const string16& folder_name = (!import_to_bookmark_bar &&
-          !it->in_toolbar && (i == it->path.begin())) ?
-              WideToUTF16Hack(real_first_folder) : *i;
+          !it->in_toolbar && (i == it->path.begin())) ? real_first_folder : *i;
 
       for (int index = 0; index < parent->child_count(); ++index) {
         const BookmarkNode* node = parent->GetChild(index);
@@ -288,17 +287,17 @@ void ProfileWriter::ShowBookmarkBar() {
 
 ProfileWriter::~ProfileWriter() {}
 
-std::wstring ProfileWriter::GenerateUniqueFolderName(
+string16 ProfileWriter::GenerateUniqueFolderName(
     BookmarkModel* model,
-    const std::wstring& folder_name) {
+    const string16& folder_name) {
   // Build a set containing the folder names of the other folder.
-  std::set<std::wstring> other_folder_names;
+  std::set<string16> other_folder_names;
   const BookmarkNode* other = model->other_node();
 
   for (int i = 0, child_count = other->child_count(); i < child_count; ++i) {
     const BookmarkNode* node = other->GetChild(i);
     if (node->is_folder())
-      other_folder_names.insert(UTF16ToWideHack(node->GetTitle()));
+      other_folder_names.insert(node->GetTitle());
   }
 
   if (other_folder_names.find(folder_name) == other_folder_names.end())
@@ -306,7 +305,7 @@ std::wstring ProfileWriter::GenerateUniqueFolderName(
 
   // Otherwise iterate until we find a unique name.
   for (int i = 1; i < 100; ++i) {
-    std::wstring name = folder_name + StringPrintf(L" (%d)", i);
+    string16 name = folder_name + UTF8ToUTF16(base::StringPrintf(" (%d)", i));
     if (other_folder_names.find(name) == other_folder_names.end())
       return name;
   }
@@ -317,7 +316,7 @@ std::wstring ProfileWriter::GenerateUniqueFolderName(
 bool ProfileWriter::DoesBookmarkExist(
     BookmarkModel* model,
     const BookmarkEntry& entry,
-    const std::wstring& first_folder_name,
+    const string16& first_folder_name,
     bool import_to_bookmark_bar) {
   std::vector<const BookmarkNode*> nodes_with_same_url;
   model->GetNodesByURL(entry.url, &nodes_with_same_url);
@@ -337,7 +336,7 @@ bool ProfileWriter::DoesBookmarkExist(
          (path_it != entry.path.rend()) && found_match; ++path_it) {
       const string16& folder_name =
           (!import_to_bookmark_bar && path_it + 1 == entry.path.rend()) ?
-          WideToUTF16Hack(first_folder_name) : *path_it;
+           first_folder_name : *path_it;
       if (NULL == parent || *path_it != folder_name)
         found_match = false;
       else

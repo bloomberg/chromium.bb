@@ -99,16 +99,16 @@ void ProfileImportThread::OnImportItemFinished(uint16 item) {
     NotifyEnded();
 }
 
+void ProfileImportThread::NotifyStarted() {
+  Send(new ProfileImportProcessHostMsg_Import_Started());
+}
+
 void ProfileImportThread::NotifyItemStarted(importer::ImportItem item) {
   Send(new ProfileImportProcessHostMsg_ImportItem_Started(item));
 }
 
 void ProfileImportThread::NotifyItemEnded(importer::ImportItem item) {
   Send(new ProfileImportProcessHostMsg_ImportItem_Finished(item));
-}
-
-void ProfileImportThread::NotifyStarted() {
-  Send(new ProfileImportProcessHostMsg_Import_Started());
 }
 
 void ProfileImportThread::NotifyEnded() {
@@ -142,7 +142,8 @@ void ProfileImportThread::NotifyHomePageImportReady(
 
 void ProfileImportThread::NotifyBookmarksImportReady(
     const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
-    const std::wstring& first_folder_name, int options) {
+    const string16& first_folder_name,
+    int options) {
   Send(new ProfileImportProcessHostMsg_NotifyBookmarksImportStart(
       first_folder_name, options, bookmarks.size()));
 

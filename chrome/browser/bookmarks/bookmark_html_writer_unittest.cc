@@ -226,9 +226,14 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   // Read the bookmarks back in.
   std::vector<ProfileWriter::BookmarkEntry> parsed_bookmarks;
   std::vector<history::ImportedFaviconUsage> favicons;
-  Firefox2Importer::ImportBookmarksFile(path_, std::set<GURL>(),
-                                        false, L"x", NULL, &parsed_bookmarks,
-                                        NULL, &favicons);
+  Firefox2Importer::ImportBookmarksFile(path_,
+                                        std::set<GURL>(),
+                                        false,
+                                        ASCIIToUTF16("x"),
+                                        NULL,
+                                        &parsed_bookmarks,
+                                        NULL,
+                                        &favicons);
 
   // Check loaded favicon (url1 is represents by 3 separate bookmarks).
   EXPECT_EQ(3U, favicons.size());

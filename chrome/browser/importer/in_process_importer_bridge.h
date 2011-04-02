@@ -25,8 +25,9 @@ class InProcessImporterBridge : public ImporterBridge {
   // Begin ImporterBridge implementation:
   virtual void AddBookmarkEntries(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
-      const std::wstring& first_folder_name,
+      const string16& first_folder_name,
       int options) OVERRIDE;
+
   virtual void AddHomePage(const GURL &home_page) OVERRIDE;
 
 #if defined(OS_WIN)
@@ -36,11 +37,14 @@ class InProcessImporterBridge : public ImporterBridge {
 
   virtual void SetFavicons(
       const std::vector<history::ImportedFaviconUsage>& favicons) OVERRIDE;
-  virtual void SetHistoryItems(const std::vector<history::URLRow> &rows,
+
+  virtual void SetHistoryItems(const std::vector<history::URLRow>& rows,
                                history::VisitSource visit_source) OVERRIDE;
+
   virtual void SetKeywords(const std::vector<TemplateURL*>& template_urls,
                            int default_keyword_index,
                            bool unique_on_host_and_path) OVERRIDE;
+
   virtual void SetPasswordForm(const webkit_glue::PasswordForm& form) OVERRIDE;
 
   virtual void NotifyStarted() OVERRIDE;

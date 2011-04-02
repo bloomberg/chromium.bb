@@ -27,6 +27,7 @@
 #include "chrome/browser/search_engines/template_url_parser.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/data_url.h"
 #include "webkit/glue/password_form.h"
@@ -148,7 +149,7 @@ void Firefox2Importer::ImportBookmarksFile(
     const FilePath& file_path,
     const std::set<GURL>& default_urls,
     bool import_to_bookmark_bar,
-    const std::wstring& first_folder_name,
+    const string16& first_folder_name,
     Importer* importer,
     std::vector<ProfileWriter::BookmarkEntry>* bookmarks,
     std::vector<TemplateURL*>* template_urls,
@@ -159,7 +160,7 @@ void Firefox2Importer::ImportBookmarksFile(
   base::SplitString(content, '\n', &lines);
 
   std::vector<ProfileWriter::BookmarkEntry> toolbar_bookmarks;
-  string16 last_folder = WideToUTF16Hack(first_folder_name);
+  string16 last_folder = first_folder_name;
   bool last_folder_on_toolbar = false;
   bool last_folder_is_empty = true;
   base::Time last_folder_add_date;
@@ -302,10 +303,9 @@ void Firefox2Importer::ImportBookmarks() {
   FilePath file = source_path_;
   if (!parsing_bookmarks_html_file_)
     file = file.AppendASCII("bookmarks.html");
-  std::wstring first_folder_name;
-  first_folder_name = UTF16ToWideHack(bridge_->GetLocalizedString(
+  string16 first_folder_name = bridge_->GetLocalizedString(
       parsing_bookmarks_html_file_ ? IDS_BOOKMARK_GROUP :
-                                     IDS_BOOKMARK_GROUP_FROM_FIREFOX));
+                                     IDS_BOOKMARK_GROUP_FROM_FIREFOX);
 
   ImportBookmarksFile(file, default_urls, import_to_bookmark_bar(),
                       first_folder_name, this, &bookmarks, &template_urls,

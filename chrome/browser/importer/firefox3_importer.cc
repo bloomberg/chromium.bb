@@ -284,8 +284,8 @@ void Firefox3Importer::ImportBookmarks() {
 
   // Write into profile.
   if (!bookmarks.empty() && !cancelled()) {
-    const std::wstring& first_folder_name = UTF16ToWide(
-        bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_FIREFOX));
+    const string16& first_folder_name =
+        bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_FIREFOX);
     int options = 0;
     if (import_to_bookmark_bar())
       options = ProfileWriter::IMPORT_TO_BOOKMARK_BAR;

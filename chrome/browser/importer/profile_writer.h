@@ -90,7 +90,7 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
   // if another bookmarks does not exist with the same title, path and
   // url.
   virtual void AddBookmarkEntry(const std::vector<BookmarkEntry>& bookmark,
-                                const std::wstring& first_folder_name,
+                                const string16& first_folder_name,
                                 int options);
   virtual void AddFavicons(
       const std::vector<history::ImportedFaviconUsage>& favicons);
@@ -121,15 +121,15 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
  private:
   // Generates a unique folder name. If folder_name is not unique, then this
   // repeatedly tests for '|folder_name| + (i)' until a unique name is found.
-  std::wstring GenerateUniqueFolderName(BookmarkModel* model,
-                                        const std::wstring& folder_name);
+  string16 GenerateUniqueFolderName(BookmarkModel* model,
+                                    const string16& folder_name);
 
   // Returns true if a bookmark exists with the same url, title and path
   // as |entry|. |first_folder_name| is the name to use for the first
   // path entry if |import_to_bookmark_bar| is true.
   bool DoesBookmarkExist(BookmarkModel* model,
                          const BookmarkEntry& entry,
-                         const std::wstring& first_folder_name,
+                         const string16& first_folder_name,
                          bool import_to_bookmark_bar);
 
   Profile* const profile_;

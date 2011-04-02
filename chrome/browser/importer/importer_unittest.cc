@@ -55,6 +55,7 @@ class ImporterTest : public testing::Test {
   ImporterTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {}
+
  protected:
   virtual void SetUp() {
     // Creates a new profile in a new subdirectory in the temp directory.
@@ -244,7 +245,7 @@ class TestObserver : public ProfileWriter,
   }
 
   virtual void AddBookmarkEntry(const std::vector<BookmarkEntry>& bookmark,
-                                const std::wstring& first_folder_name,
+                                const string16& first_folder_name,
                                 int options) {
     // Importer should import the IE Favorites folder the same as the list.
     for (size_t i = 0; i < bookmark.size(); ++i) {
@@ -610,7 +611,7 @@ class FirefoxObserver : public ProfileWriter,
   }
 
   virtual void AddBookmarkEntry(const std::vector<BookmarkEntry>& bookmark,
-                                const std::wstring& first_folder_name,
+                                const string16& first_folder_name,
                                 int options) {
     for (size_t i = 0; i < bookmark.size(); ++i) {
       if (FindBookmarkEntry(bookmark[i], kFirefox2Bookmarks,
@@ -820,7 +821,7 @@ class Firefox3Observer : public ProfileWriter,
   }
 
   virtual void AddBookmarkEntry(const std::vector<BookmarkEntry>& bookmark,
-                                const std::wstring& first_folder_name,
+                                const string16& first_folder_name,
                                 int options) {
     for (size_t i = 0; i < bookmark.size(); ++i) {
       if (FindBookmarkEntry(bookmark[i], kFirefox3Bookmarks,

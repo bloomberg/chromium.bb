@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_IMPORTER_IMPORTER_BRIDGE_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -25,8 +24,9 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
 
   virtual void AddBookmarkEntries(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
-      const std::wstring& first_folder_name,
+      const string16& first_folder_name,
       int options) = 0;
+
   virtual void AddHomePage(const GURL& home_page) = 0;
 
 #if defined(OS_WIN)
@@ -35,11 +35,14 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
 
   virtual void SetFavicons(
       const std::vector<history::ImportedFaviconUsage>& favicons) = 0;
+
   virtual void SetHistoryItems(const std::vector<history::URLRow>& rows,
                                history::VisitSource visit_source) = 0;
+
   virtual void SetKeywords(const std::vector<TemplateURL*>& template_urls,
                            int default_keyword_index,
                            bool unique_on_host_and_path) = 0;
+
   virtual void SetPasswordForm(const webkit_glue::PasswordForm& form) = 0;
 
   // Notifies the coordinator that the import operation has begun.

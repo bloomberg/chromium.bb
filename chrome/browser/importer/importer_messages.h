@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -413,9 +414,9 @@ IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyHomePageImportReady,
                      GURL  /* GURL of home page */)
 
 IPC_MESSAGE_CONTROL3(ProfileImportProcessHostMsg_NotifyBookmarksImportStart,
-                     std::wstring  /* first folder name */,
-                     int  /* options */,
-                     int  /* total number of bookmarks */)
+                     string16  /* first folder name */,
+                     int       /* options */,
+                     int       /* total number of bookmarks */)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyBookmarksImportGroup,
                      std::vector<ProfileWriter::BookmarkEntry>)

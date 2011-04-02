@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/string16.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
 #include "chrome/browser/importer/profile_import_process_client.h"
@@ -86,7 +87,7 @@ class ExternalProcessImporterClient : public ProfileImportProcessClient {
   // |first_folder_name| can be NULL.
   // |options| is described in ProfileWriter::BookmarkOptions.
   // |total_bookmarks_count| is the total number of bookmarks to be imported.
-  virtual void OnBookmarksImportStart(const std::wstring& first_folder_name,
+  virtual void OnBookmarksImportStart(const string16& first_folder_name,
                                       int options,
                                       size_t total_bookmarks_count) OVERRIDE;
 
@@ -124,7 +125,7 @@ class ExternalProcessImporterClient : public ProfileImportProcessClient {
 
   // Usually some variation on IDS_BOOKMARK_GROUP_...; the name of the folder
   // under which imported bookmarks will be placed.
-  std::wstring bookmarks_first_folder_name_;
+  string16 bookmarks_first_folder_name_;
 
   // Determines how bookmarks should be added (ProfileWriter::BookmarkOptions).
   int bookmarks_options_;

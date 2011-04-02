@@ -6,12 +6,12 @@
 #define CHROME_PROFILE_IMPORT_PROFILE_IMPORT_THREAD_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
@@ -45,23 +45,25 @@ class ProfileImportThread : public ChildThread {
   }
 
   // Bridging methods, called from importer_bridge tasks posted here.
+  void NotifyStarted();
   void NotifyItemStarted(importer::ImportItem item);
   void NotifyItemEnded(importer::ImportItem item);
-  void NotifyStarted();
   void NotifyEnded();
 
   // Bridging methods that move data back across the process boundary.
-  void NotifyHistoryImportReady(const std::vector<history::URLRow> &rows,
+  void NotifyHistoryImportReady(const std::vector<history::URLRow>& rows,
                                 history::VisitSource visit_source);
   void NotifyHomePageImportReady(const GURL& home_page);
   void NotifyBookmarksImportReady(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
-          const std::wstring& first_folder_name, int options);
+      const string16& first_folder_name,
+      int options);
   void NotifyFaviconsImportReady(
       const std::vector<history::ImportedFaviconUsage>& favicons);
   void NotifyPasswordFormReady(const webkit_glue::PasswordForm& form);
   void NotifyKeywordsReady(const std::vector<TemplateURL*>& template_urls,
-      int default_keyword_index, bool unique_on_host_and_path);
+                           int default_keyword_index,
+                           bool unique_on_host_and_path);
 
  private:
   // IPC messages

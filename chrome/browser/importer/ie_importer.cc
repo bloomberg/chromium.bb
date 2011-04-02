@@ -126,8 +126,8 @@ void IEImporter::ImportFavorites() {
   ParseFavoritesFolder(info, &bookmarks);
 
   if (!bookmarks.empty() && !cancelled()) {
-    const std::wstring& first_folder_name =
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_GROUP_FROM_IE));
+    const string16& first_folder_name =
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_GROUP_FROM_IE);
     int options = 0;
     if (import_to_bookmark_bar())
       options = ProfileWriter::IMPORT_TO_BOOKMARK_BAR;

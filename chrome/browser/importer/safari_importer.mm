@@ -101,8 +101,8 @@ void SafariImporter::ImportBookmarks() {
 
   // Write bookmarks into profile.
   if (!bookmarks.empty() && !cancelled()) {
-    const std::wstring& first_folder_name = UTF16ToWideHack(
-        bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_SAFARI));
+    const string16& first_folder_name =
+        bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_SAFARI);
     int options = 0;
     if (import_to_bookmark_bar())
       options = ProfileWriter::IMPORT_TO_BOOKMARK_BAR;

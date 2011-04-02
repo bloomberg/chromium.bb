@@ -22,7 +22,7 @@ InProcessImporterBridge::InProcessImporterBridge(ProfileWriter* writer,
 
 void InProcessImporterBridge::AddBookmarkEntries(
     const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
-    const std::wstring& first_folder_name,
+    const string16& first_folder_name,
     int options) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

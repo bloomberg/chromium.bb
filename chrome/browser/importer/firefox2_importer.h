@@ -12,11 +12,12 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/string16.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
-#include "googleurl/src/gurl.h"
 
+class GURL;
 class TemplateURL;
 
 // Importer for Mozilla Firefox 2.
@@ -32,7 +33,7 @@ class Firefox2Importer : public Importer {
   // Loads the default bookmarks in the Firefox installed at |firefox_app_path|,
   // and stores their locations in |urls|.
   static void LoadDefaultBookmarks(const FilePath& firefox_app_path,
-                                   std::set<GURL> *urls);
+                                   std::set<GURL>* urls);
 
   // Creates a TemplateURL with the |keyword| and |url|. |title| may be empty.
   // This function transfers ownership of the created TemplateURL to the caller.
@@ -47,7 +48,7 @@ class Firefox2Importer : public Importer {
       const FilePath& file_path,
       const std::set<GURL>& default_urls,
       bool import_to_bookmark_bar,
-      const std::wstring& first_folder_name,
+      const string16& first_folder_name,
       Importer* importer,
       std::vector<ProfileWriter::BookmarkEntry>* bookmarks,
       std::vector<TemplateURL*>* template_urls,
