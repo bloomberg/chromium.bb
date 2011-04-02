@@ -18,8 +18,8 @@
 #include "ipc/ipc_message_utils.h"
 #include "webkit/glue/password_form.h"
 
-#ifndef CHROME_BROWSER_IMPORTER_IMPORTER_MESSAGES_H_
-#define CHROME_BROWSER_IMPORTER_IMPORTER_MESSAGES_H_
+#ifndef CHROME_BROWSER_IMPORTER_PROFILE_IMPORT_PROCESS_MESSAGES_H_
+#define CHROME_BROWSER_IMPORTER_PROFILE_IMPORT_PROCESS_MESSAGES_H_
 
 namespace IPC {
 
@@ -365,7 +365,7 @@ struct ParamTraits<TemplateURL> {
 
 }  // namespace IPC
 
-#endif  // CHROME_BROWSER_IMPORTER_IMPORTER_MESSAGES_H_
+#endif  // CHROME_BROWSER_IMPORTER_PROFILE_IMPORT_PROCESS_MESSAGES_H_
 
 #define IPC_MESSAGE_START ProfileImportMsgStart
 
@@ -374,9 +374,9 @@ struct ParamTraits<TemplateURL> {
 // These are messages sent from the browser to the profile import process.
 IPC_MESSAGE_CONTROL4(ProfileImportProcessMsg_StartImport,
                      importer::ProfileInfo /* ProfileInfo struct */,
-                     int  /* bitmask of items to import */,
-                     DictionaryValue  /* localized strings */,
-                     bool  /* import to bookmark bar */)
+                     int                   /* bitmask of items to import */,
+                     DictionaryValue       /* localized strings */,
+                     bool                  /* import to bookmark bar */)
 
 IPC_MESSAGE_CONTROL0(ProfileImportProcessMsg_CancelImport)
 
@@ -391,7 +391,7 @@ IPC_MESSAGE_CONTROL1(ProfileImportProcessMsg_ReportImportItemFinished,
 IPC_MESSAGE_CONTROL0(ProfileImportProcessHostMsg_Import_Started)
 
 IPC_MESSAGE_CONTROL2(ProfileImportProcessHostMsg_Import_Finished,
-                     bool  /* was import successful? */,
+                     bool         /* was import successful? */,
                      std::string  /* error message, if any */)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_ImportItem_Started,
@@ -425,13 +425,12 @@ IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFaviconsImportStart,
                      int  /* total number of favicons */)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFaviconsImportGroup,
-                     std::vector<history::ImportedFaviconUsage> )
+                     std::vector<history::ImportedFaviconUsage>)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyPasswordFormReady,
-                     webkit_glue::PasswordForm )
+                     webkit_glue::PasswordForm)
 
 IPC_MESSAGE_CONTROL3(ProfileImportProcessHostMsg_NotifyKeywordsReady,
                      std::vector<TemplateURL>,
                      int,  /* default keyword index */
                      bool  /* unique on host and path */)
-

@@ -5,8 +5,8 @@
 #include "chrome/browser/importer/profile_import_process_client.h"
 
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/importer/importer_messages.h"
 #include "chrome/browser/importer/profile_import_process_host.h"
+#include "chrome/browser/importer/profile_import_process_messages.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
