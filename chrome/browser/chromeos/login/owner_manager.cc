@@ -20,7 +20,7 @@ namespace chromeos {
 
 OwnerManager::OwnerManager()
     : private_key_(NULL),
-      public_key_(NULL),
+      public_key_(0),
       utils_(OwnerKeyUtils::Create()) {
 }
 
