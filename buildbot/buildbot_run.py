@@ -23,27 +23,26 @@ def GypTestFormat(title, format, msvs_version=None):
     0 for sucesss, 1 for failure.
   """
   print '@@@BUILD_STEP ' + title + '@@@'
+  sys.stdout.flush()
   buildbot_dir = os.path.dirname(os.path.abspath(__file__))
   trunk_dir = os.path.dirname(buildbot_dir)
   root_dir = os.path.dirname(trunk_dir)
+  env = os.environ.copy()
   if msvs_version:
-    env = {
-        'GYP_MSVS_VERSION': msvs_version,
-    }
-  else:
-    env = None
-  retcode = subprocess.call(
-      ['python', 'trunk/gyptest.py',
+    env['GYP_MSVS_VERSION'] = msvs_version
+  retcode = subprocess.call(' '.join(
+      [sys.executable, 'trunk/gyptest.py',
        '--all',
        '--passed',
        '--format', format,
        '--chdir', 'trunk',
-       '--path', '../scons'],
-      cwd=root_dir, env=env)
+       '--path', '../scons']),
+      cwd=root_dir, env=env, shell=True)
   if retcode:
     # Emit failure tag, and keep going.
     print '@@@STEP_FAILURE@@@'
     return 1
+  return 0
 
 
 def GypBuild():
@@ -55,7 +54,8 @@ def GypBuild():
     retcode += GypTestFormat('xcode', format='xcode')
   elif sys.platform == 'win32':
     retcode += GypTestFormat('msvs-2008', format='msvs', msvs_version='2008')
-    retcode += GypTestFormat('msvs-2010', format='msvs', msvs_version='2010')
+    if os.environ['BUILDBOT_BUILDERNAME'] == 'gyp-win64':
+      retcode += GypTestFormat('msvs-2010', format='msvs', msvs_version='2010')
   else:
     raise Exception('Unknown platform')
   if retcode:

@@ -1,6 +1,5 @@
 #!/usr/bin/python
-
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -413,7 +412,7 @@ def ConvertToMSBuildSettings(msvs_settings, stderr=sys.stderr):
           # Invoke the translation function.
           try:
             msvs_tool[msvs_setting](msvs_value, msbuild_settings)
-          except ValueError as e:
+          except ValueError, e:
             print >> stderr, ('Warning: while converting %s/%s to MSBuild, '
                               '%s' % (msvs_tool_name, msvs_setting, e))
         else:
@@ -467,7 +466,7 @@ def _ValidateSettings(validators, settings, stderr):
         if setting in tool_validators:
           try:
             tool_validators[setting](value)
-          except ValueError as e:
+          except ValueError, e:
             print >> stderr, ('Warning: for %s/%s, %s' %
                               (tool_name, setting, e))
         else:
