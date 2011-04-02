@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/default_search_view.h"
 #include "chrome/browser/ui/views/download_shelf_view.h"
+#include "chrome/browser/ui/views/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble.h"
@@ -283,140 +284,6 @@ class ResizeCorner : public views::View {
   }
 
   DISALLOW_COPY_AND_ASSIGN(ResizeCorner);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// DownloadInProgressConfirmDialogDelegate
-
-class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
-                                                public views::View {
- public:
-  explicit DownloadInProgressConfirmDialogDelegate(Browser* browser)
-      : browser_(browser),
-        product_name_(
-            UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))) {
-    int download_count = browser->profile()->GetDownloadManager()->
-        in_progress_count();
-
-    std::wstring warning_text;
-    std::wstring explanation_text;
-    if (download_count == 1) {
-      warning_text = UTF16ToWide(l10n_util::GetStringFUTF16(
-          IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING,
-          WideToUTF16(product_name_)));
-      explanation_text = UTF16ToWide(l10n_util::GetStringFUTF16(
-          IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION,
-          WideToUTF16(product_name_)));
-      ok_button_text_ = UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL));
-      cancel_button_text_ = UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
-    } else {
-      warning_text = UTF16ToWide(l10n_util::GetStringFUTF16(
-          IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING,
-          WideToUTF16(product_name_),
-          UTF8ToUTF16(base::IntToString(download_count))));
-      explanation_text = UTF16ToWide(l10n_util::GetStringFUTF16(
-          IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION,
-          WideToUTF16(product_name_)));
-      ok_button_text_ = UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL));
-      cancel_button_text_ = UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
-    }
-
-    // There are two lines of text: the bold warning label and the text
-    // explanation label.
-    GridLayout* layout = new GridLayout(this);
-    SetLayoutManager(layout);
-    const int columnset_id = 0;
-    ColumnSet* column_set = layout->AddColumnSet(columnset_id);
-    column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1,
-                          GridLayout::USE_PREF, 0, 0);
-
-    gfx::Font bold_font =
-        ResourceBundle::GetSharedInstance().GetFont(
-            ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
-    warning_ = new views::Label(warning_text, bold_font);
-    warning_->SetMultiLine(true);
-    warning_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    warning_->set_border(views::Border::CreateEmptyBorder(10, 10, 10, 10));
-    layout->StartRow(0, columnset_id);
-    layout->AddView(warning_);
-
-    explanation_ = new views::Label(explanation_text);
-    explanation_->SetMultiLine(true);
-    explanation_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    explanation_->set_border(views::Border::CreateEmptyBorder(10, 10, 10, 10));
-    layout->StartRow(0, columnset_id);
-    layout->AddView(explanation_);
-
-    dialog_dimensions_ = views::Window::GetLocalizedContentsSize(
-        IDS_DOWNLOAD_IN_PROGRESS_WIDTH_CHARS,
-        IDS_DOWNLOAD_IN_PROGRESS_MINIMUM_HEIGHT_LINES);
-    const int height =
-        warning_->GetHeightForWidth(dialog_dimensions_.width()) +
-        explanation_->GetHeightForWidth(dialog_dimensions_.width());
-    dialog_dimensions_.set_height(std::max(height,
-                                           dialog_dimensions_.height()));
-  }
-
-  ~DownloadInProgressConfirmDialogDelegate() {
-  }
-
-  // View implementation:
-  virtual gfx::Size GetPreferredSize() {
-    return dialog_dimensions_;
-  }
-
-  // DialogDelegate implementation:
-  virtual int GetDefaultDialogButton() const {
-    return MessageBoxFlags::DIALOGBUTTON_CANCEL;
-  }
-
-  virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const {
-    if (button == MessageBoxFlags::DIALOGBUTTON_OK)
-      return ok_button_text_;
-
-    DCHECK_EQ(MessageBoxFlags::DIALOGBUTTON_CANCEL, button);
-    return cancel_button_text_;
-  }
-
-  virtual bool Accept() {
-    browser_->InProgressDownloadResponse(true);
-    return true;
-  }
-
-  virtual bool Cancel() {
-    browser_->InProgressDownloadResponse(false);
-    return true;
-  }
-
-  // WindowDelegate implementation:
-  virtual bool IsModal() const { return true; }
-
-  virtual views::View* GetContentsView() {
-    return this;
-  }
-
-  virtual std::wstring GetWindowTitle() const {
-    return product_name_;
-  }
-
- private:
-  Browser* browser_;
-  views::Label* warning_;
-  views::Label* explanation_;
-
-  std::wstring ok_button_text_;
-  std::wstring cancel_button_text_;
-
-  std::wstring product_name_;
-
-  gfx::Size dialog_dimensions_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadInProgressConfirmDialogDelegate);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1121,10 +988,9 @@ void BrowserView::ShowThemeInstallBubble() {
 }
 
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
-  DownloadInProgressConfirmDialogDelegate* delegate =
-      new DownloadInProgressConfirmDialogDelegate(browser_.get());
-  browser::CreateViewsWindow(GetNativeHandle(), gfx::Rect(),
-                             delegate)->Show();
+  DownloadInProgressDialogView* view =
+      new DownloadInProgressDialogView(browser_.get());
+  browser::CreateViewsWindow(GetNativeHandle(), gfx::Rect(), view)->Show();
 }
 
 void BrowserView::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
