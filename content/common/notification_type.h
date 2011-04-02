@@ -566,6 +566,10 @@ class NotificationType {
     // parent Profile, and the details are the BackgroundContents being deleted.
     BACKGROUND_CONTENTS_DELETED,
 
+    // The background contents has crashed. The source is the parent Profile,
+    // and the details are the BackgroundContents.
+    BACKGROUND_CONTENTS_TERMINATED,
+
     // Child Processes ---------------------------------------------------------
 
     // This notification is sent when a child process host has connected to a

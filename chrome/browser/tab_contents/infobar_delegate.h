@@ -12,7 +12,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class ConfirmInfoBarDelegate;
-class CrashedExtensionInfoBarDelegate;
 class ExtensionInfoBarDelegate;
 class InfoBar;
 class LinkInfoBarDelegate;
@@ -89,7 +88,6 @@ class InfoBarDelegate {
 
   // Type-checking downcast routines:
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
-  virtual CrashedExtensionInfoBarDelegate* AsCrashedExtensionInfoBarDelegate();
   virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate();
   virtual LinkInfoBarDelegate* AsLinkInfoBarDelegate();
   virtual PluginInstallerInfoBarDelegate* AsPluginInstallerInfoBarDelegate();

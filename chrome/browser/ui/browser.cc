@@ -24,6 +24,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_list.h"
@@ -40,7 +41,6 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_started_animation.h"
-#include "chrome/browser/extensions/crashed_extension_infobar.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
@@ -56,6 +56,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
@@ -67,6 +68,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
+#include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tabs/tab_finder.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -3382,38 +3384,25 @@ void Browser::Observe(NotificationType type,
 
     case NotificationType::EXTENSION_PROCESS_TERMINATED: {
       window()->GetLocationBar()->InvalidatePageActions();
-
-      TabContents* tab_contents = GetSelectedTabContents();
-      if (!tab_contents)
-        break;
-      ExtensionService* extensions_service =
-          Source<Profile>(source).ptr()->GetExtensionService();
-      ExtensionHost* extension_host = Details<ExtensionHost>(details).ptr();
-      tab_contents->AddInfoBar(new CrashedExtensionInfoBarDelegate(
-          tab_contents, extensions_service, extension_host->extension()));
       break;
     }
 
     case NotificationType::EXTENSION_UNINSTALLED: {
       window()->GetLocationBar()->UpdatePageActions();
 
-      // If any "This extension has crashed" InfoBarDelegates are around for
-      // this extension, it means that it has been uninstalled
-      // so just remove the remaining CrashedExtensionInfoBarDelegate objects.
+      // Remove any "This extension has crashed" balloons.
       const UninstalledExtensionInfo* uninstalled_extension =
           Details<const UninstalledExtensionInfo>(details).ptr();
-      RemoveCrashedExtensionInfoBar(uninstalled_extension->extension_id);
+      RemoveCrashedExtensionBalloon(uninstalled_extension->extension_id);
       break;
     }
 
     case NotificationType::EXTENSION_LOADED: {
       window()->GetLocationBar()->UpdatePageActions();
 
-      // If any "This extension has crashed" InfoBarDelegates are around for
-      // this extension, it means that it has been reloaded in another window
-      // so just remove the remaining CrashedExtensionInfoBarDelegate objects.
+      // Remove any "This extension has crashed" balloons.
       const Extension* extension = Details<const Extension>(details).ptr();
-      RemoveCrashedExtensionInfoBar(extension->id());
+      RemoveCrashedExtensionBalloon(extension->id());
       break;
     }
 
@@ -3479,19 +3468,9 @@ void Browser::Observe(NotificationType type,
   }
 }
 
-void Browser::RemoveCrashedExtensionInfoBar(const std::string& extension_id) {
-  TabStripModel* model = tab_handler_->GetTabStripModel();
-  for (int m = 0; m < model->count(); ++m) {
-    TabContents* tab_contents = model->GetTabContentsAt(m)->tab_contents();
-    for (size_t i = 0; i < tab_contents->infobar_count(); ) {
-      CrashedExtensionInfoBarDelegate* delegate = tab_contents->
-          GetInfoBarDelegateAt(i)->AsCrashedExtensionInfoBarDelegate();
-      if (delegate && delegate->extension_id() == extension_id)
-        tab_contents->RemoveInfoBar(delegate);
-      else
-        ++i;
-    }
-  }
+void Browser::RemoveCrashedExtensionBalloon(const std::string& extension_id) {
+  g_browser_process->notification_ui_manager()->CancelAllBySourceOrigin(
+      Extension::GetBaseURLFromExtensionId(extension_id));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -217,6 +217,12 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       <message name="IDS_BACKGROUND_APP_INSTALLED_BALLOON_BODY" desc="The contents of the balloon that is displayed when a background app is installed">
         <ph name="APP_NAME">$1<ex>Background App</ex></ph> will launch at system startup and continue to run in the background even once you've closed all other <ph name="PRODUCT_NAME">$2<ex>Google Chrome</ex></ph> windows.
       </message>
+      <message name="IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE" desc="The contents of the balloon that is displayed when a background app crashes">
+        <ph name="APP_NAME">$1<ex>Background App</ex></ph> has crashed. Click on this balloon to restart the app.
+      </message>
+      <message name="IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE" desc="The contents of the balloon that is displayed when an extension crashes">
+        <ph name="APP_NAME">$1<ex>Extension</ex></ph> has crashed. Click on this balloon to reload the extension.
+      </message>
 
       <message name="IDS_SHOWFULLHISTORY_LINK" desc="The label of the Show Full History link at the bottom of the back/forward menu.">
         Show Full History
@@ -3508,14 +3514,6 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       </message>
       <message name="IDS_TASK_MANAGER_NOTIFICATION_PREFIX" desc="The prefix for a Desktop Notification in the Task Manager">
         Notification: <ph name="NOTIFICATION_NAME">$1<ex>http://www.domain.com</ex></ph>
-      </message>
-
-      <!-- Extension Crashed Info Bar-->
-      <message name="IDS_EXTENSION_CRASHED_INFOBAR_RELOAD_BUTTON" desc="Title of the reload button in the extension crashed infobar. After the button is clicked, the extension will be reloaded.">
-        Reload
-      </message>
-      <message name="IDS_EXTENSION_CRASHED_INFOBAR_MESSAGE" desc="Message displayed on the extension crashed infobar.">
-        The following extension has crashed: <ph name="EXTENSION_NAME">$1<ex>Buildbot Monitor</ex></ph>
       </message>
 
       <!-- Theme preview info bar -->

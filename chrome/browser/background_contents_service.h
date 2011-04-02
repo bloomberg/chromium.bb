@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/task.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -18,6 +20,8 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class CommandLine;
+class DictionaryValue;
+class NotificationDelegate;
 class PrefService;
 class Profile;
 class TabContents;
@@ -74,10 +78,16 @@ class BackgroundContentsService : private NotificationObserver,
                                                const string16& frame_name,
                                                const string16& application_id);
 
+  // Load the registered BackgroundContents for the specified extension. This
+  // is typically used to reload a crashed background page.
+  void LoadBackgroundContentsForExtension(Profile* profile,
+                                          const std::string& extension_id);
+
  private:
   friend class BackgroundContentsServiceTest;
   friend class MockBackgroundContents;
   friend class TaskManagerBrowserTest;
+
   FRIEND_TEST_ALL_PREFIXES(BackgroundContentsServiceTest,
                            BackgroundContentsCreateDestroy);
   FRIEND_TEST_ALL_PREFIXES(BackgroundContentsServiceTest,
@@ -97,6 +107,12 @@ class BackgroundContentsService : private NotificationObserver,
 
   // Loads all registered BackgroundContents at startup.
   void LoadBackgroundContentsFromPrefs(Profile* profile);
+
+  // Load a BackgroundContent; the settings are read from the provided
+  // dictionary.
+  void LoadBackgroundContentsFromDictionary(Profile* profile,
+                                            const std::string& extension_id,
+                                            const DictionaryValue* contents);
 
   // Creates a single BackgroundContents associated with the specified |appid|,
   // creates an associated RenderView with the name specified by |frame_name|,
