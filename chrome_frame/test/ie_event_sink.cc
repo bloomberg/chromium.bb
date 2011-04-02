@@ -431,10 +431,31 @@ STDMETHODIMP_(void) IEEventSink::OnDownloadBegin() {
     listener_->OnDownloadBegin();
 }
 
-STDMETHODIMP_(void) IEEventSink::OnNewWindow2(IDispatch** disp,
+STDMETHODIMP_(void) IEEventSink::OnNewWindow2(IDispatch** dispatch,
                                               VARIANT_BOOL* s) {
+  DVLOG(1) << __FUNCTION__;
+
+  EXPECT_TRUE(dispatch);
+  if (!dispatch)
+    return;
+
   if (listener_)
-    listener_->OnNewWindow2(disp, s);
+    listener_->OnNewWindow2(dispatch, s);
+
+  // Note that |dispatch| is an [in/out] argument. IE is asking listeners if
+  // they want to use a IWebBrowser2 of their choice for the new window.
+  // Since we need to listen on events on the new browser, we create one
+  // if needed.
+  if (!*dispatch) {
+    ScopedComPtr<IDispatch> new_browser;
+    HRESULT hr = new_browser.CreateInstance(CLSID_InternetExplorer, NULL,
+                                            CLSCTX_LOCAL_SERVER);
+    DCHECK(SUCCEEDED(hr) && new_browser);
+    *dispatch = new_browser.Detach();
+  }
+
+  if (*dispatch && listener_)
+    listener_->OnNewBrowserWindow(*dispatch, ScopedBstr());
 }
 
 STDMETHODIMP_(void) IEEventSink::OnNavigateError(IDispatch* dispatch,
@@ -511,7 +532,7 @@ STDMETHODIMP_(void) IEEventSink::OnNewWindow3(
     *dispatch = new_browser.Detach();
   }
 
-  if (*dispatch)
+  if (*dispatch && listener_)
     listener_->OnNewBrowserWindow(*dispatch, url);
 }
 

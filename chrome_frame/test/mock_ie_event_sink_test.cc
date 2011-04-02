@@ -136,7 +136,12 @@ void MockIEEventSink::ExpectJavascriptWindowOpenNavigation(
 void MockIEEventSink::ExpectNewWindow(MockIEEventSink* new_window_mock) {
   DCHECK(new_window_mock);
 
-  EXPECT_CALL(*this, OnNewWindow3(_, _, _, _, _));
+  // IE8 seems to fire one of these events based on version.
+  EXPECT_CALL(*this, OnNewWindow2(_, _))
+      .Times(testing::AtMost(1));
+  EXPECT_CALL(*this, OnNewWindow3(_, _, _, _, _))
+      .Times(testing::AtMost(1));
+
   EXPECT_CALL(*this, OnNewBrowserWindow(_, _))
       .WillOnce(testing::WithArgs<0>(testing::Invoke(testing::CreateFunctor(
           new_window_mock, &MockIEEventSink::Attach))));
