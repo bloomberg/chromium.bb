@@ -317,7 +317,7 @@ CountryDataMap::CountryDataMap() {
 
   // Add any other countries that ICU knows about, falling back to default data
   // values.
-  for (const char* const* country_pointer = Locale::getISOCountries();
+  for (const char* const* country_pointer = icu::Locale::getISOCountries();
        *country_pointer;
        ++country_pointer) {
     std::string country_code = *country_pointer;
