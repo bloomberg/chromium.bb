@@ -575,7 +575,6 @@ public:
 
     long GetEntryCount() const;
 
-    //void Load() const;
     long Load(long long& pos, long& size) const;
 
     long Parse(long long& pos, long& size) const;
