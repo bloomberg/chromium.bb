@@ -578,8 +578,6 @@ public:
     //void Load() const;
     long Load(long long& pos, long& size) const;
 
-    //void LoadBlockEntries() const;
-
     long Parse(long long& pos, long& size) const;
     long GetEntry(long index, const mkvparser::BlockEntry*&) const;
 
