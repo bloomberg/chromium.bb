@@ -121,6 +121,9 @@ public:
     long GetIndex() const;
     virtual const Block* GetBlock() const = 0;
 
+    enum Kind { kBlockEOS, kBlockSimple, kBlockGroup };
+    virtual Kind GetKind() const = 0;
+
 protected:
     Cluster* const m_pCluster;
     const long m_index;
@@ -139,6 +142,7 @@ public:
     //bool EOS() const;
     //const Cluster* GetCluster() const;
     //long GetIndex() const;
+    Kind GetKind() const;
     const Block* GetBlock() const;
 
 protected:
@@ -164,6 +168,7 @@ public:
     //bool EOS() const;
     //const Cluster* GetCluster() const;
     //long GetIndex() const;
+    Kind GetKind() const;
     const Block* GetBlock() const;
 
     short GetPrevTimeCode() const;  //relative to block's time
@@ -246,6 +251,7 @@ protected:
         //bool EOS() const;
         //const Cluster* GetCluster() const;
         //long GetIndex() const;
+        Kind GetKind() const;
         const Block* GetBlock() const;
     };
 

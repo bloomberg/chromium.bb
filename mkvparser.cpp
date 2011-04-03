@@ -5145,8 +5145,15 @@ long Track::GetNext(
 }
 
 
-Track::EOSBlock::EOSBlock() : BlockEntry(NULL, LONG_MIN)
+Track::EOSBlock::EOSBlock() :
+    BlockEntry(NULL, LONG_MIN)
 {
+}
+
+
+BlockEntry::Kind Track::EOSBlock::GetKind() const
+{
+    return kBlockEOS;
 }
 
 
@@ -7802,6 +7809,12 @@ SimpleBlock::SimpleBlock(
 }
 
 
+BlockEntry::Kind SimpleBlock::GetKind() const
+{
+    return kBlockSimple;
+}
+
+
 const Block* SimpleBlock::GetBlock() const
 {
     return &m_block;
@@ -7839,6 +7852,12 @@ void BlockGroup::ParseBlock(long long start, long long size)
     m_pBlock = pBlock;
 }
 #endif
+
+
+BlockEntry::Kind BlockGroup::GetKind() const
+{
+    return kBlockGroup;
+}
 
 
 const Block* BlockGroup::GetBlock() const
