@@ -23,6 +23,12 @@ if ENABLE_WAYLAND_COMPOSITOR
 wayland_compositor_sources = compositor-wayland.c
 endif
 
+if ENABLE_OPENWFD_COMPOSITOR
+openwfd_compositor_sources = compositor-openwfd.c
+AM_CPPFLAGS += $(OPENWFD_CFLAGS)
+compositor_LDADD += $(OPENWFD_LIBS)
+endif
+
 compositor_SOURCES =				\
 	compositor.c				\
 	compositor.h				\
@@ -33,6 +39,7 @@ compositor_SOURCES =				\
 	screenshooter-server-protocol.h		\
 	shm.c					\
 	$(drm_compositor_sources)		\
+	$(openwfd_compositor_sources)		\
 	$(x11_compositor_sources)		\
 	$(wayland_compositor_sources)
 

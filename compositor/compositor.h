@@ -280,6 +280,9 @@ struct wlsc_compositor *
 drm_compositor_create(struct wl_display *display, int connector);
 
 struct wlsc_compositor *
+wfd_compositor_create(struct wl_display *display, int connector);
+
+struct wlsc_compositor *
 wayland_compositor_create(struct wl_display *display, int width, int height);
 
 void

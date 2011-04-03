@@ -1606,6 +1606,11 @@ int main(int argc, char *argv[])
 		ec = x11_compositor_create(display, width, height);
 #endif
 
+#if BUILD_OPENWFD_COMPOSITOR
+	if (ec == NULL && getenv("OPENWFD"))
+		ec = wfd_compositor_create(display, option_connector);
+#endif
+
 #if BUILD_DRM_COMPOSITOR
 	if (ec == NULL)
 		ec = drm_compositor_create(display, option_connector);
