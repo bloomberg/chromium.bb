@@ -180,6 +180,14 @@
     'chromedriver': {
       'filepath': 'chrome/test/webdriver|third_party/webdriver'
     },
+    'dom_login' : {
+      'filepath': 'chrome/browser/chromeos/frame/.*dom.*' \
+                  '|chrome/browser/chromeos/login/.*dom.*'  \
+                  '|chrome/browser/chromeos/login/.*login_display.*' \
+                  '|chrome/browser/chromeos/login/existing_user_controller.*' \
+                  '|chrome/browser/resources/login.html' \
+                  '|chrome/browser/ui/webui/chromeos/login/.*'
+    },
   },
 
   'WATCHLISTS': {
@@ -246,5 +254,6 @@
     'pepper_api': ['piman+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org'],
     'chromedriver': ['kkania@chromium.org'],
+    'dom_login': ['rharrison@chromium.org'],
   },
 }
