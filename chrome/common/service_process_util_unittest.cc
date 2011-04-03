@@ -125,7 +125,7 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
       GetServiceProcessScopedName(base_desktop_name), "Exec", &exec_value));
   GError *error = NULL;
   gchar **argv = NULL;
-  gint argc = NULL;
+  gint argc = 0;
   if (g_shell_parse_argv(exec_value.c_str(), &argc, &argv, &error)) {
     autorun_command_line.reset(new CommandLine(argc, argv));
     g_strfreev(argv);

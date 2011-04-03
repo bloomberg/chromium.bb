@@ -167,7 +167,7 @@ bool CompareEOLInsensitive(const std::string& s1, const std::string& s2) {
 TEST(QuotedPrintableTest, Encode) {
   ASSERT_EQ(arraysize(kNormalText), arraysize(kEncodedText));
   for (size_t i = 0; i < arraysize(kNormalText); ++i) {
-    SCOPED_TRACE(::testing::Message::Message() << "Iteration " << i);
+    SCOPED_TRACE(::testing::Message() << "Iteration " << i);
     std::string output;
     chrome::browser::net::QuotedPrintableEncode(kNormalText[i], &output);
     std::string expected(kEncodedText[i]);

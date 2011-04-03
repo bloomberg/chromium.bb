@@ -197,8 +197,8 @@ TEST(ExtensionUITest, LocationExternalPrefPropagation) {
   EXPECT_TRUE(extension_details->GetBoolean("allow_reload", &ui_allow_reload));
   EXPECT_TRUE(extension_details->GetBoolean("isUnpacked", &ui_is_unpacked));
   EXPECT_FALSE(extension_details->GetString("path", &ui_path));
-  EXPECT_EQ(false, ui_allow_reload);
-  EXPECT_EQ(false, ui_is_unpacked);
+  EXPECT_FALSE(ui_allow_reload);
+  EXPECT_FALSE(ui_is_unpacked);
 }
 
 // Test that the extension path is correctly propagated into the extension
