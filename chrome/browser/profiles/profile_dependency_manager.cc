@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <iterator>
 
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/crash_upload_list.h"
 
+#include <iterator>
+
 #include "base/path_service.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
