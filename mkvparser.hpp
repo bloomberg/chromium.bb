@@ -115,7 +115,7 @@ public:
     virtual ~BlockEntry();
     virtual bool EOS() const = 0;
     virtual const Cluster* GetCluster() const = 0;
-    virtual size_t GetIndex() const = 0;
+    virtual long GetIndex() const = 0;
     virtual const Block* GetBlock() const = 0;
     //virtual bool IsBFrame() const = 0;
 
@@ -135,7 +135,7 @@ public:
 
     bool EOS() const;
     const Cluster* GetCluster() const;
-    size_t GetIndex() const;
+    long GetIndex() const;
     const Block* GetBlock() const;
     //bool IsBFrame() const;
 
@@ -158,7 +158,7 @@ public:
 
     bool EOS() const;
     const Cluster* GetCluster() const;
-    size_t GetIndex() const;
+    long GetIndex() const;
     const Block* GetBlock() const;
     //bool IsBFrame() const;
 
@@ -254,7 +254,7 @@ protected:
 
         bool EOS() const;
         const Cluster* GetCluster() const;
-        size_t GetIndex() const;
+        long GetIndex() const;
         const Block* GetBlock() const;
         bool IsBFrame() const;
     };

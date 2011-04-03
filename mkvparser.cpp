@@ -5162,9 +5162,9 @@ const Cluster* Track::EOSBlock::GetCluster() const
 }
 
 
-size_t Track::EOSBlock::GetIndex() const
+long Track::EOSBlock::GetIndex() const
 {
-    return 0;
+    return -1;
 }
 
 
@@ -8030,7 +8030,7 @@ const Cluster* SimpleBlock::GetCluster() const
 }
 
 
-size_t SimpleBlock::GetIndex() const
+long SimpleBlock::GetIndex() const
 {
     return m_index;
 }
@@ -8157,7 +8157,7 @@ const Cluster* BlockGroup::GetCluster() const
 }
 
 
-size_t BlockGroup::GetIndex() const
+long BlockGroup::GetIndex() const
 {
     return m_index;
 }
