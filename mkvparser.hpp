@@ -111,16 +111,19 @@ class BlockEntry
     BlockEntry(const BlockEntry&);
     BlockEntry& operator=(const BlockEntry&);
 
+protected:
+    BlockEntry(Cluster*, long index);
+
 public:
     virtual ~BlockEntry();
-    virtual bool EOS() const = 0;
-    virtual const Cluster* GetCluster() const = 0;
-    virtual long GetIndex() const = 0;
+    bool EOS() const;
+    const Cluster* GetCluster() const;
+    long GetIndex() const;
     virtual const Block* GetBlock() const = 0;
-    //virtual bool IsBFrame() const = 0;
 
 protected:
-    BlockEntry();
+    Cluster* const m_pCluster;
+    const long m_index;
 
 };
 
@@ -131,17 +134,14 @@ class SimpleBlock : public BlockEntry
     SimpleBlock& operator=(const SimpleBlock&);
 
 public:
-    SimpleBlock(Cluster*, size_t, long long start, long long size);
+    SimpleBlock(Cluster*, long index, long long start, long long size);
 
-    bool EOS() const;
-    const Cluster* GetCluster() const;
-    long GetIndex() const;
+    //bool EOS() const;
+    //const Cluster* GetCluster() const;
+    //long GetIndex() const;
     const Block* GetBlock() const;
-    //bool IsBFrame() const;
 
 protected:
-    Cluster* const m_pCluster;
-    const size_t m_index;
     Block m_block;
 
 };
@@ -153,21 +153,16 @@ class BlockGroup : public BlockEntry
     BlockGroup& operator=(const BlockGroup&);
 
 public:
-    BlockGroup(Cluster*, size_t, long long, long long);
+    BlockGroup(Cluster*, long index, long long, long long);
     ~BlockGroup();
 
-    bool EOS() const;
-    const Cluster* GetCluster() const;
-    long GetIndex() const;
+    //bool EOS() const;
+    //const Cluster* GetCluster() const;
+    //long GetIndex() const;
     const Block* GetBlock() const;
-    //bool IsBFrame() const;
 
     short GetPrevTimeCode() const;  //relative to block's time
     short GetNextTimeCode() const;  //as above
-
-protected:
-    Cluster* const m_pCluster;
-    const size_t m_index;
 
 private:
     BlockGroup(Cluster*, size_t, unsigned long);
@@ -252,11 +247,10 @@ protected:
     public:
         EOSBlock();
 
-        bool EOS() const;
-        const Cluster* GetCluster() const;
-        long GetIndex() const;
+        //bool EOS() const;
+        //const Cluster* GetCluster() const;
+        //long GetIndex() const;
         const Block* GetBlock() const;
-        bool IsBFrame() const;
     };
 
     EOSBlock m_eos;

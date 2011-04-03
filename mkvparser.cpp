@@ -5145,38 +5145,14 @@ long Track::GetNext(
 }
 
 
-Track::EOSBlock::EOSBlock()
+Track::EOSBlock::EOSBlock() : BlockEntry(NULL, LONG_MIN)
 {
-}
-
-
-bool Track::EOSBlock::EOS() const
-{
-    return true;
-}
-
-
-const Cluster* Track::EOSBlock::GetCluster() const
-{
-    return NULL;
-}
-
-
-long Track::EOSBlock::GetIndex() const
-{
-    return -1;
 }
 
 
 const Block* Track::EOSBlock::GetBlock() const
 {
     return NULL;
-}
-
-
-bool Track::EOSBlock::IsBFrame() const
-{
-    return false;
 }
 
 
@@ -7996,7 +7972,9 @@ const BlockEntry* Cluster::GetMaxKey(const VideoTrack* pTrack) const
 #endif
 
 
-BlockEntry::BlockEntry()
+BlockEntry::BlockEntry(Cluster* p, long idx) :
+    m_pCluster(p),
+    m_index(idx)
 {
 }
 
@@ -8006,33 +7984,35 @@ BlockEntry::~BlockEntry()
 }
 
 
-SimpleBlock::SimpleBlock(
-    Cluster* pCluster,
-    size_t idx,
-    long long start,
-    long long size) :
-    m_pCluster(pCluster),
-    m_index(idx),
-    m_block(start, size, pCluster->m_pSegment->m_pReader)
+bool BlockEntry::EOS() const
 {
+    return (m_index == LONG_MIN);
 }
 
 
-bool SimpleBlock::EOS() const
-{
-    return false;
-}
-
-
-const Cluster* SimpleBlock::GetCluster() const
+const Cluster* BlockEntry::GetCluster() const
 {
     return m_pCluster;
 }
 
 
-long SimpleBlock::GetIndex() const
+long BlockEntry::GetIndex() const
 {
-    return m_index;
+    if (m_index == LONG_MIN)  //EOS
+        return -1;
+
+    return labs(m_index);
+}
+
+
+SimpleBlock::SimpleBlock(
+    Cluster* pCluster,
+    long idx,
+    long long start,
+    long long size) :
+    BlockEntry(pCluster, idx),
+    m_block(start, size, pCluster->m_pSegment->m_pReader)
+{
 }
 
 
@@ -8042,19 +8022,12 @@ const Block* SimpleBlock::GetBlock() const
 }
 
 
-//bool SimpleBlock::IsBFrame() const
-//{
-//    return false;
-//}
-
-
 BlockGroup::BlockGroup(
     Cluster* pCluster,
-    size_t idx,
+    long idx,
     long long start,
     long long size_) :
-    m_pCluster(pCluster),
-    m_index(idx),
+    BlockEntry(pCluster, idx),
     m_prevTimeCode(0),
     m_nextTimeCode(0),
     m_pBlock(NULL)  //TODO: accept multiple blocks within a block group
@@ -8145,24 +8118,6 @@ void BlockGroup::ParseBlock(long long start, long long size)
 }
 
 
-bool BlockGroup::EOS() const
-{
-    return false;
-}
-
-
-const Cluster* BlockGroup::GetCluster() const
-{
-    return m_pCluster;
-}
-
-
-long BlockGroup::GetIndex() const
-{
-    return m_index;
-}
-
-
 const Block* BlockGroup::GetBlock() const
 {
     return m_pBlock;
@@ -8179,12 +8134,6 @@ short BlockGroup::GetNextTimeCode() const
 {
     return m_nextTimeCode;
 }
-
-
-//bool BlockGroup::IsBFrame() const
-//{
-//    return (m_nextTimeCode > 0);
-//}
 
 
 Block::Block(long long start, long long size_, IMkvReader* pReader) :
