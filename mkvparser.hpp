@@ -153,8 +153,13 @@ class BlockGroup : public BlockEntry
     BlockGroup& operator=(const BlockGroup&);
 
 public:
-    BlockGroup(Cluster*, long index, long long, long long);
-    ~BlockGroup();
+    BlockGroup(
+        Cluster*,
+        long index,
+        long long block_start, //absolute pos of block's payload
+        long long block_size,  //size of block's payload
+        short prev,
+        short next);
 
     //bool EOS() const;
     //const Cluster* GetCluster() const;
@@ -165,21 +170,12 @@ public:
     short GetNextTimeCode() const;  //as above
 
 private:
-    BlockGroup(Cluster*, size_t, unsigned long);
-    void ParseBlock(long long start, long long size);
+    //BlockGroup(Cluster*, size_t, unsigned long);
+    //void ParseBlock(long long start, long long size);
 
-    short m_prevTimeCode;
-    short m_nextTimeCode;
-
-    //TODO: the Matroska spec says you can have multiple blocks within the
-    //same block group, with blocks ranked by priority (the flag bits).
-    //For now we just cache a single block.
-#if 0
-    typedef std::deque<Block*> blocks_t;
-    blocks_t m_blocks;  //In practice should contain only a single element.
-#else
-    Block* m_pBlock;
-#endif
+    Block m_block;
+    const short m_prev;
+    const short m_next;
 
 };
 

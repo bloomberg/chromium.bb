@@ -7192,7 +7192,65 @@ void Cluster::CreateBlockGroup(
     assert(idx < m_entries_size);
 
     Cluster* const this_ = const_cast<Cluster*>(this);
-    *ppEntry++ = new BlockGroup(this_, idx, st, sz);
+
+    IMkvReader* const pReader = m_pSegment->m_pReader;
+
+    long long pos = st;
+    const long long stop = st + sz;
+
+    short prev = 0;
+    short next = 0;
+    //bool bReferenceBlock = false;
+
+    long long bpos = -1;
+    long long bsize = -1;
+
+    while (pos < stop)
+    {
+        short t;
+
+        if (Match(pReader, pos, 0x7B, t))
+        {
+            if (t < 0)
+                prev = t;
+            else if (t > 0)
+                next = t;
+            else
+                assert(false);
+
+            //bReferenceBlock = true;
+        }
+        else
+        {
+            long len;
+            const long long id = ReadUInt(pReader, pos, len);
+            assert(id >= 0);  //TODO
+            assert((pos + len) <= stop);
+
+            pos += len;  //consume ID
+
+            const long long size = ReadUInt(pReader, pos, len);
+            assert(size >= 0);  //TODO
+            assert((pos + len) <= stop);
+
+            pos += len;  //consume size
+
+            if ((id == 0x21) && (bpos < 0)) //Block ID
+            {
+                bpos = pos;
+                bsize = size;
+            }
+
+            pos += size;  //consume payload
+            assert(pos <= stop);
+        }
+    }
+
+    assert(pos == stop);
+    assert(bpos >= 0);
+    assert(bsize >= 0);
+
+    *ppEntry++ = new BlockGroup(this_, idx, bpos, bsize, prev, next);
 }
 
 
@@ -7753,84 +7811,20 @@ const Block* SimpleBlock::GetBlock() const
 BlockGroup::BlockGroup(
     Cluster* pCluster,
     long idx,
-    long long start,
-    long long size_) :
+    long long block_start,
+    long long block_size,
+    short prev,
+    short next) :
     BlockEntry(pCluster, idx),
-    m_prevTimeCode(0),
-    m_nextTimeCode(0),
-    m_pBlock(NULL)  //TODO: accept multiple blocks within a block group
+    m_block(block_start, block_size, pCluster->m_pSegment->m_pReader),
+    m_prev(prev),
+    m_next(next)
 {
-    IMkvReader* const pReader = m_pCluster->m_pSegment->m_pReader;
-
-    long long pos = start;
-    const long long stop = start + size_;
-
-    bool bSimpleBlock = false;
-    bool bReferenceBlock = false;
-
-    while (pos < stop)
-    {
-        short t;
-
-        if (Match(pReader, pos, 0x7B, t))
-        {
-            if (t < 0)
-                m_prevTimeCode = t;
-            else if (t > 0)
-                m_nextTimeCode = t;
-            else
-                assert(false);
-
-            bReferenceBlock = true;
-        }
-        else
-        {
-            long len;
-            const long long id = ReadUInt(pReader, pos, len);
-            assert(id >= 0);  //TODO
-            assert((pos + len) <= stop);
-
-            pos += len;  //consume ID
-
-            const long long size = ReadUInt(pReader, pos, len);
-            assert(size >= 0);  //TODO
-            assert((pos + len) <= stop);
-
-            pos += len;  //consume size
-
-            switch (id)
-            {
-                case 0x23:  //SimpleBlock ID
-                    bSimpleBlock = true;
-                    //YES, FALL THROUGH TO NEXT CASE
-
-                case 0x21:  //Block ID
-                    ParseBlock(pos, size);
-                    break;
-
-                default:
-                    break;
-            }
-
-            pos += size;  //consume payload
-            assert(pos <= stop);
-        }
-    }
-
-    assert(pos == stop);
-    assert(m_pBlock);
-
-    if (!bSimpleBlock)
-        m_pBlock->SetKey(!bReferenceBlock);
+    m_block.SetKey((prev == 0) && (next == 0));
 }
 
 
-BlockGroup::~BlockGroup()
-{
-    delete m_pBlock;
-}
-
-
+#if 0
 void BlockGroup::ParseBlock(long long start, long long size)
 {
     IMkvReader* const pReader = m_pCluster->m_pSegment->m_pReader;
@@ -7844,23 +7838,24 @@ void BlockGroup::ParseBlock(long long start, long long size)
     assert(m_pBlock == NULL);
     m_pBlock = pBlock;
 }
+#endif
 
 
 const Block* BlockGroup::GetBlock() const
 {
-    return m_pBlock;
+    return &m_block;
 }
 
 
 short BlockGroup::GetPrevTimeCode() const
 {
-    return m_prevTimeCode;
+    return m_prev;
 }
 
 
 short BlockGroup::GetNextTimeCode() const
 {
-    return m_nextTimeCode;
+    return m_next;
 }
 
 
