@@ -8443,12 +8443,13 @@ Block::~Block()
 
 long long Block::GetTimeCode(const Cluster* pCluster) const
 {
-    assert(pCluster);
+    if (pCluster == 0)
+        return m_timecode;
 
     const long long tc0 = pCluster->GetTimeCode();
     assert(tc0 >= 0);
 
-    const long long tc = tc0 + static_cast<long long>(m_timecode);
+    const long long tc = tc0 + m_timecode;
     assert(tc >= 0);
 
     return tc;  //unscaled timecode units
