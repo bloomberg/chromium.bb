@@ -20,7 +20,6 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/common/sqlite_utils.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 
 namespace syncable {
