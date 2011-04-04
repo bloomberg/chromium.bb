@@ -31,7 +31,7 @@ function RPCWrapper() {
   // Async calls can make it faster, but it can also change order of events.
   this.async = false;
 
-  // Called if URL-encoded RPC gets a 404, can't find the server, etc. 
+  // Called if URL-encoded RPC gets a 404, can't find the server, etc.
   function handleRPCFailure(name, message) {
     // This isn't treated as a testing error - the test can be run without a
     // web server that understands RPC.
@@ -50,7 +50,7 @@ function RPCWrapper() {
       handleRPCFailure(name, req.status.toString());
     }
   }
-  
+
   // Performs a URL-encoded RPC call, given a function name and a dictionary
   // (actually just an object - it's a JS idiom) of parameters.
   function rpcCall(name, params) {
@@ -168,7 +168,7 @@ function RPCWrapper() {
   this.fail = function(test_name, message) {
     this.num_failed += 1;
     this.visualError();
-    var full_message = '[' + test_name + ' FAIL] ' + message 
+    var full_message = '[' + test_name + ' FAIL] ' + message
     this._log(full_message, 'red');
   }
 
@@ -189,7 +189,7 @@ function RPCWrapper() {
   this.blankLine = function() {
     this._log('');
   }
-  
+
   this.visualError = function() {
     // Changing the color is defered until testing is done
     this.ever_failed = true;
@@ -211,7 +211,7 @@ function RPCWrapper() {
       this.localOutput.appendChild(div);
     }
   }
-  
+
   this.logLocal = function(message, color) {
     var lines = message.split('\n');
     for (var i = 0; i < lines.length; i++) {
@@ -228,7 +228,7 @@ function RPCWrapper() {
 
 
 //
-// BEGIN functions for testing 
+// BEGIN functions for testing
 //
 
 
@@ -265,7 +265,7 @@ function toString(obj) {
     return obj.toString();
   } catch (err) {
     try {
-      // Arrays should do this automatically, but there is a known bug where 
+      // Arrays should do this automatically, but there is a known bug where
       // NaCl gets array types wrong.  .toString will fail on these objects.
       return obj.join(',');
     } catch (err) {
@@ -419,6 +419,9 @@ function Tester() {
   this.initRPC = function() {
     this.rpc = new RPCWrapper();
     this.rpc.startup();
+    for (var i = 0; i < backlog.length; i++) {
+      this.log(backlog[i]);
+    }
   }
 
   // Find all the plugins in the DOM and make sure they've all loaded.

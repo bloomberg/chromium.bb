@@ -11,6 +11,7 @@
   ],
   "content_scripts": [
     {
+      "run_at": "document_end",
       "matches": ["<all_urls>"],
       "js": ["test_bridge.js"]
     }

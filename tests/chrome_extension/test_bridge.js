@@ -13,41 +13,25 @@
  */
 
 /**
- * Process the test results by changing the innerHTML of the DOM element with
- * id "nacl_test_module".  If that DOM does not exist, do nothing.
- * @param {!Object} testResults A dictionary mapping test names with result
- *     values.  This dictionary is filled in by the extension.
- */
-function dispatchTestResults(testResults) {
-  var naclTestModule = document.getElementById('test_results_element');
-  if (naclTestModule && naclTestModule.onclick) {
-    naclTestModule.onclick(testResults);
-  } else {
-    // Retry, the extension may have spun up before the main page.
-    setTimeout(function() { dispatchTestResults(testResults)}, 50);
-  }
-}
-
-/**
- * Listen for events coming from the background page.  An event is sent from
- * the background page when the NaCl module is loaded & the tests have been
- * run (or a load error occured).
- */
-chrome.extension.onRequest.addListener(
-  function(request, sender, sendResponse) {
-    if (request.type == 'processTestResults')
-      dispatchTestResults(request.testResults);
-    sendResponse({});
-  });
-
-/**
- * Run the unit tests.  This sends an RPC request to the extension.  The
+ * Run the unit tests.  This opens a port to the extension.  The
  * extension, in turn, runs the tests and sends the results back to the
  * embedding page via a DOM event.
  */
 function runAllNaClTests() {
-  chrome.extension.sendRequest({type: 'runTests'});
+  // Opening the channel will kick off testing.
+  port = chrome.extension.connect({name: 'testChannel'});
+  port.onMessage.addListener(function(e) {
+    console.log('Content script: ' + e.type);
+    var naclTestModule = document.getElementById('test_results_element');
+    if(!naclTestModule) return;
+    if(e.type == 'processTestResults') {
+      // Run the tests
+      naclTestModule.onclick.run(e.testResults);
+    } else if(e.type == 'log') {
+      // A generic log message
+      naclTestModule.onclick.log(e.message);
+    }
+  });
 }
 
-// Run the unit tests once this script has actually been injected.
 runAllNaClTests();

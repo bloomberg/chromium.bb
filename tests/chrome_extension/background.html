@@ -39,20 +39,23 @@
      *      NaCl module isloaded, or after the number of retires is exceeded.
      *      The callback is passed a bool argument indicating load success.
      */
-    function waitForNaClModule(embed, moduleDidLoad) {
+    function waitForNaClModule(embed, moduleDidLoad, responseCallback) {
       if (isLoaded(embed)) {
-        moduleDidLoad(true);
+        moduleDidLoad(true, responseCallback);
         return;
       }
       retries -= 1;
       if (retries <= 0) {
-        moduleDidLoad(false);
+        moduleDidLoad(false, responseCallback);
         return;
       }
-      // At this point, there is no discernable load error, and the module
+      // At this point, there is no discernible load error, and the module
       // has not yet loaded.  Continue to wait.
-      setTimeout(function() { waitForNaClModule(embed, moduleDidLoad); },
-                 retryWait);
+      responseCallback({type: 'log', message: 'Waiting...'});
+      var callback = function() {
+        waitForNaClModule(embed, moduleDidLoad, responseCallback);
+      };
+      setTimeout(callback, retryWait);
     }
 
     /**
@@ -64,7 +67,7 @@
      * @param {bool} loadSuccess Indicates whether the NaCl module was
      *     loaded.
      */
-    function runAllTests(loadSuccess) {
+    function runAllTests(loadSuccess, responseCallback) {
       var response = { type: 'processTestResults',
                        testResults: {error: 0} };
       if (loadSuccess) {
@@ -77,11 +80,7 @@
       } else {
         response.testResults.error = 'NaCl module failed to load';
       }
-      // Send the results via RPC back to the embedding page, which is assumed
-      // to live in the current (only) tab.
-      chrome.tabs.getSelected(null, function(tab) {
-        chrome.tabs.sendRequest(tab.id, response);
-      });
+      responseCallback(response);
     }
 
     /**
@@ -90,9 +89,9 @@
      * @return An object whose keys are the test ids, and values are the test
      *     results.
      */
-    function loadModuleAndRunAllTests() {
+    function loadModuleAndRunAllTests(responseCallback) {
       var nacl_module = document.getElementById('nacl_module');
-      waitForNaClModule(nacl_module, runAllTests);
+      waitForNaClModule(nacl_module, runAllTests, responseCallback);
     }
 
     /**
@@ -100,12 +99,11 @@
      * test_bridge script.  For more info, see:
      *     http://code.google.com/chrome/extensions/messaging.html
      */
-    chrome.extension.onRequest.addListener(
-        function(request, sender, sendResponse) {
-          if (request.type == 'runTests')
-            loadModuleAndRunAllTests();
-          sendResponse({});
-        });
+    chrome.extension.onConnect.addListener(function(port) {
+      loadModuleAndRunAllTests(function(response) {
+        port.postMessage(response);
+      });
+    });
   </script>
 </head>
 <body>

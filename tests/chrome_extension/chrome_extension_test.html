@@ -19,8 +19,6 @@
    *     test result values.
    */
   function processTestResults(testResults) {
-    var tester = new Tester();
-
     // Fail if any errors occurred during the test run in the extension.
     tester.addTest('load_errors', function() {
       assertEqual(testResults.error, 0);
@@ -56,8 +54,13 @@
     // in this page; the only way it can communicate is via the DOM.  For more
     // info, see:
     //     http://code.google.com/chrome/extensions/content_scripts.html
+    var tester = new Tester();
     var naclTestModule = $('test_results_element');
-    naclTestModule.onclick = processTestResults;
+    // Use onclick because arbitrary attributes don't show up in the bridge
+    // script.
+    naclTestModule.onclick = {}
+    naclTestModule.onclick.run = processTestResults;
+    naclTestModule.onclick.log = function(message) { tester.log(message); }
   </script>
 </body>
 </html>
