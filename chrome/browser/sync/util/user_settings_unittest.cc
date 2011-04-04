@@ -5,31 +5,32 @@
 #include <limits>
 #include <string>
 
+#include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_temp_dir.h"
+#include "base/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/util/user_settings.h"
-#include "chrome/common/sqlite_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using browser_sync::APEncode;
-using browser_sync::APDecode;
-using browser_sync::ExecOrDie;
-using browser_sync::UserSettings;
 
 using std::numeric_limits;
 
-static const FilePath::CharType kV10UserSettingsDB[] =
+namespace {
+
+const FilePath::CharType kV10UserSettingsDB[] =
     FILE_PATH_LITERAL("Version10Settings.sqlite3");
-static const FilePath::CharType kV11UserSettingsDB[] =
+const FilePath::CharType kV11UserSettingsDB[] =
     FILE_PATH_LITERAL("Version11Settings.sqlite3");
-static const FilePath::CharType kOldStyleSyncDataDB[] =
+const FilePath::CharType kOldStyleSyncDataDB[] =
     FILE_PATH_LITERAL("OldStyleSyncData.sqlite3");
+
+}  // namespace
 
 class UserSettingsTest : public testing::Test {
  public:
-  UserSettingsTest() : sync_data_("Some sync data") { }
+  UserSettingsTest() : sync_data_("Some sync data") {}
 
   virtual void SetUp() {
 #if defined(OS_MACOSX)
@@ -42,12 +43,11 @@ class UserSettingsTest : public testing::Test {
   // Creates and populates the V10 database files within
   // |destination_directory|.
   void SetUpVersion10Databases(const FilePath& destination_directory) {
-    sqlite3* primer_handle = NULL;
     v10_user_setting_db_path_ =
         destination_directory.Append(FilePath(kV10UserSettingsDB));
-    ASSERT_EQ(SQLITE_OK, sqlite_utils::OpenSqliteDb(v10_user_setting_db_path_,
-                                                    &primer_handle));
-    sqlite_utils::scoped_sqlite_db_ptr db(primer_handle);
+
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(v10_user_setting_db_path_));
 
     old_style_sync_data_path_ =
         destination_directory.Append(FilePath(kOldStyleSyncDataDB));
@@ -58,84 +58,89 @@ class UserSettingsTest : public testing::Test {
                   sync_data_.length())));
 
     // Create settings table.
-    ExecOrDie(primer_handle, "CREATE TABLE settings"
-              " (email, key, value, "
-              "  PRIMARY KEY(email, key) ON CONFLICT REPLACE)");
+    ASSERT_TRUE(db.Execute(
+        "CREATE TABLE settings (email, key, value,  PRIMARY KEY(email, key)"
+        " ON CONFLICT REPLACE)"));
+
     // Add a blank signin table.
-    ExecOrDie(primer_handle, "CREATE TABLE signin_types"
-              " (signin, signin_type)");
+    ASSERT_TRUE(db.Execute(
+        "CREATE TABLE signin_types (signin, signin_type)"));
+
     // Create and populate version table.
-    ExecOrDie(primer_handle, "CREATE TABLE db_version ( version )");
+    ASSERT_TRUE(db.Execute("CREATE TABLE db_version (version)"));
     {
-      SQLStatement statement;
-      const char query[] = "INSERT INTO db_version values ( ? )";
-      statement.prepare(primer_handle, query);
-      statement.bind_int(0, 10);
-      if (SQLITE_DONE != statement.step()) {
-        LOG(FATAL) << query << "\n" << sqlite3_errmsg(primer_handle);
-      }
+      const char* query = "INSERT INTO db_version VALUES(?)";
+      sql::Statement s(db.GetUniqueStatement(query));
+      if (!s)
+        LOG(FATAL) << query << "\n" << db.GetErrorMessage();
+
+      s.BindInt(0, 10);
+      if (!s.Run())
+        LOG(FATAL) << query << "\n" << db.GetErrorMessage();
     }
+
     // Create shares table.
-    ExecOrDie(primer_handle, "CREATE TABLE shares"
-              " (email, share_name, file_name,"
-              "  PRIMARY KEY(email, share_name) ON CONFLICT REPLACE)");
+    ASSERT_TRUE(db.Execute(
+        "CREATE TABLE shares (email, share_name, file_name,"
+        " PRIMARY KEY(email, share_name) ON CONFLICT REPLACE)"));
     // Populate a share.
     {
-      SQLStatement statement;
-      const char query[] = "INSERT INTO shares values ( ?, ?, ? )";
-      statement.prepare(primer_handle, query);
-      statement.bind_string(0, "foo@foo.com");
-      statement.bind_string(1, "foo@foo.com");
+      const char* query = "INSERT INTO shares VALUES(?, ?, ?)";
+      sql::Statement s(db.GetUniqueStatement(query));
+      if (!s)
+        LOG(FATAL) << query << "\n" << db.GetErrorMessage();
+
+      s.BindString(0, "foo@foo.com");
+      s.BindString(1, "foo@foo.com");
 #if defined(OS_WIN)
-      statement.bind_string(2, WideToUTF8(old_style_sync_data_path_.value()));
+      s.BindString(2, WideToUTF8(old_style_sync_data_path_.value()));
 #elif defined(OS_POSIX)
-      statement.bind_string(2, old_style_sync_data_path_.value());
+      s.BindString(2, old_style_sync_data_path_.value());
 #endif
-      if (SQLITE_DONE != statement.step()) {
-        LOG(FATAL) << query << "\n" << sqlite3_errmsg(primer_handle);
-      }
+      if (!s.Run())
+        LOG(FATAL) << query << "\n" << db.GetErrorMessage();
     }
   }
 
    // Creates and populates the V11 database file within
   // |destination_directory|.
   void SetUpVersion11Database(const FilePath& destination_directory) {
-    sqlite3* primer_handle = NULL;
     v11_user_setting_db_path_ =
         destination_directory.Append(FilePath(kV11UserSettingsDB));
-    ASSERT_EQ(SQLITE_OK, sqlite_utils::OpenSqliteDb(v11_user_setting_db_path_,
-                                                    &primer_handle));
-    sqlite_utils::scoped_sqlite_db_ptr db(primer_handle);
+
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(v11_user_setting_db_path_));
 
     // Create settings table.
-    ExecOrDie(primer_handle, "CREATE TABLE settings"
-              " (email, key, value, "
-              "  PRIMARY KEY(email, key) ON CONFLICT REPLACE)");
+    ASSERT_TRUE(db.Execute(
+        "CREATE TABLE settings (email, key, value, PRIMARY KEY(email, key)"
+        " ON CONFLICT REPLACE)"));
 
     // Create and populate version table.
-    ExecOrDie(primer_handle, "CREATE TABLE db_version ( version )");
+    ASSERT_TRUE(db.Execute("CREATE TABLE db_version (version)"));
     {
-      SQLStatement statement;
-      const char query[] = "INSERT INTO db_version values ( ? )";
-      statement.prepare(primer_handle, query);
-      statement.bind_int(0, 11);
-      if (SQLITE_DONE != statement.step()) {
-        LOG(FATAL) << query << "\n" << sqlite3_errmsg(primer_handle);
-      }
+      const char* query = "INSERT INTO db_version VALUES(?)";
+      sql::Statement s(db.GetUniqueStatement(query));
+      if (!s)
+        LOG(FATAL) << query << "\n" << db.GetErrorMessage();
+
+      s.BindInt(0, 11);
+      if (!s.Run())
+        LOG(FATAL) << query << "\n" << db.GetErrorMessage();
     }
 
-    ExecOrDie(primer_handle, "CREATE TABLE signin_types"
-              " (signin, signin_type)");
-
+    ASSERT_TRUE(db.Execute(
+        "CREATE TABLE signin_types (signin, signin_type)"));
     {
-      SQLStatement statement;
-      const char query[] = "INSERT INTO signin_types values ( ?, ? )";
-      statement.prepare(primer_handle, query);
-      statement.bind_string(0, "test");
-      statement.bind_string(1, "test");
-      if (SQLITE_DONE != statement.step()) {
-        LOG(FATAL) << query << "\n" << sqlite3_errmsg(primer_handle);
-      }
+      const char* query = "INSERT INTO signin_types VALUES(?, ?)";
+      sql::Statement s(db.GetUniqueStatement(query));
+      if (!s)
+        LOG(FATAL) << query << "\n" << db.GetErrorMessage();
+
+      s.BindString(0, "test");
+      s.BindString(1, "test");
+      if (!s.Run())
+        LOG(FATAL) << query << "\n" << db.GetErrorMessage();
     }
   }
 
@@ -167,23 +172,24 @@ TEST_F(UserSettingsTest, MigrateFromV10ToV11) {
     // Create a UserSettings, which should trigger migration code. We do this
     // inside a scoped block so it closes itself and we can poke around to see
     // what happened later.
-    UserSettings settings;
+    browser_sync::UserSettings settings;
     settings.Init(v10_user_setting_db_path());
   }
 
   // Now poke around using sqlite to see if UserSettings migrated properly.
-  sqlite3* handle = NULL;
-  ASSERT_EQ(SQLITE_OK, sqlite_utils::OpenSqliteDb(v10_user_setting_db_path(),
-                                                  &handle));
-  sqlite_utils::scoped_sqlite_db_ptr db(handle);
+  sql::Connection db;
+  ASSERT_TRUE(db.Open(v10_user_setting_db_path()));
 
   // Note that we don't use ScopedStatement to avoid closing the sqlite handle
   // before finalizing the statement.
   {
-    SQLStatement version_query;
-    version_query.prepare(handle, "SELECT version FROM db_version");
-    ASSERT_EQ(SQLITE_ROW, version_query.step());
-    const int version = version_query.column_int(0);
+    const char* query = "SELECT version FROM db_version";
+    sql::Statement version_query(db.GetUniqueStatement(query));
+    if (!version_query)
+      LOG(FATAL) << query << "\n" << db.GetErrorMessage();
+
+    ASSERT_TRUE(version_query.Step());
+    const int version = version_query.ColumnInt(0);
     EXPECT_GE(version, 11);
   }
 
@@ -202,25 +208,29 @@ TEST_F(UserSettingsTest, MigrateFromV11ToV12) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   SetUpVersion11Database(temp_dir.path());
   {
-    UserSettings settings;
+    browser_sync::UserSettings settings;
     settings.Init(v11_user_setting_db_path());
   }
-  sqlite3* handle = NULL;
-  ASSERT_EQ(SQLITE_OK, sqlite_utils::OpenSqliteDb(v11_user_setting_db_path(),
-                                                  &handle));
-  sqlite_utils::scoped_sqlite_db_ptr db(handle);
+  sql::Connection db;
+  ASSERT_TRUE(db.Open(v11_user_setting_db_path()));
 
   {
-    SQLStatement version_query;
-    version_query.prepare(handle, "SELECT version FROM db_version");
-    ASSERT_EQ(SQLITE_ROW, version_query.step());
-    const int version = version_query.column_int(0);
+    const char* query = "SELECT version FROM db_version";
+    sql::Statement version_query(db.GetUniqueStatement(query));
+    if (!version_query)
+      LOG(FATAL) << query << "\n" << db.GetErrorMessage();
+
+    ASSERT_TRUE(version_query.Step());
+    const int version = version_query.ColumnInt(0);
     EXPECT_GE(version, 12);
 
-    SQLStatement table_query;
-    table_query.prepare(handle, "SELECT name FROM sqlite_master "
-        "WHERE type='table' AND name='signin_types'");
-    ASSERT_NE(SQLITE_ROW, table_query.step());
+    const char* query2 = "SELECT name FROM sqlite_master "
+                         "WHERE type='table' AND name='signin_types'";
+    sql::Statement table_query(db.GetUniqueStatement(query2));
+    if (!table_query)
+      LOG(FATAL) << query2 << "\n" << db.GetErrorMessage();
+
+    ASSERT_FALSE(table_query.Step());
   }
 }
 
@@ -230,15 +240,15 @@ TEST_F(UserSettingsTest, APEncode) {
   for (i = numeric_limits<char>::min(); i < numeric_limits<char>::max(); ++i)
     test.push_back(i);
   test.push_back(i);
-  const std::string encoded = APEncode(test);
-  const std::string decoded = APDecode(encoded);
+  const std::string encoded = browser_sync::APEncode(test);
+  const std::string decoded = browser_sync::APDecode(encoded);
   ASSERT_EQ(test, decoded);
 }
 
 TEST_F(UserSettingsTest, PersistEmptyToken) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  UserSettings settings;
+  browser_sync::UserSettings settings;
   settings.Init(temp_dir.path().AppendASCII("UserSettings.sqlite3"));
   settings.SetAuthTokenForService("username", "service", "");
   std::string username;
@@ -252,7 +262,7 @@ TEST_F(UserSettingsTest, PersistEmptyToken) {
 TEST_F(UserSettingsTest, PersistNonEmptyToken) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  UserSettings settings;
+  browser_sync::UserSettings settings;
   settings.Init(temp_dir.path().AppendASCII("UserSettings.sqlite3"));
   settings.SetAuthTokenForService("username", "service",
       "oonetuhasonteuhasonetuhasonetuhasonetuhasouhasonetuhasonetuhasonetuhah"
