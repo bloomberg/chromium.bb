@@ -886,6 +886,11 @@ class NotificationType {
     // details about why the install failed.
     EXTENSION_INSTALL_ERROR,
 
+    // Sent when an extension install is not allowed, as indicated by
+    // PendingExtensionInfo::ShouldAllowInstall. The details are an Extension,
+    // and the source is a Profile.
+    EXTENSION_INSTALL_NOT_ALLOWED,
+
     // Sent when an extension has been uninstalled.  The details are
     // an UninstalledExtensionInfo struct and the source is a Profile.
     EXTENSION_UNINSTALLED,
