@@ -40,9 +40,10 @@ function checkExpectations() {
 }
 
 function captureEvent(name, details) {
-  // Ignore system-level requests like safebrowsing updates since they are
-  // unpredictable.
-  if (details.tabId == -1)
+  // Ignore system-level requests like safebrowsing updates and favicon fetches
+  // since they are unpredictable.
+  if (details.tabId == -1 || details.type == "other" ||
+      details.url.match(/\/favicon.ico$/))
     return;
 
   delete details.requestId;
