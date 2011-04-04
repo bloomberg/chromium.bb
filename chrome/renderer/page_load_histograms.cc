@@ -672,13 +672,13 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
             break;
           case NavigationState::NORMAL_LOAD:
             PLT_HISTOGRAM(base::FieldTrial::MakeName(
-                "PLT.BeginToFinish_NormalLoad_SpdyTrial", "SpdyImpact"),
+                "PLT.BeginToFinish_NormalLoad", "SpdyImpact"),
                 begin_to_finish_all_loads);
             PLT_HISTOGRAM(base::FieldTrial::MakeName(
-                "PLT.StartToFinish_NormalLoad_SpdyTrial", "SpdyImpact"),
+                "PLT.StartToFinish_NormalLoad", "SpdyImpact"),
                 start_to_finish_all_loads);
             PLT_HISTOGRAM(base::FieldTrial::MakeName(
-                "PLT.StartToCommit_NormalLoad_SpdyTrial", "SpdyImpact"),
+                "PLT.StartToCommit_NormalLoad", "SpdyImpact"),
                 start_to_commit);
             break;
           default:
