@@ -32,6 +32,7 @@
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
@@ -793,6 +794,7 @@ bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionHost, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_PostMessage, OnPostMessage)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -848,4 +850,11 @@ void ExtensionHost::OnRunFileChooser(
   if (file_select_helper_.get() == NULL)
     file_select_helper_.reset(new FileSelectHelper(profile()));
   file_select_helper_->RunFileChooser(render_view_host_, params);
+}
+
+void ExtensionHost::OnPostMessage(int port_id, const std::string& message) {
+  if (profile()->GetExtensionMessageService()) {
+    profile()->GetExtensionMessageService()->PostMessageFromRenderer(
+        port_id, message);
+  }
 }

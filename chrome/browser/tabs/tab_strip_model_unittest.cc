@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -1759,9 +1760,9 @@ TEST_F(TabStripModelTest, Apps) {
                                                        Extension::INVALID));
   extension_app->launch_web_url_ = "http://www.google.com";
   TabContentsWrapper* contents1 = CreateTabContents();
-  contents1->tab_contents()->SetExtensionApp(extension_app);
+  contents1->extension_tab_helper()->SetExtensionApp(extension_app);
   TabContentsWrapper* contents2 = CreateTabContents();
-  contents2->tab_contents()->SetExtensionApp(extension_app);
+  contents2->extension_tab_helper()->SetExtensionApp(extension_app);
   TabContentsWrapper* contents3 = CreateTabContents();
 
   SetID(contents1->tab_contents(), 1);

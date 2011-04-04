@@ -796,6 +796,10 @@ PrefService* TestingProfile::GetOffTheRecordPrefs() {
   return NULL;
 }
 
+quota::SpecialStoragePolicy* TestingProfile::GetSpecialStoragePolicy() {
+  return GetExtensionSpecialStoragePolicy();
+}
+
 void TestingProfile::DestroyWebDataService() {
   if (!web_data_service_.get())
     return;

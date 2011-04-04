@@ -6,6 +6,7 @@
 
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/desktop_notification_handler.h"
+#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
@@ -197,9 +198,17 @@ void BackgroundContents::RenderViewGone(RenderViewHost* rvh,
 }
 
 bool BackgroundContents::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(BackgroundContents, message)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_PostMessage, OnPostMessage)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
   // Forward desktop notification IPCs if any to the
   // DesktopNotificationHandler.
-  return desktop_notification_handler_->OnMessageReceived(message);
+  if (!handled)
+   handled = desktop_notification_handler_->OnMessageReceived(message);
+  return handled;
 }
 
 RendererPreferences BackgroundContents::GetRendererPrefs(
@@ -275,4 +284,13 @@ BackgroundContents::GetBackgroundContentsByID(int render_process_id,
     return NULL;
 
   return render_view_host->delegate()->GetAsBackgroundContents();
+}
+
+void BackgroundContents::OnPostMessage(int port_id,
+                                       const std::string& message) {
+  Profile* profile = render_view_host_->process()->profile();
+  if (profile->GetExtensionMessageService()) {
+    profile->GetExtensionMessageService()->PostMessageFromRenderer(
+        port_id, message);
+  }
 }

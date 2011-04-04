@@ -26,6 +26,10 @@ class ContentBrowserClient {
 
   // Gets the WebUIFactory which will be responsible for generating WebUIs.
   virtual WebUIFactory* GetWebUIFactory();
+
+  // Get the effective URL for the given actual URL, to allow an embedder to
+  // group different url schemes in the same SiteInstance.
+  virtual GURL GetEffectiveURL(Profile* profile, const GURL& url);
 };
 
 }  // namespace content

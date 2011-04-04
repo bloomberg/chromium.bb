@@ -50,14 +50,23 @@ class SiteInstanceTestBrowserClient : public content::ContentBrowserClient {
 
 class SiteInstanceTest : public testing::Test {
  public:
+  SiteInstanceTest() : old_browser_client_(NULL) {
+  }
+
   virtual void SetUp() {
+    old_browser_client_ = content::GetContentClient()->browser();
     content::GetContentClient()->set_browser(&browser_client_);
+  }
+
+  virtual void TearDown() {
+    content::GetContentClient()->set_browser(old_browser_client_);
   }
 
  private:
   MessageLoopForUI message_loop_;
 
   SiteInstanceTestBrowserClient browser_client_;
+  content::ContentBrowserClient* old_browser_client_;
 };
 
 class TestBrowsingInstance : public BrowsingInstance {

@@ -399,7 +399,7 @@ class NotificationType {
     TAB_CONTENTS_DESTROYED,
 
     // This notification is sent when TabContents::SetAppExtension is invoked.
-    // The source is the TabContents SetAppExtension was invoked on.
+    // The source is the ExtensionTabHelper SetAppExtension was invoked on.
     TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
 
     // A RenderViewHost was created for a TabContents. The source is the

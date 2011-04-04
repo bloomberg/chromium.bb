@@ -32,4 +32,23 @@ content::WebUIFactory* ChromeContentBrowserClient::GetWebUIFactory() {
   return ChromeWebUIFactory::GetInstance();
 }
 
+GURL ChromeContentBrowserClient::GetEffectiveURL(Profile* profile,
+                                                 const GURL& url) {
+  // Get the effective URL for the given actual URL. If the URL is part of an
+  // installed app, the effective URL is an extension URL with the ID of that
+  // extension as the host. This has the effect of grouping apps together in
+  // a common SiteInstance.
+  if (!profile || !profile->GetExtensionService())
+    return url;
+
+  const Extension* extension =
+      profile->GetExtensionService()->GetExtensionByWebExtent(url);
+  if (!extension)
+    return url;
+
+  // If the URL is part of an extension's web extent, convert it to an
+  // extension URL.
+  return extension->GetResourceURL(url.path());
+}
+
 }  // namespace chrome

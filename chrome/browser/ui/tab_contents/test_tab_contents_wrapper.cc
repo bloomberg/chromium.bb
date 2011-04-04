@@ -24,7 +24,6 @@ TabContentsWrapper* TabContentsWrapperTestHarness::contents_wrapper() {
 }
 
 void TabContentsWrapperTestHarness::SetUp() {
-  content::GetContentClient()->set_browser(&browser_client_);
   contents_wrapper_.reset(new TabContentsWrapper(CreateTestTabContents()));
 }
 

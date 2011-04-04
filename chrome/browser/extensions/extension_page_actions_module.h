@@ -8,7 +8,7 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
-class TabContents;
+class TabContentsWrapper;
 class ExtensionAction;
 
 // Base class for page action APIs.
@@ -21,7 +21,7 @@ class PageActionFunction : public SyncExtensionFunction {
   bool SetVisible(bool visible);
 
   ExtensionAction* page_action_;
-  TabContents* contents_;
+  TabContentsWrapper* contents_;
 };
 
 // Implement chrome.pageActions.enableForTab().

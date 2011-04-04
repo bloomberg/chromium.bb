@@ -47,6 +47,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
@@ -1054,7 +1055,7 @@ TabContents* Browser::AddRestoredTab(
       GetSelectedTabContents(),
       session_storage_namespace);
   TabContents* new_tab = wrapper->tab_contents();
-  new_tab->SetExtensionAppById(extension_app_id);
+  wrapper->extension_tab_helper()->SetExtensionAppById(extension_app_id);
   new_tab->controller().RestoreFromState(navigations, selected_navigation,
                                          from_last_session);
 
@@ -1096,8 +1097,8 @@ void Browser::ReplaceRestoredTab(
       MSG_ROUTING_NONE,
       GetSelectedTabContents(),
       session_storage_namespace);
+  wrapper->extension_tab_helper()->SetExtensionAppById(extension_app_id);
   TabContents* replacement = wrapper->tab_contents();
-  replacement->SetExtensionAppById(extension_app_id);
   replacement->controller().RestoreFromState(navigations, selected_navigation,
                                              from_last_session);
 

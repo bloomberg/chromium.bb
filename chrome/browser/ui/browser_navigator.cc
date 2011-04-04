@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -182,7 +183,8 @@ Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
       // |source| represents an app.
       Browser::Type type = Browser::TYPE_POPUP;
       if ((params->browser && (params->browser->type() & Browser::TYPE_APP)) ||
-          (params->source_contents && params->source_contents->is_app())) {
+          (params->source_contents &&
+           params->source_contents->extension_tab_helper()->is_app())) {
         type = Browser::TYPE_APP_POPUP;
       }
       if (profile) {
@@ -424,7 +426,8 @@ void Navigate(NavigateParams* params) {
       // This function takes ownership of |params->target_contents| until it
       // is added to a TabStripModel.
       target_contents_owner.TakeOwnership();
-      params->target_contents->SetExtensionAppById(params->extension_app_id);
+      params->target_contents->extension_tab_helper()->
+          SetExtensionAppById(params->extension_app_id);
       // TODO(sky): figure out why this is needed. Without it we seem to get
       // failures in startup tests.
       // By default, content believes it is not hidden.  When adding contents

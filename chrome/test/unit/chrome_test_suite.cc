@@ -99,6 +99,7 @@ void ChromeTestSuite::Initialize() {
 
   // Initialize the content client which that code uses to talk to Chrome.
   content::SetContentClient(&chrome_content_client_);
+  content::GetContentClient()->set_browser(&chrome_browser_content_client_);
 
   chrome::RegisterChromeSchemes();
   host_resolver_proc_ = new LocalHostResolverProc();

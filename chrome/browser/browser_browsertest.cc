@@ -12,6 +12,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -490,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
   TabContentsWrapper* app_contents =
       Browser::TabContentsFactory(browser()->profile(), NULL,
                                   MSG_ROUTING_NONE, NULL, NULL);
-  app_contents->tab_contents()->SetExtensionApp(extension_app);
+  app_contents->extension_tab_helper()->SetExtensionApp(extension_app);
 
   model->AddTabContents(app_contents, 0, 0, TabStripModel::ADD_NONE);
   model->SetTabPinned(0, true);
@@ -611,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   TabContentsWrapper* app_contents =
     Browser::TabContentsFactory(browser()->profile(), NULL,
                                 MSG_ROUTING_NONE, NULL, NULL);
-  app_contents->tab_contents()->SetExtensionApp(extension_app);
+  app_contents->extension_tab_helper()->SetExtensionApp(extension_app);
   model->AddTabContents(app_contents, 0, 0, TabStripModel::ADD_NONE);
   model->SetTabPinned(0, true);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -664,7 +665,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
       new_model->GetTabContentsAt(2)->tab_contents()->GetURL());
 
   EXPECT_TRUE(
-      new_model->GetTabContentsAt(0)->tab_contents()->extension_app() ==
+      new_model->GetTabContentsAt(0)->extension_tab_helper()->extension_app() ==
           extension_app);
 }
 #endif  // !defined(OS_CHROMEOS)
@@ -696,7 +697,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
 
   // Apps launched in a window from the NTP do not have extension_app set in
   // tab contents.
-  EXPECT_FALSE(app_window->extension_app());
+  TabContentsWrapper* wrapper =
+          TabContentsWrapper::GetCurrentWrapperForContents(app_window);
+  EXPECT_FALSE(wrapper->extension_tab_helper()->extension_app());
   EXPECT_EQ(extension_app->GetFullLaunchURL(), app_window->GetURL());
 
   // The launch should have created a new browser.

@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
@@ -125,13 +126,13 @@ void SessionChangeProcessor::Observe(NotificationType type,
     }
 
     case NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
-      TabContents* tab_contents = Source<TabContents>(source).ptr();
-      DCHECK(tab_contents);
-      if (tab_contents->profile() != profile_) {
+      ExtensionTabHelper* extension_tab_helper =
+          Source<ExtensionTabHelper>(source).ptr();
+      if (extension_tab_helper->tab_contents()->profile() != profile_) {
         return;
       }
-      if (tab_contents->extension_app()) {
-        modified_tabs.push_back(tab_contents);
+      if (extension_tab_helper->extension_app()) {
+        modified_tabs.push_back(extension_tab_helper->tab_contents());
       }
       break;
     }

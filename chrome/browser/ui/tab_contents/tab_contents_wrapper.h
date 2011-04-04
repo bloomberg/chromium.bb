@@ -28,6 +28,7 @@ class AutocompleteHistoryManager;
 class AutofillManager;
 class DevToolsObserver;
 class Extension;
+class ExtensionTabHelper;
 class FileSelectObserver;
 class FindTabHelper;
 class NavigationController;
@@ -87,16 +88,6 @@ class TabContentsWrapper : public NotificationObserver,
     return tab_contents()->render_view_host();
   }
   Profile* profile() const { return tab_contents()->profile(); }
-
-  // Convenience methods until extensions are removed from TabContents.
-  void SetExtensionAppById(const std::string& extension_app_id) {
-    tab_contents()->SetExtensionAppById(extension_app_id);
-  }
-  const Extension* extension_app() const {
-    return tab_contents()->extension_app();
-  }
-  bool is_app() const { return tab_contents()->is_app(); }
-
   bool is_starred() const { return is_starred_; }
 
   // Tab Helpers ---------------------------------------------------------------
@@ -106,6 +97,10 @@ class TabContentsWrapper : public NotificationObserver,
   }
 
   AutofillManager* autofill_manager() { return autofill_manager_.get(); }
+
+  ExtensionTabHelper* extension_tab_helper() {
+    return extension_tab_helper_.get();
+  }
 
   FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
 
@@ -170,6 +165,8 @@ class TabContentsWrapper : public NotificationObserver,
   scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
 
   scoped_ptr<AutofillManager> autofill_manager_;
+
+  scoped_ptr<ExtensionTabHelper> extension_tab_helper_;
 
   scoped_ptr<FindTabHelper> find_tab_helper_;
 

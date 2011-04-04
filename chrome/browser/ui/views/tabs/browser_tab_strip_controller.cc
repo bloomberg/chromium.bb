@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -388,11 +389,13 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
     int model_index,
     TabRendererData* data) {
   SkBitmap* app_icon = NULL;
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(contents);
 
   // Extension App icons are slightly larger than favicons, so only allow
   // them if permitted by the model.
   if (model_->delegate()->LargeIconsPermitted())
-    app_icon = contents->GetExtensionAppIcon();
+    app_icon = wrapper->extension_tab_helper()->GetExtensionAppIcon();
 
   if (app_icon)
     data->favicon = *app_icon;
@@ -406,7 +409,7 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   data->show_icon = contents->ShouldDisplayFavicon();
   data->mini = model_->IsMiniTab(model_index);
   data->blocked = model_->IsTabBlocked(model_index);
-  data->app = contents->is_app();
+  data->app = wrapper->extension_tab_helper()->is_app();
 }
 
 void BrowserTabStripController::StartHighlightTabsForCommand(

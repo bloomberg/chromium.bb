@@ -970,6 +970,8 @@
         'browser/extensions/extension_special_storage_policy.h',
         'browser/extensions/extension_tab_id_map.cc',
         'browser/extensions/extension_tab_id_map.h',
+        'browser/extensions/extension_tab_helper.cc',
+        'browser/extensions/extension_tab_helper.h',
         'browser/extensions/extension_tabs_module.cc',
         'browser/extensions/extension_tabs_module.h',
         'browser/extensions/extension_tabs_module_constants.cc',

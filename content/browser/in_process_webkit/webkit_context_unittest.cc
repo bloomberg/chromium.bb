@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
@@ -11,8 +10,9 @@
 
 class MockDOMStorageContext : public DOMStorageContext {
  public:
-  explicit MockDOMStorageContext(WebKitContext* webkit_context)
-      : DOMStorageContext(webkit_context, new ExtensionSpecialStoragePolicy),
+  MockDOMStorageContext(WebKitContext* webkit_context,
+                        quota::SpecialStoragePolicy* special_storage_policy)
+      : DOMStorageContext(webkit_context, special_storage_policy),
         purge_count_(0) {
   }
 
@@ -32,14 +32,14 @@ TEST(WebKitContextTest, Basic) {
   TestingProfile profile;
   scoped_refptr<WebKitContext> context1(new WebKitContext(
           profile.IsOffTheRecord(), profile.GetPath(),
-          profile.GetExtensionSpecialStoragePolicy(),
+          profile.GetSpecialStoragePolicy(),
           false));
   EXPECT_TRUE(profile.GetPath() == context1->data_path());
   EXPECT_TRUE(profile.IsOffTheRecord() == context1->is_incognito());
 
   scoped_refptr<WebKitContext> context2(new WebKitContext(
           profile.IsOffTheRecord(), profile.GetPath(),
-          profile.GetExtensionSpecialStoragePolicy(),
+          profile.GetSpecialStoragePolicy(),
           false));
   EXPECT_TRUE(context1->data_path() == context2->data_path());
   EXPECT_TRUE(context1->is_incognito() == context2->is_incognito());
@@ -55,10 +55,10 @@ TEST(WebKitContextTest, PurgeMemory) {
   TestingProfile profile;
   scoped_refptr<WebKitContext> context(new WebKitContext(
           profile.IsOffTheRecord(), profile.GetPath(),
-          profile.GetExtensionSpecialStoragePolicy(),
+          profile.GetSpecialStoragePolicy(),
           false));
-  MockDOMStorageContext* mock_context =
-      new MockDOMStorageContext(context.get());
+  MockDOMStorageContext* mock_context = new MockDOMStorageContext(
+      context.get(), profile.GetSpecialStoragePolicy());
   context->set_dom_storage_context(mock_context);  // Takes ownership.
 
   // Ensure PurgeMemory() calls our mock object on the right thread.

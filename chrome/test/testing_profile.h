@@ -20,6 +20,10 @@ namespace net {
 class CookieMonster;
 }
 
+namespace quota {
+class SpecialStoragePolicy;
+}
+
 class AutocompleteClassifier;
 class BookmarkModel;
 class CommandLine;
@@ -282,6 +286,11 @@ class TestingProfile : public Profile {
   virtual ChromeURLDataManager* GetChromeURLDataManager();
   virtual prerender::PrerenderManager* GetPrerenderManager();
   virtual PrefService* GetOffTheRecordPrefs();
+
+  // TODO(jam): remove me once webkit_context_unittest.cc doesn't use Profile
+  // and gets the quota::SpecialStoragePolicy* from whatever ends up replacing
+  // it in the content module.
+  quota::SpecialStoragePolicy* GetSpecialStoragePolicy();
 
  protected:
   base::Time start_time_;

@@ -16,7 +16,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/dom_operation_notification_details.h"
-#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/profiles/profile.h"
@@ -772,7 +771,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnExtensionRequest)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnMsgSelectionChanged)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_PostMessage, OnExtensionPostMessage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityNotifications,
                         OnAccessibilityNotifications)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OnCSSInserted, OnCSSInserted)
@@ -1499,14 +1497,6 @@ void RenderViewHost::FilterURL(ChildProcessSecurityPolicy* policy,
 
 void RenderViewHost::JavaScriptStressTestControl(int cmd, int param) {
   Send(new ViewMsg_JavaScriptStressTestControl(routing_id(), cmd, param));
-}
-
-void RenderViewHost::OnExtensionPostMessage(
-    int port_id, const std::string& message) {
-  if (process()->profile()->GetExtensionMessageService()) {
-    process()->profile()->GetExtensionMessageService()->
-        PostMessageFromRenderer(port_id, message);
-  }
 }
 
 void RenderViewHost::OnAccessibilityNotifications(

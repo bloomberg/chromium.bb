@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/test/test_suite.h"
 #include "chrome/app/scoped_ole_initializer.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/common/chrome_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "net/base/mock_host_resolver.h"
@@ -55,6 +56,7 @@ class ChromeTestSuite : public base::TestSuite {
 
   // Client for embedding content in Chrome.
   chrome::ChromeContentClient chrome_content_client_;
+  chrome::ChromeContentBrowserClient chrome_browser_content_client_;
 
   base::StatsTable* stats_table_;
 

@@ -17,6 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1327,13 +1328,15 @@ class NotificationBridge : public NotificationObserver {
 // A helper routine for creating an NSImageView to hold the favicon or app icon
 // for |contents|.
 - (NSImageView*)iconImageViewForContents:(TabContents*)contents {
-  BOOL isApp = contents->is_app();
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(contents);
+  BOOL isApp = wrapper->extension_tab_helper()->is_app();
   NSImage* image = nil;
   // Favicons come from the renderer, and the renderer draws everything in the
   // system color space.
   CGColorSpaceRef colorSpace = base::mac::GetSystemColorSpace();
   if (isApp) {
-    SkBitmap* icon = contents->GetExtensionAppIcon();
+    SkBitmap* icon = wrapper->extension_tab_helper()->GetExtensionAppIcon();
     if (icon)
       image = gfx::SkBitmapToNSImageWithColorSpace(*icon, colorSpace);
   } else {

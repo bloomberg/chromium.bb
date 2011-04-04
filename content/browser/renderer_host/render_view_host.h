@@ -594,7 +594,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgShouldCloseACK(bool proceed);
 
   void OnExtensionRequest(const ExtensionHostMsg_DomMessage_Params& params);
-  void OnExtensionPostMessage(int port_id, const std::string& message);
   void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
   void OnCSSInserted();

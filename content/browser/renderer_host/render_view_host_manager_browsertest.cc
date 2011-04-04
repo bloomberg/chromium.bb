@@ -6,7 +6,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"

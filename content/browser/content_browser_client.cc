@@ -6,12 +6,17 @@
 
 #include "base/memory/singleton.h"
 #include "content/browser/webui/empty_web_ui_factory.h"
+#include "googleurl/src/gurl.h"
 
 namespace content {
 
 WebUIFactory* ContentBrowserClient::GetWebUIFactory() {
   // Return an empty factory so callsites don't have to check for NULL.
   return EmptyWebUIFactory::Get();
+}
+
+GURL ContentBrowserClient::GetEffectiveURL(Profile* profile, const GURL& url) {
+  return url;
 }
 
 }  // namespace content

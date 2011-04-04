@@ -153,6 +153,9 @@ class BackgroundContents : public RenderViewHostDelegate,
   BackgroundContents();
 
  private:
+  // Message handlers.
+  void OnPostMessage(int port_id, const std::string& message);
+
   // The delegate for this BackgroundContents.
   Delegate* delegate_;
 

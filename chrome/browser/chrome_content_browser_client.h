@@ -16,6 +16,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                    Profile* profile,
                                    const GURL& url);
   virtual content::WebUIFactory* GetWebUIFactory();
+  virtual GURL GetEffectiveURL(Profile* profile, const GURL& url);
 };
 
 }  // namespace chrome

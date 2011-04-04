@@ -149,10 +149,7 @@ class SiteInstance : public base::RefCounted<SiteInstance>,
   // GetRelatedSiteInstance instead.
   explicit SiteInstance(BrowsingInstance* browsing_instance);
 
-  // Get the effective URL for the given actual URL. If the URL is part of an
-  // installed app, the effective URL is an extension URL with the ID of that
-  // extension as the host. This has the effect of grouping apps together in
-  // a common SiteInstance.
+  // Get the effective URL for the given actual URL.
   static GURL GetEffectiveURL(Profile* profile, const GURL& url);
 
   // Returns the type of renderer process this instance belongs in, for grouping

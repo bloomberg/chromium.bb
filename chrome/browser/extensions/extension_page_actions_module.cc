@@ -9,6 +9,7 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_page_actions_module_constants.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -89,7 +90,7 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
   page_action->SetIsVisible(tab_id, enable);
   page_action->SetTitle(tab_id, title);
   page_action->SetIconIndex(tab_id, icon_id);
-  contents->tab_contents()->PageActionStateChanged();
+  contents->extension_tab_helper()->PageActionStateChanged();
 
   return true;
 }
@@ -111,7 +112,7 @@ bool PageActionFunction::InitCommon(int tab_id) {
         kNoTabError, base::IntToString(tab_id));
     return false;
   }
-  contents_ = wrapper->tab_contents();
+  contents_ = wrapper;
 
   return true;
 }
@@ -123,7 +124,7 @@ bool PageActionFunction::SetVisible(bool visible) {
     return false;
 
   page_action_->SetIsVisible(tab_id, visible);
-  contents_->PageActionStateChanged();
+  contents_->extension_tab_helper()->PageActionStateChanged();
   return true;
 }
 
@@ -175,7 +176,7 @@ bool PageActionSetIconFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(false);
   }
 
-  contents_->PageActionStateChanged();
+  contents_->extension_tab_helper()->PageActionStateChanged();
   return true;
 }
 
@@ -192,7 +193,7 @@ bool PageActionSetTitleFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args->GetString("title", &title));
 
   page_action_->SetTitle(tab_id, title);
-  contents_->PageActionStateChanged();
+  contents_->extension_tab_helper()->PageActionStateChanged();
   return true;
 }
 
@@ -215,7 +216,7 @@ bool PageActionSetPopupFunction::RunImpl() {
     popup_url = GetExtension()->GetResourceURL(popup_string);
 
   page_action_->SetPopupUrl(tab_id, popup_url);
-  contents_->PageActionStateChanged();
+  contents_->extension_tab_helper()->PageActionStateChanged();
   return true;
 }
 
@@ -241,7 +242,7 @@ bool PageActionSetBadgeBackgroundColorFunction::RunImpl() {
   SkColor color = SkColorSetARGB(color_array[3], color_array[0], color_array[1],
                                  color_array[2]);
   page_action_->SetBadgeBackgroundColor(tab_id, color);
-  contents_->PageActionStateChanged();
+  contents_->extension_tab_helper()->PageActionStateChanged();
   return true;
 }
 
@@ -267,7 +268,7 @@ bool PageActionSetBadgeTextColorFunction::RunImpl() {
   SkColor color = SkColorSetARGB(color_array[3], color_array[0], color_array[1],
                                  color_array[2]);
   page_action_->SetBadgeTextColor(tab_id, color);
-  contents_->PageActionStateChanged();
+  contents_->extension_tab_helper()->PageActionStateChanged();
   return true;
 }
 
@@ -286,6 +287,6 @@ bool PageActionSetBadgeTextFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args->GetString("text", &text));
 
   page_action_->SetBadgeText(tab_id, text);
-  contents_->PageActionStateChanged();
+  contents_->extension_tab_helper()->PageActionStateChanged();
   return true;
 }

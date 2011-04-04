@@ -9,12 +9,14 @@
 #include <algorithm>
 
 #include "base/i18n/rtl.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/backing_store_x.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -56,8 +58,10 @@ DraggedTabGtk::DraggedTabGtk(TabContents* datasource,
       attached_tab_size_(TabRendererGtk::GetMinimumSelectedSize()),
       contents_size_(contents_size),
       close_animation_(this) {
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(datasource);
   renderer_->UpdateData(datasource,
-                        datasource->is_app(),
+                        wrapper->extension_tab_helper()->is_app(),
                         false); // loading_only
   renderer_->set_mini(mini);
 

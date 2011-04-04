@@ -232,6 +232,7 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   // Message handlers.
   void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
+  void OnPostMessage(int port_id, const std::string& message);
 
   // Handles keyboard events that were not handled by HandleKeyboardEvent().
   // Platform specific implementation may override this method to handle the

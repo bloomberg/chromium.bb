@@ -9,6 +9,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
@@ -292,7 +293,9 @@ void TabRendererGtk::UpdateData(TabContents* contents,
     data_.incognito = contents->profile()->IsOffTheRecord();
     data_.crashed = contents->is_crashed();
 
-    SkBitmap* app_icon = contents->GetExtensionAppIcon();
+    SkBitmap* app_icon =
+        TabContentsWrapper::GetCurrentWrapperForContents(contents)->
+            extension_tab_helper()->GetExtensionAppIcon();
     if (app_icon)
       data_.favicon = *app_icon;
     else

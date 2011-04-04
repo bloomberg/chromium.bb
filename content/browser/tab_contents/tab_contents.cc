@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/string16.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/google/google_util.h"
@@ -40,6 +40,7 @@
 #include "chrome/browser/pdf_unsupported_feature.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_observer.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -56,10 +57,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -243,7 +241,6 @@ TabContents::TabContents(Profile* profile,
       all_contents_blocked_(false),
       dont_notify_render_view_(false),
       displayed_insecure_content_(false),
-      extension_app_(NULL),
       capturing_contents_(false),
       is_being_destroyed_(false),
       notify_disconnection_(false),
@@ -451,39 +448,6 @@ RenderProcessHost* TabContents::GetRenderProcessHost() const {
   return render_manager_.current_host()->process();
 }
 
-void TabContents::SetExtensionApp(const Extension* extension) {
-  DCHECK(!extension || extension->GetFullLaunchURL().is_valid());
-  extension_app_ = extension;
-
-  UpdateExtensionAppIcon(extension_app_);
-
-  NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
-      Source<TabContents>(this),
-      NotificationService::NoDetails());
-}
-
-void TabContents::SetExtensionAppById(const std::string& extension_app_id) {
-  if (extension_app_id.empty())
-    return;
-
-  ExtensionService* extension_service = profile()->GetExtensionService();
-  if (!extension_service || !extension_service->is_ready())
-    return;
-
-  const Extension* extension =
-      extension_service->GetExtensionById(extension_app_id, false);
-  if (extension)
-    SetExtensionApp(extension);
-}
-
-SkBitmap* TabContents::GetExtensionAppIcon() {
-  if (extension_app_icon_.empty())
-    return NULL;
-
-  return &extension_app_icon_;
-}
-
 const GURL& TabContents::GetURL() const {
   // We may not have a navigation entry yet
   NavigationEntry* entry = controller_.GetActiveEntry();
@@ -612,10 +576,6 @@ void TabContents::SetIsCrashed(base::TerminationStatus status, int error_code) {
   crashed_status_ = status;
   crashed_error_code_ = error_code;
   NotifyNavigationStateChanged(INVALIDATE_TAB);
-}
-
-void TabContents::PageActionStateChanged() {
-  NotifyNavigationStateChanged(TabContents::INVALIDATE_PAGE_ACTIONS);
 }
 
 void TabContents::NotifyNavigationStateChanged(unsigned changed_flags) {
@@ -782,8 +742,6 @@ TabContents* TabContents::Clone() {
                                     SiteInstance::CreateSiteInstance(profile()),
                                     MSG_ROUTING_NONE, this, NULL);
   tc->controller().CopyStateFrom(controller_);
-  tc->extension_app_ = extension_app_;
-  tc->extension_app_icon_ = extension_app_icon_;
   return tc;
 }
 
@@ -1639,28 +1597,6 @@ void TabContents::DidNavigateMainFramePostCommit(
   // Clear all page actions, blocked content notifications and browser actions
   // for this tab, unless this is an in-page navigation.
   if (!details.is_in_page) {
-    ExtensionService* service = profile()->GetExtensionService();
-    if (service) {
-      for (size_t i = 0; i < service->extensions()->size(); ++i) {
-        ExtensionAction* browser_action =
-            service->extensions()->at(i)->browser_action();
-        if (browser_action) {
-          browser_action->ClearAllValuesForTab(controller().session_id().id());
-          NotificationService::current()->Notify(
-              NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
-              Source<ExtensionAction>(browser_action),
-              NotificationService::NoDetails());
-        }
-
-        ExtensionAction* page_action =
-            service->extensions()->at(i)->page_action();
-        if (page_action) {
-          page_action->ClearAllValuesForTab(controller().session_id().id());
-          PageActionStateChanged();
-        }
-      }
-    }
-
     // Close blocked popups.
     if (blocked_contents_) {
       AutoReset<bool> auto_reset(&dont_notify_render_view_, true);
@@ -2664,42 +2600,6 @@ void TabContents::Observe(NotificationType type,
 
     default:
       NOTREACHED();
-  }
-}
-
-void TabContents::UpdateExtensionAppIcon(const Extension* extension) {
-  extension_app_icon_.reset();
-
-  if (extension) {
-    extension_app_image_loader_.reset(new ImageLoadingTracker(this));
-    extension_app_image_loader_->LoadImage(
-        extension,
-        extension->GetIconResource(Extension::EXTENSION_ICON_SMALLISH,
-                                   ExtensionIconSet::MATCH_EXACTLY),
-        gfx::Size(Extension::EXTENSION_ICON_SMALLISH,
-                  Extension::EXTENSION_ICON_SMALLISH),
-        ImageLoadingTracker::CACHE);
-  } else {
-    extension_app_image_loader_.reset(NULL);
-  }
-}
-
-const Extension* TabContents::GetExtensionContaining(const GURL& url) {
-  ExtensionService* extensions_service = profile()->GetExtensionService();
-  if (!extensions_service)
-    return NULL;
-
-  const Extension* extension = extensions_service->GetExtensionByURL(url);
-  return extension ?
-      extension : extensions_service->GetExtensionByWebExtent(url);
-}
-
-void TabContents::OnImageLoaded(SkBitmap* image,
-                                const ExtensionResource& resource,
-                                int index) {
-  if (image) {
-    extension_app_icon_ = *image;
-    NotifyNavigationStateChanged(INVALIDATE_TAB);
   }
 }
 

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -18,6 +19,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 
@@ -268,8 +270,13 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   int index_in_window = browser.tabstrip_model()->GetWrapperIndex(&tab);
   DCHECK(index_in_window != TabStripModel::kNoTab);
   tab_s->set_pinned(browser.tabstrip_model()->IsTabPinned(index_in_window));
-  if (tab.extension_app())
-    tab_s->set_extension_app_id(tab.extension_app()->id());
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(
+          const_cast<TabContents*>(&tab));
+  if (wrapper->extension_tab_helper()->extension_app()) {
+    tab_s->set_extension_app_id(
+        wrapper->extension_tab_helper()->extension_app()->id());
+  }
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?
        tab.controller().pending_entry() : tab.controller().GetEntryAtIndex(i);

@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -43,7 +44,8 @@ static void EncodePinnedTab(TabStripModel* model,
 
   TabContentsWrapper* tab_contents = model->GetTabContentsAt(index);
   if (model->IsAppTab(index)) {
-    const Extension* extension = tab_contents->extension_app();
+    const Extension* extension =
+        tab_contents->extension_tab_helper()->extension_app();
     DCHECK(extension);
     value->SetString(kAppID, extension->id());
     // For apps we use the launch url. We do this for the following reason:

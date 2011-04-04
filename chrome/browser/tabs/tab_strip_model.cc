@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -117,7 +118,8 @@ void TabStripModel::InsertTabContentsAt(int index,
                                         int add_types) {
   bool foreground = add_types & ADD_SELECTED;
   // Force app tabs to be pinned.
-  bool pin = contents->is_app() || add_types & ADD_PINNED;
+  bool pin =
+      contents->extension_tab_helper()->is_app() || add_types & ADD_PINNED;
   index = ConstrainInsertionIndex(index, pin);
 
   // In tab dragging situations, if the last tab in the window was detached
@@ -545,7 +547,7 @@ bool TabStripModel::IsMiniTab(int index) const {
 
 bool TabStripModel::IsAppTab(int index) const {
   TabContentsWrapper* contents = GetTabContentsAt(index);
-  return contents && contents->is_app();
+  return contents && contents->extension_tab_helper()->is_app();
 }
 
 bool TabStripModel::IsTabBlocked(int index) const {
@@ -997,7 +999,7 @@ void TabStripModel::Observe(NotificationType type,
       // Iterate backwards as we may remove items while iterating.
       for (int i = count() - 1; i >= 0; i--) {
         TabContentsWrapper* contents = GetTabContentsAt(i);
-        if (contents->extension_app() == extension) {
+        if (contents->extension_tab_helper()->extension_app() == extension) {
           // The extension an app tab was created from has been nuked. Delete
           // the TabContents. Deleting a TabContents results in a notification
           // of type TAB_CONTENTS_DESTROYED; we do the necessary cleanup in

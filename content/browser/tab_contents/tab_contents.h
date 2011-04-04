@@ -16,7 +16,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/download/save_package.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/favicon_helper.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/tab_contents/tab_specific_content_settings.h"
@@ -92,7 +91,6 @@ class TabContents : public PageNavigator,
                     public RenderViewHostDelegate,
                     public RenderViewHostManager::Delegate,
                     public JavaScriptAppModalDialogDelegate,
-                    public ImageLoadingTracker::Observer,
                     public TabSpecificContentSettings::Delegate,
                     public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
@@ -178,32 +176,6 @@ class TabContents : public PageNavigator,
   FaviconHelper& favicon_helper() {
     return *favicon_helper_.get();
   }
-
-  // App extensions ------------------------------------------------------------
-
-  // Sets the extension denoting this as an app. If |extension| is non-null this
-  // tab becomes an app-tab. TabContents does not listen for unload events for
-  // the extension. It's up to consumers of TabContents to do that.
-  //
-  // NOTE: this should only be manipulated before the tab is added to a browser.
-  // TODO(sky): resolve if this is the right way to identify an app tab. If it
-  // is, than this should be passed in the constructor.
-  void SetExtensionApp(const Extension* extension);
-
-  // Convenience for setting the app extension by id. This does nothing if
-  // |extension_app_id| is empty, or an extension can't be found given the
-  // specified id.
-  void SetExtensionAppById(const std::string& extension_app_id);
-
-  const Extension* extension_app() const { return extension_app_; }
-  bool is_app() const { return extension_app_ != NULL; }
-
-  // If an app extension has been explicitly set for this TabContents its icon
-  // is returned.
-  //
-  // NOTE: the returned icon is larger than 16x16 (its size is
-  // Extension::EXTENSION_ICON_SMALLISH).
-  SkBitmap* GetExtensionAppIcon();
 
   // Tab navigation state ------------------------------------------------------
 
@@ -302,9 +274,6 @@ class TabContents : public PageNavigator,
   base::TerminationStatus crashed_status() const { return crashed_status_; }
   int crashed_error_code() const { return crashed_error_code_; }
   void SetIsCrashed(base::TerminationStatus status, int error_code);
-
-  // Call this after updating a page action to notify clients about the changes.
-  void PageActionStateChanged();
 
   // Whether the tab is in the process of being destroyed.
   // Added as a tentative work-around for focus related bug #4633.  This allows
@@ -979,19 +948,6 @@ class TabContents : public PageNavigator,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // App extensions related methods:
-
-  // Returns the first extension whose extent contains |url|.
-  const Extension* GetExtensionContaining(const GURL& url);
-
-  // Resets app_icon_ and if |extension| is non-null creates a new
-  // ImageLoadingTracker to load the extension's image.
-  void UpdateExtensionAppIcon(const Extension* extension);
-
-  // ImageLoadingTracker::Observer.
-  virtual void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
-                             int index);
-
   // NetworkChangeNotifier::OnlineStateObserver:
   virtual void OnOnlineStateChanged(bool online);
 
@@ -1115,18 +1071,6 @@ class TabContents : public PageNavigator,
 
   // Delegates for InfoBars associated with this TabContents.
   std::vector<InfoBarDelegate*> infobar_delegates_;
-
-  // Data for app extensions ---------------------------------------------------
-
-  // If non-null this tab is an app tab and this is the extension the tab was
-  // created for.
-  const Extension* extension_app_;
-
-  // Icon for extension_app_ (if non-null) or extension_for_current_page_.
-  SkBitmap extension_app_icon_;
-
-  // Used for loading extension_app_icon_.
-  scoped_ptr<ImageLoadingTracker> extension_app_image_loader_;
 
   // Data for misc internal state ----------------------------------------------
 

@@ -41,8 +41,8 @@ class TabStripModelOrderController;
 //   You'll notice there is no explcit api for making a tab a mini-tab, rather
 //   there are two tab types that are implicitly mini-tabs:
 //   . App. Corresponds to an extension that wants an app tab. App tabs are
-//     identified by TabContents::is_app(). App tabs are always pinneded (you
-//     can't unpin them).
+//     identified by TabContentsWrapper::extension_tab_helper()::is_app().
+//     App tabs are always pinneded (you can't unpin them).
 //   . Pinned. Any tab can be pinned. Non-app tabs whose pinned state is changed
 //     are moved to be with other mini-tabs or non-mini tabs.
 //

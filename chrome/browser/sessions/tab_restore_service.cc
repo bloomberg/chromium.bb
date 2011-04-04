@@ -13,12 +13,14 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/tab_contents/navigation_controller.h"
@@ -492,9 +494,16 @@ void TabRestoreService::PopulateTab(Tab* tab,
     tab->current_navigation_index = 0;
   tab->tabstrip_index = index;
 
-  const Extension* extension = controller->tab_contents()->extension_app();
-  if (extension)
-    tab->extension_app_id = extension->id();
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(
+          controller->tab_contents());
+  // wrapper is NULL in some browser tests.
+  if (wrapper) {
+    const Extension* extension =
+        wrapper->extension_tab_helper()->extension_app();
+    if (extension)
+      tab->extension_app_id = extension->id();
+  }
 
   tab->session_storage_namespace = controller->session_storage_namespace();
 

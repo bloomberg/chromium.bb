@@ -17,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_backend.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_init.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -518,11 +520,14 @@ void SessionService::Observe(NotificationType type,
       NavigationController* controller =
           Source<NavigationController>(source).ptr();
       SetTabWindow(controller->window_id(), controller->session_id());
-      if (controller->tab_contents()->extension_app()) {
+      TabContentsWrapper* wrapper =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              controller->tab_contents());
+      if (wrapper->extension_tab_helper()->extension_app()) {
         SetTabExtensionAppID(
             controller->window_id(),
             controller->session_id(),
-            controller->tab_contents()->extension_app()->id());
+            wrapper->extension_tab_helper()->extension_app()->id());
       }
       break;
     }
@@ -584,12 +589,13 @@ void SessionService::Observe(NotificationType type,
     }
 
     case NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
-      TabContents* tab_contents = Source<TabContents>(source).ptr();
-      DCHECK(tab_contents);
-      if (tab_contents->extension_app()) {
-        SetTabExtensionAppID(tab_contents->controller().window_id(),
-                             tab_contents->controller().session_id(),
-                             tab_contents->extension_app()->id());
+      ExtensionTabHelper* extension_tab_helper =
+          Source<ExtensionTabHelper>(source).ptr();
+      if (extension_tab_helper->extension_app()) {
+        SetTabExtensionAppID(
+            extension_tab_helper->tab_contents()->controller().window_id(),
+            extension_tab_helper->tab_contents()->controller().session_id(),
+            extension_tab_helper->extension_app()->id());
       }
       break;
     }
@@ -1072,12 +1078,15 @@ void SessionService::BuildCommandsForTab(
     commands->push_back(
         CreatePinnedStateCommand(controller->session_id(), true));
   }
-  if (controller->tab_contents()->extension_app()) {
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(
+          controller->tab_contents());
+  if (wrapper->extension_tab_helper()->extension_app()) {
     commands->push_back(
         CreateSetTabExtensionAppIDCommand(
             kCommandSetExtensionAppID,
             controller->session_id().id(),
-            controller->tab_contents()->extension_app()->id()));
+            wrapper->extension_tab_helper()->extension_app()->id()));
   }
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?

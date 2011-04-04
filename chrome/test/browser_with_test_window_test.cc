@@ -16,7 +16,6 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/content_client.h"
 #include "content/common/page_transition_types.h"
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
@@ -33,7 +32,6 @@ void BrowserWithTestWindowTest::SetUp() {
   TestingBrowserProcessTest::SetUp();
 
   profile_.reset(CreateProfile());
-  content::GetContentClient()->set_browser(&browser_client_);
   browser_.reset(new Browser(Browser::TYPE_NORMAL, profile()));
   window_.reset(new TestBrowserWindow(browser()));
   browser_->set_window(window_.get());

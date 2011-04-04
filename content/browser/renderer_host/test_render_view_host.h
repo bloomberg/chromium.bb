@@ -10,7 +10,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/message_loop.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_content_browser_client.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -303,7 +302,6 @@ class RenderViewHostTestHarness : public testing::Test {
   MockRenderProcessHostFactory rph_factory_;
   TestRenderViewHostFactory rvh_factory_;
 
-  chrome::ChromeContentBrowserClient browser_client_;
   scoped_ptr<TestTabContents> contents_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestHarness);
