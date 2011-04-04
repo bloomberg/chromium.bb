@@ -984,6 +984,8 @@ def CMDupload(parser, args):
 
   try:
     issue, patchset = upload.RealMain(['upload'] + upload_args + args)
+  except KeyboardInterrupt:
+    sys.exit(1)
   except:
     # If we got an exception after the user typed a description for their
     # change, back up the description before re-raising.

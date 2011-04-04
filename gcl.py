@@ -906,7 +906,10 @@ def CMDupload(change_info, args):
   # each file and concatenate them before passing it to upload.py.
   if change_info.patch is None:
     change_info.patch = GenerateDiff(change_info.GetFileNames())
-  issue, patchset = upload.RealMain(upload_arg, change_info.patch)
+  try:
+    issue, patchset = upload.RealMain(upload_arg, change_info.patch)
+  except KeyboardInterrupt:
+    sys.exit(1)
   if issue and patchset:
     change_info.issue = int(issue)
     change_info.patchset = int(patchset)
