@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_CONSTRAINED_WINDOW_WIN_H_
-#define CHROME_BROWSER_UI_VIEWS_CONSTRAINED_WINDOW_WIN_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_CONSTRAINED_WINDOW_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_CONSTRAINED_WINDOW_VIEWS_H_
 #pragma once
 
 #include "content/browser/tab_contents/constrained_window.h"
@@ -19,15 +19,15 @@ class WindowDelegate;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ConstrainedWindowWin
+// ConstrainedWindowViews
 //
 //  A ConstrainedWindow implementation that implements a Constrained Window as
 //  a child HWND with a custom window frame.
 //
-class ConstrainedWindowWin : public ConstrainedWindow,
-                             public views::WindowWin {
+class ConstrainedWindowViews : public ConstrainedWindow,
+                               public views::WindowWin {
  public:
-  virtual ~ConstrainedWindowWin();
+  virtual ~ConstrainedWindowViews();
 
   // Returns the TabContents that constrains this Constrained Window.
   TabContents* owner() const { return owner_; }
@@ -45,20 +45,18 @@ class ConstrainedWindowWin : public ConstrainedWindow,
 
  protected:
   // Windows message handlers:
-  virtual void OnDestroy() OVERRIDE;
   virtual void OnFinalMessage(HWND window) OVERRIDE;
   virtual LRESULT OnMouseActivate(UINT message,
                                   WPARAM w_param,
                                   LPARAM l_param) OVERRIDE;
-  virtual void OnWindowPosChanged(WINDOWPOS* window_pos) OVERRIDE;
 
  private:
   friend class ConstrainedWindow;
 
   // Use the static factory methods on ConstrainedWindow to construct a
   // ConstrainedWindow.
-  ConstrainedWindowWin(TabContents* owner,
-                       views::WindowDelegate* window_delegate);
+  ConstrainedWindowViews(TabContents* owner,
+                         views::WindowDelegate* window_delegate);
 
   // Moves this window to the front of the Z-order and registers us with the
   // focus manager.
@@ -74,7 +72,7 @@ class ConstrainedWindowWin : public ConstrainedWindow,
   // Current display rectangle (relative to owner_'s visible area).
   gfx::Rect current_bounds_;
 
-  DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowWin);
+  DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowViews);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_CONSTRAINED_WINDOW_WIN_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_CONSTRAINED_WINDOW_VIEWS_H_

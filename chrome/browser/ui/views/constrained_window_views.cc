@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/constrained_window_win.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 
 #include <algorithm>
 
@@ -142,7 +142,7 @@ class ConstrainedWindowFrameView
     : public views::NonClientFrameView,
       public views::ButtonListener {
  public:
-  explicit ConstrainedWindowFrameView(ConstrainedWindowWin* container);
+  explicit ConstrainedWindowFrameView(ConstrainedWindowViews* container);
   virtual ~ConstrainedWindowFrameView();
 
   void UpdateWindowTitle();
@@ -208,7 +208,7 @@ class ConstrainedWindowFrameView
   // Loads the appropriate set of WindowResources for the frame view.
   void InitWindowResources();
 
-  ConstrainedWindowWin* container_;
+  ConstrainedWindowViews* container_;
 
   scoped_ptr<views::WindowResources> resources_;
 
@@ -258,7 +258,7 @@ const SkColor kContentsBorderShadow = SkColorSetARGB(51, 0, 0, 0);
 // ConstrainedWindowFrameView, public:
 
 ConstrainedWindowFrameView::ConstrainedWindowFrameView(
-    ConstrainedWindowWin* container)
+    ConstrainedWindowViews* container)
         : NonClientFrameView(),
           container_(container),
           close_button_(new views::ImageButton(this)) {
@@ -554,19 +554,19 @@ void ConstrainedWindowFrameView::InitClass() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ConstrainedWindowWin, public:
+// ConstrainedWindowViews, public:
 
-ConstrainedWindowWin::~ConstrainedWindowWin() {
+ConstrainedWindowViews::~ConstrainedWindowViews() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ConstrainedWindowWin, ConstrainedWindow implementation:
+// ConstrainedWindowViews, ConstrainedWindow implementation:
 
-views::NonClientFrameView* ConstrainedWindowWin::CreateFrameViewForWindow() {
+views::NonClientFrameView* ConstrainedWindowViews::CreateFrameViewForWindow() {
   return new ConstrainedWindowFrameView(this);
 }
 
-void ConstrainedWindowWin::FocusConstrainedWindow() {
+void ConstrainedWindowViews::FocusConstrainedWindow() {
   if ((!owner_->delegate() ||
        owner_->delegate()->ShouldFocusConstrainedWindow()) &&
       window_delegate() && window_delegate()->GetInitiallyFocusedView()) {
@@ -574,7 +574,7 @@ void ConstrainedWindowWin::FocusConstrainedWindow() {
   }
 }
 
-void ConstrainedWindowWin::ShowConstrainedWindow() {
+void ConstrainedWindowViews::ShowConstrainedWindow() {
   // We marked the view as hidden during construction.  Mark it as
   // visible now so FocusManager will let us receive focus.
   non_client_view()->SetVisible(true);
@@ -584,7 +584,7 @@ void ConstrainedWindowWin::ShowConstrainedWindow() {
   FocusConstrainedWindow();
 }
 
-void ConstrainedWindowWin::CloseConstrainedWindow() {
+void ConstrainedWindowViews::CloseConstrainedWindow() {
   // Broadcast to all observers of NOTIFY_CWINDOW_CLOSED.
   // One example of such an observer is AutomationCWindowTracker in the
   // automation component.
@@ -595,7 +595,7 @@ void ConstrainedWindowWin::CloseConstrainedWindow() {
   Window::CloseWindow();
 }
 
-std::wstring ConstrainedWindowWin::GetWindowTitle() const {
+std::wstring ConstrainedWindowViews::GetWindowTitle() const {
   if (window_delegate())
     return window_delegate()->GetWindowTitle();
 
@@ -604,14 +604,14 @@ std::wstring ConstrainedWindowWin::GetWindowTitle() const {
   return std::wstring(L"Untitled");
 }
 
-const gfx::Rect& ConstrainedWindowWin::GetCurrentBounds() const {
+const gfx::Rect& ConstrainedWindowViews::GetCurrentBounds() const {
   return current_bounds_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ConstrainedWindowWin, private:
+// ConstrainedWindowViews, private:
 
-ConstrainedWindowWin::ConstrainedWindowWin(
+ConstrainedWindowViews::ConstrainedWindowViews(
     TabContents* owner,
     views::WindowDelegate* window_delegate)
     : WindowWin(window_delegate),
@@ -629,22 +629,15 @@ ConstrainedWindowWin::ConstrainedWindowWin(
   WindowWin::Init(owner_->GetNativeView(), gfx::Rect());
 }
 
-void ConstrainedWindowWin::ActivateConstrainedWindow() {
+void ConstrainedWindowViews::ActivateConstrainedWindow() {
   // Other pop-ups are simply moved to the front of the z-order.
   SetWindowPos(HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ConstrainedWindowWin, views::WidgetWin overrides:
+// ConstrainedWindowViews, views::WidgetWin overrides:
 
-void ConstrainedWindowWin::OnDestroy() {
-  // TODO(jcampan): figure out focus restoration
-
-  // Make sure we call super so that it can do its cleanup.
-  WindowWin::OnDestroy();
-}
-
-void ConstrainedWindowWin::OnFinalMessage(HWND window) {
+void ConstrainedWindowViews::OnFinalMessage(HWND window) {
   // Tell our constraining TabContents that we've gone so it can update its
   // list.
   owner_->WillClose(this);
@@ -652,9 +645,9 @@ void ConstrainedWindowWin::OnFinalMessage(HWND window) {
   WindowWin::OnFinalMessage(window);
 }
 
-LRESULT ConstrainedWindowWin::OnMouseActivate(UINT message,
-                                              WPARAM w_param,
-                                              LPARAM l_param) {
+LRESULT ConstrainedWindowViews::OnMouseActivate(UINT message,
+                                                WPARAM w_param,
+                                                LPARAM l_param) {
   // We only detach the window if the user clicked on the title bar. That
   // way, users can click inside the contents of legitimate popups obtained
   // with a mouse gesture.
@@ -667,19 +660,11 @@ LRESULT ConstrainedWindowWin::OnMouseActivate(UINT message,
   return MA_ACTIVATE;
 }
 
-void ConstrainedWindowWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
-  // If the window was moved or sized, tell the owner.
-  if (!(window_pos->flags & SWP_NOMOVE) || !(window_pos->flags & SWP_NOSIZE))
-    owner_->DidMoveOrResize(this);
-  WindowWin::OnWindowPosChanged(window_pos);
-}
-
-
 // static
 ConstrainedWindow* ConstrainedWindow::CreateConstrainedDialog(
     TabContents* parent,
     views::WindowDelegate* window_delegate) {
-  ConstrainedWindowWin* window = new ConstrainedWindowWin(parent,
-                                                          window_delegate);
+  ConstrainedWindowViews* window = new ConstrainedWindowViews(parent,
+                                                              window_delegate);
   return window;
 }

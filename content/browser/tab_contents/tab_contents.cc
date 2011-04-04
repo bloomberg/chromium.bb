@@ -1063,12 +1063,6 @@ void TabContents::WillCloseBlockedContentContainer(
   PopupNotificationVisibilityChanged(false);
 }
 
-void TabContents::DidMoveOrResize(ConstrainedWindow* window) {
-#if defined(OS_WIN)
-  UpdateWindow(GetNativeView());
-#endif
-}
-
 void TabContents::OnSavePage() {
   // If we can not save the page, try to download it.
   if (!SavePackage::IsSavableContents(contents_mime_type())) {

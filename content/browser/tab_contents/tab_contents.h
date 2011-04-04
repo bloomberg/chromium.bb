@@ -474,9 +474,6 @@ class TabContents : public PageNavigator,
   // Called when a BlockedContentContainer we own is about to be closed.
   void WillCloseBlockedContentContainer(BlockedContentContainer* container);
 
-  // Called when a ConstrainedWindow we own is moved or resized.
-  void DidMoveOrResize(ConstrainedWindow* window);
-
   // Interstitials -------------------------------------------------------------
 
   // Various other systems need to know about our interstitials.
