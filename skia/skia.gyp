@@ -679,6 +679,7 @@
         'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
         'GR_STATIC_RECT_VB=1',
         'GR_AGGRESSIVE_SHADER_OPTS=1',
+        'SK_DISABLE_FAST_AA_STROKE_RECT',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
