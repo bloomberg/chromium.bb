@@ -17,6 +17,8 @@ import time
 import xml.dom.minidom
 
 import gclient_utils
+import subprocess2
+
 
 def ValidateEmail(email):
   return (re.match(r"^[a-zA-Z0-9._%-+]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", email)
@@ -270,25 +272,25 @@ class GIT(object):
     try:
       upstream_branch = GIT.Capture(
           ['config', 'branch.%s.merge' % branch], cwd=cwd).strip()
-    except gclient_utils.Error:
+    except (gclient_utils.Error, subprocess2.CalledProcessError):
       upstream_branch = None
     if upstream_branch:
       try:
         remote = GIT.Capture(
             ['config', 'branch.%s.remote' % branch], cwd=cwd).strip()
-      except gclient_utils.Error:
+      except (gclient_utils.Error, subprocess2.CalledProcessError):
         pass
     else:
       try:
         upstream_branch = GIT.Capture(
             ['config', 'rietveld.upstream-branch'], cwd=cwd).strip()
-      except gclient_utils.Error:
+      except (gclient_utils.Error, subprocess2.CalledProcessError):
         upstream_branch = None
       if upstream_branch:
         try:
           remote = GIT.Capture(
               ['config', 'rietveld.upstream-remote'], cwd=cwd).strip()
-        except gclient_utils.Error:
+        except (gclient_utils.Error, subprocess2.CalledProcessError):
           pass
       else:
         # Fall back on trying a git-svn upstream branch.
@@ -459,7 +461,7 @@ class SVN(object):
             always=verbose,
             filter_fn=CaptureMatchingLines,
             stdout=stdout)
-      except gclient_utils.Error:
+      except (gclient_utils.Error, subprocess2.CalledProcessError):
         def IsKnownFailure():
           for x in failure:
             if (x.startswith('svn: OPTIONS of') or
@@ -659,7 +661,7 @@ class SVN(object):
     """
     try:
       return SVN.Capture(['propget', property_name, filename])
-    except gclient_utils.Error:
+    except (gclient_utils.Error, subprocess2.CalledProcessError):
       return ''
 
   @staticmethod
@@ -840,7 +842,7 @@ class SVN(object):
     """Retrieves the svn account which we assume is an email address."""
     try:
       infos = SVN.CaptureInfo(repo_root)
-    except gclient_utils.Error:
+    except (gclient_utils.Error, subprocess2.CalledProcessError):
       return None
 
     # Should check for uuid but it is incorrectly saved for https creds.
@@ -902,7 +904,7 @@ class SVN(object):
       info = SVN.CaptureInfo(directory)
       cur_dir_repo_root = info['Repository Root']
       url = info['URL']
-    except gclient_utils.Error:
+    except (gclient_utils.Error, subprocess2.CalledProcessError):
       return None
     while True:
       parent = os.path.dirname(directory)
@@ -912,7 +914,7 @@ class SVN(object):
             info['URL'] != os.path.dirname(url)):
           break
         url = info['URL']
-      except gclient_utils.Error:
+      except (gclient_utils.Error, subprocess2.CalledProcessError):
         break
       directory = parent
     return GetCasedPath(directory)

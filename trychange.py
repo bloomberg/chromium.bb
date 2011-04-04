@@ -37,6 +37,8 @@ import gcl
 import fix_encoding
 import gclient_utils
 import scm
+import subprocess2
+
 
 __version__ = '1.2'
 
@@ -758,7 +760,7 @@ def TryChange(argv,
       return 1
     print >> sys.stderr, e
     return 1
-  except gclient_utils.Error, e:
+  except (gclient_utils.Error, subprocess2.CalledProcessError), e:
     print >> sys.stderr, e
     return 1
   return 0

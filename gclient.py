@@ -68,6 +68,7 @@ import fix_encoding
 import gclient_scm
 import gclient_utils
 from third_party.repo.progress import Progress
+import subprocess2
 
 
 def attr(attribute, data):
@@ -453,7 +454,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     try:
       gclient_utils.CheckCallAndFilterAndHeader(
           command, cwd=self.root_dir(), always=True)
-    except gclient_utils.Error, e:
+    except (gclient_utils.Error, subprocess2.CalledProcessError), e:
       # Use a discrete exit status code of 2 to indicate that a hook action
       # failed.  Users of this script may wish to treat hook action failures
       # differently from VC failures.
@@ -1261,7 +1262,7 @@ def Main(argv):
     # Not a known command. Default to help.
     GenUsage(parser, 'help')
     return CMDhelp(parser, argv)
-  except gclient_utils.Error, e:
+  except (gclient_utils.Error, subprocess2.CalledProcessError), e:
     print >> sys.stderr, 'Error: %s' % str(e)
     return 1
 

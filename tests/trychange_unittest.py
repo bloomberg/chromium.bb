@@ -48,7 +48,7 @@ class TryChangeUnittest(TryChangeTestsBase):
       'breakpad', 'datetime', 'errno', 'fix_encoding', 'gcl', 'gclient_utils',
       'getpass',
       'json', 'logging', 'optparse', 'os', 'posixpath', 're', 'scm', 'shutil',
-      'sys', 'tempfile', 'urllib',
+      'subprocess2', 'sys', 'tempfile', 'urllib',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange, members)

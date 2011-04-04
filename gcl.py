@@ -39,6 +39,7 @@ from scm import SVN
 import fix_encoding
 import gclient_utils
 import presubmit_support
+import subprocess2
 
 __version__ = '1.2'
 
@@ -136,7 +137,7 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
     # First we check if we have a cached version.
     try:
       cached_file = os.path.join(GetCacheDir(), filename)
-    except gclient_utils.Error:
+    except (gclient_utils.Error, subprocess2.CalledProcessError):
       return None
     if (not os.path.exists(cached_file) or
         (time.time() - os.stat(cached_file).st_mtime) > max_age):
@@ -168,7 +169,7 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
             # Exit the loop if the file was found. Override content.
             content = '\n'.join(content_array)
             break
-          except gclient_utils.Error:
+          except (gclient_utils.Error, subprocess2.CalledProcessError):
             if content_array[0].startswith(
                 'svn: Can\'t get username or password'):
               ErrorExit('Your svn credentials expired. Please run svn update '
@@ -1425,7 +1426,7 @@ def main(argv):
 
   try:
     GetRepositoryRoot()
-  except gclient_utils.Error:
+  except (gclient_utils.Error, subprocess2.CalledProcessError):
     print >> sys.stderr, 'To use gcl, you need to be in a subversion checkout.'
     return 1
 
@@ -1443,7 +1444,7 @@ def main(argv):
       return command(argv[1:])
     # Unknown command, try to pass that to svn
     return CMDpassthru(argv)
-  except gclient_utils.Error, e:
+  except (gclient_utils.Error, subprocess2.CalledProcessError), e:
     print >> sys.stderr, 'Got an exception'
     print >> sys.stderr, str(e)
     return 1

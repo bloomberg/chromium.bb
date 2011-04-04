@@ -94,8 +94,8 @@ class GclUnittest(GclTestsBase):
         'gclient_utils', 'getpass',
         'json', 'main', 'need_change', 'need_change_and_args', 'no_args',
         'optparse', 'os', 'presubmit_support', 'random', 're',
-        'string', 'subprocess', 'sys', 'tempfile', 'time', 'upload',
-        'urllib2',
+        'string', 'subprocess', 'subprocess2', 'sys', 'tempfile', 'time',
+        'upload', 'urllib2',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gcl, members)

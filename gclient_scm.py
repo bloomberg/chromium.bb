@@ -11,8 +11,9 @@ import re
 import sys
 import time
 
-import scm
 import gclient_utils
+import scm
+import subprocess2
 
 
 class DiffFilterer(object):
@@ -495,7 +496,7 @@ class GitWrapper(SCMWrapper):
       try:
         self._Run(clone_cmd, options, cwd=self._root_dir)
         break
-      except gclient_utils.Error, e:
+      except (gclient_utils.Error, subprocess2.CalledProcessError), e:
         # TODO(maruel): Hackish, should be fixed by moving _Run() to
         # CheckCall().
         # Too bad we don't have access to the actual output.
@@ -750,7 +751,7 @@ class SVNWrapper(SCMWrapper):
     # Get the existing scm url and the revision number of the current checkout.
     try:
       from_info = scm.SVN.CaptureInfo(os.path.join(self.checkout_path, '.'))
-    except gclient_utils.Error:
+    except (gclient_utils.Error, subprocess2.CalledProcessError):
       raise gclient_utils.Error(
           ('Can\'t update/checkout %s if an unversioned directory is present. '
            'Delete the directory and try again.') % self.checkout_path)
@@ -772,7 +773,7 @@ class SVNWrapper(SCMWrapper):
       # The repository url changed, need to switch.
       try:
         to_info = scm.SVN.CaptureInfo(url)
-      except gclient_utils.Error:
+      except (gclient_utils.Error, subprocess2.CalledProcessError):
         # The url is invalid or the server is not accessible, it's safer to bail
         # out right now.
         raise gclient_utils.Error('This url is unreachable: %s' % url)
@@ -889,7 +890,7 @@ class SVNWrapper(SCMWrapper):
     """Display revision"""
     try:
       return scm.SVN.CaptureRevision(self.checkout_path)
-    except gclient_utils.Error:
+    except (gclient_utils.Error, subprocess2.CalledProcessError):
       return None
 
   def runhooks(self, options, args, file_list):
