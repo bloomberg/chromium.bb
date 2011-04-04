@@ -23,7 +23,7 @@ bool AlwaysInstall(const Extension& extension) {
 }  // namespace
 
 PendingExtensionManager::PendingExtensionManager(
-    const ExtensionUpdateService& service)
+    const ExtensionServiceInterface& service)
     : service_(service) {
 }
 

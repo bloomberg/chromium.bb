@@ -96,7 +96,7 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
   if (!running()) {
     return;
   }
-  ExtensionService* extensions_service =
+  ExtensionServiceInterface* extensions_service =
       GetExtensionServiceFromProfile(profile_);
   for (int i = 0; i < change_count; ++i) {
     const sync_api::SyncManager::ChangeRecord& change = changes[i];

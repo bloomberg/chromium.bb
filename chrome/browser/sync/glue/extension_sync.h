@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include <string>
 
 class Extension;
-class ExtensionService;
+class ExtensionServiceInterface;
 class Profile;
 class ProfileSyncService;
 
@@ -38,7 +38,7 @@ bool RootNodeHasChildren(const char* tag,
                          ProfileSyncService* sync_service,
                          bool* has_children);
 
-ExtensionService* GetExtensionServiceFromProfile(Profile* profile);
+ExtensionServiceInterface* GetExtensionServiceFromProfile(Profile* profile);
 
 // Fills |extension_data_map| with both client-side information about
 // installed extensions and the server-side information about
@@ -74,12 +74,12 @@ void RemoveServerData(const ExtensionSyncTraits& traits,
 // Starts updating the client data from the given server data.
 void UpdateClient(const ExtensionSyncTraits& traits,
                   const sync_pb::ExtensionSpecifics& server_data,
-                  ExtensionService* extensions_service);
+                  ExtensionServiceInterface* extensions_service);
 
 // Removes existing client data for the given extension.
 void RemoveFromClient(const ExtensionSyncTraits& traits,
                       const std::string& id,
-                      ExtensionService* extensions_service);
+                      ExtensionServiceInterface* extensions_service);
 
 }  // namespace browser_sync
 

@@ -102,7 +102,7 @@ class ManifestFetchData {
 // extensions and pending extensions.
 class ManifestFetchesBuilder {
  public:
-  explicit ManifestFetchesBuilder(ExtensionUpdateService* service);
+  explicit ManifestFetchesBuilder(ExtensionServiceInterface* service);
   ~ManifestFetchesBuilder();
 
   void AddExtension(const Extension& extension);
@@ -138,7 +138,7 @@ class ManifestFetchesBuilder {
                         Extension::Type extension_type,
                         GURL update_url,
                         const std::string& update_url_data);
-  ExtensionUpdateService* service_;
+  ExtensionServiceInterface* service_;
 
   // List of data on fetches we're going to do. We limit the number of
   // extensions grouped together in one batch to avoid running into the limits
@@ -166,7 +166,7 @@ class ExtensionUpdater
   // Holds a pointer to the passed |service|, using it for querying installed
   // extensions and installing updated ones. The |frequency_seconds| parameter
   // controls how often update checks are scheduled.
-  ExtensionUpdater(ExtensionUpdateService* service,
+  ExtensionUpdater(ExtensionServiceInterface* service,
                    PrefService* prefs,
                    int frequency_seconds);
 
@@ -317,7 +317,7 @@ class ExtensionUpdater
   ExtensionFetch current_extension_fetch_;
 
   // Pointer back to the service that owns this ExtensionUpdater.
-  ExtensionUpdateService* service_;
+  ExtensionServiceInterface* service_;
 
   base::OneShotTimer<ExtensionUpdater> timer_;
   int frequency_seconds_;

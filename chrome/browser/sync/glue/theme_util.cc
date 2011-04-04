@@ -93,7 +93,8 @@ void SetCurrentThemeFromThemeSpecifics(
     std::string id(theme_specifics.custom_theme_id());
     GURL update_url(theme_specifics.custom_theme_update_url());
     VLOG(1) << "Applying theme " << id << " with update_url " << update_url;
-    ExtensionService* extensions_service = profile->GetExtensionService();
+    ExtensionServiceInterface* extensions_service =
+        profile->GetExtensionService();
     CHECK(extensions_service);
     const Extension* extension = extensions_service->GetExtensionById(id, true);
     if (extension) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 
 class Extension;
 class ExtensionPrefs;
-class ExtensionService;
+class ExtensionServiceInterface;
 struct UninstalledExtensionInfo;
 
 namespace sync_pb {
@@ -101,7 +101,7 @@ bool IsExtensionOutdated(const Extension& extension,
 // valid.
 void SetExtensionProperties(
     const sync_pb::ExtensionSpecifics& specifics,
-    ExtensionService* extensions_service, const Extension* extension);
+    ExtensionServiceInterface* extensions_service, const Extension* extension);
 
 // Merge |specifics| into |merged_specifics|.  Both must be valid and
 // have the same ID.  The merge policy is currently to copy the

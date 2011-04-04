@@ -48,13 +48,18 @@ const ManifestFetchData::PingData kNeverPingedData(
 }  // namespace
 
 // Base class for further specialized test classes.
-class MockService : public ExtensionUpdateService {
+class MockService : public ExtensionServiceInterface {
  public:
   MockService()
       : pending_extension_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(*this)) {}
   virtual ~MockService() {}
 
   virtual const ExtensionList* extensions() const {
+    ADD_FAILURE();
+    return NULL;
+  }
+
+  virtual const ExtensionList* disabled_extensions() const {
     ADD_FAILURE();
     return NULL;
   }
@@ -77,6 +82,20 @@ class MockService : public ExtensionUpdateService {
     return NULL;
   }
 
+  virtual void UninstallExtension(const std::string& extension_id,
+                                  bool external_uninstall) {
+    FAIL();
+  }
+
+  virtual void EnableExtension(const std::string& extension_id) {
+    FAIL();
+  }
+
+  virtual void DisableExtension(const std::string& extension_id) {
+    FAIL();
+  }
+
+
   virtual void UpdateExtensionBlacklist(
       const std::vector<std::string>& blacklist) {
     FAIL();
@@ -91,9 +110,19 @@ class MockService : public ExtensionUpdateService {
     return false;
   }
 
+  virtual void SetIsIncognitoEnabled(const Extension* extension,
+                                     bool enabled) {
+    FAIL();
+  }
+
   virtual ExtensionPrefs* extension_prefs() { return prefs_.prefs(); }
   virtual const ExtensionPrefs& const_extension_prefs() const {
     return prefs_.const_prefs();
+  }
+
+  virtual ExtensionUpdater* updater() {
+    ADD_FAILURE();
+    return NULL;
   }
 
   virtual Profile* profile() { return &profile_; }

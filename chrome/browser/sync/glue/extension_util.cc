@@ -182,7 +182,8 @@ bool IsExtensionOutdated(const Extension& extension,
 
 void SetExtensionProperties(
     const sync_pb::ExtensionSpecifics& specifics,
-    ExtensionService* extensions_service, const Extension* extension) {
+    ExtensionServiceInterface* extensions_service,
+    const Extension* extension) {
   DcheckIsExtensionSpecificsValid(specifics);
   CHECK(extensions_service);
   CHECK(extension);

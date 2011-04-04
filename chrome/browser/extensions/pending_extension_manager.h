@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/common/extensions/extension.h"
 
-class ExtensionUpdateService;
+class ExtensionServiceInterface;
 class GURL;
 
 // Class PendingExtensionManager manages the set of extensions which are
@@ -33,7 +33,7 @@ class PendingExtensionManager {
   // extensions we are managing. The service creates an instance of
   // this class on construction, and destroys it on destruction.
   // The service remains valid over the entire lifetime of this class.
-  explicit PendingExtensionManager(const ExtensionUpdateService& service);
+  explicit PendingExtensionManager(const ExtensionServiceInterface& service);
   ~PendingExtensionManager();
 
   // TODO(skerner): Many of these methods can be private once code in
@@ -106,8 +106,8 @@ class PendingExtensionManager {
   // Reference to the extension service whose pending extensions this class is
   // managing.  Because this class is a member of |service_|, it is created
   // and destroyed with |service_|. We only use methods from the interface
-  // ExtensionUpdateService.
-  const ExtensionUpdateService& service_;
+  // ExtensionServiceInterface.
+  const ExtensionServiceInterface& service_;
 
   // A map from extension id to the pending extension info for that extension.
   PendingExtensionMap pending_extension_map_;

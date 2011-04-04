@@ -47,26 +47,39 @@ class Profile;
 class Version;
 
 // This is an interface class to encapsulate the dependencies that
-// ExtensionUpdater has on ExtensionService. This allows easy mocking.
-class ExtensionUpdateService {
+// various classes have on ExtensionService. This allows easy mocking.
+class ExtensionServiceInterface {
  public:
-  virtual ~ExtensionUpdateService() {}
+  virtual ~ExtensionServiceInterface() {}
   virtual const ExtensionList* extensions() const = 0;
+  virtual const ExtensionList* disabled_extensions() const = 0;
   virtual PendingExtensionManager* pending_extension_manager() = 0;
   virtual void UpdateExtension(const std::string& id,
                                const FilePath& path,
                                const GURL& download_url) = 0;
   virtual const Extension* GetExtensionById(const std::string& id,
                                             bool include_disabled) const = 0;
+
+  virtual void UninstallExtension(const std::string& extension_id,
+                                  bool external_uninstall) = 0;
+
+  virtual void EnableExtension(const std::string& extension_id) = 0;
+  virtual void DisableExtension(const std::string& extension_id) = 0;
+
   virtual void UpdateExtensionBlacklist(
     const std::vector<std::string>& blacklist) = 0;
   virtual void CheckAdminBlacklist() = 0;
   virtual bool HasInstalledExtensions() = 0;
 
+  virtual void SetIsIncognitoEnabled(const Extension* extension,
+                                     bool enabled) = 0;
+
   // TODO(skerner): Change to const ExtensionPrefs& extension_prefs() const,
   // ExtensionPrefs* mutable_extension_prefs().
   virtual ExtensionPrefs* extension_prefs() = 0;
   virtual const ExtensionPrefs& const_extension_prefs() const = 0;
+
+  virtual ExtensionUpdater* updater() = 0;
 
   virtual Profile* profile() = 0;
 };
@@ -75,7 +88,7 @@ class ExtensionUpdateService {
 class ExtensionService
     : public base::RefCountedThreadSafe<ExtensionService,
                                         BrowserThread::DeleteOnUIThread>,
-      public ExtensionUpdateService,
+      public ExtensionServiceInterface,
       public ExternalExtensionProviderInterface::VisitorInterface,
       public NotificationObserver {
  public:
@@ -156,7 +169,7 @@ class ExtensionService
 
   // Whether this extension can run in an incognito window.
   bool IsIncognitoEnabled(const Extension* extension);
-  void SetIsIncognitoEnabled(const Extension* extension, bool enabled);
+  virtual void SetIsIncognitoEnabled(const Extension* extension, bool enabled);
 
   // Returns true if the given extension can see events and data from another
   // sub-profile (incognito to original profile, or vice versa).
@@ -217,13 +230,13 @@ class ExtensionService
   // callers should never set to true.
   // TODO(aa): Remove |external_uninstall| -- this information should be passed
   // to ExtensionPrefs some other way.
-  void UninstallExtension(const std::string& extension_id,
-                          bool external_uninstall);
+  virtual void UninstallExtension(const std::string& extension_id,
+                                  bool external_uninstall);
 
   // Enable or disable an extension. No action if the extension is already
   // enabled/disabled.
-  void EnableExtension(const std::string& extension_id);
-  void DisableExtension(const std::string& extension_id);
+  virtual void EnableExtension(const std::string& extension_id);
+  virtual void DisableExtension(const std::string& extension_id);
 
   // Updates the |extension|'s granted permissions lists to include all
   // permissions in the |extension|'s manifest.
@@ -347,7 +360,7 @@ class ExtensionService
   bool is_ready() { return ready_; }
 
   // Note that this may return NULL if autoupdate is not turned on.
-  ExtensionUpdater* updater() { return updater_.get(); }
+  virtual ExtensionUpdater* updater();
 
   ExtensionToolbarModel* toolbar_model() { return &toolbar_model_; }
 

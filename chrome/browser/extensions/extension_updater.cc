@@ -205,7 +205,7 @@ static int CalculateActivePingDays(const Time& last_active_ping_day,
 }  // namespace
 
 ManifestFetchesBuilder::ManifestFetchesBuilder(
-    ExtensionUpdateService* service) : service_(service) {
+    ExtensionServiceInterface* service) : service_(service) {
   DCHECK(service_);
 }
 
@@ -422,7 +422,7 @@ ExtensionUpdater::ExtensionFetch::ExtensionFetch(const std::string& i,
 
 ExtensionUpdater::ExtensionFetch::~ExtensionFetch() {}
 
-ExtensionUpdater::ExtensionUpdater(ExtensionUpdateService* service,
+ExtensionUpdater::ExtensionUpdater(ExtensionServiceInterface* service,
                                    PrefService* prefs,
                                    int frequency_seconds)
     : alive_(false), service_(service), frequency_seconds_(frequency_seconds),

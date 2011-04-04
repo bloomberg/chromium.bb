@@ -1053,6 +1053,10 @@ const ExtensionPrefs& ExtensionService::const_extension_prefs() const {
   return *extension_prefs_;
 }
 
+ExtensionUpdater* ExtensionService::updater() {
+  return updater_.get();
+}
+
 void ExtensionService::CheckAdminBlacklist() {
   std::vector<std::string> to_be_removed;
   // Loop through extensions list, unload installed extensions.
