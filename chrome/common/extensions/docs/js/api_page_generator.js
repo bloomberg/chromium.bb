@@ -1,3 +1,7 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 /**
  * @fileoverview This file is the controller for generating extension
  * doc pages.
@@ -20,7 +24,7 @@ var SCHEMA = "../api/extension_api.json";
 var DEVTOOLS_SCHEMA = WEBKIT_PATH +
   "/Source/WebCore/inspector/front-end/ExtensionAPISchema.json";
 var USE_DEVTOOLS_SCHEMA =
-  /\.webInspector\.[^/]*\.html/.test(location.pathname);
+  /\.webInspector[^/]*\.html/.test(location.pathname);
 var API_MODULE_PREFIX = USE_DEVTOOLS_SCHEMA ? "" : "chrome.";
 var SAMPLES = "samples.json";
 var REQUEST_TIMEOUT = 2000;
@@ -338,6 +342,14 @@ function stableAPIs() {
 function experimentalAPIs() {
   return schema.filter(function(module) {
     return !module.nodoc && module.namespace.indexOf("experimental") == 0;
+  }).map(function(module) {
+    return module.namespace;
+  }).sort();
+}
+
+function webInspectorAPIs() {
+  return schema.filter(function(module) {
+    return !module.nodoc && module.namespace.indexOf("webInspector.") !== 0;
   }).map(function(module) {
     return module.namespace;
   }).sort();

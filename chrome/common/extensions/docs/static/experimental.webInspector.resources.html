@@ -1,0 +1,44 @@
+<!-- BEGIN AUTHORED CONTENT -->
+<p id="classSummary">
+Use the <code>experimental.webInspector.resources</code> module to retrieve the
+information about network resources displayed by DevTools' Network panel.
+</p><p>
+See <a href="experimental.webInspector.html">WebInspector API summary</a> for
+general introduction to using WebInspector API</a>.
+</p>
+
+<h2>Notes</h2>
+
+<p>
+Network resource information is represented in HTTP Archive format
+(<em>HAR</em>). The description of HAR is outside of scope of this document,
+please refer to
+<a href=
+"http://groups.google.com/group/http-archive-specification/web/har-1-2-spec">
+HAR v1.2 Specification</a>.
+</p><p>
+In terms of HAR, the <code>webInspector.resources.getHAR()</code> method
+returns entire <em>HAR log</em>, while
+<code>webInspector.resources.onFinish</code> event provides <em>HAR entry</em>
+as an argument to the event callback.
+</p>
+<p>Note that resource content is not provided as part of HAR for efficieny
+reasons. You may call resource's <code>getContent()</code> method to retrieve
+content.
+<p>Some resources may be missing in the array of entries returned by <code>
+getHAR()</code> in case WebInspector was opened after the page was loaded &mdash;
+reload the page to get all resources. In general, the list of resources returned
+by <code>getHAR()</code> should match that displayed by the Network panel.
+<h2 id="overview-examples">Examples</h2>
+
+<p>The following code logs URLs of all images larger than 40KB as they are
+loaded:</p>
+
+<pre>
+experimental.webInspector.resources.onFinished.addListener(function(resource) {
+  if (resource.response.bodySize > 40*1024)
+    webInspector.log("Large image: " + resource.request.url);
+});
+</pre>
+
+<!-- END AUTHORED CONTENT -->
