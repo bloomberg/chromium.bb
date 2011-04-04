@@ -124,13 +124,15 @@ static void AudioCallBack(void* data, unsigned char* buffer, int length) {
   Global.desc_audio_sync_in->Write(&value, sizeof value);
 }
 // ======================================================================
-// NOTE: these are not fully supported at this time
-//       they undoubtedly need to be updated when ppapi changes
+// NOTE: These are not fully supported at this time.
+//       They undoubtedly need to be updated when ppapi changes.
+//       We do not use defines like PPB_CORE_INTERFACE because
+//       the implementation/emulation needs to be updated as well.
 static bool IsSupportedInterface(string interface) {
   return
-    interface == "PPB_Audio;0.5" ||
+    interface == "PPB_Audio;0.6" ||
     interface == "PPB_AudioConfig;0.5" ||
-    interface == "PPB_Core;0.3" ||
+    interface == "PPB_Core;0.4" ||
     interface == "PPB_FileIO(Dev);0.3" ||
     interface == "PPB_Graphics2D;0.3" ||
     interface == "PPB_ImageData;0.3" ||
