@@ -25,7 +25,7 @@ cr.define('ntp4', function() {
     initialize: function() {
       assert(this.appData.id, 'Got an app without an ID');
 
-      this.className = 'app';
+      this.className = 'app tile';
       this.setAttribute('app-id', this.appData.id);
 
       var appImg = this.ownerDocument.createElement('img');
@@ -74,6 +74,9 @@ cr.define('ntp4', function() {
     return el;
   }
 
+  var MAX_ROW_TILE_COUNT = 6;
+  var MIN_ROW_TILE_COUNT = 3;
+
   AppsPage.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -81,6 +84,19 @@ cr.define('ntp4', function() {
       this.className = 'apps-page';
       /* Ordered list of our apps. */
       this.appElements = this.getElementsByClassName('app');
+
+      this.lastWidth_ = this.clientWidth;
+
+      this.eventTracker = new EventTracker();
+      this.eventTracker.add(window, 'resize', this.onResize_.bind(this));
+    },
+
+    /**
+     * Cleans up resources that are no longer needed after this AppsPage
+     * instance is removed from the DOM.
+     */
+    tearDown: function() {
+      this.eventTracker.removeAll();
     },
 
     /**
@@ -91,7 +107,70 @@ cr.define('ntp4', function() {
     appendApp: function(appData) {
       var appElement = new App(appData);
       this.appendChild(appElement);
-    }
+      this.positionApp_(this.appElements.length - 1);
+    },
+
+    /**
+     * Calculates the x/y coordinates for an element and moves it there.
+     * @param {number} The index of the element to be positioned.
+     */
+    positionApp_: function(index) {
+      var width = this.clientWidth;
+      // Vertical and horizontal spacing between tiles.
+      var innerSpacing = 28;
+
+      // Try to show 6 elements per row. If there's not enough space, go for
+      // 3.
+      var numRowTiles = MAX_ROW_TILE_COUNT;
+      var minSixupTileSize = 128;
+      var tileSize = (width - (numRowTiles - 1) * innerSpacing) / numRowTiles;
+      if (tileSize < minSixupTileSize) {
+        numRowTiles = MIN_ROW_TILE_COUNT;
+        tileSize = minSixupTileSize;
+      }
+
+      var row = Math.floor(index / numRowTiles);
+      var col = index % numRowTiles;
+
+      var usedWidth = numRowTiles * tileSize + (numRowTiles - 1) * innerSpacing;
+      var leftSpacing = (width - usedWidth) / 2;
+      var x = col * (innerSpacing + tileSize) + leftSpacing;
+      var topSpacing = 50;
+      var y = row * (innerSpacing + tileSize) + topSpacing;
+
+      var tileElement = this.appElements[index];
+      tileElement.style.left = x + 'px';
+      tileElement.style.top = y + 'px';
+    },
+
+    /**
+     * Find the index within the page of the given application.
+     * returns {int} The index of the app.
+     */
+    indexOf_: function(appElement) {
+      for (var i = 0; i < this.appElements.length; i++) {
+        if (appElement == this.appElements[i])
+          return i;
+      }
+
+      return -1;
+    },
+
+    /**
+     * Window resize event handler. Window resizes may trigger re-layouts.
+     * @param {Object} e The resize event.
+     */
+    onResize_: function(e) {
+      // Do nothing if the width didn't change.
+      if (this.lastWidth_ == this.clientWidth)
+        return;
+
+      this.lastWidth_ = this.clientWidth;
+
+      for (var i = 0; i < this.appElements.length; i++) {
+        this.positionApp_(i);
+      }
+    },
   };
 
   return {

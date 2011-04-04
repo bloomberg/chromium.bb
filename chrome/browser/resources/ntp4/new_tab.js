@@ -241,6 +241,9 @@ var ntp = (function() {
     // uninstall. Could we re-use the existing page and dot elements?  It seems
     // unfortunate to have Chrome send us the entire apps list after an
     // uninstall.
+    for (var i = 0; i < appsPages.length; i++) {
+      appsPages[i].tearDown();
+    }
     removeChildrenByClassName(appsPageList, 'apps-page');
     removeChildrenByClassName(dotList, 'dot');
 

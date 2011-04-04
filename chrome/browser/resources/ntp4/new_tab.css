@@ -49,35 +49,32 @@ body {
 .apps-page {
   margin-left: auto;
   margin-right: auto;
-  max-width: 1100px;
-  padding: 29px;
+  min-width: 480px;
+  max-width: 960px;
   position: relative;
-  width: 960px;
+  width: 100%;
   -webkit-box-sizing: border-box;
 }
 
 .app {
   display: inline-block;
   height: 128px;
+  position: absolute;
   text-align: center;
   width: 128px;
   /* Animate effects to/from the grabbed state, and the position when drop
      is cancelled.  I'd like to also animate movement when an app is
      re-positioned, but since chrome is doing the layout there is no property
-     to animate.
-     TODO(rbyers): Should we take over responsibility for app layout ourself
-     like the classic NTP's most-visited icons?  Or should we extend webkit
-     somehow to support animation of the position of browser laid-out
-     elements. */
-  -webkit-transition-property: -webkit-transform, opacity, zIndex;
-  -webkit-transition-duration: 200ms;
+     to animate. */
+  -webkit-transition: -webkit-transform 200ms, opacity 200ms, zIndex 200ms,
+                      left 0, top 0;
   /* Don't offer the context menu on long-press. */
   -webkit-touch-callout: none;
 }
 
 .app span {
+  display: block;
   text-decoration: none;
-  /* TODO(rbyers): why isn't ellipsis working? */
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
