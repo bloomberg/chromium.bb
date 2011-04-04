@@ -53,7 +53,6 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   // Create the tab helpers.
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(contents));
   autofill_manager_.reset(new AutofillManager(contents));
-  dev_tools_tab_helper_.reset(new DevToolsTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(contents));
   password_manager_.reset(
@@ -67,6 +66,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
                  NotificationService::AllSources());
 
   // Create the per-tab observers.
+  dev_tools_observer_.reset(new DevToolsObserver(contents));
   file_select_observer_.reset(new FileSelectObserver(contents));
   prerender_observer_.reset(new prerender::PrerenderObserver(contents));
   printing_.reset(new printing::PrintViewManager(contents));

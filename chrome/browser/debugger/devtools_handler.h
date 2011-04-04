@@ -38,9 +38,9 @@ class DevToolsHandler {
 };
 
 // A wrapper around DevToolsHandler that implements TabContentsObserver.
-class DevToolsTabHelper : public TabContentsObserver {
+class DevToolsObserver : public TabContentsObserver {
  public:
-  explicit DevToolsTabHelper(TabContents* tab_contents);
+  explicit DevToolsObserver(TabContents* tab_contents);
 
   // TabContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
@@ -48,7 +48,7 @@ class DevToolsTabHelper : public TabContentsObserver {
  private:
   DevToolsHandler handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(DevToolsTabHelper);
+  DISALLOW_COPY_AND_ASSIGN(DevToolsObserver);
 };
 
 #endif  // CHROME_BROWSER_DEBUGGER_DEVTOOLS_HANDLER_H_

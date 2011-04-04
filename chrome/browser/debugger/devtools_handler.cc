@@ -70,11 +70,11 @@ RenderViewHost* DevToolsHandler::GetRenderViewHost() {
 }
 
 
-DevToolsTabHelper::DevToolsTabHelper(TabContents* tab_contents)
+DevToolsObserver::DevToolsObserver(TabContents* tab_contents)
     : TabContentsObserver(tab_contents),
       handler_(tab_contents, NULL) {
 }
 
-bool DevToolsTabHelper::OnMessageReceived(const IPC::Message& message) {
+bool DevToolsObserver::OnMessageReceived(const IPC::Message& message) {
   return handler_.OnMessageReceived(message);
 }

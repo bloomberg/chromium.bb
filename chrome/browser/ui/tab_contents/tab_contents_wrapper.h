@@ -26,7 +26,7 @@ class PrintViewManager;
 
 class AutocompleteHistoryManager;
 class AutofillManager;
-class DevToolsTabHelper;
+class DevToolsObserver;
 class Extension;
 class FileSelectObserver;
 class FindTabHelper;
@@ -171,8 +171,6 @@ class TabContentsWrapper : public NotificationObserver,
 
   scoped_ptr<AutofillManager> autofill_manager_;
 
-  scoped_ptr<DevToolsTabHelper> dev_tools_tab_helper_;
-
   scoped_ptr<FindTabHelper> find_tab_helper_;
 
   // PasswordManager and its delegate. The delegate must outlive the manager,
@@ -186,6 +184,7 @@ class TabContentsWrapper : public NotificationObserver,
   // (These provide no API for callers; objects that need to exist 1:1 with tabs
   // and silently do their thing live here.)
 
+  scoped_ptr<DevToolsObserver> dev_tools_observer_;
   scoped_ptr<FileSelectObserver> file_select_observer_;
   scoped_ptr<prerender::PrerenderObserver> prerender_observer_;
 
