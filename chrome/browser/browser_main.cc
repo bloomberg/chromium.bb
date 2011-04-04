@@ -74,6 +74,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
+#include "chrome/browser/web_resource/promo_resource_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -1775,6 +1776,16 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // a GPU blacklist auto update.
   GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
   DCHECK(gpu_data_manager);
+
+  // Need to initialize PromoResourceServiceFactory to load any currently
+  // available promo data into local state. Must be initialized after
+  // ResourceBundle::GetSharedInstance.
+  if (!parsed_command_line.HasSwitch(switches::kDisableWebResources)) {
+    PromoResourceServiceFactory* promo_resource_service_factory =
+        PromoResourceServiceFactory::GetInstance();
+    DCHECK(promo_resource_service_factory);
+    promo_resource_service_factory->StartPromoResourceService();
+  }
 
   // Start watching all browser threads for responsiveness.
   ThreadWatcherList::StartWatchingAll();

@@ -27,9 +27,7 @@ const char* GpuBlacklistUpdater::kDefaultGpuBlacklistURL =
     "https://dl.google.com/dl/edgedl/chrome/gpu/software_rendering_list.json";
 
 GpuBlacklistUpdater::GpuBlacklistUpdater()
-    : WebResourceService(ProfileManager::GetDefaultProfile(),
-                         g_browser_process->local_state(),
-                         GpuBlacklistUpdater::kDefaultGpuBlacklistURL,
+    : WebResourceService(GpuBlacklistUpdater::kDefaultGpuBlacklistURL,
                          false,  // don't append locale to URL
                          NotificationType::NOTIFICATION_TYPE_COUNT,
                          prefs::kGpuBlacklistUpdate,
@@ -41,8 +39,10 @@ GpuBlacklistUpdater::~GpuBlacklistUpdater() { }
 
 void GpuBlacklistUpdater::Unpack(const DictionaryValue& parsed_json) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
   DictionaryValue* gpu_blacklist_cache =
-      prefs_->GetMutableDictionary(prefs::kGpuBlacklist);
+      local_state->GetMutableDictionary(prefs::kGpuBlacklist);
   DCHECK(gpu_blacklist_cache);
   gpu_blacklist_cache->Clear();
   gpu_blacklist_cache->MergeDictionary(&parsed_json);

@@ -2074,6 +2074,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kDeleteFormData, false);
   prefs->RegisterIntegerPref(prefs::kDeleteTimePeriod, 0);
   prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser, true);
+  prefs->RegisterBooleanPref(prefs::kNTPPromoClosed, false);
   prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint, true);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop, true);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInAppsMenu, true);

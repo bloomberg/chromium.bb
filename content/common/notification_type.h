@@ -786,10 +786,14 @@ class NotificationType {
     // should be the UI thread.
     DEFAULT_REQUEST_CONTEXT_AVAILABLE,
 
-    // The state of a web resource has been changed. A resource may have been
+    // The state of a promo resource has been changed. A resource may have been
     // added, removed, or altered. Source is WebResourceService, and the
     // details are NoDetails.
     PROMO_RESOURCE_STATE_CHANGED,
+
+    // The user has elected not to display the promo on the New Tab Page.
+    // Source is WebResourceService, and the details are NoDetails.
+    PROMO_CLOSED,
 
     // Autocomplete ------------------------------------------------------------
 

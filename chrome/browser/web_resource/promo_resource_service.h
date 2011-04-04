@@ -8,13 +8,16 @@
 
 #include "chrome/browser/web_resource/web_resource_service.h"
 
-namespace PromoResourceServiceUtil {
+class Profile;
+class PromoResourceServiceTest;
+
+namespace web_resource {
 
 // Certain promotions should only be shown to certain classes of users. This
 // function will change to reflect each kind of promotion.
 bool CanShowPromo(Profile* profile);
 
-}  // namespace PromoResourceServiceUtil
+}  // namespace web_resource
 
 // A PromoResourceService fetches data from a web resource server to be used to
 // dynamically change the appearance of the New Tab Page. For example, it has
@@ -27,7 +30,7 @@ bool CanShowPromo(Profile* profile);
 class PromoResourceService
     : public WebResourceService {
  public:
-  explicit PromoResourceService(Profile* profile);
+  PromoResourceService();
 
   // Unpack the web resource as a custom promo signal. Expects a start and end
   // signal, with the promo to be shown in the tooltip of the start signal
@@ -65,7 +68,8 @@ class PromoResourceService
   // For "promo_start", the promotional line itself is given in the "tooltip"
   // field. The "question" field gives the type of builds that should be shown
   // this promo (see the BuildType enum in web_resource_service.cc) and the
-  // number of hours that each promo group should see it, separated by ":".
+  // number of hours that each promo group should see it, separated by ":":
+  //     BuildType bitmask : time slice in hours
   // For example, "7:24" would indicate that all builds should see the promo,
   // and each group should see it for 24 hours.
   //
@@ -105,6 +109,8 @@ class PromoResourceService
   static const char* kDefaultPromoResourceServer;
 
  private:
+  friend class PromoResourceServiceTest;
+
   virtual ~PromoResourceService();
 
   virtual void Unpack(const DictionaryValue& parsed_json);
@@ -118,6 +124,9 @@ class PromoResourceService
   // Gets mutable dictionary attached to user's preferences, so that we
   // can write resource data back to user's pref file.
   DictionaryValue* web_resource_cache_;
+
+  // Saved for use in unit testing.
+  int promo_group_;
 
   DISALLOW_COPY_AND_ASSIGN(PromoResourceService);
 };

@@ -11,19 +11,16 @@
 #include "chrome/browser/utility_process_host.h"
 #include "content/common/notification_type.h"
 
-class PrefService;
-class Profile;
-
-// A WebResourceService fetches data from a web resource server and store
-// locally as user preference.
+// A WebResourceService fetches data from a web resource server and stores
+// cache update time in Local State. Any other data may be stored in Local
+// State or the Profile's Preferences, as determined by the type of
+// WebResourceService.
 class WebResourceService
     : public UtilityProcessHost::Client {
  public:
   // Pass notification_type = NOTIFICATION_TYPE_COUNT if notification is not
   // required.
-  WebResourceService(Profile* profile,
-                     PrefService* prefs,
-                     const char* web_resource_server,
+  WebResourceService(const char* web_resource_server,
                      bool apply_locale_to_url_,
                      NotificationType::Type notification_type,
                      const char* last_update_time_pref_name,
@@ -48,10 +45,6 @@ class WebResourceService
   // If delay_ms is negative, do nothing.
   void PostNotification(int64 delay_ms);
 
-  // We need to be able to load parsed resource data into preferences file,
-  // and get proper install directory.
-  PrefService* prefs_;
-
  private:
   class WebResourceFetcher;
   friend class WebResourceFetcher;
@@ -66,8 +59,6 @@ class WebResourceService
 
   // Notify listeners that the state of a web resource has changed.
   void WebResourceStateChange();
-
-  Profile* profile_;
 
   scoped_ptr<WebResourceFetcher> web_resource_fetcher_;
 

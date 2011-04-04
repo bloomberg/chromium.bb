@@ -76,7 +76,6 @@
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/visitedlink/visitedlink_event_listener.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
-#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -492,14 +491,6 @@ void ProfileImpl::InstallDefaultApps() {
        iter != app_ids.end(); ++iter) {
     pending_extension_manager->AddFromDefaultAppList(*iter);
   }
-}
-
-void ProfileImpl::InitPromoResources() {
-  if (promo_resource_service_)
-    return;
-
-  promo_resource_service_ = new PromoResourceService(this);
-  promo_resource_service_->StartAfterDelay();
 }
 
 void ProfileImpl::InitRegisteredProtocolHandlers() {

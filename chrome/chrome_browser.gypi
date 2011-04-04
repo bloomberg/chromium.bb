@@ -3310,6 +3310,8 @@
         'browser/web_resource/gpu_blacklist_updater.h',
         'browser/web_resource/promo_resource_service.cc',
         'browser/web_resource/promo_resource_service.h',
+        'browser/web_resource/promo_resource_service_factory.cc',
+        'browser/web_resource/promo_resource_service_factory.h',
         'browser/web_resource/web_resource_service.cc',
         'browser/web_resource/web_resource_service.h',
         'browser/webdata/autofill_change.cc',
