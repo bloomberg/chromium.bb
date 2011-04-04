@@ -3726,10 +3726,6 @@ void Browser::UpdateCommandsForTabState() {
   bool non_app_window = !(type() & TYPE_APP);
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB,
       non_app_window && CanDuplicateContentsAt(selected_index()));
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB,
-      non_app_window && tab_count() > 1);
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_PREVIOUS_TAB,
-      non_app_window && tab_count() > 1);
 
   // Page-related commands
   window_->SetStarredState(current_tab_wrapper->is_starred());
