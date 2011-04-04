@@ -18,7 +18,6 @@ import chromite.lib.cros_build_lib as cros_lib
 from chromite.shell import utils
 from chromite.shell.subcmds import build_cmd
 from chromite.shell.subcmds import clean_cmd
-from chromite.shell.subcmds import portage_cmds
 from chromite.shell.subcmds import shell_cmd
 from chromite.shell.subcmds import workon_cmd
 from chromite.shell import chromite_env
@@ -31,10 +30,6 @@ from chromite.lib import operation
 _COMMAND_HANDLERS = [
   build_cmd.BuildCmd,
   clean_cmd.CleanCmd,
-  portage_cmds.EbuildCmd,
-  portage_cmds.EmergeCmd,
-  portage_cmds.EqueryCmd,
-  portage_cmds.PortageqCmd,
   shell_cmd.ShellCmd,
   workon_cmd.WorkonCmd,
 ]

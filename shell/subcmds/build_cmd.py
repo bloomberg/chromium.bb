@@ -160,6 +160,7 @@ class BuildCmd(subcmd.ChromiteCmd):
     #parser.add_option('--clean', default=False, action='store_true',
                       #help='Clean before building.')
     (options, argv) = parser.parse_args(raw_argv[1:])
+    options.clean = False
 
     # Load the build config if needed...
     if not loaded_config:

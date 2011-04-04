@@ -118,6 +118,7 @@ class CleanCmd(subcmd.ChromiteCmd):
     #parser.add_option('-y', '--yes', default=False, action='store_true',
                       #help='Answer "YES" to "are you sure?" questions.')
     (options, argv) = parser.parse_args(raw_argv[1:])
+    options.yes = False
 
     # Make sure the chroot exists first, before possibly prompting for board...
     # ...not really required, but nice for the user...
