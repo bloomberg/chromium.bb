@@ -143,11 +143,14 @@ drm_intel_bo_mrb_exec(drm_intel_bo *bo, int used,
 					cliprects, num_cliprects, DR4,
 					rings);
 
-	if (rings == 0)
+	switch (rings) {
+	case I915_EXEC_DEFAULT:
+	case I915_EXEC_RENDER:
 		return bo->bufmgr->bo_exec(bo, used,
 					   cliprects, num_cliprects, DR4);
-
-	return -ENODEV;
+	default:
+		return -ENODEV;
+	}
 }
 
 void drm_intel_bufmgr_set_debug(drm_intel_bufmgr *bufmgr, int enable_debug)
