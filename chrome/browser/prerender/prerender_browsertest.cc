@@ -104,6 +104,9 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
           " with no expected final status";
     FinalStatus expected_final_status = expected_final_status_queue_.front();
     expected_final_status_queue_.pop_front();
+    LOG(INFO) << "Creating prerender contents for " << url.path() <<
+                 " with expected final status " << expected_final_status;
+    LOG(INFO) << expected_final_status_queue_.size() << " left in the queue.";
     return new TestPrerenderContents(prerender_manager, profile, url,
                                      alias_urls, referrer,
                                      expected_final_status);
