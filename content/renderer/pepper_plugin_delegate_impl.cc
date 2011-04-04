@@ -337,7 +337,11 @@ PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
 }
 
 scoped_refptr<webkit::ppapi::PluginModule>
-PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
+PepperPluginDelegateImpl::CreatePepperPlugin(
+    const FilePath& path,
+    bool* pepper_plugin_was_registered) {
+  *pepper_plugin_was_registered = true;
+
   // See if a module has already been loaded for this plugin.
   scoped_refptr<webkit::ppapi::PluginModule> module =
       PepperPluginRegistry::GetInstance()->GetLiveModule(path);
@@ -345,12 +349,17 @@ PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
     return module;
 
   // In-process plugins will have always been created up-front to avoid the
-  // sandbox restrictions. So gettin here implies it doesn't exist or should
+  // sandbox restrictions. So getting here implies it doesn't exist or should
   // be out of process.
   const PepperPluginInfo* info =
       PepperPluginRegistry::GetInstance()->GetInfoForPlugin(path);
-  if (!info || !info->is_out_of_process)
-    return module;  // Return the NULL module.
+  if (!info) {
+    *pepper_plugin_was_registered = false;
+    return scoped_refptr<webkit::ppapi::PluginModule>();
+  } else if (!info->is_out_of_process) {
+    // In-process plugin not preloaded, it probably couldn't be initialized.
+    return scoped_refptr<webkit::ppapi::PluginModule>();
+  }
 
   // Out of process: have the browser start the plugin process for us.
   base::ProcessHandle plugin_process_handle = base::kNullProcessHandle;

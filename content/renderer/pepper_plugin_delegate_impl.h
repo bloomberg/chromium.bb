@@ -50,8 +50,18 @@ class PepperPluginDelegateImpl
   explicit PepperPluginDelegateImpl(RenderView* render_view);
   virtual ~PepperPluginDelegateImpl();
 
+  // Attempts to create a PPAPI plugin for the given filepath. On success, it
+  // will return the newly-created module.
+  //
+  // There are two reasons for failure. The first is that the plugin isn't
+  // a PPAPI plugin. In this case, |*pepper_plugin_was_registered| will be set
+  // to false and the caller may want to fall back on creating an NPAPI plugin.
+  // the second is that the plugin failed to initialize. In this case,
+  // |*pepper_plugin_was_registered| will be set to true and the caller should
+  // not fall back on any other plugin types.
   scoped_refptr<webkit::ppapi::PluginModule> CreatePepperPlugin(
-      const FilePath& path);
+      const FilePath& path,
+      bool* pepper_plugin_was_registered);
 
   // Called by RenderView to tell us about painting events, these two functions
   // just correspond to the DidInitiatePaint and DidFlushPaint in R.V..

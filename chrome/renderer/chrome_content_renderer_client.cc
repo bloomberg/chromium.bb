@@ -197,11 +197,17 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           IDS_PLUGIN_LOAD, true, true);
     }
 
+    bool pepper_plugin_was_registered = false;
     scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
-        render_view->pepper_delegate_.CreatePepperPlugin(info.path));
-    if (pepper_module) {
-      return render_view->CreatePepperPlugin(
-          frame, params, info.path, pepper_module.get());
+        render_view->pepper_delegate_.CreatePepperPlugin(
+            info.path,
+            &pepper_plugin_was_registered));
+    if (pepper_plugin_was_registered) {
+      if (pepper_module) {
+        return render_view->CreatePepperPlugin(
+            frame, params, info.path, pepper_module.get());
+      }
+      return NULL;
     }
 
     return render_view->CreateNPAPIPlugin(
