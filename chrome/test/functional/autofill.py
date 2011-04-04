@@ -12,6 +12,9 @@ import autofill_dataset_generator
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
 
+TAB_KEYPRESS = 0x09  # Tab keyboard key press.
+DOWN_KEYPRESS = 0x28  # Down arrow keyboard key press.
+RETURN_KEYPRESS = 0x0D  # Return keyboard key press.
 
 class AutofillTest(pyauto.PyUITest):
   """Tests that autofill works correctly"""
@@ -56,6 +59,7 @@ class AutofillTest(pyauto.PyUITest):
     file_path = os.path.join(self.DataDir(), 'autofill', 'crazy_autofill.txt')
     profiles = self.EvalDataFrom(file_path)
     self.FillAutofillProfile(profiles=profiles)
+
     self.assertEqual(profiles, self.GetAutofillProfile()['profiles'])
 
     # Adding credit cards.
@@ -147,22 +151,6 @@ class AutofillTest(pyauto.PyUITest):
     if 'EMAIL_ADDRESS' in self.GetAutofillProfile()['profiles'][0]:
       raise KeyError('TEST FAIL: Malformed email address is saved in profiles.')
 
-  def _SendKeyEventsToPopulateForm(self, tab_index=0, windex=0):
-    """Send key events to populate a web form with Autofill profile data.
-
-    Args:
-      tab_index: The tab index, default is 0.
-      windex: The window index, default is 0.
-    """
-    TAB_KEYPRESS = 0x09  # Tab keyboard key press.
-    DOWN_KEYPRESS = 0x28  # Down arrow keyboard key press.
-    RETURN_KEYPRESS = 0x0D  # Return keyboard key press.
-
-    self.SendWebkitKeyEvent(TAB_KEYPRESS, tab_index, windex)
-    self.SendWebkitKeyEvent(DOWN_KEYPRESS, tab_index, windex)
-    self.SendWebkitKeyEvent(DOWN_KEYPRESS, tab_index, windex)
-    self.SendWebkitKeyEvent(RETURN_KEYPRESS, tab_index, windex)
-
   def testComparePhoneNumbers(self):
     """Test phone fields parse correctly from a given profile.
 
@@ -181,7 +169,14 @@ class AutofillTest(pyauto.PyUITest):
         os.path.join('autofill', 'form_phones.html'))
     for profile_expected in profiles_expected:
       self.NavigateToURL(url)
-      self._SendKeyEventsToPopulateForm()
+      # Tab keyboard key press.
+      self.SendWebkitKeyEvent(TAB_KEYPRESS, tab_index=0, windex=0)
+      # Down arrow keyboard key press.
+      self.SendWebkitKeyEvent(DOWN_KEYPRESS, tab_index=0, windex=0)
+      # Down arrow keyboard key press.
+      self.SendWebkitKeyEvent(DOWN_KEYPRESS, tab_index=0, windex=0)
+      # Return keyboard key press.
+      self.SendWebkitKeyEvent(RETURN_KEYPRESS, tab_index=0, windex=0)
       form_values = {}
       for key, value in profile_expected.iteritems():
         js_returning_field_value = (
@@ -227,40 +222,6 @@ class AutofillTest(pyauto.PyUITest):
     cc_infobar = self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars']
     self.assertEqual(0, len(cc_infobar),
                      'Save credit card infobar offered to save CC info.')
-
-  def testNoAutofillForReadOnlyFields(self):
-    """Test that Autofill does not fill in read-only fields."""
-    profile = {'NAME_FIRST': 'Bob',
-               'NAME_LAST': 'Smith',
-               'EMAIL_ADDRESS': 'bsmith@gmail.com',
-               'ADDRESS_HOME_LINE1': '1234 H St.',
-               'ADDRESS_HOME_CITY': 'San Jose',
-               'ADDRESS_HOME_STATE': 'CA',
-               'ADDRESS_HOME_ZIP': '95110',
-               'COMPANY_NAME': 'Company X',
-               'PHONE_HOME_WHOLE_NUMBER': '408-123-4567',}
-
-    self.FillAutofillProfile(profiles=[profile])
-    url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'read_only_field_test.html'))
-    self.NavigateToURL(url)
-    self._SendKeyEventsToPopulateForm()
-    js_return_readonly_field = (
-        'var field_value = document.getElementById("email").value;'
-        'window.domAutomationController.send(field_value);')
-    readonly_field_value = self.ExecuteJavascript(
-        js_return_readonly_field, 0, 0)
-    js_return_addrline1_field = (
-        'var field_value = document.getElementById("address").value;'
-        'window.domAutomationController.send(field_value);')
-    addrline1_field_value = self.ExecuteJavascript(
-        js_return_addrline1_field, 0, 0)
-    self.assertNotEqual(
-        readonly_field_value, profile['EMAIL_ADDRESS'],
-        'Autofill filled in value for a read-only field.')
-    self.assertEqual(
-        addrline1_field_value, profile['ADDRESS_HOME_LINE1'],
-        'Unexpected value in the Address field.')
 
   def FormFillLatencyAfterSubmit(self):
     """Test latency time on form submit with lots of stored Autofill profiles.
