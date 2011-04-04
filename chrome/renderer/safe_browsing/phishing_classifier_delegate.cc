@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "chrome/common/safebrowsing_messages.h"
 #include "chrome/renderer/render_thread.h"
@@ -122,14 +123,19 @@ void PhishingClassifierDelegate::OnStartPhishingDetection(const GURL& url) {
 
 void PhishingClassifierDelegate::DidCommitProvisionalLoad(
     WebKit::WebFrame* frame, bool is_new_navigation) {
-  // A new page is starting to load.  Unless the load is a navigation within
-  // the same page, we need to cancel classification since we may get an
-  // inconsistent result.
+  // A new page is starting to load, so cancel classificaiton.
+  //
+  // TODO(bryner): We shouldn't need to cancel classification if the navigation
+  // is within the same page.  However, if we let classification continue in
+  // this case, we need to properly deal with the fact that PageCaptured will
+  // be called again for the in-page navigation.  We need to be sure not to
+  // swap out the page text while the term feature extractor is still running.
   NavigationState* state = NavigationState::FromDataSource(
       frame->dataSource());
-  if (!state->was_within_same_page()) {
-    CancelPendingClassification();
+  if (state->was_within_same_page()) {
+    UMA_HISTOGRAM_COUNTS("SBClientPhishing.CanceledForInPageNavigation", 1);
   }
+  CancelPendingClassification();
 }
 
 void PhishingClassifierDelegate::PageCaptured(const string16& page_text,

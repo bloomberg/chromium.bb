@@ -143,8 +143,9 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   delegate->PageCaptured(page_text, false);
 
   // Scrolling to an anchor will increment the page id, but should not
-  // not trigger a reclassification.  A pending classification should not
-  // be cancelled, since the content is not changing.
+  // not trigger a reclassification.  Currently, a pending classification will
+  // be canceled, but see the TODO in phishing_classifier_delegate.cc.
+  EXPECT_CALL(*classifier, CancelPendingClassification());
   LoadURL("http://host.com/#foo");
   OnStartPhishingDetection(delegate, GURL("http://host.com/#foo"));
   delegate->PageCaptured(page_text, false);
