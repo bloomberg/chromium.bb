@@ -4073,7 +4073,6 @@
    fun:_ZN7WebCore8Gradient16platformGradientEv
    fun:_ZN7WebCore15GraphicsContext*EPNS_8GradientE
    fun:_ZN7WebCore15GraphicsContext*EN3WTF10PassRefPtrINS_8GradientEEE
-   fun:_ZN7WebCore25RenderSVGResourceGradient13applyResourceEPNS_12RenderObjectEPNS_11RenderStyleERPNS_15GraphicsContextEt
 }
 {
    bug_77258_a
