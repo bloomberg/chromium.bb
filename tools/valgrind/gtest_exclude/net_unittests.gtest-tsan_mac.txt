@@ -6,3 +6,6 @@ WebSocketTest.*
 # Strange reports from __NSThread__main__ appeared with the new TSan binaries
 # See http://crbug.com/38926
 DirectoryLister*
+
+# Failing, see http://crbug.com/78303
+HttpNetworkTransactionTest.HttpsProxySpdyGetWithProxyAuth
