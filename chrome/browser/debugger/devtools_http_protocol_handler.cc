@@ -263,34 +263,32 @@ static PageList GeneratePageList(
 void DevToolsHttpProtocolHandler::OnRootRequestUI(
     int connection_id,
     const HttpServerRequestInfo& info) {
-  std::string response = "<html><body><script>"
-        "function addTab(id, url, attached, frontendUrl) {"
-        "    if (!attached) {"
-        "        var a = document.createElement('a');"
-        "        a.textContent = url;"
-        "        a.href = frontendUrl + '?host=' + window.location.host +"
-        "            '&page=' + id;"
-        "        document.body.appendChild(a);"
-        "    } else {"
-        "        var span = document.createElement('span');"
-        "        span.textContent = url + ' (attached)';"
-        "        document.body.appendChild(span);"
-        "    }"
-        "    document.body.appendChild(document.createElement('br'));"
-        "}";
-
+  std::string host = info.headers["Host"];
+  std::string response = "<html><body>";
   PageList page_list = GeneratePageList(tab_contents_provider_.get(),
                                         connection_id, info);
   for (PageList::iterator i = page_list.begin();
        i != page_list.end(); ++i) {
+
+    std::string frontendURL = StringPrintf("%s?host=%s&page=%d",
+                                           overriden_frontend_url_.c_str(),
+                                           host.c_str(),
+                                           i->id);
+    response += "<div>";
     response += StringPrintf(
-        "addTab(%d, '%s', %s, '%s');\n",
-        i->id,
-        i->url.c_str(),
-        i->attached ? "true" : "false",
-        overriden_frontend_url_.c_str());
+        "<img style=\"margin-right:5px;width:16px;height:16px\" src=\"%s\">",
+        i->favicon_url.c_str());
+
+    if (i->attached) {
+      response += i->url.c_str();
+    } else {
+      response += StringPrintf("<a href=\"%s\">%s</a><br>",
+                               frontendURL.c_str(),
+                               i->url.c_str());
+    }
+    response += "</div>";
   }
-  response += "</script></body></html>";
+  response += "</body></html>";
   Send200(connection_id, response, "text/html; charset=UTF-8");
 }
 
@@ -300,17 +298,28 @@ void DevToolsHttpProtocolHandler::OnJsonRequestUI(
   PageList page_list = GeneratePageList(tab_contents_provider_.get(),
                                         connection_id, info);
   ListValue json_pages_list;
+  std::string host = info.headers["Host"];
   for (PageList::iterator i = page_list.begin();
        i != page_list.end(); ++i) {
 
     DictionaryValue* page_info = new DictionaryValue;
     json_pages_list.Append(page_info);
-    page_info->SetInteger("id", i->id);
-    page_info->SetBoolean("attached", i->attached);
     page_info->SetString("title", i->title);
     page_info->SetString("url", i->url);
     page_info->SetString("faviconUrl", i->favicon_url);
+    if (!i->attached) {
+      page_info->SetString("webSocketDebuggerUrl",
+                           StringPrintf("ws://%s/devtools/page/%d",
+                                        host.c_str(),
+                                        i->id));
+      page_info->SetString(
+          "devtoolsFrontendUrl",
+          StringPrintf("http://%s/devtools/devtools.html?page=%d",
+                       host.c_str(),
+                       i->id));
+    }
   }
+
   std::string response;
   base::JSONWriter::Write(&json_pages_list, true, &response);
   Send200(connection_id, response, "application/json; charset=UTF-8");
@@ -367,7 +376,6 @@ void DevToolsHttpProtocolHandler::OnWebSocketMessageUI(
     return;
 
   DevToolsManager* manager = DevToolsManager::GetInstance();
-
   manager->ForwardToDevToolsAgent(
       it->second,
       DevToolsAgentMsg_DispatchOnInspectorBackend(data));
