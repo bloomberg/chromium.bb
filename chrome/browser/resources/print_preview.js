@@ -317,7 +317,7 @@ function createPDFPlugin() {
   loadingElement.classList.add('hidden');
   var mainView = loadingElement.parentNode;
 
-  var pdfPlugin = document.createElement('object');
+  var pdfPlugin = document.createElement('embed');
   pdfPlugin.setAttribute('id', 'pdf-viewer');
   pdfPlugin.setAttribute('type', 'application/pdf');
   pdfPlugin.setAttribute('src', 'chrome://print/print.pdf');
