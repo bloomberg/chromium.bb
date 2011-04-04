@@ -90,6 +90,10 @@ struct TestURLInfo {
   {"http://binky/", "Intranet binky", 2, 2},
   {"http://winky/", "Intranet winky", 2, 2},
   {"http://www.winky.com/", "Internet winky", 5, 0},
+
+  // URLs used by EmptyVisits.
+  {"http://pandora.com/", "Pandora", 2, 2},
+  {"http://p/", "p", 0, 0},
 };
 
 class HistoryURLProviderTest : public TestingBrowserProcessTest,
@@ -131,8 +135,6 @@ class HistoryURLProviderTest : public TestingBrowserProcessTest,
   ACMatches matches_;
   scoped_ptr<TestingProfile> profile_;
   HistoryService* history_service_;
-
- private:
   scoped_refptr<HistoryURLProvider> autocomplete_;
 };
 
@@ -449,6 +451,33 @@ TEST_F(HistoryURLProviderTest, AdjustOffset) {
   RunAdjustOffsetTest(WideToUTF16(L"http://www.\uAD50\uC721"), 13);
   RunAdjustOffsetTest(ASCIIToUTF16("http://spaces.com/path%20with%20spa"), 31);
   RunAdjustOffsetTest(ASCIIToUTF16("http://ms/c++ s"), 15);
+}
+
+// Make sure the results for the input 'p' don't change between the first and
+// second passes.
+TEST_F(HistoryURLProviderTest, EmptyVisits) {
+  // Wait for history to create the in memory DB.
+  profile_->BlockUntilHistoryProcessesPendingRequests();
+
+  AutocompleteInput input(ASCIIToUTF16("p"), string16(), false, false, true,
+                          AutocompleteInput::ALL_MATCHES);
+  autocomplete_->Start(input, false);
+  // HistoryURLProvider shouldn't be done (waiting on async results).
+  EXPECT_FALSE(autocomplete_->done());
+
+  // We should get back an entry for pandora.
+  matches_ = autocomplete_->matches();
+  ASSERT_GT(matches_.size(), 0u);
+  EXPECT_EQ(GURL("http://pandora.com/"), matches_[0].destination_url);
+  int pandora_relevance = matches_[0].relevance;
+
+  // Run the message loop. When |autocomplete_| finishes the loop is quit.
+  MessageLoop::current()->Run();
+  EXPECT_TRUE(autocomplete_->done());
+  matches_ = autocomplete_->matches();
+  ASSERT_GT(matches_.size(), 0u);
+  EXPECT_EQ(GURL("http://pandora.com/"), matches_[0].destination_url);
+  EXPECT_EQ(pandora_relevance, matches_[0].relevance);
 }
 
 TEST_F(HistoryURLProviderTestNoDB, NavigateWithoutDB) {

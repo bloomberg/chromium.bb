@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,6 +120,9 @@ struct HistoryURLProviderParams {
 
   // Languages we should pass to gfx::GetCleanStringFromUrl.
   std::string languages;
+
+  // When true, we should avoid calling SuggestExactInput().
+  bool dont_suggest_exact_input;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryURLProviderParams);
