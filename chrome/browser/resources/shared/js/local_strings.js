@@ -8,9 +8,15 @@
  * The local strings get injected into the page using a variable named
  * {@code templateData}. This class provides a simpler interface to access those
  * strings.
+ *
+ * @param {Object} opt_templateData Optional object containing translated
+ *     strings.  If this is not supplied during construction, it can be
+ *     assigned to the templateData property after construction.  If all else
+ *     fails, the value of window.templateDate will be used.
  * @constructor
  */
-function LocalStrings() {
+function LocalStrings(opt_templateData) {
+  this.templateData = opt_templateData;
 }
 
 // Start of anonymous namespace.

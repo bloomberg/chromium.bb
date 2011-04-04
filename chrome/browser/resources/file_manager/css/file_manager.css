@@ -1,8 +1,226 @@
 /*
-Copyright (c) 2010 The Chromium Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.
-*/
-h1 {
-  color: blue;
+ * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* Outer frame of the dialog. */
+body {
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  -webkit-user-select: none;
+  display: -webkit-box;
+  font-family: sans-serif;
+  font-size: 13px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  width: 100%;
+}
+
+/* The top title of the dialog. */
+.dialog-title {
+  -webkit-box-sizing: border-box;
+  -webkit-padding-start: 15px;
+  background-image: -webkit-linear-gradient(top, #fff,#f6f6f6);
+  border-bottom: 1px #d6d9e3 solid;
+  color: #42506c;
+  font-size: 15px;
+  font-weight: bold;
+  height: 32px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+/* Breadcrumbs and things under the title but above the list view. */
+.dialog-header {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  margin: 15px;
+}
+
+/* Container for the detail and thumbnail (not implemented yet) list views. */
+.dialog-body {
+  -webkit-box-orient: horizontal;
+  -webkit-box-flex: 1;
+  border: 1px #aaa solid;
+  border-radius: 3px;
+  display: -webkit-box;
+  margin: 15px;
+  margin-top: 0;
+}
+
+/* Container for the ok/cancel buttons. */
+.dialog-footer {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  margin: 15px;
+  margin-top: 0;
+}
+
+/* The container for breadcrumb elements. */
+.breadcrumbs {
+  -webkit-box-orient: horizontal;
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+  font-size: 15px;
+  line-height: 15px;
+}
+
+/* A single directory name in the list of path breadcrumbs. */
+.breadcrumb-path {
+  color: #265692;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* The final breadcrumb, representing the current directory. */
+.breadcrumb-last {
+  color: #666;
+  cursor: inherit;
+  font-weight: bold;
+}
+
+/* The > arrow between breadcrumbs. */
+.breadcrumb-spacer {
+  -webkit-margin-start: 7px;
+  -webkit-margin-end: 4px;
+  color: #aaa;
+  font-size: 12px;
+}
+
+/* The cr.ui.Table representing the detailed file list. */
+.detail-table {
+  -webkit-box-orient: vertical;
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+  border: 0;
+}
+
+/* The actual element containing the list items. */
+.detail-table > .list {
+  /* TODO(rginda): The list is not able to adjust to the available height,
+   * so we have to hardcode it for now.
+   */
+  height: 417px;
+}
+
+/* The right-column 'Preview' column container. */
+.preview-container {
+  -webkit-border-start: 1px #aaa solid;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  width: 225px;
+}
+
+/* cr.ui.Table has a black focus border by default, which we don't want. */
+.detail-table:focus {
+  border: 0;
+}
+
+/* Table splitter element */
+.table-header-splitter {
+  -webkit-border-start: 1px #aaa solid;
+  background-color: inherit;
+  height: 20px;
+  margin-top: 4px;
+}
+
+/* Container for a table header. */
+.table-header {
+  -webkit-box-sizing: border-box;
+  border-bottom: 1px #aaa solid;
+  background-image: -webkit-linear-gradient(top, #f9f9f9, #e8e8e8);
+  height: 28px;
+}
+
+/* Text label in a table header. */
+.table-header-label {
+  margin-top: 6px;
+}
+
+/* The first child of a list cell. */
+.table-row-cell > * {
+  -webkit-margin-start: 5px;
+  -webkit-box-orient: horizontal;
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+}
+
+/* Column text containers. */
+.detail-name, .detail-size, .detail-date {
+  padding-top: 2px;
+}
+
+/* The icon in the name column. */
+.detail-icon {
+  -webkit-margin-end: 3px;
+  background-image: url(../images/icon-unknown.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 24px;
+  width: 16px;
+}
+
+/* Icon for image files. */
+.detail-icon[iconType="image"] {
+  background-image: url(../images/icon-image.png);
+}
+
+/* The filename text in the preview pane. */
+.preview-filename {
+  -webkit-margin-start: 8px;
+  color: #666;
+  font-weight: bold;
+  margin-top: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The preview image. */
+.preview-img {
+  margin-top: 10px;
+  max-height: 300px;
+  max-width: 190px;
+}
+
+.preview-img[src=''] {
+  visibility: hidden;
+}
+
+/* Decoration when multiple images are selected. */
+.preview-img.multiple-selected {
+  -webkit-box-shadow: 5px 5px 0 #aaa;
+}
+
+/* Checkboard background to distinguish images with alpha channels. */
+.preview-img.transparent-background {
+  background-image: url(../images/preview-background.png);
+}
+
+/* The selection summary text at the bottom of the preview pane. */
+.preview-summary {
+  border-top: 1px #aaa solid;
+  color: #666;
+  font-weight: bold;
+  overflow: hidden;
+  padding: 5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A horizontal spring. */
+.horizontal-spacer {
+  -webkit-box-orient: horizontal;
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+}
+
+/* A vertical spring. */
+.vertical-spacer {
+  -webkit-box-orient: vertical;
+  -webkit-box-flex: 1;
+  display: -webkit-box;
 }

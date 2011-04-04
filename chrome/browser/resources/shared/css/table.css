@@ -23,9 +23,6 @@ list > [selected]:hover {
   border-right: none;
   border-left: none;
 }
-.list {
-  height: 200px;
-}
 
 .table:focus {
   border: 1px solid;
