@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,6 +146,7 @@ TEST_F(RenderWidgetHostViewMacTest, TakesFocusOnMouseDown) {
 
   // Even if the RWHVCocoa disallows first responder, clicking on it gives it
   // focus.
+  [window setPretendIsKeyWindow:YES];
   [window makeFirstResponder:nil];
   ASSERT_NE(rwhv_cocoa_.get(), [window firstResponder]);
 
@@ -174,6 +175,7 @@ TEST_F(RenderWidgetHostViewMacTest, TakesFocusOnMouseDownWithAcceleratedView) {
   // Add the RWHVCocoa to the window and remove first responder status.
   scoped_nsobject<NSWindow> window([[CocoaTestHelperWindow alloc] init]);
   [[window contentView] addSubview:rwhv_cocoa_.get()];
+  [window setPretendIsKeyWindow:YES];
   [window makeFirstResponder:nil];
   EXPECT_NE(rwhv_cocoa_.get(), [window firstResponder]);
 
