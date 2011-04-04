@@ -121,4 +121,10 @@
 <translation id="1768404365792104093">Следующая/предыдущая команда</translation>
 <translation id="1823768272150895732">Шрифт</translation>
 <translation id="2161656808144014275">Текст</translation>
+<translation id="1169028494908542778">Вернуться к этой ревизии</translation>
+<translation id="1272268244580491898">Включить точку остановки</translation>
+<translation id="1801042861827795142">Загрузка завершена</translation>
+<translation id="1946125830871712831">Ошибка при получении пути к корневой папке файловой системы.</translation>
+<translation id="2071167425364270751">&lt;исходный код не доступен&gt;</translation>
+<translation id="5552689477187388058">Таблица “<ph name="TABLE_NAME"/>”\n пуста.</translation>
 </translationbundle>

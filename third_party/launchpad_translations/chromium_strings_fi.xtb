@@ -79,4 +79,6 @@
 <translation id="4222661289444749267">Chromium Frame -kehyksen päivitys</translation>
 <translation id="4330297532943865716">Järjestelmästä löytyi ristiriidan aiheuttava asennus Chromiumista tai Chromium Frame -kehyksestä. Poista se ensin ja yritä sitten asennusta uudelleen.</translation>
 <translation id="980185455267101462">Tällä tietokoneella on jo uudempi versio Chromium Frame -kehyksestä asennettuna. Jos se ei toimi kunnolla, poista Chromium Frame -kehyksen asennus ja lataa se uudelleen.</translation>
+<translation id="275588974610408078">Kaatumisraportointi ei ole käytettävissä Chromiumissa.</translation>
+<translation id="378917192836375108">Chromium mahdollistaa soiton verkkosivulla olevaan puhelinnumeroon Skypea käyttäen!</translation>
 </translationbundle>

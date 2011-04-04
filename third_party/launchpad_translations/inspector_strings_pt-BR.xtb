@@ -343,4 +343,85 @@
 <translation id="8752618944283862203">Mutação de DOM</translation>
 <translation id="8814517835479322133">Contador \xb1</translation>
 <translation id="9094024956608024774">Pontos de interrupção XHR</translation>
+<translation id="1471549911969958014">Pausado sobre um ponto de parada \&quot;<ph name="BREAKPOINT"/>\&quot; estabelecido sobre <ph name="NODE"/>, pois o seu <ph name="CHILD"/> foi removido.</translation>
+<translation id="1648890265918980181">Pausa em todas as exceções. \nClique para Pausar nas exceções que não foram capturadas.</translation>
+<translation id="1708703581063682228">Pausado sobre um ponto de parada \&quot;<ph name="BREAKPOINT"/>\&quot; estabelecido sobre <ph name="NODE"/>, pois um novo filho foi adicionado a seus <ph name="CHILD"/> descendentes.</translation>
+<translation id="1927081658806650620">Apenas nós selecionados</translation>
+<translation id="1946125830871712831">Erro ao obter o caminho da raiz para o sistema de arquivos.</translation>
+<translation id="1970347183234422155">Requisitar a carga útil.</translation>
+<translation id="2091908538154256618">Tempo agregado.</translation>
+<translation id="2161656808144014275">Texto</translation>
+<translation id="2187217037175158938">Nenhum sensor de eventos.</translation>
+<translation id="2210962763794079615">Hora atual</translation>
+<translation id="2243185493588087847">Mostrar contagens e dimensões absolutas.</translation>
+<translation id="230848277395574520">Aceitar sugestão.</translation>
+<translation id="2359808026110333948">Continuar</translation>
+<translation id="2403051638416974630">Controle</translation>
+<translation id="2448312741937722512">Tipo</translation>
+<translation id="2499326669217188700">nova</translation>
+<translation id="2630955248802405275">Carga XHR</translation>
+<translation id="2660779039299703961">Evento</translation>
+<translation id="2712822772848061154">Chamada de função</translation>
+<translation id="2739191690716947896">Depuração</translation>
+<translation id="2746060588217358343">Controlar o perfil da CPU ao pressionar o botão <ph name="BUTTON"/> na barra de status.</translation>
+<translation id="3044671142938250587">Receber dados</translation>
+<translation id="3049858878589819824">Desabilitar ponto de interrupção</translation>
+<translation id="3084452240056471321">Regsitro de XMLHttpRequest.</translation>
+<translation id="3151539355209957474">Hora inicial</translation>
+<translation id="3173108072600140882">Avançar para</translation>
+<translation id="3202131003361292969">Caminho</translation>
+<translation id="3241921515408606578">Painel seguinte/anterior</translation>
+<translation id="3248185426436836442">Pendente</translation>
+<translation id="3278501001215972235">Pausado sobre um ponto de interrupção \&quot;<ph name="BREAKPOINT"/>\&quot; sobre <ph name="NODE"/>, pois um novo filho foi adicionado ao nó.</translation>
+<translation id="3378988938143122462">Chamar a pilha do sítio.</translation>
+<translation id="3387873041565926208">Obter um retrato do heap pressionando o botão <ph name="BUTTON"/> na barra de status.</translation>
+<translation id="3466326894725069228">Arquivos locais</translation>
+<translation id="3480041348039209433">Expressões de observação</translation>
+<translation id="3489326909961440727">Auditorias</translation>
+<translation id="3490160943926483091">Repetições</translation>
+<translation id="3587482841069643663">Todos</translation>
+<translation id="3662406032239313663">Registros</translation>
+<translation id="3684450102844331538">Pausado sobre um Sensor de Eventos \&quot;<ph name="NAME"/>\&quot;.</translation>
+<translation id="3715281739000626361">Recebendo</translation>
+<translation id="3763112915663291237">Trabalhadores</translation>
+<translation id="4047216625641135770">Marcar</translation>
+<translation id="4062427243989761924">Esta solicitação não possui info detalhada de timing.</translation>
+<translation id="4275663329226226506">Mídia</translation>
+<translation id="4399074272412234706">Bloqueio</translation>
+<translation id="4415583656415968050">Chamada de estrutura seguinte/anterior</translation>
+<translation id="4491109536499578614">Imagem</translation>
+<translation id="4588170590087229653">Pausado sobre uma interrupção JavaScript.</translation>
+<translation id="4971778856584289542">Mudança de Estado para XHR Pronto.</translation>
+<translation id="5037676449506322593">Selecionar todos</translation>
+<translation id="5213520324118152207">Tempo esgotado</translation>
+<translation id="5215654583224799840">Interrupção na remoção do nó</translation>
+<translation id="5327248766486351172">Nome</translation>
+<translation id="5524017339881576324">Atendentes de evento</translation>
+<translation id="5646376287012673985">Localização</translation>
+<translation id="5747552184818312860">Expira</translation>
+<translation id="6032183131938659321">Temporização</translation>
+<translation id="6122191549521593678">On-line</translation>
+<translation id="6270944267518310103">Aguardando</translation>
+<translation id="6494960638240363096">Linhas do tempo</translation>
+<translation id="6512256785841114303">excluído</translation>
+<translation id="6643016212128521049">Limpar</translation>
+<translation id="667999046851023355">Documento</translation>
+<translation id="6817585190033523357">Adicionar novo</translation>
+<translation id="7025575154794296384">Avisos</translation>
+<translation id="7338790140396171603">Ir para a linha</translation>
+<translation id="7401459497329391984">Pontos de interrupção DOM</translation>
+<translation id="7417902279122870866">Script</translation>
+<translation id="7445029764808004633">Editar texto</translation>
+<translation id="74825880534622691">Evento de carregamento disparado</translation>
+<translation id="7505152414826719222">Armazenamento local</translation>
+<translation id="7583948862126372804">Contagem</translation>
+<translation id="7588707273764747927">Transferência</translation>
+<translation id="7771862541428416420">Pontos de interrupção dos sensores de eventos</translation>
+<translation id="7791267293787079395">Sistema de arquivos</translation>
+<translation id="7791543448312431591">Adicionar</translation>
+<translation id="7805768142964895445">Status</translation>
+<translation id="8003193230778528533">Pesquisa de DNS</translation>
+<translation id="8797900270324800718">Evento DOMContent disparado</translation>
+<translation id="8859469458671597381">Preservar Log sobre Navegação</translation>
+<translation id="9159762225425937606">Selecione auditorias para executar.</translation>
 </translationbundle>

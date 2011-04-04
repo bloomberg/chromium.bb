@@ -25,7 +25,7 @@
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">Configurar actualizacións automáticas para todos os usuarios</translation>
 <translation id="1084824384139382525">Copiar o &amp;enderezo da ligazón</translation>
-<translation id="1086613338090581534">Se o certificado non caducou,ao emisora será responsable de manter o que se coñece co nome de «lista de revogacións». Se a integridade dun certificado resulta vulnerada, a emisora pode revogalo. Para elo, debe engadilo á lista de revogacións. Unha vez feito isto, o certificado deixa de ser de confianza para o seu navegador. No caso dos certificados caducados, non é necesario manter o estado de revogación. Polo tanto, aínda que este certificado adoitaba ser válido para o sitio web que visita, neste momento non é posíbel determinar se o certificado foi vulnerado e posteriormente revogado ou se segue a ser seguro. Polo que non é posíbel dicir se se está comunicando co sitio web lexítimo ou se o certificado foi vulnerado e agora está en mans dun atacante con quen se está comunicando. Chegados a este punto, non debería continuar.</translation>
+<translation id="1086613338090581534">Se o certificado non caducou,a emisora será responsable de manter o que se coñece co nome de «lista de revogacións». Se a integridade dun certificado resulta vulnerada, a emisora pode revogalo. Para elo, debe engadilo á lista de revogacións. Unha vez feito isto, o certificado deixa de ser de confianza para o seu navegador. No caso dos certificados caducados, non é necesario manter o estado de revogación. Polo tanto, aínda que este certificado adoitaba ser válido para o sitio web que visita, neste momento non é posíbel determinar se o certificado foi vulnerado e posteriormente revogado ou se segue a ser seguro. Polo que non é posíbel dicir se se está comunicando co sitio web lexítimo ou se o certificado foi vulnerado e agora está en mans dun atacante con quen se está comunicando. Chegados a este punto, non debería continuar.</translation>
 <translation id="1087119889335281750">&amp;Non hai suxestións ortográficas</translation>
 <translation id="1093148655619282731">Detalles do certificado seleccionado</translation>
 <translation id="1103523840287552314">Traducir sempre o <ph name="LANGUAGE"/></translation>
@@ -500,7 +500,7 @@
 <translation id="2501278716633472235">Retroceder</translation>
 <translation id="2502105862509471425">Engadir unha nova tarxeta de crédito...</translation>
 <translation id="2503406935270646946">Confirmar para saír</translation>
-<translation id="2503522102815150840">Produciuse un fallo do navegador...</translation>
+<translation id="2503522102815150840">O navegador quebrou... foi e estourou</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT"/> de <ph name="TOTAL_SIZE"/></translation>
 <translation id="250599269244456932">Executar automaticamente (recomendado)</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -527,7 +527,7 @@
 <translation id="2574102660421949343">As cookies de <ph name="DOMAIN"/> están permitidas.</translation>
 <translation id="2580170710466019930">Agarde mentres <ph name="PRODUCT_NAME"/> instala as últimas actualizacións do sistema.</translation>
 <translation id="2587203970400270934">Código de operador:</translation>
-<translation id="2592884116796016067">Unha parte desta páxina (Operador do web HTML) está danada, polo que é posíbel que non funcione correctamente.</translation>
+<translation id="2592884116796016067">Unha parte desta páxina (Operador do web HTML) quebrou, polo que é posíbel que non funcione correctamente.</translation>
 <translation id="2600306978737826651">Produciuse un fallo na descarga da imaxe, a gravación foi interrompida!</translation>
 <translation id="2604243255129603442"><ph name="NAME_OF_EXTENSION"/> foi desactivada. Se detén a sincronización dos seus marcadores, pode reactivala na páxina de extensións, accesíbel a través do menú de ferramentas.</translation>
 <translation id="2604355933404423285">Abrir algunhas páxinas específicas</translation>
@@ -778,7 +778,7 @@
 <translation id="3384773155383850738">Número máximo de suxestións</translation>
 <translation id="338583716107319301">Separador</translation>
 <translation id="3388026114049080752">As lapelas e a actividade de navegación</translation>
-<translation id="3391060940042023865">O seguinte complemento pechouse de forma inesperada: <ph name="PLUGIN_NAME"/></translation>
+<translation id="3391060940042023865">O seguinte complemento quebrou: <ph name="PLUGIN_NAME"/></translation>
 <translation id="3398951731874728419">Inf. de erro:</translation>
 <translation id="340485819826776184">Usar un servizo de predición para axudarlle a completar as buscas e os enderezos introducidos na barra de enderezos</translation>
 <translation id="3412265149091626468">Saltar á selección</translation>
@@ -958,7 +958,7 @@
 <translation id="3954582159466790312">Activar &amp;son</translation>
 <translation id="3966072572894326936">Seleccionar outro cartafol...</translation>
 <translation id="3968739731834770921">Kana</translation>
-<translation id="3978267865113951599">(estragado)</translation>
+<translation id="3978267865113951599">(quebrou)</translation>
 <translation id="3979748722126423326">Activar <ph name="NETWORKDEVICE"/></translation>
 <translation id="3981760180856053153">O tipo de gardado introducido non é válido.</translation>
 <translation id="3984413272403535372">Produciuse un erro ao asinar a extensión.</translation>
@@ -1037,7 +1037,7 @@
 <translation id="4164507027399414915">Restaurar todas as miniaturas retiradas</translation>
 <translation id="4176463684765177261">Desactivada</translation>
 <translation id="4178055285485194276">Ao inicio:</translation>
-<translation id="4180788401304023883">Borrar certificado de EC «<ph name="CERTIFICATE_NAME"/>»?</translation>
+<translation id="4180788401304023883">Eliminar certificado de EA «<ph name="CERTIFICATE_NAME"/>»?</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4181898366589410653">Non se atopou ningún mecanismo de revogación no certificado do servidor.</translation>
 <translation id="4182252350869425879">Advertencia: Posíbel sitio de suplantación de identidade (phishing).</translation>
@@ -1055,7 +1055,7 @@
 <translation id="4215444178533108414">Rematou a eliminación de elementos</translation>
 <translation id="421577943854572179">incrustado en calquera outro sitio</translation>
 <translation id="4216499942524365685">Os detalles da súa conta de inicio de sesión están obsoletos. Prema para volver a introducir o contrasinal.</translation>
-<translation id="4220128509585149162">Peches inesperados</translation>
+<translation id="4220128509585149162">Quebras</translation>
 <translation id="4222982218026733335">Certificado do servidor non válido</translation>
 <translation id="4224803122026931301">Excepcións de localizacións</translation>
 <translation id="422929353996972043">asdfzxcv89</translation>
@@ -1605,7 +1605,7 @@
 <translation id="5875565123733157100">Tipo de erro:</translation>
 <translation id="5880867612172997051">Suspendido o acceso á rede</translation>
 <translation id="5885996401168273077">Conexión de rede</translation>
-<translation id="5889282057229379085">Número máximo de entidades emisoras de certificados intermediarias: <ph name="NUM_INTERMEDIATE_CA"/></translation>
+<translation id="5889282057229379085">Número máximo de entidades emisoras de certificados (EA) intermediarias: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="5894314466642127212">O comentario enviouse satisfactoriamente</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5895187275912066135">Emitido o</translation>
@@ -1891,7 +1891,7 @@
 <translation id="6833901631330113163">Sureuropeo</translation>
 <translation id="683526731807555621">Engadir un novo motor de buscas</translation>
 <translation id="6839225236531462745">Produciuse un erro na eliminación do certificado</translation>
-<translation id="6840184929775541289">Non é unha entidade de acreditación</translation>
+<translation id="6840184929775541289">Non é unha entidade de acreditación (EA)</translation>
 <translation id="684265517037058883">(aínda non é válido)</translation>
 <translation id="6845180713465955339">O certificado «<ph name="CERTIFICATE_NAME"/>» foi emitido por:</translation>
 <translation id="6845383723252244143">Seleccionar cartafol</translation>
@@ -2503,7 +2503,7 @@ Se vostede pensa que este comportamento non é o desexábel, por exemplo, se vos
 <translation id="8590375307970699841">Configurar actualizacións automáticas</translation>
 <translation id="859285277496340001">O certificado non especifica un mecanismo para comprobar se foi revogado.</translation>
 <translation id="8593048479750897716">Xestión do servizo mobil de datos</translation>
-<translation id="8595062045771121608">Neste caso, o certificado do servidor ou un certificado de entidade emisora de certificados intermediaria presentado ao seu navegador está asinado cun algoritmo moi feble (como RSA-MD2). Estudos recentes feitos por expertos informáticos demostraron que o algoritmo de sinatura é menos seguro do que se pensaba ata agora e que actualmente apenas é utilizado en sitos web de confianza. É probábel que este certificado teña sido falsificado, polo que no debe continuar cara o punto seguinte.</translation>
+<translation id="8595062045771121608">Neste caso, o certificado do servidor ou un certificado de entidade emisora de certificados (EA) intermediaria presentado ao seu navegador está asinado cun algoritmo moi feble (como RSA-MD2). Estudos recentes feitos por expertos informáticos demostraron que o algoritmo de sinatura é menos seguro do que se pensaba ata agora e que actualmente apenas é utilizado en sitos web de confianza. É probábel que este certificado teña sido falsificado, polo que no debe continuar cara o punto seguinte.</translation>
 <translation id="8596540852772265699">Ficheiros personalizados</translation>
 <translation id="8601206103050338563">Autenticación de cliente WWW TLS</translation>
 <translation id="8602184400052594090">Falta o ficheiro de manifesto ou non é lexíbel.</translation>
@@ -2566,7 +2566,7 @@ Se vostede pensa que este comportamento non é o desexábel, por exemplo, se vos
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> permite realizar buscas no web usando a caixa multifuncional. Seleccione o motor de busca que desexe empregar:</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8813873272012220470">Permite una comprobación en segundo plano que lle avisará cando se detecte una incompatibilidade no software (isto é, módulos de terceiros que poden rachar o navegador).</translation>
+<translation id="8813873272012220470">Permite una comprobación en segundo plano que lle avisará cando se detecte una incompatibilidade no software (isto é, módulos de terceiros que poden quebrar o navegador).</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="881799181680267069">Agochar outros</translation>
 <translation id="8820817407110198400">Marcadores</translation>
@@ -2639,7 +2639,7 @@ Se vostede pensa que este comportamento non é o desexábel, por exemplo, se vos
 <translation id="8977410484919641907">Sincronizado...</translation>
 <translation id="8978540966440585844">Na&amp;vegar</translation>
 <translation id="8986267729801483565">Localización da descarga:</translation>
-<translation id="8986494364107987395">Enviar automaticamente estatísticas de uso e informes de erros a Google</translation>
+<translation id="8986494364107987395">Enviar automaticamente estatísticas de uso e informes de quebras a Google</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION"/> [<ph name="COUNTRY"/>]</translation>
 <translation id="8990467782371788738">Obter máis aplicativos</translation>
 <translation id="899403249577094719">URL base de certificado de Netscape</translation>
@@ -2844,11 +2844,11 @@ Se vostede pensa que este comportamento non é o desexábel, por exemplo, se vos
 <translation id="2799223571221894425">Volver a iniciar</translation>
 <translation id="2900139581179749587">Voz non recoñecida.</translation>
 <translation id="3174168572213147020">Illa</translation>
-<translation id="3220586366024592812">O proceso do conectador <ph name="CLOUD_PRINT_NAME"/> estragouse. Reiniciar?</translation>
+<translation id="3220586366024592812">O proceso do conectador <ph name="CLOUD_PRINT_NAME"/> quebrou. Reiniciar?</translation>
 <translation id="3423858849633684918">Volva a iniciar <ph name="PRODUCT_NAME"/></translation>
 <translation id="354211537509721945">As actualizacións foron desactivadas polo administrador</translation>
 <translation id="3753317529742723206">Quere empregar <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) para manexar as ligazóns <ph name="PROTOCOL"/>:// no canto de <ph name="REPLACED_HANDLER_TITLE"/> a partir de agora?</translation>
-<translation id="3759461132968374835">Recentemente non se informou de quebras. As quebras que ocorres cando está desactivado o informe de quebras non aparecerán aquí.</translation>
+<translation id="3759461132968374835">Recentemente non se informou de quebras. As quebras que ocorren cando está desactivado o informe de quebras non aparecerán aquí.</translation>
 <translation id="3824846808674205670">Este ficheiro semella ser malicioso. Seguro que quere continuar?</translation>
 <translation id="3885155851504623709">Parroquia</translation>
 <translation id="4051923669149193910">Xa se está a empregar <ph name="HANDLER_TITLE"/> para manexar as ligazóns <ph name="PROTOCOL"/>://.</translation>
@@ -2931,7 +2931,7 @@ Se vostede pensa que este comportamento non é o desexábel, por exemplo, se vos
 <translation id="2956763290572484660"><ph name="COOKIES"/> cookies</translation>
 <translation id="3084771660770137092">Unha de dúas, Chrome quedou sen memoria ou, por calquera outra razón, foi rematado o proceso para a páxina web. Para continuar, volva a cargar a páxina ou vaia a outra.</translation>
 <translation id="3108967419958202225">Escolla...</translation>
-<translation id="3776667127601582921">Neste caso, o certificado do servidor ou un certificado de entidade emisora de certificados intermediaria presentado ao seu navegador non é válido. Isto pode significar que o certificado é incorrecto, conten campos non válidos, ou non é compatíbel.</translation>
+<translation id="3776667127601582921">Neste caso, o certificado do servidor ou un certificado de entidade emisora de certificados (EA) intermediaria presentado ao seu navegador non é válido. Isto pode significar que o certificado é incorrecto, conten campos non válidos, ou non é compatíbel.</translation>
 <translation id="428771275901304970">Menos de 1 MB dispoñíbel</translation>
 <translation id="4589094618264613095">Fase 2 autenticación:</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
@@ -3056,4 +3056,60 @@ Se vostede pensa que este comportamento non é o desexábel, por exemplo, se vos
 <translation id="8205333955675906842">Tipo de letra Sans-serif</translation>
 <translation id="838870586332499308">Activar a itinerancia de datos</translation>
 <translation id="8828781037212165374">Activar estas características...</translation>
+<translation id="10614374240317010">Nunca gardado</translation>
+<translation id="1436277043903132741">A tarxeta SIM está bloquedad, introduza o PIN</translation>
+<translation id="1478632774608054702">Executar PPAPI Flash no proceso de renderización</translation>
+<translation id="1492817554256909552">Nome do punto de acceso:</translation>
+<translation id="152234381334907219">Nunca gardado</translation>
+<translation id="1548132948283577726">Os sitios dos que nunca gardou os contrasinais aparecerán aquí.</translation>
+<translation id="1765313842989969521">(esta extensión é xestionada e non é posíbel desintalala ou desactivala)</translation>
+<translation id="1801298019027379214">PIN incorrecto, tenteo de novo. Intentos restantes: <ph name="TRIES_COUNT"/></translation>
+<translation id="2296019197782308739">Método EAP</translation>
+<translation id="2412835451908901523">Introduza a chave PUK (PIN Unlocking Key) de 8 díxitos fornecida por <ph name="CARRIER_ID"/>.</translation>
+<translation id="2485056306054380289">Certificado de EA do servidor:</translation>
+<translation id="2655386581175833247">Certificardo de usuario</translation>
+<translation id="2738899061413302924">Unirse a rede WiFi</translation>
+<translation id="3222066309010235055">Prerenderizado: <ph name="PRERENDER_CONTENTS_NAME"/></translation>
+<translation id="3320859581025497771">o seu provedor</translation>
+<translation id="3445830502289589282">Fase 2 autenticación:</translation>
+<translation id="3614837889828516995">Imprimir nun PDF</translation>
+<translation id="3638865692466101147">Vista previa de impresión - <ph name="PREVIEW_TAB_TITLE"/></translation>
+<translation id="3754634516926225076">PIN incorrecto, tenteo de novo.</translation>
+<translation id="3790909017043401679">Introduza o PIN da tarxeta SIM</translation>
+<translation id="3887875461425980041">Se está a usarse a versión de Flash PPAPI executala en cada proceso de renderización e non nun complemento de proceso adicado.</translation>
+<translation id="3991936620356087075">Vostede introduciu unha chave PUK (PIN Unlocking Key) incorrecta demasiadas veces. A tarxeta SIM quedou desactivada permanentemente.</translation>
+<translation id="4094105377635924481">Engadir a agrupación ao menú de contexto da lapela</translation>
+<translation id="4287167099933143704">Introduza a chave PUK (PIN Unlocking Key)</translation>
+<translation id="4520722934040288962">Seleccionar por apertura</translation>
+<translation id="4767609879663389331">Tirar unha foto...</translation>
+<translation id="5078796286268621944">PIN incorrecto</translation>
+<translation id="529172024324796256">Nome de usuario:</translation>
+<translation id="5376120287135475614">Cambiar de xanela</translation>
+<translation id="5613695965848159202">Identidade anónima:</translation>
+<translation id="5661272705528507004">Esta tarxeta SIM está desactivada e non pode ser usada. Póñase en contacto co seu provedor de servizos para que lla substitúa.</translation>
+<translation id="5871289088729111342">Inscribirse para a xestión da empresa</translation>
+<translation id="5976690834266782200">Engadir elementos ao menú de contexto para agrupacións de lapelas</translation>
+<translation id="6233791676228700266">Se vostede introduce unha chave PUK (PIN Unlocking Key) incorrecta a súa tarxeta SIM quedará bloqueada permanentemente. Intentos restantes: <ph name="TRIES_COUNT"/></translation>
+<translation id="6359806961507272919">SMS desde <ph name="PHONE_NUMBER"/></translation>
+<translation id="661719348160586794">Os contrasinais gardados aparecerán aquí.</translation>
+<translation id="6635491740861629599">Seleccionar por dominio</translation>
+<translation id="6748105842970712833">Tarxeta SIM desactivada</translation>
+<translation id="6892450194319317066">Seleccionar por apertura</translation>
+<translation id="7175353351958621980">Cargado desde:</translation>
+<translation id="7652346794160415516">Cancelar a inscrición</translation>
+<translation id="8041140688818013446">Semella que o servidor que aloxa a páxina web está sobrecargado ou atopou un erro. Para non provocar
+        demasiado tráfico e empeorar a situación,
+        <ph name="PRODUCT_NAME"/> detivéronse
+        temporalmente as peticións ao servidor.
+        <ph name="LINE_BREAK"/>
+        Se pensa que este comportamento non é o desexábel, por exemplo porque está depurando o seu sitio web,
+        visite a páxina <ph name="NET_INTERNALS_PAGE"/>
+        onde pode atopar máis información ou desactivar esta característica.</translation>
+<translation id="8297550481859252616"><ph name="APP_NAME"/> quebrou.Prema nesta mensaxe para reiniciar o aplicativo.</translation>
+<translation id="8426519927982004547">HTTPS/SSL</translation>
+<translation id="8502803898357295528">O seu contrasinal cambiou</translation>
+<translation id="8530339740589765688">Seleccionar por dominio</translation>
+<translation id="8555158933959651891"><ph name="APP_NAME"/> quebrou.Prema nesta mensaxe para volver cargar a extensión.</translation>
+<translation id="8656768832129462377">Non comprobar</translation>
+<translation id="89217462949994770">Introduciu un PIN incorrecto demasiadas veces. Póñase en contacto con <ph name="CARRIER_ID"/> para obter un novo PUK (PIN Unlocking Key) de 8 díxitos.</translation>
 </translationbundle>

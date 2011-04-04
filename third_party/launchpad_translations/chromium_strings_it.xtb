@@ -8,4 +8,30 @@
 <translation id="1221340462641866827">Chromium OS non supporta l'avvio di applicazioni esterne usando collegamenti <ph name="SCHEME"/>. Il collegamento richiesto è <ph name="PROTOLINK"/>.</translation>
 <translation id="1293235220023151515">È stata trovata nel sistema un'installazione di Chronium in conflitto. Disinstallarla e riprovare di nuovo l'installazione.</translation>
 <translation id="1708666629004767631">È disponibile una nuova e più sicura versione di Chromium.</translation>
+<translation id="1929939181775079593">Chromium non risponde. Riavviare ora?</translation>
+<translation id="1967743265616885482">Un modulo con lo stesso nome è in conflitto con Chromium.</translation>
+<translation id="205900032229966545">Si è tentato di raggiungere &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il server ha presentato un certificato scaduto. Non ci sono informazioni per indicare se quel certificato è stato compromesso dalla sua scadenza. Ciò significa che Chromium non può garantire che si sta comunicando con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e non con un aggressore. Non si dovrebbe procedere.</translation>
+<translation id="2407806170074302369">Informazioni sulla frame di Chromium...</translation>
+<translation id="2485422356828889247">Disinstalla</translation>
+<translation id="2558235863893655150">Si desidera che Chromium salvi la password?</translation>
+<translation id="2572494885440352020">Helper di Chronium</translation>
+<translation id="2632329825580776666">Il file contenente le preferenze è danneggiato o non valido.\n\nChromium non è in grado di recuperare le impostazioni.</translation>
+<translation id="263863604136125912">Avvia Chromium</translation>
+<translation id="2648074677641340862">Si è verificato un errore del sistema operativo durante l'installazione. Scaricare Chromium nuovamente.</translation>
+<translation id="2682584270762546522">Si è cercato di raggiungere &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il server ha presentato un certificato scaduto. Nessuna informazione è disponibile per indicare se quel certificato è stato compromesso dalla sua scadenza. Ciò significa che Chromium non può garantire che si sta comunicando con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e non con un aggressore. Occorrerebbe assicurarsi che l'orologio ed il fuso orario del pc siano impostati correttamente e, nel caso, correggerli e caricare la pagina di nuovo. Se i dati sono corretti, non si dovrebbe procedere.</translation>
+<translation id="2712549016134575851">È stato rilevato un conflitto con un'altra applicazione già installata.</translation>
+<translation id="275588974610408078">La segnalazione di crash non è disponibile su Chronium.</translation>
+<translation id="2770231113462710648">Cambia il browser predefinito in:</translation>
+<translation id="2843244238218937196">Render di Chronium</translation>
+<translation id="2927042866129133279">Argomenti non validi. Chromium Frame non può essere installato nella modalità &quot;ready&quot; senza installare anche Chromium.</translation>
+<translation id="2966088006374919794">Chromium necessita di avviare una applicazione esterna per usare link <ph name="SCHEME"/>. Il link richiesto è <ph name="PROTOLINK"/>.</translation>
+<translation id="3014684866565908571">Utilità di Chromium</translation>
+<translation id="3069161343438701711">Worker di Chronium</translation>
+<translation id="309634601461115233">Uscire da Chromium OS e rientrare per applicare questo cambiamento.</translation>
+<translation id="3096463977885168586">Copyright © 2006-2011 Gli autori di Chromium. Tutti i diritti riservati.</translation>
+<translation id="3103660991484857065">L'installer ha fallito la decompressione dell'archivio. Scaricare Chromium di nuovo.</translation>
+<translation id="3509308970982693815">Chiudere tutte le finestre di Chronium e riprovare.</translation>
+<translation id="3555616473548901994">Disintallazione completata.</translation>
+<translation id="3838208658251026018">Chromium sta ora importando le seguenti informazioni da <ph name="BROWSER_COMPONENT"/>:</translation>
+<translation id="4179848566211676653">Esci da Chronium</translation>
 </translationbundle>

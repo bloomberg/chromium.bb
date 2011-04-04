@@ -212,7 +212,7 @@
 <translation id="166278006618318542">Hartzailearen gako publikoaren algoritmoa</translation>
 <translation id="1664314758578115406">Gehitu orria...</translation>
 <translation id="1664712100580477121">Seguru al zaude irudia hurrengo gailuan grabatu nahi duzula:</translation>
-<translation id="1665770420914915777">Erabili fitxa berriaren orria</translation>
+<translation id="1665770420914915777">Erabili fitxa-orri berria</translation>
 <translation id="1666788816626221136">Beste kategorietan ondo egokitzen ez diren ziurtagiriak dituzu fitxategian:</translation>
 <translation id="1674989413181946727">Ordenagailu osoaren SSL ezarpenak:</translation>
 <translation id="1676388805288306495">Aldatu webguneentzako letra-tipo eta hizkuntza lehenetsiak.</translation>
@@ -1997,7 +1997,7 @@
 <translation id="7136984461011502314">Ongi etorri <ph name="PRODUCT_NAME"/>-(e)ra</translation>
 <translation id="7138678301420049075">Bestelakoa</translation>
 <translation id="7144878232160441200">Saiatu berriro</translation>
-<translation id="7146678227226703416">Bisitatu &lt;a&gt; Chrome Web Store&lt;/a&gt; Fitxa Berria orriaren alde honetan aplikazio eta joko bikainak gehitzeko.</translation>
+<translation id="7146678227226703416">Bisitatu &lt;a&gt; Chrome Web Store&lt;/a&gt; fitxa-orri berriaren alde honetan aplikazio eta joko bikainak gehitzeko.</translation>
 <translation id="7148804936871729015"><ph name="URL"/> gunerako zerbitzariak denbora gehiegi hartu du erantzuteko.  Agian gehiegizko karga du.</translation>
 <translation id="7150146631451105528"><ph name="DATE"/></translation>
 <translation id="7150459935934478649">Horrek pozten ez bazaitu: egin klik hemen nabigatzailea itxi, saioa amaitu eta leheneratzeko.</translation>
@@ -2990,7 +2990,7 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="4393664266930911253">Gaitu ezaugarri hauek...</translation>
 <translation id="4480627574828695486">Deskonektatu kontu hau...</translation>
 <translation id="4539401194496451708"><ph name="USER_EMAIL_ADDRESS"/> Chromium profila erabiltzen. Azken sinkronizazioa: <ph name="LAST_SYNC_TIME"/></translation>
-<translation id="4665674675433053715">Fitxa berriaren orri esperimentala</translation>
+<translation id="4665674675433053715">Fitxa-orri berri esperimentala</translation>
 <translation id="5098647635849512368">Ezin izan da aurkitu paketatu nahi den direktorioaren bide-izen absolutua.</translation>
 <translation id="5105855035535475848">Lotu fitxak</translation>
 <translation id="5453029940327926427">Itxi fitxak</translation>
@@ -3014,4 +3014,88 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="8205333955675906842">Sans-Serif letra-tipoa</translation>
 <translation id="8870318296973696995">Orri nagusia</translation>
 <translation id="9076523132036239772">Zure posta-helbidea edo pasahitza ezin izan dira egiaztatu. Saiatu sare batera konektatzen lehenengo.</translation>
+<translation id="10614374240317010">Inoiz gorde gabea</translation>
+<translation id="1436277043903132741">SIM txartela blokeatuta dago, mesedez sartu PINa.</translation>
+<translation id="1478632774608054702">Exekutatu PPAPI Flash errendatze-prozesuan</translation>
+<translation id="1492817554256909552">Sarbide-puntuaren izena:</translation>
+<translation id="152234381334907219">Inoiz gorde gabea</translation>
+<translation id="1548132948283577726">Pasahitzak inoiz gordetzen ez dituzten guneak hemen agertuko dira.</translation>
+<translation id="1765313842989969521">(hedapen hau kudeatua da eta ezin da desinstalatu edo desgaitu)</translation>
+<translation id="1801298019027379214">PIN okerra, saiatu berriro. Geratzen diren saialdiak: <ph name="TRIES_COUNT"/></translation>
+<translation id="2045969484888636535">Jarraitu cookie-ak blokeatzen</translation>
+<translation id="2296019197782308739">EAP metodoa:</translation>
+<translation id="2412835451908901523">Sartu <ph name="CARRIER_ID"/>-(e)k PINa desblokeatzeko eman dizun 8 digituko gakoa.</translation>
+<translation id="2485056306054380289">Zerbitzariaren CA ziurtagiria:</translation>
+<translation id="2655386581175833247">Erabiltzaile-ziurtagiria:</translation>
+<translation id="2738899061413302924">Bat egin wifi sarearekin</translation>
+<translation id="3222066309010235055">Aurre-errendatzea: <ph name="PRERENDER_CONTENTS_NAME"/></translation>
+<translation id="3320859581025497771">zure garraiolaria</translation>
+<translation id="3347210705307733273">Google kontu bat erabil dezakezu zure laster-markak eta beste ezarpen batzuk sinkronizatzeko eta Chrome Web Store-ra sartzeko.</translation>
+<translation id="3445830502289589282">2. faseko autentifikazioa:</translation>
+<translation id="3614837889828516995">Inprimatu PDFra</translation>
+<translation id="3638865692466101147">Inprimatzeko aurrebista - <ph name="PREVIEW_TAB_TITLE"/></translation>
+<translation id="3754634516926225076">PIN okerra, saiatu berriro.</translation>
+<translation id="3790909017043401679">Sartu SIM txartelaren PINa</translation>
+<translation id="3887875461425980041">Flash-en PPAPI bertsioa indarrean badago, exekutatu hura errendatze-prozesu bakoitzean, ez plugin-prozesu dedikatu batean.</translation>
+<translation id="3991936620356087075">PINa desblokeatzeko gako okerra gehiegitan sartu duzu. Zure SIM txartela modu iraunkorrean desgaituko da.</translation>
+<translation id="4094105377635924481">Gehitu fitxen taldekatzea testuinguru-menuari</translation>
+<translation id="4287167099933143704">Sartu PINa desblokeatzeko gakoa</translation>
+<translation id="4419409365248380979">Onartu beti <ph name="HOST"/>-(e)k cookie-ak ezar ditzan</translation>
+<translation id="4520722934040288962">Hautatu irekigailu bidez</translation>
+<translation id="4532822216683966758">DNS ziurtagirien jatorria egiaztatzeko aukera gaituta daukazu. Honen ondorioz, Google-k zure informazio pribatua jaso dezake.</translation>
+<translation id="4767609879663389331">Hartu argazkia...</translation>
+<translation id="505077122661873132">Saiatu DNSen aurre-eskuratzea desgaitzen hurrengo urratsak jarraituz:
+        Joan
+        <ph name="BEGIN_BOLD"/>
+        Wrench menu &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        <ph name="END_BOLD"/>
+        eta kendu hautapena &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot; aukerari.</translation>
+<translation id="5078796286268621944">PIN okerra</translation>
+<translation id="529172024324796256">Erabiltzaile-izena:</translation>
+<translation id="5359419173856026110">Orri baten uneko marko-abiadura erakusten du, markoak segundoko abiaduran, hardware bidezko azelerazioa aktibatuta dagoenean.</translation>
+<translation id="5376120287135475614">Txandakatu leihoak</translation>
+<translation id="5412713837047574330">Ezin da <ph name="HOST_NAME"/> ostalariko aplikaziora iritsi sareko konexioa erorita dagoelako. Konexioa berrezartzean kargatuko da orria. &lt;br&gt;</translation>
+<translation id="5512074755152723588">Existitzen den fitxa baten URLa omnibox-en idazten bada, fitxa birfokatuko da, informazioa uneko fitxan kargatu ordez.</translation>
+<translation id="5613695965848159202">Nortasun anonimoa:</translation>
+<translation id="5661272705528507004">SIM txartela desgaituta dago eta ezin da erabili. Jarri harremanetan zure zerbitzu-hornitzailearekin ordezko bat eskuratzeko.</translation>
+<translation id="5871289088729111342">Eman izena enpresa-kudeaketarako</translation>
+<translation id="5976690834266782200">Gehitu elementuak fitxen testuinguru-menuari fitxak taldekatzeko.</translation>
+<translation id="6233791676228700266">PINa desblokeatzeko gako okerra sartzen baduzu, zure SIM txartela modu iraunkorrean desgaituko da. Geratzen diren saialdiak: <ph name="TRIES_COUNT"/></translation>
+<translation id="6359806961507272919">SMSa <ph name="PHONE_NUMBER"/> telefono-zenbakitik</translation>
+<translation id="661719348160586794">Gorde dituzun pasahitzak hemen agertuko dira.</translation>
+<translation id="6635491740861629599">Hautatu domeinu bidez</translation>
+<translation id="6748105842970712833">SIM txartela desgaitua</translation>
+<translation id="6892450194319317066">Hautatu irekigailu bidez</translation>
+<translation id="7175353351958621980">Hemendik kargatua:</translation>
+<translation id="7652346794160415516">Utzi izena ematea</translation>
+<translation id="7747704580171477003">Fitxa-orri berriaren garapen-faseko berdiseinua gaitzen du</translation>
+<translation id="8041140688818013446">Beharbada web-orria ostatatzen duen zerbitzariak gainkarga izan du edo errore bat aurkitu du. Trafiko gehiegi sortu
+        eta egoera okerragoa izan dadin saihesteko,
+        <ph name="PRODUCT_NAME"/>-(e)k zerbitzariari
+        eskaerak egitea eten du behin-behinean.
+        <ph name="LINE_BREAK"/>
+        Portaera hau desiragarria ez dela uste baduzu, adibidez zure webgunea arazten ari bazara,
+        bisitatu <ph name="NET_INTERNALS_PAGE"/> orria,
+        eta han informazio gehiago aurkituko duzu eta ezaugarri hau desgaitu ahal izango duzu.</translation>
+<translation id="8297550481859252616"><ph name="APP_NAME"/> kraskatu egin da. Egin klik baloi honetan aplikazioa berrabiarazteko.</translation>
+<translation id="838870586332499308">Gaitu datu-ibiltaritza</translation>
+<translation id="8426519927982004547">HTTPS/SSL</translation>
+<translation id="8502803898357295528">Zure pasahitza aldatu egin da</translation>
+<translation id="8530339740589765688">Hautatu domeinu bidez</translation>
+<translation id="8555158933959651891"><ph name="APP_NAME"/> kraskatu egin da. Egin klik baloi honetan hedapena birkargatzeko.</translation>
+<translation id="8652487083013326477">orri-tartearen aukera-botoia</translation>
+<translation id="8656768832129462377">Ez egiaztatu</translation>
+<translation id="8828781037212165374">Gaitu ezaugarri hauek...</translation>
+<translation id="8844709414456935411"><ph name="PRODUCT_NAME"/>-(e)k
+        detektatu du ESET produktu bat konexio seguruak mozten ari dela.
+        Hau normalean ez da segurtasun-arazoa, ESET softwarea ordenagailuan bertan
+        baitago. Hala ere, <ph name="PRODUCT_NAME"/>-(e)n
+        konexio seguruen zenbait ezaugarriekiko
+        tolerantzia ezagatik, ESET produktuen konfigurazioa aldatu behar da mozketa hau
+        egin ez dezan. Egin klik &quot;Ikasi gehiago&quot; estekan argibide gehiago jasotzeko.</translation>
+<translation id="89217462949994770">PIN okerra gehiegitan sartu duzu. Jarri harremanetan <ph name="CARRIER_ID"/>-(r)ekin PINa desblokeatzeko 8 digituko gako berria eskuratzeko.</translation>
+<translation id="976526967778596630">Ezin da <ph name="HOST_NAME"/> ostalariko web-orrira iritsi sareko konexioa erorita dagoelako. Konexioa berrezartzean kargatuko da orria. &lt;br&gt;</translation>
 </translationbundle>
