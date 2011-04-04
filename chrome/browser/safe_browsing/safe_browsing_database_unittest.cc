@@ -1209,12 +1209,20 @@ TEST_F(SafeBrowsingDatabaseTest, CsdWhitelist) {
   const char kGood1Url1[] = "www.good1.com/a/b.html";
   const char kGood1Url2[] = "www.good1.com/b/";
 
+  const char kGood2Host[] = "www.good2.com/";
+  const char kGood2Url1[] = "www.good2.com/c";  // Should match '/c/bla'.
+
   SBChunkList chunks;
   SBChunk chunk;
-  // Add a simple chunk with one hostkey for the csd whitelist.
+  // Add two simple chunks to the csd whitelist.
   InsertAddChunkHost2FullHashes(&chunk, 1, kGood1Host,
                                 kGood1Url1, kGood1Url2);
   chunks.push_back(chunk);
+
+  chunk.hosts.clear();
+  InsertAddChunkHostFullHashes(&chunk, 2, kGood2Host, kGood2Url1);
+  chunks.push_back(chunk);
+
   std::vector<SBListChunkRanges> lists;
   EXPECT_TRUE(database_->UpdateStarted(&lists));
   database_->InsertChunks(safe_browsing_util::kCsdWhiteList, chunks);
@@ -1236,6 +1244,13 @@ TEST_F(SafeBrowsingDatabaseTest, CsdWhitelist) {
   EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
       GURL(std::string("https://") + kGood1Url2 + "/c.html")));
 
+  EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
+      GURL(std::string("http://") + kGood2Url1 + "/c")));
+  EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
+      GURL(std::string("http://") + kGood2Url1 + "/c?bla")));
+  EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
+      GURL(std::string("http://") + kGood2Url1 + "/c/bla")));
+
   EXPECT_FALSE(database_->ContainsCsdWhitelistedUrl(
       GURL(std::string("http://www.google.com/"))));
 
@@ -1243,7 +1258,7 @@ TEST_F(SafeBrowsingDatabaseTest, CsdWhitelist) {
   chunks.clear();
   lists.clear();
   SBChunk chunk2;
-  InsertAddChunkHostFullHashes(&chunk2, 2, "sb-ssl.google.com/",
+  InsertAddChunkHostFullHashes(&chunk2, 3, "sb-ssl.google.com/",
                                "sb-ssl.google.com/safebrowsing/csd/killswitch");
   chunks.push_back(chunk2);
 
@@ -1262,7 +1277,7 @@ TEST_F(SafeBrowsingDatabaseTest, CsdWhitelist) {
   chunks.clear();
   lists.clear();
   SBChunk sub_chunk;
-  InsertSubChunkHostFullHash(&sub_chunk, 1, 2,
+  InsertSubChunkHostFullHash(&sub_chunk, 1, 3,
                              "sb-ssl.google.com/",
                              "sb-ssl.google.com/safebrowsing/csd/killswitch");
   chunks.push_back(sub_chunk);
@@ -1273,6 +1288,8 @@ TEST_F(SafeBrowsingDatabaseTest, CsdWhitelist) {
 
   EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
       GURL(std::string("https://") + kGood1Url2 + "/c.html")));
+  EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
+      GURL(std::string("https://") + kGood2Url1 + "/c/bla")));
   EXPECT_FALSE(database_->ContainsCsdWhitelistedUrl(
       GURL(std::string("http://www.google.com/"))));
   EXPECT_FALSE(database_->ContainsCsdWhitelistedUrl(

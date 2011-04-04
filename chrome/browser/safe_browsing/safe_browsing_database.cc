@@ -76,13 +76,18 @@ void GetDownloadUrlPrefix(const GURL& url, SBPrefix* prefix) {
   *prefix = full_hash.prefix;
 }
 
-// Generate the set of full hashes to check for |url|.
+// Generate the set of full hashes to check for |url|.  If
+// |include_whitelist_hashes| is true we will generate additional path-prefixes
+// to match against the csd whitelist.  E.g., if the path-prefix /foo is on the
+// whitelist it should also match /foo/bar which is not the case for all the
+// other lists.
 // TODO(shess): This function is almost the same as
 // |CompareFullHashes()| in safe_browsing_util.cc, except that code
 // does an early exit on match.  Since match should be the infrequent
 // case (phishing or malware found), consider combining this function
 // with that one.
 void BrowseFullHashesToCheck(const GURL& url,
+                             bool include_whitelist_hashes,
                              std::vector<SBFullHash>* full_hashes) {
   std::vector<std::string> hosts;
   if (url.HostIsIPAddress()) {
@@ -96,10 +101,22 @@ void BrowseFullHashesToCheck(const GURL& url,
 
   for (size_t i = 0; i < hosts.size(); ++i) {
     for (size_t j = 0; j < paths.size(); ++j) {
+      const std::string& path = paths[j];
       SBFullHash full_hash;
-      base::SHA256HashString(hosts[i] + paths[j], &full_hash,
+      base::SHA256HashString(hosts[i] + path, &full_hash,
                              sizeof(full_hash));
       full_hashes->push_back(full_hash);
+
+      // We may have /foo as path-prefix in the whitelist which should
+      // also match with /foo/bar and /foo?bar.  Hence, for every path
+      // that ends in '/' we also add the path without the slash.
+      if (include_whitelist_hashes &&
+          path.size() > 1 &&
+          path[path.size() - 1] == '/') {
+        base::SHA256HashString(hosts[i] + path.substr(0, path.size() - 1),
+                               &full_hash, sizeof(full_hash));
+        full_hashes->push_back(full_hash);
+      }
     }
   }
 }
@@ -573,7 +590,7 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
   full_hits->clear();
 
   std::vector<SBFullHash> full_hashes;
-  BrowseFullHashesToCheck(url, &full_hashes);
+  BrowseFullHashesToCheck(url, false, &full_hashes);
   if (full_hashes.empty())
     return false;
 
@@ -692,7 +709,7 @@ bool SafeBrowsingDatabaseNew::ContainsCsdWhitelistedUrl(const GURL& url) {
     return true;
 
   std::vector<SBFullHash> full_hashes;
-  BrowseFullHashesToCheck(url, &full_hashes);
+  BrowseFullHashesToCheck(url, true, &full_hashes);
   for (std::vector<SBFullHash>::const_iterator it = full_hashes.begin();
        it != full_hashes.end(); ++it) {
     if (std::binary_search(csd_whitelist_.begin(), csd_whitelist_.end(), *it))
