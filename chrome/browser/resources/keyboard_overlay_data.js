@@ -23566,7 +23566,7 @@ var keyboardOverlayData = {
     "esc<>SHIFT": "keyboardOverlayTaskManager",
     "f<>ALT<>CTRL": "keyboardOverlayFullScreen",
     "f<>CTRL": "keyboardOverlayFindText",
-    "fullscreen<>CTRL": "keyboardOverlayTakeScreenshot",
+    "full screen<>CTRL": "keyboardOverlayTakeScreenshot",
     "g<>CTRL": "keyboardOverlayFindAgain",
     "g<>CTRL<>SHIFT": "keyboardOverlayFindPrevious",
     "h<>CTRL": "keyboardOverlayHistory",
