@@ -1,13 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/event_executor_win.h"
+#include "remoting/host/event_executor.h"
 
 #include <windows.h>
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "base/stl_util-inl.h"
 #include "remoting/host/capturer.h"
 #include "remoting/proto/event.pb.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -17,13 +17,31 @@ namespace remoting {
 using protocol::MouseEvent;
 using protocol::KeyEvent;
 
-EventExecutorWin::EventExecutorWin(
-    MessageLoopForUI* message_loop, Capturer* capturer)
+namespace {
+
+// A class to generate events on Windows.
+class EventExecutorWin : public EventExecutor {
+ public:
+  EventExecutorWin(MessageLoopForUI* message_loop, Capturer* capturer);
+  virtual ~EventExecutorWin() {}
+
+  virtual void InjectKeyEvent(const KeyEvent* event, Task* done) OVERRIDE;
+  virtual void InjectMouseEvent(const MouseEvent* event, Task* done) OVERRIDE;
+
+ private:
+  void HandleKey(const KeyEvent* event);
+  void HandleMouse(const MouseEvent* event);
+
+  MessageLoopForUI* message_loop_;
+  Capturer* capturer_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventExecutorWin);
+};
+
+EventExecutorWin::EventExecutorWin(MessageLoopForUI* message_loop,
+                                   Capturer* capturer)
     : message_loop_(message_loop),
       capturer_(capturer) {
-}
-
-EventExecutorWin::~EventExecutorWin() {
 }
 
 void EventExecutorWin::InjectKeyEvent(const KeyEvent* event, Task* done) {
@@ -80,11 +98,6 @@ void EventExecutorWin::HandleKey(const KeyEvent* event) {
   }
 
   SendInput(1, &input, sizeof(INPUT));
-}
-
-protocol::InputStub* CreateEventExecutor(MessageLoopForUI* message_loop,
-                                         Capturer* capturer) {
-  return new EventExecutorWin(message_loop, capturer);
 }
 
 void EventExecutorWin::HandleMouse(const MouseEvent* event) {
@@ -153,4 +166,14 @@ void EventExecutorWin::HandleMouse(const MouseEvent* event) {
   }
 }
 
+}  // namespace
+
+EventExecutor* EventExecutor::Create(MessageLoopForUI* message_loop,
+                                     Capturer* capturer) {
+  return new EventExecutorWin(message_loop, capturer);
+}
+
 }  // namespace remoting
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::EventExecutorWin);
+

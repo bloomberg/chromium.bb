@@ -10,7 +10,6 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/in_memory_host_config.h"
-#include "remoting/host/user_authenticator_fake.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/session_config.h"
@@ -23,7 +22,6 @@ using ::remoting::protocol::MockClientStub;
 using ::remoting::protocol::MockConnectionToClient;
 using ::remoting::protocol::MockConnectionToClientEventHandler;
 using ::remoting::protocol::MockHostStub;
-using ::remoting::protocol::MockInputStub;
 using ::remoting::protocol::MockSession;
 using ::remoting::protocol::MockVideoStub;
 using ::remoting::protocol::SessionConfig;
@@ -42,10 +40,6 @@ using testing::Sequence;
 namespace remoting {
 
 namespace {
-
-UserAuthenticator* MakeUserAuthenticator() {
-  return new UserAuthenticatorFake();
-}
 
 void PostQuitTask(MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
@@ -90,22 +84,19 @@ class ChromotingHostTest : public testing::Test {
     Capturer* capturer = new CapturerFake();
     host_stub_ = new MockHostStub();
     host_stub2_ = new MockHostStub();
-    input_stub_ = new MockInputStub();
-    input_stub2_ = new MockInputStub();
+    event_executor_ = new MockEventExecutor();
+    event_executor2_ = new MockEventExecutor();
     curtain_ = new MockCurtain();
     DesktopEnvironment* desktop =
-        new DesktopEnvironment(capturer, input_stub_, curtain_);
+        new DesktopEnvironment(capturer, event_executor_, curtain_);
     host_ = ChromotingHost::Create(&context_, config_, desktop);
-    credentials_good_.set_type(protocol::PASSWORD);
-    credentials_good_.set_username("user");
-    credentials_good_.set_credential("password");
-    credentials_bad_.set_type(protocol::PASSWORD);
-    credentials_bad_.set_username(UserAuthenticatorFake::fail_username());
-    credentials_bad_.set_credential(UserAuthenticatorFake::fail_password());
+    credentials_.set_type(protocol::PASSWORD);
+    credentials_.set_username("user");
+    credentials_.set_credential("password");
     connection_ = new MockConnectionToClient(
-        &message_loop_, &handler_, host_stub_, input_stub_);
+        &message_loop_, &handler_, host_stub_, event_executor_);
     connection2_ = new MockConnectionToClient(
-        &message_loop_, &handler_, host_stub2_, input_stub2_);
+        &message_loop_, &handler_, host_stub2_, event_executor2_);
     session_ = new MockSession();
     session2_ = new MockSession();
     session_config_.reset(SessionConfig::CreateDefault());
@@ -151,20 +142,20 @@ class ChromotingHostTest : public testing::Test {
         .Times(AnyNumber());
   }
 
-  virtual void TearDown() {
-  }
-
   // Helper method to pretend a client is connected to ChromotingHost.
   void SimulateClientConnection(int connection_index, bool authenticate) {
     scoped_refptr<MockConnectionToClient> connection =
         (connection_index == 0) ? connection_ : connection2_;
-    protocol::LocalLoginCredentials& credentials =
-        authenticate ? credentials_good_ : credentials_bad_;
+
+    MockUserAuthenticator *user_authenticator = new MockUserAuthenticator;
+    EXPECT_CALL(*user_authenticator, Authenticate(_, _))
+        .WillOnce(Return(authenticate));
+
     scoped_refptr<ClientSession> client = new ClientSession(
         host_.get(),
-        base::Bind(MakeUserAuthenticator),
+        user_authenticator,
         connection,
-        input_stub_);
+        event_executor_);
     connection->set_host_stub(client.get());
 
     context_.network_message_loop()->PostTask(
@@ -181,7 +172,7 @@ class ChromotingHostTest : public testing::Test {
         FROM_HERE,
         NewRunnableMethod(client.get(),
                           &ClientSession::BeginSessionRequest,
-                          &credentials,
+                          &credentials_,
                           NewRunnableFunction(&DummyDoneTask)));
   }
 
@@ -200,15 +191,14 @@ class ChromotingHostTest : public testing::Test {
   scoped_refptr<ChromotingHost> host_;
   scoped_refptr<InMemoryHostConfig> config_;
   MockChromotingHostContext context_;
-  protocol::LocalLoginCredentials credentials_good_;
-  protocol::LocalLoginCredentials credentials_bad_;
+  protocol::LocalLoginCredentials credentials_;
   scoped_refptr<MockConnectionToClient> connection_;
   scoped_refptr<MockSession> session_;
   scoped_ptr<SessionConfig> session_config_;
   MockVideoStub video_stub_;
   MockClientStub client_stub_;
   MockHostStub* host_stub_;
-  MockInputStub* input_stub_;
+  MockEventExecutor* event_executor_;
   MockCurtain* curtain_;
   scoped_refptr<MockConnectionToClient> connection2_;
   scoped_refptr<MockSession> session2_;
@@ -216,7 +206,7 @@ class ChromotingHostTest : public testing::Test {
   MockVideoStub video_stub2_;
   MockClientStub client_stub2_;
   MockHostStub* host_stub2_;
-  MockInputStub* input_stub2_;
+  MockEventExecutor* event_executor2_;
 };
 
 TEST_F(ChromotingHostTest, StartAndShutdown) {
@@ -236,19 +226,20 @@ TEST_F(ChromotingHostTest, Connect) {
 
   // When the video packet is received we first shutdown ChromotingHost
   // then execute the done task.
-  InSequence s;
-  EXPECT_CALL(*curtain_, EnableCurtainMode(true))
-      .Times(1);
-  EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
-      .WillOnce(DoAll(
-          InvokeWithoutArgs(host_.get(), &ChromotingHost::Shutdown),
-          RunDoneTask()))
-      .RetiresOnSaturation();
-  EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
-      .Times(AnyNumber());
-  EXPECT_CALL(*connection_.get(), Disconnect())
-      .RetiresOnSaturation();
-
+  {
+    InSequence s;
+    EXPECT_CALL(*curtain_, EnableCurtainMode(true))
+        .Times(1);
+    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
+        .WillOnce(DoAll(
+            InvokeWithoutArgs(host_.get(), &ChromotingHost::Shutdown),
+            RunDoneTask()))
+        .RetiresOnSaturation();
+    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
+        .Times(AnyNumber());
+    EXPECT_CALL(*connection_.get(), Disconnect())
+        .RetiresOnSaturation();
+  }
   SimulateClientConnection(0, true);
   message_loop_.Run();
 }
@@ -362,8 +353,7 @@ TEST_F(ChromotingHostTest, CurtainModeFail) {
   host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
 
   EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
-      .Times(1)
-      .WillRepeatedly(RunDoneTask());
+      .WillOnce(RunDoneTask());
 
   // Ensure that curtain mode is not activated if a connection does not
   // authenticate.
@@ -380,19 +370,17 @@ TEST_F(ChromotingHostTest, CurtainModeFailSecond) {
   host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
 
   EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
-      .Times(1)
-      .WillRepeatedly(RunDoneTask());
+      .WillOnce(RunDoneTask());
 
   EXPECT_CALL(client_stub2_, BeginSessionResponse(_, _))
-      .Times(1)
-      .WillRepeatedly(RunDoneTask());
+      .WillOnce(RunDoneTask());
+
 
   // When a video packet is received we connect the second mock
   // connection.
   {
     InSequence s;
     EXPECT_CALL(*curtain_, EnableCurtainMode(true))
-        .Times(1)
         .WillOnce(QuitMainMessageLoop(&message_loop_));
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .WillOnce(DoAll(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/capturer_linux.h"
+#include "remoting/host/capturer.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -10,33 +10,36 @@
 
 #include <set>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "remoting/base/types.h"
 #include "remoting/host/capturer_helper.h"
 #include "remoting/host/x_server_pixel_buffer.h"
 
 namespace remoting {
 
-// Private Implementation pattern to avoid leaking the X11 types into the header
-// file.
-class CapturerLinuxPimpl : public Capturer {
- public:
-  CapturerLinuxPimpl();
-  virtual ~CapturerLinuxPimpl();
+namespace {
 
-  bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
+// A class to perform capturing for Linux.
+class CapturerLinux : public Capturer {
+ public:
+  CapturerLinux();
+  virtual ~CapturerLinux();
+
 
   // Capturer interface.
-  virtual void ScreenConfigurationChanged();
-  virtual media::VideoFrame::Format pixel_format() const;
-  virtual void ClearInvalidRects();
-  virtual void InvalidateRects(const InvalidRects& inval_rects);
-  virtual void InvalidateScreen(const gfx::Size& size);
-  virtual void InvalidateFullScreen();
-  virtual void CaptureInvalidRects(CaptureCompletedCallback* callback);
-  virtual const gfx::Size& size_most_recent() const;
+  virtual void ScreenConfigurationChanged() OVERRIDE;
+  virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
+  virtual void ClearInvalidRects() OVERRIDE;
+  virtual void InvalidateRects(const InvalidRects& inval_rects) OVERRIDE;
+  virtual void InvalidateScreen(const gfx::Size& size) OVERRIDE;
+  virtual void InvalidateFullScreen() OVERRIDE;
+  virtual void CaptureInvalidRects(CaptureCompletedCallback* callback) OVERRIDE;
+  virtual const gfx::Size& size_most_recent() const OVERRIDE;
 
  private:
+  bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
   void CalculateInvalidRects();
   void CaptureRects(const InvalidRects& rects,
                     Capturer::CaptureCompletedCallback* callback);
@@ -84,51 +87,11 @@ class CapturerLinuxPimpl : public Capturer {
 
   // Last capture buffer used.
   uint8* last_buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(CapturerLinux);
 };
 
 CapturerLinux::CapturerLinux()
-    : pimpl_(new CapturerLinuxPimpl()) {
-  // TODO(ajwong): This should be moved into an Init() method on Capturer
-  // itself.  Then we can remove the CHECK.
-  CHECK(pimpl_->Init());
-}
-
-CapturerLinux::~CapturerLinux() {
-}
-
-void CapturerLinux::ScreenConfigurationChanged() {
-  pimpl_->ScreenConfigurationChanged();
-}
-
-media::VideoFrame::Format CapturerLinux::pixel_format() const {
-  return pimpl_->pixel_format();
-}
-
-void CapturerLinux::ClearInvalidRects() {
-  pimpl_->ClearInvalidRects();
-}
-
-void CapturerLinux::InvalidateRects(const InvalidRects& inval_rects) {
-  pimpl_->InvalidateRects(inval_rects);
-}
-
-void CapturerLinux::InvalidateScreen(const gfx::Size& size) {
-  pimpl_->InvalidateScreen(size);
-}
-
-void CapturerLinux::InvalidateFullScreen() {
-  pimpl_->InvalidateFullScreen();
-}
-
-void CapturerLinux::CaptureInvalidRects(CaptureCompletedCallback* callback) {
-  pimpl_->CaptureInvalidRects(callback);
-}
-
-const gfx::Size& CapturerLinux::size_most_recent() const {
-  return pimpl_->size_most_recent();
-}
-
-CapturerLinuxPimpl::CapturerLinuxPimpl()
     : display_(NULL),
       gc_(NULL),
       root_window_(BadValue),
@@ -145,9 +108,10 @@ CapturerLinuxPimpl::CapturerLinuxPimpl()
   for (int i = 0; i < kNumBuffers; i++) {
     buffers_[i] = NULL;
   }
+  CHECK(Init());
 }
 
-CapturerLinuxPimpl::~CapturerLinuxPimpl() {
+CapturerLinux::~CapturerLinux() {
   DeinitXlib();
 
   for (int i = 0; i < kNumBuffers; i++) {
@@ -156,7 +120,7 @@ CapturerLinuxPimpl::~CapturerLinuxPimpl() {
   }
 }
 
-bool CapturerLinuxPimpl::Init() {
+bool CapturerLinux::Init() {
   // TODO(ajwong): We should specify the display string we are attaching to
   // in the constructor.
   display_ = XOpenDisplay(NULL);
@@ -216,32 +180,32 @@ bool CapturerLinuxPimpl::Init() {
   return true;
 }
 
-void CapturerLinuxPimpl::ScreenConfigurationChanged() {
+void CapturerLinux::ScreenConfigurationChanged() {
   // TODO(ajwong): Support resolution changes.
   NOTIMPLEMENTED();
 }
 
-media::VideoFrame::Format CapturerLinuxPimpl::pixel_format() const {
+media::VideoFrame::Format CapturerLinux::pixel_format() const {
   return pixel_format_;
 }
 
-void CapturerLinuxPimpl::ClearInvalidRects() {
+void CapturerLinux::ClearInvalidRects() {
   helper_.ClearInvalidRects();
 }
 
-void CapturerLinuxPimpl::InvalidateRects(const InvalidRects& inval_rects) {
+void CapturerLinux::InvalidateRects(const InvalidRects& inval_rects) {
   helper_.InvalidateRects(inval_rects);
 }
 
-void CapturerLinuxPimpl::InvalidateScreen(const gfx::Size& size) {
+void CapturerLinux::InvalidateScreen(const gfx::Size& size) {
   helper_.InvalidateScreen(size);
 }
 
-void CapturerLinuxPimpl::InvalidateFullScreen() {
+void CapturerLinux::InvalidateFullScreen() {
   helper_.InvalidateFullScreen();
 }
 
-void CapturerLinuxPimpl::CaptureInvalidRects(
+void CapturerLinux::CaptureInvalidRects(
     CaptureCompletedCallback* callback) {
   CalculateInvalidRects();
 
@@ -251,7 +215,7 @@ void CapturerLinuxPimpl::CaptureInvalidRects(
   CaptureRects(rects, callback);
 }
 
-void CapturerLinuxPimpl::CalculateInvalidRects() {
+void CapturerLinux::CalculateInvalidRects() {
   if (helper_.IsCaptureFullScreen(gfx::Size(width_, height_)))
     capture_fullscreen_ = true;
 
@@ -294,7 +258,7 @@ void CapturerLinuxPimpl::CalculateInvalidRects() {
   }
 }
 
-void CapturerLinuxPimpl::CaptureRects(
+void CapturerLinux::CaptureRects(
     const InvalidRects& rects,
     Capturer::CaptureCompletedCallback* callback) {
   scoped_ptr<CaptureCompletedCallback> callback_deleter(callback);
@@ -354,7 +318,7 @@ void CapturerLinuxPimpl::CaptureRects(
   callback->Run(capture_data);
 }
 
-void CapturerLinuxPimpl::DeinitXlib() {
+void CapturerLinux::DeinitXlib() {
   if (gc_) {
     XFreeGC(display_, gc_);
     gc_ = NULL;
@@ -366,7 +330,7 @@ void CapturerLinuxPimpl::DeinitXlib() {
   }
 }
 
-void CapturerLinuxPimpl::FastBlit(uint8* image, const gfx::Rect& rect,
+void CapturerLinux::FastBlit(uint8* image, const gfx::Rect& rect,
                                   CaptureData* capture_data) {
   uint8* src_pos = image;
   int src_stride = x_server_pixel_buffer_.GetStride();
@@ -388,7 +352,7 @@ void CapturerLinuxPimpl::FastBlit(uint8* image, const gfx::Rect& rect,
   }
 }
 
-void CapturerLinuxPimpl::SlowBlit(uint8* image, const gfx::Rect& rect,
+void CapturerLinux::SlowBlit(uint8* image, const gfx::Rect& rect,
                                   CaptureData* capture_data) {
   DataPlanes planes = capture_data->data_planes();
   uint8* dst_buffer = planes.data[0];
@@ -439,9 +403,11 @@ void CapturerLinuxPimpl::SlowBlit(uint8* image, const gfx::Rect& rect,
   }
 }
 
-const gfx::Size& CapturerLinuxPimpl::size_most_recent() const {
+const gfx::Size& CapturerLinux::size_most_recent() const {
   return helper_.size_most_recent();
 }
+
+}  // namespace
 
 // static
 Capturer* Capturer::Create() {

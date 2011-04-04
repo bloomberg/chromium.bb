@@ -1,14 +1,16 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/event_executor_linux.h"
+#include "remoting/host/event_executor.h"
 
 #include <X11/Xlib.h>
 #include <X11/XF86keysym.h>
 #include <X11/keysym.h>
 #include <X11/extensions/XTest.h>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/task.h"
@@ -19,8 +21,35 @@ namespace remoting {
 using protocol::MouseEvent;
 using protocol::KeyEvent;
 
-static int MouseButtonToX11ButtonNumber(
-    protocol::MouseEvent::MouseButton button) {
+namespace {
+
+// A class to generate events on Linux.
+class EventExecutorLinux : public EventExecutor {
+ public:
+  EventExecutorLinux(MessageLoopForUI* message_loop, Capturer* capturer);
+  virtual ~EventExecutorLinux() {};
+
+  virtual void InjectKeyEvent(const KeyEvent* event, Task* done) OVERRIDE;
+  virtual void InjectMouseEvent(const MouseEvent* event, Task* done) OVERRIDE;
+
+ private:
+  bool Init();
+  MessageLoopForUI* message_loop_;
+  Capturer* capturer_;
+
+  // X11 graphics context.
+  Display* display_;
+  Window root_window_;
+  int width_;
+  int height_;
+
+  int test_event_base_;
+  int test_error_base_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventExecutorLinux);
+};
+
+int MouseButtonToX11ButtonNumber(MouseEvent::MouseButton button) {
   switch (button) {
     case MouseEvent::BUTTON_LEFT:
       return 1;
@@ -196,7 +225,7 @@ const int kUsVkeyToKeysym[256] = {
   /* VKEY_NONAME */ -1, /* VKEY_PA1 */ -1, /* VKEY_OEM_CLEAR */ -1, -1
 };
 
-static int ChromotocolKeycodeToX11Keysym(int32_t keycode) {
+int ChromotocolKeycodeToX11Keysym(int32_t keycode) {
   if (keycode < 0 || keycode > 255) {
     return -1;
   }
@@ -204,41 +233,18 @@ static int ChromotocolKeycodeToX11Keysym(int32_t keycode) {
   return kUsVkeyToKeysym[keycode];
 }
 
-class EventExecutorLinuxPimpl {
- public:
-  explicit EventExecutorLinuxPimpl(EventExecutorLinux* executor,
-                                   Display* display);
-
-  bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
-
-  void HandleMouse(const MouseEvent* message);
-  void HandleKey(const KeyEvent* key_event);
-
- private:
-  // Reference to containing class so we can access friend functions.
-  // Not owned.
-  EventExecutorLinux* executor_;
-
-  // X11 graphics context.
-  Display* display_;
-  Window root_window_;
-  int width_;
-  int height_;
-
-  int test_event_base_;
-  int test_error_base_;
-};
-
-EventExecutorLinuxPimpl::EventExecutorLinuxPimpl(EventExecutorLinux* executor,
-                                                 Display* display)
-    : executor_(executor),
-      display_(display),
+EventExecutorLinux::EventExecutorLinux(
+    MessageLoopForUI* message_loop, Capturer* capturer)
+    : message_loop_(message_loop),
+      capturer_(capturer),
+      display_(message_loop->GetDisplay()),
       root_window_(BadValue),
       width_(0),
       height_(0) {
+  CHECK(Init());
 }
 
-bool EventExecutorLinuxPimpl::Init() {
+bool EventExecutorLinux::Init() {
   CHECK(display_);
 
   root_window_ = RootWindow(display_, DefaultScreen(display_));
@@ -267,16 +273,22 @@ bool EventExecutorLinuxPimpl::Init() {
 
   width_ = root_attr.width;
   height_ = root_attr.height;
-
   return true;
 }
 
-void EventExecutorLinuxPimpl::HandleKey(const KeyEvent* key_event) {
+void EventExecutorLinux::InjectKeyEvent(const KeyEvent* event, Task* done) {
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &EventExecutorLinux::InjectKeyEvent,
+                          event, done));
+    return;
+  }
   // TODO(ajwong): This will only work for QWERTY keyboards.
-  int keysym = ChromotocolKeycodeToX11Keysym(key_event->keycode());
+  int keysym = ChromotocolKeycodeToX11Keysym(event->keycode());
 
   if (keysym == -1) {
-    LOG(WARNING) << "Ignoring unknown key: " << key_event->keycode();
+    LOG(WARNING) << "Ignoring unknown key: " << event->keycode();
     return;
   }
 
@@ -284,17 +296,28 @@ void EventExecutorLinuxPimpl::HandleKey(const KeyEvent* key_event) {
   int keycode = XKeysymToKeycode(display_, keysym);
   if (keycode == 0) {
     LOG(WARNING) << "Ignoring undefined keysym: " << keysym
-                 << " for key: " << key_event->keycode();
+                 << " for key: " << event->keycode();
     return;
   }
 
-  VLOG(3) << "Got pepper key: " << key_event->keycode()
+  VLOG(3) << "Got pepper key: " << event->keycode()
           << " sending keysym: " << keysym
           << " to keycode: " << keycode;
-  XTestFakeKeyEvent(display_, keycode, key_event->pressed(), CurrentTime);
+  XTestFakeKeyEvent(display_, keycode, event->pressed(), CurrentTime);
+
+  done->Run();
+  delete done;
 }
 
-void EventExecutorLinuxPimpl::HandleMouse(const MouseEvent* event) {
+void EventExecutorLinux::InjectMouseEvent(const MouseEvent* event,
+                                          Task* done) {
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &EventExecutorLinux::InjectMouseEvent,
+                          event, done));
+    return;
+  }
   if (event->has_x() && event->has_y()) {
     if (event->x() < 0 || event->y() < 0 ||
         event->x() > width_ || event->y() > height_) {
@@ -329,49 +352,19 @@ void EventExecutorLinuxPimpl::HandleMouse(const MouseEvent* event) {
   if (event->has_wheel_offset_x() && event->has_wheel_offset_y()) {
     NOTIMPLEMENTED() << "No scroll wheel support yet.";
   }
-}
 
-EventExecutorLinux::EventExecutorLinux(
-    MessageLoopForUI* message_loop, Capturer* capturer)
-    : message_loop_(message_loop),
-      capturer_(capturer),
-      pimpl_(new EventExecutorLinuxPimpl(this, message_loop->GetDisplay())) {
-  CHECK(pimpl_->Init());
-}
-
-EventExecutorLinux::~EventExecutorLinux() {
-}
-
-void EventExecutorLinux::InjectKeyEvent(const KeyEvent* event, Task* done) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &EventExecutorLinux::InjectKeyEvent,
-                          event, done));
-    return;
-  }
-  pimpl_->HandleKey(event);
   done->Run();
   delete done;
 }
 
-void EventExecutorLinux::InjectMouseEvent(const MouseEvent* event,
-                                          Task* done) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &EventExecutorLinux::InjectMouseEvent,
-                          event, done));
-    return;
-  }
-  pimpl_->HandleMouse(event);
-  done->Run();
-  delete done;
-}
+}  // namespace
 
-protocol::InputStub* CreateEventExecutor(MessageLoopForUI* message_loop,
-                                         Capturer* capturer) {
+EventExecutor* EventExecutor::Create(MessageLoopForUI* message_loop,
+                                     Capturer* capturer) {
   return new EventExecutorLinux(message_loop, capturer);
 }
 
 }  // namespace remoting
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::EventExecutorLinux);
+

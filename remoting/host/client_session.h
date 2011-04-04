@@ -34,10 +34,8 @@ class ClientSession : public protocol::HostStub,
         scoped_refptr<protocol::ConnectionToClient> client) = 0;
   };
 
-  typedef UserAuthenticator* UserAuthenticatorFactory();
-
   ClientSession(EventHandler* event_handler,
-                const base::Callback<UserAuthenticatorFactory>& auth_factory,
+                UserAuthenticator* user_authenticator,
                 scoped_refptr<protocol::ConnectionToClient> connection,
                 protocol::InputStub* input_stub);
 
@@ -69,7 +67,7 @@ class ClientSession : public protocol::HostStub,
   EventHandler* event_handler_;
 
   // A factory for user authenticators.
-  base::Callback<UserAuthenticatorFactory> auth_factory_;
+  scoped_ptr<UserAuthenticator> user_authenticator_;
 
   // The connection to the client.
   scoped_refptr<protocol::ConnectionToClient> connection_;

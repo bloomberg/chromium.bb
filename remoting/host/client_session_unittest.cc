@@ -2,20 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/host_mock_objects.h"
-#include "remoting/host/user_authenticator_fake.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
 
 namespace {
-
-UserAuthenticator* MakeUserAuthenticator() {
-  return new UserAuthenticatorFake();
-}
 
 // A task that does nothing.
 class DummyTask : public Task {
@@ -33,30 +27,26 @@ using protocol::MockInputStub;
 using testing::_;
 using testing::DeleteArg;
 using testing::InSequence;
+using testing::Return;
 
 class ClientSessionTest : public testing::Test {
  public:
-  ClientSessionTest() {
-  }
+  ClientSessionTest() {}
 
   virtual void SetUp() {
     connection_ = new MockConnectionToClient(&message_loop_,
                                              &connection_event_handler_,
                                              &host_stub_,
                                              &input_stub_);
-    client_session_ = new ClientSession(&session_event_handler_,
-                                        base::Bind(MakeUserAuthenticator),
-                                        connection_,
-                                        &input_stub_);
-    credentials_.set_type(protocol::PASSWORD);
-    credentials_.set_username("user");
-    credentials_.set_credential("password");
+    user_authenticator_ = new MockUserAuthenticator();
+    client_session_ = new ClientSession(
+        &session_event_handler_,
+        user_authenticator_,
+        connection_,
+        &input_stub_);
 
     ON_CALL(input_stub_, InjectKeyEvent(_, _)).WillByDefault(DeleteArg<1>());
     ON_CALL(input_stub_, InjectMouseEvent(_, _)).WillByDefault(DeleteArg<1>());
-  }
-
-  virtual void TearDown() {
   }
 
  protected:
@@ -65,9 +55,9 @@ class ClientSessionTest : public testing::Test {
   MockHostStub host_stub_;
   MockInputStub input_stub_;
   MockClientSessionEventHandler session_event_handler_;
+  MockUserAuthenticator* user_authenticator_;
   scoped_refptr<MockConnectionToClient> connection_;
   scoped_refptr<ClientSession> client_session_;
-  protocol::LocalLoginCredentials credentials_;
 };
 
 TEST_F(ClientSessionTest, InputStubFilter) {
@@ -95,11 +85,14 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   mouse_event3.set_x(300);
   mouse_event3.set_y(301);
 
-  credentials_.set_type(protocol::PASSWORD);
-  credentials_.set_username("user");
-  credentials_.set_credential("password");
+  protocol::LocalLoginCredentials credentials;
+  credentials.set_type(protocol::PASSWORD);
+  credentials.set_username("user");
+  credentials.set_credential("password");
 
   InSequence s;
+  EXPECT_CALL(*user_authenticator_, Authenticate(_, _))
+      .WillOnce(Return(true));
   EXPECT_CALL(session_event_handler_, LocalLoginSucceeded(_));
   EXPECT_CALL(input_stub_, InjectKeyEvent(&key_event2, _));
   EXPECT_CALL(input_stub_, InjectMouseEvent(&mouse_event2, _));
@@ -109,7 +102,7 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   // because the client isn't authenticated yet.
   client_session_->InjectKeyEvent(&key_event1, new DummyTask());
   client_session_->InjectMouseEvent(&mouse_event1, new DummyTask());
-  client_session_->BeginSessionRequest(&credentials_, new DummyTask());
+  client_session_->BeginSessionRequest(&credentials, new DummyTask());
   // These events should get through to the input stub.
   client_session_->InjectKeyEvent(&key_event2, new DummyTask());
   client_session_->InjectMouseEvent(&mouse_event2, new DummyTask());

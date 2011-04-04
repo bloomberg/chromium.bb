@@ -6,17 +6,15 @@
 
 #include "remoting/host/capturer.h"
 #include "remoting/host/curtain.h"
-#include "remoting/protocol/input_stub.h"
-
-using remoting::protocol::InputStub;
+#include "remoting/host/event_executor.h"
 
 namespace remoting {
 
 DesktopEnvironment::DesktopEnvironment(Capturer* capturer,
-                                       InputStub* input_stub,
+                                       EventExecutor* event_executor,
                                        Curtain* curtain)
     : capturer_(capturer),
-      input_stub_(input_stub),
+      event_executor_(event_executor),
       curtain_(curtain) {
 }
 

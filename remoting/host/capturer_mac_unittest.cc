@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/capturer.h"
+
 #include <ApplicationServices/ApplicationServices.h>
 
 #include <iostream>
@@ -9,22 +11,21 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/base/types.h"
-#include "remoting/host/capturer_mac.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
 
 class CapturerMacTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    capturer_.reset(new CapturerMac());
+    capturer_.reset(Capturer::Create());
   }
 
   void AddDirtyRect() {
     rects_.insert(gfx::Rect(0, 0, 10, 10));
   }
 
-  scoped_ptr<CapturerMac> capturer_;
+  scoped_ptr<Capturer> capturer_;
   InvalidRects rects_;
 };
 

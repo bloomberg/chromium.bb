@@ -1,32 +1,51 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/event_executor_mac.h"
+#include "remoting/host/event_executor.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <Carbon/Carbon.h>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/message_loop.h"
 #include "base/task.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "remoting/host/capturer.h"
-#include "remoting/protocol/message_decoder.h"
 #include "remoting/proto/internal.pb.h"
+#include "remoting/protocol/message_decoder.h"
 
 namespace remoting {
 
+namespace {
+
 using protocol::MouseEvent;
 using protocol::KeyEvent;
+
+// A class to generate events on Mac.
+class EventExecutorMac : public EventExecutor {
+ public:
+  EventExecutorMac(MessageLoopForUI* message_loop, Capturer* capturer);
+  virtual ~EventExecutorMac() {}
+
+  virtual void InjectKeyEvent(const KeyEvent* event, Task* done) OVERRIDE;
+  virtual void InjectMouseEvent(const MouseEvent* event, Task* done) OVERRIDE;
+
+ private:
+  MessageLoopForUI* message_loop_;
+  Capturer* capturer_;
+  int last_x_, last_y_;
+  int modifiers_, mouse_buttons_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventExecutorMac);
+};
 
 EventExecutorMac::EventExecutorMac(
     MessageLoopForUI* message_loop, Capturer* capturer)
     : message_loop_(message_loop),
       capturer_(capturer), last_x_(0), last_y_(0), modifiers_(0),
       mouse_buttons_(0) {
-}
-
-EventExecutorMac::~EventExecutorMac() {
 }
 
 // Hard-coded mapping from Virtual Key codes to Mac KeySyms.
@@ -287,8 +306,10 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent* event, Task* done) {
   delete done;
 }
 
-protocol::InputStub* CreateEventExecutor(MessageLoopForUI* message_loop,
-                                         Capturer* capturer) {
+}  // namespace
+
+EventExecutor* EventExecutor::Create(MessageLoopForUI* message_loop,
+                                     Capturer* capturer) {
   return new EventExecutorMac(message_loop, capturer);
 }
 

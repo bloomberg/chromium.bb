@@ -15,7 +15,6 @@
 using ::remoting::protocol::MockConnectionToClient;
 using ::remoting::protocol::MockConnectionToClientEventHandler;
 using ::remoting::protocol::MockHostStub;
-using ::remoting::protocol::MockInputStub;
 using ::remoting::protocol::MockVideoStub;
 
 using ::testing::_;
@@ -82,7 +81,7 @@ class ScreenRecorderTest : public testing::Test {
     encoder_ = new MockEncoder();
 
     connection_ = new MockConnectionToClient(&message_loop_, &handler_,
-                                             &host_stub_, &input_stub_);
+                                             &host_stub_, &event_executor_);
 
     record_ = new ScreenRecorder(
         &message_loop_, &message_loop_, &message_loop_,
@@ -94,7 +93,7 @@ class ScreenRecorderTest : public testing::Test {
 
   MockConnectionToClientEventHandler handler_;
   MockHostStub host_stub_;
-  MockInputStub input_stub_;
+  MockEventExecutor event_executor_;
   scoped_refptr<MockConnectionToClient> connection_;
 
   // The following mock objects are owned by ScreenRecorder.

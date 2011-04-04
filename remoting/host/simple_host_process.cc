@@ -131,12 +131,12 @@ int main(int argc, char** argv) {
   if (fake) {
     remoting::Capturer* capturer =
         new remoting::CapturerFake();
-    remoting::protocol::InputStub* input_stub =
-        CreateEventExecutor(context.ui_message_loop(), capturer);
+    remoting::EventExecutor* event_executor =
+        remoting::EventExecutor::Create(context.ui_message_loop(), capturer);
     remoting::Curtain* curtain = remoting::Curtain::Create();
     host = ChromotingHost::Create(
         &context, config,
-        new DesktopEnvironment(capturer, input_stub, curtain));
+        new DesktopEnvironment(capturer, event_executor, curtain));
   } else {
     host = ChromotingHost::Create(&context, config);
   }

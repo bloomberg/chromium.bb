@@ -4,9 +4,6 @@
 
 #include "remoting/host/chromoting_host.h"
 
-#include "base/bind.h"
-#include "base/stl_util-inl.h"
-#include "base/task.h"
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/encoder.h"
@@ -38,11 +35,11 @@ namespace remoting {
 ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
                                        MutableHostConfig* config) {
   Capturer* capturer = Capturer::Create();
-  InputStub* input_stub = CreateEventExecutor(context->ui_message_loop(),
-                                              capturer);
+  EventExecutor* event_executor =
+      EventExecutor::Create(context->ui_message_loop(), capturer);
   Curtain* curtain = Curtain::Create();
   return Create(context, config,
-                new DesktopEnvironment(capturer, input_stub, curtain));
+                new DesktopEnvironment(capturer, event_executor, curtain));
 }
 
 // static
@@ -332,9 +329,9 @@ void ChromotingHost::OnNewClientSession(
   // Create a client object.
   ClientSession* client = new ClientSession(
       this,
-      base::Bind(UserAuthenticator::Create),
+      UserAuthenticator::Create(),
       connection,
-      desktop_environment_->input_stub());
+      desktop_environment_->event_executor());
   connection->set_host_stub(client);
   connection->set_input_stub(client);
 

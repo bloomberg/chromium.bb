@@ -4,7 +4,6 @@
 
 #include "remoting/host/client_session.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "media/base/callback.h"
 #include "remoting/host/user_authenticator.h"
@@ -14,11 +13,11 @@ namespace remoting {
 
 ClientSession::ClientSession(
     EventHandler* event_handler,
-    const base::Callback<UserAuthenticatorFactory>& auth_factory,
+    UserAuthenticator* user_authenticator,
     scoped_refptr<protocol::ConnectionToClient> connection,
     protocol::InputStub* input_stub)
     : event_handler_(event_handler),
-      auth_factory_(auth_factory),
+      user_authenticator_(user_authenticator),
       connection_(connection),
       input_stub_(input_stub),
       authenticated_(false) {
@@ -45,11 +44,10 @@ void ClientSession::BeginSessionRequest(
   media::AutoTaskRunner done_runner(done);
 
   bool success = false;
-  scoped_ptr<UserAuthenticator> authenticator(auth_factory_.Run());
   switch (credentials->type()) {
     case protocol::PASSWORD:
-      success = authenticator->Authenticate(credentials->username(),
-                                            credentials->credential());
+      success = user_authenticator_->Authenticate(credentials->username(),
+                                                  credentials->credential());
       break;
 
     default:

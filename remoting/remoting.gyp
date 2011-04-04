@@ -105,19 +105,9 @@
         '../media/base/yuv_convert.h',
         '../media/base/yuv_row.h',
         '../media/base/yuv_row_table.cc',
+        '../media/base/yuv_row_win.cc',
+        '../media/base/yuv_row_posix.cc',
       ],
-      'conditions': [
-        ['OS=="win"', {
-          'sources': [
-            '../media/base/yuv_row_win.cc',
-          ],
-        }],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="mac"', {
-          'sources': [
-            '../media/base/yuv_row_posix.cc',
-          ],
-        }],
-      ],  # end of 'conditions'
     },  # end of target 'chromoting_plugin'
 
     {
@@ -204,6 +194,9 @@
         'host/capturer_helper.h',
         'host/capturer_fake.cc',
         'host/capturer_fake.h',
+        'host/capturer_linux.cc',
+        'host/capturer_mac.cc',
+        'host/capturer_win.cc',
         'host/chromoting_host.cc',
         'host/chromoting_host.h',
         'host/chromoting_host_context.cc',
@@ -211,52 +204,40 @@
         'host/client_session.cc',
         'host/client_session.h',
         'host/curtain.h',
+        'host/curtain_linux.cc',
+        'host/curtain_mac.cc',
+        'host/curtain_win.cc',
         'host/desktop_environment.cc',
         'host/desktop_environment.h',
         'host/differ.h',
         'host/differ.cc',
-        'host/screen_recorder.cc',
-        'host/screen_recorder.h',
+        'host/event_executor.h',
+        'host/event_executor_linux.cc',
+        'host/event_executor_mac.cc',
+        'host/event_executor_win.cc',
         'host/heartbeat_sender.cc',
         'host/heartbeat_sender.h',
         'host/host_config.cc',
         'host/host_config.h',
         'host/host_key_pair.cc',
         'host/host_key_pair.h',
-        'host/json_host_config.cc',
-        'host/json_host_config.h',
         'host/in_memory_host_config.cc',
         'host/in_memory_host_config.h',
+        'host/json_host_config.cc',
+        'host/json_host_config.h',
+        'host/screen_recorder.cc',
+        'host/screen_recorder.h',
         'host/user_authenticator.h',
+        'host/user_authenticator_linux.cc',
+        'host/user_authenticator_mac.cc',
+        'host/user_authenticator_win.cc',
       ],
       'conditions': [
-        ['OS=="win"', {
-          'sources': [
-            'host/capturer_gdi.cc',
-            'host/capturer_gdi.h',
-            'host/curtain_win.cc',
-            'host/curtain_win.h',
-            'host/event_executor_win.cc',
-            'host/event_executor_win.h',
-            'host/user_authenticator_fake.cc',
-            'host/user_authenticator_fake.h',
-            'host/user_authenticator_win.cc',
-          ],
-        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
           'sources': [
-            'host/capturer_linux.cc',
-            'host/capturer_linux.h',
-            'host/curtain_linux.cc',
-            'host/curtain_linux.h',
-            'host/event_executor_linux.cc',
-            'host/event_executor_linux.h',
-            'host/user_authenticator_linux.cc',
-            'host/user_authenticator_pam.cc',
-            'host/user_authenticator_pam.h',
             'host/x_server_pixel_buffer.cc',
             'host/x_server_pixel_buffer.h',
           ],
@@ -271,16 +252,6 @@
           },
         }],
         ['OS=="mac"', {
-          'sources': [
-            'host/capturer_mac.cc',
-            'host/capturer_mac.h',
-            'host/curtain_mac.cc',
-            'host/curtain_mac.h',
-            'host/event_executor_mac.cc',
-            'host/event_executor_mac.h',
-            'host/user_authenticator_mac.cc',
-            'host/user_authenticator_mac.h',
-          ],
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
@@ -541,6 +512,9 @@
         'base/base_mock_objects.h',
 # BUG57351        'client/chromoting_view_unittest.cc',
         'host/access_verifier_unittest.cc',
+        'host/capturer_linux_unittest.cc',
+        'host/capturer_mac_unittest.cc',
+        'host/capturer_win_unittest.cc',
         'host/chromoting_host_context_unittest.cc',
         'host/chromoting_host_unittest.cc',
         'host/client_session_unittest.cc',
@@ -553,8 +527,6 @@
         'host/json_host_config_unittest.cc',
         'host/screen_recorder_unittest.cc',
         'host/test_key_pair.h',
-        'host/user_authenticator_fake.cc',
-        'host/user_authenticator_fake.h',
         'jingle_glue/iq_request_unittest.cc',
         'jingle_glue/jingle_client_unittest.cc',
         'jingle_glue/jingle_thread_unittest.cc',
@@ -573,11 +545,6 @@
         'run_all_unittests.cc',
       ],
       'conditions': [
-        ['OS=="win"', {
-          'sources': [
-            'host/capturer_gdi_unittest.cc',
-          ],
-        }],
         ['OS=="linux"', {
           'dependencies': [
             '../app/app.gyp:app_base',
@@ -587,9 +554,6 @@
             #   gtk/gtk.h
             '../build/linux/system.gyp:gtk',
           ],
-          'sources': [
-            'host/capturer_linux_unittest.cc',
-          ],
           'conditions': [
             [ 'linux_use_tcmalloc==1', {
                 'dependencies': [
@@ -597,11 +561,6 @@
                 ],
               },
             ],
-          ],
-        }],
-        ['OS=="mac"', {
-          'sources': [
-            'host/capturer_mac_unittest.cc',
           ],
         }],
         ['target_arch=="arm"', {

@@ -2,23 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/user_authenticator_mac.h"
+#include "remoting/host/user_authenticator.h"
 
 #include <Security/Security.h>
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace remoting {
 
-static const char kAuthorizationRightName[] = "system.login.tty";
+namespace {
 
-UserAuthenticatorMac::UserAuthenticatorMac() {
-}
+class UserAuthenticatorMac : public UserAuthenticator {
+ public:
+  UserAuthenticatorMac() {}
+  virtual ~UserAuthenticatorMac() {}
+  virtual bool Authenticate(const std::string& username,
+                            const std::string& password);
 
-UserAuthenticatorMac::~UserAuthenticatorMac() {
-}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UserAuthenticatorMac);
+};
+
+const char kAuthorizationRightName[] = "system.login.tty";
 
 bool UserAuthenticatorMac::Authenticate(const std::string& username,
                                         const std::string& password) {
@@ -33,6 +41,7 @@ bool UserAuthenticatorMac::Authenticate(const std::string& username,
   AuthorizationRights rights;
   rights.count = 1;
   rights.items = &right;
+
   // Passing the username/password as an "environment" parameter causes these
   // to be submitted to the Security Framework, instead of the interactive
   // password prompt appearing on the host system.  Valid on OS X 10.4 and
@@ -65,6 +74,8 @@ bool UserAuthenticatorMac::Authenticate(const std::string& username,
       return false;
   }
 }
+
+}  // namespace
 
 // static
 UserAuthenticator* UserAuthenticator::Create() {

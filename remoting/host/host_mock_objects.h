@@ -9,6 +9,8 @@
 #include "remoting/host/curtain.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/client_session.h"
+#include "remoting/host/event_executor.h"
+#include "remoting/host/user_authenticator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace remoting {
@@ -67,6 +69,32 @@ class MockClientSessionEventHandler : public ClientSession::EventHandler {
 
  private:
    DISALLOW_COPY_AND_ASSIGN(MockClientSessionEventHandler);
+};
+
+class MockEventExecutor : public EventExecutor {
+ public:
+  MockEventExecutor();
+  virtual ~MockEventExecutor();
+
+  MOCK_METHOD2(InjectKeyEvent, void(const protocol::KeyEvent* event,
+                                    Task* done));
+  MOCK_METHOD2(InjectMouseEvent, void(const protocol::MouseEvent* event,
+                                      Task* done));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockEventExecutor);
+};
+
+class MockUserAuthenticator : public UserAuthenticator {
+ public:
+  MockUserAuthenticator();
+  virtual ~MockUserAuthenticator();
+
+  MOCK_METHOD2(Authenticate, bool(const std::string& username,
+                                  const std::string& password));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockUserAuthenticator);
 };
 
 }  // namespace remoting

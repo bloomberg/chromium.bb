@@ -10,30 +10,27 @@
 
 namespace remoting {
 
-namespace protocol {
-class InputStub;
-}  // namespace protocol
-
 class Capturer;
 class Curtain;
+class EventExecutor;
 
 class DesktopEnvironment {
  public:
   // DesktopEnvironment takes ownership of all the objects passed the ctor.
-  DesktopEnvironment(Capturer* capturer, protocol::InputStub* input_stub,
+  DesktopEnvironment(Capturer* capturer, EventExecutor* event_executor,
                      Curtain* curtain);
   virtual ~DesktopEnvironment();
 
   Capturer* capturer() const { return capturer_.get(); }
-  protocol::InputStub* input_stub() const { return input_stub_.get(); }
+  EventExecutor* event_executor() const { return event_executor_.get(); }
   Curtain* curtain() const { return curtain_.get(); }
 
  private:
   // Capturer to be used by ScreenRecorder.
   scoped_ptr<Capturer> capturer_;
 
-  // InputStub in the host executes input events received from the client.
-  scoped_ptr<protocol::InputStub> input_stub_;
+  // Executes input events received from the client.
+  scoped_ptr<EventExecutor> event_executor_;
 
   // Curtain ensures privacy for the remote user.
   scoped_ptr<Curtain> curtain_;

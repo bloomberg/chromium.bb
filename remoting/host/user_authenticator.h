@@ -11,8 +11,6 @@ namespace remoting {
 
 // Interface for authenticating users for access to remote desktop session.
 // Implementation is platform-specific.
-// Implementations may assume each instance of this class handles only a
-// single Authenticate request.
 
 // TODO(lambroslambrou): Decide whether this needs an asychronous interface
 // (for example AuthenticateStart()..AuthenticateEndCallback()), or whether the
