@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -308,6 +308,13 @@ void NativeMenuGtk::OnMenuHidden(GtkWidget* widget) {
   }
   // Quit the nested message loop we spawned in RunMenuAt.
   MessageLoop::current()->Quit();
+
+  // Menu can be closed before the menu is shown.
+  if (expose_handler_id_) {
+    g_signal_handler_disconnect(menu_, expose_handler_id_);
+    expose_handler_id_ = 0;
+  }
+
   menu_hidden_ = true;
 }
 

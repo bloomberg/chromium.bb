@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "ui/gfx/skia_utils_gtk.h"
 #include "views/window/non_client_view.h"
 
-namespace chromeos {
+namespace {
 
 bool IsInsideCircle(int x0, int y0, int x1, int y1, int r) {
   return (x0 - x1) * (x0 - x1) + (y0 - y1) * (y0 - y1) <= r * r;
@@ -22,6 +22,10 @@ void SetRegionUnionWithPoint(int i, int j, GdkRegion* region) {
   GdkRectangle rect = {i, j, 1, 1};
   gdk_region_union_with_rect(region, &rect);
 }
+
+}  // namespace
+
+namespace chromeos {
 
 // static
 const SkColor BubbleWindow::kBackgroundColor = SK_ColorWHITE;

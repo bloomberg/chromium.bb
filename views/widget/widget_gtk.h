@@ -303,6 +303,7 @@ class WidgetGtk : public Widget,
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
 
+  // This is called only when the window is transparent.
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnWindowPaint, GdkEventExpose*);
 
   // Returns the first ancestor of |widget| that is a window.

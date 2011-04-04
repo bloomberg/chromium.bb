@@ -1395,6 +1395,13 @@ gboolean WidgetGtk::OnWindowPaint(GtkWidget* widget, GdkEventExpose* event) {
   // paint the root view here as that is done by OnPaint.
   DCHECK(transparent_);
   DrawTransparentBackground(widget, event);
+  // The Keyboard layout view has a renderer that covers the entire
+  // window, which prevents OnPaint from being called on window_contents_,
+  // so we need to remove the FREEZE_UPDATES property here.
+  if (!painted_) {
+    painted_ = true;
+    UpdateFreezeUpdatesProperty(GTK_WINDOW(widget_), false /* remove */);
+  }
   return false;
 }
 
