@@ -6,15 +6,16 @@
 
 #include "chrome/renderer/render_thread.h"
 #include "content/renderer/command_buffer_proxy.h"
-#include "content/renderer/ggl.h"
+#include "content/renderer/renderer_gl_context.h"
 #include "content/renderer/gpu_channel_host.h"
 #include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 
 #ifdef ENABLE_GPU
-PlatformContext3DImpl::PlatformContext3DImpl(ggl::Context* parent_context)
-      : parent_context_(ggl::GetWeakContextReference(parent_context)),
+
+PlatformContext3DImpl::PlatformContext3DImpl(RendererGLContext* parent_context)
+      : parent_context_(parent_context->AsWeakPtr()),
         parent_texture_id_(0),
         command_buffer_(NULL),
         callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -30,7 +31,7 @@ PlatformContext3DImpl::~PlatformContext3DImpl() {
   channel_ = NULL;
 
   if (parent_context_.get() && parent_texture_id_ != 0) {
-    ggl::GetImplementation(parent_context_)->FreeTextureId(parent_texture_id_);
+    parent_context_->GetImplementation()->FreeTextureId(parent_texture_id_);
   }
 
 }
@@ -57,22 +58,22 @@ bool PlatformContext3DImpl::Init() {
   // Flush any remaining commands in the parent context to make sure the
   // texture id accounting stays consistent.
   gpu::gles2::GLES2Implementation* parent_gles2 =
-      ggl::GetImplementation(parent_context_);
+      parent_context_->GetImplementation();
   parent_gles2->helper()->CommandBufferHelper::Finish();
   parent_texture_id_ = parent_gles2->MakeTextureId();
 
   // TODO(apatrick): Let Pepper plugins configure their back buffer surface.
   static const int32 kAttribs[] = {
-    ggl::GGL_ALPHA_SIZE, 8,
-    ggl::GGL_DEPTH_SIZE, 24,
-    ggl::GGL_STENCIL_SIZE, 8,
-    ggl::GGL_SAMPLES, 0,
-    ggl::GGL_SAMPLE_BUFFERS, 0,
-    ggl::GGL_NONE,
+    RendererGLContext::ALPHA_SIZE, 8,
+    RendererGLContext::DEPTH_SIZE, 24,
+    RendererGLContext::STENCIL_SIZE, 8,
+    RendererGLContext::SAMPLES, 0,
+    RendererGLContext::SAMPLE_BUFFERS, 0,
+    RendererGLContext::NONE,
   };
   std::vector<int32> attribs(kAttribs, kAttribs + ARRAYSIZE_UNSAFE(kAttribs));
   CommandBufferProxy* parent_command_buffer =
-      ggl::GetCommandBufferProxy(parent_context_);
+      parent_context_->GetCommandBufferProxy();
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(
       parent_command_buffer,
       gfx::Size(1, 1),

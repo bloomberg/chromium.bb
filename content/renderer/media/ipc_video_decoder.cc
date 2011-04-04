@@ -6,7 +6,7 @@
 
 #include "base/task.h"
 #include "content/common/child_process.h"
-#include "content/renderer/ggl.h"
+#include "content/renderer/renderer_gl_context.h"
 #include "media/base/callback.h"
 #include "media/base/filters.h"
 #include "media/base/filter_host.h"
@@ -17,9 +17,9 @@
 #include "media/video/video_decode_engine.h"
 
 IpcVideoDecoder::IpcVideoDecoder(MessageLoop* message_loop,
-                                 ggl::Context* ggl_context)
+                                 RendererGLContext* gl_context)
     : decode_context_message_loop_(message_loop),
-      ggl_context_(ggl_context) {
+      gl_context_(gl_context) {
 }
 
 IpcVideoDecoder::~IpcVideoDecoder() {
@@ -60,11 +60,11 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
   // Create a video decode context that assocates with the graphics
   // context.
   decode_context_.reset(
-      ggl::CreateVideoDecodeContext(
-          ggl_context_, decode_context_message_loop_, true));
+      gl_context_->CreateVideoDecodeContext(
+          decode_context_message_loop_, true));
 
   // Create a hardware video decoder handle.
-  decode_engine_.reset(ggl::CreateVideoDecodeEngine(ggl_context_));
+  decode_engine_.reset(gl_context_->CreateVideoDecodeEngine());
 
   media::VideoCodecConfig config(
       media::CodecIDToVideoCodec(av_stream->codec->codec_id),

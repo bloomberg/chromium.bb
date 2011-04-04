@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/renderer/render_thread.h"
-#include "content/renderer/ggl.h"
+#include "content/renderer/renderer_gl_context.h"
 #include "content/renderer/gpu_channel_host.h"
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 #include "content/common/view_messages.h"
@@ -69,13 +69,13 @@ class PepperWidget : public WebWidget {
   }
 
   virtual void composite(bool finish) {
-    ggl::Context* context = widget_->context();
+    RendererGLContext* context = widget_->context();
     DCHECK(context);
-    gpu::gles2::GLES2Implementation* gl = ggl::GetImplementation(context);
+    gpu::gles2::GLES2Implementation* gl = context->GetImplementation();
     unsigned int texture = plugin_->GetBackingTextureId();
     gl->BindTexture(GL_TEXTURE_2D, texture);
     gl->DrawArrays(GL_TRIANGLES, 0, 3);
-    ggl::SwapBuffers(context);
+    context->SwapBuffers();
   }
 
   virtual void themeChanged() {
@@ -135,14 +135,14 @@ class PepperWidget : public WebWidget {
   DISALLOW_COPY_AND_ASSIGN(PepperWidget);
 };
 
-void DestroyContext(ggl::Context* context, GLuint program, GLuint buffer) {
+void DestroyContext(RendererGLContext* context, GLuint program, GLuint buffer) {
   DCHECK(context);
-  gpu::gles2::GLES2Implementation* gl = ggl::GetImplementation(context);
+  gpu::gles2::GLES2Implementation* gl = context->GetImplementation();
   if (program)
     gl->DeleteProgram(program);
   if (buffer)
     gl->DeleteBuffers(1, &buffer);
-  ggl::DestroyContext(context);
+  delete context;
 }
 
 }  // anonymous namespace
@@ -247,9 +247,9 @@ RenderWidgetFullscreenPepper::GetBitmapForOptimizedPluginPaint(
 void RenderWidgetFullscreenPepper::OnResize(const gfx::Size& size,
                                             const gfx::Rect& resizer_rect) {
   if (context_) {
-    gpu::gles2::GLES2Implementation* gl = ggl::GetImplementation(context_);
+    gpu::gles2::GLES2Implementation* gl = context_->GetImplementation();
 #if defined(OS_MACOSX)
-    ggl::ResizeOnscreenContext(context_, size);
+    context_->ResizeOnscreen(size);
 #else
     gl->ResizeCHROMIUM(size.width(), size.height());
 #endif
@@ -270,14 +270,14 @@ void RenderWidgetFullscreenPepper::CreateContext() {
   if (!host)
     return;
   const int32 attribs[] = {
-    ggl::GGL_ALPHA_SIZE, 8,
-    ggl::GGL_DEPTH_SIZE, 0,
-    ggl::GGL_STENCIL_SIZE, 0,
-    ggl::GGL_SAMPLES, 0,
-    ggl::GGL_SAMPLE_BUFFERS, 0,
-    ggl::GGL_NONE,
+    RendererGLContext::ALPHA_SIZE, 8,
+    RendererGLContext::DEPTH_SIZE, 0,
+    RendererGLContext::STENCIL_SIZE, 0,
+    RendererGLContext::SAMPLES, 0,
+    RendererGLContext::SAMPLE_BUFFERS, 0,
+    RendererGLContext::NONE,
   };
-  context_ = ggl::CreateViewContext(
+  context_ = RendererGLContext::CreateViewContext(
       host,
       routing_id(),
       "GL_OES_packed_depth_stencil GL_OES_depth24",
@@ -291,12 +291,9 @@ void RenderWidgetFullscreenPepper::CreateContext() {
     context_ = NULL;
     return;
   }
-
-  ggl::SetSwapBuffersCallback(
-      context_,
+  context_->SetSwapBuffersCallback(
       NewCallback(this, &RenderWidgetFullscreenPepper::DidFlushPaint));
-  ggl::SetContextLostCallback(
-      context_,
+  context_->SetContextLostCallback(
       NewCallback(this, &RenderWidgetFullscreenPepper::OnLostContext));
 }
 
@@ -350,7 +347,7 @@ const float kTexCoords[] = {
 }  // anonymous namespace
 
 bool RenderWidgetFullscreenPepper::InitContext() {
-  gpu::gles2::GLES2Implementation* gl = ggl::GetImplementation(context_);
+  gpu::gles2::GLES2Implementation* gl = context_->GetImplementation();
   program_ = gl->CreateProgram();
 
   GLuint vertex_shader =

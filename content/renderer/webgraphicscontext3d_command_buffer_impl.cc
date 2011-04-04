@@ -39,9 +39,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
 
 WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {
-  if (context_) {
-    ggl::DestroyContext(context_);
-  }
+  delete context_;
 }
 
 static const char* kWebGraphicsContext3DPerferredGLExtensions =
@@ -61,19 +59,20 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     return false;
   DCHECK(host->state() == GpuChannelHost::kConnected);
 
-  // Convert WebGL context creation attributes into GGL/EGL size requests.
+  // Convert WebGL context creation attributes into RendererGLContext / EGL size
+  // requests.
   const int alpha_size = attributes.alpha ? 8 : 0;
   const int depth_size = attributes.depth ? 24 : 0;
   const int stencil_size = attributes.stencil ? 8 : 0;
   const int samples = attributes.antialias ? 4 : 0;
   const int sample_buffers = attributes.antialias ? 1 : 0;
   const int32 attribs[] = {
-    ggl::GGL_ALPHA_SIZE, alpha_size,
-    ggl::GGL_DEPTH_SIZE, depth_size,
-    ggl::GGL_STENCIL_SIZE, stencil_size,
-    ggl::GGL_SAMPLES, samples,
-    ggl::GGL_SAMPLE_BUFFERS, sample_buffers,
-    ggl::GGL_NONE,
+    RendererGLContext::ALPHA_SIZE, alpha_size,
+    RendererGLContext::DEPTH_SIZE, depth_size,
+    RendererGLContext::STENCIL_SIZE, stencil_size,
+    RendererGLContext::SAMPLES, samples,
+    RendererGLContext::SAMPLE_BUFFERS, sample_buffers,
+    RendererGLContext::NONE,
   };
 
   const GPUInfo& gpu_info = host->gpu_info();
@@ -96,22 +95,21 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
       return false;
 
     web_view_ = web_view;
-    context_ = ggl::CreateViewContext(
+    context_ = RendererGLContext::CreateViewContext(
         host,
         renderview->routing_id(),
         kWebGraphicsContext3DPerferredGLExtensions,
         attribs,
         active_url);
     if (context_) {
-      ggl::SetSwapBuffersCallback(
-          context_,
+      context_->SetSwapBuffersCallback(
           NewCallback(this,
                       &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffers));
     }
   } else {
     bool compositing_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisableAcceleratedCompositing);
-    ggl::Context* parent_context = NULL;
+    RendererGLContext* parent_context = NULL;
     // If GPU compositing is enabled we need to create a GL context that shares
     // resources with the compositor's context.
     if (compositing_enabled) {
@@ -126,7 +124,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
         parent_context = context_impl->context_;
       }
     }
-    context_ = ggl::CreateOffscreenContext(
+    context_ = RendererGLContext::CreateOffscreenContext(
         host,
         parent_context,
         gfx::Size(1, 1),
@@ -138,15 +136,14 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   if (!context_)
     return false;
 
-  ggl::SetContextLostCallback(
-      context_,
+  context_->SetContextLostCallback(
       NewCallback(this,
                   &WebGraphicsContext3DCommandBufferImpl::OnContextLost));
 
   // TODO(gman): Remove this.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisableGLSLTranslator)) {
-    DisableShaderTranslation(context_);
+    context_->DisableShaderTranslation();
   }
 
   // Set attributes_ from created offscreen context.
@@ -170,7 +167,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::makeContextCurrent() {
-  return ggl::MakeCurrent(context_);
+  return RendererGLContext::MakeCurrent(context_);
 }
 
 int WebGraphicsContext3DCommandBufferImpl::width() {
@@ -187,13 +184,13 @@ bool WebGraphicsContext3DCommandBufferImpl::isGLES2Compliant() {
 
 WebGLId WebGraphicsContext3DCommandBufferImpl::getPlatformTextureId() {
   DCHECK(context_);
-  return ggl::GetParentTextureId(context_);
+  return context_->GetParentTextureId();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
   // Copies the contents of the off-screen render target into the texture
   // used by the compositor.
-  ggl::SwapBuffers(context_);
+  context_->SwapBuffers();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
@@ -203,14 +200,14 @@ void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
 
   if (web_view_) {
 #if defined(OS_MACOSX)
-    ggl::ResizeOnscreenContext(context_, gfx::Size(width, height));
+    context_->ResizeOnscreen(gfx::Size(width, height));
 #else
     glResizeCHROMIUM(width, height);
 #endif
   } else {
-    ggl::ResizeOffscreenContext(context_, gfx::Size(width, height));
+    context_->ResizeOffscreen(gfx::Size(width, height));
     // Force a SwapBuffers to get the framebuffer to resize.
-    ggl::SwapBuffers(context_);
+    context_->SwapBuffers();
   }
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
@@ -221,13 +218,13 @@ void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
 WebGLId WebGraphicsContext3DCommandBufferImpl::createCompositorTexture(
     WGC3Dsizei width, WGC3Dsizei height) {
   makeContextCurrent();
-  return ggl::CreateParentTexture(context_, gfx::Size(width, height));
+  return context_->CreateParentTexture(gfx::Size(width, height));
 }
 
 void WebGraphicsContext3DCommandBufferImpl::deleteCompositorTexture(
     WebGLId parent_texture) {
   makeContextCurrent();
-  ggl::DeleteParentTexture(context_, parent_texture);
+  context_->DeleteParentTexture(parent_texture);
 }
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
@@ -650,7 +647,7 @@ WGC3Denum WebGraphicsContext3DCommandBufferImpl::getError() {
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::isContextLost() {
-  return ggl::IsCommandBufferContextLost(context_);
+  return context_->IsCommandBufferContextLost();
 }
 
 DELEGATE_TO_GL_2(getFloatv, GetFloatv, WGC3Denum, WGC3Dfloat*)

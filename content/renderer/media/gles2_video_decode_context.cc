@@ -1,15 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <GLES2/gl2.h>
 
 #include "base/message_loop.h"
-#include "content/renderer/ggl.h"
 #include "content/renderer/media/gles2_video_decode_context.h"
+#include "content/renderer/renderer_gl_context.h"
 
 Gles2VideoDecodeContext::Gles2VideoDecodeContext(
-    MessageLoop* message_loop, bool memory_mapped, ggl::Context* context)
+    MessageLoop* message_loop, bool memory_mapped, RendererGLContext* context)
     : message_loop_(message_loop),
       memory_mapped_(memory_mapped),
       context_(context) {
@@ -37,10 +37,10 @@ void Gles2VideoDecodeContext::AllocateVideoFrames(
     return;
   }
 
-  // In this method we need to make the ggl context current and then generate
+  // In this method we need to make the context current and then generate
   // textures for each video frame. We also need to allocate memory for each
   // texture generated.
-  bool ret = ggl::MakeCurrent(context_);
+  bool ret = RendererGLContext::MakeCurrent(context_);
   CHECK(ret) << "Failed to switch context";
 
   frames_.resize(num_frames);
@@ -86,7 +86,7 @@ void Gles2VideoDecodeContext::ReleaseAllVideoFrames() {
   }
 
   // Make the context current and then release the video frames.
-  bool ret = ggl::MakeCurrent(context_);
+  bool ret = RendererGLContext::MakeCurrent(context_);
   CHECK(ret) << "Failed to switch context";
 
   for (size_t i = 0; i < frames_.size(); ++i) {

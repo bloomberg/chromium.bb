@@ -17,9 +17,7 @@ class PluginInstance;
 }  // namespace ppapi
 }  // namespace webkit
 
-namespace ggl {
-class Context;
-}  // namespace ggl
+class RendererGLContext;
 
 // A RenderWidget that hosts a fullscreen pepper plugin. This provides a
 // FullscreenContainer that the plugin instance can callback into to e.g.
@@ -40,7 +38,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   virtual void Destroy();
   virtual webkit::ppapi::PluginDelegate::PlatformContext3D* CreateContext3D();
 
-  ggl::Context* context() const { return context_; }
+  RendererGLContext* context() const { return context_; }
 
  protected:
   RenderWidgetFullscreenPepper(RenderThreadBase* render_thread,
@@ -84,7 +82,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   webkit::ppapi::PluginInstance* plugin_;
 
   // GL context for compositing.
-  ggl::Context* context_;
+  RendererGLContext* context_;
   unsigned int buffer_;
   unsigned int program_;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,21 +10,19 @@
 #include "media/video/video_decode_context.h"
 
 class MessageLoop;
-
-namespace ggl {
-class Context;
-}  // namespace ggl
+class RendererGLContext;
 
 // FUNCTIONS
 //
-// This is a class that provides a video decode context using a ggl::Context
-// backend.
+// This is a class that provides a video decode context using a
+// RendererGLContext backend.
 //
 // It provides resources for a VideoDecodeEngine to store decoded video frames.
 //
 // This class is aware of the command buffer implementation of GLES2 inside the
-// Chrome renderer and keeps a reference of ggl::Context. It might use GLES2
-// commands specific to Chrome's renderer process to provide needed resources.
+// Chrome renderer and keeps a reference of RendererGLContext. It might use
+// GLES2 commands specific to Chrome's renderer process to provide needed
+// resources.
 //
 // There are two different kinds of video frame storage provided by this class:
 // 1. Memory mapped textures (aka software decoding mode).
@@ -76,7 +74,8 @@ class Gles2VideoDecodeContext : public media::VideoDecodeContext {
   // |memory_mapped| determines if textures allocated are memory mapped.
   // |context| is the graphics context for generating textures.
   Gles2VideoDecodeContext(MessageLoop* message_loop,
-                          bool memory_mapped, ggl::Context* context);
+                          bool memory_mapped,
+                          RendererGLContext* context);
   virtual ~Gles2VideoDecodeContext();
 
   // media::VideoDecodeContext implementation.
@@ -102,7 +101,7 @@ class Gles2VideoDecodeContext : public media::VideoDecodeContext {
   bool memory_mapped_;
 
   // Pointer to the GLES2 context.
-  ggl::Context* context_;
+  RendererGLContext* context_;
 
   // VideoFrames allocated.
   std::vector<scoped_refptr<media::VideoFrame> > frames_;

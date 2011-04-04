@@ -64,7 +64,6 @@
 #include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
-#include "content/renderer/ggl.h"
 #include "content/renderer/load_progress_tracker.h"
 #include "content/renderer/media/audio_renderer_impl.h"
 #include "content/renderer/media/ipc_video_decoder.h"

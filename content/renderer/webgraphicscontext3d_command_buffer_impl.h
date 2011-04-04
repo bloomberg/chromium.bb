@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/renderer/ggl.h"
+#include "content/renderer/renderer_gl_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -419,7 +419,7 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void copyTextureToCompositor(WebGLId texture,
                                        WebGLId parent_texture);
 
-  ggl::Context* context() { return context_; }
+  RendererGLContext* context() { return context_; }
 
   virtual void setContextLostCallback(
       WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
@@ -429,8 +429,8 @@ class WebGraphicsContext3DCommandBufferImpl
   void OnSwapBuffers();
   virtual void OnContextLost();
 
-  // The GGL context we use for OpenGL rendering.
-  ggl::Context* context_;
+  // The context we use for OpenGL rendering.
+  RendererGLContext* context_;
   // If rendering directly to WebView, weak pointer to it.
   WebKit::WebView* web_view_;
 #if defined(OS_MACOSX)

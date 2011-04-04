@@ -27,7 +27,7 @@
 #include "content/renderer/audio_message_filter.h"
 #include "content/renderer/command_buffer_proxy.h"
 #include "content/renderer/content_renderer_client.h"
-#include "content/renderer/ggl.h"
+#include "content/renderer/renderer_gl_context.h"
 #include "content/renderer/gpu_channel_host.h"
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 #include "content/renderer/render_view.h"
@@ -512,7 +512,7 @@ webkit::ppapi::PluginDelegate::PlatformContext3D*
   if (!context || context->isContextLost())
     return NULL;
 
-  ggl::Context* parent_context = context->context();
+  RendererGLContext* parent_context = context->context();
   if (!parent_context)
     return NULL;
 

@@ -18,19 +18,14 @@ class CommandBuffer;
 
 }  // namespace gpu
 
-namespace ggl {
-
-class Context;
-
-}  // namespace ggl;
-
-class GpuChannelHost;
 class CommandBufferProxy;
+class GpuChannelHost;
+class RendererGLContext;
 
 class PlatformContext3DImpl
     : public webkit::ppapi::PluginDelegate::PlatformContext3D {
  public:
-  explicit PlatformContext3DImpl(ggl::Context* parent_context);
+  explicit PlatformContext3DImpl(RendererGLContext* parent_context);
   virtual ~PlatformContext3DImpl();
 
   virtual bool Init();
@@ -43,7 +38,7 @@ class PlatformContext3DImpl
   bool InitRaw();
   void OnContextLost();
 
-  base::WeakPtr<ggl::Context> parent_context_;
+  base::WeakPtr<RendererGLContext> parent_context_;
   scoped_refptr<GpuChannelHost> channel_;
   unsigned int parent_texture_id_;
   CommandBufferProxy* command_buffer_;

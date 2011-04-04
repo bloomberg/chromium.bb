@@ -13,15 +13,12 @@
 #include "media/video/video_decode_context.h"
 
 struct AVRational;
-
-namespace ggl {
-class Context;
-}  // namespace ggl
+class RendererGLContext;
 
 class IpcVideoDecoder : public media::VideoDecoder,
                         public media::VideoDecodeEngine::EventHandler {
  public:
-  IpcVideoDecoder(MessageLoop* message_loop, ggl::Context* ggl_context);
+  IpcVideoDecoder(MessageLoop* message_loop, RendererGLContext* gl_context);
   virtual ~IpcVideoDecoder();
 
   // media::Filter implementation.
@@ -72,10 +69,10 @@ class IpcVideoDecoder : public media::VideoDecoder,
   MessageLoop* decode_context_message_loop_;
 
   // A context for allocating textures and issuing GLES2 commands.
-  // TODO(hclam): A ggl::Context lives on the Render Thread while this object
-  // lives on the Video Decoder Thread, we need to take care of context lost
-  // and destruction of the context.
-  ggl::Context* ggl_context_;
+  // TODO(hclam): A RendererGLContext lives on the Render Thread while this
+  // object lives on the Video Decoder Thread, we need to take care of context
+  // lost and destruction of the context.
+  RendererGLContext* gl_context_;
 
   // This VideoDecodeEngine translate our requests to IPC commands to the
   // GPU process.
