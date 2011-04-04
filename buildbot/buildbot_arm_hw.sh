@@ -56,7 +56,8 @@ fi
 curl -L \
     http://commondatastorage.googleapis.com/nativeclient-archive2/\
 between_builders/${PARENT_BUILDER}/${VERSION}/build.tgz \
-    -o build.tgz && tar xvfz build.tgz --no-same-owner
+    -o build.tgz
+tar xvfz build.tgz --no-same-owner
 
 echo @@@BUILD_STEP small_tests@@@
 ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \

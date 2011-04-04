@@ -58,15 +58,15 @@ echo @@@BUILD_STEP partial_sdk@@@
     extra_sdk_update
 
 echo @@@BUILD_STEP gyp_compile@@@
-cd .. && make -k -j4 V=1 BUILDTYPE=${GYPMODE} && cd native_client
+make -C .. -k -j4 V=1 BUILDTYPE=${GYPMODE}
 
 echo @@@BUILD_STEP gyp_tests@@@
 python trusted_test.py --config ${GYPMODE}
 
 echo @@@BUILD_STEP scons_compile@@@
 ./scons -j 8 DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    --mode=${MODE}-linux,nacl,doc platform=arm bitcode=1 sdl=none && \
-    tar cvfz arm.tgz scons-out/
+    --mode=${MODE}-linux,nacl,doc platform=arm bitcode=1 sdl=none
+tar cvfz arm.tgz scons-out/
 
 echo @@@BUILD_STEP small_tests@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \

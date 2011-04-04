@@ -34,13 +34,15 @@ echo @@@BUILD_STEP compile_toolchain@@@
 echo @@@BUILD_STEP tar_glibc@@@
 (
   cd tools/glibc
-  tar zScf ../glibc.tgz * && chmod a+r ../glibc.tgz
+  tar zScf ../glibc.tgz *
+  chmod a+r ../glibc.tgz
 )
 
 echo @@@BUILD_STEP tar_toolchain@@@
 (
   cd tools
-  tar zScf toolchain.tgz toolchain/ && chmod a+r toolchain.tgz
+  tar zScf toolchain.tgz toolchain/
+  chmod a+r toolchain.tgz
 )
 
 echo @@@BUILD_STEP archive_glibc@@@

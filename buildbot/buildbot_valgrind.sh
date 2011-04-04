@@ -31,7 +31,7 @@ echo @@@BUILD_STEP partial_sdk@@@
 extra_sdk_update_header install_libpthread extra_sdk_update
 
 echo @@@BUILD_STEP gyp_compile@@@
-cd .. && make -k -j12 V=1 BUILDTYPE=Debug && cd native_client
+make -C .. -k -j12 V=1 BUILDTYPE=Debug
 
 echo @@@BUILD_STEP gyp_tests@@@
 python trusted_test.py --config Debug

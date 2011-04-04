@@ -50,7 +50,7 @@ extra_sdk_update_header install_libpthread extra_sdk_update
 fi
 
 echo @@@BUILD_STEP gyp_compile@@@
-cd .. && make -k -j12 V=1 BUILDTYPE=${GYPMODE} && cd native_client
+make -C .. -k -j12 V=1 BUILDTYPE=${GYPMODE}
 
 echo @@@BUILD_STEP gyp_tests@@@
 python trusted_test.py --config ${GYPMODE}
