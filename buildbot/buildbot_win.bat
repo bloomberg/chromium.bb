@@ -45,6 +45,13 @@ echo @@@BUILD_STEP gyp_tests@@@
 python_slave.exe trusted_test.py --config %GYPMODE%
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
+echo on
+echo @@@BUILD_STEP scons_compile@@@
+call vcvarsall.bat %VCBITS% && call scons.bat -j 8 ^
+ DOXYGEN=..\third_party\doxygen\win\doxygen ^
+ -k --verbose --mode=%MODE%-win,nacl,doc platform=x86-%BITS%
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+
 echo @@@BUILD_STEP small_tests@@@
 call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
@@ -78,14 +85,6 @@ call vcvarsall.bat %VCBITS% && call scons.bat ^
  -k --verbose --mode=%MODE%-win,nacl,doc SILENT=1 platform=x86-%BITS% ^
  pyauto_tests
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
-
-
-echo on
-echo @@@BUILD_STEP scons_compile@@@
-call vcvarsall.bat %VCBITS% && call scons.bat -j 8 ^
- DOXYGEN=..\third_party\doxygen\win\doxygen ^
- -k --verbose --mode=%MODE%-win,nacl,doc platform=x86-%BITS%
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 if %BUILDBOT_BUILDERNAME% equ vista64-m64-n64-dbg goto ArchiveIt
 if %BUILDBOT_BUILDERNAME% equ vista64-m64-n64-opt goto ArchiveIt
