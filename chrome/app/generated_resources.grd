@@ -9596,7 +9596,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Require password to wake from sleep
       </message>
       <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the Personal Stuff settings tab, the text on the button to change picture for the current user.">
-        Change picture...
+        Change picture
+      </message>
+      <message name="IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TITLE" desc="Title of the dialog shown when user wants to change his/her picture.">
+        Change picture
+      </message>
+      <message name="IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT" desc="Text with description of what to do on Change picture dialog.">
+        Choose a picture to identify your account later on the Sign-in screen.
+      </message>
+      <message name="IDS_OPTIONS_CHANGE_PICTURE_PICK_FILE" desc="Text on a button that shows file picker to choose a picture.">
+        Pick a file
+      </message>
+      <message name="IDS_OPTIONS_CROP_IMAGE_DIALOG_TITLE" desc="Title of the dialog shown when user wants to crop his/her picture.">
+        Crop image
+      </message>
+      <message name="IDS_OPTIONS_CROP_IMAGE_DIALOG_TEXT" desc="Text with description of what to do on Crop image dialog.">
+        Select a square region of the image.
       </message>
       <message name="IDS_OPTIONS_TAKE_PHOTO" desc="In the Personal Stuff settings tab, the text on the button to take photo of the current user.">
         Take photo...
