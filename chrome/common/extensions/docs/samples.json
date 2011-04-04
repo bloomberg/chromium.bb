@@ -1416,6 +1416,7 @@
         "chrome.browserAction.setBadgeText",
         "chrome.browserAction.setTitle",
         "chrome.experimental.proxy.onProxyError",
+        "chrome.extension.isAllowedIncognitoAccess",
         "chrome.extension.onRequest",
         "chrome.extension.sendRequest",
         "chrome.i18n.getMessage"
@@ -1433,7 +1434,7 @@
       "name": "Proxy Settings",
       "path": "examples/extensions/proxy_configuration/",
       "protocols": [],
-      "search_string": "PROXY SETTINGS SET CHROME-SPECIFIC PROXIES; A DEMONSTRATION OF CHROMES PROXY API BACKGROUND_PAGE BROWSER_ACTION EXPERIMENTAL POPUP PROXY CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXPERIMENTAL.PROXY.ONPROXYERROR CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE",
+      "search_string": "PROXY SETTINGS SET CHROME-SPECIFIC PROXIES; A DEMONSTRATION OF CHROMES PROXY API BACKGROUND_PAGE BROWSER_ACTION EXPERIMENTAL POPUP PROXY CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXPERIMENTAL.PROXY.ONPROXYERROR CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE",
       "source_files": [
         "_locales/en/messages.json",
         "background.html",
@@ -1446,7 +1447,7 @@
         "test/proxy_form_controller_test.js",
         "test/unittest.css"
       ],
-      "source_hash": "b36c6558338a1a1c291f0cb4fa68f484355e6997",
+      "source_hash": "3565d99743a1f7579d91174cb77f9ff2c189c37c",
       "zip_path": "examples/extensions/proxy_configuration.zip"
     },
     {
@@ -1687,6 +1688,31 @@
       ],
       "source_hash": "efa16032a02c474f9c9bafb90a964fd57c667ea2",
       "zip_path": "examples/api/webNavigation/basic.zip"
+    },
+    {
+      "api_calls": [
+        "chrome.extension.isAllowedFileSchemeAccess",
+        "chrome.extension.isAllowedIncognitoAccess"
+      ],
+      "description": "Demonstrates the `extension.isAllowed???Access` APIs",
+      "features": [
+        "browser_action"
+      ],
+      "icon": "sample-128.png",
+      "id": "0fa4abe6545f0316fea7cfa07c53aa48c4f3d018",
+      "name": "`extension.isAllowed???Access` Example",
+      "path": "examples/api/extension/isAllowedAccess/",
+      "protocols": [
+        "file://"
+      ],
+      "search_string": "`EXTENSION.ISALLOWED???ACCESS` EXAMPLE DEMONSTRATES THE `EXTENSION.ISALLOWED???ACCESS` APIS BROWSER_ACTION CHROME.EXTENSION.ISALLOWEDFILESCHEMEACCESS CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
+      "source_files": [
+        "manifest.json",
+        "popup.html",
+        "sample.css"
+      ],
+      "source_hash": "4494289baae4cb06b3c825d80059b89536df0db2",
+      "zip_path": "examples/api/extension/isAllowedAccess.zip"
     }
   ]
 }

@@ -125,6 +125,12 @@ ProxyFormController.prototype = {
    */
   config_: {regular: null, incognito: null},
 
+  /**
+   * Do we have access to incognito mode?
+   * @type {boolean}
+   * @private
+   */
+  isAllowedIncognitoAccess_: false,
 
   /**
    * @return {string} The PAC file URL (or an empty string).
@@ -323,10 +329,27 @@ ProxyFormController.prototype = {
    * @private
    */
   readCurrentState_: function() {
+    chrome.extension.isAllowedIncognitoAccess(
+        this.handleIncognitoAccessResponse_.bind(this));
+  },
+
+  /**
+   * Handles the respnse from `chrome.extension.isAllowedIncognitoAccess`
+   * We can't render the form until we know what our access level is, so
+   * we wait until we have confirmed incognito access levels before
+   * asking for the proxy state.
+   *
+   * @param {boolean} state The state of incognito access.
+   * @private
+   */
+  handleIncognitoAccessResponse_: function(state) {
+    this.isAllowedIncognitoAccess_ = state;
     chrome.experimental.proxy.settings.get({incognito: false},
         this.handleRegularState_.bind(this));
-    chrome.experimental.proxy.settings.get({incognito: true},
-        this.handleIncognitoState_.bind(this));
+    if (this.isAllowedIncognitoAccess_) {
+      chrome.experimental.proxy.settings.get({incognito: true},
+          this.handleIncognitoState_.bind(this));
+    }
   },
 
   /**
@@ -532,10 +555,10 @@ ProxyFormController.prototype = {
    * @private
    */
   generateAlert_: function(msg, close) {
-    var success = document.createElement('p');
+    var success = document.createElement('div');
     success.classList.add('overlay');
     success.setAttribute('role', 'alert');
-    success.innerText = msg;
+    success.textContent = msg;
     document.body.appendChild(success);
 
     setTimeout(function() { success.classList.add('visible'); }, 10);
@@ -631,6 +654,21 @@ ProxyFormController.prototype = {
   toggleIncognitoMode_: function(e) {
     var div = this.form_.parentNode;
     var button = document.getElementsByTagName('button')[0];
+
+    // Cancel the button click.
+    e.preventDefault();
+    e.stopPropagation();
+
+    // If we can't access Incognito settings, throw a message and return.
+    if (!this.isAllowedIncognitoAccess_) {
+      var msg = "I'm sorry, Dave, I'm afraid I can't do that. Give me access " +
+                "to Incognito settings by checking the checkbox labeled " +
+                "'Allow in Incognito mode', which is visible at " +
+                "chrome://extensions.";
+      this.generateAlert_(msg, false);
+      return;
+    }
+
     if (this.isIncognitoMode_()) {
       // In incognito mode, switching to cognito.
       this.config_.incognito = this.generateProxyConfig_();
@@ -644,10 +682,6 @@ ProxyFormController.prototype = {
       this.recalcFormValues_(this.config_.incognito);
       button.innerText = 'Configure regular window settings.';
     }
-
-    // Cancel the button click.
-    e.preventDefault();
-    e.stopPropagation();
   },
 
 

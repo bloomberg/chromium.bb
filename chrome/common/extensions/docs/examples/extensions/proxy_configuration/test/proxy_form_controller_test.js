@@ -14,11 +14,14 @@ chrome.experimental = chrome.experimental || {
 };
 // Stub out i18n
 chrome.i18n = chrome.i18n || {
-   getMessage: function(x) { return x; }
+  getMessage: function(x) { return x; }
 };
-// Stub out messaging
+// Stub out messaging and access.
 chrome.extension = chrome.extension || {
-   sendRequest: function() {}
+  sendRequest: function() {},
+  isAllowedIncognitoAccess: function(funk) {
+    funk(true);
+  }
 };
 var fixture = document.getElementById('fixture');
 var baselineHTML = fixture.innerHTML;
