@@ -6,7 +6,6 @@
 
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/gfx_resource_provider.h"
 #include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
@@ -28,7 +27,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "ui/gfx/gfx_module.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_LINUX)
@@ -96,9 +94,6 @@ void RenderViewTest::LoadHTML(const char* html) {
 }
 
 void RenderViewTest::SetUp() {
-  // Configure modules that need access to resources.
-  gfx::GfxModule::SetResourceProvider(chrome::GfxResourceProvider);
-
   content::GetContentClient()->set_renderer(&chrome_content_renderer_client_);
   extension_dispatcher_ = new ExtensionDispatcher();
   sandbox_init_wrapper_.reset(new SandboxInitWrapper());

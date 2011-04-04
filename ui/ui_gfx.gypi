@@ -74,8 +74,6 @@
         'gfx/font.cc',
         'gfx/gfx_paths.cc',
         'gfx/gfx_paths.h',
-        'gfx/gfx_module.cc',
-        'gfx/gfx_module.h',
         'gfx/image.cc',
         'gfx/image.h',
         'gfx/image_mac.mm',

@@ -76,6 +76,9 @@ class ResourceBundle {
   // defined by the Cocoa UI (ie-NSBundle does the langange work).
   static std::string InitSharedInstance(const std::string& pref_locale);
 
+  // Initialize the ResourceBundle using given data pack path for testing.
+  static void InitSharedInstanceForTest(const FilePath& path);
+
   // Changes the locale for an already-initialized ResourceBundle.  Future
   // calls to get strings will return the strings for this new locale.  This
   // has no effect on existing or future image resources.  This has no effect
@@ -210,6 +213,9 @@ class ResourceBundle {
   // Try to load the locale specific strings from an external data module.
   // Returns the locale that is loaded.
   std::string LoadLocaleResources(const std::string& pref_locale);
+
+  // Load test resources in given path.
+  void LoadTestResources(const FilePath& path);
 
   // Unload the locale specific strings and prepares to load new ones. See
   // comments for ReloadSharedInstance().

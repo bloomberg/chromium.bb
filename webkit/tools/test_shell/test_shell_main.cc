@@ -29,7 +29,6 @@
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptController.h"
-#include "ui/gfx/gfx_module.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_switches.h"
 #include "webkit/glue/webkit_glue.h"
@@ -198,7 +197,6 @@ int main(int argc, char* argv[]) {
 
   // Config the modules that need access to a limited set of resources.
   net::NetModule::SetResourceProvider(TestShell::ResourceProvider);
-  gfx::GfxModule::SetResourceProvider(TestShell::ResourceProvider);
 
   platform.InitializeGUI();
 

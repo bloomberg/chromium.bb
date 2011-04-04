@@ -79,7 +79,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
-#include "chrome/common/gfx_resource_provider.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/logging_chrome.h"
@@ -114,7 +113,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/system_monitor/system_monitor.h"
-#include "ui/gfx/gfx_module.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "base/linux_util.h"
@@ -1588,7 +1586,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
-  gfx::GfxModule::SetResourceProvider(chrome::GfxResourceProvider);
 
   // Register our global network handler for chrome:// and
   // chrome-extension:// URLs.

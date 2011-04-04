@@ -65,6 +65,14 @@ std::string ResourceBundle::InitSharedInstance(
 }
 
 /* static */
+void ResourceBundle::InitSharedInstanceForTest(const FilePath& path) {
+  DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
+  g_shared_instance_ = new ResourceBundle();
+
+  g_shared_instance_->LoadTestResources(path);
+}
+
+/* static */
 std::string ResourceBundle::ReloadSharedInstance(
     const std::string& pref_locale) {
   DCHECK(g_shared_instance_ != NULL) << "ResourceBundle not initialized";

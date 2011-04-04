@@ -47,8 +47,6 @@
           'common/content_settings_helper.h',
           'common/content_settings_types.h',
           'common/devtools_messages.h',
-          'common/gfx_resource_provider.cc',
-          'common/gfx_resource_provider.h',
           'common/guid.cc',
           'common/guid.h',
           'common/guid_posix.cc',

@@ -68,6 +68,11 @@ std::string ResourceBundle::LoadLocaleResources(
   return app_locale;
 }
 
+void ResourceBundle::LoadTestResources(const FilePath& path) {
+  // ResourceBundle with test resources is only used on Linux test_sheel/DRT.
+  NOTREACHED();
+}
+
 void ResourceBundle::UnloadLocaleResources() {
   if (locale_resources_data_) {
     BOOL rv = FreeLibrary(locale_resources_data_);

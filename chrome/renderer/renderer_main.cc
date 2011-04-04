@@ -24,7 +24,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/gfx_resource_provider.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pepper_plugin_registry.h"
@@ -37,7 +36,6 @@
 #include "net/base/net_module.h"
 #include "ui/base/system_monitor/system_monitor.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/gfx/gfx_module.h"
 
 #if defined(OS_MACOSX)
 #include "base/eintr_wrapper.h"
@@ -249,7 +247,6 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
-  gfx::GfxModule::SetResourceProvider(chrome::GfxResourceProvider);
 
   // This function allows pausing execution using the --renderer-startup-dialog
   // flag allowing us to attach a debugger.

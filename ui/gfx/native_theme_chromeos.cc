@@ -10,7 +10,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "ui/gfx/gfx_module.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -298,13 +298,12 @@ gfx::Size NativeThemeChromeos::GetPartSize(Part part) const {
 void NativeThemeChromeos::PaintScrollbarTrack(skia::PlatformCanvas* canvas,
     Part part, State state,
     const ScrollbarTrackExtraParams& extra_params, const gfx::Rect& rect) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (part == kScrollbarVerticalTrack) {
-    SkBitmap* background =
-        gfx::GfxModule::GetBitmapNamed(IDR_SCROLL_BACKGROUND);
-    SkBitmap* border_up =
-        gfx::GfxModule::GetBitmapNamed(IDR_SCROLL_BACKGROUND_BORDER_UP);
+    SkBitmap* background = rb.GetBitmapNamed(IDR_SCROLL_BACKGROUND);
+    SkBitmap* border_up = rb.GetBitmapNamed(IDR_SCROLL_BACKGROUND_BORDER_UP);
     SkBitmap* border_down =
-        gfx::GfxModule::GetBitmapNamed(IDR_SCROLL_BACKGROUND_BORDER_DOWN);
+        rb.GetBitmapNamed(IDR_SCROLL_BACKGROUND_BORDER_DOWN);
     // Draw track background.
     DrawBitmapInt(
         canvas, *background,
@@ -342,13 +341,14 @@ void NativeThemeChromeos::PaintScrollbarTrack(skia::PlatformCanvas* canvas,
 
 void NativeThemeChromeos::PaintScrollbarThumb(skia::PlatformCanvas* canvas,
     Part part, State state, const gfx::Rect& rect) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int resource_id = IDR_SCROLL_THUMB;
   if (state == kHovered)
     resource_id++;
   else if (state == kPressed)
     resource_id += 2;
   if (part == kScrollbarVerticalThumb) {
-    SkBitmap* bitmap = gfx::GfxModule::GetBitmapNamed(resource_id);
+    SkBitmap* bitmap = rb.GetBitmapNamed(resource_id);
     // Top
     DrawBitmapInt(
         canvas, *bitmap,
@@ -386,6 +386,7 @@ void NativeThemeChromeos::PaintScrollbarThumb(skia::PlatformCanvas* canvas,
 
 void NativeThemeChromeos::PaintArrowButton(skia::PlatformCanvas* canvas,
     const gfx::Rect& rect, Part part, State state) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int resource_id =
       (part == kScrollbarUpArrow || part == kScrollbarLeftArrow) ?
           IDR_SCROLL_ARROW_UP : IDR_SCROLL_ARROW_DOWN;
@@ -395,7 +396,7 @@ void NativeThemeChromeos::PaintArrowButton(skia::PlatformCanvas* canvas,
     resource_id += 2;
   SkBitmap* bitmap;
   if (part == kScrollbarUpArrow || part == kScrollbarDownArrow)
-    bitmap = gfx::GfxModule::GetBitmapNamed(resource_id);
+    bitmap = rb.GetBitmapNamed(resource_id);
   else
     bitmap = GetHorizontalBitmapNamed(resource_id);
   DrawBitmapInt(canvas, *bitmap,
@@ -678,7 +679,8 @@ SkBitmap* NativeThemeChromeos::GetHorizontalBitmapNamed(int resource_id) {
   if (found != horizontal_bitmaps_.end())
     return found->second;
 
-  SkBitmap* vertical_bitmap = gfx::GfxModule::GetBitmapNamed(resource_id);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  SkBitmap* vertical_bitmap = rb.GetBitmapNamed(resource_id);
 
   if (vertical_bitmap) {
     SkBitmap transposed_bitmap =

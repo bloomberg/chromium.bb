@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "grit/gfx_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/gfx_module.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -383,19 +383,20 @@ void NativeThemeLinux::PaintCheckbox(skia::PlatformCanvas* canvas,
                                      State state,
                                      const gfx::Rect& rect,
                                      const ButtonExtraParams& button) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SkBitmap* image = NULL;
   if (button.indeterminate) {
     image = state == kDisabled ?
-        GfxModule::GetBitmapNamed(IDR_LINUX_CHECKBOX_DISABLED_INDETERMINATE) :
-        GfxModule::GetBitmapNamed(IDR_LINUX_CHECKBOX_INDETERMINATE);
+        rb.GetBitmapNamed(IDR_LINUX_CHECKBOX_DISABLED_INDETERMINATE) :
+        rb.GetBitmapNamed(IDR_LINUX_CHECKBOX_INDETERMINATE);
   } else if (button.checked) {
     image = state == kDisabled ?
-        GfxModule::GetBitmapNamed(IDR_LINUX_CHECKBOX_DISABLED_ON) :
-        GfxModule::GetBitmapNamed(IDR_LINUX_CHECKBOX_ON);
+        rb.GetBitmapNamed(IDR_LINUX_CHECKBOX_DISABLED_ON) :
+        rb.GetBitmapNamed(IDR_LINUX_CHECKBOX_ON);
   } else {
     image = state == kDisabled ?
-        GfxModule::GetBitmapNamed(IDR_LINUX_CHECKBOX_DISABLED_OFF) :
-        GfxModule::GetBitmapNamed(IDR_LINUX_CHECKBOX_OFF);
+        rb.GetBitmapNamed(IDR_LINUX_CHECKBOX_DISABLED_OFF) :
+        rb.GetBitmapNamed(IDR_LINUX_CHECKBOX_OFF);
   }
 
   gfx::Rect bounds = rect.Center(gfx::Size(image->width(), image->height()));
@@ -407,15 +408,16 @@ void NativeThemeLinux::PaintRadio(skia::PlatformCanvas* canvas,
                                   State state,
                                   const gfx::Rect& rect,
                                   const ButtonExtraParams& button) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SkBitmap* image = NULL;
   if (state == kDisabled) {
     image = button.checked ?
-        GfxModule::GetBitmapNamed(IDR_LINUX_RADIO_DISABLED_ON) :
-        GfxModule::GetBitmapNamed(IDR_LINUX_RADIO_DISABLED_OFF);
+        rb.GetBitmapNamed(IDR_LINUX_RADIO_DISABLED_ON) :
+        rb.GetBitmapNamed(IDR_LINUX_RADIO_DISABLED_OFF);
   } else {
     image = button.checked ?
-        GfxModule::GetBitmapNamed(IDR_LINUX_RADIO_ON) :
-        GfxModule::GetBitmapNamed(IDR_LINUX_RADIO_OFF);
+        rb.GetBitmapNamed(IDR_LINUX_RADIO_ON) :
+        rb.GetBitmapNamed(IDR_LINUX_RADIO_OFF);
   }
 
   gfx::Rect bounds = rect.Center(gfx::Size(image->width(), image->height()));
@@ -697,11 +699,10 @@ void NativeThemeLinux::PaintProgressBar(skia::PlatformCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const ProgressBarExtraParams& progress_bar) {
-  SkBitmap* bar_image = GfxModule::GetBitmapNamed(IDR_PROGRESS_BAR);
-  SkBitmap* left_border_image = GfxModule::GetBitmapNamed(
-      IDR_PROGRESS_BORDER_LEFT);
-  SkBitmap* right_border_image = GfxModule::GetBitmapNamed(
-      IDR_PROGRESS_BORDER_RIGHT);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  SkBitmap* bar_image = rb.GetBitmapNamed(IDR_PROGRESS_BAR);
+  SkBitmap* left_border_image = rb.GetBitmapNamed(IDR_PROGRESS_BORDER_LEFT);
+  SkBitmap* right_border_image = rb.GetBitmapNamed(IDR_PROGRESS_BORDER_RIGHT);
 
   double tile_scale = static_cast<double>(rect.height()) /
       bar_image->height();
@@ -714,7 +715,7 @@ void NativeThemeLinux::PaintProgressBar(skia::PlatformCanvas* canvas,
       rect.x(), rect.y(), rect.width(), rect.height());
 
   if (progress_bar.value_rect_width) {
-    SkBitmap* value_image = GfxModule::GetBitmapNamed(IDR_PROGRESS_VALUE);
+    SkBitmap* value_image = rb.GetBitmapNamed(IDR_PROGRESS_VALUE);
 
     new_tile_width = static_cast<int>(value_image->width() * tile_scale);
     tile_scale_x = static_cast<double>(new_tile_width) /

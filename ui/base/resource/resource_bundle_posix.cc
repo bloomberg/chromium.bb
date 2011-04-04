@@ -115,4 +115,12 @@ std::string ResourceBundle::LoadLocaleResources(
   return app_locale;
 }
 
+void ResourceBundle::LoadTestResources(const FilePath& path) {
+  DCHECK(!resources_data_) << "resource already loaded";
+
+  // Use the given resource pak for both common and localized resources.
+  resources_data_ = LoadResourcesDataPak(path);
+  locale_resources_data_ = LoadResourcesDataPak(path);
+}
+
 }  // namespace ui
