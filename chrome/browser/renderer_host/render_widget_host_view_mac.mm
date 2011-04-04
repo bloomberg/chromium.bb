@@ -1454,12 +1454,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   closeOnDeactivate_ = b;
 }
 
-- (BOOL)shouldIgnoreMouseEvent:(NSEvent*)theEvent {
-  // If this is a background window, don't handle mouse events. This is
-  // the expected behavior on the Mac as evidenced by other applications.
-  if (![[self window] isKeyWindow])
-    return YES;
-
+- (void)mouseEvent:(NSEvent*)theEvent {
   // Use hitTest to check whether the mouse is over a nonWebContentView - in
   // which case the mouse event should not be handled by the render host.
   const SEL nonWebContentViewSelector = @selector(nonWebContentView);
@@ -1472,25 +1467,20 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     if ([view respondsToSelector:nonWebContentViewSelector] &&
         [view performSelector:nonWebContentViewSelector]) {
       // The cursor is over a nonWebContentView - ignore this mouse event.
-      return YES;
+      // If this is the first such event, send a mouse exit to the host view.
+      if (!mouseEventWasIgnored_ &&
+          renderWidgetHostView_->render_widget_host_) {
+        WebMouseEvent exitEvent =
+            WebInputEventFactory::mouseEvent(theEvent, self);
+        exitEvent.type = WebInputEvent::MouseLeave;
+        exitEvent.button = WebMouseEvent::ButtonNone;
+        renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(
+            exitEvent);
+      }
+      mouseEventWasIgnored_ = YES;
+      return;
     }
     view = [view superview];
-  }
-  return NO;
-}
-
-- (void)mouseEvent:(NSEvent*)theEvent {
-  if ([self shouldIgnoreMouseEvent:theEvent]) {
-    // If this is the first such event, send a mouse exit to the host view.
-    if (!mouseEventWasIgnored_ && renderWidgetHostView_->render_widget_host_) {
-      WebMouseEvent exitEvent =
-          WebInputEventFactory::mouseEvent(theEvent, self);
-      exitEvent.type = WebInputEvent::MouseLeave;
-      exitEvent.button = WebMouseEvent::ButtonNone;
-      renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(exitEvent);
-    }
-    mouseEventWasIgnored_ = YES;
-    return;
   }
 
   if (mouseEventWasIgnored_) {
