@@ -45,6 +45,8 @@ class Extension;
 // NOTE: All getters may return NULL.
 class BrowserWindow {
  public:
+  virtual ~BrowserWindow() {}
+
   // Show the window, or activates it if it's already visible.
   virtual void Show() = 0;
 
@@ -343,8 +345,6 @@ class BrowserWindow {
   friend class BrowserList;
   friend class BrowserView;
   virtual void DestroyBrowser() = 0;
-
-  virtual ~BrowserWindow() {}
 };
 
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)

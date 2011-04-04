@@ -2714,6 +2714,8 @@
         'browser/ui/options/options_window.h',
         'browser/ui/options/show_options_url.cc',
         'browser/ui/options/show_options_url.h',
+        'browser/ui/panels/panel.cc',
+        'browser/ui/panels/panel.h',
         'browser/ui/search_engines/edit_search_engine_controller.cc',
         'browser/ui/search_engines/edit_search_engine_controller.h',
         'browser/ui/search_engines/keyword_editor_controller.cc',
