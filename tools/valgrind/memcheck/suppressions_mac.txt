@@ -1570,6 +1570,31 @@
    fun:_ZN15DownloadManager24OnPathExistenceAvailableEP18DownloadCreateInfo
 }
 {
+   bug_77884_a
+   Memcheck:Cond
+   fun:-[TabStripController layoutTabsWithAnimation:regenerateSubviews:]
+   fun:-[TabStripController layoutTabs]
+   fun:-[TabStripController selectTabWithContents:previousContents:atIndex:userGesture:]
+   fun:_ZN27TabStripModelObserverBridge13TabSelectedAtEP18TabContentsWrapperS1_ib
+   fun:_ZN13TabStripModel26NotifyTabSelectedIfChangedEP18TabContentsWrapperib
+   fun:_ZN13TabStripModel19InsertTabContentsAtEiP18TabContentsWrapperi
+   fun:_ZN13TabStripModel17AppendTabContentsEP18TabContentsWrapperb
+   fun:_ZN12_GLOBAL__N_141TabStripControllerTest_AddRemoveTabs_Test8TestBodyEv
+}
+{
+   bug_77884_b
+   Memcheck:Value4
+   fun:_ZSt3minIfERKT_S2_S2_
+   fun:-[TabStripController layoutTabsWithAnimation:regenerateSubviews:]
+   fun:-[TabStripController layoutTabs]
+   fun:-[TabStripController selectTabWithContents:previousContents:atIndex:userGesture:]
+   fun:_ZN27TabStripModelObserverBridge13TabSelectedAtEP18TabContentsWrapperS1_ib
+   fun:_ZN13TabStripModel26NotifyTabSelectedIfChangedEP18TabContentsWrapperib
+   fun:_ZN13TabStripModel19InsertTabContentsAtEiP18TabContentsWrapperi
+   fun:_ZN13TabStripModel17AppendTabContentsEP18TabContentsWrapperb
+   fun:_ZN12_GLOBAL__N_141TabStripControllerTest_AddRemoveTabs_Test8TestBodyEv
+}
+{
    bug_77910
    Memcheck:Leak
    ...
