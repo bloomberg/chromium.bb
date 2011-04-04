@@ -1304,7 +1304,10 @@ def CMDdelete(args):
   """Deletes a changelist."""
   if not len(args) == 1:
     ErrorExit('You need to pass a change list name')
-  os.remove(GetChangelistInfoFile(args[0]))
+  filepath = GetChangelistInfoFile(args[0])
+  if not os.path.isfile(filepath):
+    ErrorExit('You need to pass a valid change list name')
+  os.remove(filepath)
   return 0
 
 
