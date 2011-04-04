@@ -159,11 +159,9 @@ void GeolocationContentSettingsMap::SetContentSetting(
   if (!profile_)
     return;
   PrefService* prefs = profile_->GetPrefs();
-  DictionaryValue* all_settings_dictionary = prefs->GetMutableDictionary(
-      prefs::kGeolocationContentSettings);
-  DCHECK(all_settings_dictionary);
 
-  ScopedUserPrefUpdate update(prefs, prefs::kGeolocationContentSettings);
+  DictionaryPrefUpdate update(prefs, prefs::kGeolocationContentSettings);
+  DictionaryValue* all_settings_dictionary = update.Get();
   DictionaryValue* requesting_origin_settings_dictionary = NULL;
   all_settings_dictionary->GetDictionaryWithoutPathExpansion(
       requesting_origin.spec(), &requesting_origin_settings_dictionary);

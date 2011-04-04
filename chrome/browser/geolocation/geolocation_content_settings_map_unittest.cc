@@ -6,6 +6,7 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
@@ -247,17 +248,19 @@ TEST_F(GeolocationContentSettingsMapTests, WildCardForEmptyEmbedder) {
 
 TEST_F(GeolocationContentSettingsMapTests, IgnoreInvalidURLsInPrefs) {
   TestingProfile profile;
-  DictionaryValue* all_settings_dictionary =
-      profile.GetPrefs()->GetMutableDictionary(
-          prefs::kGeolocationContentSettings);
-  // For simplicity, use the overloads that do path expansion. As '.' is the
-  // path separator, we can't have dotted hostnames (which is fine).
-  all_settings_dictionary->SetInteger("http://a/.http://b/",
-                                      CONTENT_SETTING_ALLOW);
-  all_settings_dictionary->SetInteger("bad_requester.http://b/",
-                                      CONTENT_SETTING_ALLOW);
-  all_settings_dictionary->SetInteger("http://a/.bad-embedder",
-                                      CONTENT_SETTING_ALLOW);
+  {
+    DictionaryPrefUpdate update(profile.GetPrefs(),
+                                prefs::kGeolocationContentSettings);
+    DictionaryValue* all_settings_dictionary = update.Get();
+    // For simplicity, use the overloads that do path expansion. As '.' is the
+    // path separator, we can't have dotted hostnames (which is fine).
+    all_settings_dictionary->SetInteger("http://a/.http://b/",
+                                        CONTENT_SETTING_ALLOW);
+    all_settings_dictionary->SetInteger("bad_requester.http://b/",
+                                        CONTENT_SETTING_ALLOW);
+    all_settings_dictionary->SetInteger("http://a/.bad-embedder",
+                                        CONTENT_SETTING_ALLOW);
+  }
 
   GeolocationContentSettingsMap* map =
       profile.GetGeolocationContentSettingsMap();
