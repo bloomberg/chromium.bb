@@ -6,24 +6,12 @@
   "enabled": true,
   "terminated": false,
   "description": "__MSG_chrome_extension_description__",
-  "permissions": ["http://*.google.com/*", "https://*.google.com/*"],
   "allow_reload": false,
   "is_hosted_app": false,
   "order": 2,
   "enabledIncognito": false,
   "wantsFileAccess": true,
   "allowFileAccess": false,
-  "content_scripts": [
-    {
-      "matches": ["file://*", "http://*.google.com/*", "https://*.google.com/*"],
-      "js": ["script1.js", "script2.js"],
-      "css": ["style1.css", "style2.css", "style2.css"]
-    },
-    {
-      "matches": ["http://*.news.com/*"],
-      "js": ["js_files/script3.js"]
-    }
-  ],
   "views": [
     {
       "path": "bar.html",

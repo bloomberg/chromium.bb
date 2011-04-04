@@ -675,46 +675,6 @@ void ExtensionsDOMHandler::MaybeUpdateAfterNotification() {
   deleting_rvh_ = NULL;
 }
 
-static void CreateScriptFileDetailValue(
-    const FilePath& extension_path, const UserScript::FileList& scripts,
-    const char* key, DictionaryValue* script_data) {
-  if (scripts.empty())
-    return;
-
-  ListValue *list = new ListValue();
-  for (size_t i = 0; i < scripts.size(); ++i) {
-    const UserScript::File& file = scripts[i];
-    // TODO(cira): this information is not used on extension page yet. We
-    // may want to display actual resource that got loaded, not default.
-    list->Append(
-        new StringValue(file.relative_path().value()));
-  }
-  script_data->Set(key, list);
-}
-
-// Static
-DictionaryValue* ExtensionsDOMHandler::CreateContentScriptDetailValue(
-  const UserScript& script, const FilePath& extension_path) {
-  DictionaryValue* script_data = new DictionaryValue();
-  CreateScriptFileDetailValue(extension_path, script.js_scripts(), "js",
-    script_data);
-  CreateScriptFileDetailValue(extension_path, script.css_scripts(), "css",
-    script_data);
-
-  // Get list of glob "matches" strings
-  ListValue *url_pattern_list = new ListValue();
-  const std::vector<URLPattern>& url_patterns = script.url_patterns();
-  for (std::vector<URLPattern>::const_iterator url_pattern =
-      url_patterns.begin();
-    url_pattern != url_patterns.end(); ++url_pattern) {
-    url_pattern_list->Append(new StringValue(url_pattern->GetAsString()));
-  }
-
-  script_data->Set("matches", url_pattern_list);
-
-  return script_data;
-}
-
 // Static
 DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
     ExtensionService* service, const Extension* extension,
@@ -759,26 +719,6 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
 
   if (service && !service->GetBrowserActionVisibility(extension))
     extension_data->SetBoolean("enable_show_button", true);
-
-  // Add list of content_script detail DictionaryValues.
-  ListValue *content_script_list = new ListValue();
-  UserScriptList content_scripts = extension->content_scripts();
-  for (UserScriptList::const_iterator script = content_scripts.begin();
-    script != content_scripts.end(); ++script) {
-      content_script_list->Append(
-          CreateContentScriptDetailValue(*script, extension->path()));
-  }
-  extension_data->Set("content_scripts", content_script_list);
-
-  // Add permissions.
-  ListValue *permission_list = new ListValue;
-  std::vector<URLPattern> permissions = extension->host_permissions();
-  for (std::vector<URLPattern>::iterator permission = permissions.begin();
-       permission != permissions.end(); ++permission) {
-    permission_list->Append(Value::CreateStringValue(
-        permission->GetAsString()));
-  }
-  extension_data->Set("permissions", permission_list);
 
   // Add views
   ListValue* views = new ListValue;

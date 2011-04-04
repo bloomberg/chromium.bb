@@ -343,18 +343,6 @@ var extensionDataFormat = {
       'options_url': 'options.html',
       'enable_show_button': false,
       'icon': 'relative-path-to-icon.png',
-      'content_scripts': [
-        {
-          'js': ['script1_file1.js', 'script1_file2.js'],
-          'css': ['script1_file1.css', 'script1_file2.css'],
-          'matches': ['http://*/*', 'http://other.com/*']
-        },
-        {
-          'js': ['script2_file1.js', 'script2_file2.js'],
-          'css': ['script2_file1.css', 'script2_file2.css'],
-          'matches': ['http://*/*', 'http://other.com/*']
-        }
-      ],
       // TODO(aa): It would be nice to also render what type of view each one
       // is, like 'toolstrip', 'background', etc. Eventually, if we can also
       // debug and inspect content scripts, maybe we don't need to list the
@@ -389,26 +377,6 @@ var extensionDataFormat = {
       'is_hosted_app': false,
       'order': 2,
       'icon': '',
-      'content_scripts': [
-        {
-          'js': ['script1_file1.js', 'script1_file2.js'],
-          'css': ['script1_file1.css', 'script1_file2.css'],
-          'matches': ['http://*/*', 'http://other.com/*']
-        },
-        {
-          'js': ['script2_file1.js', 'script2_file2.js'],
-          'css': ['script2_file1.css', 'script2_file2.css'],
-          'matches': ['http://*/*', 'http://other.com/*']
-        }
-      ],
-      'views': [
-        {
-          'path': 'foo/bar/toolstrip.html',
-          'renderViewId': 3,
-          'renderProcessId': 1,
-          'incognito': false
-        }
-      ],
       "hasPopupAction": false
     }
   ]
@@ -907,7 +875,7 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                   href="javascript:void 0;"
                   i18n-content="uninstall"
                   >UNINSTALL</a>
-                <span jsdisplay="options_url && enabled">-</span>                
+                <span jsdisplay="options_url && enabled">-</span>
                 <a
                   jsdisplay="options_url && enabled"
                   jsvalues=".extensionId:id"
@@ -938,7 +906,7 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                   onchange="handleToggleAllowFileAccess(this)">
                 <span i18n-content="allowFileAccess">ALLOW THIS EXTENSION ACCESS TO FILE URLS</span></label>
                 <span jsdisplay="!mayDisable">-</span>
-                <span jsdisplay="!mayDisable" 
+                <span jsdisplay="!mayDisable"
                   i18n-content="policyControlled">THIS EXTENSION CAN NOT BE DISABLED OR UNINSTALLED BY USER</span>
               </span>
             </div>

@@ -81,11 +81,6 @@ class ExtensionsDOMHandler : public WebUIMessageHandler,
       bool enabled,
       bool terminated);
 
-  // ContentScript JSON Struct for page. (static for ease of testing).
-  static DictionaryValue* CreateContentScriptDetailValue(
-      const UserScript& script,
-      const FilePath& extension_path);
-
   // ExtensionPackJob::Client
   virtual void OnPackSuccess(const FilePath& crx_file,
                              const FilePath& key_file);
