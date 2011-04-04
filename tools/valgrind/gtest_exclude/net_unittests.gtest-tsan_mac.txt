@@ -8,5 +8,6 @@ WebSocketTest.*
 DirectoryLister*
 
 # Failing, see http://crbug.com/78303
-HttpNetworkTransactionTest.HttpsProxySpdyGetWithProxyAuth
 HttpNetworkTransactionTest.BypassHostCacheOnRefresh2
+HttpNetworkTransactionTest.GenerateAuthToken
+HttpNetworkTransactionTest.HttpsProxySpdyGetWithProxyAuth
