@@ -4,20 +4,22 @@
 
 #include "base/base_paths.h"
 
-#include <unistd.h>
-#if defined(OS_FREEBSD)
-#include <sys/param.h>
-#include <sys/sysctl.h>
-#endif
+#include <ostream>
+#include <string>
 
+#include "build/build_config.h"
 #include "base/environment.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/sys_string_conversions.h"
 #include "base/nix/xdg_util.h"
+
+#if defined(OS_FREEBSD)
+#include <sys/param.h>
+#include <sys/sysctl.h>
+#endif
 
 namespace base {
 
