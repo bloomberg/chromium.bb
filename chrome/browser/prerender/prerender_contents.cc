@@ -490,6 +490,9 @@ void PrerenderContents::RendererUnresponsive(RenderViewHost* render_view_host,
 
 base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
   if (process_metrics_.get() == NULL) {
+    // If a PrenderContents hasn't started prerending, don't be fully formed.
+    if (!render_view_host_ || !render_view_host_->process())
+      return NULL;
     base::ProcessHandle handle = render_view_host_->process()->GetHandle();
     if (handle == base::kNullProcessHandle)
       return NULL;

@@ -96,7 +96,7 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
             PrerenderManager::PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP);
       } else if (trial_group == kPrerenderControl1Group ||
                  trial_group == kPrerenderControl2Group) {
-        ResourceDispatcherHost::set_is_prefetch_enabled(false);
+        ResourceDispatcherHost::set_is_prefetch_enabled(true);
         PrerenderManager::SetMode(
             PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
       } else {

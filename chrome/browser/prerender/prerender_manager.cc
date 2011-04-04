@@ -180,7 +180,9 @@ bool PrerenderManager::AddPreload(const GURL& url,
                              GetCurrentTime());
 
   prerender_list_.push_back(data);
-  if (!IsControlGroup()) {
+  if (IsControlGroup()) {
+    data.contents_->set_final_status(FINAL_STATUS_CONTROL_GROUP);
+  } else {
     last_prerender_start_time_ = GetCurrentTimeTicks();
     data.contents_->StartPrerendering();
   }
