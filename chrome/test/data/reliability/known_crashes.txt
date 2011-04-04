@@ -186,6 +186,3 @@ PREFIX: webcore::implicitanimation::~implicitanimation___webcore::implicitanimat
 
 # 21054
 REGEX : ^deletetask.*::run___messageloop::runtask___messageloop::dowork
-
-# 78172
-SUBSTRING : purecall___infobarcontainer::changetabcontents___infobarcontainer::~infobarcontainer

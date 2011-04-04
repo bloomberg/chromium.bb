@@ -16,6 +16,7 @@ InfoBarContainerView::InfoBarContainerView(Delegate* delegate)
 }
 
 InfoBarContainerView::~InfoBarContainerView() {
+  RemoveAllInfoBarsForDestruction();
 }
 
 int InfoBarContainerView::GetVerticalOverlap() {

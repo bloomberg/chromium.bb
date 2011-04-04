@@ -19,13 +19,8 @@ InfoBarContainer::InfoBarContainer(Delegate* delegate)
 }
 
 InfoBarContainer::~InfoBarContainer() {
-  // Before we remove any children, we reset |delegate_|, so that no removals
-  // will result in us trying to call
-  // delegate_->InfoBarContainerHeightChanged().  This is important because at
-  // this point |delegate_| may be shutting down, and it's at best unimportant
-  // and at worst disastrous to call that.
-  delegate_ = NULL;
-  ChangeTabContents(NULL);
+  // RemoveAllInfoBarsForDestruction() should have already cleared our infobars.
+  DCHECK(infobars_.empty());
 }
 
 void InfoBarContainer::ChangeTabContents(TabContents* contents) {
@@ -76,6 +71,16 @@ void InfoBarContainer::RemoveDelegate(InfoBarDelegate* delegate) {
 void InfoBarContainer::RemoveInfoBar(InfoBar* infobar) {
   PlatformSpecificRemoveInfoBar(infobar);
   infobars_.erase(infobar);
+}
+
+void InfoBarContainer::RemoveAllInfoBarsForDestruction() {
+  // Before we remove any children, we reset |delegate_|, so that no removals
+  // will result in us trying to call
+  // delegate_->InfoBarContainerHeightChanged().  This is important because at
+  // this point |delegate_| may be shutting down, and it's at best unimportant
+  // and at worst disastrous to call that.
+  delegate_ = NULL;
+  ChangeTabContents(NULL);
 }
 
 void InfoBarContainer::Observe(NotificationType type,

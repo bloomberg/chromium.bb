@@ -62,6 +62,11 @@ class InfoBarContainer : public NotificationObserver {
   virtual int GetVerticalOverlap() = 0;
 
  protected:
+  // Subclasses must call this during destruction, so that we can remove
+  // infobars (which will call the pure virtual functions below) while the
+  // subclass portion of |this| has not yet been destroyed.
+  void RemoveAllInfoBarsForDestruction();
+
   // These must be implemented on each platform to e.g. adjust the visible
   // object hierarchy.
   virtual void PlatformSpecificAddInfoBar(InfoBar* infobar) = 0;
