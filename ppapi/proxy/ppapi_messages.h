@@ -172,8 +172,8 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiMsg_PPPInstance_DidCreate,
                            std::vector<std::string> /* argn */,
                            std::vector<std::string> /* argv */,
                            PP_Bool /* result */)
-IPC_MESSAGE_ROUTED1(PpapiMsg_PPPInstance_DidDestroy,
-                    PP_Instance /* instance */)
+IPC_SYNC_MESSAGE_ROUTED1_0(PpapiMsg_PPPInstance_DidDestroy,
+                           PP_Instance /* instance */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPPInstance_DidChangeView,
                     PP_Instance /* instance */,
                     PP_Rect /* position */,
