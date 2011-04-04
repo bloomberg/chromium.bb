@@ -2679,27 +2679,22 @@ void TestingAutomationProvider::GetDownloadsInfo(Browser* browser,
                                                  DictionaryValue* args,
                                                  IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-
-  if (!browser->profile()->HasCreatedDownloadManager()) {
-      reply.SendError("no download manager");
-      return;
-  }
-
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  std::vector<DownloadItem*> downloads;
-  browser->profile()->GetDownloadManager()->
-      GetAllDownloads(FilePath(), &downloads);
-
   ListValue* list_of_downloads = new ListValue;
-  for (std::vector<DownloadItem*>::iterator it = downloads.begin();
-       it != downloads.end();
-       it++) {  // Fill info about each download item.
-    list_of_downloads->Append(GetDictionaryFromDownloadItem(*it));
+
+  if (browser->profile()->HasCreatedDownloadManager()) {
+    std::vector<DownloadItem*> downloads;
+    browser->profile()->GetDownloadManager()->
+        GetAllDownloads(FilePath(), &downloads);
+
+    for (std::vector<DownloadItem*>::iterator it = downloads.begin();
+         it != downloads.end();
+         it++) {  // Fill info about each download item.
+      list_of_downloads->Append(GetDictionaryFromDownloadItem(*it));
+    }
   }
   return_value->Set("downloads", list_of_downloads);
   reply.SendSuccess(return_value.get());
-  // All value objects allocated above are owned by |return_value|
-  // and get freed by it.
 }
 
 void TestingAutomationProvider::WaitForDownloadsToComplete(
