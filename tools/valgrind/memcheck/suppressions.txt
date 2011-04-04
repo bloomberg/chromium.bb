@@ -4173,7 +4173,7 @@
    fun:_ZN4base13AtExitManagerD1Ev
 }
 {
-   bug_78067
+   bug_78067a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN25ChromeRenderMessageFilterC1EiP7Profile*URLRequestContextGetter*
@@ -4189,6 +4189,21 @@
    fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
    fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
    fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
+}
+{
+   bug_78067b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN25ChromeRenderMessageFilterC1EiP7Profile*URLRequestContextGetter*
+   fun:_ZN24BrowserRenderProcessHost20CreateMessageFiltersEv
+   fun:_ZN24BrowserRenderProcessHost4InitEbb
+   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN13ExtensionHost19CreateRenderViewNowEv
+   fun:_ZN13ExtensionHost20ProcessCreationQueue14ProcessOneHostEv
+   fun:_Z16DispatchToMethodIN13ExtensionHost20ProcessCreationQueueEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN27ScopedRunnableMethodFactoryIN13ExtensionHost20ProcessCreationQueueEE14RunnableMethodIMS1_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
 }
 {
    bug_78197
