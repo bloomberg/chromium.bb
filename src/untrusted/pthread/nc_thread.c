@@ -71,7 +71,7 @@ int __nc_memory_block_counter[2];
 /* Internal functions */
 
 static inline nc_thread_descriptor_t *nc_get_tdb() {
-  return NACL_SYSCALL(tls_get)();
+  return nacl_tls_get();
 }
 
 static int nc_allocate_thread_id_mu(nc_basic_thread_data_t *basic_data) {

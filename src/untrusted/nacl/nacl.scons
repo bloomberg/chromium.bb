@@ -64,6 +64,8 @@ sources_for_nacl_extensions = [
     'nacl_thread_create.c',
     'nacl_thread_exit.c',
     'nacl_thread_nice.c',
+    'nacl_tls_get.c',
+    'nacl_tls_init.c',
     'nameservice.c',
     'null.c',
     'srpc_init.c',

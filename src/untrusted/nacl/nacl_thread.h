@@ -33,6 +33,9 @@ extern void nacl_thread_exit(int32_t *stack_flag);
  */
 extern int nacl_thread_nice(const int nice);
 
+extern void *nacl_tls_get(void);
+extern int nacl_tls_init(void *tdb, size_t size);
+
 extern int nacl_mutex_create(int *mutex_handle);
 extern int nacl_mutex_lock(int mutex_handle);
 extern int nacl_mutex_unlock(int mutex_handle);
