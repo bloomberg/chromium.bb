@@ -55,7 +55,7 @@ void Firefox2Importer::StartImport(const importer::ProfileInfo& profile_info,
   app_path_ = profile_info.app_path;
 
   parsing_bookmarks_html_file_ =
-      (profile_info.browser_type == importer::BOOKMARKS_HTML);
+      (profile_info.importer_type == importer::BOOKMARKS_HTML);
 
   // The order here is important!
   bridge_->NotifyStarted();

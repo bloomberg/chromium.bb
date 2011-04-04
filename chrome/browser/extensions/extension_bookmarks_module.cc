@@ -854,7 +854,7 @@ void ImportBookmarksFunction::FileSelected(const FilePath& path,
                                            void* params) {
   scoped_refptr<ImporterHost> importer_host(new ImporterHost);
   importer::ProfileInfo profile_info;
-  profile_info.browser_type = importer::BOOKMARKS_HTML;
+  profile_info.importer_type = importer::BOOKMARKS_HTML;
   profile_info.source_path = path;
   importer_host->StartImportSettings(profile_info,
                                      profile(),

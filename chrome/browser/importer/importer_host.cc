@@ -8,13 +8,11 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/importer/external_process_importer_client.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/importer_bridge.h"
-#include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
+#include "chrome/browser/importer/importer_type.h"
 #include "chrome/browser/importer/in_process_importer_bridge.h"
 #include "chrome/browser/importer/toolbar_importer_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -103,15 +101,16 @@ void ImporterHost::StartImportSettings(
     uint16 items,
     ProfileWriter* writer,
     bool first_run) {
-  DCHECK(!profile_);  // We really only support importing from one host at a
-                      // time.
+  // We really only support importing from one host at a time.
+  DCHECK(!profile_);
+
   profile_ = target_profile;
-  // Preserves the observer and creates a task, since we do async import
-  // so that it doesn't block the UI. When the import is complete, observer
-  // will be notified.
+  // Preserves the observer and creates a task, since we do async import so that
+  // it doesn't block the UI. When the import is complete, observer will be
+  // notified.
   writer_ = writer;
-  importer_ = ImporterList::CreateImporterByType(profile_info.browser_type);
-  // If we fail to create Importer, exit as we cannot do anything.
+  importer_ = importer::CreateImporterByType(profile_info.importer_type);
+  // If we fail to create the Importer, exit, as we cannot do anything.
   if (!importer_) {
     NotifyImportEnded();
     return;
@@ -121,17 +120,17 @@ void ImporterHost::StartImportSettings(
 
   importer_->set_import_to_bookmark_bar(ShouldImportToBookmarkBar(first_run));
   importer_->set_bookmark_bar_disabled(first_run);
-  scoped_refptr<ImporterBridge> bridge(
+  scoped_refptr<InProcessImporterBridge> bridge(
       new InProcessImporterBridge(writer_.get(), this));
-  task_ = NewRunnableMethod(importer_, &Importer::StartImport,
-      profile_info, items, bridge);
+  task_ = NewRunnableMethod(
+      importer_, &Importer::StartImport, profile_info, items, bridge);
 
   CheckForFirefoxLock(profile_info, items, first_run);
 
 #if defined(OS_WIN)
   // For google toolbar import, we need the user to log in and store their GAIA
   // credentials.
-  if (profile_info.browser_type == importer::GOOGLE_TOOLBAR5) {
+  if (profile_info.importer_type == importer::GOOGLE_TOOLBAR5) {
     if (!toolbar_importer_utils::IsGoogleGAIACookieInstalled()) {
       ui::MessageBox(
           NULL,
@@ -183,8 +182,8 @@ bool ImporterHost::ShouldImportToBookmarkBar(bool first_run) {
 
 void ImporterHost::CheckForFirefoxLock(
     const importer::ProfileInfo& profile_info, uint16 items, bool first_run) {
-  if (profile_info.browser_type == importer::FIREFOX2 ||
-      profile_info.browser_type == importer::FIREFOX3) {
+  if (profile_info.importer_type == importer::FIREFOX2 ||
+      profile_info.importer_type == importer::FIREFOX3) {
     DCHECK(!firefox_lock_.get());
     firefox_lock_.reset(new FirefoxProfileLock(profile_info.source_path));
     if (!firefox_lock_->HasAcquired()) {

@@ -97,10 +97,6 @@ class ProfileImportThread : public ChildThread {
   // directly back to the ProfileImportProcessHost.
   scoped_refptr<ExternalProcessImporterBridge> bridge_;
 
-  // importer::ProfileType enum from importer_list, stored in ProfileInfo
-  // struct in importer.
-  int browser_type_;
-
   // A bitmask of importer::ImportItem.
   uint16 items_to_import_;
 

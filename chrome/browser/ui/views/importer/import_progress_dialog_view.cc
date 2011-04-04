@@ -296,7 +296,7 @@ void ShowImportProgressDialog(HWND parent_window,
       importer_host,
       importer_observer,
       source_profile.description,
-      source_profile.browser_type == importer::BOOKMARKS_HTML);
+      source_profile.importer_type == importer::BOOKMARKS_HTML);
 
   views::Window* window = views::Window::CreateChromeWindow(
       parent_window, gfx::Rect(), progress_view);

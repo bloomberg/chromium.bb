@@ -1198,6 +1198,8 @@
         'browser/importer/importer_observer.h',
         'browser/importer/importer_progress_dialog.h',
         'browser/importer/importer_progress_observer.h',
+        'browser/importer/importer_type.cc',
+        'browser/importer/importer_type.h',
         'browser/importer/in_process_importer_bridge.cc',
         'browser/importer/in_process_importer_bridge.h',
         'browser/importer/mork_reader.cc',

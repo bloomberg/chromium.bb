@@ -5,22 +5,14 @@
 #include "chrome/browser/importer/importer_list.h"
 
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/importer/firefox2_importer.h"
-#include "chrome/browser/importer/firefox3_importer.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
-#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_bridge.h"
-#include "chrome/browser/importer/toolbar_importer.h"
 #include "chrome/browser/shell_integration.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/importer/ie_importer.h"
-#include "chrome/browser/password_manager/ie7_password.h"
-#endif
 #if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
+#include "base/mac/foundation_util.h"
 #include "chrome/browser/importer/safari_importer.h"
 #endif
 
@@ -31,7 +23,7 @@ void DetectIEProfiles(std::vector<importer::ProfileInfo*>* profiles) {
     // IE always exists and doesn't have multiple profiles.
   importer::ProfileInfo* ie = new importer::ProfileInfo();
   ie->description = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_IE);
-  ie->browser_type = importer::MS_IE;
+  ie->importer_type = importer::MS_IE;
   ie->source_path.clear();
   ie->app_path.clear();
   ie->services_supported = importer::HISTORY | importer::FAVORITES |
@@ -47,7 +39,7 @@ void DetectSafariProfiles(std::vector<importer::ProfileInfo*>* profiles) {
     return;
 
   importer::ProfileInfo* safari = new importer::ProfileInfo();
-  safari->browser_type = importer::SAFARI;
+  safari->importer_type = importer::SAFARI;
   safari->description = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_SAFARI);
   safari->source_path.clear();
   safari->app_path.clear();
@@ -62,7 +54,7 @@ void DetectFirefoxProfiles(std::vector<importer::ProfileInfo*>* profiles) {
     return;
 
   // Detects which version of Firefox is installed.
-  importer::ProfileType firefox_type;
+  importer::ImporterType firefox_type;
   FilePath app_path;
   int version = 0;
 #if defined(OS_WIN)
@@ -82,7 +74,7 @@ void DetectFirefoxProfiles(std::vector<importer::ProfileInfo*>* profiles) {
 
   importer::ProfileInfo* firefox = new importer::ProfileInfo();
   firefox->description = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_FIREFOX);
-  firefox->browser_type = firefox_type;
+  firefox->importer_type = firefox_type;
   firefox->source_path = profile_path;
 #if defined(OS_WIN)
   firefox->app_path = FilePath::FromWStringHack(
@@ -101,7 +93,7 @@ void DetectGoogleToolbarProfiles(
     return;
 
   importer::ProfileInfo* google_toolbar = new importer::ProfileInfo();
-  google_toolbar->browser_type = importer::GOOGLE_TOOLBAR5;
+  google_toolbar->importer_type = importer::GOOGLE_TOOLBAR5;
   google_toolbar->description =
       l10n_util::GetStringUTF16(IDS_IMPORT_FROM_GOOGLE_TOOLBAR);
   google_toolbar->source_path.clear();
@@ -111,32 +103,6 @@ void DetectGoogleToolbarProfiles(
 }
 
 }  // namespace
-
-// static
-Importer* ImporterList::CreateImporterByType(importer::ProfileType type) {
-  switch (type) {
-#if defined(OS_WIN)
-    case importer::MS_IE:
-      return new IEImporter();
-#endif
-    case importer::BOOKMARKS_HTML:
-    case importer::FIREFOX2:
-      return new Firefox2Importer();
-    case importer::FIREFOX3:
-      return new Firefox3Importer();
-    case importer::GOOGLE_TOOLBAR5:
-      return new Toolbar5Importer();
-#if defined(OS_MACOSX)
-    case importer::SAFARI:
-      return new SafariImporter(base::mac::GetUserLibraryPath());
-#endif  // OS_MACOSX
-    case importer::NO_PROFILE_TYPE:
-      NOTREACHED();
-      return NULL;
-  }
-  NOTREACHED();
-  return NULL;
-}
 
 ImporterList::ImporterList()
     : source_thread_id_(BrowserThread::UI),
@@ -187,13 +153,13 @@ const importer::ProfileInfo& ImporterList::GetSourceProfileInfoAt(
   return *source_profiles_[index];
 }
 
-const importer::ProfileInfo& ImporterList::GetSourceProfileInfoForBrowserType(
-    int browser_type) const {
+const importer::ProfileInfo& ImporterList::GetSourceProfileInfoForImporterType(
+    int importer_type) const {
   DCHECK(source_profiles_loaded_);
 
   int count = GetAvailableProfileCount();
   for (int i = 0; i < count; ++i) {
-    if (source_profiles_[i]->browser_type == browser_type)
+    if (source_profiles_[i]->importer_type == importer_type)
       return *source_profiles_[i];
   }
   NOTREACHED();

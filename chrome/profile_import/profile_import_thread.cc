@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/importer/external_process_importer_bridge.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/importer_list.h"
+#include "chrome/browser/importer/importer_type.h"
 #include "chrome/browser/importer/profile_import_process_messages.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "content/common/child_process.h"
@@ -30,7 +30,6 @@ const int kNumFaviconsToSend = 100;
 
 ProfileImportThread::ProfileImportThread()
     : bridge_(NULL),
-      browser_type_(0),
       items_to_import_(0),
       importer_(NULL) {
   ChildProcess::current()->AddRefProcess();  // Balanced in Cleanup().
@@ -58,9 +57,7 @@ void ProfileImportThread::OnImportStart(
     const DictionaryValue& localized_strings,
     bool import_to_bookmark_bar) {
   bridge_ = new ExternalProcessImporterBridge(this, localized_strings);
-
-  scoped_refptr<ImporterList> importer_list(new ImporterList);
-  importer_ = importer_list->CreateImporterByType(profile_info.browser_type);
+  importer_ = importer::CreateImporterByType(profile_info.importer_type);
   if (!importer_) {
     Send(new ProfileImportProcessHostMsg_Import_Finished(false,
         "Importer could not be created."));

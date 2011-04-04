@@ -289,7 +289,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     scoped_refptr<ImporterList> importer_list(new ImporterList);
     importer_list->DetectSourceProfilesHack();
     if (!FirstRun::ImportSettings(NULL,
-          importer_list->GetSourceProfileInfoAt(0).browser_type,
+          importer_list->GetSourceProfileInfoAt(0).importer_type,
           out_prefs->do_import_items,
           FilePath::FromWStringHack(UTF8ToWide(import_bookmarks_path)),
           true, NULL)) {
@@ -434,7 +434,7 @@ int FirstRun::ImportFromFile(Profile* profile, const CommandLine& cmdline) {
   importer_host->set_headless();
 
   importer::ProfileInfo profile_info;
-  profile_info.browser_type = importer::BOOKMARKS_HTML;
+  profile_info.importer_type = importer::BOOKMARKS_HTML;
   profile_info.source_path = file_path;
 
   importer::ShowImportProgressDialog(

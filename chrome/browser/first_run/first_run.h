@@ -115,11 +115,14 @@ class FirstRun {
 
   // Returns true if this is the first time chrome is run for this user.
   static bool IsChromeFirstRun();
+
   // Creates the sentinel file that signals that chrome has been configured.
   static bool CreateSentinel();
+
   // Removes the sentinel file created in ConfigDone(). Returns false if the
   // sentinel file could not be removed.
   static bool RemoveSentinel();
+
   // Imports settings. This may be done in a separate process depending on the
   // platform, but it will always block until done. The return value indicates
   // success.
@@ -163,26 +166,32 @@ class FirstRun {
   // Writes the EULA to a temporary file, returned in |*eula_path|, and returns
   // true if successful.
   static bool WriteEULAtoTempFile(FilePath* eula_path);
+
   // Launches the setup exe with the given parameter/value on the command-line,
   // waits for its termination, returns its exit code in |*ret_code|, and
   // returns true if the exit code is valid.
   static bool LaunchSetupWithParam(const std::string& param,
                                    const std::wstring& value,
                                    int* ret_code);
+
   // Installs a task to do an extensions update check once the extensions system
   // is running.
   static void DoDelayedInstallExtensions();
+
   // Imports settings in a separate process. It is the implementation of the
   // public version.  |skip_first_run_ui| is true if no first run UI should
   // appear (search engine dialog, Firefox import warning dialog).
-  static bool ImportSettings(Profile* profile, int browser_type,
+  static bool ImportSettings(Profile* profile,
+                             int importer_type,
                              int items_to_import,
                              const FilePath& import_path,
                              bool skip_first_run_ui,
                              gfx::NativeView parent_window);
+
   // Import browser items in this process. The browser and the items to
   // import are encoded int the command line.
   static int ImportFromBrowser(Profile* profile, const CommandLine& cmdline);
+
 #else
   static bool ImportBookmarks(const FilePath& import_bookmarks_path);
 #endif
@@ -199,6 +208,7 @@ class FirstRun {
     FIRST_RUN_TRUE,
     FIRST_RUN_FALSE
   };
+
   // This variable should only be accessed through IsChromeFirstRun().
   static FirstRunState first_run_;
 

@@ -103,7 +103,7 @@ class ImporterTest : public testing::Test {
 
     MessageLoop* loop = MessageLoop::current();
     importer::ProfileInfo profile_info;
-    profile_info.browser_type = importer::FIREFOX3;
+    profile_info.importer_type = importer::FIREFOX3;
     profile_info.app_path = app_path_;
     profile_info.source_path = profile_path_;
     scoped_refptr<ImporterHost> host(new ImporterHost);
@@ -396,7 +396,7 @@ TEST_F(ImporterTest, IEImporter) {
   TestObserver* observer = new TestObserver();
   host->SetObserver(observer);
   importer::ProfileInfo profile_info;
-  profile_info.browser_type = importer::MS_IE;
+  profile_info.importer_type = importer::MS_IE;
   profile_info.source_path = test_path_;
 
   loop->PostTask(FROM_HERE, NewRunnableMethod(host.get(),
@@ -690,7 +690,7 @@ TEST_F(ImporterTest, MAYBE(Firefox2Importer)) {
   FirefoxObserver* observer = new FirefoxObserver();
   host->SetObserver(observer);
   importer::ProfileInfo profile_info;
-  profile_info.browser_type = importer::FIREFOX2;
+  profile_info.importer_type = importer::FIREFOX2;
   profile_info.app_path = app_path_;
   profile_info.source_path = profile_path_;
 

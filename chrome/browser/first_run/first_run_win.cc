@@ -367,20 +367,25 @@ class HungImporterMonitor : public WorkerThreadTicker::Callback {
   DISALLOW_COPY_AND_ASSIGN(HungImporterMonitor);
 };
 
-std::string EncodeImportParams(int browser_type, int options,
-                               int skip_first_run_ui, HWND window) {
-  return StringPrintf("%d@%d@%d@%d", browser_type, options, skip_first_run_ui,
+std::string EncodeImportParams(int importer_type,
+                               int options,
+                               int skip_first_run_ui,
+                               HWND window) {
+  return StringPrintf("%d@%d@%d@%d", importer_type, options, skip_first_run_ui,
                       window);
 }
 
-bool DecodeImportParams(const std::string& encoded, int* browser_type,
-                        int* options, int* skip_first_run_ui, HWND* window) {
+bool DecodeImportParams(const std::string& encoded,
+                        int* importer_type,
+                        int* options,
+                        int* skip_first_run_ui,
+                        HWND* window) {
   std::vector<std::string> parts;
   base::SplitString(encoded, '@', &parts);
   if (parts.size() != 4)
     return false;
 
-  if (!base::StringToInt(parts[0], browser_type))
+  if (!base::StringToInt(parts[0], importer_type))
     return false;
 
   if (!base::StringToInt(parts[1], options))
@@ -435,7 +440,8 @@ void FirstRun::ShowFirstRunDialog(Profile* profile,
 }
 
 // static
-bool FirstRun::ImportSettings(Profile* profile, int browser_type,
+bool FirstRun::ImportSettings(Profile* profile,
+                              int importer_type,
                               int items_to_import,
                               const FilePath& import_bookmarks_path,
                               bool skip_first_run_ui,
@@ -458,7 +464,7 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
 
   if (items_to_import) {
     import_cmd.CommandLine::AppendSwitchASCII(switches::kImport,
-        EncodeImportParams(browser_type, items_to_import,
+        EncodeImportParams(importer_type, items_to_import,
                            skip_first_run_ui ? 1 : 0, NULL));
   }
 
@@ -492,7 +498,7 @@ bool FirstRun::ImportSettings(Profile* profile,
                               int items_to_import) {
   return ImportSettings(
       profile,
-      importer_list->GetSourceProfileInfoAt(0).browser_type,
+      importer_list->GetSourceProfileInfoAt(0).importer_type,
       items_to_import,
       FilePath(), false, NULL);
 }
@@ -504,11 +510,11 @@ int FirstRun::ImportFromBrowser(Profile* profile,
     NOTREACHED();
     return false;
   }
-  int browser_type = 0;
+  int importer_type = 0;
   int items_to_import = 0;
   int skip_first_run_ui = 0;
   HWND parent_window = NULL;
-  if (!DecodeImportParams(import_info, &browser_type, &items_to_import,
+  if (!DecodeImportParams(import_info, &importer_type, &items_to_import,
                           &skip_first_run_ui, &parent_window)) {
     NOTREACHED();
     return false;
@@ -529,7 +535,7 @@ int FirstRun::ImportFromBrowser(Profile* profile,
       static_cast<uint16>(items_to_import),
       importer_host,
       &importer_observer,
-      importer_list->GetSourceProfileInfoForBrowserType(browser_type),
+      importer_list->GetSourceProfileInfoForImporterType(importer_type),
       profile,
       true);
   importer_observer.RunLoop();

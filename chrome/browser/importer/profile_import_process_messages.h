@@ -29,7 +29,7 @@ struct ParamTraits<importer::ProfileInfo> {
   typedef importer::ProfileInfo param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.description);
-    WriteParam(m, static_cast<int>(p.browser_type));
+    WriteParam(m, static_cast<int>(p.importer_type));
     WriteParam(m, p.source_path);
     WriteParam(m, p.app_path);
     WriteParam(m, static_cast<int>(p.services_supported));
@@ -38,10 +38,10 @@ struct ParamTraits<importer::ProfileInfo> {
     if (!ReadParam(m, iter, &p->description))
       return false;
 
-    int browser_type = 0;
-    if (!ReadParam(m, iter, &browser_type))
+    int importer_type = 0;
+    if (!ReadParam(m, iter, &importer_type))
       return false;
-    p->browser_type = static_cast<importer::ProfileType>(browser_type);
+    p->importer_type = static_cast<importer::ImporterType>(importer_type);
 
     if (!ReadParam(m, iter, &p->source_path) ||
         !ReadParam(m, iter, &p->app_path))
@@ -58,7 +58,7 @@ struct ParamTraits<importer::ProfileInfo> {
     l->append("(");
     LogParam(p.description, l);
     l->append(", ");
-    LogParam(static_cast<int>(p.browser_type), l);
+    LogParam(static_cast<int>(p.importer_type), l);
     l->append(", ");
     LogParam(p.source_path, l);
     l->append(", ");

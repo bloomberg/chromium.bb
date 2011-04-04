@@ -16,8 +16,6 @@
 #include "chrome/browser/importer/importer_data_types.h"
 #include "content/browser/browser_thread.h"
 
-class Importer;
-
 class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
  public:
   // Any class calling DetectSourceProfiles() must implement this interface in
@@ -29,8 +27,6 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
    protected:
     virtual ~Observer() {}
   };
-
-  static Importer* CreateImporterByType(importer::ProfileType type);
 
   ImporterList();
 
@@ -53,17 +49,17 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
   // Returns the number of different browser profiles you can import from.
   int GetAvailableProfileCount() const;
 
-  // Returns the name of the profile at the 'index' slot. The profiles are
-  // ordered such that the profile at index 0 is the likely default browser.
+  // Returns the name of the profile at |index|. The profiles are ordered such
+  // that the profile at index 0 is the likely default browser.
   string16 GetSourceProfileNameAt(int index) const;
 
-  // Returns the ProfileInfo at the specified index.  The ProfileInfo should be
+  // Returns the ProfileInfo at |index|. The ProfileInfo should be
   // passed to StartImportSettings().
   const importer::ProfileInfo& GetSourceProfileInfoAt(int index) const;
 
-  // Returns the ProfileInfo with the given browser type.
-  const importer::ProfileInfo& GetSourceProfileInfoForBrowserType(
-      int browser_type) const;
+  // Returns the ProfileInfo with the given |importer_type|.
+  const importer::ProfileInfo& GetSourceProfileInfoForImporterType(
+      int importer_type) const;
 
   // Returns true if the source profiles have been loaded.
   bool source_profiles_loaded() const;
