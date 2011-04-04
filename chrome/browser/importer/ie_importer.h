@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/file_path.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/profile_writer.h"
 
@@ -25,11 +26,27 @@ class IEImporter : public Importer {
                            ImporterBridge* bridge) OVERRIDE;
 
  private:
+  typedef std::vector<ProfileWriter::BookmarkEntry> BookmarkVector;
+
+  // A struct that hosts the information of IE Favorite folder.
+  struct FavoritesInfo {
+    FilePath path;
+    std::wstring links_folder;
+  };
+
+  // IE PStore subkey GUID: AutoComplete password & form data.
+  static const GUID kPStoreAutocompleteGUID;
+
+  // A fake GUID for unit test.
+  static const GUID kUnittestGUID;
+
   FRIEND_TEST_ALL_PREFIXES(ImporterTest, IEImporter);
 
   virtual ~IEImporter();
 
   void ImportFavorites();
+
+  // Reads history information from COM interface.
   void ImportHistory();
 
   // Import password for IE6 stored in protected storage.
@@ -38,7 +55,7 @@ class IEImporter : public Importer {
   // Import password for IE7 and IE8 stored in Storage2.
   void ImportPasswordsIE7();
 
-  virtual void ImportSearchEngines();
+  void ImportSearchEngines();
 
   // Import the homepage setting of IE. Note: IE supports multiple home pages,
   // whereas Chrome doesn't, so we import only the one defined under the
@@ -49,13 +66,6 @@ class IEImporter : public Importer {
   // Resolves what's the .url file actually targets.
   // Returns empty string if failed.
   std::wstring ResolveInternetShortcut(const std::wstring& file);
-
-  // A struct hosts the information of IE Favorite folder.
-  struct FavoritesInfo {
-    std::wstring path;
-    std::wstring links_folder;
-  };
-  typedef std::vector<ProfileWriter::BookmarkEntry> BookmarkVector;
 
   // Gets the information of Favorites folder. Returns true if successful.
   bool GetFavoritesInfo(FavoritesInfo* info);
@@ -68,22 +78,9 @@ class IEImporter : public Importer {
   // Determines which version of IE is in use.
   int CurrentIEVersion() const;
 
-  // IE PStore subkey GUID: AutoComplete password & form data.
-  static const GUID kPStoreAutocompleteGUID;
-
-  // A fake GUID for unit test.
-  static const GUID kUnittestGUID;
-
-  // A struct hosts the information of AutoComplete data in PStore.
-  struct AutoCompleteInfo {
-    std::wstring key;
-    std::vector<std::wstring> data;
-    bool is_url;
-  };
-
-  // IE does not have source path. It's used in unit tests only for
-  // providing a fake source.
-  std::wstring source_path_;
+  // IE does not have source path. It's used in unit tests only for providing a
+  // fake source.
+  FilePath source_path_;
 
   DISALLOW_COPY_AND_ASSIGN(IEImporter);
 };
