@@ -89,8 +89,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
   // Test that our extension's keyword is suggested to us when we partially type
   // it.
   {
-    autocomplete_controller->Start(ASCIIToUTF16("keywor"), string16(),
-                                   true, false, true, false);
+    autocomplete_controller->Start(
+        ASCIIToUTF16("keywor"), string16(), true, false, true,
+        AutocompleteInput::ALL_MATCHES);
 
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
@@ -114,8 +115,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
 
   // Test that our extension can send suggestions back to us.
   {
-    autocomplete_controller->Start(ASCIIToUTF16("keyword suggestio"),
-                                   string16(), true, false, true, false);
+    autocomplete_controller->Start(
+        ASCIIToUTF16("keyword suggestio"), string16(), true, false, true,
+        AutocompleteInput::ALL_MATCHES);
 
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
@@ -178,8 +180,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
 
   {
     ResultCatcher catcher;
-    autocomplete_controller->Start(ASCIIToUTF16("keyword command"), string16(),
-                                   true, false, true, false);
+    autocomplete_controller->Start(
+        ASCIIToUTF16("keyword command"), string16(), true, false, true,
+        AutocompleteInput::ALL_MATCHES);
     location_bar->AcceptInput();
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }

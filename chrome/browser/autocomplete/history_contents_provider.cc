@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,6 +87,12 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
     return;
   }
 
+  if (input.matches_requested() == AutocompleteInput::BEST_MATCH) {
+    // None of our results are applicable for best match.
+    Stop();
+    return;
+  }
+
   // Change input type so matches will be marked up properly.
   input_type_ = input.type();
   trim_http_ = !HasHTTPScheme(input.text());
@@ -105,7 +111,7 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
     // allowed to keep running it, do so, and when it finishes, its results will
     // get marked up for this new input.  In synchronous_only mode, cancel the
     // history query.
-    if (input.synchronous_only()) {
+    if (input.matches_requested() != AutocompleteInput::ALL_MATCHES) {
       done_ = true;
       request_consumer_.CancelAllRequests();
     }
@@ -125,7 +131,7 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
   // Convert the bookmark results.
   ConvertResults();
 
-  if (!input.synchronous_only()) {
+  if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
     HistoryService* history =
         profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
     if (history) {

@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/google/google_util.h"
@@ -133,7 +134,8 @@ void SearchProvider::Start(const AutocompleteInput& input,
                            bool minimal_changes) {
   matches_.clear();
 
-  instant_finalized_ = input.synchronous_only();
+  instant_finalized_ =
+      (input.matches_requested() != AutocompleteInput::ALL_MATCHES);
 
   // Can't return search/suggest results for bogus input or without a profile.
   if (!profile_ || (input.type() == AutocompleteInput::INVALID)) {
@@ -326,14 +328,16 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   // have its results, or are allowed to keep running it, just do that, rather
   // than starting a new query.
   if (minimal_changes &&
-      (have_suggest_results_ || (!done_ && !input_.synchronous_only())))
+      (have_suggest_results_ ||
+       (!done_ &&
+        input_.matches_requested() == AutocompleteInput::ALL_MATCHES)))
     return;
 
   // We can't keep running any previous query, so halt it.
   StopSuggest();
 
   // We can't start a new query if we're only allowed synchronous results.
-  if (input_.synchronous_only())
+  if (input_.matches_requested() != AutocompleteInput::ALL_MATCHES)
     return;
 
   // We'll have at least one pending fetch. Set it to 1 now, but the value is
@@ -601,6 +605,7 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
                                             int did_not_accept_suggestion,
                                             MatchMap* map) {
   int last_relevance = 0;
+  AutocompleteClassifier* classifier = profile_->GetAutocompleteClassifier();
   for (HistoryResults::const_iterator i(results.begin()); i != results.end();
        ++i) {
     // History returns results sorted for us. We force the relevance to decrease
@@ -611,7 +616,22 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
     // be random.
     // This uses >= to handle the case where 3 or more results have the same
     // relevance.
-    int relevance = CalculateRelevanceForHistory(i->time, is_keyword);
+    bool term_looks_like_url = false;
+    // Don't autocomplete search terms that would normally be treated as URLs
+    // when typed. For example, if the user searched for google.com and types
+    // goog, don't autocomplete to the search term google.com. Otherwise, the
+    // input will look like a URL but act like a search, which is confusing.
+    // Note that if the user has typed the whole term, we don't need to do
+    // anything special, since the "What you typed" history match will outrank
+    // us; bypassing this case also prevents the Classify() call below from
+    // recursing infinitely.
+    if (classifier && i->term != input_.text()) {
+      AutocompleteMatch match;
+      classifier->Classify(i->term, string16(), false, &match, NULL);
+      term_looks_like_url = match.transition == PageTransition::TYPED;
+    }
+    int relevance = CalculateRelevanceForHistory(i->time, term_looks_like_url,
+                                                 is_keyword);
     if (i != results.begin() && relevance >= last_relevance)
       relevance = last_relevance - 1;
     last_relevance = relevance;
@@ -663,18 +683,19 @@ int SearchProvider::CalculateRelevanceForWhatYouTyped() const {
 }
 
 int SearchProvider::CalculateRelevanceForHistory(const Time& time,
+                                                 bool looks_like_url,
                                                  bool is_keyword) const {
   // The relevance of past searches falls off over time. There are two distinct
   // equations used. If the first equation is used (searches to the primary
-  // provider with a type other than URL) the score starts at 1399 and falls to
-  // 1300. If the second equation is used the relevance of a search 15 minutes
-  // ago is discounted about 50 points, while the relevance of a search two
-  // weeks ago is discounted about 450 points.
+  // provider with a type other than URL that don't autocomplete to a url) the
+  // score starts at 1399 and falls to 1300. If the second equation is used the
+  // relevance of a search 15 minutes ago is discounted about 50 points, while
+  // the relevance of a search two weeks ago is discounted about 450 points.
   double elapsed_time = std::max((Time::Now() - time).InSecondsF(), 0.);
 
   if (providers_.is_primary_provider(is_keyword) &&
       input_.type() != AutocompleteInput::URL &&
-      !input_.prevent_inline_autocomplete()) {
+      !input_.prevent_inline_autocomplete() && !looks_like_url) {
     // Searches with the past two days get a different curve.
     const double autocomplete_time= 2 * 24 * 60 * 60;
     if (elapsed_time < autocomplete_time) {

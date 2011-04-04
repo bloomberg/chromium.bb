@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -188,7 +188,7 @@ void HistoryURLProviderTest::RunTest(const string16 text,
                                      const std::string* expected_urls,
                                      size_t num_results) {
   AutocompleteInput input(text, desired_tld, prevent_inline_autocomplete,
-                          false, true, false);
+                          false, true, AutocompleteInput::ALL_MATCHES);
   autocomplete_->Start(input, false);
   if (!autocomplete_->done())
     MessageLoop::current()->Run();
@@ -202,7 +202,8 @@ void HistoryURLProviderTest::RunTest(const string16 text,
 
 void HistoryURLProviderTest::RunAdjustOffsetTest(const string16 text,
                                                  size_t expected_offset) {
-  AutocompleteInput input(text, string16(), false, false, true, false);
+  AutocompleteInput input(text, string16(), false, false, true,
+                          AutocompleteInput::ALL_MATCHES);
   autocomplete_->Start(input, false);
   if (!autocomplete_->done())
     MessageLoop::current()->Run();

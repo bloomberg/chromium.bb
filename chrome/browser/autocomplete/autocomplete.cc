@@ -51,7 +51,7 @@ AutocompleteInput::AutocompleteInput()
     prevent_inline_autocomplete_(false),
     prefer_keyword_(false),
     allow_exact_keyword_match_(true),
-    synchronous_only_(false) {
+    matches_requested_(ALL_MATCHES) {
 }
 
 AutocompleteInput::AutocompleteInput(const string16& text,
@@ -59,14 +59,14 @@ AutocompleteInput::AutocompleteInput(const string16& text,
                                      bool prevent_inline_autocomplete,
                                      bool prefer_keyword,
                                      bool allow_exact_keyword_match,
-                                     bool synchronous_only)
+                                     MatchesRequested matches_requested)
     : original_text_(text),
       desired_tld_(desired_tld),
       initial_prevent_inline_autocomplete_(prevent_inline_autocomplete),
       prevent_inline_autocomplete_(prevent_inline_autocomplete),
       prefer_keyword_(prefer_keyword),
       allow_exact_keyword_match_(allow_exact_keyword_match),
-      synchronous_only_(synchronous_only) {
+      matches_requested_(matches_requested) {
   // Trim whitespace from edges of input; don't inline autocomplete if there
   // was trailing whitespace.
   if (TrimWhitespace(text, TRIM_ALL, &text_) & TRIM_TRAILING)
@@ -464,7 +464,7 @@ bool AutocompleteInput::Equals(const AutocompleteInput& other) const {
          (scheme_ == other.scheme_) &&
          (prevent_inline_autocomplete_ == other.prevent_inline_autocomplete_) &&
          (prefer_keyword_ == other.prefer_keyword_) &&
-         (synchronous_only_ == other.synchronous_only_);
+         (matches_requested_ == other.matches_requested_);
 }
 
 void AutocompleteInput::Clear() {
@@ -826,16 +826,18 @@ void AutocompleteController::SetProfile(Profile* profile) {
                    // different profile.
 }
 
-void AutocompleteController::Start(const string16& text,
-                                   const string16& desired_tld,
-                                   bool prevent_inline_autocomplete,
-                                   bool prefer_keyword,
-                                   bool allow_exact_keyword_match,
-                                   bool synchronous_only) {
+void AutocompleteController::Start(
+    const string16& text,
+    const string16& desired_tld,
+    bool prevent_inline_autocomplete,
+    bool prefer_keyword,
+    bool allow_exact_keyword_match,
+    AutocompleteInput::MatchesRequested matches_requested) {
   const string16 old_input_text(input_.text());
-  const bool old_synchronous_only = input_.synchronous_only();
+  const AutocompleteInput::MatchesRequested old_matches_requested =
+      input_.matches_requested();
   input_ = AutocompleteInput(text, desired_tld, prevent_inline_autocomplete,
-      prefer_keyword, allow_exact_keyword_match, synchronous_only);
+      prefer_keyword, allow_exact_keyword_match, matches_requested);
 
   // See if we can avoid rerunning autocomplete when the query hasn't changed
   // much.  When the user presses or releases the ctrl key, the desired_tld
@@ -847,7 +849,7 @@ void AutocompleteController::Start(const string16& text,
   // NOTE: This comes after constructing |input_| above since that construction
   // can change the text string (e.g. by stripping off a leading '?').
   const bool minimal_changes = (input_.text() == old_input_text) &&
-      (input_.synchronous_only() == old_synchronous_only);
+      (input_.matches_requested() == old_matches_requested);
 
   expire_timer_.Stop();
 
@@ -857,10 +859,10 @@ void AutocompleteController::Start(const string16& text,
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end();
        ++i) {
     (*i)->Start(input_, minimal_changes);
-    if (synchronous_only)
+    if (matches_requested != AutocompleteInput::ALL_MATCHES)
       DCHECK((*i)->done());
   }
-  if (!synchronous_only && text.size() < 6) {
+  if (matches_requested == AutocompleteInput::ALL_MATCHES && text.size() < 6) {
     base::TimeTicks end_time = base::TimeTicks::Now();
     std::string name = "Omnibox.QueryTime." + base::IntToString(text.size());
     scoped_refptr<base::Histogram> counter = base::Histogram::FactoryGet(

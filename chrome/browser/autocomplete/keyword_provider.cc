@@ -185,7 +185,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
        i != keyword_matches.end(); ) {
     const TemplateURL* template_url(model->GetTemplateURLForKeyword(*i));
     if (profile_ &&
-        !input.synchronous_only() && template_url->IsExtensionKeyword()) {
+        input.matches_requested() == AutocompleteInput::ALL_MATCHES &&
+        template_url->IsExtensionKeyword()) {
       ExtensionService* service = profile_->GetExtensionService();
       const Extension* extension = service->GetExtensionById(
           template_url->GetExtensionId(), false);
@@ -215,7 +216,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
                                                remaining_input, -1));
 
     if (profile_ &&
-        !input.synchronous_only() && template_url->IsExtensionKeyword()) {
+        input.matches_requested() == AutocompleteInput::ALL_MATCHES &&
+        template_url->IsExtensionKeyword()) {
       if (template_url->GetExtensionId() != current_keyword_extension_id_)
         MaybeEndExtensionKeywordMode();
       if (current_keyword_extension_id_.empty())

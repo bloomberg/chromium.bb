@@ -67,7 +67,7 @@ void KeywordProviderTest::RunTest(
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
     AutocompleteInput input(keyword_cases[i].input, string16(), true,
-                            false, true, false);
+                            false, true, AutocompleteInput::ALL_MATCHES);
     kw_provider_->Start(input, false);
     EXPECT_TRUE(kw_provider_->done());
     matches = kw_provider_->matches();

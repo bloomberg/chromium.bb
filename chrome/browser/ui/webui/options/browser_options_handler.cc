@@ -413,8 +413,8 @@ void BrowserOptionsHandler::RequestAutocompleteSuggestions(
   CHECK_EQ(args->GetSize(), 1U);
   CHECK(args->GetString(0, &input));
 
-  autocomplete_controller_->Start(input, string16(),
-                                  true, false, false, false);
+  autocomplete_controller_->Start(input, string16(), true, false, false,
+                                  AutocompleteInput::ALL_MATCHES);
 }
 
 void BrowserOptionsHandler::OnResultChanged(bool default_match_changed) {

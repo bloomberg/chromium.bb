@@ -93,7 +93,7 @@ void AutocompleteResultTest::RunCopyOldMatchesTest(
     const TestData* current, size_t current_size,
     const TestData* expected, size_t expected_size) {
   AutocompleteInput input(ASCIIToUTF16("a"), string16(), false, false, false,
-                          false);
+                          AutocompleteInput::ALL_MATCHES);
 
   ACMatches last_matches;
   PopulateAutocompleteMatches(last, last_size, &last_matches);
@@ -125,7 +125,7 @@ TEST_F(AutocompleteResultTest, Swap) {
   ACMatches matches;
   AutocompleteMatch match;
   AutocompleteInput input(ASCIIToUTF16("a"), string16(), false, false, false,
-                          false);
+                          AutocompleteInput::ALL_MATCHES);
   matches.push_back(match);
   r1.AppendMatches(matches);
   r1.SortAndCull(input);

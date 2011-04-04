@@ -185,13 +185,30 @@ class AutocompleteInput {
     FORCED_QUERY,   // Input forced to be a query by an initial '?'
   };
 
+  // Enumeration of the possible match query types. Callers who only need some
+  // of the matches for a particular input can get answers more quickly by
+  // specifying that upfront.
+  enum MatchesRequested {
+    // Only the best match in the whole result set matters.  Providers should at
+    // most return synchronously-available matches, and if possible do even less
+    // work, so that it's safe to ask for these repeatedly in the course of one
+    // higher-level "synchronous" query.
+    BEST_MATCH,
+
+    // Only synchronous matches should be returned.
+    SYNCHRONOUS_MATCHES,
+
+    // All matches should be fetched.
+    ALL_MATCHES,
+  };
+
   AutocompleteInput();
   AutocompleteInput(const string16& text,
                     const string16& desired_tld,
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,
                     bool allow_exact_keyword_match,
-                    bool synchronous_only);
+                    MatchesRequested matches_requested);
   ~AutocompleteInput();
 
   // If type is |FORCED_QUERY| and |text| starts with '?', it is removed.
@@ -282,11 +299,8 @@ class AutocompleteInput {
   // keyword search, even if the input is "<keyword> <search string>".
   bool allow_exact_keyword_match() const { return allow_exact_keyword_match_; }
 
-  // Returns whether providers should avoid scheduling asynchronous work.  If
-  // this is true, providers should stop after returning all the
-  // synchronously-available matches.  This also means any in-progress
-  // asynchronous work should be canceled, so no later callbacks are fired.
-  bool synchronous_only() const { return synchronous_only_; }
+  // See description of enum for details.
+  MatchesRequested matches_requested() const { return matches_requested_; }
 
   // operator==() by another name.
   bool Equals(const AutocompleteInput& other) const;
@@ -306,7 +320,7 @@ class AutocompleteInput {
   bool prevent_inline_autocomplete_;
   bool prefer_keyword_;
   bool allow_exact_keyword_match_;
-  bool synchronous_only_;
+  MatchesRequested matches_requested_;
 };
 
 // AutocompleteProvider -------------------------------------------------------
@@ -611,9 +625,9 @@ class AutocompleteController : public ACProviderListener {
   // in a page and telling the browser to search for it or navigate to it. This
   // parameter only applies to substituting keywords.
 
-  // If |synchronous_only| is true, the controller asks the providers to only
-  // return matches which are synchronously available, which should mean that
-  // all providers will be done immediately.
+  // If |matches_requested| is BEST_MATCH or SYNCHRONOUS_MATCHES the controller
+  // asks the providers to only return matches which are synchronously
+  // available, which should mean that all providers will be done immediately.
   //
   // The controller calls AutocompleteControllerDelegate::OnResultChanged() from
   // inside this call at least once. If matches are available later on that
@@ -625,7 +639,7 @@ class AutocompleteController : public ACProviderListener {
              bool prevent_inline_autocomplete,
              bool prefer_keyword,
              bool allow_exact_keyword_match,
-             bool synchronous_only);
+             AutocompleteInput::MatchesRequested matches_requested);
 
   // Cancels the current query, ensuring there will be no future notifications
   // fired.  If new matches have come in since the most recent notification was

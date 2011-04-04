@@ -392,7 +392,8 @@ void AutocompleteEditModel::StartAutocomplete(
       prevent_inline_autocomplete || just_deleted_text_ ||
       (has_selected_text && inline_autocomplete_text_.empty()) ||
       (paste_state_ != NONE), keyword_is_selected,
-      keyword_is_selected || allow_exact_keyword_match_, false);
+      keyword_is_selected || allow_exact_keyword_match_,
+      AutocompleteInput::ALL_MATCHES);
 }
 
 void AutocompleteEditModel::StopAutocomplete() {

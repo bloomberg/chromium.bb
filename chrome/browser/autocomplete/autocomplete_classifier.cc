@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ void AutocompleteClassifier::Classify(const string16& text,
                                       AutocompleteMatch* match,
                                       GURL* alternate_nav_url) {
   controller_->Start(text, desired_tld, true, false, allow_exact_keyword_match,
-                     true);
+                     AutocompleteInput::BEST_MATCH);
   DCHECK(controller_->done());
   const AutocompleteResult& result = controller_->result();
   if (result.empty()) {

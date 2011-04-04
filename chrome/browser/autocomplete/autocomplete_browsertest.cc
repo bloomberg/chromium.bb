@@ -106,8 +106,9 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
   AutocompleteController* autocomplete_controller = GetAutocompleteController();
 
   {
-    autocomplete_controller->Start(ASCIIToUTF16("chrome"), string16(),
-                                   true, false, true, true);
+    autocomplete_controller->Start(
+        ASCIIToUTF16("chrome"), string16(), true, false, true,
+        AutocompleteInput::SYNCHRONOUS_MATCHES);
 
     EXPECT_TRUE(autocomplete_controller->done());
     EXPECT_TRUE(location_bar->GetInputString().empty());

@@ -178,7 +178,7 @@ void SearchProviderTest::QueryForInput(const string16& text,
                                        bool minimal_changes) {
   // Start a query.
   AutocompleteInput input(text, string16(), prevent_inline_autocomplete,
-                          false, true, false);
+                          false, true, AutocompleteInput::ALL_MATCHES);
   provider_->Start(input, minimal_changes);
 
   // RunAllPending so that the task scheduled by SearchProvider to create the
@@ -452,4 +452,43 @@ TEST_F(SearchProviderTest, DifferingText) {
       *default_t_url_, ASCIIToUTF16("foo"), 0, string16()));
   AutocompleteMatch instant_match = FindMatchWithDestination(instant_url);
   EXPECT_FALSE(instant_match.destination_url.is_empty());
+}
+
+TEST_F(SearchProviderTest, DontAutocompleteURLLikeTerms) {
+  profile_.CreateAutocompleteClassifier();
+  string16 term(ASCIIToUTF16("docs.google.com"));
+  HistoryService* history =
+      profile_.GetHistoryService(Profile::EXPLICIT_ACCESS);
+  GURL url = GURL(default_t_url_->url()->ReplaceSearchTerms(
+      *default_t_url_, term, 0, string16()));
+  history->AddPageWithDetails(
+      url, string16(), 1, 1, base::Time::Now(), false, history::SOURCE_BROWSED);
+  history->SetKeywordSearchTermsForURL(url, default_t_url_->id(), term);
+
+  // Add the term as a url.
+  history->AddPageWithDetails(
+      GURL("http://docs.google.com"), string16(), 1, 1, base::Time::Now(),
+      false, history::SOURCE_BROWSED);
+
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+
+  QueryForInput(ASCIIToUTF16("docs"), false, false);
+
+  // Wait until history and the suggest query complete.
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+  ASSERT_NO_FATAL_FAILURE(FinishDefaultSuggestQuery());
+
+  // Provider should be done.
+  EXPECT_TRUE(provider_->done());
+
+  // There should be two matches, one for what you typed, the other for
+  // 'docs.google.com'. The search term should have a lower priority than the
+  // what you typed match.
+  ASSERT_EQ(2u, provider_->matches().size());
+  AutocompleteMatch term_match = FindMatchWithDestination(url);
+  GURL what_you_typed_url = GURL(default_t_url_->url()->ReplaceSearchTerms(
+      *default_t_url_, ASCIIToUTF16("docs"), 0, string16()));
+  AutocompleteMatch what_you_typed_match =
+      FindMatchWithDestination(what_you_typed_url);
+  EXPECT_GT(what_you_typed_match.relevance, term_match.relevance);
 }

@@ -28,7 +28,8 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
   matches_.clear();
   if ((input.type() == AutocompleteInput::INVALID) ||
       (input.type() == AutocompleteInput::FORCED_QUERY) ||
-      (input.type() == AutocompleteInput::QUERY))
+      (input.type() == AutocompleteInput::QUERY) ||
+      (input.matches_requested() == AutocompleteInput::BEST_MATCH))
     return;
   for (Builtins::const_iterator i(builtins_.begin());
        (i != builtins_.end()) && (matches_.size() < kMaxMatches); ++i) {

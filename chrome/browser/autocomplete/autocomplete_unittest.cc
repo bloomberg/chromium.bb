@@ -68,7 +68,7 @@ void TestProvider::Start(const AutocompleteInput& input,
   // Generate one result synchronously, the rest later.
   AddResults(0, 1);
 
-  if (!input.synchronous_only()) {
+  if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
     done_ = false;
     MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
         this, &TestProvider::Run));
@@ -203,7 +203,8 @@ void AutocompleteProviderTest::
 
 void AutocompleteProviderTest::RunTest() {
   result_.Reset();
-  controller_->Start(ASCIIToUTF16("a"), string16(), true, false, true, false);
+  controller_->Start(ASCIIToUTF16("a"), string16(), true, false, true,
+                     AutocompleteInput::ALL_MATCHES);
 
   // The message loop will terminate when all autocomplete input has been
   // collected.
@@ -217,7 +218,8 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
   // match should thus be a keyword match iff |allow_exact_keyword_match| is
   // true.
   controller_->Start(ASCIIToUTF16("k test"), string16(), true, false,
-                     allow_exact_keyword_match, true);
+                     allow_exact_keyword_match,
+                     AutocompleteInput::SYNCHRONOUS_MATCHES);
   EXPECT_TRUE(controller_->done());
   // ResetControllerWithKeywordAndSearchProviders() adds the keyword provider
   // first, then the search provider.  So if the default match is a keyword
@@ -359,7 +361,7 @@ TEST_F(AutocompleteTest, InputType) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input, string16(), true, false,
-                            true, false);
+                            true, AutocompleteInput::ALL_MATCHES);
     EXPECT_EQ(input_cases[i].type, input.type());
   }
 }
@@ -375,7 +377,7 @@ TEST_F(AutocompleteTest, InputTypeWithDesiredTLD) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
     AutocompleteInput input(input_cases[i].input, ASCIIToUTF16("com"), true,
-                            false, true, false);
+                            false, true, AutocompleteInput::ALL_MATCHES);
     EXPECT_EQ(input_cases[i].type, input.type()) << "Input: " <<
         input_cases[i].input;
   }
@@ -385,7 +387,7 @@ TEST_F(AutocompleteTest, InputTypeWithDesiredTLD) {
 // crash. As long as the test completes without crashing, we're fine.
 TEST_F(AutocompleteTest, InputCrash) {
   AutocompleteInput input(WideToUTF16(L"\uff65@s"), string16(), true, false,
-                          true, false);
+                          true, AutocompleteInput::ALL_MATCHES);
 }
 
 // Test comparing matches relevance.
@@ -455,7 +457,7 @@ TEST(AutocompleteInput, ParseForEmphasizeComponent) {
                                                    &scheme,
                                                    &host);
     AutocompleteInput input(input_cases[i].input, string16(), true, false,
-                            true, false);
+                            true, AutocompleteInput::ALL_MATCHES);
     EXPECT_EQ(input_cases[i].scheme.begin, scheme.begin) << "Input: " <<
         input_cases[i].input;
     EXPECT_EQ(input_cases[i].scheme.len, scheme.len) << "Input: " <<

@@ -631,7 +631,7 @@ void HistoryURLProvider::RunAutocompletePasses(
 
   // Pass 2: Ask the history service to call us back on the history thread,
   // where we can read the full on-disk DB.
-  if (!input.synchronous_only()) {
+  if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
     done_ = false;
     params_ = params.release();  // This object will be destroyed in
                                  // QueryComplete() once we're done with it.
