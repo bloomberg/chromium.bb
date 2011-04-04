@@ -176,7 +176,7 @@ class HungCOMCallDetector
     }
 
     static const int kHungDetectTimerId = 0x0000baba;
-    SetTimer(kHungDetectTimerId, 1000 * (timeout_seconds + 2), NULL);
+    SetTimer(kHungDetectTimerId, 1000 * (timeout_seconds + 20), NULL);
     return S_OK;
   }
 
