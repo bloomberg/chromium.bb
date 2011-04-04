@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/pdf_metafile_mac.h"
+#include "printing/pdf_metafile_cg_mac.h"
 
 #import <ApplicationServices/ApplicationServices.h>
 
@@ -14,9 +14,9 @@
 
 namespace printing {
 
-TEST(PdfMetafileTest, Pdf) {
+TEST(PdfMetafileCgTest, Pdf) {
   // Test in-renderer constructor.
-  printing::PdfMetafile pdf;
+  printing::PdfMetafileCg pdf;
   EXPECT_TRUE(pdf.Init());
   EXPECT_TRUE(pdf.context() != NULL);
 
@@ -43,7 +43,7 @@ TEST(PdfMetafileTest, Pdf) {
   pdf.GetData(&buffer.front(), size);
 
   // Test browser-side constructor.
-  printing::PdfMetafile pdf2;
+  printing::PdfMetafileCg pdf2;
   EXPECT_TRUE(pdf2.InitFromData(&buffer.front(), size));
 
   // Get the first 4 characters from pdf2.

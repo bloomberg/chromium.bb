@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SKIA_EXT_VECTOR_PLATFORM_DEVICE_LINUX_H_
-#define SKIA_EXT_VECTOR_PLATFORM_DEVICE_LINUX_H_
+#ifndef SKIA_EXT_VECTOR_PLATFORM_DEVICE_CAIRO_LINUX_H_
+#define SKIA_EXT_VECTOR_PLATFORM_DEVICE_CAIRO_LINUX_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -13,7 +14,7 @@
 
 namespace skia {
 
-class VectorPlatformDeviceFactory : public SkDeviceFactory {
+class VectorPlatformDeviceCairoFactory : public SkDeviceFactory {
  public:
   static PlatformDevice* CreateDevice(cairo_t* context, int width, int height,
                                       bool isOpaque);
@@ -29,17 +30,17 @@ class VectorPlatformDeviceFactory : public SkDeviceFactory {
 // cooresponding Cairo APIs and outputs to a Cairo surface. Please NOTE that
 // since it is completely vectorial, the bitmap content in it is thus
 // meaningless.
-class VectorPlatformDevice : public PlatformDevice {
+class VectorPlatformDeviceCairo : public PlatformDevice {
  public:
-  virtual ~VectorPlatformDevice();
+  virtual ~VectorPlatformDeviceCairo();
 
   // Factory function. Ownership of |context| is not transferred.
-  static VectorPlatformDevice* create(PlatformSurface context,
-                                      int width, int height);
+  static VectorPlatformDeviceCairo* create(PlatformSurface context,
+                                           int width, int height);
 
   // Clean up cached fonts. It is an error to call this while some
-  // VectorPlatformDevice callee is still using fonts created for it by this
-  // class.
+  // VectorPlatformDeviceCairo callee is still using fonts created for it by
+  // this class.
   static void ClearFontCache();
 
   // Overridden from SkDevice (through PlatformDevice):
@@ -85,8 +86,8 @@ class VectorPlatformDevice : public PlatformDevice {
   virtual bool IsVectorial();
 
  protected:
-  explicit VectorPlatformDevice(PlatformSurface context,
-                                const SkBitmap& bitmap);
+  explicit VectorPlatformDeviceCairo(PlatformSurface context,
+                                     const SkBitmap& bitmap);
 
  private:
   // Apply paint's color in the context.
@@ -129,11 +130,9 @@ class VectorPlatformDevice : public PlatformDevice {
   // Device context.
   PlatformSurface context_;
 
-  // Copy & assign are not supported.
-  VectorPlatformDevice(const VectorPlatformDevice&);
-  const VectorPlatformDevice& operator=(const VectorPlatformDevice&);
+  DISALLOW_COPY_AND_ASSIGN(VectorPlatformDeviceCairo);
 };
 
 }  // namespace skia
 
-#endif  // SKIA_EXT_VECTOR_PLATFORM_DEVICE_LINUX_H_
+#endif  // SKIA_EXT_VECTOR_PLATFORM_DEVICE_CAIRO_LINUX_H_

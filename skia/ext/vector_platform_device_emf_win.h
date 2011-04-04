@@ -1,11 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SKIA_EXT_VECTOR_PLATFORM_DEVICE_WIN_H_
-#define SKIA_EXT_VECTOR_PLATFORM_DEVICE_WIN_H_
+#ifndef SKIA_EXT_VECTOR_PLATFORM_DEVICE_EMF_WIN_H_
+#define SKIA_EXT_VECTOR_PLATFORM_DEVICE_EMF_WIN_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -13,7 +14,7 @@
 
 namespace skia {
 
-class SK_API VectorPlatformDeviceFactory : public SkDeviceFactory {
+class SK_API VectorPlatformDeviceEmfFactory : public SkDeviceFactory {
  public:
   virtual SkDevice* newDevice(SkCanvas* ignored, SkBitmap::Config config,
                               int width, int height,
@@ -26,16 +27,16 @@ class SK_API VectorPlatformDeviceFactory : public SkDeviceFactory {
 // SkCanvas to draw into. This specific device is not not backed by a surface
 // and is thus unreadable. This is because the backend is completely vectorial.
 // This device is a simple wrapper over a Windows device context (HDC) handle.
-class VectorPlatformDevice : public PlatformDevice {
+class VectorPlatformDeviceEmf : public PlatformDevice {
  public:
   // Factory function. The DC is kept as the output context.
-  static VectorPlatformDevice* create(HDC dc, int width, int height);
+  static VectorPlatformDeviceEmf* create(HDC dc, int width, int height);
 
-  VectorPlatformDevice(HDC dc, const SkBitmap& bitmap);
-  virtual ~VectorPlatformDevice();
+  VectorPlatformDeviceEmf(HDC dc, const SkBitmap& bitmap);
+  virtual ~VectorPlatformDeviceEmf();
 
   virtual SkDeviceFactory* getDeviceFactory() {
-    return SkNEW(VectorPlatformDeviceFactory);
+    return SkNEW(VectorPlatformDeviceEmfFactory);
   }
 
   virtual HDC getBitmapDC() {
@@ -134,12 +135,10 @@ class VectorPlatformDevice : public PlatformDevice {
   // True if AlphaBlend() was called during this print.
   bool alpha_blend_used_;
 
-  // Copy & assign are not supported.
-  VectorPlatformDevice(const VectorPlatformDevice&);
-  const VectorPlatformDevice& operator=(const VectorPlatformDevice&);
+  DISALLOW_COPY_AND_ASSIGN(VectorPlatformDeviceEmf);
 };
 
 }  // namespace skia
 
-#endif  // SKIA_EXT_VECTOR_PLATFORM_DEVICE_WIN_H_
+#endif  // SKIA_EXT_VECTOR_PLATFORM_DEVICE_EMF_WIN_H_
 

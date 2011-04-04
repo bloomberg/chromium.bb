@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
-#include "skia/ext/vector_platform_device_win.h"
+#include "skia/ext/vector_platform_device_emf_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -409,9 +409,9 @@ skia::PlatformDevice* Emf::StartPageForVectorCanvas(
   if (!StartPage(page_size, content_origin, scale_factor))
     return NULL;
 
-  return skia::VectorPlatformDeviceFactory::CreateDevice(page_size.width(),
-                                                         page_size.height(),
-                                                         true, hdc_);
+  return skia::VectorPlatformDeviceEmfFactory::CreateDevice(page_size.width(),
+                                                            page_size.height(),
+                                                            true, hdc_);
 }
 
 bool Emf::StartPage(const gfx::Size& /*page_size*/,

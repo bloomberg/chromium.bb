@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/pdf_metafile_mac.h"
+#include "printing/pdf_metafile_cg_mac.h"
 
 #include "base/file_path.h"
 #include "base/logging.h"
@@ -15,13 +15,13 @@ using base::mac::ScopedCFTypeRef;
 
 namespace printing {
 
-PdfMetafile::PdfMetafile()
+PdfMetafileCg::PdfMetafileCg()
     : page_is_open_(false) {
 }
 
-PdfMetafile::~PdfMetafile() {}
+PdfMetafileCg::~PdfMetafileCg() {}
 
-bool PdfMetafile::Init() {
+bool PdfMetafileCg::Init() {
   // Ensure that Init hasn't already been called.
   DCHECK(!context_.get());
   DCHECK(!pdf_data_.get());
@@ -47,7 +47,8 @@ bool PdfMetafile::Init() {
   return true;
 }
 
-bool PdfMetafile::InitFromData(const void* src_buffer, uint32 src_buffer_size) {
+bool PdfMetafileCg::InitFromData(const void* src_buffer,
+                                 uint32 src_buffer_size) {
   DCHECK(!context_.get());
   DCHECK(!pdf_data_.get());
 
@@ -62,16 +63,16 @@ bool PdfMetafile::InitFromData(const void* src_buffer, uint32 src_buffer_size) {
   return true;
 }
 
-skia::PlatformDevice* PdfMetafile::StartPageForVectorCanvas(
+skia::PlatformDevice* PdfMetafileCg::StartPageForVectorCanvas(
     const gfx::Size& page_size, const gfx::Point& content_origin,
     const float& scale_factor) {
   NOTIMPLEMENTED();
   return NULL;
 }
 
-bool PdfMetafile::StartPage(const gfx::Size& page_size,
-                            const gfx::Point& content_origin,
-                            const float& scale_factor) {
+bool PdfMetafileCg::StartPage(const gfx::Size& page_size,
+                              const gfx::Point& content_origin,
+                              const float& scale_factor) {
   DCHECK(context_.get());
   DCHECK(!page_is_open_);
 
@@ -93,7 +94,7 @@ bool PdfMetafile::StartPage(const gfx::Size& page_size,
   return context_.get() != NULL;
 }
 
-bool PdfMetafile::FinishPage() {
+bool PdfMetafileCg::FinishPage() {
   DCHECK(context_.get());
   DCHECK(page_is_open_);
 
@@ -103,7 +104,7 @@ bool PdfMetafile::FinishPage() {
   return true;
 }
 
-bool PdfMetafile::FinishDocument() {
+bool PdfMetafileCg::FinishDocument() {
   DCHECK(context_.get());
   DCHECK(!page_is_open_);
 
@@ -123,11 +124,13 @@ bool PdfMetafile::FinishDocument() {
   return true;
 }
 
-bool PdfMetafile::RenderPage(unsigned int page_number, CGContextRef context,
-                             const CGRect rect, bool shrink_to_fit,
-                             bool stretch_to_fit,
-                             bool center_horizontally,
-                             bool center_vertically) const {
+bool PdfMetafileCg::RenderPage(unsigned int page_number,
+                               CGContextRef context,
+                               const CGRect rect,
+                               bool shrink_to_fit,
+                               bool stretch_to_fit,
+                               bool center_horizontally,
+                               bool center_vertically) const {
   CGPDFDocumentRef pdf_doc = GetPDFDocument();
   if (!pdf_doc) {
     LOG(ERROR) << "Unable to create PDF document from data";
@@ -175,12 +178,12 @@ bool PdfMetafile::RenderPage(unsigned int page_number, CGContextRef context,
   return true;
 }
 
-unsigned int PdfMetafile::GetPageCount() const {
+unsigned int PdfMetafileCg::GetPageCount() const {
   CGPDFDocumentRef pdf_doc = GetPDFDocument();
   return pdf_doc ? CGPDFDocumentGetNumberOfPages(pdf_doc) : 0;
 }
 
-gfx::Rect PdfMetafile::GetPageBounds(unsigned int page_number) const {
+gfx::Rect PdfMetafileCg::GetPageBounds(unsigned int page_number) const {
   CGPDFDocumentRef pdf_doc = GetPDFDocument();
   if (!pdf_doc) {
     LOG(ERROR) << "Unable to create PDF document from data";
@@ -195,7 +198,7 @@ gfx::Rect PdfMetafile::GetPageBounds(unsigned int page_number) const {
   return gfx::Rect(page_rect);
 }
 
-uint32 PdfMetafile::GetDataSize() const {
+uint32 PdfMetafileCg::GetDataSize() const {
   // PDF data is only valid/complete once the context is released.
   DCHECK(!context_);
 
@@ -204,7 +207,7 @@ uint32 PdfMetafile::GetDataSize() const {
   return static_cast<uint32>(CFDataGetLength(pdf_data_));
 }
 
-bool PdfMetafile::GetData(void* dst_buffer, uint32 dst_buffer_size) const {
+bool PdfMetafileCg::GetData(void* dst_buffer, uint32 dst_buffer_size) const {
   // PDF data is only valid/complete once the context is released.
   DCHECK(!context_);
   DCHECK(pdf_data_);
@@ -221,7 +224,7 @@ bool PdfMetafile::GetData(void* dst_buffer, uint32 dst_buffer_size) const {
   return true;
 }
 
-bool PdfMetafile::SaveTo(const FilePath& file_path) const {
+bool PdfMetafileCg::SaveTo(const FilePath& file_path) const {
   DCHECK(pdf_data_.get());
   DCHECK(!context_.get());
 
@@ -234,11 +237,11 @@ bool PdfMetafile::SaveTo(const FilePath& file_path) const {
   return error_code == 0;
 }
 
-CGContextRef PdfMetafile::context() const {
+CGContextRef PdfMetafileCg::context() const {
   return context_.get();
 }
 
-CGPDFDocumentRef PdfMetafile::GetPDFDocument() const {
+CGPDFDocumentRef PdfMetafileCg::GetPDFDocument() const {
   // Make sure that we have data, and that it's not being modified any more.
   DCHECK(pdf_data_.get());
   DCHECK(!context_.get());

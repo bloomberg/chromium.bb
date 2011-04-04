@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/pdf_ps_metafile_cairo.h"
+#include "printing/pdf_metafile_cairo_linux.h"
 
 #include <fcntl.h>
 #include <string>
@@ -20,15 +20,15 @@ typedef struct _cairo cairo_t;
 
 namespace {
 
-class PdfPsTest : public testing::Test {};
+class PdfMetafileCairoTest : public testing::Test {};
 
 }  // namespace
 
 namespace printing {
 
-TEST_F(PdfPsTest, Pdf) {
+TEST_F(PdfMetafileCairoTest, Pdf) {
   // Tests in-renderer constructor.
-  printing::PdfPsMetafile pdf;
+  printing::PdfMetafileCairo pdf;
   EXPECT_TRUE(pdf.Init());
 
   // Renders page 1.
@@ -53,7 +53,7 @@ TEST_F(PdfPsTest, Pdf) {
   pdf.GetData(&buffer.front(), size);
 
   // Tests another constructor.
-  printing::PdfPsMetafile pdf2;
+  printing::PdfMetafileCairo pdf2;
   EXPECT_TRUE(pdf2.InitFromData(&buffer.front(), size));
 
   // Tries to get the first 4 characters from pdf2.
@@ -68,7 +68,7 @@ TEST_F(PdfPsTest, Pdf) {
   EXPECT_TRUE(pdf.SaveTo(FilePath("/dev/null")));
 
   // Test overriding the metafile with raw data.
-  printing::PdfPsMetafile pdf3;
+  printing::PdfMetafileCairo pdf3;
   EXPECT_TRUE(pdf3.Init());
   EXPECT_TRUE(pdf3.StartPage(gfx::Size(72, 73), gfx::Point(4, 5), 1));
   std::string test_raw_data = "Dummy PDF";

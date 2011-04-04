@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "skia/ext/vector_canvas.h"
-#include "skia/ext/vector_platform_device.h"
+#include "skia/ext/vector_platform_device_emf_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -388,7 +388,7 @@ class VectorCanvasTest : public ImageTest {
     size_ = size;
     context_ = new Context();
     bitmap_ = new Bitmap(*context_, size_, size_);
-    vcanvas_ = new VectorCanvas(VectorPlatformDeviceFactory::CreateDevice(
+    vcanvas_ = new VectorCanvas(VectorPlatformDeviceEmfFactory::CreateDevice(
         size_, size_, true, context_->context()));
     pcanvas_ = new PlatformCanvas(size_, size_, false);
 
@@ -455,7 +455,7 @@ TEST_F(VectorCanvasTest, Uninitialized) {
 
   context_ = new Context();
   bitmap_ = new Bitmap(*context_, size_, size_);
-  vcanvas_ = new VectorCanvas(VectorPlatformDeviceFactory::CreateDevice(
+  vcanvas_ = new VectorCanvas(VectorPlatformDeviceEmfFactory::CreateDevice(
       size_, size_, true, context_->context()));
   pcanvas_ = new PlatformCanvas(size_, size_, false);
 

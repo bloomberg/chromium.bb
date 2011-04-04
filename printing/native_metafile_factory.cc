@@ -9,9 +9,9 @@
 #if defined(OS_WIN)
 #include "printing/emf_win.h"
 #elif defined(OS_MACOSX)
-#include "printing/pdf_metafile_mac.h"
+#include "printing/pdf_metafile_cg_mac.h"
 #elif defined(OS_POSIX)
-#include "printing/pdf_ps_metafile_cairo.h"
+#include "printing/pdf_metafile_cairo_linux.h"
 #endif
 
 namespace printing {
@@ -38,9 +38,9 @@ NativeMetafile* NativeMetafileFactory::CreateNewMetafile(){
 #if defined(OS_WIN)
   return new printing::Emf;
 #elif defined(OS_MACOSX)
-  return new printing::PdfMetafile;
+  return new printing::PdfMetafileCg;
 #elif defined(OS_POSIX)
-  return new printing::PdfPsMetafile;
+  return new printing::PdfMetafileCairo;
 #endif
 }
 

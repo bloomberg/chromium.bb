@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PRINTING_PDF_PS_METAFILE_CAIRO_H_
-#define PRINTING_PDF_PS_METAFILE_CAIRO_H_
+#ifndef PRINTING_PDF_METAFILE_CAIRO_LINUX_H_
+#define PRINTING_PDF_METAFILE_CAIRO_LINUX_H_
 
 #include <string>
 
@@ -23,9 +23,9 @@ namespace printing {
 
 // This class uses Cairo graphics library to generate PDF stream and stores
 // rendering results in a string buffer.
-class PdfPsMetafile : public NativeMetafile {
+class PdfMetafileCairo : public NativeMetafile {
  public:
-  virtual ~PdfPsMetafile();
+  virtual ~PdfMetafileCairo();
 
   // NativeMetafile methods.
   virtual bool Init();
@@ -59,11 +59,11 @@ class PdfPsMetafile : public NativeMetafile {
 #endif  // if defined(OS_CHROMEOS)
 
  protected:
-  PdfPsMetafile();
+  PdfMetafileCairo();
 
  private:
   friend class NativeMetafileFactory;
-  FRIEND_TEST_ALL_PREFIXES(PdfPsTest, Pdf);
+  FRIEND_TEST_ALL_PREFIXES(PdfMetafileCairoTest, Pdf);
 
   // Cleans up all resources.
   void CleanUpAll();
@@ -84,9 +84,9 @@ class PdfPsMetafile : public NativeMetafile {
   // initialized (Init() vs InitFromData()).
   std::string* current_data_;
 
-  DISALLOW_COPY_AND_ASSIGN(PdfPsMetafile);
+  DISALLOW_COPY_AND_ASSIGN(PdfMetafileCairo);
 };
 
 }  // namespace printing
 
-#endif  // PRINTING_PDF_PS_METAFILE_CAIRO_H_
+#endif  // PRINTING_PDF_METAFILE_CAIRO_LINUX_H_

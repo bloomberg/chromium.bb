@@ -26,7 +26,6 @@
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppp_instance.h"
 #include "printing/units.h"
-#include "skia/ext/vector_platform_device.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
@@ -75,6 +74,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "skia/ext/vector_platform_device_emf_win.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/gdi_util.h"
 #endif
@@ -1231,8 +1231,8 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
 #elif defined(OS_WIN)
   // On Windows, we now need to render the PDF to the DC that backs the
   // supplied canvas.
-  skia::VectorPlatformDevice& device =
-      static_cast<skia::VectorPlatformDevice&>(
+  skia::VectorPlatformDeviceEmf& device =
+      static_cast<skia::VectorPlatformDeviceEmf&>(
           canvas->getTopPlatformDevice());
   HDC dc = device.getBitmapDC();
   gfx::Size size_in_pixels;
@@ -1322,8 +1322,8 @@ bool PluginInstance::DrawJPEGToPlatformDC(
     const SkBitmap& bitmap,
     const gfx::Rect& printable_area,
     WebKit::WebCanvas* canvas) {
-  skia::VectorPlatformDevice& device =
-      static_cast<skia::VectorPlatformDevice&>(
+  skia::VectorPlatformDeviceEmf& device =
+      static_cast<skia::VectorPlatformDeviceEmf&>(
           canvas->getTopPlatformDevice());
   HDC dc = device.getBitmapDC();
   // TODO(sanjeevr): This is a temporary hack. If we output a JPEG

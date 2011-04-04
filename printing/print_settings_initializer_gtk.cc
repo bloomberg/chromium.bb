@@ -9,7 +9,6 @@
 
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
-#include "printing/pdf_ps_metafile_cairo.h"
 #include "printing/print_settings.h"
 #include "printing/units.h"
 

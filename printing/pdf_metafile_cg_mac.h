@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PRINTING_PDF_METAFILE_MAC_H_
-#define PRINTING_PDF_METAFILE_MAC_H_
+#ifndef PRINTING_PDF_METAFILE_CG_MAC_H_
+#define PRINTING_PDF_METAFILE_CG_MAC_H_
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -24,10 +24,10 @@ class Point;
 namespace printing {
 
 // This class creates a graphics context that renders into a PDF data stream.
-class PdfMetafile : public NativeMetafile {
+class PdfMetafileCg : public NativeMetafile {
  public:
 
-  virtual ~PdfMetafile();
+  virtual ~PdfMetafileCg();
 
   // NativeMetafile methods.
   virtual bool Init();
@@ -65,11 +65,11 @@ class PdfMetafile : public NativeMetafile {
                           bool center_vertically) const;
 
  protected:
-  PdfMetafile();
+  PdfMetafileCg();
 
  private:
   friend class NativeMetafileFactory;
-  FRIEND_TEST_ALL_PREFIXES(PdfMetafileTest, Pdf);
+  FRIEND_TEST_ALL_PREFIXES(PdfMetafileCgTest, Pdf);
 
   // Returns a CGPDFDocumentRef version of pdf_data_.
   CGPDFDocumentRef GetPDFDocument() const;
@@ -86,9 +86,9 @@ class PdfMetafile : public NativeMetafile {
   // Whether or not a page is currently open.
   bool page_is_open_;
 
-  DISALLOW_COPY_AND_ASSIGN(PdfMetafile);
+  DISALLOW_COPY_AND_ASSIGN(PdfMetafileCg);
 };
 
 }  // namespace printing
 
-#endif  // PRINTING_PDF_METAFILE_MAC_H_
+#endif  // PRINTING_PDF_METAFILE_CG_MAC_H_

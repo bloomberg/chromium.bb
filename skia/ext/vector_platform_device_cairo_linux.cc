@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "skia/ext/vector_platform_device.h"
+#include "skia/ext/vector_platform_device_cairo_linux.h"
 
 #include <cairo.h>
 #include <cairo-ft.h>
@@ -40,7 +40,7 @@ class FtLibrary {
     FT_Error ft_error = FT_Init_FreeType(&library_);
     if (ft_error) {
       DLOG(ERROR) << "Cannot initialize FreeType library for " \
-                  << "VectorPlatformDevice.";
+                  << "VectorPlatformDeviceCairo.";
     }
   }
 
@@ -68,19 +68,20 @@ bool IsContextValid(cairo_t* context) {
 
 namespace skia {
 
-SkDevice* VectorPlatformDeviceFactory::newDevice(SkCanvas* ignored,
-                                                 SkBitmap::Config config,
-                                                 int width, int height,
-                                                 bool isOpaque,
-                                                 bool isForLayer) {
+SkDevice* VectorPlatformDeviceCairoFactory::newDevice(SkCanvas* ignored,
+                                                      SkBitmap::Config config,
+                                                      int width, int height,
+                                                      bool isOpaque,
+                                                      bool isForLayer) {
   SkASSERT(config == SkBitmap::kARGB_8888_Config);
   return CreateDevice(NULL, width, height, isOpaque);
 }
 
 // static
-PlatformDevice* VectorPlatformDeviceFactory::CreateDevice(cairo_t* context,
-                                                          int width, int height,
-                                                          bool isOpaque) {
+PlatformDevice* VectorPlatformDeviceCairoFactory::CreateDevice(cairo_t* context,
+                                                               int width,
+                                                               int height,
+                                                               bool isOpaque) {
   // TODO(myhuang): Here we might also have similar issues as those on Windows
   // (vector_canvas_win.cc, http://crbug.com/18382 & http://crbug.com/18383).
   // Please note that is_opaque is true when we use this class for printing.
@@ -90,12 +91,14 @@ PlatformDevice* VectorPlatformDeviceFactory::CreateDevice(cairo_t* context,
   }
 
   PlatformDevice* device =
-    VectorPlatformDevice::create(context, width, height);
+    VectorPlatformDeviceCairo::create(context, width, height);
   return device;
 }
 
-VectorPlatformDevice* VectorPlatformDevice::create(PlatformSurface context,
-                                                   int width, int height) {
+VectorPlatformDeviceCairo* VectorPlatformDeviceCairo::create(
+    PlatformSurface context,
+    int width,
+    int height) {
   SkASSERT(cairo_status(context) == CAIRO_STATUS_SUCCESS);
   SkASSERT(width > 0);
   SkASSERT(height > 0);
@@ -106,11 +109,11 @@ VectorPlatformDevice* VectorPlatformDevice::create(PlatformSurface context,
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
 
-  return new VectorPlatformDevice(context, bitmap);
+  return new VectorPlatformDeviceCairo(context, bitmap);
 }
 
-VectorPlatformDevice::VectorPlatformDevice(PlatformSurface context,
-                                           const SkBitmap& bitmap)
+VectorPlatformDeviceCairo::VectorPlatformDeviceCairo(PlatformSurface context,
+                                                     const SkBitmap& bitmap)
     : PlatformDevice(bitmap),
       context_(context) {
   SkASSERT(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
@@ -121,28 +124,29 @@ VectorPlatformDevice::VectorPlatformDevice(PlatformSurface context,
   transform_.reset();
 }
 
-VectorPlatformDevice::~VectorPlatformDevice() {
+VectorPlatformDeviceCairo::~VectorPlatformDeviceCairo() {
   // Un-ref |context_| since we referenced it in the constructor.
   cairo_destroy(context_);
 }
 
-SkDeviceFactory* VectorPlatformDevice::getDeviceFactory() {
-  return SkNEW(VectorPlatformDeviceFactory);
+SkDeviceFactory* VectorPlatformDeviceCairo::getDeviceFactory() {
+  return SkNEW(VectorPlatformDeviceCairoFactory);
 }
 
-bool VectorPlatformDevice::IsVectorial() {
+bool VectorPlatformDeviceCairo::IsVectorial() {
   return true;
 }
 
-PlatformDevice::PlatformSurface VectorPlatformDevice::beginPlatformPaint() {
+PlatformDevice::PlatformSurface
+VectorPlatformDeviceCairo::beginPlatformPaint() {
   return context_;
 }
 
-void VectorPlatformDevice::drawBitmap(const SkDraw& draw,
-                                      const SkBitmap& bitmap,
-                                      const SkIRect* srcRectOrNull,
-                                      const SkMatrix& matrix,
-                                      const SkPaint& paint) {
+void VectorPlatformDeviceCairo::drawBitmap(const SkDraw& draw,
+                                           const SkBitmap& bitmap,
+                                           const SkIRect* srcRectOrNull,
+                                           const SkMatrix& matrix,
+                                           const SkPaint& paint) {
   SkASSERT(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
 
   // Load the temporary matrix. This is what will translate, rotate and resize
@@ -157,19 +161,19 @@ void VectorPlatformDevice::drawBitmap(const SkDraw& draw,
   LoadTransformToContext(transform_);
 }
 
-void VectorPlatformDevice::drawDevice(const SkDraw& draw,
-                                      SkDevice* device,
-                                      int x,
-                                      int y,
-                                      const SkPaint& paint) {
+void VectorPlatformDeviceCairo::drawDevice(const SkDraw& draw,
+                                           SkDevice* device,
+                                           int x,
+                                           int y,
+                                           const SkPaint& paint) {
   SkASSERT(device);
 
   // TODO(myhuang): We may also have to consider http://b/1183870 .
   drawSprite(draw, device->accessBitmap(false), x, y, paint);
 }
 
-void VectorPlatformDevice::drawPaint(const SkDraw& draw,
-                                     const SkPaint& paint) {
+void VectorPlatformDeviceCairo::drawPaint(const SkDraw& draw,
+                                          const SkPaint& paint) {
   // Bypass the current transformation matrix.
   LoadIdentityTransformToContext();
 
@@ -185,11 +189,11 @@ void VectorPlatformDevice::drawPaint(const SkDraw& draw,
   LoadTransformToContext(transform_);
 }
 
-void VectorPlatformDevice::drawPath(const SkDraw& draw,
-                                    const SkPath& path,
-                                    const SkPaint& paint,
-                                    const SkMatrix* prePathMatrix,
-                                    bool pathIsMutable) {
+void VectorPlatformDeviceCairo::drawPath(const SkDraw& draw,
+                                         const SkPath& path,
+                                         const SkPaint& paint,
+                                         const SkMatrix* prePathMatrix,
+                                         bool pathIsMutable) {
   if (paint.getPathEffect()) {
     // Apply the path effect forehand.
     SkPath path_modified;
@@ -273,11 +277,11 @@ void VectorPlatformDevice::drawPath(const SkDraw& draw,
   DoPaintStyle(paint);
 }
 
-void VectorPlatformDevice::drawPoints(const SkDraw& draw,
-                                      SkCanvas::PointMode mode,
-                                      size_t count,
-                                      const SkPoint pts[],
-                                      const SkPaint& paint) {
+void VectorPlatformDeviceCairo::drawPoints(const SkDraw& draw,
+                                           SkCanvas::PointMode mode,
+                                           size_t count,
+                                           const SkPoint pts[],
+                                           const SkPaint& paint) {
   SkASSERT(pts);
 
   if (!count)
@@ -339,13 +343,13 @@ void VectorPlatformDevice::drawPoints(const SkDraw& draw,
 
 // TODO(myhuang): Embed fonts/texts into PDF surface.
 // Please NOTE that len records text's length in byte, not uint16_t.
-void VectorPlatformDevice::drawPosText(const SkDraw& draw,
-                                       const void* text,
-                                       size_t len,
-                                       const SkScalar pos[],
-                                       SkScalar constY,
-                                       int scalarsPerPos,
-                                       const SkPaint& paint) {
+void VectorPlatformDeviceCairo::drawPosText(const SkDraw& draw,
+                                            const void* text,
+                                            size_t len,
+                                            const SkScalar pos[],
+                                            SkScalar constY,
+                                            int scalarsPerPos,
+                                            const SkPaint& paint) {
   SkASSERT(text);
   SkASSERT(pos);
   SkASSERT(paint.getTextEncoding() == SkPaint::kGlyphID_TextEncoding);
@@ -399,9 +403,9 @@ void VectorPlatformDevice::drawPosText(const SkDraw& draw,
   }
 }
 
-void VectorPlatformDevice::drawRect(const SkDraw& draw,
-                                    const SkRect& rect,
-                                    const SkPaint& paint) {
+void VectorPlatformDeviceCairo::drawRect(const SkDraw& draw,
+                                         const SkRect& rect,
+                                         const SkPaint& paint) {
   if (paint.getPathEffect()) {
     // Draw a path instead.
     SkPath path_orginal;
@@ -434,10 +438,10 @@ void VectorPlatformDevice::drawRect(const SkDraw& draw,
   DoPaintStyle(paint);
 }
 
-void VectorPlatformDevice::drawSprite(const SkDraw& draw,
-                                      const SkBitmap& bitmap,
-                                      int x, int y,
-                                      const SkPaint& paint) {
+void VectorPlatformDeviceCairo::drawSprite(const SkDraw& draw,
+                                           const SkBitmap& bitmap,
+                                           int x, int y,
+                                           const SkPaint& paint) {
   SkASSERT(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
 
   LoadIdentityTransformToContext();
@@ -448,44 +452,44 @@ void VectorPlatformDevice::drawSprite(const SkDraw& draw,
   LoadTransformToContext(transform_);
 }
 
-void VectorPlatformDevice::drawText(const SkDraw& draw,
-                                    const void* text,
-                                    size_t byteLength,
-                                    SkScalar x,
-                                    SkScalar y,
-                                    const SkPaint& paint) {
+void VectorPlatformDeviceCairo::drawText(const SkDraw& draw,
+                                         const void* text,
+                                         size_t byteLength,
+                                         SkScalar x,
+                                         SkScalar y,
+                                         const SkPaint& paint) {
   // This function isn't used in the code. Verify this assumption.
   SkASSERT(false);
 }
 
 
-void VectorPlatformDevice::drawTextOnPath(const SkDraw& draw,
-                                          const void* text,
-                                          size_t len,
-                                          const SkPath& path,
-                                          const SkMatrix* matrix,
-                                          const SkPaint& paint) {
+void VectorPlatformDeviceCairo::drawTextOnPath(const SkDraw& draw,
+                                               const void* text,
+                                               size_t len,
+                                               const SkPath& path,
+                                               const SkMatrix* matrix,
+                                               const SkPaint& paint) {
   // This function isn't used in the code. Verify this assumption.
   SkASSERT(false);
 }
 
-void VectorPlatformDevice::drawVertices(const SkDraw& draw,
-                                        SkCanvas::VertexMode vmode,
-                                        int vertexCount,
-                                        const SkPoint vertices[],
-                                        const SkPoint texs[],
-                                        const SkColor colors[],
-                                        SkXfermode* xmode,
-                                        const uint16_t indices[],
-                                        int indexCount,
-                                        const SkPaint& paint) {
+void VectorPlatformDeviceCairo::drawVertices(const SkDraw& draw,
+                                             SkCanvas::VertexMode vmode,
+                                             int vertexCount,
+                                             const SkPoint vertices[],
+                                             const SkPoint texs[],
+                                             const SkColor colors[],
+                                             SkXfermode* xmode,
+                                             const uint16_t indices[],
+                                             int indexCount,
+                                             const SkPaint& paint) {
   // This function isn't used in the code. Verify this assumption.
   SkASSERT(false);
 }
 
-void VectorPlatformDevice::setMatrixClip(const SkMatrix& transform,
-                                         const SkRegion& region,
-                                         const SkClipStack&) {
+void VectorPlatformDeviceCairo::setMatrixClip(const SkMatrix& transform,
+                                              const SkRegion& region,
+                                              const SkClipStack&) {
   clip_region_ = region;
   if (!clip_region_.isEmpty())
     LoadClipRegion(clip_region_);
@@ -494,7 +498,7 @@ void VectorPlatformDevice::setMatrixClip(const SkMatrix& transform,
   LoadTransformToContext(transform_);
 }
 
-void VectorPlatformDevice::ApplyPaintColor(const SkPaint& paint) {
+void VectorPlatformDeviceCairo::ApplyPaintColor(const SkPaint& paint) {
   SkColor color = paint.getColor();
   double a = static_cast<double>(SkColorGetA(color)) / 255.;
   double r = static_cast<double>(SkColorGetR(color)) / 255.;
@@ -504,14 +508,14 @@ void VectorPlatformDevice::ApplyPaintColor(const SkPaint& paint) {
   cairo_set_source_rgba(context_, r, g, b, a);
 }
 
-void VectorPlatformDevice::ApplyFillStyle(const SkPath& path) {
+void VectorPlatformDeviceCairo::ApplyFillStyle(const SkPath& path) {
   // Setup fill style.
   // TODO(myhuang): Cairo does NOT support all skia fill rules!!
   cairo_set_fill_rule(context_,
                       static_cast<cairo_fill_rule_t>(path.getFillType()));
 }
 
-void VectorPlatformDevice::ApplyStrokeStyle(const SkPaint& paint) {
+void VectorPlatformDeviceCairo::ApplyStrokeStyle(const SkPaint& paint) {
   // Line width.
   cairo_set_line_width(context_, paint.getStrokeWidth());
 
@@ -524,7 +528,7 @@ void VectorPlatformDevice::ApplyStrokeStyle(const SkPaint& paint) {
                      static_cast<cairo_line_cap_t>(paint.getStrokeCap()));
 }
 
-void VectorPlatformDevice::DoPaintStyle(const SkPaint& paint) {
+void VectorPlatformDeviceCairo::DoPaintStyle(const SkPaint& paint) {
   SkPaint::Style style = paint.getStyle();
 
   switch (style) {
@@ -546,9 +550,9 @@ void VectorPlatformDevice::DoPaintStyle(const SkPaint& paint) {
   }
 }
 
-void VectorPlatformDevice::InternalDrawBitmap(const SkBitmap& bitmap,
-                                              int x, int y,
-                                              const SkPaint& paint) {
+void VectorPlatformDeviceCairo::InternalDrawBitmap(const SkBitmap& bitmap,
+                                                   int x, int y,
+                                                   const SkPaint& paint) {
   SkASSERT(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
 
   unsigned char alpha = paint.getAlpha();
@@ -575,7 +579,7 @@ void VectorPlatformDevice::InternalDrawBitmap(const SkBitmap& bitmap,
   cairo_surface_destroy(bitmap_surface);
 }
 
-void VectorPlatformDevice::LoadClipRegion(const SkRegion& clip) {
+void VectorPlatformDeviceCairo::LoadClipRegion(const SkRegion& clip) {
   cairo_reset_clip(context_);
 
   LoadIdentityTransformToContext();
@@ -591,13 +595,13 @@ void VectorPlatformDevice::LoadClipRegion(const SkRegion& clip) {
   LoadTransformToContext(transform_);
 }
 
-void VectorPlatformDevice::LoadIdentityTransformToContext() {
+void VectorPlatformDeviceCairo::LoadIdentityTransformToContext() {
   SkMatrix identity;
   identity.reset();
   LoadTransformToContext(identity);
 }
 
-void VectorPlatformDevice::LoadTransformToContext(const SkMatrix& matrix) {
+void VectorPlatformDeviceCairo::LoadTransformToContext(const SkMatrix& matrix) {
   cairo_matrix_t m;
   m.xx = matrix[SkMatrix::kMScaleX];
   m.xy = matrix[SkMatrix::kMSkewX];
@@ -608,7 +612,7 @@ void VectorPlatformDevice::LoadTransformToContext(const SkMatrix& matrix) {
   cairo_set_matrix(context_, &m);
 }
 
-bool VectorPlatformDevice::SelectFontById(uint32_t font_id) {
+bool VectorPlatformDeviceCairo::SelectFontById(uint32_t font_id) {
   DCHECK(IsContextValid(context_));
   DCHECK(SkFontHost::ValidFontID(font_id));
 
@@ -686,7 +690,7 @@ bool VectorPlatformDevice::SelectFontById(uint32_t font_id) {
 }
 
 // static
-void VectorPlatformDevice::ClearFontCache() {
+void VectorPlatformDeviceCairo::ClearFontCache() {
   MapFontId2FontInfo* g_font_cache = g_map_font_id_to_font_info.Pointer();
   DCHECK(g_font_cache);
 

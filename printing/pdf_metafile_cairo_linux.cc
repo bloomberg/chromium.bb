@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/pdf_ps_metafile_cairo.h"
+#include "printing/pdf_metafile_cairo_linux.h"
 
 #include <stdio.h>
 
@@ -14,7 +14,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "printing/units.h"
-#include "skia/ext/vector_platform_device_linux.h"
+#include "skia/ext/vector_platform_device_cairo_linux.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -65,18 +65,18 @@ cairo_status_t WriteCairoStream(void* dst_buffer,
 
 namespace printing {
 
-PdfPsMetafile::PdfPsMetafile()
+PdfMetafileCairo::PdfMetafileCairo()
     : surface_(NULL),
       context_(NULL),
       current_data_(NULL) {
 }
 
-PdfPsMetafile::~PdfPsMetafile() {
+PdfMetafileCairo::~PdfMetafileCairo() {
   // Releases all resources if we forgot to do so.
   CleanUpAll();
 }
 
-bool PdfPsMetafile::Init() {
+bool PdfMetafileCairo::Init() {
   // We need to check |current_data_| to ensure Init/InitFromData has not been
   // called before.
   DCHECK(!current_data_);
@@ -90,7 +90,7 @@ bool PdfPsMetafile::Init() {
   // Cairo always returns a valid pointer.
   // Hence, we have to check if it points to a "nil" object.
   if (!IsSurfaceValid(surface_)) {
-    DLOG(ERROR) << "Cannot create Cairo surface for PdfPsMetafile!";
+    DLOG(ERROR) << "Cannot create Cairo surface for PdfMetafileCairo!";
     CleanUpSurface(&surface_);
     return false;
   }
@@ -98,7 +98,7 @@ bool PdfPsMetafile::Init() {
   // Creates a context.
   context_ = cairo_create(surface_);
   if (!IsContextValid(context_)) {
-    DLOG(ERROR) << "Cannot create Cairo context for PdfPsMetafile!";
+    DLOG(ERROR) << "Cannot create Cairo context for PdfMetafileCairo!";
     CleanUpContext(&context_);
     CleanUpSurface(&surface_);
     return false;
@@ -107,8 +107,8 @@ bool PdfPsMetafile::Init() {
   return true;
 }
 
-bool PdfPsMetafile::InitFromData(const void* src_buffer,
-                                 uint32 src_buffer_size) {
+bool PdfMetafileCairo::InitFromData(const void* src_buffer,
+                                    uint32 src_buffer_size) {
   if (src_buffer == NULL || src_buffer_size == 0)
     return false;
 
@@ -118,21 +118,19 @@ bool PdfPsMetafile::InitFromData(const void* src_buffer,
   return true;
 }
 
-skia::PlatformDevice* PdfPsMetafile::StartPageForVectorCanvas(
+skia::PlatformDevice* PdfMetafileCairo::StartPageForVectorCanvas(
     const gfx::Size& page_size, const gfx::Point& content_origin,
     const float& scale_factor) {
   if (!StartPage(page_size, content_origin, scale_factor))
     return NULL;
 
-  return skia::VectorPlatformDeviceFactory::CreateDevice(context_,
-                                                         page_size.width(),
-                                                         page_size.height(),
-                                                         true);
+  return skia::VectorPlatformDeviceCairoFactory::CreateDevice(
+      context_, page_size.width(), page_size.height(), true);
 }
 
-bool PdfPsMetafile::StartPage(const gfx::Size& page_size,
-                              const gfx::Point& content_origin,
-                              const float& scale_factor) {
+bool PdfMetafileCairo::StartPage(const gfx::Size& page_size,
+                                 const gfx::Point& content_origin,
+                                 const float& scale_factor) {
   DCHECK(IsSurfaceValid(surface_));
   DCHECK(IsContextValid(context_));
   // Passing this check implies page_surface_ is NULL, and current_page_ is
@@ -151,7 +149,7 @@ bool PdfPsMetafile::StartPage(const gfx::Size& page_size,
   return context_ != NULL;
 }
 
-bool PdfPsMetafile::FinishPage() {
+bool PdfMetafileCairo::FinishPage() {
   DCHECK(IsSurfaceValid(surface_));
   DCHECK(IsContextValid(context_));
 
@@ -161,7 +159,7 @@ bool PdfPsMetafile::FinishPage() {
   return true;
 }
 
-bool PdfPsMetafile::FinishDocument() {
+bool PdfMetafileCairo::FinishDocument() {
   DCHECK(IsSurfaceValid(surface_));
   DCHECK(IsContextValid(context_));
 
@@ -174,7 +172,7 @@ bool PdfPsMetafile::FinishDocument() {
   return true;
 }
 
-uint32 PdfPsMetafile::GetDataSize() const {
+uint32 PdfMetafileCairo::GetDataSize() const {
   // We need to check at least these two members to ensure that either Init()
   // has been called to initialize |data_|, or metafile has been closed.
   DCHECK(!context_);
@@ -183,7 +181,7 @@ uint32 PdfPsMetafile::GetDataSize() const {
   return current_data_->size();
 }
 
-bool PdfPsMetafile::GetData(void* dst_buffer, uint32 dst_buffer_size) const {
+bool PdfMetafileCairo::GetData(void* dst_buffer, uint32 dst_buffer_size) const {
   DCHECK(dst_buffer);
   DCHECK_GT(dst_buffer_size, 0u);
   memcpy(dst_buffer, current_data_->data(), dst_buffer_size);
@@ -191,11 +189,11 @@ bool PdfPsMetafile::GetData(void* dst_buffer, uint32 dst_buffer_size) const {
   return true;
 }
 
-cairo_t* PdfPsMetafile::context() const {
+cairo_t* PdfMetafileCairo::context() const {
   return context_;
 }
 
-bool PdfPsMetafile::SaveTo(const FilePath& file_path) const {
+bool PdfMetafileCairo::SaveTo(const FilePath& file_path) const {
   // We need to check at least these two members to ensure that either Init()
   // has been called to initialize |data_|, or metafile has been closed.
   DCHECK(!context_);
@@ -210,18 +208,18 @@ bool PdfPsMetafile::SaveTo(const FilePath& file_path) const {
   return success;
 }
 
-gfx::Rect PdfPsMetafile::GetPageBounds(unsigned int page_number) const  {
+gfx::Rect PdfMetafileCairo::GetPageBounds(unsigned int page_number) const  {
   NOTIMPLEMENTED();
   return gfx::Rect();
 }
 
-unsigned int PdfPsMetafile::GetPageCount() const {
+unsigned int PdfMetafileCairo::GetPageCount() const {
   NOTIMPLEMENTED();
   return 1;
 }
 
 #if defined(OS_CHROMEOS)
-bool PdfPsMetafile::SaveToFD(const base::FileDescriptor& fd) const {
+bool PdfMetafileCairo::SaveToFD(const base::FileDescriptor& fd) const {
   // We need to check at least these two members to ensure that either Init()
   // has been called to initialize |data_|, or metafile has been closed.
   DCHECK(!context_);
@@ -250,12 +248,12 @@ bool PdfPsMetafile::SaveToFD(const base::FileDescriptor& fd) const {
 }
 #endif  // if defined(OS_CHROMEOS)
 
-void PdfPsMetafile::CleanUpAll() {
+void PdfMetafileCairo::CleanUpAll() {
   CleanUpContext(&context_);
   CleanUpSurface(&surface_);
   cairo_data_.clear();
   raw_data_.clear();
-  skia::VectorPlatformDevice::ClearFontCache();
+  skia::VectorPlatformDeviceCairo::ClearFontCache();
 }
 
 }  // namespace printing

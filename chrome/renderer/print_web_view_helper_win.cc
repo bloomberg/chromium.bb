@@ -11,7 +11,7 @@
 #include "printing/native_metafile.h"
 #include "printing/units.h"
 #include "skia/ext/vector_canvas.h"
-#include "skia/ext/vector_platform_device.h"
+#include "skia/ext/vector_platform_device_emf_win.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/point.h"
@@ -230,8 +230,8 @@ void PrintWebViewHelper::RenderPage(
   bool result = (*metafile)->FinishPage();
   DCHECK(result);
 
-  skia::VectorPlatformDevice* platform_device =
-      static_cast<skia::VectorPlatformDevice*>(device);
+  skia::VectorPlatformDeviceEmf* platform_device =
+      static_cast<skia::VectorPlatformDeviceEmf*>(device);
   if (platform_device->alpha_blend_used() && !params.supports_alpha_blend) {
     // Currently, we handle alpha blend transparency for a single page.
     // Therefore, expecting a metafile with page count 1.
