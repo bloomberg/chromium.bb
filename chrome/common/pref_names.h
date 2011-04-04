@@ -380,6 +380,8 @@ extern const char kNTPPromoStart[];
 extern const char kNTPPromoEnd[];
 extern const char kNTPPromoLine[];
 extern const char kNTPPromoClosed[];
+extern const char kNTPPromoGroup[];
+extern const char kNTPPromoGroupTimeSlice[];
 extern const char kNTPPromoBuild[];
 
 extern const char kGpuBlacklist[];

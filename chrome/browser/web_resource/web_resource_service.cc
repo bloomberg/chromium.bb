@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -66,12 +67,13 @@ class WebResourceService::WebResourceFetcher
     url_fetcher_.reset(new URLFetcher(GURL(
         web_resource_server),
         URLFetcher::GET, this));
-    // Do not let url fetcher affect existing state (by setting cookies, for
-    // example).
+    // Do not let url fetcher affect existing state in profile (by setting
+    // cookies, for example.
     url_fetcher_->set_load_flags(net::LOAD_DISABLE_CACHE |
         net::LOAD_DO_NOT_SAVE_COOKIES);
-    url_fetcher_->set_request_context(
-        g_browser_process->system_request_context());
+    net::URLRequestContextGetter* url_request_context_getter =
+        web_resource_service_->profile_->GetRequestContext();
+    url_fetcher_->set_request_context(url_request_context_getter);
     url_fetcher_->Start();
   }
 
@@ -195,13 +197,17 @@ class WebResourceService::UnpackerClient
 };
 
 WebResourceService::WebResourceService(
+    Profile* profile,
+    PrefService* prefs,
     const char* web_resource_server,
     bool apply_locale_to_url,
     NotificationType::Type notification_type,
     const char* last_update_time_pref_name,
     int start_fetch_delay,
     int cache_update_delay)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(service_factory_(this)),
+    : prefs_(prefs),
+      profile_(profile),
+      ALLOW_THIS_IN_INITIALIZER_LIST(service_factory_(this)),
       in_fetch_(false),
       web_resource_server_(web_resource_server),
       apply_locale_to_url_(apply_locale_to_url),
@@ -210,9 +216,9 @@ WebResourceService::WebResourceService(
       start_fetch_delay_(start_fetch_delay),
       cache_update_delay_(cache_update_delay),
       web_resource_update_scheduled_(false) {
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-  local_state->RegisterStringPref(last_update_time_pref_name, "0");
+  DCHECK(prefs);
+  DCHECK(profile);
+  prefs_->RegisterStringPref(last_update_time_pref_name, "0");
   resource_dispatcher_host_ = g_browser_process->resource_dispatcher_host();
   web_resource_fetcher_.reset(new WebResourceFetcher(this));
 }
@@ -256,10 +262,9 @@ void WebResourceService::StartAfterDelay() {
   int64 delay = start_fetch_delay_;
   // Check whether we have ever put a value in the web resource cache;
   // if so, pull it out and see if it's time to update again.
-  PrefService* local_state = g_browser_process->local_state();
-  if (local_state->HasPrefPath(last_update_time_pref_name_)) {
+  if (prefs_->HasPrefPath(last_update_time_pref_name_)) {
     std::string last_update_pref =
-        local_state->GetString(last_update_time_pref_name_);
+        prefs_->GetString(last_update_time_pref_name_);
     if (!last_update_pref.empty()) {
       double last_update_value;
       base::StringToDouble(last_update_pref, &last_update_value);
@@ -280,6 +285,6 @@ void WebResourceService::UpdateResourceCache(const std::string& json_data) {
   client->Start();
 
   // Set cache update time in preferences.
-  g_browser_process->local_state()->SetString(last_update_time_pref_name_,
+  prefs_->SetString(last_update_time_pref_name_,
       base::DoubleToString(base::Time::Now().ToDoubleT()));
 }

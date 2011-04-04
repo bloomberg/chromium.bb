@@ -470,6 +470,9 @@ class Profile {
 
   virtual void InitExtensions() = 0;
 
+  // Start up service that gathers data from a promo resource feed.
+  virtual void InitPromoResources() = 0;
+
   // Register URLRequestFactories for protocols registered with
   // registerProtocolHandler.
   virtual void InitRegisteredProtocolHandlers() = 0;

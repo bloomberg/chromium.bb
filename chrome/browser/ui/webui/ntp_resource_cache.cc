@@ -15,7 +15,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -154,8 +153,6 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::PROMO_RESOURCE_STATE_CHANGED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::PROMO_CLOSED,
-                 NotificationService::AllSources());
 
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
   pref_change_registrar_.Init(profile_->GetPrefs());
@@ -194,18 +191,13 @@ RefCountedBytes* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
 void NTPResourceCache::Observe(NotificationType type,
     const NotificationSource& source, const NotificationDetails& details) {
   // Invalidate the cache.
-  if (type == NotificationType::BROWSER_THEME_CHANGED ||
-      type == NotificationType::PROMO_RESOURCE_STATE_CHANGED ||
-      type == NotificationType::PROMO_CLOSED) {
+  if (NotificationType::BROWSER_THEME_CHANGED == type ||
+      NotificationType::PROMO_RESOURCE_STATE_CHANGED == type) {
     new_tab_incognito_html_ = NULL;
     new_tab_html_ = NULL;
     new_tab_incognito_css_ = NULL;
     new_tab_css_ = NULL;
-    // Reset the promo closed preference if a new promo is being displayed.
-    if (type == NotificationType::PROMO_RESOURCE_STATE_CHANGED) {
-      profile_->GetPrefs()->SetBoolean(prefs::kNTPPromoClosed, false);
-    }
-  } else if (type == NotificationType::PREF_CHANGED) {
+  } else if (NotificationType::PREF_CHANGED == type) {
     std::string* pref_name = Details<std::string>(details).ptr();
     if (*pref_name == prefs::kShowBookmarkBar ||
         *pref_name == prefs::kHomePageIsNewTabPage ||
@@ -376,13 +368,11 @@ void NTPResourceCache::CreateNewTabHTML() {
 
   // If the user has preferences for a start and end time for a custom logo,
   // and the time now is between these two times, show the custom logo.
-  DCHECK(g_browser_process);
-  PrefService* local_state = g_browser_process->local_state();
-  if (local_state->FindPreference(prefs::kNTPCustomLogoStart) &&
-      local_state->FindPreference(prefs::kNTPCustomLogoEnd)) {
+  if (profile_->GetPrefs()->FindPreference(prefs::kNTPCustomLogoStart) &&
+      profile_->GetPrefs()->FindPreference(prefs::kNTPCustomLogoEnd)) {
     localized_strings.SetString("customlogo",
-        InDateRange(local_state->GetDouble(prefs::kNTPCustomLogoStart),
-                    local_state->GetDouble(prefs::kNTPCustomLogoEnd)) ?
+        InDateRange(profile_->GetPrefs()->GetDouble(prefs::kNTPCustomLogoStart),
+                    profile_->GetPrefs()->GetDouble(prefs::kNTPCustomLogoEnd)) ?
         "true" : "false");
   } else {
     localized_strings.SetString("customlogo", "false");
@@ -390,15 +380,15 @@ void NTPResourceCache::CreateNewTabHTML() {
 
   // If the user has preferences for a start and end time for a promo from
   // the server, and this promo string exists, set the localized string.
-  if (local_state->FindPreference(prefs::kNTPPromoStart) &&
-      local_state->FindPreference(prefs::kNTPPromoEnd) &&
-      local_state->FindPreference(prefs::kNTPPromoLine) &&
-      web_resource::CanShowPromo(profile_)) {
+  if (profile_->GetPrefs()->FindPreference(prefs::kNTPPromoStart) &&
+      profile_->GetPrefs()->FindPreference(prefs::kNTPPromoEnd) &&
+      profile_->GetPrefs()->FindPreference(prefs::kNTPPromoLine) &&
+      PromoResourceServiceUtil::CanShowPromo(profile_)) {
     localized_strings.SetString("serverpromo",
-        InDateRange(local_state->GetDouble(prefs::kNTPPromoStart),
-                    local_state->GetDouble(prefs::kNTPPromoEnd)) ?
-                    local_state->GetString(prefs::kNTPPromoLine) :
-                                           std::string());
+        InDateRange(profile_->GetPrefs()->GetDouble(prefs::kNTPPromoStart),
+                    profile_->GetPrefs()->GetDouble(prefs::kNTPPromoEnd)) ?
+                    profile_->GetPrefs()->GetString(prefs::kNTPPromoLine) :
+                                                    std::string());
     UserMetrics::RecordAction(UserMetricsAction("NTPPromoShown"));
   }
 
