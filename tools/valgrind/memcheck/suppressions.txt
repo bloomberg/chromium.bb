@@ -1351,6 +1351,15 @@
    fun:_ZN11WebDatabase*
 }
 {
+   bug_60556g
+   Memcheck:Addr4
+   ...
+   fun:sqlite3_step
+   fun:_ZN3sql9Statement4StepEv
+   fun:_ZN7history11URLDatabase12GetRowForURLERK4GURLPNS_6URLRowE
+   fun:_ZN7history14HistoryBackend12AddPageVisitERK4GURLN4base4TimeExjNS_11VisitSourceE
+}
+{
    bug_20581
    Memcheck:Leak
    ...
