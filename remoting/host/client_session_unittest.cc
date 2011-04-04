@@ -31,6 +31,7 @@ using protocol::MockHostStub;
 using protocol::MockInputStub;
 
 using testing::_;
+using testing::DeleteArg;
 using testing::InSequence;
 
 class ClientSessionTest : public testing::Test {
@@ -50,6 +51,9 @@ class ClientSessionTest : public testing::Test {
     credentials_.set_type(protocol::PASSWORD);
     credentials_.set_username("user");
     credentials_.set_credential("password");
+
+    ON_CALL(input_stub_, InjectKeyEvent(_, _)).WillByDefault(DeleteArg<1>());
+    ON_CALL(input_stub_, InjectMouseEvent(_, _)).WillByDefault(DeleteArg<1>());
   }
 
   virtual void TearDown() {
