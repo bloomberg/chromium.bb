@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -188,6 +188,7 @@
           'dependencies': [
             '../testing/gtest.gyp:gtest',
             '../base/base.gyp:base',
+            '../base/base.gyp:base_static',
           ],
           'msvs_guid': '881F6A97-D539-4C48-B401-DF04385B2343',
           'sources': [
