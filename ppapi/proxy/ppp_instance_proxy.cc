@@ -186,11 +186,6 @@ void PPP_Instance_Proxy::OnMsgDidCreate(
   *result = ppp_instance_target()->DidCreate(instance,
                                              static_cast<uint32_t>(argn.size()),
                                              &argn_array[0], &argv_array[0]);
-  if (!*result) {
-    // In the failure to create case, this plugin instance will be torn down
-    // without further notification, so we also need to undo the routing.
-    plugin_dispatcher->DidDestroyInstance(instance);
-  }
 }
 
 void PPP_Instance_Proxy::OnMsgDidDestroy(PP_Instance instance) {

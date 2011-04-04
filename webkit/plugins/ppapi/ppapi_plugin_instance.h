@@ -77,6 +77,8 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   PluginInstance(PluginDelegate* delegate,
                  PluginModule* module,
                  const PPP_Instance* instance_interface);
+
+  // Delete should be called by the WebPlugin before this destructor.
   ~PluginInstance();
 
   static const PPB_Instance* GetInterface();
@@ -104,6 +106,12 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // Returns the PP_Instance uniquely identifying this instance. Guaranteed
   // nonzero.
   PP_Instance pp_instance() const { return pp_instance_; }
+
+  // Does some pre-destructor cleanup on the instance. This is necessary
+  // because some cleanup depends on the plugin instance still existing (like
+  // calling the plugin's DidDestroy function). This function is called from
+  // the WebPlugin implementation when WebKit is about to remove the plugin.
+  void Delete();
 
   // Paints the current backing store to the web page.
   void Paint(WebKit::WebCanvas* canvas,
@@ -146,7 +154,6 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   PP_Var ExecuteScript(PP_Var script, PP_Var* exception);
 
   // PPP_Instance pass-through.
-  void Delete();
   bool Initialize(WebKit::WebPluginContainer* container,
                   const std::vector<std::string>& arg_names,
                   const std::vector<std::string>& arg_values,

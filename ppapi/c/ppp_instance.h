@@ -74,6 +74,10 @@ struct PPP_Instance {
    * even if DidCreate returned failure. The function should deallocate any data
    * associated with the instance.
    *
+   * The instance identifier will still be valid so the plugin can perform
+   * cleanup-related tasks. Once this function is called, the PP_Instance will
+   * be invalid.
+   *
    * @param[in] instance A PP_Instance indentifying one instance of a module.
    */
   void (*DidDestroy)(PP_Instance instance);

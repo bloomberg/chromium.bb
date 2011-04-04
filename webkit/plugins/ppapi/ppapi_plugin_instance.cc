@@ -418,6 +418,18 @@ const PPB_Zoom_Dev* PluginInstance::GetZoomInterface() {
 // method needs to access a member of the instance after the call has returned,
 // then it needs to keep its own reference on the stack.
 
+void PluginInstance::Delete() {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
+  instance_interface_->DidDestroy(pp_instance());
+
+  if (fullscreen_container_) {
+    fullscreen_container_->Destroy();
+    fullscreen_container_ = NULL;
+  }
+  container_ = NULL;
+}
+
 void PluginInstance::Paint(WebCanvas* canvas,
                            const gfx::Rect& plugin_rect,
                            const gfx::Rect& paint_rect) {
@@ -670,18 +682,6 @@ PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
 
 void PluginInstance::PostMessage(PP_Var message) {
   message_channel_->PostMessageToJavaScript(message);
-}
-
-void PluginInstance::Delete() {
-  // Keep a reference on the stack. See NOTE above.
-  scoped_refptr<PluginInstance> ref(this);
-  instance_interface_->DidDestroy(pp_instance());
-
-  if (fullscreen_container_) {
-    fullscreen_container_->Destroy();
-    fullscreen_container_ = NULL;
-  }
-  container_ = NULL;
 }
 
 bool PluginInstance::Initialize(WebPluginContainer* container,
