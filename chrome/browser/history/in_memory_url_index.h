@@ -62,6 +62,9 @@ struct ScoredHistoryMatch : public HistoryMatch {
   explicit ScoredHistoryMatch(const URLRow& url_info);
   ~ScoredHistoryMatch();
 
+  static bool MatchScoreGreater(const ScoredHistoryMatch& m1,
+                                const ScoredHistoryMatch& m2);
+
   // An interim score taking into consideration location and completeness
   // of the match.
   int raw_score;

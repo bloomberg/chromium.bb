@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profiles/profile.h"
@@ -52,12 +53,12 @@ const size_t InMemoryURLIndex::kNoCachedResultForTerm = -1;
 const float kOrderMaxValue = 50.0;
 const float kStartMaxValue = 50.0;
 const size_t kMaxSignificantStart = 20;
-const float kCompleteMaxValue = 50.0;
-const float kLastVisitMaxValue = 50.0;
+const float kCompleteMaxValue = 100.0;
+const float kLastVisitMaxValue = 200.0;
 const base::TimeDelta kMaxSignificantDay = base::TimeDelta::FromDays(30);
-const float kVisitCountMaxValue = 50.0;
+const float kVisitCountMaxValue = 100.0;
 const int kMaxSignificantVisits = 20;
-const float kTypedCountMaxValue = 50.0;
+const float kTypedCountMaxValue = 300.0;
 const int kMaxSignificantTyped = 20;
 const float kMaxRawScore = kOrderMaxValue + kStartMaxValue + kCompleteMaxValue +
     kLastVisitMaxValue + kVisitCountMaxValue + kTypedCountMaxValue;
@@ -73,6 +74,12 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& url_info)
       prefix_adjust(0) {}
 
 ScoredHistoryMatch::~ScoredHistoryMatch() {}
+
+// Comparison function for sorting ScoredMatches by their scores.
+bool ScoredHistoryMatch::MatchScoreGreater(const ScoredHistoryMatch& m1,
+                                           const ScoredHistoryMatch& m2) {
+  return m1.raw_score >= m2.raw_score;
+}
 
 struct InMemoryURLIndex::TermCharWordSet {
   TermCharWordSet()  // Required for STL resize().
@@ -95,7 +102,7 @@ struct InMemoryURLIndex::TermCharWordSet {
 };
 
 // Comparison function for sorting TermMatches by their offsets.
-bool CompareMatchOffset(const TermMatch& m1, const TermMatch& m2) {
+bool MatchOffsetLess(const TermMatch& m1, const TermMatch& m2) {
   return m1.offset < m2.offset;
 }
 
@@ -335,6 +342,18 @@ ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
       // substring match, inserting those which pass in order by score.
       scored_items = std::for_each(history_id_set.begin(), history_id_set.end(),
           AddHistoryMatch(*this, lower_terms)).ScoredMatches();
+      // Select and sort only the top kMaxMatches results.
+      if (scored_items.size() > AutocompleteProvider::kMaxMatches) {
+        std::partial_sort(scored_items.begin(),
+                          scored_items.begin() +
+                              AutocompleteProvider::kMaxMatches,
+                          scored_items.end(),
+                          ScoredHistoryMatch::MatchScoreGreater);
+          scored_items.resize(AutocompleteProvider::kMaxMatches);
+      } else {
+        std::sort(scored_items.begin(), scored_items.end(),
+                  ScoredHistoryMatch::MatchScoreGreater);
+      }
     }
   }
 
@@ -614,7 +633,7 @@ TermMatches InMemoryURLIndex::SortAndDeoverlap(const TermMatches& matches) {
     return matches;
   TermMatches sorted_matches = matches;
   std::sort(sorted_matches.begin(), sorted_matches.end(),
-            CompareMatchOffset);
+            MatchOffsetLess);
   TermMatches clean_matches;
   TermMatch last_match = sorted_matches[0];
   clean_matches.push_back(last_match);
@@ -741,7 +760,6 @@ int InMemoryURLIndex::RawScoreForMatches(const TermMatches& matches,
   float complete_value =
       (static_cast<float>(term_length_total) / static_cast<float>(max_length)) *
       kStartMaxValue;
-
   return static_cast<int>(order_value + start_value + complete_value);
 }
 
@@ -764,27 +782,8 @@ void InMemoryURLIndex::AddHistoryMatch::operator()(
   if (hist_pos != index_.history_info_map_.end()) {
     const URLRow& hist_item = hist_pos->second;
     ScoredHistoryMatch match(ScoredMatchForURL(hist_item, lower_terms_));
-    if (match.raw_score != 0) {
-      // We only retain the top 10 highest scoring results so
-      // see if this one fits into the top 10 and, if so, where.
-      ScoredHistoryMatches::iterator scored_iter = scored_matches_.begin();
-      while (scored_iter != scored_matches_.end() &&
-             (*scored_iter).raw_score > match.raw_score)
-        ++scored_iter;
-      if ((scored_matches_.size() < 10) ||
-          (scored_iter != scored_matches_.end())) {
-        // Insert the new item.
-        if (!scored_matches_.empty())
-          scored_matches_.insert(scored_iter, match);
-        else
-          scored_matches_.push_back(match);
-        // Trim any entries beyond 10.
-        if (scored_matches_.size() > 10) {
-          scored_matches_.erase(scored_matches_.begin() + 10,
-                                scored_matches_.end());
-        }
-      }
-    }
+    if (match.raw_score > 0)
+      scored_matches_.push_back(match);
   }
 }
 

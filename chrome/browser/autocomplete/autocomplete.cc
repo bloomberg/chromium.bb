@@ -787,9 +787,7 @@ AutocompleteController::AutocompleteController(
       in_start_(false) {
   search_provider_ = new SearchProvider(this, profile);
   providers_.push_back(search_provider_);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHistoryQuickProvider) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableHistoryQuickProvider))
     providers_.push_back(new HistoryQuickProvider(this, profile));
   if (!CommandLine::ForCurrentProcess()->HasSwitch(

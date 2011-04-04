@@ -177,7 +177,7 @@ int HistoryQuickProvider::CalculateRelevance(int raw_score,
       return 1200;
 
     default:
-      return 900 + static_cast<int>(match_number);
+      return 400 + raw_score;
   }
 }
 

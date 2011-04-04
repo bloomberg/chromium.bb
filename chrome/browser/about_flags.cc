@@ -254,13 +254,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableWebAudio)
   },
   {
-    "enable-history-quick-provider",
-    IDS_FLAGS_ENABLE_HISTORY_QUICK_PROVIDER,
-    IDS_FLAGS_ENABLE_HISTORY_QUICK_PROVIDER_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableHistoryQuickProvider)
-  },
-  {
     "p2papi",
     IDS_FLAGS_P2P_API_NAME,
     IDS_FLAGS_P2P_API_DESCRIPTION,
