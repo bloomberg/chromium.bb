@@ -6,17 +6,52 @@
 #define CHROME_BROWSER_UI_VIEWS_CONSTRAINED_WINDOW_VIEWS_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "content/browser/tab_contents/constrained_window.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
-#include "views/window/window_win.h"
 
 class ConstrainedTabContentsWindowDelegate;
 class ConstrainedWindowAnimation;
 class ConstrainedWindowFrameView;
 namespace views {
+class NativeWindow;
+class NonClientFrameView;
+class Window;
 class WindowDelegate;
 }
+
+class NativeConstrainedWindowDelegate {
+ public:
+  virtual ~NativeConstrainedWindowDelegate() {}
+
+  // Called after the NativeConstrainedWindow has been destroyed and is about to
+  // be deleted.
+  virtual void OnNativeConstrainedWindowDestroyed() = 0;
+
+  // Called when the NativeConstrainedWindow is clicked on when inactive.
+  virtual void OnNativeConstrainedWindowMouseActivate() = 0;
+
+  // Creates the frame view for the constrained window.
+  // TODO(beng): remove once ConstrainedWindowViews is-a views::Window.
+  virtual views::NonClientFrameView* CreateFrameViewForWindow() = 0;
+};
+
+class NativeConstrainedWindow {
+ public:
+  virtual ~NativeConstrainedWindow() {}
+
+  // Creates a platform-specific implementation of NativeConstrainedWindow.
+  // TODO(beng): Remove WindowDelegate param once ConstrainedWindowViews is-a
+  //             views::Window.
+  static NativeConstrainedWindow* CreateNativeConstrainedWindow(
+      NativeConstrainedWindowDelegate* delegate,
+      views::WindowDelegate* window_delegate);
+
+  virtual void InitNativeConstrainedWindow(gfx::NativeView parent) = 0;
+
+  virtual views::NativeWindow* AsNativeWindow() = 0;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindowViews
@@ -25,52 +60,32 @@ class WindowDelegate;
 //  a child HWND with a custom window frame.
 //
 class ConstrainedWindowViews : public ConstrainedWindow,
-                               public views::WindowWin {
+                               public NativeConstrainedWindowDelegate {
  public:
+  ConstrainedWindowViews(TabContents* owner,
+                         views::WindowDelegate* window_delegate);
   virtual ~ConstrainedWindowViews();
 
   // Returns the TabContents that constrains this Constrained Window.
   TabContents* owner() const { return owner_; }
 
-  // Overridden from views::Window:
-  virtual views::NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
+  views::Window* GetWindow();
 
   // Overridden from ConstrainedWindow:
   virtual void ShowConstrainedWindow() OVERRIDE;
   virtual void CloseConstrainedWindow() OVERRIDE;
   virtual void FocusConstrainedWindow() OVERRIDE;
 
-  virtual std::wstring GetWindowTitle() const;
-  virtual const gfx::Rect& GetCurrentBounds() const;
-
- protected:
-  // Windows message handlers:
-  virtual void OnFinalMessage(HWND window) OVERRIDE;
-  virtual LRESULT OnMouseActivate(UINT message,
-                                  WPARAM w_param,
-                                  LPARAM l_param) OVERRIDE;
-
  private:
-  friend class ConstrainedWindow;
-
-  // Use the static factory methods on ConstrainedWindow to construct a
-  // ConstrainedWindow.
-  ConstrainedWindowViews(TabContents* owner,
-                         views::WindowDelegate* window_delegate);
-
-  // Moves this window to the front of the Z-order and registers us with the
-  // focus manager.
-  void ActivateConstrainedWindow();
+  // Overridden from NativeConstrainedWindowDelegate:
+  virtual void OnNativeConstrainedWindowDestroyed() OVERRIDE;
+  virtual void OnNativeConstrainedWindowMouseActivate() OVERRIDE;
+  virtual views::NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
 
   // The TabContents that owns and constrains this ConstrainedWindow.
   TabContents* owner_;
 
-  // Current "anchor point", the lower right point at which we render
-  // the constrained title bar.
-  gfx::Point anchor_point_;
-
-  // Current display rectangle (relative to owner_'s visible area).
-  gfx::Rect current_bounds_;
+  NativeConstrainedWindow* native_constrained_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowViews);
 };
