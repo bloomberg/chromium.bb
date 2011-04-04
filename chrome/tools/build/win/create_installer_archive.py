@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -74,7 +74,22 @@ def BuildVersion(output_dir):
 
 def CompressUsingLZMA(output_dir, compressed_file, input_file):
   lzma_exec = GetLZMAExec(output_dir)
-  cmd = '%s a -t7z "%s" "%s" -mx9' % (lzma_exec, compressed_file, input_file)
+  cmd = ('%s a -t7z '
+          # Flags equivalent to -mx9 (ultra) but with the bcj2 turned on (exe
+          # pre-filter). This results in a ~2.3MB decrease in installer size on
+          # a 24MB installer.
+          # Additionally, these settings reflect a 7zip 4.42 and up change in
+          # the definition of -mx9, increasting the dicionary size moving to
+          # 26bit = 64MB. This results in an additional ~3.5MB decrease.
+          # Older 7zip versions can support these settings, as these changes
+          # rely on existing functionality in the lzma format.
+          '-m0=BCJ2 '
+          '-m1=LZMA:d26:fb64 '
+          '-m2=LZMA:d20:fb64:mf=bt2 '
+          '-m3=LZMA:d20:fb64:mf=bt2 '
+          '-mb0:1 -mb0s1:2 '
+          '-mb0s2:3 '
+          '"%s" "%s"') % (lzma_exec, compressed_file, input_file)
   if os.path.exists(compressed_file):
     os.remove(compressed_file)
   RunSystemCommand(cmd)
