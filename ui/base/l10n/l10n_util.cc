@@ -18,7 +18,6 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/sys_string_conversions.h"
@@ -27,15 +26,12 @@
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/canvas.h"
 #include "unicode/rbbi.h"
 #include "unicode/uloc.h"
 
-#if defined(OS_MACOSX)
-#include "ui/base/l10n/l10n_util_mac.h"
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #include "ui/base/l10n/l10n_util_win.h"
-#endif
+#endif  // OS_WIN
 
 namespace {
 

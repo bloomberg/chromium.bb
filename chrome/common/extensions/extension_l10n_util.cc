@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/extension_l10n_util.h"
 
+#include <algorithm>
 #include <set>
 #include <string>
 #include <vector>
