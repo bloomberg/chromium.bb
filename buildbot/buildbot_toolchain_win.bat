@@ -2,5 +2,7 @@
 :: Use of this source code is governed by a BSD-style license that can be
 :: found in the LICENSE file.
 
-set PATH=c:\cygwin\bin;cygwin\usr\bin;%PATH%
+setlocal
+call "%~dp0cygwin_env.bat"
 bash -c "buildbot/buildbot_toolchain.sh win"
+endlocal
