@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_PLUGIN_EXCEPTIONS_TABLE_MODEL_H_
 #pragma once
 
-#include <deque>
 #include <string>
 #include <vector>
 
@@ -68,13 +67,16 @@ class PluginExceptionsTableModel : public RemoveRowsTableModel,
   scoped_refptr<HostContentSettingsMap> map_;
   scoped_refptr<HostContentSettingsMap> otr_map_;
 
-  std::deque<SettingsEntry> settings_;
-  std::deque<int> row_counts_;
-  std::deque<std::string> resources_;
+  std::vector<SettingsEntry> settings_;
+  std::vector<int> row_counts_;
+  std::vector<std::string> resources_;
   TableModel::Groups groups_;
 
   NotificationRegistrar registrar_;
   bool updates_disabled_;
+
+  // Weak, can be NULL. Our owner should manage its lifetime, see
+  // TableModel::SetObserver().
   ui::TableModelObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginExceptionsTableModel);

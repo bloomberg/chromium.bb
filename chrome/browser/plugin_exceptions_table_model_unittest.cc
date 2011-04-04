@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ using ::testing::Invoke;
 
 class MockTableModelObserver : public ui::TableModelObserver {
  public:
-   explicit MockTableModelObserver(ui::TableModel* model)
+  explicit MockTableModelObserver(ui::TableModel* model)
       : model_(model) {
     ON_CALL(*this, OnItemsRemoved(_, _))
         .WillByDefault(
@@ -108,12 +108,12 @@ class PluginExceptionsTableModelTest : public testing::Test {
   }
 
  protected:
-  void CheckInvariants() {
-    typedef std::deque<PluginExceptionsTableModel::SettingsEntry> Entries;
-    Entries& settings = table_model_->settings_;
-    std::deque<int>& row_counts = table_model_->row_counts_;
-    std::deque<std::string>& resources = table_model_->resources_;
-    ui::TableModel::Groups& groups = table_model_->groups_;
+  void CheckInvariants() const {
+    typedef std::vector<PluginExceptionsTableModel::SettingsEntry> Entries;
+    const Entries& settings = table_model_->settings_;
+    const std::vector<int>& row_counts = table_model_->row_counts_;
+    const std::vector<std::string>& resources = table_model_->resources_;
+    const ui::TableModel::Groups& groups = table_model_->groups_;
 
     EXPECT_EQ(groups.size(), row_counts.size());
     EXPECT_EQ(groups.size(), resources.size());

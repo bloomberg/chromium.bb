@@ -49,8 +49,6 @@ class PluginDataRemoverTest : public InProcessBrowserTest,
     command_line->AppendSwitchPath(switches::kExtraPluginDir,
                                    browser_directory.AppendASCII("plugins"));
 #endif
-
-//    command_line->AppendSwitch(switches::kPluginStartupDialog);
   }
 
  private:

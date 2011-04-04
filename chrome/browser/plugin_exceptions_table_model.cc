@@ -23,7 +23,8 @@ PluginExceptionsTableModel::PluginExceptionsTableModel(
                  NotificationService::AllSources());
 }
 
-PluginExceptionsTableModel::~PluginExceptionsTableModel() {}
+PluginExceptionsTableModel::~PluginExceptionsTableModel() {
+}
 
 bool PluginExceptionsTableModel::CanRemoveRows(const Rows& rows) const {
   return !rows.empty();
@@ -32,11 +33,12 @@ bool PluginExceptionsTableModel::CanRemoveRows(const Rows& rows) const {
 void PluginExceptionsTableModel::RemoveRows(const Rows& rows) {
   AutoReset<bool> tmp(&updates_disabled_, true);
   bool reload_all = false;
-  // Iterate in reverse over the rows to get the indexes right.
+  // Iterate over the rows starting with the highest ones so we can delete
+  // entries from |settings_| without the other indices shifting.
   for (Rows::const_reverse_iterator it = rows.rbegin();
        it != rows.rend(); ++it) {
     DCHECK_LT(*it, settings_.size());
-    SettingsEntry& entry = settings_[*it];
+    SettingsEntry entry = settings_[*it];
     HostContentSettingsMap* map = entry.is_otr ? otr_map_ : map_;
     map->SetContentSetting(entry.pattern,
                            CONTENT_SETTINGS_TYPE_PLUGINS,
@@ -50,7 +52,8 @@ void PluginExceptionsTableModel::RemoveRows(const Rows& rows) {
       if (row_counts_[entry.plugin_id] == 0)  {
         reload_all = true;
       } else {
-        observer_->OnItemsRemoved(*it, 1);
+        if (observer_)
+          observer_->OnItemsRemoved(*it, 1);
       }
     }
   }
@@ -156,7 +159,8 @@ void PluginExceptionsTableModel::LoadSettings() {
     }
     string16 title = plugins[i].GetGroupName();
     for (HostContentSettingsMap::SettingsForOneType::iterator setting_it =
-             settings.begin(); setting_it != settings.end(); ++setting_it) {
+             settings.begin();
+         setting_it != settings.end(); ++setting_it) {
       SettingsEntry entry = {
         setting_it->first,
         group_id,
@@ -193,4 +197,3 @@ void PluginExceptionsTableModel::ReloadSettings() {
   if (observer_)
     observer_->OnModelChanged();
 }
-
