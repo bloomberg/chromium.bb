@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_USER_SCRIPT_SLAVE_H_
-#define CHROME_RENDERER_USER_SCRIPT_SLAVE_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_SLAVE_H_
+#define CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_SLAVE_H_
 #pragma once
 
 #include <set>
@@ -63,4 +63,4 @@ class UserScriptSlave {
   DISALLOW_COPY_AND_ASSIGN(UserScriptSlave);
 };
 
-#endif  // CHROME_RENDERER_USER_SCRIPT_SLAVE_H_
+#endif  // CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_SLAVE_H_

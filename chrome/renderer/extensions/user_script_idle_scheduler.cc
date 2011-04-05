@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/user_script_idle_scheduler.h"
+#include "chrome/renderer/extensions/user_script_idle_scheduler.h"
 
 #include "base/message_loop.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/render_thread.h"
-#include "chrome/renderer/user_script_slave.h"
+#include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_USER_SCRIPT_IDLE_SCHEDULER_H_
-#define CHROME_RENDERER_USER_SCRIPT_IDLE_SCHEDULER_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_IDLE_SCHEDULER_H_
+#define CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_IDLE_SCHEDULER_H_
 #pragma once
 
 #include <queue>
@@ -73,4 +73,4 @@ class UserScriptIdleScheduler : public RenderViewObserver {
       pending_code_execution_queue_;
 };
 
-#endif  // CHROME_RENDERER_USER_SCRIPT_IDLE_SCHEDULER_H_
+#endif  // CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_IDLE_SCHEDULER_H_

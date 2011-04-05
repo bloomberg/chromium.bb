@@ -8,8 +8,8 @@
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
-#include "chrome/renderer/user_script_idle_scheduler.h"
-#include "chrome/renderer/user_script_slave.h"
+#include "chrome/renderer/extensions/user_script_idle_scheduler.h"
+#include "chrome/renderer/extensions/user_script_slave.h"
 
 using WebKit::WebFrame;
 using WebKit::WebDataSource;
