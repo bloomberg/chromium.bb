@@ -296,8 +296,11 @@ SDKDIRS=\
     $(DESTDIR)$(SDKROOT)/bin \
     $(DESTDIR)$(SDKROOT)/lib \
     $(DESTDIR)$(SDKROOT)/libexec \
+    $(DESTDIR)$(SDKROOT)/nacl/bin \
+    $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin \
     $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include \
     $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib \
+    $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib32
 
 .PHONY: sdkdirs
 sdkdirs:
@@ -308,32 +311,8 @@ sdkdirs:
 	    install -m 755 -d $$d; \
 	  fi; \
 	done
-
-GLIBC_SDKDIRS=\
-    $(DESTDIR)$(SDKROOT)/bin \
-    $(DESTDIR)$(SDKROOT)/include \
-    $(DESTDIR)$(SDKROOT)/lib \
-    $(DESTDIR)$(SDKROOT)/libexec \
-    $(DESTDIR)$(SDKROOT)/nacl \
-    $(DESTDIR)$(SDKROOT)/nacl64/lib \
-    $(DESTDIR)$(SDKROOT)/nacl64/lib32
-
-# This structure has symlinks in toolchain/nacl64 subdirectory. This causes
-# problems on Windows buildbots running non-Cygwin python (scons).
-# TODO(pasko): either switch to another link structure or run scons in Cygwin on
-# Windows.
-.PHONY: glibc-sdkdirs
-glibc-sdkdirs:
-	echo "Creating the SDK tree at $(DESTDIR)$(SDKROOT)"
-	@for d in $(GLIBC_SDKDIRS); do \
-	  if [ ! -d $$d ]; then \
-	    echo install -m 755 -d $$d; \
-	    install -m 755 -d $$d; \
-	  fi; \
-	done
 	# Make sure there is a single install location for all header files.
-	ln -sfn ../include $(DESTDIR)$(SDKROOT)/nacl/include
-	ln -sfn ../include $(DESTDIR)$(SDKROOT)/nacl64/include
+	ln -sfn ../nacl64/include $(DESTDIR)$(SDKROOT)/nacl/include
 	# libgcc_s.so is installed to lib64
 	ln -sfn lib $(DESTDIR)$(SDKROOT)/nacl64/lib64
 	# GCC searches for 32bit libraries in nacl64/lib/32 and in nacl64/lib32
@@ -472,14 +451,6 @@ BUILD/stamp-$(CROSSARCH)-pregcc-standalone: \
 BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD
 	rm -rf BUILD/build-newlib-$(CROSSARCH)
 	mkdir BUILD/build-newlib-$(CROSSARCH)
-	(cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) ; \
-	    ln -sfn lib/32 lib32 ; \
-	    ln -sfn lib lib64 ; \
-	    cd $(DESTDIR)$(SDKROOT); \
-	    rm -rf nacl; mkdir nacl; cd nacl; \
-	    mkdir bin; \
-	    ln -s ../nacl64/lib/32 lib; \
-	    ln -s ../nacl64/include; )
 	../src/trusted/service_runtime/export_header.py ../src/trusted/service_runtime/include \
 		SRC/newlib/newlib/libc/sys/nacl
 	if [ "x$(CROSSARCH)" = "xnacl64" ] ; then \
@@ -551,7 +522,8 @@ GLIBC_CFLAGS=-O2 -g
 # redefining variables with recursive $(MAKE) calls.
 LIB_BITS?=64
 ARCH_DEST=$(DESTDIR)$(SDKROOT)/$(if $(filter 32,$(LIB_BITS)),nacl,nacl64)
-ARCH_DEST_NATIVE=$(SDKLOC_NATIVE)/$(if $(filter 32,$(LIB_BITS)),nacl64/lib32,nacl64/lib)
+ARCH_DEST_INC_NATIVE=$(SDKLOC_NATIVE)/$(if $(filter 32,$(LIB_BITS)),nacl,nacl64)/include
+ARCH_DEST_LIB_NATIVE=$(SDKLOC_NATIVE)/$(if $(filter 32,$(LIB_BITS)),nacl64/lib32,nacl64/lib)
 
 BUILD/stamp-glibc32: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
   | SRC/glibc SRC/linux-headers-for-nacl
@@ -602,7 +574,7 @@ install-glibc: BUILD/stamp-glibc32 BUILD/stamp-glibc64
 	rmdir "$(INST_GLIBC_PREFIX)/$(PREFIX)" || \
 	  rm "$(INST_GLIBC_PREFIX)/$(PREFIX)"
 	ln -sfn "$(INST_GLIBC_PREFIX)/glibc" "$(INST_GLIBC_PREFIX)/$(PREFIX)"
-	$(MAKE) -f $(THISMAKEFILE) glibc-sdkdirs \
+	$(MAKE) -f $(THISMAKEFILE) sdkdirs \
 	  DESTDIR="" SDKROOT="$(INST_GLIBC_PREFIX)/glibc"
 	$(MAKE) -f $(THISMAKEFILE) -C BUILD/build-glibc32 \
 	  install_root=$(INST_GLIBC_PREFIX) install
@@ -654,7 +626,7 @@ glibc-adhoc-files: | SRC/glibc SRC/linux-headers-for-nacl
 SCONS_DESTINATIONS_NOLIB=\
  DESTINATION_ROOT=tools/BUILD/build-extra_sdk-$(CROSSARCH) \
  naclsdk_mode=custom:$(SDKLOC_NATIVE) \
- extra_sdk_include_destination=$(SDKLOC_NATIVE)/include \
+ extra_sdk_include_destination=$(ARCH_DEST_INC_NATIVE) \
 
 BUILD_EXTRA_SDK=BUILD/build-extra_sdk-$(CROSSARCH)
 
@@ -665,7 +637,7 @@ scons-libs-glibc: glibc-adhoc-files
 	cd .. && \
 	  (./$(SCONS) \
 	    $(SCONS_DESTINATIONS_NOLIB) \
-	    extra_sdk_lib_destination=$(ARCH_DEST_NATIVE) \
+	    extra_sdk_lib_destination=$(ARCH_DEST_LIB_NATIVE) \
 	    MODE=nacl_extra_sdk --nacl_glibc \
 	    extra_sdk_update_header extra_sdk_update \
 	    targetplatform=x86-$(LIB_BITS) --verbose )
@@ -716,15 +688,9 @@ ifeq ($(CYGWIN17), 1)
 	    BUILD/build-full-gcc-$(CROSSARCH)/gcc
 	cp -af $(DESTDIR)$(SDKROOT)/$(CROSSARCH) \
 	    BUILD/build-full-gcc-$(CROSSARCH)/$(CROSSARCH)
-	rm BUILD/build-full-gcc-$(CROSSARCH)/$(CROSSARCH)/include
-	cp -af $(DESTDIR)$(SDKROOT)/include \
-	    BUILD/build-full-gcc-$(CROSSARCH)/$(CROSSARCH)/include
 ifeq ($(CROSSARCH), nacl64)
 	cp -af $(DESTDIR)$(SDKROOT)/nacl \
 	    BUILD/build-full-gcc-$(CROSSARCH)/nacl
-	rm BUILD/build-full-gcc-$(CROSSARCH)/nacl/include
-	cp -af $(DESTDIR)$(SDKROOT)/include \
-	    BUILD/build-full-gcc-$(CROSSARCH)/nacl/include
 endif
 endif
 	PATH=$(BUILDPATH) $(MAKE) \
@@ -953,7 +919,7 @@ endif
 INST_GLIBC_PROGRAM?=none
 .PHONY: dev-build-with-glibc
 dev-build-with-glibc:
-	$(MAKE) -f $(THISMAKEFILE) glibc-sdkdirs
+	$(MAKE) -f $(THISMAKEFILE) sdkdirs
 	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
 ifeq ($(INST_GLIBC_PROGRAM), none)
@@ -973,6 +939,7 @@ endif
 	$(MAKE) -f $(THISMAKEFILE) gcc-redirector
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=32
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=64
+	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib,lib32,lib64}
 
 .PHONY: dev-build
 dev-build:
@@ -991,6 +958,7 @@ dev-build:
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
 	$(MAKE) -f $(THISMAKEFILE) redirector
+	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib,lib32,lib64}
 
 # Newlib toolchain for buildbot.
 .PHONY: build
