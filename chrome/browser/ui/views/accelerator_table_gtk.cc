@@ -88,6 +88,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_OEM_2,          true,  true,  false, IDC_HELP_PAGE },
 #endif
   { ui::VKEY_I,              true,  true,  false, IDC_DEV_TOOLS },
+  { ui::VKEY_F12             false, false, false, IDC_DEV_TOOLS },
   { ui::VKEY_J,              true,  true,  false, IDC_DEV_TOOLS_CONSOLE },
   { ui::VKEY_C,              true,  true,  false, IDC_DEV_TOOLS_INSPECT },
   { ui::VKEY_N,              true,  true,  false, IDC_NEW_INCOGNITO_WINDOW },
