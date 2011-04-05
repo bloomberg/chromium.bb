@@ -97,6 +97,8 @@
       'enterprise',      
       # crbug.com/77969
       '-autofill.AutofillTest.testComparePhoneNumbers',
+      # crbug.com/78519
+      '-autofill.AutofillTest.testNoAutofillForReadOnlyFields',
       # testBookmarkBarVisible fails on windows. crbug.com/42823
       '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
       # crbug.com/64664
