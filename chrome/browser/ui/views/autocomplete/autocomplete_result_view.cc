@@ -36,7 +36,12 @@ const char16 kEllipsis[] = { 0x2026 };
 // The minimum distance between the top and bottom of the {icon|text} and the
 // top or bottom of the row.
 const int kMinimumIconVerticalPadding = 2;
+
+#if defined(TOUCH_UI)
+const int kMinimumTextVerticalPadding = 15;
+#else
 const int kMinimumTextVerticalPadding = 3;
+#endif
 
 }  // namespace
 
