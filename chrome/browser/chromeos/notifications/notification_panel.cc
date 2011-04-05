@@ -102,9 +102,8 @@ class ViewportWidget : public views::WidgetGtk {
   // views::WidgetGtk overrides.
   virtual gboolean OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
     gboolean result = WidgetGtk::OnMotionNotify(widget, event);
-
-    int x = 0, y = 0;
-    GetContainedWidgetEventCoordinates(event, &x, &y);
+    gdouble x = event->x;
+    gdouble y = event->y;
 
     // The window_contents_' allocation has been moved off the top left
     // corner, so we need to adjust it.

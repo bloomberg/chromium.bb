@@ -16,6 +16,14 @@ namespace {
 ui::EventType EventTypeFromNative(NativeEvent native_event) {
   // Add new event types as necessary.
   switch (native_event->type) {
+    case GDK_2BUTTON_PRESS:
+    case GDK_3BUTTON_PRESS:
+    case GDK_BUTTON_PRESS:
+      return ui::ET_MOUSE_PRESSED;
+    case GDK_BUTTON_RELEASE:
+      return ui::ET_MOUSE_RELEASED;
+    case GDK_DRAG_MOTION:
+      return ui::ET_MOUSE_DRAGGED;
     case GDK_ENTER_NOTIFY:
       return ui::ET_MOUSE_ENTERED;
     case GDK_KEY_PRESS:
@@ -24,6 +32,15 @@ ui::EventType EventTypeFromNative(NativeEvent native_event) {
       return ui::ET_KEY_RELEASED;
     case GDK_LEAVE_NOTIFY:
       return ui::ET_MOUSE_EXITED;
+    case GDK_MOTION_NOTIFY:
+      if (native_event->motion.state & GDK_BUTTON1_MASK ||
+          native_event->motion.state & GDK_BUTTON2_MASK ||
+          native_event->motion.state & GDK_BUTTON3_MASK ||
+          native_event->motion.state & GDK_BUTTON4_MASK ||
+          native_event->motion.state & GDK_BUTTON5_MASK) {
+        return ui::ET_MOUSE_DRAGGED;
+      }
+      return ui::ET_MOUSE_MOVED;
     case GDK_SCROLL:
       return ui::ET_MOUSEWHEEL;
     default:

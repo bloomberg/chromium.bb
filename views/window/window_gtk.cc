@@ -116,22 +116,20 @@ const Window* WindowGtk::AsWindow() const {
 // WindowGtk, WidgetGtk overrides:
 
 gboolean WindowGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
-  int x = 0, y = 0;
-  GetContainedWidgetEventCoordinates(event, &x, &y);
+  GdkEventButton transformed_event = *event;
+  MouseEvent mouse_event(TransformEvent(&transformed_event));
 
   int hittest_code =
-      GetWindow()->non_client_view()->NonClientHitTest(gfx::Point(x, y));
+      GetWindow()->non_client_view()->NonClientHitTest(mouse_event.location());
   switch (hittest_code) {
     case HTCAPTION: {
-      MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED, event->x, event->y,
-          Event::GetFlagsFromGdkEvent(reinterpret_cast<GdkEvent*>(event)));
       // Start dragging if the mouse event is a single click and *not* a right
       // click. If it is a right click, then pass it through to
       // WidgetGtk::OnButtonPress so that View class can show ContextMenu upon a
       // mouse release event. We only start drag on single clicks as we get a
       // crash in Gtk on double/triple clicks.
       if (event->type == GDK_BUTTON_PRESS &&
-          !mouse_pressed.IsOnlyRightMouseButton()) {
+          !mouse_event.IsOnlyRightMouseButton()) {
         gfx::Point screen_point(event->x, event->y);
         View::ConvertPointToScreen(GetRootView(), &screen_point);
         gtk_window_begin_move_drag(GetNativeWindow(), event->button,
@@ -174,12 +172,13 @@ gboolean WindowGtk::OnConfigureEvent(GtkWidget* widget,
 }
 
 gboolean WindowGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
-  int x = 0, y = 0;
-  GetContainedWidgetEventCoordinates(event, &x, &y);
+  GdkEventMotion transformed_event = *event;
+  TransformEvent(&transformed_event);
+  gfx::Point translated_location(transformed_event.x, transformed_event.y);
 
   // Update the cursor for the screen edge.
   int hittest_code =
-      GetWindow()->non_client_view()->NonClientHitTest(gfx::Point(x, y));
+      GetWindow()->non_client_view()->NonClientHitTest(translated_location);
   if (hittest_code != HTCLIENT) {
     GdkCursorType cursor_type = HitTestCodeToGdkCursorType(hittest_code);
     gdk_window_set_cursor(widget->window, gfx::GetCursor(cursor_type));

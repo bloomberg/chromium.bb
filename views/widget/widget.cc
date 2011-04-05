@@ -353,6 +353,9 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
       last_mouse_event_was_move_ = false;
       GetRootView()->OnMouseExited(event);
       return false;
+    case ui::ET_MOUSEWHEEL:
+      return GetRootView()->OnMouseWheel(
+          reinterpret_cast<const MouseWheelEvent&>(event));
     default:
       return false;
   }
@@ -364,7 +367,6 @@ void Widget::OnMouseCaptureLost() {
     GetRootView()->OnMouseCaptureLost();
   is_mouse_button_pressed_ = false;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, FocusTraversable implementation:

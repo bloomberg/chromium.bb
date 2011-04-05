@@ -221,24 +221,16 @@ class WidgetGtk : public Widget,
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
 
  protected:
-  // If widget contains another widget, translates event coordinates to the
-  // contained widget's coordinates, else returns original event coordinates.
-  template<class Event> bool GetContainedWidgetEventCoordinates(Event* event,
-                                                                int* x,
-                                                                int* y) {
-    if (event == NULL || x == NULL || y == NULL)
-      return false;
-    *x = event->x;
-    *y = event->y;
+  // Modifies event coordinates to the targeted widget contained by this widget.
+  template<class Event> GdkEvent* TransformEvent(Event* event) {
     GdkWindow* dest = GTK_WIDGET(window_contents_)->window;
-    if (event->window != dest) {
-      int dest_x, dest_y;
+    if (event && event->window != dest) {
+      gint dest_x, dest_y;
       gdk_window_get_root_origin(dest, &dest_x, &dest_y);
-      *x = event->x_root - dest_x;
-      *y = event->y_root - dest_y;
-      return true;
+      event->x = event->x_root - dest_x;
+      event->y = event->y_root - dest_y;
     }
-    return false;
+    return reinterpret_cast<GdkEvent*>(event);
   }
 
   // Event handlers:

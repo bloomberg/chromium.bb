@@ -1135,19 +1135,17 @@ gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
     // When a mouse button is pressed gtk generates a leave, enter, press.
     // RootView expects to get a mouse move before a press, otherwise enter is
     // not set. So we generate a move here.
-    int x = 0, y = 0;
-    GetContainedWidgetEventCoordinates(event, &x, &y);
-    int flags = Event::GetFlagsFromGdkEvent(reinterpret_cast<GdkEvent*>(event));
+    GdkEventMotion motion = { GDK_MOTION_NOTIFY, event->window,
+        event->send_event, event->time, event->x, event->y, NULL, event->state,
+        0, NULL, event->x_root, event->y_root };
 
     // If this event is the result of pressing a button then one of the button
     // modifiers is set. Unset it as we're compensating for the leave generated
     // when you press a button.
-    flags &= ~(ui::EF_LEFT_BUTTON_DOWN |
-               ui::EF_MIDDLE_BUTTON_DOWN |
-               ui::EF_RIGHT_BUTTON_DOWN);
+    motion.state &= ~(GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK);
 
-    MouseEvent mouse_move(ui::ET_MOUSE_MOVED, x, y, flags);
-    delegate_->OnMouseEvent(mouse_move);
+    MouseEvent mouse_event(TransformEvent(&motion));
+    delegate_->OnMouseEvent(mouse_event);
   }
 
   return false;
@@ -1156,18 +1154,14 @@ gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
 gboolean WidgetGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
   last_mouse_event_was_move_ = false;
   if (!HasMouseCapture() && !is_mouse_button_pressed_) {
-    MouseEvent mouse_event(reinterpret_cast<GdkEvent*>(event));
+    MouseEvent mouse_event(TransformEvent(event));
     delegate_->OnMouseEvent(mouse_event);
   }
   return false;
 }
 
 gboolean WidgetGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
-  int x = 0, y = 0;
-  GetContainedWidgetEventCoordinates(event, &x, &y);
-  int flags = Event::GetFlagsFromGdkEvent(reinterpret_cast<GdkEvent*>(event));
-  MouseEvent mouse_event((HasMouseCapture() && is_mouse_button_pressed_) ?
-      ui::ET_MOUSE_DRAGGED : ui::ET_MOUSE_MOVED, x, y, flags);
+  MouseEvent mouse_event(TransformEvent(event));
   delegate_->OnMouseEvent(mouse_event);
   return true;
 }
@@ -1185,43 +1179,23 @@ gboolean WidgetGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
     return true;
   }
 
-  // An event may come from a contained widget which has its own gdk window.
-  // Translate it to the widget's coordinates.
-  int x = 0, y = 0;
-  GetContainedWidgetEventCoordinates(event, &x, &y);
-  int flags = Event::GetFlagsFromGdkEvent(reinterpret_cast<GdkEvent*>(event));
-  MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED, x, y, flags);
-
+  MouseEvent mouse_event(TransformEvent(event));
   // Returns true to consume the event when widget is not transparent.
-  return delegate_->OnMouseEvent(mouse_pressed) || !transparent_;
+  return delegate_->OnMouseEvent(mouse_event) || !transparent_;
 }
 
 gboolean WidgetGtk::OnButtonRelease(GtkWidget* widget, GdkEventButton* event) {
   // GTK generates a mouse release at the end of dnd. We need to ignore it.
-  if (drag_data_)
-    return true;
-
-  // An event may come from a contained widget which has its own gdk window.
-  // Translate it to the widget's coordinates.
-  int x = 0, y = 0;
-  GetContainedWidgetEventCoordinates(event, &x, &y);
-  int flags = Event::GetFlagsFromGdkEvent(reinterpret_cast<GdkEvent*>(event));
-  MouseEvent mouse_up(ui::ET_MOUSE_RELEASED, x, y, flags);
-  delegate_->OnMouseEvent(mouse_up);
+  if (!drag_data_) {
+    MouseEvent mouse_event(TransformEvent(event));
+    delegate_->OnMouseEvent(mouse_event);
+  }
   return true;
 }
 
 gboolean WidgetGtk::OnScroll(GtkWidget* widget, GdkEventScroll* event) {
-  // An event may come from a contained widget which has its own gdk window.
-  // Translate it to the widget's coordinates.
-  int x = 0, y = 0;
-  GetContainedWidgetEventCoordinates(event, &x, &y);
-  GdkEventScroll translated_event = *event;
-  translated_event.x = x;
-  translated_event.y = y;
-
-  MouseWheelEvent wheel_event(reinterpret_cast<GdkEvent*>(&translated_event));
-  return GetRootView()->OnMouseWheel(wheel_event);
+  MouseEvent mouse_event(TransformEvent(event));
+  return delegate_->OnMouseEvent(mouse_event);
 }
 
 gboolean WidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {

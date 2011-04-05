@@ -864,7 +864,7 @@ LRESULT WidgetWin::OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param) {
 
   MSG msg = { hwnd(), message, w_param, l_param, 0,
               { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
-  return GetRootView()->OnMouseWheel(MouseWheelEvent(msg)) ? 0 : 1;
+  return delegate_->OnMouseEvent(MouseWheelEvent(msg)) ? 0 : 1;
 }
 
 void WidgetWin::OnMove(const CPoint& point) {
