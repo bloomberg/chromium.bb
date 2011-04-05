@@ -79,6 +79,8 @@
         'gfx/image_mac.mm',
         'gfx/insets.cc',
         'gfx/insets.h',
+        'gfx/native_theme.cc',
+        'gfx/native_theme.h',
         'gfx/native_widget_types.h',
         'gfx/path.cc',
         'gfx/path.h',

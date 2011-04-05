@@ -54,7 +54,12 @@ void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
 
 namespace gfx {
 
-/* static */
+// static
+const NativeTheme* NativeTheme::instance() {
+  return NativeThemeWin::instance();
+}
+
+// static
 const NativeThemeWin* NativeThemeWin::instance() {
   // The global NativeThemeWin instance.
   static const NativeThemeWin s_native_theme;
@@ -100,10 +105,212 @@ NativeThemeWin::NativeThemeWin()
 
 NativeThemeWin::~NativeThemeWin() {
   if (theme_dll_) {
-    // todo (cpu): fix this soon.
-    // CloseHandles();
+    // todo (cpu): fix this soon.  Making a call to CloseHandles() here breaks
+    // certain tests and the reliability bots.
+    //CloseHandles();
     FreeLibrary(theme_dll_);
   }
+}
+
+gfx::Size NativeThemeWin::GetPartSize(Part part) const {
+  HDC hdc = GetDC(NULL);
+  SIZE size;
+  HANDLE handle = GetThemeHandle(GetThemeName(part));
+  int part_win = GetWindowsPart(part);
+  HRESULT hr = get_theme_part_size_(handle, hdc, part_win, 0, NULL, TS_TRUE,
+                                    &size);
+  ReleaseDC(NULL, hdc);
+  return SUCCEEDED(hr) ? Size(size.cx, size.cy) : Size();
+}
+
+void NativeThemeWin::Paint(skia::PlatformCanvas* canvas,
+                           Part part,
+                           State state,
+                           const gfx::Rect& rect,
+                           const ExtraParams& extra) const {
+  HDC hdc = canvas->beginPlatformPaint();
+
+  switch (part) {
+    case kCheckbox:
+      PaintCheckbox(hdc, part, state, rect, extra.button);
+      break;
+    case kRadio:
+      PaintRadioButton(hdc, part, state, rect, extra.button);
+      break;
+    case kPushButton:
+      PaintPushButton(hdc, part, state, rect, extra.button);
+      break;
+    case kScrollbarDownArrow:
+    case kScrollbarUpArrow:
+    case kScrollbarLeftArrow:
+    case kScrollbarRightArrow:
+    case kScrollbarHorizontalThumb:
+    case kScrollbarVerticalThumb:
+    case kScrollbarHorizontalTrack:
+    case kScrollbarVerticalTrack:
+    case kTextField:
+    case kMenuList:
+    case kSliderTrack:
+    case kSliderThumb:
+    case kInnerSpinButton:
+    case kProgressBar:
+    default:
+      // While transitioning NativeThemeWin to the single Paint() entry point,
+      // unsupported parts will DCHECK here.
+      DCHECK(false);
+  }
+
+  canvas->endPlatformPaint();
+}
+
+HRESULT NativeThemeWin::PaintScrollbarArrow(HDC hdc,
+                                            Part direction,
+                                            State state,
+                                            const gfx::Rect& rect) const {
+  static int state_id[4][kMaxState] = {
+      ABS_DOWNDISABLED, ABS_DOWNHOT, ABS_DOWNNORMAL, ABS_DOWNPRESSED,
+      ABS_LEFTDISABLED, ABS_LEFTHOT, ABS_LEFTNORMAL, ABS_LEFTPRESSED,
+      ABS_RIGHTDISABLED, ABS_RIGHTHOT, ABS_RIGHTNORMAL, ABS_RIGHTPRESSED,
+      ABS_UPDISABLED, ABS_UPHOT, ABS_UPNORMAL, ABS_UPPRESSED
+  };
+
+  HANDLE handle = GetThemeHandle(SCROLLBAR);
+  if (handle && draw_theme_) {
+    int index = direction - kScrollbarDownArrow;
+    DCHECK(index >=0 && index < 4);
+    return draw_theme_(handle, hdc, SBP_ARROWBTN, state_id[index][state],
+                       &rect.ToRECT(), NULL);
+  }
+
+  // TODO: Draw it manually.
+  RECT rect_win = rect.ToRECT();
+  DrawFrameControl(hdc, &rect_win, DFC_SCROLL, 0);
+  return S_OK;
+}
+
+HRESULT NativeThemeWin::PaintScrollbarThumb(HDC hdc,
+                                            Part part,
+                                            State state,
+                                            const gfx::Rect& rect) const {
+  int part_id;
+  if (part == kScrollbarHorizontalThumb) {
+    part_id = SBP_THUMBBTNHORZ;
+  } else if (part == kScrollbarHorizontalThumb) {
+    part_id = SBP_THUMBBTNVERT;
+  } else {
+    DCHECK(false);
+  }
+
+  static int state_id[kMaxState] = {
+      SCRBS_DISABLED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_PRESSED
+  };
+
+  HANDLE handle = GetThemeHandle(SCROLLBAR);
+  if (handle && draw_theme_) {
+    return draw_theme_(handle, hdc, part_id, state_id[state],
+                       &rect.ToRECT(), NULL);
+  }
+
+
+  // TODO: Draw it manually.
+  if ((part_id == SBP_THUMBBTNHORZ) || (part_id == SBP_THUMBBTNVERT)) {
+    RECT rect_win = rect.ToRECT();
+    DrawEdge(hdc, &rect_win, EDGE_RAISED, BF_RECT | BF_MIDDLE);
+    // Classic mode doesn't have a gripper.
+  }
+  return S_OK;
+}
+
+HRESULT NativeThemeWin::PaintPushButton(HDC hdc,
+                                        Part part,
+                                        State state,
+                                        const gfx::Rect& rect,
+                                        const ButtonExtraParams& extra) const {
+  int state_id;
+  switch(state) {
+    case kDisabled:
+      state_id = PBS_DISABLED;
+      break;
+    case kHovered:
+      state_id = PBS_HOT;
+      break;
+    case kNormal:
+      state_id = extra.is_default ? PBS_DEFAULTED : PBS_NORMAL;
+      break;
+    case kPressed:
+      state_id = PBS_PRESSED;
+      break;
+    default:
+      DCHECK(false);
+  }
+
+  RECT rect_win = rect.ToRECT();
+  return PaintButton(hdc, BP_PUSHBUTTON, state_id, extra.classic_state,
+                     &rect_win);
+}
+
+HRESULT NativeThemeWin::PaintRadioButton(HDC hdc,
+                                         Part part,
+                                         State state,
+                                         const gfx::Rect& rect,
+                                         const ButtonExtraParams& extra) const {
+  int state_id;
+  switch(state) {
+    case kDisabled:
+      state_id = extra.checked ? RBS_CHECKEDDISABLED : RBS_UNCHECKEDDISABLED;
+      break;
+    case kHovered:
+      state_id = extra.checked ? RBS_CHECKEDHOT : RBS_UNCHECKEDHOT;
+      break;
+    case kNormal:
+      state_id = extra.checked ? RBS_CHECKEDNORMAL : RBS_UNCHECKEDNORMAL;
+      break;
+    case kPressed:
+      state_id = extra.checked ? RBS_CHECKEDPRESSED : RBS_UNCHECKEDPRESSED;
+      break;
+    default:
+      DCHECK(false);
+  }
+
+  RECT rect_win = rect.ToRECT();
+  return PaintButton(hdc, BP_RADIOBUTTON, state_id, extra.classic_state,
+                     &rect_win);
+}
+
+HRESULT NativeThemeWin::PaintCheckbox(HDC hdc,
+                                      Part part,
+                                      State state,
+                                      const gfx::Rect& rect,
+                                      const ButtonExtraParams& extra) const {
+  int state_id;
+  switch(state) {
+    case kDisabled:
+      state_id = extra.checked ? CBS_CHECKEDDISABLED :
+          extra.indeterminate ? CBS_MIXEDDISABLED :
+              CBS_UNCHECKEDDISABLED;
+      break;
+    case kHovered:
+      state_id = extra.checked ? CBS_CHECKEDHOT :
+          extra.indeterminate ? CBS_MIXEDHOT :
+              CBS_UNCHECKEDHOT;
+      break;
+    case kNormal:
+      state_id = extra.checked ? CBS_CHECKEDNORMAL :
+          extra.indeterminate ? CBS_MIXEDNORMAL :
+              CBS_UNCHECKEDNORMAL;
+      break;
+    case kPressed:
+      state_id = extra.checked ? CBS_CHECKEDPRESSED :
+          extra.indeterminate ? CBS_MIXEDPRESSED :
+              CBS_UNCHECKEDPRESSED;
+      break;
+    default:
+      DCHECK(false);
+  }
+
+  RECT rect_win = rect.ToRECT();
+  return PaintButton(hdc, BP_CHECKBOX, state_id, extra.classic_state,
+                     &rect_win);
 }
 
 HRESULT NativeThemeWin::PaintButton(HDC hdc,
@@ -798,15 +1005,15 @@ HRESULT NativeThemeWin::PaintFrameControl(HDC hdc,
   return S_OK;
 }
 
-void NativeThemeWin::CloseHandles() const
-{
+void NativeThemeWin::CloseHandles() const {
   if (!close_theme_)
     return;
 
   for (int i = 0; i < LAST; ++i) {
-    if (theme_handles_[i])
+    if (theme_handles_[i]) {
       close_theme_(theme_handles_[i]);
       theme_handles_[i] = NULL;
+    }
   }
 }
 
@@ -817,8 +1024,7 @@ bool NativeThemeWin::IsClassicTheme(ThemeName name) const {
   return !GetThemeHandle(name);
 }
 
-HANDLE NativeThemeWin::GetThemeHandle(ThemeName theme_name) const
-{
+HANDLE NativeThemeWin::GetThemeHandle(ThemeName theme_name) const {
   if (!open_theme_ || theme_name < 0 || theme_name >= LAST)
     return 0;
 
@@ -869,6 +1075,84 @@ HANDLE NativeThemeWin::GetThemeHandle(ThemeName theme_name) const
   }
   theme_handles_[theme_name] = handle;
   return handle;
+}
+
+// static
+NativeThemeWin::ThemeName NativeThemeWin::GetThemeName(Part part) {
+  ThemeName name;
+  switch(part) {
+    case kScrollbarDownArrow:
+    case kScrollbarLeftArrow:
+    case kScrollbarRightArrow:
+    case kScrollbarUpArrow:
+    case kScrollbarHorizontalThumb:
+    case kScrollbarVerticalThumb:
+    case kScrollbarHorizontalTrack:
+    case kScrollbarVerticalTrack:
+      name = SCROLLBAR;
+      break;
+    case kCheckbox:
+    case kRadio:
+    case kPushButton:
+      name = BUTTON;
+      break;
+    case kTextField:
+      name = TEXTFIELD;
+      break;
+    case kMenuList:
+      name = MENU;
+      break;
+    case kSliderTrack:
+    case kSliderThumb:
+      name = TRACKBAR;
+      break;
+    case kInnerSpinButton:
+      name = SPIN;
+      break;
+    case kProgressBar:
+      name = PROGRESS;
+      break;
+    default:
+      DCHECK(false);
+      break;
+  }
+  return name;
+}
+
+// static
+int NativeThemeWin::GetWindowsPart(Part part) {
+  int part_id;
+  switch(part) {
+    case kCheckbox:
+      part_id = BP_CHECKBOX;
+      break;
+    case kRadio:
+      part_id = BP_RADIOBUTTON;
+      break;
+    case kPushButton:
+      part_id = BP_PUSHBUTTON;
+      break;
+    case kTextField:
+    case kMenuList:
+    case kSliderTrack:
+    case kSliderThumb:
+    case kInnerSpinButton:
+    case kProgressBar:
+    case kScrollbarDownArrow:
+    case kScrollbarLeftArrow:
+    case kScrollbarRightArrow:
+    case kScrollbarUpArrow:
+    case kScrollbarHorizontalThumb:
+    case kScrollbarVerticalThumb:
+    case kScrollbarHorizontalTrack:
+    case kScrollbarVerticalTrack:
+    default:
+      // While transitioning NativeThemeWin to the single Paint() entry point,
+      // unsupported parts will DCHECK here.
+      DCHECK(false);
+      break;
+  }
+  return part_id;
 }
 
 }  // namespace gfx
