@@ -1238,7 +1238,7 @@ void RenderViewHost::OnAddMessageToConsole(const std::wstring& message,
                                            int32 line_no,
                                            const std::wstring& source_id) {
   logging::LogMessage("CONSOLE", 0).stream() << "\"" << message
-      << ",\" source: " << source_id << " (" << line_no << ")";
+      << "\", source: " << source_id << " (" << line_no << ")";
 }
 
 bool RenderViewHost::PreHandleKeyboardEvent(
