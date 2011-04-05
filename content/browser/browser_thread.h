@@ -6,6 +6,9 @@
 #define CONTENT_BROWSER_BROWSER_THREAD_H_
 #pragma once
 
+#if defined(UNIT_TEST)
+#include "base/logging.h"
+#endif  // UNIT_TEST
 #include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
@@ -161,7 +164,13 @@ class BrowserThread : public base::Thread {
       if (CurrentlyOn(thread)) {
         delete x;
       } else {
-        DeleteSoon(thread, FROM_HERE, x);
+        if (!DeleteSoon(thread, FROM_HERE, x)) {
+#if defined(UNIT_TEST)
+          // Only logged under unit testing because leaks at shutdown
+          // are acceptable under normal circumstances.
+          LOG(ERROR) << "DeleteSoon failed on thread " << thread;
+#endif  // UNIT_TEST
+        }
       }
     }
   };
