@@ -1027,7 +1027,7 @@ class NotificationBridge : public NotificationObserver {
     }
   }
 
-  if (![profileMenuButton_ isHidden]) {
+  if (profileMenuButton_ && ![profileMenuButton_ isHidden]) {
     CGFloat maxX;
     if ([newTabButton_ isHidden]) {
       maxX = std::max(offset, NSMaxX(placeholderFrame_) - kTabOverlap);
