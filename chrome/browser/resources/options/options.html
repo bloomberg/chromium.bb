@@ -33,10 +33,10 @@
 <link rel="stylesheet" href="subpages_tab_controls.css">
 <if expr="pp_ifdef('chromeos')">
   <link rel="stylesheet" href="about_page.css">
-  <link rel="stylesheet" href="chromeos_accounts_options_page.css">
-  <link rel="stylesheet" href="chromeos_internet_options_page.css">
-  <link rel="stylesheet" href="chromeos_proxy.css">
-  <link rel="stylesheet" href="chromeos_system_options_page.css">
+  <link rel="stylesheet" href="chromeos/accounts_options_page.css">
+  <link rel="stylesheet" href="chromeos/internet_options_page.css">
+  <link rel="stylesheet" href="chromeos/proxy.css">
+  <link rel="stylesheet" href="chromeos/system_options_page.css">
 </if>
 
 <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
@@ -66,15 +66,15 @@
 <script src="options_page.js"></script>
 <if expr="pp_ifdef('chromeos')">
   <script src="about_page.js"></script>
-  <script src="chromeos_cellular_plan_element.js"></script>
-  <script src="chromeos_internet_network_element.js"></script>
-  <script src="chromeos_internet_options.js"></script>
-  <script src="chromeos_system_options.js"></script>
-  <script src="chromeos_accounts_options.js"></script>
-  <script src="chromeos_proxy_options.js"></script>
-  <script src="chromeos_proxy_rules_list.js"></script>
-  <script src="chromeos_accounts_user_list.js"></script>
-  <script src="chromeos_accounts_user_name_edit.js"></script>
+  <script src="chromeos/cellular_plan_element.js"></script>
+  <script src="chromeos/internet_network_element.js"></script>
+  <script src="chromeos/internet_options.js"></script>
+  <script src="chromeos/system_options.js"></script>
+  <script src="chromeos/accounts_options.js"></script>
+  <script src="chromeos/proxy_options.js"></script>
+  <script src="chromeos/proxy_rules_list.js"></script>
+  <script src="chromeos/accounts_user_list.js"></script>
+  <script src="chromeos/accounts_user_name_edit.js"></script>
   <script>
     var AboutPage = options.AboutPage;
     var AccountsOptions = options.AccountsOptions;
@@ -141,8 +141,8 @@
   <include src="language_add_language_overlay.html">
   <if expr="pp_ifdef('chromeos')">
      <include
-         src="chromeos_language_customize_modifier_keys_overlay.html">
-     <include src="chromeos_internet_detail.html">
+         src="chromeos/language_customize_modifier_keys_overlay.html">
+     <include src="chromeos/internet_detail.html">
   </if>
   <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
     <include src="certificate_restore_overlay.html">
@@ -172,9 +172,9 @@
          <include src="browser_options.html">
          <include src="personal_options.html">
          <if expr="pp_ifdef('chromeos')">
-           <include src="chromeos_system_options.html">
-           <include src="chromeos_internet_options.html">
-           <include src="chromeos_accounts_options.html">
+           <include src="chromeos/system_options.html">
+           <include src="chromeos/internet_options.html">
+           <include src="chromeos/accounts_options.html">
          </if>
          <include src="advanced_options.html">
        </div>
@@ -185,7 +185,7 @@
            <div class="subpage-sheet-contents">
              <if expr="pp_ifdef('chromeos')">
                <include src="about_page.html">
-               <include src="chromeos_proxy.html">
+               <include src="chromeos/proxy.html">
              </if>
              <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
                <include src="certificate_manager.html">
@@ -205,10 +205,10 @@
            <button class="raw-button close-subpage"></button>
            <div class="subpage-sheet-contents">
              <if expr="pp_ifdef('chromeos')">
-               <include src="chromeos_language_chewing_options.html">
-               <include src="chromeos_language_hangul_options.html">
-               <include src="chromeos_language_mozc_options.html">
-               <include src="chromeos_language_pinyin_options.html">
+               <include src="chromeos/language_chewing_options.html">
+               <include src="chromeos/language_hangul_options.html">
+               <include src="chromeos/language_mozc_options.html">
+               <include src="chromeos/language_pinyin_options.html">
              </if>
              <include src="cookies_view.html">
              <include src="content_settings_exceptions_area.html">
