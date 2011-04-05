@@ -2087,6 +2087,10 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
 
   handler_map["GetNetworkInfo"] = &TestingAutomationProvider::GetNetworkInfo;
   handler_map["NetworkScan"] = &TestingAutomationProvider::NetworkScan;
+  handler_map["GetProxySettings"] =
+      &TestingAutomationProvider::GetProxySettings;
+  handler_map["SetProxySettings"] =
+      &TestingAutomationProvider::SetProxySettings;
   handler_map["ConnectToWifiNetwork"] =
       &TestingAutomationProvider::ConnectToWifiNetwork;
   handler_map["DisconnectFromWifiNetwork"] =

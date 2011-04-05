@@ -2423,15 +2423,15 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Returns:
       A dictionary with the following keys:
 
-      'battery_is_present' : bool
-      'line_power_on' : bool
+      'battery_is_present': bool
+      'line_power_on': bool
       if 'battery_is_present':
-        'battery_percentage' : float (0 ~ 100)
-        'battery_fully_charged' : bool
+        'battery_percentage': float (0 ~ 100)
+        'battery_fully_charged': bool
         if 'line_power_on':
-          'battery_time_to_full' : int (seconds)
+          'battery_time_to_full': int (seconds)
         else:
-          'battery_time_to_empty' : int (seconds)
+          'battery_time_to_empty': int (seconds)
 
       If it is still calculating the time left, 'battery_time_to_full'
       and 'battery_time_to_empty' will be absent.
@@ -2505,6 +2505,99 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     cmd_dict = { 'command': 'NetworkScan' }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  PROXY_TYPE_DIRECT = 1
+  PROXY_TYPE_MANUAL = 2
+  PROXY_TYPE_PAC = 3
+
+  def GetProxyTypeName(self, proxy_type):
+    values = { self.PROXY_TYPE_DIRECT: 'Direct Internet connection',
+               self.PROXY_TYPE_MANUAL: 'Manual proxy configuration',
+               self.PROXY_TYPE_PAC: 'Automatic proxy configuration' }
+    return values[proxy_type]
+
+  def GetProxySettingsOnChromeOS(self):
+    """Get current proxy settings on Chrome OS.
+
+    Returns:
+      A dictionary. See SetProxySettings() below
+      for the full list of possible dictionary keys.
+
+      Samples:
+      { u'ignorelist': [],
+        u'single': False,
+        u'type': 1}
+
+      { u'ignorelist': [u'www.example.com', u'www.example2.com'],
+        u'single': True,
+        u'singlehttp': u'24.27.78.152',
+        u'singlehttpport': 1728,
+        u'type': 2}
+
+      { u'ignorelist': [],
+        u'pacurl': u'http://example.com/config.pac',
+        u'single': False,
+        u'type': 3}
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'GetProxySettings' }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def SetProxySettingsOnChromeOS(self, key, value):
+    """Set a proxy setting on Chrome OS.
+
+    Owner must be logged in for these to persist.
+    If user is not logged in or is logged in as non-owner or guest,
+    proxy settings do not persist across browser restarts or login/logout.
+
+    Valid settings are:
+      'type': int - Type of proxy. Should be one of:
+                     PROXY_TYPE_DIRECT, PROXY_TYPE_MANUAL, PROXY_TYPE_PAC.
+      'ignorelist': list - The list of hosts and domains to ignore.
+
+      These settings set 'type' to PROXY_TYPE_MANUAL:
+        'single': boolean - Whether to use the same proxy for all protocols.
+
+        These settings set 'single' to True:
+          'singlehttp': string - If single is true, the proxy address to use.
+          'singlehttpport': int - If single is true, the proxy port to use.
+
+        These settings set 'single' to False:
+          'httpurl': string - HTTP proxy address.
+          'httpport': int - HTTP proxy port.
+          'httpsurl': string - Secure HTTP proxy address.
+          'httpsport': int - Secure HTTP proxy port.
+          'ftpurl': string - FTP proxy address.
+          'ftpport': int - FTP proxy port.
+          'socks': string - SOCKS host address.
+          'socksport': int - SOCKS host port.
+
+      This setting sets 'type' to PROXY_TYPE_PAC:
+        'pacurl': string - Autoconfiguration URL.
+
+    Examples:
+      # Sets direct internet connection, no proxy.
+      self.SetProxySettings('type', self.PROXY_TYPE_DIRECT)
+
+      # Sets manual proxy configuration, same proxy for all protocols.
+      self.SetProxySettings('singlehttp', '24.27.78.152')
+      self.SetProxySettings('singlehttpport', 1728)
+      self.SetProxySettings('ignorelist', ['www.example.com', 'example2.com'])
+
+      # Sets automatic proxy configuration with the specified PAC url.
+      self.SetProxySettings('pacurl', 'http://example.com/config.pac')
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'SetProxySettings',
+        'key': key,
+        'value': value,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   def ConnectToWifiNetwork(self, service_path,
                            password='', identity='', certpath=''):

@@ -481,7 +481,19 @@ cr.define('options', function() {
       // Listen to user events.
       this.addEventListener('change',
           function(e) {
-            Preferences.setStringPref(self.pref, self.value, self.metric);
+            switch(self.dataType) {
+              case 'number':
+                Preferences.setIntegerPref(self.pref, parseInt(self.value, 10),
+                                           self.metric);
+                break;
+              case 'double':
+                Preferences.setDoublePref(self.pref, parseFloat(self.value),
+                                          self.metric);
+                break;
+              default:
+                Preferences.setStringPref(self.pref, self.value, self.metric);
+                break;
+            }
           });
 
       window.addEventListener('unload',
@@ -503,6 +515,12 @@ cr.define('options', function() {
    * @type {string}
    */
   cr.defineProperty(PrefTextField, 'metric', cr.PropertyKind.ATTR);
+
+  /**
+   * The data type for the preference options.
+   * @type {string}
+   */
+  cr.defineProperty(PrefTextField, 'dataType', cr.PropertyKind.ATTR);
 
   // Export
   return {

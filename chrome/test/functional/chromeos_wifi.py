@@ -22,6 +22,12 @@ class ChromeosWifi(chromeos_network.PyNetworkUITest):
     """Basic check to ensure that a network scan doesn't throw errors."""
     self.NetworkScan()
 
+  def testGetProxySettings(self):
+    """Print some information about proxy settings."""
+    result = self.GetProxySettingsOnChromeOS()
+    self.assertTrue(result)
+    logging.debug(result)
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()

@@ -1034,6 +1034,10 @@ class TestingAutomationProvider : public AutomationProvider,
 
   void NetworkScan(DictionaryValue* args, IPC::Message* reply_message);
 
+  void GetProxySettings(DictionaryValue* args, IPC::Message* reply_message);
+
+  void SetProxySettings(DictionaryValue* args, IPC::Message* reply_message);
+
   void ConnectToWifiNetwork(DictionaryValue* args, IPC::Message* reply_message);
 
   void DisconnectFromWifiNetwork(DictionaryValue* args,

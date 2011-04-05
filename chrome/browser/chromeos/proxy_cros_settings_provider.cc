@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,9 +37,6 @@ void ProxyCrosSettingsProvider::DoSet(const std::string& path,
     return;
   }
 
-  // Keep whatever user inputs so that we could use it later.
-  SetCache(path, in_value);
-
   chromeos::ProxyConfigServiceImpl* config_service = GetConfigService();
   // Don't persist settings to device for guest session.
   config_service->UISetPersistToDevice(
@@ -57,50 +54,42 @@ void ProxyCrosSettingsProvider::DoSet(const std::string& path,
   } else if (path == kProxySingleHttp) {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      std::string uri = val;
-      AppendPortIfValid(kProxySingleHttpPort, &uri);
-      config_service->UISetProxyConfigToSingleProxy(
-          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+      config_service->UISetProxyConfigToSingleProxy(CreateProxyServerFromHost(
+          val, config.single_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxySingleHttpPort) {
-    std::string val;
-    if (in_value->GetAsString(&val)) {
-      std::string uri;
-      FormServerUriIfValid(kProxySingleHttp, val, &uri);
-      config_service->UISetProxyConfigToSingleProxy(
-          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+    int val;
+    if (in_value->GetAsInteger(&val)) {
+      config_service->UISetProxyConfigToSingleProxy(CreateProxyServerFromPort(
+          val, config.single_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxyHttpUrl) {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      std::string uri = val;
-      AppendPortIfValid(kProxyHttpPort, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("http",
-          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+          CreateProxyServerFromHost(
+              val, config.http_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxyHttpPort) {
-    std::string val;
-    if (in_value->GetAsString(&val)) {
-      std::string uri;
-      FormServerUriIfValid(kProxyHttpUrl, val, &uri);
+    int val;
+    if (in_value->GetAsInteger(&val)) {
       config_service->UISetProxyConfigToProxyPerScheme("http",
-         net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+          CreateProxyServerFromPort(
+              val, config.http_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxyHttpsUrl) {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      std::string uri = val;
-      AppendPortIfValid(kProxyHttpsPort, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("https",
-          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+          CreateProxyServerFromHost(
+              val, config.https_proxy, net::ProxyServer::SCHEME_HTTPS));
     }
   } else if (path == kProxyHttpsPort) {
-    std::string val;
-    if (in_value->GetAsString(&val)) {
-      std::string uri;
-      FormServerUriIfValid(kProxyHttpsUrl, val, &uri);
+    int val;
+    if (in_value->GetAsInteger(&val)) {
       config_service->UISetProxyConfigToProxyPerScheme("https",
-          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+          CreateProxyServerFromPort(
+              val, config.https_proxy, net::ProxyServer::SCHEME_HTTPS));
     }
   } else if (path == kProxyType) {
     int val;
@@ -159,40 +148,35 @@ void ProxyCrosSettingsProvider::DoSet(const std::string& path,
   } else if (path == kProxyFtpUrl) {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      std::string uri = val;
-      AppendPortIfValid(kProxyFtpPort, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("ftp",
-          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+          CreateProxyServerFromHost(
+              val, config.ftp_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxyFtpPort) {
-    std::string val;
-    if (in_value->GetAsString(&val)) {
-      std::string uri;
-      FormServerUriIfValid(kProxyFtpUrl, val, &uri);
+    int val;
+    if (in_value->GetAsInteger(&val)) {
       config_service->UISetProxyConfigToProxyPerScheme("ftp",
-          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+          CreateProxyServerFromPort(
+              val, config.ftp_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxySocks) {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      std::string uri = val;
-      AppendPortIfValid(kProxySocksPort, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("socks",
-          net::ProxyServer::FromURI(uri,
-              StartsWithASCII(uri, "socks4://", false) ?
-                  net::ProxyServer::SCHEME_SOCKS4 :
-                  net::ProxyServer::SCHEME_SOCKS5));
+          CreateProxyServerFromHost(val, config.socks_proxy,
+                                    StartsWithASCII(val, "socks5://", false) ?
+                                        net::ProxyServer::SCHEME_SOCKS5 :
+                                        net::ProxyServer::SCHEME_SOCKS4));
     }
   } else if (path == kProxySocksPort) {
-    std::string val;
-    if (in_value->GetAsString(&val)) {
-      std::string uri;
-      FormServerUriIfValid(kProxySocks, val, &uri);
+    int val;
+    if (in_value->GetAsInteger(&val)) {
+      std::string host = config.socks_proxy.server.host_port_pair().host();
       config_service->UISetProxyConfigToProxyPerScheme("socks",
-          net::ProxyServer::FromURI(uri,
-              StartsWithASCII(uri, "socks4://", false) ?
-                  net::ProxyServer::SCHEME_SOCKS4 :
-                  net::ProxyServer::SCHEME_SOCKS5));
+          CreateProxyServerFromPort(val, config.socks_proxy,
+                                    StartsWithASCII(host, "socks5://", false) ?
+                                        net::ProxyServer::SCHEME_SOCKS5 :
+                                        net::ProxyServer::SCHEME_SOCKS4));
     }
   } else if (path == kProxyIgnoreList) {
     net::ProxyBypassRules bypass_rules;
@@ -294,22 +278,24 @@ chromeos::ProxyConfigServiceImpl*
   return g_browser_process->chromeos_proxy_config_service_impl();
 }
 
-void ProxyCrosSettingsProvider::AppendPortIfValid(
-    const char* port_cache_key,
-    std::string* server_uri) {
-  std::string port;
-  if (!server_uri->empty() && cache_.GetString(port_cache_key, &port) &&
-      !port.empty()) {
-    *server_uri += ":" + port;
-  }
+net::ProxyServer ProxyCrosSettingsProvider::CreateProxyServerFromHost(
+    const std::string& host,
+    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
+    net::ProxyServer::Scheme scheme) const {
+  uint16 port = proxy.server.host_port_pair().port();
+  if (!port)
+    port = net::ProxyServer::GetDefaultPortForScheme(scheme);
+  net::HostPortPair host_port_pair(host, port);
+  return net::ProxyServer(scheme, host_port_pair);
 }
 
-void ProxyCrosSettingsProvider::FormServerUriIfValid(
-    const char* host_cache_key,
-    const std::string& port_num, std::string* server_uri) {
-  if (cache_.GetString(host_cache_key, server_uri) && !server_uri->empty() &&
-      !port_num.empty())
-    *server_uri += ":" + port_num;
+net::ProxyServer ProxyCrosSettingsProvider::CreateProxyServerFromPort(
+    uint16 port,
+    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
+    net::ProxyServer::Scheme scheme) const {
+  std::string host = proxy.server.host_port_pair().host();
+  net::HostPortPair host_port_pair(host, port);
+  return net::ProxyServer(scheme, host_port_pair);
 }
 
 Value* ProxyCrosSettingsProvider::CreateServerHostValue(
@@ -324,11 +310,6 @@ Value* ProxyCrosSettingsProvider::CreateServerPortValue(
   return proxy.server.is_valid() ?
          Value::CreateIntegerValue(proxy.server.host_port_pair().port()) :
          NULL;
-}
-
-void ProxyCrosSettingsProvider::SetCache(const std::string& key,
-    const Value* value) {
-  cache_.Set(key, value->DeepCopy());
 }
 
 }  // namespace chromeos

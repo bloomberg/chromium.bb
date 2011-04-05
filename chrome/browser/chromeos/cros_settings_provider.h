@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ class CrosSettingsProvider {
   void Set(const std::string& path, Value* in_value);
 
   // Gets settings value of given |path| to |out_value|.
-  // Note that |out_value| is still owned by this class.
+  // Note that |out_value| is owned by the caller, not this class.
   virtual bool Get(const std::string& path, Value** out_value) const = 0;
 
   // Gets the namespace prefix provided by this provider

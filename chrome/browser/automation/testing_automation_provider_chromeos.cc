@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
 
 using chromeos::CrosLibrary;
 using chromeos::NetworkLibrary;
@@ -27,6 +28,29 @@ DictionaryValue* GetNetworkInfoDict(const chromeos::Network* network) {
   item->SetString("ip_address", network->ip_address());
   item->SetString("status", network->GetStateString());
   return item;
+}
+
+Value* GetProxySetting(const std::string& setting_name) {
+  chromeos::ProxyCrosSettingsProvider settings_provider;
+  std::string setting_path = "cros.session.proxy.";
+  setting_path.append(setting_name);
+
+  if (setting_name == "ignorelist") {
+    Value* value;
+    if (settings_provider.Get(setting_path, &value))
+      return value;
+  } else {
+    Value* setting;
+    if (settings_provider.Get(setting_path, &setting)) {
+      DictionaryValue* setting_dict = static_cast<DictionaryValue*>(setting);
+      Value* value;
+      bool found = setting_dict->Remove("value", &value);
+      delete setting;
+      if (found)
+        return value;
+    }
+  }
+  return NULL;
 }
 
 }  // namespace
@@ -260,6 +284,43 @@ void TestingAutomationProvider::NetworkScan(DictionaryValue* args,
 
   // Set up an observer (it will delete itself).
   new NetworkScanObserver(this, reply_message);
+}
+
+void TestingAutomationProvider::GetProxySettings(DictionaryValue* args,
+                                                 IPC::Message* reply_message) {
+  const char* settings[] = { "pacurl", "singlehttp", "singlehttpport",
+                             "httpurl", "httpport", "httpsurl", "httpsport",
+                             "type", "single", "ftpurl", "ftpport",
+                             "socks", "socksport", "ignorelist" };
+
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  chromeos::ProxyCrosSettingsProvider settings_provider;
+
+  for (size_t i = 0; i < arraysize(settings); ++i) {
+    Value* setting = GetProxySetting(settings[i]);
+    if (setting)
+      return_value->Set(settings[i], setting);
+  }
+
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+}
+
+void TestingAutomationProvider::SetProxySettings(DictionaryValue* args,
+                                                IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  std::string key;
+  Value* value;
+  if (!args->GetString("key", &key) || !args->Get("value", &value)) {
+    reply.SendError("Invalid or missing args.");
+    return;
+  }
+
+  std::string setting_path = "cros.session.proxy.";
+  setting_path.append(key);
+
+  // ProxyCrosSettingsProvider will own the Value* passed to Set().
+  chromeos::ProxyCrosSettingsProvider().Set(setting_path, value->DeepCopy());
+  reply.SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::ConnectToWifiNetwork(
