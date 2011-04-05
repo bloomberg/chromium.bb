@@ -180,6 +180,16 @@ function isColor() {
 }
 
 /**
+ * Checks whether the preview collate setting value is set or not.
+ *
+ * @return {boolean} true if collate setting is enabled and checked.
+ */
+function isCollated() {
+  var collateField = $('collate');
+  return (!collateField.disabled && collateField.checked);
+}
+
+/**
  * Creates a JSON string based on the values in the printer settings.
  *
  * @return {string} JSON string with print job settings.
@@ -191,8 +201,8 @@ function getSettingsJSON() {
     printerName = $('printer-list').options[selectedPrinter].textContent;
   var printAll = $('all-pages').checked;
   var twoSided = $('two-sided').checked;
-  var copies = $('copies').value;
-  var collate = $('collate').checked;
+  var copies = parseInt($('copies').value, 10);
+  var collate = isCollated();
   var landscape = isLandscape();
   var color = isColor();
   var printToPDF = (printerName == localStrings.getString('printToPDF'));

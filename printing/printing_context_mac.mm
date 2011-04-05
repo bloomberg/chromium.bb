@@ -11,6 +11,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "base/values.h"
+#include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_mac.h"
 
 namespace printing {
@@ -85,21 +86,32 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
     const DictionaryValue& job_settings, const PageRanges& ranges) {
   DCHECK(!in_print_job_);
 
-  // TODO (kmadhusu): Update other print job settings such as number of copies,
-  // collate, etc.,
-
   ResetSettings();
   print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
 
   bool landscape;
   std::string printer_name;
-  if (!GetSettingsFromDict(job_settings, &landscape, &printer_name))
+  int copies;
+  bool collate;
+  if (!job_settings.GetBoolean(kSettingLandscape, &landscape) ||
+      !job_settings.GetString(kSettingPrinterName, &printer_name) ||
+      !job_settings.GetInteger(kSettingCopies, &copies) ||
+      !job_settings.GetBoolean(kSettingCollate, &collate)) {
     return OnError();
+  }
 
   settings_.SetOrientation(landscape);
 
   if (!SetPrinter(printer_name))
     return OnError();
+
+  if (!SetCopiesInPrintSettings(copies))
+    return OnError();
+
+  if (!SetCollateInPrintSettings(collate))
+    return OnError();
+
+  [print_info_.get() updateFromPMPrintSettings];
 
   InitPrintSettingsFromPrintInfo(ranges);
   return OK;
@@ -130,6 +142,21 @@ bool PrintingContextMac::SetPrinter(const std::string& printer_name) {
     [print_info_.get() setPrinter:new_printer];
   }
   return true;
+}
+
+bool PrintingContextMac::SetCopiesInPrintSettings(int copies) {
+  if (copies < 1)
+    return false;
+
+  PMPrintSettings pmPrintSettings =
+      static_cast<PMPrintSettings>([print_info_.get() PMPrintSettings]);
+  return PMSetCopies(pmPrintSettings, copies, false) == noErr;
+}
+
+bool PrintingContextMac::SetCollateInPrintSettings(bool collate) {
+  PMPrintSettings pmPrintSettings =
+      static_cast<PMPrintSettings>([print_info_.get() PMPrintSettings]);
+  return PMSetCollate(pmPrintSettings, collate) == noErr;
 }
 
 void PrintingContextMac::ParsePrintInfo(NSPrintInfo* print_info) {

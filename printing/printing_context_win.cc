@@ -12,6 +12,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_win.h"
 #include "printing/printed_document.h"
 #include "skia/ext/platform_device_win.h"
@@ -214,7 +215,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
   DCHECK(!in_print_job_);
 
   bool landscape;
-  if (!GetSettingsFromDict(job_settings, &landscape, NULL))
+  if (!job_settings.GetBoolean(kSettingLandscape, &landscape))
     return OnError();
 
   settings_.SetOrientation(landscape);

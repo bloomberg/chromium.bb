@@ -5,7 +5,6 @@
 #include "printing/printing_context.h"
 
 #include "base/values.h"
-#include "printing/print_job_constants.h"
 
 namespace printing {
 
@@ -27,19 +26,6 @@ void PrintingContext::ResetSettings() {
   in_print_job_ = false;
   dialog_box_dismissed_ = false;
   abort_printing_ = false;
-}
-
-bool PrintingContext::GetSettingsFromDict(const DictionaryValue& settings,
-                                          bool* landscape,
-                                          std::string* printerName) {
-  bool ret = true;
-  if (landscape)
-    ret &= settings.GetBoolean(kSettingLandscape, landscape);
-
-  if (printerName)
-    ret &= settings.GetString(kSettingPrinterName, printerName);
-
-  return ret;
 }
 
 PrintingContext::Result PrintingContext::OnError() {

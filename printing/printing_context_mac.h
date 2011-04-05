@@ -51,6 +51,14 @@ class PrintingContextMac : public PrintingContext {
   // Returns true if the printer was set else returns false.
   bool SetPrinter(const std::string& printer_name);
 
+  // Sets |copies| in PMPrintSettings.
+  // Returns true if the number of copies is set.
+  bool SetCopiesInPrintSettings(int copies);
+
+  // Sets |collate| in PMPrintSettings.
+  // Returns true if |collate| is set.
+  bool SetCollateInPrintSettings(bool collate);
+
   // The native print info object.
   scoped_nsobject<NSPrintInfo> print_info_;
 

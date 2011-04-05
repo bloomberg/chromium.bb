@@ -6,8 +6,14 @@
 
 namespace printing {
 
+// Print job setting 'collate'.
+const char kSettingCollate[] = "collate";
+
 // Print out color: true for color, false for grayscale.
 const char kSettingColor[] = "color";
+
+// Number of copies.
+const char kSettingCopies[] = "copies";
 
 // Page orientation: true for landscape, false for portrait.
 const char kSettingLandscape[] = "landscape";
