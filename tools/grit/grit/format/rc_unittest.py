@@ -209,11 +209,17 @@ END'''.strip()
     # Check for the content added by the <include> tag.
     self.failUnless(file_contents.find('Hello Include!') != -1)
     # Check for the content that was removed by if tag.
-    self.failUnless(file_contents.find('This should not be here anymore') == -1)
+    self.failUnless(file_contents.find('should be removed') == -1)
     # Check for the content that was kept in place by if.
     self.failUnless(file_contents.find('should be kept') != -1)
     self.failUnless(file_contents.find('in the middle...') != -1)
     self.failUnless(file_contents.find('at the end...') != -1)
+    # Check for nested content that was kept
+    self.failUnless(file_contents.find('nested true should be kept') != -1)
+    self.failUnless(file_contents.find('silbing true should be kept') != -1)
+    # Check for removed "<if>" and "</if>" tags.
+    self.failUnless(file_contents.find('<if expr=') == -1)
+    self.failUnless(file_contents.find('</if>') == -1)
 
 
   def testStructureNodeOutputfile(self):
@@ -294,4 +300,3 @@ END''')
 
 if __name__ == '__main__':
   unittest.main()
-

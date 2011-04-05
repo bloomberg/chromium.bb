@@ -24,6 +24,12 @@ DIST_DEFAULT = 'chromium'
 DIST_ENV_VAR = 'CHROMIUM_BUILD'
 DIST_SUBSTR = '%DISTRIBUTION%'
 
+# Matches beginning of an "if" block with trailing spaces.
+_BEGIN_IF_BLOCK = re.compile('<if [^>]*?expr="(?P<expression>[^"]*)"[^>]*?>\s*')
+
+# Matches ending of an "if" block with preceding spaces.
+_END_IF_BLOCK = re.compile('\s*</if>')
+
 def ReadFile(input_filename):
   """Helper function that returns input_filename as a string.
 
@@ -124,11 +130,42 @@ def DoInline(input_filename, grd_node):
     expression = src_match.group('expression')
     return grd_node is None or grd_node.EvaluateCondition(expression)
 
-  def CheckConditionalElements(src_match):
+  def CheckConditionalElements(str):
     """Helper function to conditionally inline inner elements"""
-    if not IsConditionSatisfied(src_match):
-      return ''
-    return src_match.group('content')
+    while True:
+      begin_if = _BEGIN_IF_BLOCK.search(str)
+      if begin_if is None:
+        return str
+
+      condition_satisfied = IsConditionSatisfied(begin_if)
+      leading = str[0:begin_if.start()]
+      content_start = begin_if.end()
+
+      # Find matching "if" block end.
+      count = 1
+      pos = begin_if.end()
+      while True:
+        end_if = _END_IF_BLOCK.search(str, pos)
+        if end_if is None:
+          raise Exception('Unmatched <if>')
+
+        next_if = _BEGIN_IF_BLOCK.search(str, pos)
+        if next_if is None or next_if.start() >= end_if.end():
+          count = count - 1
+          if count == 0:
+            break
+          pos = end_if.end()
+        else:
+          count = count + 1
+          pos = next_if.end()
+
+      content = str[content_start:end_if.start()]
+      trailing = str[end_if.end():]
+
+      if condition_satisfied:
+        str = leading + CheckConditionalElements(content) + trailing
+      else:
+        str = leading + trailing
 
   def InlineFileContents(src_match, pattern, inlined_files=inlined_files):
     """Helper function to inline external script and css files"""
@@ -193,10 +230,7 @@ def DoInline(input_filename, grd_node):
       flat_text)
 
   # Check conditional elements, remove unsatisfied ones from the file.
-  flat_text = re.sub('<if .*?expr="(?P<expression>[^"]*)".*?>\s*' +
-                     '(?P<content>([\s\S]+?))\s*</if>',
-                     CheckConditionalElements,
-                     flat_text)
+  flat_text = CheckConditionalElements(flat_text)
 
   # TODO(glen): Make this regex not match src="" text that is not inside a tag
   flat_text = re.sub('src="(?P<filename>[^"\']*)"',
