@@ -98,7 +98,9 @@ if not prog_env.Bit('target_arm'):
        sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1']))
 
 # TODO(kcc): non-standard linking options confuse Valgrind debug info reader.
-if not prog_env.IsRunningUnderValgrind():
-  prog_env.AddNodeToTestSuite(tests,
-                              ['small_tests', 'sel_ldr_tests'],
-                              'run_dynamic_load_test')
+# See http://code.google.com/p/nativeclient/issues/detail?id=1606
+is_broken = prog_env.IsRunningUnderValgrind()
+prog_env.AddNodeToTestSuite(tests,
+                            ['small_tests', 'sel_ldr_tests'],
+                            'run_dynamic_load_test',
+                            is_broken=is_broken)

@@ -37,4 +37,8 @@ node = env.CommandSelLdrTestNacl(
     sel_ldr_flags=['-B', blob_library],
     command=[user_executable],
     stdout_golden=env.File('example_blob.stdout'))
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_blob_library_loading_test')
+# TODO(kcc): The segment gap confuses the Valgrind debug info reader.
+# See http://code.google.com/p/nativeclient/issues/detail?id=1606
+is_broken = env.IsRunningUnderValgrind()
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_blob_library_loading_test',
+                       is_broken=is_broken)
