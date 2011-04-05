@@ -8,6 +8,7 @@
 #include <map>
 
 #include "native_client/src/include/checked_cast.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
@@ -200,7 +201,7 @@ MethodInfo* MethodMap::GetMethod(uintptr_t method_id) {
 void MethodMap::AddMethod(uintptr_t method_id, MethodInfo *info) {
   if (method_map_.find(method_id) != method_map_.end()) {
     // the method already exists
-    abort();
+    NaClAbort();
   }
   method_map_[method_id] = info;
   method_map_keys_.push_back(method_id);

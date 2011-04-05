@@ -48,6 +48,7 @@ enum PosixSignals {
   SIGQUIT = 3,
   SIGILL  = 4,
   SIGTRACE= 5,
+  SIGABRT = 6,
   SIGBUS  = 7,
   SIGFPE  = 8,
   SIGKILL = 9,

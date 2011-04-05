@@ -10,6 +10,7 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -130,13 +131,13 @@ enum NaClSignalResult NaClSignalHandleAll(int signal, void *ctx) {
     SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from untrusted code: Halting "
              "at %" NACL_PRIXNACL_REG "h\n", signal, sigCtx.prog_ctr);
     NaClSignalErrorMessage(tmp);
-    _exit((-signal) & 0xFF);
+    NaClExit((-signal) & 0xFF);
   }
   else {
     SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from trusted code: Halting "
              "at %" NACL_PRIXNACL_REG "h\n", signal, sigCtx.prog_ctr);
     NaClSignalErrorMessage(tmp);
-    _exit((-signal) & 0xFF);
+    NaClExit((-signal) & 0xFF);
   }
   return NACL_SIGNAL_RETURN;
 }
@@ -153,7 +154,7 @@ enum NaClSignalResult NaClSignalHandleUntrusted(int signal, void *ctx) {
     SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from untrusted code: Halting "
              "at %" NACL_PRIXNACL_REG "h\n", signal, sigCtx.prog_ctr);
     NaClSignalErrorMessage(tmp);
-    _exit((-signal) & 0xFF);
+    NaClExit((-signal) & 0xFF);
   }
   else {
     SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from trusted code: Continuing "

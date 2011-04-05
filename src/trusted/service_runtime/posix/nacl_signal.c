@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -204,7 +205,7 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
          * number as the error code.
          */
         NaClSignalErrorMessage("Failed to handle signal.\n");
-        _exit(-sig);
+        NaClExit(-sig);
       }
     }
   }
@@ -244,7 +245,7 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
          * number as the error code.
          */
         NaClSignalErrorMessage("Failed to handle signal.\n");
-        _exit(-sig);
+        NaClExit(-sig);
       }
     }
   }

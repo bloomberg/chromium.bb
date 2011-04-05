@@ -26,6 +26,7 @@
  */
 
 #include "native_client/src/shared/gio/gio.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_log_intern.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
@@ -47,7 +48,7 @@ static struct GioFile   log_file_stream;
 static int              timestamp_enabled = 1;
 
 /* global, but explicitly not exposed in non-test header file */
-void (*gNaClLogAbortBehavior)(void) = abort;
+void (*gNaClLogAbortBehavior)(void) = NaClAbort;
 
 static FILE *NaClLogFileIoBufferFromFile(char const *log_file) {
   int   log_desc;
@@ -57,14 +58,14 @@ static FILE *NaClLogFileIoBufferFromFile(char const *log_file) {
   if (-1 == log_desc) {
     perror("NaClLogSetFile");
     fprintf(stderr, "Could not create log file\n");
-    abort();
+    NaClAbort();
   }
 
   log_iob = FDOPEN(log_desc, "a");
   if (NULL == log_iob) {
     perror("NaClLogSetFile");
     fprintf(stderr, "Could not fdopen log stream\n");
-    abort();
+    NaClAbort();
   }
   return log_iob;
 }
@@ -76,11 +77,11 @@ static struct Gio *NaClLogGioFromFileIoBuffer(FILE *log_iob) {
   if (NULL == log_gio) {
     perror("NaClLogSetFile");
     fprintf(stderr, "No memory for log buffers\n");
-    abort();
+    NaClAbort();
   }
   if (!GioFileRefCtor(log_gio, log_iob)) {
     fprintf(stderr, "NaClLog module internal error: GioFileRefCtor failed\n");
-    abort();
+    NaClAbort();
   }
   return (struct Gio *) log_gio;
 }
@@ -150,7 +151,7 @@ void NaClLogUnlock(void) {
      */
     NaClLog_mu(LOG_ERROR, "LOG_FATAL abort exit\n");
 #ifdef __COVERITY__
-    abort();  /* help coverity figure out that this is the default behavior */
+    NaClAbort();  /* help coverity figure out that this is the default */
 #else
     (*gNaClLogAbortBehavior)();
 #endif

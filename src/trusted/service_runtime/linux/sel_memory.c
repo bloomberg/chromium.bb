@@ -18,6 +18,7 @@
 
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -179,7 +180,7 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
             extra);
     if (-1 == munmap((void *) orig_addr, extra)) {
       perror("munmap (front)");
-      exit(2);
+      NaClExit(2);
     }
   }
 
@@ -193,7 +194,7 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
     if (-1 == munmap((void *) (rounded_addr + mem_sz),
          extra)) {
       perror("munmap (end)");
-      exit(3);
+      NaClExit(3);
     }
   }
   NaClLog(4,

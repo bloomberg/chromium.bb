@@ -24,6 +24,7 @@
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -777,7 +778,7 @@ int main(int  argc,
    * addr space is still valid.  otherwise we'd have to kill threads
    * before we clean up the address space.
    */
-  _exit(ret_code);
+  NaClExit(ret_code);
 
  done:
   fflush(stdout);
@@ -802,5 +803,8 @@ int main(int  argc,
 
   WINDOWS_EXCEPTION_CATCH;
 
-  _exit(ret_code);
+  NaClExit(ret_code);
+
+  /* Unreachable, but having the return prevents a compiler error. */
+  return ret_code;
 }

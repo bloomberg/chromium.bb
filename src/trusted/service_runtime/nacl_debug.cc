@@ -19,6 +19,7 @@
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/debug_stub/debug_stub.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
@@ -49,16 +50,16 @@ using gdb_rsp::Target;
 #define DBG_CATCH_ALL                                                       \
   catch(std::bad_alloc) {                                                  \
     NaClLog(LOG_FATAL, "nacl_debug(%d) : Failed to allocate.\n", __LINE__); \
-    exit(-1);                                                               \
+    NaClExit(-1);                                                          \
   }                                                                         \
   catch(std::exception e) {                                                \
     NaClLog(LOG_FATAL, "nacl_debug(%d) : Caught exception: %s.\n",          \
             __LINE__ , e.what());                                           \
-    exit(-1);                                                               \
+    NaClExit(-1);                                                          \
   }                                                                         \
   catch(...) {                                                             \
     NaClLog(LOG_FATAL, "nacl_debug(%d) : Unexpected exception.\n", __LINE__);\
-    exit(-1);                                                               \
+    NaClExit(-1);                                                           \
   }
 
 

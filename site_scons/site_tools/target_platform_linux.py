@@ -78,7 +78,7 @@ def generate(env):
       CCFLAG_INCLUDE='-include',     # Command line option to include a header
 
       # Code coverage related.
-      COVERAGE_CCFLAGS=['-ftest-coverage', '-fprofile-arcs'],
+      COVERAGE_CCFLAGS=['-ftest-coverage', '-fprofile-arcs', '-DCOVERAGE'],
       COVERAGE_LIBS='gcov',
       COVERAGE_STOP_CMD=[
           '$COVERAGE_MCOV --directory "$TARGET_ROOT" --output "$TARGET"',

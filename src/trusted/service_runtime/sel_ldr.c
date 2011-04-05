@@ -15,6 +15,7 @@
 
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
@@ -917,7 +918,7 @@ static void NaClSecureChannelShutdownRpc(
   UNREFERENCED_PARAMETER(done);
 
   NaClLog(4, "NaClSecureChannelShutdownRpc (hard_shutdown), exiting\n");
-  _exit(0);
+  NaClExit(0);
   /* Return is never reached, so no need to invoke (*done->Run)(done). */
 }
 
@@ -1274,7 +1275,7 @@ void NaClSecureServiceRpcHandler(struct NaClSimpleService           *vself,
   NaClLog(4, "NaClSecureChannelThread started\n");
   (*kNaClSimpleServiceVtbl.RpcHandler)(vself, vconn);
   NaClLog(4, "NaClSecureChannelThread: channel closed, exiting.\n");
-  _exit(0);
+  NaClExit(0);
 }
 
 struct NaClSecureServiceVtbl const kNaClSecureServiceVtbl = {

@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <time.h>
 
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -171,8 +172,8 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   user_ret = (nacl_reg_t) NaClSandboxCodeAddr(nap, (uintptr_t)user_ret);
 
   NaClSwitchToApp(natp, user_ret);
- /* NOTREACHED */
+  /* NOTREACHED */
 
   fprintf(stderr, "NORETURN NaClSwitchToApp returned!?!\n");
-  abort();
+  NaClAbort();
 }

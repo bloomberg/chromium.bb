@@ -19,6 +19,7 @@
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
@@ -109,7 +110,7 @@ bool SelLdrLauncher::LaunchFromCommandLine() {
       NaClLog(LOG_ERROR, "%s\n", argv[i]);
     }
     perror("execv");
-    _exit(EXIT_FAILURE);
+    NaClExit(EXIT_FAILURE);
   }
   CloseHandlesAfterLaunch();
   return true;

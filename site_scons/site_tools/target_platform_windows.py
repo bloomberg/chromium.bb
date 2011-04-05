@@ -342,6 +342,7 @@ def generate(env):
       PDB='${TARGET.base}.pdb',
 
       # Code coverage related.
+      COVERAGE_CCFLAGS='-DCOVERAGE',
       COVERAGE_LINKFLAGS='/PROFILE',  # Requires vc_80 or higher.
       COVERAGE_SHLINKFLAGS='$COVERAGE_LINKFLAGS',
       # Change install step for coverage to cause instrumentation.

@@ -66,41 +66,15 @@ static int VerifyPattern(void   *memory,
   return 1;
 }
 
-/*
- * If this code is interrupted or for some reason segvs, then the
- * shared memory is leaked.  In that case, use "ipcs -m" to look for
- * segments with key of 0 and bytes of 65536, and then use "ipcrm -m
- * shmid" for the corresponding shmid number to garbage collect the
- * shared memory segment.
- */
-
-static int      shm_id = -1;
-
-static void CleanUp(void) {
-  if (-1 != shm_id) {
-    (void) shmctl(shm_id, IPC_RMID, NULL);
-  }
-}
 
 /*
- * To build as a standalone, build with -DSysVShmAndMmapHasProblems=main.
+ * Verify the allocated shared memory ID.
  */
-int NaClPlatformQualifySysVShmAndMmapHasProblems(void) {
+int NaClPlatformQualifySysVShmId(int shm_id) {
   void            *shm_addr;
   void            *shm_addr2;
   void            *mmap_addr;
   struct shmid_ds shm_ds;
-
-  shm_id = shmget(IPC_PRIVATE,
-                  SYSVSHM_SIZE,
-                  IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
-  dprintf(("shmget -> %d\n", shm_id));
-
-  if (-1 == shm_id) {
-    perror("platform_qualify: sysv_shm_and_mmap: shmget");
-    return 1;
-  }
-  (void) atexit(CleanUp);
 
   shm_addr = shmat(shm_id, (const void *) NULL, 0);
   dprintf(("shmat -> %p\n", shm_addr));
@@ -225,13 +199,48 @@ int NaClPlatformQualifySysVShmAndMmapHasProblems(void) {
             (unsigned long) shm_ds.shm_nattch);
     return 18;
   }
+
+  return 0;
+ }
+
+/*
+ * If this code is interrupted or for some reason segvs, then the
+ * shared memory is leaked.  In that case, use "ipcs -m" to look for
+ * segments with key of 0 and bytes of 65536, and then use "ipcrm -m
+ * shmid" for the corresponding shmid number to garbage collect the
+ * shared memory segment.
+ */
+
+
+/*
+ * To build as a standalone, build with -DSysVShmAndMmapHasProblems=main.
+ */
+int NaClPlatformQualifySysVShmAndMmapHasProblems(void) {
+  int err_code = 0;
+  int shm_id = -1;
+
+  shm_id = shmget(IPC_PRIVATE,
+                  SYSVSHM_SIZE,
+                  IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
+  dprintf(("shmget -> %d\n", shm_id));
+
+  if (-1 == shm_id) {
+    perror("platform_qualify: sysv_shm_and_mmap: shmget");
+    return 1;
+  }
+
+  err_code = NaClPlatformQualifySysVShmId(shm_id);
+
   if (-1 == shmctl(shm_id, IPC_RMID, NULL)) {
     perror("platform_qualify: sysv_shm_and_mmap: shmctl IPC_RMID failed\n");
+
     /*
-     * atexit CleanUp will fail its IPC_RMID again....
+     * Set the err code to a release failure only if we do not already have
+     * a more interesting failure to report.
      */
-    return 19;
+    if (!err_code) err_code = 19;
   }
-  shm_id = -1;
-  return 0;
+
+  return err_code;
 }
+

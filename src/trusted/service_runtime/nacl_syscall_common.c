@@ -17,6 +17,7 @@
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability_string.h"
 
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_host_dir.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -108,7 +109,7 @@ void NaClSysCommonThreadSuicide(struct NaClAppThread  *natp) {
   NaClLog(3, " NaClThreadExit\n");
   NaClThreadExit();  /* should not return */
   NaClLog(LOG_ERROR, "INCONCEIVABLE!\n");
-  abort();
+  NaClAbort();
   /* NOTREACHED */
 }
 

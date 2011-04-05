@@ -9,6 +9,7 @@
 #include <io.h>
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/win/lock_impl.h"
 
 static const char *kMutexCreateFailed =
@@ -25,7 +26,7 @@ NaCl::LockImpl::LockImpl() {
    */
   if (NULL == mutex_) {
     _write(2, kMutexCreateFailed, sizeof kMutexCreateFailed - 1);
-    abort();
+    NaClAbort();
   }
 }
 
@@ -56,7 +57,7 @@ void NaCl::LockImpl::Lock() {
    */
   if (WAIT_OBJECT_0 != dwWaitResult) {
     _write(2, kMutexLockFailed, sizeof kMutexLockFailed - 1);
-    abort();
+    NaClAbort();
   }
 }
 

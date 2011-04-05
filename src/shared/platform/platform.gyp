@@ -64,6 +64,7 @@
         'platform_sources': [
           'linux/condition_variable.cc',
           'linux/lock.cc',
+          'linux/nacl_exit.c',
           'linux/nacl_find_addrsp.c',
           'linux/nacl_host_desc.c',
           'linux/nacl_host_dir.c',
@@ -79,6 +80,7 @@
         'platform_sources': [
           'linux/condition_variable.cc',
           'linux/lock.cc',
+          'linux/nacl_exit.c',
           'linux/nacl_find_addrsp.c',
           'linux/nacl_host_desc.c',
           'linux/nacl_secure_random.c',
@@ -95,6 +97,7 @@
         'platform_sources': [
           'win/condition_variable.cc',
           'win/lock.cc',
+          'win/nacl_exit.c',
           'win/nacl_find_addrsp.c',
           'win/nacl_host_desc.c',
           'win/nacl_host_dir.c',
