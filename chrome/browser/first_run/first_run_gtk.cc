@@ -89,7 +89,7 @@ void FirstRun::ShowFirstRunDialog(Profile* profile,
 }
 
 // static
-bool FirstRun::IsOrganic() {
+bool FirstRun::IsOrganicFirstRun() {
   // We treat all installs as organic.
   return true;
 }

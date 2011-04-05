@@ -64,9 +64,6 @@ class FirstRun {
   // Creates the quick launch shortcut to chrome for the current user. Returns
   // false if it fails. It will overwrite the shortcut if it exists.
   static bool CreateChromeQuickLaunchShortcut();
-  // Returns true if we are being run in a locale in which search experiments
-  // are allowed.
-  static bool InSearchExperimentLocale();
 #endif  // OS_WIN
   // Import bookmarks and/or browser items (depending on platform support)
   // in this process. This function is paired with FirstRun::ImportSettings().
@@ -75,7 +72,7 @@ class FirstRun {
   static int ImportNow(Profile* profile, const CommandLine& cmdline);
 
   // Automatically import history and home page (and search engine, if
-  // nonorganic).
+  // ShouldShowSearchEngineDialog is true).
   static void AutoImport(
       Profile* profile,
       bool homepage_defined,
@@ -89,11 +86,11 @@ class FirstRun {
   // Does platform specific setup. Called at the start of AutoImport.
   static void PlatformSetup();
 
-  // Returns whether the current install is "organic".
-  static bool IsOrganic();
+  // Returns whether the first run should be "organic".
+  static bool IsOrganicFirstRun();
 
   // Shows the search engine choice dialog, and any other platform dialogs.
-  // Only called in "organic" installs.
+  // Only called if IsOrganicFirstRun is true.
   static void ShowFirstRunDialog(Profile* profile,
                                  bool randomize_search_engine_experiment);
 

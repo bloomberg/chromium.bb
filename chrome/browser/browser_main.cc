@@ -779,8 +779,10 @@ MetricsService* InitializeMetrics(const CommandLine& parsed_command_line,
 // should not continue.
 Profile* CreateProfile(const MainFunctionParams& parameters,
                        const FilePath& user_data_dir) {
-  Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile(
+  Profile* profile = g_browser_process->profile_manager()->GetLastUsedProfile(
       user_data_dir);
+//  Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile(
+//      user_data_dir);
   if (profile)
     return profile;
 
@@ -1817,7 +1819,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // shutdown because otherwise we can't be sure the user has finished
   // selecting a search engine through the dialog reached from the first run
   // bubble link.
-  if (FirstRun::InSearchExperimentLocale() && record_search_engine) {
+  if (record_search_engine) {
     const TemplateURL* default_search_engine =
         profile->GetTemplateURLModel()->GetDefaultSearchProvider();
     // The default engine can be NULL if the administrator has disabled

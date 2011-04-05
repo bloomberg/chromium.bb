@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,23 @@ TEST_F(GoogleUpdateTest, LastRunTime) {
   // should give 0 days.
   EXPECT_TRUE(GoogleUpdateSettings::SetLastRunTime());
   EXPECT_EQ(0, GoogleUpdateSettings::GetLastRunTime());
+}
+
+TEST_F(GoogleUpdateTest, ShouldShowSearchEngineDialog) {
+  // Test some brand codes to ensure that future changes to this method won't
+  // go unnoticed.
+  const wchar_t* false_brand1 = L"CHFO";
+  EXPECT_FALSE(GoogleUpdateSettings::IsOrganicFirstRun(
+      false_brand1));
+  const wchar_t* false_brand2 = L"CHMA";
+  EXPECT_FALSE(GoogleUpdateSettings::IsOrganicFirstRun(
+      false_brand2));
+  const wchar_t* good_brand1 = L"EUBA";
+  EXPECT_TRUE(GoogleUpdateSettings::IsOrganicFirstRun(
+      good_brand1));
+  const wchar_t* good_brand2 = L"GGRA";
+  EXPECT_TRUE(GoogleUpdateSettings::IsOrganicFirstRun(
+      good_brand2));
 }
 
 #endif  // defined(OS_WIN)

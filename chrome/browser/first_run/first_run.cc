@@ -264,11 +264,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
       &import_bookmarks_path);
 
 #if defined(OS_WIN)
-  std::wstring brand;
-  GoogleUpdateSettings::GetBrand(&brand);
-  // This should generally be true, as skip_first_run_ui is a setting used for
-  // non-organic builds.
-  if (!GoogleUpdateSettings::IsOrganic(brand)) {
+  if (!IsOrganicFirstRun()) {
     // If search engines aren't explicitly imported, don't import.
     if (!(out_prefs->do_import_items & importer::SEARCH_ENGINES)) {
       out_prefs->dont_import_items |= importer::SEARCH_ENGINES;
@@ -536,17 +532,17 @@ void FirstRun::AutoImport(
       items = items | importer::HISTORY;
     // Home page is imported in organic builds only unless turned off or
     // defined in master_preferences.
-    if (IsOrganic()) {
+    if (IsOrganicFirstRun()) {
       if (!(dont_import_items & importer::HOME_PAGE) && !homepage_defined)
         items = items | importer::HOME_PAGE;
     } else {
       if (import_items & importer::HOME_PAGE)
         items = items | importer::HOME_PAGE;
     }
-    // Search engines are only imported in organic builds unless overridden
+    // Search engines are only imported in certain builds unless overridden
     // in master_preferences. Search engines are not imported automatically
     // if the user already has a user preferences directory.
-    if (IsOrganic()) {
+    if (IsOrganicFirstRun()) {
       if (!(dont_import_items & importer::SEARCH_ENGINES) &&
           !local_state_file_exists) {
         items = items | importer::SEARCH_ENGINES;
@@ -564,9 +560,9 @@ void FirstRun::AutoImport(
 
   UserMetrics::RecordAction(UserMetricsAction("FirstRunDef_Accept"));
 
-  // Launch the search engine dialog only if build is organic, and user has not
-  // already set preferences.
-  if (IsOrganic() && !local_state_file_exists) {
+  // Launch the search engine dialog only for certain builds, and only if the
+  // user has not already set preferences.
+  if (IsOrganicFirstRun() && !local_state_file_exists) {
     // The home page string may be set in the preferences, but the user should
     // initially use Chrome with the NTP as home page in organic builds.
     profile->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage, true);

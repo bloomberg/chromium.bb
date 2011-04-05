@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -370,8 +370,15 @@ bool GoogleUpdateSettings::IsOrganic(const std::wstring& brand) {
   const wchar_t** found = std::find(&kBrands[0], end, brand);
   if (found != end)
     return true;
-  if (StartsWith(brand, L"EUB", true) || StartsWith(brand, L"EUC", true) ||
-      StartsWith(brand, L"GGR", true))
+  return (StartsWith(brand, L"EUB", true) || StartsWith(brand, L"EUC", true) ||
+          StartsWith(brand, L"GGR", true));
+}
+
+bool GoogleUpdateSettings::IsOrganicFirstRun(const std::wstring& brand) {
+  // Used for testing, to force search engine selector to appear.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kOrganicInstall))
     return true;
-  return false;
+
+  return (StartsWith(brand, L"GG", true) || StartsWith(brand, L"EU", true));
 }

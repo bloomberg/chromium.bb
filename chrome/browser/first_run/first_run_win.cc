@@ -411,10 +411,10 @@ void FirstRun::PlatformSetup() {
 }
 
 // static
-bool FirstRun::IsOrganic() {
+bool FirstRun::IsOrganicFirstRun() {
   std::wstring brand;
   GoogleUpdateSettings::GetBrand(&brand);
-  return GoogleUpdateSettings::IsOrganic(brand);
+  return GoogleUpdateSettings::IsOrganicFirstRun(brand);
 }
 
 // static
@@ -540,19 +540,6 @@ int FirstRun::ImportFromBrowser(Profile* profile,
       true);
   importer_observer.RunLoop();
   return importer_observer.import_result();
-}
-
-// static
-bool FirstRun::InSearchExperimentLocale() {
-  static std::set<std::string> allowed_locales;
-  if (allowed_locales.empty()) {
-    // List of locales in which search experiment can be run.
-    allowed_locales.insert("en-GB");
-    allowed_locales.insert("en-US");
-  }
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
-  std::set<std::string>::iterator locale = allowed_locales.find(app_locale);
-  return locale != allowed_locales.end();
 }
 
 //////////////////////////////////////////////////////////////////////////

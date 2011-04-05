@@ -103,7 +103,7 @@ bool FirstRun::ImportBookmarks(const FilePath& import_bookmarks_path) {
 }
 
 // static
-bool FirstRun::IsOrganic() {
+bool FirstRun::IsOrganicFirstRun() {
   // We treat all installs as organic.
   return true;
 }
