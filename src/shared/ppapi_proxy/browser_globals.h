@@ -1,12 +1,13 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_GLOBALS_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_GLOBALS_H_
 
-#include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
+#include "ppapi/c/dev/ppb_file_system_dev.h"
+#include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
@@ -71,6 +72,7 @@ const PPB_Context3D_Dev* PPBContext3DInterface();
 const PPB_Context3DTrusted_Dev* PPBContext3DTrustedInterface();
 const PPB_Core* PPBCoreInterface();  // shared
 const PPB_FileIO_Dev* PPBFileIOInterface();
+const PPB_FileSystem_Dev* PPBFileSystemInterface();
 const PPB_Graphics2D* PPBGraphics2DInterface();
 const PPB_ImageData* PPBImageDataInterface();
 const PPB_ImageDataTrusted* PPBImageDataTrustedInterface();

@@ -539,6 +539,68 @@ NaClSrpcError PpbFileIODevRpcClient::PPB_FileIO_Dev_Read(
   return retval;
 }
 
+NaClSrpcError PpbFileSystemDevRpcClient::PPB_FileSystem_Dev_Create(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t file_system_type,
+    PP_Resource* resource)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileSystem_Dev_Create:ii:i",
+      instance,
+      file_system_type,
+      resource
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileSystemDevRpcClient::PPB_FileSystem_Dev_IsFileSystem(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileSystem_Dev_IsFileSystem:i:i",
+      resource,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileSystemDevRpcClient::PPB_FileSystem_Dev_Open(
+    NaClSrpcChannel* channel,
+    PP_Resource file_system,
+    int64_t expected_size,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileSystem_Dev_Open:ili:i",
+      file_system,
+      expected_size,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileSystemDevRpcClient::PPB_FileSystem_Dev_GetType(
+    NaClSrpcChannel* channel,
+    PP_Resource file_system,
+    int32_t* type)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileSystem_Dev_GetType:i:i",
+      file_system,
+      type
+  );
+  return retval;
+}
+
 NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance,

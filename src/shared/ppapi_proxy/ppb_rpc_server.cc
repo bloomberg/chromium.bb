@@ -514,6 +514,65 @@ static void PPB_FileIO_Dev_ReadDispatcher(
   );
 }
 
+static void PPB_FileSystem_Dev_CreateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileSystemDevRpcServer::PPB_FileSystem_Dev_Create(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileSystem_Dev_IsFileSystemDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileSystemDevRpcServer::PPB_FileSystem_Dev_IsFileSystem(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileSystem_Dev_OpenDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileSystemDevRpcServer::PPB_FileSystem_Dev_Open(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.lval,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileSystem_Dev_GetTypeDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileSystemDevRpcServer::PPB_FileSystem_Dev_GetType(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
 static void PPB_Graphics2D_CreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -1263,6 +1322,10 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_FileIO_Dev_IsFileIO:i:i", PPB_FileIO_Dev_IsFileIODispatcher },
   { "PPB_FileIO_Dev_Open:iiii:i", PPB_FileIO_Dev_OpenDispatcher },
   { "PPB_FileIO_Dev_Read:ilii:Ci", PPB_FileIO_Dev_ReadDispatcher },
+  { "PPB_FileSystem_Dev_Create:ii:i", PPB_FileSystem_Dev_CreateDispatcher },
+  { "PPB_FileSystem_Dev_IsFileSystem:i:i", PPB_FileSystem_Dev_IsFileSystemDispatcher },
+  { "PPB_FileSystem_Dev_Open:ili:i", PPB_FileSystem_Dev_OpenDispatcher },
+  { "PPB_FileSystem_Dev_GetType:i:i", PPB_FileSystem_Dev_GetTypeDispatcher },
   { "PPB_Graphics2D_Create:iCi:i", PPB_Graphics2D_CreateDispatcher },
   { "PPB_Graphics2D_IsGraphics2D:i:i", PPB_Graphics2D_IsGraphics2DDispatcher },
   { "PPB_Graphics2D_Describe:i:Cii", PPB_Graphics2D_DescribeDispatcher },

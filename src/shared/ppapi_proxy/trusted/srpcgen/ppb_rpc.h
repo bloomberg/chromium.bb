@@ -275,6 +275,38 @@ class PpbFileIODevRpcServer {
   void operator=(const PpbFileIODevRpcServer);
 };  // class PpbFileIODevRpcServer
 
+class PpbFileSystemDevRpcServer {
+ public:
+  static void PPB_FileSystem_Dev_Create(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t file_system_type,
+      PP_Resource* resource);
+  static void PPB_FileSystem_Dev_IsFileSystem(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t* success);
+  static void PPB_FileSystem_Dev_Open(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource file_system,
+      int64_t expected_size,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static void PPB_FileSystem_Dev_GetType(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource file_system,
+      int32_t* type);
+
+ private:
+  PpbFileSystemDevRpcServer();
+  PpbFileSystemDevRpcServer(const PpbFileSystemDevRpcServer&);
+  void operator=(const PpbFileSystemDevRpcServer);
+};  // class PpbFileSystemDevRpcServer
+
 class PpbGraphics2DRpcServer {
  public:
   static void PPB_Graphics2D_Create(

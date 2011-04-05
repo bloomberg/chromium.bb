@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2011 Google Inc.  All rights reserved. -->
+  <head>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+    <META HTTP-EQUIV="Expires" CONTENT="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <script type="application/x-javascript">
+      //<![CDATA[
+function setupTests(tester, plugin) {
+    tester.addTest('PPB_FileSystem_Dev::Create', function() {
+      assert(plugin.testCreate());
+    });
+
+    tester.addTest('PPB_FileSystem_Dev::IsFileSystem', function() {
+      assert(plugin.testIsFileSystem());
+    });
+
+    // TODO(ncbray): Replace with async test harness.
+    tester.addTest('PPB_FileSystem_Dev::Open', function() {
+      assert(plugin.testOpen());
+      var gotCallbackCount = 0;
+
+      // Deliberately global - this is called from w/in the nexe.
+      OpenCallback = function() {
+        ++gotCallbackCount;
+        tester.log('OpenCallback callback!');
+      }
+
+      function wait() {
+        // We expect OpenCallback to be called 4 times w/in the nexe.
+        if (gotCallbackCount != 4) {
+          halt_and_callback(1, wait);
+        } else {
+          tester.log('Done waiting.');
+        }
+      }
+
+      wait();
+    });
+
+    tester.addTest('PPB_FileSytem_Dev::GetType', function() {
+      assert(plugin.testGetType());
+    });
+} // STOP!!!
+      //]]>
+    </script>
+    <title>PPAPI PPB_FileSytem_Dev Test</title>
+  </head>
+  <body>
+    <h1>PPAPI PPB_FileSystem_Dev Test</h1>
+
+    <embed type="application/x-nacl" id="test_nexe"
+           name="nacl_module"
+           nacl="ppapi_file_system.nmf"
+           width="0" height="0" />
+
+    <script type="text/javascript">
+      //<![CDATA[
+      var tester = new Tester();
+      setupTests(tester, $('test_nexe'));
+      tester.waitFor($('test_nexe'));
+      tester.run();
+      //]]>
+    </script>
+  </body>
+</html>

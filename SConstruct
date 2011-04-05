@@ -1698,6 +1698,7 @@ base_env.Append(
     # TODO: This file has an early out in case we are building for ARM
     #       but provides nchelper lib. Needs to be cleaned up
     'src/trusted/validator_x86/build.scons',
+    'tests/ppapi_file_system/build.scons',
     'tests/ppapi_geturl/build.scons',
     'tests/python_version/build.scons',
     'tests/selenium_self_test/build.scons',
@@ -2231,6 +2232,7 @@ nacl_env.Append(
     'tests/ppapi_core/nacl.scons',
     'tests/ppapi_example_2d/nacl.scons',
     'tests/ppapi_example_audio/nacl.scons',
+    'tests/ppapi_file_system/nacl.scons',
     'tests/ppapi_geturl/nacl.scons',
     'tests/ppapi_gles_book/nacl.scons',
     'tests/ppapi_proxy/nacl.scons',

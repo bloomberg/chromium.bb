@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
+
 #include <stdio.h>
 #include <map>
+
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
@@ -208,5 +210,11 @@ const PPB_FileIO_Dev* PPBFileIOInterface() {
   return ppb;
 }
 
-}  // namespace ppapi_proxy
+const PPB_FileSystem_Dev* PPBFileSystemInterface() {
+  static const PPB_FileSystem_Dev* ppb =
+      reinterpret_cast<const PPB_FileSystem_Dev*>(
+        GetBrowserInterfaceSafe(PPB_FILESYSTEM_DEV_INTERFACE));
+  return ppb;
+}
 
+}  // namespace ppapi_proxy

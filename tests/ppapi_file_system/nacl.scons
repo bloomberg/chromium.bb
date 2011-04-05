@@ -1,0 +1,57 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+# This is a C PPAPI
+#
+# ppapi_file_system.html - test driver that loads the nexe and scripts it
+# ppapi_file_system.nmf - manifest file for serving platform specific nexe binary.
+#
+# ppapi_file_system.cc - implementation of PPP interface and PPP_Instance
+# scriptable_object.c - implementation of the scripting interface
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+nexe = 'ppapi_file_system_%s.nexe' % env.get('TARGET_FULLARCH')
+
+env.Alias('ppapi_file_system.nexe', ['$STAGING_DIR/%s' % nexe])
+
+ppapi_file_system_nexe = env.ComponentProgram(nexe,
+                                       ['ppapi_file_system.cc',
+                                        'scriptable_object.c'],
+                                       EXTRA_LIBS=['ppruntime',
+                                                   'imc',
+                                                   'platform',
+                                                   'gio',
+                                                   'pthread',
+                                                   'm',
+                                                   'srpc'])
+
+# Note that the html is required to run this program.
+dest_copy = env.Replicate('$STAGING_DIR',
+                          ['ppapi_file_system.html',
+                           'ppapi_file_system.nmf',
+                           env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
+                                    'browserdata/nacltest.js')]
+                          )
+env.Depends(nexe, dest_copy)
+
+node = env.PPAPIBrowserTester('ppapi_file_system_browser_test.out',
+                              url='ppapi_file_system.html',
+                              files=[ppapi_file_system_nexe,
+                                     env.File('ppapi_file_system.nmf'),
+                                     env.File('ppapi_file_system.html')])
+
+# Disabled for ARM because Chrome binaries for ARM are not available.
+# TODO(ncbray): Enable this on Windows.
+tester_is_broken = \
+    (env.Bit('target_arm') or
+     (env.Bit('host_windows') and
+      not env.Bit('disable_dynamic_plugin_loading')))
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_file_system_browser_test',
+                       is_broken=tester_is_broken)
