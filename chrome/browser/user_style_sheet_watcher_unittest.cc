@@ -25,16 +25,19 @@ TEST(UserStyleSheetWatcherTest, StyleLoad) {
   ASSERT_TRUE(file_util::WriteFile(style_sheet_file,
               css_file_contents.data(), css_file_contents.length()));
 
-  scoped_refptr<UserStyleSheetWatcher> style_sheet_watcher(
-      new UserStyleSheetWatcher(dir.path()));
-
   MessageLoop loop(MessageLoop::TYPE_UI);
   base::Thread io_thread("UserStyleSheetWatcherTestIOThread");
   base::Thread::Options options(MessageLoop::TYPE_IO, 0);
-  io_thread.StartWithOptions(options);
+  ASSERT_TRUE(io_thread.StartWithOptions(options));
   BrowserThread browser_ui_thread(BrowserThread::UI, &loop);
   BrowserThread browser_file_thread(BrowserThread::FILE,
                                     io_thread.message_loop());
+
+  // It is important that the creation of |style_sheet_watcher| occur after the
+  // creation of |browser_ui_thread| because UserStyleSheetWatchers are
+  // restricted to being deleted only on UI browser threads.
+  scoped_refptr<UserStyleSheetWatcher> style_sheet_watcher(
+      new UserStyleSheetWatcher(dir.path()));
   style_sheet_watcher->Init();
 
   io_thread.Stop();

@@ -474,7 +474,7 @@ void FilePathWatcherImpl::CancelOnMessageLoopThread() {
     CloseFileDescriptor(&kqueue_);
     std::for_each(events_.begin(), events_.end(), ReleaseEvent);
     events_.clear();
-    io_message_loop_.release();
+    io_message_loop_ = NULL;
     MessageLoop::current()->RemoveDestructionObserver(this);
     delegate_ = NULL;
   }
