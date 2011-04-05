@@ -3324,8 +3324,6 @@
         'browser/webdata/autofill_entry.h',
         'browser/webdata/autofill_table.cc',
         'browser/webdata/autofill_table.h',
-        'browser/webdata/autofill_util.cc',
-        'browser/webdata/autofill_util.h',
         'browser/webdata/keyword_table.cc',
         'browser/webdata/keyword_table.h',
         'browser/webdata/logins_table.cc',

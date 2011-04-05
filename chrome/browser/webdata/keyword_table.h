@@ -81,6 +81,13 @@ class KeywordTable : public WebDatabaseTable {
   bool SetBuitinKeywordVersion(int version);
   int GetBuitinKeywordVersion();
 
+  // Table migration functions.
+  bool MigrateToVersion21AutoGenerateKeywordColumn();
+  bool MigrateToVersion25AddLogoIDColumn();
+  bool MigrateToVersion26AddCreatedByPolicyColumn();
+  bool MigrateToVersion28SupportsInstantColumn();
+  bool MigrateToVersion29InstantUrlToSupportsInstant();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(KeywordTable);
 };

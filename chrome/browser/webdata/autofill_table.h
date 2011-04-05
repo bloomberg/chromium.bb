@@ -259,6 +259,18 @@ class AutofillTable : public WebDatabaseTable {
   // Clear all profiles.
   bool ClearAutofillProfiles();
 
+  // Table migration functions.
+  bool MigrateToVersion23AddCardNumberEncryptedColumn();
+  bool MigrateToVersion24CleanupOversizedStringFields();
+  bool MigrateToVersion27UpdateLegacyCreditCards();
+  bool MigrateToVersion30AddDateModifed();
+  bool MigrateToVersion31AddGUIDToCreditCardsAndProfiles();
+  bool MigrateToVersion32UpdateProfilesAndCreditCards();
+  bool MigrateToVersion33ProfilesBasedOnFirstName();
+  bool MigrateToVersion34ProfilesBasedOnCountryCode();
+  bool MigrateToVersion35GreatBritainCountryCodes();
+  bool MigrateToVersion36MergeAndCullOlderProfiles();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_AddChanges);

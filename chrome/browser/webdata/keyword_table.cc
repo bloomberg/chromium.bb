@@ -226,3 +226,67 @@ int KeywordTable::GetBuitinKeywordVersion() {
   meta_table_->GetValue(kBuiltinKeywordVersion, &version);
   return version;
 }
+
+bool KeywordTable::MigrateToVersion21AutoGenerateKeywordColumn() {
+  return db_->Execute("ALTER TABLE keywords ADD COLUMN autogenerate_keyword "
+                      "INTEGER DEFAULT 0");
+}
+
+bool KeywordTable::MigrateToVersion25AddLogoIDColumn() {
+  return db_->Execute(
+      "ALTER TABLE keywords ADD COLUMN logo_id INTEGER DEFAULT 0");
+}
+
+bool KeywordTable::MigrateToVersion26AddCreatedByPolicyColumn() {
+  return db_->Execute("ALTER TABLE keywords ADD COLUMN created_by_policy "
+                      "INTEGER DEFAULT 0");
+}
+
+bool KeywordTable::MigrateToVersion28SupportsInstantColumn() {
+  return db_->Execute("ALTER TABLE keywords ADD COLUMN supports_instant "
+                      "INTEGER DEFAULT 0");
+}
+
+bool KeywordTable::MigrateToVersion29InstantUrlToSupportsInstant() {
+  if (!db_->Execute("ALTER TABLE keywords ADD COLUMN instant_url VARCHAR"))
+    return false;
+
+  if (!db_->Execute("CREATE TABLE keywords_temp ("
+                    "id INTEGER PRIMARY KEY,"
+                    "short_name VARCHAR NOT NULL,"
+                    "keyword VARCHAR NOT NULL,"
+                    "favicon_url VARCHAR NOT NULL,"
+                    "url VARCHAR NOT NULL,"
+                    "show_in_default_list INTEGER,"
+                    "safe_for_autoreplace INTEGER,"
+                    "originating_url VARCHAR,"
+                    "date_created INTEGER DEFAULT 0,"
+                    "usage_count INTEGER DEFAULT 0,"
+                    "input_encodings VARCHAR,"
+                    "suggest_url VARCHAR,"
+                    "prepopulate_id INTEGER DEFAULT 0,"
+                    "autogenerate_keyword INTEGER DEFAULT 0,"
+                    "logo_id INTEGER DEFAULT 0,"
+                    "created_by_policy INTEGER DEFAULT 0,"
+                    "instant_url VARCHAR)")) {
+    return false;
+  }
+
+  if (!db_->Execute(
+      "INSERT INTO keywords_temp "
+      "SELECT id, short_name, keyword, favicon_url, url, "
+      "show_in_default_list, safe_for_autoreplace, originating_url, "
+      "date_created, usage_count, input_encodings, suggest_url, "
+      "prepopulate_id, autogenerate_keyword, logo_id, created_by_policy, "
+      "instant_url FROM keywords")) {
+    return false;
+  }
+
+  if (!db_->Execute("DROP TABLE keywords"))
+    return false;
+
+  if (!db_->Execute("ALTER TABLE keywords_temp RENAME TO keywords"))
+    return false;
+
+  return true;
+}
