@@ -7,6 +7,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
+#include "base/metrics/histogram.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 #include "grit/generated_resources.h"
@@ -23,6 +24,20 @@ const NSTimeInterval kTimeDeltaFuzzFactor = 1.0;
 
 // Duration of the window fade out animation.
 const NSTimeInterval kWindowFadeAnimationDuration = 0.2;
+
+// For metrics recording only: How long the user must hold the keys to
+// differentitate kDoubleTap from kTapHold.
+const NSTimeInterval kDoubleTapTimeDelta = 0.32;
+
+// Functions ///////////////////////////////////////////////////////////////////
+
+namespace confirm_quit {
+
+void RecordHistogram(ConfirmQuitMetric sample) {
+  HISTOGRAM_ENUMERATION("ConfirmToQuit", sample, kSampleCount);
+}
+
+}  // namespace confirm_quit
 
 // Custom Content View /////////////////////////////////////////////////////////
 
@@ -217,6 +232,12 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
     NSEvent* nextEvent = [self pumpEventQueueForKeyUp:app
                                             untilDate:[NSDate distantFuture]];
     [app discardEventsMatchingMask:NSAnyEventMask beforeEvent:nextEvent];
+
+    // Based on how long the user held the keys, record the metric.
+    if ([[NSDate date] timeIntervalSinceDate:timeNow] < kDoubleTapTimeDelta)
+      confirm_quit::RecordHistogram(confirm_quit::kDoubleTap);
+    else
+      confirm_quit::RecordHistogram(confirm_quit::kTapHold);
     return NSTerminateNow;
   } else {
     [lastQuitAttempt release];  // Harmless if already nil.
@@ -263,6 +284,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
   if (willQuit) {
     // The user held down the combination long enough that quitting should
     // happen.
+    confirm_quit::RecordHistogram(confirm_quit::kHoldDuration);
     return NSTerminateNow;
   } else {
     // Slowly fade the confirm window out in case the user doesn't

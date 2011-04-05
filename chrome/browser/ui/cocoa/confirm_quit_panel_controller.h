@@ -12,6 +12,26 @@
 
 @class ConfirmQuitFrameView;
 
+namespace confirm_quit {
+
+enum ConfirmQuitMetric {
+  // The user quit without having the feature enabled.
+  kNoConfirm = 0,
+  // The user held Cmd+Q for the entire duration.
+  kHoldDuration,
+  // The user hit Cmd+Q twice for the accelerated path.
+  kDoubleTap,
+  // The user tapped Cmd+Q once and then held it.
+  kTapHold,
+
+  kSampleCount
+};
+
+// Records the histogram value for the above metric.
+void RecordHistogram(ConfirmQuitMetric sample);
+
+}  // namespace confirm_quit
+
 // The ConfirmQuitPanelController manages the black HUD window that tells users
 // to "Hold Cmd+Q to Quit".
 @interface ConfirmQuitPanelController : NSWindowController<NSWindowDelegate> {

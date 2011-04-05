@@ -277,8 +277,10 @@ void RecordLastRunAppBundlePath() {
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)app {
   // Check if the preference is turned on.
   const PrefService* prefs = [self defaultProfile]->GetPrefs();
-  if (!prefs->GetBoolean(prefs::kConfirmToQuitEnabled))
+  if (!prefs->GetBoolean(prefs::kConfirmToQuitEnabled)) {
+    confirm_quit::RecordHistogram(confirm_quit::kNoConfirm);
     return NSTerminateNow;
+  }
 
   // If the application is going to terminate as the result of a Cmd+Q
   // invocation, use the special sauce to prevent accidental quitting.
