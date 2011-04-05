@@ -259,7 +259,10 @@ const char kLearnMoreReportingURL[] =
     "http://www.google.com/support/chrome/bin/answer.py?answer=96817";
 
 const char kOutdatedPluginLearnMoreURL[] =
-    "http://www.google.com/support/chrome/bin/answer.py?answer=1181003";
+    "https://www.google.com/support/chrome/bin/answer.py?answer=1181003";
+
+const char kBlockedPluginLearnMoreURL[] =
+    "https://www.google.com/support/chrome/bin/answer.py?answer=1247383";
 
 void RegisterChromeSchemes() {
   // Don't need "chrome-internal" which was used in old versions of Chrome for

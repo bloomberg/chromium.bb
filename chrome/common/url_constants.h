@@ -230,8 +230,11 @@ extern const char kChromiumProjectURL[];
 // first run dialog.
 extern const char kLearnMoreReportingURL[];
 
-// The URL for the "Learn more" page for the blocked/outdated plugin infobar.
+// The URL for the "Learn more" page for the outdated plugin infobar.
 extern const char kOutdatedPluginLearnMoreURL[];
+
+// The URL for the "Learn more" page for the blocked plugin infobar.
+extern const char kBlockedPluginLearnMoreURL[];
 
 // Call near the beginning of startup to register Chrome's internal URLs that
 // should be parsed as "standard" with the googleurl library.
