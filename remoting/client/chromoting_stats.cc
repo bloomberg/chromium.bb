@@ -25,4 +25,7 @@ ChromotingStats::ChromotingStats()
       video_paint_ms_(kLatencyWindow) {
 }
 
+ChromotingStats::~ChromotingStats() {
+}
+
 }  // namespace remoting

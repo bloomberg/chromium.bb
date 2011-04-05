@@ -16,6 +16,7 @@ namespace remoting {
 class ChromotingStats {
  public:
   ChromotingStats();
+  virtual ~ChromotingStats();
 
   RateCounter* video_bandwidth() { return &video_bandwidth_; }
   RunningAverage* video_capture_ms() { return &video_capture_ms_; }
