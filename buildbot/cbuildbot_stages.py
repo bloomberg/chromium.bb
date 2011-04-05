@@ -319,10 +319,14 @@ class BuildTargetStage(BuilderStage):
     BuilderStage.new_binhost = self._GetPortageEnvVar(_FULL_BINHOST)
     emptytree = (BuilderStage.old_binhost and
                  BuilderStage.old_binhost != BuilderStage.new_binhost)
+    env=[]
+    if self._build_config['useflags']:
+      env.append('USE="%s"' % ' '.join(self._build_config['useflags']))
 
     commands.Build(
         self._build_root, emptytree, usepkg=self._build_config['usepkg'],
-        build_autotest=(self._build_config['vm_tests'] and self._options.tests))
+        build_autotest=(self._build_config['vm_tests'] and self._options.tests),
+        extra_env=env)
 
     # TODO(sosa):  Do this optimization in a better way.
     if self._build_type == 'full':
