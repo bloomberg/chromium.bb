@@ -4,78 +4,36 @@
     <title>SRPC Simple Plug-in</title>
     <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
     <META HTTP-EQUIV="Expires" CONTENT="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <script type="application/x-javascript">
+      //<![CDATA[
+
+function testMethods(tester, server) {
+  tester.addTest('forty_two', function() {
+    assertEqual(42, server.fortytwo());
+  })
+  tester.addTest('hello_world', function() {
+    assertEqual('hello, world.', server.helloworld());
+  })
+}
+
+      //]]>
+    </script>
   </head>
-  <body onload="nacllib.waitForModulesAndRunTests();"
-        onunload="nacllib.cleanUp();" >
-<script type="text/javascript">
-//<![CDATA[
-function setStatus(message) {
-    var status = document.getElementById("status");
-    status.firstChild.nodeValue = message;
-}
+  <body>
+    <h1>Native Client SRPC Simple Plug-in</h1>
 
-function fortytwo() {
-  var result = "";
-  try {
-    result = document.getElementById("pluginobj").fortytwo();
-  } catch(e) {
-    result = "ERROR: " + e;
-  }
-  setStatus(result);
-}
+    <embed type="application/x-nacl" id="nacl_server"
+           name="nacl_module" width="0" height="0" src="srpc_hw.nexe" />
 
-function helloworld() {
-  var result = "";
-  try {
-    result = document.getElementById("pluginobj").helloworld();
-  } catch(e) {
-    result = "ERROR: " + e;
-  }
-  setStatus(result);
-}
-//]]>
-</script>
-
-<h1>Native Client SRPC Simple Plug-in</h1>
-<p>
-  <button onclick="fortytwo()">Call fortytwo()</button>
-  <button onclick="helloworld()">Call helloworld()</button>
-
-  <embed name="nacl_module"
-         id="pluginobj"
-         width=0 height=0
-         src="srpc_hw.nexe"
-         type="application/x-nacl" />
-</p>
-
-<p>If the plug-in is working correctly, a click on the "Call fortytwo" button
-  should open a popup dialog containing <b>42</b> as value.</p>
-
-<p> Clicking on the "Call helloworld" button
-  should open a popup dialog containing <b>hello, world</b> as value.</p>
-
-<h2>Status</h2>
-<div id=status>NO-STATUS</div>
-
-<script type="text/javascript" src="nacl_js_lib.js"></script>
-<script type="text/javascript">
-//<![CDATA[
-var nacllib = new NaclLib("nacl_module", "status", 500);
-
-nacllib.test = function() {
-  var plugin = document.getElementById("pluginobj");
-  if ('42' != plugin.fortytwo()) {
-    return "expected 42";
-  }
-
-  if ("hello, world." != plugin.helloworld()) {
-    return "expected 'hello, world.'";
-  }
-
-  return "";
-};
-//]]>
-</script>
-
+    <script type="text/javascript">
+      //<![CDATA[
+      var tester = new Tester();
+      var server = $("nacl_server");
+      testMethods(tester, server);
+      tester.waitFor(server);
+      tester.run();
+      //]]>
+    </script>
   </body>
 </html>

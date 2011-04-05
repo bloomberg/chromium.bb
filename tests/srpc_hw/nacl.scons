@@ -1,52 +1,49 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
-nexe = env.ComponentProgram('srpc_hw.nexe', 'srpc_hw.c',
-                            EXTRA_LIBS=['srpc', 'imc','pthread'])
+srpc_hw_nexe = env.ComponentProgram('srpc_hw.nexe',
+                                    'srpc_hw.c',
+                                    EXTRA_LIBS=['srpc', 'imc','pthread'])
 
-# Note that the html is required to run this program.
-# In Chrome, we can share the nexe between the NPAPI (built-in) and
-# PPAPI (loaded with --register-pepper-plugins) versions of NaCl, but the html
-# needs to be different to specify different plugin content types.
 nacl_js_lib = env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')
 env.Publish('srpc_hw.nexe', 'run', ['srpc_hw.html', nacl_js_lib])
 env.Publish('srpc_hw.nexe', 'run', ['srpc_hw_fd.html', nacl_js_lib])
-env.Publish('srpc_hw.nexe', 'run', ['srpc_hw_ppapi.html', nacl_js_lib])
 
-env.AddPrebuiltBinaryToRepository(nexe)
+env.AddPrebuiltBinaryToRepository(srpc_hw_nexe)
 
-
-# TODO(dpolukhin): enable for x86-64 ASAP.
-is_broken = False
-if env.Bit('target_x86_64'):
-  is_broken = True
-
-node = env.BrowserTester(
-     'srpc_hw_browser_test.out',
-     url='srpc_hw.html',
-     files=[nexe,
-            env.File('srpc_hw.html'),
-            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-            ],
-     )
+node = env.SelUniversalTest(
+    'srpc_hw_test.out',
+    sel_universal_flags=['--command_file', env.File('srpc_hw_test.stdin')],
+    command=[srpc_hw_nexe],
+    stdout_golden=env.File('srpc_hw_test.stdout'),
+    )
 env.AddNodeToTestSuite(node,
-                       ['browser_tests'],
-                       'run_srpc_hw_browser_test',
-                       is_broken=is_broken)
+                       ['small_tests'],
+                       'run_srpc_hw_test')
 
-node = env.BrowserTester(
-     'srpc_hw_ppapi_browser_test.out',
-     url='srpc_hw_ppapi.html',
-     files=[nexe,
-            env.File('srpc_hw_ppapi.html'),
-            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-            ],
-     )
+# chrome_browser_tests
+
+node = env.PPAPIBrowserTester(
+    'srpc_hw_browser_test.out',
+    url='srpc_hw.html',
+    files=[srpc_hw_nexe, env.File('srpc_hw.html')])
 
 env.AddNodeToTestSuite(node,
-                       ['pepper_browser_tests'],
-                       'run_srpc_hw_ppapi_browser_test')
+                       ['chrome_browser_tests'],
+                       'run_srpc_hw_chrome_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
+
+node = env.PPAPIBrowserTester(
+    'srpc_hw_fd_browser_test.out',
+    url='srpc_hw_fd.html',
+    files=[srpc_hw_nexe, env.File('srpc_hw_fd.html')])
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_srpc_hw_fd_chrome_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
+

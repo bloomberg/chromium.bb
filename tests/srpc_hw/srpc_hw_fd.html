@@ -4,89 +4,60 @@
     <title>SRPC Simple Plug-in</title>
     <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
     <META HTTP-EQUIV="Expires" CONTENT="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <script type="application/x-javascript">
+      //<![CDATA[
+
+function loadAndTestMethods(tester, server) {
+  tester.addTest('load_and_run_methods', function() {
+    // Variables to hold the response.
+    var responded = false;
+    var nexe_file_descriptor_object = undefined;
+
+    var Callback = function() {
+      this.onload = function(fd) {
+        nexe_file_descriptor_object = fd;
+        responded = true;
+      },
+      this.onfail = function(message) {
+      }
+    };
+
+    // Make the request.
+    server.__urlAsNaClDesc('srpc_hw.nexe', new Callback());
+
+    function wait() {
+      if (!responded) {
+        // Periodically poll until the results are ready.
+        halt_and_callback(5, wait);
+      } else {
+        // Validate the results.
+        server.__launchExecutableFromFd(nexe_file_descriptor_object);
+        assertEqual(42, server.fortytwo());
+        assertEqual('hello, world.', server.helloworld());
+      }
+    }
+    wait();
+  });
+}
+
+      //]]>
+    </script>
   </head>
   <body>
-<script type="text/javascript">
-//<![CDATA[
-function fortytwo() {
-  var result = "";
-  try {
-    result = document.getElementById('pluginobj').fortytwo();
-  } catch(e) {
-    result = "ERROR: " + e;
-  }
-  alert("" + result);
-}
+    <h1>Native Client SRPC Plug-in from a File Descriptor</h1>
 
-function helloworld() {
-  var result = "";
-  try {
-    result = document.getElementById('pluginobj').helloworld();
-  } catch(e) {
-    result = "ERROR: " + e;
-  }
-  alert("" + result);
-}
-//]]>
-</script>
+    <embed type="application/x-nacl" id="nacl_server"
+           name="nacl_module" width="0" height="0" src="srpc_hw.nexe" />
 
-<h1>Native Client SRPC Plug-in from a File Descriptor</h1>
-<p>
-  <button onclick='loadNexe("srpc_hw.nexe")'>Load nexe</button>
-</p>
-<p>
-  <button id='fortytwo' onclick='fortytwo()' disabled='disabled'>
-    Call fortytwo()</button>
-  <button id='helloworld' onclick='helloworld()' disabled='disabled'>
-    Call helloworld()</button>
-
-  <embed name="nacl_module"
-         id="pluginobj"
-         width=0 height=0
-         type="application/x-nacl" />
-</p>
-
-<p>If the plug-in is working correctly, a click on the "Load nexe" button
-  should change status to "SUCCESS", and allow clicking the other buttons. </p>
-
-<p> Clicking on the "Call fortytwo" button
-  should open a popup dialog containing <b>42</b> as value.</p>
-
-<p> Clicking on the "Call helloworld" button
-  should open a popup dialog containing <b>hello, world</b> as value.</p>
-
-<h2>Status</h2>
-<div id=status>NO-STATUS</div>
-
-<script type="text/javascript">
-//<![CDATA[
-var nacl_embed = null;
-
-var EnableButton = function(id) {
-  var button = document.getElementById(id);
-  button.disabled = null;
-}
-
-function Callback() {
-  this.onload = function(nexe_fd) {
-    nacl_embed.__launchExecutableFromFd(nexe_fd);
-    EnableButton('fortytwo');
-    EnableButton('helloworld');
-    var status = document.getElementById('status');
-    status.textContent = 'SUCCESS';
-  },
-  this.onfail = function(message) {
-    var status = document.getElementById('status');
-    status.textContent = 'LOAD FAILED';
-  }
-};
-
-var loadNexe = function(url) {
-  nacl_embed = document.getElementById('pluginobj');
-  nacl_embed.__urlAsNaClDesc(url, new Callback());
-}
-//]]>
-</script>
-
+    <script type="text/javascript">
+      //<![CDATA[
+      var tester = new Tester();
+      var server = $("nacl_server");
+      loadAndTestMethods(tester, server);
+      tester.waitFor(server);
+      tester.run();
+      //]]>
+    </script>
   </body>
 </html>
