@@ -711,6 +711,9 @@ void WidgetGtk::EnableDebugPaint() {
 void WidgetGtk::UpdateFreezeUpdatesProperty(GtkWindow* window, bool enable) {
   if (!GTK_WIDGET_REALIZED(GTK_WIDGET(window)))
     gtk_widget_realize(GTK_WIDGET(window));
+#if 0
+  // Temporarily disabling the FREEZE_UPDATE as this is causing
+  // problem in panels. see crosbug.com/13750.
   GdkWindow* gdk_window = GTK_WIDGET(window)->window;
 
   static GdkAtom freeze_atom_ =
@@ -731,6 +734,7 @@ void WidgetGtk::UpdateFreezeUpdatesProperty(GtkWindow* window, bool enable) {
         GDK_WINDOW_XID(gdk_window);
     gdk_property_delete(gdk_window, freeze_atom_);
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
