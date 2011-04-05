@@ -1017,8 +1017,9 @@ void ProfileImpl::CreatePasswordStore() {
     // Detect the store to use automatically.
     scoped_ptr<base::Environment> env(base::Environment::Create());
     desktop_env = base::nix::GetDesktopEnvironment(env.get());
+    const char* name = base::nix::GetDesktopEnvironmentName(desktop_env);
     VLOG(1) << "Password storage detected desktop environment: "
-            << base::nix::GetDesktopEnvironmentName(desktop_env);
+            << (name ? name : "(unknown)");
   } else {
     desktop_env = base::nix::DESKTOP_ENVIRONMENT_OTHER;
   }
