@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/gpu_data_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
@@ -363,16 +364,13 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
 
 void RenderViewHostDelegateHelper::UpdateInspectorSetting(
     Profile* profile, const std::string& key, const std::string& value) {
-  DictionaryValue* inspector_settings =
-      profile->GetPrefs()->GetMutableDictionary(
-          prefs::kWebKitInspectorSettings);
+  DictionaryPrefUpdate update(profile->GetPrefs(),
+                              prefs::kWebKitInspectorSettings);
+  DictionaryValue* inspector_settings = update.Get();
   inspector_settings->SetWithoutPathExpansion(key,
                                               Value::CreateStringValue(value));
 }
 
 void RenderViewHostDelegateHelper::ClearInspectorSettings(Profile* profile) {
-  DictionaryValue* inspector_settings =
-      profile->GetPrefs()->GetMutableDictionary(
-          prefs::kWebKitInspectorSettings);
-  inspector_settings->Clear();
+  profile->GetPrefs()->ClearPref(prefs::kWebKitInspectorSettings);
 }
