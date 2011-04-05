@@ -18,13 +18,17 @@ class ChromotingStats {
   ChromotingStats();
 
   RateCounter* video_bandwidth() { return &video_bandwidth_; }
-  RunningAverage* video_decode() { return &video_decode_; }
-  RunningAverage* video_paint() { return &video_paint_; }
+  RunningAverage* video_capture_ms() { return &video_capture_ms_; }
+  RunningAverage* video_encode_ms() { return &video_encode_ms_; }
+  RunningAverage* video_decode_ms() { return &video_decode_ms_; }
+  RunningAverage* video_paint_ms() { return &video_paint_ms_; }
 
  private:
   RateCounter video_bandwidth_;
-  RunningAverage video_decode_;
-  RunningAverage video_paint_;
+  RunningAverage video_capture_ms_;
+  RunningAverage video_encode_ms_;
+  RunningAverage video_decode_ms_;
+  RunningAverage video_paint_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingStats);
 };

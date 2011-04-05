@@ -28,6 +28,8 @@ const char kSendIq[] = "sendIq";
 const char kQualityAttribute[] = "quality";
 const char kStatusAttribute[] = "status";
 const char kVideoBandwidthAttribute[] = "videoBandwidth";
+const char kVideoCaptureLatencyAttribute[] = "videoCaptureLatency";
+const char kVideoEncodeLatencyAttribute[] = "videoEncodeLatency";
 const char kVideoDecodeLatencyAttribute[] = "videoDecodeLatency";
 const char kVideoRenderLatencyAttribute[] = "videoRenderLatency";
 
@@ -75,6 +77,8 @@ void ChromotingScriptableObject::Init() {
 
   // Statistics.
   AddAttribute(kVideoBandwidthAttribute, Var());
+  AddAttribute(kVideoCaptureLatencyAttribute, Var());
+  AddAttribute(kVideoEncodeLatencyAttribute, Var());
   AddAttribute(kVideoDecodeLatencyAttribute, Var());
   AddAttribute(kVideoRenderLatencyAttribute, Var());
 
@@ -137,15 +141,16 @@ Var ChromotingScriptableObject::GetProperty(const Var& name, Var* exception) {
 
   // If this is a statistics attribute then return the value from
   // ChromotingStats structure.
-  if (name.AsString() == kVideoBandwidthAttribute) {
+  if (name.AsString() == kVideoBandwidthAttribute)
     return instance_->GetStats()->video_bandwidth()->Rate();
-  }
-  else if (name.AsString() == kVideoDecodeLatencyAttribute) {
-    return instance_->GetStats()->video_decode()->Average();
-  }
-  else if (name.AsString() == kVideoRenderLatencyAttribute) {
-    return instance_->GetStats()->video_paint()->Average();
-  }
+  if (name.AsString() == kVideoCaptureLatencyAttribute)
+    return instance_->GetStats()->video_capture_ms()->Average();
+  if (name.AsString() == kVideoEncodeLatencyAttribute)
+    return instance_->GetStats()->video_encode_ms()->Average();
+  if (name.AsString() == kVideoDecodeLatencyAttribute)
+    return instance_->GetStats()->video_decode_ms()->Average();
+  if (name.AsString() == kVideoRenderLatencyAttribute)
+    return instance_->GetStats()->video_paint_ms()->Average();
 
   // TODO(ajwong): This incorrectly return a null object if a function
   // property is requested.

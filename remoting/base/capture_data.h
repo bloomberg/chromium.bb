@@ -46,11 +46,22 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
   // Mutating methods.
   InvalidRects& mutable_dirty_rects() { return dirty_rects_; }
 
+  // Return the time spent on capturing.
+  int capture_time_ms() const { return capture_time_ms_; }
+
+  // Set the time spent on capturing.
+  void set_capture_time_ms(int capture_time_ms) {
+    capture_time_ms_ = capture_time_ms;
+  }
+
  private:
   const DataPlanes data_planes_;
   InvalidRects dirty_rects_;
   gfx::Size size_;
   media::VideoFrame::Format pixel_format_;
+
+  // Time spent in capture. Unit is in milliseconds.
+  int capture_time_ms_;
 
   friend class base::RefCountedThreadSafe<CaptureData>;
   virtual ~CaptureData();

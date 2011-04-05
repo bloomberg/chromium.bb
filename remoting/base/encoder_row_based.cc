@@ -117,6 +117,7 @@ void EncoderRowBased::EncodeRect(const gfx::Rect& rect, bool last) {
     // We have reached the end of stream.
     if (!compress_again) {
       packet->set_flags(packet->flags() | VideoPacket::LAST_PACKET);
+      packet->set_capture_time_ms(capture_data_->capture_time_ms());
       if (last)
         packet->set_flags(packet->flags() | VideoPacket::LAST_PARTITION);
       DCHECK(row_pos == row_size);

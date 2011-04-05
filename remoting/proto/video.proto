@@ -85,4 +85,10 @@ message VideoPacket {
   // TODO(hclam): Remove this field when we can obtain this information from
   // libvpx.
   repeated Rect dirty_rects = 6;
+
+  // Time in milliseconds spent in capturing this video frame.
+  optional int32 capture_time_ms = 7;
+
+  // Time in milliseconds spent in encoding this video frame.
+  optional int32 encode_time_ms = 8;
 }

@@ -267,6 +267,7 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
                      VideoPacket::LAST_PARTITION);
   message->mutable_format()->set_screen_width(capture_data->size().width());
   message->mutable_format()->set_screen_height(capture_data->size().height());
+  message->set_capture_time_ms(capture_data->capture_time_ms());
   for (size_t i = 0; i < updated_rects.size(); ++i) {
     Rect* rect = message->add_dirty_rects();
     rect->set_x(updated_rects[i].x());

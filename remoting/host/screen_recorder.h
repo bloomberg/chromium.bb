@@ -11,6 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "remoting/base/encoder.h"
 #include "remoting/host/capturer.h"
@@ -193,6 +195,12 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
 
   // Number of captures to perform every second. Written on the capture thread.
   double max_rate_;
+
+  // Time when capture is started.
+  base::Time capture_start_time_;
+
+  // Time when encode is started.
+  base::Time encode_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenRecorder);
 };

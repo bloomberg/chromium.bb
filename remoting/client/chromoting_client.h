@@ -106,8 +106,8 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   void DispatchPacket();
 
   // Callback method when a VideoPacket is processed.
-  // If |last_packet| is true when |decode_start| contains the timestamp when
-  // the packet starts to be processed.
+  // If |last_packet| is true then |decode_start| contains the timestamp when
+  // the packet will start to be processed.
   void OnPacketDone(bool last_packet, base::Time decode_start);
 
   // The following are not owned by this class.

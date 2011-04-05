@@ -253,7 +253,7 @@ void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
 void PepperView::OnPaintDone(base::Time paint_start) {
   DCHECK(CurrentlyOnPluginThread());
   TraceContext::tracer()->PrintString("Paint flushed");
-  instance_->GetStats()->video_paint()->Record(
+  instance_->GetStats()->video_paint_ms()->Record(
       (base::Time::Now() - paint_start).InMilliseconds());
   return;
 }

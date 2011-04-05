@@ -17,9 +17,13 @@
 //   // Statistics.
 //   // Video Bandwidth in bytes per second.
 //   readonly attribute float videoBandwidth;
-//   // Latency for video decoding.
+//   // Latency for capturing in milliseconds.
+//   readonly attribute int videoCaptureLatency;
+//   // Latency for video encoding in milliseconds.
+//   readonly attribute int videoEncodeLatency;
+//   // Latency for video decoding in milliseconds.
 //   readonly attribute int videoDecodeLatency;
-//   // Latency for rendering.
+//   // Latency for rendering in milliseconds.
 //   readonly attribute int videoRenderLatency;
 //
 //   // Constants for connection status.

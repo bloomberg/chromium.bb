@@ -212,6 +212,7 @@ void ScreenRecorder::DoCapture() {
   DCHECK_LE(recordings_, kMaxRecordings);
 
   // And finally perform one capture.
+  capture_start_time_ = base::Time::Now();
   capturer()->CaptureInvalidRects(
       NewCallback(this, &ScreenRecorder::CaptureDoneCallback));
 }
@@ -224,6 +225,9 @@ void ScreenRecorder::CaptureDoneCallback(
     return;
 
   TraceContext::tracer()->PrintString("Capture Done");
+  int capture_time =
+      (base::Time::Now() - capture_start_time_).InMilliseconds();
+  capture_data->set_capture_time_ms(capture_time);
   encode_loop_->PostTask(
       FROM_HERE,
       NewTracedMethod(this, &ScreenRecorder::DoEncode, capture_data));
@@ -354,6 +358,7 @@ void ScreenRecorder::DoEncode(
   }
 
   TraceContext::tracer()->PrintString("Encode start");
+  encode_start_time_ = base::Time::Now();
   encoder()->Encode(
       capture_data, false,
       NewCallback(this, &ScreenRecorder::EncodedDataAvailableCallback));
@@ -373,6 +378,13 @@ void ScreenRecorder::DoStopOnEncodeThread(Task* done_task) {
 
 void ScreenRecorder::EncodedDataAvailableCallback(VideoPacket* packet) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
+
+  bool last = packet->flags() & VideoPacket::LAST_PACKET;
+  if (last) {
+    int encode_time =
+        (base::Time::Now() - encode_start_time_).InMilliseconds();
+    packet->set_encode_time_ms(encode_time);
+  }
 
   network_loop_->PostTask(
       FROM_HERE,
