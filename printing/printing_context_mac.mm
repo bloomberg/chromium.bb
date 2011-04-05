@@ -100,8 +100,6 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
     return OnError();
   }
 
-  settings_.SetOrientation(landscape);
-
   if (!SetPrinter(printer_name))
     return OnError();
 
@@ -109,6 +107,9 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
     return OnError();
 
   if (!SetCollateInPrintSettings(collate))
+    return OnError();
+
+  if (!SetOrientationIsLandscape(landscape))
     return OnError();
 
   [print_info_.get() updateFromPMPrintSettings];
@@ -157,6 +158,19 @@ bool PrintingContextMac::SetCollateInPrintSettings(bool collate) {
   PMPrintSettings pmPrintSettings =
       static_cast<PMPrintSettings>([print_info_.get() PMPrintSettings]);
   return PMSetCollate(pmPrintSettings, collate) == noErr;
+}
+
+bool PrintingContextMac::SetOrientationIsLandscape(bool landscape) {
+  PMPageFormat page_format =
+      static_cast<PMPageFormat>([print_info_.get() PMPageFormat]);
+
+  PMOrientation orientation = landscape ? kPMLandscape : kPMPortrait;
+
+  if (PMSetOrientation(page_format, orientation, false) != noErr)
+    return false;
+
+  [print_info_.get() updateFromPMPageFormat];
+  return true;
 }
 
 void PrintingContextMac::ParsePrintInfo(NSPrintInfo* print_info) {

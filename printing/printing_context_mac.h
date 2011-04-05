@@ -59,6 +59,10 @@ class PrintingContextMac : public PrintingContext {
   // Returns true if |collate| is set.
   bool SetCollateInPrintSettings(bool collate);
 
+  // Sets orientation in native print info object.
+  // Returns true if the orientation was set.
+  bool SetOrientationIsLandscape(bool landscape);
+
   // The native print info object.
   scoped_nsobject<NSPrintInfo> print_info_;
 
