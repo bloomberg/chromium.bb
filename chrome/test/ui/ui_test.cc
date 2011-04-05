@@ -297,6 +297,10 @@ void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
                 url, number_of_navigations)) << url.spec();
 }
 
+bool UITestBase::WaitForBrowserProcessToQuit(int timeout) {
+  return launcher_->WaitForBrowserProcessToQuit(timeout);
+}
+
 bool UITestBase::WaitForBookmarkBarVisibilityChange(BrowserProxy* browser,
                                                     bool wait_for_open) {
   const int kCycles = 10;
@@ -309,7 +313,11 @@ bool UITestBase::WaitForBookmarkBarVisibilityChange(BrowserProxy* browser,
       return true;  // Bookmark bar visibility change complete.
 
     // Give it a chance to catch up.
-    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms() / kCycles);
+    bool browser_survived = CrashAwareSleep(
+        TestTimeouts::action_timeout_ms() / kCycles);
+    EXPECT_TRUE(browser_survived);
+    if (!browser_survived)
+      return false;
   }
 
   ADD_FAILURE() << "Timeout reached in WaitForBookmarkBarVisibilityChange";
@@ -357,6 +365,10 @@ bool UITestBase::IsBrowserRunning() {
   return launcher_->IsBrowserRunning();
 }
 
+bool UITestBase::CrashAwareSleep(int timeout_ms) {
+  return launcher_->CrashAwareSleep(timeout_ms);
+}
+
 int UITestBase::GetTabCount() {
   return GetTabCount(0);
 }
@@ -379,10 +391,12 @@ void UITestBase::WaitUntilTabCount(int tab_count) {
   const int kIntervalMs = TestTimeouts::action_timeout_ms() / kMaxIntervals;
 
   for (int i = 0; i < kMaxIntervals; ++i) {
+    bool browser_survived = CrashAwareSleep(kIntervalMs);
+    EXPECT_TRUE(browser_survived);
+    if (!browser_survived)
+      return;
     if (GetTabCount() == tab_count)
       return;
-
-    base::PlatformThread::Sleep(kIntervalMs);
   }
 
   ADD_FAILURE() << "Timeout reached in WaitUntilTabCount";
@@ -713,6 +727,11 @@ bool UITest::WaitUntilJavaScriptCondition(TabProxy* tab,
 
   // Wait until the test signals it has completed.
   for (int i = 0; i < kMaxIntervals; ++i) {
+    bool browser_survived = CrashAwareSleep(kIntervalMs);
+    EXPECT_TRUE(browser_survived);
+    if (!browser_survived)
+      return false;
+
     bool done_value = false;
     bool success = tab->ExecuteAndExtractBool(frame_xpath, jscript,
                                               &done_value);
@@ -721,8 +740,6 @@ bool UITest::WaitUntilJavaScriptCondition(TabProxy* tab,
       return false;
     if (done_value)
       return true;
-
-    base::PlatformThread::Sleep(kIntervalMs);
   }
 
   ADD_FAILURE() << "Timeout reached in WaitUntilJavaScriptCondition";
@@ -739,11 +756,14 @@ bool UITest::WaitUntilCookieValue(TabProxy* tab,
 
   std::string cookie_value;
   for (int i = 0; i < kMaxIntervals; ++i) {
+    bool browser_survived = CrashAwareSleep(kIntervalMs);
+    EXPECT_TRUE(browser_survived);
+    if (!browser_survived)
+      return false;
+
     EXPECT_TRUE(tab->GetCookieByName(url, cookie_name, &cookie_value));
     if (cookie_value == expected_value)
       return true;
-
-    base::PlatformThread::Sleep(kIntervalMs);
   }
 
   ADD_FAILURE() << "Timeout reached in WaitUntilCookieValue";
@@ -758,12 +778,15 @@ std::string UITest::WaitUntilCookieNonEmpty(TabProxy* tab,
   const int kMaxIntervals = timeout_ms / kIntervalMs;
 
   for (int i = 0; i < kMaxIntervals; ++i) {
+    bool browser_survived = CrashAwareSleep(kIntervalMs);
+    EXPECT_TRUE(browser_survived);
+    if (!browser_survived)
+      return std::string();
+
     std::string cookie_value;
     EXPECT_TRUE(tab->GetCookieByName(url, cookie_name, &cookie_value));
     if (!cookie_value.empty())
       return cookie_value;
-
-    base::PlatformThread::Sleep(kIntervalMs);
   }
 
   ADD_FAILURE() << "Timeout reached in WaitUntilCookieNonEmpty";
@@ -789,7 +812,11 @@ bool UITest::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
       return true;  // Find window visibility change complete.
 
     // Give it a chance to catch up.
-    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms() / kCycles);
+    bool browser_survived = CrashAwareSleep(
+        TestTimeouts::action_timeout_ms() / kCycles);
+    EXPECT_TRUE(browser_survived);
+    if (!browser_survived)
+      return false;
   }
 
   ADD_FAILURE() << "Timeout reached in WaitForFindWindowVisibilityChange";
@@ -813,6 +840,19 @@ bool UITest::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
   int incorrect_state_count = 0;
   base::Time start = base::Time::Now();
   for (int i = 0; i < kCycles; i++) {
+    // Give it a chance to catch up.
+    bool browser_survived = CrashAwareSleep(
+        TestTimeouts::action_timeout_ms() / kCycles);
+    EXPECT_TRUE(browser_survived);
+    if (!browser_survived) {
+      LOG(INFO) << "Elapsed time: " << (base::Time::Now() - start).InSecondsF()
+                << " seconds"
+                << " call failed " << fail_count << " times"
+                << " state was incorrect " << incorrect_state_count << " times";
+      ADD_FAILURE() << "Browser failed in " << __FUNCTION__;
+      return false;
+    }
+
     bool visible = !wait_for_open;
     if (!browser->IsShelfVisible(&visible)) {
       fail_count++;
@@ -826,9 +866,6 @@ bool UITest::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
       return true;  // Got the download shelf.
     }
     incorrect_state_count++;
-
-    // Give it a chance to catch up.
-    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms() / kCycles);
   }
 
   LOG(INFO) << "Elapsed time: " << (base::Time::Now() - start).InSecondsF()
