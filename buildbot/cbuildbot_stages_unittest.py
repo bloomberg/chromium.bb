@@ -90,7 +90,18 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.VerifyAll()
 
 
-class BuilderStageTest(mox.MoxTestBase):
+class AbstractStageTest(mox.MoxTestBase):
+  """Base class for tests that test a particular build stage.
+
+  Abstract base class that sets up the build config and options with some
+  default values for testing BuilderStage and its derivatives.
+  """
+
+  def ConstructStage(self):
+    """Returns an instance of the stage to be tested.
+    Implement in subclasses.
+    """
+    raise NotImplementedError, "return an instance of stage to be tested"
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
@@ -114,6 +125,30 @@ class BuilderStageTest(mox.MoxTestBase):
     stages.BuilderStage.push_overlays = [self.overlay]
     self.mox.StubOutWithMock(os.path, 'isdir')
 
+  def RunStage(self):
+    """Creates and runs an instance of the stage to be tested.
+    Requires ConstructStage() to be implemented.
+
+    Raises:
+      NotImplementedError: ConstructStage() was not implemented.
+    """
+
+    # Stage construction is usually done as late as possible because the tests
+    # set up the build configuration and options used in constructing the stage.
+
+    stage = self.ConstructStage()
+    stage.Run()
+
+
+class BuilderStageTest(AbstractStageTest):
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    AbstractStageTest.setUp(self)
+
+  def ConstructStage(self):
+    return stages.BuilderStage(self.bot_id, self.options, self.build_config)
+
   def testGetPortageEnvVar(self):
     """Basic test case for _GetPortageEnvVar function."""
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
@@ -124,7 +159,7 @@ class BuilderStageTest(mox.MoxTestBase):
                            redirect_stdout=True, enter_chroot=True,
                            error_ok=True).AndReturn('RESULT\n')
     self.mox.ReplayAll()
-    stage = stages.BuilderStage(self.bot_id, self.options, self.build_config)
+    stage = self.ConstructStage()
     result = stage._GetPortageEnvVar(envvar)
     self.mox.VerifyAll()
     self.assertEqual(result, 'RESULT')
@@ -142,7 +177,7 @@ class BuilderStageTest(mox.MoxTestBase):
       cros_lib.RunCommand(mox.And(mox.IsA(list), mox.In('--nopublic')), \
                           redirect_stdout=True).AndReturn(output_obj)
     self.mox.ReplayAll()
-    stage = stages.BuilderStage(self.bot_id, self.options, self.build_config)
+    stage = self.ConstructStage()
     public_overlays = ['public1', 'public2', self.overlay]
     private_overlays = ['private1', 'private2']
     self.assertEqual(stage._ResolveOverlays('public'), public_overlays)
@@ -152,12 +187,15 @@ class BuilderStageTest(mox.MoxTestBase):
     self.mox.VerifyAll()
 
 
-class SyncStageTest(BuilderStageTest):
+class SyncStageTest(AbstractStageTest):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
-    BuilderStageTest.setUp(self)
+    AbstractStageTest.setUp(self)
     self.mox.StubOutWithMock(commands, 'PreFlightRinse')
+
+  def ConstructStage(self):
+     return stages.SyncStage(self.bot_id, self.options, self.build_config)
 
   def testFullSync(self):
     """Tests whether we can perform a full sync with a missing .repo folder."""
@@ -170,8 +208,7 @@ class SyncStageTest(BuilderStageTest):
     os.path.isdir(self.overlay).AndReturn(True)
 
     self.mox.ReplayAll()
-    stage = stages.SyncStage(self.bot_id, self.options, self.build_config)
-    stage.Run()
+    self.RunStage()
     self.mox.VerifyAll()
 
   def testIncrementalSync(self):
@@ -188,16 +225,18 @@ class SyncStageTest(BuilderStageTest):
     os.path.isdir(self.overlay).AndReturn(True)
 
     self.mox.ReplayAll()
-    stage = stages.SyncStage(self.bot_id, self.options, self.build_config)
-    stage.Run()
+    self.RunStage()
     self.mox.VerifyAll()
 
 
-class BuildBoardTest(BuilderStageTest):
+class BuildBoardTest(AbstractStageTest):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
-    BuilderStageTest.setUp(self)
+    AbstractStageTest.setUp(self)
+
+  def ConstructStage(self):
+     return stages.BuildBoardStage(self.bot_id, self.options, self.build_config)
 
   def testFullBuild(self):
     """Tests whether correctly run make chroot and setup board for a full."""
@@ -214,8 +253,7 @@ class BuildBoardTest(BuilderStageTest):
     commands.SetupBoard(self.build_root, board=self.build_config['board'])
 
     self.mox.ReplayAll()
-    stage = stages.BuildBoardStage(self.bot_id, self.options, self.build_config)
-    stage.Run()
+    self.RunStage()
     self.mox.VerifyAll()
 
   def testBinBuild(self):
@@ -226,8 +264,7 @@ class BuildBoardTest(BuilderStageTest):
                                self.build_config['board'])).AndReturn(True)
 
     self.mox.ReplayAll()
-    stage = stages.BuildBoardStage(self.bot_id, self.options, self.build_config)
-    stage.Run()
+    self.RunStage()
     self.mox.VerifyAll()
 
   def testBinBuildAfterClobber(self):
@@ -242,75 +279,20 @@ class BuildBoardTest(BuilderStageTest):
                                self.build_config['board'])).AndReturn(False)
     commands.SetupBoard(self.build_root, board=self.build_config['board'])
 
-
     self.mox.ReplayAll()
-    stage = stages.BuildBoardStage(self.bot_id, self.options, self.build_config)
-    stage.Run()
+    self.RunStage()
     self.mox.VerifyAll()
 
 
-class BuildBoardTest(BuilderStageTest):
+class BuildTestsTest(AbstractStageTest):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
-    BuilderStageTest.setUp(self)
-
-  def testFullBuild(self):
-    """Tests whether correctly run make chroot and setup board for a full."""
-    self.bot_id = 'x86-generic-full'
-    self.build_config = config.config[self.bot_id]
-    self.mox.StubOutWithMock(commands, 'MakeChroot')
-    self.mox.StubOutWithMock(commands, 'SetupBoard')
-
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
-    os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
-    commands.MakeChroot(self.build_root, self.build_config['chroot_replace'])
-    os.path.isdir(os.path.join(self.build_root, 'chroot/build',
-                               self.build_config['board'])).AndReturn(False)
-    commands.SetupBoard(self.build_root, board=self.build_config['board'])
-
-    self.mox.ReplayAll()
-    stage = stages.BuildBoardStage(self.bot_id, self.options, self.build_config)
-    stage.Run()
-    self.mox.VerifyAll()
-
-  def testBinBuild(self):
-    """Tests whether we skip un-necessary steps for a binary builder."""
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
-    os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
-    os.path.isdir(os.path.join(self.build_root, 'chroot/build',
-                               self.build_config['board'])).AndReturn(True)
-
-    self.mox.ReplayAll()
-    stage = stages.BuildBoardStage(self.bot_id, self.options, self.build_config)
-    stage.Run()
-    self.mox.VerifyAll()
-
-  def testBinBuildAfterClobber(self):
-    """Tests whether we make chroot and board after a clobber."""
-    self.mox.StubOutWithMock(commands, 'MakeChroot')
-    self.mox.StubOutWithMock(commands, 'SetupBoard')
-
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
-    os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(False)
-    commands.MakeChroot(self.build_root, self.build_config['chroot_replace'])
-    os.path.isdir(os.path.join(self.build_root, 'chroot/build',
-                               self.build_config['board'])).AndReturn(False)
-    commands.SetupBoard(self.build_root, board=self.build_config['board'])
-
-
-    self.mox.ReplayAll()
-    stage = stages.BuildBoardStage(self.bot_id, self.options, self.build_config)
-    stage.Run()
-    self.mox.VerifyAll()
-
-
-class BuildTestsTest(BuilderStageTest):
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    BuilderStageTest.setUp(self)
+    AbstractStageTest.setUp(self)
     self.fake_results_dir = '/tmp/fake_results_dir'
+
+  def ConstructStage(self):
+     return stages.TestStage(self.bot_id, self.options, self.build_config)
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
@@ -340,8 +322,7 @@ class BuildTestsTest(BuilderStageTest):
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
     self.mox.ReplayAll()
-    stage = stages.TestStage(self.bot_id, self.options, self.build_config)
-    stage.Run()
+    self.RunStage()
     self.mox.VerifyAll()
 
   def testQuickTests(self):
@@ -370,8 +351,268 @@ class BuildTestsTest(BuilderStageTest):
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
     self.mox.ReplayAll()
-    stage = stages.TestStage(self.bot_id, self.options, self.build_config)
-    stage.Run()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+
+class UprevStageTest(AbstractStageTest):
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    AbstractStageTest.setUp(self)
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+
+    # Disable most paths by default and selectively enable in tests
+
+    self.options.chrome_rev = None
+    self.build_config['uprev'] = False
+    self.mox.StubOutWithMock(commands, 'MarkChromeAsStable')
+    self.mox.StubOutWithMock(commands, 'UprevPackages')
+    self.mox.StubOutWithMock(sys, 'exit')
+
+  def ConstructStage(self):
+     return stages.UprevStage(self.bot_id, self.options, self.build_config)
+
+  def testChromeRevSuccess(self):
+    """Case where MarkChromeAsStable returns an atom.  We shouldn't exit."""
+    self.options.chrome_rev = 'tot'
+    chrome_atom = 'chromeos-base/chromeos-chrome-12.0.719.0_alpha-r1'
+
+    commands.MarkChromeAsStable(
+        self.build_root, self.options.tracking_branch, self.options.chrome_rev,
+        self.build_config['board']).AndReturn(chrome_atom)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testChromeRevFoundNothing(self):
+    """Verify we exit when MarkChromeAsStable doesn't return an atom."""
+    self.options.chrome_rev = 'tot'
+
+    commands.MarkChromeAsStable(
+        self.build_root, self.options.tracking_branch, self.options.chrome_rev,
+        self.build_config['board'])
+
+    sys.exit(0)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testBuildRev(self):
+    """Uprevving the build without uprevving chrome."""
+    self.build_config['uprev'] = True
+
+    commands.UprevPackages(
+        self.build_root, self.options.tracking_branch,
+        self.build_config['board'], [self.overlay])
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testNoRev(self):
+    """No paths are enabled."""
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testUprevAll(self):
+    """Uprev both Chrome and built packages."""
+    self.build_config['uprev'] = True
+    self.options.chrome_rev = 'tot'
+
+    # Even if MarkChromeAsStable didn't find anything to rev,
+    # if we rev the build then we don't exit
+
+    commands.MarkChromeAsStable(
+        self.build_root, self.options.tracking_branch, self.options.chrome_rev,
+        self.build_config['board']).AndReturn(None)
+
+    commands.UprevPackages(
+        self.build_root, self.options.tracking_branch,
+        self.build_config['board'], [self.overlay])
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+
+class BuildTargetStageTest(AbstractStageTest):
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    AbstractStageTest.setUp(self)
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+
+    # Disable most paths by default and selectively enable in tests
+
+    self.build_config['vm_tests'] = False
+    self.build_config['build_type'] = 'preflight'
+    self.build_config['usepkg'] = False
+
+    self.options.prebuilts = True
+    self.options.tests = False
+
+    self.mox.StubOutWithMock(commands, 'Build')
+    self.mox.StubOutWithMock(commands, 'UploadPrebuilts')
+    self.mox.StubOutWithMock(commands, 'BuildImage')
+    self.mox.StubOutWithMock(commands, 'BuildVMImageForTesting')
+    self.mox.StubOutWithMock(stages.BuilderStage, '_GetPortageEnvVar')
+
+  def ConstructStage(self):
+     return stages.BuildTargetStage(self.bot_id,
+                                    self.options,
+                                    self.build_config)
+
+  def testAllConditionalPaths(self):
+    """Enable all paths to get line coverage."""
+    self.build_config['vm_tests'] = True
+    self.options.tests = True
+    self.build_config['build_type'] = 'full'
+    self.build_config['usepkg'] = True
+
+    stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST').AndReturn('new.com')
+    stages.BuilderStage.old_binhost = 'old.com'
+
+    commands.Build(
+        self.build_root, True,
+        build_autotest=True, usepkg=True)
+
+    commands.UploadPrebuilts(
+        self.build_root, self.build_config['board'],
+        self.build_config['rev_overlays'], [],
+        self.build_config['build_type'], False)
+
+    commands.BuildImage(self.build_root)
+    commands.BuildVMImageForTesting(self.build_root)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testFalseBuildArgs1(self):
+    """Make sure our logic for Build arguments can toggle to false."""
+    stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST').AndReturn('new.com')
+    stages.BuilderStage.old_binhost = 'new.com'
+
+    commands.Build(self.build_root, False, build_autotest=False, usepkg=False)
+    commands.BuildImage(self.build_root)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testFalseBuildArgs2(self):
+    """Verify emptytree flag is false when there is no old binhost."""
+    stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST').AndReturn('new.com')
+    stages.BuilderStage.old_binhost = False
+
+    commands.Build(
+        self.build_root, False,
+        build_autotest=False, usepkg=False)
+
+    commands.BuildImage(self.build_root)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+
+class ArchiveStageTest(AbstractStageTest):
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    AbstractStageTest.setUp(self)
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+
+  def ConstructStage(self):
+     return stages.ArchiveStage(self.bot_id, self.options, self.build_config)
+
+  def testArchive(self):
+    """Simple did-it-run test."""
+    self.mox.StubOutWithMock(commands, 'LegacyArchiveBuild')
+
+    commands.LegacyArchiveBuild(
+        self.build_root, self.bot_id, self.build_config,
+        self.options.buildnumber, None,
+        self.options.debug).AndReturn('')
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+
+class PushChangesStageTest(AbstractStageTest):
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    AbstractStageTest.setUp(self)
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+
+    # Disable most paths by default and selectively enable in tests
+
+    self.build_config['build_type'] = 'full'
+    self.options.chrome_rev = 'tot'
+    self.options.prebuilts = True
+    self.mox.StubOutWithMock(commands, 'UploadPrebuilts')
+    self.mox.StubOutWithMock(commands, 'UprevPush')
+
+  def ConstructStage(self):
+     return stages.PushChangesStage(self.bot_id,
+                                    self.options,
+                                    self.build_config)
+
+  def testChromePush(self):
+    """Test uploading of prebuilts for chrome build."""
+    self.build_config['build_type'] = 'chrome'
+
+    commands.UploadPrebuilts(
+        self.build_root, self.build_config['board'],
+        self.build_config['rev_overlays'], mox.IsA(list),
+        self.build_config['build_type'],
+        self.options.chrome_rev)
+
+    commands.UprevPush(
+        self.build_root, self.options.tracking_branch,
+        self.build_config['board'], [self.overlay],
+        self.options.debug)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testPreflightPush(self):
+    """Test uploading of prebuilts for preflight build."""
+    self.build_config['build_type'] = 'preflight'
+
+    commands.UploadPrebuilts(
+        self.build_root, self.build_config['board'],
+        self.build_config['rev_overlays'], mox.IsA(list),
+        self.build_config['build_type'],
+        self.options.chrome_rev)
+
+    commands.UprevPush(
+        self.build_root, self.options.tracking_branch,
+        self.build_config['board'], [self.overlay],
+        self.options.debug)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testFullPush(self):
+    """Shouldn't upload prebuilts for a full build."""
+    self.build_config['build_type'] = 'full'
+
+    commands.UprevPush(
+        self.build_root, self.options.tracking_branch,
+        self.build_config['board'], [self.overlay],
+        self.options.debug)
+
+    self.mox.ReplayAll()
+    self.RunStage()
     self.mox.VerifyAll()
 
 
@@ -385,7 +626,7 @@ class BuildStagesResultsTest(unittest.TestCase):
     self.build_root = '/fake_root'
     self.url = 'fake_url'
 
-    # Create a class to hold 
+    # Create a class to hold
     class Options:
       pass
 
@@ -435,7 +676,7 @@ class BuildStagesResultsTest(unittest.TestCase):
         ('Fail', self.failException)]
 
     actualResults = stages.BuilderStage.Results.Get()
-    
+
     # Break out the asserts to be per item to make debugging easier
     self.assertEqual(len(expectedResults), len(actualResults))
     for i in xrange(len(expectedResults)):
@@ -537,6 +778,7 @@ class BuildStagesResultsTest(unittest.TestCase):
     self.assertEqual(len(expectedResults), len(actualResults))
     for i in xrange(len(expectedResults)):
       self.assertEqual(expectedResults[i], actualResults[i])
+
 
 if __name__ == '__main__':
   unittest.main()
