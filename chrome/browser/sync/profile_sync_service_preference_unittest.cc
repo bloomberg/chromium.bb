@@ -9,6 +9,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_piece.h"
 #include "base/task.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/preference_change_processor.h"
@@ -246,9 +247,12 @@ TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationDoNotSyncDefaults) {
 
 TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationEmptyCloud) {
   prefs_->SetString(prefs::kHomePage, example_url0_);
-  ListValue* url_list = prefs_->GetMutableList(prefs::kURLsToRestoreOnStartup);
-  url_list->Append(Value::CreateStringValue(example_url0_));
-  url_list->Append(Value::CreateStringValue(example_url1_));
+  {
+    ListPrefUpdate update(prefs_, prefs::kURLsToRestoreOnStartup);
+    ListValue* url_list = update.Get();
+    url_list->Append(Value::CreateStringValue(example_url0_));
+    url_list->Append(Value::CreateStringValue(example_url1_));
+  }
   CreateRootTask task(this, syncable::PREFERENCES);
   ASSERT_TRUE(StartSyncService(&task, false));
   ASSERT_TRUE(task.success());
@@ -264,9 +268,12 @@ TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationEmptyCloud) {
 
 TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationCloudHasData) {
   prefs_->SetString(prefs::kHomePage, example_url0_);
-  ListValue* url_list = prefs_->GetMutableList(prefs::kURLsToRestoreOnStartup);
-  url_list->Append(Value::CreateStringValue(example_url0_));
-  url_list->Append(Value::CreateStringValue(example_url1_));
+  {
+    ListPrefUpdate update(prefs_, prefs::kURLsToRestoreOnStartup);
+    ListValue* url_list = update.Get();
+    url_list->Append(Value::CreateStringValue(example_url0_));
+    url_list->Append(Value::CreateStringValue(example_url1_));
+  }
 
   PreferenceValues cloud_data;
   cloud_data[prefs::kHomePage] = Value::CreateStringValue(example_url1_);

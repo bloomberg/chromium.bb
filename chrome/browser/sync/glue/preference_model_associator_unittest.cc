@@ -4,6 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/sync/glue/preference_model_associator.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
@@ -95,35 +96,45 @@ TEST_F(ListPreferenceMergeTest, LocalEmpty) {
 
 TEST_F(ListPreferenceMergeTest, ServerNull) {
   scoped_ptr<Value> null_value(Value::CreateNullValue());
-  ListValue* local_list_value =
-      pref_service_->GetMutableList(prefs::kURLsToRestoreOnStartup);
-  local_list_value->Append(Value::CreateStringValue(local_url0_));
+  {
+    ListPrefUpdate update(pref_service_, prefs::kURLsToRestoreOnStartup);
+    ListValue* local_list_value = update.Get();
+    local_list_value->Append(Value::CreateStringValue(local_url0_));
+  }
 
   const PrefService::Preference* pref =
       pref_service_->FindPreference(prefs::kURLsToRestoreOnStartup);
   scoped_ptr<Value> merged_value(
       PreferenceModelAssociator::MergePreference(*pref, *null_value));
+  const ListValue* local_list_value =
+        pref_service_->GetList(prefs::kURLsToRestoreOnStartup);
   EXPECT_TRUE(merged_value->Equals(local_list_value));
 }
 
 TEST_F(ListPreferenceMergeTest, ServerEmpty) {
   scoped_ptr<Value> empty_value(new ListValue);
-  ListValue* local_list_value =
-      pref_service_->GetMutableList(prefs::kURLsToRestoreOnStartup);
-  local_list_value->Append(Value::CreateStringValue(local_url0_));
+  {
+    ListPrefUpdate update(pref_service_, prefs::kURLsToRestoreOnStartup);
+    ListValue* local_list_value = update.Get();
+    local_list_value->Append(Value::CreateStringValue(local_url0_));
+  }
 
   const PrefService::Preference* pref =
       pref_service_->FindPreference(prefs::kURLsToRestoreOnStartup);
   scoped_ptr<Value> merged_value(
       PreferenceModelAssociator::MergePreference(*pref, *empty_value));
+  const ListValue* local_list_value =
+        pref_service_->GetList(prefs::kURLsToRestoreOnStartup);
   EXPECT_TRUE(merged_value->Equals(local_list_value));
 }
 
 TEST_F(ListPreferenceMergeTest, Merge) {
-  ListValue* local_list_value =
-      pref_service_->GetMutableList(prefs::kURLsToRestoreOnStartup);
-  local_list_value->Append(Value::CreateStringValue(local_url0_));
-  local_list_value->Append(Value::CreateStringValue(local_url1_));
+  {
+    ListPrefUpdate update(pref_service_, prefs::kURLsToRestoreOnStartup);
+    ListValue* local_list_value = update.Get();
+    local_list_value->Append(Value::CreateStringValue(local_url0_));
+    local_list_value->Append(Value::CreateStringValue(local_url1_));
+  }
 
   const PrefService::Preference* pref =
       pref_service_->FindPreference(prefs::kURLsToRestoreOnStartup);
@@ -139,11 +150,13 @@ TEST_F(ListPreferenceMergeTest, Merge) {
 }
 
 TEST_F(ListPreferenceMergeTest, Duplicates) {
-  ListValue* local_list_value =
-      pref_service_->GetMutableList(prefs::kURLsToRestoreOnStartup);
-  local_list_value->Append(Value::CreateStringValue(local_url0_));
-  local_list_value->Append(Value::CreateStringValue(server_url0_));
-  local_list_value->Append(Value::CreateStringValue(server_url1_));
+  {
+    ListPrefUpdate update(pref_service_, prefs::kURLsToRestoreOnStartup);
+    ListValue* local_list_value = update.Get();
+    local_list_value->Append(Value::CreateStringValue(local_url0_));
+    local_list_value->Append(Value::CreateStringValue(server_url0_));
+    local_list_value->Append(Value::CreateStringValue(server_url1_));
+  }
 
   const PrefService::Preference* pref =
       pref_service_->FindPreference(prefs::kURLsToRestoreOnStartup);
@@ -158,10 +171,12 @@ TEST_F(ListPreferenceMergeTest, Duplicates) {
 }
 
 TEST_F(ListPreferenceMergeTest, Equals) {
-  ListValue* local_list_value =
-      pref_service_->GetMutableList(prefs::kURLsToRestoreOnStartup);
-  local_list_value->Append(Value::CreateStringValue(server_url0_));
-  local_list_value->Append(Value::CreateStringValue(server_url1_));
+  {
+    ListPrefUpdate update(pref_service_, prefs::kURLsToRestoreOnStartup);
+    ListValue* local_list_value = update.Get();
+    local_list_value->Append(Value::CreateStringValue(server_url0_));
+    local_list_value->Append(Value::CreateStringValue(server_url1_));
+  }
 
   scoped_ptr<Value> original(server_url_list_.DeepCopy());
   const PrefService::Preference* pref =
@@ -206,34 +221,44 @@ TEST_F(DictionaryPreferenceMergeTest, LocalEmpty) {
 
 TEST_F(DictionaryPreferenceMergeTest, ServerNull) {
   scoped_ptr<Value> null_value(Value::CreateNullValue());
-  DictionaryValue* local_dict_value =
-      pref_service_->GetMutableDictionary(prefs::kContentSettingsPatterns);
-  SetContentPattern(local_dict_value, expression2_, content_type0_, 1);
+  {
+    DictionaryPrefUpdate update(pref_service_, prefs::kContentSettingsPatterns);
+    DictionaryValue* local_dict_value = update.Get();
+    SetContentPattern(local_dict_value, expression2_, content_type0_, 1);
+  }
 
   const PrefService::Preference* pref =
       pref_service_->FindPreference(prefs::kContentSettingsPatterns);
   scoped_ptr<Value> merged_value(
       PreferenceModelAssociator::MergePreference(*pref, *null_value));
+  const DictionaryValue* local_dict_value =
+      pref_service_->GetDictionary(prefs::kContentSettingsPatterns);
   EXPECT_TRUE(merged_value->Equals(local_dict_value));
 }
 
 TEST_F(DictionaryPreferenceMergeTest, ServerEmpty) {
   scoped_ptr<Value> empty_value(new DictionaryValue);
-  DictionaryValue* local_dict_value =
-      pref_service_->GetMutableDictionary(prefs::kContentSettingsPatterns);
-  SetContentPattern(local_dict_value, expression2_, content_type0_, 1);
+  {
+    DictionaryPrefUpdate update(pref_service_, prefs::kContentSettingsPatterns);
+    DictionaryValue* local_dict_value = update.Get();
+    SetContentPattern(local_dict_value, expression2_, content_type0_, 1);
+  }
 
   const PrefService::Preference* pref =
       pref_service_->FindPreference(prefs::kContentSettingsPatterns);
   scoped_ptr<Value> merged_value(
       PreferenceModelAssociator::MergePreference(*pref, *empty_value));
+  const DictionaryValue* local_dict_value =
+      pref_service_->GetDictionary(prefs::kContentSettingsPatterns);
   EXPECT_TRUE(merged_value->Equals(local_dict_value));
 }
 
 TEST_F(DictionaryPreferenceMergeTest, MergeNoConflicts) {
-  DictionaryValue* local_dict_value =
-      pref_service_->GetMutableDictionary(prefs::kContentSettingsPatterns);
-  SetContentPattern(local_dict_value, expression2_, content_type0_, 1);
+  {
+    DictionaryPrefUpdate update(pref_service_, prefs::kContentSettingsPatterns);
+    DictionaryValue* local_dict_value = update.Get();
+    SetContentPattern(local_dict_value, expression2_, content_type0_, 1);
+  }
 
   scoped_ptr<Value> merged_value(PreferenceModelAssociator::MergePreference(
       *pref_service_->FindPreference(prefs::kContentSettingsPatterns),
@@ -248,12 +273,14 @@ TEST_F(DictionaryPreferenceMergeTest, MergeNoConflicts) {
 }
 
 TEST_F(DictionaryPreferenceMergeTest, MergeConflicts) {
-  DictionaryValue* local_dict_value =
-      pref_service_->GetMutableDictionary(prefs::kContentSettingsPatterns);
-  SetContentPattern(local_dict_value, expression0_, content_type0_, 2);
-  SetContentPattern(local_dict_value, expression1_, content_type0_, 1);
-  SetContentPattern(local_dict_value, expression1_, content_type1_, 1);
-  SetContentPattern(local_dict_value, expression2_, content_type0_, 2);
+  {
+    DictionaryPrefUpdate update(pref_service_, prefs::kContentSettingsPatterns);
+    DictionaryValue* local_dict_value = update.Get();
+    SetContentPattern(local_dict_value, expression0_, content_type0_, 2);
+    SetContentPattern(local_dict_value, expression1_, content_type0_, 1);
+    SetContentPattern(local_dict_value, expression1_, content_type1_, 1);
+    SetContentPattern(local_dict_value, expression2_, content_type0_, 2);
+  }
 
   scoped_ptr<Value> merged_value(PreferenceModelAssociator::MergePreference(
       *pref_service_->FindPreference(prefs::kContentSettingsPatterns),
@@ -269,11 +296,13 @@ TEST_F(DictionaryPreferenceMergeTest, MergeConflicts) {
 }
 
 TEST_F(DictionaryPreferenceMergeTest, Equal) {
-  DictionaryValue* local_dict_value =
-      pref_service_->GetMutableDictionary(prefs::kContentSettingsPatterns);
-  SetContentPattern(local_dict_value, expression0_, content_type0_, 1);
-  SetContentPattern(local_dict_value, expression0_, content_type1_, 2);
-  SetContentPattern(local_dict_value, expression1_, content_type0_, 1);
+  {
+    DictionaryPrefUpdate update(pref_service_, prefs::kContentSettingsPatterns);
+    DictionaryValue* local_dict_value = update.Get();
+    SetContentPattern(local_dict_value, expression0_, content_type0_, 1);
+    SetContentPattern(local_dict_value, expression0_, content_type1_, 2);
+    SetContentPattern(local_dict_value, expression1_, content_type0_, 1);
+  }
 
   scoped_ptr<Value> merged_value(PreferenceModelAssociator::MergePreference(
       *pref_service_->FindPreference(prefs::kContentSettingsPatterns),
@@ -282,11 +311,13 @@ TEST_F(DictionaryPreferenceMergeTest, Equal) {
 }
 
 TEST_F(DictionaryPreferenceMergeTest, ConflictButServerWins) {
-  DictionaryValue* local_dict_value =
-      pref_service_->GetMutableDictionary(prefs::kContentSettingsPatterns);
-  SetContentPattern(local_dict_value, expression0_, content_type0_, 2);
-  SetContentPattern(local_dict_value, expression0_, content_type1_, 2);
-  SetContentPattern(local_dict_value, expression1_, content_type0_, 1);
+  {
+    DictionaryPrefUpdate update(pref_service_, prefs::kContentSettingsPatterns);
+    DictionaryValue* local_dict_value = update.Get();
+    SetContentPattern(local_dict_value, expression0_, content_type0_, 2);
+    SetContentPattern(local_dict_value, expression0_, content_type1_, 2);
+    SetContentPattern(local_dict_value, expression1_, content_type0_, 1);
+  }
 
   scoped_ptr<Value> merged_value(PreferenceModelAssociator::MergePreference(
       *pref_service_->FindPreference(prefs::kContentSettingsPatterns),
@@ -310,8 +341,11 @@ class IndividualPreferenceMergeTest : public AbstractPreferenceMergeTest {
   }
 
   bool MergeListPreference(const char* pref) {
-    ListValue* local_list_value = pref_service_->GetMutableList(pref);
-    local_list_value->Append(Value::CreateStringValue(url1_));
+    {
+      ListPrefUpdate update(pref_service_, pref);
+      ListValue* local_list_value = update.Get();
+      local_list_value->Append(Value::CreateStringValue(url1_));
+    }
 
     scoped_ptr<Value> merged_value(PreferenceModelAssociator::MergePreference(
         *pref_service_->FindPreference(pref),
@@ -324,9 +358,11 @@ class IndividualPreferenceMergeTest : public AbstractPreferenceMergeTest {
   }
 
   bool MergeDictionaryPreference(const char* pref) {
-    DictionaryValue* local_dict_value =
-        pref_service_->GetMutableDictionary(pref);
-    SetContentPattern(local_dict_value, expression1_, content_type0_, 1);
+    {
+      DictionaryPrefUpdate update(pref_service_, pref);
+      DictionaryValue* local_dict_value = update.Get();
+      SetContentPattern(local_dict_value, expression1_, content_type0_, 1);
+    }
 
     scoped_ptr<Value> merged_value(PreferenceModelAssociator::MergePreference(
         *pref_service_->FindPreference(pref),

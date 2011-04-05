@@ -249,8 +249,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_EQ(GetPrefs(0)->GetInteger(prefs::kRestoreOnStartup),
       GetPrefs(1)->GetInteger(prefs::kRestoreOnStartup));
-  ASSERT_TRUE(GetPrefs(0)->GetMutableList(prefs::kURLsToRestoreOnStartup)->
-      Equals(GetPrefs(1)->GetMutableList(prefs::kURLsToRestoreOnStartup)));
+  ASSERT_TRUE(GetPrefs(0)->GetList(prefs::kURLsToRestoreOnStartup)->
+      Equals(GetPrefs(1)->GetList(prefs::kURLsToRestoreOnStartup)));
 
   GetVerifierPrefs()->SetInteger(prefs::kRestoreOnStartup, 0);
   GetPrefs(0)->SetInteger(prefs::kRestoreOnStartup, 0);
@@ -264,11 +264,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
 
   GetVerifierPrefs()->SetInteger(prefs::kRestoreOnStartup, 4);
   GetPrefs(0)->SetInteger(prefs::kRestoreOnStartup, 4);
-  ListValue* url_list_verifier = GetVerifierPrefs()->
-      GetMutableList(prefs::kURLsToRestoreOnStartup);
-  ListValue* url_list_client = GetPrefs(0)->
-      GetMutableList(prefs::kURLsToRestoreOnStartup);
   {
+    ListPrefUpdate update_0(GetPrefs(0), prefs::kURLsToRestoreOnStartup);
+    ListPrefUpdate update_verifier(GetVerifierPrefs(),
+                                   prefs::kURLsToRestoreOnStartup);
+    ListValue* url_list_client = update_0.Get();
+    ListValue* url_list_verifier = update_verifier.Get();
     url_list_verifier->
         Append(Value::CreateStringValue("http://www.google.com/"));
     url_list_verifier->
@@ -277,7 +278,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
         Append(Value::CreateStringValue("http://www.google.com/"));
     url_list_client->
         Append(Value::CreateStringValue("http://www.flickr.com/"));
-    ScopedUserPrefUpdate update(GetPrefs(0), prefs::kURLsToRestoreOnStartup);
   }
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
@@ -288,11 +288,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
             GetPrefs(1)->GetInteger(prefs::kRestoreOnStartup));
 
   ASSERT_TRUE(GetVerifierPrefs()->
-      GetMutableList(prefs::kURLsToRestoreOnStartup)->
-      Equals(GetPrefs(0)->GetMutableList(prefs::kURLsToRestoreOnStartup)));
+      GetList(prefs::kURLsToRestoreOnStartup)->
+      Equals(GetPrefs(0)->GetList(prefs::kURLsToRestoreOnStartup)));
   ASSERT_TRUE(GetVerifierPrefs()->
-      GetMutableList(prefs::kURLsToRestoreOnStartup)->
-      Equals(GetPrefs(1)->GetMutableList(prefs::kURLsToRestoreOnStartup)));
+      GetList(prefs::kURLsToRestoreOnStartup)->
+      Equals(GetPrefs(1)->GetList(prefs::kURLsToRestoreOnStartup)));
 }
 
 // TestScribe ID - 423958.
