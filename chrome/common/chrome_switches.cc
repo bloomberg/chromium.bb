@@ -24,12 +24,6 @@ const char kAllowFileAccess[]               = "allow-file-access";
 // Don't block outdated plugins.
 const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
 
-// Disable checking of the renegotiation extension and any future checks over
-// and above what a "traditional" SSL stack might do. This has been requested
-// in order to support some web development tools that intercept SSL
-// connections.
-const char kAllowSSLMITMProxies[]           = "allow-ssl-mitm-proxies";
-
 // Allows injecting extensions and user scripts on the extensions
 // gallery site. Normally prevented for security reasons, but can be
 // useful for automation testing of the gallery.
