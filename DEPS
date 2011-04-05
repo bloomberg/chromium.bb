@@ -64,10 +64,10 @@ deps = {
     (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@70",
 
   "src/third_party/leveldb":
-    (Var("googlecode_url") % "leveldb") + "/trunk@17",
+    (Var("googlecode_url") % "leveldb") + "/trunk@19",
 
   "src/third_party/snappy/src":
-    (Var("googlecode_url") % "snappy") + "/trunk@21",
+    (Var("googlecode_url") % "snappy") + "/trunk@25",
 
   "src/tools/gyp":
     (Var("googlecode_url") % "gyp") + "/trunk@904",
