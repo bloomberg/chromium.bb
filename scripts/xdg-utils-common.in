@@ -200,7 +200,7 @@ detectDE()
     fi
 
     if [ x"$DE" = x"" ]; then
-    # if all else fails, fallback to checking $DESKTOP_SESSION
+      # fallback to checking $DESKTOP_SESSION
       case "$DESKTOP_SESSION" in
          LXDE)
            DE=lxde; 
@@ -208,6 +208,15 @@ detectDE()
          xfce|xfce4)
            DE=xfce;
            ;;
+      esac
+    fi
+
+    if [ x"$DE" = x"" ]; then
+      # fallback to uname output for other platforms
+      case "$(uname 2>/dev/null)" in 
+        Darwin)
+          DE=darwin;
+          ;;
       esac
     fi
 

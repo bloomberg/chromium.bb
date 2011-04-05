@@ -1,9 +1,9 @@
 Name: xdg-utils
 URL: http://portland.freedesktop.org/wiki/
-Version: a616912e48b7ff1d908852739d16525df79471b9
+Version: ca33e673f7fd9173267843aac9668f692d48d6da
 
 Description:
-This directory contains a copy of xdg-utils obtained from git on 2011-03-30,
+This directory contains a copy of xdg-utils obtained from git on 2011-04-02,
 with this command:
 
 git clone git://anongit.freedesktop.org/xdg/xdg-utils xdg-utils

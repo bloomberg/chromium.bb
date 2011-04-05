@@ -430,8 +430,33 @@ detectDE()
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
     elif `dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.gnome.SessionManager > /dev/null 2>&1` ; then DE=gnome;
     elif xprop -root _DT_SAVE_MODE 2> /dev/null | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
-    elif [ x"$DESKTOP_SESSION" == x"LXDE" ]; then DE=lxde;
-    else DE=""
+    fi
+
+    if [ x"$DE" = x"" ]; then
+      # fallback to checking $DESKTOP_SESSION
+      case "$DESKTOP_SESSION" in
+         LXDE)
+           DE=lxde; 
+           ;;
+         xfce|xfce4)
+           DE=xfce;
+           ;;
+      esac
+    fi
+
+    if [ x"$DE" = x"" ]; then
+      # fallback to uname output for other platforms
+      case "$(uname 2>/dev/null)" in 
+        Darwin)
+          DE=darwin;
+          ;;
+      esac
+    fi
+
+    if [ x"$DE" = x"gnome" ]; then
+      # gnome-default-applications-properties is only available in GNOME 2.x
+      # but not in GNOME 3.x
+      which gnome-default-applications-properties 2> /dev/null || DE="gnome3"
     fi
 }
 
@@ -496,14 +521,17 @@ info_kde()
 
 info_gnome()
 {
-    file=`readlink -f "$1"` # Normalize path
-
     if gvfs-info --help 2>/dev/null 1>&2; then
-        DEBUG 1 "Running gvfs-info \"$file\""
-        gvfs-info "$file" 2> /dev/null | grep standard::content-type | cut -d' ' -f4
+        DEBUG 1 "Running gvfs-info \"$1\""
+        gvfs-info "$1" 2> /dev/null | grep standard::content-type | cut -d' ' -f4
+    elif gnomevfs-info --help 2>/dev/null 1>&2; then
+       DEBUG 1 "Running gnomevfs-info \"$1\""
+       gnomevfs-info --slow-mime "$1" 2> /dev/null | grep "^MIME" | cut -d ":" -f 2 | sed s/"^ "//
     else
-       DEBUG 1 "Running gnomevfs-info \"$file\""
-       gnomevfs-info --slow-mime "$file" 2> /dev/null | grep "^MIME" | cut -d ":" -f 2 | sed s/"^ "//
+       # according to https://bugs.freedesktop.org/show_bug.cgi?id=33094#c5
+       # neither gvfs-info or gnomevfs-info are present in a default Ubuntu Natty
+       # install, so fallback to info_generic
+       info_generic "$1"
     fi
 
     if [ $? -eq 0 ]; then
@@ -515,8 +543,13 @@ info_gnome()
 
 info_generic()
 {
-    DEBUG 1 "Running file -i \"$1\""
-    /usr/bin/file -i "$1" 2> /dev/null | cut -d ":" -f 2 | sed s/"^ "//
+    if mimetype --version >/dev/null 2>&1; then
+        DEBUG 1 "Running mimetype -b \"$1\""
+        mimetype -b "$1"
+    else
+        DEBUG 1 "Running file -i \"$1\""
+        /usr/bin/file -i "$1" 2> /dev/null | cut -d ":" -f 2 | sed s/"^ "//
+    fi
 
     if [ $? -eq 0 ]; then
         exit_success
@@ -752,6 +785,7 @@ case $1 in
             ;;
         esac
         check_input_file "$filename"
+        filename=`readlink -f -- "$filename"`
         ;;
 
       default)
@@ -845,7 +879,7 @@ if [ "$action" = "info" ]; then
         info_kde "$filename"
         ;;
 
-        gnome)
+        gnome*)
         info_gnome "$filename"
         ;;
 

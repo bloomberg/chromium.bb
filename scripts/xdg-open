@@ -307,8 +307,33 @@ detectDE()
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
     elif `dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.gnome.SessionManager > /dev/null 2>&1` ; then DE=gnome;
     elif xprop -root _DT_SAVE_MODE 2> /dev/null | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
-    elif [ x"$DESKTOP_SESSION" == x"LXDE" ]; then DE=lxde;
-    else DE=""
+    fi
+
+    if [ x"$DE" = x"" ]; then
+      # fallback to checking $DESKTOP_SESSION
+      case "$DESKTOP_SESSION" in
+         LXDE)
+           DE=lxde; 
+           ;;
+         xfce|xfce4)
+           DE=xfce;
+           ;;
+      esac
+    fi
+
+    if [ x"$DE" = x"" ]; then
+      # fallback to uname output for other platforms
+      case "$(uname 2>/dev/null)" in 
+        Darwin)
+          DE=darwin;
+          ;;
+      esac
+    fi
+
+    if [ x"$DE" = x"gnome" ]; then
+      # gnome-default-applications-properties is only available in GNOME 2.x
+      # but not in GNOME 3.x
+      which gnome-default-applications-properties 2> /dev/null || DE="gnome3"
     fi
 }
 
@@ -335,6 +360,23 @@ first_word()
 {
     read first rest
     echo "$first"
+}
+
+last_word()
+{
+    read first rest
+    echo "$rest"
+}
+
+open_darwin()
+{
+    open "$1"
+
+    if [ $? -eq 0 ]; then
+        exit_success
+    else
+        exit_failure_operation_failed
+    fi
 }
 
 open_kde()
@@ -395,12 +437,26 @@ open_generic_xdg_mime()
         [ -n "$xdg_system_dirs" ] || xdg_system_dirs=/usr/local/share/:/usr/share/
 
         for x in `echo "$xdg_user_dir:$xdg_system_dirs" | sed 's/:/ /g'`; do
-            local file="$x/applications/$default"
+            local file
+            # look for both vendor-app.desktop, vendor/app.desktop
+            if [ -r "$x/applications/$default" ]; then
+              file="$x/applications/$default"
+            elif [ -r "$x/applications/`echo $default | sed -e 's|-|/|'`" ]; then
+              file="$x/applications/`echo $default | sed -e 's|-|/|'`"
+            fi
+
             if [ -r "$file" ] ; then
                 command="`grep -E "^Exec(\[[^]=]*])?=" "$file" | cut -d= -f 2- | first_word`"
                 command_exec=`which $command 2>/dev/null`
+                arguments="`grep -E "^Exec(\[[^]=]*])?=" "$file" | cut -d= -f 2- | last_word`"
+                arguments_exec="`echo $arguments | sed -e 's*%[fFuU]*"'"$1"'"*g'`"
                 if [ -x "$command_exec" ] ; then
-                    $command_exec "$1"
+                    if echo $arguments | grep -iq '%[fFuU]' ; then
+                        eval $command_exec $arguments_exec
+                    else
+                        eval $command_exec $arguments_exec "$1"
+                    fi
+
                     if [ $? -eq 0 ]; then
                         exit_success
                     fi
@@ -536,7 +592,7 @@ case "$DE" in
     open_kde "$url"
     ;;
 
-    gnome)
+    gnome*)
     open_gnome "$url"
     ;;
 

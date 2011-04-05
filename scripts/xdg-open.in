@@ -42,6 +42,17 @@ last_word()
     echo "$rest"
 }
 
+open_darwin()
+{
+    open "$1"
+
+    if [ $? -eq 0 ]; then
+        exit_success
+    else
+        exit_failure_operation_failed
+    fi
+}
+
 open_kde()
 {
     if kde-open -v 2>/dev/null 1>&2; then

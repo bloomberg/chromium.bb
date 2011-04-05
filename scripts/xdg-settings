@@ -315,8 +315,33 @@ detectDE()
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
     elif `dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.gnome.SessionManager > /dev/null 2>&1` ; then DE=gnome;
     elif xprop -root _DT_SAVE_MODE 2> /dev/null | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
-    elif [ x"$DESKTOP_SESSION" == x"LXDE" ]; then DE=lxde;
-    else DE=""
+    fi
+
+    if [ x"$DE" = x"" ]; then
+      # fallback to checking $DESKTOP_SESSION
+      case "$DESKTOP_SESSION" in
+         LXDE)
+           DE=lxde; 
+           ;;
+         xfce|xfce4)
+           DE=xfce;
+           ;;
+      esac
+    fi
+
+    if [ x"$DE" = x"" ]; then
+      # fallback to uname output for other platforms
+      case "$(uname 2>/dev/null)" in 
+        Darwin)
+          DE=darwin;
+          ;;
+      esac
+    fi
+
+    if [ x"$DE" = x"gnome" ]; then
+      # gnome-default-applications-properties is only available in GNOME 2.x
+      # but not in GNOME 3.x
+      which gnome-default-applications-properties 2> /dev/null || DE="gnome3"
     fi
 }
 
@@ -419,21 +444,26 @@ desktop_file_to_binary()
 # This function is hard-coded for text/html but it could be adapted if needed.
 fix_local_desktop_file()
 {
+    if test -z "$2" ; then
+        MIME="text/html"
+    else
+        MIME="$2"
+    fi
     apps="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
     # No local desktop file?
     [ ! -f "$apps/$1" ] && return
-    MIME="`grep "^MimeType=" "$apps/$1" | cut -d= -f 2-`"
-    case "$MIME" in
-      text/html\;*|*\;text/html\;*|*\;text/html\;|*\;text/html)
-        # Already has text/html? Great!
+    MIMETYPES="`grep "^MimeType=" "$apps/$1" | cut -d= -f 2-`"
+    case "$MIMETYPES" in
+      $MIME\;*|*\;$MIME\;*|*\;$MIME\;|*\;$MIME)
+        # Already has the mime-type? Great!
         return 0
         ;;
     esac
 
-    # Add text/html to the list
+    # Add the mime-type to the list
     temp="`mktemp "$apps/$1.XXXXXX"`" || return
     grep -v "^MimeType=" "$apps/$1" >> "$temp"
-    echo "MimeType=text/html;$MIME" >> "$temp"
+    echo "MimeType=$MIME;$MIMETYPES" >> "$temp"
 
     oldlines="`wc -l < "$apps/$1"`"
     newlines="`wc -l < "$temp"`"
@@ -467,22 +497,32 @@ xdg_mime_fixup()
 
 get_browser_mime()
 {
+    if test -z "$1" ; then
+        MIME="text/html"
+    else
+        MIME="$1"
+    fi
     xdg_mime_fixup
-    xdg-mime query default text/html
+    xdg-mime query default "$MIME"
 }
 
 set_browser_mime()
 {
     xdg_mime_fixup
-    orig="`get_browser_mime`"
+    if test -z "$2" ; then
+        MIME="text/html"
+    else
+        MIME="$2"
+    fi
+    orig="`get_browser_mime $MIME`"
     # Fixing the local desktop file can actually change the default browser all
     # by itself, so we fix it only after querying to find the current default.
-    fix_local_desktop_file "$1" || return
+    fix_local_desktop_file "$1" "$MIME" || return
     mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}/applications"
-    xdg-mime default "$1" text/html || return
+    xdg-mime default "$1" "$MIME" || return
     if [ x"`get_browser_mime`" != x"$1" ]; then
         # Put back the original value
-        xdg-mime default "$orig" text/html
+        xdg-mime default "$orig" "$MIME"
         exit_failure_operation_failed
     fi
 }
@@ -652,6 +692,45 @@ set_browser_gnome()
 }
 
 # }}} GNOME
+# {{{ GNOME 3.x
+
+get_browser_gnome3()
+{
+    get_browser_mime "x-scheme-handler/http"
+}
+
+check_browser_gnome3()
+{
+    desktop="$1"
+    check="`desktop_file_to_binary "$1"`"
+    if [ -z "$check" ]; then
+        echo no
+        exit_success
+    fi
+    # Check HTTP and HTTPS, but not about: and unknown:.
+    for protocol in http https; do
+        browser="`get_browser_mime "x-scheme-handler/$protocol"`"
+        if [ x"$browser" != x"$desktop" ]; then
+            echo no
+            exit_success
+        fi
+    done
+    echo yes
+    exit_success
+}
+
+set_browser_gnome3()
+{
+    binary="`desktop_file_to_binary "$1"`"
+    [ "$binary" ] || exit_failure_file_missing
+    set_browser_mime "$1" || return
+
+    # Set the default browser.
+    for protocol in http https about unknown; do
+        set_browser_mime "$1" "x-scheme-handler/$protocol" || return
+    done
+}
+# }}} GNOME 3.x
 # {{{ xfce
 
 get_browser_xfce()
@@ -861,7 +940,7 @@ fi
 detectDE
 
 case "$DE" in
-    kde|gnome|xfce)
+    kde|gnome*|xfce)
     dispatch_specific "$@"
     ;;
 

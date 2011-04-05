@@ -82,7 +82,7 @@ install
     To add menu items to a new submenu the desktop-files must be preceded by a
     directory-file that describes the submenu. If multiple desktop-files are
     specified, all entries will be added to the same menu. If entries are
-    installed to a menu that has been created with a previous call to 
+    installed to a menu that has been created with a previous call to
     xdg-desktop-menu the entries will be installed in addition to any already
     existing entries.
 
@@ -604,8 +604,33 @@ detectDE()
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
     elif `dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.gnome.SessionManager > /dev/null 2>&1` ; then DE=gnome;
     elif xprop -root _DT_SAVE_MODE 2> /dev/null | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
-    elif [ x"$DESKTOP_SESSION" == x"LXDE" ]; then DE=lxde;
-    else DE=""
+    fi
+
+    if [ x"$DE" = x"" ]; then
+      # fallback to checking $DESKTOP_SESSION
+      case "$DESKTOP_SESSION" in
+         LXDE)
+           DE=lxde; 
+           ;;
+         xfce|xfce4)
+           DE=xfce;
+           ;;
+      esac
+    fi
+
+    if [ x"$DE" = x"" ]; then
+      # fallback to uname output for other platforms
+      case "$(uname 2>/dev/null)" in 
+        Darwin)
+          DE=darwin;
+          ;;
+      esac
+    fi
+
+    if [ x"$DE" = x"gnome" ]; then
+      # gnome-default-applications-properties is only available in GNOME 2.x
+      # but not in GNOME 3.x
+      which gnome-default-applications-properties 2> /dev/null || DE="gnome3"
     fi
 }
 
@@ -687,7 +712,7 @@ make_lazy_default()
             # App already listed as default
             continue;
         fi
-        default_file="$1/defaults.list"
+        default_file="$(readlink -f "$1/defaults.list")"
         DEBUG 1 "Updating $default_file"
         grep -v "$MIME=" $default_file > ${default_file}.new 2> /dev/null
         if ! grep "[Default Applications]" ${default_file}.new > /dev/null; then

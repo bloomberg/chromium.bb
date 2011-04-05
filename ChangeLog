@@ -1,5 +1,10 @@
 === xdg-utils 1.1.x ===
 
+2011-03-31 Rex Dieter <rdieter@fedoraproject.org>
+   * Don't overwrite a /usr/share/applications/defaults.list symlink (BR35794)
+   * Use D-Bus API for GNOME screensaver (BR29860)
+   * Initial support for DE=Darwin, Default for $BROWSER under Mac OS (BR35500)
+
 2011-03-28 Rex Dieter <rdieter@fedoraproject.org>
    * xdg-open cannot detect xfce 4.8 correctly (BR33321)
    * xdg-mime's info_generic doesn't normalize symlinks (BR33097)

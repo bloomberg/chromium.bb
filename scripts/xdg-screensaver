@@ -335,8 +335,33 @@ detectDE()
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
     elif `dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.gnome.SessionManager > /dev/null 2>&1` ; then DE=gnome;
     elif xprop -root _DT_SAVE_MODE 2> /dev/null | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
-    elif [ x"$DESKTOP_SESSION" == x"LXDE" ]; then DE=lxde;
-    else DE=""
+    fi
+
+    if [ x"$DE" = x"" ]; then
+      # fallback to checking $DESKTOP_SESSION
+      case "$DESKTOP_SESSION" in
+         LXDE)
+           DE=lxde; 
+           ;;
+         xfce|xfce4)
+           DE=xfce;
+           ;;
+      esac
+    fi
+
+    if [ x"$DE" = x"" ]; then
+      # fallback to uname output for other platforms
+      case "$(uname 2>/dev/null)" in 
+        Darwin)
+          DE=darwin;
+          ;;
+      esac
+    fi
+
+    if [ x"$DE" = x"gnome" ]; then
+      # gnome-default-applications-properties is only available in GNOME 2.x
+      # but not in GNOME 3.x
+      which gnome-default-applications-properties 2> /dev/null || DE="gnome3"
     fi
 }
 
@@ -763,16 +788,18 @@ screensaver_suspend_loop()
 
 screensaver_gnome_screensaver()
 {
-# TODO
-# There seems to be a DBUS interface for gnome-screensaver
-# See http://lists.mplayerhq.hu/pipermail/mplayer-dev-eng/2006-April/042579.html and
-# http://cvs.gnome.org/viewcvs/gnome-screensaver/src/gs-listener-dbus.c?rev=1.36&view=log
-# A problem seems to be that Inhibit is tied to the lifetime of the DBUS appname and
-# this can not be used from a script
+# DBUS interface for gnome-screensaver
+# http://people.gnome.org/~mccann/gnome-screensaver/docs/gnome-screensaver.html
     case "$1" in
         suspend)
-        screensaver_suspend_loop gnome-screensaver-command --poke
-        result=0
+        screensaver_suspend_loop \
+        dbus-send --session \
+                  --dest=org.gnome.ScreenSaver \
+                  --type=method_call \
+                  /org/gnome/ScreenSaver \
+                  org.gnome.ScreenSaver.SimulateUserActivity \
+                  2> /dev/null
+        result=$?
         ;;
 
         resume)
@@ -781,7 +808,13 @@ screensaver_gnome_screensaver()
         ;;
 
         activate)
-        gnome-screensaver-command --activate > /dev/null 2> /dev/null
+        dbus-send --session \
+                  --dest=org.gnome.ScreenSaver \
+                  --type=method_call \
+                  /org/gnome/ScreenSaver \
+                  org.gnome.ScreenSaver.SetActive \
+                  boolean:true \
+                  2> /dev/null
         result=$?
         ;;
 
@@ -792,18 +825,31 @@ screensaver_gnome_screensaver()
 
         reset)
         # Turns the screensaver off right now
-        gnome-screensaver-command --deactivate > /dev/null 2> /dev/null
+        dbus-send --session \
+                  --dest=org.gnome.ScreenSaver \
+                  --type=method_call \
+                  /org/gnome/ScreenSaver \
+                  org.gnome.ScreenSaver.SimulateUserActivity \
+                 2> /dev/null
         result=$?
         ;;
 
         status)
-        result=0
-        if [ -f "$screensaver_file" ] ; then
-            echo "disabled"
-        elif gnome-screensaver-command --query > /dev/null 2> /dev/null; then
+        status=`dbus-send --session \
+                          --dest=org.gnome.ScreenSaver \
+                          --type=method_call \
+                          --print-reply \
+                          --reply-timeout=2000 \
+                          /org/gnome/ScreenSaver \
+                          org.gnome.ScreenSaver.GetActive \
+                          | grep boolean | cut -d ' ' -f 5`
+        result=$?
+        if [ x"$status" = "xtrue" -o x"$status" = "xfalse" ]; then
             echo "enabled"
+        elif [ x"$result" != "x0" ]; then
+            echo "ERROR: dbus org.gnome.ScreenSaver.GetActive returned '$status'" >&2
+            return 1
         else
-            # Something is wrong
             echo "disabled"
         fi
         ;;
