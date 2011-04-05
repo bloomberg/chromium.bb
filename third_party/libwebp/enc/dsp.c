@@ -21,9 +21,11 @@ extern "C" {
 
 static uint8_t clip1[255 + 510 + 1];    // clips [-255,510] to [0,255]
 
-static int tables_ok = 0;
+// We declare this variable 'volatile' to prevent instruction reordering
+// and make sure it's set to true _last_ (so as to be thread-safe)
+static volatile int tables_ok = 0;
 
-static void InitTables() {
+static void InitTables(void) {
   if (!tables_ok) {
     int i;
     for (i = -255; i <= 255 + 255; ++i) {
@@ -79,7 +81,7 @@ static void ITransform(const uint8_t* ref, const int16_t* in, uint8_t* dst) {
   }
 }
 
-void FTransform(const uint8_t* src, const uint8_t* ref, int16_t* out) {
+static void FTransform(const uint8_t* src, const uint8_t* ref, int16_t* out) {
   int i;
   int tmp[16];
   for (i = 0; i < 4; ++i, src += BPS, ref += BPS) {
@@ -582,6 +584,38 @@ VP8WMetric VP8TDisto4x4 = Disto4x4;
 VP8WMetric VP8TDisto16x16 = Disto16x16;
 
 //-----------------------------------------------------------------------------
+// Quantization
+//
+
+// Simple quantization
+static int QuantizeBlock(int16_t in[16], int16_t out[16],
+                         int n, const VP8Matrix* const mtx) {
+  int last = -1;
+  for (; n < 16; ++n) {
+    const int j = VP8Zigzag[n];
+    const int sign = (in[j] < 0);
+    int coeff = (sign ? -in[j] : in[j]) + mtx->sharpen_[j];
+    if (coeff > 2047) coeff = 2047;
+    if (coeff > mtx->zthresh_[j]) {
+      const int Q = mtx->q_[j];
+      const int iQ = mtx->iq_[j];
+      const int B = mtx->bias_[j];
+      out[n] = QUANTDIV(coeff, iQ, B);
+      if (sign) out[n] = -out[n];
+      in[j] = out[n] * Q;
+      if (out[n]) last = n;
+    } else {
+      out[n] = 0;
+      in[j] = 0;
+    }
+  }
+  return (last >= 0);
+}
+
+// default C implementation
+VP8QuantizeBlock VP8EncQuantizeBlock = QuantizeBlock;
+
+//-----------------------------------------------------------------------------
 // Block copy
 
 static inline void Copy(const uint8_t* src, uint8_t* dst, int size) {
@@ -604,9 +638,8 @@ VP8BlockCopy VP8Copy16x16 = Copy16x16;
 
 //-----------------------------------------------------------------------------
 
-void VP8EncDspInit() {
+void VP8EncDspInit(void) {
   InitTables();
-  // later we'll plug some SSE2 variant here
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)
