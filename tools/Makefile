@@ -941,10 +941,7 @@ endif
 	$(MAKE) -f $(THISMAKEFILE) gcc-redirector
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=32
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=64
-	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib,lib32,lib64}
-	# GCC uses path like this one - we need empty /lib for that:
-	# toolchain/linux_x86/bin/../lib/gcc/nacl64/4.4.3/../../../../nacl64/bin/as
-	mkdir "$(DESTDIR)$(SDKROOT)"/lib
+	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,lib/*.so*,lib32,lib64}
 
 .PHONY: build-with-newlib
 build-with-newlib:
@@ -963,10 +960,7 @@ build-with-newlib:
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
 	$(MAKE) -f $(THISMAKEFILE) redirector
-	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib,lib32,lib64}
-	# GCC uses path like this one - we need empty /lib for that:
-	# toolchain/linux_x86/bin/../lib/gcc/nacl64/4.4.3/../../../../nacl64/bin/as
-	mkdir "$(DESTDIR)$(SDKROOT)"/lib
+	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,lib/*.so*,lib32,lib64}
 
 # Newlib toolchain for buildbot.
 .PHONY: buildbot-build-with-newlib
