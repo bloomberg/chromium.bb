@@ -1017,7 +1017,7 @@ void MenuController::UpdateInitialLocation(
 
   // Calculate the bounds of the monitor we'll show menus on. Do this once to
   // avoid repeated system queries for the info.
-  pending_state_.monitor_bounds = Screen::GetMonitorAreaNearestPoint(
+  pending_state_.monitor_bounds = Screen::GetMonitorWorkAreaNearestPoint(
       bounds.origin());
 }
 
