@@ -55,6 +55,22 @@ class CrxInstaller
   // crbug.com/54916
   static void SetWhitelistedInstallId(const std::string& id);
 
+  // Exempt the next extension install with |id| from displaying a confirmation
+  // prompt, since the user already agreed to the install via
+  // beginInstallWithManifest. We require that the extension manifest matches
+  // |parsed_manifest| which is what was used to prompt with. Ownership of
+  // |parsed_manifest| is transferred here.
+  static void SetWhitelistedManifest(const std::string& id,
+                                     DictionaryValue* parsed_manifest);
+
+  // Returns the previously stored manifest from a call to
+  // SetWhitelistedManifest.
+  static const DictionaryValue* GetWhitelistedManifest(const std::string& id);
+
+  // Removes any whitelisted manifest for |id| and returns it. The caller owns
+  // the return value and is responsible for deleting it.
+  static DictionaryValue* RemoveWhitelistedManifest(const std::string& id);
+
   // Returns whether |id| is whitelisted - only call this on the UI thread.
   static bool IsIdWhitelisted(const std::string& id);
 
@@ -136,6 +152,10 @@ class CrxInstaller
   virtual void OnUnpackSuccess(const FilePath& temp_dir,
                                const FilePath& extension_dir,
                                const Extension* extension);
+
+  // Returns true if we can skip confirmation because the install was
+  // whitelisted.
+  bool CanSkipConfirmation();
 
   // Runs on the UI thread. Confirms with the user (via ExtensionInstallUI) that
   // it is OK to install this extension.

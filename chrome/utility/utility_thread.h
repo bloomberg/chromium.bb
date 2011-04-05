@@ -55,6 +55,9 @@ class UtilityThread : public ChildThread {
   // IPC for decoding an image.
   void OnDecodeImage(const std::vector<unsigned char>& encoded_data);
 
+  // IPC for decoding an image which is base64 encoded.
+  void OnDecodeImageBase64(const std::string& encoded_data);
+
   // IPC to render a PDF into a platform metafile.
   void OnRenderPDFPagesToMetafile(
       base::PlatformFile pdf_file,
@@ -85,6 +88,9 @@ class UtilityThread : public ChildThread {
   void OnInjectIDBKey(const IndexedDBKey& key,
                       const SerializedScriptValue& value,
                       const string16& key_path);
+
+  // IPC for parsing a string of JSON into a Value.
+  void OnParseJSON(const std::string& json);
 
   // IPC to notify we'll be running in batch mode instead of quitting after
   // any of the IPCs above, we'll only quit during OnBatchModeFinished().

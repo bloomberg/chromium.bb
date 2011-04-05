@@ -33,7 +33,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/extensions/gtk_theme_installed_infobar_delegate.h"
@@ -186,15 +185,8 @@ void ExtensionInstallUI::SetIcon(SkBitmap* image) {
     icon_ = *image;
   else
     icon_ = SkBitmap();
-  if (icon_.empty()) {
-    if (extension_->is_app()) {
-      icon_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          IDR_APP_DEFAULT_ICON);
-    } else {
-      icon_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          IDR_EXTENSION_DEFAULT_ICON);
-    }
-  }
+  if (icon_.empty())
+    icon_ = Extension::GetDefaultIcon(extension_->is_app());
 }
 
 void ExtensionInstallUI::OnImageLoaded(

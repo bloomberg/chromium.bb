@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/crx_installer.h"
 
+#include <map>
 #include <set>
 
 #include "base/file_util.h"
@@ -42,6 +43,7 @@ namespace {
 struct WhitelistedInstallData {
   WhitelistedInstallData() {}
   std::set<std::string> ids;
+  std::map<std::string, linked_ptr<DictionaryValue> > manifests;
 };
 
 static base::LazyInstance<WhitelistedInstallData>
@@ -53,6 +55,36 @@ static base::LazyInstance<WhitelistedInstallData>
 void CrxInstaller::SetWhitelistedInstallId(const std::string& id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   g_whitelisted_install_data.Get().ids.insert(id);
+}
+
+// static
+void CrxInstaller::SetWhitelistedManifest(const std::string& id,
+                                          DictionaryValue* parsed_manifest) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  WhitelistedInstallData& data = g_whitelisted_install_data.Get();
+  data.manifests[id] = linked_ptr<DictionaryValue>(parsed_manifest);
+}
+
+// static
+const DictionaryValue* CrxInstaller::GetWhitelistedManifest(
+    const std::string& id) {
+  WhitelistedInstallData& data = g_whitelisted_install_data.Get();
+  if (ContainsKey(data.manifests, id))
+    return data.manifests[id].get();
+  else
+    return NULL;
+}
+
+// static
+DictionaryValue* CrxInstaller::RemoveWhitelistedManifest(
+    const std::string& id) {
+  WhitelistedInstallData& data = g_whitelisted_install_data.Get();
+  if (ContainsKey(data.manifests, id)) {
+    DictionaryValue* manifest = data.manifests[id].release();
+    data.manifests.erase(id);
+    return manifest;
+  }
+  return NULL;
 }
 
 // static
@@ -289,6 +321,17 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
       NewRunnableMethod(this, &CrxInstaller::ConfirmInstall));
 }
 
+// Helper method to let us compare a whitelisted manifest with the actual
+// downloaded extension's manifest, but ignoring the kPublicKey since the
+// whitelisted manifest doesn't have that value.
+static bool EqualsIgnoringPublicKey(
+    const DictionaryValue& extension_manifest,
+    const DictionaryValue& whitelisted_manifest) {
+  scoped_ptr<DictionaryValue> manifest_copy(extension_manifest.DeepCopy());
+  manifest_copy->Remove(extension_manifest_keys::kPublicKey, NULL);
+  return manifest_copy->Equals(&whitelisted_manifest);
+}
+
 void CrxInstaller::ConfirmInstall() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (frontend_->extension_prefs()->IsExtensionBlacklisted(extension_->id())) {
@@ -318,8 +361,22 @@ void CrxInstaller::ConfirmInstall() {
   current_version_ =
       frontend_->extension_prefs()->GetVersionString(extension_->id());
 
+  // First see if it's whitelisted by id (the old mechanism).
   bool whitelisted = ClearWhitelistedInstallId(extension_->id()) &&
       extension_->plugins().empty() && is_gallery_install_;
+
+  // Now check if it's whitelisted by manifest.
+  scoped_ptr<DictionaryValue> whitelisted_manifest(
+      RemoveWhitelistedManifest(extension_->id()));
+  if (is_gallery_install_ && whitelisted_manifest.get()) {
+    if (!EqualsIgnoringPublicKey(*extension_->manifest_value(),
+                                 *whitelisted_manifest)) {
+      ReportFailureFromUIThread(
+          l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_INVALID));
+      return;
+    }
+    whitelisted = true;
+  }
 
   if (client_ &&
       (!allow_silent_install_ || !whitelisted)) {

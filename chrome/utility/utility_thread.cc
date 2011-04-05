@@ -7,9 +7,12 @@
 #include <stddef.h>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/file_path.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_unpacker.h"
@@ -64,12 +67,14 @@ bool UtilityThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(UtilityMsg_UnpackWebResource, OnUnpackWebResource)
     IPC_MESSAGE_HANDLER(UtilityMsg_ParseUpdateManifest, OnParseUpdateManifest)
     IPC_MESSAGE_HANDLER(UtilityMsg_DecodeImage, OnDecodeImage)
+    IPC_MESSAGE_HANDLER(UtilityMsg_DecodeImageBase64, OnDecodeImageBase64)
     IPC_MESSAGE_HANDLER(UtilityMsg_RenderPDFPagesToMetafile,
                         OnRenderPDFPagesToMetafile)
     IPC_MESSAGE_HANDLER(UtilityMsg_IDBKeysFromValuesAndKeyPath,
                         OnIDBKeysFromValuesAndKeyPath)
     IPC_MESSAGE_HANDLER(UtilityMsg_InjectIDBKey,
                         OnInjectIDBKey)
+    IPC_MESSAGE_HANDLER(UtilityMsg_ParseJSON, OnParseJSON)
     IPC_MESSAGE_HANDLER(UtilityMsg_BatchMode_Started, OnBatchModeStarted)
     IPC_MESSAGE_HANDLER(UtilityMsg_BatchMode_Finished, OnBatchModeFinished)
     IPC_MESSAGE_HANDLER(UtilityMsg_GetPrinterCapsAndDefaults,
@@ -131,6 +136,22 @@ void UtilityThread::OnDecodeImage(
   ReleaseProcessIfNeeded();
 }
 
+void UtilityThread::OnDecodeImageBase64(
+    const std::string& encoded_string) {
+  std::string decoded_string;
+
+  if (!base::Base64Decode(encoded_string, &decoded_string)) {
+    Send(new UtilityHostMsg_DecodeImage_Failed());
+    return;
+  }
+
+  std::vector<unsigned char> decoded_vector(decoded_string.size());
+  for (size_t i = 0; i < decoded_string.size(); ++i) {
+    decoded_vector[i] = static_cast<unsigned char>(decoded_string[i]);
+  }
+
+  OnDecodeImage(decoded_vector);
+}
 
 void UtilityThread::OnRenderPDFPagesToMetafile(
     base::PlatformFile pdf_file,
@@ -321,6 +342,21 @@ void UtilityThread::OnInjectIDBKey(const IndexedDBKey& key,
   SerializedScriptValue new_value(webkit_glue::InjectIDBKey(key, value,
                                                               key_path));
   Send(new UtilityHostMsg_InjectIDBKey_Finished(new_value));
+  ReleaseProcessIfNeeded();
+}
+
+void UtilityThread::OnParseJSON(const std::string& json) {
+  int error_code;
+  std::string error;
+  Value* value =
+      base::JSONReader::ReadAndReturnError(json, false, &error_code, &error);
+  if (value) {
+    ListValue wrapper;
+    wrapper.Append(value);
+    Send(new UtilityHostMsg_ParseJSON_Succeeded(wrapper));
+  } else {
+    Send(new UtilityHostMsg_ParseJSON_Failed(error));
+  }
   ReleaseProcessIfNeeded();
 }
 

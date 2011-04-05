@@ -65,6 +65,15 @@ bool UtilityProcessHost::StartImageDecoding(
   return true;
 }
 
+bool UtilityProcessHost::StartImageDecodingBase64(
+    const std::string& base64_encoded_data) {
+  if (!StartProcess(FilePath()))
+    return false;
+
+  Send(new UtilityMsg_DecodeImageBase64(base64_encoded_data));
+  return true;
+}
+
 bool UtilityProcessHost::StartIDBKeysFromValuesAndKeyPath(
     int id, const std::vector<SerializedScriptValue>& serialized_values,
     const string16& key_path)  {
@@ -83,6 +92,13 @@ bool UtilityProcessHost::StartInjectIDBKey(
     return false;
 
   Send(new UtilityMsg_InjectIDBKey(key, value, key_path));
+  return true;
+}
+
+bool UtilityProcessHost::StartJSONParsing(const std::string& json) {
+  if (!StartProcess(FilePath()))
+    return false;
+  Send(new UtilityMsg_ParseJSON(json));
   return true;
 }
 
@@ -209,6 +225,10 @@ bool UtilityProcessHost::Client::OnMessageReceived(
                         Client::OnIDBKeysFromValuesAndKeyPathFailed)
     IPC_MESSAGE_HANDLER(UtilityHostMsg_InjectIDBKey_Finished,
                         Client::OnInjectIDBKeyFinished)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseJSON_Succeeded,
+                        Client::OnJSONParseSucceeded)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseJSON_Failed,
+                        Client::OnJSONParseFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;

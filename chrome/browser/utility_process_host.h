@@ -18,6 +18,7 @@
 
 class DictionaryValue;
 class IndexedDBKey;
+class ListValue;
 class SerializedScriptValue;
 class SkBitmap;
 
@@ -95,6 +96,13 @@ class UtilityProcessHost : public BrowserChildProcessHost {
     virtual void OnInjectIDBKeyFinished(
         const SerializedScriptValue& new_value) {}
 
+    // Called when we're finished parsing a JSON string. Note that if parsing
+    // was successful, the result Value is contained in the first element of
+    // |wrapper| (we do this to get around a trickiness with passing a Value
+    // by const reference via our IPC system).
+    virtual void OnJSONParseSucceeded(const ListValue& wrapper) {}
+    virtual void OnJSONParseFailed(const std::string& error_message) {}
+
    protected:
     friend class base::RefCountedThreadSafe<Client>;
 
@@ -129,8 +137,11 @@ class UtilityProcessHost : public BrowserChildProcessHost {
   // Start parsing an extensions auto-update manifest xml file.
   bool StartUpdateManifestParse(const std::string& xml);
 
-  // Start image decoding.
+  // Start image decoding. The image can be any format WebCore understands.
+  // Results are reported to either OnDecodeImageSuceeded() or
+  // OnDecodeImageFailed().
   bool StartImageDecoding(const std::vector<unsigned char>& encoded_data);
+  bool StartImageDecodingBase64(const std::string& base64_encoded_data);
 
   // Starts extracting |key_path| from |serialized_values|, and replies with the
   // corresponding IndexedDBKeys via OnIDBKeysFromValuesAndKeyPathSucceeded.
@@ -143,6 +154,10 @@ class UtilityProcessHost : public BrowserChildProcessHost {
   bool StartInjectIDBKey(const IndexedDBKey& key,
                          const SerializedScriptValue& value,
                          const string16& key_path);
+
+  // Starts parsing a JSON string into a Value object. The result is reported
+  // to the client via OnJSONParseSucceeded or OnJSONParseFailed.
+  bool StartJSONParsing(const std::string& json);
 
   // Starts utility process in batch mode. Caller must call EndBatchMode()
   // to finish the utility process.

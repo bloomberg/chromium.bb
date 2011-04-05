@@ -300,6 +300,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SetStoreLoginFunction>();
   RegisterFunction<PromptBrowserLoginFunction>();
   RegisterFunction<BeginInstallFunction>();
+  RegisterFunction<BeginInstallWithManifestFunction>();
   RegisterFunction<CompleteInstallFunction>();
 
   // WebRequest.

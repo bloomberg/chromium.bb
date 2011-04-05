@@ -1489,7 +1489,7 @@ TEST(ExtensionTest, IsElevatedHostList) {
 
 TEST(ExtensionTest, GenerateId) {
   std::string result;
-  EXPECT_FALSE(Extension::GenerateId("", &result));
+  EXPECT_TRUE(Extension::GenerateId("", &result));
 
   EXPECT_TRUE(Extension::GenerateId("test", &result));
   EXPECT_EQ(result, "jpignaibiiemhngfjkcpokkamffknabf");

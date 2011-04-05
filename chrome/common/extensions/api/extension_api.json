@@ -4557,6 +4557,44 @@
         ]
       },
       {
+        "name": "beginInstallWithManifest",
+        "description": "Initiates the install process for the given extension. This must be called during a user gesture.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "The id of the extension to be installled.",
+            "minLength": 32,
+            "maxLength": 32
+          },
+          {
+            "name": "icon_data",
+            "type": "string",
+            "description": "An icon as a base64-encoded image, displayed in a confirmation dialog."
+          },
+          {
+            "name": "manifest_json",
+            "type": "string",
+            "description": "A string with the contents of the extension's manifest.json file. During the install process, the browser will check that the downloaded extension's manifest matches what was passed in here.",
+            "minLength": 1
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called when the user has either accepted/rejected the dialog, or some error occurred (such as invalid manifest or icon image data).",
+            "optional": "true",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "string",
+                "description": "A string result code, which will be empty upon success. The possible values in the case of errors include 'unknown_error', 'user_cancelled', 'manifest_error', 'icon_error', 'invalid_id', 'permission_denied', and 'no_gesture'."
+              }
+            ]
+          }
+        ]
+
+      },
+      {
         "name": "completeInstall",
         "description": "",
         "parameters": [

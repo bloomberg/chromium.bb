@@ -37,9 +37,11 @@
 #include "googleurl/src/url_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "net/base/registry_controlled_domain.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/image_decoder.h"
 
 namespace keys = extension_manifest_keys;
@@ -540,9 +542,6 @@ GURL Extension::GetResourceURL(const GURL& extension_url,
 
 bool Extension::GenerateId(const std::string& input, std::string* output) {
   CHECK(output);
-  if (input.empty())
-    return false;
-
   uint8 hash[Extension::kIdSize];
   base::SHA256HashString(input, hash, sizeof(hash));
   *output = StringToLowerASCII(base::HexEncode(hash, sizeof(hash)));
@@ -1226,7 +1225,7 @@ Extension::Extension(const FilePath& path, Location location)
       launch_width_(0),
       launch_height_(0),
       wants_file_access_(false) {
-  DCHECK(path.IsAbsolute());
+  DCHECK(path.empty() || path.IsAbsolute());
   path_ = MaybeNormalizePath(path);
 }
 Extension::~Extension() {
@@ -1406,6 +1405,17 @@ void Extension::DecodeIconFromPath(const FilePath& icon_path,
   }
 
   result->swap(decoded);
+}
+
+// static
+const SkBitmap& Extension::GetDefaultIcon(bool is_app) {
+  if (is_app) {
+    return *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_APP_DEFAULT_ICON);
+  } else {
+    return *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_EXTENSION_DEFAULT_ICON);
+  }
 }
 
 GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
