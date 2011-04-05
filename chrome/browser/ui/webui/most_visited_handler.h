@@ -15,7 +15,6 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
-class DictionaryValue;
 class GURL;
 class ListValue;
 class PageUsageData;
@@ -23,6 +22,15 @@ class PrefService;
 class Value;
 
 // The handler for Javascript messages related to the "most visited" view.
+//
+// This class manages two preferences:
+// - The URL blacklist: URLs we do not want to show in the thumbnails list.  It
+//   is a dictionary for quick access (it associates a dummy boolean to the URL
+//   string).
+// - Pinned URLs: This is a dictionary for the pinned URLs for the the most
+//   visited part of the new tab page. The key of the dictionary is a hash of
+//   the URL and the value is a dictionary with title, url and index.  This is
+//   owned by the PrefService.
 class MostVisitedHandler : public WebUIMessageHandler,
                            public NotificationObserver {
  public:
@@ -111,17 +119,6 @@ class MostVisitedHandler : public WebUIMessageHandler,
   // Only used for matching up clicks on the page to which most visited entry
   // was clicked on for metrics purposes.
   std::vector<GURL> most_visited_urls_;
-
-  // The URL blacklist: URLs we do not want to show in the thumbnails list.  It
-  // is a dictionary for quick access (it associates a dummy boolean to the URL
-  // string).  This is owned by the PrefService.
-  DictionaryValue* url_blacklist_;
-
-  // This is a dictionary for the pinned URLs for the the most visited part of
-  // the new tab page. The key of the dictionary is a hash of the URL and the
-  // value is a dictionary with title, url and index.  This is owned by the
-  // PrefService.
-  DictionaryValue* pinned_urls_;
 
   // We pre-fetch the first set of result pages.  This variable is false until
   // we get the first getMostVisited() call.

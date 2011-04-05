@@ -20,6 +20,7 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -55,9 +56,7 @@ struct MostVisitedHandler::MostVisitedPage {
 };
 
 MostVisitedHandler::MostVisitedHandler()
-    : url_blacklist_(NULL),
-      pinned_urls_(NULL),
-      got_first_most_visited_request_(false) {
+    : got_first_most_visited_request_(false) {
 }
 
 MostVisitedHandler::~MostVisitedHandler() {
@@ -65,10 +64,6 @@ MostVisitedHandler::~MostVisitedHandler() {
 
 WebUIMessageHandler* MostVisitedHandler::Attach(WebUI* web_ui) {
   Profile* profile = web_ui->GetProfile();
-  url_blacklist_ = profile->GetPrefs()->GetMutableDictionary(
-      prefs::kNTPMostVisitedURLsBlacklist);
-  pinned_urls_ = profile->GetPrefs()->GetMutableDictionary(
-      prefs::kNTPMostVisitedPinnedURLs);
   // Set up our sources for thumbnail and favicon data.
   ThumbnailSource* thumbnail_src = new ThumbnailSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(thumbnail_src);
@@ -121,8 +116,11 @@ void MostVisitedHandler::HandleGetMostVisited(const ListValue* args) {
 
 void MostVisitedHandler::SendPagesValue() {
   if (pages_value_.get()) {
-    bool has_blacklisted_urls = !url_blacklist_->empty();
-    history::TopSites* ts = web_ui_->GetProfile()->GetTopSites();
+    Profile* profile = web_ui_->GetProfile();
+    const DictionaryValue* url_blacklist =
+        profile->GetPrefs()->GetDictionary(prefs::kNTPMostVisitedURLsBlacklist);
+    bool has_blacklisted_urls = !url_blacklist->empty();
+    history::TopSites* ts = profile->GetTopSites();
     if (ts)
       has_blacklisted_urls = ts->HasBlacklistedItems();
     FundamentalValue first_run(IsFirstRun());
@@ -235,18 +233,22 @@ bool MostVisitedHandler::GetPinnedURLAtIndex(int index,
   // having a map from the index to the item but the number of items is limited
   // to the number of items the most visited section is showing on the NTP so
   // this will be fast enough for now.
-  for (DictionaryValue::key_iterator it = pinned_urls_->begin_keys();
-      it != pinned_urls_->end_keys(); ++it) {
+  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  const DictionaryValue* pinned_urls =
+      prefs->GetDictionary(prefs::kNTPMostVisitedPinnedURLs);
+  for (DictionaryValue::key_iterator it = pinned_urls->begin_keys();
+      it != pinned_urls->end_keys(); ++it) {
     Value* value;
-    if (pinned_urls_->GetWithoutPathExpansion(*it, &value)) {
+    if (pinned_urls->GetWithoutPathExpansion(*it, &value)) {
       if (!value->IsType(DictionaryValue::TYPE_DICTIONARY)) {
         // Moved on to TopSites and now going back.
-        pinned_urls_->Clear();
+        DictionaryPrefUpdate update(prefs, prefs::kNTPMostVisitedPinnedURLs);
+        update.Get()->Clear();
         return false;
       }
 
       int dict_index;
-      DictionaryValue* dict = static_cast<DictionaryValue*>(value);
+      const DictionaryValue* dict = static_cast<DictionaryValue*>(value);
       if (dict->GetInteger("index", &dict_index) && dict_index == index) {
         // The favicon and thumbnail URLs may be empty.
         std::string tmp_string;
