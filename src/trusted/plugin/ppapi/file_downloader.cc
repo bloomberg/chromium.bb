@@ -1,6 +1,6 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/src/trusted/plugin/ppapi/file_downloader.h"
 
@@ -118,7 +118,7 @@ void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
   if (url_response.is_null()) {
     PLUGIN_PRINTF((
         "FileDownloader::URLLoadStartNotify (url_response=NULL)\n"));
-    file_open_notify_callback_.Run(pp_error);
+    file_open_notify_callback_.Run(PP_ERROR_FAILED);
     return;
   }
   // Note that URLs in the chrome-extension scheme produce different error
@@ -129,7 +129,7 @@ void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
   if (!full_url.is_string()) {
     PLUGIN_PRINTF((
         "FileDownloader::URLLoadStartNotify (url is not a string)\n"));
-    file_open_notify_callback_.Run(pp_error);
+    file_open_notify_callback_.Run(PP_ERROR_FAILED);
     return;
   }
   bool status_ok = false;
@@ -145,7 +145,7 @@ void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
   }
 
   if (!status_ok) {
-    file_open_notify_callback_.Run(pp_error);
+    file_open_notify_callback_.Run(PP_ERROR_FAILED);
     return;
   }
 
@@ -182,7 +182,7 @@ void FileDownloader::URLLoadFinishNotify(int32_t pp_error) {
   PLUGIN_PRINTF(("FileDownloader::URLLoadFinishNotify (full_url=%s)\n",
                  full_url.DebugString().c_str()));
   if (!full_url.is_string()) {
-    file_open_notify_callback_.Run(pp_error);
+    file_open_notify_callback_.Run(PP_ERROR_FAILED);
     return;
   }
   url_ = full_url.AsString();
@@ -191,7 +191,7 @@ void FileDownloader::URLLoadFinishNotify(int32_t pp_error) {
   pp::FileRef_Dev file(url_response.GetBodyAsFileRef());
   if (file.is_null()) {
     PLUGIN_PRINTF(("FileDownloader::URLLoadFinishNotify (file=NULL)\n"));
-    file_open_notify_callback_.Run(pp_error);
+    file_open_notify_callback_.Run(PP_ERROR_FAILED);
     return;
   }
 
