@@ -20,6 +20,9 @@ fi
 readonly SCRIPT_DIR="$(dirname "$0")"
 readonly SCRIPT_DIR_ABS="$(cd "${SCRIPT_DIR}" ; pwd)"
 
+export TOOLCHAINLOC=sdk
+export TOOLCHAINNAME=nacl-sdk
+
 set -x
 set -e
 set -u
@@ -34,7 +37,7 @@ rm -rf ../scons-out sdk-out sdk ../toolchain SRC BUILD
 
 echo @@@BUILD_STEP compile_toolchain@@@
 mkdir -p ../toolchain/${PLATFORM}_x86
-make -j8 clean build SDKLOC=`pwd`/sdk
+make -j8 clean buildbot-build
 
 echo @@@BUILD_STEP tar_toolchain@@@
 tar cvfz naclsdk.tgz sdk/

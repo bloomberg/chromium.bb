@@ -7,7 +7,9 @@
 #
 # Buildbots:
 # - Sync needed sources at pinned revision and build newlib-based toolchain:
-#     make build TOOLCHAINLOC=<where-to-install-the-toolchain>
+#     make buildbot-build-with-newlib TOOLCHAINLOC=<where-to-install-the-toolchain>
+#  or
+#     make buildbot-build-with-glibc TOOLCHAINLOC=<where-to-install-the-toolchain>
 #
 # Development:
 # - Sync all sources at pinned revision:
@@ -15,13 +17,13 @@
 # - Sync all sources at most recent revision:
 #     make sync
 # - Build newlib-based toolchain from current sources:
-#     make dev-build TOOLCHAINLOC=<where-to-install-the-toolchain>
+#     make build-with-newlib TOOLCHAINLOC=<where-to-install-the-toolchain>
 # - Build glibc-based toolchain from current sources:
-#     make dev-build-with-glibc TOOLCHAINLOC=<where-to-install-the-toolchain>
+#     make build-with-glibc TOOLCHAINLOC=<where-to-install-the-toolchain>
 #
 ##############################################################################
 
-default: build
+default: build-with-glibc
 
 # Delete the target file if the recipe fails after beginning to change the file
 # http://www.gnu.org/software/make/manual/make.html#Errors (Errors in Recipes)
@@ -917,8 +919,8 @@ endif
 # On platforms where glibc build is slow or unavailable you can specify
 # glibc_download.sh (or any other program) to download glibc
 INST_GLIBC_PROGRAM?=none
-.PHONY: dev-build-with-glibc
-dev-build-with-glibc:
+.PHONY: build-with-glibc
+build-with-glibc:
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
 	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
@@ -940,9 +942,12 @@ endif
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=32
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=64
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib,lib32,lib64}
+	# GCC uses path like this one - we need empty /lib for that:
+	# toolchain/linux_x86/bin/../lib/gcc/nacl64/4.4.3/../../../../nacl64/bin/as
+	mkdir "$(DESTDIR)$(SDKROOT)"/lib
 
-.PHONY: dev-build
-dev-build:
+.PHONY: build-with-newlib
+build-with-newlib:
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
 	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
@@ -959,16 +964,19 @@ dev-build:
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
 	$(MAKE) -f $(THISMAKEFILE) redirector
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib,lib32,lib64}
+	# GCC uses path like this one - we need empty /lib for that:
+	# toolchain/linux_x86/bin/../lib/gcc/nacl64/4.4.3/../../../../nacl64/bin/as
+	mkdir "$(DESTDIR)$(SDKROOT)"/lib
 
 # Newlib toolchain for buildbot.
-.PHONY: build
-build: | \
+.PHONY: buildbot-build-with-newlib
+buildbot-build-with-newlib: | \
   pinned-src-binutils \
   pinned-src-gcc \
   pinned-src-newlib \
   pinned-src-gdb
 	find SRC -print0 | xargs -0 touch -r SRC
-	$(MAKE) -f $(THISMAKEFILE) dev-build
+	$(MAKE) -f $(THISMAKEFILE) build-with-newlib
 
 # Glibc toolchain for buildbot.
 .PHONY: buildbot-build-with-glibc
@@ -978,7 +986,7 @@ buildbot-build-with-glibc: | \
   pinned-src-glibc \
   pinned-src-linux-headers-for-nacl
 	find SRC -print0 | xargs -0 touch -r SRC
-	$(MAKE) -f $(THISMAKEFILE) dev-build-with-glibc
+	$(MAKE) -f $(THISMAKEFILE) build-with-glibc
 
 ##################################################################
 # Run DejaGnu tests.
