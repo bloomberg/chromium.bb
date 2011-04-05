@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FAVICON_HELPER_H__
-#define CHROME_BROWSER_FAVICON_HELPER_H__
+#ifndef CHROME_BROWSER_FAVICON_TAB_HELPER_H__
+#define CHROME_BROWSER_FAVICON_TAB_HELPER_H__
 #pragma once
 
 #include <map>
@@ -12,18 +12,16 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/favicon_service.h"
-#include "chrome/common/ref_counted_util.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
 class NavigationEntry;
-class Profile;
 class RefCountedMemory;
 class SkBitmap;
 class TabContents;
 
-// FaviconHelper is used to fetch the favicon for TabContents.
+// FaviconTabHelper is used to fetch the favicon for TabContents.
 //
 // FetchFavicon requests the favicon from the favicon service which in turn
 // requests the favicon from the history database. At this point
@@ -65,13 +63,25 @@ class TabContents;
 // at which point we update the favicon of the NavigationEntry and notify
 // the database to save the favicon.
 
-class FaviconHelper : public TabContentsObserver {
+class FaviconTabHelper : public TabContentsObserver {
  public:
-  explicit FaviconHelper(TabContents* tab_contents);
-  virtual ~FaviconHelper();
+  explicit FaviconTabHelper(TabContents* tab_contents);
+  virtual ~FaviconTabHelper();
 
-  // Initiates loading the favicon for the specified url.
-  void FetchFavicon(const GURL& url);
+  // Returns the favicon for this tab, or an isNull() bitmap if the tab does not
+  // have a favicon. The default implementation uses the current navigation
+  // entry.
+  SkBitmap GetFavicon() const;
+
+  // Returns true if we are not using the default favicon.
+  bool FaviconIsValid() const;
+
+  // Returns whether the favicon should be displayed. If this returns false, no
+  // space is provided for the favicon, and the favicon is never displayed.
+  virtual bool ShouldDisplayFavicon();
+
+  // Saves the favicon for the current page.
+  void SaveFavicon();
 
   // Initiates loading an image from given |image_url|. Returns a download id
   // for caller to track the request. When download completes, |callback| is
@@ -103,19 +113,26 @@ class FaviconHelper : public TabContentsObserver {
     ImageDownloadCallback* callback;
   };
 
-  // TabContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  // TabContentsObserver overrides.
+  virtual void NavigateToPendingEntry(
+      const GURL& url,
+      NavigationController::ReloadType reload_type) OVERRIDE;
+  virtual void DidNavigateMainFramePostCommit(
+      const NavigationController::LoadCommittedDetails& details,
+      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnDidDownloadFavicon(int id,
                             const GURL& image_url,
                             bool errored,
                             const SkBitmap& image);
 
+  // Initiates loading the favicon for the specified url.
+  void FetchFavicon(const GURL& url);
+
   // Return the NavigationEntry for the active entry, or NULL if the active
   // entries URL does not match that of the URL last passed to FetchFavicon.
   NavigationEntry* GetEntry();
-
-  Profile* profile();
 
   FaviconService* GetFaviconService();
 
@@ -179,7 +196,7 @@ class FaviconHelper : public TabContentsObserver {
   typedef std::map<int, DownloadRequest> DownloadRequests;
   DownloadRequests download_requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(FaviconHelper);
+  DISALLOW_COPY_AND_ASSIGN(FaviconTabHelper);
 };
 
-#endif  // CHROME_BROWSER_FAVICON_HELPER_H__
+#endif  // CHROME_BROWSER_FAVICON_TAB_HELPER_H__

@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -562,7 +563,7 @@ void LocationBarViewGtk::OnSetFocus() {
 }
 
 SkBitmap LocationBarViewGtk::GetFavicon() const {
-  return GetTabContents()->GetFavicon();
+  return GetTabContentsWrapper()->favicon_tab_helper()->GetFavicon();
 }
 
 string16 LocationBarViewGtk::GetTitle() const {
@@ -573,7 +574,7 @@ InstantController* LocationBarViewGtk::GetInstant() {
   return browser_->instant();
 }
 
-TabContentsWrapper* LocationBarViewGtk::GetTabContentsWrapper() {
+TabContentsWrapper* LocationBarViewGtk::GetTabContentsWrapper() const {
   return browser_->GetSelectedTabContentsWrapper();
 }
 

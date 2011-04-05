@@ -9,9 +9,11 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -337,8 +339,12 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
     tc->UpdateTitle(rvh, pc->page_id(), UTF16ToWideHack(title));
 
   GURL icon_url = pc->icon_url();
-  if (!icon_url.is_empty())
-    tc->favicon_helper().OnUpdateFaviconURL(pc->page_id(), icon_url);
+  if (!icon_url.is_empty()) {
+    // TODO(avi): move prerendering to use TCWs; remove this.
+    TabContentsWrapper* wrapper =
+        TabContentsWrapper::GetCurrentWrapperForContents(tc);
+    wrapper->favicon_tab_helper()->OnUpdateFaviconURL(pc->page_id(), icon_url);
+  }
 
   if (pc->has_stopped_loading())
     tc->DidStopLoading();

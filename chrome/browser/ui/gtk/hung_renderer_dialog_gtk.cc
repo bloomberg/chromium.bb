@@ -9,6 +9,7 @@
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/logging_chrome.h"
@@ -154,7 +155,7 @@ void HungRendererDialogGtk::ShowForTabContents(TabContents* hung_contents) {
       std::string title = UTF16ToUTF8(it->tab_contents()->GetTitle());
       if (title.empty())
         title = UTF16ToUTF8(TabContentsWrapper::GetDefaultTitle());
-      SkBitmap favicon = it->tab_contents()->GetFavicon();
+      SkBitmap favicon = it->favicon_tab_helper()->GetFavicon();
 
       GdkPixbuf* pixbuf = NULL;
       if (favicon.width() > 0)

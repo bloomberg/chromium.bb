@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/wm_overview_favicon.h"
 #include "chrome/browser/chromeos/wm_overview_snapshot.h"
 #include "chrome/browser/chromeos/wm_overview_title.h"
+#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -239,7 +240,7 @@ void BrowserListener::TabChangedAt(
     snapshots_[index].title->SetTitle(contents->tab_contents()->GetTitle());
     snapshots_[index].title->SetUrl(contents->tab_contents()->GetURL());
     snapshots_[index].favicon->SetFavicon(
-        contents->tab_contents()->GetFavicon());
+        contents->favicon_tab_helper()->GetFavicon());
     if (change_type != TabStripModelObserver::TITLE_NOT_LOADING)
       MarkSnapshotAsDirty(index);
   }
@@ -424,7 +425,9 @@ void BrowserListener::InsertSnapshot(int index) {
 
   node.favicon = new WmOverviewFavicon;
   node.favicon->Init(node.snapshot);
-  node.favicon->SetFavicon(browser_->GetTabContentsAt(index)->GetFavicon());
+  node.favicon->SetFavicon(
+      browser_->GetTabContentsWrapperAt(index)->
+          favicon_tab_helper()->GetFavicon());
 
   node.title = new WmOverviewTitle;
   node.title->Init(gfx::Size(std::max(0, cell_size.width() -

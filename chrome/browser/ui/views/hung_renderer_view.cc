@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/logging_chrome.h"
@@ -55,7 +56,7 @@ class HungPagesTableModel : public views::GroupTableModel {
   virtual void GetGroupRangeForItem(int item, views::GroupRange* range);
 
  private:
-  typedef std::vector<TabContents*> TabContentsVector;
+  typedef std::vector<TabContentsWrapper*> TabContentsVector;
   TabContentsVector tab_contentses_;
 
   ui::TableModelObserver* observer_;
@@ -77,7 +78,7 @@ void HungPagesTableModel::InitForTabContents(TabContents* hung_contents) {
   for (TabContentsIterator it; !it.done(); ++it) {
     if (it->tab_contents()->GetRenderProcessHost() ==
         hung_contents->GetRenderProcessHost())
-      tab_contentses_.push_back((*it)->tab_contents());
+      tab_contentses_.push_back(*it);
   }
   // The world is different.
   if (observer_)
@@ -93,7 +94,7 @@ int HungPagesTableModel::RowCount() {
 
 string16 HungPagesTableModel::GetText(int row, int column_id) {
   DCHECK(row >= 0 && row < RowCount());
-  string16 title = tab_contentses_[row]->GetTitle();
+  string16 title = tab_contentses_[row]->tab_contents()->GetTitle();
   if (title.empty())
     title = TabContentsWrapper::GetDefaultTitle();
   // TODO(xji): Consider adding a special case if the title text is a URL,
@@ -105,7 +106,7 @@ string16 HungPagesTableModel::GetText(int row, int column_id) {
 
 SkBitmap HungPagesTableModel::GetIcon(int row) {
   DCHECK(row >= 0 && row < RowCount());
-  return tab_contentses_.at(row)->GetFavicon();
+  return tab_contentses_.at(row)->favicon_tab_helper()->GetFavicon();
 }
 
 void HungPagesTableModel::SetObserver(ui::TableModelObserver* observer) {

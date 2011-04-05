@@ -321,7 +321,7 @@ void ToolbarView::RunMenu(views::View* source, const gfx::Point& /* pt */) {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, LocationBarView::Delegate implementation:
 
-TabContentsWrapper* ToolbarView::GetTabContentsWrapper() {
+TabContentsWrapper* ToolbarView::GetTabContentsWrapper() const {
   return browser_->GetSelectedTabContentsWrapper();
 }
 

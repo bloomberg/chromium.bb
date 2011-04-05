@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
@@ -286,6 +287,8 @@ void TabRendererGtk::UpdateData(TabContents* contents,
                                 bool app,
                                 bool loading_only) {
   DCHECK(contents);
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(contents);
   theme_service_ = GtkThemeService::GetFrom(contents->profile());
 
   if (!loading_only) {
@@ -299,7 +302,7 @@ void TabRendererGtk::UpdateData(TabContents* contents,
     if (app_icon)
       data_.favicon = *app_icon;
     else
-      data_.favicon = contents->GetFavicon();
+      data_.favicon = wrapper->favicon_tab_helper()->GetFavicon();
 
     data_.app = app;
     // This is kind of a hacky way to determine whether our icon is the default
@@ -316,7 +319,7 @@ void TabRendererGtk::UpdateData(TabContents* contents,
   // Loading state also involves whether we show the favicon, since that's where
   // we display the throbber.
   data_.loading = contents->is_loading();
-  data_.show_icon = contents->ShouldDisplayFavicon();
+  data_.show_icon = wrapper->favicon_tab_helper()->ShouldDisplayFavicon();
 }
 
 void TabRendererGtk::UpdateFromModel() {

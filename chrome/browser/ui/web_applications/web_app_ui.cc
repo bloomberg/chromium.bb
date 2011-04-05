@@ -9,6 +9,7 @@
 #include "base/task.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -133,7 +134,7 @@ void UpdateShortcutWorker::DownloadIcon() {
     return;
   }
 
-  tab_contents_->tab_contents()->favicon_helper().DownloadImage(
+  tab_contents_->favicon_tab_helper()->DownloadImage(
       unprocessed_icons_.back().url,
       std::max(unprocessed_icons_.back().width,
                unprocessed_icons_.back().height),
@@ -303,7 +304,7 @@ void GetShortcutInfoForTab(TabContentsWrapper* tab_contents_wrapper,
                                           tab_contents->GetTitle()) :
       app_info.title;
   info->description = app_info.description;
-  info->favicon = tab_contents->GetFavicon();
+  info->favicon = tab_contents_wrapper->favicon_tab_helper()->GetFavicon();
 }
 
 void UpdateShortcutForTabContents(TabContentsWrapper* tab_contents) {
