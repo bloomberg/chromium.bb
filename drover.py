@@ -6,19 +6,19 @@
 import optparse
 import os
 import re
-import subprocess
 import sys
 
 import breakpad  # pylint: disable=W0611
 
 import gclient_utils
+import subprocess2
 
 USAGE = """
 WARNING: Please use this tool in an empty directory
 (or at least one that you don't mind clobbering.)
 
 REQUIRES: SVN 1.5+
-NOTE: NO NEED TO CHECKOUT ANYTHING IN ADVANCE OF USING THIS TOOL."
+NOTE: NO NEED TO CHECKOUT ANYTHING IN ADVANCE OF USING THIS TOOL.
 Valid parameters:
 
 [Merge from trunk to branch]
@@ -64,9 +64,8 @@ def gclUpload(revision, author):
   return runGcl(command)
 
 def getSVNInfo(url, revision):
-  svn_info = gclient_utils.Popen(['svn', 'info', '%s@%s' % (url, revision)],
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE).stdout.readlines()
+  svn_info = subprocess2.check_output(
+      ['svn', 'info', '%s@%s' % (url, revision)]).splitlines()
   info = {}
   for line in svn_info:
     match = re.search(r"(.*?):(.*)", line)
@@ -76,9 +75,7 @@ def getSVNInfo(url, revision):
   return info
 
 def isSVNDirty():
-  svn_status = gclient_utils.Popen(['svn', 'status'],
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE).stdout.readlines()
+  svn_status = subprocess2.check_output(['svn', 'status']).splitlines()
   for line in svn_status:
     match = re.search(r"^[^X?]", line)
     if match:
@@ -118,18 +115,15 @@ def inCheckoutRoot(path):
 
 def getRevisionLog(url, revision):
   """Takes an svn url and gets the associated revision."""
-  svn_log = gclient_utils.Popen(['svn', 'log', url, '-r', str(revision)],
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE).stdout.readlines()
+  svn_log = subprocess2.check_output(
+      ['svn', 'log', url, '-r', str(revision)]).splitlines()
   # Don't include the header lines and the trailing "---..." line and eliminate
   # any '\r's.
   return ''.join([l.replace('\r','') for l in svn_log[3:-1]])
 
 def getSVNVersionInfo():
   """Extract version information from SVN"""
-  svn_info = gclient_utils.Popen(['svn', '--version'],
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE).stdout.readlines()
+  svn_info = subprocess2.check_output(['svn', '--version']).splitlines()
   info = {}
   for line in svn_info:
     match = re.search(r"svn, version ((\d+)\.(\d+)\.(\d+))", line)
@@ -277,9 +271,8 @@ def getFileInfo(url, revision):
   if (files_info_ != None):
     return files_info_
 
-  svn_log = gclient_utils.Popen(['svn', 'log', url, '-r', str(revision), '-v'],
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE).stdout.readlines()
+  svn_log = subprocess2.check_output(
+      ['svn', 'log', url, '-r', str(revision), '-v']).splitlines()
 
   info = []
   for line in svn_log:
@@ -437,7 +430,7 @@ def drover(options, args):
     if not (options.revertbot or SKIP_CHECK_WORKING or
         prompt("Working directory: '%s' already exists, clobber?" % working)):
       return 0
-    gclient_utils.RemoveDirectory(working)
+    gclient_utils.rmtree(working)
 
   if not options.local:
     os.makedirs(working)
