@@ -243,6 +243,9 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
         *additional_headers,
         (updated_headers.length() + 1) * sizeof(wchar_t)));
     lstrcpyW(*additional_headers, ASCIIToWide(updated_headers).c_str());
+  } else {
+    // TODO(erikwright): Remove the user agent if it is present (i.e., because
+    // of PostPlatform setting in the registry).
   }
   return S_OK;
 }

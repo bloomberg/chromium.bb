@@ -84,19 +84,9 @@ class ReadyModeDelegateImpl : public ready_mode::Delegate {
   DISALLOW_COPY_AND_ASSIGN(ReadyModeDelegateImpl);
 };  // class ReadyModeDelegateImpl
 
-void SynchronizeEnablementState() {
-  std::string user_agent(http_utils::GetDefaultUserAgent());
-  bool enabled = user_agent.find("chromeframe") != std::string::npos;
-  ProtocolSinkWrap::set_ignore_xua(!enabled);
-}
-
 void ReadyModeDelegateImpl::DisableChromeFrame() {
-  if (GetIEVersion() != IE_9) {
-    SynchronizeEnablementState();
-  } else {
-    HttpNegotiatePatch::set_modify_user_agent(false);
-    ProtocolSinkWrap::set_ignore_xua(true);
-  }
+  HttpNegotiatePatch::set_modify_user_agent(false);
+  ProtocolSinkWrap::set_ignore_xua(true);
 }
 
 }  // namespace
@@ -111,13 +101,6 @@ STDMETHODIMP Bho::SetSite(IUnknown* site) {
       DCHECK(SUCCEEDED(hr)) << "DispEventAdvise failed. Error: " << hr;
 
       ready_mode::Configure(new ReadyModeDelegateImpl(), web_browser2);
-
-      // At this time, the user agent has been updated to reflect the Ready Mode
-      // state. We should make sure to modify our recognition of meta tags
-      // accordingly. On IE 9, another method is used to manage meta tags.
-      if (GetIEVersion() != IE_9) {
-        SynchronizeEnablementState();
-      }
     }
 
     if (g_patch_helper.state() == PatchHelper::PATCH_IBROWSER) {
