@@ -29,6 +29,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -1786,9 +1787,9 @@ void BrowserWindowGtk::SaveWindowPosition() {
     return;
 
   std::string window_name = browser_->GetWindowPlacementKey();
-  DictionaryValue* window_preferences =
-      browser_->profile()->GetPrefs()->
-          GetMutableDictionary(window_name.c_str());
+  DictionaryPrefUpdate update(browser_->profile()->GetPrefs(),
+                              window_name.c_str());
+  DictionaryValue* window_preferences = update.Get();
   // Note that we store left/top for consistency with Windows, but that we
   // *don't* obey them; we only use them for computing width/height.  See
   // comments in SetGeometryHints().

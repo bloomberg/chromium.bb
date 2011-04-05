@@ -8,6 +8,7 @@
 #import "base/memory/scoped_nsobject.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
@@ -116,8 +117,8 @@ enum {
   if (browser_->ShouldSaveWindowPlacement())
     browser_->SaveWindowPlacement(bounds, /*maximized=*/ false);
 
-  DictionaryValue* windowPreferences = prefs->GetMutableDictionary(
-      browser_->GetWindowPlacementKey().c_str());
+  DictionaryPrefUpdate update(prefs, browser_->GetWindowPlacementKey().c_str());
+  DictionaryValue* windowPreferences = update.Get();
   windowPreferences->SetInteger("left", bounds.x());
   windowPreferences->SetInteger("top", bounds.y());
   windowPreferences->SetInteger("right", bounds.right());

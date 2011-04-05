@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -230,8 +231,9 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   }
 
   const DictionaryValue* wp_pref = prefs->GetDictionary(wp_key.c_str());
-  if (!wp_pref) {
-    DictionaryValue* defaults = prefs->GetMutableDictionary(wp_key.c_str());
+  if (!wp_pref || wp_pref->empty()) {
+    DictionaryPrefUpdate update(prefs, wp_key.c_str());
+    DictionaryValue* defaults = update.Get();
     defaults->SetInteger("left", 100);
     defaults->SetInteger("top", 100);
     defaults->SetInteger("right", 740);

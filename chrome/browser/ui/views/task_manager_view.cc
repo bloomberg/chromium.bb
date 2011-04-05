@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/memory_purger.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -622,9 +623,9 @@ bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
 
     // Save the state.
     if (g_browser_process->local_state()) {
-      DictionaryValue* window_preferences =
-          g_browser_process->local_state()->GetMutableDictionary(
-              WideToUTF8(GetWindowName()).c_str());
+      DictionaryPrefUpdate update(g_browser_process->local_state(),
+                                  WideToUTF8(GetWindowName()).c_str());
+      DictionaryValue* window_preferences = update.Get();
       window_preferences->SetBoolean("always_on_top", is_always_on_top_);
     }
     return true;

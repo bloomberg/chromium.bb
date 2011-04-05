@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 
 // If the window width stored in the prefs is smaller than this, the size is
 // not restored but instead cleared from the profile -- to protect users from
@@ -52,7 +53,8 @@ const int kMinWindowHeight = 17;
 }
 
 - (void)save:(NSNotification*)notification {
-  DictionaryValue* windowPrefs = prefService_->GetMutableDictionary(path_);
+  DictionaryPrefUpdate update(prefService_, path_);
+  DictionaryValue* windowPrefs = update.Get();
   NSRect frame = [window_ frame];
   if ([window_ styleMask] & NSResizableWindowMask) {
     // Save the origin of the window.
@@ -72,7 +74,7 @@ const int kMinWindowHeight = 17;
 
 - (void)restore {
   // Get the positioning information.
-  DictionaryValue* windowPrefs = prefService_->GetMutableDictionary(path_);
+  const DictionaryValue* windowPrefs = prefService_->GetDictionary(path_);
   if ([window_ styleMask] & NSResizableWindowMask) {
     int x1, x2, y1, y2;
     if (!windowPrefs->GetInteger("left", &x1) ||
@@ -83,10 +85,12 @@ const int kMinWindowHeight = 17;
     }
     if (x2 - x1 < kMinWindowWidth || y2 - y1 < kMinWindowHeight) {
       // Windows should never be very small.
-      windowPrefs->Remove("left", NULL);
-      windowPrefs->Remove("right", NULL);
-      windowPrefs->Remove("top", NULL);
-      windowPrefs->Remove("bottom", NULL);
+      DictionaryPrefUpdate update(prefService_, path_);
+      DictionaryValue* mutableWindowPrefs = update.Get();
+      mutableWindowPrefs->Remove("left", NULL);
+      mutableWindowPrefs->Remove("right", NULL);
+      mutableWindowPrefs->Remove("top", NULL);
+      mutableWindowPrefs->Remove("bottom", NULL);
     } else {
       [window_ setFrame:NSMakeRect(x1, y1, x2 - x1, y2 - y1) display:YES];
 

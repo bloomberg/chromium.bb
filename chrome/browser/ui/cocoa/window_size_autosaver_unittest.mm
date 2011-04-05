@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,7 +96,7 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesPos) {
   // ...and it should be in the profile, too.
   EXPECT_TRUE(pref->GetDictionary(path_) != NULL);
   int x, y;
-  DictionaryValue* windowPref = pref->GetMutableDictionary(path_);
+  const DictionaryValue* windowPref = pref->GetDictionary(path_);
   EXPECT_FALSE(windowPref->GetInteger("left", &x));
   EXPECT_FALSE(windowPref->GetInteger("right", &x));
   EXPECT_FALSE(windowPref->GetInteger("top", &x));
@@ -154,7 +155,7 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesRect) {
   // ...and it should be in the profile, too.
   EXPECT_TRUE(pref->GetDictionary(path_) != NULL);
   int x1, y1, x2, y2;
-  DictionaryValue* windowPref = pref->GetMutableDictionary(path_);
+  const DictionaryValue* windowPref = pref->GetDictionary(path_);
   EXPECT_FALSE(windowPref->GetInteger("x", &x1));
   EXPECT_FALSE(windowPref->GetInteger("y", &x1));
   ASSERT_TRUE(windowPref->GetInteger("left", &x1));
@@ -172,7 +173,8 @@ TEST_F(WindowSizeAutosaverTest, DoesNotRestoreButClearsEmptyRect) {
   PrefService* pref = browser_helper_.profile()->GetPrefs();
   ASSERT_TRUE(pref != NULL);
 
-  DictionaryValue* windowPref = pref->GetMutableDictionary(path_);
+  DictionaryPrefUpdate update(pref, path_);
+  DictionaryValue* windowPref = update.Get();
   windowPref->SetInteger("left", 50);
   windowPref->SetInteger("right", 50);
   windowPref->SetInteger("top", 60);

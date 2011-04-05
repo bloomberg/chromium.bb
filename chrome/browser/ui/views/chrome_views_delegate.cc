@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/accessibility_event_router_views.h"
 #include "chrome/browser/ui/window_sizer.h"
@@ -60,8 +61,8 @@ void ChromeViewsDelegate::SaveWindowPlacement(views::Window* window,
     return;
 
   DCHECK(prefs->FindPreference(WideToUTF8(window_name).c_str()));
-  DictionaryValue* window_preferences =
-      prefs->GetMutableDictionary(WideToUTF8(window_name).c_str());
+  DictionaryPrefUpdate update(prefs, WideToUTF8(window_name).c_str());
+  DictionaryValue* window_preferences = update.Get();
   window_preferences->SetInteger("left", bounds.x());
   window_preferences->SetInteger("top", bounds.y());
   window_preferences->SetInteger("right", bounds.right());

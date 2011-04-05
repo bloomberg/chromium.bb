@@ -19,6 +19,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/memory_purger.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_tree.h"
@@ -863,9 +864,9 @@ void TaskManagerGtk::OnResponse(GtkWidget* dialog, int response_id) {
     if (g_browser_process->local_state()) {
       gfx::Rect dialog_bounds = gtk_util::GetDialogBounds(GTK_WIDGET(dialog));
 
-      DictionaryValue* placement_pref =
-          g_browser_process->local_state()->GetMutableDictionary(
-              prefs::kTaskManagerWindowPlacement);
+      DictionaryPrefUpdate update(g_browser_process->local_state(),
+                                  prefs::kTaskManagerWindowPlacement);
+      DictionaryValue* placement_pref = update.Get();
       // Note that we store left/top for consistency with Windows, but that we
       // *don't* restore them.
       placement_pref->SetInteger("left", dialog_bounds.x());
