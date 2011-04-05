@@ -366,7 +366,7 @@ def generate(env):
 
   env.Replace(
       COMPONENT_LINKFLAGS=[''],
-      COMPONENT_LIBRARY_LINK_SUFFIXES=['.a'],
+      COMPONENT_LIBRARY_LINK_SUFFIXES=['.so', '.a'],
       _RPATH='',
       COMPONENT_LIBRARY_DEBUG_SUFFIXES=[],
 
