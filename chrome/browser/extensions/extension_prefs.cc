@@ -765,13 +765,14 @@ void ExtensionPrefs::SetLaunchType(const std::string& extension_id,
   SavePrefsAndNotify();
 }
 
-bool ExtensionPrefs::IsExtensionKilled(const std::string& id) const {
+bool ExtensionPrefs::IsExternalExtensionUninstalled(
+    const std::string& id) const {
   DictionaryValue* extension = GetExtensionPref(id);
   if (!extension)
     return false;
   int state = 0;
   return extension->GetInteger(kPrefState, &state) &&
-         state == static_cast<int>(Extension::KILLBIT);
+         state == static_cast<int>(Extension::EXTERNAL_EXTENSION_UNINSTALLED);
 }
 
 std::vector<std::string> ExtensionPrefs::GetToolbarOrder() {
@@ -839,7 +840,8 @@ void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
   // no longer lists the extension).
   if (!external_uninstall && Extension::IsExternalLocation(location)) {
     UpdateExtensionPref(extension_id, kPrefState,
-                        Value::CreateIntegerValue(Extension::KILLBIT));
+                        Value::CreateIntegerValue(
+                            Extension::EXTERNAL_EXTENSION_UNINSTALLED));
     SavePrefsAndNotify();
     extension_pref_value_map_->SetExtensionState(extension_id, false);
   } else {
@@ -1004,7 +1006,7 @@ static ExtensionInfo* GetInstalledExtensionInfoImpl(
     // extensions.
     return NULL;
   }
-  if (state_value == Extension::KILLBIT) {
+  if (state_value == Extension::EXTERNAL_EXTENSION_UNINSTALLED) {
     LOG(WARNING) << "External extension with id " << *extension_id
                  << " has been uninstalled by the user";
     return NULL;

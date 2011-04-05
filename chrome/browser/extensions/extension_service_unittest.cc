@@ -1108,8 +1108,8 @@ TEST_F(ExtensionServiceTest, InstallExtension) {
   // TODO(erikkay): add tests for upgrade cases.
 }
 
-// Test the handling of killed extensions.
-TEST_F(ExtensionServiceTest, KilledExtensions) {
+// Test the handling of Extension::EXTERNAL_EXTENSION_UNINSTALLED
+TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
   InitializeEmptyExtensionService();
 
   FilePath extensions_path;
@@ -1129,14 +1129,16 @@ TEST_F(ExtensionServiceTest, KilledExtensions) {
   // Uninstall it and check that its killbit gets set.
   service_->UninstallExtension(good_crx, false);
   loop_.RunAllPending();
-  ValidateIntegerPref(good_crx, "location", Extension::KILLBIT);
+  ValidateIntegerPref(good_crx, "location",
+                      Extension::EXTERNAL_EXTENSION_UNINSTALLED);
 
   // Try to re-install it externally. This should fail because of the killbit.
   service_->OnExternalExtensionFileFound(good_crx, version.get(),
                                          path, Extension::EXTERNAL_PREF);
   loop_.RunAllPending();
   ASSERT_TRUE(NULL == service_->GetExtensionById(good_crx, false));
-  ValidateIntegerPref(good_crx, "location", Extension::KILLBIT);
+  ValidateIntegerPref(good_crx, "location",
+                      Extension::EXTERNAL_EXTENSION_UNINSTALLED);
 
   version.reset(Version::GetVersionFromString("1.0.0.1"));
   // Repeat the same thing with a newer version of the extension.
@@ -1145,7 +1147,8 @@ TEST_F(ExtensionServiceTest, KilledExtensions) {
                                          path, Extension::EXTERNAL_PREF);
   loop_.RunAllPending();
   ASSERT_TRUE(NULL == service_->GetExtensionById(good_crx, false));
-  ValidateIntegerPref(good_crx, "location", Extension::KILLBIT);
+  ValidateIntegerPref(good_crx, "location",
+                      Extension::EXTERNAL_EXTENSION_UNINSTALLED);
 
   // Try adding the same extension from an external update URL.
   service_->pending_extension_manager()->AddFromExternalUpdateUrl(
@@ -2975,7 +2978,8 @@ void ExtensionServiceTest::TestExternalProvider(
     loop_.RunAllPending();
     ASSERT_EQ(0u, loaded_.size());
     ValidatePrefKeyCount(1);
-    ValidateIntegerPref(good_crx, "state", Extension::KILLBIT);
+    ValidateIntegerPref(good_crx, "state",
+                        Extension::EXTERNAL_EXTENSION_UNINSTALLED);
     ValidateIntegerPref(good_crx, "location", location);
 
     // Now clear the preference and reinstall.

@@ -1669,7 +1669,7 @@ void ExtensionService::OnExternalExtensionFileFound(
          Extension::Location location) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(Extension::IdIsValid(id));
-  if (extension_prefs_->IsExtensionKilled(id))
+  if (extension_prefs_->IsExternalExtensionUninstalled(id))
     return;
 
   DCHECK(version);

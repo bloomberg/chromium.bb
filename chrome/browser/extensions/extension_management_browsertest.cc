@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   UninstallExtension(kExtensionId);
 
   ExtensionPrefs* extension_prefs = service->extension_prefs();
-  EXPECT_TRUE(extension_prefs->IsExtensionKilled(kExtensionId))
+  EXPECT_TRUE(extension_prefs->IsExternalExtensionUninstalled(kExtensionId))
       << "Uninstalling should set kill bit on externaly installed extension.";
 
   // Try to install the extension again from an external source. It should fail
@@ -383,19 +383,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
       Extension::EXTERNAL_PREF_DOWNLOAD);
   EXPECT_FALSE(pending_extension_manager->IsIdPending(kExtensionId))
       << "External reinstall of a killed extension shouldn't work.";
-  EXPECT_TRUE(extension_prefs->IsExtensionKilled(kExtensionId))
+  EXPECT_TRUE(extension_prefs->IsExternalExtensionUninstalled(kExtensionId))
       << "External reinstall of a killed extension should leave it killed.";
 
   // Installing from non-external source.
   ASSERT_TRUE(InstallExtension(basedir.AppendASCII("v2.crx"), 1));
 
-  EXPECT_FALSE(extension_prefs->IsExtensionKilled(kExtensionId))
+  EXPECT_FALSE(extension_prefs->IsExternalExtensionUninstalled(kExtensionId))
       << "Reinstalling should clear the kill bit.";
 
   // Uninstalling from a non-external source should not set the kill bit.
   UninstallExtension(kExtensionId);
 
-  EXPECT_FALSE(extension_prefs->IsExtensionKilled(kExtensionId))
+  EXPECT_FALSE(extension_prefs->IsExternalExtensionUninstalled(kExtensionId))
       << "Uninstalling non-external extension should not set kill bit.";
 }
 

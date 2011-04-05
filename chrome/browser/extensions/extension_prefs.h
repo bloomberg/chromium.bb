@@ -75,9 +75,9 @@ class ExtensionPrefs {
   // aware of the internal structure of the preferences.
   DictionaryValue* CopyCurrentExtensions();
 
-  // Returns true if the specified extension has an entry in prefs
-  // and its killbit is on.
-  bool IsExtensionKilled(const std::string& id) const;
+  // Returns true if the specified external extension was uninstalled by the
+  // user.
+  bool IsExternalExtensionUninstalled(const std::string& id) const;
 
   // Get the order that toolstrip URLs appear in the shelf.
   typedef std::vector<GURL> URLList;

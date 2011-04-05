@@ -61,8 +61,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   enum State {
     DISABLED = 0,
     ENABLED,
-    KILLBIT,  // Don't install/upgrade (applies to external extensions only).
-
+    // An external extension that the user uninstalled. We should not reinstall
+    // such extensions on startup.
+    EXTERNAL_EXTENSION_UNINSTALLED,
     NUM_STATES
   };
 
