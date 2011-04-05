@@ -36,14 +36,36 @@ extern "C" { // needed to compile on Leopard
 }
 
 #include "breakpad_nlist_64.h"
+#include <AvailabilityMacros.h>
 #include <assert.h>
+#include <CoreServices/CoreServices.h>
 #include <dlfcn.h>
 #include <mach/mach_vm.h>
+#include <mach/task_info.h>
 #include <sys/sysctl.h>
 
 #include <algorithm>
 #include <string>
 #include <vector>
+
+#ifndef MAC_OS_X_VERSION_10_6
+#define MAC_OS_X_VERSION_10_6 1060
+#endif
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
+
+// Fallback declarations for TASK_DYLD_INFO and friends, introduced in
+// <mach/task_info.h> in the Mac OS X 10.6 SDK.
+#define TASK_DYLD_INFO 17
+struct task_dyld_info {
+  mach_vm_address_t all_image_info_addr;
+  mach_vm_size_t all_image_info_size;
+};
+typedef struct task_dyld_info task_dyld_info_data_t;
+typedef struct task_dyld_info *task_dyld_info_t;
+#define TASK_DYLD_INFO_COUNT (sizeof(task_dyld_info_data_t) / sizeof(natural_t))
+
+#endif
 
 namespace google_breakpad {
 
@@ -336,13 +358,43 @@ static uint64_t LookupSymbol(const char* symbol_name,
   return list.n_value;
 }
 
-uint64_t DynamicImages::GetDyldAllImageInfosPointer() {
-  const char *imageSymbolName = "_dyld_all_image_infos";
-  const char *dyldPath = "/usr/lib/dyld";
+static SInt32 GetOSVersionInternal() {
+  SInt32 os_version = 0;
+  Gestalt(gestaltSystemVersion, &os_version);
+  return os_version;
+}
 
-  if (Is64Bit())
-    return LookupSymbol<MachO64>(imageSymbolName, dyldPath, cpu_type_);
-  return LookupSymbol<MachO32>(imageSymbolName, dyldPath, cpu_type_);
+static SInt32 GetOSVersion() {
+  static SInt32 os_version = GetOSVersionInternal();
+  return os_version;
+}
+
+static bool IsSnowLeopardOrLater() {
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
+  return true;
+#else
+  return GetOSVersion() >= 0x1060;
+#endif
+}
+
+uint64_t DynamicImages::GetDyldAllImageInfosPointer() {
+  if (IsSnowLeopardOrLater()) {
+    task_dyld_info_data_t task_dyld_info;
+    mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
+    if (task_info(task_, TASK_DYLD_INFO, (task_info_t)&task_dyld_info,
+                  &count) != KERN_SUCCESS) {
+      return NULL;
+    }
+
+    return (uint64_t)task_dyld_info.all_image_info_addr;
+  } else {
+    const char *imageSymbolName = "_dyld_all_image_infos";
+    const char *dyldPath = "/usr/lib/dyld";
+
+    if (Is64Bit())
+      return LookupSymbol<MachO64>(imageSymbolName, dyldPath, cpu_type_);
+    return LookupSymbol<MachO32>(imageSymbolName, dyldPath, cpu_type_);
+  }
 }
 
 //==============================================================================
