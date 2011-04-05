@@ -55,6 +55,7 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegateCustomSheet,
 // very thin bridge (see cookies_window_controller.h).
 @interface CollectedCookiesWindowController : NSWindowController
                                               <NSOutlineViewDelegate,
+                                               NSTabViewDelegate,
                                                NSWindowDelegate> {
  @private
   // Platform-independent model.
