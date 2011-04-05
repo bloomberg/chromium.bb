@@ -99,7 +99,7 @@ class GpuDataManager {
   scoped_refptr<GpuBlacklistUpdater> gpu_blacklist_updater_;
   // This is the version cached in local state that's automatically updated
   // from the web.
-  DictionaryValue* gpu_blacklist_cache_;
+  const DictionaryValue* gpu_blacklist_cache_;
 
   // Map of callbacks.
   std::set<Callback0::Type*> gpu_info_update_callbacks_;
@@ -110,4 +110,3 @@ class GpuDataManager {
 };
 
 #endif  // CHROME_BROWSER_GPU_DATA_MANAGER_H_
-

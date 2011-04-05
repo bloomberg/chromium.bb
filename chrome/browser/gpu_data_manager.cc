@@ -31,8 +31,7 @@ GpuDataManager::GpuDataManager()
   // we handle the case where local_state == NULL for certain tests.
   if (local_state) {
     local_state->RegisterDictionaryPref(prefs::kGpuBlacklist);
-    gpu_blacklist_cache_ =
-        local_state->GetMutableDictionary(prefs::kGpuBlacklist);
+    gpu_blacklist_cache_ = local_state->GetDictionary(prefs::kGpuBlacklist);
     DCHECK(gpu_blacklist_cache_);
 
     gpu_blacklist_updater_ = new GpuBlacklistUpdater();
@@ -281,4 +280,3 @@ GpuBlacklist* GpuDataManager::GetGpuBlacklist() {
     return NULL;
   return gpu_blacklist_.get();
 }
-

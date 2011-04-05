@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -41,8 +42,8 @@ GpuBlacklistUpdater::~GpuBlacklistUpdater() { }
 
 void GpuBlacklistUpdater::Unpack(const DictionaryValue& parsed_json) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DictionaryValue* gpu_blacklist_cache =
-      prefs_->GetMutableDictionary(prefs::kGpuBlacklist);
+  DictionaryPrefUpdate update(prefs_, prefs::kGpuBlacklist);
+  DictionaryValue* gpu_blacklist_cache = update.Get();
   DCHECK(gpu_blacklist_cache);
   gpu_blacklist_cache->Clear();
   gpu_blacklist_cache->MergeDictionary(&parsed_json);
