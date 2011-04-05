@@ -277,6 +277,10 @@ class RenderViewHostTestHarness : public testing::Test {
   // Frees the current tab contents for tests that want to test destruction.
   void DeleteContents();
 
+  // Sets the current tab contents for tests that want to alter it. Takes
+  // ownership of the TestTabContents passed.
+  void SetContents(TestTabContents* contents);
+
   // Creates a new TestTabContents. Ownership passes to the caller.
   TestTabContents* CreateTestTabContents();
 
@@ -302,6 +306,7 @@ class RenderViewHostTestHarness : public testing::Test {
   MockRenderProcessHostFactory rph_factory_;
   TestRenderViewHostFactory rvh_factory_;
 
+ private:
   scoped_ptr<TestTabContents> contents_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestHarness);

@@ -23,8 +23,12 @@ TabContentsWrapper* TabContentsWrapperTestHarness::contents_wrapper() {
   return contents_wrapper_.get();
 }
 
+void TabContentsWrapperTestHarness::SetContents(TestTabContents* contents) {
+  contents_wrapper_.reset(new TabContentsWrapper(contents));
+}
+
 void TabContentsWrapperTestHarness::SetUp() {
-  contents_wrapper_.reset(new TabContentsWrapper(CreateTestTabContents()));
+  SetContents(CreateTestTabContents());
 }
 
 void TabContentsWrapperTestHarness::TearDown() {

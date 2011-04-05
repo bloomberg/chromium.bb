@@ -82,7 +82,7 @@ TEST_F(SadTabControllerTest, WithTabContents) {
 }
 
 TEST_F(SadTabControllerTest, WithoutTabContents) {
-  contents_.reset();
+  DeleteContents();
   scoped_nsobject<SadTabController> controller(CreateController());
   EXPECT_TRUE(controller);
   NSButton* link = GetLinkButton(controller);

@@ -312,7 +312,11 @@ MockRenderProcessHost* RenderViewHostTestHarness::process() {
 }
 
 void RenderViewHostTestHarness::DeleteContents() {
-  contents_.reset();
+  SetContents(NULL);
+}
+
+void RenderViewHostTestHarness::SetContents(TestTabContents* contents) {
+  contents_.reset(contents);
 }
 
 TestTabContents* RenderViewHostTestHarness::CreateTestTabContents() {
@@ -338,11 +342,11 @@ void RenderViewHostTestHarness::Reload() {
 }
 
 void RenderViewHostTestHarness::SetUp() {
-  contents_.reset(CreateTestTabContents());
+  SetContents(CreateTestTabContents());
 }
 
 void RenderViewHostTestHarness::TearDown() {
-  contents_.reset();
+  SetContents(NULL);
 
   // Make sure that we flush any messages related to TabContents destruction
   // before we destroy the profile.

@@ -176,10 +176,10 @@ void GeolocationPermissionContextTests::SetUp() {
   RenderViewHostTestHarness::SetUp();
   GeolocationArbitrator::SetDependencyFactoryForTest(
       dependency_factory_.get());
-  SiteInstance* site_instance = contents_->GetSiteInstance();
+  SiteInstance* site_instance = contents()->GetSiteInstance();
   tab_contents_with_pending_infobar_ =
       new TestTabContentsWithPendingInfoBar(profile_.get(), site_instance);
-  contents_.reset(tab_contents_with_pending_infobar_);
+  SetContents(tab_contents_with_pending_infobar_);
   geolocation_permission_context_ =
       new GeolocationPermissionContext(profile());
 }

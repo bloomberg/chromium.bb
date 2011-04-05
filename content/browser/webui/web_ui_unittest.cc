@@ -166,8 +166,7 @@ TEST_F(WebUITest, FocusOnNavigate) {
       contents()->profile(),
       SiteInstance::CreateSiteInstance(contents()->profile()));
   tc->controller().CopyStateFrom(controller());
-  scoped_ptr<TestTabContents> tc_scoped_ptr(tc);
-  contents_.swap(tc_scoped_ptr);
+  SetContents(tc);
   int page_id = 200;
 
   // Load the NTP.
@@ -194,6 +193,4 @@ TEST_F(WebUITest, FocusOnNavigate) {
   controller().GoForward();
   pending_rvh()->SendNavigate(next_page_id, next_url);
   EXPECT_EQ(focus_called, tc->focus_called());
-
-  contents_.swap(tc_scoped_ptr);
 }

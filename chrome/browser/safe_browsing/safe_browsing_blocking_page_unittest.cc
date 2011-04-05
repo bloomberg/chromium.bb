@@ -101,7 +101,7 @@ class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
   void Navigate(const char* url, int page_id) {
     ViewHostMsg_FrameNavigate_Params params;
     InitNavigateParams(&params, page_id, GURL(url), PageTransition::TYPED);
-    contents()->TestDidNavigate(contents_->render_view_host(), params);
+    contents()->TestDidNavigate(contents()->render_view_host(), params);
   }
 
   void GoBackCrossSite() {
@@ -113,7 +113,7 @@ class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
     ViewHostMsg_FrameNavigate_Params params;
     InitNavigateParams(&params, entry->page_id(), GURL(entry->url()),
                        PageTransition::TYPED);
-    contents()->TestDidNavigate(contents_->pending_rvh(), params);
+    contents()->TestDidNavigate(contents()->pending_rvh(), params);
   }
 
   void ShowInterstitial(ResourceType::Type resource_type,
@@ -160,8 +160,8 @@ class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
     resource->url = url;
     resource->resource_type = resource_type;
     resource->threat_type = SafeBrowsingService::URL_MALWARE;
-    resource->render_process_host_id = contents_->GetRenderProcessHost()->id();
-    resource->render_view_id = contents_->render_view_host()->routing_id();
+    resource->render_process_host_id = contents()->GetRenderProcessHost()->id();
+    resource->render_view_id = contents()->render_view_host()->routing_id();
   }
 
   UserResponse user_response_;
