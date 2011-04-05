@@ -217,6 +217,7 @@ class GIT(object):
     # The -100 is an arbitrary limit so we don't search forever.
     cmd = ['git', 'log', '-100', '--pretty=medium']
     proc = gclient_utils.Popen(cmd, stdout=subprocess.PIPE)
+    url = None
     for line in proc.stdout:
       match = git_svn_re.match(line)
       if match:
