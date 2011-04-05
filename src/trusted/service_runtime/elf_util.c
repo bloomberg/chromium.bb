@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -398,6 +398,9 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
   memset(image.loadable, 0, sizeof image.loadable);
   if (-1 == (*gp->vtbl->Seek)(gp, 0, 0)) {
     NaClLog(2, "could not seek to beginning of Gio object containing nexe\n");
+    if (NULL != err_code) {
+      *err_code = LOAD_READ_ERROR;
+    }
     return 0;
   }
   if ((*gp->vtbl->Read)(gp,
