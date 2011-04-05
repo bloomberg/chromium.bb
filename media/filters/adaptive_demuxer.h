@@ -82,6 +82,7 @@ class AdaptiveDemuxer : public Demuxer {
   virtual void Seek(base::TimeDelta time, FilterCallback* callback);
   virtual void OnAudioRendererDisabled();
   virtual void set_host(FilterHost* filter_host);
+  virtual void SetPreload(Preload preload);
   // TODO(fischman): add support for SetPlaybackRate().
 
   // Demuxer implementation.

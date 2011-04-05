@@ -50,7 +50,7 @@ BufferedResourceLoader::BufferedResourceLoader(
     int64 last_byte_position)
     : buffer_(new media::SeekableBuffer(kBackwardCapcity, kForwardCapacity)),
       deferred_(false),
-      defer_allowed_(true),
+      defer_strategy_(kReadThenDefer),
       completed_(false),
       range_requested_(false),
       partial_response_(false),
@@ -180,9 +180,14 @@ void BufferedResourceLoader::Read(int64 position,
   // If we can serve the request now, do the actual read.
   if (CanFulfillRead()) {
     ReadInternal();
-    DisableDeferIfNeeded();
+    UpdateDeferBehavior();
     return;
   }
+
+  // If you're deferred and you can't fulfill the read because you don't have
+  // enough data, you will never fulfill the read.
+  // Update defer behavior to re-enable deferring if need be.
+  UpdateDeferBehavior();
 
   // If we expected the read request to be fulfilled later, returns
   // immediately and let more data to flow in.
@@ -197,11 +202,6 @@ int64 BufferedResourceLoader::GetBufferedPosition() {
   if (buffer_.get())
     return offset_ + static_cast<int>(buffer_->forward_bytes()) - 1;
   return kPositionNotSpecified;
-}
-
-void BufferedResourceLoader::SetAllowDefer(bool is_allowed) {
-  defer_allowed_ = is_allowed;
-  DisableDeferIfNeeded();
 }
 
 int64 BufferedResourceLoader::content_length() {
@@ -344,21 +344,19 @@ void BufferedResourceLoader::didReceiveData2(
   buffer_->Append(reinterpret_cast<const uint8*>(data), data_length);
 
   // If there is an active read request, try to fulfill the request.
-  if (HasPendingRead() && CanFulfillRead()) {
+  if (HasPendingRead() && CanFulfillRead())
     ReadInternal();
-  } else if (!defer_allowed_) {
-    // If we're not allowed to defer, slide the buffer window forward instead
-    // of deferring.
-    if (buffer_->forward_bytes() > buffer_->forward_capacity()) {
-      size_t excess = buffer_->forward_bytes() - buffer_->forward_capacity();
-      bool success = buffer_->Seek(excess);
-      DCHECK(success);
-      offset_ += first_offset_ + excess;
-    }
-  }
 
   // At last see if the buffer is full and we need to defer the downloading.
-  EnableDeferIfNeeded();
+  UpdateDeferBehavior();
+
+  // Consume excess bytes from our in-memory buffer if necessary.
+  if (buffer_->forward_bytes() > buffer_->forward_capacity()) {
+    size_t excess = buffer_->forward_bytes() - buffer_->forward_capacity();
+    bool success = buffer_->Seek(excess);
+    DCHECK(success);
+    offset_ += first_offset_ + excess;
+  }
 
   // Notify that we have received some data.
   NotifyNetworkEvent();
@@ -441,32 +439,83 @@ bool BufferedResourceLoader::HasSingleOrigin() const {
 
 /////////////////////////////////////////////////////////////////////////////
 // Helper methods.
-void BufferedResourceLoader::EnableDeferIfNeeded() {
-  if (!defer_allowed_)
+void BufferedResourceLoader::UpdateDeferBehavior() {
+  if (!url_loader_.get() || !buffer_.get())
     return;
 
-  if (!deferred_ &&
-      buffer_->forward_bytes() >= buffer_->forward_capacity()) {
-    deferred_ = true;
-
-  if (url_loader_.get())
-    url_loader_->setDefersLoading(true);
-
-    NotifyNetworkEvent();
+  if ((deferred_ && ShouldDisableDefer()) ||
+      (!deferred_ && ShouldEnableDefer())) {
+    bool eventOccurred = ToggleDeferring();
+    if (eventOccurred)
+      NotifyNetworkEvent();
   }
 }
 
-void BufferedResourceLoader::DisableDeferIfNeeded() {
-  if (deferred_ &&
-      (!defer_allowed_ ||
-       buffer_->forward_bytes() < buffer_->forward_capacity() / 2)) {
-    deferred_ = false;
+void BufferedResourceLoader::UpdateDeferStrategy(DeferStrategy strategy) {
+  defer_strategy_ = strategy;
+  UpdateDeferBehavior();
+}
 
-    if (url_loader_.get())
-      url_loader_->setDefersLoading(false);
+bool BufferedResourceLoader::ShouldEnableDefer() {
+  // If we're already deferring, then enabling makes no sense.
+  if (deferred_)
+    return false;
 
-    NotifyNetworkEvent();
+  switch(defer_strategy_) {
+    // Never defer at all, so never enable defer.
+    case kNeverDefer:
+      return false;
+
+    // Defer if nothing is being requested.
+    case kReadThenDefer:
+      return !read_callback_.get();
+
+    // Defer if we've reached the max capacity of the threshold.
+    case kThresholdDefer:
+      return buffer_->forward_bytes() >= buffer_->forward_capacity();
   }
+  // Otherwise don't enable defer.
+  return false;
+}
+
+bool BufferedResourceLoader::ShouldDisableDefer() {
+  // If we're not deferring, then disabling makes no sense.
+  if (!deferred_)
+    return false;
+
+  switch(defer_strategy_) {
+    // Always disable deferring.
+    case kNeverDefer:
+      return true;
+
+    // We have an outstanding read request, and we have not buffered enough
+    // yet to fulfill the request; disable defer to get more data.
+    case kReadThenDefer: {
+      size_t amount_buffered = buffer_->forward_bytes();
+      size_t amount_to_read = static_cast<size_t>(read_size_);
+      return read_callback_.get() && amount_buffered < amount_to_read;
+    }
+
+    // We have less than half the capacity of our threshold, so
+    // disable defer to get more data.
+    case kThresholdDefer: {
+      size_t amount_buffered = buffer_->forward_bytes();
+      size_t half_capacity = buffer_->forward_capacity() / 2;
+      return amount_buffered < half_capacity;
+    }
+  }
+
+  // Otherwise keep deferring.
+  return false;
+}
+
+bool BufferedResourceLoader::ToggleDeferring() {
+  deferred_ = !deferred_;
+  if (url_loader_.get()) {
+    url_loader_->setDefersLoading(deferred_);
+    return true;
+  }
+  return false;
 }
 
 bool BufferedResourceLoader::CanFulfillRead() {

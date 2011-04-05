@@ -176,18 +176,8 @@ class BufferedResourceLoaderTest : public testing::Test {
     EXPECT_EQ(0, memcmp(buffer, data_ + pos, size));
   }
 
-  // Helper method to disallow deferring in |loader_|.
-  void DisallowLoaderDefer() {
-    if (loader_->deferred_) {
-      EXPECT_CALL(*url_loader_, setDefersLoading(false));
-      EXPECT_CALL(*this, NetworkCallback());
-    }
-    loader_->SetAllowDefer(false);
-  }
-
-  // Helper method to allow deferring in |loader_|.
-  void AllowLoaderDefer() {
-    loader_->SetAllowDefer(true);
+  void ConfirmLoaderDeferredState(bool expectedVal) {
+    EXPECT_EQ(loader_->deferred_, expectedVal);
   }
 
   MOCK_METHOD1(StartCallback, void(int error));
@@ -275,6 +265,7 @@ TEST_F(BufferedResourceLoaderTest, InvalidPartialResponse) {
 // Tests the logic of sliding window for data buffering and reading.
 TEST_F(BufferedResourceLoaderTest, BufferAndRead) {
   Initialize(kHttpUrl, 10, 29);
+  loader_->UpdateDeferStrategy(BufferedResourceLoader::kThresholdDefer);
   Start();
   PartialResponse(10, 29, 30);
 
@@ -325,6 +316,7 @@ TEST_F(BufferedResourceLoaderTest, BufferAndRead) {
 
 TEST_F(BufferedResourceLoaderTest, ReadOutsideBuffer) {
   Initialize(kHttpUrl, 10, 0x00FFFFFF);
+  loader_->UpdateDeferStrategy(BufferedResourceLoader::kThresholdDefer);
   Start();
   PartialResponse(10, 0x00FFFFFF, 0x01000000);
 
@@ -368,128 +360,86 @@ TEST_F(BufferedResourceLoaderTest, RequestFailedWhenRead) {
   loader_->didFail(url_loader_, error);
 }
 
-// Tests the logic of caching data to disk when media is paused.
-TEST_F(BufferedResourceLoaderTest, AllowDefer_NoDataReceived) {
+// Tests the data buffering logic of NeverDefer strategy.
+TEST_F(BufferedResourceLoaderTest, NeverDeferStrategy) {
   Initialize(kHttpUrl, 10, 99);
   SetLoaderBuffer(10, 20);
-  Start();
-  PartialResponse(10, 99, 100);
-
-  // Start in undeferred state, then disallow defer, then allow defer
-  // without receiving data in between.
-  DisallowLoaderDefer();
-  AllowLoaderDefer();
-  StopWhenLoad();
-}
-
-TEST_F(BufferedResourceLoaderTest, AllowDefer_ReadSameWindow) {
-  Initialize(kHttpUrl, 10, 99);
-  SetLoaderBuffer(10, 20);
+  loader_->UpdateDeferStrategy(BufferedResourceLoader::kNeverDefer);
   Start();
   PartialResponse(10, 99, 100);
 
   uint8 buffer[10];
 
-  // Start in undeferred state, disallow defer, receive data but don't shift
-  // buffer window, then allow defer and read.
-  DisallowLoaderDefer();
-  WriteLoader(10, 10);
-  AllowLoaderDefer();
-
-  EXPECT_CALL(*this, ReadCallback(10));
-  ReadLoader(10, 10, buffer);
-  VerifyBuffer(buffer, 10, 10);
-  StopWhenLoad();
-}
-
-TEST_F(BufferedResourceLoaderTest, AllowDefer_ReadPastWindow) {
-  Initialize(kHttpUrl, 10, 99);
-  SetLoaderBuffer(10, 20);
-  Start();
-  PartialResponse(10, 99, 100);
-
-  uint8 buffer[10];
-
-  // Not deferred, disallow defer, received data and shift buffer window,
-  // allow defer, then read in area outside of buffer window.
-  DisallowLoaderDefer();
+  // Read past the buffer size; should not defer regardless.
   WriteLoader(10, 10);
   WriteLoader(20, 50);
-  AllowLoaderDefer();
+  ConfirmLoaderDeferredState(false);
 
+  // Should move past window.
   EXPECT_CALL(*this, ReadCallback(net::ERR_CACHE_MISS));
   ReadLoader(10, 10, buffer);
+
   StopWhenLoad();
 }
 
-TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredNoDataReceived) {
+// Tests the data buffering logic of ReadThenDefer strategy.
+TEST_F(BufferedResourceLoaderTest, ReadThenDeferStrategy) {
   Initialize(kHttpUrl, 10, 99);
   SetLoaderBuffer(10, 20);
+  loader_->UpdateDeferStrategy(BufferedResourceLoader::kReadThenDefer);
   Start();
   PartialResponse(10, 99, 100);
 
   uint8 buffer[10];
 
-  // Start in deferred state, then disallow defer, receive no data, and
-  // allow defer and read.
-  EXPECT_CALL(*url_loader_, setDefersLoading(true));
+  // Make an outstanding read request.
+  // We should disable deferring after the read request, so expect
+  // a network event.
   EXPECT_CALL(*this, NetworkCallback());
-  WriteLoader(10, 40);
+  ReadLoader(10, 10, buffer);
 
-  DisallowLoaderDefer();
-  AllowLoaderDefer();
+  // Receive almost enough data to cover, shouldn't defer.
+  WriteLoader(10, 9);
+  ConfirmLoaderDeferredState(false);
 
+  // As soon as we have received enough data to fulfill the read, defer.
+  EXPECT_CALL(*this, NetworkCallback());
   EXPECT_CALL(*this, ReadCallback(10));
-  ReadLoader(20, 10, buffer);
-  VerifyBuffer(buffer, 20, 10);
+  WriteLoader(19, 1);
+
+  ConfirmLoaderDeferredState(true);
+  VerifyBuffer(buffer, 10, 10);
+
   StopWhenLoad();
 }
 
-TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredReadSameWindow) {
+// Tests the data buffering logic of ThresholdDefer strategy.
+TEST_F(BufferedResourceLoaderTest, ThresholdDeferStrategy) {
   Initialize(kHttpUrl, 10, 99);
   SetLoaderBuffer(10, 20);
+  loader_->UpdateDeferStrategy(BufferedResourceLoader::kThresholdDefer);
   Start();
   PartialResponse(10, 99, 100);
 
   uint8 buffer[10];
 
-  // Start in deferred state, disallow defer, receive data and shift buffer
-  // window, allow defer, and read in a place that's still in the window.
-  EXPECT_CALL(*url_loader_, setDefersLoading(true));
+  WriteLoader(10, 5);
+  // Haven't reached threshold, don't defer.
+  ConfirmLoaderDeferredState(false);
+
+  // We're at the threshold now, let's defer.
   EXPECT_CALL(*this, NetworkCallback());
-  WriteLoader(10, 30);
+  WriteLoader(15, 5);
+  ConfirmLoaderDeferredState(true);
 
-  DisallowLoaderDefer();
-  WriteLoader(40, 5);
-  AllowLoaderDefer();
-
-  EXPECT_CALL(*this, ReadCallback(10));
-  ReadLoader(20, 10, buffer);
-  VerifyBuffer(buffer, 20, 10);
-  StopWhenLoad();
-}
-
-TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredReadPastWindow) {
-  Initialize(kHttpUrl, 10, 99);
-  SetLoaderBuffer(10, 20);
-  Start();
-  PartialResponse(10, 99, 100);
-
-  uint8 buffer[10];
-
-  // Start in deferred state, disallow defer, receive data and shift buffer
-  // window, allow defer, and read outside of the buffer window.
-  EXPECT_CALL(*url_loader_, setDefersLoading(true));
+  // Now we've read over half of the buffer, disable deferring.
+  EXPECT_CALL(*this, ReadCallback(6));
   EXPECT_CALL(*this, NetworkCallback());
-  WriteLoader(10, 40);
+  ReadLoader(10, 6, buffer);
 
-  DisallowLoaderDefer();
-  WriteLoader(50, 20);
-  WriteLoader(70, 40);
-  AllowLoaderDefer();
+  ConfirmLoaderDeferredState(false);
+  VerifyBuffer(buffer, 10, 6);
 
-  EXPECT_CALL(*this, ReadCallback(net::ERR_CACHE_MISS));
-  ReadLoader(20, 5, buffer);
   StopWhenLoad();
 }
 

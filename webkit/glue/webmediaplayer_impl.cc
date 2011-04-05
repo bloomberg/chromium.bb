@@ -387,6 +387,8 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
 
   // Handle any volume changes that occured before load().
   setVolume(GetClient()->volume());
+  // Get the preload value.
+  setPreload(GetClient()->preload());
 
   // Initialize the pipeline.
   SetNetworkState(WebKit::WebMediaPlayer::Loading);
@@ -500,10 +502,18 @@ void WebMediaPlayerImpl::setVisible(bool visible) {
   return;
 }
 
-bool WebMediaPlayerImpl::setAutoBuffer(bool autoBuffer) {
+#define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, chromium_name) \
+        COMPILE_ASSERT(int(WebKit::WebMediaPlayer::webkit_name) == \
+                       int(media::chromium_name), \
+                       mismatching_enums)
+COMPILE_ASSERT_MATCHING_ENUM(None, NONE);
+COMPILE_ASSERT_MATCHING_ENUM(MetaData, METADATA);
+COMPILE_ASSERT_MATCHING_ENUM(Auto, AUTO);
+
+void WebMediaPlayerImpl::setPreload(WebKit::WebMediaPlayer::Preload preload) {
   DCHECK(MessageLoop::current() == main_loop_);
 
-  return false;
+  pipeline_->SetPreload(static_cast<media::Preload>(preload));
 }
 
 bool WebMediaPlayerImpl::totalBytesKnown() {

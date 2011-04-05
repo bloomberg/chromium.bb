@@ -45,6 +45,19 @@ class FilterHost;
 
 struct PipelineStatistics;
 
+// Used to specify video preload states. They are "hints" to the browser about
+// how aggressively the browser should load and buffer data.
+// Please see the HTML5 spec for the descriptions of these values:
+// http://www.w3.org/TR/html5/video.html#attr-media-preload
+//
+// Enum values must match the values in WebCore::MediaPlayer::Preload and
+// there will be assertions at compile time if they do not match.
+enum Preload {
+  NONE,
+  METADATA,
+  AUTO,
+};
+
 // Used for completing asynchronous methods.
 typedef Callback0::Type FilterCallback;
 
@@ -129,6 +142,9 @@ class DataSource : public Filter {
   // Returns true if we are performing streaming. In this case seeking is
   // not possible.
   virtual bool IsStreaming() = 0;
+
+  // Alert the DataSource that the video preload value has been changed.
+  virtual void SetPreload(Preload preload) = 0;
 };
 
 class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
@@ -166,6 +182,9 @@ class Demuxer : public Filter {
  public:
   // Returns the given stream type, or NULL if that type is not present.
   virtual scoped_refptr<DemuxerStream> GetStream(DemuxerStream::Type type) = 0;
+
+  // Alert the Demuxer that the video preload value has been changed.
+  virtual void SetPreload(Preload preload) = 0;
 };
 
 

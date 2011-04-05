@@ -208,7 +208,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   virtual void setRate(float rate);
   virtual void setVolume(float volume);
   virtual void setVisible(bool visible);
-  virtual bool setAutoBuffer(bool autoBuffer);
+  virtual void setPreload(WebKit::WebMediaPlayer::Preload preload);
   virtual bool totalBytesKnown();
   virtual const WebKit::WebTimeRanges& buffered();
   virtual float maxTimeSeekable() const;

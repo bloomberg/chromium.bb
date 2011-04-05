@@ -64,6 +64,8 @@ BufferedDataSource::BufferedDataSource(
       stop_signal_received_(false),
       stopped_on_render_loop_(false),
       media_is_paused_(true),
+      media_has_played_(false),
+      preload_(media::METADATA),
       using_range_request_(true) {
 }
 
@@ -152,6 +154,12 @@ void BufferedDataSource::SetPlaybackRate(float playback_rate) {
   render_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &BufferedDataSource::SetPlaybackRateTask,
                         playback_rate));
+}
+
+void BufferedDataSource::SetPreload(media::Preload preload) {
+  render_loop_->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &BufferedDataSource::SetPreloadTask,
+                        preload));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -310,7 +318,8 @@ void BufferedDataSource::RestartLoadingTask() {
   }
 
   loader_ = CreateResourceLoader(read_position_, kPositionNotSpecified);
-  loader_->SetAllowDefer(!media_is_paused_);
+  BufferedResourceLoader::DeferStrategy strategy = ChooseDeferStrategy();
+  loader_->UpdateDeferStrategy(strategy);
   loader_->Start(
       NewCallback(this, &BufferedDataSource::PartialReadStartCallback),
       NewCallback(this, &BufferedDataSource::NetworkEventCallback),
@@ -346,7 +355,8 @@ void BufferedDataSource::WatchDogTask() {
   // retry the request.
   loader_->Stop();
   loader_ = CreateResourceLoader(read_position_, kPositionNotSpecified);
-  loader_->SetAllowDefer(!media_is_paused_);
+  BufferedResourceLoader::DeferStrategy strategy = ChooseDeferStrategy();
+  loader_->UpdateDeferStrategy(strategy);
   loader_->Start(
       NewCallback(this, &BufferedDataSource::PartialReadStartCallback),
       NewCallback(this, &BufferedDataSource::NetworkEventCallback),
@@ -360,13 +370,37 @@ void BufferedDataSource::SetPlaybackRateTask(float playback_rate) {
   bool previously_paused = media_is_paused_;
   media_is_paused_ = (playback_rate == 0.0);
 
-  // Disallow deferring data when we are pausing, allow deferring data
-  // when we resume playing.
-  if (previously_paused && !media_is_paused_) {
-    loader_->SetAllowDefer(true);
-  } else if (!previously_paused && media_is_paused_) {
-    loader_->SetAllowDefer(false);
+  if (!media_has_played_ && previously_paused && !media_is_paused_)
+    media_has_played_ = true;
+
+  BufferedResourceLoader::DeferStrategy strategy = ChooseDeferStrategy();
+  loader_->UpdateDeferStrategy(strategy);
+}
+
+void BufferedDataSource::SetPreloadTask(media::Preload preload) {
+  DCHECK(MessageLoop::current() == render_loop_);
+  preload_ = preload;
+}
+
+BufferedResourceLoader::DeferStrategy
+BufferedDataSource::ChooseDeferStrategy() {
+  // If the user indicates preload=metadata, then just load exactly
+  // what is needed for starting the pipeline and prerolling frames.
+  if (preload_ == media::METADATA && !media_has_played_)
+    return BufferedResourceLoader::kReadThenDefer;
+
+  // In general, we want to try to buffer the entire video when the video
+  // is paused. But we don't want to do this if the video hasn't played yet
+  // and preload!=auto.
+  if (media_is_paused_ &&
+      (preload_ == media::AUTO || media_has_played_)) {
+    return BufferedResourceLoader::kNeverDefer;
   }
+
+  // When the video is playing, regardless of preload state, we buffer up
+  // to a hard limit and enable/disable deferring when the buffer is
+  // depleted/full.
+  return BufferedResourceLoader::kThresholdDefer;
 }
 
 // This method is the place where actual read happens, |loader_| must be valid

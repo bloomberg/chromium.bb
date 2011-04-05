@@ -229,6 +229,8 @@ void AdaptiveDemuxer::set_host(FilterHost* filter_host) {
   if (video && audio != video) video->set_host(filter_host);
 }
 
+void AdaptiveDemuxer::SetPreload(Preload preload) {}
+
 scoped_refptr<DemuxerStream> AdaptiveDemuxer::GetStream(
     DemuxerStream::Type type) {
   switch (type) {

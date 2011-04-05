@@ -36,6 +36,15 @@ class BufferedResourceLoader :
     public base::RefCountedThreadSafe<BufferedResourceLoader>,
     public WebKit::WebURLLoaderClient {
  public:
+  // kNeverDefer - Aggresively buffer; never defer loading while paused.
+  // kReadThenDefer - Request only enough data to fulfill read requests.
+  // kThresholdDefer - Try to keep amount of buffered data at a threshold.
+  enum DeferStrategy {
+    kNeverDefer,
+    kReadThenDefer,
+    kThresholdDefer,
+  };
+
   typedef Callback0::Type NetworkEventCallback;
 
   // |url| - URL for the resource to be loaded.
@@ -84,9 +93,6 @@ class BufferedResourceLoader :
   // Returns the position of the last byte buffered. Returns
   // |kPositionNotSpecified| if such value is not available.
   virtual int64 GetBufferedPosition();
-
-  // Sets whether deferring data is allowed or disallowed.
-  virtual void SetAllowDefer(bool is_allowed);
 
   // Gets the content length in bytes of the instance after this loader has been
   // started. If this value is |kPositionNotSpecified|, then content length is
@@ -149,19 +155,30 @@ class BufferedResourceLoader :
 
   bool HasSingleOrigin() const;
 
+  // Sets the defer strategy to the given value.
+  void UpdateDeferStrategy(DeferStrategy strategy);
+
  protected:
   friend class base::RefCountedThreadSafe<BufferedResourceLoader>;
-
   virtual ~BufferedResourceLoader();
 
  private:
   friend class BufferedResourceLoaderTest;
 
-  // Defer the resource loading if the buffer is full.
-  void EnableDeferIfNeeded();
+  // Toggles whether the resource loading is deferred or not.
+  // Returns true if a network event was fired.
+  bool ToggleDeferring();
 
-  // Disable defer loading if we are under-buffered.
-  void DisableDeferIfNeeded();
+  // Returns true if we should defer resource loading, based
+  // on current buffering scheme.
+  bool ShouldEnableDefer();
+
+  // Returns true if we should enable resource loading, based
+  // on current buffering scheme.
+  bool ShouldDisableDefer();
+
+  // Updates deferring behavior based on current buffering scheme.
+  void UpdateDeferBehavior();
 
   // Returns true if the current read request can be fulfilled by what is in
   // the buffer.
@@ -204,8 +221,8 @@ class BufferedResourceLoader :
   // True if resource loading was deferred.
   bool deferred_;
 
-  // True if resource loader is allowed to defer, false otherwise.
-  bool defer_allowed_;
+  // Current buffering algorithm in place for resource loading.
+  DeferStrategy defer_strategy_;
 
   // True if resource loading has completed.
   bool completed_;

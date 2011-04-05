@@ -139,6 +139,8 @@ bool SimpleDataSource::IsStreaming() {
   return false;
 }
 
+void SimpleDataSource::SetPreload(media::Preload preload) {}
+
 void SimpleDataSource::SetURLLoaderForTest(WebKit::WebURLLoader* mock_loader) {
   url_loader_.reset(mock_loader);
   keep_test_loader_ = true;

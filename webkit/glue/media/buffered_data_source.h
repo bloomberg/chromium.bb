@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/filter_factories.h"
+#include "media/base/filters.h"
 #include "webkit/glue/media/buffered_resource_loader.h"
 
 namespace webkit_glue {
@@ -40,6 +41,7 @@ class BufferedDataSource : public WebDataSource {
                     media::DataSource::ReadCallback* read_callback);
   virtual bool GetSize(int64* size_out);
   virtual bool IsStreaming();
+  virtual void SetPreload(media::Preload preload);
 
   const media::MediaFormat& media_format() {
     return media_format_;
@@ -89,6 +91,13 @@ class BufferedDataSource : public WebDataSource {
   // to determine whether we are going from pause to play and play to pause,
   // and signals the buffered resource loader accordingly.
   void SetPlaybackRateTask(float playback_rate);
+
+  // This task saves the preload value for the media.
+  void SetPreloadTask(media::Preload preload);
+
+  // Decides which DeferStrategy to used based on the current state of the
+  // BufferedDataSource.
+  BufferedResourceLoader::DeferStrategy ChooseDeferStrategy();
 
   // The method that performs actual read. This method can only be executed on
   // the render thread.
@@ -195,6 +204,14 @@ class BufferedDataSource : public WebDataSource {
   // This variable is true when we are in a paused state and false when we
   // are in a playing state.
   bool media_is_paused_;
+
+  // This variable is true when the user has requested the video to play at
+  // least once.
+  bool media_has_played_;
+
+  // This variable holds the value of the preload attribute for the video
+  // element.
+  media::Preload preload_;
 
   // This timer is to run the WatchDogTask repeatedly. We use a timer instead
   // of doing PostDelayedTask() reduce the extra reference held by the message
