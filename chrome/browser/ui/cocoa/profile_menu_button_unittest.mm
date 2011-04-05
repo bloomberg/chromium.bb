@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/cocoa_protocols.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/profile_menu_button.h"
 #import "chrome/browser/ui/cocoa/test_event_utils.h"
@@ -47,13 +48,13 @@ TEST_F(ProfileMenuButtonTest, ControlSize) {
 
 // A menu delegate that will count the number open/close calls it recieves.
 // The delegate will also automatically close the menu after it opens.
-@interface ProfileMenuDelegate : NSObject {
+@interface ProfileMenuDelegate : NSObject<NSMenuDelegate> {
   int menuOpenCount_;
   int menuCloseCount_;
 }
 
-@property(assign,nonatomic) int menuOpenCount;
-@property(assign,nonatomic) int menuCloseCount;
+@property(assign, nonatomic) int menuOpenCount;
+@property(assign, nonatomic) int menuCloseCount;
 
 @end
 
