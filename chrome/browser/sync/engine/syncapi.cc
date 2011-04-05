@@ -2143,10 +2143,12 @@ void SyncManager::SyncInternal::Shutdown() {
     sync_notifier_.reset();
   }
 
-  // Pump any messages the auth watcher, syncer thread, or talk
-  // mediator posted before they shut down. (See OnSyncEngineEvent(),
-  // and HandleTalkMediatorEvent() for the
-  // events that may be posted.)
+  // |this| is about to be destroyed, so we have to ensure any messages
+  // that were posted to core_thread_ before or during syncer thread shutdown
+  // are flushed out, else they refer to garbage memory.  SendNotification
+  // is an example.
+  // TODO(tim): Remove this monstrosity, perhaps with ObserverListTS once core
+  // thread is removed. Bug 78190.
   {
     CHECK(core_message_loop_);
     bool old_state = core_message_loop_->NestableTasksAllowed();
