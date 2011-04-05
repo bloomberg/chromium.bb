@@ -122,13 +122,10 @@ class ProxyLauncher {
   // window or if the browser process died by itself.
   bool IsBrowserRunning();
 
-  // Returns true when timeout_ms milliseconds have elapsed.
-  // Returns false if the browser process died while waiting.
-  bool CrashAwareSleep(int timeout_ms);
-
   // Wait for the browser process to shut down on its own (i.e. as a result of
-  // some action that your test has taken).
-  bool WaitForBrowserProcessToQuit(int timeout);
+  // some action that your test has taken). If it has exited within |timeout|,
+  // puts the exit code in |exit_code| and returns true.
+  bool WaitForBrowserProcessToQuit(int timeout, int* exit_code);
 
   AutomationProxy* automation() const;
 

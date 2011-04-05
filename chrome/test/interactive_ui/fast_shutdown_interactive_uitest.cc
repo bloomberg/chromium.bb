@@ -54,6 +54,9 @@ TEST_F(FastShutdown, MAYBE_SlowTermination) {
   ASSERT_TRUE(automation()->WaitForAppModalDialog());
   ASSERT_TRUE(automation()->ClickAppModalDialogButton(
                   ui::MessageBoxFlags::DIALOGBUTTON_OK));
-  ASSERT_TRUE(WaitForBrowserProcessToQuit(
-      TestTimeouts::wait_for_terminate_timeout_ms()));
+
+  int exit_code = -1;
+  ASSERT_TRUE(launcher_->WaitForBrowserProcessToQuit(
+                  TestTimeouts::wait_for_terminate_timeout_ms(), &exit_code));
+  EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
 }

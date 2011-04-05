@@ -401,6 +401,8 @@ int RunTest(const std::string& test_name, int default_timeout_ms) {
   }
 #endif
 
+  base::CloseProcessHandle(process_handle);
+
   return exit_code;
 }
 
