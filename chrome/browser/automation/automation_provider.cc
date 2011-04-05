@@ -1015,7 +1015,7 @@ void AutomationProvider::GetExtensionProperty(
             // Skip this extension if we are in incognito mode
             // and it is not incognito-enabled.
             if (profile_->IsOffTheRecord() &&
-                !service->IsIncognitoEnabled(*iter))
+                !service->IsIncognitoEnabled((*iter)->id()))
               continue;
             if (*iter == extension) {
               found_index = index;

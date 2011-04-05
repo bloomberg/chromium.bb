@@ -102,14 +102,7 @@ void SetCurrentThemeFromThemeSpecifics(
         VLOG(1) << "Extension " << id << " is not a theme; aborting";
         return;
       }
-      ExtensionPrefs* extension_prefs = extensions_service->extension_prefs();
-      CHECK(extension_prefs);
-      // TODO(akalin): GetExtensionState() isn't very safe as it
-      // returns Extension::ENABLED by default; either change it to
-      // return something else by default or create a separate
-      // function that does so.
-      if (extension_prefs->GetExtensionState(extension->id()) !=
-          Extension::ENABLED) {
+      if (!extensions_service->IsExtensionEnabled(id)) {
         VLOG(1) << "Theme " << id << " is not enabled; aborting";
         return;
       }
@@ -144,15 +137,7 @@ void SetCurrentThemeFromThemeSpecifics(
       extensions_service->pending_extension_manager()->AddFromSync(
           id, update_url, &IsTheme,
           kInstallSilently, kEnableOnInstall, kEnableIncognitoOnInstall);
-      ExtensionUpdater* extension_updater = extensions_service->updater();
-      // Auto-updates should now be on always (see the construction of
-      // the ExtensionService in ProfileImpl::InitExtensions()).
-      if (!extension_updater) {
-        LOG(DFATAL) << "Extension updater unexpectedly NULL; "
-                    << "auto-updates may be turned off";
-        return;
-      }
-      extension_updater->CheckNow();
+      extensions_service->CheckForUpdates();
     }
   } else if (theme_specifics.use_system_theme_by_default()) {
     ThemeServiceFactory::GetForProfile(profile)->SetNativeTheme();

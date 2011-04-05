@@ -344,7 +344,7 @@ void UserScriptMaster::Observe(NotificationType type,
       // Add any content scripts inside the extension.
       const Extension* extension = Details<const Extension>(details).ptr();
       bool incognito_enabled = profile_->GetExtensionService()->
-          IsIncognitoEnabled(extension);
+          IsIncognitoEnabled(extension->id());
       const UserScriptList& scripts = extension->content_scripts();
       for (UserScriptList::const_iterator iter = scripts.begin();
            iter != scripts.end(); ++iter) {
@@ -377,7 +377,7 @@ void UserScriptMaster::Observe(NotificationType type,
       const Extension* extension = Details<const Extension>(details).ptr();
       UserScriptList new_lone_scripts;
       bool incognito_enabled = profile_->GetExtensionService()->
-          IsIncognitoEnabled(extension);
+          IsIncognitoEnabled(extension->id());
       for (UserScriptList::iterator iter = lone_scripts_.begin();
            iter != lone_scripts_.end(); ++iter) {
         if (iter->extension_id() == extension->id()) {
