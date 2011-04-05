@@ -46,8 +46,8 @@ bool ExtensionMessageHandler::CanDispatchRequest(
     // This can happen if someone uses window.open() to open an extension URL
     // from a non-extension context.
     sender_->Send(new ExtensionMsg_Response(
-      routing_id, params.request_id, false, std::string(),
-      "Access to extension API denied."));
+        routing_id, params.request_id, false, std::string(),
+        "Access to extension API denied."));
     return false;
   }
 

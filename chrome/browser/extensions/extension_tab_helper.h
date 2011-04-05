@@ -93,7 +93,7 @@ class ExtensionTabHelper : public TabContentsObserver,
   // created for.
   const Extension* extension_app_;
 
-  // Icon for extension_app_ (if non-null) or extension_for_current_page_.
+  // Icon for extension_app_ (if non-null).
   SkBitmap extension_app_icon_;
 
   // Used for loading extension_app_icon_.

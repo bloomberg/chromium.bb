@@ -63,12 +63,15 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/plugin_process_host.h"
+#include "content/browser/plugin_service.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/registry_controlled_domain.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 using base::Time;
 
@@ -108,6 +111,13 @@ ManifestReloadReason ShouldReloadExtensionManifest(const ExtensionInfo& info) {
     return NEEDS_RELOCALIZATION;
 
   return NOT_NEEDED;
+}
+
+static void ForceShutdownPlugin(const FilePath& plugin_path) {
+  PluginProcessHost* plugin =
+      PluginService::GetInstance()->FindNpapiPluginProcess(plugin_path);
+  if (plugin)
+    plugin->ForceShutdown();
 }
 
 }  // namespace
@@ -986,6 +996,20 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
       NotificationType::EXTENSION_LOADED,
       Source<Profile>(profile_),
       Details<const Extension>(extension));
+
+  bool plugins_changed = false;
+  for (size_t i = 0; i < extension->plugins().size(); ++i) {
+    const Extension::PluginInfo& plugin = extension->plugins()[i];
+    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+    webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(plugin.path);
+    plugins_changed = true;
+    if (!plugin.is_public) {
+      PluginService::GetInstance()->RestrictPluginToUrl(
+          plugin.path, extension->url());
+    }
+  }
+  if (plugins_changed)
+    PluginService::GetInstance()->PurgePluginListCache(false);
 }
 
 void ExtensionService::NotifyExtensionUnloaded(
@@ -1001,6 +1025,22 @@ void ExtensionService::NotifyExtensionUnloaded(
     profile_->GetExtensionSpecialStoragePolicy()->
         RevokeRightsForExtension(extension);
   }
+
+  bool plugins_changed = false;
+  for (size_t i = 0; i < extension->plugins().size(); ++i) {
+    const Extension::PluginInfo& plugin = extension->plugins()[i];
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            NewRunnableFunction(&ForceShutdownPlugin,
+                                                plugin.path));
+    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+    webkit::npapi::PluginList::Singleton()->RemoveExtraPluginPath(
+        plugin.path);
+    plugins_changed = true;
+    if (!plugin.is_public)
+      PluginService::GetInstance()->RestrictPluginToUrl(plugin.path, GURL());
+  }
+  if (plugins_changed)
+    PluginService::GetInstance()->PurgePluginListCache(false);
 }
 
 void ExtensionService::UpdateExtensionBlacklist(

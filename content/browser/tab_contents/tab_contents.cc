@@ -292,12 +292,6 @@ TabContents::TabContents(Profile* profile,
   registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
                  NotificationService::AllSources());
 
-  // Listen for extension changes so we can update extension_for_current_page_.
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
-                 NotificationService::AllSources());
-
   // Listen for Google URL changes.
   registrar_.Add(this, NotificationType::GOOGLE_URL_UPDATED,
                  NotificationService::AllSources());
@@ -2474,12 +2468,6 @@ void TabContents::Observe(NotificationType type,
       }
       break;
     }
-
-    case NotificationType::EXTENSION_LOADED:
-      break;
-
-    case NotificationType::EXTENSION_UNLOADED:
-      break;
 
     case NotificationType::GOOGLE_URL_UPDATED:
       UpdateAlternateErrorPageURL();

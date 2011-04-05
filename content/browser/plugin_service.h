@@ -114,12 +114,23 @@ class PluginService
                                  webkit::npapi::WebPluginInfo* info,
                                  std::string* actual_mime_type);
 
-  // Returns true if the given plugin is allowed to be used by a page with
-  // the given URL.
-  bool PrivatePluginAllowedForURL(const FilePath& plugin_path, const GURL& url);
-
   // Safe to be called from any thread.
   void OverridePluginForTab(const OverriddenPlugin& plugin);
+
+  // Restricts the given plugin to the the scheme and host of the given url.
+  // Call with an empty url to reset this.
+  // Can be called on any thread.
+  void RestrictPluginToUrl(const FilePath& plugin_path, const GURL& url);
+
+  // Returns true if the given plugin is allowed to be used by a page with
+  // the given URL.
+  // Can be called on any thread.
+  bool PluginAllowedForURL(const FilePath& plugin_path, const GURL& url);
+
+  // Tells all the renderer processes to throw away their cache of the plugin
+  // list, and optionally also reload all the pages with plugins.
+  // NOTE: can only be called on the UI thread.
+  static void PurgePluginListCache(bool reload_pages);
 
   // The UI thread's message loop
   MessageLoop* main_message_loop() { return main_message_loop_; }
@@ -176,10 +187,10 @@ class PluginService
   // The browser's UI locale.
   const std::string ui_locale_;
 
-  // Map of plugin paths to the origin they are restricted to.  Used for
-  // extension-only plugins.
-  typedef base::hash_map<FilePath, GURL> PrivatePluginMap;
-  PrivatePluginMap private_plugins_;
+  // Map of plugin paths to the origin they are restricted to.
+  base::Lock restricted_plugin_lock_;  // Guards access to restricted_plugin_.
+  typedef base::hash_map<FilePath, GURL> RestrictedPluginMap;
+  RestrictedPluginMap restricted_plugin_;
 
   NotificationRegistrar registrar_;
 

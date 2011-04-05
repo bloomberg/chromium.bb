@@ -20,7 +20,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/default_plugin.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
@@ -50,13 +49,6 @@ static void NotifyPluginsOfActivation() {
   }
 }
 #endif
-
-static void PurgePluginListCache(bool reload_pages) {
-  for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
-       !it.IsAtEnd(); it.Advance()) {
-    it.GetCurrentValue()->Send(new ViewMsg_PurgePluginListCache(reload_pages));
-  }
-}
 
 #if defined(OS_LINUX)
 // Delegate class for monitoring directories.
@@ -173,10 +165,6 @@ PluginService::PluginService()
     file_watchers_.push_back(watcher);
   }
 #endif
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
-                 NotificationService::AllSources());
 #if defined(OS_MACOSX)
   // We need to know when the browser comes forward so we can bring modal plugin
   // windows forward too.
@@ -410,54 +398,10 @@ void PluginService::OnWaitableEventSignaled(
 #endif  // defined(OS_WIN)
 }
 
-static void ForceShutdownPlugin(const FilePath& plugin_path) {
-  PluginProcessHost* plugin =
-      PluginService::GetInstance()->FindNpapiPluginProcess(plugin_path);
-  if (plugin)
-    plugin->ForceShutdown();
-}
-
 void PluginService::Observe(NotificationType type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::EXTENSION_LOADED: {
-      const Extension* extension = Details<const Extension>(details).ptr();
-      bool plugins_changed = false;
-      for (size_t i = 0; i < extension->plugins().size(); ++i) {
-        const Extension::PluginInfo& plugin = extension->plugins()[i];
-        webkit::npapi::PluginList::Singleton()->RefreshPlugins();
-        webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(plugin.path);
-        plugins_changed = true;
-        if (!plugin.is_public)
-          private_plugins_[plugin.path] = extension->url();
-      }
-      if (plugins_changed)
-        PurgePluginListCache(false);
-      break;
-    }
-
-    case NotificationType::EXTENSION_UNLOADED: {
-      const Extension* extension =
-          Details<UnloadedExtensionInfo>(details)->extension;
-      bool plugins_changed = false;
-      for (size_t i = 0; i < extension->plugins().size(); ++i) {
-        const Extension::PluginInfo& plugin = extension->plugins()[i];
-        BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                                NewRunnableFunction(&ForceShutdownPlugin,
-                                                    plugin.path));
-        webkit::npapi::PluginList::Singleton()->RefreshPlugins();
-        webkit::npapi::PluginList::Singleton()->RemoveExtraPluginPath(
-            plugin.path);
-        plugins_changed = true;
-        if (!plugin.is_public)
-          private_plugins_.erase(plugin.path);
-      }
-      if (plugins_changed)
-        PurgePluginListCache(false);
-      break;
-    }
-
 #if defined(OS_MACOSX)
     case NotificationType::APP_ACTIVATED: {
       BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -488,25 +432,42 @@ void PluginService::Observe(NotificationType type,
   }
 }
 
-bool PluginService::PrivatePluginAllowedForURL(const FilePath& plugin_path,
-                                               const GURL& url) {
-  if (url.is_empty())
-    return true;  // Caller wants all plugins.
-
-  PrivatePluginMap::iterator it = private_plugins_.find(plugin_path);
-  if (it == private_plugins_.end())
-    return true;  // This plugin is not private, so it's allowed everywhere.
-
-  // We do a dumb compare of scheme and host, rather than using the domain
-  // service, since we only care about this for extensions.
-  const GURL& required_url = it->second;
-  return (url.scheme() == required_url.scheme() &&
-          url.host() == required_url.host());
-}
-
 void PluginService::OverridePluginForTab(const OverriddenPlugin& plugin) {
   base::AutoLock auto_lock(overridden_plugins_lock_);
   overridden_plugins_.push_back(plugin);
+}
+
+void PluginService::PurgePluginListCache(bool reload_pages) {
+  for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->Send(new ViewMsg_PurgePluginListCache(reload_pages));
+  }
+}
+
+void PluginService::RestrictPluginToUrl(const FilePath& plugin_path,
+                                        const GURL& url) {
+  base::AutoLock auto_lock(restricted_plugin_lock_);
+  if (url.is_empty()) {
+    restricted_plugin_.erase(plugin_path);
+  } else {
+    restricted_plugin_[plugin_path] = url;
+  }
+}
+
+bool PluginService::PluginAllowedForURL(const FilePath& plugin_path,
+                                        const GURL& url) {
+  if (url.is_empty())
+    return true;  // Caller wants all plugins.
+
+  base::AutoLock auto_lock(restricted_plugin_lock_);
+
+  RestrictedPluginMap::iterator it = restricted_plugin_.find(plugin_path);
+  if (it == restricted_plugin_.end())
+    return true;  // This plugin is not restricted, so it's allowed everywhere.
+
+  const GURL& required_url = it->second;
+  return (url.scheme() == required_url.scheme() &&
+          url.host() == required_url.host());
 }
 
 void PluginService::RegisterPepperPlugins() {

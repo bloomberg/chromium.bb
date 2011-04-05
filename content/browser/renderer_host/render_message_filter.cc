@@ -659,10 +659,7 @@ void RenderMessageFilter::OnGotPluginInfo(
   int content_setting = CONTENT_SETTING_DEFAULT;
   webkit::npapi::WebPluginInfo info_copy = info;
   if (found) {
-    // TODO(mpcomplete): The plugin service should do this check. We should
-    // not be calling the PluginList directly.
-    if (!plugin_service_->PrivatePluginAllowedForURL(
-            info_copy.path, policy_url))
+    if (!plugin_service_->PluginAllowedForURL(info_copy.path, policy_url))
       info_copy.enabled |= webkit::npapi::WebPluginInfo::POLICY_DISABLED;
     std::string resource =
         webkit::npapi::PluginList::Singleton()->GetPluginGroupIdentifier(
