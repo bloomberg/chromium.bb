@@ -23,11 +23,16 @@ found in the LICENSE file.
   -webkit-box-flex: 1;
 }
 
-#timeline-selection-summary {
+#timeline-selection-summary-container {
   border-top: 1px solid black;
-  max-height: 300px;
-  min-height: 100px;
+  max-height: 250px;
+  min-height: 250px;
   font-family: monospace;
+  overflow: auto;
+}
+
+#timeline-selection-summary {
+  margin: 2px;
 }
 
 #timeline-selection-summary ul {

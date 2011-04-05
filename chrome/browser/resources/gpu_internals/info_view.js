@@ -132,7 +132,7 @@ cr.define('gpu', function() {
               link.textContent = bugid;
               link.href = 'http://crbug.com/' + bugid;
               reasonEl.appendChild(link);
-              nreasons ++;
+              nreasons++;
             }
 
             for (j = 0; j < reason.webkit_bugs.length; ++j) {
@@ -148,7 +148,7 @@ cr.define('gpu', function() {
 
               link.href = 'https://bugs.webkit.org/show_bug.cgi?id=' + bugid;
               reasonEl.appendChild(link);
-              nreasons ++;
+              nreasons++;
             }
 
             reasonsEl.appendChild(reasonEl);

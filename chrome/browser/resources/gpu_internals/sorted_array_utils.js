@@ -126,7 +126,7 @@ cr.define('gpu', function() {
       return;
     }
 
-    for(var n = ary.length; i < n; i++) {
+    for (var n = ary.length; i < n; i++) {
       var lo = mapLoFn(ary[i]);
       if (lo >= hiVal)
         break;

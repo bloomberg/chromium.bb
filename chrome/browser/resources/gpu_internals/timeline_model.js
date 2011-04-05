@@ -138,11 +138,14 @@ cr.define('gpu', function() {
       var threadStateByPTID = {};
 
       var nameToColorMap = {};
-      var nextColorId = 0;
       function getColor(name) {
         if (!(name in nameToColorMap)) {
-          nameToColorMap[name] = nextColorId;
-          nextColorId = (nextColorId + 1) % numColorIds;
+          // Compute a simplistic hashcode of the string so we get consistent
+          // coloring across traces.
+          var hash = 0;
+          for (var i = 0; i < name.length; ++i)
+            hash = (hash + 37 * hash + name.charCodeAt(i)) % 0xFFFFFFFF;
+          nameToColorMap[name] = hash % numColorIds;
         }
         return nameToColorMap[name];
       }

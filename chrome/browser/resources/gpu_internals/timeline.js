@@ -136,7 +136,7 @@ cr.define('gpu', function() {
       this.appendChild(this.tracks_);
 
       this.dragBox_ = this.ownerDocument.createElement('div');
-      this.dragBox_.className = 'timeline-drag-box timeline-drag-box-hidden';
+      this.dragBox_.className = 'timeline-drag-box';
       this.appendChild(this.dragBox_);
 
       // The following code uses a setInterval to monitor the timeline control
@@ -290,6 +290,13 @@ cr.define('gpu', function() {
       }
     },
 
+    get keyHelp() {
+      return 'Keyboard shortcuts:\n' +
+          ' w/s   : Zoom in/out\n' +
+          ' a/d   : Pan left/right\n' +
+          ' e     : Center on mouse';
+    },
+
     get selection() {
       return this.selection_;
     },
@@ -300,11 +307,11 @@ cr.define('gpu', function() {
     },
 
     showDragBox_: function() {
-      this.dragBox_.classList.remove('timeline-drag-box-hidden');
+      this.dragBox_.hidden = false;
     },
 
     hideDragBox_: function() {
-      this.dragBox_.classList.add('timeline-drag-box-hidden');
+      this.dragBox_.hidden = true;
     },
 
     setDragBoxPosition_: function(eDown, eCur) {

@@ -18,10 +18,6 @@ found in the LICENSE file.
   height: 18px;
 }
 
-.timeline-drag-box-hidden {
-  display: none;
-}
-
 .timeline-drag-box {
   position: fixed;
   background-color: rgba(0, 0, 255, 0.25);
