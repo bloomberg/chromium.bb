@@ -66,9 +66,8 @@ class FaviconLoadObserver : public BookmarkModelObserver {
 
 }
 
-// static
 bool BookmarkModelVerifier::NodesMatch(const BookmarkNode* node_a,
-                                       const BookmarkNode* node_b) {
+                                       const BookmarkNode* node_b) const {
   if (node_a == NULL || node_b == NULL)
     return node_a == node_b;
   if (node_a->is_folder() != node_b->is_folder()) {
@@ -95,9 +94,8 @@ bool BookmarkModelVerifier::NodesMatch(const BookmarkNode* node_a,
   return true;
 }
 
-// static
 bool BookmarkModelVerifier::ModelsMatch(BookmarkModel* model_a,
-                                        BookmarkModel* model_b) {
+                                        BookmarkModel* model_b) const {
   bool ret_val = true;
   ui::TreeNodeIterator<const BookmarkNode> iterator_a(model_a->root_node());
   ui::TreeNodeIterator<const BookmarkNode> iterator_b(model_b->root_node());
@@ -106,16 +104,27 @@ bool BookmarkModelVerifier::ModelsMatch(BookmarkModel* model_a,
     EXPECT_TRUE(iterator_b.has_next());
     const BookmarkNode* node_b = iterator_b.Next();
     ret_val = ret_val && NodesMatch(node_a, node_b);
-    const SkBitmap& bitmap_a = model_a->GetFavicon(node_a);
-    const SkBitmap& bitmap_b = model_b->GetFavicon(node_b);
-    ret_val = ret_val && FaviconsMatch(bitmap_a, bitmap_b);
+    if (node_a->type() != BookmarkNode::URL ||
+        node_b->type() != BookmarkNode::URL)
+      continue;
+    ret_val = ret_val && FaviconsMatch(model_a, model_b, node_a, node_b);
   }
   ret_val = ret_val && (!iterator_b.has_next());
   return ret_val;
 }
 
-bool BookmarkModelVerifier::FaviconsMatch(const SkBitmap& bitmap_a,
-                                          const SkBitmap& bitmap_b) {
+bool BookmarkModelVerifier::FaviconsMatch(BookmarkModel* model_a,
+                                          BookmarkModel* model_b,
+                                          const BookmarkNode* node_a,
+                                          const BookmarkNode* node_b) const {
+  const SkBitmap& bitmap_a = GetFavicon(model_a, node_a);
+  const SkBitmap& bitmap_b = GetFavicon(model_b, node_b);
+  return FaviconBitmapsMatch(bitmap_a, bitmap_b);
+}
+
+bool BookmarkModelVerifier::FaviconBitmapsMatch(
+    const SkBitmap& bitmap_a,
+    const SkBitmap& bitmap_b) const {
   if (bitmap_a.getSize() == 0U && bitmap_a.getSize() == 0U)
     return true;
   if ((bitmap_a.getSize() != bitmap_b.getSize()) ||
@@ -141,7 +150,8 @@ bool BookmarkModelVerifier::FaviconsMatch(const SkBitmap& bitmap_a,
   }
 }
 
-bool BookmarkModelVerifier::ContainsDuplicateBookmarks(BookmarkModel* model) {
+bool BookmarkModelVerifier::ContainsDuplicateBookmarks(
+    BookmarkModel* model) const {
   ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
@@ -162,11 +172,10 @@ bool BookmarkModelVerifier::ContainsDuplicateBookmarks(BookmarkModel* model) {
   return false;
 }
 
-// static
 int BookmarkModelVerifier::CountNodesWithTitlesMatching(
     BookmarkModel* model,
     BookmarkNode::Type node_type,
-    const string16& title) {
+    const string16& title) const {
   ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
   // Walk through the model tree looking for bookmark nodes of node type
   // |node_type| whose titles match |title|.
@@ -263,6 +272,7 @@ void BookmarkModelVerifier::SetFavicon(
     BookmarkModel* model,
     const BookmarkNode* node,
     const std::vector<unsigned char>& icon_bytes_vector) {
+  urls_with_favicons_.insert(node->GetURL());
   if (use_verifier_model_) {
     const BookmarkNode* v_node = NULL;
     FindNodeInVerifier(model, node, &v_node);
@@ -275,6 +285,25 @@ void BookmarkModelVerifier::SetFavicon(
   browser_sync::BookmarkChangeProcessor::ApplyBookmarkFavicon(
       node, model->profile(), icon_bytes_vector);
   observer.WaitForFaviconLoad();
+}
+
+const SkBitmap& BookmarkModelVerifier::GetFavicon(
+    BookmarkModel* model,
+    const BookmarkNode* node) const {
+  // If a favicon wasn't explicitly set for a particular URL, simply return its
+  // blank favicon.
+  if (urls_with_favicons_.find(node->GetURL()) == urls_with_favicons_.end()) {
+    return node->favicon();
+  }
+  // If a favicon was explicitly set, we may need to wait for it to be loaded
+  // via BookmarkModel::GetFavIcon(), which is an asynchronous operation.
+  if (!node->is_favicon_loaded()) {
+    FaviconLoadObserver observer(model, node);
+    model->GetFavicon(node);
+    observer.WaitForFaviconLoad();
+  }
+  EXPECT_TRUE(node->is_favicon_loaded());
+  return node->favicon();
 }
 
 void BookmarkModelVerifier::Move(BookmarkModel* model,

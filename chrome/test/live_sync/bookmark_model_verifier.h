@@ -6,6 +6,7 @@
 #define CHROME_TEST_LIVE_SYNC_BOOKMARK_MODEL_VERIFIER_H_
 #pragma once
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -31,16 +32,24 @@ class BookmarkModelVerifier {
   // Checks if the hierarchies in |model_a| and |model_b| are equivalent in
   // terms of the data model and favicon. Returns true if they both match.
   // Note: Some peripheral fields like creation times are allowed to mismatch.
-  static bool ModelsMatch(BookmarkModel* model_a,
-                          BookmarkModel* model_b) WARN_UNUSED_RESULT;
+  bool ModelsMatch(BookmarkModel* model_a,
+                   BookmarkModel* model_b) const WARN_UNUSED_RESULT;
 
   // Checks if |model| contains any instances of two bookmarks with the same URL
   // under the same parent folder. Returns true if even one instance is found.
-  static bool ContainsDuplicateBookmarks(BookmarkModel* model);
+  bool ContainsDuplicateBookmarks(BookmarkModel* model) const;
+
+  // Checks if the favicon in |node_a| from |model_a| matches that of |node_b|
+  // from |model_b|. Returns true if they match.
+  bool FaviconsMatch(BookmarkModel* model_a,
+                     BookmarkModel* model_b,
+                     const BookmarkNode* node_a,
+                     const BookmarkNode* node_b) const;
 
   // Checks if the favicon data in |bitmap_a| and |bitmap_b| are equivalent.
   // Returns true if they match.
-  static bool FaviconsMatch(const SkBitmap& bitmap_a, const SkBitmap& bitmap_b);
+  bool FaviconBitmapsMatch(const SkBitmap& bitmap_a,
+                           const SkBitmap& bitmap_b) const;
 
   // Adds the same bookmark to |model| and |verifier_model_|. See
   // BookmarkModel::AddURL for details.
@@ -69,6 +78,10 @@ class BookmarkModelVerifier {
   void SetFavicon(BookmarkModel* model,
                   const BookmarkNode* node,
                   const std::vector<unsigned char>& icon_bytes_vector);
+
+  // Gets the favicon associated with |node| in |model|.
+  const SkBitmap& GetFavicon(BookmarkModel* model,
+                             const BookmarkNode* node) const;
 
   // Moves the same node to the same position in both |model| and
   // |verifier_model_|. See BookmarkModel::Move for details.
@@ -100,8 +113,8 @@ class BookmarkModelVerifier {
 
   // Does a deep comparison of BookmarkNode fields in |model_a| and |model_b|.
   // Returns true if they are all equal.
-  static bool NodesMatch(
-      const BookmarkNode* model_a, const BookmarkNode* model_b);
+  bool NodesMatch(const BookmarkNode* model_a,
+                  const BookmarkNode* model_b) const;
 
   bool use_verifier_model() const { return use_verifier_model_; }
 
@@ -111,9 +124,9 @@ class BookmarkModelVerifier {
 
   // Returns the number of nodes of node type |node_type| in |model| whose
   // titles match the string |title|.
-  static int CountNodesWithTitlesMatching(BookmarkModel* model,
-                                          BookmarkNode::Type node_type,
-                                          const string16& title);
+  int CountNodesWithTitlesMatching(BookmarkModel* model,
+                                   BookmarkNode::Type node_type,
+                                   const string16& title) const;
 
  private:
   // A pointer to the BookmarkModel object within the verifier_profile_ object
@@ -123,6 +136,12 @@ class BookmarkModelVerifier {
   // A flag that indicates whether bookmark operations should also update the
   // verifier model or not.
   bool use_verifier_model_;
+
+  // A collection of URLs for which we have added favicons. Since loading a
+  // favicon is an asynchronous operation and doesn't necessarily invoke a
+  // callback, this collection is used to determine if we must wait for a URL's
+  // favicon to load or not.
+  std::set<GURL> urls_with_favicons_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelVerifier);
 };

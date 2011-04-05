@@ -182,8 +182,8 @@ bool LiveBookmarksSyncTest::ModelMatchesVerifier(int profile) {
                << "DisableVerifier(). Use ModelsMatch() instead.";
     return false;
   }
-  return BookmarkModelVerifier::ModelsMatch(
-      GetVerifierBookmarkModel(), GetBookmarkModel(profile));
+  return verifier_helper_->ModelsMatch(GetVerifierBookmarkModel(),
+                                       GetBookmarkModel(profile));
 }
 
 bool LiveBookmarksSyncTest::AllModelsMatchVerifier() {
@@ -202,8 +202,8 @@ bool LiveBookmarksSyncTest::AllModelsMatchVerifier() {
 }
 
 bool LiveBookmarksSyncTest::ModelsMatch(int profile_a, int profile_b) {
-  return BookmarkModelVerifier::ModelsMatch(
-      GetBookmarkModel(profile_a), GetBookmarkModel(profile_b));
+  return verifier_helper_->ModelsMatch(GetBookmarkModel(profile_a),
+                                       GetBookmarkModel(profile_b));
 }
 
 bool LiveBookmarksSyncTest::AllModelsMatch() {
@@ -217,7 +217,7 @@ bool LiveBookmarksSyncTest::AllModelsMatch() {
 }
 
 bool LiveBookmarksSyncTest::ContainsDuplicateBookmarks(int profile) {
-  return BookmarkModelVerifier::ContainsDuplicateBookmarks(
+  return verifier_helper_->ContainsDuplicateBookmarks(
       GetBookmarkModel(profile));
 }
 

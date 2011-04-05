@@ -123,14 +123,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 }
 
 // Test Scribe ID - 370489.
-// TODO(rsimha): Enable after http://crbug.com/69694 is fixed.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-                       FAILS_SC_AddFirstBMWithFavicon) {
+                       SC_AddFirstBMWithFavicon) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   const BookmarkNode* bookmark = AddURL(0, kGenericURLTitle, GURL(kGenericURL));
   ASSERT_TRUE(bookmark != NULL);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   SetFavicon(0, bookmark, GenericFavicon());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
