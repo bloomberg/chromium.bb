@@ -172,6 +172,7 @@
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/child_process_logging.h"
@@ -430,13 +431,8 @@ void MetricsService::DiscardOldStabilityStats(PrefService* local_state) {
 
   local_state->ClearPref(prefs::kStabilityPluginStats);
 
-  ListValue* unsent_initial_logs = local_state->GetMutableList(
-      prefs::kMetricsInitialLogs);
-  unsent_initial_logs->Clear();
-
-  ListValue* unsent_ongoing_logs = local_state->GetMutableList(
-      prefs::kMetricsOngoingLogs);
-  unsent_ongoing_logs->Clear();
+  local_state->ClearPref(prefs::kMetricsInitialLogs);
+  local_state->ClearPref(prefs::kMetricsOngoingLogs);
 }
 
 MetricsService::MetricsService()
@@ -1211,11 +1207,11 @@ void MetricsService::RecallUnsentLogs() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
-  ListValue* unsent_initial_logs = local_state->GetMutableList(
+  const ListValue* unsent_initial_logs = local_state->GetList(
       prefs::kMetricsInitialLogs);
   RecallUnsentLogsHelper(*unsent_initial_logs, &unsent_initial_logs_);
 
-  ListValue* unsent_ongoing_logs = local_state->GetMutableList(
+  const ListValue* unsent_ongoing_logs = local_state->GetList(
       prefs::kMetricsOngoingLogs);
   RecallUnsentLogsHelper(*unsent_ongoing_logs, &unsent_ongoing_logs_);
 }
@@ -1267,15 +1263,19 @@ void MetricsService::StoreUnsentLogs() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
-  ListValue* unsent_initial_logs = local_state->GetMutableList(
-      prefs::kMetricsInitialLogs);
-  StoreUnsentLogsHelper(unsent_initial_logs_, kMaxInitialLogsPersisted,
-                        unsent_initial_logs);
+  {
+    ListPrefUpdate update(local_state, prefs::kMetricsInitialLogs);
+    ListValue* unsent_initial_logs = update.Get();
+    StoreUnsentLogsHelper(unsent_initial_logs_, kMaxInitialLogsPersisted,
+                          unsent_initial_logs);
+  }
 
-  ListValue* unsent_ongoing_logs = local_state->GetMutableList(
-      prefs::kMetricsOngoingLogs);
-  StoreUnsentLogsHelper(unsent_ongoing_logs_, kMaxOngoingLogsPersisted,
-                        unsent_ongoing_logs);
+  {
+    ListPrefUpdate update(local_state, prefs::kMetricsOngoingLogs);
+    ListValue* unsent_ongoing_logs = update.Get();
+    StoreUnsentLogsHelper(unsent_ongoing_logs_, kMaxOngoingLogsPersisted,
+                          unsent_ongoing_logs);
+  }
 }
 
 void MetricsService::PreparePendingLogText() {
@@ -1806,7 +1806,8 @@ void MetricsService::LogKeywords(const TemplateURLModel* url_model) {
 }
 
 void MetricsService::RecordPluginChanges(PrefService* pref) {
-  ListValue* plugins = pref->GetMutableList(prefs::kStabilityPluginStats);
+  ListPrefUpdate update(pref, prefs::kStabilityPluginStats);
+  ListValue* plugins = update.Get();
   DCHECK(plugins);
 
   for (ListValue::iterator value_iter = plugins->begin();
