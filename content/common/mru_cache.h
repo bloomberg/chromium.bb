@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,10 @@ class MRUCacheBase {
   // example, maybe it has special work to do when something is evicted), it
   // can pass NO_AUTO_EVICT to not restrict the cache size.
   explicit MRUCacheBase(size_type max_size) : max_size_(max_size) {
+  }
+
+  MRUCacheBase(size_type max_size, const DeletorType& deletor)
+      : max_size_(max_size), deletor_(deletor) {
   }
 
   virtual ~MRUCacheBase() {
