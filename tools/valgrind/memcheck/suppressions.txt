@@ -3366,6 +3366,50 @@
    fun:_ZN7testing14InitGoogleTestEPiPPc
 }
 {
+   bug_64887_d
+   Memcheck:Value4
+   ...
+   fun:_ZNSolsEx
+   fun:_ZN7testing9internal220TypeWithoutFormatterIN5media7PreloadELNS0_8TypeKindE1EE10PrintValueERKS3_PSo
+   fun:_ZN7testing9internal2lsIcSt11char_traitsIcEN5media7PreloadEEERSt13basic_ostreamIT_T0_ESA_RKT1_
+   fun:_ZN16testing_internal26DefaultPrintNonContainerToIN5media7PreloadEEEvRKT_PSo
+   fun:_ZN7testing8internal14DefaultPrintToIN5media7PreloadEEEvcNS0_13bool_constantILb0EEERKT_PSo
+   fun:_ZN7testing8internal7PrintToIN5media7PreloadEEEvRKT_PSo
+   fun:_ZN7testing8internal16UniversalPrinterIN5media7PreloadEE5PrintERKS3_PSo
+   fun:_ZN7testing8internal18TuplePrefixPrinter*
+   fun:_ZN7testing8internal12PrintTupleToINSt3tr15tupleIN5media7PreloadENS2*
+   fun:_ZN7testing8internal7PrintToIN5media7PreloadEEEvRKNSt3tr15tupleIT*
+   fun:_ZN7testing8internal16UniversalPrinterINSt3tr15tupleIN5media7PreloadENS2*
+   fun:_ZN7testing8internal14UniversalPrintINSt3tr15tupleIN5media7PreloadENS2*
+   fun:_ZNK7testing8internal18FunctionMockerBaseIFvN5media7PreloadEEE32UntypedDescribeUninterestingCallEPKvPSo
+   fun:_ZN7testing8internal25UntypedFunctionMockerBase17UntypedInvokeWithEPKv
+   fun:_ZN7testing8internal18FunctionMockerBaseIFvN5media7PreloadEEE10InvokeWithERKNSt3tr15tupleIS3*
+   fun:_ZN7testing8internal14FunctionMockerIFvN5media7PreloadEEE6InvokeES3_
+   fun:_ZN5media11MockDemuxer10SetPreloadENS_7PreloadE
+}
+{
+   bug_64887_e
+   Memcheck:Cond
+   ...
+   fun:_ZNSolsEx
+   fun:_ZN7testing9internal220TypeWithoutFormatterIN5media7PreloadELNS0_8TypeKindE1EE10PrintValueERKS3_PSo
+   fun:_ZN7testing9internal2lsIcSt11char_traitsIcEN5media7PreloadEEERSt13basic_ostreamIT_T0_ESA_RKT1_
+   fun:_ZN16testing_internal26DefaultPrintNonContainerToIN5media7PreloadEEEvRKT_PSo
+   fun:_ZN7testing8internal14DefaultPrintToIN5media7PreloadEEEvcNS0_13bool_constantILb0EEERKT_PSo
+   fun:_ZN7testing8internal7PrintToIN5media7PreloadEEEvRKT_PSo
+   fun:_ZN7testing8internal16UniversalPrinterIN5media7PreloadEE5PrintERKS3_PSo
+   fun:_ZN7testing8internal18TuplePrefixPrinter*
+   fun:_ZN7testing8internal12PrintTupleToINSt3tr15tupleIN5media7PreloadENS2*
+   fun:_ZN7testing8internal7PrintToIN5media7PreloadEEEvRKNSt3tr15tupleIT*
+   fun:_ZN7testing8internal16UniversalPrinterINSt3tr15tupleIN5media7PreloadENS2*
+   fun:_ZN7testing8internal14UniversalPrintINSt3tr15tupleIN5media7PreloadENS2*
+   fun:_ZNK7testing8internal18FunctionMockerBaseIFvN5media7PreloadEEE32UntypedDescribeUninterestingCallEPKvPSo
+   fun:_ZN7testing8internal25UntypedFunctionMockerBase17UntypedInvokeWithEPKv
+   fun:_ZN7testing8internal18FunctionMockerBaseIFvN5media7PreloadEEE10InvokeWithERKNSt3tr15tupleIS3*
+   fun:_ZN7testing8internal14FunctionMockerIFvN5media7PreloadEEE6InvokeES3_
+   fun:_ZN5media11MockDemuxer10SetPreloadENS_7PreloadE
+}
+{
    bug_64930a
    Memcheck:Leak
    fun:_Znw*
