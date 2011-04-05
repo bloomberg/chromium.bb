@@ -310,7 +310,8 @@ TEST_F(CloudPrintURLFetcherBasicTest, FLAKY_HandleRawData) {
   MessageLoop::current()->Run();
 }
 
-TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
+// http://code.google.com/p/chromium/issues/detail?id=78440
+TEST_F(CloudPrintURLFetcherOverloadTest, FLAKY_Protect) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
