@@ -139,6 +139,36 @@
    ...
    fun:base::*Histogram::FactoryGet
 }
+{
+   Intentional leak of stats histogram to avoid shutdown races
+   Heapcheck:Leak
+   ...
+   fun:Histogram
+   fun:StatsHistogram
+   fun:disk_cache::StatsHistogram::StatsHistogramFactoryGet
+}
+{
+   String name pushed into deliberately leaked histograms
+   Heapcheck:Leak
+   ...
+   fun:basic_string
+   fun:base:*:HistogramTest_*_Test::TestBody
+}
+{
+   String name pushed into deliberately leaked ScoketPool histigram
+   Heapcheck:Leak
+   ...
+   fun:std::string::*
+   ...
+   fun:ClientSocketPoolHistograms
+}
+{
+   String name pushed into leaked CookieMonsterHistograms
+   Heapcheck:Leak
+   ...
+   fun:basic_string
+   fun:net::CookieMonster::InitializeHistograms
+}
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
