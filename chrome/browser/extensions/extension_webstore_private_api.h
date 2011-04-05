@@ -43,6 +43,8 @@ class BeginInstallFunction : public SyncExtensionFunction {
 class BeginInstallWithManifestFunction : public AsyncExtensionFunction,
                                          public ExtensionInstallUI::Delegate {
  public:
+  BeginInstallWithManifestFunction();
+
   // Result codes for the return value. If you change this, make sure to
   // update the description for the beginInstallWithManifest callback in
   // extension_api.json.
@@ -88,6 +90,7 @@ class BeginInstallWithManifestFunction : public AsyncExtensionFunction,
   virtual void InstallUIAbort() OVERRIDE;
 
  protected:
+  virtual ~BeginInstallWithManifestFunction();
   virtual bool RunImpl();
 
   // Sets the result_ as a string based on |code|.

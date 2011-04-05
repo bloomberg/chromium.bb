@@ -268,6 +268,10 @@ class SafeBeginInstallHelper : public UtilityProcessHost::Client {
   BeginInstallWithManifestFunction::ResultCode parse_error_;
 };
 
+BeginInstallWithManifestFunction::BeginInstallWithManifestFunction() {}
+
+BeginInstallWithManifestFunction::~BeginInstallWithManifestFunction() {}
+
 bool BeginInstallWithManifestFunction::RunImpl() {
   if (!IsWebStoreURL(profile_, source_url())) {
     SetResult(PERMISSION_DENIED);
