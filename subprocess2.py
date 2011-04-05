@@ -233,9 +233,11 @@ def capture(args, **kwargs):
   - Discards returncode.
   - Discards stderr. By default sets stderr=STDOUT.
   """
+  if kwargs.get('stdout') is None:
+    kwargs['stdout'] = PIPE
   if kwargs.get('stderr') is None:
     kwargs['stderr'] = STDOUT
-  return call(args, stdout=PIPE, **kwargs)[0][0]
+  return call(args, **kwargs)[0][0]
 
 
 def check_output(args, **kwargs):
@@ -247,6 +249,8 @@ def check_output(args, **kwargs):
   - Throws if return code is not 0.
   - Works even prior to python 2.7.
   """
+  if kwargs.get('stdout') is None:
+    kwargs['stdout'] = PIPE
   if kwargs.get('stderr') is None:
     kwargs['stderr'] = STDOUT
-  return check_call(args, stdout=PIPE, **kwargs)[0]
+  return check_call(args, **kwargs)[0]
