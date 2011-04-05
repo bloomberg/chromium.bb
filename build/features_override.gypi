@@ -64,6 +64,9 @@
       'ENABLE_XPATH=1',
       'ENABLE_XSLT=1',
       'WTF_USE_BUILTIN_UTF8_CODEC=1',
+      # WTF_USE_DYNAMIC_ANNOTATIONS=1 may be defined in build/common.gypi
+      # We can't define it here because it should be present only
+      # in Debug or release_valgrind_build=1 builds.
       'WTF_USE_WEBP=1',
       'WTF_USE_WEBKIT_IMAGE_DECODERS=1',
     ],

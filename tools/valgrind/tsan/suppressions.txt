@@ -137,16 +137,6 @@
   fun:browser_sync::*
 }
 
-{
-  bug_78302
-  ThreadSanitizer:Race
-  fun:WebCore::WorkerScriptController::forbidExecution*
-  fun:WebCore::WorkerThread::stop*
-  fun:WebKit::WebWorkerBase::stopWorkerThread*
-  fun:WebKit::WebWorkerImpl::terminateWorkerContext*
-  fun:WebWorkerStub::OnTerminateWorkerContext*
-}
-
 ############################
 # Benign races in Chromium
 {
@@ -494,21 +484,4 @@
   tsanbug_62b
   ThreadSanitizer:Race
   fun:__GI_memcpy
-}
-
-{
-  bug_70085a
-  ThreadSanitizer:Race
-  fun:WebCore::ResourceResponseBase::~ResourceResponseBase*
-  fun:WebCore::ResourceResponse::~ResourceResponse*
-  ...
-  fun:WebCore::DocumentLoader::~DocumentLoader*
-  fun:WebKit::WebDataSourceImpl::~WebDataSourceImpl*
-}
-
-{
-  bug_70085b
-  ThreadSanitizer:Race
-  ...
-  fun:WTF::ThreadSafeRefCounted<*>::deref*
 }
