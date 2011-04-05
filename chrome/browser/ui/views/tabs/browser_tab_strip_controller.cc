@@ -403,6 +403,7 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
     data->favicon = contents->GetFavicon();
   data->network_state = TabContentsNetworkState(contents);
   data->title = contents->GetTitle();
+  data->url = contents->GetURL();
   data->loading = contents->is_loading();
   data->crashed_status = contents->crashed_status();
   data->incognito = contents->profile()->IsOffTheRecord();

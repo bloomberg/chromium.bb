@@ -1104,6 +1104,7 @@ class NotificationBridge : public NotificationObserver {
   [newController setMini:tabStripModel_->IsMiniTab(modelIndex)];
   [newController setPinned:tabStripModel_->IsTabPinned(modelIndex)];
   [newController setApp:tabStripModel_->IsAppTab(modelIndex)];
+  [newController setUrl:contents->tab_contents()->GetURL()];
   [tabArray_ insertObject:newController atIndex:index];
   NSView* newView = [newController view];
 
@@ -1501,6 +1502,7 @@ class NotificationBridge : public NotificationObserver {
   [tabController setMini:tabStripModel_->IsMiniTab(modelIndex)];
   [tabController setPinned:tabStripModel_->IsTabPinned(modelIndex)];
   [tabController setApp:tabStripModel_->IsAppTab(modelIndex)];
+  [tabController setUrl:contents->tab_contents()->GetURL()];
   [self updateFaviconForContents:contents->tab_contents() atIndex:modelIndex];
   // If the tab is being restored and it's pinned, the mini state is set after
   // the tab has already been rendered, so re-layout the tabstrip. In all other
@@ -2043,7 +2045,7 @@ class NotificationBridge : public NotificationObserver {
     if (!title.empty() && ![tabController mini]) {
       titles.push_back(new string16(title));
       tabTitleInfos.push_back(TitlePrefixMatcher::TitleInfo(
-          titles[titles.size() - 1], tabIndex));
+          titles[titles.size() - 1], [tabController url], tabIndex));
     }
   }
 

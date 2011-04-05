@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "googleurl/src/gurl.h"
 
 // This class exposes a static method that receives a vector of TitleInfo
 // objects so that it can find the length of the common prefixes among all
@@ -26,11 +27,14 @@
 class TitlePrefixMatcher {
  public:
   struct TitleInfo {
-    TitleInfo(const string16* title, int caller_value);
+    TitleInfo(const string16* title, const GURL& url, int caller_value);
+    ~TitleInfo();
     // We assume the title string will be valid throughout the execution of
     // the prefix lengths calculation, and so we use a pointer to avoid an
     // unnecessary string copy.
     const string16* title;
+    // We only look for common prefix when the URL has the same hostname.
+    GURL url;
     // This contains the number of characters at the beginning of title that
     // are common with other titles in the TitleInfo vector.
     size_t prefix_length;
@@ -38,6 +42,12 @@ class TitlePrefixMatcher {
     int caller_value;
   };
   static void CalculatePrefixLengths(std::vector<TitleInfo>* title_infos);
+
+  // We want to show the last few common chars of a page title in the tab,
+  // so we only do it if the common prefix is at least kMinElidingLength,
+  // otherwise, we could be replacing less characters than the ellipsis take.
+  static const int kCommonCharsToShow;
+  static const size_t kMinElidingLength;
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(TitlePrefixMatcher);

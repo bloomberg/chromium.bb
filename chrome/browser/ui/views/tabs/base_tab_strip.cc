@@ -476,7 +476,9 @@ void BaseTabStrip::UpdateCommonTitlePrefix() {
     DCHECK(tab_data_[tab_index].tab != NULL);
     if (!IgnoreTitlePrefixEliding(tab_data_[tab_index].tab)) {
       tab_title_infos.push_back(TitlePrefixMatcher::TitleInfo(
-          &tab_data_[tab_index].tab->data().title, tab_index));
+          &tab_data_[tab_index].tab->data().title,
+          tab_data_[tab_index].tab->data().url,
+          tab_index));
     }
   }
   TitlePrefixMatcher::CalculatePrefixLengths(&tab_title_infos);

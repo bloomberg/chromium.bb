@@ -8,6 +8,7 @@
 
 #include "base/process_util.h"
 #include "base/string16.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 // Wraps the state needed by the renderers.
@@ -40,6 +41,7 @@ struct TabRendererData {
   SkBitmap favicon;
   NetworkState network_state;
   string16 title;
+  GURL url;
   // Identifies the number of chars at the beginning of the string
   // that are common to other tab titles.
   size_t common_prefix_length;

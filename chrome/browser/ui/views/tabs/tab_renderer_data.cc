@@ -25,6 +25,7 @@ bool TabRendererData::Equals(const TabRendererData& data) {
       favicon.pixelRefOffset() == data.favicon.pixelRefOffset() &&
       network_state == data.network_state &&
       title == data.title &&
+      url == data.url &&
       common_prefix_length == data.common_prefix_length &&
       loading == data.loading &&
       crashed_status == data.crashed_status &&

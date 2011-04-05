@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#include "chrome/browser/ui/title_prefix_matcher.h"
 #import "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
 #import "third_party/GTM/AppKit/GTMFadeTruncatingTextFieldCell.h"
@@ -22,6 +23,7 @@
 @synthesize mini = mini_;
 @synthesize pinned = pinned_;
 @synthesize target = target_;
+@synthesize url = url_;
 @synthesize iconView = iconView_;
 @synthesize titleView = titleView_;
 @synthesize closeButton = closeButton_;
@@ -308,9 +310,10 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   DCHECK([[titleView_ cell] isKindOfClass:
       [GTMFadeTruncatingTextFieldCell class]]);
   GTMFadeTruncatingTextFieldCell* cell = [titleView_ cell];
-  [cell setDesiredCharactersToTruncateFromHead:length];
-  [cell setTruncateMode:length > 0 ? GTMFadeTruncatingHeadAndTail :
-                                     GTMFadeTruncatingTail];
+  [cell setDesiredCharactersToTruncateFromHead:length -
+      TitlePrefixMatcher::kCommonCharsToShow];
+  [cell setTruncateMode:length > TitlePrefixMatcher::kMinElidingLength ?
+      GTMFadeTruncatingHeadAndTail : GTMFadeTruncatingTail];
 }
 
 @end

@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/title_prefix_matcher.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/common/chrome_switches.h"
@@ -479,11 +480,14 @@ void BaseTab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
     Browser::FormatTitleForDisplay(&title);
     // If we'll need to truncate, check if we should also truncate
     // a common prefix, but only if there is enough room for it.
-    // We arbitrarily choose to request enough room for 10 average chars.
-    if (data().common_prefix_length > 0 &&
-        font_->GetExpectedTextWidth(10) < title_bounds.width() &&
+    // We arbitrarily choose to request enough room for 6 average chars.
+    if (data().common_prefix_length > TitlePrefixMatcher::kMinElidingLength &&
+        font_->GetExpectedTextWidth(6) < title_bounds.width() &&
         font_->GetStringWidth(title) > title_bounds.width()) {
-      title.replace(0, data().common_prefix_length, UTF8ToUTF16(ui::kEllipsis));
+      title.replace(0,
+                    data().common_prefix_length -
+                        TitlePrefixMatcher::kCommonCharsToShow,
+                    UTF8ToUTF16(ui::kEllipsis));
     }
   }
   canvas->DrawStringInt(title, *font_, title_color,
