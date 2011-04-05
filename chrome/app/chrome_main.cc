@@ -72,6 +72,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #endif
 
@@ -738,6 +739,16 @@ int ChromeMain(int argc, char** argv) {
 
   if (!process_type.empty())
     CommonSubprocessInit(process_type);
+
+#if defined(OS_CHROMEOS)
+  {
+    // Read and cache ChromeOS version from file,
+    // to be used from inside the sandbox.
+    int32 major_version, minor_version, bugfix_version;
+    base::SysInfo::OperatingSystemVersionNumbers(
+        &major_version, &minor_version, &bugfix_version);
+  }
+#endif
 
   // Initialize the sandbox for this process.
   SandboxInitWrapper sandbox_wrapper;
