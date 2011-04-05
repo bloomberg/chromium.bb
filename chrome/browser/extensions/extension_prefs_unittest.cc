@@ -611,6 +611,45 @@ TEST_F(ExtensionPrefsAppDraggedByUser, ExtensionPrefsAppDraggedByUser) {}
 
 namespace keys = extension_manifest_keys;
 
+// Tests that we gracefully handle changes in the ID generation function for
+// unpacked extensions.
+class ExtensionPrefsIdChange : public ExtensionPrefsTest {
+ public:
+  virtual void Initialize() {
+    DictionaryValue manifest;
+    manifest.SetString(keys::kVersion, "1.0.0.0");
+    manifest.SetString(keys::kName, "unused");
+
+    extension_ = prefs_.AddExtensionWithManifest(
+        manifest, Extension::LOAD);
+    extension_id_ = extension_->id();
+
+    DictionaryValue* extensions_dict =
+        prefs()->pref_service()->GetMutableDictionary(
+            ExtensionPrefs::kExtensionsPref);
+
+    Value* extension_prefs;
+    EXPECT_TRUE(extensions_dict->RemoveWithoutPathExpansion(
+        extension_id_, &extension_prefs));
+    extensions_dict->SetWithoutPathExpansion(
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", extension_prefs);
+  }
+
+  virtual void Verify() {
+    prefs_.RecreateExtensionPrefs();
+    prefs()->SetExtensionState(extension_.get(), Extension::DISABLED);
+    ExtensionPrefs::ExtensionIdSet extension_ids;
+    prefs()->GetExtensions(&extension_ids);
+    EXPECT_EQ(1U, extension_ids.size());
+    EXPECT_EQ(extension_id_, extension_ids[0]);
+  }
+
+ private:
+  scoped_refptr<Extension> extension_;
+  std::string extension_id_;
+};
+TEST_F(ExtensionPrefsIdChange, IdChange) {}
+
 class ExtensionPrefsPreferencesBase : public ExtensionPrefsTest {
  public:
   ExtensionPrefsPreferencesBase()

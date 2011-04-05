@@ -119,29 +119,66 @@ const char kPrefPreferences[] = "preferences";
 
 namespace {
 
-// TODO(asargent) - This is cleanup code for a key that was introduced into
-// the extensions.settings sub-dictionary which wasn't a valid extension
-// id. We can remove this in a couple of months. (See http://crbug.com/40017
-// and http://crbug.com/39745 for more details).
-static void CleanupBadExtensionKeys(PrefService* prefs) {
+// TODO(mihaip): This is cleanup code for keys for unpacked extensions (which
+// are derived from paths). As part of the wstring removal, we changed the way
+// we hash paths, so we need to move prefs from their old synthesized IDs to
+// their new ones. We can remove this by July 2011. (See http://crbug.com/75945
+// for more details).
+static void CleanupBadExtensionKeys(const FilePath& root_dir,
+                                    PrefService* prefs) {
   DictionaryValue* dictionary =
       prefs->GetMutableDictionary(ExtensionPrefs::kExtensionsPref);
-  std::set<std::string> bad_keys;
+  std::map<std::string, std::string> remapped_keys;
   for (DictionaryValue::key_iterator i = dictionary->begin_keys();
        i != dictionary->end_keys(); ++i) {
-    const std::string& key_name(*i);
-    if (!Extension::IdIsValid(key_name)) {
-      bad_keys.insert(key_name);
+    DictionaryValue* ext;
+    if (!dictionary->GetDictionaryWithoutPathExpansion(*i, &ext))
+      continue;
+
+    int location;
+    FilePath::StringType path_str;
+    if (!ext->GetInteger(kPrefLocation, &location) ||
+        !ext->GetString(kPrefPath, &path_str)) {
+      continue;
+    }
+
+    // Only unpacked extensions have generated IDs.
+    if (location != Extension::LOAD)
+      continue;
+
+    const std::string& prefs_id(*i);
+    FilePath path(path_str);
+    // The persisted path can be relative to the root dir (see
+    // MakePath(s)Relative), but the ID is generated before that, using the
+    // absolute path, so we need to undo that.
+    if (!path.IsAbsolute()) {
+      path = root_dir.Append(path);
+    }
+    std::string computed_id = Extension::GenerateIdForPath(path);
+
+    if (prefs_id != computed_id) {
+      remapped_keys[prefs_id] = computed_id;
     }
   }
-  bool dirty = false;
-  for (std::set<std::string>::iterator i = bad_keys.begin();
-       i != bad_keys.end(); ++i) {
-    dirty = true;
-    dictionary->Remove(*i, NULL);
-  }
-  if (dirty)
+
+  if (!remapped_keys.empty()) {
+    for (std::map<std::string, std::string>::const_iterator i =
+            remapped_keys.begin();
+        i != remapped_keys.end();
+        ++i) {
+      // Don't clobber prefs under the correct ID if they already exist.
+      if (dictionary->HasKey(i->second)) {
+        CHECK(dictionary->RemoveWithoutPathExpansion(i->first, NULL));
+        continue;
+      }
+      Value* extension_prefs = NULL;
+      CHECK(dictionary->RemoveWithoutPathExpansion(
+          i->first, &extension_prefs));
+      dictionary->SetWithoutPathExpansion(i->second, extension_prefs);
+    }
+
     prefs->ScheduleSavePersistentPrefs();
+  }
 }
 
 static void ExtentToStringSet(const ExtensionExtent& host_extent,
@@ -162,9 +199,8 @@ ExtensionPrefs::ExtensionPrefs(
     : prefs_(prefs),
       install_directory_(root_dir),
       extension_pref_value_map_(extension_pref_value_map) {
-  // TODO(asargent) - Remove this in a couple of months. (See comment above
-  // CleanupBadExtensionKeys).
-  CleanupBadExtensionKeys(prefs_);
+  // TODO(mihaip): Remove this by July 2011 (see comment above).
+  CleanupBadExtensionKeys(root_dir, prefs_);
 
   MakePathsRelative();
 
