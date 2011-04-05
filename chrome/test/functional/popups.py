@@ -73,7 +73,7 @@ class PopupsTest(pyauto.PyUITest):
     while attempts < 3:
       if self.GetActiveTabTitle(window_index=1) != \
         'Popup created using window.open':
-        logging.debug('Attempt %s' % attempts+1)
+        logging.debug('Attempt %d' % attempts + 1)
         self.NavigateToURL(file_url, 1, 0)
         attempts = attempts + 1
       else:
