@@ -189,16 +189,6 @@ bool TabContentsDelegate::ShouldAddNavigationToHistory(
   return true;
 }
 
-void TabContentsDelegate::OnDidGetApplicationInfo(TabContents* tab_contents,
-                                                  int32 page_id) {
-}
-
-// Notification when an application programmatically requests installation.
-void TabContentsDelegate::OnInstallApplication(
-    TabContents* tab_contents,
-    const WebApplicationInfo& app_info) {
-}
-
 gfx::NativeWindow TabContentsDelegate::GetFrameNativeWindow() {
   return NULL;
 }

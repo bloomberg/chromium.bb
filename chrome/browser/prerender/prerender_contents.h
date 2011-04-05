@@ -116,8 +116,6 @@ class PrerenderContents : public RenderViewHostDelegate,
                            int32 page_id,
                            const std::wstring& title);
   virtual WebPreferences GetWebkitPrefs();
-  virtual void ProcessWebUIMessage(
-      const ExtensionHostMsg_DomMessage_Params& params);
   virtual void RunJavaScriptMessage(const std::wstring& message,
                                     const std::wstring& default_prompt,
                                     const GURL& frame_url,

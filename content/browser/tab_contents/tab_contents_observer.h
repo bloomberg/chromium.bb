@@ -12,8 +12,29 @@ struct ViewHostMsg_FrameNavigate_Params;
 
 // An observer API implemented by classes which are interested in various page
 // load events from TabContents.  They also get a chance to filter IPC messages.
-class TabContentsObserver : public IPC::Channel::Listener {
+class TabContentsObserver : public IPC::Channel::Listener,
+                            public IPC::Message::Sender {
  public:
+  // Use this as a member variable in a class that uses the emptry constructor
+  // version of this interface.
+  class Registrar {
+   public:
+    explicit Registrar(TabContentsObserver* observer);
+    ~Registrar();
+
+    // Call this to start observing a tab.  Passing in NULL resets it.
+    // This can only be used to watch one tab at a time.  If you call this and
+    // you're already observing another tab, the old tab won't be observed
+    // afterwards.
+    void Observe(TabContents* tab);
+
+   private:
+    TabContentsObserver* observer_;
+    TabContents* tab_;
+
+    DISALLOW_COPY_AND_ASSIGN(Registrar);
+  };
+
   virtual void NavigateToPendingEntry();
 
   virtual void DidNavigateMainFramePostCommit(
@@ -45,7 +66,15 @@ class TabContentsObserver : public IPC::Channel::Listener {
 #endif
 
  protected:
+  // Use this constructor when the object is tied to a single TabContents for
+  // its entire lifetime.
   explicit TabContentsObserver(TabContents* tab_contents);
+
+  // Use this constructor when the object wants to observe a TabContents for
+  // part of its lifetime.  It can use a TabContentsRegistrar member variable
+  // to start and stop observing.
+  TabContentsObserver();
+
   virtual ~TabContentsObserver();
 
   // Invoked when the TabContents is being destroyed. Gives subclasses a chance
@@ -61,6 +90,11 @@ class TabContentsObserver : public IPC::Channel::Listener {
 
   TabContents* tab_contents() const { return tab_contents_; }
   int routing_id() const { return routing_id_; }
+
+ protected:
+  friend class Registrar;
+
+  void SetTabContents(TabContents* tab_contents);
 
  private:
   friend class TabContents;

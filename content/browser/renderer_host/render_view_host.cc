@@ -29,7 +29,6 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/web_apps.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
@@ -561,10 +560,6 @@ int RenderViewHost::DownloadFavicon(const GURL& url, int image_size) {
   return id;
 }
 
-void RenderViewHost::GetApplicationInfo(int32 page_id) {
-  Send(new ExtensionMsg_GetApplicationInfo(routing_id(), page_id));
-}
-
 void RenderViewHost::CaptureSnapshot() {
   Send(new ViewMsg_CaptureSnapshot(routing_id()));
 }
@@ -748,8 +743,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
                         OnMsgDocumentOnLoadCompletedInMainFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ExecuteCodeFinished,
-                        OnExecuteCodeFinished)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContextMenu, OnMsgContextMenu)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenURL, OnMsgOpenURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
@@ -769,7 +762,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnExtensionRequest)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnMsgSelectionChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityNotifications,
                         OnAccessibilityNotifications)
@@ -1029,14 +1021,6 @@ void RenderViewHost::OnMsgDocumentAvailableInMainFrame() {
 
 void RenderViewHost::OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id) {
   delegate_->DocumentOnLoadCompletedInMainFrame(this, page_id);
-}
-
-void RenderViewHost::OnExecuteCodeFinished(int request_id, bool success) {
-  std::pair<int, bool> result_details(request_id, success);
-  NotificationService::current()->Notify(
-      NotificationType::TAB_CODE_EXECUTED,
-      NotificationService::AllSources(),
-      Details<std::pair<int, bool> >(&result_details));
 }
 
 void RenderViewHost::OnMsgContextMenu(const ContextMenuParams& params) {
@@ -1387,31 +1371,6 @@ void RenderViewHost::ForwardMessageFromExternalHost(const std::string& message,
                                                     const std::string& target) {
   Send(new ViewMsg_HandleMessageFromExternalHost(routing_id(), message, origin,
                                                  target));
-}
-
-void RenderViewHost::OnExtensionRequest(
-    const ExtensionHostMsg_DomMessage_Params& params) {
-  if (!ChildProcessSecurityPolicy::GetInstance()->
-          HasExtensionBindings(process()->id())) {
-    // This can happen if someone uses window.open() to open an extension URL
-    // from a non-extension context.
-    BlockExtensionRequest(params.request_id);
-    return;
-  }
-
-  delegate_->ProcessWebUIMessage(params);
-}
-
-void RenderViewHost::SendExtensionResponse(int request_id, bool success,
-                                           const std::string& response,
-                                           const std::string& error) {
-  Send(new ExtensionMsg_Response(
-      routing_id(), request_id, success, response, error));
-}
-
-void RenderViewHost::BlockExtensionRequest(int request_id) {
-  SendExtensionResponse(request_id, false, "",
-                        "Access to extension API denied.");
 }
 
 void RenderViewHost::UpdateBrowserWindowId(int window_id) {

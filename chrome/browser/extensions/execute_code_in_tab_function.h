@@ -10,12 +10,11 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 
 // Implement API call tabs.executeScript and tabs.insertCSS.
 class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
-                                 public NotificationObserver {
+                                 public TabContentsObserver {
  public:
   ExecuteCodeInTabFunction();
   virtual ~ExecuteCodeInTabFunction();
@@ -23,9 +22,11 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
  private:
   virtual bool RunImpl();
 
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+  // TabContentsObserver overrides.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
+  // Message handler.
+  void OnExecuteCodeFinished(int request_id, bool success);
 
   // Called when contents from the file whose path is specified in JSON
   // arguments has been loaded.
@@ -35,7 +36,7 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
   // true on success. If true is returned, this does an AddRef.
   bool Execute(const std::string& code_string);
 
-  NotificationRegistrar registrar_;
+  TabContentsObserver::Registrar registrar_;
 
   // Id of tab which executes code.
   int execute_tab_id_;

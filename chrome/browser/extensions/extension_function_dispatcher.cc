@@ -486,7 +486,9 @@ void ExtensionFunctionDispatcher::HandleRequest(
 
   if (!service->ExtensionBindingsAllowed(function->source_url()) ||
       !extension->HasApiPermission(function->name())) {
-    render_view_host_->BlockExtensionRequest(function->request_id());
+    render_view_host_->Send(new ExtensionMsg_Response(
+        render_view_host_->routing_id(), function->request_id(), false,
+        std::string(), "Access to extension API denied."));
     return;
   }
 
@@ -498,15 +500,17 @@ void ExtensionFunctionDispatcher::HandleRequest(
 
     function->Run();
   } else {
-    render_view_host_->SendExtensionResponse(function->request_id(), false,
-        std::string(), QuotaLimitHeuristic::kGenericOverQuotaError);
+    render_view_host_->Send(new ExtensionMsg_Response(
+        render_view_host_->routing_id(), function->request_id(), false,
+        std::string(), QuotaLimitHeuristic::kGenericOverQuotaError));
   }
 }
 
 void ExtensionFunctionDispatcher::SendResponse(ExtensionFunction* function,
                                                bool success) {
-  render_view_host_->SendExtensionResponse(function->request_id(), success,
-      function->GetResult(), function->GetError());
+  render_view_host_->Send(new ExtensionMsg_Response(
+      render_view_host_->routing_id(), function->request_id(), success,
+      function->GetResult(), function->GetError()));
 }
 
 void ExtensionFunctionDispatcher::HandleBadMessage(ExtensionFunction* api) {

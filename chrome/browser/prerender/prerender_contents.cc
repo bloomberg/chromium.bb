@@ -372,11 +372,6 @@ WebPreferences PrerenderContents::GetWebkitPrefs() {
                                                       false);  // is_web_ui
 }
 
-void PrerenderContents::ProcessWebUIMessage(
-    const ExtensionHostMsg_DomMessage_Params& params) {
-  render_view_host_->BlockExtensionRequest(params.request_id);
-}
-
 void PrerenderContents::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {

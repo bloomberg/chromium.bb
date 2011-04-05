@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -416,7 +417,7 @@ CreateUrlApplicationShortcutView::CreateUrlApplicationShortcutView(
 
   web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
   const WebApplicationInfo& app_info =
-      tab_contents_->tab_contents()->web_app_info();
+      tab_contents_->extension_tab_helper()->web_app_info();
   if (!app_info.icons.empty()) {
     web_app::GetIconsInfo(app_info, &unprocessed_icons_);
     FetchIcon();

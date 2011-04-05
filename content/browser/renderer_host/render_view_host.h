@@ -38,13 +38,11 @@ class SkBitmap;
 class ViewMsg_Navigate;
 struct ContentSettings;
 struct ContextMenuParams;
-struct ExtensionHostMsg_DomMessage_Params;
 struct MediaPlayerAction;
 struct ViewHostMsg_AccessibilityNotification_Params;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewMsg_Navigate_Params;
-struct WebApplicationInfo;
 struct WebDropData;
 struct WebPreferences;
 struct UserMetricsAction;
@@ -289,11 +287,6 @@ class RenderViewHost : public RenderWidgetHost {
   // browser.
   int DownloadFavicon(const GURL& url, int image_size);
 
-  // Requests application info for the specified page. This is an asynchronous
-  // request. The delegate is notified by way of OnDidGetApplicationInfo when
-  // the data is available.
-  void GetApplicationInfo(int32 page_id);
-
   // Captures a snapshot of the page.
   void CaptureSnapshot();
 
@@ -441,15 +434,6 @@ class RenderViewHost : public RenderWidgetHost {
   // Creates a full screen RenderWidget.
   void CreateNewFullscreenWidget(int route_id);
 
-  // Sends the response to an extension api call.
-  void SendExtensionResponse(int request_id, bool success,
-                             const std::string& response,
-                             const std::string& error);
-
-  // Sends a response to an extension api call that it was blocked for lack of
-  // permission.
-  void BlockExtensionRequest(int request_id);
-
   // Tells the renderer which browser window it is being attached to.
   void UpdateBrowserWindowId(int window_id);
 
@@ -550,7 +534,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgDidChangeLoadProgress(double load_progress);
   void OnMsgDocumentAvailableInMainFrame();
   void OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id);
-  void OnExecuteCodeFinished(int request_id, bool success);
   void OnMsgUpdateFaviconURL(int32 page_id, const GURL& icon_url);
   void OnMsgDidDownloadFavicon(int id,
                                const GURL& image_url,
@@ -593,7 +576,6 @@ class RenderViewHost : public RenderWidgetHost {
                                 const std::string& value);
   void OnMsgShouldCloseACK(bool proceed);
 
-  void OnExtensionRequest(const ExtensionHostMsg_DomMessage_Params& params);
   void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
   void OnCSSInserted();

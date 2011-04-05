@@ -416,10 +416,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_PDFHasUnsupportedFeature,
                         OnPDFHasUnsupportedFeature)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_DidGetApplicationInfo,
-                        OnDidGetApplicationInfo)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_InstallApplication,
-                        OnInstallApplication)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -844,22 +840,6 @@ void TabContents::AddNewContents(TabContents* new_contents,
 
   // TODO(pkasting): Why is this necessary?
   PopupNotificationVisibilityChanged(blocked_contents_ != NULL);
-}
-
-bool TabContents::ExecuteCode(int request_id, const std::string& extension_id,
-                              bool is_js_code, const std::string& code_string,
-                              bool all_frames) {
-  RenderViewHost* host = render_view_host();
-  if (!host)
-    return false;
-
-  ExtensionMsg_ExecuteCode_Params params;
-  params.request_id = request_id;
-  params.extension_id = extension_id;
-  params.is_javascript = is_js_code;
-  params.code = code_string;
-  params.all_frames = all_frames;
-  return host->Send(new ExtensionMsg_ExecuteCode(host->routing_id(), params));
 }
 
 void TabContents::PopupNotificationVisibilityChanged(bool visible) {
@@ -1794,19 +1774,6 @@ void TabContents::OnGoToEntryAtOffset(int offset) {
   }
 }
 
-void TabContents::OnDidGetApplicationInfo(int32 page_id,
-                                          const WebApplicationInfo& info) {
-  web_app_info_ = info;
-
-  if (delegate())
-    delegate()->OnDidGetApplicationInfo(this, page_id);
-}
-
-void TabContents::OnInstallApplication(const WebApplicationInfo& info) {
-  if (delegate())
-    delegate()->OnInstallApplication(this, info);
-}
-
 void TabContents::OnPageContents(const GURL& url,
                                  int32 page_id,
                                  const string16& contents,
@@ -2250,7 +2217,9 @@ void TabContents::ProcessWebUIMessage(
   if (!render_manager_.web_ui()) {
     // This can happen if someone uses window.open() to open an extension URL
     // from a non-extension context.
-    render_view_host()->BlockExtensionRequest(params.request_id);
+    render_view_host()->Send(new ExtensionMsg_Response(
+        render_view_host()->routing_id(), params.request_id, false, "",
+        "Access to extension API denied."));
     return;
   }
   render_manager_.web_ui()->ProcessWebUIMessage(params);

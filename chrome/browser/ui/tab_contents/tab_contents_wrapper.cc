@@ -11,6 +11,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/debugger/devtools_handler.h"
+#include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/history/top_sites.h"
@@ -54,7 +55,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   // Create the tab helpers.
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(contents));
   autofill_manager_.reset(new AutofillManager(contents));
-  extension_tab_helper_.reset(new ExtensionTabHelper(contents));
+  extension_tab_helper_.reset(new ExtensionTabHelper(this));
   find_tab_helper_.reset(new FindTabHelper(contents));
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(contents));
   password_manager_.reset(
@@ -69,6 +70,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
 
   // Create the per-tab observers.
   dev_tools_observer_.reset(new DevToolsObserver(contents));
+  extension_message_observer_.reset(new ExtensionMessageObserver(contents));
   file_select_observer_.reset(new FileSelectObserver(contents));
   prerender_observer_.reset(new prerender::PrerenderObserver(contents));
   printing_.reset(new printing::PrintViewManager(contents));

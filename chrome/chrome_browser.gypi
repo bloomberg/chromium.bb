@@ -926,6 +926,8 @@
         'browser/extensions/extension_management_api.h',
         'browser/extensions/extension_menu_manager.cc',
         'browser/extensions/extension_menu_manager.h',
+        'browser/extensions/extension_message_handler.cc',
+        'browser/extensions/extension_message_handler.h',
         'browser/extensions/extension_message_service.cc',
         'browser/extensions/extension_message_service.h',
         'browser/extensions/extension_metrics_module.cc',

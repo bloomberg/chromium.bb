@@ -1803,7 +1803,7 @@ void Browser::OpenCreateShortcutsDialog() {
 
   // Start fetching web app info for CreateApplicationShortcut dialog and show
   // the dialog when the data is available in OnDidGetApplicationInfo.
-  current_tab->render_view_host()->GetApplicationInfo(entry->page_id());
+  current_tab->extension_tab_helper()->GetApplicationInfo(entry->page_id());
 #else
   NOTIMPLEMENTED();
 #endif
@@ -2940,7 +2940,8 @@ void Browser::LoadingStateChanged(TabContents* source) {
       // malware site etc). When this happens, we abort the shortcut update.
       NavigationEntry* entry = source->controller().GetLastCommittedEntry();
       if (entry) {
-        source->render_view_host()->GetApplicationInfo(entry->page_id());
+        TabContentsWrapper::GetCurrentWrapperForContents(source)->
+            extension_tab_helper()->GetApplicationInfo(entry->page_id());
       } else {
         pending_web_app_action_ = NONE;
       }
@@ -3241,46 +3242,6 @@ bool Browser::ShouldAddNavigationToHistory(
   return !IsApplication();
 }
 
-void Browser::OnDidGetApplicationInfo(TabContents* tab_contents,
-                                      int32 page_id) {
-  TabContentsWrapper* current_tab = GetSelectedTabContentsWrapper();
-  if (current_tab->tab_contents() != tab_contents)
-    return;
-
-  NavigationEntry* entry = current_tab->controller().GetLastCommittedEntry();
-  if (!entry || (entry->page_id() != page_id))
-    return;
-
-  switch (pending_web_app_action_) {
-    case CREATE_SHORTCUT: {
-      window()->ShowCreateWebAppShortcutsDialog(current_tab);
-      break;
-    }
-    case UPDATE_SHORTCUT: {
-      web_app::UpdateShortcutForTabContents(current_tab);
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  pending_web_app_action_ = NONE;
-}
-
-void Browser::OnInstallApplication(TabContents* source,
-                                   const WebApplicationInfo& web_app) {
-  ExtensionService* extensions_service = profile()->GetExtensionService();
-  if (!extensions_service)
-    return;
-
-  scoped_refptr<CrxInstaller> installer(
-      new CrxInstaller(extensions_service,
-                       extensions_service->show_extensions_prompts() ?
-                       new ExtensionInstallUI(profile()) : NULL));
-  installer->InstallWebApp(web_app);
-}
-
 void Browser::ContentRestrictionsChanged(TabContents* source) {
   UpdateCommandsForContentRestrictionState();
 }
@@ -3299,6 +3260,45 @@ void Browser::WorkerCrashed() {
 void Browser::URLStarredChanged(TabContentsWrapper* source, bool starred) {
   if (source == GetSelectedTabContentsWrapper())
     window_->SetStarredState(starred);
+}
+
+void Browser::OnDidGetApplicationInfo(TabContentsWrapper* source,
+                                      int32 page_id) {
+  if (GetSelectedTabContentsWrapper() != source)
+    return;
+
+  NavigationEntry* entry = source->controller().GetLastCommittedEntry();
+  if (!entry || (entry->page_id() != page_id))
+    return;
+
+  switch (pending_web_app_action_) {
+    case CREATE_SHORTCUT: {
+      window()->ShowCreateWebAppShortcutsDialog(source);
+      break;
+    }
+    case UPDATE_SHORTCUT: {
+      web_app::UpdateShortcutForTabContents(source);
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  pending_web_app_action_ = NONE;
+}
+
+void Browser::OnInstallApplication(TabContentsWrapper* source,
+                                   const WebApplicationInfo& web_app) {
+  ExtensionService* extensions_service = profile()->GetExtensionService();
+  if (!extensions_service)
+    return;
+
+  scoped_refptr<CrxInstaller> installer(
+      new CrxInstaller(extensions_service,
+                       extensions_service->show_extensions_prompts() ?
+                       new ExtensionInstallUI(profile()) : NULL));
+  installer->InstallWebApp(web_app);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

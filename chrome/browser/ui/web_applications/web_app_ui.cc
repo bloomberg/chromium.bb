@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/task.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -92,7 +93,7 @@ UpdateShortcutWorker::UpdateShortcutWorker(TabContentsWrapper* tab_contents)
     : tab_contents_(tab_contents),
       profile_path_(tab_contents->profile()->GetPath()) {
   web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
-  web_app::GetIconsInfo(tab_contents_->tab_contents()->web_app_info(),
+  web_app::GetIconsInfo(tab_contents_->extension_tab_helper()->web_app_info(),
                         &unprocessed_icons_);
   file_name_ = web_app::internals::GetSanitizedFileName(shortcut_info_.title);
 
@@ -292,7 +293,8 @@ void GetShortcutInfoForTab(TabContentsWrapper* tab_contents_wrapper,
   DCHECK(info);  // Must provide a valid info.
   const TabContents* tab_contents = tab_contents_wrapper->tab_contents();
 
-  const WebApplicationInfo& app_info = tab_contents->web_app_info();
+  const WebApplicationInfo& app_info =
+      tab_contents_wrapper->extension_tab_helper()->web_app_info();
 
   info->url = app_info.app_url.is_empty() ? tab_contents->GetURL() :
                                             app_info.app_url;

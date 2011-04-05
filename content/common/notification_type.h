@@ -285,9 +285,6 @@ class NotificationType {
     // actual snapshot.
     TAB_SNAPSHOT_TAKEN,
 
-    // Send after the code is run in specified tab.
-    TAB_CODE_EXECUTED,
-
     // The user has changed the browser theme.
     BROWSER_THEME_CHANGED,
 

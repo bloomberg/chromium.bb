@@ -28,6 +28,7 @@ class AutocompleteHistoryManager;
 class AutofillManager;
 class DevToolsObserver;
 class Extension;
+class ExtensionMessageObserver;
 class ExtensionTabHelper;
 class FileSelectObserver;
 class FindTabHelper;
@@ -182,6 +183,7 @@ class TabContentsWrapper : public NotificationObserver,
   // and silently do their thing live here.)
 
   scoped_ptr<DevToolsObserver> dev_tools_observer_;
+  scoped_ptr<ExtensionMessageObserver> extension_message_observer_;
   scoped_ptr<FileSelectObserver> file_select_observer_;
   scoped_ptr<prerender::PrerenderObserver> prerender_observer_;
 

@@ -813,16 +813,18 @@ class Browser : public TabHandlerDelegate,
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       NavigationType::Type navigation_type);
-  virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
-                                       int32 page_id);
-  virtual void OnInstallApplication(TabContents* tab_contents,
-                                    const WebApplicationInfo& app_info);
   virtual void ContentRestrictionsChanged(TabContents* source);
   virtual void WorkerCrashed();
 
   // Overridden from TabContentsWrapperDelegate:
   virtual void URLStarredChanged(TabContentsWrapper* source,
                                  bool starred) OVERRIDE;
+  virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,
+                                       int32 page_id) OVERRIDE;
+  virtual void OnInstallApplication(
+      TabContentsWrapper* source,
+      const WebApplicationInfo& app_info) OVERRIDE;
+
   // Overridden from SearchEngineTabHelperDelegate:
   virtual void ConfirmSetDefaultSearchProvider(
       TabContents* tab_contents,

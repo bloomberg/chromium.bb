@@ -4,9 +4,10 @@
 
 #include "chrome/browser/extensions/extension_tab_helper.h"
 
-#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -15,9 +16,10 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/common/notification_service.h"
 
-ExtensionTabHelper::ExtensionTabHelper(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents),
-      extension_app_(NULL) {
+ExtensionTabHelper::ExtensionTabHelper(TabContentsWrapper* wrapper)
+    : TabContentsObserver(wrapper->tab_contents()),
+      extension_app_(NULL),
+      wrapper_(wrapper) {
 }
 
 ExtensionTabHelper::~ExtensionTabHelper() {
@@ -31,6 +33,10 @@ void ExtensionTabHelper::CopyStateFrom(const ExtensionTabHelper& source) {
 void ExtensionTabHelper::PageActionStateChanged() {
   tab_contents()->NotifyNavigationStateChanged(
       TabContents::INVALIDATE_PAGE_ACTIONS);
+}
+
+void ExtensionTabHelper::GetApplicationInfo(int32 page_id) {
+  Send(new ExtensionMsg_GetApplicationInfo(routing_id(), page_id));
 }
 
 void ExtensionTabHelper::SetExtensionApp(const Extension* extension) {
@@ -103,10 +109,26 @@ void ExtensionTabHelper::DidNavigateMainFramePostCommit(
 bool ExtensionTabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionTabHelper, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_PostMessage, OnPostMessage)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_DidGetApplicationInfo,
+                        OnDidGetApplicationInfo)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_InstallApplication,
+                        OnInstallApplication)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void ExtensionTabHelper::OnDidGetApplicationInfo(
+    int32 page_id, const WebApplicationInfo& info) {
+  web_app_info_ = info;
+
+  if (wrapper_->delegate())
+    wrapper_->delegate()->OnDidGetApplicationInfo(wrapper_, page_id);
+}
+
+void ExtensionTabHelper::OnInstallApplication(const WebApplicationInfo& info) {
+  if (wrapper_->delegate())
+    wrapper_->delegate()->OnInstallApplication(wrapper_, info);
 }
 
 void ExtensionTabHelper::UpdateExtensionAppIcon(const Extension* extension) {
@@ -132,13 +154,5 @@ void ExtensionTabHelper::OnImageLoaded(SkBitmap* image,
   if (image) {
     extension_app_icon_ = *image;
     tab_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
-  }
-}
-
-void ExtensionTabHelper::OnPostMessage(int port_id,
-                                       const std::string& message) {
-  if (tab_contents()->profile()->GetExtensionMessageService()) {
-    tab_contents()->profile()->GetExtensionMessageService()->
-        PostMessageFromRenderer(port_id, message);
   }
 }

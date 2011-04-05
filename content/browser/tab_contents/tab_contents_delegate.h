@@ -36,7 +36,6 @@ struct NativeWebKeyboardEvent;
 class Profile;
 class RenderViewHost;
 class TabContents;
-struct WebApplicationInfo;
 
 // Objects implement this interface to get notified about changes in the
 // TabContents and to provide necessary functionality.
@@ -283,14 +282,6 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       NavigationType::Type navigation_type);
-
-  // Notification that a user's request to install an application has completed.
-  virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
-                                       int32 page_id);
-
-  // Notification when an application programmatically requests installation.
-  virtual void OnInstallApplication(TabContents* tab_contents,
-                                    const WebApplicationInfo& app_info);
 
   // Returns the native window framing the view containing the tab contents.
   virtual gfx::NativeWindow GetFrameNativeWindow();

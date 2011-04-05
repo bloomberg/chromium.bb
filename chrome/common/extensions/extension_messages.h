@@ -267,7 +267,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ExtensionHostMsg_GetMessageBundle,
                             SubstitutionMap /* message bundle */)
 
 // Send from the renderer to the browser to return the script running result.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_ExecuteCodeFinished,
+IPC_MESSAGE_ROUTED2(ExtensionHostMsg_ExecuteCodeFinished,
                     int, /* request id */
                     bool /* whether the script ran successfully */)
 

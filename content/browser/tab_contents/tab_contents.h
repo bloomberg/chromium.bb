@@ -30,6 +30,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/property_bag.h"
@@ -217,13 +218,6 @@ class TabContents : public PageNavigator,
   // space is provided for the favicon, and the favicon is never displayed.
   virtual bool ShouldDisplayFavicon();
 
-  // Add and remove observers for page navigation notifications. Adding or
-  // removing multiple times has no effect. The order in which notifications
-  // are sent to observers is undefined. Clients must be sure to remove the
-  // observer before they go away.
-  void AddObserver(TabContentsObserver* observer);
-  void RemoveObserver(TabContentsObserver* observer);
-
   // Return whether this tab contents is loading a resource.
   bool is_loading() const { return is_loading_; }
 
@@ -241,10 +235,6 @@ class TabContents : public PageNavigator,
   void set_encoding(const std::string& encoding);
   void reset_encoding() {
     encoding_.clear();
-  }
-
-  const WebApplicationInfo& web_app_info() const {
-    return web_app_info_;
   }
 
   const SkBitmap& app_icon() const { return app_icon_; }
@@ -375,12 +365,6 @@ class TabContents : public PageNavigator,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_pos,
                       bool user_gesture);
-
-  // Execute code in this tab. Returns true if the message was successfully
-  // sent.
-  bool ExecuteCode(int request_id, const std::string& extension_id,
-                   bool is_js_code, const std::string& code_string,
-                   bool all_frames);
 
   // Called when the blocked popup notification is shown or hidden.
   virtual void PopupNotificationVisibilityChanged(bool visible);
@@ -660,6 +644,16 @@ class TabContents : public PageNavigator,
   WebUI::TypeID GetWebUITypeForCurrentState();
 
  protected:
+  friend class TabContentsObserver;
+  friend class TabContentsObserver::Registrar;
+
+  // Add and remove observers for page navigation notifications. Adding or
+  // removing multiple times has no effect. The order in which notifications
+  // are sent to observers is undefined. Clients must be sure to remove the
+  // observer before they go away.
+  void AddObserver(TabContentsObserver* observer);
+  void RemoveObserver(TabContentsObserver* observer);
+
   // from RenderViewHostDelegate.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
@@ -725,8 +719,6 @@ class TabContents : public PageNavigator,
   void OnPDFHasUnsupportedFeature();
 
   void OnGoToEntryAtOffset(int offset);
-  void OnDidGetApplicationInfo(int32 page_id, const WebApplicationInfo& info);
-  void OnInstallApplication(const WebApplicationInfo& info);
   void OnPageContents(const GURL& url,
                       int32 page_id,
                       const string16& contents,
@@ -991,9 +983,6 @@ class TabContents : public PageNavigator,
 
   // Handles downloading favicons.
   scoped_ptr<FaviconHelper> favicon_helper_;
-
-  // Cached web app info data.
-  WebApplicationInfo web_app_info_;
 
   // Cached web app icon.
   SkBitmap app_icon_;

@@ -2,21 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSOIN_TAB_HELPER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSOIN_TAB_HELPER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_HELPER_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_HELPER_H_
 #pragma once
 
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/common/web_apps.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Extension;
+class TabContentsWrapper;
+struct WebApplicationInfo;
 
 // Per-tab extension helper.
 class ExtensionTabHelper : public TabContentsObserver,
                            public ImageLoadingTracker::Observer {
  public:
-  explicit ExtensionTabHelper(TabContents* tab_contents);
+  explicit ExtensionTabHelper(TabContentsWrapper* wrapper);
   virtual ~ExtensionTabHelper();
 
   // Copies the internal state from another ExtensionTabHelper.
@@ -24,6 +27,11 @@ class ExtensionTabHelper : public TabContentsObserver,
 
   // Call this after updating a page action to notify clients about the changes.
   void PageActionStateChanged();
+
+  // Requests application info for the specified page. This is an asynchronous
+  // request. The delegate is notified by way of OnDidGetApplicationInfo when
+  // the data is available.
+  void GetApplicationInfo(int32 page_id);
 
   // App extensions ------------------------------------------------------------
 
@@ -43,6 +51,9 @@ class ExtensionTabHelper : public TabContentsObserver,
 
   const Extension* extension_app() const { return extension_app_; }
   bool is_app() const { return extension_app_ != NULL; }
+  const WebApplicationInfo& web_app_info() const {
+    return web_app_info_;
+  }
 
   // If an app extension has been explicitly set for this TabContents its icon
   // is returned.
@@ -60,7 +71,11 @@ class ExtensionTabHelper : public TabContentsObserver,
   virtual void DidNavigateMainFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
+  // Message handlers.
+  void OnDidGetApplicationInfo(int32 page_id, const WebApplicationInfo& info);
+  void OnInstallApplication(const WebApplicationInfo& info);
 
   // App extensions related methods:
 
@@ -71,9 +86,6 @@ class ExtensionTabHelper : public TabContentsObserver,
   // ImageLoadingTracker::Observer.
   virtual void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
                              int index);
-
-  // Message handlers.
-  void OnPostMessage(int port_id, const std::string& message);
 
   // Data for app extensions ---------------------------------------------------
 
@@ -87,7 +99,12 @@ class ExtensionTabHelper : public TabContentsObserver,
   // Used for loading extension_app_icon_.
   scoped_ptr<ImageLoadingTracker> extension_app_image_loader_;
 
+  // Cached web app info data.
+  WebApplicationInfo web_app_info_;
+
+  TabContentsWrapper* wrapper_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionTabHelper);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSOIN_TAB_HELPER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_HELPER_H_
