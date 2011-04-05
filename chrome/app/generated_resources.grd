@@ -9906,6 +9906,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_SET" desc="Cellular device set APN settings button under network details in chrome:settings/internet.">
         Save
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_CANCEL" desc="Cellular device cancel APN settings edit button under network details in chrome:settings/internet.">
+        Cancel
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_OTHER" desc="Select user defined APN in the lost of predefined APNs under network details in chrome:settings/internet.">
+        Other...
+      </message>
 
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE" desc="In settings Internet options, Title of the section which houses the enable/disable buttons.">
         General
