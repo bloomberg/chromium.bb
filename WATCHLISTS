@@ -69,6 +69,9 @@
     'net': {
       'filepath': 'net/.*',
     },
+    'net_error_list': {
+      'filepath': 'net/base/net_error_list.h',
+    },
     'ftp': {
       'filepath': 'ftp',
     },
@@ -214,6 +217,7 @@
                   'erikkay@chromium.org',
                   'pam+watch@chromium.org'],
     'net': ['darin-cc@chromium.org', 'cbentzel+watch@chromium.org'],
+    'net_error_list': ['mmenke@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
     'media': ['acolwell@chromium.org', 'ajwong+watch@chromium.org',
               'annacc@chromium.org', 'ddorwin+watch@chromium.org',
