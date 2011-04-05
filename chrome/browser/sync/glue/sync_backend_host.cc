@@ -351,6 +351,38 @@ PendingConfigureDataTypesState() : deleted_type(false) {}
 SyncBackendHost::PendingConfigureDataTypesState::
 ~PendingConfigureDataTypesState() {}
 
+// static
+SyncBackendHost::PendingConfigureDataTypesState*
+    SyncBackendHost::MakePendingConfigModeState(
+        const DataTypeController::TypeMap& data_type_controllers,
+        const syncable::ModelTypeSet& types,
+        CancelableTask* ready_task,
+        ModelSafeRoutingInfo* routing_info) {
+  PendingConfigureDataTypesState* state = new PendingConfigureDataTypesState();
+
+  for (DataTypeController::TypeMap::const_iterator it =
+           data_type_controllers.begin();
+       it != data_type_controllers.end(); ++it) {
+    syncable::ModelType type = it->first;
+
+    // If a type is not specified, remove it from the routing_info.
+    if (types.count(type) == 0) {
+      state->deleted_type = (routing_info->erase(type) > 0);
+    } else {
+      // Add a newly specified data type as GROUP_PASSIVE into the
+      // routing_info, if it does not already exist.
+      if (routing_info->count(type) == 0) {
+        (*routing_info)[type] = GROUP_PASSIVE;
+        state->added_types.set(type);
+      }
+    }
+  }
+
+  state->ready_task.reset(ready_task);
+  state->initial_types = types;
+  return state;
+}
+
 void SyncBackendHost::ConfigureDataTypes(
     const DataTypeController::TypeMap& data_type_controllers,
     const syncable::ModelTypeSet& types,
@@ -364,34 +396,12 @@ void SyncBackendHost::ConfigureDataTypes(
     ConfigureAutofillMigration();
   }
 
-  scoped_ptr<PendingConfigureDataTypesState> state(new
-      PendingConfigureDataTypesState());
-
   {
     base::AutoLock lock(registrar_lock_);
-    for (DataTypeController::TypeMap::const_iterator it =
-             data_type_controllers.begin();
-         it != data_type_controllers.end(); ++it) {
-      syncable::ModelType type = (*it).first;
-
-      // If a type is not specified, remove it from the routing_info.
-      if (types.count(type) == 0) {
-        registrar_.routing_info.erase(type);
-        state->deleted_type = true;
-      } else {
-        // Add a newly specified data type as GROUP_PASSIVE into the
-        // routing_info, if it does not already exist.
-        if (registrar_.routing_info.count(type) == 0) {
-          registrar_.routing_info[type] = GROUP_PASSIVE;
-          state->added_types.set(type);
-        }
-      }
-    }
+    pending_config_mode_state_.reset(
+        MakePendingConfigModeState(data_type_controllers, types, ready_task,
+                                   &registrar_.routing_info));
   }
-
-  state->ready_task.reset(ready_task);
-  state->initial_types = types;
-  pending_config_mode_state_.reset(state.release());
 
   // If we're doing the first configure (at startup) this is redundant as the
   // syncer thread always must start in config mode.

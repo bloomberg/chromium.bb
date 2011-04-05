@@ -174,9 +174,13 @@ bool HttpBridge::MakeSynchronousPost(int* os_error_code, int* response_code) {
   DCHECK(url_for_request_.is_valid()) << "Invalid URL for request";
   DCHECK(!content_type_.empty()) << "Payload not set";
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &HttpBridge::CallMakeAsynchronousPost));
+  if (!BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          NewRunnableMethod(this, &HttpBridge::CallMakeAsynchronousPost))) {
+    // This usually happens when we're in a unit test.
+    LOG(WARNING) << "Could not post CallMakeAsynchronousPost task";
+    return false;
+  }
 
   if (!http_post_completed_.Wait())  // Block until network request completes.
     NOTREACHED();                    // See OnURLFetchComplete.

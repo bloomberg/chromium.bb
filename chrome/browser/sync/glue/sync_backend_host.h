@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/synchronization/lock.h"
@@ -554,9 +555,36 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   scoped_refptr<Core> core_;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SyncBackendHostTest, MakePendingConfigModeState);
+
+  struct PendingConfigureDataTypesState {
+    PendingConfigureDataTypesState();
+    ~PendingConfigureDataTypesState();
+
+    // A task that should be called once data type configuration is
+    // complete.
+    scoped_ptr<CancelableTask> ready_task;
+
+    // The set of types that we are waiting to be initially synced in a
+    // configuration cycle.
+    syncable::ModelTypeSet initial_types;
+
+    // Additional details about which types were added / removed.
+    bool deleted_type;
+    syncable::ModelTypeBitSet added_types;
+  };
+
   UIModelWorker* ui_worker();
 
   void ConfigureAutofillMigration();
+
+  // Helper function for ConfigureDataTypes().  Caller owns return
+  // value.  Takes ownership of |ready_task| (but not |routing_info|).
+  static PendingConfigureDataTypesState* MakePendingConfigModeState(
+      const DataTypeController::TypeMap& data_type_controllers,
+      const syncable::ModelTypeSet& types,
+      CancelableTask* ready_task,
+      ModelSafeRoutingInfo* routing_info);
 
   // A thread we dedicate for use by our Core to perform initialization,
   // authentication, handle messages from the syncapi, and periodically tell
@@ -603,23 +631,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // Path of the folder that stores the sync data files.
   FilePath sync_data_folder_path_;
-
-  struct PendingConfigureDataTypesState {
-    PendingConfigureDataTypesState();
-    ~PendingConfigureDataTypesState();
-
-    // A task that should be called once data type configuration is
-    // complete.
-    scoped_ptr<CancelableTask> ready_task;
-
-    // The set of types that we are waiting to be initially synced in a
-    // configuration cycle.
-    syncable::ModelTypeSet initial_types;
-
-    // Additional details about which types were added / removed.
-    bool deleted_type;
-    syncable::ModelTypeBitSet added_types;
-  };
 
   scoped_ptr<PendingConfigureDataTypesState> pending_download_state_;
   scoped_ptr<PendingConfigureDataTypesState> pending_config_mode_state_;
