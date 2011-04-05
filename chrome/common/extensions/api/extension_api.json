@@ -4310,7 +4310,7 @@
             "type": "string"
           },
           "mayDisable": {
-            "description": "Whether this extension can be disabled or unistalled by user.",
+            "description": "Whether this extension can be disabled or uninstalled by the user.",
             "type": "boolean"
           },
           "enabled": {

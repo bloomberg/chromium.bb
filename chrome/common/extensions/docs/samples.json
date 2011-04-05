@@ -41,8 +41,8 @@
     "chrome.experimental.debugger.attach": "experimental.debugger.html#method-attach",
     "chrome.experimental.debugger.detach": "experimental.debugger.html#method-detach",
     "chrome.experimental.debugger.onDetach": "experimental.debugger.html#event-onDetach",
-    "chrome.experimental.debugger.onMessage": "experimental.debugger.html#event-onMessage",
-    "chrome.experimental.debugger.postMessage": "experimental.debugger.html#method-postMessage",
+    "chrome.experimental.debugger.onEvent": "experimental.debugger.html#event-onEvent",
+    "chrome.experimental.debugger.sendCommand": "experimental.debugger.html#method-sendCommand",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
     "chrome.experimental.processes.getProcessIdForTab": "experimental.processes.html#method-getProcessIdForTab",
     "chrome.experimental.processes.onUpdated": "experimental.processes.html#event-onUpdated",
@@ -73,6 +73,7 @@
     "chrome.experimental.webRequest.eventHandled": "experimental.webRequest.html#method-eventHandled",
     "chrome.experimental.webRequest.onBeforeRedirect": "experimental.webRequest.html#event-onBeforeRedirect",
     "chrome.experimental.webRequest.onBeforeRequest": "experimental.webRequest.html#event-onBeforeRequest",
+    "chrome.experimental.webRequest.onBeforeSendHeaders": "experimental.webRequest.html#event-onBeforeSendHeaders",
     "chrome.experimental.webRequest.onCompleted": "experimental.webRequest.html#event-onCompleted",
     "chrome.experimental.webRequest.onErrorOccurred": "experimental.webRequest.html#event-onErrorOccurred",
     "chrome.experimental.webRequest.onHeadersReceived": "experimental.webRequest.html#event-onHeadersReceived",
@@ -1711,7 +1712,7 @@
         "popup.html",
         "sample.css"
       ],
-      "source_hash": "4494289baae4cb06b3c825d80059b89536df0db2",
+      "source_hash": "c8bfc2b60f25c24dc3c5aaf75dd635c9419df66d",
       "zip_path": "examples/api/extension/isAllowedAccess.zip"
     }
   ]
