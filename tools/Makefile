@@ -966,7 +966,7 @@ build-with-newlib:
 .PHONY: buildbot-build-with-newlib
 buildbot-build-with-newlib: | \
   buildbot-mark-version \
-  pinned-src-newlib \
+  pinned-src-newlib
 	find SRC -print0 | xargs -0 touch -r SRC
 	$(MAKE) -f $(THISMAKEFILE) build-with-newlib
 
