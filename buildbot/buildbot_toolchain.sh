@@ -76,7 +76,7 @@ echo @@@BUILD_STEP archive_build@@@
     naclsdk.tgz \
     ${GS_BASE}/latest/naclsdk_${PLATFORM}_x86.tgz
 )
-echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/toolchain/r${BUILDBOT_GOT_REVISION}/@@@
+echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/toolchain/${BUILDBOT_GOT_REVISION}/@@@
 
 echo @@@BUILD_STEP untar_toolchain@@@
 mkdir -p ../toolchain/${PLATFORM}_x86/.tmp

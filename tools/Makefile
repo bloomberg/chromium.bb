@@ -997,7 +997,7 @@ buildbot-mark-version: | \
 	+++ SRC/gdb/gdb/version.in\n\
 	@@ -1 +1 @@\n\
 	-`cat SRC/gdb/gdb/version.in`\n\
-	+`cat SRC/gdb/gdb/version.in` `LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1-\2-\3+'` (Native Client r`LC_ALL=C svnversion`, Git Commit `cd SRC/binutils ; LC_ALL=C git log | head -n 1 | sed -e s'|commit ||'`)\n" |\
+	+`cat SRC/gdb/gdb/version.in` `LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1-\2-\3+'` (Native Client r`LC_ALL=C svnversion`, Git Commit `cd SRC/gdb ; LC_ALL=C git log | head -n 1 | sed -e s'|commit ||'`)\n" |\
 	patch -p0
 
 ##################################################################
