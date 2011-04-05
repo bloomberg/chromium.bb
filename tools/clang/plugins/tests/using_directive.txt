@@ -1,5 +1,0 @@
-In file included from using_directive.cpp:5:
-./using_directive.h:11:17: warning: [chromium-style] Using namespace directives are banned in headers in Google style.
-using namespace std;
-                ^
-1 warning generated.
