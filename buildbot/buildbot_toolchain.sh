@@ -37,7 +37,7 @@ rm -rf ../scons-out sdk-out sdk ../toolchain SRC BUILD
 
 echo @@@BUILD_STEP compile_toolchain@@@
 mkdir -p ../toolchain/${PLATFORM}_x86
-make -j8 clean buildbot-build
+make -j8 clean buildbot-build-with-newlib
 
 echo @@@BUILD_STEP tar_toolchain@@@
 tar cvfz naclsdk.tgz sdk/
