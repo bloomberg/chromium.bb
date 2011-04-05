@@ -391,7 +391,7 @@ TEST_F(SignedSettingsTest, RetrievePropertyNotFound) {
   MockLoginLibrary* lib = MockLoginLib();
   EXPECT_CALL(*lib, RequestRetrieveProperty(fake_prop_, _, _))
       .WillOnce(
-          InvokeArgument<1>(reinterpret_cast<void*>(s.get()),
+          InvokeArgument<1>(static_cast<void*>(s.get()),
                             false,
                             static_cast<chromeos::Property*>(NULL)))
       .RetiresOnSaturation();
@@ -436,7 +436,7 @@ TEST_F(SignedSettingsTest, SignAndStorePolicy) {
 
   MockLoginLibrary* lib = MockLoginLib();
   EXPECT_CALL(*lib, RequestStorePolicy(StrEq(signed_serialized), _, &d))
-      .WillOnce(InvokeArgument<1>(reinterpret_cast<void*>(&d), true))
+      .WillOnce(InvokeArgument<1>(static_cast<void*>(&d), true))
       .RetiresOnSaturation();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, fake_sig);
   UnMockLoginLib();
@@ -454,7 +454,7 @@ TEST_F(SignedSettingsTest, StoreSignedPolicy) {
       SignedSettings::CreateStorePolicyOp(&fake_policy, &d));
   MockLoginLibrary* lib = MockLoginLib();
   EXPECT_CALL(*lib, RequestStorePolicy(StrEq(serialized), _, &d))
-      .WillOnce(InvokeArgument<1>(reinterpret_cast<void*>(&d), true))
+      .WillOnce(InvokeArgument<1>(static_cast<void*>(&d), true))
       .RetiresOnSaturation();
   s->Execute();
   message_loop_.RunAllPending();
@@ -495,7 +495,7 @@ TEST_F(SignedSettingsTest, RetrievePolicy) {
 
   MockLoginLibrary* lib = MockLoginLib();
   EXPECT_CALL(*lib, RequestRetrievePolicy(_, s.get()))
-      .WillOnce(InvokeArgument<0>(reinterpret_cast<void*>(s.get()),
+      .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()),
                                   signed_serialized.c_str()))
       .RetiresOnSaturation();
 
@@ -521,7 +521,7 @@ TEST_F(SignedSettingsTest, RetrieveNoPolicy) {
   MockLoginLibrary* lib = MockLoginLib();
   EXPECT_CALL(*lib, RequestRetrievePolicy(_, s.get()))
       .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()),
-                                  reinterpret_cast<const char*>(NULL)))
+                                  static_cast<const char*>(NULL)))
       .RetiresOnSaturation();
 
   s->Execute();
@@ -540,7 +540,7 @@ TEST_F(SignedSettingsTest, RetrieveUnsignedPolicy) {
 
   MockLoginLibrary* lib = MockLoginLib();
   EXPECT_CALL(*lib, RequestRetrievePolicy(_, s.get()))
-      .WillOnce(InvokeArgument<0>(reinterpret_cast<void*>(s.get()),
+      .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()),
                                   serialized.c_str()))
       .RetiresOnSaturation();
 
@@ -560,7 +560,7 @@ TEST_F(SignedSettingsTest, RetrieveMalsignedPolicy) {
 
   MockLoginLibrary* lib = MockLoginLib();
   EXPECT_CALL(*lib, RequestRetrievePolicy(_, s.get()))
-      .WillOnce(InvokeArgument<0>(reinterpret_cast<void*>(s.get()),
+      .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()),
                                   signed_serialized.c_str()))
       .RetiresOnSaturation();
 

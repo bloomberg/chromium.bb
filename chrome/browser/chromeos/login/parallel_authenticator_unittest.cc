@@ -117,7 +117,7 @@ class ParallelAuthenticatorTest : public ::testing::Test {
   FilePath PopulateTempFile(const char* data, int data_len) {
     FilePath out;
     FILE* tmp_file = CreateAndOpenTemporaryFile(&out);
-    EXPECT_NE(tmp_file, reinterpret_cast<FILE*>(NULL));
+    EXPECT_NE(tmp_file, static_cast<FILE*>(NULL));
     EXPECT_EQ(WriteFile(out, data, data_len), data_len);
     EXPECT_TRUE(CloseFile(tmp_file));
     return out;
@@ -130,7 +130,7 @@ class ParallelAuthenticatorTest : public ::testing::Test {
     FILE* tmp_file = CreateAndOpenTemporaryFileInDir(exe_dir,
                                                      &local_account_file);
     int ascii_len = ascii.length();
-    EXPECT_NE(tmp_file, reinterpret_cast<FILE*>(NULL));
+    EXPECT_NE(tmp_file, static_cast<FILE*>(NULL));
     EXPECT_EQ(WriteFile(local_account_file, ascii.c_str(), ascii_len),
               ascii_len);
     EXPECT_TRUE(CloseFile(tmp_file));

@@ -150,20 +150,21 @@ void ViewsLoginDisplay::OnUserRemoved(const std::string& username) {
     return;
 
   // Insert just before guest or add new user pods if any.
-  int new_size = static_cast<int>(controllers_.size());
-  int insert_position = new_size;
+  size_t new_size = controllers_.size();
+  size_t insert_position = new_size;
   while (insert_position > 0 &&
          (controllers_[insert_position - 1]->is_new_user() ||
-          controllers_[insert_position - 1]->is_guest()))
+          controllers_[insert_position - 1]->is_guest())) {
     --insert_position;
+  }
 
   controllers_.insert(controllers_.begin() + insert_position,
                       invisible_controllers_[0]);
   invisible_controllers_.erase(invisible_controllers_.begin());
 
   // Update counts for exiting pods.
-  new_size = static_cast<int>(controllers_.size());
-  for (int i = 0; i < new_size; ++i) {
+  new_size = controllers_.size();
+  for (size_t i = 0; i < new_size; ++i) {
     if (i != insert_position)
       controllers_[i]->UpdateUserCount(i, new_size);
   }
