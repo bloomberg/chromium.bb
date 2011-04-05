@@ -211,52 +211,52 @@ const char kSystemOptionsSubPage[] = "system";
 
 const char kPasswordManagerLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
-    "http://www.google.com/support/chromeos/bin/answer.py?answer=95606";
+    "https://www.google.com/support/chromeos/bin/answer.py?answer=95606";
 #else
-    "http://www.google.com/support/chrome/bin/answer.py?answer=95606";
+    "https://www.google.com/support/chrome/bin/answer.py?answer=95606";
 #endif
 
 const char kChromeHelpURL[] =
 #if defined(OS_CHROMEOS)
-  "http://www.google.com/support/chromeos/";
+  "https://www.google.com/support/chromeos/";
 #else
-  "http://www.google.com/support/chrome/";
+  "https://www.google.com/support/chrome/";
 #endif
 
   const char kPageInfoHelpCenterURL[] =
 #if defined(OS_CHROMEOS)
-    "http://www.google.com/support/chromeos/bin/answer.py?answer=95617";
+    "https://www.google.com/support/chromeos/bin/answer.py?answer=95617";
 #else
-    "http://www.google.com/support/chrome/bin/answer.py?answer=95617";
+    "https://www.google.com/support/chrome/bin/answer.py?answer=95617";
 #endif
 
 const char kCrashReasonURL[] =
 #if defined(OS_CHROMEOS)
-    "http://www.google.com/support/chromeos/bin/answer.py?answer=1047340";
+    "https://www.google.com/support/chromeos/bin/answer.py?answer=1047340";
 #else
-    "http://www.google.com/support/chrome/bin/answer.py?answer=95669";
+    "https://www.google.com/support/chrome/bin/answer.py?answer=95669";
 #endif
 
 // TODO: These are currently placeholders that point to the crash
 // docs.  See bug http://crosbug.com/10711
 const char kKillReasonURL[] =
 #if defined(OS_CHROMEOS)
-    "http://www.google.com/support/chromeos/bin/answer.py?answer=1047340";
+    "https://www.google.com/support/chromeos/bin/answer.py?answer=1047340";
 #else
-    "http://www.google.com/support/chrome/bin/answer.py?answer=95669";
+    "https://www.google.com/support/chrome/bin/answer.py?answer=95669";
 #endif
 
 const char kPrivacyLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
-    "http://www.google.com/support/chromeos/bin/answer.py?answer=1047334";
+    "https://www.google.com/support/chromeos/bin/answer.py?answer=1047334";
 #else
-    "http://www.google.com/support/chrome/bin/answer.py?answer=114836";
+    "https://www.google.com/support/chrome/bin/answer.py?answer=114836";
 #endif
 
 const char kChromiumProjectURL[] = "http://code.google.com/chromium/";
 
 const char kLearnMoreReportingURL[] =
-    "http://www.google.com/support/chrome/bin/answer.py?answer=96817";
+    "https://www.google.com/support/chrome/bin/answer.py?answer=96817";
 
 const char kOutdatedPluginLearnMoreURL[] =
     "https://www.google.com/support/chrome/bin/answer.py?answer=1181003";
