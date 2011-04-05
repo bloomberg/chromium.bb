@@ -189,7 +189,7 @@
    ...
    fun:gl*
    ...
-   fun:_ZN8remoting11CapturerMac*
+   fun:_ZN8remoting*CapturerMac*
 }
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
