@@ -143,8 +143,6 @@
    Intentional leak of stats histogram to avoid shutdown races
    Heapcheck:Leak
    ...
-   fun:Histogram
-   fun:StatsHistogram
    fun:disk_cache::StatsHistogram::StatsHistogramFactoryGet
 }
 {
@@ -175,6 +173,13 @@
    ...
    fun:basic_string
    fun:DiskCacheBackendTest_Histograms_Test::TestBody
+}
+{
+   Histogram name pushed in deliberately leaked StatsHistogram
+   Heapcheck:Leak
+   ...
+   fun:basic_string
+   fun:disk_cache::Stats::Init
 }
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
