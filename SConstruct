@@ -2182,6 +2182,7 @@ nacl_env.Append(
     'tests/app_lib/nacl.scons',
     'tests/autoloader/nacl.scons',
     'tests/barebones/nacl.scons',
+    'tests/blob_library_loading/nacl.scons',
     'tests/browser_dynamic_library/nacl.scons',
     'tests/bundle_size/nacl.scons',
     'tests/computed_gotos/nacl.scons',

@@ -305,6 +305,9 @@ NaClErrorCode NaClAppLoadFile(struct Gio      *gp,
                               struct NaClApp  *nap,
                               enum NaClAbiCheckOption check_abi) NACL_WUR;
 
+NaClErrorCode NaClAppLoadFileDynamically(struct NaClApp *nap,
+                                         struct Gio     *gio_file) NACL_WUR;
+
 size_t  NaClAlignPad(size_t val,
                      size_t align);
 

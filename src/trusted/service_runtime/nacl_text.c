@@ -637,14 +637,11 @@ static INLINE void NaclTextMapClearCacheIfNeeded(struct NaClApp *nap,
   }
 }
 
-int32_t NaClTextSysDyncode_Create(struct NaClAppThread *natp,
-                                uint32_t             dest,
-                                uint32_t             src,
-                                uint32_t             size) {
-  struct NaClApp              *nap = natp->nap;
+int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
+                              uint32_t       dest,
+                              void           *code_copy,
+                              uint32_t       size) {
   uintptr_t                   dest_addr;
-  uintptr_t                   src_addr;
-  uint8_t                     *code_copy;
   uint8_t                     *mapped_addr;
   int32_t                     retval = -NACL_ABI_EINVAL;
   int                         validator_result;
@@ -659,10 +656,8 @@ int32_t NaClTextSysDyncode_Create(struct NaClAppThread *natp,
     return -NACL_ABI_EINVAL;
   }
   dest_addr = NaClUserToSysAddrRange(nap, dest, size);
-  src_addr = NaClUserToSysAddrRange(nap, src, size);
-  if (kNaClBadAddress == dest_addr ||
-      kNaClBadAddress == src_addr) {
-    NaClLog(1, "NaClTextSysDyncode_Copy: Address out of range\n");
+  if (kNaClBadAddress == dest_addr) {
+    NaClLog(1, "NaClTextSysDyncode_Copy: Dest address out of range\n");
     return -NACL_ABI_EFAULT;
   }
   if (dest < nap->dynamic_text_start) {
@@ -681,17 +676,6 @@ int32_t NaClTextSysDyncode_Create(struct NaClAppThread *natp,
     /* Nothing to load.  Succeed trivially. */
     return 0;
   }
-
-  /*
-   * Make a private copy of the code, so that we can validate it
-   * without a TOCTTOU race condition.
-   */
-  code_copy = malloc(size);
-  if (NULL == code_copy) {
-    retval = -NACL_ABI_ENOMEM;
-    goto cleanup_free;
-  }
-  memcpy(code_copy, (uint8_t*) src_addr, size);
 
   NaClMutexLock(&nap->dynamic_load_mutex);
 
@@ -732,9 +716,37 @@ int32_t NaClTextSysDyncode_Create(struct NaClAppThread *natp,
  cleanup_unlock:
   NaClMutexUnlock(&nap->dynamic_load_mutex);
 
- cleanup_free:
-  free(code_copy);
+  return retval;
+}
 
+int32_t NaClTextSysDyncode_Create(struct NaClAppThread *natp,
+                                  uint32_t             dest,
+                                  uint32_t             src,
+                                  uint32_t             size) {
+  struct NaClApp              *nap = natp->nap;
+  uintptr_t                   src_addr;
+  uint8_t                     *code_copy;
+  int32_t                     retval = -NACL_ABI_EINVAL;
+
+  src_addr = NaClUserToSysAddrRange(nap, src, size);
+  if (kNaClBadAddress == src_addr) {
+    NaClLog(1, "NaClTextSysDyncode_Copy: Source address out of range\n");
+    return -NACL_ABI_EFAULT;
+  }
+
+  /*
+   * Make a private copy of the code, so that we can validate it
+   * without a TOCTTOU race condition.
+   */
+  code_copy = malloc(size);
+  if (NULL == code_copy) {
+    return -NACL_ABI_ENOMEM;
+  }
+  memcpy(code_copy, (uint8_t*) src_addr, size);
+
+  retval = NaClTextDyncodeCreate(nap, dest, code_copy, size);
+
+  free(code_copy);
   return retval;
 }
 

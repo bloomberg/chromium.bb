@@ -9,6 +9,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 struct NaClElfImage;
 struct Gio;
@@ -31,10 +32,21 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
   uintptr_t           *data_end,
   uintptr_t           *max_vaddr);
 
+/*
+ * Loads an ELF executable before the address space's memory
+ * protections have been set up by NaClMemoryProtection().
+ */
 NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
                                struct Gio          *gp,
                                uint8_t             addr_bits,
                                uintptr_t           mem_start);
+
+/*
+ * Loads an ELF object after NaClMemoryProtection() has been called.
+ */
+NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
+                                          struct NaClApp      *nap,
+                                          struct Gio          *gfile);
 
 
 NaClErrorCode NaClElfImageValidateAbi(struct NaClElfImage *image);

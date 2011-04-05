@@ -464,6 +464,30 @@ done:
   return ret;
 }
 
+NaClErrorCode NaClAppLoadFileDynamically(struct NaClApp *nap,
+                                         struct Gio     *gio_file) {
+  struct NaClElfImage *image = NULL;
+  NaClErrorCode ret = LOAD_INTERNAL;
+
+  image = NaClElfImageNew((struct Gio *) gio_file, &ret);
+  if (NULL == image) {
+    goto done;
+  }
+  ret = NaClElfImageValidateElfHeader(image);
+  if (LOAD_OK != ret) {
+    goto done;
+  }
+  ret = NaClElfImageLoadDynamically(image, nap, gio_file);
+  if (LOAD_OK != ret) {
+    goto done;
+  }
+  nap->entry_pt = NaClElfImageGetEntryPoint(image);
+
+ done:
+  NaClElfImageDelete(image);
+  return ret;
+}
+
 int NaClAddrIsValidEntryPt(struct NaClApp *nap,
                            uintptr_t      addr) {
   if (0 != (addr & (nap->bundle_size - 1))) {

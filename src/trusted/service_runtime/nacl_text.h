@@ -31,6 +31,11 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap);
 struct NaClDescEffectorShm;
 int NaClDescEffectorShmCtor(struct NaClDescEffectorShm *self);
 
+int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
+                              uint32_t       dest,
+                              void           *code_copy,
+                              uint32_t       size);
+
 int32_t NaClTextSysDyncode_Create(struct NaClAppThread *natp,
                                   uint32_t             dest,
                                   uint32_t             src,
