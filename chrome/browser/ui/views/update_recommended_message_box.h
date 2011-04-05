@@ -22,19 +22,20 @@ class UpdateRecommendedMessageBox : public views::DialogDelegate {
   static void ShowMessageBox(gfx::NativeWindow parent_window);
 
   // Overridden from views::DialogDelegate:
-  virtual bool Accept();
+  virtual bool Accept() OVERRIDE;
 
  protected:
   // Overridden from views::DialogDelegate:
-  virtual int GetDialogButtons() const;
+  virtual int GetDialogButtons() const OVERRIDE;
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
-  virtual std::wstring GetWindowTitle() const;
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
 
   // Overridden from views::WindowDelegate:
-  virtual void DeleteDelegate();
-  virtual bool IsModal() const;
-  virtual views::View* GetContentsView();
+  virtual bool ShouldShowWindowTitle() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
+  virtual bool IsModal() const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
 
  private:
   explicit UpdateRecommendedMessageBox(gfx::NativeWindow parent_window);

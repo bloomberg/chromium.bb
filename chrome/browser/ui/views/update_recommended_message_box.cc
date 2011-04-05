@@ -60,6 +60,14 @@ std::wstring UpdateRecommendedMessageBox::GetDialogButtonLabel(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_NOT_NOW));
 }
 
+bool UpdateRecommendedMessageBox::ShouldShowWindowTitle() const {
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  return true;
+#endif
+}
+
 std::wstring UpdateRecommendedMessageBox::GetWindowTitle() const {
   return UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 }

@@ -71,7 +71,13 @@ void FlagsUIHTMLSource::StartDataRequest(const std::string& path,
       IDS_FLAGS_WARNING_TEXT));
   localized_strings.SetString("flagsRestartNotice", l10n_util::GetStringFUTF16(
       IDS_FLAGS_RELAUNCH_NOTICE,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+      l10n_util::GetStringUTF16(
+#if defined(OS_CHROMEOS)
+          IDS_PRODUCT_OS_NAME
+#else
+          IDS_PRODUCT_NAME
+#endif
+          )));
   localized_strings.SetString("flagsRestartButton",
       l10n_util::GetStringUTF16(IDS_FLAGS_RELAUNCH_BUTTON));
   localized_strings.SetString("disable",
