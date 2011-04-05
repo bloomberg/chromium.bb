@@ -374,20 +374,16 @@ function Tester() {
   var this_ = this;
   // The tests being run.
   var tests = [];
-  // Log messages that occur before RPC has been set up
-  var backlog = [];
   var embedsToWaitFor = [];
+
+  this.rpc = new RPCWrapper();
 
   //
   // BEGIN public interface
   //
 
   this.log = function(message) {
-    if (this.rpc == undefined) {
-      backlog.push(message);
-    } else {
-      this.rpc.log(this.currentTest, message);
-    }
+    this.rpc.log(this.currentTest, message);
   }
 
   this.addTest = function(name, callback) {
@@ -395,7 +391,7 @@ function Tester() {
   }
 
   this.run = function() {
-    this.initRPC();
+    this.rpc.startup();
 
     // Wait for up to ten seconds for the nexes to load.
     // TODO(ncbray) use error handling mechanisms (when they are implemented)
@@ -415,14 +411,6 @@ function Tester() {
   //
   // END public interface
   //
-
-  this.initRPC = function() {
-    this.rpc = new RPCWrapper();
-    this.rpc.startup();
-    for (var i = 0; i < backlog.length; i++) {
-      this.log(backlog[i]);
-    }
-  }
 
   // Find all the plugins in the DOM and make sure they've all loaded.
   this.waitForPlugins = function() {

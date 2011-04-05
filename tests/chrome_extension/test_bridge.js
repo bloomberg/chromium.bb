@@ -18,6 +18,11 @@
  * embedding page via a DOM event.
  */
 function runAllNaClTests() {
+  var naclTestModule = document.getElementById('test_results_element');
+  if(naclTestModule) {
+    naclTestModule.onclick.log('Bridge script injected.');
+  }
+
   // Opening the channel will kick off testing.
   port = chrome.extension.connect({name: 'testChannel'});
   port.onMessage.addListener(function(e) {
