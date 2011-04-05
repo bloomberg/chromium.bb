@@ -61,7 +61,7 @@ deps = {
     (Var("googlecode_url") % "google-safe-browsing") + "/trunk/testing@106",
 
   "src/third_party/cacheinvalidation/files":
-    (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@70",
+    (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@78",
 
   "src/third_party/leveldb":
     (Var("googlecode_url") % "leveldb") + "/trunk@19",
