@@ -225,8 +225,8 @@ void ScreenRecorder::CaptureDoneCallback(
     return;
 
   TraceContext::tracer()->PrintString("Capture Done");
-  int capture_time =
-      (base::Time::Now() - capture_start_time_).InMilliseconds();
+  int capture_time = static_cast<int>(
+      (base::Time::Now() - capture_start_time_).InMilliseconds());
   capture_data->set_capture_time_ms(capture_time);
   encode_loop_->PostTask(
       FROM_HERE,
@@ -379,10 +379,10 @@ void ScreenRecorder::DoStopOnEncodeThread(Task* done_task) {
 void ScreenRecorder::EncodedDataAvailableCallback(VideoPacket* packet) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
-  bool last = packet->flags() & VideoPacket::LAST_PACKET;
+  bool last = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
   if (last) {
-    int encode_time =
-        (base::Time::Now() - encode_start_time_).InMilliseconds();
+    int encode_time = static_cast<int>(
+        (base::Time::Now() - encode_start_time_).InMilliseconds());
     packet->set_encode_time_ms(encode_time);
   }
 
