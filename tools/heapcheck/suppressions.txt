@@ -133,6 +133,12 @@
    Heapcheck:Leak
    fun:BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
 }
+{
+   Intentional leak of *Histograms to avoid shutdown races
+   Heapcheck:Leak
+   ...
+   fun:base::*Histogram::FactoryGet
+}
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
