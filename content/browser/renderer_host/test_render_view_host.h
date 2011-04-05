@@ -206,6 +206,10 @@ class TestRenderViewHost : public RenderViewHost {
   // False by default.
   void set_simulate_fetch_via_proxy(bool proxy);
 
+  // If set, future loads will have |mime_type| set as the mime type.
+  // If not set, the mime type will default to "text/html".
+  void set_contents_mime_type(const std::string& mime_type);
+
   // RenderViewHost overrides --------------------------------------------------
 
   virtual bool CreateRenderView(const string16& frame_name);
@@ -223,6 +227,9 @@ class TestRenderViewHost : public RenderViewHost {
 
   // See set_simulate_fetch_via_proxy() above.
   bool simulate_fetch_via_proxy_;
+
+  // See set_contents_mime_type() above.
+  std::string contents_mime_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
 };

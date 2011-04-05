@@ -61,9 +61,19 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
 
   void Start() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    // We start by doing some simple checks that can run on the UI thread.
 
-    // We first start by doing the proxy, local IP and off-the-record checks
-    // synchronously because they are fast and they run on the UI thread.
+    // Only classify [X]HTML documents.
+    if (params_.contents_mime_type != "text/html" &&
+        params_.contents_mime_type != "application/xhtml+xml") {
+      VLOG(1) << "Skipping phishing classification for URL: " << params_.url
+              << " because it has an unsupported MIME type: "
+              << params_.contents_mime_type;
+      UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PreClassificationCheckFail",
+                                NO_CLASSIFY_UNSUPPORTED_MIME_TYPE,
+                                NO_CLASSIFY_MAX);
+      return;
+    }
 
     // Don't run the phishing classifier if the URL came from a private
     // network, since we don't want to ping back in this case.  We also need
@@ -132,6 +142,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     NO_CLASSIFY_OFF_THE_RECORD,
     NO_CLASSIFY_MATCH_CSD_WHITELIST,
     NO_CLASSIFY_TOO_MANY_REPORTS,
+    NO_CLASSIFY_UNSUPPORTED_MIME_TYPE,
 
     NO_CLASSIFY_MAX  // Always add new values before this one.
   };

@@ -433,6 +433,24 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
       SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_FALSE(msg);
 
+  // Check that XHTML is supported, in addition to the default HTML type.
+  // Note: for this test to work correctly, the new URL must be on the
+  // same domain as the previous URL, otherwise it will create a new
+  // RenderViewHost that won't have the mime type set.
+  url = GURL("http://host.com/xhtml");
+  rvh()->set_contents_mime_type("application/xhtml+xml");
+  ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
+                                &kFalse, &kFalse);
+  NavigateAndCommit(url);
+  WaitAndCheckPreClassificationChecks();
+  msg = process()->sink().GetFirstMessageMatching(
+      SafeBrowsingMsg_StartPhishingDetection::ID);
+  ASSERT_TRUE(msg);
+  SafeBrowsingMsg_StartPhishingDetection::Read(msg, &actual_url);
+  EXPECT_EQ(url, actual_url.a);
+  EXPECT_EQ(rvh()->routing_id(), msg->routing_id());
+  process()->sink().ClearMessages();
+
   // Navigate to a new host, which should cause another IPC.
   url = GURL("http://host2.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
@@ -446,6 +464,19 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   EXPECT_EQ(url, actual_url.a);
   EXPECT_EQ(rvh()->routing_id(), msg->routing_id());
   process()->sink().ClearMessages();
+
+  // If the mime type is not one that we support, no IPC should be triggered.
+  // Note: for this test to work correctly, the new URL must be on the
+  // same domain as the previous URL, otherwise it will create a new
+  // RenderViewHost that won't have the mime type set.
+  url = GURL("http://host2.com/image.jpg");
+  rvh()->set_contents_mime_type("image/jpeg");
+  ExpectPreClassificationChecks(url, NULL, NULL, NULL, NULL, NULL, NULL);
+  NavigateAndCommit(url);
+  WaitAndCheckPreClassificationChecks();
+  msg = process()->sink().GetFirstMessageMatching(
+      SafeBrowsingMsg_StartPhishingDetection::ID);
+  ASSERT_FALSE(msg);
 
   // If IsPrivateIPAddress returns true, no IPC should be triggered.
   url = GURL("http://host3.com/");

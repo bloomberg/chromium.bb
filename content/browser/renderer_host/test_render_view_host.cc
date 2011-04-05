@@ -46,7 +46,8 @@ TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
                      kInvalidSessionStorageNamespaceId),
       render_view_created_(false),
       delete_counter_(NULL),
-      simulate_fetch_via_proxy_(false) {
+      simulate_fetch_via_proxy_(false),
+      contents_mime_type_("text/html") {
   // For normal RenderViewHosts, this is freed when |Shutdown()| is called.
   // For TestRenderViewHost, the view is explicitly deleted in the destructor
   // below, because TestRenderWidgetHostView::Destroy() doesn't |delete this|.
@@ -95,7 +96,7 @@ void TestRenderViewHost::SendNavigateWithTransition(
   params.password_form = PasswordForm();
   params.security_info = std::string();
   params.gesture = NavigationGestureUser;
-  params.contents_mime_type = std::string();
+  params.contents_mime_type = contents_mime_type_;
   params.is_post = false;
   params.was_within_same_page = false;
   params.http_status_code = 0;
@@ -110,6 +111,10 @@ void TestRenderViewHost::SendNavigateWithTransition(
 
 void TestRenderViewHost::set_simulate_fetch_via_proxy(bool proxy) {
   simulate_fetch_via_proxy_ = proxy;
+}
+
+void TestRenderViewHost::set_contents_mime_type(const std::string& mime_type) {
+  contents_mime_type_ = mime_type;
 }
 
 TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
