@@ -277,4 +277,8 @@ pp::Var ChromotingInstance::GetInstanceObject() {
   return instance_object_;
 }
 
+ChromotingStats* ChromotingInstance::GetStats() {
+  return client_->GetStats();
+}
+
 }  // namespace remoting

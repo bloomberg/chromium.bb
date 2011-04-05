@@ -39,6 +39,7 @@ class ConnectionToHost;
 }  // namespace protocol
 
 class ChromotingClient;
+class ChromotingStats;
 class ClientContext;
 class InputHandler;
 class JingleThread;
@@ -77,6 +78,9 @@ class ChromotingInstance : public pp::Instance {
                        const std::string& password);
 
   void LogDebugInfo(const std::string& info);
+
+  // Return statistics record by ChromotingClient.
+  ChromotingStats* GetStats();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingInstanceTest, TestCaseSetup);

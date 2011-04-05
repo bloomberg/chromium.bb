@@ -4,13 +4,14 @@
 
 // ChromotingClient is the controller for the Client implementation.
 
-#ifndef REMOTING_CLIENT_CHROMOTING_CLIENT_H
-#define REMOTING_CLIENT_CHROMOTING_CLIENT_H
+#ifndef REMOTING_CLIENT_CHROMOTING_CLIENT_H_
+#define REMOTING_CLIENT_CHROMOTING_CLIENT_H_
 
 #include <list>
 
 #include "base/task.h"
 #include "remoting/client/client_config.h"
+#include "remoting/client/chromoting_stats.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/connection_to_host.h"
@@ -52,6 +53,9 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                       const std::string& host_jid);
   void Stop();
   void ClientDone();
+
+  // Return the stats recorded by this client.
+  ChromotingStats* GetStats();
 
   // Signals that the associated view may need updating.
   virtual void Repaint();
@@ -125,6 +129,9 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   // safe to dispatch another message.
   bool packet_being_processed_;
 
+  // Record the statistics of the connection.
+  ChromotingStats stats_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromotingClient);
 };
 
@@ -132,4 +139,4 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::ChromotingClient);
 
-#endif  // REMOTING_CLIENT_CHROMOTING_CLIENT_H
+#endif  // REMOTING_CLIENT_CHROMOTING_CLIENT_H_

@@ -92,6 +92,10 @@ void ChromotingClient::ClientDone() {
   }
 }
 
+ChromotingStats* ChromotingClient::GetStats() {
+  return &stats_;
+}
+
 void ChromotingClient::Repaint() {
   if (message_loop() != MessageLoop::current()) {
     message_loop()->PostTask(
@@ -124,6 +128,9 @@ void ChromotingClient::ProcessVideoPacket(const VideoPacket* packet,
                           packet, done));
     return;
   }
+
+  // Record size of the packet for statistics.
+  stats_.video_bandwidth()->Record(packet->data().size());
 
   received_packets_.push_back(QueuedVideoPacket(packet, done));
   if (!packet_being_processed_)

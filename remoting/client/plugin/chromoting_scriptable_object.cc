@@ -8,6 +8,7 @@
 #include "base/stringprintf.h"
 #include "ppapi/cpp/var.h"
 #include "remoting/client/client_config.h"
+#include "remoting/client/chromoting_stats.h"
 #include "remoting/client/plugin/chromoting_instance.h"
 #include "remoting/client/plugin/pepper_xmpp_proxy.h"
 
@@ -26,6 +27,7 @@ const char kLoginChallenge[] = "loginChallenge";
 const char kSendIq[] = "sendIq";
 const char kQualityAttribute[] = "quality";
 const char kStatusAttribute[] = "status";
+const char kVideoBandwidthAttribute[] = "videoBandwidth";
 
 }  // namespace
 
@@ -68,6 +70,9 @@ void ChromotingScriptableObject::Init() {
   AddAttribute(kSendIq, Var());
   AddAttribute(kDesktopWidth, Var(0));
   AddAttribute(kDesktopHeight, Var(0));
+
+  // Statistics.
+  AddAttribute(kVideoBandwidthAttribute, Var());
 
   AddMethod("connect", &ChromotingScriptableObject::DoConnect);
   AddMethod("connectSandboxed",
@@ -124,6 +129,12 @@ Var ChromotingScriptableObject::GetProperty(const Var& name, Var* exception) {
   // No property found.
   if (iter == property_names_.end()) {
     return ScriptableObject::GetProperty(name, exception);
+  }
+
+  // If this is a statistics attribute then return the value from
+  // ChromotingStats structure.
+  if (name.AsString() == kVideoBandwidthAttribute) {
+    return instance_->GetStats()->video_bandwidth()->Rate();
   }
 
   // TODO(ajwong): This incorrectly return a null object if a function

@@ -1,0 +1,39 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/logging.h"
+#include "remoting/base/running_average.h"
+
+namespace remoting {
+
+RunningAverage::RunningAverage(int window_size)
+    : window_size_(window_size),
+      sum_(0) {
+  CHECK(window_size_);
+}
+
+RunningAverage::~RunningAverage() {
+}
+
+void RunningAverage::Record(int64 value) {
+  base::AutoLock auto_lock(lock_);
+
+  data_points_.push_back(value);
+  sum_ += value;
+
+  if (data_points_.size() > window_size_) {
+    sum_ -= data_points_[0];
+    data_points_.pop_front();
+  }
+}
+
+double RunningAverage::Average() {
+  base::AutoLock auto_lock(lock_);
+
+  if (data_points_.empty())
+    return 0;
+  return static_cast<double>(sum_) / data_points_.size();
+}
+
+}  // namespace remoting

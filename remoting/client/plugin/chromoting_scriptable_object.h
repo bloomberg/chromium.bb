@@ -13,6 +13,11 @@
 //
 //   // Connection status.
 //   readonly attribute unsigned short status;
+//
+//   // Statistics.
+//   // Video Bandwidth in bytes per second.
+//   readonly attribute float videoBandwidth;
+//
 //   // Constants for connection status.
 //   const unsigned short STATUS_UNKNOWN = 0;
 //   const unsigned short STATUS_CONNECTING = 1;
