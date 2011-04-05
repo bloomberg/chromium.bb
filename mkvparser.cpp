@@ -8193,6 +8193,13 @@ bool Block::IsInvisible() const
 }
 
 
+Block::Lacing Block::GetLacing() const
+{
+    const int value = int(m_flags & 0x06) >> 1;
+    return static_cast<Lacing>(value);
+}
+
+
 int Block::GetFrameCount() const
 {
     return m_frame_count;

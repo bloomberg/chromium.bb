@@ -83,6 +83,9 @@ public:
     void SetKey(bool);
     bool IsInvisible() const;
 
+    enum Lacing { kLacingNone, kLacingXiph, kLacingFixed, kLacingEbml };
+    Lacing GetLacing() const;
+
     int GetFrameCount() const;  //to index frames: [0, count)
 
     struct Frame
