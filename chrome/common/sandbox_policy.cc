@@ -35,11 +35,12 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"adialhk.dll",                 // Kaspersky Internet Security.
   L"acpiz.dll",                   // Unknown.
   L"avgrsstx.dll",                // AVG 8.
-  L"BabylonChromePI.dll",         // Babylon translator.
+  L"babylonchromepi.dll",         // Babylon translator.
   L"btkeyind.dll",                // Widcomm Bluetooth.
   L"cmcsyshk.dll",                // CMC Internet Security.
+  L"cooliris.dll",                // CoolIris.
   L"dockshellhook.dll",           // Stardock Objectdock.
-  L"GoogleDesktopNetwork3.DLL",   // Google Desktop Search v5.
+  L"googledesktopnetwork3.dll",   // Google Desktop Search v5.
   L"fwhook.dll",                  // PC Tools Firewall Plus.
   L"hookprocesscreation.dll",     // Blumentals Program protector.
   L"hookterminateapis.dll",       // Blumentals and Cyberprinter.
@@ -59,13 +60,17 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"oawatch.dll",                 // Online Armor.
   L"pavhook.dll",                 // Panda Internet Security.
   L"pavshook.dll",                // Panda Antivirus.
+  L"pavshookwow.dll",             // Panda Antivirus.
   L"pctavhook.dll",               // PC Tools Antivirus.
   L"pctgmhk.dll",                 // PC Tools Spyware Doctor.
   L"prntrack.dll",                // Pharos Systems.
   L"radhslib.dll",                // Radiant Naomi Internet Filter.
   L"radprlib.dll",                // Radiant Naomi Internet Filter.
+  L"rapportnikko.dll",            // Trustware Rapport.
   L"rlhook.dll",                  // Trustware Bufferzone.
+  L"rooksdol.dll",                // Trustware Rapport.
   L"rpchromebrowserrecordhelper.dll",  // RealPlayer.
+  L"rpmainbrowserrecordplugin.dll",    // RealPlayer.
   L"r3hook.dll",                  // Kaspersky Internet Security.
   L"sahook.dll",                  // McAfee Site Advisor.
   L"sbrige.dll",                  // Unknown.
@@ -77,7 +82,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"syncor11.dll",                // SynthCore Midi interface.
   L"systools.dll",                // Panda Antivirus.
   L"tfwah.dll",                   // Threatfire (PC tools).
-  L"YCWebCameraSource.ax",        // Cyberlink Camera helper.
+  L"ycwebcamerasource.ax",        // Cyberlink Camera helper.
   L"wblind.dll",                  // Stardock Object desktop.
   L"wbhelp.dll",                  // Stardock Object desktop.
   L"winstylerthemehelper.dll"     // Tuneup utilities 2006.
