@@ -169,6 +169,13 @@
    fun:basic_string
    fun:net::CookieMonster::InitializeHistograms
 }
+{
+   String name pushed into deliberately leaked StatsHistogram
+   Heapcheck:Leak
+   ...
+   fun:basic_string
+   fun:DiskCacheBackendTest_Histograms_Test::TestBody
+}
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
