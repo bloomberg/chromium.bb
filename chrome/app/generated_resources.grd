@@ -218,10 +218,10 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
         <ph name="APP_NAME">$1<ex>Background App</ex></ph> will launch at system startup and continue to run in the background even once you've closed all other <ph name="PRODUCT_NAME">$2<ex>Google Chrome</ex></ph> windows.
       </message>
       <message name="IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE" desc="The contents of the balloon that is displayed when a background app crashes">
-        <ph name="APP_NAME">$1<ex>Background App</ex></ph> has crashed. Click on this balloon to restart the app.
+        <ph name="APP_NAME">$1<ex>Background App</ex></ph> has crashed. Click this balloon to restart the app.
       </message>
       <message name="IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE" desc="The contents of the balloon that is displayed when an extension crashes">
-        <ph name="APP_NAME">$1<ex>Extension</ex></ph> has crashed. Click on this balloon to reload the extension.
+        <ph name="APP_NAME">$1<ex>Extension</ex></ph> has crashed. Click this balloon to reload the extension.
       </message>
 
       <message name="IDS_SHOWFULLHISTORY_LINK" desc="The label of the Show Full History link at the bottom of the back/forward menu.">
