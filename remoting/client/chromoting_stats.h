@@ -9,6 +9,7 @@
 #define REMOTING_CLIENT_CHROMOTING_STATS_H_
 
 #include "remoting/base/rate_counter.h"
+#include "remoting/base/running_average.h"
 
 namespace remoting {
 
@@ -17,9 +18,13 @@ class ChromotingStats {
   ChromotingStats();
 
   RateCounter* video_bandwidth() { return &video_bandwidth_; }
+  RunningAverage* video_decode() { return &video_decode_; }
+  RunningAverage* video_paint() { return &video_paint_; }
 
  private:
   RateCounter video_bandwidth_;
+  RunningAverage video_decode_;
+  RunningAverage video_paint_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingStats);
 };

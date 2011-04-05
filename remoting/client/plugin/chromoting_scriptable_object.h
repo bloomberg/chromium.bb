@@ -17,6 +17,10 @@
 //   // Statistics.
 //   // Video Bandwidth in bytes per second.
 //   readonly attribute float videoBandwidth;
+//   // Latency for video decoding.
+//   readonly attribute int videoDecodeLatency;
+//   // Latency for rendering.
+//   readonly attribute int videoRenderLatency;
 //
 //   // Constants for connection status.
 //   const unsigned short STATUS_UNKNOWN = 0;

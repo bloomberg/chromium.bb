@@ -12,6 +12,7 @@
 #include "ppapi/cpp/size.h"
 #include "remoting/base/tracer.h"
 #include "remoting/base/util.h"
+#include "remoting/client/chromoting_stats.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/plugin/chromoting_instance.h"
 #include "remoting/client/plugin/pepper_util.h"
@@ -68,7 +69,8 @@ void PepperView::Paint() {
     // size!  Otherwise, this will just silently do nothing.
     graphics2d_.ReplaceContents(&image);
     graphics2d_.Flush(TaskToCompletionCallback(
-        task_factory_.NewRunnableMethod(&PepperView::OnPaintDone)));
+        task_factory_.NewRunnableMethod(&PepperView::OnPaintDone,
+                                        base::Time::Now())));
   } else {
     // TODO(ajwong): We need to keep a backing store image of the viewport that
     // has the data here which can be redrawn.
@@ -121,7 +123,8 @@ void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
   }
 
   graphics2d_.Flush(TaskToCompletionCallback(
-      task_factory_.NewRunnableMethod(&PepperView::OnPaintDone)));
+      task_factory_.NewRunnableMethod(&PepperView::OnPaintDone,
+                                      base::Time::Now())));
 
   TraceContext::tracer()->PrintString("End Paint Frame.");
 }
@@ -247,12 +250,11 @@ void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
   delete done;
 }
 
-void PepperView::OnPaintDone() {
+void PepperView::OnPaintDone(base::Time paint_start) {
   DCHECK(CurrentlyOnPluginThread());
-
-  // TODO(ajwong):Probably should set some variable to allow repaints to
-  // actually paint.
   TraceContext::tracer()->PrintString("Paint flushed");
+  instance_->GetStats()->video_paint()->Record(
+      (base::Time::Now() - paint_start).InMilliseconds());
   return;
 }
 

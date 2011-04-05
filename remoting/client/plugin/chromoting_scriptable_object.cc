@@ -28,6 +28,8 @@ const char kSendIq[] = "sendIq";
 const char kQualityAttribute[] = "quality";
 const char kStatusAttribute[] = "status";
 const char kVideoBandwidthAttribute[] = "videoBandwidth";
+const char kVideoDecodeLatencyAttribute[] = "videoDecodeLatency";
+const char kVideoRenderLatencyAttribute[] = "videoRenderLatency";
 
 }  // namespace
 
@@ -73,6 +75,8 @@ void ChromotingScriptableObject::Init() {
 
   // Statistics.
   AddAttribute(kVideoBandwidthAttribute, Var());
+  AddAttribute(kVideoDecodeLatencyAttribute, Var());
+  AddAttribute(kVideoRenderLatencyAttribute, Var());
 
   AddMethod("connect", &ChromotingScriptableObject::DoConnect);
   AddMethod("connectSandboxed",
@@ -135,6 +139,12 @@ Var ChromotingScriptableObject::GetProperty(const Var& name, Var* exception) {
   // ChromotingStats structure.
   if (name.AsString() == kVideoBandwidthAttribute) {
     return instance_->GetStats()->video_bandwidth()->Rate();
+  }
+  else if (name.AsString() == kVideoDecodeLatencyAttribute) {
+    return instance_->GetStats()->video_decode()->Average();
+  }
+  else if (name.AsString() == kVideoRenderLatencyAttribute) {
+    return instance_->GetStats()->video_paint()->Average();
   }
 
   // TODO(ajwong): This incorrectly return a null object if a function

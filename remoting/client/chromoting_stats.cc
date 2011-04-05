@@ -8,13 +8,16 @@ namespace {
 
 // The default window of bandwidth in seconds.
 static const int kBandwidthWindow = 3;
+static const int kLatencyWindow = 10;
 
 }  // namespace
 
 namespace remoting {
 
 ChromotingStats::ChromotingStats()
-    : video_bandwidth_(base::TimeDelta::FromSeconds(kBandwidthWindow)) {
+    : video_bandwidth_(base::TimeDelta::FromSeconds(kBandwidthWindow)),
+      video_decode_(kLatencyWindow),
+      video_paint_(kLatencyWindow) {
 }
 
 }  // namespace remoting

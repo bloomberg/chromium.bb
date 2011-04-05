@@ -54,7 +54,7 @@ class PepperView : public ChromotingView,
                                     Task* done);
 
  private:
-  void OnPaintDone();
+  void OnPaintDone(base::Time paint_start);
   void PaintFrame(media::VideoFrame* frame, UpdatedRects* rects);
 
   // Reference to the creating plugin instance. Needed for interacting with

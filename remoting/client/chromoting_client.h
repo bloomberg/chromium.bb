@@ -10,6 +10,7 @@
 #include <list>
 
 #include "base/task.h"
+#include "base/time.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_stats.h"
 #include "remoting/client/chromoting_view.h"
@@ -104,7 +105,10 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   // |received_packets_| queue.
   void DispatchPacket();
 
-  void OnPacketDone();
+  // Callback method when a VideoPacket is processed.
+  // If |last_packet| is true when |decode_start| contains the timestamp when
+  // the packet starts to be processed.
+  void OnPacketDone(bool last_packet, base::Time decode_start);
 
   // The following are not owned by this class.
   ClientConfig config_;
