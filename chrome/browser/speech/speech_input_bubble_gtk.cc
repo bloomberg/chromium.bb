@@ -49,7 +49,7 @@ class SpeechInputBubbleGtk
   virtual void Show();
   virtual void Hide();
   virtual void UpdateLayout();
-  virtual void SetImage(const SkBitmap& image);
+  virtual void UpdateImage();
 
   CHROMEGTK_CALLBACK_0(SpeechInputBubbleGtk, void, OnCancelClicked);
   CHROMEGTK_CALLBACK_0(SpeechInputBubbleGtk, void, OnTryAgainClicked);
@@ -61,6 +61,7 @@ class SpeechInputBubbleGtk
   bool did_invoke_close_;
 
   GtkWidget* label_;
+  GtkWidget* cancel_button_;
   GtkWidget* try_again_button_;
   GtkWidget* icon_;
   GtkWidget* mic_settings_;
@@ -77,6 +78,7 @@ SpeechInputBubbleGtk::SpeechInputBubbleGtk(TabContents* tab_contents,
       element_rect_(element_rect),
       did_invoke_close_(false),
       label_(NULL),
+      cancel_button_(NULL),
       try_again_button_(NULL),
       icon_(NULL),
       mic_settings_(NULL) {
@@ -146,10 +148,10 @@ void SpeechInputBubbleGtk::Show() {
   gtk_box_pack_start(GTK_BOX(vbox), button_bar, FALSE, FALSE,
                      kBubbleControlVerticalSpacing);
 
-  GtkWidget* cancel_button = gtk_button_new_with_label(
+  cancel_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_CANCEL).c_str());
-  gtk_box_pack_start(GTK_BOX(button_bar), cancel_button, TRUE, FALSE, 0);
-  g_signal_connect(cancel_button, "clicked",
+  gtk_box_pack_start(GTK_BOX(button_bar), cancel_button_, TRUE, FALSE, 0);
+  g_signal_connect(cancel_button_, "clicked",
                    G_CALLBACK(&OnCancelClickedThunk), this);
 
   try_again_button_ = gtk_button_new_with_label(
@@ -206,23 +208,25 @@ void SpeechInputBubbleGtk::UpdateLayout() {
     if (display_mode() == DISPLAY_MODE_RECORDING) {
       gtk_label_set_text(GTK_LABEL(label_),
           l10n_util::GetStringUTF8(IDS_SPEECH_INPUT_BUBBLE_HEADING).c_str());
-      SkBitmap* image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          IDR_SPEECH_INPUT_MIC_EMPTY);
-      GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(image);
-      gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
-      g_object_unref(pixbuf);
       gtk_widget_show(label_);
     } else {
       gtk_widget_hide(label_);
     }
+    UpdateImage();
     gtk_widget_show(icon_);
     gtk_widget_hide(try_again_button_);
     if (mic_settings_)
       gtk_widget_hide(mic_settings_);
+    if (display_mode() == DISPLAY_MODE_WARM_UP) {
+      gtk_widget_hide(cancel_button_);
+    } else {
+      gtk_widget_show(cancel_button_);
+    }
   }
 }
 
-void SpeechInputBubbleGtk::SetImage(const SkBitmap& image) {
+void SpeechInputBubbleGtk::UpdateImage() {
+  SkBitmap image = icon_image();
   if (image.isNull() || !info_bubble_)
     return;
 

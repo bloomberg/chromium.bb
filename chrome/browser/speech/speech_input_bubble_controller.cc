@@ -55,6 +55,11 @@ void SpeechInputBubbleController::CloseBubble(int caller_id) {
   ProcessRequestInUiThread(caller_id, REQUEST_CLOSE, string16(), 0, 0);
 }
 
+void SpeechInputBubbleController::SetBubbleWarmUpMode(int caller_id) {
+  ProcessRequestInUiThread(caller_id, REQUEST_SET_WARM_UP_MODE,
+                           string16(), 0, 0);
+}
+
 void SpeechInputBubbleController::SetBubbleRecordingMode(int caller_id) {
   ProcessRequestInUiThread(caller_id, REQUEST_SET_RECORDING_MODE,
                            string16(), 0, 0);
@@ -146,7 +151,7 @@ void SpeechInputBubbleController::ProcessRequestInUiThread(
   if (!bubbles_.count(caller_id))
     return;
 
-  bool change_active_bubble = (type == REQUEST_SET_RECORDING_MODE ||
+  bool change_active_bubble = (type == REQUEST_SET_WARM_UP_MODE ||
                                type == REQUEST_SET_MESSAGE);
   if (change_active_bubble) {
     if (current_bubble_caller_id_ && current_bubble_caller_id_ != caller_id)
@@ -156,6 +161,9 @@ void SpeechInputBubbleController::ProcessRequestInUiThread(
 
   SpeechInputBubble* bubble = bubbles_[caller_id];
   switch (type) {
+    case REQUEST_SET_WARM_UP_MODE:
+      bubble->SetWarmUpMode();
+      break;
     case REQUEST_SET_RECORDING_MODE:
       bubble->SetRecordingMode();
       break;

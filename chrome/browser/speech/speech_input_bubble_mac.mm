@@ -26,7 +26,7 @@ class SpeechInputBubbleImpl : public SpeechInputBubbleBase {
   virtual void Show();
   virtual void Hide();
   virtual void UpdateLayout();
-  virtual void SetImage(const SkBitmap& image);
+  virtual void UpdateImage();
 
  private:
   scoped_nsobject<SpeechInputWindowController> window_;
@@ -47,9 +47,9 @@ SpeechInputBubbleImpl::~SpeechInputBubbleImpl() {
     [window_.get() close];
 }
 
-void SpeechInputBubbleImpl::SetImage(const SkBitmap& image) {
+void SpeechInputBubbleImpl::UpdateImage() {
   if (window_.get())
-    [window_.get() setImage:gfx::SkBitmapToNSImage(image)];
+    [window_.get() setImage:gfx::SkBitmapToNSImage(icon_image())];
 }
 
 void SpeechInputBubbleImpl::Show() {
@@ -93,7 +93,8 @@ void SpeechInputBubbleImpl::UpdateLayout() {
     return;
 
   [window_.get() updateLayout:display_mode()
-                  messageText:message_text()];
+                  messageText:message_text()
+                    iconImage:gfx::SkBitmapToNSImage(icon_image())];
 }
 
 }  // namespace

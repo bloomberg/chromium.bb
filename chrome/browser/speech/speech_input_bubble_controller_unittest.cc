@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,7 +59,7 @@ class MockSpeechInputBubble : public SpeechInputBubbleBase {
   virtual void Show() {}
   virtual void Hide() {}
   virtual void UpdateLayout() {}
-  virtual void SetImage(const SkBitmap&) {}
+  virtual void UpdateImage() {}
 
  private:
   static BubbleType type_;
@@ -123,7 +123,7 @@ class SpeechInputBubbleControllerTest
   static void ActivateBubble() {
     if (MockSpeechInputBubble::type() ==
         MockSpeechInputBubble::BUBBLE_TEST_FOCUS_CHANGED) {
-      test_fixture_->controller_->SetBubbleRecordingMode(kBubbleCallerId);
+      test_fixture_->controller_->SetBubbleWarmUpMode(kBubbleCallerId);
     } else {
       test_fixture_->controller_->SetBubbleMessage(kBubbleCallerId,
                                                    ASCIIToUTF16("Test"));

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/speech/speech_input_bubble.h"
 
+#include <algorithm>
+
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_window.h"
@@ -39,7 +41,8 @@ class ContentView
   explicit ContentView(SpeechInputBubbleDelegate* delegate);
 
   void UpdateLayout(SpeechInputBubbleBase::DisplayMode mode,
-                    const string16& message_text);
+                    const string16& message_text,
+                    const SkBitmap& image);
   void SetImage(const SkBitmap& image);
 
   // views::ButtonListener methods.
@@ -60,12 +63,17 @@ class ContentView
   views::NativeButton* try_again_;
   views::NativeButton* cancel_;
   views::Link* mic_settings_;
+  SpeechInputBubbleBase::DisplayMode display_mode_;
+  const int kIconLayoutMinWidth;
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
 
 ContentView::ContentView(SpeechInputBubbleDelegate* delegate)
-     : delegate_(delegate) {
+     : delegate_(delegate),
+       display_mode_(SpeechInputBubbleBase::DISPLAY_MODE_WARM_UP),
+       kIconLayoutMinWidth(ResourceBundle::GetSharedInstance().GetBitmapNamed(
+                           IDR_SPEECH_INPUT_MIC_EMPTY)->width()) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Font& font = rb.GetFont(ResourceBundle::MediumFont);
 
@@ -86,8 +94,6 @@ ContentView::ContentView(SpeechInputBubbleDelegate* delegate)
   AddChildView(message_);
 
   icon_ = new views::ImageView();
-  icon_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_SPEECH_INPUT_MIC_EMPTY));
   icon_->SetHorizontalAlignment(views::ImageView::CENTER);
   AddChildView(icon_);
 
@@ -108,23 +114,31 @@ ContentView::ContentView(SpeechInputBubbleDelegate* delegate)
 }
 
 void ContentView::UpdateLayout(SpeechInputBubbleBase::DisplayMode mode,
-                               const string16& message_text) {
+                               const string16& message_text,
+                               const SkBitmap& image) {
+  display_mode_ = mode;
   bool is_message = (mode == SpeechInputBubbleBase::DISPLAY_MODE_MESSAGE);
   icon_->SetVisible(!is_message);
   message_->SetVisible(is_message);
   mic_settings_->SetVisible(is_message);
   try_again_->SetVisible(is_message);
+  cancel_->SetVisible(mode != SpeechInputBubbleBase::DISPLAY_MODE_WARM_UP);
   heading_->SetVisible(mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING);
 
-  if (mode == SpeechInputBubbleBase::DISPLAY_MODE_MESSAGE) {
+  if (is_message) {
     message_->SetText(UTF16ToWideHack(message_text));
-  } else if (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING) {
-    icon_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_SPEECH_INPUT_MIC_EMPTY));
+  } else {
+    SetImage(image);
   }
 
   if (icon_->IsVisible())
     icon_->ResetImageSize();
+
+  // When moving from warming up to recording state, the size of the content
+  // stays the same. So we wouldn't get a resize/layout call from the view
+  // system and we do it ourselves.
+  if (GetPreferredSize() == size())  // |size()| here is the current size.
+    Layout();
 }
 
 void ContentView::SetImage(const SkBitmap& image) {
@@ -154,15 +168,13 @@ gfx::Size ContentView::GetPreferredSize() {
     control_width += try_again_->GetPreferredSize().width() +
                      views::kRelatedButtonHSpacing;
   }
-  if (control_width > width)
-    width = control_width;
-  control_width = icon_->GetPreferredSize().width();
-  if (control_width > width)
-    width = control_width;
+  width = std::max(width, control_width);
+  control_width = std::max(icon_->GetPreferredSize().width(),
+                           kIconLayoutMinWidth);
+  width = std::max(width, control_width);
   if (mic_settings_->IsVisible()) {
     control_width = mic_settings_->GetPreferredSize().width();
-    if (control_width > width)
-      width = control_width;
+    width = std::max(width, control_width);
   }
 
   int height = cancel_->GetPreferredSize().height();
@@ -213,6 +225,8 @@ void ContentView::Layout() {
     DCHECK(icon_->IsVisible());
 
     int control_height = icon_->GetImage().height();
+    if (display_mode_ == SpeechInputBubbleBase::DISPLAY_MODE_WARM_UP)
+      y = (available_height - control_height) / 2;
     icon_->SetBounds(x, y, available_width, control_height);
     y += control_height;
 
@@ -222,10 +236,12 @@ void ContentView::Layout() {
       y += control_height;
     }
 
-    control_height = cancel_->GetPreferredSize().height();
-    int width = cancel_->GetPreferredSize().width();
-    cancel_->SetBounds(x + (available_width - width) / 2, y, width,
-                       control_height);
+    if (cancel_->IsVisible()) {
+      control_height = cancel_->GetPreferredSize().height();
+      int width = cancel_->GetPreferredSize().width();
+      cancel_->SetBounds(x + (available_width - width) / 2, y, width,
+                         control_height);
+    }
   }
 }
 
@@ -245,7 +261,7 @@ class SpeechInputBubbleImpl
 
   // SpeechInputBubbleBase methods.
   virtual void UpdateLayout();
-  virtual void SetImage(const SkBitmap& image);
+  virtual void UpdateImage();
 
   // Returns the screen rectangle to use as the info bubble's target.
   // |element_rect| is the html element's bounds in page coordinates.
@@ -344,14 +360,14 @@ void SpeechInputBubbleImpl::Hide() {
 
 void SpeechInputBubbleImpl::UpdateLayout() {
   if (bubble_content_)
-    bubble_content_->UpdateLayout(display_mode(), message_text());
+    bubble_content_->UpdateLayout(display_mode(), message_text(), icon_image());
   if (info_bubble_)  // Will be null on first call.
     info_bubble_->SizeToContents();
 }
 
-void SpeechInputBubbleImpl::SetImage(const SkBitmap& image) {
+void SpeechInputBubbleImpl::UpdateImage() {
   if (bubble_content_)
-    bubble_content_->SetImage(image);
+    bubble_content_->SetImage(icon_image());
 }
 
 }  // namespace

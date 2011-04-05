@@ -27,7 +27,7 @@ const char* const kConfidenceString = "confidence";
 
 // TODO(satish): Remove this hardcoded value once the page is allowed to
 // set this via an attribute.
-const int kMaxResults = 5;
+const int kMaxResults = 6;
 
 bool ParseServerResponse(const std::string& response_body,
                          speech_input::SpeechInputResultArray* result) {

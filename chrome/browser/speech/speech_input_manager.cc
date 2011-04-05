@@ -111,6 +111,7 @@ class SpeechInputManagerImpl : public SpeechInputManager,
       SpeechInputManagerDelegate* delegate);
 
   // SpeechRecognizer::Delegate methods.
+  virtual void DidStartReceivingAudio(int caller_id);
   virtual void SetRecognitionResult(int caller_id,
                                     bool error,
                                     const SpeechInputResultArray& result);
@@ -247,7 +248,7 @@ void SpeechInputManagerImpl::StartRecognitionForRequest(int caller_id) {
     recording_caller_id_ = caller_id;
     requests_[caller_id].is_active = true;
     requests_[caller_id].recognizer->StartRecording();
-    bubble_controller_->SetBubbleRecordingMode(caller_id);
+    bubble_controller_->SetBubbleWarmUpMode(caller_id);
   }
 }
 
@@ -332,6 +333,12 @@ void SpeechInputManagerImpl::OnRecognizerError(
   }
 
   NOTREACHED() << "unknown error " << error;
+}
+
+void SpeechInputManagerImpl::DidStartReceivingAudio(int caller_id) {
+  DCHECK(HasPendingRequest(caller_id));
+  DCHECK(recording_caller_id_ == caller_id);
+  bubble_controller_->SetBubbleRecordingMode(caller_id);
 }
 
 void SpeechInputManagerImpl::DidCompleteEnvironmentEstimation(int caller_id) {

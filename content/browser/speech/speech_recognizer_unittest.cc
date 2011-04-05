@@ -30,6 +30,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
         recording_complete_(false),
         recognition_complete_(false),
         result_received_(false),
+        audio_received_(false),
         error_(SpeechRecognizer::RECOGNIZER_NO_ERROR),
         volume_(-1.0f) {
     int audio_packet_length_bytes =
@@ -56,6 +57,10 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
   }
 
   virtual void DidCompleteEnvironmentEstimation(int caller_id) {
+  }
+
+  virtual void DidStartReceivingAudio(int caller_id) {
+    audio_received_ = true;
   }
 
   virtual void OnRecognizerError(int caller_id,
@@ -101,6 +106,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
   bool recording_complete_;
   bool recognition_complete_;
   bool result_received_;
+  bool audio_received_;
   SpeechRecognizer::ErrorCode error_;
   TestURLFetcherFactory url_fetcher_factory_;
   TestAudioInputControllerFactory audio_input_controller_factory_;
@@ -116,6 +122,7 @@ TEST_F(SpeechRecognizerTest, StopNoData) {
   EXPECT_FALSE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
+  EXPECT_FALSE(audio_received_);
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_NO_ERROR, error_);
 }
 
@@ -127,6 +134,7 @@ TEST_F(SpeechRecognizerTest, CancelNoData) {
   EXPECT_TRUE(recording_complete_);
   EXPECT_TRUE(recognition_complete_);
   EXPECT_FALSE(result_received_);
+  EXPECT_FALSE(audio_received_);
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_NO_ERROR, error_);
 }
 
@@ -153,6 +161,7 @@ TEST_F(SpeechRecognizerTest, StopWithData) {
   }
 
   recognizer_->StopRecording();
+  EXPECT_TRUE(audio_received_);
   EXPECT_TRUE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
@@ -183,6 +192,7 @@ TEST_F(SpeechRecognizerTest, CancelWithData) {
   MessageLoop::current()->RunAllPending();
   recognizer_->CancelRecognition();
   ASSERT_TRUE(url_fetcher_factory_.GetFetcherByID(0));
+  EXPECT_TRUE(audio_received_);
   EXPECT_FALSE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
@@ -203,6 +213,7 @@ TEST_F(SpeechRecognizerTest, ConnectionError) {
   ASSERT_TRUE(fetcher);
 
   recognizer_->StopRecording();
+  EXPECT_TRUE(audio_received_);
   EXPECT_TRUE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
@@ -233,6 +244,7 @@ TEST_F(SpeechRecognizerTest, ServerError) {
   ASSERT_TRUE(fetcher);
 
   recognizer_->StopRecording();
+  EXPECT_TRUE(audio_received_);
   EXPECT_TRUE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
@@ -257,6 +269,7 @@ TEST_F(SpeechRecognizerTest, AudioControllerErrorNoData) {
   ASSERT_TRUE(controller);
   controller->event_handler()->OnError(controller, 0);
   MessageLoop::current()->RunAllPending();
+  EXPECT_FALSE(audio_received_);
   EXPECT_FALSE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
@@ -275,6 +288,7 @@ TEST_F(SpeechRecognizerTest, AudioControllerErrorWithData) {
   controller->event_handler()->OnError(controller, 0);
   MessageLoop::current()->RunAllPending();
   ASSERT_TRUE(url_fetcher_factory_.GetFetcherByID(0));
+  EXPECT_TRUE(audio_received_);
   EXPECT_FALSE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
@@ -299,6 +313,7 @@ TEST_F(SpeechRecognizerTest, NoSpeechCallbackIssued) {
                                         audio_packet_.size());
   }
   MessageLoop::current()->RunAllPending();
+  EXPECT_TRUE(audio_received_);
   EXPECT_FALSE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
@@ -334,6 +349,7 @@ TEST_F(SpeechRecognizerTest, NoSpeechCallbackNotIssued) {
 
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_NO_ERROR, error_);
+  EXPECT_TRUE(audio_received_);
   EXPECT_FALSE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
   recognizer_->CancelRecognition();

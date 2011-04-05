@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,7 @@ const int kInstructionLabelMaxWidth = 150;
                                 anchoredAt:anchoredAt])) {
     DCHECK(delegate);
     delegate_ = delegate;
+    displayMode_ = SpeechInputBubbleBase::DISPLAY_MODE_WARM_UP;
   }
   return self;
 }
@@ -72,13 +73,25 @@ const int kInstructionLabelMaxWidth = 150;
   if (![tryAgainButton_ isHidden])
     newWidth += tryAgainSize.width;
 
+  // The size of the bubble in warm up mode is fixed to be the same as in
+  // recording mode, so from warm up it can transition to recording without any
+  // UI jank.
+  bool isWarmUp = (displayMode_ ==
+                   SpeechInputBubbleBase::DISPLAY_MODE_WARM_UP);
+
   if (![iconImage_ isHidden]) {
     NSSize size = [[iconImage_ image] size];
+    if (isWarmUp) {
+      NSImage* volumeIcon =
+          ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+              IDR_SPEECH_INPUT_MIC_EMPTY);
+      size = [volumeIcon size];
+    }
     newHeight += size.height;
     newWidth = std::max(newWidth, size.width + 2 * kBubbleHorizontalMargin);
   }
 
-  if (![instructionLabel_ isHidden]) {
+  if (![instructionLabel_ isHidden] || isWarmUp) {
     [instructionLabel_ sizeToFit];
     NSSize textSize = [[instructionLabel_ cell] cellSize];
     NSRect boundsRect = NSMakeRect(0, 0, kInstructionLabelMaxWidth,
@@ -118,9 +131,11 @@ const int kInstructionLabelMaxWidth = 150;
     [tryAgainButton_ setFrame:tryAgainRect];
   }
   cancelRect.origin.y = y;
-  [cancelButton_ setFrame:cancelRect];
 
-  y += NSHeight(cancelRect) + kBubbleControlVerticalSpacing;
+  if (![cancelButton_ isHidden]) {
+    [cancelButton_ setFrame:cancelRect];
+    y += NSHeight(cancelRect) + kBubbleControlVerticalSpacing;
+  }
 
   NSRect rect;
   if (![micSettingsButton_ isHidden]) {
@@ -146,6 +161,9 @@ const int kInstructionLabelMaxWidth = 150;
 
   if (![iconImage_ isHidden]) {
     rect.size = [[iconImage_ image] size];
+    // In warm-up mode only the icon gets displayed so center it vertically.
+    if (displayMode_ == SpeechInputBubbleBase::DISPLAY_MODE_WARM_UP)
+      y = (size.height - rect.size.height) / 2;
     rect.origin.x = (size.width - NSWidth(rect)) / 2;
     rect.origin.y = y;
     [iconImage_ setFrame:rect];
@@ -153,34 +171,29 @@ const int kInstructionLabelMaxWidth = 150;
 }
 
 - (void)updateLayout:(SpeechInputBubbleBase::DisplayMode)mode
-         messageText:(const string16&)messageText {
+         messageText:(const string16&)messageText
+           iconImage:(NSImage*)iconImage {
   // The very first time this method is called, the child views would still be
   // uninitialized and null. So we invoke [self window] first and that sets up
   // the child views properly so we can do the layout calculations below.
   NSWindow* window = [self window];
+  displayMode_ = mode;
+  BOOL is_message = (mode == SpeechInputBubbleBase::DISPLAY_MODE_MESSAGE);
+  BOOL is_recording = (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING);
+  BOOL is_warm_up = (mode == SpeechInputBubbleBase::DISPLAY_MODE_WARM_UP);
+  [iconImage_ setHidden:is_message];
+  [tryAgainButton_ setHidden:!is_message];
+  [micSettingsButton_ setHidden:!is_message];
+  [instructionLabel_ setHidden:!is_message && !is_recording];
+  [cancelButton_ setHidden:is_warm_up];
 
   // Get the right set of controls to be visible.
-  if (mode == SpeechInputBubbleBase::DISPLAY_MODE_MESSAGE) {
+  if (is_message) {
     [instructionLabel_ setStringValue:base::SysUTF16ToNSString(messageText)];
-    [iconImage_ setHidden:YES];
-    [tryAgainButton_ setHidden:NO];
-    [instructionLabel_ setHidden:NO];
-    [micSettingsButton_ setHidden:NO];
   } else {
-    if (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING) {
-      [instructionLabel_ setStringValue:l10n_util::GetNSString(
-          IDS_SPEECH_INPUT_BUBBLE_HEADING)];
-      [instructionLabel_ setHidden:NO];
-      NSImage* icon = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-          IDR_SPEECH_INPUT_MIC_EMPTY);
-      [iconImage_ setImage:icon];
-    } else {
-      [instructionLabel_ setHidden:YES];
-    }
-    [iconImage_ setHidden:NO];
-    [iconImage_ setNeedsDisplay:YES];
-    [tryAgainButton_ setHidden:YES];
-    [micSettingsButton_ setHidden:YES];
+    [iconImage_ setImage:iconImage];
+    [instructionLabel_ setStringValue:l10n_util::GetNSString(
+        IDS_SPEECH_INPUT_BUBBLE_HEADING)];
   }
 
   NSSize newSize = [self calculateContentSize];

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 @interface SpeechInputWindowController : BaseBubbleController {
  @private
   SpeechInputBubble::Delegate* delegate_;  // weak.
+  SpeechInputBubbleBase::DisplayMode displayMode_;
 
   // References below are weak, being obtained from the nib.
   IBOutlet NSImageView* iconImage_;
@@ -41,7 +42,8 @@
 
 // Updates the UI with data related to the given display mode.
 - (void)updateLayout:(SpeechInputBubbleBase::DisplayMode)mode
-         messageText:(const string16&)messageText;
+         messageText:(const string16&)messageText
+           iconImage:(NSImage*)iconImage;
 
 // Makes the speech input bubble visible on screen.
 - (void)show;

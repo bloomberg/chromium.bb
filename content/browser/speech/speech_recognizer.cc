@@ -219,7 +219,8 @@ void SpeechRecognizer::HandleOnData(string* data) {
 
   if (request_ == NULL) {
     // This was the first audio packet recorded, so start a request to the
-    // server to send the data.
+    // server to send the data and inform the delegate.
+    delegate_->DidStartReceivingAudio(caller_id_);
     request_.reset(new SpeechRecognitionRequest(
         Profile::GetDefaultRequestContext(), this));
     request_->Start(language_, grammar_, hardware_info_, origin_url_,

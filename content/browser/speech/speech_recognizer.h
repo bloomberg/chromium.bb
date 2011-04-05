@@ -41,6 +41,10 @@ class SpeechRecognizer
         bool error,
         const SpeechInputResultArray& result) = 0;
 
+    // Invoked when the first audio packet was received from the audio capture
+    // device.
+    virtual void DidStartReceivingAudio(int caller_id) = 0;
+
     // Invoked when audio recording stops, either due to the end pointer
     // detecting silence in user input or if |StopRecording| was called. The
     // delegate has to wait until |DidCompleteRecognition| is invoked before

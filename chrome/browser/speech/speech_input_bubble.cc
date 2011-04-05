@@ -9,16 +9,26 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/skbitmap_operations.h"
+
+namespace {
+
+color_utils::HSL kGrayscaleShift = { -1, 0, 0.6 };
+
+SkBitmap* mic_full_ = NULL;  // Mic image with full volume.
+SkBitmap* mic_noise_ = NULL;  // Mic image with full noise volume.
+SkBitmap* mic_empty_ = NULL;  // Mic image with zero volume.
+SkBitmap* mic_mask_ = NULL;  // Gradient mask used by the volume indicator.
+SkBitmap* spinner_ = NULL;  // Spinner image for the progress animation.
+
+const int kWarmingUpAnimationStartMs = 500;
+const int kWarmingUpAnimationStepMs = 100;
+const int kRecognizingAnimationStepMs = 100;
+
+}  // namespace
 
 SpeechInputBubble::FactoryMethod SpeechInputBubble::factory_ = NULL;
 const int SpeechInputBubble::kBubbleTargetOffsetX = 10;
-
-SkBitmap* SpeechInputBubbleBase::mic_empty_ = NULL;
-SkBitmap* SpeechInputBubbleBase::mic_noise_ = NULL;
-SkBitmap* SpeechInputBubbleBase::mic_full_ = NULL;
-SkBitmap* SpeechInputBubbleBase::mic_mask_ = NULL;
-SkBitmap* SpeechInputBubbleBase::spinner_ = NULL;
-const int SpeechInputBubbleBase::kRecognizingAnimationStepMs = 100;
 
 SpeechInputBubble* SpeechInputBubble::Create(TabContents* tab_contents,
                                              Delegate* delegate,
@@ -65,6 +75,22 @@ SpeechInputBubbleBase::SpeechInputBubbleBase(TabContents* tab_contents)
   // horizontal/wide image. Each animation frame is square in shape within the
   // sprite.
   const int kFrameSize = spinner_->height();
+
+  // When recording starts up, it may take a short while (few ms or even a
+  // couple of seconds) before the audio device starts really capturing data.
+  // This is more apparent on first use. To cover such cases we show a warming
+  // up state in the bubble starting with a blank spinner image. If audio data
+  // starts coming in within a couple hundred ms, we switch to the recording
+  // UI and if it takes longer, we show the real warm up animation frames.
+  // This reduces visual jank for the most part.
+  // TODO(satish): Change this to create the frames only once on first use
+  // instead of keeping them as instance variables in every bubble.
+  SkBitmap empty_spinner;
+  empty_spinner.setConfig(SkBitmap::kARGB_8888_Config, kFrameSize, kFrameSize);
+  empty_spinner.allocPixels();
+  empty_spinner.eraseRGB(255, 255, 255);
+  warming_up_frames_.push_back(empty_spinner);
+
   for (SkIRect src_rect(SkIRect::MakeWH(kFrameSize, kFrameSize));
        src_rect.fLeft < spinner_->width();
        src_rect.offset(kFrameSize, 0)) {
@@ -79,6 +105,10 @@ SpeechInputBubbleBase::SpeechInputBubbleBase(TabContents* tab_contents)
     SkBitmap frame_copy;
     frame.copyTo(&frame_copy, SkBitmap::kARGB_8888_Config);
     animation_frames_.push_back(frame_copy);
+
+    // The warm up spinner animation is a gray scale version of the real one.
+    warming_up_frames_.push_back(SkBitmapOperations::CreateHSLShiftedBitmap(
+        frame_copy, kGrayscaleShift));
   }
 }
 
@@ -88,9 +118,30 @@ SpeechInputBubbleBase::~SpeechInputBubbleBase() {
   // member variables which they don't use.
 }
 
+void SpeechInputBubbleBase::SetWarmUpMode() {
+  task_factory_.RevokeAll();
+  display_mode_ = DISPLAY_MODE_WARM_UP;
+  animation_step_ = 0;
+  DoWarmingUpAnimationStep();
+  UpdateLayout();
+}
+
+void SpeechInputBubbleBase::DoWarmingUpAnimationStep() {
+  SetImage(warming_up_frames_[animation_step_]);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      task_factory_.NewRunnableMethod(
+          &SpeechInputBubbleBase::DoWarmingUpAnimationStep),
+      animation_step_ == 0 ? kWarmingUpAnimationStartMs
+                           : kWarmingUpAnimationStepMs);
+  if (++animation_step_ >= static_cast<int>(animation_frames_.size()))
+    animation_step_ = 1;  // Frame 0 is skipped during the animation.
+}
+
 void SpeechInputBubbleBase::SetRecordingMode() {
   task_factory_.RevokeAll();
   display_mode_ = DISPLAY_MODE_RECORDING;
+  SetInputVolume(0, 0);
   UpdateLayout();
 }
 
@@ -158,4 +209,13 @@ void SpeechInputBubbleBase::SetInputVolume(float volume, float noise_volume) {
 
 TabContents* SpeechInputBubbleBase::tab_contents() {
   return tab_contents_;
+}
+
+void SpeechInputBubbleBase::SetImage(const SkBitmap& image) {
+  icon_image_.reset(new SkBitmap(image));
+  UpdateImage();
+}
+
+SkBitmap SpeechInputBubbleBase::icon_image() {
+  return (icon_image_ != NULL) ? *icon_image_ : SkBitmap();
 }
