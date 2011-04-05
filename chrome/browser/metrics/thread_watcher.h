@@ -186,7 +186,7 @@ class ThreadWatcher {
   int ping_count_;
 
   // Histogram that keeps track of response times for the watched thread.
-  scoped_refptr<base::Histogram> histogram_;
+  base::Histogram* histogram_;
 
   // We use this factory to create callback tasks for ThreadWatcher object. We
   // use this during ping-pong messaging between WatchDog thread and watched

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,7 @@ bool MetricsHistogramHelperFunction::RecordValue(const std::string& name,
                                                  size_t buckets,
                                                  int sample) {
   std::string full_name = BuildMetricName(name, GetExtension());
-  scoped_refptr<Histogram> counter;
+  Histogram* counter;
   if (type == Histogram::LINEAR_HISTOGRAM) {
     counter = LinearHistogram::FactoryGet(full_name,
                                           min,

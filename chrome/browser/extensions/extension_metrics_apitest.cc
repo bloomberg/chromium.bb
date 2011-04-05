@@ -123,7 +123,7 @@ void ValidateHistograms(const Extension* extension,
 
     size_t j = 0;
     for (j = 0; j < histograms.size(); ++j) {
-      scoped_refptr<base::Histogram> histogram(histograms[j]);
+      base::Histogram* histogram(histograms[j]);
 
       if (name == histogram->histogram_name()) {
         EXPECT_EQ(r.type, histogram->histogram_type());

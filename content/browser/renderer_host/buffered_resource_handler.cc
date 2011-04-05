@@ -29,21 +29,24 @@ namespace {
 void RecordSnifferMetrics(bool sniffing_blocked,
                           bool we_would_like_to_sniff,
                           const std::string& mime_type) {
-  scoped_refptr<base::Histogram> nosniff_usage =
-      base::BooleanHistogram::FactoryGet(
-          "nosniff.usage", base::Histogram::kUmaTargetedHistogramFlag);
+  static base::Histogram* nosniff_usage(NULL);
+  if (!nosniff_usage)
+    nosniff_usage = base::BooleanHistogram::FactoryGet(
+        "nosniff.usage", base::Histogram::kUmaTargetedHistogramFlag);
   nosniff_usage->AddBoolean(sniffing_blocked);
 
   if (sniffing_blocked) {
-    scoped_refptr<base::Histogram> nosniff_otherwise =
-        base::BooleanHistogram::FactoryGet(
-            "nosniff.otherwise", base::Histogram::kUmaTargetedHistogramFlag);
+    static base::Histogram* nosniff_otherwise(NULL);
+    if (!nosniff_otherwise)
+      nosniff_otherwise = base::BooleanHistogram::FactoryGet(
+          "nosniff.otherwise", base::Histogram::kUmaTargetedHistogramFlag);
     nosniff_otherwise->AddBoolean(we_would_like_to_sniff);
 
-    scoped_refptr<base::Histogram> nosniff_empty_mime_type =
-        base::BooleanHistogram::FactoryGet(
-            "nosniff.empty_mime_type",
-            base::Histogram::kUmaTargetedHistogramFlag);
+    static base::Histogram* nosniff_empty_mime_type(NULL);
+    if (!nosniff_empty_mime_type)
+      nosniff_empty_mime_type = base::BooleanHistogram::FactoryGet(
+          "nosniff.empty_mime_type",
+          base::Histogram::kUmaTargetedHistogramFlag);
     nosniff_empty_mime_type->AddBoolean(mime_type.empty());
   }
 }

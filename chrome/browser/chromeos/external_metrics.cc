@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,7 +86,7 @@ void ExternalMetrics::RecordHistogram(const char* histogram_data) {
   }
   // Do not use the UMA_HISTOGRAM_... macros here.  They cache the Histogram
   // instance and thus only work if |name| is constant.
-  scoped_refptr<base::Histogram> counter = base::Histogram::FactoryGet(
+  base::Histogram* counter = base::Histogram::FactoryGet(
       name, min, max, nbuckets, base::Histogram::kUmaTargetedHistogramFlag);
   counter->Add(sample);
 }
@@ -101,7 +101,7 @@ void ExternalMetrics::RecordLinearHistogram(const char* histogram_data) {
   }
   // Do not use the UMA_HISTOGRAM_... macros here.  They cache the Histogram
   // instance and thus only work if |name| is constant.
-  scoped_refptr<base::Histogram> counter = base::LinearHistogram::FactoryGet(
+  base::Histogram* counter = base::LinearHistogram::FactoryGet(
       name, 1, max, max + 1, base::Histogram::kUmaTargetedHistogramFlag);
   counter->Add(sample);
 }

@@ -259,7 +259,7 @@ void BootTimesLoader::WriteTimes(
   base::Time first = login_times.front().time();
   base::Time last = login_times.back().time();
   base::TimeDelta total = last - first;
-  scoped_refptr<base::Histogram>total_hist = base::Histogram::FactoryTimeGet(
+  base::Histogram* total_hist = base::Histogram::FactoryTimeGet(
       uma_name,
       base::TimeDelta::FromMilliseconds(kMinTimeMillis),
       base::TimeDelta::FromMilliseconds(kMaxTimeMillis),
@@ -277,7 +277,7 @@ void BootTimesLoader::WriteTimes(
 
     if (tm.send_to_uma()) {
       name = uma_prefix + tm.name();
-      scoped_refptr<base::Histogram>prev_hist = base::Histogram::FactoryTimeGet(
+      base::Histogram* prev_hist = base::Histogram::FactoryTimeGet(
           name,
           base::TimeDelta::FromMilliseconds(kMinTimeMillis),
           base::TimeDelta::FromMilliseconds(kMaxTimeMillis),

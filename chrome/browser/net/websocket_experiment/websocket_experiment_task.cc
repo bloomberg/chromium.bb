@@ -173,7 +173,6 @@ static Histogram* GetEnumsHistogramForConfig(
   Histogram* counter = LinearHistogram::FactoryGet(
       counter_name, 1, boundary_value, boundary_value + 1,
       Histogram::kUmaTargetedHistogramFlag);
-  counter->AddRef();  // Released in ReleaseHistogram().
   g_histogram_table->insert(std::make_pair(counter_name, counter));
   return counter;
 }
@@ -194,7 +193,6 @@ static Histogram* GetTimesHistogramForConfig(
   Histogram* counter = Histogram::FactoryTimeGet(
       counter_name, min, max, bucket_count,
       Histogram::kUmaTargetedHistogramFlag);
-  counter->AddRef();  // Released in ReleaseHistogram().
   g_histogram_table->insert(std::make_pair(counter_name, counter));
   return counter;
 }
@@ -223,15 +221,6 @@ static void UpdateHistogramTimes(
 /* static */
 void WebSocketExperimentTask::ReleaseHistogram() {
   DCHECK(g_histogram_table);
-  for (base::hash_map<std::string, Histogram*>::iterator iter =
-           g_histogram_table->begin();
-       iter != g_histogram_table->end();
-       ++iter) {
-    Histogram* counter = iter->second;
-    if (counter != NULL)
-      counter->Release();
-    iter->second = NULL;
-  }
   delete g_histogram_table;
   g_histogram_table = NULL;
 }

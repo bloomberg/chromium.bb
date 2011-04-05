@@ -28,6 +28,7 @@ ThreadWatcher::ThreadWatcher(const BrowserThread::ID& thread_id,
       ping_sequence_number_(0),
       active_(false),
       ping_count_(kPingCount),
+      histogram_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   Initialize();
 }

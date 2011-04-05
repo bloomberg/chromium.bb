@@ -877,6 +877,20 @@
    fun:PL_ArenaAllocate
    fun:PORT_ArenaAlloc_Util
 }
+{
+   # Histograms are used on un-joined threads, and can't be deleted atexit.
+   Histograms via FactoryGet including Linear Custom Boolean and Basic
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base*Histogram10FactoryGet*
+}
+{
+   # Histograms are used on un-joined threads, and can't be deleted atexit.
+   Histograms via FactoryGet including Stats for disk_cache
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10disk_cache14StatsHistogram24StatsHistogramFactoryGet*
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.

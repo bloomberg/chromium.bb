@@ -2238,7 +2238,7 @@ TEST(CookieMonsterTest, HistogramCheck) {
   // Should match call in InitializeHistograms, but doesn't really matter
   // since the histogram should have been initialized by the CM construction
   // above.
-  scoped_refptr<base::Histogram> expired_histogram =
+  base::Histogram* expired_histogram =
       base::Histogram::FactoryGet(
           "Cookie.ExpirationDurationMinutes", 1, 10 * 365 * 24 * 60, 50,
           base::Histogram::kUmaTargetedHistogramFlag);

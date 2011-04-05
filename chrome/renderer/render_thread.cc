@@ -798,13 +798,9 @@ static void* CreateHistogram(
     const char *name, int min, int max, size_t buckets) {
   if (min <= 0)
     min = 1;
-  scoped_refptr<base::Histogram> histogram = base::Histogram::FactoryGet(
+  base::Histogram* histogram = base::Histogram::FactoryGet(
       name, min, max, buckets, base::Histogram::kUmaTargetedHistogramFlag);
-  // We'll end up leaking these histograms, unless there is some code hiding in
-  // there to do the dec-ref.
-  // TODO(jar): Handle reference counting in webkit glue.
-  histogram->AddRef();
-  return histogram.get();
+  return histogram;
 }
 
 static void AddHistogramSample(void* hist, int sample) {

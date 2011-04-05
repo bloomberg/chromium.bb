@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,16 +22,14 @@ void addLibcrosTimeHistogram(const char* name, const base::TimeDelta& delta) {
   static const base::TimeDelta max_time = base::TimeDelta::FromSeconds(1);
   const size_t bucket_count(10);
   DCHECK(name);
-  scoped_refptr<base::Histogram> counter = base::Histogram::FactoryTimeGet(
+  base::Histogram* counter = base::Histogram::FactoryTimeGet(
       std::string(name),
       min_time,
       max_time,
       bucket_count,
       base::Histogram::kNoFlags);
-  if (counter.get()) {
-    counter->AddTime(delta);
-    VLOG(1) << "Cros Time: " << name << ": " << delta.InMilliseconds() << "ms.";
-  }
+  counter->AddTime(delta);
+  VLOG(1) << "Cros Time: " << name << ": " << delta.InMilliseconds() << "ms.";
 }
 
 }  // namespace
