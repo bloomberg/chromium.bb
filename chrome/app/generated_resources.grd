@@ -9836,6 +9836,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
         network password
       </message>
 
+      <message name="IDS_NETWORK_OTHER_MOBILE_NETWORK" desc="Text for the item in the network menu, which changes current mobile network.">
+        Other mobile network...
+      </message>
+      <message name="IDS_NETWORK_CHOOSE_MOBILE_NETWORK" desc="Title of the window for choosing mobile network.">
+        Choose a Mobile Network
+      </message>
+      <message name="IDS_NETWORK_SCANNING_FOR_MOBILE_NETWORKS" desc="Text which appears while scanning for mobile networks.">
+        Scanning for networks.
+      </message>
+      <message name="IDS_NETWORK_SCANNING_THIS_MAY_TAKE_A_MINUTE" desc="Text which appears while scanning for mobile networks, right after IDS_NETWORK_SCANNING_FOR_MOBILE_NETWORKS text.">
+        This may take a minute...
+      </message>
+
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_SERVICE_NAME" desc="Cellular service name under network details in chrome:settings/internet.">
         Service name:
       </message>
