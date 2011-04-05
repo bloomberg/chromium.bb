@@ -198,20 +198,18 @@ TEST_F(DesktopNotificationServiceTest, DenyPermissionSentToCache) {
 TEST_F(DesktopNotificationServiceTest, PrefChangesSentToCache) {
   PrefService* prefs = profile()->GetPrefs();
 
-  ListValue* allowed_sites =
-      prefs->GetMutableList(prefs::kDesktopNotificationAllowedOrigins);
   {
-    allowed_sites->Append(new StringValue(GURL("http://allowed.com").spec()));
-    ScopedUserPrefUpdate updateAllowed(
+    ListPrefUpdate update_allowed_origins(
         prefs, prefs::kDesktopNotificationAllowedOrigins);
+    ListValue* allowed_origins = update_allowed_origins.Get();
+    allowed_origins->Append(new StringValue(GURL("http://allowed.com").spec()));
   }
 
-  ListValue* denied_sites =
-      prefs->GetMutableList(prefs::kDesktopNotificationDeniedOrigins);
   {
-    denied_sites->Append(new StringValue(GURL("http://denied.com").spec()));
-    ScopedUserPrefUpdate updateDenied(
+    ListPrefUpdate update_denied_origins(
         prefs, prefs::kDesktopNotificationDeniedOrigins);
+    ListValue* denied_origins = update_denied_origins.Get();
+    denied_origins->Append(new StringValue(GURL("http://denied.com").spec()));
   }
 
   EXPECT_EQ(WebKit::WebNotificationPresenter::PermissionAllowed,
