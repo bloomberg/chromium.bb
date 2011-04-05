@@ -965,22 +965,40 @@ build-with-newlib:
 # Newlib toolchain for buildbot.
 .PHONY: buildbot-build-with-newlib
 buildbot-build-with-newlib: | \
-  pinned-src-binutils \
-  pinned-src-gcc \
+  buildbot-mark-version \
   pinned-src-newlib \
-  pinned-src-gdb
 	find SRC -print0 | xargs -0 touch -r SRC
 	$(MAKE) -f $(THISMAKEFILE) build-with-newlib
 
 # Glibc toolchain for buildbot.
 .PHONY: buildbot-build-with-glibc
 buildbot-build-with-glibc: | \
-  pinned-src-binutils \
-  pinned-src-gcc \
+  buildbot-mark-version \
   pinned-src-glibc \
   pinned-src-linux-headers-for-nacl
 	find SRC -print0 | xargs -0 touch -r SRC
 	$(MAKE) -f $(THISMAKEFILE) build-with-glibc
+
+.PHONY: buildbot-mark-version
+buildbot-mark-version: | \
+  pinned-src-binutils \
+  pinned-src-gcc \
+  pinned-src-gdb
+	cd SRC/binutils
+	printf -- "--- SRC/binutils/bfd/version.h\n\
+	+++ SRC/binutils/bfd/version.h\n\
+	@@ -3 +3 @@\n\
+	-#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@\n\
+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \" `LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1-\2-\3+'` (Native Client r`LC_ALL=C svnversion`, Git Commit `cd SRC/binutils ; LC_ALL=C git log | head -n 1 | sed -e s'|commit ||'`)\"\n" |\
+	patch -p0
+	LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1-\2-\3+' > SRC/gcc/gcc/DATESTAMP
+	echo "Native Client r`LC_ALL=C svnversion`, Git Commit `cd SRC/gcc ; LC_ALL=C git log | head -n 1 | sed -e s'|commit ||'`" > SRC/gcc/gcc/DEV-PHASE
+	printf -- "--- SRC/gdb/gdb/version.in\n\
+	+++ SRC/gdb/gdb/version.in\n\
+	@@ -1 +1 @@\n\
+	-`cat SRC/gdb/gdb/version.in`\n\
+	+`cat SRC/gdb/gdb/version.in` `LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1-\2-\3+'` (Native Client r`LC_ALL=C svnversion`, Git Commit `cd SRC/binutils ; LC_ALL=C git log | head -n 1 | sed -e s'|commit ||'`)\n" |\
+	patch -p0
 
 ##################################################################
 # Run DejaGnu tests.

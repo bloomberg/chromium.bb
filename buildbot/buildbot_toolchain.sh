@@ -38,7 +38,7 @@ rm -rf ../scons-out sdk-out sdk ../toolchain SRC BUILD
 echo @@@BUILD_STEP compile_toolchain@@@
 mkdir -p ../toolchain/${PLATFORM}_x86
 if [[ ${PLATFORM} == win ]]; then
-  make -j2 clean buildbot-build-with-newlib
+  make clean buildbot-build-with-newlib
 else
   make -j8 clean buildbot-build-with-newlib
 fi
