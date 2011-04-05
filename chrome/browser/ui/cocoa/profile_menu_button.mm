@@ -215,9 +215,9 @@ NSColor* GetBlackWithAlpha(CGFloat alpha) {
   // White shadow for inset look
   [[NSGraphicsContext currentContext] saveGraphicsState];
   scoped_nsobject<NSShadow> tabShadow([[NSShadow alloc] init]);
-  [tabShadow setShadowOffset:NSMakeSize(0, -1)];
+  [tabShadow.get() setShadowOffset:NSMakeSize(0, -1)];
   [tabShadow setShadowBlurRadius:0];
-  [tabShadow setShadowColor:GetWhiteWithAlpha(0.6)];
+  [tabShadow.get() setShadowColor:GetWhiteWithAlpha(0.6)];
   [tabShadow set];
 
   // Gray outline
@@ -254,9 +254,9 @@ NSColor* GetBlackWithAlpha(CGFloat alpha) {
   // Arrow shadow
   [[NSGraphicsContext currentContext] saveGraphicsState];
   scoped_nsobject<NSShadow> arrowShadow([[NSShadow alloc] init]);
-  [arrowShadow setShadowOffset:NSMakeSize(0, -1)];
+  [arrowShadow.get() setShadowOffset:NSMakeSize(0, -1)];
   [arrowShadow setShadowBlurRadius:0];
-  [arrowShadow setShadowColor:GetBlackWithAlpha(0.6)];
+  [arrowShadow.get() setShadowColor:GetBlackWithAlpha(0.6)];
   [arrowShadow set];
 
   // Down arrow
