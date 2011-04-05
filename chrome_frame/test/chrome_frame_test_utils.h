@@ -141,8 +141,7 @@ class HungCOMCallDetector
                                     DWORD tick_count,
                                     DWORD pending_type) {
     MSG msg = {0};
-    if (PeekMessage(&msg, m_hWnd, WM_TIMER, WM_TIMER, PM_NOREMOVE)) {
-      is_hung_ = true;
+    if (is_hung_) {
       return PENDINGMSG_CANCELCALL;
     }
     return PENDINGMSG_WAITDEFPROCESS;
@@ -153,6 +152,7 @@ class HungCOMCallDetector
   }
 
   LRESULT OnTimer(UINT msg, WPARAM wp, LPARAM lp, BOOL& handled) {  // NOLINT
+    is_hung_ = true;
     return 1;
   }
 
@@ -176,7 +176,7 @@ class HungCOMCallDetector
     }
 
     static const int kHungDetectTimerId = 0x0000baba;
-    SetTimer(kHungDetectTimerId, 1000 * (timeout_seconds + 20), NULL);
+    SetTimer(kHungDetectTimerId, 1000 * (timeout_seconds + 40), NULL);
     return S_OK;
   }
 
