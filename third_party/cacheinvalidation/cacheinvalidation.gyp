@@ -7,6 +7,9 @@
 
 {
   'variables': {
+    # This library should build cleanly with the extra warnings turned on
+    # for Chromium.
+    'chromium_code': 1,
     # The root directory for the proto files.
     'proto_dir_root': 'files/src',
     # The relative path of the cacheinvalidation proto files from
