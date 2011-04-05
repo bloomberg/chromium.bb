@@ -33,8 +33,14 @@ long long SyncReadUInt(IMkvReader*, long long pos, long long stop, long&);
 long long UnserializeUInt(IMkvReader*, long long pos, long long size);
 float Unserialize4Float(IMkvReader*, long long);
 double Unserialize8Double(IMkvReader*, long long);
+
+#if 0
 short Unserialize2SInt(IMkvReader*, long long);
 signed char Unserialize1SInt(IMkvReader*, long long);
+#else
+long UnserializeInt(IMkvReader*, long long pos, long len, long long& result);
+#endif
+
 bool Match(IMkvReader*, long long&, unsigned long, long long&);
 bool Match(IMkvReader*, long long&, unsigned long, char*&);
 bool Match(IMkvReader*, long long&, unsigned long, unsigned char*&, size_t&);

@@ -345,6 +345,8 @@ double mkvparser::Unserialize8Double(
     return result;
 }
 
+
+#if 0
 signed char mkvparser::Unserialize1SInt(
     IMkvReader* pReader,
     long long pos)
@@ -427,7 +429,49 @@ short mkvparser::Unserialize2SInt(
 
     return result;
 }
+#else
+long mkvparser::UnserializeInt(
+    IMkvReader* pReader,
+    long long pos,
+    long size,
+    long long& result)
+{
+    assert(pReader);
+    assert(pos >= 0);
+    assert(size > 0);
+    assert(size <= 8);
 
+    {
+        signed char b;
+
+        const long status = pReader->Read(pos, 1, (unsigned char*)&b);
+
+        if (status < 0)
+            return status;
+
+        result = b;
+
+        ++pos;
+    }
+
+    for (long i = 1; i < size; ++i)
+    {
+        unsigned char b;
+
+        const long status = pReader->Read(pos, 1, &b);
+
+        if (status < 0)
+            return status;
+
+        result <<= 8;
+        result |= b;
+
+        ++pos;
+    }
+
+    return 0;  //success
+}
+#endif
 
 bool mkvparser::Match(
     IMkvReader* pReader,
@@ -648,7 +692,7 @@ bool mkvparser::Match(
 
     long long total, available;
 
-    const long status = pReader->Length(&total, &available);
+    long status = pReader->Length(&total, &available);
     assert(status >= 0);
     assert((total < 0) || (available <= total));
 
@@ -662,19 +706,24 @@ bool mkvparser::Match(
 
     pos += len;  //consume id
 
-    const long long size = ReadUInt(pReader, pos, len);
-    assert(size <= 2);
+    const long long size_ = ReadUInt(pReader, pos, len);
+    assert(size_ >= 1);
+    assert(size_ <= 2);
     assert((pos + len) <= available);
 
     pos += len;  //consume length of size of payload
-    assert((pos + size) <= available);
+    assert((pos + size_) <= available);
 
-    //TODO:
-    // Generalize this to work for any size signed int
-    if (size == 1)
-        val = Unserialize1SInt(pReader, pos);
-    else
-        val = Unserialize2SInt(pReader, pos);
+    const long size = static_cast<long>(size_);
+
+    long long value;
+
+    status = UnserializeInt(pReader, pos, size, value);
+    assert(status == 0);
+    assert(value >= SHRT_MIN);
+    assert(value <= SHRT_MAX);
+
+    val = static_cast<short>(value);
 
     pos += size;  //consume size of payload
 
@@ -7894,12 +7943,25 @@ Block::Block(long long start, long long size_, IMkvReader* pReader) :
     pos += len;  //consume track number
     assert((stop - pos) >= 2);
 
+    long status;
+
+#if 0
     m_timecode = Unserialize2SInt(pReader, pos);
+#else
+    long long value;
+
+    status = UnserializeInt(pReader, pos, 2, value);
+    assert(status == 0);
+    assert(value >= SHRT_MIN);
+    assert(value <= SHRT_MAX);
+
+    m_timecode = static_cast<short>(value);
+#endif
 
     pos += 2;
     assert((stop - pos) >= 1);
 
-    long status = pReader->Read(pos, 1, &m_flags);
+    status = pReader->Read(pos, 1, &m_flags);
     assert(status == 0);
 
 #if 0
