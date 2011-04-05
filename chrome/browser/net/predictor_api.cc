@@ -21,6 +21,7 @@
 #include "chrome/browser/net/url_info.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -407,7 +408,7 @@ static void InitNetworkPredictor(TimeDelta max_dns_queue_delay,
       GetPredictedUrlListAtStartup(user_prefs, local_state);
 
   ListValue* referral_list =
-      static_cast<ListValue*>(user_prefs->GetMutableList(
+      static_cast<ListValue*>(user_prefs->GetList(
           prefs::kDnsPrefetchingHostReferralList)->DeepCopy());
 
   // Remove obsolete preferences from local state if necessary.
@@ -484,14 +485,19 @@ void SavePredictorStateForNextStartupAndTrim(PrefService* prefs) {
 
   base::WaitableEvent completion(true, false);
 
+  ListPrefUpdate update_startup_list(prefs, prefs::kDnsPrefetchingStartupList);
+  ListPrefUpdate update_referral_list(prefs,
+                                      prefs::kDnsPrefetchingHostReferralList);
   bool posted = BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
       NewRunnableFunction(SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread,
-          prefs->GetMutableList(prefs::kDnsPrefetchingStartupList),
-          prefs->GetMutableList(prefs::kDnsPrefetchingHostReferralList),
+          update_startup_list.Get(),
+          update_referral_list.Get(),
           &completion));
 
+  // TODO(jar): Synchronous waiting for the IO thread is a potential source
+  // to deadlocks and should be investigated. See http://crbug.com/78451.
   DCHECK(posted);
   if (posted)
     completion.Wait();
@@ -505,11 +511,11 @@ static UrlList GetPredictedUrlListAtStartup(PrefService* user_prefs,
   // This may catch secondary hostnames, pulled in by the homepages.  It will
   // also catch more of the "primary" home pages, since that was (presumably)
   // rendered first (and will be rendered first this time too).
-  ListValue* startup_list =
-      user_prefs->GetMutableList(prefs::kDnsPrefetchingStartupList);
+  const ListValue* startup_list =
+      user_prefs->GetList(prefs::kDnsPrefetchingStartupList);
 
   if (startup_list) {
-    ListValue::iterator it = startup_list->begin();
+    ListValue::const_iterator it = startup_list->begin();
     int format_version = -1;
     if (it != startup_list->end() &&
         (*it)->GetAsInteger(&format_version) &&
