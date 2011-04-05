@@ -155,9 +155,12 @@ bool PrerenderManager::AddPreload(const GURL& url,
   // have to use an existing one.  We do not want prerendering to happen in
   // a shared process, so that we can always reliably lower the CPU
   // priority for prerendering.
+  // In single-process mode, ShouldTryToUseExistingProcessHost() always returns
+  // true, so that case needs to be explicitly checked for.
   // TODO(tburkard): Figure out how to cancel prerendering in the opposite
   // case, when a new tab is added to a process used for prerendering.
-  if (RenderProcessHost::ShouldTryToUseExistingProcessHost()) {
+  if (RenderProcessHost::ShouldTryToUseExistingProcessHost() &&
+      !RenderProcessHost::run_renderer_in_process()) {
     // Only record the status if we are not in the control group.
     if (!IsControlGroup())
       RecordFinalStatus(FINAL_STATUS_TOO_MANY_PROCESSES);
