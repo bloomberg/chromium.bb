@@ -79,6 +79,10 @@ cr.define('gpu', function() {
           {
             description: 'Chrome version',
             value: chromeVersion
+          },
+          {
+            description: 'Software rendering list version',
+            value: this.clientInfo_.blacklist_version
           }]);
       } else {
         this.setText_('client-info', '... loading...');

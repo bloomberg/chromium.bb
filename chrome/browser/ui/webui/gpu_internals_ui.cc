@@ -248,7 +248,7 @@ void GpuMessageHandler::OnBrowserBridgeInitialized(const ListValue* args) {
 
   // Watch for changes in GPUInfo
   gpu_info_update_callback_ =
-    NewCallback(this, &GpuMessageHandler::OnGpuInfoUpdate);
+      NewCallback(this, &GpuMessageHandler::OnGpuInfoUpdate);
   gpu_data_manager_->AddGpuInfoUpdateCallback(gpu_info_update_callback_);
 
   // Tell GpuDataManager it should have full GpuInfo. If the
@@ -274,16 +274,19 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
     dict->SetString("version", version_info.Version());
     dict->SetString("cl", version_info.LastChange());
     dict->SetString("version_mod",
-      platform_util::GetVersionStringModifier());
+        platform_util::GetVersionStringModifier());
     dict->SetString("official",
-      l10n_util::GetStringUTF16(
-      version_info.IsOfficialBuild() ?
-      IDS_ABOUT_VERSION_OFFICIAL
-      : IDS_ABOUT_VERSION_UNOFFICIAL));
+        l10n_util::GetStringUTF16(
+            version_info.IsOfficialBuild() ?
+            IDS_ABOUT_VERSION_OFFICIAL :
+            IDS_ABOUT_VERSION_UNOFFICIAL));
 
     dict->SetString("command_line",
-      CommandLine::ForCurrentProcess()->command_line_string());
+        CommandLine::ForCurrentProcess()->command_line_string());
   }
+
+  dict->SetString("blacklist_version",
+      GpuDataManager::GetInstance()->GetBlacklistVersion());
 
   return dict;
 }

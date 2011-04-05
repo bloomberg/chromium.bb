@@ -7,6 +7,7 @@
 #pragma once
 
 #include <set>
+#include <string>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -36,6 +37,8 @@ class GpuDataManager {
   // Returns blacklisting reasons structure from gpu_blacklist or NULL
   // if not blacklisted. Caller is responsible for deleting returned value.
   Value* GetBlacklistingReasons() const;
+
+  std::string GetBlacklistVersion() const;
 
   void AddLogMessage(Value* msg);
 

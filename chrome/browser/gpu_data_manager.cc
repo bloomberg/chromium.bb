@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -91,6 +92,21 @@ Value* GpuDataManager::GetBlacklistingReasons() const {
   if (gpu_feature_flags_.flags() != 0 && gpu_blacklist_.get())
     return gpu_blacklist_->GetBlacklistingReasons();
   return NULL;
+}
+
+std::string GpuDataManager::GetBlacklistVersion() const {
+  if (gpu_blacklist_.get() != NULL) {
+    uint16 version_major, version_minor;
+    if (gpu_blacklist_->GetVersion(&version_major,
+                                   &version_minor)) {
+      std::string version_string =
+          base::UintToString(static_cast<unsigned>(version_major)) +
+          "." +
+          base::UintToString(static_cast<unsigned>(version_minor));
+      return version_string;
+    }
+  }
+  return "";
 }
 
 void GpuDataManager::AddLogMessage(Value* msg) {
