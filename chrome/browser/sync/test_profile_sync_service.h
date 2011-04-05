@@ -42,7 +42,7 @@ class SyncBackendHostForProfileSyncTest
 
   MOCK_METHOD0(RequestPause, bool());
   MOCK_METHOD0(RequestResume, bool());
-  MOCK_METHOD0(RequestNudge, void());
+  MOCK_METHOD1(RequestNudge, void(const tracked_objects::Location&));
 
   virtual void ConfigureDataTypes(
       const DataTypeController::TypeMap& data_type_controllers,
@@ -50,7 +50,8 @@ class SyncBackendHostForProfileSyncTest
       CancelableTask* ready_task);
 
   // Called when a nudge comes in.
-  void SimulateSyncCycleCompletedInitialSyncEnded();
+  void SimulateSyncCycleCompletedInitialSyncEnded(
+      const tracked_objects::Location&);
 
   virtual sync_api::HttpPostProviderFactory* MakeHttpBridgeFactory(
       net::URLRequestContextGetter* getter);

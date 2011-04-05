@@ -34,6 +34,7 @@ ACTION_P(CallOnResumed, core) {
 
 namespace browser_sync {
 
+using ::testing::_;
 SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     Profile* profile,
     bool set_initial_sync_ended_on_init,
@@ -48,14 +49,14 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
   ON_CALL(*this, RequestResume()).
       WillByDefault(testing::DoAll(CallOnResumed(core_),
                                    testing::Return(true)));
-  ON_CALL(*this, RequestNudge()).WillByDefault(
+  ON_CALL(*this, RequestNudge(_)).WillByDefault(
       testing::Invoke(this,
                       &SyncBackendHostForProfileSyncTest::
                       SimulateSyncCycleCompletedInitialSyncEnded));
 
   EXPECT_CALL(*this, RequestPause()).Times(testing::AnyNumber());
   EXPECT_CALL(*this, RequestResume()).Times(testing::AnyNumber());
-  EXPECT_CALL(*this, RequestNudge()).Times(testing::AnyNumber());
+  EXPECT_CALL(*this, RequestNudge(_)).Times(testing::AnyNumber());
 }
 
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
@@ -70,7 +71,8 @@ void SyncBackendHostForProfileSyncTest::ConfigureDataTypes(
 }
 
 void SyncBackendHostForProfileSyncTest::
-    SimulateSyncCycleCompletedInitialSyncEnded() {
+    SimulateSyncCycleCompletedInitialSyncEnded(
+    const tracked_objects::Location& location) {
   syncable::ModelTypeBitSet sync_ended;
   ModelSafeRoutingInfo enabled_types;
   GetModelSafeRoutingInfo(&enabled_types);

@@ -68,10 +68,12 @@ class SyncerThread : public sessions::SyncSession::Delegate,
 
   // The meat and potatoes.
   void ScheduleNudge(const base::TimeDelta& delay, NudgeSource source,
-                     const syncable::ModelTypeBitSet& types);
+                     const syncable::ModelTypeBitSet& types,
+                     const tracked_objects::Location& nudge_location);
   void ScheduleNudgeWithPayloads(
       const base::TimeDelta& delay, NudgeSource source,
-      const syncable::ModelTypePayloadMap& types_with_payloads);
+      const syncable::ModelTypePayloadMap& types_with_payloads,
+      const tracked_objects::Location& nudge_location);
   void ScheduleConfig(const syncable::ModelTypeBitSet& types);
   void ScheduleClearUserData();
 
@@ -136,7 +138,8 @@ class SyncerThread : public sessions::SyncSession::Delegate,
   // Helper to assemble a job and post a delayed task to sync.
   void ScheduleSyncSessionJob(const base::TimeDelta& delay,
                               SyncSessionJobPurpose purpose,
-                              sessions::SyncSession* session);
+                              sessions::SyncSession* session,
+                              const tracked_objects::Location& nudge_location);
 
   // Invoke the Syncer to perform a sync.
   void DoSyncSessionJob(const SyncSessionJob& job);
@@ -170,7 +173,8 @@ class SyncerThread : public sessions::SyncSession::Delegate,
   void ScheduleNudgeImpl(
       const base::TimeDelta& delay,
       NudgeSource source,
-      const syncable::ModelTypePayloadMap& types_with_payloads);
+      const syncable::ModelTypePayloadMap& types_with_payloads,
+      const tracked_objects::Location& nudge_location);
   void ScheduleConfigImpl(const ModelSafeRoutingInfo& routing_info,
                           const std::vector<ModelSafeWorker*>& workers);
   void ScheduleClearUserDataImpl();

@@ -99,7 +99,8 @@ class SyncerThread2Test : public testing::Test {
   bool GetBackoffAndResetTest(base::WaitableEvent* done) {
     syncable::ModelTypeBitSet nudge_types;
     syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-    syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, nudge_types);
+    syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, nudge_types,
+                                   FROM_HERE);
     done->TimedWait(timeout());
     TearDown();
     done->Reset();
@@ -198,7 +199,8 @@ TEST_F(SyncerThread2Test, Nudge) {
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
           WithArg<0>(RecordSyncShare(&records, 1U, &done))))
       .RetiresOnSaturation();
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, model_types);
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, model_types,
+                                 FROM_HERE);
   done.TimedWait(timeout());
 
   EXPECT_EQ(1U, records.snapshots.size());
@@ -214,7 +216,8 @@ TEST_F(SyncerThread2Test, Nudge) {
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
           WithArg<0>(RecordSyncShare(&records2, 1U, &done))));
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, model_types);
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, model_types,
+                                 FROM_HERE);
   done.TimedWait(timeout());
 
   EXPECT_EQ(1U, records2.snapshots.size());
@@ -238,9 +241,12 @@ TEST_F(SyncerThread2Test, NudgeCoalescing) {
   types3[syncable::THEMES] = true;
   TimeDelta delay = TimeDelta::FromMilliseconds(20);
   TimeTicks optimal_time = TimeTicks::Now() + delay;
-  syncer_thread()->ScheduleNudge(delay, NUDGE_SOURCE_UNKNOWN, types1);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, types2);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_NOTIFICATION, types3);
+  syncer_thread()->ScheduleNudge(delay, NUDGE_SOURCE_UNKNOWN, types1,
+                                 FROM_HERE);
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, types2,
+                                 FROM_HERE);
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_NOTIFICATION, types3,
+                                 FROM_HERE);
   done.TimedWait(timeout());
 
   EXPECT_EQ(1U, r.snapshots.size());
@@ -255,7 +261,8 @@ TEST_F(SyncerThread2Test, NudgeCoalescing) {
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
            WithArg<0>(RecordSyncShare(&r2, 1U, &done))));
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_NOTIFICATION, types3);
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_NOTIFICATION, types3,
+                                 FROM_HERE);
   done.TimedWait(timeout());
   EXPECT_EQ(1U, r2.snapshots.size());
   EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(types3,
@@ -277,7 +284,7 @@ TEST_F(SyncerThread2Test, NudgeWithPayloads) {
           WithArg<0>(RecordSyncShare(&records, 1U, &done))))
       .RetiresOnSaturation();
   syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_LOCAL,
-      model_types_with_payloads);
+      model_types_with_payloads, FROM_HERE);
   done.TimedWait(timeout());
 
   EXPECT_EQ(1U, records.snapshots.size());
@@ -293,7 +300,7 @@ TEST_F(SyncerThread2Test, NudgeWithPayloads) {
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
           WithArg<0>(RecordSyncShare(&records2, 1U, &done))));
   syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_LOCAL,
-      model_types_with_payloads);
+      model_types_with_payloads, FROM_HERE);
   done.TimedWait(timeout());
 
   EXPECT_EQ(1U, records2.snapshots.size());
@@ -317,11 +324,11 @@ TEST_F(SyncerThread2Test, NudgeWithPayloadsCoalescing) {
   TimeDelta delay = TimeDelta::FromMilliseconds(20);
   TimeTicks optimal_time = TimeTicks::Now() + delay;
   syncer_thread()->ScheduleNudgeWithPayloads(delay, NUDGE_SOURCE_UNKNOWN,
-      types1);
+      types1, FROM_HERE);
   syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_LOCAL,
-      types2);
+      types2, FROM_HERE);
   syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_NOTIFICATION,
-      types3);
+      types3, FROM_HERE);
   done.TimedWait(timeout());
 
   EXPECT_EQ(1U, r.snapshots.size());
@@ -339,7 +346,7 @@ TEST_F(SyncerThread2Test, NudgeWithPayloadsCoalescing) {
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
            WithArg<0>(RecordSyncShare(&r2, 1U, &done))));
   syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_NOTIFICATION,
-      types3);
+      types3, FROM_HERE);
   done.TimedWait(timeout());
   EXPECT_EQ(1U, r2.snapshots.size());
   EXPECT_EQ(types3, r2.snapshots[0]->source.types);
@@ -413,7 +420,8 @@ TEST_F(SyncerThread2Test, HasMoreToSync) {
       .WillOnce(Invoke(sessions::test_util::SimulateHasMoreToSync))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                       SignalEvent(&done)));
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet());
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(),
+                                 FROM_HERE);
   done.TimedWait(timeout());
   // If more nudges are scheduled, they'll be waited on by TearDown, and would
   // cause our expectation to break.
@@ -431,7 +439,8 @@ TEST_F(SyncerThread2Test, ThrottlingDoesThrottle) {
       .WillOnce(WithArg<0>(sessions::test_util::SimulateThrottled(throttle)));
 
   syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, types);
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, types,
+                                 FROM_HERE);
   FlushLastTask(&done);
 
   syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
@@ -476,8 +485,10 @@ TEST_F(SyncerThread2Test, ConfigurationMode) {
   syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
   syncable::ModelTypeBitSet nudge_types;
   nudge_types[syncable::AUTOFILL] = true;
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, nudge_types);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, nudge_types);
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, nudge_types,
+                                 FROM_HERE);
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, nudge_types,
+                                 FROM_HERE);
 
   syncable::ModelTypeBitSet config_types;
   config_types[syncable::BOOKMARKS] = true;
@@ -566,7 +577,8 @@ TEST_F(SyncerThread2Test, BackoffDropsJobs) {
 
   // We schedule a nudge with enough delay (10X poll interval) that at least
   // one or two polls would have taken place.  The nudge should succeed.
-  syncer_thread()->ScheduleNudge(poll * 10, NUDGE_SOURCE_LOCAL, types);
+  syncer_thread()->ScheduleNudge(poll * 10, NUDGE_SOURCE_LOCAL, types,
+                                 FROM_HERE);
   ASSERT_TRUE(done.TimedWait(timeout()));
   done.Reset();
 
@@ -584,8 +596,10 @@ TEST_F(SyncerThread2Test, BackoffDropsJobs) {
   FlushLastTask(&done);
 
   syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, types);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, types);
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, types,
+                                 FROM_HERE);
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, types,
+                                 FROM_HERE);
   FlushLastTask(&done);
 }
 
@@ -683,7 +697,8 @@ TEST_F(SyncerThread2Test, SyncerSteps) {
   EXPECT_CALL(*syncer(), SyncShare(_, SYNCER_BEGIN, SYNCER_END))
       .Times(1);
   syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet());
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(),
+                                 FROM_HERE);
   FlushLastTask(&done);
   syncer_thread()->Stop();
   Mock::VerifyAndClearExpectations(syncer());
@@ -729,7 +744,8 @@ TEST_F(SyncerThread2Test, StartWhenNotConnected) {
   MessageLoop cur;
   connection()->SetServerNotReachable();
   syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet());
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(),
+                                 FROM_HERE);
   FlushLastTask(&done);
 
   connection()->SetServerReachable();
@@ -741,7 +757,8 @@ TEST_F(SyncerThread2Test, StartWhenNotConnected) {
   // SyncerThread.
   FlushLastTask(&done);
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).WillOnce(SignalEvent(&done));
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet());
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(),
+                                 FROM_HERE);
   done.TimedWait(timeout());
 }
 
@@ -755,7 +772,8 @@ TEST_F(SyncerThread2Test, SetsPreviousRoutingInfo) {
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(1);
 
   syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet());
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(),
+                                 FROM_HERE);
   FlushLastTask(&done);
   syncer_thread()->Stop();
 
