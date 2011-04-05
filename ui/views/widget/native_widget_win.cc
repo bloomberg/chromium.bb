@@ -460,11 +460,12 @@ void NativeWidgetWin::OnPaint(HDC dc) {
     GetWindowRect(hwnd(), &wr);
     SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
     POINT position = {wr.left, wr.top};
-    HDC dib_dc = window_contents_->getTopPlatformDevice().getBitmapDC();
+    HDC dib_dc = window_contents_->beginPlatformPaint();
     POINT zero = {0, 0};
     BLENDFUNCTION blend = {AC_SRC_OVER, 0, 125, AC_SRC_ALPHA};
     UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
                         RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
+    window_contents_->endPlatformPaint();
   } else {
     scoped_ptr<gfx::CanvasPaint> canvas(
         gfx::CanvasPaint::CreateCanvasPaint(hwnd()));

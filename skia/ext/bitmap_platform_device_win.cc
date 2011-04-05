@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -201,7 +201,7 @@ BitmapPlatformDevice& BitmapPlatformDevice::operator=(
   return *this;
 }
 
-HDC BitmapPlatformDevice::getBitmapDC() {
+HDC BitmapPlatformDevice::beginPlatformPaint() {
   return data_->GetBitmapDC();
 }
 
@@ -214,7 +214,7 @@ void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
 void BitmapPlatformDevice::drawToHDC(HDC dc, int x, int y,
                                      const RECT* src_rect) {
   bool created_dc = !data_->IsBitmapDCCreated();
-  HDC source_dc = getBitmapDC();
+  HDC source_dc = beginPlatformPaint();
 
   RECT temp_rect;
   if (!src_rect) {
@@ -261,6 +261,7 @@ void BitmapPlatformDevice::drawToHDC(HDC dc, int x, int y,
   }
   LoadTransformToDC(source_dc, data_->transform());
 
+  endPlatformPaint();
   if (created_dc)
     data_->ReleaseBitmapDC();
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,24 +91,13 @@ void BlitContextToContext(NativeDrawingContext dst_context,
 #endif
 }
 
-static NativeDrawingContext GetContextFromCanvas(
-    skia::PlatformCanvas *canvas) {
-  skia::PlatformDevice& device = canvas->getTopPlatformDevice();
-#if defined(OS_WIN)
-  return device.getBitmapDC();
-#elif defined(OS_MACOSX)
-  return device.GetBitmapContext();
-#else  // Linux, BSD, others
-  return device.beginPlatformPaint();
-#endif
-}
-
 void BlitContextToCanvas(skia::PlatformCanvas *dst_canvas,
                          const Rect& dst_rect,
                          NativeDrawingContext src_context,
                          const Point& src_origin) {
-  BlitContextToContext(GetContextFromCanvas(dst_canvas), dst_rect,
+  BlitContextToContext(dst_canvas->beginPlatformPaint(), dst_rect,
                        src_context, src_origin);
+  dst_canvas->endPlatformPaint();
 }
 
 void BlitCanvasToContext(NativeDrawingContext dst_context,
@@ -116,15 +105,18 @@ void BlitCanvasToContext(NativeDrawingContext dst_context,
                          skia::PlatformCanvas *src_canvas,
                          const Point& src_origin) {
   BlitContextToContext(dst_context, dst_rect,
-                       GetContextFromCanvas(src_canvas), src_origin);
+                       src_canvas->beginPlatformPaint(), src_origin);
+  src_canvas->endPlatformPaint();
 }
 
 void BlitCanvasToCanvas(skia::PlatformCanvas *dst_canvas,
                         const Rect& dst_rect,
                         skia::PlatformCanvas *src_canvas,
                         const Point& src_origin) {
-  BlitContextToContext(GetContextFromCanvas(dst_canvas), dst_rect,
-                       GetContextFromCanvas(src_canvas), src_origin);
+  BlitContextToContext(dst_canvas->beginPlatformPaint(), dst_rect,
+                       src_canvas->beginPlatformPaint(), src_origin);
+  src_canvas->endPlatformPaint();
+  dst_canvas->endPlatformPaint();
 }
 
 #if defined(OS_WIN)

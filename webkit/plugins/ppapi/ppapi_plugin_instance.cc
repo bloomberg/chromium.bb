@@ -1231,10 +1231,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
 #elif defined(OS_WIN)
   // On Windows, we now need to render the PDF to the DC that backs the
   // supplied canvas.
-  skia::VectorPlatformDeviceEmf& device =
-      static_cast<skia::VectorPlatformDeviceEmf&>(
-          canvas->getTopPlatformDevice());
-  HDC dc = device.getBitmapDC();
+  HDC dc = canvas->beginPlatformPaint();
   gfx::Size size_in_pixels;
   size_in_pixels.set_width(
       printing::ConvertUnit(current_print_settings_.printable_area.size.width,
@@ -1256,6 +1253,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
                     current_print_settings_.dpi, current_print_settings_.dpi,
                     0, 0, size_in_pixels.width(),
                     size_in_pixels.height(), true, false, true, true);
+  canvas->endPlatformPaint();
 #endif  // defined(OS_WIN)
 
   return ret;
@@ -1322,10 +1320,7 @@ bool PluginInstance::DrawJPEGToPlatformDC(
     const SkBitmap& bitmap,
     const gfx::Rect& printable_area,
     WebKit::WebCanvas* canvas) {
-  skia::VectorPlatformDeviceEmf& device =
-      static_cast<skia::VectorPlatformDeviceEmf&>(
-          canvas->getTopPlatformDevice());
-  HDC dc = device.getBitmapDC();
+  HDC dc = canvas->beginPlatformPaint();
   // TODO(sanjeevr): This is a temporary hack. If we output a JPEG
   // to the EMF, the EnumEnhMetaFile call fails in the browser
   // process. The failure also happens if we output nothing here.
@@ -1364,6 +1359,7 @@ bool PluginInstance::DrawJPEGToPlatformDC(
                 &compressed_image.front(),
                 reinterpret_cast<const BITMAPINFO*>(&bmi),
                 DIB_RGB_COLORS, SRCCOPY);
+  canvas->endPlatformPaint();
   return true;
 }
 #endif  // OS_WIN

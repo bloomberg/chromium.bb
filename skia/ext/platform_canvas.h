@@ -69,8 +69,8 @@ class SK_API PlatformCanvas : public SkCanvas {
   // Call endPlatformPaint when you are done and want to use Skia operations
   // after calling the platform-specific beginPlatformPaint; this will
   // synchronize the bitmap to OS if necessary.
-  PlatformDevice::PlatformSurface beginPlatformPaint();
-  void endPlatformPaint();
+  PlatformDevice::PlatformSurface beginPlatformPaint() const;
+  void endPlatformPaint() const;
 
   // Returns the platform device pointer of the topmost rect with a non-empty
   // clip. In practice, this is usually either the top layer or nothing, since

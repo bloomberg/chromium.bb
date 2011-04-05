@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,13 +106,14 @@ bool PlatformCanvas::initialize(int width,
       width, height, is_opaque, shared_section));
 }
 
-HDC PlatformCanvas::beginPlatformPaint() {
-  return getTopPlatformDevice().getBitmapDC();
+HDC PlatformCanvas::beginPlatformPaint() const {
+  return getTopPlatformDevice().beginPlatformPaint();
 }
 
-void PlatformCanvas::endPlatformPaint() {
+void PlatformCanvas::endPlatformPaint() const {
   // we don't clear the DC here since it will be likely to be used again
   // flushing will be done in onAccessBitmap
+  return getTopPlatformDevice().endPlatformPaint();
 }
 
 }  // namespace skia

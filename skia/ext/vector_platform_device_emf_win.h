@@ -39,7 +39,7 @@ class VectorPlatformDeviceEmf : public PlatformDevice {
     return SkNEW(VectorPlatformDeviceEmfFactory);
   }
 
-  virtual HDC getBitmapDC() {
+  virtual HDC beginPlatformPaint() {
     return hdc_;
   }
 

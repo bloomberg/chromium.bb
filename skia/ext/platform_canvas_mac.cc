@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,11 +49,11 @@ bool PlatformCanvas::initialize(CGContextRef context,
       context, width, height, is_opaque));
 }
 
-CGContextRef PlatformCanvas::beginPlatformPaint() {
+CGContextRef PlatformCanvas::beginPlatformPaint() const {
   return getTopPlatformDevice().GetBitmapContext();
 }
 
-void PlatformCanvas::endPlatformPaint() {
+void PlatformCanvas::endPlatformPaint() const {
   // Flushing will be done in onAccessBitmap.
 }
 

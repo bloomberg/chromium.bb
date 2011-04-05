@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,10 @@ class SK_API PlatformDevice : public SkDevice {
   // The DC that corresponds to the bitmap, used for GDI operations drawing
   // into the bitmap. This is possibly heavyweight, so it should be existant
   // only during one pass of rendering.
-  virtual HDC getBitmapDC() = 0;
+  virtual HDC beginPlatformPaint() = 0;
+
+  // Finish a previous call to beginPlatformPaint.
+  virtual void endPlatformPaint() { }
 
   // Draws to the given screen DC, if the bitmap DC doesn't exist, this will
   // temporarily create it. However, if you have created the bitmap DC, it will

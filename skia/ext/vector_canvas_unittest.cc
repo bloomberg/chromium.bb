@@ -99,7 +99,7 @@ class Image {
   Image(const skia::PlatformCanvas& canvas) : ignore_alpha_(true) {
     // Use a different way to access the bitmap. The normal way would be to
     // query the SkBitmap.
-    HDC context = canvas.getTopPlatformDevice().getBitmapDC();
+    HDC context = canvas.beginPlatformPaint();
     HGDIOBJ bitmap = GetCurrentObject(context, OBJ_BITMAP);
     EXPECT_TRUE(bitmap != NULL);
     // Initialize the clip region to the entire bitmap.
@@ -111,6 +111,7 @@ class Image {
     size_t size = row_length_ * height_;
     data_.resize(size);
     memcpy(&*data_.begin(), bitmap_data.bmBits, size);
+    canvas.endPlatformPaint();
   }
 
   // Loads the image from a canvas.

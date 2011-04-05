@@ -1118,12 +1118,13 @@ void WidgetWin::RedrawLayeredWindowContents() {
   GetWindowRect(&wr);
   SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
   POINT position = {wr.left, wr.top};
-  HDC dib_dc = layered_window_contents_->getTopPlatformDevice().getBitmapDC();
+  HDC dib_dc = layered_window_contents_->beginPlatformPaint();
   POINT zero = {0, 0};
   BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
   UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
                       RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
   layered_window_invalid_rect_.SetRect(0, 0, 0, 0);
+  layered_window_contents_->endPlatformPaint();
 }
 
 void WidgetWin::ClientAreaSizeChanged() {

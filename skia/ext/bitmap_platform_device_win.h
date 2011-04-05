@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,7 @@ class BitmapPlatformDevice : public PlatformDevice {
 
   // Retrieves the bitmap DC, which is the memory DC for our bitmap data. The
   // bitmap DC is lazy created.
-  virtual HDC getBitmapDC();
+  virtual HDC beginPlatformPaint();
 
   // Loads the given transform and clipping region into the HDC. This is
   // overridden from SkDevice.
