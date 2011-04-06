@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <errno.h>
@@ -133,6 +133,39 @@ void NaClSignalStackUnregister(void) {
   }
 }
 
+static void FindAndRunHandler(int sig, siginfo_t *info, void *uc) {
+  if (NaClSignalHandlerFind(sig, uc) == NACL_SIGNAL_SEARCH) {
+    int a;
+
+    /* If we need to keep searching, try the old signal handler. */
+    for (a = 0; a < SIGNAL_COUNT; a++) {
+      /* If we handle this signal */
+      if (s_Signals[a] == sig) {
+        /* If this is a real sigaction pointer... */
+        if (s_OldActions[a].sa_flags & SA_SIGINFO) {
+          /* then call the old handler. */
+          s_OldActions[a].sa_sigaction(sig, info, uc);
+          break;
+        }
+        /* otherwise check if it is a real signal pointer */
+        if ((s_OldActions[a].sa_handler != SIG_DFL) &&
+            (s_OldActions[a].sa_handler != SIG_IGN)) {
+          /* and call the old signal. */
+          s_OldActions[a].sa_handler(sig);
+          break;
+        }
+        /*
+         * We matched the signal, but didn't handle it, so we emulate
+         * the default behavior which is to exit the app with the signal
+         * number as the error code.
+         */
+        NaClSignalErrorMessage("Failed to handle signal.\n");
+        NaClExit(-sig);
+      }
+    }
+  }
+}
+
 /* For x86 32b, we need to restore segment registers */
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
 static void SignalCatch(int sig, siginfo_t *info, void *uc) {
@@ -179,36 +212,8 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
     NaClSetFs(nacl_thread->fs);
   }
 
-  if (NaClSignalHandlerFind(sig, uc) == NACL_SIGNAL_SEARCH) {
-    int a;
+  FindAndRunHandler(sig, info, uc);
 
-    /* If we need to keep searching, try the old signal handler. */
-    for (a = 0; a < SIGNAL_COUNT; a++) {
-      /* If we handle this signal */
-      if (s_Signals[a] == sig) {
-        /* If this is a real sigaction pointer... */
-        if (s_OldActions[a].sa_flags & SA_SIGINFO) {
-          /* then call the old handler. */
-          s_OldActions[a].sa_sigaction(sig, info, uc);
-          break;
-        }
-        /* otherwise check if it is a real signal pointer */
-        if ((s_OldActions[a].sa_handler != SIG_DFL) &&
-            (s_OldActions[a].sa_handler != SIG_IGN)) {
-          /* and call the old signal. */
-          s_OldActions[a].sa_handler(sig);
-          break;
-        }
-        /*
-         * We matched the signal, but didn't handle it, so we emulate
-         * the default behavior which is to exit the app with the signal
-         * number as the error code.
-         */
-        NaClSignalErrorMessage("Failed to handle signal.\n");
-        NaClExit(-sig);
-      }
-    }
-  }
   /*
    * Restore the handler's segment registers prior to returning from the
    * signal handler, just in case we are in untrusted code and changed them.
@@ -219,39 +224,8 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
 }
 #else
 static void SignalCatch(int sig, siginfo_t *info, void *uc) {
-  if (NaClSignalHandlerFind(sig, uc) == NACL_SIGNAL_SEARCH) {
-    int a;
-
-    /* If we need to keep searching, try the old signal handler. */
-    for (a = 0; a < SIGNAL_COUNT; a++) {
-      /* If we handle this signal */
-      if (s_Signals[a] == sig) {
-        /* If this is a real sigaction pointer... */
-        if (s_OldActions[a].sa_flags & SA_SIGINFO) {
-          /* then call the old handler. */
-          s_OldActions[a].sa_sigaction(sig, info, uc);
-          break;
-        }
-        /* otherwise check if it is a real signal pointer */
-        if ((s_OldActions[a].sa_handler != SIG_DFL) &&
-            (s_OldActions[a].sa_handler != SIG_IGN)) {
-          /* and call the old signal. */
-          s_OldActions[a].sa_handler(sig);
-          break;
-        }
-        /*
-         * We matched the signal, but didn't handle it, so we emulate
-         * the default behavior which is to exit the app with the signal
-         * number as the error code.
-         */
-        NaClSignalErrorMessage("Failed to handle signal.\n");
-        NaClExit(-sig);
-      }
-    }
-  }
+  FindAndRunHandler(sig, info, uc);
 }
-
-
 #endif
 
 
