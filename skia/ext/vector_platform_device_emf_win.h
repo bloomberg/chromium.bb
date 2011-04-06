@@ -39,9 +39,7 @@ class VectorPlatformDeviceEmf : public PlatformDevice {
     return SkNEW(VectorPlatformDeviceEmfFactory);
   }
 
-  virtual HDC beginPlatformPaint() {
-    return hdc_;
-  }
+  virtual PlatformSurface BeginPlatformPaint();
 
   virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) OVERRIDE;
   virtual void drawPoints(const SkDraw& draw, SkCanvas::PointMode mode,

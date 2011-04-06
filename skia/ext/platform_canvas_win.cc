@@ -107,13 +107,11 @@ bool PlatformCanvas::initialize(int width,
 }
 
 HDC PlatformCanvas::beginPlatformPaint() const {
-  return getTopPlatformDevice().beginPlatformPaint();
+  return getTopPlatformDevice().BeginPlatformPaint();
 }
 
 void PlatformCanvas::endPlatformPaint() const {
-  // we don't clear the DC here since it will be likely to be used again
-  // flushing will be done in onAccessBitmap
-  return getTopPlatformDevice().endPlatformPaint();
+  return getTopPlatformDevice().EndPlatformPaint();
 }
 
 }  // namespace skia

@@ -82,7 +82,7 @@ class VectorPlatformDeviceCairo : public PlatformDevice {
 
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
                              const SkClipStack&);
-  virtual PlatformSurface beginPlatformPaint();
+  virtual PlatformSurface BeginPlatformPaint();
   virtual bool IsVectorial();
 
  protected:

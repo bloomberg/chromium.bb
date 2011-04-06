@@ -34,11 +34,11 @@ bool PlatformCanvas::initialize(int width, int height, bool is_opaque,
 }
 
 cairo_t* PlatformCanvas::beginPlatformPaint() const {
-  return getTopPlatformDevice().beginPlatformPaint();
+  return getTopPlatformDevice().BeginPlatformPaint();
 }
 
 void PlatformCanvas::endPlatformPaint() const {
-  // We don't need to do anything on Linux here.
+  getTopPlatformDevice().EndPlatformPaint();
 }
 
 }  // namespace skia

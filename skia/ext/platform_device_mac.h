@@ -44,6 +44,9 @@ class PlatformDevice : public SkDevice {
   // Returns if native platform APIs are allowed to render text to this device.
   virtual bool IsNativeFontRenderingAllowed();
 
+  virtual PlatformSurface BeginPlatformPaint();
+  virtual void EndPlatformPaint();
+
   // Initializes the default settings and colors in a device context.
   static void InitializeCGContext(CGContextRef context);
 

@@ -40,6 +40,14 @@ bool PlatformDevice::IsNativeFontRenderingAllowed() {
     return true;
 }
 
+CGContextRef PlatformDevice::BeginPlatformPaint() {
+  return GetBitmapContext();
+}
+
+void PlatformDevice::EndPlatformPaint() {
+  // Flushing will be done in onAccessBitmap.
+}
+
 // Set up the CGContextRef for peaceful coexistence with Skia
 void PlatformDevice::InitializeCGContext(CGContextRef context) {
   // CG defaults to the same settings as Skia

@@ -30,10 +30,10 @@ class SK_API PlatformDevice : public SkDevice {
   // The DC that corresponds to the bitmap, used for GDI operations drawing
   // into the bitmap. This is possibly heavyweight, so it should be existant
   // only during one pass of rendering.
-  virtual HDC beginPlatformPaint() = 0;
+  virtual PlatformSurface BeginPlatformPaint() = 0;
 
   // Finish a previous call to beginPlatformPaint.
-  virtual void endPlatformPaint() { }
+  virtual void EndPlatformPaint();
 
   // Draws to the given screen DC, if the bitmap DC doesn't exist, this will
   // temporarily create it. However, if you have created the bitmap DC, it will

@@ -16,6 +16,11 @@ PlatformDevice::PlatformDevice(const SkBitmap& bitmap)
     : SkDevice(NULL, bitmap, /*isForLayer=*/false) {
 }
 
+void PlatformDevice::EndPlatformPaint() {
+  // We don't clear the DC here since it will be likely to be used again.
+  // Flushing will be done in onAccessBitmap.
+}
+
 // static
 void PlatformDevice::InitializeDC(HDC context) {
   // Enables world transformation.

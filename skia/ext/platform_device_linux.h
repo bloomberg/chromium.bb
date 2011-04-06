@@ -23,7 +23,8 @@ class PlatformDevice : public SkDevice {
   // Returns if native platform APIs are allowed to render text to this device.
   virtual bool IsNativeFontRenderingAllowed();
 
-  virtual PlatformSurface beginPlatformPaint() = 0;
+  virtual PlatformSurface BeginPlatformPaint() = 0;
+  virtual void EndPlatformPaint();
 
  protected:
   // Forwards |bitmap| to SkDevice's constructor.

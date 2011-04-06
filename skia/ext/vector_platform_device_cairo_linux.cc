@@ -138,7 +138,7 @@ bool VectorPlatformDeviceCairo::IsVectorial() {
 }
 
 PlatformDevice::PlatformSurface
-VectorPlatformDeviceCairo::beginPlatformPaint() {
+VectorPlatformDeviceCairo::BeginPlatformPaint() {
   return context_;
 }
 

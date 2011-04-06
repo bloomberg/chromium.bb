@@ -1320,15 +1320,6 @@ bool PluginInstance::DrawJPEGToPlatformDC(
     const SkBitmap& bitmap,
     const gfx::Rect& printable_area,
     WebKit::WebCanvas* canvas) {
-  HDC dc = canvas->beginPlatformPaint();
-  // TODO(sanjeevr): This is a temporary hack. If we output a JPEG
-  // to the EMF, the EnumEnhMetaFile call fails in the browser
-  // process. The failure also happens if we output nothing here.
-  // We need to investigate the reason for this failure and fix it.
-  // In the meantime this temporary hack of drawing an empty
-  // rectangle in the DC gets us by.
-  Rectangle(dc, 0, 0, 0, 0);
-
   // Ideally we should add JPEG compression to the VectorPlatformDevice class
   // However, Skia currently has no JPEG compression code and we cannot
   // depend on gfx/jpeg_codec.h in Skia. So we do the compression here.
@@ -1348,6 +1339,15 @@ bool PluginInstance::DrawJPEGToPlatformDC(
     NOTREACHED();
     return false;
   }
+
+  HDC dc = canvas->beginPlatformPaint();
+  // TODO(sanjeevr): This is a temporary hack. If we output a JPEG
+  // to the EMF, the EnumEnhMetaFile call fails in the browser
+  // process. The failure also happens if we output nothing here.
+  // We need to investigate the reason for this failure and fix it.
+  // In the meantime this temporary hack of drawing an empty
+  // rectangle in the DC gets us by.
+  Rectangle(dc, 0, 0, 0, 0);
   BITMAPINFOHEADER bmi = {0};
   gfx::CreateBitmapHeader(bitmap.width(), bitmap.height(), &bmi);
   bmi.biCompression = BI_JPEG;

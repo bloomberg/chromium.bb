@@ -868,7 +868,7 @@ bool WebPluginDelegateProxy::BackgroundChanged(
 
   skia::PlatformDevice& device =
       background_store_canvas_->getTopPlatformDevice();
-  cairo_surface_t* bg_surface = cairo_get_target(device.beginPlatformPaint());
+  cairo_surface_t* bg_surface = cairo_get_target(device.BeginPlatformPaint());
   DCHECK_EQ(cairo_surface_get_type(bg_surface), CAIRO_SURFACE_TYPE_IMAGE);
   DCHECK_EQ(cairo_image_surface_get_format(bg_surface), CAIRO_FORMAT_ARGB32);
   cairo_surface_flush(bg_surface);

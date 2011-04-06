@@ -151,7 +151,7 @@ bool BitmapPlatformDevice::IsVectorial() {
   return false;
 }
 
-cairo_t* BitmapPlatformDevice::beginPlatformPaint() {
+cairo_t* BitmapPlatformDevice::BeginPlatformPaint() {
   data_->LoadConfig();
   cairo_t* cairo = data_->bitmap_context();
   cairo_surface_t* surface = cairo_get_target(cairo);

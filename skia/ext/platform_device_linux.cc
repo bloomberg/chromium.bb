@@ -11,7 +11,11 @@ PlatformDevice::PlatformDevice(const SkBitmap& bitmap)
 }
 
 bool PlatformDevice::IsNativeFontRenderingAllowed() {
-    return true;
+  return true;
+}
+
+void PlatformDevice::EndPlatformPaint() {
+  // We don't need to do anything on Linux here.
 }
 
 }  // namespace skia

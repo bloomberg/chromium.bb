@@ -75,7 +75,7 @@ class BitmapPlatformDevice : public PlatformDevice {
 
   // Retrieves the bitmap DC, which is the memory DC for our bitmap data. The
   // bitmap DC is lazy created.
-  virtual HDC beginPlatformPaint();
+  virtual PlatformSurface BeginPlatformPaint();
 
   // Loads the given transform and clipping region into the HDC. This is
   // overridden from SkDevice.

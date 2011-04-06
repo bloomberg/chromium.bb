@@ -50,11 +50,11 @@ bool PlatformCanvas::initialize(CGContextRef context,
 }
 
 CGContextRef PlatformCanvas::beginPlatformPaint() const {
-  return getTopPlatformDevice().GetBitmapContext();
+  return getTopPlatformDevice().BeginPlatformPaint();
 }
 
 void PlatformCanvas::endPlatformPaint() const {
-  // Flushing will be done in onAccessBitmap.
+  getTopPlatformDevice().EndPlatformPaint();
 }
 
 }  // namespace skia

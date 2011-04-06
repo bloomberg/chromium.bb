@@ -115,6 +115,9 @@ VectorPlatformDeviceEmf::~VectorPlatformDeviceEmf() {
   SkASSERT(previous_pen_ == NULL);
 }
 
+HDC VectorPlatformDeviceEmf::BeginPlatformPaint() {
+  return hdc_;
+}
 
 void VectorPlatformDeviceEmf::drawPaint(const SkDraw& draw,
                                         const SkPaint& paint) {
@@ -194,14 +197,14 @@ void VectorPlatformDeviceEmf::drawRect(const SkDraw& draw,
   if (!ApplyPaint(paint)) {
     return;
   }
-  HDC dc = beginPlatformPaint();
+  HDC dc = BeginPlatformPaint();
   if (!Rectangle(dc, SkScalarRound(rect.fLeft),
                  SkScalarRound(rect.fTop),
                  SkScalarRound(rect.fRight),
                  SkScalarRound(rect.fBottom))) {
     SkASSERT(false);
   }
-  endPlatformPaint();
+  EndPlatformPaint();
   Cleanup();
 }
 
@@ -227,7 +230,7 @@ void VectorPlatformDeviceEmf::drawPath(const SkDraw& draw,
   if (!ApplyPaint(paint)) {
     return;
   }
-  HDC dc = beginPlatformPaint();
+  HDC dc = BeginPlatformPaint();
   PlatformDevice::LoadPathToDC(dc, path);
   switch (paint.getStyle()) {
     case SkPaint::kFill_Style: {
@@ -249,7 +252,7 @@ void VectorPlatformDeviceEmf::drawPath(const SkDraw& draw,
       SkASSERT(false);
       break;
   }
-  endPlatformPaint();
+  EndPlatformPaint();
   Cleanup();
 }
 
@@ -656,7 +659,7 @@ void VectorPlatformDeviceEmf::InternalDrawBitmap(const SkBitmap& bitmap,
     }
   }
 
-  HDC dc = beginPlatformPaint();
+  HDC dc = BeginPlatformPaint();
   BITMAPINFOHEADER hdr;
   FillBitmapInfoHeader(src_size_x, src_size_y, &hdr);
   if (is_translucent) {
@@ -722,7 +725,7 @@ void VectorPlatformDeviceEmf::InternalDrawBitmap(const SkBitmap& bitmap,
                                 SRCCOPY);
     SkASSERT(result);
   }
-  endPlatformPaint();
+  EndPlatformPaint();
   Cleanup();
 }
 

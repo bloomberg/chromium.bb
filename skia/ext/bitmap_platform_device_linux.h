@@ -97,7 +97,7 @@ class BitmapPlatformDevice : public PlatformDevice {
 
   // Overridden from PlatformDevice:
   virtual bool IsVectorial();
-  virtual cairo_t* beginPlatformPaint();
+  virtual cairo_t* BeginPlatformPaint();
 
  private:
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,
