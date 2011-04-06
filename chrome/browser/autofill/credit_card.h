@@ -63,8 +63,8 @@ class CreditCard : public FormGroup {
   bool operator==(const CreditCard& credit_card) const;
   bool operator!=(const CreditCard& credit_card) const;
 
-  // Returns true if |value| is a credit card number.  Uses the Luhn formula to
-  // validate the number.
+  // Returns true if |text| looks like a valid credit card number.
+  // Uses the Luhn formula to validate the number.
   static bool IsCreditCardNumber(const string16& text);
 
   // Returns true if there are no values (field types) set.

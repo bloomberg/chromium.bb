@@ -121,13 +121,11 @@ std::string GetCreditCardType(const string16& number) {
   return kGenericCard;
 }
 
-// Return a version of |number| that has had any non-digit values removed.
-const string16 RemoveNonAsciiDigits(const string16& number) {
+// Return a version of |number| that has any separator characters removed.
+const string16 StripSeparators(const string16& number) {
+  const char16 kSeparators[] = {'-', ' ', '\0'};
   string16 stripped;
-  for (size_t i = 0; i < number.size(); ++i) {
-    if (IsAsciiDigit(number[i]))
-      stripped.append(1, number[i]);
-  }
+  RemoveChars(number, kSeparators, &stripped);
   return stripped;
 }
 
@@ -385,14 +383,22 @@ bool CreditCard::operator!=(const CreditCard& credit_card) const {
   return !operator==(credit_card);
 }
 
-// Use the Luhn formula to validate the number.
 // static
 bool CreditCard::IsCreditCardNumber(const string16& text) {
-  string16 number = RemoveNonAsciiDigits(text);
+  string16 number = StripSeparators(text);
 
-  if (number.empty())
+  // Credit card numbers are at most 19 digits in length [1]. 12 digits seems to
+  // be a fairly safe lower-bound [2].
+  // [1] http://www.merriampark.com/anatomycc.htm
+  // [2] http://en.wikipedia.org/wiki/Bank_card_number
+  const size_t kMinCreditCardDigits = 12;
+  const size_t kMaxCreditCardDigits = 19;
+  if (number.size() < kMinCreditCardDigits ||
+      number.size() > kMaxCreditCardDigits)
     return false;
 
+  // Use the Luhn formula [3] to validate the number.
+  // [3] http://en.wikipedia.org/wiki/Luhn_algorithm
   int sum = 0;
   bool odd = false;
   string16::reverse_iterator iter;
@@ -463,7 +469,7 @@ void CreditCard::SetExpirationYearFromString(const string16& text) {
 }
 
 void CreditCard::set_number(const string16& number) {
-  number_ = RemoveNonAsciiDigits(number);
+  number_ = StripSeparators(number);
 }
 
 void CreditCard::set_expiration_month(int expiration_month) {
