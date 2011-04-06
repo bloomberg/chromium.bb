@@ -17,10 +17,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_switches.h"
 
-UtilityProcessHost::UtilityProcessHost(ResourceDispatcherHost* rdh,
-                                       Client* client,
+UtilityProcessHost::UtilityProcessHost(Client* client,
                                        BrowserThread::ID client_thread_id)
-    : BrowserChildProcessHost(UTILITY_PROCESS, rdh),
+    : BrowserChildProcessHost(UTILITY_PROCESS, NULL),
       client_(client),
       client_thread_id_(client_thread_id),
       is_batch_mode_(false) {

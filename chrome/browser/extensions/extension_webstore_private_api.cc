@@ -164,13 +164,12 @@ class SafeBeginInstallHelper : public UtilityProcessHost::Client {
         BrowserThread::IO,
         FROM_HERE,
         NewRunnableMethod(this,
-                          &SafeBeginInstallHelper::StartWorkOnIOThread,
-                          g_browser_process->resource_dispatcher_host()));
+                          &SafeBeginInstallHelper::StartWorkOnIOThread));
   }
 
-  void StartWorkOnIOThread(ResourceDispatcherHost* rdh) {
+  void StartWorkOnIOThread() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    utility_host_ = new UtilityProcessHost(rdh, this, BrowserThread::IO);
+    utility_host_ = new UtilityProcessHost(this, BrowserThread::IO);
     utility_host_->StartBatchMode();
     if (icon_data_.empty())
       icon_decode_complete_ = true;

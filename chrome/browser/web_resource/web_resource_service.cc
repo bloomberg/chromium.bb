@@ -123,6 +123,8 @@ class WebResourceService::UnpackerClient
   void Start() {
     AddRef();  // balanced in Cleanup.
 
+    // TODO(willchan): Look for a better signal of whether we're in a unit test
+    // or not. Using |resource_dispatcher_host_| for this is pretty lame.
     // If we don't have a resource_dispatcher_host_, assume we're in
     // a test and run the unpacker directly in-process.
     bool use_utility_process =
@@ -134,7 +136,6 @@ class WebResourceService::UnpackerClient
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(this, &UnpackerClient::StartProcessOnIOThread,
-                            web_resource_service_->resource_dispatcher_host_,
                             thread_id));
     } else {
       WebResourceUnpacker unpacker(json_data_);
@@ -178,9 +179,8 @@ class WebResourceService::UnpackerClient
     Release();
   }
 
-  void StartProcessOnIOThread(ResourceDispatcherHost* rdh,
-                              BrowserThread::ID thread_id) {
-    UtilityProcessHost* host = new UtilityProcessHost(rdh, this, thread_id);
+  void StartProcessOnIOThread(BrowserThread::ID thread_id) {
+    UtilityProcessHost* host = new UtilityProcessHost(this, thread_id);
     // TODO(mrc): get proper file path when we start using web resources
     // that need to be unpacked.
     host->StartWebResourceUnpacker(json_data_);
