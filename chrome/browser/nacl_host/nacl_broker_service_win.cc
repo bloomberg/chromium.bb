@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,19 +11,11 @@ NaClBrokerService* NaClBrokerService::GetInstance() {
 }
 
 NaClBrokerService::NaClBrokerService()
-    : loaders_running_(0),
-      resource_dispatcher_host_(NULL),
-      initialized_(false) {
-}
-
-void NaClBrokerService::Init(ResourceDispatcherHost* resource_dispatcher_host) {
-  if (!initialized_)
-    resource_dispatcher_host_ = resource_dispatcher_host;
-  initialized_ = true;
+    : loaders_running_(0) {
 }
 
 bool NaClBrokerService::StartBroker() {
-  NaClBrokerHost* broker_host = new NaClBrokerHost(resource_dispatcher_host_);
+  NaClBrokerHost* broker_host = new NaClBrokerHost;
   if (!broker_host->Init()) {
     delete broker_host;
     return false;

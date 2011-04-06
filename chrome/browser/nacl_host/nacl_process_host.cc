@@ -49,11 +49,8 @@ struct NaClProcessHost::NaClInternal {
   std::vector<nacl::Handle> sockets_for_sel_ldr;
 };
 
-NaClProcessHost::NaClProcessHost(
-    ResourceDispatcherHost *resource_dispatcher_host,
-    const std::wstring& url)
-    : BrowserChildProcessHost(NACL_LOADER_PROCESS, resource_dispatcher_host),
-      resource_dispatcher_host_(resource_dispatcher_host),
+NaClProcessHost::NaClProcessHost(const std::wstring& url)
+    : BrowserChildProcessHost(NACL_LOADER_PROCESS, NULL),
       reply_msg_(NULL),
       internal_(new NaClInternal()),
       running_on_wow64_(false) {
@@ -154,9 +151,8 @@ bool NaClProcessHost::LaunchSelLdr() {
   // On Windows we might need to start the broker process to launch a new loader
 #if defined(OS_WIN)
   if (running_on_wow64_) {
-    NaClBrokerService::GetInstance()->Init(resource_dispatcher_host_);
-    return NaClBrokerService::GetInstance()->LaunchLoader(this,
-        ASCIIToWide(channel_id()));
+    return NaClBrokerService::GetInstance()->LaunchLoader(
+        this, ASCIIToWide(channel_id()));
   } else {
     BrowserChildProcessHost::Launch(FilePath(), cmd_line);
   }

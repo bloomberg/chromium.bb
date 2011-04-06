@@ -14,7 +14,6 @@ template<class T> class PrefMember;
 typedef PrefMember<bool> BooleanPrefMember;
 class FilePath;
 class Profile;
-class ResourceDispatcherHost;
 
 namespace net {
 class URLRequestContextGetter;
@@ -79,7 +78,6 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
 #endif
   void OnGetOutdatedPluginsPolicy(ContentSetting* policy);
 
-  ResourceDispatcherHost* resource_dispatcher_host_;
   int render_process_id_;
 
   // The Profile associated with our renderer process.  This should only be

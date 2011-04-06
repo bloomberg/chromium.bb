@@ -32,8 +32,7 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
     int render_process_id,
     Profile* profile,
     net::URLRequestContextGetter* request_context)
-    : resource_dispatcher_host_(g_browser_process->resource_dispatcher_host()),
-      render_process_id_(render_process_id),
+    : render_process_id_(render_process_id),
       profile_(profile),
       request_context_(request_context) {
   allow_outdated_plugins_ = new BooleanPrefMember();
@@ -91,7 +90,7 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
 
 void ChromeRenderMessageFilter::OnLaunchNaCl(
     const std::wstring& url, int channel_descriptor, IPC::Message* reply_msg) {
-  NaClProcessHost* host = new NaClProcessHost(resource_dispatcher_host_, url);
+  NaClProcessHost* host = new NaClProcessHost(url);
   host->Launch(this, channel_descriptor, reply_msg);
 }
 

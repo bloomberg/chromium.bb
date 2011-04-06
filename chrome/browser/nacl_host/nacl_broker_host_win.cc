@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,9 +14,8 @@
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_messages.h"
 
-NaClBrokerHost::NaClBrokerHost(
-    ResourceDispatcherHost* resource_dispatcher_host)
-    : BrowserChildProcessHost(NACL_BROKER_PROCESS, resource_dispatcher_host),
+NaClBrokerHost::NaClBrokerHost()
+    : BrowserChildProcessHost(NACL_BROKER_PROCESS, NULL),
       stopping_(false) {
 }
 

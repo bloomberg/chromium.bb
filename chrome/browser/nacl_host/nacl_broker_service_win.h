@@ -19,8 +19,6 @@ class NaClBrokerService {
   // Returns the NaClBrokerService singleton.
   static NaClBrokerService* GetInstance();
 
-  void Init(ResourceDispatcherHost* resource_dispatcher_host);
-
   // Can be called several times, must be called before LaunchLoader.
   bool StartBroker();
 
@@ -48,8 +46,6 @@ class NaClBrokerService {
   NaClBrokerHost* GetBrokerHost();
 
   int loaders_running_;
-  bool initialized_;
-  ResourceDispatcherHost* resource_dispatcher_host_;
   PendingLaunchesMap pending_launches_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrokerService);

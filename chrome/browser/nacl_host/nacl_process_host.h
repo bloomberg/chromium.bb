@@ -22,8 +22,7 @@ class ChromeRenderMessageFilter;
 // running in the renderer and NaCl processes.
 class NaClProcessHost : public BrowserChildProcessHost {
  public:
-  NaClProcessHost(ResourceDispatcherHost *resource_dispatcher_host,
-                  const std::wstring& url);
+  explicit NaClProcessHost(const std::wstring& url);
   ~NaClProcessHost();
 
   // Initialize the new NaCl process, returning true on success.
@@ -55,8 +54,6 @@ class NaClProcessHost : public BrowserChildProcessHost {
   virtual bool CanShutdown();
 
  private:
-  ResourceDispatcherHost* resource_dispatcher_host_;
-
   // The ChromeRenderMessageFilter that requested this NaCl process.  We use
   // this for sending the reply once the process has started.
   scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter_;
