@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/translate_errors.h"
-#include "chrome/common/web_apps.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/tab_contents/constrained_window.h"
 #include "content/browser/tab_contents/language_state.h"
@@ -218,12 +217,6 @@ class TabContents : public PageNavigator,
   void reset_encoding() {
     encoding_.clear();
   }
-
-  const SkBitmap& app_icon() const { return app_icon_; }
-
-  // Sets an app icon associated with TabContents and fires an INVALIDATE_TITLE
-  // navigation state change to trigger repaint of title.
-  void SetAppIcon(const SkBitmap& app_icon);
 
   bool displayed_insecure_content() const {
     return displayed_insecure_content_;
@@ -959,9 +952,6 @@ class TabContents : public PageNavigator,
 
   // Handles drag and drop event forwarding to extensions.
   BookmarkDrag* bookmark_drag_;
-
-  // Cached web app icon.
-  SkBitmap app_icon_;
 
   // RenderViewHost::ContentSettingsDelegate.
   scoped_ptr<TabSpecificContentSettings> content_settings_delegate_;

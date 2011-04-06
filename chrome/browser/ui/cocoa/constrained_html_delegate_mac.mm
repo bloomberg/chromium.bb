@@ -4,13 +4,15 @@
 
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 
+#import <Cocoa/Cocoa.h>
+
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#import <Cocoa/Cocoa.h>
+#include "ui/gfx/size.h"
 
 class ConstrainedHtmlDelegateMac :
     public ConstrainedWindowMacDelegateCustomSheet,

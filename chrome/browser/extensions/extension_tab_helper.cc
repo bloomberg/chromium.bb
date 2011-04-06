@@ -148,6 +148,11 @@ void ExtensionTabHelper::UpdateExtensionAppIcon(const Extension* extension) {
   }
 }
 
+void ExtensionTabHelper::SetAppIcon(const SkBitmap& app_icon) {
+  extension_app_icon_ = app_icon;
+  tab_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
+}
+
 void ExtensionTabHelper::OnImageLoaded(SkBitmap* image,
                                        const ExtensionResource& resource,
                                        int index) {

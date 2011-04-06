@@ -15,7 +15,7 @@ class Extension;
 class TabContentsWrapper;
 struct WebApplicationInfo;
 
-// Per-tab extension helper.
+// Per-tab extension helper. Also handles non-extension apps.
 class ExtensionTabHelper : public TabContentsObserver,
                            public ImageLoadingTracker::Observer {
  public:
@@ -66,6 +66,10 @@ class ExtensionTabHelper : public TabContentsObserver,
       return TabContentsObserver::tab_contents();
   }
 
+  // Sets a non-extension app icon associated with TabContents and fires an
+  // INVALIDATE_TITLE navigation state change to trigger repaint of title.
+  void SetAppIcon(const SkBitmap& app_icon);
+
  private:
   // TabContentsObserver overrides.
   virtual void DidNavigateMainFramePostCommit(
@@ -93,7 +97,8 @@ class ExtensionTabHelper : public TabContentsObserver,
   // created for.
   const Extension* extension_app_;
 
-  // Icon for extension_app_ (if non-null).
+  // Icon for extension_app_ (if non-null) or a manually-set icon for
+  // non-extension apps.
   SkBitmap extension_app_icon_;
 
   // Used for loading extension_app_icon_.

@@ -153,7 +153,7 @@ void UpdateShortcutWorker::OnIconDownloaded(int download_id,
   if (!errored && !image.isNull()) {
     // Update icon with download image and update shortcut.
     shortcut_info_.favicon = image;
-    tab_contents_->tab_contents()->SetAppIcon(image);
+    tab_contents_->extension_tab_helper()->SetAppIcon(image);
     UpdateShortcuts();
   } else {
     // Try the next icon otherwise.

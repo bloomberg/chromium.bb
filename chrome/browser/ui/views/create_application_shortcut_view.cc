@@ -436,7 +436,7 @@ bool CreateUrlApplicationShortcutView::Accept() {
   if (!CreateApplicationShortcutView::Accept())
     return false;
 
-  tab_contents_->tab_contents()->SetAppIcon(shortcut_info_.favicon);
+  tab_contents_->extension_tab_helper()->SetAppIcon(shortcut_info_.favicon);
   if (tab_contents_->tab_contents()->delegate()) {
     tab_contents_->tab_contents()->delegate()->ConvertContentsToApplication(
         tab_contents_->tab_contents());

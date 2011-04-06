@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tts_api.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -1407,9 +1408,9 @@ bool BrowserView::ShouldShowWindowTitle() const {
 
 SkBitmap BrowserView::GetWindowAppIcon() {
   if (browser_->type() & Browser::TYPE_APP) {
-    TabContents* contents = browser_->GetSelectedTabContents();
-    if (contents && !contents->app_icon().isNull())
-      return contents->app_icon();
+    TabContentsWrapper* contents = browser_->GetSelectedTabContentsWrapper();
+    if (contents && contents->extension_tab_helper()->GetExtensionAppIcon())
+      return *contents->extension_tab_helper()->GetExtensionAppIcon();
   }
 
   return GetWindowIcon();

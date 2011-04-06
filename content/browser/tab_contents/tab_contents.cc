@@ -2513,11 +2513,6 @@ void TabContents::set_encoding(const std::string& encoding) {
   encoding_ = CharacterEncoding::GetCanonicalEncodingNameByAliasName(encoding);
 }
 
-void TabContents::SetAppIcon(const SkBitmap& app_icon) {
-  app_icon_ = app_icon;
-  NotifyNavigationStateChanged(INVALIDATE_TITLE);
-}
-
 void TabContents::SwapInRenderViewHost(RenderViewHost* rvh) {
   render_manager_.SwapInRenderViewHost(rvh);
 }
