@@ -195,17 +195,6 @@ class Settings(object):
             'rietveld.server', error_message=error_message))
     return self.default_server
 
-  def GetCCList(self):
-    """Return the users cc'd on this CL.
-
-    Return is a string suitable for passing to gcl with the --cc flag.
-    """
-    if self.cc is None:
-      base_cc = self._GetConfig('rietveld.cc', error_ok=True)
-      more_cc = self._GetConfig('rietveld.extracc', error_ok=True)
-      self.cc = ','.join(filter(None, (base_cc, more_cc))) or ''
-    return self.cc
-
   def GetRoot(self):
     if not self.root:
       self.root = os.path.abspath(RunGit(['rev-parse', '--show-cdup']).strip())
@@ -295,6 +284,9 @@ class Settings(object):
       self.viewvc_url = self._GetConfig('rietveld.viewvc-url', error_ok=True)
     return self.viewvc_url
 
+  def GetDefaultCCList(self):
+    return self._GetConfig('rietveld.cc', error_ok=True)
+
   def _GetConfig(self, param, **kwargs):
     self.LazyUpdateIfNeeded()
     return RunGit(['config', param], **kwargs).strip()
@@ -354,6 +346,25 @@ class Changelist(object):
     self.has_patchset = False
     self.patchset = None
     self._rpc_server = None
+    self.cc = None
+    self.watchers = ()
+
+  def GetCCList(self):
+    """Return the users cc'd on this CL.
+
+    Return is a string suitable for passing to gcl with the --cc flag.
+    """
+    if self.cc is None:
+      base_cc = settings  .GetDefaultCCList()
+      more_cc = ','.join(self.watchers)
+      self.cc = ','.join(filter(None, (base_cc, more_cc))) or ''
+    return self.cc
+
+  def SetWatchers(self, watchers):
+    """Set the list of email addresses that should be cc'd based on the changed
+       files in this CL.
+    """
+    self.watchers = watchers
 
   def GetBranch(self):
     """Returns the short branch name, e.g. 'master'."""
@@ -556,7 +567,7 @@ def GetCodereviewSettingsInteractively():
     elif new_val and new_val != initial:
       RunGit(['config', 'rietveld.' + name, new_val])
 
-  SetProperty(settings.GetCCList(), 'CC list', 'cc')
+  SetProperty(settings.GetDefaultCCList(), 'CC list', 'cc')
   SetProperty(settings.GetTreeStatusUrl(error_ok=True), 'Tree status URL',
               'tree-status-url')
   SetProperty(settings.GetViewVCUrl(), 'ViewVC URL', 'viewvc-url')
@@ -830,9 +841,7 @@ def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt):
   if not committing:
     watchlist = watchlists.Watchlists(change.RepositoryRoot())
     files = [f.LocalPath() for f in change.AffectedFiles()]
-    watchers = watchlist.GetWatchersForPaths(files)
-    RunCommand(['git', 'config', '--replace-all',
-                'rietveld.extracc', ','.join(watchers)])
+    cl.SetWatchers(watchlist.GetWatchersForPaths(files))
 
   output = presubmit_support.DoPresubmitChecks(change, committing,
       verbose=False, output_stream=sys.stdout, input_stream=sys.stdin,
@@ -961,7 +970,7 @@ def CMDupload(parser, args):
     upload_args.extend(['--description', change_desc.description])
     if change_desc.reviewers:
       upload_args.extend(['--reviewers', change_desc.reviewers])
-    cc = ','.join(filter(None, (settings.GetCCList(), options.cc)))
+    cc = ','.join(filter(None, (cl.GetCCList(), options.cc)))
     if cc:
       upload_args.extend(['--cc', cc])
 
