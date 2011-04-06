@@ -88,13 +88,13 @@
       'special_tabs',
       # crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
-      # 'sync',  crbug.com/60970
       'test_basic',
       'themes',
+      'sync',
     ],
 
     'win': [
-      'enterprise',      
+      'enterprise',
       # crbug.com/77969
       '-autofill.AutofillTest.testComparePhoneNumbers',
       # crbug.com/78519
@@ -257,6 +257,7 @@
       '-omnibox.OmniboxTest.testGoogleSearch',
       '-omnibox.OmniboxTest.testInlinAutoComplete',
       '-omnibox.OmniboxTest.testSuggest',
+      '-sync',
     ],
   },
 
