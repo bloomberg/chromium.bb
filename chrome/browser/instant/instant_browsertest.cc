@@ -750,6 +750,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DontCrashOnBlockedJS) {
 IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_DownloadOnEnter) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
+  // Make sure the browser window is the front most window.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   ASSERT_NO_FATAL_FAILURE(FindLocationBar());
   GURL url(test_server()->GetURL("files/instant/empty.html"));
