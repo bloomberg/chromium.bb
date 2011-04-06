@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_EXTENSION_INSTALL_PROMPT_H_
-#define CHROME_BROWSER_UI_COCOA_EXTENSION_INSTALL_PROMPT_H_
+#ifndef CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INSTALL_DIALOG_CONTROLER_H_
+#define CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INSTALL_DIALOG_CONTROLER_H_
 #pragma once
 
 #include <vector>
@@ -20,7 +20,7 @@ class Profile;
 
 // A controller for dialog to let the user install an extension. Created by
 // CrxInstaller.
-@interface ExtensionInstallPromptController : NSWindowController {
+@interface ExtensionInstallDialogController : NSWindowController {
 @private
   IBOutlet NSImageView* iconView_;
   IBOutlet NSTextField* titleField_;
@@ -62,4 +62,4 @@ class Profile;
 
 @end
 
-#endif  /* CHROME_BROWSER_UI_COCOA_EXTENSION_INSTALL_PROMPT_H_ */
+#endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INSTALL_DIALOG_CONTROLLER_H_

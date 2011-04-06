@@ -1640,7 +1640,7 @@
         'browser/ui/cocoa/event_utils_unittest.mm',
         'browser/ui/cocoa/extensions/browser_actions_container_view_unittest.mm',
         'browser/ui/cocoa/extensions/chevron_menu_button_unittest.mm',
-        'browser/ui/cocoa/extensions/extension_install_prompt_controller_unittest.mm',
+        'browser/ui/cocoa/extensions/extension_install_dialog_controller_unittest.mm',
         'browser/ui/cocoa/extensions/extension_installed_bubble_controller_unittest.mm',
         'browser/ui/cocoa/extensions/extension_popup_controller_unittest.mm',
         'browser/ui/cocoa/fast_resize_view_unittest.mm',

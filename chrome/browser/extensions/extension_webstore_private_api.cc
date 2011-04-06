@@ -12,8 +12,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extension_install_dialog2.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -361,12 +361,12 @@ void BeginInstallWithManifestFunction::OnParseSuccess(
   if (icon_.empty())
     icon_ = Extension::GetDefaultIcon(dummy_extension_->is_app());
 
-  ShowExtensionInstallDialog2(profile(),
-                              this,
-                              dummy_extension_.get(),
-                              &icon_,
-                              dummy_extension_->GetPermissionMessages(),
-                              ExtensionInstallUI::INSTALL_PROMPT);
+  ShowExtensionInstallDialog(profile(),
+                             this,
+                             dummy_extension_.get(),
+                             &icon_,
+                             dummy_extension_->GetPermissionMessages(),
+                             ExtensionInstallUI::INSTALL_PROMPT);
 
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }

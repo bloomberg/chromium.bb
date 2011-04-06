@@ -11,9 +11,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #import "chrome/browser/extensions/extension_install_ui.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_install_prompt_controller.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_install_dialog_controller.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/json_value_serializer.h"
@@ -25,9 +25,9 @@
 
 
 // Base class for our tests.
-class ExtensionInstallPromptControllerTest : public CocoaTest {
+class ExtensionInstallDialogControllerTest : public CocoaTest {
 public:
-  ExtensionInstallPromptControllerTest() {
+  ExtensionInstallDialogControllerTest() {
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
     test_data_dir_ = test_data_dir_.AppendASCII("extensions")
                                    .AppendASCII("install_prompt");
@@ -102,15 +102,15 @@ class MockExtensionInstallUIDelegate : public ExtensionInstallUI::Delegate {
 
 // Test that we can load the two kinds of prompts correctly, that the outlets
 // are hooked up, and that the dialog calls cancel when cancel is pressed.
-TEST_F(ExtensionInstallPromptControllerTest, BasicsNormalCancel) {
+TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalCancel) {
   scoped_ptr<MockExtensionInstallUIDelegate> delegate(
       new MockExtensionInstallUIDelegate);
 
   std::vector<string16> warnings;
   warnings.push_back(UTF8ToUTF16("warning 1"));
 
-  scoped_nsobject<ExtensionInstallPromptController>
-    controller([[ExtensionInstallPromptController alloc]
+  scoped_nsobject<ExtensionInstallDialogController>
+    controller([[ExtensionInstallDialogController alloc]
                  initWithParentWindow:test_window()
                               profile:helper_.profile()
                             extension:extension_.get()
@@ -159,15 +159,15 @@ TEST_F(ExtensionInstallPromptControllerTest, BasicsNormalCancel) {
 }
 
 
-TEST_F(ExtensionInstallPromptControllerTest, BasicsNormalOK) {
+TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalOK) {
   scoped_ptr<MockExtensionInstallUIDelegate> delegate(
       new MockExtensionInstallUIDelegate);
 
   std::vector<string16> warnings;
   warnings.push_back(UTF8ToUTF16("warning 1"));
 
-  scoped_nsobject<ExtensionInstallPromptController>
-  controller([[ExtensionInstallPromptController alloc]
+  scoped_nsobject<ExtensionInstallDialogController>
+  controller([[ExtensionInstallDialogController alloc]
               initWithParentWindow:test_window()
               profile:helper_.profile()
               extension:extension_.get()
@@ -185,7 +185,7 @@ TEST_F(ExtensionInstallPromptControllerTest, BasicsNormalOK) {
 
 // Test that controls get repositioned when there are two warnings vs one
 // warning.
-TEST_F(ExtensionInstallPromptControllerTest, MultipleWarnings) {
+TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
   scoped_ptr<MockExtensionInstallUIDelegate> delegate1(
       new MockExtensionInstallUIDelegate);
   scoped_ptr<MockExtensionInstallUIDelegate> delegate2(
@@ -198,8 +198,8 @@ TEST_F(ExtensionInstallPromptControllerTest, MultipleWarnings) {
   two_warnings.push_back(UTF8ToUTF16("warning 1"));
   two_warnings.push_back(UTF8ToUTF16("warning 2"));
 
-  scoped_nsobject<ExtensionInstallPromptController>
-  controller1([[ExtensionInstallPromptController alloc]
+  scoped_nsobject<ExtensionInstallDialogController>
+  controller1([[ExtensionInstallDialogController alloc]
               initWithParentWindow:test_window()
               profile:helper_.profile()
               extension:extension_.get()
@@ -210,8 +210,8 @@ TEST_F(ExtensionInstallPromptControllerTest, MultipleWarnings) {
 
   [controller1 window];  // force nib load
 
-  scoped_nsobject<ExtensionInstallPromptController>
-  controller2([[ExtensionInstallPromptController alloc]
+  scoped_nsobject<ExtensionInstallDialogController>
+  controller2([[ExtensionInstallDialogController alloc]
                initWithParentWindow:test_window()
                profile:helper_.profile()
                extension:extension_.get()
@@ -246,15 +246,15 @@ TEST_F(ExtensionInstallPromptControllerTest, MultipleWarnings) {
 
 // Test that we can load the skinny prompt correctly, and that the outlets are
 // are hooked up.
-TEST_F(ExtensionInstallPromptControllerTest, BasicsSkinny) {
+TEST_F(ExtensionInstallDialogControllerTest, BasicsSkinny) {
   scoped_ptr<MockExtensionInstallUIDelegate> delegate(
       new MockExtensionInstallUIDelegate);
 
   // No warnings should trigger skinny prompt.
   std::vector<string16> warnings;
 
-  scoped_nsobject<ExtensionInstallPromptController>
-  controller([[ExtensionInstallPromptController alloc]
+  scoped_nsobject<ExtensionInstallDialogController>
+  controller([[ExtensionInstallDialogController alloc]
               initWithParentWindow:test_window()
               profile:helper_.profile()
               extension:extension_.get()

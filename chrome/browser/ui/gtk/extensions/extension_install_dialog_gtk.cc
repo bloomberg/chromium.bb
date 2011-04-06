@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/extensions/extension_install_dialog2.h"
+#include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -21,7 +21,6 @@
 namespace {
 
 const int kRightColumnMinWidth = 290;
-
 const int kImageSize = 69;
 
 // Padding on all sides of each permission in the permissions list.
@@ -51,11 +50,12 @@ void OnResponse(GtkWidget* dialog, int response_id,
   gtk_widget_destroy(dialog);
 }
 
-void ShowInstallPromptDialog2(GtkWindow* parent, SkBitmap* skia_icon,
-                              const Extension* extension,
-                              ExtensionInstallUI::Delegate *delegate,
-                              const std::vector<string16>& permissions,
-                              ExtensionInstallUI::PromptType type) {
+void ShowInstallDialog(GtkWindow* parent,
+                       SkBitmap* skia_icon,
+                       const Extension* extension,
+                       ExtensionInstallUI::Delegate *delegate,
+                       const std::vector<string16>& permissions,
+                       ExtensionInstallUI::PromptType type) {
   // Build the dialog.
   GtkWidget* dialog = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(ExtensionInstallUI::kTitleIds[type]).c_str(),
@@ -169,7 +169,7 @@ void ShowInstallPromptDialog2(GtkWindow* parent, SkBitmap* skia_icon,
 
 }  // namespace
 
-void ShowExtensionInstallDialog2(
+void ShowExtensionInstallDialog(
     Profile* profile,
     ExtensionInstallUI::Delegate* delegate,
     const Extension* extension,
@@ -189,6 +189,6 @@ void ShowExtensionInstallDialog2(
     return;
   }
 
-  ShowInstallPromptDialog2(browser_window->window(), icon, extension,
-                           delegate, permissions, type);
+  ShowInstallDialog(
+      browser_window->window(), icon, extension, delegate, permissions, type);
 }

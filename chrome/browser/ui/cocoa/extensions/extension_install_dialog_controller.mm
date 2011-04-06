@@ -1,14 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/extensions/extension_install_prompt_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_install_dialog_controller.h"
 
 #include "base/mac/mac_util.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_install_dialog2.h"
+#include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -47,7 +47,7 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
 
 }
 
-@implementation ExtensionInstallPromptController
+@implementation ExtensionInstallDialogController
 
 @synthesize iconView = iconView_;
 @synthesize titleField = titleField_;
@@ -137,7 +137,7 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
   [iconView_ setImage:image];
 
   // Make sure we're the window's delegate as set in the nib.
-  DCHECK_EQ(self, static_cast<ExtensionInstallPromptController*>(
+  DCHECK_EQ(self, static_cast<ExtensionInstallDialogController*>(
                       [[self window] delegate]));
 
   // If there are any warnings, then we have to do some special layout.
@@ -190,9 +190,9 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
   [self autorelease];
 }
 
-@end  // ExtensionInstallPromptController
+@end  // ExtensionInstallDialogController
 
-void ShowExtensionInstallDialog2(
+void ShowExtensionInstallDialog(
     Profile* profile,
     ExtensionInstallUI::Delegate* delegate,
     const Extension* extension,
@@ -213,8 +213,8 @@ void ShowExtensionInstallDialog2(
 
   gfx::NativeWindow native_window = window->GetNativeHandle();
 
-  ExtensionInstallPromptController* controller =
-      [[ExtensionInstallPromptController alloc]
+  ExtensionInstallDialogController* controller =
+      [[ExtensionInstallDialogController alloc]
         initWithParentWindow:native_window
                      profile:profile
                    extension:extension

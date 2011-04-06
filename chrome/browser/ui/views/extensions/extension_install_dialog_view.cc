@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/extensions/extension_install_dialog2.h"
+#include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/extensions/extension.h"
@@ -58,33 +60,33 @@ const int kHeadingFontSizeDelta = 1;
 
 }  // namespace
 
-
-// Implements the extension installation prompt for TOOLKIT_VIEWS.
-class InstallDialogContent2
-    : public views::View, public views::DialogDelegate {
+// Implements the extension installation dialog for TOOLKIT_VIEWS.
+class ExtensionInstallDialogView : public views::View,
+                                   public views::DialogDelegate {
  public:
-  InstallDialogContent2(ExtensionInstallUI::Delegate* delegate,
-                        const Extension* extension,
-                        SkBitmap* icon,
-                        const std::vector<string16>& permissions,
-                        ExtensionInstallUI::PromptType type);
+  ExtensionInstallDialogView(ExtensionInstallUI::Delegate* delegate,
+                             const Extension* extension,
+                             SkBitmap* icon,
+                             const std::vector<string16>& permissions,
+                             ExtensionInstallUI::PromptType type);
+  virtual ~ExtensionInstallDialogView();
 
  private:
-  // DialogDelegate overrides.
+  // views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+
+  // views::DialogDelegate:
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
-  virtual int GetDefaultDialogButton() const;
-  virtual bool Accept();
-  virtual bool Cancel();
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual int GetDefaultDialogButton() const OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+  virtual bool Accept() OVERRIDE;
 
-  // WindowDelegate overrides.
-  virtual bool IsModal() const;
-  virtual std::wstring GetWindowTitle() const;
-  virtual views::View* GetContentsView();
-
-  // View overrides.
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
+  // views::WindowDelegate:
+  virtual bool IsModal() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
 
   // The delegate that we will call back to when the user accepts or rejects
   // the installation.
@@ -111,25 +113,26 @@ class InstallDialogContent2
   // whether the extension requires any permissions.
   int right_column_width_;
 
-  // The type of install prompt, which must be INSTALL_PROMPT or
+  // The type of install dialog, which must be INSTALL_PROMPT or
   // RE_ENABLE_PROMPT.
   ExtensionInstallUI::PromptType type_;
 
-  DISALLOW_COPY_AND_ASSIGN(InstallDialogContent2);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogView);
 };
 
-
-InstallDialogContent2::InstallDialogContent2(
-    ExtensionInstallUI::Delegate* delegate, const Extension* extension,
-    SkBitmap* icon, const std::vector<string16>& permissions,
+ExtensionInstallDialogView::ExtensionInstallDialogView(
+    ExtensionInstallUI::Delegate* delegate,
+    const Extension* extension,
+    SkBitmap* icon,
+    const std::vector<string16>& permissions,
     ExtensionInstallUI::PromptType type)
-        : delegate_(delegate),
-          icon_(NULL),
-          heading_(NULL),
-          will_have_access_to_(NULL),
-          permission_box_(NULL),
-          right_column_width_(0),
-          type_(type) {
+    : delegate_(delegate),
+      icon_(NULL),
+      heading_(NULL),
+      will_have_access_to_(NULL),
+      permission_box_(NULL),
+      right_column_width_(0),
+      type_(type) {
   // Scale down to icon size, but allow smaller icons (don't scale up).
   gfx::Size size(icon->width(), icon->height());
   if (size.width() > kIconSize || size.height() > kIconSize)
@@ -178,48 +181,10 @@ InstallDialogContent2::InstallDialogContent2(
   }
 }
 
-std::wstring InstallDialogContent2::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
-  switch (button) {
-    case MessageBoxFlags::DIALOGBUTTON_OK:
-      return UTF16ToWide(
-          l10n_util::GetStringUTF16(ExtensionInstallUI::kButtonIds[type_]));
-    case MessageBoxFlags::DIALOGBUTTON_CANCEL:
-      return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL));
-    default:
-      NOTREACHED();
-      return L"";
-  }
+ExtensionInstallDialogView::~ExtensionInstallDialogView() {
 }
 
-int InstallDialogContent2::GetDefaultDialogButton() const {
-  return MessageBoxFlags::DIALOGBUTTON_CANCEL;
-}
-
-bool InstallDialogContent2::Accept() {
-  delegate_->InstallUIProceed();
-  return true;
-}
-
-bool InstallDialogContent2::Cancel() {
-  delegate_->InstallUIAbort();
-  return true;
-}
-
-bool InstallDialogContent2::IsModal() const {
-  return true;
-}
-
-std::wstring InstallDialogContent2::GetWindowTitle() const {
-  return UTF16ToWide(
-      l10n_util::GetStringUTF16(ExtensionInstallUI::kTitleIds[type_]));
-}
-
-views::View* InstallDialogContent2::GetContentsView() {
-  return this;
-}
-
-gfx::Size InstallDialogContent2::GetPreferredSize() {
+gfx::Size ExtensionInstallDialogView::GetPreferredSize() {
   int width = views::kPanelHorizMargin * 2;
   width += kIconSize;
   width += views::kPanelHorizMargin;  // Gutter.
@@ -247,7 +212,7 @@ gfx::Size InstallDialogContent2::GetPreferredSize() {
                    std::max(height, kIconSize + views::kPanelVertMargin * 2));
 }
 
-void InstallDialogContent2::Layout() {
+void ExtensionInstallDialogView::Layout() {
   int x = views::kPanelHorizMargin;
   int y = views::kPanelVertMargin;
 
@@ -305,7 +270,48 @@ void InstallDialogContent2::Layout() {
                              right_column_width_, permission_box_height);
 }
 
-void ShowExtensionInstallDialog2(
+std::wstring ExtensionInstallDialogView::GetDialogButtonLabel(
+    MessageBoxFlags::DialogButton button) const {
+  switch (button) {
+    case MessageBoxFlags::DIALOGBUTTON_OK:
+      return UTF16ToWide(
+          l10n_util::GetStringUTF16(ExtensionInstallUI::kButtonIds[type_]));
+    case MessageBoxFlags::DIALOGBUTTON_CANCEL:
+      return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL));
+    default:
+      NOTREACHED();
+      return std::wstring();
+  }
+}
+
+int ExtensionInstallDialogView::GetDefaultDialogButton() const {
+  return MessageBoxFlags::DIALOGBUTTON_CANCEL;
+}
+
+bool ExtensionInstallDialogView::Cancel() {
+  delegate_->InstallUIAbort();
+  return true;
+}
+
+bool ExtensionInstallDialogView::Accept() {
+  delegate_->InstallUIProceed();
+  return true;
+}
+
+bool ExtensionInstallDialogView::IsModal() const {
+  return true;
+}
+
+std::wstring ExtensionInstallDialogView::GetWindowTitle() const {
+  return UTF16ToWide(
+      l10n_util::GetStringUTF16(ExtensionInstallUI::kTitleIds[type_]));
+}
+
+views::View* ExtensionInstallDialogView::GetContentsView() {
+  return this;
+}
+
+void ShowExtensionInstallDialog(
     Profile* profile,
     ExtensionInstallUI::Delegate* delegate,
     const Extension* extension,
@@ -325,13 +331,17 @@ void ShowExtensionInstallDialog2(
     return;
   }
 
-  BrowserWindow* window = browser->window();
-  if (!window) {
+  BrowserWindow* browser_window = browser->window();
+  if (!browser_window) {
     delegate->InstallUIAbort();
     return;
   }
 
-  browser::CreateViewsWindow(window->GetNativeHandle(), gfx::Rect(),
-      new InstallDialogContent2(delegate, extension, icon, permissions, type))
-          ->Show();
+  ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
+      delegate, extension, icon, permissions, type);
+
+  views::Window* window =  browser::CreateViewsWindow(
+      browser_window->GetNativeHandle(), gfx::Rect(), dialog);
+
+  window->Show();
 }
