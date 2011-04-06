@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -46,6 +46,8 @@ class SyncTest(pyauto.PyUITest):
     self.assertTrue(self.AwaitSyncCycleCompletion())
     self.assertTrue(self.GetSyncInfo()['summary'] == 'READY')
     self.assertTrue(self.GetSyncInfo()['last synced'] == 'Just now')
+    # TODO(rsimha): Enable this check after http://crbug.com/78548 is fixed.
+    # self.assertTrue(self.GetSyncInfo()['updates received'] == 0)
 
 
 if __name__ == '__main__':

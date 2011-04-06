@@ -4047,6 +4047,7 @@ void TestingAutomationProvider::SignInToSync(Browser* browser,
 //   u'last synced': u'Just now',
 //   u'summary': u'READY',
 //   u'sync url': u'clients4.google.com',
+//   u'updates received': 42,
 //   u'synced datatypes': [ u'Bookmarks',
 //                          u'Preferences',
 //                          u'Passwords',
@@ -4074,6 +4075,7 @@ void TestingAutomationProvider::GetSyncInfo(Browser* browser,
     sync_info->SetString("sync url", service->sync_service_url().host());
     sync_info->SetBoolean("authenticated", status.authenticated);
     sync_info->SetString("last synced", service->GetLastSyncedTimeString());
+    sync_info->SetInteger("updates received", status.updates_received);
     ListValue* synced_datatype_list = new ListValue;
     syncable::ModelTypeSet synced_datatypes;
     service->GetPreferredDataTypes(&synced_datatypes);

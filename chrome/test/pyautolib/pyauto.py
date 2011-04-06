@@ -1861,6 +1861,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
           u'last synced': u'Just now',
           u'summary': u'READY',
           u'sync url': u'clients4.google.com',
+          u'updates received': 42,
           u'synced datatypes': [ u'Bookmarks',
                                  u'Preferences',
                                  u'Passwords',
