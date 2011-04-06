@@ -6,8 +6,8 @@
 
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/favicon_tab_helper.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/logging_chrome.h"

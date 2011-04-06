@@ -7,15 +7,15 @@
 #include <algorithm>
 
 #include "base/command_line.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/status_bubble.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/chrome_switches.h"

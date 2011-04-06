@@ -6,7 +6,7 @@
 
 #include <gdk/gdkkeysyms.h>
 
-#include "chrome/browser/browser_list.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"

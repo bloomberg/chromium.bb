@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"

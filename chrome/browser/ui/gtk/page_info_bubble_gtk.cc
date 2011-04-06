@@ -8,10 +8,10 @@
 
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/page_info_window.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"

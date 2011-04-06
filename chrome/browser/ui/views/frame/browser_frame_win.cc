@@ -11,9 +11,9 @@
 
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"

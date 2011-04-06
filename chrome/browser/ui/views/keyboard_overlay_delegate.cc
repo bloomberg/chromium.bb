@@ -6,9 +6,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/url_constants.h"

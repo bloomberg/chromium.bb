@@ -1,18 +1,18 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 
 #include "base/string_util.h"
-#include "grit/generated_resources.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
-#include "chrome/browser/browser_list.h"
+#include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {

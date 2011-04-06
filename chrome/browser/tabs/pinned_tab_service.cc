@@ -4,10 +4,10 @@
 
 #include "chrome/browser/tabs/pinned_tab_service.h"
 
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 

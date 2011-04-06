@@ -15,8 +15,8 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "content/browser/browser_thread.h"
 #include "printing/print_settings_initializer_gtk.h"
 

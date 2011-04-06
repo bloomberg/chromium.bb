@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"

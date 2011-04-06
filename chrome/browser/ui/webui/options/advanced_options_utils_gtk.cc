@@ -11,7 +11,7 @@
 #include "base/nix/xdg_util.h"
 #include "base/process_util.h"
 #include "base/string_tokenizer.h"
-#include "chrome/browser/browser_list.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/process_watcher.h"
