@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,10 +67,7 @@ class Channel : public Message::Sender {
     MODE_NO_FLAG = 0x0,
     MODE_SERVER_FLAG = 0x1,
     MODE_CLIENT_FLAG = 0x2,
-    MODE_NAMED_FLAG = 0x4,
-#if defined(OS_POSIX)
-    MODE_OPEN_ACCESS_FLAG = 0x8, // Don't restrict access based on client UID.
-#endif
+    MODE_NAMED_FLAG = 0x4
   };
 
   // Some Standard Modes
@@ -85,13 +82,6 @@ class Channel : public Message::Sender {
     // MODE_NAMED_CLIENT is equivalent to MODE_CLIENT.
     MODE_NAMED_SERVER = MODE_SERVER_FLAG | MODE_NAMED_FLAG,
     MODE_NAMED_CLIENT = MODE_CLIENT_FLAG | MODE_NAMED_FLAG,
-#if defined(OS_POSIX)
-    // An "open" named server accepts connections from ANY client.
-    // The caller must then implement their own access-control based on the
-    // client process' user Id.
-    MODE_OPEN_NAMED_SERVER = MODE_OPEN_ACCESS_FLAG | MODE_SERVER_FLAG |
-                             MODE_NAMED_FLAG
-#endif
   };
 
   enum {
@@ -162,14 +152,10 @@ class Channel : public Message::Sender {
   // currently connected.
   bool HasAcceptedConnection() const;
 
-  // Returns true if the peer process' effective user id can be determined, in
-  // which case the supplied client_euid is updated with it.
-  bool GetClientEuid(uid_t* client_euid) const;
-
   // Closes any currently connected socket, and returns to a listening state
   // for more connections.
   void ResetToAcceptingConnectionState();
-#endif  // defined(OS_POSIX) && !defined(OS_NACL)
+#endif  // defined(OS_POSIX)
 
  protected:
   // Used in Chrome by the TestSink to provide a dummy channel implementation
