@@ -43,6 +43,10 @@ class AutocompleteClassifier {
  private:
   scoped_ptr<AutocompleteController> controller_;
 
+  // Are we currently in Classify? Used to verify Classify isn't invoked
+  // recursively, since this can corrupt state and cause crashes.
+  bool inside_classify_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutocompleteClassifier);
 };
 

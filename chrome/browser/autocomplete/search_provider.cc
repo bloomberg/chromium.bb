@@ -621,11 +621,17 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
     // when typed. For example, if the user searched for google.com and types
     // goog, don't autocomplete to the search term google.com. Otherwise, the
     // input will look like a URL but act like a search, which is confusing.
-    // Note that if the user has typed the whole term, we don't need to do
-    // anything special, since the "What you typed" history match will outrank
-    // us; bypassing this case also prevents the Classify() call below from
-    // recursing infinitely.
-    if (classifier && i->term != input_.text()) {
+    // NOTE: We don't check this in the following cases:
+    //  * When inline autocomplete is disabled, we won't be inline
+    //    autocompleting this term, so we don't need to worry about confusion as
+    //    much.  This also prevents calling Classify() again from inside the
+    //    classifier (which will corrupt state and likely crash), since the
+    //    classifier always disabled inline autocomplete.
+    //  * When the user has typed the whole term, the "what you typed" history
+    //    match will outrank us for URL-like inputs anyway, so we need not do
+    //    anything special.
+    if (!input_.prevent_inline_autocomplete() && classifier &&
+        i->term != input_.text()) {
       AutocompleteMatch match;
       classifier->Classify(i->term, string16(), false, &match, NULL);
       term_looks_like_url = match.transition == PageTransition::TYPED;
