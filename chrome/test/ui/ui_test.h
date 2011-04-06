@@ -139,10 +139,6 @@ class UITestBase {
   // window or if the browser process died by itself.
   bool IsBrowserRunning();
 
-  // Returns true when timeout_ms milliseconds have elapsed.
-  // Returns false if the browser process died while waiting.
-  bool CrashAwareSleep(int timeout_ms);
-
   // Returns the number of tabs in the first window.  If no windows exist,
   // causes a test failure and returns 0.
   int GetTabCount();
@@ -153,10 +149,6 @@ class UITestBase {
   // Polls up to kWaitForActionMaxMsec ms to attain a specific tab count. Will
   // assert that the tab count is valid at the end of the wait.
   void WaitUntilTabCount(int tab_count);
-
-  // Wait for the browser process to shut down on its own (i.e. as a result of
-  // some action that your test has taken).
-  bool WaitForBrowserProcessToQuit(int timeout);
 
   // Waits until the Bookmark bar has stopped animating and become fully visible
   // (if |wait_for_open| is true) or fully hidden (if |wait_for_open| is false).

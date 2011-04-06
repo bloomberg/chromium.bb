@@ -206,13 +206,14 @@ void ProxyLauncher::QuitBrowser() {
     return;
   }
 
+  base::TimeTicks quit_start = base::TimeTicks::Now();
+
   // There's nothing to do here if the browser is not running.
   // WARNING: There is a race condition here where the browser may shut down
   // after this check but before some later automation call. Your test should
   // use WaitForBrowserProcessToQuit() if it intentionally
   // causes the browser to shut down.
   if (IsBrowserRunning()) {
-    base::TimeTicks quit_start = base::TimeTicks::Now();
     EXPECT_TRUE(automation()->SetFilteredInet(false));
 
     if (WINDOW_CLOSE == shutdown_type_) {
@@ -253,21 +254,25 @@ void ProxyLauncher::QuitBrowser() {
     } else {
       NOTREACHED() << "Invalid shutdown type " << shutdown_type_;
     }
-
-    // Now, drop the automation IPC channel so that the automation provider in
-    // the browser notices and drops its reference to the browser process.
-    automation()->Disconnect();
-
-    // Wait for the browser process to quit. It should quit once all tabs have
-    // been closed.
-    if (!WaitForBrowserProcessToQuit(
-        TestTimeouts::wait_for_terminate_timeout_ms())) {
-      // We need to force the browser to quit because it didn't quit fast
-      // enough. Take no chance and kill every chrome processes.
-      CleanupAppProcesses();
-    }
-    browser_quit_time_ = base::TimeTicks::Now() - quit_start;
   }
+
+  // Now, drop the automation IPC channel so that the automation provider in
+  // the browser notices and drops its reference to the browser process.
+  if (automation_proxy_.get())
+    automation_proxy_->Disconnect();
+
+  // Wait for the browser process to quit. It should quit once all tabs have
+  // been closed.
+  int exit_code = -1;
+  if (WaitForBrowserProcessToQuit(
+          TestTimeouts::wait_for_terminate_timeout_ms(), &exit_code)) {
+    EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
+  } else {
+    // We need to force the browser to quit because it didn't quit fast
+    // enough. Take no chance and kill every chrome processes.
+    CleanupAppProcesses();
+  }
+  browser_quit_time_ = base::TimeTicks::Now() - quit_start;
 
   // Don't forget to close the handle
   base::CloseProcessHandle(process_);
@@ -276,8 +281,9 @@ void ProxyLauncher::QuitBrowser() {
 }
 
 void ProxyLauncher::TerminateBrowser() {
+  base::TimeTicks quit_start = base::TimeTicks::Now();
+
   if (IsBrowserRunning()) {
-    base::TimeTicks quit_start = base::TimeTicks::Now();
     EXPECT_TRUE(automation()->SetFilteredInet(false));
 #if defined(OS_WIN)
     scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
@@ -292,15 +298,18 @@ void ProxyLauncher::TerminateBrowser() {
 #if defined(OS_POSIX)
     EXPECT_EQ(kill(process_, SIGTERM), 0);
 #endif  // OS_POSIX
-
-    if (!WaitForBrowserProcessToQuit(
-        TestTimeouts::wait_for_terminate_timeout_ms())) {
-      // We need to force the browser to quit because it didn't quit fast
-      // enough. Take no chance and kill every chrome processes.
-      CleanupAppProcesses();
-    }
-    browser_quit_time_ = base::TimeTicks::Now() - quit_start;
   }
+
+  int exit_code = 0;
+  if (WaitForBrowserProcessToQuit(
+          TestTimeouts::wait_for_terminate_timeout_ms(), &exit_code)) {
+    EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
+  } else {
+    // We need to force the browser to quit because it didn't quit fast
+    // enough. Take no chance and kill every chrome processes.
+    CleanupAppProcesses();
+  }
+  browser_quit_time_ = base::TimeTicks::Now() - quit_start;
 
   // Don't forget to close the handle
   base::CloseProcessHandle(process_);
@@ -327,19 +336,22 @@ void ProxyLauncher::CleanupAppProcesses() {
   TerminateAllChromeProcesses(process_id_);
 }
 
-bool ProxyLauncher::WaitForBrowserProcessToQuit(int timeout) {
+bool ProxyLauncher::WaitForBrowserProcessToQuit(int timeout, int* exit_code) {
 #ifdef WAIT_FOR_DEBUGGER_ON_OPEN
   timeout = 500000;
 #endif
-  return base::WaitForSingleProcess(process_, timeout);
+  return base::WaitForExitCodeWithTimeout(process_, exit_code, timeout);
 }
 
 bool ProxyLauncher::IsBrowserRunning() {
-  return CrashAwareSleep(0);
-}
+  // If there is no active AutomationProxy the browser shouldn't be running.
+  if (!automation_proxy_.get())
+    return false;
 
-bool ProxyLauncher::CrashAwareSleep(int timeout_ms) {
-  return base::CrashAwareSleep(process_, timeout_ms);
+  // Send a simple message to the browser. If it comes back, the browser
+  // must be alive.
+  int window_count;
+  return automation_proxy_->GetBrowserWindowCount(&window_count);
 }
 
 void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,

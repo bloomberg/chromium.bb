@@ -103,25 +103,13 @@ class UnloadTest : public UITest {
     UITest::SetUp();
   }
 
-  void WaitForBrowserClosed() {
-    const int kCheckDelayMs = 100;
-    for (int max_wait_time = TestTimeouts::action_max_timeout_ms();
-         max_wait_time > 0; max_wait_time -= kCheckDelayMs) {
-      CrashAwareSleep(kCheckDelayMs);
-      if (!IsBrowserRunning())
-        break;
-    }
-
-    EXPECT_FALSE(IsBrowserRunning());
-  }
-
   void CheckTitle(const std::wstring& expected_title) {
     const int kCheckDelayMs = 100;
     for (int max_wait_time = TestTimeouts::action_max_timeout_ms();
          max_wait_time > 0; max_wait_time -= kCheckDelayMs) {
-      CrashAwareSleep(kCheckDelayMs);
       if (expected_title == GetActiveTabTitle())
         break;
+      base::PlatformThread::Sleep(kCheckDelayMs);
     }
 
     EXPECT_EQ(expected_title, GetActiveTabTitle());
@@ -301,7 +289,11 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
 
   CloseBrowserAsync(browser.get());
   ClickModalDialogButton(ui::MessageBoxFlags::DIALOGBUTTON_OK);
-  WaitForBrowserClosed();
+
+  int exit_code = -1;
+  ASSERT_TRUE(launcher_->WaitForBrowserProcessToQuit(
+                  TestTimeouts::action_max_timeout_ms(), &exit_code));
+  EXPECT_EQ(0, exit_code);  // Expect a clean shutown.
 }
 
 // Tests closing the browser with a beforeunload handler and clicking
@@ -313,14 +305,19 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
 
   CloseBrowserAsync(browser.get());
   ClickModalDialogButton(ui::MessageBoxFlags::DIALOGBUTTON_CANCEL);
+
   // There's no real graceful way to wait for something _not_ to happen, so
   // we just wait a short period.
-  CrashAwareSleep(500);
+  base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
   ASSERT_TRUE(IsBrowserRunning());
 
   CloseBrowserAsync(browser.get());
   ClickModalDialogButton(ui::MessageBoxFlags::DIALOGBUTTON_OK);
-  WaitForBrowserClosed();
+
+  int exit_code = -1;
+  ASSERT_TRUE(launcher_->WaitForBrowserProcessToQuit(
+                  TestTimeouts::action_max_timeout_ms(), &exit_code));
+  EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
 }
 
 #if defined(OS_LINUX)
@@ -342,7 +339,11 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseWithInnerFocusedFrame) {
 
   CloseBrowserAsync(browser.get());
   ClickModalDialogButton(ui::MessageBoxFlags::DIALOGBUTTON_OK);
-  WaitForBrowserClosed();
+
+  int exit_code = -1;
+  ASSERT_TRUE(launcher_->WaitForBrowserProcessToQuit(
+                  TestTimeouts::action_max_timeout_ms(), &exit_code));
+  EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
 }
 
 // Tests closing the browser with a beforeunload handler that takes

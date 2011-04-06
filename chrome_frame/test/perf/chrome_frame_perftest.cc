@@ -1358,7 +1358,8 @@ void PrintResultList(const std::string& measurement,
 
 bool RunSingleTestOutOfProc(const std::string& test_name) {
   FilePath path;
-  PathService::Get(base::DIR_EXE, &path);
+  if (!PathService::Get(base::DIR_EXE, &path))
+    return false;
   path = path.Append(L"chrome_frame_tests.exe");
 
   CommandLine cmd_line(path);
@@ -1383,6 +1384,8 @@ bool RunSingleTestOutOfProc(const std::string& test_name) {
       // Ensure that the process terminates.
       base::KillProcess(process_handle, -1, true);
   }
+
+  base::CloseProcessHandle(process_handle);
 
   return exit_code == 0;
 }
