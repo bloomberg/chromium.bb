@@ -149,6 +149,9 @@ void UpgradeDetector::RegisterPrefs(PrefService* prefs) {
 UpgradeDetector::UpgradeDetector()
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       notify_upgrade_(false) {
+  CommandLine command_line(*CommandLine::ForCurrentProcess());
+  if (command_line.HasSwitch(switches::kDisableBackgroundNetworking))
+    return;
   // Windows: only enable upgrade notifications for official builds.
   // Mac: only enable them if the updater (Keystone) is present.
   // Linux (and other POSIX): always enable regardless of branding.
