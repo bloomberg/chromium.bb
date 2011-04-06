@@ -14,3 +14,6 @@ HttpNetworkTransactionTest.HttpsProxySpdyGetWithProxyAuth
 
 # Hang, or killing the test.  See http://crbug.com/78536
 ProxyResolverV8Test.JavascriptLibrary
+
+# CHECK failure. See http://crbug.com/78533
+HttpNetworkLayerTest.GET
