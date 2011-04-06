@@ -157,9 +157,9 @@ void TestingAutomationProvider::SourceProfilesLoaded() {
   int num_browsers = importer_list_->GetAvailableProfileCount();
   int i = 0;
   for ( ; i < num_browsers; i++) {
-    string16 name = importer_list_->GetSourceProfileNameAt(i);
-    if (name == import_settings_data_.browser_name) {
-      source_profile = importer_list_->GetSourceProfileAt(i);
+    importer::SourceProfile profile = importer_list_->GetSourceProfileAt(i);
+    if (profile.importer_name == import_settings_data_.browser_name) {
+      source_profile = profile;
       break;
     }
   }

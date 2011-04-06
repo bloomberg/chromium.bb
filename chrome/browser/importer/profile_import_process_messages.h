@@ -28,14 +28,14 @@ template <>
 struct ParamTraits<importer::SourceProfile> {
   typedef importer::SourceProfile param_type;
   static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.description);
+    WriteParam(m, p.importer_name);
     WriteParam(m, static_cast<int>(p.importer_type));
     WriteParam(m, p.source_path);
     WriteParam(m, p.app_path);
     WriteParam(m, static_cast<int>(p.services_supported));
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
-    if (!ReadParam(m, iter, &p->description))
+    if (!ReadParam(m, iter, &p->importer_name))
       return false;
 
     int importer_type = 0;
@@ -56,7 +56,7 @@ struct ParamTraits<importer::SourceProfile> {
   }
   static void Log(const param_type& p, std::string* l) {
     l->append("(");
-    LogParam(p.description, l);
+    LogParam(p.importer_name, l);
     l->append(", ");
     LogParam(static_cast<int>(p.importer_type), l);
     l->append(", ");

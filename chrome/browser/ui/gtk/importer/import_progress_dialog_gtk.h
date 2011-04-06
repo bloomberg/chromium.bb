@@ -36,7 +36,7 @@ class ImportProgressDialogGtk : public importer::ImporterProgressObserver {
                           uint16 items,
                           ImporterHost* importer_host,
                           ImporterObserver* importer_observer,
-                          const string16& source_profile,
+                          const string16& importer_name,
                           bool bookmarks_import);
   virtual ~ImportProgressDialogGtk();
 

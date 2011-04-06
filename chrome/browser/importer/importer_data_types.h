@@ -33,7 +33,7 @@ struct SourceProfile {
   SourceProfile();
   ~SourceProfile();
 
-  string16 description;
+  string16 importer_name;
   ImporterType importer_type;
   FilePath source_path;
   FilePath app_path;

@@ -33,11 +33,10 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
 
   ImporterList();
 
-  // Detects the installed browsers and their associated profiles, then
-  // stores their information in a list. It returns the list of description
-  // of all profiles. Calls into DetectSourceProfilesWorker() on the FILE thread
-  // to do the real work of detecting source profiles. |observer| must be
-  // non-NULL.
+  // Detects the installed browsers and their associated profiles, then stores
+  // their information in a list. It returns the list of description of all
+  // profiles. Calls into DetectSourceProfilesWorker() on the FILE thread to do
+  // the real work of detecting source profiles. |observer| must be non-NULL.
   void DetectSourceProfiles(Observer* observer);
 
   // Sets the observer of this object. When the current observer is destroyed,
@@ -49,15 +48,12 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
   // may end up blocking the current thread, which is usually the UI thread.
   void DetectSourceProfilesHack();
 
-  // Returns the number of different browser profiles you can import from.
+  // Returns the number of different source profiles you can import from.
   int GetAvailableProfileCount() const;
 
-  // Returns the name of the profile at |index|. The profiles are ordered such
-  // that the profile at index 0 is the likely default browser.
-  string16 GetSourceProfileNameAt(int index) const;
-
-  // Returns the SourceProfile at |index|. The SourceProfile should be passed to
-  // ImporterHost::StartImportSettings().
+  // Returns the SourceProfile at |index|. The profiles are ordered such that
+  // the profile at index 0 is the likely default browser. The SourceProfile
+  // should be passed to ImporterHost::StartImportSettings().
   const importer::SourceProfile& GetSourceProfileAt(int index) const;
 
   // Returns the SourceProfile for the given |importer_type|.

@@ -114,7 +114,7 @@ void ImportDataHandler::ImportData(const ListValue* args) {
                                         new ProfileWriter(profile), false);
   } else {
     LOG(WARNING) << "There were no settings to import from '"
-        << source_profile.description << "'.";
+        << source_profile.importer_name << "'.";
   }
 }
 
@@ -127,7 +127,7 @@ void ImportDataHandler::SourceProfilesLoaded() {
     uint16 browser_services = source_profile.services_supported;
 
     DictionaryValue* browser_profile = new DictionaryValue();
-    browser_profile->SetString("name", source_profile.description);
+    browser_profile->SetString("name", source_profile.importer_name);
     browser_profile->SetInteger("index", i);
     browser_profile->SetBoolean("history",
         (browser_services & importer::HISTORY) != 0);

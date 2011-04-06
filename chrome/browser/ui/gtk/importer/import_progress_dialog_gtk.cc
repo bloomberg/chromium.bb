@@ -45,7 +45,7 @@ void ImportProgressDialogGtk::StartImport(
       items,
       importer_host,
       importer_observer,
-      source_profile.description,
+      source_profile.importer_name,
       source_profile.importer_type == importer::BOOKMARKS_HTML);
 
   // In headless mode it means that we don't show the progress window, but it
@@ -62,7 +62,7 @@ ImportProgressDialogGtk::ImportProgressDialogGtk(
     uint16 items,
     ImporterHost* importer_host,
     ImporterObserver* importer_observer,
-    const string16& source_profile,
+    const string16& importer_name,
     bool bookmarks_import)
     : parent_(parent),
       items_(items),
@@ -88,7 +88,7 @@ ImportProgressDialogGtk::ImportProgressDialogGtk(
 
   GtkWidget* import_info = gtk_label_new(
       l10n_util::GetStringFUTF8(IDS_IMPORT_PROGRESS_INFO,
-                                source_profile).c_str());
+                                importer_name).c_str());
   gtk_util::SetLabelWidth(import_info, 400);
   gtk_box_pack_start(GTK_BOX(control_group), import_info, FALSE, FALSE, 0);
 

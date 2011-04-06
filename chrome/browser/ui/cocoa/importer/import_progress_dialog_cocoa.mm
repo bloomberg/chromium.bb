@@ -55,7 +55,7 @@ NSString* keyForImportItem(importer::ImportItem item) {
 @synthesize historyImportEnabled = history_import_enabled_;
 
 - (id)initWithImporterHost:(ImporterHost*)host
-               browserName:(string16)browserName
+              importerName:(string16)importerName
                   observer:(ImporterObserver*)observer
               itemsEnabled:(int16)items {
   NSString* nib_path =
@@ -72,7 +72,7 @@ NSString* keyForImportItem(importer::ImportItem item) {
     NSString* explanatory_text = l10n_util::GetNSStringF(
         IDS_IMPORT_PROGRESS_EXPLANATORY_TEXT_MAC,
         productName,
-        browserName);
+        importerName);
     [self setExplanatoryText:explanatory_text];
 
     progress_text_ =
@@ -192,7 +192,7 @@ void ShowImportProgressDialog(gfx::NativeWindow parent_window,
   ImportProgressDialogController* progress_dialog =
       [[ImportProgressDialogController alloc]
           initWithImporterHost:importer_host
-                   browserName:source_profile.description
+                  importerName:source_profile.importer_name
                       observer:importer_observer
                   itemsEnabled:items];
    // Call is async.
