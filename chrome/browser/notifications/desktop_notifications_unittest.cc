@@ -111,17 +111,6 @@ DesktopNotificationsTest::StandardTestNotification() {
   return params;
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/78597
-#define TestShow FAILS_TestShow
-#define TestClose FAILS_TestClose
-#define TestCancel FAILS_TestCancel
-#define TestPositioning FAILS_TestPositioning
-#define TestVariableSize FAILS_TestVariableSize
-#define TestQueueing FAILS_TestQueueing
-#define TestUserInputEscaping FAILS_TestUserInputEscaping
-#endif  // OS_WIN
-
 TEST_F(DesktopNotificationsTest, TestShow) {
   DesktopNotificationHostMsg_Show_Params params = StandardTestNotification();
   params.notification_id = 1;
