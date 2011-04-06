@@ -2105,32 +2105,36 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     SAMPLE:
     [
       {
-        u'description': u'Web Store',
-        u'options_url': u'',
         u'app_launch_index': 2,
-        u'name': u'Chrome Web Store',
-        u'launch_url': u'https://chrome.google.com/webstore',
-        u'icon_small': u'chrome://favicon/https://chrome.google.com/webstore',
-        u'launch_container': 2,
+        u'description': u'Web Store',
         u'icon_big': u'chrome://theme/IDR_APP_DEFAULT_ICON',
+        u'icon_small': u'chrome://favicon/https://chrome.google.com/webstore',
         u'id': u'ahfgeienlihckogmohjhadlkjgocpleb',
-        u'launch_type': 1
+        u'is_component_extension': True,
+        u'is_disabled': False,
+        u'launch_container': 2,
+        u'launch_type': 1,
+        u'launch_url': u'https://chrome.google.com/webstore',
+        u'name': u'Chrome Web Store',
+        u'options_url': u'',
       },
       {
-        u'description': u'A countdown app',
-        u'options_url': u'',
         u'app_launch_index': 1,
-        u'name': u'Countdown',
-        u'launch_url': (u'chrome-extension://aeabikdlfbfeihglecobdkdflahfgcpd/'
-                        u'launchLocalPath.html'),
+        u'description': u'A countdown app',
+        u'icon_big': (u'chrome-extension://aeabikdlfbfeihglecobdkdflahfgcpd/'
+                      u'countdown128.png'),
         u'icon_small': (u'chrome://favicon/chrome-extension://'
                         u'aeabikdlfbfeihglecobdkdflahfgcpd/'
                         u'launchLocalPath.html'),
-        u'launch_container': 2,
-        u'icon_big': (u'chrome-extension://aeabikdlfbfeihglecobdkdflahfgcpd/'
-                      u'countdown128.png'),
         u'id': u'aeabikdlfbfeihglecobdkdflahfgcpd',
+        u'is_component_extension': False,
+        u'is_disabled': False,
+        u'launch_container': 2,
         u'launch_type': 1
+        u'launch_url': (u'chrome-extension://aeabikdlfbfeihglecobdkdflahfgcpd/'
+                        u'launchLocalPath.html'),
+        u'name': u'Countdown',
+        u'options_url': u'',
       }
     ]
 

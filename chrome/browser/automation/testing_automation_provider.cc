@@ -4032,9 +4032,9 @@ void TestingAutomationProvider::SignInToSync(Browser* browser,
     sync_waiter_->SetCredentials(username, password);
   }
   if (sync_waiter_->SetupSync()) {
-    DictionaryValue* return_value = new DictionaryValue;
+    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
     return_value->SetBoolean("success", true);
-    reply.SendSuccess(return_value);
+    reply.SendSuccess(return_value.get());
   } else {
     reply.SendError("Signing in to sync was unsuccessful");
   }
@@ -4059,7 +4059,7 @@ void TestingAutomationProvider::GetSyncInfo(Browser* browser,
                                             IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   DictionaryValue* sync_info = new DictionaryValue;
-  DictionaryValue* return_value = new DictionaryValue;
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   if (sync_waiter_.get() == NULL) {
     sync_waiter_.reset(
         ProfileSyncServiceHarness::CreateAndAttach(browser->profile()));
@@ -4085,7 +4085,7 @@ void TestingAutomationProvider::GetSyncInfo(Browser* browser,
     sync_info->Set("synced datatypes", synced_datatype_list);
   }
   return_value->Set("sync_info", sync_info);
-  reply.SendSuccess(return_value);
+  reply.SendSuccess(return_value.get());
 }
 
 // Sample json output: { "success": true }
@@ -4157,9 +4157,9 @@ void TestingAutomationProvider::EnableSyncForDatatypes(
   ProfileSyncService::Status status = sync_waiter_->GetStatus();
   if (status.summary == ProfileSyncService::Status::READY ||
       status.summary == ProfileSyncService::Status::SYNCING) {
-    DictionaryValue* return_value = new DictionaryValue;
+    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
     return_value->SetBoolean("success", true);
-    reply.SendSuccess(return_value);
+    reply.SendSuccess(return_value.get());
   } else {
     reply.SendError("Enabling sync for given datatypes was unsuccessful");
   }
@@ -4195,9 +4195,9 @@ void TestingAutomationProvider::DisableSyncForDatatypes(
     ProfileSyncService::Status status = sync_waiter_->GetStatus();
     if (status.summary != ProfileSyncService::Status::READY &&
         status.summary != ProfileSyncService::Status::SYNCING) {
-      DictionaryValue* return_value = new DictionaryValue;
+      scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
       return_value->SetBoolean("success", true);
-      reply.SendSuccess(return_value);
+      reply.SendSuccess(return_value.get());
     } else {
       reply.SendError("Disabling all sync datatypes was unsuccessful");
     }
@@ -4220,9 +4220,9 @@ void TestingAutomationProvider::DisableSyncForDatatypes(
     ProfileSyncService::Status status = sync_waiter_->GetStatus();
     if (status.summary == ProfileSyncService::Status::READY ||
         status.summary == ProfileSyncService::Status::SYNCING) {
-      DictionaryValue* return_value = new DictionaryValue;
+      scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
       return_value->SetBoolean("success", true);
-      reply.SendSuccess(return_value);
+      reply.SendSuccess(return_value.get());
     } else {
       reply.SendError("Disabling sync for given datatypes was unsuccessful");
     }
@@ -4741,13 +4741,13 @@ void TestingAutomationProvider::GetNTPThumbnailMode(
   const int shown_sections = ShownSectionsHandler::GetShownSections(
       browser->profile()->GetPrefs());
 
-  DictionaryValue* return_value = new DictionaryValue;
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->SetBoolean("apps", shown_sections & APPS ? true : false);
   return_value->SetBoolean("most_visited",
                            shown_sections & THUMB ? true : false);
 
   AutomationJSONReply reply(this, reply_message);
-  reply.SendSuccess(return_value);
+  reply.SendSuccess(return_value.get());
 }
 
 // Sample JSON input: { "command": "SetNTPThumbnailMode", "section": "apps",
@@ -4806,7 +4806,7 @@ void TestingAutomationProvider::GetNTPMenuMode(
   const int shown_sections = ShownSectionsHandler::GetShownSections(
       browser->profile()->GetPrefs());
 
-  DictionaryValue* return_value = new DictionaryValue;
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->SetBoolean("apps", shown_sections & MENU_APPS ? true : false);
   return_value->SetBoolean("most_visited",
                            shown_sections & MENU_THUMB ? true : false);
@@ -4814,7 +4814,7 @@ void TestingAutomationProvider::GetNTPMenuMode(
                            shown_sections & MENU_RECENT ? true : false);
 
   AutomationJSONReply reply(this, reply_message);
-  reply.SendSuccess(return_value);
+  reply.SendSuccess(return_value.get());
 }
 
 // Sample JSON input: { "command": "SetNTPMenuMode", "section": "apps",

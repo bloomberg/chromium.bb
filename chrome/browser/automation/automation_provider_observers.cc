@@ -1684,6 +1684,32 @@ void PageSnapshotTaker::SendMessage(bool success) {
   delete this;
 }
 
+namespace {
+
+// Returns a vector of dictionaries containing information about installed apps,
+// as identified from a given list of extensions.  The caller takes ownership
+// of the created vector.
+std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
+    const ExtensionList* extensions,
+    ExtensionPrefs* ext_prefs) {
+  std::vector<DictionaryValue*>* apps_list =
+      new std::vector<DictionaryValue*>();
+  for (ExtensionList::const_iterator ext = extensions->begin();
+       ext != extensions->end(); ++ext) {
+    // Only return information about extensions that are actually apps.
+    if ((*ext)->is_app()) {
+      DictionaryValue* app_info = new DictionaryValue();
+      AppLauncherHandler::CreateAppInfo(*ext, ext_prefs, app_info);
+      app_info->SetBoolean("is_component_extension",
+                           (*ext)->location() == Extension::COMPONENT);
+      apps_list->push_back(app_info);
+    }
+  }
+  return apps_list;
+}
+
+}  // namespace
+
 NTPInfoObserver::NTPInfoObserver(
     AutomationProvider* automation,
     IPC::Message* reply_message,
@@ -1706,20 +1732,35 @@ NTPInfoObserver::NTPInfoObserver(
     return;
   }
 
-  // Get information about the apps in the new tab page.
+  // Collect information about the apps in the new tab page.
   ExtensionService* ext_service = automation_->profile()->GetExtensionService();
-  const ExtensionList* extensions = ext_service->extensions();
-  ListValue* apps_list = new ListValue();
-  for (ExtensionList::const_iterator ext = extensions->begin();
-       ext != extensions->end(); ++ext) {
-    // Only return information about extensions that are actually apps.
-    if ((*ext)->is_app()) {
-      DictionaryValue* app_info = new DictionaryValue();
-      AppLauncherHandler::CreateAppInfo(*ext, ext_service->extension_prefs(),
-                                        app_info);
-      apps_list->Append(app_info);
-    }
+  if (!ext_service) {
+    AutomationJSONReply(automation_, reply_message_.release())
+        .SendError("No ExtensionService.");
+    return;
   }
+  // Process enabled extensions.
+  ExtensionPrefs* ext_prefs = ext_service->extension_prefs();
+  ListValue* apps_list = new ListValue();
+  const ExtensionList* extensions = ext_service->extensions();
+  std::vector<DictionaryValue*>* enabled_apps = GetAppInfoFromExtensions(
+      extensions, ext_prefs);
+  for (std::vector<DictionaryValue*>::const_iterator app =
+       enabled_apps->begin(); app != enabled_apps->end(); ++app) {
+    (*app)->SetBoolean("is_disabled", false);
+    apps_list->Append(*app);
+  }
+  delete enabled_apps;
+  // Process disabled extensions.
+  const ExtensionList* disabled_extensions = ext_service->disabled_extensions();
+  std::vector<DictionaryValue*>* disabled_apps = GetAppInfoFromExtensions(
+      disabled_extensions, ext_prefs);
+  for (std::vector<DictionaryValue*>::const_iterator app =
+       disabled_apps->begin(); app != disabled_apps->end(); ++app) {
+    (*app)->SetBoolean("is_disabled", true);
+    apps_list->Append(*app);
+  }
+  delete disabled_apps;
   ntp_info_->Set("apps", apps_list);
 
   // Get the info that would be displayed in the recently closed section.
