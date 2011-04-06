@@ -14,9 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#if defined(OS_MACOSX)
-#include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
-#endif
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/platform_util.h"
@@ -36,13 +33,19 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/tree_node_iterator.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
+#endif
+
 #if defined(TOOLKIT_VIEWS)
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "views/drag_utils.h"
 #include "views/events/event.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
-#elif defined(TOOLKIT_GTK)
+#endif
+
+#if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/custom_drag.h"
 #endif
 
@@ -69,7 +72,7 @@ class NewBrowserPageNavigator : public PageNavigator {
   virtual void OpenURL(const GURL& url,
                        const GURL& referrer,
                        WindowOpenDisposition disposition,
-                       PageTransition::Type transition) {
+                       PageTransition::Type transition) OVERRIDE {
     if (!browser_) {
       Profile* profile = (disposition == OFF_THE_RECORD) ?
           profile_->GetOffTheRecordProfile() : profile_;
@@ -102,25 +105,23 @@ void CloneBookmarkNodeImpl(BookmarkModel* model,
   }
 }
 
-// Returns the number of descendants of node that are of type url.
-int DescendantURLCount(const BookmarkNode* node) {
+// Returns the number of children of |node| that are of type url.
+int ChildURLCount(const BookmarkNode* node) {
   int result = 0;
   for (int i = 0; i < node->child_count(); ++i) {
     const BookmarkNode* child = node->GetChild(i);
     if (child->is_url())
       result++;
-    else
-      result += DescendantURLCount(child);
   }
   return result;
 }
 
-// Implementation of OpenAll. Opens all nodes of type URL and recurses for
-// folders. |navigator| is the PageNavigator used to open URLs. After the first
-// url is opened |opened_url| is set to true and |navigator| is set to the
-// PageNavigator of the last active tab. This is done to handle a window
-// disposition of new window, in which case we want subsequent tabs to open in
-// that window.
+// Implementation of OpenAll. Opens all nodes of type URL and any children of
+// |node| that are of type URL. |navigator| is the PageNavigator used to open
+// URLs. After the first url is opened |opened_url| is set to true and
+// |navigator| is set to the PageNavigator of the last active tab. This is done
+// to handle a window disposition of new window, in which case we want
+// subsequent tabs to open in that window.
 void OpenAllImpl(const BookmarkNode* node,
                  WindowOpenDisposition initial_disposition,
                  PageNavigator** navigator,
@@ -146,25 +147,26 @@ void OpenAllImpl(const BookmarkNode* node,
       }  // else, new_browser == NULL, which happens during testing.
     }
   } else {
-    // Folder, recurse through children.
+    // For folders only open direct children.
     for (int i = 0; i < node->child_count(); ++i) {
-      OpenAllImpl(node->GetChild(i), initial_disposition, navigator,
-                  opened_url);
+      const BookmarkNode* child_node = node->GetChild(i);
+      if (child_node->is_url())
+        OpenAllImpl(child_node, initial_disposition, navigator, opened_url);
     }
   }
 }
 
 bool ShouldOpenAll(gfx::NativeWindow parent,
                    const std::vector<const BookmarkNode*>& nodes) {
-  int descendant_count = 0;
+  int child_count = 0;
   for (size_t i = 0; i < nodes.size(); ++i)
-    descendant_count += DescendantURLCount(nodes[i]);
-  if (descendant_count < bookmark_utils::num_urls_before_prompting)
+    child_count += ChildURLCount(nodes[i]);
+  if (child_count < bookmark_utils::num_urls_before_prompting)
     return true;
 
   string16 message = l10n_util::GetStringFUTF16(
       IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
-      base::IntToString16(descendant_count));
+      base::IntToString16(child_count));
   string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   return platform_util::SimpleYesNoBox(parent, title, message);
 }

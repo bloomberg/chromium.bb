@@ -78,18 +78,19 @@ void DragBookmarks(Profile* profile,
                    const std::vector<const BookmarkNode*>& nodes,
                    gfx::NativeView view);
 
-// Recursively opens all bookmarks. |initial_disposition| dictates how the
-// first URL is opened, all subsequent URLs are opened as background tabs.
-// |navigator| is used to open the URLs. If |navigator| is NULL the last
-// tabbed browser with the profile |profile| is used. If there is no browser
-// with the specified profile a new one is created.
+// Opens all the bookmarks in |nodes| that are of type url and all the child
+// bookmarks that are of type url for folders in |nodes|. |initial_disposition|
+// dictates how the first URL is opened, all subsequent URLs are opened as
+// background tabs.  |navigator| is used to open the URLs. If |navigator| is
+// NULL the last tabbed browser with the profile |profile| is used. If there is
+// no browser with the specified profile a new one is created.
 void OpenAll(gfx::NativeWindow parent,
              Profile* profile,
              PageNavigator* navigator,
              const std::vector<const BookmarkNode*>& nodes,
              WindowOpenDisposition initial_disposition);
 
-// Convenience for opening a single BookmarkNode.
+// Convenience for |OpenAll| with a single BookmarkNode.
 void OpenAll(gfx::NativeWindow parent,
              Profile* profile,
              PageNavigator* navigator,

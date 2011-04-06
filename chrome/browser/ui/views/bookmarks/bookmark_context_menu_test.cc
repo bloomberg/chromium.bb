@@ -127,11 +127,9 @@ TEST_F(BookmarkContextMenuTest, OpenAll) {
   bookmark_utils::OpenAll(
       NULL, profile_.get(), &navigator_, folder, NEW_FOREGROUND_TAB);
 
-  // Should have navigated to F1's children.
-  ASSERT_EQ(static_cast<size_t>(2), navigator_.urls_.size());
+  // Should have navigated to F1's child but not F11's child.
+  ASSERT_EQ(static_cast<size_t>(1), navigator_.urls_.size());
   ASSERT_TRUE(folder->GetChild(0)->GetURL() == navigator_.urls_[0]);
-  ASSERT_TRUE(folder->GetChild(1)->GetChild(0)->GetURL() ==
-              navigator_.urls_[1]);
 }
 
 // Tests the enabled state of the menus when supplied an empty vector.
