@@ -50,7 +50,7 @@ static const char copyright[] =
 static int
 usage(int ret)
 {
-	fprintf(stderr, "usage: ./scanner [header|code]\n");
+	fprintf(stderr, "usage: ./scanner [client-header|server-header|code]\n");
 	exit(ret);
 }
 
