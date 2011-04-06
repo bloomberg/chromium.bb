@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -28,6 +28,19 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
+/* Default handler for errors while running instruction iterator. */
+static void NaClInstIterFatal(const char* error_message) {
+  NaClLog(LOG_FATAL, "*ERROR* %s\n", error_message);
+  exit(1);
+}
+
+/* Default handler for errors found while parsing the memory segment.*/
+static void NaClInstIterReportRemainingMemoryError(
+    NCRemainingMemoryError error,
+    struct NCRemainingMemory* memory) {
+  NaClInstIterFatal(NCRemainingMemoryErrorMessage(error));
+}
+
 NaClInstIter* NaClInstIterCreateWithLookback(
     NaClSegment* segment,
     size_t lookback_size) {
@@ -37,6 +50,8 @@ NaClInstIter* NaClInstIterCreateWithLookback(
   assert(((lookback_size + 1) * 2 + 1) > lookback_size);
   iter = (NaClInstIter*) malloc(sizeof(NaClInstIter));
   iter->segment = segment;
+  NCRemainingMemoryInit(segment->mbase, segment->size, &iter->memory);
+  iter->memory.error_fn = NaClInstIterReportRemainingMemoryError;
   iter->index = 0;
   iter->inst_count = 0;
   iter->buffer_size = lookback_size + 1;
@@ -45,6 +60,7 @@ NaClInstIter* NaClInstIterCreateWithLookback(
       calloc(iter->buffer_size, sizeof(NaClInstState));
   for (i = 0; i < iter->buffer_size; ++i) {
     iter->buffer[i].inst = NULL;
+    NCInstBytesInitMemory(&iter->buffer[i].bytes, &iter->memory);
   }
   return iter;
 }
@@ -91,13 +107,11 @@ Bool NaClInstIterHasNext(NaClInstIter* iter) {
 }
 
 void NaClInstIterAdvance(NaClInstIter* iter) {
-  NaClInstState* state;
   if (iter->index >= iter->segment->size) {
-    NaClLog(LOG_FATAL, "*ERROR* NaClInstIterAdvance with no next element.\n");
-    exit(1);
+    NaClInstIterFatal("NaClInstIterAdvance with no next element.");
   }
-  state = NaClInstIterGetState(iter);
-  iter->index += state->length;
+  NaClInstIterGetState(iter);
+  iter->index += iter->memory.read_length;
   ++iter->inst_count;
   iter->buffer_index = (iter->buffer_index + 1) % iter->buffer_size;
   DEBUG(
@@ -110,9 +124,7 @@ void NaClInstIterAdvance(NaClInstIter* iter) {
 
 uint8_t* NaClInstIterGetInstMemory(NaClInstIter* iter) {
   if (iter->index >= iter->segment->size) {
-    NaClLog(LOG_FATAL,
-            "*ERROR* NaClInstIterGetInstMemory with no next element.\n");
-    exit(1);
+    NaClInstIterFatal("NaClInstIterGetInstMemory with no next element.");
   }
   return iter->segment->mbase + iter->index;
 }

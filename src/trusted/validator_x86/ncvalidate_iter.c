@@ -269,7 +269,8 @@ void NaClValidatorInstMessage(int level,
     NaClRecordErrorReported(state, level);
   }
   if (state->do_stub_out && (level <= LOG_ERROR)) {
-    memset(inst->mpc, kNaClFullStop, inst->length);
+    NCRemainingMemory *memory = inst->bytes.memory;
+    memset(memory->mpc, kNaClFullStop, memory->read_length);
   }
 }
 
@@ -302,8 +303,10 @@ void NaClValidatorTwoInstMessage(int level,
     NaClRecordErrorReported(state, level);
   }
   if (state->do_stub_out && (level <= LOG_ERROR)) {
-    memset(inst1->mpc, kNaClFullStop, inst1->length);
-    memset(inst2->mpc, kNaClFullStop, inst2->length);
+    NCRemainingMemory* memory1 = inst1->bytes.memory;
+    NCRemainingMemory* memory2 = inst2->bytes.memory;
+    memset(memory1->mpc, kNaClFullStop, memory1->read_length);
+    memset(memory2->mpc, kNaClFullStop, memory2->read_length);
   }
 }
 
@@ -535,7 +538,7 @@ static Bool NaClValidateInstReplacement(NaClInstIter *iter_old,
 
   /* Location/length must match */
   if (istate_new->vpc != istate_old->vpc ||
-      istate_new->length != istate_old->length) {
+      istate_new->bytes.length != istate_old->bytes.length) {
     NaClValidatorTwoInstMessage(LOG_ERROR, state, istate_old, istate_new,
           "Code modification: instructions length/addresses do not match");
     inst_changed = TRUE;
@@ -545,7 +548,10 @@ static Bool NaClValidateInstReplacement(NaClInstIter *iter_old,
 
   do {
     /* fast check if the replacement is identical */
-    if (!memcmp(istate_old->mpc, istate_new->mpc, istate_old->length))
+    if ((istate_old->bytes.memory->read_length ==
+         istate_new->bytes.memory->read_length) &&
+        !memcmp(istate_old->bytes.memory->mpc, istate_new->bytes.memory->mpc,
+                istate_old->bytes.memory->read_length))
       return inst_changed;
 
     inst_changed = TRUE;

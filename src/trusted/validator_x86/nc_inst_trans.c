@@ -49,7 +49,7 @@ static NaClOpKind NaClGetSegmentPrefixReg(NaClInstState* state,
          kPrefixSEGGS | kPrefixSEGES | kPrefixSEGDS)) {
       int i;
       for (i = state->num_prefix_bytes - 1; (i >= 0); --i) {
-        switch (state->mpc[i]) {
+        switch (state->bytes.byte[i]) {
           case kValueSEGCS:
             return RegCS;
           case kValueSEGSS:
@@ -73,7 +73,7 @@ static NaClOpKind NaClGetSegmentPrefixReg(NaClInstState* state,
     int i;
     for (i = state->num_prefix_bytes - 1; (i >= 0); --i) {
     /* for (i = 0; i < state->num_prefix_bytes; ++i) { */
-      switch (state->mpc[i]) {
+      switch (state->bytes.byte[i]) {
         case kValueSEGFS:
           return RegFS;
         case kValueSEGGS:
@@ -709,7 +709,7 @@ uint64_t NaClExtractUnsignedBinaryValue(NaClInstState* state,
   int i;
   uint64_t value = 0;
   for (i = 0; i < num_bytes; ++i) {
-    uint8_t byte = state->mpc[start_byte + i];
+    uint8_t byte = state->bytes.byte[start_byte + i];
     value += (((uint64_t) byte) << (i * 8));
   }
   return value;
@@ -720,7 +720,7 @@ int64_t NaClExtractSignedBinaryValue(NaClInstState* state,
   int i;
   int64_t value = 0;
   for (i = 0; i < num_bytes; ++i) {
-    uint8_t byte = state->mpc[start_byte + i];
+    uint8_t byte = state->bytes.byte[start_byte + i];
     value |= (((uint64_t) byte) << (i * 8));
   }
   return value;
@@ -910,7 +910,7 @@ static NaClExp* NaClAppendMemoryOffsetImmed(NaClInstState* state) {
  * between the PC and the immedaite value of the instruction.
  */
 static NaClExp* NaClAppendRelativeImmed(NaClInstState* state) {
-  NaClPcNumber next_pc = (NaClPcNumber) state->vpc + state->length;
+  NaClPcNumber next_pc = (NaClPcNumber) state->vpc + state->bytes.length;
   NaClPcNumber val = (NaClPcNumber) NaClExtractSignedImmediate(state);
 
   DEBUG(NaClLog(LOG_INFO, "append relative immediate\n"));

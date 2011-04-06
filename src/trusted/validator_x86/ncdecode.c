@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -130,7 +130,7 @@ static void NCRemainingMemoryInternalError(NCRemainingMemoryError error,
    */
   if (NCRemainingMemoryOverflow != error) {
     NCRemainingMemoryReportError(error, memory);
-    ErrorInternal(memory->vstate);
+    ErrorInternal((struct NCValidatorState*) memory->error_fn_state);
   }
 }
 
@@ -443,7 +443,7 @@ static void InitDecodeBuffer(uint8_t *mbase, NaClPcAddress vbase,
   int dbindex;
   NCRemainingMemoryInit(mbase, size, memory);
   memory->error_fn = NCRemainingMemoryInternalError;
-  memory->vstate = vstate;
+  memory->error_fn_state = vstate;
   for (dbindex = 0; dbindex < kDecodeBufferSize; ++dbindex) {
     decodebuffer[dbindex].memory       = memory;
     decodebuffer[dbindex].vstate       = vstate;

@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -78,11 +78,18 @@ typedef struct NCRemainingMemory {
    * function should be used.
    */
   NCRemainingMemoryErrorFn error_fn;
-  /* The validator state associated with the memory segment.
+  /* Additional state associated with the memory segment.
    * Caller should set this immdiately after calling NCRemainingMemoryInit.
-   * Used to communicate the validator state to the validator error function.
+   * Used to communicate additional state to the validator error function.
+   * Initialized to NULL in NCRemainingMemoryInit.
+   * Note: The type is not specified since the notion of state is
+   * decoder/validator specific, and corresponds to additional state
+   * that may be needed by field error_fn. This field, by default is set
+   * to NULL. When setting field error_fn, one can also set this field to
+   * a corresponding structure that holds additional information for reporting
+   * errors.
    */
-  struct NCValidatorState* vstate;
+  void* error_fn_state;
 } NCRemainingMemory;
 
 /* Initialize the (remaining) memory to the memory segment beginning
@@ -118,7 +125,12 @@ void NCRemainingMemoryReset(NCRemainingMemory* memory);
  */
 void NCRemainingMemoryAdvance(NCRemainingMemory* memory);
 
-/* Default memory segment reader error function. */
+/* Default error message for type of error. */
+const char* NCRemainingMemoryErrorMessage(NCRemainingMemoryError error);
+
+/* Default memory segment reader error function. Prints out
+ * string defined by NCRemainingMemoryErrorMessage to stdout.
+ */
 void NCRemainingMemoryReportError(NCRemainingMemoryError error,
                                   NCRemainingMemory* memory);
 
@@ -143,6 +155,9 @@ typedef struct NCInstBytes {
 /* Associate memory with the corresponding instruction bytes. */
 void NCInstBytesInitMemory(NCInstBytes* bytes, NCRemainingMemory* memory);
 
+/* Resets bytes back to the beginning of the current instruciton. */
+void NCInstBytesReset(NCInstBytes* bytes);
+
 /* Initializes the instruction buffer as the empty buffer, and
  * advances the memory segment so that one is beginning the
  * parsing of the current instruction at the current position
@@ -152,6 +167,10 @@ void NCInstBytesInitMemory(NCInstBytes* bytes, NCRemainingMemory* memory);
  */
 void NCInstBytesInit(NCInstBytes* bytes);
 
+/* Peek ahead and return the nth (zero based) byte from the current position
+ * in the sequence of bytes being parsed.
+ */
+uint8_t NCInstBytesPeek(NCInstBytes* bytes, ssize_t n);
 
 /* Reads a byte from the memory segment and adds it to the instruction buffer.
  * Returns the read byte.

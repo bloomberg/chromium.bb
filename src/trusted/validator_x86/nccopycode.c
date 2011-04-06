@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -269,7 +269,8 @@ int NaClCopyCodeIter(uint8_t *dst, uint8_t *src,
      */
     istate_old = NaClInstIterGetState(iter_old);
     istate_new = NaClInstIterGetState(iter_new);
-    if (istate_old->length != istate_new->length ||
+    if (istate_old->bytes.length != istate_new->bytes.length ||
+        iter_old->memory.read_length != iter_new->memory.read_length ||
         istate_new->vpc != istate_old->vpc) {
       /* Sanity check: this should never happen based on checks in
        * NaClValidateInstReplacement.
@@ -282,9 +283,9 @@ int NaClCopyCodeIter(uint8_t *dst, uint8_t *src,
      * as every time we modify instructions we must serialize all processors
      * twice.  Re-evaluate if code modification performance is an issue.
      */
-    CopyInstructionInternal(istate_old->mpc,
-                            istate_new->mpc,
-                            istate_old->length);
+    CopyInstructionInternal(iter_old->memory.mpc,
+                            iter_new->memory.mpc,
+                            iter_old->memory.read_length);
     NaClInstIterAdvance(iter_old);
     NaClInstIterAdvance(iter_new);
   }

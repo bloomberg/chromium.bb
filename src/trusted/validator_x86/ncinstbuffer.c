@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -62,20 +62,21 @@ void NCRemainingMemoryReset(NCRemainingMemory* memory) {
   memory->overflow_count = 0;
 }
 
-void NCRemainingMemoryReportError(NCRemainingMemoryError error,
-                                  NCRemainingMemory* memory) {
+const char* NCRemainingMemoryErrorMessage(NCRemainingMemoryError error) {
   switch (error) {
     case NCRemainingMemoryOverflow:
-      fprintf(stdout, "Read past end of memory segment occurred.\n");
-      break;
+      return "Read past end of memory segment occurred.";
     case NCInstBufferOverflow:
-      fprintf(stdout, "Internal error: instruction buffer overflow.\n");
-      break;
+      return "Internal error: instruction buffer overflow.";
     case NCUnknownMemoryError:
     default:
-      fprintf(stdout, "Unknown memory error occurred.\n");
-      break;
+      return "Unknown memory error occurred.";
   }
+}
+
+void NCRemainingMemoryReportError(NCRemainingMemoryError error,
+                                  NCRemainingMemory* memory) {
+  fprintf(stdout, "%s\n", NCRemainingMemoryErrorMessage(error));
 }
 
 void NCRemainingMemoryInit(uint8_t* memory_base, NaClMemorySize size,
@@ -85,7 +86,7 @@ void NCRemainingMemoryInit(uint8_t* memory_base, NaClMemorySize size,
   memory->mlimit = memory_base + size;
   memory->next_byte = NCRemainingMemoryPeek(memory);
   memory->error_fn = NCRemainingMemoryReportError;
-  memory->vstate = NULL;
+  memory->error_fn_state = NULL;
   NCRemainingMemoryAdvance(memory);
 }
 
@@ -125,6 +126,17 @@ void NCInstBytesInitMemory(NCInstBytes* bytes, NCRemainingMemory* memory) {
   bytes->length = 0;
 }
 
+void NCInstBytesReset(NCInstBytes* buffer) {
+#if CLEAR_CACHE
+  int i;
+  for (i = 0; i < MAX_INST_LENGTH; ++i) {
+    buffer->byte[i] = 0;
+  }
+#endif
+  NCRemainingMemoryReset(buffer->memory);
+  buffer->length = 0;
+}
+
 void NCInstBytesInit(NCInstBytes* buffer) {
 #if CLEAR_CACHE
   int i;
@@ -134,6 +146,10 @@ void NCInstBytesInit(NCInstBytes* buffer) {
 #endif
   NCRemainingMemoryAdvance(buffer->memory);
   buffer->length = 0;
+}
+
+uint8_t NCInstBytesPeek(NCInstBytes* bytes, ssize_t n) {
+  return NCRemainingMemoryLookahead(bytes->memory, n);
 }
 
 uint8_t NCInstBytesRead(NCInstBytes* bytes) {

@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -25,14 +25,14 @@ typedef uint64_t NaClOpExpElement;
 
 /* Model data needed to decode an x86 instruction. */
 struct NaClInstState {
-  /* Define the start location for the bytes defining the instruction. */
-  uint8_t* mpc;
+  /* The bytes used to parse the x86-32 instruction (may have added
+   * zero filler if the instruction straddles the end of the memory segment).
+   */
+  NCInstBytes bytes;
   /* Define the (virtual pc) address associated with the instruction being
    * matched.
    */
   NaClPcAddress vpc;
-  /* Define the number of bytes in the instruction. */
-  uint8_t length;
   /* Define the upper limit on how many bytes can be in the instruction. */
   uint8_t length_limit;
   /* Define the number of prefix bytes processed. */
@@ -86,6 +86,8 @@ struct NaClInstState {
 struct NaClInstIter {
   /* Defines the segment to process */
   struct NaClSegment* segment;
+  /* Defines the remaining memory to iterate over. */
+  NCRemainingMemory memory;
   /* Defines the current (relative pc) index into the segment. */
   NaClMemorySize index;
   /* Defines the index of the current instruction, relative to
