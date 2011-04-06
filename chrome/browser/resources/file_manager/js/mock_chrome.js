@@ -26,7 +26,6 @@ chrome.fileBrowserPrivate = {
   selectFiles: function(selectedFiles) {
     console.log('selectFiles called: ' + selectedFiles.length +
                 ' files selected');
-    console.log(selectedFiles);
   },
 
   /**
@@ -34,7 +33,6 @@ chrome.fileBrowserPrivate = {
    */
   selectFile: function(selectedFile, index) {
     console.log('selectFile called: ' + selectedFile + ', ' + index);
-    console.log(selectedFile);
   },
 
   /**
@@ -51,11 +49,13 @@ chrome.fileBrowserPrivate = {
     // Keep this list in sync with the strings in generated_resources.grd and
     // extension_file_manager_api.cc!
     callback({
-      LOCALE_FMT_DATE_SHORT: '%b %d, %Y',
+      LOCALE_FMT_DATE_SHORT: '%b %-d, %Y',
       LOCALE_MONTHS_SHORT: 'Jan^Feb^Mar^Apr^May^Jun^Jul^Aug^Sep^Oct^Nov^Dec',
       LOCALE_DAYS_SHORT: 'Sun^Mon^Tue^Wed^Thu^Fri^Sat',
 
-      SHORT_DATE_FORMAT: '%b %-d, %Y',
+      BODY_FONT_FAMILY: 'sans-serif',
+      BODY_FONT_SIZE: '13px',
+
       FILES_DISPLAYED_SUMMARY: '%1 Files Displayed',
       FILES_SELECTED_SUMMARY: '%1 Files Selected',
       FILE_IS_DIRECTORY: 'Folder',
@@ -67,6 +67,8 @@ chrome.fileBrowserPrivate = {
       DATE_COLUMN_LABEL: 'Date',
       PREVIEW_COLUMN_LABEL: 'Preview',
 
+      FILENAME_LABEL: 'File Name',
+
       CANCEL_LABEL: 'Cancel',
       OPEN_LABEL: 'Open',
       SAVE_LABEL: 'Save',
@@ -74,7 +76,7 @@ chrome.fileBrowserPrivate = {
       SELECT_FOLDER_TITLE: 'Select a folder to open',
       SELECT_OPEN_FILE_TITLE: 'Select a file to open',
       SELECT_OPEN_MULTI_FILE_TITLE: 'Select one or more files',
-      SELECT_SAVEAS_FILE: 'Select a file to save as',
+      SELECT_SAVEAS_FILE_TITLE: 'Select a file to save as',
 
       COMPUTING_SELECTION: 'Computing selection...',
       NOTHING_SELECTED: 'No files selected',

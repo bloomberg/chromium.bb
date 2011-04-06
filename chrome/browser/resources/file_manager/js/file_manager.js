@@ -281,14 +281,26 @@ FileManager.prototype = {
     this.previewImage_ = this.dialogDom_.querySelector('.preview-img');
     this.previewFilename_ = this.dialogDom_.querySelector('.preview-filename');
     this.previewSummary_ = this.dialogDom_.querySelector('.preview-summary');
+    this.filenameInput_ = this.dialogDom_.querySelector('.filename-input');
     this.okButton_ = this.dialogDom_.querySelector('.ok');
     this.cancelButton_ = this.dialogDom_.querySelector('.cancel');
+
+    if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
+      this.filenameInput_.addEventListener(
+          'keyup', this.onFilenameInputKeyUp_.bind(this));
+      this.filenameInput_.addEventListener(
+          'focus', this.onFilenameInputFocus_.bind(this));
+    } else {
+      var label = this.dialogDom_.querySelector('.filename-label');
+      label.style.visibility = 'hidden';
+      this.filenameInput_.style.visibility = 'hidden';
+    }
 
     this.okButton_.addEventListener('click', this.onOk_.bind(this));
     this.cancelButton_.addEventListener('click', this.onCancel_.bind(this));
 
-    this.dialogDom_.querySelector('.preview-label').textContent =
-      str('PREVIEW_COLUMN_LABEL');
+    // Populate the static localized strings.
+    i18nTemplate.process(this.document_, localStrings.templateData);
 
     // Set up the detail table.
     var dataModel = new cr.ui.table.TableDataModel([]);
@@ -312,6 +324,10 @@ FileManager.prototype = {
     this.table.dataModel = dataModel;
     this.table.columnModel = new cr.ui.table.TableColumnModel(columns);
 
+    if (this.dialogType_ != FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
+      this.table.selectionModel = new cr.ui.table.TableSingleSelectionModel();
+    }
+
     this.table.addEventListener(
         'dblclick', this.onDetailDoubleClick_.bind(this));
     this.table.selectionModel.addEventListener(
@@ -325,7 +341,6 @@ FileManager.prototype = {
   FileManager.prototype.initDialogType_ = function() {
     var defaultTitle;
     var okLabel = str('OPEN_LABEL');
-    var cancelLabel = str('CANCEL_LABEL');
 
     switch (this.dialogType_) {
       case FileManager.DialogType.SELECT_FOLDER:
@@ -350,7 +365,6 @@ FileManager.prototype = {
     }
 
     this.okButton_.textContent = okLabel;
-    this.cancelButton_.textContent = cancelLabel;
 
     dialogTitle = this.params_.title || defaultTitle;
     this.dialogDom_.querySelector('.dialog-title').textContent = dialogTitle;
@@ -688,8 +702,9 @@ FileManager.prototype = {
       selectable = (this.selection.directoryCount == 0 &&
                     this.selection.fileCount >= 1);
     } else if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-      // TODO(rginda): save-as logic.
-      selectable = false;
+      selectable = this.selection.leadEntry && this.selection.leadEntry.isFile;
+      if (selectable)
+        this.filenameInput_.value = this.selection.leadEntry.name;
     } else {
       throw new Error('Unknown dialog type');
     }
@@ -744,6 +759,27 @@ FileManager.prototype = {
     reader.readEntries(onReadSome);
   };
 
+  FileManager.prototype.onFilenameInputKeyUp_ = function(event) {
+    this.okButton_.disabled = this.filenameInput_.value.length == 0;
+  };
+
+  FileManager.prototype.onFilenameInputFocus_ = function(event) {
+    var input = this.filenameInput_;
+
+    // On focus we want to select everything but the extension, but
+    // Chrome will select-all after the focus event completes.  We
+    // schedule a timeout to alter the focus after that happens.
+    setTimeout(function() {
+        var selectionEnd = input.value.lastIndexOf('.');
+        if (selectionEnd == -1) {
+          input.select();
+        } else {
+          input.selectionStart = 0;
+          input.selectionEnd = selectionEnd;
+        }
+    }, 0);
+  };
+
   /**
    * Handle a click of the cancel button.
    *
@@ -762,10 +798,26 @@ FileManager.prototype = {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onOk_ = function(event) {
+    if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
+      // Save-as doesn't require a valid selection from the list, since
+      // we're going to take the filename from the text input.
+      var filename = this.filenameInput_.value;
+      if (!filename)
+        throw new Error('Missing filename!');
+
+      chrome.fileBrowserPrivate.selectFile(this.currentDirEntry_.fullPath +
+                                           '/' + filename, 0);
+      return;
+    }
+
     var ary = [];
     var selectedIndexes = this.table.selectionModel.selectedIndexes;
+
+    // All other dialog types require at least one selected list item.
+    // The logic to control whether or not the ok button is enabled should
+    // prevent us from ever getting here, but we sanity check to be sure.
     if (!selectedIndexes.length)
-      return;
+      throw new Error('Nothing selected!');
 
     for (var i = 0; i < selectedIndexes.length; i++) {
       var entry = this.table.dataModel.item(selectedIndexes[i]);
@@ -774,10 +826,28 @@ FileManager.prototype = {
         continue;
       }
 
-      ary.push(entry);
+      ary.push(entry.fullPath);
     }
 
-    chrome.fileBrowserPrivate.selectFiles(ary);
+    // Multi-file selection has no other restrictions.
+    if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILES) {
+      chrome.fileBrowserPrivate.selectFiles(ary);
+      return;
+    }
+
+    // Everything else must have exactly one.
+    if (ary.length > 1)
+      throw new Error('Too many files selected!');
+
+    if (this.dialogType_ == FileManager.DialogType.SELECT_FOLDER) {
+      if (!this.selection.leadEntry.isDirectory)
+        throw new Error('Selected entry is not a folder!');
+    } else if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE) {
+      if (!this.selection.leadEntry.isFile) {
+        throw new Error('Selected entry is not a file!');
+    }
+
+    chrome.fileBrowserPrivate.selectFile(ary[0], 0);
   };
 
 })();

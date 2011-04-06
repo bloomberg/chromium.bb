@@ -36,8 +36,12 @@
     <script src='js/harness.js'></script>
   </head>
   <body>
+    [ <a href='?{"type":"saveas-file"}'>Save File</a> |
+    <a href='?{"type":"open-file"}'>Open File</a> |
+    <a href='?{"type":"open-multi-file"}'>Open Files</a> |
+    <a href='?{"type":"folder"}'>Select Folder</a> ]
     <div id=screen>
-      <iframe id=dialog src='main.html'></iframe>
+      <iframe id=dialog></iframe>
     </div>
     <div>
       <button onclick='harness.onClearClick(event)'>Reset Filesystem</button>

@@ -45,7 +45,7 @@ cr.define('cr.ui.table', function() {
      * @param {number} itemsAdded Number of items added.
      */
     adjust: function(index, itemsRemoved, itemsAdded) {
-      ListSelectionModel.prototype.adjust.call(
+      ListSingleSelectionModel.prototype.adjust.call(
           this, this.length, itemsRemoved, itemsAdded);
     }
   };

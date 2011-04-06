@@ -23,6 +23,9 @@ var harness = {
     window.requestFileSystem(window.PERSISTENT, 16 * 1024 * 1024,
                              onFilesystem,
                              util.flog('Error initializing filesystem'));
+
+    var iframe = document.getElementById('dialog');
+    iframe.setAttribute('src', 'main.html' + document.location.search);
   },
 
   /**

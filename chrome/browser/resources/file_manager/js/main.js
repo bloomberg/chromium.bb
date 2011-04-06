@@ -13,11 +13,19 @@ var fileManager;
  * Called by main.html after the dom has been parsed.
  */
 function init() {
+  var params;
+
   function onFileSystemFound(filesystem) {
     FileManager.initStrings(function () {
-      fileManager = new FileManager(document.body, filesystem);
+      fileManager = new FileManager(document.body, filesystem, params);
     });
   };
+
+  if (document.location.search) {
+    var json = decodeURIComponent(document.location.search.substr(1));
+    console.log('params: ' + json);
+    params = JSON.parse(json);
+  }
 
   util.installFileErrorToString();
 

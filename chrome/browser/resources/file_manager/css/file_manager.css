@@ -10,8 +10,6 @@ body {
   -webkit-box-orient: vertical;
   -webkit-user-select: none;
   display: -webkit-box;
-  font-family: sans-serif;
-  font-size: 13px;
   height: 100%;
   margin: 0;
   padding: 0;
@@ -209,6 +207,21 @@ body {
   padding: 5px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.filename-label {
+  -webkit-box-orient: horizontal;
+  color: #666;
+  display: -webkit-box;
+  font-weight: bold;
+  padding-top: 4px;
+  padding-right: 4px;
+}
+
+.filename-input {
+  -webkit-box-orient: horizontal;
+  -webkit-box-flex: 1;
+  display: -webkit-box;
 }
 
 /* A horizontal spring. */
