@@ -248,6 +248,8 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest, SecondIncognitoBrowser) {
 // Tests closing an incognito browser - the incognito browser should close,
 // and a new normal browser opened with a NewTabPage (which is not closeable).
 IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest, CloseIncognitoBrowser) {
+  NavigateToURL(ntp_url_);
+
   // Open an incognito browser.
   Browser* incognito_browser = CreateIncognitoBrowser();
   EXPECT_TRUE(incognito_browser->profile()->IsOffTheRecord());
@@ -262,9 +264,8 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest, CloseIncognitoBrowser) {
 
   // Close incognito browser.
   incognito_browser->CloseWindow();
-  ui_test_utils::RunAllPendingInMessageLoop();
+  Browser* new_browser = ui_test_utils::WaitForNewBrowser();
   EXPECT_EQ(1u, BrowserList::size());
-  Browser* new_browser = *(BrowserList::begin());
   EXPECT_FALSE(new_browser->profile()->IsOffTheRecord());
   EXPECT_EQ(1, new_browser->tab_count());
   EXPECT_EQ(ntp_url_, new_browser->GetSelectedTabContents()->GetURL());

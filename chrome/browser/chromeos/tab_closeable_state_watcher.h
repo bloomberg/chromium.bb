@@ -86,7 +86,7 @@ class TabCloseableStateWatcher : public ::TabCloseableStateWatcher,
   // Returns true if closing of |browser| is permitted.
   // |action_type| is the action to take regardless if browser is closeable.
   bool CanCloseBrowserImpl(const Browser* browser,
-                           BrowserActionType* action_type) const;
+                           BrowserActionType* action_type);
 
   // Data members.
 
@@ -100,6 +100,11 @@ class TabCloseableStateWatcher : public ::TabCloseableStateWatcher,
 
   // Is in guest session?
   bool guest_session_;
+
+  // Set to true if we're waiting for a new browser to be created. When true we
+  // uncoditionally allow everything as we know a browser is in the process of
+  // being created.
+  bool waiting_for_browser_;
 
   NotificationRegistrar notification_registrar_;
 

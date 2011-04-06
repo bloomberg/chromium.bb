@@ -1,8 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/file_path.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -13,6 +14,48 @@
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/page_transition_types.h"
+
+namespace {
+
+// BrowserList::Observer implementation that waits for a browser to be
+// removed.
+class BrowserListObserverImpl : public BrowserList::Observer {
+ public:
+  BrowserListObserverImpl() : did_remove_(false), running_(false) {
+    BrowserList::AddObserver(this);
+  }
+
+  ~BrowserListObserverImpl() {
+    BrowserList::RemoveObserver(this);
+  }
+
+  // Returns when a browser has been removed.
+  void Run() {
+    running_ = true;
+    if (!did_remove_)
+      ui_test_utils::RunMessageLoop();
+  }
+
+  // BrowserList::Observer
+  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE {
+  }
+  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE {
+    did_remove_ = true;
+    if (running_)
+      MessageLoop::current()->Quit();
+  }
+
+ private:
+  // Was OnBrowserRemoved invoked?
+  bool did_remove_;
+
+  // Was Run invoked?
+  bool running_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserListObserverImpl);
+};
+
+}  // namespace
 
 typedef InProcessBrowserTest SessionRestoreTest;
 
@@ -63,7 +106,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
   // And the first url should be url.
   EXPECT_EQ(url, new_browser->GetTabContentsAt(0)->GetURL());
 }
-
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   GURL url1(ui_test_utils::GetTestUrl(
@@ -141,4 +183,40 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
 
   // Make sure the restore was successful.
   EXPECT_EQ(0U, service->entries().size());
+}
+
+// Verifies we remember the last browser window when closing the last
+// non-incognito window while an incognito window is open.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, IncognitotoNonIncognito) {
+  // Turn on session restore.
+  SessionStartupPref pref(SessionStartupPref::LAST);
+  SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+
+  GURL url(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title1.html"))));
+
+  // Add a single tab.
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Create a new incognito window.
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  incognito_browser->AddBlankTab(true);
+  incognito_browser->window()->Show();
+
+  // Close the normal browser. After this we only have the incognito window
+  // open. We wait until the window closes as window closing is async.
+  {
+    BrowserListObserverImpl observer;
+    browser()->window()->Close();
+    observer.Run();
+  }
+
+  // Create a new window, which should trigger session restore.
+  incognito_browser->NewWindow();
+
+  // The first tab should have 'url' as its url.
+  Browser* new_browser = ui_test_utils::WaitForNewBrowser();
+  ASSERT_TRUE(new_browser);
+  EXPECT_EQ(url, new_browser->GetTabContentsAt(0)->GetURL());
 }
