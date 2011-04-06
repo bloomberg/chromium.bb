@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/task.h"
@@ -59,13 +60,14 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void Init(const UserVector& users);
 
   // LoginDisplay::Delegate: implementation
-  virtual void CreateAccount();
-  virtual string16 GetConnectedNetworkName();
-  virtual void FixCaptivePortal();
+  virtual void CreateAccount() OVERRIDE;
+  virtual string16 GetConnectedNetworkName() OVERRIDE;
+  virtual void FixCaptivePortal() OVERRIDE;
   virtual void Login(const std::string& username,
-                     const std::string& password);
-  virtual void LoginAsGuest();
-  virtual void OnUserSelected(const std::string& username);
+                     const std::string& password) OVERRIDE;
+  virtual void LoginAsGuest() OVERRIDE;
+  virtual void OnUserSelected(const std::string& username) OVERRIDE;
+  virtual void OnStartEnterpriseEnrollment() OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

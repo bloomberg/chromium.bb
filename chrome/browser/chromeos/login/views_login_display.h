@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
@@ -48,13 +49,14 @@ class ViewsLoginDisplay : public LoginDisplay,
                          HelpAppLauncher::HelpTopic help_topic_id);
 
   // UserController::Delegate implementation:
-  virtual void CreateAccount();
-  virtual void Login(UserController* source, const string16& password);
-  virtual void LoginAsGuest();
-  virtual void ClearErrors();
-  virtual void OnUserSelected(UserController* source);
-  virtual void RemoveUser(UserController* source);
-  virtual void SelectUser(int index);
+  virtual void CreateAccount() OVERRIDE;
+  virtual void Login(UserController* source, const string16& password) OVERRIDE;
+  virtual void LoginAsGuest() OVERRIDE;
+  virtual void ClearErrors() OVERRIDE;
+  virtual void OnUserSelected(UserController* source) OVERRIDE;
+  virtual void RemoveUser(UserController* source) OVERRIDE;
+  virtual void SelectUser(int index) OVERRIDE;
+  virtual void StartEnterpriseEnrollment() OVERRIDE;
 
   // Overridden from views::MessageBubbleDelegate:
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,

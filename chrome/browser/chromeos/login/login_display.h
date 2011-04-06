@@ -52,6 +52,10 @@ class LoginDisplay : public RemoveUserDelegate {
 
     // Called when existing user pod is selected in the UI.
     virtual void OnUserSelected(const std::string& username) = 0;
+
+    // Called when the user requests enterprise enrollment.
+    virtual void OnStartEnterpriseEnrollment() = 0;
+
    protected:
     virtual ~Delegate();
   };

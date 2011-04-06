@@ -234,6 +234,16 @@ void ExistingUserController::OnUserSelected(const std::string& username) {
   num_login_attempts_ = 0;
 }
 
+void ExistingUserController::OnStartEnterpriseEnrollment() {
+#if !defined(OFFICIAL_BUILD)
+  // TODO(mnissler): Make sure to only start if the device doesn't have an owner
+  // and isn't already enrolled.
+  host_->StartWizard(WizardController::kEnterpriseEnrollmentScreenName,
+                     NULL, GURL());
+  login_display_->OnFadeOut();
+#endif
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, LoginPerformer::Delegate implementation:
 //

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/chromeos/login/existing_user_view.h"
 #include "chrome/browser/chromeos/login/guest_user_view.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/browser/chromeos/login/username_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
@@ -302,6 +302,10 @@ void UserController::OnCreateAccount() {
   StartThrobber();
 
   delegate_->CreateAccount();
+}
+
+void UserController::OnStartEnterpriseEnrollment() {
+  delegate_->StartEnterpriseEnrollment();
 }
 
 void UserController::OnLoginAsGuest() {

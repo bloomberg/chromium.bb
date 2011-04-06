@@ -49,6 +49,9 @@ class NewUserView : public ThrobberHostView,
     // User initiated new account creation.
     virtual void OnCreateAccount() = 0;
 
+    // User requested enterprise enrollment.
+    virtual void OnStartEnterpriseEnrollment() = 0;
+
     // User started typing so clear all error messages.
     virtual void ClearErrors() = 0;
 
@@ -157,6 +160,7 @@ class NewUserView : public ThrobberHostView,
 
   views::Accelerator accel_focus_pass_;
   views::Accelerator accel_focus_user_;
+  views::Accelerator accel_enterprise_enrollment_;
   views::Accelerator accel_login_off_the_record_;
   views::Accelerator accel_toggle_accessibility_;
 

@@ -66,10 +66,13 @@ class UserEntryTextfield : public TextfieldWithMargin {
 ExistingUserView::ExistingUserView(UserController* user_controller)
     : user_controller_(user_controller),
       password_field_(NULL),
+      accel_enterprise_enrollment_(
+          views::Accelerator(ui::VKEY_E, false, true, true)),
       accel_login_off_the_record_(
-        views::Accelerator(ui::VKEY_B, false, false, true)),
+          views::Accelerator(ui::VKEY_B, false, false, true)),
       accel_toggle_accessibility_(
           WizardAccessibilityHelper::GetAccelerator()) {
+  AddAccelerator(accel_enterprise_enrollment_);
   AddAccelerator(accel_login_off_the_record_);
   AddAccelerator(accel_toggle_accessibility_);
 }
@@ -96,7 +99,10 @@ void ExistingUserView::RecreateFields() {
 
 bool ExistingUserView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
-  if (accelerator == accel_login_off_the_record_) {
+  if (accelerator == accel_enterprise_enrollment_) {
+    user_controller_->OnStartEnterpriseEnrollment();
+    return true;
+  } else if (accelerator == accel_login_off_the_record_) {
     user_controller_->OnLoginAsGuest();
     return true;
   } else if (accelerator == accel_toggle_accessibility_) {

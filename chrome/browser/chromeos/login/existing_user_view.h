@@ -53,6 +53,7 @@ class ExistingUserView : public ThrobberHostView,
   // For editing the password.
   views::Textfield* password_field_;
 
+  views::Accelerator accel_enterprise_enrollment_;
   views::Accelerator accel_login_off_the_record_;
   views::Accelerator accel_toggle_accessibility_;
 

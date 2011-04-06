@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/ui/views/window.h"
 #include "grit/chromium_strings.h"
-#include "grit/theme_resources.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/widget/widget_gtk.h"
@@ -290,6 +290,10 @@ void ViewsLoginDisplay::SelectUser(int index) {
     message.set_param(0, index);
     WmIpc::instance()->SendMessage(message);
   }
+}
+
+void ViewsLoginDisplay::StartEnterpriseEnrollment() {
+  delegate()->OnStartEnterpriseEnrollment();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

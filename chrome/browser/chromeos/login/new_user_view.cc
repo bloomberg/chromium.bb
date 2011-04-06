@@ -116,10 +116,10 @@ NewUserView::NewUserView(Delegate* delegate,
       create_account_link_(NULL),
       guest_link_(NULL),
       languages_menubutton_(NULL),
-      accel_focus_pass_(views::Accelerator(ui::VKEY_P, false, false, true)),
-      accel_focus_user_(views::Accelerator(ui::VKEY_U, false, false, true)),
-      accel_login_off_the_record_(
-          views::Accelerator(ui::VKEY_B, false, false, true)),
+      accel_focus_pass_(ui::VKEY_P, false, false, true),
+      accel_focus_user_(ui::VKEY_U, false, false, true),
+      accel_enterprise_enrollment_(ui::VKEY_E, false, true, true),
+      accel_login_off_the_record_(ui::VKEY_B, false, false, true),
       accel_toggle_accessibility_(WizardAccessibilityHelper::GetAccelerator()),
       delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
@@ -198,6 +198,7 @@ void NewUserView::Init() {
   // Set up accelerators.
   AddAccelerator(accel_focus_user_);
   AddAccelerator(accel_focus_pass_);
+  AddAccelerator(accel_enterprise_enrollment_);
   AddAccelerator(accel_login_off_the_record_);
   AddAccelerator(accel_toggle_accessibility_);
 
@@ -220,6 +221,8 @@ bool NewUserView::AcceleratorPressed(const views::Accelerator& accelerator) {
     username_field_->RequestFocus();
   } else if (accelerator == accel_focus_pass_) {
     password_field_->RequestFocus();
+  } else if (accelerator == accel_enterprise_enrollment_) {
+    delegate_->OnStartEnterpriseEnrollment();
   } else if (accelerator == accel_login_off_the_record_) {
     delegate_->OnLoginAsGuest();
   } else if (accelerator == accel_toggle_accessibility_) {
