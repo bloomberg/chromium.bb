@@ -426,7 +426,7 @@ std::string ShellIntegration::GetDesktopFileContents(
     }
   }
 
-#if defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_USES_GTK)
   std::string wmclass = web_app::GetWMClassFromAppName(app_name);
   if (!wmclass.empty()) {
     output_buffer += StringPrintf("StartupWMClass=%s\n", wmclass.c_str());
