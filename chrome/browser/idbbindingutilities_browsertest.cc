@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,16 +67,18 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
         value_for_key_path_failed_(false) {
   }
 
-  void CreateUtilityProcess() {
+  void CreateUtilityProcess(ResourceDispatcherHost* resource_dispatcher_host) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(this, &IDBKeyPathHelper::CreateUtilityProcess));
+          NewRunnableMethod(this, &IDBKeyPathHelper::CreateUtilityProcess,
+                            resource_dispatcher_host));
       return;
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     utility_process_host_ =
-        new UtilityProcessHost(this, BrowserThread::IO);
+        new UtilityProcessHost(resource_dispatcher_host, this,
+                               BrowserThread::IO);
     utility_process_host_->StartBatchMode();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             new MessageLoop::QuitTask());
@@ -191,7 +193,8 @@ class ScopedIDBKeyPathHelper {
  public:
   ScopedIDBKeyPathHelper() {
     key_path_helper_ = new IDBKeyPathHelper();
-    key_path_helper_->CreateUtilityProcess();
+    key_path_helper_->CreateUtilityProcess(
+        g_browser_process->resource_dispatcher_host());
     ui_test_utils::RunMessageLoop();
   }
 

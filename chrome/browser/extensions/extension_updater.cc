@@ -579,7 +579,7 @@ class SafeManifestParser : public UtilityProcessHost::Client {
         !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
     if (use_utility_process) {
       UtilityProcessHost* host = new UtilityProcessHost(
-          this, BrowserThread::UI);
+          rdh, this, BrowserThread::UI);
       host->StartUpdateManifestParse(xml_);
     } else {
       UpdateManifest manifest;

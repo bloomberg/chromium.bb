@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/utility_process_host.h"
 #include "content/common/indexed_db_key.h"
 #include "content/common/serialized_script_value.h"
@@ -61,7 +62,7 @@ class KeyUtilityClientImpl
   ~KeyUtilityClientImpl();
 
   void GetRDHAndStartUtilityProcess();
-  void StartUtilityProcessInternal();
+  void StartUtilityProcessInternal(ResourceDispatcherHost* rdh);
   void EndUtilityProcessInternal();
   void CallStartIDBKeyFromValueAndKeyPathFromIOThread(
       const std::vector<SerializedScriptValue>& values,
@@ -251,10 +252,12 @@ void KeyUtilityClientImpl::GetRDHAndStartUtilityProcess() {
     return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  StartUtilityProcessInternal();
+  StartUtilityProcessInternal(g_browser_process->resource_dispatcher_host());
 }
 
-void KeyUtilityClientImpl::StartUtilityProcessInternal() {
+void KeyUtilityClientImpl::StartUtilityProcessInternal(
+    ResourceDispatcherHost* rdh) {
+  DCHECK(rdh);
   // The ResourceDispatcherHost can only be used on the IO thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -262,7 +265,8 @@ void KeyUtilityClientImpl::StartUtilityProcessInternal() {
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
             this,
-            &KeyUtilityClientImpl::StartUtilityProcessInternal));
+            &KeyUtilityClientImpl::StartUtilityProcessInternal,
+            rdh));
     return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -270,7 +274,7 @@ void KeyUtilityClientImpl::StartUtilityProcessInternal() {
 
   client_ = new KeyUtilityClientImpl::Client(this);
   utility_process_host_ = new UtilityProcessHost(
-      client_.get(), BrowserThread::IO);
+      rdh, client_.get(), BrowserThread::IO);
   utility_process_host_->StartBatchMode();
   state_ = STATE_INITIALIZED;
   waitable_event_.Signal();

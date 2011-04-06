@@ -116,7 +116,8 @@ class UtilityProcessHost : public BrowserChildProcessHost {
     DISALLOW_COPY_AND_ASSIGN(Client);
   };
 
-  UtilityProcessHost(Client* client, BrowserThread::ID client_thread_id);
+  UtilityProcessHost(ResourceDispatcherHost* rdh, Client* client,
+                     BrowserThread::ID client_thread_id);
   virtual ~UtilityProcessHost();
 
   // Start a process to unpack the extension at the given path.  The process
