@@ -14,9 +14,8 @@
 namespace skia {
 
 // A class designed to translate skia painting into a region to the current
-// graphics context. This class has been adapted from the class with the same
-// name in platform_canvas_win.h. On construction, it will set up a context for
-// painting into, and on destruction, it will commit it to the current context.
+// graphics context.  On construction, it will set up a context for painting
+// into, and on destruction, it will commit it to the current context.
 template <class T>
 class CanvasPaintT : public T {
  public:

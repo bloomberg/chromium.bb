@@ -14,10 +14,9 @@
 
 namespace skia {
 
-// A class designed to translate skia painting into a region in a
-// GdkWindow. This class has been adapted from the class with the same name in
-// platform_canvas_win.h. On construction, it will set up a context for
-// painting into, and on destruction, it will commit it to the GdkWindow.
+// A class designed to translate skia painting into a region in a GdkWindow.
+// On construction, it will set up a context for painting into, and on
+// destruction, it will commit it to the GdkWindow.
 template <class T>
 class CanvasPaintT : public T {
  public:
