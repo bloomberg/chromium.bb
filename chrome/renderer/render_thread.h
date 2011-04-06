@@ -19,6 +19,7 @@
 #include "chrome/renderer/visitedlink_slave.h"
 #include "content/common/child_thread.h"
 #include "content/common/css_colors.h"
+#include "content/common/gpu_process_launch_causes.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "ui/gfx/native_widget_types.h"
@@ -224,13 +225,13 @@ class RenderThread : public RenderThreadBase,
   // Asynchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).
   // Use GetGpuChannel() to determine when the channel is ready for use.
-  void EstablishGpuChannel();
+  void EstablishGpuChannel(content::CauseForGpuLaunch);
 
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).
   // If there is a pending asynchronous request, it will be completed by the
   // time this routine returns.
-  GpuChannelHost* EstablishGpuChannelSync();
+  GpuChannelHost* EstablishGpuChannelSync(content::CauseForGpuLaunch);
 
   // Get the GPU channel. Returns NULL if the channel is not established or
   // has been lost.

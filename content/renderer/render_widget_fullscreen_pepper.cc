@@ -266,7 +266,8 @@ void RenderWidgetFullscreenPepper::CreateContext() {
   DCHECK(!context_);
   RenderThread* render_thread = RenderThread::current();
   DCHECK(render_thread);
-  GpuChannelHost* host = render_thread->EstablishGpuChannelSync();
+  GpuChannelHost* host = render_thread->EstablishGpuChannelSync(
+    content::CAUSE_FOR_GPU_LAUNCH_RENDERWIDGETFULLSCREENPEPPER_CREATECONTEXT);
   if (!host)
     return;
   const int32 attribs[] = {

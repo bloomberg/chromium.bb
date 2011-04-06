@@ -1072,13 +1072,20 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   }
 
   // Handle URLs to wreck the gpu process.
-  GpuProcessHostUIShim* gpu_ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
-  if (gpu_ui_shim) {
-    if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuCrashURL)) {
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuCrashURL)) {
+    GpuProcessHostUIShim* gpu_ui_shim =
+        GpuProcessHostUIShim::GetForRenderer(0,
+          content::CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUCRASH);
+    if (gpu_ui_shim) {
       gpu_ui_shim->SendAboutGpuCrash();
       return true;
     }
-    if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuHangURL)) {
+  }
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuHangURL)) {
+    GpuProcessHostUIShim* gpu_ui_shim =
+        GpuProcessHostUIShim::GetForRenderer(0,
+          content::CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUHANG);
+    if (gpu_ui_shim) {
       gpu_ui_shim->SendAboutGpuHang();
       return true;
     }

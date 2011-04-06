@@ -67,7 +67,9 @@ void GpuDataManager::RequestCompleteGpuInfoIfNeeded() {
     return;
   complete_gpu_info_already_requested_ = true;
 
-  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
+  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0,
+    content::
+      CAUSE_FOR_GPU_LAUNCH_GPUDATAMANAGER_REQUESTCOMPLETEGPUINFOIFNEEDED);
   if (ui_shim)
     ui_shim->CollectGpuInfoAsynchronously();
 }

@@ -159,7 +159,8 @@ RenderWidgetHostView* GpuProcessHostUIShim::ViewSurface::
   return view;
 }
 
-GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id)
+GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id,
+    content::CauseForGpuLaunch cause_for_gpu_launch)
     : host_id_(host_id),
       gpu_process_(base::kNullProcessHandle),
       gpu_render_thread_(NULL),
@@ -188,12 +189,14 @@ GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id)
         NewRunnableFunction(
             &GpuProcessHost::Create,
             host_id,
-            GpuDataManager::GetInstance()->GetGpuFeatureFlags()));
+            GpuDataManager::GetInstance()->GetGpuFeatureFlags(),
+            cause_for_gpu_launch));
   }
 }
 
 // static
-GpuProcessHostUIShim* GpuProcessHostUIShim::GetForRenderer(int renderer_id) {
+GpuProcessHostUIShim* GpuProcessHostUIShim::GetForRenderer(int renderer_id,
+    content::CauseForGpuLaunch cause_for_gpu_launch) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Don't grant further access to GPU if it is not allowed.
@@ -229,7 +232,7 @@ GpuProcessHostUIShim* GpuProcessHostUIShim::GetForRenderer(int renderer_id) {
     host_id = ++g_last_host_id;
   }
 
-  return new GpuProcessHostUIShim(host_id);
+  return new GpuProcessHostUIShim(host_id, cause_for_gpu_launch);
 }
 
 // static

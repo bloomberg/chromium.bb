@@ -160,7 +160,8 @@ class CreateCommandBufferCallback : public CallbackRunner<Tuple1<int32> > {
 
 }  // namespace
 
-void GpuMessageFilter::OnEstablishGpuChannel() {
+void GpuMessageFilter::OnEstablishGpuChannel(
+    content::CauseForGpuLaunch cause_for_gpu_launch) {
   scoped_ptr<EstablishChannelCallback> callback(
       new EstablishChannelCallback(this));
 
@@ -173,7 +174,8 @@ void GpuMessageFilter::OnEstablishGpuChannel() {
   // to something like OnCreateGpuProcess.
   GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id_);
   if (!ui_shim) {
-    ui_shim = GpuProcessHostUIShim::GetForRenderer(render_process_id_);
+    ui_shim = GpuProcessHostUIShim::GetForRenderer(render_process_id_,
+      cause_for_gpu_launch);
     if (!ui_shim) {
       callback->Run(IPC::ChannelHandle(),
                     static_cast<base::ProcessHandle>(NULL),

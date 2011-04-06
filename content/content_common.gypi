@@ -100,6 +100,7 @@
         'common/geoposition.h',
         'common/gpu_info.cc',
         'common/gpu_info.h',
+        'common/gpu_process_launch_causes.h',
         'common/gpu_messages.h',
         'common/hi_res_timer_manager_posix.cc',
         'common/hi_res_timer_manager_win.cc',

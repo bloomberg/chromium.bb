@@ -26,8 +26,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_localization_peer.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/safebrowsing_messages.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/automation/dom_automation_v8_extension.h"
 #include "chrome/renderer/devtools_agent_filter.h"
@@ -85,10 +85,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "v8/include/v8.h"
 #include "webkit/extensions/v8/benchmarking_extension.h"
 #include "webkit/extensions/v8/playback_extension.h"
 #include "webkit/glue/webkit_glue.h"
-#include "v8/include/v8.h"
 
 // TODO(port)
 #if defined(OS_WIN)
@@ -758,7 +758,8 @@ void RenderThread::EnableSpdy(bool enable) {
   Send(new ViewHostMsg_EnableSpdy(enable));
 }
 
-void RenderThread::EstablishGpuChannel() {
+void RenderThread::EstablishGpuChannel(
+    content::CauseForGpuLaunch cause_for_gpu_launch) {
   if (gpu_channel_.get()) {
     // Do nothing if we already have a GPU channel or are already
     // establishing one.
@@ -775,11 +776,12 @@ void RenderThread::EstablishGpuChannel() {
     gpu_channel_ = new GpuChannelHost;
 
   // Ask the browser for the channel name.
-  Send(new GpuHostMsg_EstablishGpuChannel());
+  Send(new GpuHostMsg_EstablishGpuChannel(cause_for_gpu_launch));
 }
 
-GpuChannelHost* RenderThread::EstablishGpuChannelSync() {
-  EstablishGpuChannel();
+GpuChannelHost* RenderThread::EstablishGpuChannelSync(
+    content::CauseForGpuLaunch cause_for_gpu_launch) {
+  EstablishGpuChannel(cause_for_gpu_launch);
   Send(new GpuHostMsg_SynchronizeGpu());
   return GetGpuChannel();
 }

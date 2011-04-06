@@ -52,10 +52,13 @@ static const int kGpuMaxCrashCount = 3;
 // static
 GpuProcessHost* GpuProcessHost::Create(
     int host_id,
-    const GpuFeatureFlags& gpu_feature_flags) {
+    const GpuFeatureFlags& gpu_feature_flags,
+    content::CauseForGpuLaunch cause_for_gpu_launch) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  GpuProcessHost* host = new GpuProcessHost(host_id, gpu_feature_flags);
+  GpuProcessHost* host = new GpuProcessHost(host_id,
+      gpu_feature_flags,
+      cause_for_gpu_launch);
   if (!host->Init()) {
     delete host;
     return NULL;
@@ -76,11 +79,15 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
 
 GpuProcessHost::GpuProcessHost(
     int host_id,
-    const GpuFeatureFlags& gpu_feature_flags)
+    const GpuFeatureFlags& gpu_feature_flags,
+    content::CauseForGpuLaunch cause_for_gpu_launch)
     : BrowserChildProcessHost(GPU_PROCESS, NULL),
       host_id_(host_id),
       gpu_feature_flags_(gpu_feature_flags) {
   g_hosts_by_id.AddWithID(this, host_id_);
+  UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLaunchCause",
+                            cause_for_gpu_launch,
+                            content::CAUSE_FOR_GPU_LAUNCH_MAX_ENUM);
 }
 
 GpuProcessHost::~GpuProcessHost() {

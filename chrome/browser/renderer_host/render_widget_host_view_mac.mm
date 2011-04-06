@@ -1101,7 +1101,9 @@ void RenderWidgetHostViewMac::DeallocFakePluginWindowHandle(
   if (render_widget_host_ &&
       plugin_container_manager_.IsRootContainer(window)) {
     GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(
-        render_widget_host_->process()->id());
+        render_widget_host_->process()->id(),
+        content::
+          CAUSE_FOR_GPU_LAUNCH_RENDERWIDGETHOSTVIEWMAC_DEALLOCFAKEPLUGINWINDOWHANDLE);
     if (ui_shim) {
       ui_shim->DidDestroyAcceleratedSurface(
           render_widget_host_->process()->id(),

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include "content/browser/browser_message_filter.h"
+#include "content/common/gpu_process_launch_causes.h"
 
 class GpuProcessHost;
 class GpuProcessHostUIShim;
@@ -38,7 +39,7 @@ class GpuMessageFilter : public BrowserMessageFilter,
   virtual ~GpuMessageFilter();
 
   // Message handlers called on the browser IO thread:
-  void OnEstablishGpuChannel();
+  void OnEstablishGpuChannel(content::CauseForGpuLaunch);
   void OnSynchronizeGpu(IPC::Message* reply);
   void OnCreateViewCommandBuffer(
       int32 render_view_id,

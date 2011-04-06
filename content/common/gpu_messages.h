@@ -5,16 +5,17 @@
 #include <vector>
 #include <string>
 
+
 #include "base/shared_memory.h"
 #include "content/common/common_param_traits.h"
 #include "content/common/gpu_info.h"
-#include "gpu/ipc/gpu_command_buffer_traits.h"
+#include "content/common/gpu_process_launch_causes.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
-
 // Multiply-included message file, hence no include guard.
 
 #define IPC_MESSAGE_START GpuMsgStart
@@ -117,6 +118,8 @@ IPC_STRUCT_TRAITS_BEGIN(GPUInfo)
 #endif
 IPC_STRUCT_TRAITS_END()
 
+IPC_ENUM_TRAITS(content::CauseForGpuLaunch)
+
 //------------------------------------------------------------------------------
 // GPU Messages
 // These are messages from the browser to the GPU process.
@@ -199,7 +202,8 @@ IPC_MESSAGE_CONTROL3(GpuMsg_GpuChannelEstablished,
 // A renderer sends this when it wants to create a connection to the GPU
 // process. The browser will create the GPU process if necessary, and will
 // return a handle to the channel via a GpuChannelEstablished message.
-IPC_MESSAGE_CONTROL0(GpuHostMsg_EstablishGpuChannel)
+IPC_MESSAGE_CONTROL1(GpuHostMsg_EstablishGpuChannel,
+                     content::CauseForGpuLaunch)
 
 // A renderer sends this to the browser process to provide a synchronization
 // point for GPU operations, in particular to make sure the GPU channel has

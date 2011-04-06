@@ -23,6 +23,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "content/common/gpu_feature_flags.h"
 #include "content/common/gpu_info.h"
+#include "content/common/gpu_process_launch_causes.h"
 #include "content/common/message_router.h"
 #include "content/gpu/gpu_render_thread.h"
 #include "ui/gfx/native_widget_types.h"
@@ -65,7 +66,8 @@ class GpuProcessHostUIShim
   // has returned to the message loop as it can be destroyed. Instead store the
   // associated GPU host ID. A renderer ID of zero means the browser process.
   // This could return NULL if GPU access is not allowed (blacklisted).
-  static GpuProcessHostUIShim* GetForRenderer(int renderer_id);
+  static GpuProcessHostUIShim* GetForRenderer(int renderer_id,
+                                              content::CauseForGpuLaunch);
 
   // Destroy the GpuProcessHostUIShim with the given host ID. This can only
   // be called on the UI thread. Only the GpuProcessHost should destroy the
@@ -150,7 +152,7 @@ class GpuProcessHostUIShim
       const std::string& message);
 
  private:
-  explicit GpuProcessHostUIShim(int host_id);
+  explicit GpuProcessHostUIShim(int host_id, content::CauseForGpuLaunch);
   virtual ~GpuProcessHostUIShim();
 
   // Message handlers.

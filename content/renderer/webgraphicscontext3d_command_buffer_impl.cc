@@ -54,7 +54,9 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   RenderThread* render_thread = RenderThread::current();
   if (!render_thread)
     return false;
-  GpuChannelHost* host = render_thread->EstablishGpuChannelSync();
+  GpuChannelHost* host = render_thread->EstablishGpuChannelSync(
+    content::
+      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);
   if (!host)
     return false;
   DCHECK(host->state() == GpuChannelHost::kConnected);

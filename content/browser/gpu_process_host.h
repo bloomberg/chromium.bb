@@ -9,6 +9,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/common/gpu_feature_flags.h"
+#include "content/common/gpu_process_launch_causes.h"
 
 namespace IPC {
 class Message;
@@ -22,7 +23,8 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // FromID with the same id.
   static GpuProcessHost* Create(
       int host_id,
-      const GpuFeatureFlags& gpu_feature_flags);
+      const GpuFeatureFlags& gpu_feature_flags,
+      content::CauseForGpuLaunch);
 
   // Get the GPU process host for the GPU process with the given ID. Returns
   // null if the process no longer exists.
@@ -35,7 +37,8 @@ class GpuProcessHost : public BrowserChildProcessHost,
 
  private:
   GpuProcessHost(int host_id,
-                 const GpuFeatureFlags& gpu_feature_flags);
+                 const GpuFeatureFlags& gpu_feature_flags,
+                 content::CauseForGpuLaunch);
   virtual ~GpuProcessHost();
 
   bool Init();
